@@ -12,7 +12,7 @@ class IntertwineNone : public Intertwine {
 public:
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
-    for (size_t c=0; c<stroke.size(); ++c)
+    for (int c=0; c<stroke.size(); ++c)
       doPointshapePoint(stroke[c].x, stroke[c].y, loop);
   }
 
@@ -79,7 +79,7 @@ public:
       doPointshapePoint(stroke[0].x, stroke[0].y, loop);
     }
     else if (stroke.size() >= 2) {
-      for (size_t c=0; c+1<stroke.size(); ++c) {
+      for (int c=0; c+1<stroke.size(); ++c) {
         int x1 = stroke[c].x;
         int y1 = stroke[c].y;
         int x2 = stroke[c+1].x;
@@ -107,7 +107,7 @@ public:
       return;
     }
 
-    for (size_t c=0; c+1<stroke.size(); ++c) {
+    for (int c=0; c+1<stroke.size(); ++c) {
       int x1 = stroke[c].x;
       int y1 = stroke[c].y;
       int x2 = stroke[c+1].x;
@@ -135,7 +135,7 @@ public:
       doPointshapePoint(stroke[0].x, stroke[0].y, loop);
     }
     else if (stroke.size() >= 2) {
-      for (size_t c=0; c+1<stroke.size(); ++c) {
+      for (int c=0; c+1<stroke.size(); ++c) {
         int x1 = stroke[c].x;
         int y1 = stroke[c].y;
         int x2 = stroke[c+1].x;
@@ -156,7 +156,7 @@ public:
       return;
     }
 
-    for (size_t c=0; c+1<stroke.size(); ++c) {
+    for (int c=0; c+1<stroke.size(); ++c) {
       int x1 = stroke[c].x;
       int y1 = stroke[c].y;
       int x2 = stroke[c+1].x;
@@ -178,7 +178,7 @@ public:
     if (stroke.size() == 0)
       return;
 
-    for (size_t c=0; c<stroke.size(); c += 4) {
+    for (int c=0; c<stroke.size(); c += 4) {
       if (stroke.size()-c == 1) {
         doPointshapePoint(stroke[c].x, stroke[c].y, loop);
       }
@@ -240,7 +240,7 @@ public:
     else {
       PPData data(m_pts, loop);
 
-      for (size_t c=0; c+1<stroke.size(); ++c) {
+      for (int c=0; c+1<stroke.size(); ++c) {
         algo_line(
           stroke[c].x,
           stroke[c].y,
@@ -251,7 +251,7 @@ public:
       }
     }
 
-    for (size_t c=0; c<m_pts.size(); ++c) {
+    for (int c=0; c<m_pts.size(); ++c) {
       // We ignore a pixel that is between other two pixels in the
       // corner of a L-like shape.
       if (c > 0 && c+1 < m_pts.size()

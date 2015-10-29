@@ -397,7 +397,7 @@ public:
 
     switch (m_clickCounter) {
       case 0:
-        for (size_t i=1; i<stroke.size(); ++i)
+        for (int i=1; i<stroke.size(); ++i)
           stroke[i] = point;
         break;
       case 1:
