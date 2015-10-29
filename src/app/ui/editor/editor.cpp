@@ -643,7 +643,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         if (x > 0) {
           gfx::Color color = color_utils::color_for_ui(docPref.grid.color());
           g->drawVLine(color,
-                       enclosingRect.x + m_zoom.apply(x),
+                       spriteRect.x + m_zoom.apply(x),
                        enclosingRect.y,
                        enclosingRect.h);
         }
@@ -655,7 +655,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
           gfx::Color color = color_utils::color_for_ui(docPref.grid.color());
           g->drawHLine(color,
                        enclosingRect.x,
-                       enclosingRect.y + m_zoom.apply(y),
+                       spriteRect.y + m_zoom.apply(y),
                        enclosingRect.w);
         }
         break;
