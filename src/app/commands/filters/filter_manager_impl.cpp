@@ -259,7 +259,8 @@ void FilterManagerImpl::flush()
           m_y+m_offset_y+m_row-1)),
       gfx::Size(
         editor->zoom().apply(m_w),
-        editor->zoom().apply(1)));
+        (editor->zoom().scale() >= 1 ? editor->zoom().apply(1):
+                                       editor->zoom().remove(1))));
 
     gfx::Region reg1(rect);
     gfx::Region reg2;
