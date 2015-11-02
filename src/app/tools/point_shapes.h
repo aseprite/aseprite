@@ -52,14 +52,14 @@ public:
       if (m_brush->type() == kImageBrushType) {
         if (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
             m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
-          m_brush->setPatternOrigin(gfx::Point(x, y)-loop->getOffset());
+          m_brush->setPatternOrigin(gfx::Point(x, y)+loop->getCelOrigin());
         }
       }
     }
     else {
       if (m_brush->type() == kImageBrushType &&
           m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
-        m_brush->setPatternOrigin(gfx::Point(x, y)-loop->getOffset());
+        m_brush->setPatternOrigin(gfx::Point(x, y)+loop->getCelOrigin());
       }
     }
 
@@ -84,24 +84,25 @@ public:
   void transformPoint(ToolLoop* loop, int x, int y) override {
     doc::algorithm::floodfill(
       const_cast<Image*>(loop->getSrcImage()), x, y,
-      paintBounds(loop, x, y),
+      floodfillBounds(loop, x, y),
       loop->getTolerance(),
       loop->getContiguous(),
       loop, (AlgoHLine)doInkHline);
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
-    area = paintBounds(loop, x, y);
+    area = floodfillBounds(loop, x, y);
   }
 
 private:
-  gfx::Rect paintBounds(ToolLoop* loop, int x, int y) {
-    gfx::Point offset = loop->getOffset();
-    gfx::Rect bounds(
-      offset.x, offset.y,
-      loop->sprite()->width(), loop->sprite()->height());
+  gfx::Rect floodfillBounds(ToolLoop* loop, int x, int y) const {
+    gfx::Point origin = loop->getCelOrigin();
+    gfx::Rect bounds(-origin.x, -origin.y,
+                     loop->sprite()->width(),
+                     loop->sprite()->height());
 
-    bounds = bounds.createIntersection(loop->getSrcImage()->bounds());
+    bounds = bounds.createIntersection(
+      loop->getSrcImage()->bounds());
 
     // Limit the flood-fill to the current tile if the grid is visible.
     if (loop->getStopAtGrid()) {
@@ -109,8 +110,8 @@ private:
       if (!grid.isEmpty()) {
         div_t d, dx, dy;
 
-        dx = div(grid.x+loop->getOffset().x, grid.w);
-        dy = div(grid.y+loop->getOffset().y, grid.h);
+        dx = div(grid.x-origin.x, grid.w);
+        dy = div(grid.y-origin.y, grid.h);
 
         if (dx.rem > 0) dx.rem -= grid.w;
         if (dy.rem > 0) dy.rem -= grid.h;

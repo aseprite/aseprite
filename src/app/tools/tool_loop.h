@@ -187,8 +187,8 @@ namespace app {
       virtual int getSprayWidth() = 0;
       virtual int getSpraySpeed() = 0;
 
-      // Offset for each point
-      virtual gfx::Point getOffset() = 0;
+      // X,Y origin of the cel where we are drawing
+      virtual gfx::Point getCelOrigin() = 0;
 
       // Velocity vector of the mouse
       virtual void setSpeed(const gfx::Point& speed) = 0;

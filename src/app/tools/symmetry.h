@@ -20,6 +20,8 @@ namespace app {
     class Symmetry {
     public:
       virtual ~Symmetry() { }
+
+      // The "stroke" must be relative to the sprite origin.
       virtual void generateStrokes(const Stroke& stroke, Strokes& strokes) = 0;
     };
 

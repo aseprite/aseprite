@@ -906,8 +906,8 @@ public:
     m_opacity = loop->getOpacity();
     m_width = m_brush->bounds().w;
     m_height = m_brush->bounds().h;
-    m_u = (loop->getOffset().x + m_brush->patternOrigin().x) % m_width;
-    m_v = (loop->getOffset().y + m_brush->patternOrigin().y) % m_height;
+    m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+    m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
   }
 
   void processPixel(int x, int y) {

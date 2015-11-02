@@ -38,6 +38,7 @@ namespace app {
     //    is called.
     // 5. When the user release the mouse:
     //    - ToolLoopManager::releaseButton
+    //
     class ToolLoopManager {
     public:
 

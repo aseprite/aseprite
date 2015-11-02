@@ -39,7 +39,8 @@ namespace app {
 
       // Called when the user starts drawing and each time a new button is
       // pressed. The controller could be sure that this method is called
-      // at least one time.
+      // at least one time. The point is a position relative to sprite
+      // bounds.
       virtual void pressButton(Stroke& stroke, const gfx::Point& point) = 0;
 
       // Called each time a mouse button is released.
@@ -48,6 +49,7 @@ namespace app {
       // Called when the mouse is moved.
       virtual void movement(ToolLoop* loop, Stroke& stroke, const gfx::Point& point) = 0;
 
+      // The input and output strokes are relative to sprite coordinates.
       virtual void getStrokeToInterwine(const Stroke& input, Stroke& output) = 0;
       virtual void getStatusBarText(const Stroke& stroke, std::string& text) = 0;
     };

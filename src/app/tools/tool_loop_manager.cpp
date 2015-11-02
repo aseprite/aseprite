@@ -164,14 +164,13 @@ void ToolLoopManager::movement(const Pointer& pointer)
 
 void ToolLoopManager::doLoopStep(bool last_step)
 {
-  // Original set of points to interwine (original user stroke).
+  // Original set of points to interwine (original user stroke,
+  // relative to sprite origin).
   Stroke main_stroke;
   if (!last_step)
     m_toolLoop->getController()->getStrokeToInterwine(m_stroke, main_stroke);
   else
     main_stroke = m_stroke;
-
-  main_stroke.offset(m_toolLoop->getOffset());
 
   // Calculate the area to be updated in all document observers.
   Symmetry* symmetry = m_toolLoop->getSymmetry();
@@ -209,6 +208,9 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   m_toolLoop->validateDstImage(m_dirtyArea);
 
+  // Move the stroke to be relative to the cel origin.
+  main_stroke.offset(-m_toolLoop->getCelOrigin());
+
   // Join or fill user points
   if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
     m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
@@ -235,6 +237,7 @@ void ToolLoopManager::snapToGrid(Point& point)
   point = snap_to_grid(m_toolLoop->getGridBounds(), point);
 }
 
+// Strokes are relative to sprite origin.
 void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
 {
   // Save the current dirty area if it's needed
@@ -244,6 +247,8 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
 
   // Start with a fresh dirty area
   m_dirtyArea.clear();
+
+  const Point celOrigin = m_toolLoop->getCelOrigin();
 
   for (auto& stroke : strokes) {
     gfx::Rect strokeBounds = stroke.bounds();
@@ -255,20 +260,19 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
 
     m_toolLoop->getPointShape()->getModifiedArea(
       m_toolLoop,
-      strokeBounds.x,
-      strokeBounds.y, r1);
+      strokeBounds.x - celOrigin.x,
+      strokeBounds.y - celOrigin.y, r1);
 
     m_toolLoop->getPointShape()->getModifiedArea(
       m_toolLoop,
-      strokeBounds.x+strokeBounds.w-1,
-      strokeBounds.y+strokeBounds.h-1, r2);
+      strokeBounds.x+strokeBounds.w-1 - celOrigin.x,
+      strokeBounds.y+strokeBounds.h-1 - celOrigin.y, r2);
 
     m_dirtyArea.createUnion(m_dirtyArea, Region(r1.createUnion(r2)));
   }
 
-  // Apply offset mode
-  Point offset(m_toolLoop->getOffset());
-  m_dirtyArea.offset(-offset);
+  // Make the dirty area relative to the sprite.
+  m_dirtyArea.offset(celOrigin);
 
   // Merge new dirty area with the previous one (for tools like line
   // or rectangle it's needed to redraw the previous position and
