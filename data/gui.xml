@@ -211,10 +211,10 @@
         <param name="action" value="out" />
       </key>
       <!-- For English keyboard -->
-      <key command="Zoom" shortcut="Ctrl+=">
+      <key command="Zoom" shortcut="Ctrl+=" mac="Cmd+=">
         <param name="action" value="in" />
       </key>
-      <key command="Zoom" shortcut="Ctrl+Shift+=">
+      <key command="Zoom" shortcut="Ctrl+Shift+=" mac="Cmd+Shift+=">
         <param name="action" value="in" />
       </key>
 
