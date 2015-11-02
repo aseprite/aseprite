@@ -262,17 +262,6 @@ void clipboard::paste()
       if (!clipboard_image)
         return;
 
-      if (!clipboard_mask) {
-        gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
-        gfx::Rect imageBounds = clipboard_image->bounds();
-
-        clipboard_mask.reset(new Mask);
-        clipboard_mask->replace(
-          gfx::Rect(visibleBounds.x + visibleBounds.w/2 - imageBounds.w/2,
-                    visibleBounds.y + visibleBounds.h/2 - imageBounds.h/2,
-                    imageBounds.w, imageBounds.h));
-      }
-
       Palette* dst_palette = dstSpr->palette(editor->frame());
 
       // Source image (clipboard or a converted copy to the destination 'imgtype')

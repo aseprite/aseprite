@@ -1494,7 +1494,20 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
 void Editor::pasteImage(const Image* image, const Mask* mask)
 {
   ASSERT(image);
-  ASSERT(mask);
+
+  base::UniquePtr<Mask> temp_mask;
+  if (!mask) {
+    gfx::Rect visibleBounds = getVisibleSpriteBounds();
+    gfx::Rect imageBounds = image->bounds();
+
+    temp_mask.reset(new Mask);
+    temp_mask->replace(
+      gfx::Rect(visibleBounds.x + visibleBounds.w/2 - imageBounds.w/2,
+                visibleBounds.y + visibleBounds.h/2 - imageBounds.h/2,
+                imageBounds.w, imageBounds.h));
+
+    mask = temp_mask.get();
+  }
 
   // Change to a selection tool: it's necessary for PixelsMovement
   // which will use the extra cel for transformation preview, and is
