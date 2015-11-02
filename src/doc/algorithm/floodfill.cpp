@@ -125,9 +125,9 @@ inline bool color_equal<IndexedTraits>(color_t c1, color_t c2, int tolerance)
  *  to the list of drawn segments. Returns the first x coordinate after
  *  the part of the line which it has dealt with.
  */
-static int flooder(Image *image, int x, int y,
-  const gfx::Rect& bounds,
-  color_t src_color, int tolerance, void *data, AlgoHLine proc)
+static int flooder(const Image* image, int x, int y,
+                   const gfx::Rect& bounds,
+                   color_t src_color, int tolerance, void *data, AlgoHLine proc)
 {
   FLOODED_LINE *p;
   int left = 0, right = 0;
@@ -263,9 +263,9 @@ static int flooder(Image *image, int x, int y,
  *  segments which have already been drawn in order to minimise the required
  *  number of tests.
  */
-static int check_flood_line(Image* image, int y, int left, int right,
-  const gfx::Rect& bounds,
-  int src_color, int tolerance, void *data, AlgoHLine proc)
+static int check_flood_line(const Image* image, int y, int left, int right,
+                            const gfx::Rect& bounds,
+                            int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   int c;
   FLOODED_LINE *p;
@@ -296,7 +296,7 @@ static int check_flood_line(Image* image, int y, int left, int right,
 }
 
 template<typename ImageTraits>
-static void replace_color(Image* image, const gfx::Rect& bounds, int src_color, int tolerance, void *data, AlgoHLine proc)
+static void replace_color(const Image* image, const gfx::Rect& bounds, int src_color, int tolerance, void* data, AlgoHLine proc)
 {
   typename ImageTraits::address_t address;
 
@@ -322,10 +322,11 @@ static void replace_color(Image* image, const gfx::Rect& bounds, int src_color, 
 /* floodfill:
  *  Fills an enclosed area (starting at point x, y) with the specified color.
  */
-void floodfill(Image* image, int x, int y,
-  const gfx::Rect& bounds,
-  int tolerance, bool contiguous,
-  void* data, AlgoHLine proc)
+void floodfill(const Image* image, int x, int y,
+               const gfx::Rect& bounds,
+               int tolerance, bool contiguous,
+               void* data,
+               AlgoHLine proc)
 {
   // Make sure we have a valid starting point
   if ((x < 0) || (x >= image->width()) ||
