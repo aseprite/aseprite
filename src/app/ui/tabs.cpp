@@ -556,7 +556,7 @@ void Tabs::selectTabInternal(TabPtr& tab)
     invalidate();
   }
 
-  if (m_delegate)
+  if (m_delegate && tab)
     m_delegate->onSelectTab(this, tab->view);
 }
 
