@@ -198,11 +198,15 @@ void osx_event_handler()
    int event_type;
    BOOL gotmouseevent = NO;
 
-   while ((event = [NSApp nextEventMatchingMask: NSAnyEventMask
-                                      untilDate: [NSDate distantPast]
-                                         inMode: NSDefaultRunLoopMode
-                                        dequeue: YES]))
+   while (osx_window != nil)
    {
+     event = [NSApp nextEventMatchingMask: NSAnyEventMask
+                                untilDate: [NSDate distantPast]
+                                   inMode: NSDefaultRunLoopMode
+                                  dequeue: YES];
+     if (!event)
+       return;
+
      BOOL send_event = YES;
 
       _unix_lock_mutex(osx_skip_events_processing_mutex);
