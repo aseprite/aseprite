@@ -39,6 +39,8 @@ namespace doc {
       return (v & INVALID) ? generateEntry(i, r, g, b, a): v;
     }
 
+    int maskIndex() const { return m_maskIndex; }
+
   private:
     int generateEntry(int i, int r, int g, int b, int a) const;
 

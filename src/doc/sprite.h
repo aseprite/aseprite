@@ -41,6 +41,10 @@ namespace doc {
   // The main structure used in the whole program to handle a sprite.
   class Sprite : public Object {
   public:
+    enum class RgbMapFor {
+      OpaqueLayer,
+      TransparentLayer
+    };
 
     ////////////////////////////////////////
     // Constructors/Destructor
@@ -105,6 +109,7 @@ namespace doc {
     void deletePalette(frame_t frame);
 
     RgbMap* rgbMap(frame_t frame) const;
+    RgbMap* rgbMap(frame_t frame, RgbMapFor forLayer) const;
 
     ////////////////////////////////////////
     // Frames

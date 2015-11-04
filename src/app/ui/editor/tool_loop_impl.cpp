@@ -65,6 +65,7 @@ protected:
   Sprite* m_sprite;
   Layer* m_layer;
   frame_t m_frame;
+  RgbMap* m_rgbMap;
   DocumentPreferences& m_docPref;
   ToolPreferences& m_toolPref;
   int m_opacity;
@@ -101,6 +102,7 @@ public:
     , m_sprite(editor->sprite())
     , m_layer(editor->layer())
     , m_frame(editor->frame())
+    , m_rgbMap(nullptr)
     , m_docPref(Preferences::instance().document(m_document))
     , m_toolPref(Preferences::instance().tool(m_tool))
     , m_opacity(m_toolPref.opacity())
@@ -179,7 +181,17 @@ public:
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
   frame_t getFrame() override { return m_frame; }
-  RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
+  RgbMap* getRgbMap() override {
+    if (!m_rgbMap) {
+      Sprite::RgbMapFor forLayer =
+        ((m_layer->isBackground() ||
+          m_sprite->pixelFormat() == IMAGE_RGB) ?
+         Sprite::RgbMapFor::OpaqueLayer:
+         Sprite::RgbMapFor::TransparentLayer);
+      m_rgbMap = m_sprite->rgbMap(m_frame, forLayer);
+    }
+    return m_rgbMap;
+  }
   const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }
   doc::color_t getFgColor() override { return m_fgColor; }

@@ -346,14 +346,22 @@ void Sprite::deletePalette(frame_t frame)
 
 RgbMap* Sprite::rgbMap(frame_t frame) const
 {
-  int mask_color = (backgroundLayer() ? -1: transparentColor());
+  return rgbMap(frame, backgroundLayer() ? RgbMapFor::OpaqueLayer:
+                                           RgbMapFor::TransparentLayer);
+}
+
+RgbMap* Sprite::rgbMap(frame_t frame, RgbMapFor forLayer) const
+{
+  int maskIndex = (forLayer == RgbMapFor::OpaqueLayer ?
+                   -1: transparentColor());
 
   if (m_rgbMap == NULL) {
     m_rgbMap = new RgbMap();
-    m_rgbMap->regenerate(palette(frame), mask_color);
+    m_rgbMap->regenerate(palette(frame), maskIndex);
   }
-  else if (!m_rgbMap->match(palette(frame))) {
-    m_rgbMap->regenerate(palette(frame), mask_color);
+  else if (!m_rgbMap->match(palette(frame)) ||
+           m_rgbMap->maskIndex() != maskIndex) {
+    m_rgbMap->regenerate(palette(frame), maskIndex);
   }
 
   return m_rgbMap;
