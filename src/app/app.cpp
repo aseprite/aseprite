@@ -448,10 +448,14 @@ void App::initialize(const AppOptions& options)
         // --list-layers
         else if (opt == &options.listLayers()) {
           listLayers = true;
+          if (m_exporter)
+            m_exporter->setListLayers(true);
         }
         // --list-tags
         else if (opt == &options.listTags()) {
           listTags = true;
+          if (m_exporter)
+            m_exporter->setListFrameTags(true);
         }
       }
       // File names aren't associated to any option

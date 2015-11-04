@@ -60,6 +60,8 @@ namespace app {
     void setInnerPadding(int padding) { m_innerPadding = padding; }
     void setTrimCels(bool trim) { m_trimCels = trim; }
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
+    void setListFrameTags(bool value) { m_listFrameTags = value; }
+    void setListLayers(bool value) { m_listLayers = value; }
 
     void addDocument(Document* document,
                      doc::Layer* layer = nullptr,
@@ -121,6 +123,8 @@ namespace app {
     Items m_documents;
     std::string m_filenameFormat;
     doc::ImageBufferPtr m_sampleRenderBuf;
+    bool m_listFrameTags;
+    bool m_listLayers;
 
     DISABLE_COPYING(DocumentExporter);
   };

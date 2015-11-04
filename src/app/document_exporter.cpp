@@ -46,10 +46,11 @@ using namespace doc;
 
 namespace {
 
-std::string escape_path_for_json(const std::string& path)
+std::string escape_for_json(const std::string& path)
 {
   std::string res = path;
   base::replace_string(res, "\\", "\\\\");
+  base::replace_string(res, "\"", "\\\"");
   return res;
 }
 
@@ -297,6 +298,8 @@ DocumentExporter::DocumentExporter()
  , m_shapePadding(0)
  , m_innerPadding(0)
  , m_trimCels(false)
+ , m_listFrameTags(false)
+ , m_listLayers(false)
 {
 }
 
@@ -593,10 +596,10 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
     gfx::Rect frameBounds = sample.inTextureBounds();
 
     if (filename_as_key)
-      os << "   \"" << escape_path_for_json(sample.filename()) << "\": {\n";
+      os << "   \"" << escape_for_json(sample.filename()) << "\": {\n";
     else if (filename_as_attr)
       os << "   {\n"
-         << "    \"filename\": \"" << escape_path_for_json(sample.filename()) << "\",\n";
+         << "    \"filename\": \"" << escape_for_json(sample.filename()) << "\",\n";
 
     os << "    \"frame\": { "
        << "\"x\": " << frameBounds.x << ", "
@@ -621,19 +624,71 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
     else
       os << "\n";
   }
+  os << " " << frames_end;
 
-  os << " " << frames_end << ",\n"
+  // "meta" property
+  os << ",\n"
      << " \"meta\": {\n"
      << "  \"app\": \"" << WEBSITE << "\",\n"
      << "  \"version\": \"" << VERSION << "\",\n";
+
   if (!m_textureFilename.empty())
-    os << "  \"image\": \"" << escape_path_for_json(m_textureFilename).c_str() << "\",\n";
+    os << "  \"image\": \"" << escape_for_json(m_textureFilename).c_str() << "\",\n";
+
   os << "  \"format\": \"" << (textureImage->pixelFormat() == IMAGE_RGB ? "RGBA8888": "I8") << "\",\n"
      << "  \"size\": { "
      << "\"w\": " << textureImage->width() << ", "
      << "\"h\": " << textureImage->height() << " },\n"
-     << "  \"scale\": \"" << m_scale << "\"\n"
-     << " }\n"
+     << "  \"scale\": \"" << m_scale << "\"";
+
+  // meta.frameTags
+  if (m_listFrameTags) {
+    os << ",\n"
+       << "  \"frameTags\": [";
+
+    bool firstTag = true;
+    for (auto& item : m_documents) {
+      Document* doc = item.doc;
+      Sprite* sprite = doc->sprite();
+
+      for (FrameTag* tag : sprite->frameTags()) {
+        if (firstTag)
+          firstTag = false;
+        else
+          os << ",";
+        os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
+           << " \"from\": " << tag->fromFrame() << ","
+           << " \"to\": " << tag->toFrame() << " }";
+      }
+    }
+    os << "\n  ]";
+  }
+
+  // meta.layers
+  if (m_listLayers) {
+    os << ",\n"
+       << "  \"layers\": [";
+
+    bool firstLayer = true;
+    for (auto& item : m_documents) {
+      Document* doc = item.doc;
+      Sprite* sprite = doc->sprite();
+
+      std::vector<Layer*> layers;
+      sprite->getLayersList(layers);
+
+      for (Layer* layer : layers) {
+        if (firstLayer)
+          firstLayer = false;
+        else
+          os << ",";
+        os << "\n   { \"name\": \"" << escape_for_json(layer->name()) << "\" }";
+      }
+    }
+    os << "\n  ]";
+  }
+
+  os << "\n }\n"
      << "}\n";
 }
 
