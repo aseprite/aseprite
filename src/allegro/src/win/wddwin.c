@@ -784,6 +784,7 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
    int w, h;
    RECT rc;
    BITMAP *new_screen;
+   BITMAP* tmp = NULL;
 
    GetClientRect(allegro_wnd, &rc);
    w = rc.right;
@@ -792,7 +793,6 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
       w -= (w % 4);
 
    /* Copy current content in screen */
-   BITMAP* tmp = NULL;
    if (screen)
       tmp = create_bitmap_ex(color_depth, w, h);
 
