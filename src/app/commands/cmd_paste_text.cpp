@@ -26,6 +26,7 @@
 #include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
+#include "render/quantization.h"
 
 #include "paste_text.xml.h"
 
@@ -173,6 +174,16 @@ void PasteTextCommand::onExecute(Context* ctx)
 
     doc::ImageRef image(render_text(faceName, size, text, color));
     if (image) {
+      Sprite* sprite = editor->sprite();
+      if (image->pixelFormat() != sprite->pixelFormat()) {
+        RgbMap* rgbmap = sprite->rgbMap(editor->frame());
+        image.reset(
+          render::convert_pixel_format(
+            image.get(), NULL, sprite->pixelFormat(),
+            DitheringMethod::NONE, rgbmap, sprite->palette(editor->frame()),
+            false, 0));
+      }
+
       editor->pasteImage(image.get());
     }
   }
