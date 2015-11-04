@@ -24,6 +24,7 @@
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/image.h"
+#include "doc/image_ref.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/box.h"
@@ -40,17 +41,20 @@
 #endif
 
 #include <queue>
+#include <map>
 
 namespace app {
 
 using namespace ui;
 
+static std::map<std::string, doc::ImageRef> g_thumbnails;
+
 class FontItem : public ListItem {
 public:
   FontItem(const std::string& fn)
     : ListItem(base::get_file_title(fn))
-    , m_filename(fn)
-    , m_loaded(false) {
+    , m_image(g_thumbnails[fn])
+    , m_filename(fn) {
   }
 
   const std::string& filename() const {
@@ -86,6 +90,9 @@ private:
   }
 
   void onSelect() override {
+    if (m_image)
+      return;
+
     ListBox* listbox = static_cast<ListBox*>(getParent());
     if (!listbox)
       return;
@@ -94,7 +101,6 @@ private:
     gfx::Color color = theme->colors.text();
 
     try {
-      m_loaded = true;
       m_image.reset(
         render_text(
           m_filename, 16,
@@ -107,6 +113,9 @@ private:
       View* view = View::getView(listbox);
       view->updateView();
       listbox->makeChildVisible(this);
+
+      // Save the thumbnail for future FontPopups
+      g_thumbnails[m_filename] = m_image;
     }
     catch (const std::exception&) {
       // Ignore errors
@@ -114,9 +123,8 @@ private:
   }
 
 private:
-  base::UniquePtr<doc::Image> m_image;
+  doc::ImageRef m_image;
   std::string m_filename;
-  bool m_loaded;
 };
 
 FontPopup::FontPopup()
