@@ -83,7 +83,9 @@ public:
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
     doc::algorithm::floodfill(
-      const_cast<Image*>(loop->getSrcImage()), x, y,
+      loop->getSrcImage(),
+      (loop->useMask() ? loop->getMask(): nullptr),
+      x, y,
       floodfillBounds(loop, x, y),
       loop->getTolerance(),
       loop->getContiguous(),

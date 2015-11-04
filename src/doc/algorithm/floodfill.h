@@ -14,10 +14,13 @@
 namespace doc {
 
   class Image;
+  class Mask;
 
   namespace algorithm {
 
-    void floodfill(const Image* image, int x, int y,
+    void floodfill(const Image* image,
+                   const Mask* mask,
+                   int x, int y,
                    const gfx::Rect& bounds,
                    int tolerance, bool contiguous,
                    void* data,
