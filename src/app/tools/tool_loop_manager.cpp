@@ -176,7 +176,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   Symmetry* symmetry = m_toolLoop->getSymmetry();
   Strokes strokes;
   if (symmetry)
-    symmetry->generateStrokes(main_stroke, strokes);
+    symmetry->generateStrokes(main_stroke, strokes, m_toolLoop);
   else
     strokes.push_back(main_stroke);
 

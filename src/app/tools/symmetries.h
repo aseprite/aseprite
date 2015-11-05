@@ -18,7 +18,8 @@ namespace tools {
 class HorizontalSymmetry : public Symmetry {
 public:
   HorizontalSymmetry(int x) : m_x(x) { }
-  void generateStrokes(const Stroke& mainStroke, Strokes& strokes) override;
+  void generateStrokes(const Stroke& mainStroke, Strokes& strokes,
+                       ToolLoop* loop) override;
 private:
   int m_x;
 };
@@ -26,7 +27,8 @@ private:
 class VerticalSymmetry : public Symmetry {
 public:
   VerticalSymmetry(int y) : m_y(y) { }
-  void generateStrokes(const Stroke& mainStroke, Strokes& strokes) override;
+  void generateStrokes(const Stroke& mainStroke, Strokes& strokes,
+                       ToolLoop* loop) override;
 private:
   int m_y;
 };

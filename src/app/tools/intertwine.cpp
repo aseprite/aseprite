@@ -35,7 +35,7 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
     main_stroke.addPoint(Point(x, y) + origin);
 
     Strokes strokes;
-    symmetry->generateStrokes(main_stroke, strokes);
+    symmetry->generateStrokes(main_stroke, strokes, loop);
     for (const auto& stroke : strokes) {
       // We call transformPoint() moving back each point to the cel
       // origin.
