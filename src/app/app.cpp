@@ -61,6 +61,7 @@
 #include "doc/frame_tag.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layers_range.h"
 #include "doc/palette.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
@@ -223,6 +224,7 @@ void App::initialize(const AppOptions& options)
     Console console;
     bool splitLayers = false;
     bool splitLayersSaveAs = false;
+    bool allLayers = false;
     bool listLayers = false;
     bool listTags = false;
     std::string importLayer;
@@ -282,6 +284,10 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.layer()) {
           importLayer = value.value();
           importLayerSaveAs = value.value();
+        }
+        // --all-layers
+        else if (opt == &options.allLayers()) {
+          allLayers = true;
         }
         // --frame-tag <tag-name>
         else if (opt == &options.frameTag()) {
@@ -344,10 +350,8 @@ void App::initialize(const AppOptions& options)
             Command* cropCommand = CommandsModule::instance()->getCommandByName(CommandId::CropSprite);
             Command* undoCommand = CommandsModule::instance()->getCommandByName(CommandId::Undo);
 
+            // --save-as with --split-layers
             if (splitLayersSaveAs) {
-              std::vector<Layer*> layers;
-              doc->sprite()->getLayersList(layers);
-
               std::string fn, fmt;
               if (format.empty()) {
                 if (doc->sprite()->totalFrames() > frame_t(1))
@@ -356,9 +360,21 @@ void App::initialize(const AppOptions& options)
                   format = "{path}/{title} ({layer}).{extension}";
               }
 
+              // Store in "visibility" the original "visible" state of every layer.
+              std::vector<bool> visibility(doc->sprite()->countLayers());
+              int i = 0;
+              for (Layer* layer : doc->sprite()->layers())
+                visibility[i++] = layer->isVisible();
+
               // For each layer, hide other ones and save the sprite.
-              for (Layer* show : layers) {
-                for (Layer* hide : layers)
+              i = 0;
+              for (Layer* show : doc->sprite()->layers()) {
+                // If the user doesn't want all layers and this one is hidden.
+                if (!visibility[i++])
+                  continue;     // Just ignore this layer.
+
+                // Make this layer ("show") the only one visible.
+                for (Layer* hide : doc->sprite()->layers())
                   hide->setVisible(hide == show);
 
                 FilenameInfo fnInfo;
@@ -393,14 +409,16 @@ void App::initialize(const AppOptions& options)
                   doc->undoHistory()->clearRedo();
                 }
               }
+
+              // Restore layer visibility
+              i = 0;
+              for (Layer* layer : doc->sprite()->layers())
+                layer->setVisible(visibility[i++]);
             }
             else {
-              std::vector<Layer*> layers;
-              doc->sprite()->getLayersList(layers);
-
               // Show only one layer
               if (!importLayerSaveAs.empty()) {
-                for (Layer* layer : layers)
+                for (Layer* layer : doc->sprite()->layers())
                   layer->setVisible(layer->name() == importLayerSaveAs);
               }
 
@@ -478,13 +496,20 @@ void App::initialize(const AppOptions& options)
 
         // List layers and/or tags
         if (doc) {
+          // Show all layers
+          if (allLayers) {
+            for (Layer* layer : doc->sprite()->layers())
+              layer->setVisible(true);
+          }
+
           if (listLayers) {
             listLayers = false;
-            std::vector<Layer*> layers;
-            doc->sprite()->getLayersList(layers);
-            for (Layer* layer : layers)
-              std::cout << layer->name() << "\n";
+            for (Layer* layer : doc->sprite()->layers()) {
+              if (layer->isVisible())
+                std::cout << layer->name() << "\n";
+            }
           }
+
           if (listTags) {
             listTags = false;
             for (FrameTag* tag : doc->sprite()->frameTags())
@@ -497,11 +522,8 @@ void App::initialize(const AppOptions& options)
               frameTag = doc->sprite()->frameTags().getByName(frameTagName);
 
             if (!importLayer.empty()) {
-              std::vector<Layer*> layers;
-              doc->sprite()->getLayersList(layers);
-
               Layer* foundLayer = NULL;
-              for (Layer* layer : layers) {
+              for (Layer* layer : doc->sprite()->layers()) {
                 if (layer->name() == importLayer) {
                   foundLayer = layer;
                   break;
@@ -511,13 +533,14 @@ void App::initialize(const AppOptions& options)
                 m_exporter->addDocument(doc, foundLayer, frameTag);
             }
             else if (splitLayers) {
-              std::vector<Layer*> layers;
-              doc->sprite()->getLayersList(layers);
-              for (auto layer : layers)
-                m_exporter->addDocument(doc, layer, frameTag);
+              for (auto layer : doc->sprite()->layers()) {
+                if (layer->isVisible())
+                  m_exporter->addDocument(doc, layer, frameTag);
+              }
             }
-            else
+            else {
               m_exporter->addDocument(doc, nullptr, frameTag);
+            }
           }
         }
 

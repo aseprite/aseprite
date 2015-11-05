@@ -37,6 +37,7 @@ add_library(doc-lib
   layer.cpp
   layer_index.cpp
   layer_io.cpp
+  layers_range.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp

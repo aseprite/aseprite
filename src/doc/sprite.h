@@ -31,6 +31,7 @@ namespace doc {
   class Layer;
   class LayerFolder;
   class LayerImage;
+  class LayersRange;
   class Mask;
   class Palette;
   class Remap;
@@ -143,6 +144,10 @@ namespace doc {
     void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
     void pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const;
 
+    ////////////////////////////////////////
+    // Iterators
+
+    LayersRange layers() const;
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;
     CelsRange uniqueCels() const;

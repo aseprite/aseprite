@@ -18,6 +18,7 @@
 #include "doc/frame_tag.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
+#include "doc/layers_range.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
@@ -532,7 +533,12 @@ void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList
 }
 
 //////////////////////////////////////////////////////////////////////
-// CelsRange
+// Iterators
+
+LayersRange Sprite::layers() const
+{
+  return LayersRange(this, LayerIndex(0), LayerIndex(countLayers()-1));
+}
 
 CelsRange Sprite::cels() const
 {
