@@ -68,8 +68,8 @@ void verbose_log(const char* format, ...)
     fflush(app::log_fileptr);
 
 #ifdef _DEBUG
-    vfprintf(stdout, format, ap);
-    fflush(stdout);
+    vfprintf(stderr, format, ap);
+    fflush(stderr);
 #endif
 
     va_end(ap);
