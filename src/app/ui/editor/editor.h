@@ -68,7 +68,7 @@ namespace app {
       kShowOnionskin = 4,
       kShowOutside = 8,
       kShowDecorators = 16,
-      kShowSymmetryLine = 2,
+      kShowSymmetryLine = 32,
       kDefaultEditorFlags = (kShowGrid |
                              kShowMask |
                              kShowOnionskin |
