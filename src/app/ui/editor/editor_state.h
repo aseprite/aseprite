@@ -96,7 +96,7 @@ namespace app {
     // Called when a key is released.
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) { return false; }
 
-    // Called when a key is released.
+    // Called when status bar needs to be updated.
     virtual bool onUpdateStatusBar(Editor* editor) { return false; }
 
     // When a part of the sprite will be exposed.
