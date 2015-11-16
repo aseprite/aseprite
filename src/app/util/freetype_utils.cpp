@@ -21,9 +21,9 @@
 
 #include <stdexcept>
 
-#include "freetype/ftglyph.h"
-#include "ft2build.h"
+#include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_GLYPH_H
 
 namespace app {
 
