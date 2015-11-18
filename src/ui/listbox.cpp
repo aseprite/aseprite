@@ -10,6 +10,7 @@
 
 #include "ui/listbox.h"
 
+#include "base/path.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
@@ -123,7 +124,7 @@ void ListBox::centerScroll()
 }
 
 inline bool sort_by_text(Widget* a, Widget* b) {
-  return a->getText() < b->getText();
+  return (base::compare_filenames(a->getText(), b->getText()) < 0);
 }
 
 void ListBox::sortItems()
