@@ -365,6 +365,9 @@
 
       <key command="NewBrush" shortcut="Ctrl+B" mac="Cmd+B" />
       <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
+
+      <!-- Commands not associated to menu items and without shortcuts by default -->
+      <key command="PixelPerfectMode" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->

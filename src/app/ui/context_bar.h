@@ -78,6 +78,7 @@ namespace app {
   protected:
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onToolSetOpacity(const int& newOpacity);
+    void onToolSetFreehandAlgorithm();
 
   private:
     void onBrushSizeChange();
@@ -156,6 +157,7 @@ namespace app {
     ScopedConnection m_sizeConn;
     ScopedConnection m_angleConn;
     ScopedConnection m_opacityConn;
+    ScopedConnection m_freehandAlgoConn;
   };
 
 } // namespace app

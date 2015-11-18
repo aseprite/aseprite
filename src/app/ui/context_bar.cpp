@@ -1125,6 +1125,15 @@ void ContextBar::onToolSetOpacity(const int& newOpacity)
   m_inkOpacity->setTextf("%d", newOpacity);
 }
 
+void ContextBar::onToolSetFreehandAlgorithm()
+{
+  Tool* tool = App::instance()->activeTool();
+  if (tool) {
+    m_freehandAlgo->setFreehandAlgorithm(
+      Preferences::instance().tool(tool).freehandAlgorithm());
+  }
+}
+
 void ContextBar::onBrushSizeChange()
 {
   if (m_activeBrush->type() != kImageBrushType)
@@ -1188,6 +1197,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_sizeConn = brushPref->size.AfterChange.connect(Bind<void>(&ContextBar::onBrushSizeChange, this));
     m_angleConn = brushPref->angle.AfterChange.connect(Bind<void>(&ContextBar::onBrushAngleChange, this));
     m_opacityConn = toolPref->opacity.AfterChange.connect(&ContextBar::onToolSetOpacity, this);
+    m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(Bind<void>(&ContextBar::onToolSetFreehandAlgorithm, this));
   }
 
   if (tool)

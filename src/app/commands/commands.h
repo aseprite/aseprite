@@ -37,6 +37,9 @@ namespace app {
     static CommandsModule* instance();
 
     Command* getCommandByName(const char* name);
+
+    CommandsList::iterator begin() { return m_commands.begin(); }
+    CommandsList::iterator end() { return m_commands.end(); }
   };
 
 } // namespace app
