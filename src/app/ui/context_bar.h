@@ -71,6 +71,7 @@ namespace app {
       ToolPreferences::Brush* brushPref = nullptr);
 
     doc::Remap* createShadesRemap(bool left);
+    void reverseShadesColors();
 
     // Signals
     Signal0<void> BrushChange;

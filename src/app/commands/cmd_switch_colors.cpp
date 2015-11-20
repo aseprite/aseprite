@@ -11,7 +11,11 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/modules/editors.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
 #include "ui/base.h"
 
 namespace app {
@@ -21,7 +25,8 @@ public:
   SwitchColorsCommand();
 
 protected:
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 SwitchColorsCommand::SwitchColorsCommand()
@@ -31,12 +36,29 @@ SwitchColorsCommand::SwitchColorsCommand()
 {
 }
 
+bool SwitchColorsCommand::onEnabled(Context* context)
+{
+  return (current_editor ? true: false);
+}
+
 void SwitchColorsCommand::onExecute(Context* context)
 {
+  ASSERT(current_editor);
+  if (!current_editor)
+    return;
+
+  tools::Tool* tool = current_editor->getCurrentEditorTool();
+  if (tool) {
+    const auto& toolPref(Preferences::instance().tool(tool));
+    if (toolPref.ink() == tools::InkType::SHADING) {
+      App::instance()->getMainWindow()->
+        getContextBar()->reverseShadesColors();
+    }
+  }
+
   ColorBar* colorbar = ColorBar::instance();
   app::Color fg = colorbar->getFgColor();
   app::Color bg = colorbar->getBgColor();
-
   colorbar->setFgColor(bg);
   colorbar->setBgColor(fg);
 }

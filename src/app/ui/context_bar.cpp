@@ -437,6 +437,11 @@ public:
     setText("Select colors in the palette");
   }
 
+  void reverseColors() {
+    std::reverse(m_colors.begin(), m_colors.end());
+    invalidate();
+  }
+
   doc::Remap* createShadesRemap(bool left) {
     base::UniquePtr<doc::Remap> remap;
     Colors colors = getColors();
@@ -1501,6 +1506,11 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
 doc::Remap* ContextBar::createShadesRemap(bool left)
 {
   return m_inkShades->createShadesRemap(left);
+}
+
+void ContextBar::reverseShadesColors()
+{
+  m_inkShades->reverseColors();
 }
 
 } // namespace app
