@@ -79,6 +79,7 @@ if(USE_SKIA_BACKEND)
   find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSE41_LIBRARY skia_opts_sse41 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSSE3_LIBRARY skia_opts_ssse3 PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_PORTS_LIBRARY skia_ports PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_SFNT_LIBRARY skia_sfnt PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_GPU_LIBRARY skia_skgpu PATH "${SKIA_BUILD_OUT_DIR}")
@@ -129,6 +130,7 @@ if(USE_SKIA_BACKEND)
     ${SKIA_OPTS_AVX_LIBRARY}
     ${SKIA_OPTS_SSE41_LIBRARY}
     ${SKIA_OPTS_SSSE3_LIBRARY}
+    ${SKIA_OPTS_AVX_LIBRARY}
     ${SKIA_PORTS_LIBRARY}
     ${SKIA_SFNT_LIBRARY}
     ${SKIA_UTILS_LIBRARY}
