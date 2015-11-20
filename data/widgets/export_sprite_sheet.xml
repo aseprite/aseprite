@@ -37,10 +37,10 @@
     <label text="Frames:" />
     <combobox id="frames" text="" cell_hspan="3" />
 
-    <label text="Save As:" />
+    <check id="image_enabled" text="Output File" />
     <button id="image_filename" cell_hspan="3" />
 
-    <check id="data_enabled" text="JSON Data:" />
+    <check id="data_enabled" text="JSON Data" />
     <button id="data_filename" cell_hspan="3" />
 
     <check id="open_generated" text="Open generated sprite sheet" cell_hspan="4" />

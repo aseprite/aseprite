@@ -103,7 +103,11 @@ DocumentPreferences& Preferences::document(const app::Document* doc)
     DocumentPreferences* docPref;
     if (doc) {
       docPref = new DocumentPreferences("");
-      *docPref = this->document(nullptr);
+
+      // The default preferences for this document are the current
+      // defaults for (document=nullptr).
+      DocumentPreferences& defPref = this->document(nullptr);
+      *docPref = defPref;
 
       // Default values for symmetry
       docPref->symmetry.xAxis.setDefaultValue(doc->sprite()->width()/2);
@@ -113,7 +117,10 @@ DocumentPreferences& Preferences::document(const app::Document* doc)
       docPref = new DocumentPreferences("");
 
     m_docs[doc] = docPref;
+
+    // Load document preferences
     serializeDocPref(doc, docPref, false);
+
     return *docPref;
   }
 }

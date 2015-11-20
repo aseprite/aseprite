@@ -46,6 +46,10 @@ namespace {
   static const char* kSelectedLayers = "**selected-layers**";
   static const char* kSelectedFrames = "**selected-frames**";
 
+  // Special key value used in default preferences to know if by default
+  // the user wants to generate texture and/or files.
+  static const char* kSpecifiedFilename = "**filename**";
+
   struct Fit {
     int width;
     int height;
@@ -125,6 +129,7 @@ namespace {
   bool ask_overwrite(bool askFilename, std::string filename,
                      bool askDataname, std::string dataname) {
     if ((askFilename &&
+         !filename.empty() &&
          base::is_file(filename)) ||
         (askDataname &&
          !dataname.empty() &&
@@ -338,19 +343,26 @@ public:
     }
 
     m_filename = m_docPref.spriteSheet.textureFilename();
+    imageEnabled()->setSelected(!m_filename.empty());
+    imageFilename()->setVisible(imageEnabled()->isSelected());
+
     m_dataFilename = m_docPref.spriteSheet.dataFilename();
     dataEnabled()->setSelected(!m_dataFilename.empty());
     dataFilename()->setVisible(dataEnabled()->isSelected());
 
     std::string base = doc->filename();
     base = base::join_path(base::get_file_path(base), base::get_file_title(base));
-    if (m_filename.empty()) {
+
+    if (m_filename.empty() ||
+        m_filename == kSpecifiedFilename) {
       if (base::utf8_icmp(base::get_file_extension(doc->filename()), "png") == 0)
         m_filename = base + "-sheet.png";
       else
         m_filename = base + ".png";
     }
-    if (m_dataFilename.empty())
+
+    if (m_dataFilename.empty() ||
+        m_dataFilename == kSpecifiedFilename)
       m_dataFilename = base + ".json";
 
     exportButton()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
@@ -362,14 +374,17 @@ public:
     borderPadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
     shapePadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
     innerPadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    imageEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onImageEnabledChange, this));
     imageFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
     dataEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
     dataFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));
     paddingEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingEnabledChange, this));
     frames()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onFramesChange, this));
+    openGenerated()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onOpenGeneratedChange, this));
 
     onSheetTypeChange();
     onFileNamesChange();
+    updateExportButton();
   }
 
   bool ok() const {
@@ -397,7 +412,10 @@ public:
   }
 
   std::string filenameValue() {
-    return m_filename;
+    if (imageEnabled()->isSelected())
+      return m_filename;
+    else
+      return std::string();
   }
 
   std::string dataFilenameValue() {
@@ -456,7 +474,7 @@ public:
       return kAllFrames;
   }
 
-protected:
+private:
 
   void onExport() {
     if (!ask_overwrite(m_filenameAskOverwrite, filenameValue(),
@@ -518,6 +536,14 @@ protected:
     onFileNamesChange();
   }
 
+  void onImageEnabledChange() {
+    m_filenameAskOverwrite = true;
+
+    imageFilename()->setVisible(imageEnabled()->isSelected());
+    updateExportButton();
+    resize();
+  }
+
   void onDataFilename() {
     // TODO hardcoded "json" extension
     std::string newFilename = app::show_file_selector(
@@ -534,6 +560,7 @@ protected:
     m_dataFilenameAskOverwrite = true;
 
     dataFilename()->setVisible(dataEnabled()->isSelected());
+    updateExportButton();
     resize();
   }
 
@@ -551,12 +578,21 @@ protected:
     updateSizeFields();
   }
 
-private:
+  void onOpenGeneratedChange() {
+    updateExportButton();
+  }
 
   void resize() {
     gfx::Size reqSize = getPreferredSize();
     moveWindow(gfx::Rect(getOrigin(), reqSize));
     invalidate();
+  }
+
+  void updateExportButton() {
+    exportButton()->setEnabled(
+      imageEnabled()->isSelected() ||
+      dataEnabled()->isSelected() ||
+      openGenerated()->isSelected());
   }
 
   void updateSizeFields() {
@@ -671,8 +707,11 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));
     defPref.spriteSheet = docPref.spriteSheet;
-    defPref.spriteSheet.textureFilename("");
-    defPref.spriteSheet.dataFilename("");
+    if (!defPref.spriteSheet.textureFilename().empty())
+      defPref.spriteSheet.textureFilename.setValueAndDefault(kSpecifiedFilename);
+    if (!defPref.spriteSheet.dataFilename().empty())
+      defPref.spriteSheet.dataFilename.setValueAndDefault(kSpecifiedFilename);
+    defPref.save();
 
     askOverwrite = false; // Already asked in the ExportSpriteSheetWindow
   }
@@ -768,7 +807,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (sheet_h == 0) sheet_h = fit.height;
 
   DocumentExporter exporter;
-  exporter.setTextureFilename(filename);
+  if (!filename.empty())
+    exporter.setTextureFilename(filename);
   if (!dataFilename.empty())
     exporter.setDataFilename(dataFilename);
   exporter.setTextureWidth(sheet_w);
@@ -797,6 +837,19 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   }
 
   if (docPref.spriteSheet.openGenerated()) {
+    // Setup a filename for the new document in case that user didn't
+    // save the file/specified one output filename.
+    if (filename.empty()) {
+      std::string fn = document->filename();
+      std::string ext = base::get_file_extension(fn);
+      if (!ext.empty())
+        ext.insert(0, 1, '.');
+
+      newDocument->setFilename(
+        base::join_path(base::get_file_path(fn),
+                        base::get_file_title(fn) + "-Sheet") + ext);
+    }
+
     newDocument->setContext(context);
     newDocument.release();
   }

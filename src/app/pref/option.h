@@ -37,9 +37,28 @@ namespace app {
       , m_dirty(false) {
     }
 
+    const T& operator()() const {
+      return m_value;
+    }
+
+    const T& operator()(const T& newValue) {
+      setValue(newValue);
+      return m_value;
+    }
+
+    // operator=() changes the value and the default value of the
+    // option.  E.g. it's used when we copy two complete Sections,
+    // from default settings to user settings, or viceversa (the
+    // default value is always involved).
     Option& operator=(const Option& opt) {
-      operator()(opt.m_value);
+      setValueAndDefault(opt.m_value);
       return *this;
+    }
+
+    // Changes the default value and the current one.
+    void setValueAndDefault(const T& value) {
+      setDefaultValue(value);
+      setValue(value);
     }
 
     const char* section() const { return m_section->name(); }
@@ -53,13 +72,9 @@ namespace app {
     void forceDirtyFlag() { m_dirty = true; }
     void cleanDirtyFlag() { m_dirty = false; }
 
-    const T& operator()() const {
-      return m_value;
-    }
-
-    const T& operator()(const T& newValue) {
+    void setValue(const T& newValue) {
       if (m_value == newValue)
-        return m_value;
+        return;
 
       BeforeChange(newValue);
       if (m_section)
@@ -71,8 +86,6 @@ namespace app {
       AfterChange(newValue);
       if (m_section)
         m_section->AfterChange();
-
-      return m_value;
     }
 
     Signal1<void, const T&> BeforeChange;
