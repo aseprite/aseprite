@@ -23,6 +23,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/pref/preferences.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -899,8 +900,10 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blitValidR
 bool Editor::isCurrentToolAffectedByRightClickMode()
 {
   tools::Tool* tool = App::instance()->activeTool();
+  bool shadingMode = (Preferences::instance().tool(tool).ink() == tools::InkType::SHADING);
   return
-    (tool->getInk(0)->isPaint() || tool->getInk(0)->isEffect()) &&
+    ((tool->getInk(0)->isPaint() && !shadingMode) ||
+     (tool->getInk(0)->isEffect())) &&
     (!tool->getInk(0)->isEraser());
 }
 
@@ -911,7 +914,8 @@ tools::Tool* Editor::getCurrentEditorTool()
 
   tools::Tool* tool = App::instance()->activeTool();
 
-  if (m_secondaryButton && isCurrentToolAffectedByRightClickMode()) {
+  if (m_secondaryButton &&
+      isCurrentToolAffectedByRightClickMode()) {
     tools::ToolBox* toolbox = App::instance()->getToolBox();
 
     switch (Preferences::instance().editor.rightClickMode()) {
