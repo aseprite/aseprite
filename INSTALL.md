@@ -19,6 +19,12 @@ You can clone it using the following command (read-only URL):
 
     git clone --recursive https://github.com/aseprite/aseprite.git
 
+To update an existing copy:
+
+    cd aseprite
+    git pull
+    git submodule update --init --recursive
+
 On Windows you can use programs like
 [msysgit](http://msysgit.github.io/) to clone the repository.
 
