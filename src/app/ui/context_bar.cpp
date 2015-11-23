@@ -506,9 +506,8 @@ private:
 
   void onPreferredSize(PreferredSizeEvent& ev) override {
     int size = getColors().size();
-
     if (size < 2)
-      ev.setPreferredSize(Size(16+getTextWidth(), 18)*guiscale());
+      ev.setPreferredSize(Size(16*guiscale()+getTextWidth(), 18*guiscale()));
     else
       ev.setPreferredSize(Size(6+12*size, 18)*guiscale());
   }
