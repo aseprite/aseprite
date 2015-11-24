@@ -940,7 +940,7 @@ void Tabs::createFloatingOverlay(Tab* tab)
         gfx::Color c = lock->getPixel(x, y);
         c = (c != gfx::rgba(255, 0, 255, 0) &&
              c != gfx::rgba(255, 0, 255, 255) ?
-             gfx::seta(c, 255):
+             gfx::rgba(gfx::getr(c), gfx::getg(c), gfx::getb(c), 255):
              gfx::ColorNone);
         lock->putPixel(c, x, y);
       }

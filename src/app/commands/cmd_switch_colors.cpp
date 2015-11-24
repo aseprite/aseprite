@@ -52,7 +52,7 @@ void SwitchColorsCommand::onExecute(Context* context)
     const auto& toolPref(Preferences::instance().tool(tool));
     if (toolPref.ink() == tools::InkType::SHADING) {
       App::instance()->getMainWindow()->
-        getContextBar()->reverseShadesColors();
+        getContextBar()->reverseShadeColors();
     }
   }
 

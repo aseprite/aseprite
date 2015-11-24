@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2014 David Capello
+// Copyright (C) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -31,11 +31,6 @@ namespace gfx {
   inline ColorComponent getg(Color c) { return (c >> ColorGShift) & 0xff; }
   inline ColorComponent getb(Color c) { return (c >> ColorBShift) & 0xff; }
   inline ColorComponent geta(Color c) { return (c >> ColorAShift) & 0xff; }
-
-  inline Color setr(Color c, ColorComponent v) { return Color((c & ~ColorRShift) | (v << ColorRShift)); }
-  inline Color setg(Color c, ColorComponent v) { return Color((c & ~ColorGShift) | (v << ColorGShift)); }
-  inline Color setb(Color c, ColorComponent v) { return Color((c & ~ColorBShift) | (v << ColorBShift)); }
-  inline Color seta(Color c, ColorComponent v) { return Color((c & ~ColorAShift) | (v << ColorAShift)); }
 
   inline bool is_transparent(Color c) { return geta(c) == 0; }
 

@@ -15,43 +15,39 @@
 
 namespace she {
 
-namespace  {
+namespace {
 
-#define INT_MULT(a, b, t)                               \
+#define MUL_UN8(a, b, t)                               \
   ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))
 
-gfx::Color blend(const gfx::Color back, gfx::Color front)
+gfx::Color blend(const gfx::Color backdrop, gfx::Color src)
 {
+  if (gfx::geta(backdrop) == 0)
+    return src;
+  else if (gfx::geta(src) == 0)
+    return backdrop;
+
+  int Br, Bg, Bb, Ba;
+  int Sr, Sg, Sb, Sa;
+  int Rr, Rg, Rb, Ra;
+
+  Br = gfx::getr(backdrop);
+  Bg = gfx::getg(backdrop);
+  Bb = gfx::getb(backdrop);
+  Ba = gfx::geta(backdrop);
+
+  Sr = gfx::getr(src);
+  Sg = gfx::getg(src);
+  Sb = gfx::getb(src);
+  Sa = gfx::geta(src);
+
   int t;
+  Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
+  Rr = Br + (Sr-Br) * Sa / Ra;
+  Rg = Bg + (Sg-Bg) * Sa / Ra;
+  Rb = Bb + (Sb-Bb) * Sa / Ra;
 
-  if (gfx::geta(back) == 0) {
-    return front;
-  }
-  else if (gfx::geta(front) == 0) {
-    return back;
-  }
-  else {
-    int B_r, B_g, B_b, B_a;
-    int F_r, F_g, F_b, F_a;
-    int D_r, D_g, D_b, D_a;
-
-    B_r = gfx::getr(back);
-    B_g = gfx::getg(back);
-    B_b = gfx::getb(back);
-    B_a = gfx::geta(back);
-
-    F_r = gfx::getr(front);
-    F_g = gfx::getg(front);
-    F_b = gfx::getb(front);
-    F_a = gfx::geta(front);
-
-    D_a = B_a + F_a - INT_MULT(B_a, F_a, t);
-    D_r = B_r + (F_r-B_r) * F_a / D_a;
-    D_g = B_g + (F_g-B_g) * F_a / D_a;
-    D_b = B_b + (F_b-B_b) * F_a / D_a;
-
-    return gfx::rgba(D_r, D_g, D_b, D_a);
-  }
+  return gfx::rgba(Rr, Rg, Rb, Ra);
 }
 
 } // anoynmous namespace
@@ -79,9 +75,13 @@ public:
         if (gfx::geta(bg) > 0)
           dstColor = blend(dstColor, bg);
 
-        int srcAlpha = (((*ptr) & format.alphaMask) >> format.alphaShift);
-        if (srcAlpha > 0)
-          dstColor = blend(dstColor, gfx::seta(fg, srcAlpha));
+        uint32_t src = (((*ptr) & format.alphaMask) >> format.alphaShift);
+        if (src > 0) {
+          src = gfx::rgba(gfx::getr(fg),
+                          gfx::getg(fg),
+                          gfx::getb(fg), src);
+          dstColor = blend(dstColor, src);
+        }
 
         putPixel(dstColor, clip.dst.x+u, clip.dst.y+v);
         ++ptr;

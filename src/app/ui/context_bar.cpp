@@ -18,6 +18,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/shade.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/ink_type.h"
@@ -28,6 +29,8 @@
 #include "app/ui/brush_popup.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/icon_button.h"
+#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/ui_context.h"
@@ -429,122 +432,288 @@ protected:
   ContextBar* m_owner;
 };
 
-class ContextBar::InkShadesField : public Widget {
-  typedef std::vector<app::Color> Colors;
-public:
+class ContextBar::InkShadesField : public HBox {
 
-  InkShadesField() : Widget(kGenericWidget) {
-    setText("Select colors in the palette");
-  }
+  class ShadeWidget : public Widget {
+  public:
+    enum ClickType { DragAndDrop, Select };
 
-  void reverseColors() {
-    std::reverse(m_colors.begin(), m_colors.end());
-    invalidate();
-  }
+    Signal0<void> Click;
 
-  doc::Remap* createShadesRemap(bool left) {
-    base::UniquePtr<doc::Remap> remap;
-    Colors colors = getColors();
+    ShadeWidget(const Shade& colors, ClickType click)
+      : Widget(kGenericWidget)
+      , m_click(click)
+      , m_shade(colors)
+      , m_hotIndex(-1)
+      , m_boxSize(12) {
+      setText("Select colors in the palette");
+    }
 
-    if (colors.size() > 0) {
-      remap.reset(new doc::Remap(get_current_palette()->size()));
+    void reverseShadeColors() {
+      std::reverse(m_shade.begin(), m_shade.end());
+      invalidate();
+    }
 
-      for (int i=0; i<remap->size(); ++i)
-        remap->map(i, i);
+    doc::Remap* createShadeRemap(bool left) {
+      base::UniquePtr<doc::Remap> remap;
+      Shade colors = getShade();
 
-      if (left) {
-        for (int i=1; i<int(colors.size()); ++i)
-          remap->map(colors[i].getIndex(), colors[i-1].getIndex());
+      if (colors.size() > 0) {
+        remap.reset(new doc::Remap(get_current_palette()->size()));
+
+        for (int i=0; i<remap->size(); ++i)
+          remap->map(i, i);
+
+        if (left) {
+          for (int i=1; i<int(colors.size()); ++i)
+            remap->map(colors[i].getIndex(), colors[i-1].getIndex());
+        }
+        else {
+          for (int i=0; i<int(colors.size())-1; ++i)
+            remap->map(colors[i].getIndex(), colors[i+1].getIndex());
+        }
+      }
+
+      return remap.release();
+    }
+
+    int size() const {
+      int colors = 0;
+      for (const auto& color : m_shade) {
+        if (color.getIndex() >= 0 &&
+            color.getIndex() < get_current_palette()->size())
+          ++colors;
+      }
+      return colors;
+    }
+
+    Shade getShade() const {
+      Shade colors;
+      for (const auto& color : m_shade) {
+        if (color.getIndex() >= 0 &&
+            color.getIndex() < get_current_palette()->size())
+          colors.push_back(color);
+      }
+      return colors;
+    }
+
+    void setShade(const Shade& shade) {
+      m_shade = shade;
+      invalidate();
+      getParent()->getParent()->layout();
+    }
+
+  private:
+
+    void onChangeColorBarSelection() {
+      if (!isVisible())
+        return;
+
+      doc::PalettePicks picks;
+      ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
+
+      m_shade.resize(picks.picks());
+
+      int i = 0, j = 0;
+      for (bool pick : picks) {
+        if (pick)
+          m_shade[j++] = app::Color::fromIndex(i);
+        ++i;
+      }
+
+      getParent()->getParent()->layout();
+    }
+
+    bool onProcessMessage(ui::Message* msg) override {
+      switch (msg->type()) {
+
+        case kOpenMessage:
+          ColorBar::instance()->ChangeSelection.connect(
+            Bind<void>(&ShadeWidget::onChangeColorBarSelection, this));
+          break;
+
+        case kMouseEnterMessage:
+        case kMouseLeaveMessage:
+          invalidate();
+          break;
+
+        case kMouseUpMessage: {
+          if (m_click == Select) {
+            setSelected(true);
+            Click();
+            closeWindow();
+            break;
+          }
+          break;
+        }
+
+        case kMouseMoveMessage: {
+          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+          gfx::Point mousePos = mouseMsg->position() - getBounds().getOrigin();
+          gfx::Rect bounds = getClientBounds();
+          int hot = -1;
+
+          bounds.shrink(3*guiscale());
+          if (bounds.contains(mousePos)) {
+            int count = size();
+            hot = (mousePos.x - bounds.x) / m_boxSize;
+            hot = MID(0, hot, count-1);
+          }
+
+          if (m_hotIndex != hot) {
+            m_hotIndex = hot;
+            invalidate();
+          }
+          break;
+        }
+
+        case kMouseDownMessage: {
+          break;
+        }
+      }
+      return Widget::onProcessMessage(msg);
+    }
+
+    void onPreferredSize(PreferredSizeEvent& ev) override {
+      int size = this->size();
+      if (size < 2)
+        ev.setPreferredSize(Size((16+m_boxSize)*guiscale()+getTextWidth(), 18*guiscale()));
+      else
+        ev.setPreferredSize(Size(6+m_boxSize*size, 18)*guiscale());
+    }
+
+    void onPaint(PaintEvent& ev) override {
+      SkinTheme* theme = SkinTheme::instance();
+      Graphics* g = ev.getGraphics();
+      gfx::Rect bounds = getClientBounds();
+
+      gfx::Color bg = getBgColor();
+      if (m_click == Select && hasMouseOver())
+        bg = theme->colors.menuitemHighlightFace();
+      g->fillRect(bg, bounds);
+
+      Shade colors = getShade();
+      if (colors.size() >= 2) {
+        int w = (6+m_boxSize*colors.size())*guiscale();
+        if (bounds.w > w)
+          bounds.w = w;
+      }
+
+      skin::Style::State state;
+      if (hasMouseOver()) state += Style::hover();
+      theme->styles.view()->paint(g, bounds, nullptr, state);
+
+      bounds.shrink(3*guiscale());
+
+      gfx::Rect box(bounds.x, bounds.y, m_boxSize*guiscale(), bounds.h);
+
+      if (colors.size() >= 2) {
+        for (int i=0; i<int(colors.size()); ++i) {
+          if (i == int(colors.size())-1)
+            box.w = bounds.x+bounds.w-box.x;
+
+          draw_color(g, box, colors[i]);
+          box.x += box.w;
+        }
       }
       else {
-        for (int i=0; i<int(colors.size())-1; ++i)
-          remap->map(colors[i].getIndex(), colors[i+1].getIndex());
+        g->fillRect(theme->colors.editorFace(), bounds);
+        g->drawAlignedUIString(getText(), theme->colors.face(), gfx::ColorNone, bounds,
+                               ui::CENTER | ui::MIDDLE);
       }
     }
 
-    return remap.release();
+    ClickType m_click;
+    Shade m_shade;
+    int m_hotIndex;
+    int m_boxSize;
+  };
+
+public:
+  InkShadesField() :
+    m_button(SkinTheme::instance()->parts.iconArrowDown()->getBitmap(0)),
+    m_shade(Shade(), ShadeWidget::DragAndDrop) {
+    SkinTheme* theme = SkinTheme::instance();
+    m_shade.setBgColor(theme->colors.workspace());
+    m_button.setBgColor(theme->colors.workspace());
+
+    noBorderNoChildSpacing();
+    addChild(&m_button);
+    addChild(&m_shade);
+
+    m_button.setFocusStop(false);
+    m_button.Click.connect(Bind<void>(&InkShadesField::onShowMenu, this));
+  }
+
+  void reverseShadeColors() {
+    m_shade.reverseShadeColors();
+  }
+
+  doc::Remap* createShadeRemap(bool left) {
+    return m_shade.createShadeRemap(left);
   }
 
 private:
+  void onShowMenu() {
+    gfx::Rect bounds = m_button.getBounds();
 
-  Colors getColors() const {
-    Colors colors;
-    for (const auto& color : m_colors) {
-      if (color.getIndex() >= 0 &&
-          color.getIndex() < get_current_palette()->size())
-        colors.push_back(color);
-    }
-    return colors;
-  }
+    Menu menu;
+    MenuItem
+      reverse("Reverse Shade"),
+      save("Save Shade");
+    menu.addChild(&reverse);
+    menu.addChild(&save);
 
-  void onChangeColorBarSelection() {
-    if (!isVisible())
-      return;
+    bool hasShade = (m_shade.size() >= 2);
+    reverse.setEnabled(hasShade);
+    save.setEnabled(hasShade);
+    reverse.Click.connect(Bind<void>(&InkShadesField::reverseShadeColors, this));
+    save.Click.connect(Bind<void>(&InkShadesField::onSaveShade, this));
 
-    doc::PalettePicks picks;
-    ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
+    if (!m_shades.empty()) {
+      SkinTheme* theme = SkinTheme::instance();
 
-    m_colors.resize(picks.picks());
+      menu.addChild(new MenuSeparator);
 
-    int i = 0, j = 0;
-    for (bool pick : picks) {
-      if (pick)
-        m_colors[j++] = app::Color::fromIndex(i);
-      ++i;
-    }
+      int i = 0;
+      for (const Shade& shade : m_shades) {
+        auto shadeWidget = new ShadeWidget(shade, ShadeWidget::Select);
+        shadeWidget->setExpansive(true);
+        shadeWidget->setBgColor(theme->colors.menuitemNormalFace());
+        shadeWidget->Click.connect(
+          [&]{
+            m_shade.setShade(shade);
+          });
 
-    getParent()->layout();
-  }
+        auto close = new IconButton(theme->parts.iconClose()->getBitmap(0));
+        close->setBgColor(theme->colors.menuitemNormalFace());
+        close->Click.connect(
+          Bind<void>(
+            [this, i, close]{
+              m_shades.erase(m_shades.begin()+i);
+              close->closeWindow();
+            }));
 
-  bool onProcessMessage(ui::Message* msg) override {
-    if (msg->type() == kOpenMessage) {
-      ColorBar::instance()->ChangeSelection.connect(
-        Bind<void>(&InkShadesField::onChangeColorBarSelection, this));
-    }
-    return Widget::onProcessMessage(msg);
-  }
-
-  void onPreferredSize(PreferredSizeEvent& ev) override {
-    int size = getColors().size();
-    if (size < 2)
-      ev.setPreferredSize(Size(16*guiscale()+getTextWidth(), 18*guiscale()));
-    else
-      ev.setPreferredSize(Size(6+12*size, 18)*guiscale());
-  }
-
-  void onPaint(PaintEvent& ev) override {
-    SkinTheme* theme = SkinTheme::instance();
-    Graphics* g = ev.getGraphics();
-    gfx::Rect bounds = getClientBounds();
-
-    skin::Style::State state;
-    if (hasMouseOver()) state += Style::hover();
-
-    g->fillRect(theme->colors.workspace(), bounds);
-    theme->styles.view()->paint(g, bounds, nullptr, state);
-
-    bounds.shrink(3*guiscale());
-
-    gfx::Rect box(bounds.x, bounds.y, 12*guiscale(), bounds.h);
-    Colors colors = getColors();
-
-    if (colors.size() >= 2) {
-      for (int i=0; i<int(colors.size()); ++i) {
-        if (i == int(colors.size())-1)
-          box.w = bounds.x+bounds.w-box.x;
-
-        draw_color(g, box, colors[i]);
-        box.x += box.w;
+        auto item = new HBox();
+        item->noBorderNoChildSpacing();
+        item->addChild(shadeWidget);
+        item->addChild(close);
+        menu.addChild(item);
+        ++i;
       }
     }
-    else {
-      g->fillRect(theme->colors.editorFace(), bounds);
-      g->drawAlignedUIString(getText(), theme->colors.face(), gfx::ColorNone, bounds,
-                             ui::CENTER | ui::MIDDLE);
-    }
+
+    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    m_button.invalidate();
   }
 
-  std::vector<app::Color> m_colors;
+  void onSaveShade() {
+    m_shades.push_back(m_shade.getShade());
+  }
+
+  IconButton m_button;
+  ShadeWidget m_shade;
+  std::vector<Shade> m_shades;
 };
 
 class ContextBar::InkOpacityField : public IntEntry
@@ -1502,14 +1671,14 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
   return brush;
 }
 
-doc::Remap* ContextBar::createShadesRemap(bool left)
+doc::Remap* ContextBar::createShadeRemap(bool left)
 {
-  return m_inkShades->createShadesRemap(left);
+  return m_inkShades->createShadeRemap(left);
 }
 
-void ContextBar::reverseShadesColors()
+void ContextBar::reverseShadeColors()
 {
-  m_inkShades->reverseColors();
+  m_inkShades->reverseShadeColors();
 }
 
 } // namespace app

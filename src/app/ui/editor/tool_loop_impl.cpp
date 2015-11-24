@@ -169,7 +169,7 @@ public:
 
     if (m_toolPref.ink() == tools::InkType::SHADING) {
       m_shadingRemap.reset(
-        App::instance()->getMainWindow()->getContextBar()->createShadesRemap(
+        App::instance()->getMainWindow()->getContextBar()->createShadeRemap(
           button == tools::ToolLoop::Left));
     }
   }
