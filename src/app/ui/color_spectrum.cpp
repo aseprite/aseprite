@@ -14,6 +14,7 @@
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -69,6 +70,12 @@ app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
     MID(0, val, 100));
 }
 
+void ColorSpectrum::selectColor(const app::Color& color)
+{
+  m_color = color;
+  invalidate();
+}
+
 void ColorSpectrum::onPreferredSize(PreferredSizeEvent& ev)
 {
   ev.setPreferredSize(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
@@ -121,6 +128,20 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
 
       g->putPixel(color, rc.x+x, rc.y+y);
     }
+  }
+
+  if (m_color.getType() != app::Color::MaskType) {
+    int hue = m_color.getHue();
+    int sat = m_color.getSaturation();
+    int val = m_color.getValue();
+    int lit = (200 - sat) * val / 200;
+    gfx::Point pos(rc.x + hue * rc.w / 360,
+                   rc.y + rc.h - (lit * rc.h / 100));
+
+    she::Surface* icon = theme->parts.colorWheelIndicator()->getBitmap(0);
+    g->drawRgbaSurface(icon,
+                       pos.x-icon->width()/2,
+                       pos.y-icon->height()/2);
   }
 }
 

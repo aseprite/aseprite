@@ -318,6 +318,7 @@ void ColorBar::setColorSelector(ColorSelector selector)
       if (!m_spectrum) {
         m_spectrum = new ColorSpectrum;
         m_spectrum->setExpansive(true);
+        m_spectrum->selectColor(m_fgColor.getColor());
         m_spectrum->ColorChange.connect(&ColorBar::onPickSpectrum, this);
         m_selectorPlaceholder.addChild(m_spectrum);
       }
@@ -771,6 +772,9 @@ void ColorBar::onColorButtonChange(const app::Color& color)
     // palette view fg/bg indicators.
     m_paletteView.invalidate();
   }
+
+  if (m_spectrum && m_spectrum->isVisible())
+    m_spectrum->selectColor(color);
 
   if (m_wheel && m_wheel->isVisible())
     m_wheel->selectColor(color);
