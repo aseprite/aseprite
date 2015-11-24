@@ -22,6 +22,7 @@ namespace app {
     ~ColorSpectrum();
 
     app::Color pickColor(const gfx::Point& pos) const;
+    void selectColor(const app::Color& color);
 
     // Signals
     Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
@@ -31,6 +32,9 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
+
+  private:
+    app::Color m_color;
   };
 
 } // namespace app

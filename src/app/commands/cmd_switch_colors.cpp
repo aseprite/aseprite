@@ -59,8 +59,12 @@ void SwitchColorsCommand::onExecute(Context* context)
   ColorBar* colorbar = ColorBar::instance();
   app::Color fg = colorbar->getFgColor();
   app::Color bg = colorbar->getBgColor();
-  colorbar->setFgColor(bg);
+
+  // Change the background and then the foreground color so the color
+  // spectrum and color wheel shows the foreground color as the
+  // selected one.
   colorbar->setBgColor(fg);
+  colorbar->setFgColor(bg);
 }
 
 Command* CommandFactory::createSwitchColorsCommand()

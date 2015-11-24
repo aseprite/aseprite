@@ -901,8 +901,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   gfx::Rect bounds = widget->getClientBounds();
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  std::string textString = widget->getText() + widget->getSuffix();
-  int suffixIndex = widget->getTextLength();
+  const std::string& textString = widget->getText();
   int c, ch, x, y, w;
   int caret_x;
 
@@ -929,7 +928,6 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
   base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
   int textlen = base::utf8_length(textString);
-
   if (scroll < textlen)
     utf8_it += scroll;
 
@@ -955,15 +953,6 @@ void SkinTheme::paintEntry(PaintEvent& ev)
       fg = colors.disabled();
     }
 
-    // Suffix
-    if (c >= suffixIndex) {
-      if (widget->hasFocus())
-        break;
-
-      bg = ColorNone;
-      fg = colors.entrySuffix();
-    }
-
     w = g->measureChar(ch).w;
     if (x+w > bounds.x2()-3)
       return;
@@ -975,6 +964,20 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     // Caret
     if ((c == caret) && (state) && (widget->hasFocus()))
       drawEntryCaret(g, widget, caret_x, y);
+  }
+
+  // Draw suffix if there is enough space
+  if (!widget->getSuffix().empty()) {
+    Rect sufBounds(x, y,
+                   bounds.x2()-3*guiscale()-x,
+                   widget->getTextHeight());
+    IntersectClip clip(g, sufBounds);
+    if (clip) {
+      drawTextString(
+        g, widget->getSuffix().c_str(),
+        colors.entrySuffix(), ColorNone,
+        widget, sufBounds, 0);
+    }
   }
 
   // Draw the caret if it is next of the last character
