@@ -12,6 +12,7 @@
 #include "app/ui/context_bar.h"
 
 #include "app/app.h"
+#include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/document.h"
 #include "app/modules/gfx.h"
@@ -54,6 +55,7 @@
 #include "ui/paint_event.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
+#include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/tooltips.h"
 
@@ -445,6 +447,7 @@ class ContextBar::InkShadesField : public HBox {
       , m_click(click)
       , m_shade(colors)
       , m_hotIndex(-1)
+      , m_dragIndex(-1)
       , m_boxSize(12) {
       setText("Select colors in the palette");
     }
@@ -480,9 +483,11 @@ class ContextBar::InkShadesField : public HBox {
     int size() const {
       int colors = 0;
       for (const auto& color : m_shade) {
-        if (color.getIndex() >= 0 &&
-            color.getIndex() < get_current_palette()->size())
+        if ((color.getIndex() >= 0 &&
+             color.getIndex() < get_current_palette()->size()) ||
+            (m_click == Select)) {
           ++colors;
+        }
       }
       return colors;
     }
@@ -490,9 +495,11 @@ class ContextBar::InkShadesField : public HBox {
     Shade getShade() const {
       Shade colors;
       for (const auto& color : m_shade) {
-        if (color.getIndex() >= 0 &&
-            color.getIndex() < get_current_palette()->size())
+        if ((color.getIndex() >= 0 &&
+             color.getIndex() < get_current_palette()->size()) ||
+            (m_click == Select)) {
           colors.push_back(color);
+        }
       }
       return colors;
     }
@@ -532,18 +539,52 @@ class ContextBar::InkShadesField : public HBox {
             Bind<void>(&ShadeWidget::onChangeColorBarSelection, this));
           break;
 
+        case kSetCursorMessage:
+          if (hasCapture()) {
+            ui::set_mouse_cursor(kMoveCursor);
+            return true;
+          }
+          break;
+
         case kMouseEnterMessage:
         case kMouseLeaveMessage:
           invalidate();
           break;
+
+        case kMouseDownMessage: {
+          if (m_click == DragAndDrop) {
+            if (m_hotIndex >= 0) {
+              m_dragIndex = m_hotIndex;
+              m_dropBefore = false;
+              captureMouse();
+            }
+          }
+          break;
+        }
 
         case kMouseUpMessage: {
           if (m_click == Select) {
             setSelected(true);
             Click();
             closeWindow();
-            break;
           }
+
+          if (m_dragIndex >= 0) {
+            auto color = m_shade[m_dragIndex];
+            m_shade.erase(m_shade.begin()+m_dragIndex);
+            if (m_hotIndex >= 0)
+              m_shade.insert(m_shade.begin()+m_hotIndex, color);
+
+            m_dragIndex = -1;
+            invalidate();
+
+            // Relayout the context bar if we have removed an entry.
+            if (m_hotIndex < 0)
+              getParent()->getParent()->layout();
+          }
+
+          if (hasCapture())
+            releaseMouse();
           break;
         }
 
@@ -554,9 +595,10 @@ class ContextBar::InkShadesField : public HBox {
           int hot = -1;
 
           bounds.shrink(3*guiscale());
+
           if (bounds.contains(mousePos)) {
             int count = size();
-            hot = (mousePos.x - bounds.x) / m_boxSize;
+            hot = (mousePos.x - bounds.x) / (m_boxSize*guiscale());
             hot = MID(0, hot, count-1);
           }
 
@@ -564,10 +606,13 @@ class ContextBar::InkShadesField : public HBox {
             m_hotIndex = hot;
             invalidate();
           }
-          break;
-        }
 
-        case kMouseDownMessage: {
+          bool dropBefore =
+            (hot >= 0 && mousePos.x < (bounds.x+m_boxSize*guiscale()*hot)+m_boxSize*guiscale()/2);
+          if (m_dropBefore != dropBefore) {
+            m_dropBefore = dropBefore;
+            invalidate();
+          }
           break;
         }
       }
@@ -578,8 +623,11 @@ class ContextBar::InkShadesField : public HBox {
       int size = this->size();
       if (size < 2)
         ev.setPreferredSize(Size((16+m_boxSize)*guiscale()+getTextWidth(), 18*guiscale()));
-      else
+      else {
+        if (m_click == Select && size > 16)
+          size = 16;
         ev.setPreferredSize(Size(6+m_boxSize*size, 18)*guiscale());
+      }
     }
 
     void onPaint(PaintEvent& ev) override {
@@ -608,12 +656,44 @@ class ContextBar::InkShadesField : public HBox {
       gfx::Rect box(bounds.x, bounds.y, m_boxSize*guiscale(), bounds.h);
 
       if (colors.size() >= 2) {
+        gfx::Rect hotBounds;
+
+        int j = 0;
         for (int i=0; i<int(colors.size()); ++i) {
           if (i == int(colors.size())-1)
             box.w = bounds.x+bounds.w-box.x;
 
-          draw_color(g, box, colors[i]);
+          app::Color color;
+
+          if (m_dragIndex >= 0 &&
+              m_hotIndex == i) {
+            color = colors[m_dragIndex];
+          }
+          else {
+            if (j == m_dragIndex) {
+              ++j;
+            }
+            if (j < int(colors.size()))
+              color = colors[j++];
+            else
+              color = app::Color::fromMask();
+          }
+
+          draw_color(g, box, color);
+
+          if (m_hotIndex == i)
+            hotBounds = box;
+
           box.x += box.w;
+        }
+
+        if (!hotBounds.isEmpty() && m_click == DragAndDrop) {
+          hotBounds.enlarge(3*guiscale());
+
+          Style::State state = Style::active();
+          state += Style::hover();
+          theme->styles.timelineRangeOutline()->paint(
+            g, hotBounds, NULL, state);
         }
       }
       else {
@@ -626,6 +706,8 @@ class ContextBar::InkShadesField : public HBox {
     ClickType m_click;
     Shade m_shade;
     int m_hotIndex;
+    int m_dragIndex;
+    bool m_dropBefore;
     int m_boxSize;
   };
 
