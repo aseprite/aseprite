@@ -311,6 +311,7 @@ add_library(app-lib
   resource_finder.cpp
   scripting/app_scripting.cpp
   send_crash.cpp
+  shade.cpp
   shell.cpp
   snap_to_grid.cpp
   thumbnail_generator.cpp

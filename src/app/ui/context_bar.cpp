@@ -15,6 +15,7 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/document.h"
+#include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -712,9 +713,10 @@ class ContextBar::InkShadesField : public HBox {
   };
 
 public:
-  InkShadesField() :
-    m_button(SkinTheme::instance()->parts.iconArrowDown()->getBitmap(0)),
-    m_shade(Shade(), ShadeWidget::DragAndDrop) {
+  InkShadesField()
+    : m_button(SkinTheme::instance()->parts.iconArrowDown()->getBitmap(0))
+    , m_shade(Shade(), ShadeWidget::DragAndDrop)
+    , m_loaded(false) {
     SkinTheme* theme = SkinTheme::instance();
     m_shade.setBgColor(theme->colors.workspace());
     m_button.setBgColor(theme->colors.workspace());
@@ -727,6 +729,10 @@ public:
     m_button.Click.connect(Bind<void>(&InkShadesField::onShowMenu, this));
   }
 
+  ~InkShadesField() {
+    saveShades();
+  }
+
   void reverseShadeColors() {
     m_shade.reverseShadeColors();
   }
@@ -737,6 +743,7 @@ public:
 
 private:
   void onShowMenu() {
+    loadShades();
     gfx::Rect bounds = m_button.getBounds();
 
     Menu menu;
@@ -790,12 +797,44 @@ private:
   }
 
   void onSaveShade() {
+    loadShades();
     m_shades.push_back(m_shade.getShade());
+  }
+
+  void loadShades() {
+    if (m_loaded)
+      return;
+
+    m_loaded = true;
+
+    char buf[32];
+    int n = get_config_int("shades", "count", 0);
+    n = MID(0, n, 256);
+    for (int i=0; i<n; ++i) {
+      sprintf(buf, "shade%d", i);
+      Shade shade = shade_from_string(get_config_string("shades", buf, ""));
+      if (shade.size() >= 2)
+        m_shades.push_back(shade);
+    }
+  }
+
+  void saveShades() {
+    if (!m_loaded)
+      return;
+
+    char buf[32];
+    int n = int(m_shades.size());
+    set_config_int("shades", "count", n);
+    for (int i=0; i<n; ++i) {
+      sprintf(buf, "shade%d", i);
+      set_config_string("shades", buf, shade_to_string(m_shades[i]).c_str());
+    }
   }
 
   IconButton m_button;
   ShadeWidget m_shade;
   std::vector<Shade> m_shades;
+  bool m_loaded;
 };
 
 class ContextBar::InkOpacityField : public IntEntry
