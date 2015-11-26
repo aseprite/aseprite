@@ -37,6 +37,7 @@
 #include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/connection.h"
 #include "base/scoped_value.h"
 #include "base/unique_ptr.h"
 #include "doc/brush.h"
@@ -536,8 +537,10 @@ class ContextBar::InkShadesField : public HBox {
       switch (msg->type()) {
 
         case kOpenMessage:
-          ColorBar::instance()->ChangeSelection.connect(
-            Bind<void>(&ShadeWidget::onChangeColorBarSelection, this));
+          if (m_click == DragAndDrop) {
+            m_conn = ColorBar::instance()->ChangeSelection.connect(
+              Bind<void>(&ShadeWidget::onChangeColorBarSelection, this));
+          }
           break;
 
         case kSetCursorMessage:
@@ -710,6 +713,7 @@ class ContextBar::InkShadesField : public HBox {
     int m_dragIndex;
     bool m_dropBefore;
     int m_boxSize;
+    ScopedConnection m_conn;
   };
 
 public:
