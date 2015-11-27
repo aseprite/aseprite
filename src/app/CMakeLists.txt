@@ -243,6 +243,7 @@ add_library(app-lib
   commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
   commands/cmd_set_color_selector.cpp
+  commands/cmd_set_ink_type.cpp
   commands/cmd_set_loop_section.cpp
   commands/cmd_set_palette.cpp
   commands/cmd_set_palette_entry_size.cpp
@@ -315,6 +316,7 @@ add_library(app-lib
   shell.cpp
   snap_to_grid.cpp
   thumbnail_generator.cpp
+  tools/ink_type.cpp
   tools/intertwine.cpp
   tools/pick_ink.cpp
   tools/point_shape.cpp

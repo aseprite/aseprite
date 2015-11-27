@@ -368,6 +368,11 @@
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
       <key command="PixelPerfectMode" />
+      <key command="SetInkType"><param name="type" value="simple" /></key>
+      <key command="SetInkType"><param name="type" value="alpha-compositing" /></key>
+      <key command="SetInkType"><param name="type" value="copy-color" /></key>
+      <key command="SetInkType"><param name="type" value="lock-alpha" /></key>
+      <key command="SetInkType"><param name="type" value="shading" /></key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->

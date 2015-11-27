@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/pref/preferences.h"
+#include "app/tools/ink_type.h"
 #include "app/tools/selection_mode.h"
 #include "app/ui/context_bar_observer.h"
 #include "base/connection.h"
@@ -72,6 +73,8 @@ namespace app {
 
     doc::Remap* createShadeRemap(bool left);
     void reverseShadeColors();
+
+    void setInkType(tools::InkType type);
 
     // Signals
     Signal0<void> BrushChange;

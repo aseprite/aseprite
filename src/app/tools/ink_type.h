@@ -9,6 +9,8 @@
 #define APP_TOOLS_INK_TYPE_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace app {
 namespace tools {
 
@@ -25,6 +27,8 @@ namespace tools {
     return (inkType == InkType::ALPHA_COMPOSITING ||
             inkType == InkType::LOCK_ALPHA);
   }
+
+  std::string ink_type_to_string(InkType inkType);
 
 } // namespace tools
 } // namespace app

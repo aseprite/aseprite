@@ -341,6 +341,21 @@ public:
   }
 
   void setInkType(InkType inkType) {
+    Preferences& pref = Preferences::instance();
+
+    if (pref.shared.shareInk()) {
+      for (Tool* tool : *App::instance()->getToolBox())
+        pref.tool(tool).ink(inkType);
+    }
+    else {
+      Tool* tool = App::instance()->activeTool();
+      pref.tool(tool).ink(inkType);
+    }
+
+    m_owner->updateForCurrentTool();
+  }
+
+  void setInkTypeIcon(InkType inkType) {
     SkinTheme* theme = SkinTheme::instance();
     SkinPartPtr part = theme->parts.inkSimple();
 
@@ -363,11 +378,11 @@ protected:
 
     Menu menu;
     MenuItem
-      simple("Simple Ink"),
-      alphacompo("Alpha Compositing"),
-      copycolor("Copy Color+Alpha"),
-      lockalpha("Lock Alpha"),
-      shading("Shading"),
+      simple(tools::ink_type_to_string(tools::InkType::SIMPLE)),
+      alphacompo(tools::ink_type_to_string(tools::InkType::ALPHA_COMPOSITING)),
+      copycolor(tools::ink_type_to_string(tools::InkType::COPY_COLOR)),
+      lockalpha(tools::ink_type_to_string(tools::InkType::LOCK_ALPHA)),
+      shading(tools::ink_type_to_string(tools::InkType::SHADING)),
       alltools("Same in all Tools");
     menu.addChild(&simple);
     menu.addChild(&alphacompo);
@@ -387,31 +402,16 @@ protected:
     }
     alltools.setSelected(Preferences::instance().shared.shareInk());
 
-    simple.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::SIMPLE));
-    alphacompo.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::ALPHA_COMPOSITING));
-    copycolor.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::COPY_COLOR));
-    lockalpha.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::LOCK_ALPHA));
-    shading.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::SHADING));
+    simple.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::SIMPLE));
+    alphacompo.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::ALPHA_COMPOSITING));
+    copycolor.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::COPY_COLOR));
+    lockalpha.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::LOCK_ALPHA));
+    shading.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::SHADING));
     alltools.Click.connect(Bind<void>(&InkTypeField::onSameInAllTools, this));
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
 
     deselectItems();
-  }
-
-  void selectInk(InkType inkType) {
-    Preferences& pref = Preferences::instance();
-
-    if (pref.shared.shareInk()) {
-      for (Tool* tool : *App::instance()->getToolBox())
-        pref.tool(tool).ink(inkType);
-    }
-    else {
-      Tool* tool = App::instance()->activeTool();
-      pref.tool(tool).ink(inkType);
-    }
-
-    m_owner->updateForCurrentTool();
   }
 
   void onSameInAllTools() {
@@ -1535,7 +1535,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_stopAtGrid->setSelected(
       toolPref->floodfill.stopAtGrid() == app::gen::StopAtGrid::IF_VISIBLE ? true: false);
 
-    m_inkType->setInkType(toolPref->ink());
+    m_inkType->setInkTypeIcon(toolPref->ink());
     m_inkOpacity->setTextf("%d", toolPref->opacity());
 
     hasInkWithOpacity =
@@ -1804,6 +1804,11 @@ doc::Remap* ContextBar::createShadeRemap(bool left)
 void ContextBar::reverseShadeColors()
 {
   m_inkShades->reverseShadeColors();
+}
+
+void ContextBar::setInkType(tools::InkType type)
+{
+  m_inkType->setInkType(type);
 }
 
 } // namespace app
