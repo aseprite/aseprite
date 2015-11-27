@@ -12,6 +12,7 @@
 #include "app/ui/context_bar.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/document.h"
@@ -376,61 +377,11 @@ protected:
 
     gfx::Rect bounds = getBounds();
 
-    Menu menu;
-    MenuItem
-      simple(tools::ink_type_to_string(tools::InkType::SIMPLE)),
-      alphacompo(tools::ink_type_to_string(tools::InkType::ALPHA_COMPOSITING)),
-      copycolor(tools::ink_type_to_string(tools::InkType::COPY_COLOR)),
-      lockalpha(tools::ink_type_to_string(tools::InkType::LOCK_ALPHA)),
-      shading(tools::ink_type_to_string(tools::InkType::SHADING)),
-      alltools("Same in all Tools");
-    menu.addChild(&simple);
-    menu.addChild(&alphacompo);
-    menu.addChild(&copycolor);
-    menu.addChild(&lockalpha);
-    menu.addChild(&shading);
-    menu.addChild(new MenuSeparator);
-    menu.addChild(&alltools);
-
-    Tool* tool = App::instance()->activeTool();
-    switch (Preferences::instance().tool(tool).ink()) {
-      case tools::InkType::SIMPLE: simple.setSelected(true); break;
-      case tools::InkType::ALPHA_COMPOSITING: alphacompo.setSelected(true); break;
-      case tools::InkType::COPY_COLOR: copycolor.setSelected(true); break;
-      case tools::InkType::LOCK_ALPHA: lockalpha.setSelected(true); break;
-      case tools::InkType::SHADING: shading.setSelected(true); break;
-    }
-    alltools.setSelected(Preferences::instance().shared.shareInk());
-
-    simple.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::SIMPLE));
-    alphacompo.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::ALPHA_COMPOSITING));
-    copycolor.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::COPY_COLOR));
-    lockalpha.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::LOCK_ALPHA));
-    shading.Click.connect(Bind<void>(&InkTypeField::setInkType, this, InkType::SHADING));
-    alltools.Click.connect(Bind<void>(&InkTypeField::onSameInAllTools, this));
-
-    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    AppMenus::instance()
+      ->getInkPopupMenu()
+      ->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
 
     deselectItems();
-  }
-
-  void onSameInAllTools() {
-    Preferences& pref = Preferences::instance();
-    bool newState = !pref.shared.shareInk();
-    pref.shared.shareInk(newState);
-
-    if (newState) {
-      Tool* activeTool = App::instance()->activeTool();
-      InkType inkType = pref.tool(activeTool).ink();
-      int opacity = pref.tool(activeTool).opacity();
-
-      for (Tool* tool : *App::instance()->getToolBox()) {
-        if (tool != activeTool) {
-          pref.tool(tool).ink(inkType);
-          pref.tool(tool).opacity(opacity);
-        }
-      }
-    }
   }
 
   ContextBar* m_owner;

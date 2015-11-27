@@ -247,6 +247,7 @@ add_library(app-lib
   commands/cmd_set_loop_section.cpp
   commands/cmd_set_palette.cpp
   commands/cmd_set_palette_entry_size.cpp
+  commands/cmd_set_same_ink.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp

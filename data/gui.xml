@@ -373,6 +373,7 @@
       <key command="SetInkType"><param name="type" value="copy-color" /></key>
       <key command="SetInkType"><param name="type" value="lock-alpha" /></key>
       <key command="SetInkType"><param name="type" value="shading" /></key>
+      <key command="SetSameInk" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
@@ -844,6 +845,26 @@
       </item>
       <separator />
       <item command="ColorQuantization" text="Create Palette from Current Sprite" />
+    </menu>
+
+    <menu id="ink_popup">
+      <item command="SetInkType" text="Simple Ink">
+	<param name="type" value="simple" />
+      </item>
+      <item command="SetInkType" text="Alpha Compositing">
+	<param name="type" value="alpha-compositing" />
+      </item>
+      <item command="SetInkType" text="Copy Alpha+Color">
+	<param name="type" value="copy-color" />
+      </item>
+      <item command="SetInkType" text="Lock Alpha">
+	<param name="type" value="lock-alpha" />
+      </item>
+      <item command="SetInkType" text="Shading">
+	<param name="type" value="shading" />
+      </item>
+      <separator />
+      <item command="SetSameInk" text="Same in all Tools" />
     </menu>
 
   </menus>

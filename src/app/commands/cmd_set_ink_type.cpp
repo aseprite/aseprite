@@ -26,6 +26,7 @@ public:
 
 protected:
   void onLoadParams(const Params& params) override;
+  bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
 
@@ -56,6 +57,12 @@ void SetInkTypeCommand::onLoadParams(const Params& params)
     m_type = tools::InkType::SHADING;
   else
     m_type = tools::InkType::DEFAULT;
+}
+
+bool SetInkTypeCommand::onChecked(Context* context)
+{
+  tools::Tool* tool = App::instance()->activeTool();
+  return (Preferences::instance().tool(tool).ink() == m_type);
 }
 
 void SetInkTypeCommand::onExecute(Context* context)

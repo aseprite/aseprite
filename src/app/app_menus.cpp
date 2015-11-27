@@ -89,6 +89,7 @@ void AppMenus::reload()
   m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
   m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup"));
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup"));
+  m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup"));
 
   ////////////////////////////////////////
   // Load keyboard shortcuts for commands
