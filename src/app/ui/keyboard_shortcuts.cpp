@@ -347,9 +347,10 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           if (!removed) {
             key->add(accel, source);
 
-            // Add the shortcut to the menuitems with this
-            // command (this is only visual, the "manager_msg_proc"
-            // is the only one that process keyboard shortcuts)
+            // Add the shortcut to the menuitems with this command
+            // (this is only visual, the
+            // "CustomizedGuiManager::onProcessMessage" is the only
+            // one that process keyboard shortcuts)
             if (key->accels().size() == 1) {
               AppMenus::instance()->applyShortcutToMenuitemsWithCommand(
                 command, params, key);
