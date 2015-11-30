@@ -17,6 +17,7 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
+#include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_not_found.h"
@@ -465,6 +466,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
         throw base::Exception("Error loading %s file", file);
       }
     }
+  }
+  else if (elem_name == "search") {
+    if (!widget)
+      widget = new SearchEntry;
   }
 
   // Was the widget created?

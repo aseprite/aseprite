@@ -40,6 +40,7 @@ namespace ui {
     // for themes
     void getEntryThemeInfo(int* scroll, int* caret, int* state,
                            int* selbeg, int* selend);
+    gfx::Rect getEntryTextBounds() const;
 
     // Signals
     Signal0<void> Change;
@@ -53,6 +54,7 @@ namespace ui {
 
     // New Events
     virtual void onChange();
+    virtual gfx::Rect onGetEntryTextBounds() const;
 
   private:
     enum class EntryCmd {

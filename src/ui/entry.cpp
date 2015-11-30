@@ -178,6 +178,11 @@ void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
   }
 }
 
+gfx::Rect Entry::getEntryTextBounds() const
+{
+  return onGetEntryTextBounds();
+}
+
 bool Entry::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -454,27 +459,37 @@ void Entry::onChange()
   Change();
 }
 
+gfx::Rect Entry::onGetEntryTextBounds() const
+{
+  gfx::Rect bounds = getClientBounds();
+  bounds.x += border().left();
+  bounds.y += bounds.h/2 - getTextHeight()/2;
+  bounds.w -= border().width();
+  bounds.h = getTextHeight();
+  return bounds;
+}
+
 int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 {
   base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
   base::utf8_const_iterator utf8_end = base::utf8_const_iterator(getText().end());
-  int c, x, w, mx, caret = m_caret;
+  int caret = m_caret;
   int textlen = base::utf8_length(getText());
+  gfx::Rect bounds = getEntryTextBounds().offset(getBounds().getOrigin());
 
-  mx = mousemsg->position().x;
-  mx = MID(getBounds().x+border().left(),
-           mx,
-           getBounds().x2()-border().right()-1);
+  int mx = mousemsg->position().x;
+  mx = MID(bounds.x, mx, bounds.x2()-1);
 
-  x = getBounds().x + border().left();
+  int x = bounds.x;
 
   base::utf8_const_iterator utf8_it =
     (m_scroll < textlen ?
       utf8_begin + m_scroll:
       utf8_end);
 
-  for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
-    w = getFont()->charWidth(*utf8_it);
+  int c = m_scroll;
+  for (; utf8_it != utf8_end; ++c, ++utf8_it) {
+    int w = getFont()->charWidth(*utf8_it);
     if (x+w >= getBounds().x2()-border().right())
       break;
     if ((mx >= x) && (mx < x+w)) {
@@ -485,8 +500,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   }
 
   if (utf8_it == utf8_end) {
-    if ((mx >= x) &&
-        (mx <= getBounds().x2()-border().right()-1)) {
+    if ((mx >= x) && (mx < bounds.x2())) {
       caret = c;
     }
   }

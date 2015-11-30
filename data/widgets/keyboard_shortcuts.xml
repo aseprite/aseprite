@@ -5,6 +5,7 @@
     <vbox>
       <hbox expansive="true">
         <vbox>
+          <search id="search" magnet="true" />
           <view width="80" expansive="true">
             <listbox id="section" expansive="true" />
           </view>
@@ -14,6 +15,9 @@
           <button text="&amp;Reset" id="reset_button" />
         </vbox>
         <vbox expansive="true">
+          <view id="search_view" expansive="true">
+            <listbox id="search_list" />
+          </view>
           <view id="menus_view" expansive="true">
             <listbox id="menus" />
           </view>

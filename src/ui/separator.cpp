@@ -45,8 +45,10 @@ void Separator::onPreferredSize(PreferredSizeEvent& ev)
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }
 
-  if (hasText())
+  if (hasText()) {
     maxSize.w = MAX(maxSize.w, getTextWidth());
+    maxSize.h = MAX(maxSize.h, getTextHeight());
+  }
 
   int w = maxSize.w + border().width();
   int h = maxSize.h + border().height();

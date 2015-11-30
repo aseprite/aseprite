@@ -18,16 +18,21 @@
 #include "app/tools/tool.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/search_entry.h"
 #include "app/ui/select_accelerator.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "base/scoped_value.h"
+#include "base/split_string.h"
+#include "base/string.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 #include "ui/resize_event.h"
+#include "ui/separator.h"
 
 #include "keyboard_shortcuts.xml.h"
 
@@ -54,6 +59,8 @@ public:
     border.bottom(0);
     setBorder(border);
   }
+
+  Key* key() { return m_key; }
 
   void restoreKeys() {
     if (m_key && m_keyOrig)
@@ -280,7 +287,7 @@ private:
 
 class KeyboardShortcutsWindow : public app::gen::KeyboardShortcuts {
 public:
-  KeyboardShortcutsWindow() {
+  KeyboardShortcutsWindow() : m_searchChange(false) {
     setAutoRemap(false);
 
     section()->addChild(new ListItem("Menus"));
@@ -288,6 +295,7 @@ public:
     section()->addChild(new ListItem("Tools"));
     section()->addChild(new ListItem("Action Modifiers"));
 
+    search()->Change.connect(Bind<void>(&KeyboardShortcutsWindow::onSearchChange, this));
     section()->Change.connect(Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
     importButton()->Click.connect(Bind<void>(&KeyboardShortcutsWindow::onImport, this));
     exportButton()->Click.connect(Bind<void>(&KeyboardShortcutsWindow::onExport, this));
@@ -304,6 +312,8 @@ public:
 
 private:
   void deleteAllKeyItems() {
+    while (searchList()->getLastChild())
+      searchList()->removeChild(searchList()->getLastChild());
     while (menus()->getLastChild())
       menus()->removeChild(menus()->getLastChild());
     while (commands()->getLastChild())
@@ -375,12 +385,78 @@ private:
     this->actions()->sortItems();
 
     section()->selectIndex(0);
-    onSectionChange();
+    updateViews();
+  }
+
+  void fillSearchList(const std::string& search) {
+    while (searchList()->getLastChild())
+      searchList()->removeChild(searchList()->getLastChild());
+
+    std::vector<std::string> parts;
+    base::split_string(base::string_to_lower(search), parts, " ");
+
+    ListBox* listBoxes[] = { commands(), tools(), actions() };
+    int sectionIdx = 1;         // index 0 is menus, index 1 is commands
+    for (auto listBox : listBoxes) {
+      Separator* group = nullptr;
+
+      for (auto item : listBox->getChildren()) {
+        if (KeyItem* keyItem = dynamic_cast<KeyItem*>(item)) {
+          std::string itemText =
+            base::string_to_lower(keyItem->getText());
+          int matches = 0;
+
+          for (const auto& part : parts) {
+            if (itemText.find(part) != std::string::npos)
+              ++matches;
+          }
+
+          if (matches == int(parts.size())) {
+            if (!group) {
+              group = new Separator(
+                section()->getChildren()[sectionIdx]->getText(), HORIZONTAL);
+              group->setBgColor(SkinTheme::instance()->colors.background());
+
+              searchList()->addChild(group);
+            }
+
+            KeyItem* copyItem =
+              new KeyItem(keyItem->getText(),
+                          keyItem->key(), nullptr, 0);
+            searchList()->addChild(copyItem);
+          }
+        }
+      }
+
+      ++sectionIdx;
+    }
+  }
+
+  void onSearchChange() {
+    base::ScopedValue<bool> flag(m_searchChange, true, false);
+    std::string searchText = search()->getText();
+
+    if (searchText.empty())
+      section()->selectIndex(0);
+    else {
+      fillSearchList(searchText);
+      section()->selectChild(nullptr);
+    }
+
+    updateViews();
   }
 
   void onSectionChange() {
-    int section = this->section()->getSelectedIndex();
+    if (m_searchChange)
+      return;
 
+    search()->setText("");
+    updateViews();
+  }
+
+  void updateViews() {
+    int section = this->section()->getSelectedIndex();
+    searchView()->setVisible(section < 0);
     menusView()->setVisible(section == 0);
     commandsView()->setVisible(section == 1);
     toolsView()->setVisible(section == 2);
@@ -438,6 +514,7 @@ private:
   }
 
   std::vector<KeyItem*> m_allKeyItems;
+  bool m_searchChange;
 };
 
 class KeyboardShortcutsCommand : public Command {

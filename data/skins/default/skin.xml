@@ -407,7 +407,8 @@
     <part id="horizontal_symmetry"              x="160" y="240" w="13" h="13" />
     <part id="vertical_symmetry"                x="176" y="240" w="13" h="13" />
     <part id="icon_arrow_down"                  x="144" y="256" w="7" h="4" />
-    <part id="icon_close"                       x="153" y="256" w="7" h="7" />
+    <part id="icon_close"                       x="152" y="256" w="7" h="7" />
+    <part id="icon_search"                      x="160" y="256" w="8" h="8" />
   </parts>
 
   <stylesheet>

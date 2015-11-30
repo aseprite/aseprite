@@ -381,6 +381,7 @@ add_library(app-lib
   ui/preview_editor.cpp
   ui/recent_listbox.cpp
   ui/resources_listbox.cpp
+  ui/search_entry.cpp
   ui/select_accelerator.cpp
   ui/skin/button_icon_impl.cpp
   ui/skin/skin_part.cpp
