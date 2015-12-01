@@ -108,7 +108,8 @@ private:
           doc::rgba(gfx::getr(color),
                     gfx::getg(color),
                     gfx::getb(color),
-                    gfx::geta(color))));
+                    gfx::geta(color)),
+          true));                   // antialias
 
       View* view = View::getView(listbox);
       view->updateView();

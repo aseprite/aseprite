@@ -15,6 +15,10 @@
     <label text="Color:" />
     <colorpicker id="font_color" cell_align="horizontal" />
 
+    <hbox />
+    <check id="antialias" text="Anti-aliasing filter" cell_align="horizontal"
+           tooltip="Smooth font edges" />
+
     <separator horizontal="true" cell_hspan="2" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">

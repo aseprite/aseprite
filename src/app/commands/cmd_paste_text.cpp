@@ -59,6 +59,7 @@ bool PasteTextCommand::onEnabled(Context* ctx)
 class PasteTextWindow : public app::gen::PasteText {
 public:
   PasteTextWindow(const std::string& face, int size,
+                  bool antialias,
                   const app::Color& color)
     : m_face(face) {
     ok()->setEnabled(!m_face.empty());
@@ -69,6 +70,7 @@ public:
     fontFace()->Click.connect(Bind<void>(&PasteTextWindow::onSelectFontFile, this));
     fontFace()->DropDownClick.connect(Bind<void>(&PasteTextWindow::onSelectSystemFont, this));
     fontColor()->setColor(color);
+    this->antialias()->setSelected(antialias);
   }
 
   std::string faceValue() const {
@@ -148,6 +150,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   Preferences& pref = Preferences::instance();
   PasteTextWindow window(pref.textTool.fontFace(),
                          pref.textTool.fontSize(),
+                         pref.textTool.antialias(),
                          pref.colorBar.fgColor());
 
   window.userText()->setText(last_text_used);
@@ -158,11 +161,13 @@ void PasteTextCommand::onExecute(Context* ctx)
 
   last_text_used = window.userText()->getText();
 
+  bool antialias = window.antialias()->isSelected();
   std::string faceName = window.faceValue();
   int size = window.sizeValue();
   size = MID(1, size, 999);
   pref.textTool.fontFace(faceName);
   pref.textTool.fontSize(size);
+  pref.textTool.antialias(antialias);
 
   try {
     std::string text = window.userText()->getText();
@@ -172,7 +177,7 @@ void PasteTextCommand::onExecute(Context* ctx)
                                    appColor.getBlue(),
                                    appColor.getAlpha());
 
-    doc::ImageRef image(render_text(faceName, size, text, color));
+    doc::ImageRef image(render_text(faceName, size, text, color, antialias));
     if (image) {
       Sprite* sprite = editor->sprite();
       if (image->pixelFormat() != sprite->pixelFormat()) {

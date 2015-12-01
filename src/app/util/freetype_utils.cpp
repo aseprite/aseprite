@@ -28,7 +28,9 @@
 namespace app {
 
 template<typename Iterator, typename Func>
-static void for_each_glyph(FT_Face face, Iterator first, Iterator end, Func callback)
+static void for_each_glyph(FT_Face face, bool antialias,
+                           Iterator first, Iterator end,
+                           Func callback)
 {
   bool use_kerning = (FT_HAS_KERNING(face) ? true: false);
 
@@ -47,7 +49,10 @@ static void for_each_glyph(FT_Face face, Iterator first, Iterator end, Func call
 
     FT_Error err = FT_Load_Glyph(
       face, glyph_index,
-      FT_LOAD_RENDER | FT_LOAD_NO_BITMAP);
+      FT_LOAD_RENDER |
+      FT_LOAD_NO_BITMAP |
+      (antialias ? FT_LOAD_TARGET_NORMAL:
+                   FT_LOAD_TARGET_MONO));
 
     if (!err) {
       callback(x, face->glyph);
@@ -83,7 +88,8 @@ private:
 
 doc::Image* render_text(const std::string& fontfile, int fontsize,
                         const std::string& text,
-                        doc::color_t color)
+                        doc::color_t color,
+                        bool antialias)
 {
   base::UniquePtr<doc::Image> image(nullptr);
   FT_Library ft;
@@ -106,7 +112,7 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
     base::utf8_const_iterator begin(text.begin()), end(text.end());
     gfx::Rect bounds(0, 0, 0, 0);
     for_each_glyph(
-      face, begin, end,
+      face, antialias, begin, end,
       [&bounds](int x, FT_GlyphSlot glyph) {
         bounds |= gfx::Rect(x + glyph->bitmap_left,
                             -glyph->bitmap_top,
@@ -120,14 +126,29 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
       doc::clear_image(image, 0);
 
       for_each_glyph(
-        face, begin, end,
-        [&bounds, &image, color](int x, FT_GlyphSlot glyph) {
+        face, antialias, begin, end,
+        [&bounds, &image, color, antialias](int x, FT_GlyphSlot glyph) {
           int t, yimg = - bounds.y - glyph->bitmap_top;
+
           for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++yimg) {
             const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
             int ximg = x - bounds.x + glyph->bitmap_left;
-            for (int u=0; u<(int)glyph->bitmap.width; ++u, ++p, ++ximg) {
-              int alpha = *p;
+            int bit = 0;
+
+            for (int u=0; u<(int)glyph->bitmap.width; ++u, ++ximg) {
+              int alpha;
+
+              if (antialias) {
+                alpha = *(p++);
+              }
+              else {
+                alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
+                if (bit == 8) {
+                  bit = 0;
+                  ++p;
+                }
+              }
+
               doc::put_pixel(
                 image, ximg, yimg,
                 doc::rgba_blender_normal(
