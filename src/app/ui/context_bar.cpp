@@ -887,17 +887,22 @@ private:
     Menu menu;
     MenuItem
       opaque("Opaque"),
-      masked("Transparent");
+      masked("Transparent"),
+      automatic("Adjust automatically depending on layer type");
     menu.addChild(&opaque);
     menu.addChild(&masked);
+    menu.addChild(new MenuSeparator);
+    menu.addChild(&automatic);
 
     if (Preferences::instance().selection.opaque())
       opaque.setSelected(true);
     else
       masked.setSelected(true);
+    automatic.setSelected(Preferences::instance().selection.autoOpaque());
 
     opaque.Click.connect(Bind<void>(&TransparentColorField::setOpaque, this, true));
     masked.Click.connect(Bind<void>(&TransparentColorField::setOpaque, this, false));
+    automatic.Click.connect(Bind<void>(&TransparentColorField::onAutomatic, this));
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
@@ -928,6 +933,11 @@ private:
 
     if (m_owner)
       m_owner->layout();
+  }
+
+  void onAutomatic() {
+    Preferences::instance().selection.autoOpaque(
+      !Preferences::instance().selection.autoOpaque());
   }
 
   ButtonSet m_icon;
