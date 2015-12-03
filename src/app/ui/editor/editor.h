@@ -295,6 +295,7 @@ namespace app {
     // Slots listeing document preferences.
     ScopedConnection m_tiledConn;
     ScopedConnection m_gridConn;
+    ScopedConnection m_symmtryConn;
     ScopedConnection m_pixelGridConn;
     ScopedConnection m_onionskinConn;
 

@@ -194,6 +194,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   m_tiledConn = docPref.tiled.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
   m_gridConn = docPref.grid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_symmtryConn = docPref.symmetry.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
   m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
   m_onionskinConn = docPref.onionskin.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
 
