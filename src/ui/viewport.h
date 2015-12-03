@@ -12,8 +12,7 @@
 
 namespace ui {
 
-  class Viewport : public Widget
-  {
+  class Viewport : public Widget {
   public:
     Viewport();
 

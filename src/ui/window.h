@@ -17,8 +17,7 @@
 
 namespace ui {
 
-  class Window : public Widget
-  {
+  class Window : public Widget {
   public:
     enum Type { DesktopWindow, WithTitleBar, WithoutTitleBar };
 
