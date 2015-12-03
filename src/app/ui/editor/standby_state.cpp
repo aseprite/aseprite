@@ -16,6 +16,7 @@
 #include "app/commands/cmd_eyedropper.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/document_range.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
@@ -27,16 +28,18 @@
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/moving_cel_state.h"
-#include "app/ui/editor/moving_symmetry_state.h"
 #include "app/ui/editor/moving_pixels_state.h"
+#include "app/ui/editor/moving_symmetry_state.h"
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/editor/transform_handles.h"
 #include "app/ui/editor/zooming_state.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
 #include "base/bind.h"
@@ -182,7 +185,16 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       ColorPicker picker;
       picker.pickColor(site, cursor, ColorPicker::FromComposition);
 
-      if (layer != picker.layer()) {
+      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+
+      // Change layer only when the layer is diffrent from current one, and
+      // the range we selected is not with multiple cels.
+      bool layerChanged = (layer != picker.layer());
+      bool rangeEnabled = range.enabled();
+      bool rangeSingleCel = ((range.type() == DocumentRange::kCels) &&
+                             (range.layers() == 1) && (range.frames() == 1));
+
+      if (layerChanged && (!rangeEnabled || rangeSingleCel)) {
         layer = picker.layer();
         if (layer) {
           editor->setLayer(layer);

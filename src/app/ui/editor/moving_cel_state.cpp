@@ -36,21 +36,31 @@ using namespace ui;
 MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   : m_canceled(false)
 {
+  ContextWriter writer(UIContext::instance(), 500);
   Document* document = editor->document();
+  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
   LayerImage* layer = static_cast<LayerImage*>(editor->layer());
   ASSERT(layer->isImage());
 
-  m_cel = layer->cel(editor->frame());
-  ASSERT(m_cel); // The cel cannot be null
-  if (m_cel) {
-    m_celStart = m_cel->position();
-  }
-  else {
-    m_celStart = gfx::Point(0, 0);
-  }
-  m_celNew = m_celStart;
+  Cel* currentCel = layer->cel(editor->frame());
+  ASSERT(currentCel); // The cel cannot be null
 
-  m_mouseStart = editor->screenToEditor(msg->position());
+  if (!range.enabled())
+    range = DocumentRange(currentCel);
+
+  // Record start positions of all cels in selected range
+  for (Cel* cel : get_unique_cels(writer.sprite(), range)) {
+    Layer* layer = cel->layer();
+    ASSERT(layer);
+
+    if (layer && layer->isMovable() && !layer->isBackground()) {
+      m_celList.push_back(cel);
+      m_celStarts.push_back(cel->position());
+    }
+  }
+
+  m_cursorStart = editor->screenToEditor(msg->position());
+  m_celOffset = gfx::Point(0, 0);
   editor->captureMouse();
 
   // Hide the mask (temporarily, until mouse-up event)
@@ -71,10 +81,14 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   // Here we put back the cel into its original coordinate (so we can
   // add an undoer before).
-  if (m_celStart != m_celNew) {
-    // Put the cel in the original position.
-    if (m_cel)
-      m_cel->setPosition(m_celStart);
+  if (m_celOffset != gfx::Point(0, 0)) {
+    // Put the cels in the original position.
+    for (unsigned int i = 0; i < m_celList.size(); i++) {
+      Cel* cel = m_celList[i];
+      gfx::Point* celStart = &m_celStarts[i];
+
+      cel->setPosition(*celStart);
+    }
 
     // If the user didn't cancel the operation...
     if (!m_canceled) {
@@ -83,33 +97,24 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       DocumentApi api = document->getApi(transaction);
 
       // And now we move the cel (or all selected range) to the new position.
-      gfx::Point delta = m_celNew - m_celStart;
-
-      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
-      if (!range.enabled())
-        range = DocumentRange(m_cel);
-
-      for (Cel* cel : get_unique_cels(writer.sprite(), range)) {
-        Layer* layer = cel->layer();
-        ASSERT(layer);
-        if (layer && layer->isMovable() && !layer->isBackground()) {
-          api.setCelPosition(writer.sprite(), cel, cel->x()+delta.x, cel->y()+delta.y);
-        }
+      for (Cel* cel : m_celList) {
+        api.setCelPosition(writer.sprite(), cel,
+                           cel->x() + m_celOffset.x,
+                           cel->y() + m_celOffset.y);
       }
 
       // Move selection if it was visible
       if (m_maskVisible)
-        api.setMaskPosition(document->mask()->bounds().x + delta.x,
-                            document->mask()->bounds().y + delta.y);
+        api.setMaskPosition(document->mask()->bounds().x + m_celOffset.x,
+                            document->mask()->bounds().y + m_celOffset.y);
 
       transaction.commit();
     }
 
     // Redraw all editors. We've to notify all views about this
     // general update because MovingCelState::onMouseMove() redraws
-    // only the current cel in the current editor. And at this point
-    // we might have moved several cels (and we've to update all the
-    // editors).
+    // only the cels in the current editor. And at this point we'd
+    // like to update all the editors.
     document->notifyGeneralUpdate();
   }
 
@@ -127,21 +132,25 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point newCursorPos = editor->screenToEditor(msg->position());
-  gfx::Point delta = newCursorPos - m_mouseStart;
+
+  m_celOffset = newCursorPos - m_cursorStart;
 
   if (int(editor->getCustomizationDelegate()
           ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
-    if (ABS(delta.x) < ABS(delta.y)) {
-      delta.x = 0;
+    if (ABS(m_celOffset.x) < ABS(m_celOffset.y)) {
+      m_celOffset.x = 0;
     }
     else {
-      delta.y = 0;
+      m_celOffset.y = 0;
     }
   }
 
-  m_celNew = m_celStart + delta;
-  if (m_cel)
-    m_cel->setPosition(m_celNew);
+  for (unsigned int i = 0; i < m_celList.size(); i++) {
+    Cel* cel = m_celList[i];
+    gfx::Point* celStart = &m_celStarts[i];
+
+    cel->setPosition(*celStart + m_celOffset);
+  }
 
   // Redraw the new cel position.
   editor->invalidate();
@@ -155,10 +164,10 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
   StatusBar::instance()->setStatusText
     (0,
      "Pos %3d %3d Offset %3d %3d",
-     (int)m_celNew.x,
-     (int)m_celNew.y,
-     (int)(m_celNew.x - m_celStart.x),
-     (int)(m_celNew.y - m_celStart.y));
+     (int)m_cursorStart.x,
+     (int)m_cursorStart.y,
+     (int)m_celOffset.x,
+     (int)m_celOffset.y);
 
   return true;
 }

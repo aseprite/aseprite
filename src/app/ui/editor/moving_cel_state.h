@@ -11,6 +11,10 @@
 
 #include "app/ui/editor/standby_state.h"
 
+#include "doc/cel_list.h"
+
+#include <vector>
+
 namespace doc {
   class Cel;
 }
@@ -30,10 +34,10 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
   private:
-    Cel* m_cel;
-    gfx::Point m_celStart;
-    gfx::Point m_mouseStart;
-    gfx::Point m_celNew;
+    CelList m_celList;
+    std::vector<gfx::Point> m_celStarts;
+    gfx::Point m_celOffset;
+    gfx::Point m_cursorStart;
     bool m_canceled;
     bool m_maskVisible;
   };
