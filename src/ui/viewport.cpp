@@ -38,8 +38,7 @@ void Viewport::onResize(ResizeEvent& ev)
   cpos.x = rect.x + border().left() - scroll.x;
   cpos.y = rect.y + border().top() - scroll.y;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     Size reqSize = child->getPreferredSize();
 
     cpos.w = MAX(reqSize.w, rect.w - border().width());
@@ -65,8 +64,8 @@ Size Viewport::calculateNeededSize()
   Size maxSize(0, 0);
   Size reqSize;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    reqSize = (*it)->getPreferredSize();
+  for (auto child : children()) {
+    reqSize = child->getPreferredSize();
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }

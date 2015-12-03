@@ -297,9 +297,7 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Param
 
 void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key)
 {
-  UI_FOREACH_WIDGET(menu->getChildren(), it) {
-    Widget* child = *it;
-
+  for (auto child : menu->children()) {
     if (child->type() == kMenuItemWidget) {
       AppMenuItem* menuitem = dynamic_cast<AppMenuItem*>(child);
       if (!menuitem)

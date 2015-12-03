@@ -448,20 +448,18 @@ bool Widget::hasAncestor(Widget* ancestor)
 
 Widget* Widget::findChild(const char* id)
 {
-  Widget* child;
-
-  UI_FOREACH_WIDGET(m_children, it) {
-    child = *it;
+  for (auto child : m_children) {
     if (child->getId() == id)
       return child;
   }
 
-  UI_FOREACH_WIDGET(m_children, it) {
-    if ((child = (*it)->findChild(id)))
-      return child;
+  for (auto child : m_children) {
+    auto subchild = child->findChild(id);
+    if (subchild)
+      return subchild;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 Widget* Widget::findSibling(const char* id)
@@ -562,8 +560,8 @@ void Widget::loadLayout()
   }
 
   // Do for all children
-  UI_FOREACH_WIDGET(m_children, it)
-    (*it)->loadLayout();
+  for (auto child : m_children)
+    child->loadLayout();
 }
 
 void Widget::saveLayout()
@@ -582,8 +580,8 @@ void Widget::saveLayout()
   }
 
   // Do for all children
-  UI_FOREACH_WIDGET(m_children, it)
-    (*it)->saveLayout();
+  for (auto child : m_children)
+    child->saveLayout();
 }
 
 void Widget::setDecorativeWidgetBounds()
@@ -659,7 +657,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     manager = window ? window->getManager(): NULL;
 
     while (manager) {
-      const WidgetsList& windows_list = manager->getChildren();
+      const WidgetsList& windows_list = manager->children();
       WidgetsList::const_reverse_iterator it =
         std::find(windows_list.rbegin(), windows_list.rend(), window);
 
@@ -683,12 +681,11 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   }
 
   // Clip the areas where are children
-  if (!(flags & kUseChildArea) && !getChildren().empty()) {
+  if (!(flags & kUseChildArea) && !children().empty()) {
     Region reg1;
     Region reg2(getChildrenBounds());
 
-    UI_FOREACH_WIDGET(getChildren(), it) {
-      Widget* child = *it;
+    for (auto child : children()) {
       if (child->isVisible()) {
         Region reg3;
         child->getRegion(reg3);
@@ -888,8 +885,7 @@ void Widget::flushRedraw()
     if (!widget->isVisible())
       continue;
 
-    UI_FOREACH_WIDGET(widget->getChildren(), it) {
-      Widget* child = *it;
+    for (auto child : widget->children()) {
       if (child->hasFlags(DIRTY)) {
         child->disableFlags(DIRTY);
         processing.push(child);
@@ -941,10 +937,8 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
     if (!widget->isVisible())
       continue;
 
-    UI_FOREACH_WIDGET(widget->getChildren(), it) {
-      Widget* child = *it;
+    for (auto child : widget->children())
       processing.push(child);
-    }
 
     // Intersect drawRegion with widget's drawable region.
     Region region;
@@ -1027,8 +1021,8 @@ void Widget::invalidate()
 
     mark_dirty_flag(this);
 
-    UI_FOREACH_WIDGET(getChildren(), it)
-      (*it)->invalidate();
+    for (auto child : m_children)
+      child->invalidate();
   }
 }
 
@@ -1301,8 +1295,8 @@ bool Widget::onProcessMessage(Message* msg)
     case kCloseMessage:
     case kWinMoveMessage:
       // Broadcast the message to the children.
-      UI_FOREACH_WIDGET(getChildren(), it)
-        (*it)->sendMessage(msg);
+      for (auto child : m_children)
+        child->sendMessage(msg);
       break;
 
     case kPaintMessage: {
@@ -1318,8 +1312,8 @@ bool Widget::onProcessMessage(Message* msg)
     case kKeyUpMessage:
       if (static_cast<KeyMessage*>(msg)->propagateToChildren()) {
         // Broadcast the message to the children.
-        UI_FOREACH_WIDGET(getChildren(), it)
-          if ((*it)->sendMessage(msg))
+        for (auto child : m_children)
+          if (child->sendMessage(msg))
             return true;
       }
 
@@ -1387,8 +1381,8 @@ void Widget::onInvalidateRegion(const Region& region)
 
     mark_dirty_flag(this);
 
-    UI_FOREACH_WIDGET(getChildren(), it)
-      (*it)->invalidateRegion(reg1);
+    for (auto child : m_children)
+      child->invalidateRegion(reg1);
   }
 }
 
@@ -1413,8 +1407,8 @@ void Widget::onResize(ResizeEvent& ev)
 
   // Set all the children to the same "cpos".
   gfx::Rect cpos = getChildrenBounds();
-  UI_FOREACH_WIDGET(getChildren(), it)
-    (*it)->setBounds(cpos);
+  for (auto child : m_children)
+    child->setBounds(cpos);
 }
 
 void Widget::onPaint(PaintEvent& ev)
@@ -1479,8 +1473,8 @@ void Widget::offsetWidgets(int dx, int dy)
   m_updateRegion.offset(dx, dy);
   m_bounds.offset(dx, dy);
 
-  UI_FOREACH_WIDGET(m_children, it)
-    (*it)->offsetWidgets(dx, dy);
+  for (auto child : m_children)
+    child->offsetWidgets(dx, dy);
 }
 
 } // namespace ui

@@ -38,8 +38,7 @@ void Separator::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size maxSize(0, 0);
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     Size reqSize = child->getPreferredSize();
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);

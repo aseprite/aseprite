@@ -400,7 +400,7 @@ private:
     for (auto listBox : listBoxes) {
       Separator* group = nullptr;
 
-      for (auto item : listBox->getChildren()) {
+      for (auto item : listBox->children()) {
         if (KeyItem* keyItem = dynamic_cast<KeyItem*>(item)) {
           std::string itemText =
             base::string_to_lower(keyItem->getText());
@@ -414,7 +414,7 @@ private:
           if (matches == int(parts.size())) {
             if (!group) {
               group = new Separator(
-                section()->getChildren()[sectionIdx]->getText(), HORIZONTAL);
+                section()->children()[sectionIdx]->getText(), HORIZONTAL);
               group->setBgColor(SkinTheme::instance()->colors.background());
 
               searchList()->addChild(group);
@@ -496,7 +496,7 @@ private:
   }
 
   void fillList(ListBox* listbox, Menu* menu, int level) {
-    for (Widget* child : menu->getChildren()) {
+    for (auto child : menu->children()) {
       if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
         if (menuItem == AppMenus::instance()->getRecentListMenuitem())
           continue;

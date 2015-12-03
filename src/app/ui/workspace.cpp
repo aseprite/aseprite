@@ -141,7 +141,7 @@ void Workspace::duplicateActiveView()
 
 void Workspace::updateTabs()
 {
-  WidgetsList children = getChildren();
+  WidgetsList children = this->children();
   while (!children.empty()) {
     Widget* child = children.back();
     children.erase(--children.end());
@@ -149,7 +149,7 @@ void Workspace::updateTabs()
     if (child->type() == WorkspacePanel::Type())
       static_cast<WorkspacePanel*>(child)->tabs()->updateTabs();
 
-    for (auto subchild : child->getChildren())
+    for (auto subchild : child->children())
       children.push_back(subchild);
   }
 }
@@ -164,7 +164,7 @@ void Workspace::onResize(ui::ResizeEvent& ev)
   setBoundsQuietly(ev.getBounds());
 
   gfx::Rect rc = getChildrenBounds();
-  for (Widget* child : getChildren())
+  for (auto child : children())
     child->setBounds(rc);
 }
 

@@ -153,7 +153,7 @@ DataRecoveryView::~DataRecoveryView()
 
 void DataRecoveryView::fillList()
 {
-  WidgetsList children = m_listBox.getChildren();
+  WidgetsList children = m_listBox.children();
   for (auto child : children) {
     m_listBox.removeChild(child);
     child->deferDelete();

@@ -55,7 +55,7 @@ bool Splitter::onProcessMessage(Message* msg)
 
         bar = click_bar = 0;
 
-        UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+        UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
           if (it+1 != end) {
             c1 = *it;
             c2 = *(it+1);
@@ -136,7 +136,7 @@ bool Splitter::onProcessMessage(Message* msg)
         int x1, y1, x2, y2;
         bool change_cursor = false;
 
-        UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+        UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
           if (it+1 != end) {
             c1 = *it;
             c2 = *(it+1);
@@ -256,7 +256,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   Size reqSize;
 
   visibleChildren = 0;
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (child->isVisible())
       visibleChildren++;
   }
@@ -264,7 +264,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   int w, h;
   w = h = 0;
 
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (!child->isVisible())
       continue;
 
@@ -297,7 +297,7 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
     m_pos *= guiscale();
 
   // Do for all children
-  for (Widget* child : getChildren())
+  for (auto child : children())
     child->loadLayout();
 }
 
@@ -307,13 +307,13 @@ void Splitter::onSaveLayout(SaveLayoutEvent& ev)
   ev.stream() << pos;
 
   // Do for all children
-  for (Widget* child : getChildren())
+  for (auto child : children())
     child->saveLayout();
 }
 
 Widget* Splitter::panel1() const
 {
-  const WidgetsList& list = getChildren();
+  const WidgetsList& list = children();
   if (list.size() >= 1 && list[0]->isVisible())
     return list[0];
   else
@@ -322,7 +322,7 @@ Widget* Splitter::panel1() const
 
 Widget* Splitter::panel2() const
 {
-  const WidgetsList& list = getChildren();
+  const WidgetsList& list = children();
   if (list.size() >= 2 && list[1]->isVisible())
     return list[1];
   else

@@ -210,10 +210,10 @@ MenuItem::~MenuItem()
 
 Menu* MenuBox::getMenu()
 {
-  if (getChildren().empty())
-    return NULL;
+  if (children().empty())
+    return nullptr;
   else
-    return static_cast<Menu*>(getChildren().front());
+    return static_cast<Menu*>(children().front());
 }
 
 MenuBaseData* MenuBox::createBase()
@@ -264,7 +264,7 @@ void MenuItem::setHighlighted(bool state)
 
 bool MenuItem::hasSubmenu() const
 {
-  return (m_submenu && !m_submenu->getChildren().empty());
+  return (m_submenu && !m_submenu->children().empty());
 }
 
 void Menu::showPopup(const gfx::Point& pos)
@@ -319,8 +319,7 @@ void Menu::onResize(ResizeEvent& ev)
   Rect cpos = getChildrenBounds();
   bool isBar = (getParent()->type() == kMenuBarWidget);
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     Size reqSize = child->getPreferredSize();
 
     if (isBar)
@@ -342,7 +341,7 @@ void Menu::onPreferredSize(PreferredSizeEvent& ev)
   Size size(0, 0);
   Size reqSize;
 
-  UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+  UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
     reqSize = (*it)->getPreferredSize();
 
     if (getParent() && getParent()->type() == kMenuBarWidget) {
@@ -502,8 +501,7 @@ bool MenuBox::onProcessMessage(Message* msg)
           bool used = false;
 
           // Search a child with highlight or the submenu opened
-          UI_FOREACH_WIDGET(menu->getChildren(), it) {
-            Widget* child = *it;
+          for (auto child : menu->children()) {
             if (child->type() != kMenuItemWidget)
               continue;
 
@@ -779,9 +777,7 @@ bool MenuItem::onProcessMessage(Message* msg)
           // Select the first child
           MenuItem* first_child = NULL;
 
-          UI_FOREACH_WIDGET(m_submenu->getChildren(), it) {
-            Widget* child = *it;
-
+          for (auto child : m_submenu->children()) {
             if (child->type() != kMenuItemWidget)
               continue;
 
@@ -938,8 +934,7 @@ static MenuBaseData* get_base(Widget* widget)
 
 MenuItem* Menu::getHighlightedItem()
 {
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     if (child->type() != kMenuItemWidget)
       continue;
 
@@ -953,8 +948,7 @@ MenuItem* Menu::getHighlightedItem()
 void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool select_first_child)
 {
   // Find the menuitem with the highlight
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     if (child->type() != kMenuItemWidget)
       continue;
 
@@ -1027,8 +1021,7 @@ void MenuItem::openSubmenu(bool select_first)
 
   // Close all siblings of 'menuitem'
   if (menu->getParent()) {
-    UI_FOREACH_WIDGET(menu->getChildren(), it) {
-      Widget* child = *it;
+    for (auto child : menu->children()) {
       if (child->type() != kMenuItemWidget)
         continue;
 
@@ -1074,8 +1067,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   menu = m_submenu_menubox->getMenu();
   ASSERT(menu != NULL);
 
-  UI_FOREACH_WIDGET(menu->getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : menu->children()) {
     if (child->type() != kMenuItemWidget)
       continue;
 
@@ -1149,8 +1141,7 @@ void Menu::closeAll()
       menuitem->closeSubmenu(true);
   }
   else {
-    UI_FOREACH_WIDGET(menu->getChildren(), it) {
-      Widget* child = *it;
+    for (auto child : menu->children()) {
       if (child->type() != kMenuItemWidget)
         continue;
 
@@ -1198,8 +1189,7 @@ void MenuItem::executeClick()
 
 static MenuItem* check_for_letter(Menu* menu, int ascii)
 {
-  UI_FOREACH_WIDGET(menu->getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : menu->children()) {
     if (child->type() != kMenuItemWidget)
       continue;
 
@@ -1215,8 +1205,8 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
 // from the first item in `menu'
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem)
 {
-  WidgetsList::const_iterator begin = menu->getChildren().begin();
-  WidgetsList::const_iterator it, end = menu->getChildren().end();
+  WidgetsList::const_iterator begin = menu->children().begin();
+  WidgetsList::const_iterator it, end = menu->children().end();
 
   if (menuitem) {
     it = std::find(begin, end, menuitem);
@@ -1240,8 +1230,8 @@ static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem)
 
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
 {
-  WidgetsList::const_reverse_iterator begin = menu->getChildren().rbegin();
-  WidgetsList::const_reverse_iterator it, end = menu->getChildren().rend();
+  WidgetsList::const_reverse_iterator begin = menu->children().rbegin();
+  WidgetsList::const_reverse_iterator it, end = menu->children().rend();
 
   if (menuitem) {
     it = std::find(begin, end, menuitem);

@@ -39,8 +39,8 @@ void ListItem::onResize(ResizeEvent& ev)
   setBoundsQuietly(ev.getBounds());
 
   Rect crect = getChildrenBounds();
-  UI_FOREACH_WIDGET(getChildren(), it)
-    (*it)->setBounds(crect);
+  for (auto child : children())
+    child->setBounds(crect);
 }
 
 void ListItem::onPreferredSize(PreferredSizeEvent& ev)
@@ -53,8 +53,8 @@ void ListItem::onPreferredSize(PreferredSizeEvent& ev)
   else
     maxSize.w = maxSize.h = 0;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Size reqSize = (*it)->getPreferredSize();
+  for (auto child : children()) {
+    Size reqSize = child->getPreferredSize();
 
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);

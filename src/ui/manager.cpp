@@ -170,7 +170,7 @@ void Manager::run()
     set_mouse_cursor(kArrowCursor);
   }
 
-  while (!getChildren().empty())
+  while (!children().empty())
     loop.pumpMessages();
 }
 
@@ -205,14 +205,12 @@ void Manager::flipDisplay()
 bool Manager::generateMessages()
 {
   // First check: there are windows to manage?
-  if (getChildren().empty())
+  if (children().empty())
     return false;
 
   // New windows to show?
   if (!new_windows.empty()) {
-    UI_FOREACH_WIDGET(new_windows, it) {
-      Widget* window = *it;
-
+    for (auto window : new_windows) {
       // Relayout
       window->layout();
 
@@ -401,9 +399,9 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
   broadcastMouseMessage(mouse_widgets_list);
 
   // Get the widget under the mouse
-  Widget* widget = NULL;
-  UI_FOREACH_WIDGET(mouse_widgets_list, it) {
-    widget = (*it)->pick(mousePos);
+  Widget* widget = nullptr;
+  for (auto mouseWidget : mouse_widgets_list) {
+    widget = mouseWidget->pick(mousePos);
     if (widget)
       break;
   }
@@ -502,8 +500,8 @@ void Manager::handleWindowZOrder()
     if (window->isOnTop())
       win_manager->insertChild(0, window);
     else {
-      int pos = (int)win_manager->getChildren().size();
-      UI_FOREACH_WIDGET_BACKWARD(win_manager->getChildren(), it) {
+      int pos = (int)win_manager->children().size();
+      UI_FOREACH_WIDGET_BACKWARD(win_manager->children(), it) {
         if (static_cast<Window*>(*it)->isOnTop())
           break;
 
@@ -576,18 +574,18 @@ void Manager::enqueueMessage(Message* msg)
 
 Window* Manager::getTopWindow()
 {
-  return static_cast<Window*>(UI_FIRST_WIDGET(getChildren()));
+  return static_cast<Window*>(UI_FIRST_WIDGET(children()));
 }
 
 Window* Manager::getForegroundWindow()
 {
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Window* window = static_cast<Window*>(*it);
+  for (auto child : children()) {
+    Window* window = static_cast<Window*>(child);
     if (window->isForeground() ||
         window->isDesktop())
       return window;
   }
-  return NULL;
+  return nullptr;
 }
 
 Widget* Manager::getFocus()
@@ -951,8 +949,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 
   // Close all windows to this desktop
   if (window->isDesktop()) {
-    while (!getChildren().empty()) {
-      Window* child = static_cast<Window*>(getChildren().front());
+    while (!children().empty()) {
+      Window* child = static_cast<Window*>(children().front());
       if (child == window)
         break;
       else {
@@ -1019,11 +1017,11 @@ bool Manager::onProcessMessage(Message* msg)
       // Continue sending the message to the children of all windows
       // (until a desktop or foreground window).
       Window* win = nullptr;
-      for (Widget* manchild : getChildren()) {
+      for (auto manchild : children()) {
         win = static_cast<Window*>(manchild);
 
         // Send to the window.
-        for (auto winchild : win->getChildren())
+        for (auto winchild : win->children())
           if (winchild->sendMessage(msg))
             return true;
 
@@ -1058,8 +1056,8 @@ void Manager::onResize(ResizeEvent& ev)
   int dw = new_pos.w - old_pos.w;
   int dh = new_pos.h - old_pos.h;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Window* window = static_cast<Window*>(*it);
+  for (auto child : children()) {
+    Window* window = static_cast<Window*>(child);
     if (window->isDesktop()) {
       window->setBounds(new_pos);
       break;
@@ -1097,7 +1095,7 @@ void Manager::onBroadcastMouseMessage(WidgetsList& targets)
 {
   // Ask to the first window in the "children" list to know how to
   // propagate mouse messages.
-  Widget* widget = UI_FIRST_WIDGET(getChildren());
+  Widget* widget = UI_FIRST_WIDGET(children());
   if (widget)
     widget->broadcastMouseMessage(targets);
 }
@@ -1134,8 +1132,8 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
   else {
     gfx::Rect pos = getParent()->getChildrenBounds();
 
-    UI_FOREACH_WIDGET(getChildren(), it) {
-      gfx::Rect cpos = (*it)->getBounds();
+    for (auto child : children()) {
+      gfx::Rect cpos = child->getBounds();
       pos = pos.createUnion(cpos);
     }
 
@@ -1179,8 +1177,7 @@ void Manager::pumpQueue()
     }
 
     bool done = false;
-    UI_FOREACH_WIDGET(msg->recipients(), it2) {
-      Widget* widget = *it2;
+    for (auto widget : msg->recipients()) {
       if (!widget)
         continue;
 
@@ -1289,8 +1286,10 @@ void Manager::invalidateDisplayRegion(const gfx::Region& region)
 
   // Redraw windows from top to background.
   bool withDesktop = false;
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Window* window = static_cast<Window*>(*it);
+  for (auto child : children()) {
+    ASSERT(dynamic_cast<Window*>(child));
+    ASSERT(child->type() == kWindowWidget);
+    Window* window = static_cast<Window*>(child);
 
     // Invalidate regions of this window
     window->invalidateRegion(reg1);
@@ -1358,8 +1357,8 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 {
   Widget* found;
 
-  UI_FOREACH_WIDGET(widget->getChildren(), it) {
-    found = findMagneticWidget(*it);
+  for (auto child : widget->children()) {
+    found = findMagneticWidget(child);
     if (found)
       return found;
   }
@@ -1421,7 +1420,7 @@ static bool move_focus(Manager* manager, Message* msg)
   if (focus_widget) {
     window = focus_widget->getRoot();
   }
-  else if (!manager->getChildren().empty()) {
+  else if (!manager->children().empty()) {
     window = manager->getTopWindow();
   }
 
@@ -1520,8 +1519,8 @@ static int count_widgets_accept_focus(Widget* widget)
 
   int count = 0;
 
-  UI_FOREACH_WIDGET(widget->getChildren(), it)
-    count += count_widgets_accept_focus(*it);
+  for (auto child : widget->children())
+    count += count_widgets_accept_focus(child);
 
   if ((count == 0) && (ACCEPT_FOCUS(widget)))
     count++;
@@ -1531,21 +1530,21 @@ static int count_widgets_accept_focus(Widget* widget)
 
 static bool childs_accept_focus(Widget* widget, bool first)
 {
-  UI_FOREACH_WIDGET(widget->getChildren(), it)
-    if (childs_accept_focus(*it, false))
+  for (auto child : widget->children())
+    if (childs_accept_focus(child, false))
       return true;
 
-  return first ? false: ACCEPT_FOCUS(widget);
+  return (first ? false: ACCEPT_FOCUS(widget));
 }
 
 static Widget* next_widget(Widget* widget)
 {
-  if (!widget->getChildren().empty())
-    return UI_FIRST_WIDGET(widget->getChildren());
+  if (!widget->children().empty())
+    return UI_FIRST_WIDGET(widget->children());
 
   while (widget->getParent()->type() != kManagerWidget) {
-    WidgetsList::const_iterator begin = widget->getParent()->getChildren().begin();
-    WidgetsList::const_iterator end = widget->getParent()->getChildren().end();
+    WidgetsList::const_iterator begin = widget->getParent()->children().begin();
+    WidgetsList::const_iterator end = widget->getParent()->children().end();
     WidgetsList::const_iterator it = std::find(begin, end, widget);
 
     ASSERT(it != end);

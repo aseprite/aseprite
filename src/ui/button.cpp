@@ -364,8 +364,8 @@ void RadioButton::deselectRadioGroup()
         radioButton->setSelected(false);
     }
 
-    UI_FOREACH_WIDGET(widget->getChildren(), it) {
-      allChildrens.push(*it);
+    for (auto child : widget->children()) {
+      allChildrens.push(child);
     }
   }
 }

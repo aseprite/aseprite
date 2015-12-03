@@ -69,8 +69,8 @@ void Message::broadcastToChildren(Widget* widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
-  UI_FOREACH_WIDGET(widget->getChildren(), it)
-    broadcastToChildren(*it);
+  for (auto child : widget->children())
+    broadcastToChildren(child);
 
   addRecipient(widget);
 }

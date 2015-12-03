@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,13 +9,6 @@
 #pragma once
 
 #include <vector>
-
-#define UI_FOREACH_WIDGET(list_name, iterator_name)    \
-  for (WidgetsList::const_iterator                     \
-         iterator_name = (list_name).begin(),          \
-         __end = (list_name).end();                    \
-       iterator_name != __end;                         \
-       ++iterator_name)
 
 #define UI_FOREACH_WIDGET_BACKWARD(list_name, iterator_name)    \
   for (WidgetsList::const_reverse_iterator                      \

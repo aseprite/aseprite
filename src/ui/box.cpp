@@ -43,13 +43,13 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   int visibleChildren = 0;
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (!child->hasFlags(HIDDEN))
       ++visibleChildren;
   }
 
   Size prefSize(0, 0);
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (child->hasFlags(HIDDEN))
       continue;
 
@@ -87,7 +87,7 @@ void Box::onResize(ResizeEvent& ev)
                                                                         \
     Rect childPos(getChildrenBounds());                                 \
     int i = 0, j = 0;                                                   \
-    for (Widget* child : getChildren()) {                               \
+    for (auto child : children()) {                                     \
       if (child->hasFlags(HIDDEN))                                      \
         continue;                                                       \
                                                                         \
@@ -123,7 +123,7 @@ void Box::onResize(ResizeEvent& ev)
 
   int visibleChildren = 0;
   int expansiveChildren = 0;
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (!child->hasFlags(HIDDEN)) {
       ++visibleChildren;
       if (child->isExpansive())

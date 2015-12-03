@@ -168,7 +168,7 @@ namespace ui {
     void getParents(bool ascendant, WidgetsList& parents);
 
     // Returns a list of children.
-    const WidgetsList& getChildren() const { return m_children; }
+    const WidgetsList& children() const { return m_children; }
 
     Widget* at(int index) { return m_children[index]; }
 
@@ -201,8 +201,7 @@ namespace ui {
 
     template<class T>
     T* findFirstChildByType() {
-      UI_FOREACH_WIDGET(m_children, it) {
-        Widget* child = *it;
+      for (auto child : m_children) {
         if (T* specificChild = dynamic_cast<T*>(child))
           return specificChild;
       }

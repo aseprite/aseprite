@@ -200,7 +200,7 @@ FontPopup::FontPopup()
       m_listBox.addChild(new FontItem(file));
   }
 
-  if (m_listBox.getChildren().empty())
+  if (m_listBox.children().empty())
     m_listBox.addChild(new ListItem("No system fonts were found"));
 }
 

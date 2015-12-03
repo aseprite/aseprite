@@ -163,13 +163,11 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
   resultSize.w += border().width();
   resultSize.h += border().height();
 
-  if (!getChildren().empty()) {
+  if (!children().empty()) {
     Size maxSize(0, 0);
     Size reqSize;
 
-    UI_FOREACH_WIDGET(getChildren(), it) {
-      Widget* child = *it;
-
+    for (auto child : children()) {
       reqSize = child->getPreferredSize();
 
       maxSize.w = MAX(maxSize.w, reqSize.w);

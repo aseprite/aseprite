@@ -83,8 +83,8 @@ private:
     const char* oldSelected = (m_filter.getMatrix() ? m_filter.getMatrix()->getName(): NULL);
 
     // Clean the list
-    while (!m_stockListBox->getChildren().empty()) {
-      Widget* listitem = m_stockListBox->getChildren().front();
+    while (!m_stockListBox->children().empty()) {
+      Widget* listitem = m_stockListBox->children().front();
       m_stockListBox->removeChild(listitem);
       delete listitem;
     }
@@ -101,12 +101,10 @@ private:
 
   void selectMatrixByName(const char* oldSelected)
   {
-    Widget* select_this = UI_FIRST_WIDGET(m_stockListBox->getChildren());
+    Widget* select_this = UI_FIRST_WIDGET(m_stockListBox->children());
 
     if (oldSelected) {
-      UI_FOREACH_WIDGET(m_stockListBox->getChildren(), it) {
-        Widget* child = *it;
-
+      for (auto child : m_stockListBox->children()) {
         if (child->getText() == oldSelected) {
           select_this = child;
           break;

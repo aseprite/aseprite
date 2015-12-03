@@ -433,8 +433,8 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
               // Commands are executed only when the main window is
               // the current window running at foreground.
-              UI_FOREACH_WIDGET(getChildren(), it) {
-                Window* child = static_cast<Window*>(*it);
+              for (auto childWidget : children()) {
+                Window* child = static_cast<Window*>(childWidget);
 
                 // There are a foreground window executing?
                 if (child->isForeground()) {

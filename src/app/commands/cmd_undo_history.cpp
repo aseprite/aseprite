@@ -189,7 +189,7 @@ private:
   }
 
   void selectState(const undo::UndoState* state) {
-    for (auto child : actions()->getChildren()) {
+    for (auto child : actions()->children()) {
       Item* item = static_cast<Item*>(child);
       if (item->state() == state) {
         actions()->selectChild(item);

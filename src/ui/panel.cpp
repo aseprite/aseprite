@@ -22,8 +22,7 @@ Panel::Panel()
 
 void Panel::showChild(Widget* widget)
 {
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     if (!child->isDecorative())
       child->setVisible(child == widget);
   }
@@ -37,8 +36,7 @@ void Panel::onResize(ResizeEvent& ev)
 
   // Set all the children to the same "cpos"
   gfx::Rect cpos = getChildrenBounds();
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  for (auto child : children()) {
     if (!child->isDecorative())
       child->setBounds(cpos);
   }
@@ -49,9 +47,7 @@ void Panel::onPreferredSize(PreferredSizeEvent& ev)
   gfx::Size maxSize(0, 0);
   gfx::Size reqSize;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
+  for (auto child : children()) {
     if (!child->isDecorative()) {
       reqSize = child->getPreferredSize();
 

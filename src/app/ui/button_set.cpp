@@ -271,7 +271,7 @@ ButtonSet::Item* ButtonSet::getItem(int index)
 int ButtonSet::selectedItem() const
 {
   int index = 0;
-  for (Widget* child : getChildren()) {
+  for (Widget* child : children()) {
     if (child->isSelected())
       return index;
     ++index;
@@ -281,7 +281,7 @@ int ButtonSet::selectedItem() const
 
 void ButtonSet::setSelectedItem(int index)
 {
-  if (index >= 0 && index < (int)getChildren().size())
+  if (index >= 0 && index < (int)children().size())
     setSelectedItem(static_cast<Item*>(at(index)));
   else
     setSelectedItem(static_cast<Item*>(NULL));
@@ -338,11 +338,11 @@ void ButtonSet::onRightClick(Item* item)
 
 ButtonSet::Item* ButtonSet::findSelectedItem() const
 {
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (child->isSelected())
       return static_cast<Item*>(child);
   }
-  return NULL;
+  return nullptr;
 }
 
 } // namespace app

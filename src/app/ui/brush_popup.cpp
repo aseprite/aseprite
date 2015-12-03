@@ -122,7 +122,7 @@ BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
 
 void BrushPopup::setBrush(Brush* brush)
 {
-  for (auto child : m_buttons->getChildren()) {
+  for (auto child : m_buttons->children()) {
     Item* item = static_cast<Item*>(child);
 
     // Same type and same image
@@ -141,7 +141,7 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
   int columns = 3;
 
   if (m_buttons) {
-    for (auto child : m_buttons->getChildren())
+    for (auto child : m_buttons->children())
       m_tooltipManager->removeTooltipFor(child);
     removeChild(m_buttons.get());
     m_buttons.reset();
@@ -186,7 +186,7 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
   addChild(m_buttons.get());
 
   gfx::Rect rc = box;
-  int buttons = m_buttons->getChildren().size();
+  int buttons = m_buttons->children().size();
   int rows = (buttons/columns + ((buttons%columns) > 0 ? 1: 0));
   rc.w *= columns;
   rc.h = rows * (rc.h-2*guiscale()) + 2*guiscale();

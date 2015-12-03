@@ -176,7 +176,7 @@ void WorkspacePanel::adjustActiveViewBounds()
     rc.h -= int(inbetween(0.0, threshold, top) + inbetween(0.0, threshold, bottom));
   }
 
-  for (Widget* child : getChildren())
+  for (auto child : children())
     if (child->isVisible())
       child->setBounds(rc);
 }

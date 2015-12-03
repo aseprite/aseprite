@@ -102,8 +102,8 @@ HitTest Window::hitTest(const gfx::Point& point)
 
 void Window::removeDecorativeWidgets()
 {
-  while (!getChildren().empty())
-    delete getChildren().front();
+  while (!children().empty())
+    delete children().front();
 }
 
 void Window::onClose(CloseEvent& ev)
@@ -266,8 +266,8 @@ void Window::closeWindow(Widget* killer)
 bool Window::isTopLevel()
 {
   Widget* manager = getManager();
-  if (!manager->getChildren().empty())
-    return (this == UI_FIRST_WIDGET(manager->getChildren()));
+  if (!manager->children().empty())
+    return (this == UI_FIRST_WIDGET(manager->children()));
   else
     return false;
 }
@@ -435,9 +435,7 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
     Size maxSize(0, 0);
     Size reqSize;
 
-    UI_FOREACH_WIDGET(getChildren(), it) {
-      Widget* child = *it;
-
+    for (auto child : children()) {
       if (!child->isDecorative()) {
         reqSize = child->getPreferredSize();
 
@@ -486,9 +484,7 @@ void Window::windowSetPosition(const gfx::Rect& rect)
   Rect cpos = getChildrenBounds();
 
   // Set all the children to the same "cpos"
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
+  for (auto child : children()) {
     if (child->isDecorative())
       child->setDecorativeWidgetBounds();
     else

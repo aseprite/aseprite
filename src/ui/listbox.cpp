@@ -32,7 +32,7 @@ ListBox::ListBox()
 
 Widget* ListBox::getSelectedChild()
 {
-  for (Widget* child : getChildren())
+  for (auto child : children())
     if (child->isSelected())
       return child;
 
@@ -43,7 +43,7 @@ int ListBox::getSelectedIndex()
 {
   int i = 0;
 
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (child->isSelected())
       return i;
 
@@ -55,7 +55,7 @@ int ListBox::getSelectedIndex()
 
 void ListBox::selectChild(Widget* item)
 {
-  for (Widget* child : getChildren()) {
+  for (auto child : children()) {
     if (child->isSelected()) {
       if (item && child == item)
         return;
@@ -74,7 +74,7 @@ void ListBox::selectChild(Widget* item)
 
 void ListBox::selectIndex(int index)
 {
-  const WidgetsList& children = getChildren();
+  const WidgetsList& children = this->children();
   if (index < 0 || index >= (int)children.size())
     return;
 
@@ -85,7 +85,7 @@ void ListBox::selectIndex(int index)
 
 std::size_t ListBox::getItemsCount() const
 {
-  return getChildren().size();
+  return children().size();
 }
 
 void ListBox::makeChildVisible(Widget* child)
@@ -129,7 +129,7 @@ inline bool sort_by_text(Widget* a, Widget* b) {
 
 void ListBox::sortItems()
 {
-  WidgetsList widgets = getChildren();
+  WidgetsList widgets = children();
   std::sort(widgets.begin(), widgets.end(), &sort_by_text);
 
   // Remove all children and add then again.
@@ -207,10 +207,10 @@ bool ListBox::onProcessMessage(Message* msg)
     }
 
     case kKeyDownMessage:
-      if (hasFocus() && !getChildren().empty()) {
+      if (hasFocus() && !children().empty()) {
         int select = getSelectedIndex();
         View* view = View::getView(this);
-        int bottom = MAX(0, getChildren().size()-1);
+        int bottom = MAX(0, children().size()-1);
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
 
         switch (keymsg->scancode()) {
@@ -288,9 +288,7 @@ void ListBox::onResize(ResizeEvent& ev)
 
   Rect cpos = getChildrenBounds();
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
+  for (auto child : children()) {
     cpos.h = child->getPreferredSize().h;
     child->setBounds(cpos);
 
@@ -302,7 +300,7 @@ void ListBox::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0, h = 0;
 
-  UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+  UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
     Size reqSize = static_cast<ListItem*>(*it)->getPreferredSize();
 
     w = MAX(w, reqSize.w);
