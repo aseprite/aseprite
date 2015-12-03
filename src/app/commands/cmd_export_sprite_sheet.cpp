@@ -54,11 +54,12 @@ namespace {
     int width;
     int height;
     int columns;
+    int rows;
     int freearea;
-    Fit() : width(0), height(0), columns(0), freearea(0) {
+    Fit() : width(0), height(0), columns(0), rows(0), freearea(0) {
     }
-    Fit(int width, int height, int columns, int freearea) :
-      width(width), height(height), columns(columns), freearea(freearea) {
+    Fit(int width, int height, int columns, int rows, int freearea) :
+      width(width), height(height), columns(columns), rows(rows), freearea(freearea) {
     }
   };
 
@@ -67,7 +68,7 @@ namespace {
   Fit best_fit(Sprite* sprite, int nframes, int borderPadding, int shapePadding, int innerPadding) {
     int framew = sprite->width()+2*innerPadding;
     int frameh = sprite->height()+2*innerPadding;
-    Fit result(framew*nframes, frameh, nframes, std::numeric_limits<int>::max());
+    Fit result(framew*nframes, frameh, nframes, 1, std::numeric_limits<int>::max());
     int w, h;
 
     for (w=2; w < framew; w*=2)
@@ -103,7 +104,7 @@ namespace {
         for (const gfx::Rect& rgnRect : rgn)
           freearea += rgnRect.w * rgnRect.h;
 
-        Fit fit(w, h, (w / framew), freearea);
+        Fit fit(w, h, (w / framew), (h / frameh), freearea);
         if (fit.freearea < result.freearea)
           result = fit;
       }
@@ -115,15 +116,22 @@ namespace {
     return result;
   }
 
-  Fit calculate_sheet_size(Sprite* sprite, int nframes, int columns,
+  Fit calculate_sheet_size(Sprite* sprite, int nframes,
+                           int columns, int rows,
                            int borderPadding, int shapePadding, int innerPadding) {
-    columns = MID(1, columns, nframes);
-    int rows = ((nframes/columns) + ((nframes%columns) > 0 ? 1: 0));
+    if (columns == 0) {
+      rows = MID(1, rows, nframes);
+      columns = ((nframes/rows) + ((nframes%rows) > 0 ? 1: 0));
+    }
+    else {
+      columns = MID(1, columns, nframes);
+      rows = ((nframes/columns) + ((nframes%columns) > 0 ? 1: 0));
+    }
 
     return Fit(
       2*borderPadding + (sprite->width()+2*innerPadding)*columns + (columns-1)*shapePadding,
       2*borderPadding + (sprite->height()+2*innerPadding)*rows + (rows-1)*shapePadding,
-      columns, 0);
+      columns, rows, 0);
   }
 
   bool ask_overwrite(bool askFilename, std::string filename,
@@ -270,16 +278,18 @@ public:
     , m_dataFilenameAskOverwrite(true)
   {
     static_assert(
-      (int)app::gen::SpriteSheetType::NONE == 0 &&
-      (int)app::gen::SpriteSheetType::HORIZONTAL_STRIP == 1 &&
-      (int)app::gen::SpriteSheetType::VERTICAL_STRIP == 2 &&
-      (int)app::gen::SpriteSheetType::MATRIX == 3,
-      "ExportType enum changed");
+      (int)app::SpriteSheetType::None == 0 &&
+      (int)app::SpriteSheetType::Horizontal == 1 &&
+      (int)app::SpriteSheetType::Vertical == 2 &&
+      (int)app::SpriteSheetType::Rows == 3 &&
+      (int)app::SpriteSheetType::Columns == 4,
+      "SpriteSheetType enum changed");
 
     sheetType()->addItem("Horizontal Strip");
     sheetType()->addItem("Vertical Strip");
-    sheetType()->addItem("Matrix");
-    if (m_docPref.spriteSheet.type() != app::gen::SpriteSheetType::NONE)
+    sheetType()->addItem("By Rows");
+    sheetType()->addItem("By Columns");
+    if (m_docPref.spriteSheet.type() != app::SpriteSheetType::None)
       sheetType()->setSelectedItemIndex((int)m_docPref.spriteSheet.type()-1);
 
     layers()->addItem("Visible layers");
@@ -329,6 +339,7 @@ public:
     }
     else {
       columns()->setTextf("%d", m_docPref.spriteSheet.columns());
+      rows()->setTextf("%d", m_docPref.spriteSheet.rows());
       onColumnsChange();
 
       if (m_docPref.spriteSheet.width() > 0 || m_docPref.spriteSheet.height() > 0) {
@@ -368,6 +379,7 @@ public:
     exportButton()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
     sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
     columns()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
+    rows()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onRowsChange, this));
     fitWidth()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
     fitHeight()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
     bestFit()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onBestFit, this));
@@ -391,41 +403,51 @@ public:
     return getKiller() == exportButton();
   }
 
-  app::gen::SpriteSheetType spriteSheetTypeValue() {
-    return (app::gen::SpriteSheetType)(sheetType()->getSelectedItemIndex()+1);
+  app::SpriteSheetType spriteSheetTypeValue() const {
+    return (app::SpriteSheetType)(sheetType()->getSelectedItemIndex()+1);
   }
 
-  int columnsValue() {
-    return columns()->getTextInt();
+  int columnsValue() const {
+    if (spriteSheetTypeValue() != SpriteSheetType::Columns)
+      return columns()->getTextInt();
+    else
+      return 0;
   }
 
-  int fitWidthValue() {
+  int rowsValue() const {
+    if (spriteSheetTypeValue() == SpriteSheetType::Columns)
+      return rows()->getTextInt();
+    else
+      return 0;
+  }
+
+  int fitWidthValue() const {
     return fitWidth()->getEntryWidget()->getTextInt();
   }
 
-  int fitHeightValue() {
+  int fitHeightValue() const {
     return fitHeight()->getEntryWidget()->getTextInt();
   }
 
-  bool bestFitValue() {
+  bool bestFitValue() const {
     return bestFit()->isSelected();
   }
 
-  std::string filenameValue() {
+  std::string filenameValue() const {
     if (imageEnabled()->isSelected())
       return m_filename;
     else
       return std::string();
   }
 
-  std::string dataFilenameValue() {
+  std::string dataFilenameValue() const {
     if (dataEnabled()->isSelected())
       return m_dataFilename;
     else
       return std::string();
   }
 
-  int borderPaddingValue() {
+  int borderPaddingValue() const {
     if (paddingEnabled()->isSelected()) {
       int value = borderPadding()->getTextInt();
       return MID(0, value, 100);
@@ -434,7 +456,7 @@ public:
       return 0;
   }
 
-  int shapePaddingValue() {
+  int shapePaddingValue() const {
     if (paddingEnabled()->isSelected()) {
       int value = shapePadding()->getTextInt();
       return MID(0, value, 100);
@@ -443,7 +465,7 @@ public:
       return 0;
   }
 
-  int innerPaddingValue() {
+  int innerPaddingValue() const {
     if (paddingEnabled()->isSelected()) {
       int value = innerPadding()->getTextInt();
       return MID(0, value, 100);
@@ -452,11 +474,11 @@ public:
       return 0;
   }
 
-  bool openGeneratedValue() {
+  bool openGeneratedValue() const {
     return openGenerated()->isSelected();
   }
 
-  std::string layerValue() {
+  std::string layerValue() const {
     if (LayerItem* item = dynamic_cast<LayerItem*>(layers()->getSelectedItem()))
       return item->layer()->name();
     else if (layers()->getSelectedItemIndex() == 1)
@@ -465,7 +487,7 @@ public:
       return kAllLayers;
   }
 
-  std::string frameTagValue() {
+  std::string frameTagValue() const {
     if (TagItem* item = dynamic_cast<TagItem*>(frames()->getSelectedItem()))
       return item->tag()->name();
     else if (frames()->getSelectedItemIndex() == 1)
@@ -485,21 +507,33 @@ private:
   }
 
   void onSheetTypeChange() {
-    bool state = false;
+    bool rowsState = false;
+    bool colsState = false;
+    bool matrixState = false;
     switch (spriteSheetTypeValue()) {
-      case app::gen::SpriteSheetType::MATRIX:
-        state = true;
+      case app::SpriteSheetType::Rows:
+        colsState = true;
+        matrixState = true;
+        break;
+      case app::SpriteSheetType::Columns:
+        rowsState = true;
+        matrixState = true;
         break;
     }
 
-    columnsLabel()->setVisible(state);
-    columns()->setVisible(state);
-    fitWidthLabel()->setVisible(state);
-    fitWidth()->setVisible(state);
-    fitHeightLabel()->setVisible(state);
-    fitHeight()->setVisible(state);
-    bestFitFiller()->setVisible(state);
-    bestFit()->setVisible(state);
+    columnsLabel()->setVisible(colsState);
+    columns()->setVisible(colsState);
+
+    rowsLabel()->setVisible(rowsState);
+    rows()->setVisible(rowsState);
+
+    fitWidthLabel()->setVisible(matrixState);
+    fitWidth()->setVisible(matrixState);
+    fitHeightLabel()->setVisible(matrixState);
+    fitHeight()->setVisible(matrixState);
+    bestFitFiller()->setVisible(matrixState);
+    bestFit()->setVisible(matrixState);
+
     resize();
   }
 
@@ -514,8 +548,14 @@ private:
     updateSizeFields();
   }
 
+  void onRowsChange() {
+    bestFit()->setSelected(false);
+    updateSizeFields();
+  }
+
   void onSizeChange() {
     columns()->setTextf("%d", fitWidthValue() / m_sprite->width());
+    rows()->setTextf("%d", fitHeightValue() / m_sprite->height());
     bestFit()->setSelected(false);
   }
 
@@ -585,6 +625,7 @@ private:
   void resize() {
     gfx::Size reqSize = getPreferredSize();
     moveWindow(gfx::Rect(getOrigin(), reqSize));
+    layout();
     invalidate();
   }
 
@@ -614,13 +655,16 @@ private:
     }
     else {
       fit = calculate_sheet_size(
-        m_sprite, nframes, columnsValue(),
+        m_sprite, nframes,
+        columnsValue(),
+        rowsValue(),
         borderPaddingValue(),
         shapePaddingValue(),
         innerPaddingValue());
     }
 
     columns()->setTextf("%d", fit.columns);
+    rows()->setTextf("%d", fit.rows);
     fitWidth()->getEntryWidget()->setTextf("%d", fit.width);
     fitHeight()->getEntryWidget()->setTextf("%d", fit.height);
   }
@@ -692,6 +736,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
     docPref.spriteSheet.type(window.spriteSheetTypeValue());
     docPref.spriteSheet.columns(window.columnsValue());
+    docPref.spriteSheet.rows(window.rowsValue());
     docPref.spriteSheet.width(window.fitWidthValue());
     docPref.spriteSheet.height(window.fitHeightValue());
     docPref.spriteSheet.bestFit(window.bestFitValue());
@@ -716,8 +761,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     askOverwrite = false; // Already asked in the ExportSpriteSheetWindow
   }
 
-  app::gen::SpriteSheetType type = docPref.spriteSheet.type();
+  app::SpriteSheetType type = docPref.spriteSheet.type();
   int columns = docPref.spriteSheet.columns();
+  int rows = docPref.spriteSheet.rows();
   int width = docPref.spriteSheet.width();
   int height = docPref.spriteSheet.height();
   bool bestFit = docPref.spriteSheet.bestFit();
@@ -777,6 +823,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (bestFit) {
     Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding, innerPadding);
     columns = fit.columns;
+    rows = fit.rows;
     width = fit.width;
     height = fit.height;
   }
@@ -785,24 +832,25 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   int sheet_h = 0;
 
   switch (type) {
-    case app::gen::SpriteSheetType::HORIZONTAL_STRIP:
+    case app::SpriteSheetType::Horizontal:
       columns = sprite->totalFrames();
+      rows = 1;
       break;
-    case app::gen::SpriteSheetType::VERTICAL_STRIP:
+    case app::SpriteSheetType::Vertical:
       columns = 1;
+      rows = nframes;
       break;
-    case app::gen::SpriteSheetType::MATRIX:
+    case app::SpriteSheetType::Rows:
+    case app::SpriteSheetType::Columns:
       if (width > 0) sheet_w = width;
       if (height > 0) sheet_h = height;
       break;
   }
 
   Fit fit = calculate_sheet_size(
-    sprite,
-    nframes,
-    columns,
+    sprite, nframes,
+    columns, rows,
     borderPadding, shapePadding, innerPadding);
-  columns = fit.columns;
   if (sheet_w == 0) sheet_w = fit.width;
   if (sheet_h == 0) sheet_h = fit.height;
 
@@ -813,7 +861,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     exporter.setDataFilename(dataFilename);
   exporter.setTextureWidth(sheet_w);
   exporter.setTextureHeight(sheet_h);
-  exporter.setTexturePack(false);
+  exporter.setSpriteSheetType(type);
   exporter.setBorderPadding(borderPadding);
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);

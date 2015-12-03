@@ -49,9 +49,12 @@ public:
   CanvasSizeWindow()
     : m_editor(current_editor)
     , m_rect(0, 0, current_editor->sprite()->width(), current_editor->sprite()->height())
-    , m_selectBoxState(new SelectBoxState(this, m_rect,
-        SelectBoxState::RULERS |
-        SelectBoxState::DARKOUTSIDE)) {
+    , m_selectBoxState(
+      new SelectBoxState(
+        this, m_rect,
+        SelectBoxState::Flags(
+          int(SelectBoxState::Flags::Rulers) |
+          int(SelectBoxState::Flags::DarkOutside)))) {
     setWidth(m_rect.w);
     setHeight(m_rect.h);
     setLeft(0);

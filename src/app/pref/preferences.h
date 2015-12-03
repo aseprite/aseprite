@@ -11,6 +11,7 @@
 
 #include "app/color.h"
 #include "app/pref/option.h"
+#include "app/sprite_sheet_type.h"
 #include "app/tools/freehand_algorithm.h"
 #include "app/tools/ink_type.h"
 #include "app/tools/rotation_algorithm.h"

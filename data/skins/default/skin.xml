@@ -101,6 +101,8 @@
     <color id="flag_normal" value="#d3cbbe" />
     <color id="flag_active" value="#ff0000" />
     <color id="flag_clicked" value="#7d929e" />
+    <color id="select_box_ruler" value="#0000ff" />
+    <color id="select_box_grid" value="#64c864" />
   </colors>
 
   <cursors>

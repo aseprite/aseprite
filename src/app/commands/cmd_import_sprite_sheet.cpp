@@ -54,6 +54,20 @@ public:
     , m_docPref(nullptr) {
     import()->setEnabled(false);
 
+    static_assert(
+      (int)app::SpriteSheetType::Horizontal == 1 &&
+      (int)app::SpriteSheetType::Vertical == 2 &&
+      (int)app::SpriteSheetType::Rows == 3 &&
+      (int)app::SpriteSheetType::Columns == 4,
+      "SpriteSheetType enum changed");
+
+    sheetType()->addItem("Horizontal Strip");
+    sheetType()->addItem("Vertical Strip");
+    sheetType()->addItem("By Rows");
+    sheetType()->addItem("By Columns");
+    sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
+
+    sheetType()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onSheetTypeChange, this));
     x()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     y()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     width()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
@@ -74,6 +88,10 @@ public:
     releaseEditor();
   }
 
+  SpriteSheetType sheetTypeValue() const {
+    return (app::SpriteSheetType)(sheetType()->getSelectedItemIndex()+1);
+  }
+
   bool ok() const {
     return getKiller() == import();
   }
@@ -92,6 +110,10 @@ public:
 
 protected:
 
+  void onSheetTypeChange() {
+    updateGridState();
+  }
+
   void onSelectFile() {
     Document* oldActiveDocument = m_context->activeDocument();
     Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
@@ -107,8 +129,7 @@ protected:
     }
   }
 
-  gfx::Rect getRectFromEntries()
-  {
+  gfx::Rect getRectFromEntries() {
     int w = width()->getTextInt();
     int h = height()->getTextInt();
 
@@ -119,8 +140,7 @@ protected:
       std::max<int>(1, h));
   }
 
-  void onEntriesChange()
-  {
+  void onEntriesChange() {
     m_rect = getRectFromEntries();
 
     // Redraw new rulers position
@@ -187,6 +207,12 @@ private:
     if (m_document) {
       m_docPref = &Preferences::instance().document(m_document);
 
+      if (m_docPref->importSpriteSheet.type() >= app::SpriteSheetType::Horizontal &&
+          m_docPref->importSpriteSheet.type() <= app::SpriteSheetType::Columns)
+        sheetType()->setSelectedItemIndex((int)m_docPref->importSpriteSheet.type()-1);
+      else
+        sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
+
       onChangeRectangle(m_docPref->importSpriteSheet.bounds());
       onEntriesChange();
     }
@@ -198,12 +224,38 @@ private:
     if (m_document && !m_editor) {
       m_rect = getRectFromEntries();
       m_editor = current_editor;
+      m_editorState.reset(
+        new SelectBoxState(
+          this, m_rect,
+          SelectBoxState::Flags(
+            int(SelectBoxState::Flags::Rulers) |
+            int(SelectBoxState::Flags::Grid))));
 
-      EditorStatePtr newState(new SelectBoxState(this, m_rect,
-                                                 SelectBoxState::RULERS |
-                                                 SelectBoxState::GRID));
-      m_editor->setState(newState);
+      m_editor->setState(m_editorState);
+      updateGridState();
     }
+  }
+
+  void updateGridState() {
+    if (!m_editorState)
+      return;
+
+    int flags = int(SelectBoxState::Flags::Rulers);
+    switch (sheetTypeValue()) {
+      case SpriteSheetType::Horizontal:
+        flags |= int(SelectBoxState::Flags::HGrid);
+        break;
+      case SpriteSheetType::Vertical:
+        flags |= int(SelectBoxState::Flags::VGrid);
+        break;
+      case SpriteSheetType::Rows:
+      case SpriteSheetType::Columns:
+        flags |= int(SelectBoxState::Flags::Grid);
+        break;
+    }
+
+    static_cast<SelectBoxState*>(m_editorState.get())->setFlags(SelectBoxState::Flags(flags));
+    m_editor->invalidate();
   }
 
   void releaseEditor() {
@@ -216,6 +268,7 @@ private:
   Context* m_context;
   Document* m_document;
   Editor* m_editor;
+  EditorStatePtr m_editorState;
   gfx::Rect m_rect;
 
   // True if the user has been opened the file (instead of selecting
@@ -252,6 +305,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
   Document* document = window.document();
   DocumentPreferences* docPref = window.docPref();
   gfx::Rect frameBounds = window.frameBounds();
+  auto sheetType = window.sheetTypeValue();
 
   ASSERT(document);
   if (!document)
@@ -265,18 +319,48 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     frame_t currentFrame = context->activeSite().frame();
     render::Render render;
 
+    // Each sprite in the sheet
+    std::vector<gfx::Rect> tileRects;
+
+    switch (sheetType) {
+      case app::SpriteSheetType::Horizontal:
+        for (int x=frameBounds.x; x+frameBounds.w<=sprite->width(); x += frameBounds.w) {
+          tileRects.push_back(gfx::Rect(x, frameBounds.y, frameBounds.w, frameBounds.h));
+        }
+        break;
+      case app::SpriteSheetType::Vertical:
+        for (int y=frameBounds.y; y+frameBounds.h<=sprite->height(); y += frameBounds.h) {
+          tileRects.push_back(gfx::Rect(frameBounds.x, y, frameBounds.w, frameBounds.h));
+        }
+        break;
+      case app::SpriteSheetType::Rows:
+        for (int y=frameBounds.y; y+frameBounds.h<=sprite->height(); y += frameBounds.h) {
+          for (int x=frameBounds.x; x+frameBounds.w<=sprite->width(); x += frameBounds.w) {
+            tileRects.push_back(gfx::Rect(x, y, frameBounds.w, frameBounds.h));
+          }
+        }
+        break;
+      case app::SpriteSheetType::Columns:
+        for (int x=frameBounds.x; x+frameBounds.w<=sprite->width(); x += frameBounds.w) {
+          for (int y=frameBounds.y; y+frameBounds.h<=sprite->height(); y += frameBounds.h) {
+            tileRects.push_back(gfx::Rect(x, y, frameBounds.w, frameBounds.h));
+          }
+        }
+        break;
+    }
+
     // As first step, we cut each tile and add them into "animation" list.
-    for (int y=frameBounds.y; y<sprite->height(); y += frameBounds.h) {
-      for (int x=frameBounds.x; x<sprite->width(); x += frameBounds.w) {
-        ImageRef resultImage(
-          Image::create(sprite->pixelFormat(), frameBounds.w, frameBounds.h));
+    for (const auto& tileRect : tileRects) {
+      ImageRef resultImage(
+        Image::create(
+          sprite->pixelFormat(), tileRect.w, tileRect.h));
 
-        // Render the portion of sheet.
-        render.renderSprite(resultImage.get(), sprite, currentFrame,
-          gfx::Clip(0, 0, x, y, frameBounds.w, frameBounds.h));
+      // Render the portion of sheet.
+      render.renderSprite(
+        resultImage.get(), sprite, currentFrame,
+        gfx::Clip(0, 0, tileRect));
 
-        animation.push_back(resultImage);
-      }
+      animation.push_back(resultImage);
     }
 
     if (animation.size() == 0) {
@@ -324,8 +408,10 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     transaction.commit();
 
     ASSERT(docPref);
-    if (docPref)
+    if (docPref) {
+      docPref->importSpriteSheet.type(sheetType);
       docPref->importSpriteSheet.bounds(frameBounds);
+    }
   }
   catch (...) {
     throw;

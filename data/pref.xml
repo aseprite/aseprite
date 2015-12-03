@@ -26,12 +26,6 @@
       <value id="CHECKED_4x4" value="2" />
       <value id="CHECKED_2x2" value="3" />
     </enum>
-    <enum id="SpriteSheetType">
-      <value id="NONE" value="0" />
-      <value id="HORIZONTAL_STRIP" value="1" />
-      <value id="VERTICAL_STRIP" value="2" />
-      <value id="MATRIX" value="3" />
-    </enum>
     <enum id="StopAtGrid">
       <value id="NEVER" value="0" />
       <value id="IF_VISIBLE" value="1" />
@@ -241,8 +235,9 @@
       <option id="resize_scale" type="double" default="1" />
     </section>
     <section id="sprite_sheet">
-      <option id="type" type="SpriteSheetType" default="SpriteSheetType::NONE" />
+      <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::None" />
       <option id="columns" type="int" default="0" />
+      <option id="rows" type="int" default="0" />
       <option id="width" type="int" default="0" />
       <option id="height" type="int" default="0" />
       <option id="best_fit" type="bool" default="false" />
@@ -256,6 +251,7 @@
       <option id="frame_tag" type="std::string" />
     </section>
     <section id="import_sprite_sheet">
+      <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::Rows" />
       <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
     </section>
   </document>

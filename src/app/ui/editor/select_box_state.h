@@ -41,16 +41,32 @@ namespace app {
     enum { H1, H2, V1, V2 };
 
   public:
-    typedef int Flags;
-    static const int RULERS = 1;      // Draw rulers at each edge of the current box
-    static const int DARKOUTSIDE = 2; // The outside of the box must be darker
-    static const int GRID = 4;        // Draw a grid
-    static const int QUICKBOX = 8;    // Select the box as in selection tool, drawing a boxu
+    enum class Flags {
+      // Draw rulers at each edge of the current box
+      Rulers = 1,
+
+      // The outside of the current box must be darker (used in "Canvas Size" command)
+      DarkOutside = 2,
+
+      // Show a horizontal array of boxes starting from the current box
+      HGrid = 4,
+
+      // Show a vertical array of boxes starting from the current box
+      VGrid = 8,
+
+      // Show a grid starting from the current box
+      Grid = (HGrid | VGrid),
+
+      // Select the box as in selection tool, drawing a boxu
+      QuickBox = 16,
+    };
 
     SelectBoxState(SelectBoxDelegate* delegate,
                    const gfx::Rect& rc,
                    Flags flags);
     ~SelectBoxState();
+
+    void setFlags(Flags flags);
 
     // Returns the bounding box arranged by the rulers.
     gfx::Rect getBoxBounds() const;

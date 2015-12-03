@@ -53,7 +53,7 @@ void RepeatLastExportCommand::onExecute(Context* context)
       Preferences::instance().document(document);
 
     params.set("ui",
-      (docPref.spriteSheet.type() == app::gen::SpriteSheetType::NONE ? "1": "0"));
+      (docPref.spriteSheet.type() == app::SpriteSheetType::None ? "1": "0"));
   }
 
   context->executeCommand(cmd, params);

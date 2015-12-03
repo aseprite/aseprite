@@ -9,6 +9,7 @@
 #define APP_DOCUMENT_EXPORTER_H_INCLUDED
 #pragma once
 
+#include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
 #include "doc/image_buffer.h"
 #include "gfx/fwd.h"
@@ -51,7 +52,7 @@ namespace app {
     void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
     void setTextureWidth(int width) { m_textureWidth = width; }
     void setTextureHeight(int height) { m_textureHeight = height; }
-    void setTexturePack(bool state) { m_texturePack = state; }
+    void setSpriteSheetType(SpriteSheetType type) { m_sheetType = type; }
     void setScale(double scale) { m_scale = scale; }
     void setScaleMode(ScaleMode mode) { m_scaleMode = mode; }
     void setIgnoreEmptyCels(bool ignore) { m_ignoreEmptyCels = ignore; }
@@ -112,7 +113,7 @@ namespace app {
     std::string m_textureFilename;
     int m_textureWidth;
     int m_textureHeight;
-    bool m_texturePack;
+    SpriteSheetType m_sheetType;
     double m_scale;
     ScaleMode m_scaleMode;
     bool m_ignoreEmptyCels;

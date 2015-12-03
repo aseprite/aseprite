@@ -218,6 +218,7 @@ void App::initialize(const AppOptions& options)
   bool ignoreEmpty = false;
   bool trim = false;
   Params cropParams;
+  SpriteSheetType sheetType = SpriteSheetType::None;
 
   // Open file specified in the command line
   if (!options.values().empty()) {
@@ -271,9 +272,21 @@ void App::initialize(const AppOptions& options)
             m_exporter->setTextureHeight(strtol(value.value().c_str(), NULL, 0));
         }
         // --sheet-pack
+        else if (opt == &options.sheetType()) {
+          if (value.value() == "horizontal")
+            sheetType = SpriteSheetType::Horizontal;
+          else if (value.value() == "vertical")
+            sheetType = SpriteSheetType::Vertical;
+          else if (value.value() == "rows")
+            sheetType = SpriteSheetType::Rows;
+          else if (value.value() == "columns")
+            sheetType = SpriteSheetType::Columns;
+          else if (value.value() == "packed")
+            sheetType = SpriteSheetType::Packed;
+        }
+        // --sheet-pack
         else if (opt == &options.sheetPack()) {
-          if (m_exporter)
-            m_exporter->setTexturePack(true);
+          sheetType = SpriteSheetType::Packed;
         }
         // --split-layers
         else if (opt == &options.splitLayers()) {
@@ -563,6 +576,9 @@ void App::initialize(const AppOptions& options)
   // Export
   if (m_exporter) {
     LOG("Exporting sheet...\n");
+
+    if (sheetType != SpriteSheetType::None)
+      m_exporter->setSpriteSheetType(sheetType);
 
     if (ignoreEmpty)
       m_exporter->setIgnoreEmptyCels(true);

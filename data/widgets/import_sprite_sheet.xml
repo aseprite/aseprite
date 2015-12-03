@@ -5,6 +5,9 @@
   <grid columns="4">
     <button id="select_file" text="Select File" cell_hspan="4" />
 
+    <label text="Type:" />
+    <combobox id="sheet_type" cell_hspan="3" />
+
     <label text="X" />
     <entry id="x" text="0" maxsize="4" />
     <label text="Width" />

@@ -202,6 +202,10 @@ public:
 class DocumentExporter::SimpleLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
+  SimpleLayoutSamples(SpriteSheetType type)
+    : m_type(type) {
+  }
+
   void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
     const Sprite* oldSprite = NULL;
     const Layer* oldLayer = NULL;
@@ -218,36 +222,67 @@ public:
       gfx::Size size = sample.requiredSize();
 
       if (oldSprite) {
-        // If the user didn't specify a width for the texture, we put
-        // each sprite/layer in a different row.
-        if (width == 0) {
-          // New sprite or layer, go to next row.
-          if (oldSprite != sprite || oldLayer != layer) {
+        if (m_type == SpriteSheetType::Columns) {
+          // If the user didn't specify a height for the texture, we
+          // put each sprite/layer in a different column.
+          if (height == 0) {
+            // New sprite or layer, go to next column.
+            if (oldSprite != sprite || oldLayer != layer) {
+              framePt.x += rowSize.w + shapePadding;
+              framePt.y = borderPadding;
+              rowSize = size;
+            }
+          }
+          // When a texture height is specified, we can put different
+          // sprites/layers in each column until we reach the texture
+          // bottom-border.
+          else if (framePt.y+size.h > height-borderPadding) {
+            framePt.x += rowSize.w + shapePadding;
+            framePt.y = borderPadding;
+            rowSize = size;
+          }
+        }
+        else {
+          // If the user didn't specify a width for the texture, we put
+          // each sprite/layer in a different row.
+          if (width == 0) {
+            // New sprite or layer, go to next row.
+            if (oldSprite != sprite || oldLayer != layer) {
+              framePt.x = borderPadding;
+              framePt.y += rowSize.h + shapePadding;
+              rowSize = size;
+            }
+          }
+          // When a texture width is specified, we can put different
+          // sprites/layers in each row until we reach the texture
+          // right-border.
+          else if (framePt.x+size.w > width-borderPadding) {
             framePt.x = borderPadding;
             framePt.y += rowSize.h + shapePadding;
             rowSize = size;
           }
-        }
-        // When a texture width is specified, we can put different
-        // sprites/layers in each row until we reach the texture
-        // right-border.
-        else if (framePt.x+size.w > width-borderPadding) {
-          framePt.x = borderPadding;
-          framePt.y += rowSize.h + shapePadding;
-          rowSize = size;
         }
       }
 
       sample.setInTextureBounds(gfx::Rect(framePt, size));
 
       // Next frame position.
-      framePt.x += size.w + shapePadding;
+      if (m_type == SpriteSheetType::Columns) {
+        framePt.y += size.h + shapePadding;
+      }
+      else {
+        framePt.x += size.w + shapePadding;
+      }
+
       rowSize = rowSize.createUnion(size);
 
       oldSprite = sprite;
       oldLayer = layer;
     }
   }
+
+private:
+  SpriteSheetType m_type;
 };
 
 class DocumentExporter::BestFitLayoutSamples :
@@ -290,7 +325,7 @@ DocumentExporter::DocumentExporter()
  , m_textureFormat(DefaultTextureFormat)
  , m_textureWidth(0)
  , m_textureHeight(0)
- , m_texturePack(false)
+ , m_sheetType(SpriteSheetType::None)
  , m_scale(1.0)
  , m_scaleMode(DefaultScaleMode)
  , m_ignoreEmptyCels(false)
@@ -327,15 +362,21 @@ Document* DocumentExporter::exportSheet()
   }
 
   // 2) Layout those samples in a texture field.
-  if (m_texturePack) {
-    BestFitLayoutSamples layout;
-    layout.layoutSamples(samples,
-      m_borderPadding, m_shapePadding, m_textureWidth, m_textureHeight);
-  }
-  else {
-    SimpleLayoutSamples layout;
-    layout.layoutSamples(samples,
-      m_borderPadding, m_shapePadding, m_textureWidth, m_textureHeight);
+  switch (m_sheetType) {
+    case SpriteSheetType::Packed: {
+      BestFitLayoutSamples layout;
+      layout.layoutSamples(
+        samples, m_borderPadding, m_shapePadding,
+        m_textureWidth, m_textureHeight);
+      break;
+    }
+    default: {
+      SimpleLayoutSamples layout(m_sheetType);
+      layout.layoutSamples(
+        samples, m_borderPadding, m_shapePadding,
+        m_textureWidth, m_textureHeight);
+      break;
+    }
   }
 
   // 3) Create and render the texture.

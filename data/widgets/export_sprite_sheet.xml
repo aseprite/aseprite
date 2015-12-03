@@ -6,8 +6,12 @@
     <label text="Sheet Type:" />
     <combobox id="sheet_type" cell_hspan="3" />
 
-    <label id="columns_label" text="Columns:" />
+    <label id="columns_label" text="# of Columns:" />
     <entry id="columns" text="" maxsize="4" />
+    <boxfiller cell_hspan="2" />
+
+    <label id="rows_label" text="# of Rows:" />
+    <entry id="rows" text="" maxsize="4" />
     <boxfiller cell_hspan="2" />
 
     <hbox />

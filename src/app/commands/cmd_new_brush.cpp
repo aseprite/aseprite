@@ -87,8 +87,9 @@ void NewBrushCommand::onExecute(Context* context)
       EditorStatePtr(
         new SelectBoxState(
           this, current_editor->sprite()->bounds(),
-          SelectBoxState::DARKOUTSIDE |
-          SelectBoxState::QUICKBOX)));
+          SelectBoxState::Flags(
+            int(SelectBoxState::Flags::DarkOutside) |
+            int(SelectBoxState::Flags::QuickBox)))));
   }
   // Create a brush from the active selection
   else {
