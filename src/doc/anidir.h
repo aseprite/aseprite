@@ -8,6 +8,8 @@
 #define DOC_ANIDIR_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace doc {
 
   enum class AniDir {
@@ -15,6 +17,8 @@ namespace doc {
     REVERSE = 1,
     PING_PONG = 2,
   };
+
+  std::string convert_to_string(AniDir anidir);
 
 } // namespace doc
 

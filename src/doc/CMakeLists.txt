@@ -11,6 +11,7 @@ add_library(doc-lib
   algorithm/rotsprite.cpp
   algorithm/shift_image.cpp
   algorithm/shrink_bounds.cpp
+  anidir.cpp
   blend_funcs.cpp
   brush.cpp
   cel.cpp

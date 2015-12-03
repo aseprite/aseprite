@@ -697,9 +697,11 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
           firstTag = false;
         else
           os << ",";
+
         os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
            << " \"from\": " << tag->fromFrame() << ","
-           << " \"to\": " << tag->toFrame() << " }";
+           << " \"to\": " << tag->toFrame() << ","
+           << " \"direction\": \"" << escape_for_json(convert_to_string(tag->aniDir())) << "\" }";
       }
     }
     os << "\n  ]";
