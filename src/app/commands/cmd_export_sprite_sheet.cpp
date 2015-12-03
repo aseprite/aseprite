@@ -359,7 +359,9 @@ public:
 
     m_dataFilename = m_docPref.spriteSheet.dataFilename();
     dataEnabled()->setSelected(!m_dataFilename.empty());
-    dataFilename()->setVisible(dataEnabled()->isSelected());
+    listLayers()->setSelected(m_docPref.spriteSheet.listLayers());
+    listTags()->setSelected(m_docPref.spriteSheet.listFrameTags());
+    updateDataFields();
 
     std::string base = doc->filename();
     base = base::join_path(base::get_file_path(base), base::get_file_title(base));
@@ -496,6 +498,14 @@ public:
       return kAllFrames;
   }
 
+  bool listLayersValue() const {
+    return listLayers()->isSelected();
+  }
+
+  bool listFrameTagsValue() const {
+    return listTags()->isSelected();
+  }
+
 private:
 
   void onExport() {
@@ -599,7 +609,7 @@ private:
   void onDataEnabledChange() {
     m_dataFilenameAskOverwrite = true;
 
-    dataFilename()->setVisible(dataEnabled()->isSelected());
+    updateDataFields();
     updateExportButton();
     resize();
   }
@@ -667,6 +677,12 @@ private:
     rows()->setTextf("%d", fit.rows);
     fitWidth()->getEntryWidget()->setTextf("%d", fit.width);
     fitHeight()->getEntryWidget()->setTextf("%d", fit.height);
+  }
+
+  void updateDataFields() {
+    bool state = dataEnabled()->isSelected();
+    dataFilename()->setVisible(state);
+    dataMeta()->setVisible(state);
   }
 
   Sprite* m_sprite;
@@ -748,6 +764,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.openGenerated(window.openGeneratedValue());
     docPref.spriteSheet.layer(window.layerValue());
     docPref.spriteSheet.frameTag(window.frameTagValue());
+    docPref.spriteSheet.listLayers(window.listLayersValue());
+    docPref.spriteSheet.listFrameTags(window.listFrameTagsValue());
 
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));
@@ -777,6 +795,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   borderPadding = MID(0, borderPadding, 100);
   shapePadding = MID(0, shapePadding, 100);
   innerPadding = MID(0, innerPadding, 100);
+  bool listLayers = docPref.spriteSheet.listLayers();
+  bool listFrameTags = docPref.spriteSheet.listFrameTags();
 
   if (context->isUIAvailable() && askOverwrite) {
     if (!ask_overwrite(true, filename,
@@ -865,6 +885,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setBorderPadding(borderPadding);
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);
+  if (listLayers)
+    exporter.setListLayers(true);
+  if (listFrameTags)
+    exporter.setListFrameTags(true);
   exporter.addDocument(document, layer, frameTag, isTemporalTag);
 
   base::UniquePtr<Document> newDocument(exporter.exportSheet());

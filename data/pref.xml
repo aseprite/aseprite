@@ -249,6 +249,8 @@
       <option id="open_generated" type="bool" default="false" />
       <option id="layer" type="std::string" />
       <option id="frame_tag" type="std::string" />
+      <option id="list_layers" type="bool" default="true" />
+      <option id="list_frame_tags" type="bool" default="true" />
     </section>
     <section id="import_sprite_sheet">
       <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::Rows" />
