@@ -145,7 +145,7 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
     }
   }
 
-  for (unsigned int i = 0; i < m_celList.size(); i++) {
+  for (size_t i=0; i<m_celList.size(); ++i) {
     Cel* cel = m_celList[i];
     gfx::Point* celStart = &m_celStarts[i];
 
