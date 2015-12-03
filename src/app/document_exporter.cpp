@@ -342,9 +342,12 @@ Document* DocumentExporter::exportSheet()
 {
   // We output the metadata to std::cout if the user didn't specify a file.
   std::ofstream fos;
-  std::streambuf* osbuf;
-  if (m_dataFilename.empty())
-    osbuf = std::cout.rdbuf();
+  std::streambuf* osbuf = nullptr;
+  if (m_dataFilename.empty()) {
+    // Redirect to stdout if we are running in batch mode
+    if (!UIContext::instance()->isUIAvailable())
+      osbuf = std::cout.rdbuf();
+  }
   else {
     fos.open(FSTREAM_PATH(m_dataFilename), std::ios::out);
     osbuf = fos.rdbuf();
@@ -390,7 +393,8 @@ Document* DocumentExporter::exportSheet()
   renderTexture(samples, textureImage);
 
   // Save the metadata.
-  createDataFile(samples, os, textureImage);
+  if (osbuf)
+    createDataFile(samples, os, textureImage);
 
   // Save the image files.
   if (!m_textureFilename.empty()) {
