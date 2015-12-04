@@ -26,7 +26,7 @@
 #include "ui/message.h"
 #include "ui/move_region.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
 #include "ui/system.h"
@@ -68,7 +68,7 @@ Widget::Widget(WidgetType type)
   , m_bgColor(gfx::ColorNone)
   , m_bounds(0, 0, 0, 0)
   , m_parent(nullptr)
-  , m_preferredSize(nullptr)
+  , m_sizeHint(nullptr)
   , m_doubleBuffered(false)
   , m_transparent(false)
   , m_minSize(0, 0)
@@ -97,8 +97,8 @@ Widget::~Widget()
   while (!m_children.empty())
     delete m_children.front();
 
-  // Delete the preferred size
-  delete m_preferredSize;
+  // Delete fixed size hint if it isn't nullptr
+  delete m_sizeHint;
 
   // Low level free
   details::removeWidget(this);
@@ -1132,25 +1132,25 @@ void Widget::broadcastMouseMessage(WidgetsList& targets)
    Returns the preferred size of the Widget.
 
    It checks if the preferred size is static (it means when it was
-   set through #setPreferredSize before) or if it is dynamic (this is
-   the default and is when the #onPreferredSize is used to determined
+   set through #setSizeHint before) or if it is dynamic (this is
+   the default and is when the #onSizeHint is used to determined
    the preferred size).
 
-   In another words, if you do not use #setPreferredSize to set a
-   <em>static preferred size</em> for the widget then #onPreferredSize
+   In another words, if you do not use #setSizeHint to set a
+   <em>static preferred size</em> for the widget then #onSizeHint
    will be used to calculate it.
 
-   @see setPreferredSize, onPreferredSize, #getPreferredSize(const Size &)
+   @see setSizeHint, onSizeHint, #sizeHint(const Size &)
 */
-Size Widget::getPreferredSize()
+Size Widget::sizeHint()
 {
-  if (m_preferredSize != NULL)
-    return *m_preferredSize;
+  if (m_sizeHint != NULL)
+    return *m_sizeHint;
   else {
-    PreferredSizeEvent ev(this, Size(0, 0));
-    onPreferredSize(ev);
+    SizeHintEvent ev(this, Size(0, 0));
+    onSizeHint(ev);
 
-    Size sz(ev.getPreferredSize());
+    Size sz(ev.sizeHint());
     sz.w = MID(m_minSize.w, sz.w, m_maxSize.w);
     sz.h = MID(m_minSize.h, sz.h, m_maxSize.h);
     return sz;
@@ -1159,27 +1159,27 @@ Size Widget::getPreferredSize()
 
 /**
    Returns the preferred size trying to fit in the specified size.
-   Remember that if you use #setPreferredSize this routine will
+   Remember that if you use #setSizeHint this routine will
    return the static size which you specified manually.
 
    @param fitIn
        This can have both attributes (width and height) in
-       zero, which means that it'll behave same as #getPreferredSize().
-       If the width is great than zero the #onPreferredSize will try to
+       zero, which means that it'll behave same as #sizeHint().
+       If the width is great than zero the #onSizeHint will try to
        fit in that width (this is useful to fit Label or Edit controls
        in a specified width and calculate the height it could occupy).
 
-   @see getPreferredSize
+   @see sizeHint
 */
-Size Widget::getPreferredSize(const Size& fitIn)
+Size Widget::sizeHint(const Size& fitIn)
 {
-  if (m_preferredSize != NULL)
-    return *m_preferredSize;
+  if (m_sizeHint != NULL)
+    return *m_sizeHint;
   else {
-    PreferredSizeEvent ev(this, fitIn);
-    onPreferredSize(ev);
+    SizeHintEvent ev(this, fitIn);
+    onSizeHint(ev);
 
-    Size sz(ev.getPreferredSize());
+    Size sz(ev.sizeHint());
     sz.w = MID(m_minSize.w, sz.w, m_maxSize.w);
     sz.h = MID(m_minSize.h, sz.h, m_maxSize.h);
     return sz;
@@ -1188,17 +1188,17 @@ Size Widget::getPreferredSize(const Size& fitIn)
 
 /**
    Sets a fixed preferred size specified by the user.
-   Widget::getPreferredSize() will return this value if it's setted.
+   Widget::sizeHint() will return this value if it's setted.
 */
-void Widget::setPreferredSize(const Size& fixedSize)
+void Widget::setSizeHint(const Size& fixedSize)
 {
-  delete m_preferredSize;
-  m_preferredSize = new Size(fixedSize);
+  delete m_sizeHint;
+  m_sizeHint = new Size(fixedSize);
 }
 
-void Widget::setPreferredSize(int fixedWidth, int fixedHeight)
+void Widget::setSizeHint(int fixedWidth, int fixedHeight)
 {
-  setPreferredSize(Size(fixedWidth, fixedHeight));
+  setSizeHint(Size(fixedWidth, fixedHeight));
 }
 
 // ===============================================================
@@ -1386,9 +1386,9 @@ void Widget::onInvalidateRegion(const Region& region)
   }
 }
 
-void Widget::onPreferredSize(PreferredSizeEvent& ev)
+void Widget::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(m_minSize);
+  ev.setSizeHint(m_minSize);
 }
 
 void Widget::onLoadLayout(LoadLayoutEvent& ev)

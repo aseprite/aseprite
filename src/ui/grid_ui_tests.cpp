@@ -26,24 +26,24 @@ TEST(Grid, Simple2x1Grid)
   grid->addChildInCell(w2, 1, 1, 0);
 
   // Test request-size
-  Size reqSize = grid->getPreferredSize();
+  Size reqSize = grid->sizeHint();
   EXPECT_EQ(20, reqSize.w);
   EXPECT_EQ(10, reqSize.h);
 
   // Test child-spacing
   grid->setChildSpacing(2);
-  reqSize = grid->getPreferredSize();
+  reqSize = grid->sizeHint();
   EXPECT_EQ(22, reqSize.w);
   EXPECT_EQ(10, reqSize.h);
 
   // Test borders
   grid->setBorder(gfx::Border(3, 0, 0, 3));
-  reqSize = grid->getPreferredSize();
+  reqSize = grid->sizeHint();
   EXPECT_EQ(25, reqSize.w);
   EXPECT_EQ(13, reqSize.h);
 
   grid->setBorder(gfx::Border(3, 2, 5, 3));
-  reqSize = grid->getPreferredSize();
+  reqSize = grid->sizeHint();
   EXPECT_EQ(30, reqSize.w);
   EXPECT_EQ(15, reqSize.h);
 
@@ -63,7 +63,7 @@ TEST(Grid, Expand2ndWidget)
   grid->addChildInCell(w2, 1, 1, HORIZONTAL | TOP);
 
   // Test request size
-  Size reqSize = grid->getPreferredSize();
+  Size reqSize = grid->sizeHint();
   EXPECT_EQ(30, reqSize.w);
   EXPECT_EQ(20, reqSize.h);
 
@@ -96,7 +96,7 @@ TEST(Grid, SameWidth2x1Grid)
   grid->addChildInCell(w2, 1, 1, 0);
 
   // Test request size
-  Size reqSize = grid->getPreferredSize();
+  Size reqSize = grid->sizeHint();
   EXPECT_EQ(40, reqSize.w);
   EXPECT_EQ(20, reqSize.h);
 
@@ -165,7 +165,7 @@ TEST(Grid, Intrincate3x3Grid)
 
   // Test request size
   grid->setChildSpacing(2);
-  Size reqSize = grid->getPreferredSize();
+  Size reqSize = grid->sizeHint();
   EXPECT_EQ(22, reqSize.w);
   EXPECT_EQ(22, reqSize.h);
 
@@ -217,7 +217,7 @@ TEST(Grid, FourColumns)
 
   // Test request size
   grid.setChildSpacing(0);
-  EXPECT_EQ(gfx::Size(40, 20), grid.getPreferredSize());
+  EXPECT_EQ(gfx::Size(40, 20), grid.sizeHint());
 
   // Test layout
   grid.setBounds(gfx::Rect(0, 0, 40, 20));

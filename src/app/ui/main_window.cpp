@@ -93,7 +93,7 @@ MainWindow::MainWindow()
   timelinePlaceholder()->addChild(m_timeline);
 
   // Default splitter positions
-  colorBarSplitter()->setPosition(m_colorBar->getPreferredSize().w);
+  colorBarSplitter()->setPosition(m_colorBar->sizeHint().w);
   timelineSplitter()->setPosition(75);
 
   // Prepare the window

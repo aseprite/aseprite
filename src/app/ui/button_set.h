@@ -28,7 +28,7 @@ namespace app {
     protected:
       void onPaint(ui::PaintEvent& ev) override;
       bool onProcessMessage(ui::Message* msg) override;
-      void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+      void onSizeHint(ui::SizeHintEvent& ev) override;
     private:
       skin::SkinPartPtr m_icon;
     };

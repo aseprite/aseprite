@@ -11,7 +11,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -39,7 +39,7 @@ void Viewport::onResize(ResizeEvent& ev)
   cpos.y = rect.y + border().top() - scroll.y;
 
   for (auto child : children()) {
-    Size reqSize = child->getPreferredSize();
+    Size reqSize = child->sizeHint();
 
     cpos.w = MAX(reqSize.w, rect.w - border().width());
     cpos.h = MAX(reqSize.h, rect.h - border().height());
@@ -48,10 +48,10 @@ void Viewport::onResize(ResizeEvent& ev)
   }
 }
 
-void Viewport::onPreferredSize(PreferredSizeEvent& ev)
+void Viewport::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(1 + border().width(),
-                                1 + border().height()));
+  ev.setSizeHint(gfx::Size(1 + border().width(),
+                           1 + border().height()));
 }
 
 void Viewport::onPaint(PaintEvent& ev)
@@ -65,7 +65,7 @@ Size Viewport::calculateNeededSize()
   Size reqSize;
 
   for (auto child : children()) {
-    reqSize = child->getPreferredSize();
+    reqSize = child->sizeHint();
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }

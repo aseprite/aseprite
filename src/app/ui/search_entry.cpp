@@ -16,7 +16,7 @@
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 
 namespace app {
 
@@ -69,16 +69,16 @@ void SearchEntry::onPaint(ui::PaintEvent& ev)
   }
 }
 
-void SearchEntry::onPreferredSize(PreferredSizeEvent& ev)
+void SearchEntry::onSizeHint(SizeHintEvent& ev)
 {
-  Entry::onPreferredSize(ev);
-  Size sz = ev.getPreferredSize();
+  Entry::onSizeHint(ev);
+  Size sz = ev.sizeHint();
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   auto icon = theme->parts.iconSearch()->getBitmap(0);
   sz.h = MAX(sz.h, icon->height()+border().height());
 
-  ev.setPreferredSize(sz);
+  ev.setSizeHint(sz);
 }
 
 Rect SearchEntry::onGetEntryTextBounds() const

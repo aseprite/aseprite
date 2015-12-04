@@ -15,7 +15,7 @@
 #include "she/surface.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 
 namespace app {
@@ -30,9 +30,9 @@ IconButton::IconButton(she::Surface* icon)
   setBgColor(SkinTheme::instance()->colors.menuitemNormalFace());
 }
 
-void IconButton::onPreferredSize(PreferredSizeEvent& ev)
+void IconButton::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(
+  ev.setSizeHint(
     gfx::Size(m_icon->width(),
               m_icon->height()) + 4*guiscale());
 }

@@ -11,7 +11,7 @@
 #include "she/font.h"
 #include "ui/label.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
 
 namespace ui {
@@ -24,7 +24,7 @@ Label::Label(const std::string& text)
   initTheme();
 }
 
-void Label::onPreferredSize(PreferredSizeEvent& ev)
+void Label::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Size sz(0, 0);
 
@@ -37,7 +37,7 @@ void Label::onPreferredSize(PreferredSizeEvent& ev)
   sz.w += border().width();
   sz.h += border().height();
 
-  ev.setPreferredSize(sz);
+  ev.setSizeHint(sz);
 }
 
 void Label::onPaint(PaintEvent& ev)

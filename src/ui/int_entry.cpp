@@ -17,7 +17,7 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/popup_window.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -127,7 +127,7 @@ bool IntEntry::onProcessMessage(Message* msg)
   return Entry::onProcessMessage(msg);
 }
 
-void IntEntry::onPreferredSize(PreferredSizeEvent& ev)
+void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
   int min_w = getFont()->textLength(m_slider.convertValueToText(m_min));
   int max_w = getFont()->textLength(m_slider.convertValueToText(m_max));
@@ -138,7 +138,7 @@ void IntEntry::onPreferredSize(PreferredSizeEvent& ev)
   w += border().width();
   h += border().height();
 
-  ev.setPreferredSize(w, h);
+  ev.setSizeHint(w, h);
 }
 
 void IntEntry::onChange()
@@ -157,7 +157,7 @@ void IntEntry::openPopup()
   m_slider.setValue(getValue());
 
   Rect rc = getBounds();
-  int sliderH = m_slider.getPreferredSize().h;
+  int sliderH = m_slider.sizeHint().h;
 
   if (rc.y+rc.h+sliderH < ui::display_h())
     rc.y += rc.h;

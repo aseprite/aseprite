@@ -20,7 +20,7 @@ namespace ui {
 
   protected:
     virtual void onResize(ResizeEvent& ev) override;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
+    virtual void onSizeHint(SizeHintEvent& ev) override;
   };
 
 } // namespace ui

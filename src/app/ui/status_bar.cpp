@@ -366,7 +366,7 @@ void StatusBar::showSnapToGridWarning(bool state)
       m_snapToGridWindow->remapWindow();
 
       Rect rc = getBounds();
-      int toolBarWidth = ToolBar::instance()->getPreferredSize().w;
+      int toolBarWidth = ToolBar::instance()->sizeHint().w;
 
       m_snapToGridWindow->positionWindow(
         rc.x+rc.w-toolBarWidth-m_snapToGridWindow->getBounds().w,
@@ -393,8 +393,8 @@ void StatusBar::onResize(ResizeEvent& ev)
   Rect rc = ev.getBounds();
   bool docControls = (rc.w > 300*ui::guiscale());
   if (docControls) {
-    int prefWidth = m_docControls->getPreferredSize().w;
-    int toolBarWidth = ToolBar::instance()->getPreferredSize().w;
+    int prefWidth = m_docControls->sizeHint().w;
+    int toolBarWidth = ToolBar::instance()->sizeHint().w;
 
     rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
     rc.w = prefWidth;
@@ -406,10 +406,10 @@ void StatusBar::onResize(ResizeEvent& ev)
     m_docControls->setVisible(false);
 }
 
-void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
+void StatusBar::onSizeHint(SizeHintEvent& ev)
 {
   int s = 4*guiscale() + getTextHeight() + 4*guiscale();
-  ev.setPreferredSize(Size(s, s));
+  ev.setSizeHint(Size(s, s));
 }
 
 void StatusBar::onPaint(ui::PaintEvent& ev)

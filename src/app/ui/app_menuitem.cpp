@@ -19,7 +19,7 @@
 #include "ui/accelerator.h"
 #include "ui/menu.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/widget.h"
 
 #include <cstdarg>
@@ -85,7 +85,7 @@ bool AppMenuItem::onProcessMessage(Message* msg)
   return MenuItem::onProcessMessage(msg);
 }
 
-void AppMenuItem::onPreferredSize(PreferredSizeEvent& ev)
+void AppMenuItem::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Size size(0, 0);
 
@@ -105,7 +105,7 @@ void AppMenuItem::onPreferredSize(PreferredSizeEvent& ev)
     }
   }
 
-  ev.setPreferredSize(size);
+  ev.setSizeHint(size);
 }
 
 void AppMenuItem::onClick()

@@ -38,7 +38,7 @@ namespace ui {
     virtual bool onProcessMessage(Message* msg) override;
     virtual void onPaint(PaintEvent& ev) override;
     virtual void onResize(ResizeEvent& ev) override;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
+    virtual void onSizeHint(SizeHintEvent& ev) override;
     virtual void onChange();
     virtual void onDoubleClickItem();
   };

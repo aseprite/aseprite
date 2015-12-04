@@ -17,7 +17,7 @@
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -425,7 +425,7 @@ bool Entry::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void Entry::onPreferredSize(PreferredSizeEvent& ev)
+void Entry::onSizeHint(SizeHintEvent& ev)
 {
   int w =
     + getFont()->charWidth('w') * MIN(m_maxsize, 6)
@@ -438,7 +438,7 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
     + getFont()->height()
     + border().height();
 
-  ev.setPreferredSize(w, h);
+  ev.setSizeHint(w, h);
 }
 
 void Entry::onPaint(PaintEvent& ev)

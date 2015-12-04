@@ -52,7 +52,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) override;
-  void onPreferredSize(PreferredSizeEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
   void onPaint(PaintEvent& ev) override;
 
 private:
@@ -276,12 +276,12 @@ bool ToolBar::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void ToolBar::onPreferredSize(PreferredSizeEvent& ev)
+void ToolBar::onSizeHint(SizeHintEvent& ev)
 {
   Size iconsize = getToolIconSize(this);
   iconsize.w += border().width();
   iconsize.h += border().height();
-  ev.setPreferredSize(iconsize);
+  ev.setSizeHint(iconsize);
 }
 
 void ToolBar::onPaint(ui::PaintEvent& ev)
@@ -661,7 +661,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void ToolBar::ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
+void ToolBar::ToolStrip::onSizeHint(SizeHintEvent& ev)
 {
   ToolBox* toolbox = App::instance()->getToolBox();
   int c = 0;
@@ -674,7 +674,7 @@ void ToolBar::ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   Size iconsize = getToolIconSize(this);
-  ev.setPreferredSize(Size(iconsize.w * c, iconsize.h));
+  ev.setSizeHint(Size(iconsize.w * c, iconsize.h));
 }
 
 void ToolBar::ToolStrip::onPaint(PaintEvent& ev)

@@ -23,7 +23,7 @@ namespace app {
     Resource* selectedResource();
 
     void paintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource);
-    gfx::Size preferredResourceSize(Resource* resource);
+    gfx::Size resourceSizeHint(Resource* resource);
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;
@@ -32,7 +32,7 @@ namespace app {
 
     // abstract
     virtual void onPaintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource) = 0;
-    virtual void onResourcePreferredSize(Resource* resource, gfx::Size& size) = 0;
+    virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) = 0;
 
   private:
     void onTick();

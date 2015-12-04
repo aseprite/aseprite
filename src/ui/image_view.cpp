@@ -14,7 +14,7 @@
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
@@ -27,13 +27,13 @@ ImageView::ImageView(she::Surface* sur, int align)
   setAlign(align);
 }
 
-void ImageView::onPreferredSize(PreferredSizeEvent& ev)
+void ImageView::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
   getTextIconInfo(&box, NULL, NULL,
     getAlign(), m_sur->width(), m_sur->height());
 
-  ev.setPreferredSize(
+  ev.setSizeHint(
     gfx::Size(
       box.w + border().width(),
       box.h + border().height()));

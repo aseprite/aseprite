@@ -17,7 +17,7 @@
 #include "ui/message.h"
 #include "ui/message_loop.h"
 #include "ui/move_region.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -195,7 +195,7 @@ void Window::remapWindow()
   }
 
   setBounds(Rect(Point(getBounds().x, getBounds().y),
-                 getPreferredSize()));
+                 sizeHint()));
 
   // load layout
   loadLayout();
@@ -423,13 +423,13 @@ void Window::onResize(ResizeEvent& ev)
   windowSetPosition(ev.getBounds());
 }
 
-void Window::onPreferredSize(PreferredSizeEvent& ev)
+void Window::onSizeHint(SizeHintEvent& ev)
 {
   Widget* manager = getManager();
 
   if (m_isDesktop) {
     Rect cpos = manager->getChildrenBounds();
-    ev.setPreferredSize(cpos.w, cpos.h);
+    ev.setSizeHint(cpos.w, cpos.h);
   }
   else {
     Size maxSize(0, 0);
@@ -437,7 +437,7 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
 
     for (auto child : children()) {
       if (!child->isDecorative()) {
-        reqSize = child->getPreferredSize();
+        reqSize = child->sizeHint();
 
         maxSize.w = MAX(maxSize.w, reqSize.w);
         maxSize.h = MAX(maxSize.h, reqSize.h);
@@ -447,8 +447,8 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
     if (hasText())
       maxSize.w = MAX(maxSize.w, getTextWidth());
 
-    ev.setPreferredSize(maxSize.w + border().width(),
-                        maxSize.h + border().height());
+    ev.setSizeHint(maxSize.w + border().width(),
+                   maxSize.h + border().height());
   }
 }
 

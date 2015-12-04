@@ -19,7 +19,7 @@
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/view.h"
 
 namespace app {
@@ -85,10 +85,10 @@ protected:
         bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) override {
-    ev.setPreferredSize(
+  void onSizeHint(SizeHintEvent& ev) override {
+    ev.setSizeHint(
       static_cast<ResourcesListBox*>(getParent())->
-        preferredResourceSize(m_resource));
+        resourceSizeHint(m_resource));
   }
 
 private:
@@ -140,10 +140,10 @@ void ResourcesListBox::paintResource(Graphics* g, const gfx::Rect& bounds, Resou
   onPaintResource(g, bounds, resource);
 }
 
-gfx::Size ResourcesListBox::preferredResourceSize(Resource* resource)
+gfx::Size ResourcesListBox::resourceSizeHint(Resource* resource)
 {
   gfx::Size pref(0, 0);
-  onResourcePreferredSize(resource, pref);
+  onResourceSizeHint(resource, pref);
   return pref;
 }
 

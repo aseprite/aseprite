@@ -35,7 +35,7 @@ namespace app {
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onClick() override;
 
   private:

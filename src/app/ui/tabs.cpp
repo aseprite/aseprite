@@ -543,9 +543,9 @@ void Tabs::onResize(ResizeEvent& ev)
   updateTabs();
 }
 
-void Tabs::onPreferredSize(PreferredSizeEvent& ev)
+void Tabs::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(0, m_tabsHeight));
+  ev.setSizeHint(gfx::Size(0, m_tabsHeight));
 }
 
 void Tabs::selectTabInternal(TabPtr& tab)

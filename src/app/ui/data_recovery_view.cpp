@@ -24,7 +24,7 @@
 #include "ui/entry.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -58,19 +58,19 @@ public:
   Signal0<void> Regenerate;
 
 protected:
-  void onPreferredSize(PreferredSizeEvent& ev) override {
-    gfx::Size sz = m_deleteButton.getPreferredSize();
+  void onSizeHint(SizeHintEvent& ev) override {
+    gfx::Size sz = m_deleteButton.sizeHint();
     sz.h += 4*guiscale();
-    ev.setPreferredSize(sz);
+    ev.setSizeHint(sz);
   }
 
   void onResize(ResizeEvent& ev) override {
     ListItem::onResize(ev);
 
     gfx::Rect rc = ev.getBounds();
-    gfx::Size sz1 = m_openButton.getPreferredSize();
+    gfx::Size sz1 = m_openButton.sizeHint();
     sz1.w *= 2*guiscale();
-    gfx::Size sz2 = m_deleteButton.getPreferredSize();
+    gfx::Size sz2 = m_deleteButton.sizeHint();
     int h = rc.h*3/4;
     int sep = 8*guiscale();
     m_openButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w-sz1.w-2*sep, rc.y+rc.h/2-h/2, sz1.w, h));

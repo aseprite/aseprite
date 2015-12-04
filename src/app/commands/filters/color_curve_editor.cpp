@@ -17,7 +17,7 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -177,10 +177,10 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void ColorCurveEditor::onPreferredSize(PreferredSizeEvent& ev)
+void ColorCurveEditor::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(1 + border().width(),
-                                1 + border().height()));
+  ev.setSizeHint(gfx::Size(1 + border().width(),
+                           1 + border().height()));
 }
 
 void ColorCurveEditor::onPaint(ui::PaintEvent& ev)

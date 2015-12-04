@@ -92,7 +92,7 @@ namespace ui {
   protected:
     bool onProcessMessage(Message* msg) override;
     void onResize(ResizeEvent& ev) override;
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     virtual void onChange();
     virtual void onOpenListBox();
     virtual void onCloseListBox();

@@ -26,7 +26,7 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) override;
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     void onChange() override;
 
     // New events

@@ -21,7 +21,7 @@
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/view.h"
 
 namespace app {
@@ -75,7 +75,7 @@ void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Reso
   //     bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
 }
 
-void PalettesListBox::onResourcePreferredSize(Resource* resource, gfx::Size& size)
+void PalettesListBox::onResourceSizeHint(Resource* resource, gfx::Size& size)
 {
   size = gfx::Size(0, (2+16+2)*guiscale());
 }

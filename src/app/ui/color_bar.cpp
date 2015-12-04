@@ -155,8 +155,8 @@ ColorBar::ColorBar(int align)
   setChildSpacing(2*guiscale());
 
   m_paletteView.setColumns(8);
-  m_fgColor.setPreferredSize(0, m_fgColor.getPreferredSize().h);
-  m_bgColor.setPreferredSize(0, m_bgColor.getPreferredSize().h);
+  m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
+  m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
 
   // TODO hardcoded scroll bar width should be get from skin.xml file
   int scrollBarWidth = 6*guiscale();

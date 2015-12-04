@@ -36,7 +36,7 @@ namespace ui {
   class Message;
   class MouseMessage;
   class PaintEvent;
-  class PreferredSizeEvent;
+  class SizeHintEvent;
   class ResizeEvent;
   class SaveLayoutEvent;
   class Theme;
@@ -322,10 +322,10 @@ namespace ui {
     // SIZE & POSITION
     // ===============================================================
 
-    gfx::Size getPreferredSize();
-    gfx::Size getPreferredSize(const gfx::Size& fitIn);
-    void setPreferredSize(const gfx::Size& fixedSize);
-    void setPreferredSize(int fixedWidth, int fixedHeight);
+    gfx::Size sizeHint();
+    gfx::Size sizeHint(const gfx::Size& fitIn);
+    void setSizeHint(const gfx::Size& fixedSize);
+    void setSizeHint(int fixedWidth, int fixedHeight);
 
     // ===============================================================
     // MOUSE, FOCUS & KEYBOARD
@@ -362,7 +362,7 @@ namespace ui {
     // ===============================================================
 
     virtual void onInvalidateRegion(const gfx::Region& region);
-    virtual void onPreferredSize(PreferredSizeEvent& ev);
+    virtual void onSizeHint(SizeHintEvent& ev);
     virtual void onLoadLayout(LoadLayoutEvent& ev);
     virtual void onSaveLayout(SaveLayoutEvent& ev);
     virtual void onResize(ResizeEvent& ev);
@@ -393,7 +393,7 @@ namespace ui {
     gfx::Region m_updateRegion;   // Region to be redrawed.
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
-    gfx::Size* m_preferredSize;
+    gfx::Size* m_sizeHint;
     bool m_doubleBuffered;
     bool m_transparent;
 

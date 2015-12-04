@@ -13,7 +13,7 @@
 #include "base/path.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -289,19 +289,19 @@ void ListBox::onResize(ResizeEvent& ev)
   Rect cpos = getChildrenBounds();
 
   for (auto child : children()) {
-    cpos.h = child->getPreferredSize().h;
+    cpos.h = child->sizeHint().h;
     child->setBounds(cpos);
 
     cpos.y += child->getBounds().h + this->childSpacing();
   }
 }
 
-void ListBox::onPreferredSize(PreferredSizeEvent& ev)
+void ListBox::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0, h = 0;
 
   UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
-    Size reqSize = static_cast<ListItem*>(*it)->getPreferredSize();
+    Size reqSize = static_cast<ListItem*>(*it)->sizeHint();
 
     w = MAX(w, reqSize.w);
     h += reqSize.h + (it+1 != end ? this->childSpacing(): 0);
@@ -310,7 +310,7 @@ void ListBox::onPreferredSize(PreferredSizeEvent& ev)
   w += border().width();
   h += border().height();
 
-  ev.setPreferredSize(Size(w, h));
+  ev.setSizeHint(Size(w, h));
 }
 
 void ListBox::onChange()

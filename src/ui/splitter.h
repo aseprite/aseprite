@@ -27,7 +27,7 @@ namespace ui {
     bool onProcessMessage(Message* msg) override;
     void onResize(ResizeEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     void onLoadLayout(LoadLayoutEvent& ev) override;
     void onSaveLayout(SaveLayoutEvent& ev) override;
 

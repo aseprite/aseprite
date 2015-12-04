@@ -22,7 +22,7 @@
 #include "base/time.h"
 #include "ui/link_label.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/view.h"
 
 #include "tinyxml.h"
@@ -126,22 +126,22 @@ public:
   }
 
 protected:
-  void onPreferredSize(PreferredSizeEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Style* style = theme->styles.newsItem();
     Style* styleDetail = theme->styles.newsItemDetail();
     Style::State state;
-    gfx::Size sz1 = style->preferredSize(getText().c_str(), state);
+    gfx::Size sz1 = style->sizeHint(getText().c_str(), state);
     gfx::Size sz2, sz2fourlines;
 
     if (!m_desc.empty()) {
       View* view = View::getView(getParent());
-      sz2 = styleDetail->preferredSize(m_desc.c_str(), state,
+      sz2 = styleDetail->sizeHint(m_desc.c_str(), state,
         (view ? view->getViewportBounds().w: 0));
-      sz2fourlines = styleDetail->preferredSize("\n\n\n", state);
+      sz2fourlines = styleDetail->sizeHint("\n\n\n", state);
     }
 
-    ev.setPreferredSize(gfx::Size(0, MIN(sz1.h+sz2fourlines.h, sz1.h+sz2.h)));
+    ev.setSizeHint(gfx::Size(0, MIN(sz1.h+sz2fourlines.h, sz1.h+sz2.h)));
   }
 
   void onPaint(PaintEvent& ev) override {
@@ -156,7 +156,7 @@ protected:
     if (isSelected()) state += Style::active();
     if (getParent()->hasCapture()) state += Style::clicked();
 
-    gfx::Size textSize = style->preferredSize(getText().c_str(), state);
+    gfx::Size textSize = style->sizeHint(getText().c_str(), state);
     gfx::Rect textBounds(bounds.x, bounds.y, bounds.w, textSize.h);
     gfx::Rect detailsBounds(
       bounds.x, bounds.y+textSize.h,

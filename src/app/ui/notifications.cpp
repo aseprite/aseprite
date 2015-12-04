@@ -17,7 +17,7 @@
 #include "base/launcher.h"
 #include "ui/menu.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 
 namespace app {
 
@@ -53,9 +53,9 @@ void Notifications::addLink(INotificationDelegate* del)
   m_withNotifications = true;
 }
 
-void Notifications::onPreferredSize(PreferredSizeEvent& ev)
+void Notifications::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(16, 10)*guiscale()); // TODO hard-coded flag size
+  ev.setSizeHint(gfx::Size(16, 10)*guiscale()); // TODO hard-coded flag size
 }
 
 void Notifications::onPaint(PaintEvent& ev)
@@ -76,7 +76,7 @@ void Notifications::onClick(ui::Event& ev)
 
   gfx::Rect bounds = getBounds();
   m_popup.showPopup(gfx::Point(
-      bounds.x - m_popup.getPreferredSize().w,
+      bounds.x - m_popup.sizeHint().w,
       bounds.y + bounds.h));
 }
 

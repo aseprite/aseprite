@@ -11,7 +11,7 @@
 #include "gfx/size.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
 #include "ui/ui.h"
 
@@ -149,7 +149,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
   return Window::onProcessMessage(msg);
 }
 
-void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
+void PopupWindow::onSizeHint(SizeHintEvent& ev)
 {
   ScreenGraphics g;
   g.setFont(getFont());
@@ -168,7 +168,7 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
     Size reqSize;
 
     for (auto child : children()) {
-      reqSize = child->getPreferredSize();
+      reqSize = child->sizeHint();
 
       maxSize.w = MAX(maxSize.w, reqSize.w);
       maxSize.h = MAX(maxSize.h, reqSize.h);
@@ -178,7 +178,7 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
     resultSize.h += maxSize.h;
   }
 
-  ev.setPreferredSize(resultSize);
+  ev.setSizeHint(resultSize);
 }
 
 void PopupWindow::onPaint(PaintEvent& ev)

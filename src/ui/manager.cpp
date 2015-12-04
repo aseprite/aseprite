@@ -1121,7 +1121,7 @@ void Manager::onNewDisplayConfiguration()
   flushRedraw();
 }
 
-void Manager::onPreferredSize(PreferredSizeEvent& ev)
+void Manager::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0, h = 0;
 
@@ -1141,7 +1141,7 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
     h = pos.h;
   }
 
-  ev.setPreferredSize(gfx::Size(w, h));
+  ev.setSizeHint(gfx::Size(w, h));
 }
 
 void Manager::pumpQueue()

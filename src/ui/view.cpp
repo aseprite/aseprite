@@ -11,7 +11,7 @@
 #include "gfx/size.h"
 #include "ui/intern.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/scroll_helper.h"
 #include "ui/system.h"
@@ -215,12 +215,12 @@ void View::onResize(ResizeEvent& ev)
   updateView();
 }
 
-void View::onPreferredSize(PreferredSizeEvent& ev)
+void View::onSizeHint(SizeHintEvent& ev)
 {
-  Size viewSize = m_viewport.getPreferredSize();
+  Size viewSize = m_viewport.sizeHint();
   viewSize.w += border().width();
   viewSize.h += border().height();
-  ev.setPreferredSize(viewSize);
+  ev.setSizeHint(viewSize);
 }
 
 void View::onPaint(PaintEvent& ev)

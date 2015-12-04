@@ -36,7 +36,7 @@ namespace app {
   protected:
     // Events
     bool onProcessMessage(ui::Message* msg) override;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onClick(ui::Event& ev) override;
 

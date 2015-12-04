@@ -1324,7 +1324,7 @@ bool Editor::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void Editor::onPreferredSize(PreferredSizeEvent& ev)
+void Editor::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Size sz(0, 0);
 
@@ -1337,7 +1337,7 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
     sz.w = 4;
     sz.h = 4;
   }
-  ev.setPreferredSize(sz);
+  ev.setSizeHint(sz);
 }
 
 void Editor::onResize(ui::ResizeEvent& ev)

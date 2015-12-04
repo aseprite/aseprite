@@ -18,7 +18,7 @@ namespace ui {
     Label(const std::string& text);
 
   protected:
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
   };
 

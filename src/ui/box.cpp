@@ -11,7 +11,7 @@
 #include "gfx/size.h"
 #include "ui/box.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 
@@ -26,7 +26,7 @@ Box::Box(int align)
   initTheme();
 }
 
-void Box::onPreferredSize(PreferredSizeEvent& ev)
+void Box::onSizeHint(SizeHintEvent& ev)
 {
 #define ADD_CHILD_SIZE(w, h) {                      \
     if (getAlign() & HOMOGENEOUS)                   \
@@ -53,7 +53,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
     if (child->hasFlags(HIDDEN))
       continue;
 
-    Size childSize = child->getPreferredSize();
+    Size childSize = child->sizeHint();
     if (getAlign() & HORIZONTAL) {
       ADD_CHILD_SIZE(w, h);
     }
@@ -74,7 +74,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   prefSize.w += border().width();
   prefSize.h += border().height();
 
-  ev.setPreferredSize(prefSize);
+  ev.setSizeHint(prefSize);
 }
 
 void Box::onResize(ResizeEvent& ev)
@@ -100,7 +100,7 @@ void Box::onResize(ResizeEvent& ev)
           size = availSize.w;                                           \
       }                                                                 \
       else {                                                            \
-        size = child->getPreferredSize().w;                             \
+        size = child->sizeHint().w;                                     \
                                                                         \
         if (child->isExpansive()) {                                     \
           int extraSize = (availExtraSize / (expansiveChildren-j));     \
@@ -132,7 +132,7 @@ void Box::onResize(ResizeEvent& ev)
   }
 
   if (visibleChildren > 0) {
-    Size prefSize(getPreferredSize());
+    Size prefSize(sizeHint());
     Size availSize(getChildrenBounds().getSize());
     int homogeneousSize = 0;
     int availExtraSize = 0;

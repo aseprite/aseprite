@@ -25,7 +25,7 @@
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
 
@@ -44,14 +44,14 @@ public:
   }
 
 protected:
-  void onPreferredSize(PreferredSizeEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Style* style = theme->styles.recentFile();
     Style* styleDetail = theme->styles.recentFileDetail();
     Style::State state;
-    gfx::Size sz1 = style->preferredSize(name().c_str(), state);
-    gfx::Size sz2 = styleDetail->preferredSize(path().c_str(), state);
-    ev.setPreferredSize(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
+    gfx::Size sz1 = style->sizeHint(name().c_str(), state);
+    gfx::Size sz2 = styleDetail->sizeHint(path().c_str(), state);
+    ev.setSizeHint(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
   }
 
   void onPaint(PaintEvent& ev) override {
@@ -69,7 +69,7 @@ protected:
     std::string name = this->name();
     style->paint(g, bounds, name.c_str(), state);
 
-    gfx::Size textSize = style->preferredSize(name.c_str(), state);
+    gfx::Size textSize = style->sizeHint(name.c_str(), state);
     gfx::Rect detailsBounds(
       bounds.x+textSize.w, bounds.y,
       bounds.w-textSize.w, bounds.h);

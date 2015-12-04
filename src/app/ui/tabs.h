@@ -174,7 +174,7 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onAnimationFrame() override;
     void onAnimationStop(int animation) override;
 

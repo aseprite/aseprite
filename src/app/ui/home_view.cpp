@@ -157,7 +157,7 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
     SkinStylePropertyPtr(new SkinStyleProperty(theme->styles.workspaceUpdateLink())));
 
   // TODO this should be in a skin.xml's <style>
-  gfx::Size iconSize = theme->styles.workspaceUpdateLink()->preferredSize(
+  gfx::Size iconSize = theme->styles.workspaceUpdateLink()->sizeHint(
     nullptr, Style::State());
   checkUpdate()->setBorder(gfx::Border(6*guiscale())+gfx::Border(
       0, 0, iconSize.w, 0));

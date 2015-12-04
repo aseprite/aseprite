@@ -855,10 +855,10 @@ bool Timeline::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void Timeline::onPreferredSize(PreferredSizeEvent& ev)
+void Timeline::onSizeHint(SizeHintEvent& ev)
 {
   // This doesn't matter, the AniEditor'll use the entire screen anyway.
-  ev.setPreferredSize(Size(32, 32));
+  ev.setSizeHint(Size(32, 32));
 }
 
 void Timeline::onResize(ui::ResizeEvent& ev)
@@ -866,7 +866,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
   gfx::Rect rc = ev.getBounds();
   setBoundsQuietly(rc);
 
-  gfx::Size sz = m_aniControls.getPreferredSize();
+  gfx::Size sz = m_aniControls.sizeHint();
   m_aniControls.setBounds(
     gfx::Rect(rc.x, rc.y, MIN(sz.w, m_separator_x),
       getFont()->height() +

@@ -12,7 +12,7 @@
 
 #include "gfx/size.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
 
 namespace ui {
@@ -34,12 +34,12 @@ void Separator::onPaint(PaintEvent& ev)
   getTheme()->paintSeparator(ev);
 }
 
-void Separator::onPreferredSize(PreferredSizeEvent& ev)
+void Separator::onSizeHint(SizeHintEvent& ev)
 {
   Size maxSize(0, 0);
 
   for (auto child : children()) {
-    Size reqSize = child->getPreferredSize();
+    Size reqSize = child->sizeHint();
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }
@@ -52,7 +52,7 @@ void Separator::onPreferredSize(PreferredSizeEvent& ev)
   int w = maxSize.w + border().width();
   int h = maxSize.h + border().height();
 
-  ev.setPreferredSize(Size(w, h));
+  ev.setSizeHint(Size(w, h));
 }
 
 } // namespace ui

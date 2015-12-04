@@ -633,7 +633,7 @@ private:
   }
 
   void resize() {
-    gfx::Size reqSize = getPreferredSize();
+    gfx::Size reqSize = sizeHint();
     moveWindow(gfx::Rect(getOrigin(), reqSize));
     layout();
     invalidate();

@@ -54,7 +54,7 @@ namespace ui {
     // Events
     bool onProcessMessage(Message* msg) override;
     void onResize(ResizeEvent& ev) override;
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
 
     virtual void onScrollChange();

@@ -57,7 +57,7 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/popup_window.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/tooltips.h"
@@ -113,8 +113,8 @@ protected:
       closePopup();
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) override {
-    ev.setPreferredSize(Size(16, 18)*guiscale());
+  void onSizeHint(SizeHintEvent& ev) override {
+    ev.setSizeHint(Size(16, 18)*guiscale());
   }
 
   // BrushPopupDelegate impl
@@ -144,7 +144,7 @@ private:
   gfx::Rect getPopupBox() {
     Rect rc = getBounds();
     rc.y += rc.h - 2*guiscale();
-    rc.setSize(getPreferredSize());
+    rc.setSize(sizeHint());
     return rc;
   }
 
@@ -574,14 +574,14 @@ class ContextBar::InkShadesField : public HBox {
       return Widget::onProcessMessage(msg);
     }
 
-    void onPreferredSize(PreferredSizeEvent& ev) override {
+    void onSizeHint(SizeHintEvent& ev) override {
       int size = this->size();
       if (size < 2)
-        ev.setPreferredSize(Size((16+m_boxSize)*guiscale()+getTextWidth(), 18*guiscale()));
+        ev.setSizeHint(Size((16+m_boxSize)*guiscale()+getTextWidth(), 18*guiscale()));
       else {
         if (m_click == Select && size > 16)
           size = 16;
-        ev.setPreferredSize(Size(6+m_boxSize*size, 18)*guiscale());
+        ev.setSizeHint(Size(6+m_boxSize*size, 18)*guiscale());
       }
     }
 
@@ -866,7 +866,7 @@ public:
     addChild(&m_maskColor);
 
     m_icon.addItem(theme->parts.selectionOpaque());
-    gfx::Size sz = m_icon.getItem(0)->getPreferredSize();
+    gfx::Size sz = m_icon.getItem(0)->sizeHint();
     sz.w += 2*guiscale();
     m_icon.getItem(0)->setMinSize(sz);
 
@@ -1371,9 +1371,9 @@ ContextBar::ContextBar()
   setActiveBrush(createBrushFromPreferences());
 }
 
-void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
+void ContextBar::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(0, 18*guiscale())); // TODO calculate height
+  ev.setSizeHint(gfx::Size(0, 18*guiscale())); // TODO calculate height
 }
 
 void ContextBar::onToolSetOpacity(const int& newOpacity)

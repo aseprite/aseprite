@@ -17,7 +17,7 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
@@ -232,7 +232,7 @@ bool TipWindow::onProcessMessage(Message* msg)
   return PopupWindow::onProcessMessage(msg);
 }
 
-void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
+void TipWindow::onSizeHint(SizeHintEvent& ev)
 {
   ScreenGraphics g;
   g.setFont(getFont());
@@ -248,7 +248,7 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
     Size reqSize;
 
     for (auto child : children()) {
-      reqSize = child->getPreferredSize();
+      reqSize = child->sizeHint();
 
       maxSize.w = MAX(maxSize.w, reqSize.w);
       maxSize.h = MAX(maxSize.h, reqSize.h);
@@ -258,7 +258,7 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
     resultSize.h += maxSize.h;
   }
 
-  ev.setPreferredSize(resultSize);
+  ev.setSizeHint(resultSize);
 }
 
 void TipWindow::onInitTheme(InitThemeEvent& ev)

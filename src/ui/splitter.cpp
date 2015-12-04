@@ -13,7 +13,7 @@
 #include "ui/load_layout_event.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
 #include "ui/system.h"
@@ -238,7 +238,7 @@ void Splitter::onPaint(PaintEvent& ev)
   getTheme()->paintSplitter(ev);
 }
 
-void Splitter::onPreferredSize(PreferredSizeEvent& ev)
+void Splitter::onSizeHint(SizeHintEvent& ev)
 {
 #define GET_CHILD_SIZE(w, h)                    \
   do {                                          \
@@ -268,7 +268,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
     if (!child->isVisible())
       continue;
 
-    reqSize = child->getPreferredSize();
+    reqSize = child->sizeHint();
 
     if (this->getAlign() & HORIZONTAL)
       GET_CHILD_SIZE(w, h);
@@ -286,7 +286,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   w += border().width();
   h += border().height();
 
-  ev.setPreferredSize(Size(w, h));
+  ev.setSizeHint(Size(w, h));
 }
 
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)

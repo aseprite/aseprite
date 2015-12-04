@@ -35,7 +35,7 @@ namespace ui {
   protected:
     virtual void onPaint(PaintEvent& ev) override;
     virtual void onResize(ResizeEvent& ev) override;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
+    virtual void onSizeHint(SizeHintEvent& ev) override;
 
   private:
     void setOwnerMenuItem(MenuItem* ownerMenuItem) {
@@ -73,7 +73,7 @@ namespace ui {
   protected:
     virtual bool onProcessMessage(Message* msg) override;
     virtual void onResize(ResizeEvent& ev) override;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
+    virtual void onSizeHint(SizeHintEvent& ev) override;
     MenuBaseData* createBase();
 
   private:
@@ -126,7 +126,7 @@ namespace ui {
   protected:
     virtual bool onProcessMessage(Message* msg) override;
     virtual void onPaint(PaintEvent& ev) override;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
+    virtual void onSizeHint(SizeHintEvent& ev) override;
     virtual void onClick();
 
     bool inBar();

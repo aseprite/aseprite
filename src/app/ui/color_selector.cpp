@@ -97,7 +97,7 @@ ColorSelector::ColorSelector()
   m_hexColorEntry.ColorChange.connect(&ColorSelector::onColorHexEntryChange, this);
 
   selectColorType(app::Color::RgbType);
-  setPreferredSize(gfx::Size(300*guiscale(), getPreferredSize().h));
+  setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
 
   m_onPaletteChangeConn =
     App::instance()->PaletteChange.connect(&ColorSelector::onPaletteChange, this);

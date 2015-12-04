@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -44,7 +44,7 @@
 #include "ui/paint_event.h"
 #include "ui/panel.h"
 #include "ui/popup_window.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/property.h"
 #include "ui/register_message.h"
 #include "ui/resize_event.h"

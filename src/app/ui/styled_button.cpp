@@ -15,7 +15,7 @@
 #include "app/ui/skin/style.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 
 namespace app {
@@ -40,9 +40,9 @@ bool StyledButton::onProcessMessage(Message* msg) {
   return Button::onProcessMessage(msg);
 }
 
-void StyledButton::onPreferredSize(PreferredSizeEvent& ev) {
-  ev.setPreferredSize(
-    m_style->preferredSize(NULL, skin::Style::State()) + 4*guiscale());
+void StyledButton::onSizeHint(SizeHintEvent& ev) {
+  ev.setSizeHint(
+    m_style->sizeHint(NULL, skin::Style::State()) + 4*guiscale());
 }
 
 void StyledButton::onPaint(PaintEvent& ev) {

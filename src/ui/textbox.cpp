@@ -13,7 +13,7 @@
 #include "gfx/size.h"
 #include "ui/intern.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -147,7 +147,7 @@ void TextBox::onPaint(PaintEvent& ev)
   getTheme()->paintTextBox(ev);
 }
 
-void TextBox::onPreferredSize(PreferredSizeEvent& ev)
+void TextBox::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0;
   int h = 0;
@@ -175,7 +175,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
     w = min;
   }
 
-  ev.setPreferredSize(gfx::Size(w, h));
+  ev.setSizeHint(gfx::Size(w, h));
 }
 
 void TextBox::onSetText()

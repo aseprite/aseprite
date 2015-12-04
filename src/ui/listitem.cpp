@@ -11,7 +11,7 @@
 #include "ui/listitem.h"
 
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -43,7 +43,7 @@ void ListItem::onResize(ResizeEvent& ev)
     child->setBounds(crect);
 }
 
-void ListItem::onPreferredSize(PreferredSizeEvent& ev)
+void ListItem::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0, h = 0;
   Size maxSize;
@@ -54,7 +54,7 @@ void ListItem::onPreferredSize(PreferredSizeEvent& ev)
     maxSize.w = maxSize.h = 0;
 
   for (auto child : children()) {
-    Size reqSize = child->getPreferredSize();
+    Size reqSize = child->sizeHint();
 
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);
@@ -63,7 +63,7 @@ void ListItem::onPreferredSize(PreferredSizeEvent& ev)
   w = maxSize.w + border().width();
   h = maxSize.h + border().height();
 
-  ev.setPreferredSize(Size(w, h));
+  ev.setSizeHint(Size(w, h));
 }
 
 } // namespace ui

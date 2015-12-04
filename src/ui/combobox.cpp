@@ -386,7 +386,7 @@ void ComboBox::onResize(ResizeEvent& ev)
   setBoundsQuietly(bounds);
 
   // Button
-  Size buttonSize = m_button->getPreferredSize();
+  Size buttonSize = m_button->sizeHint();
   m_button->setBounds(Rect(bounds.x2() - buttonSize.w, bounds.y,
                            buttonSize.w, bounds.h));
 
@@ -395,10 +395,10 @@ void ComboBox::onResize(ResizeEvent& ev)
                           bounds.w - buttonSize.w, bounds.h));
 }
 
-void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
+void ComboBox::onSizeHint(SizeHintEvent& ev)
 {
   Size reqSize(0, 0);
-  Size entrySize = m_entry->getPreferredSize();
+  Size entrySize = m_entry->sizeHint();
 
   // Get the text-length of every item and put in 'w' the maximum value
   ListItems::iterator it, end = m_items.end();
@@ -414,10 +414,10 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   reqSize.w += entrySize.w;
   reqSize.h += entrySize.h;
 
-  Size buttonSize = m_button->getPreferredSize();
+  Size buttonSize = m_button->sizeHint();
   reqSize.w += buttonSize.w;
   reqSize.h = MAX(reqSize.h, buttonSize.h);
-  ev.setPreferredSize(reqSize);
+  ev.setSizeHint(reqSize);
 }
 
 bool ComboBoxEntry::onProcessMessage(Message* msg)

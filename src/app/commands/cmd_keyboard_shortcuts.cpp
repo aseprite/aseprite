@@ -30,7 +30,7 @@
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/separator.h"
 
@@ -121,7 +121,7 @@ private:
     getRoot()->layout();
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override {
     gfx::Size size = getTextSize();
     size.w = size.w + border().width();
     size.h = size.h + border().height() + 4*guiscale();
@@ -132,7 +132,7 @@ private:
         size.h *= combos;
     }
 
-    ev.setPreferredSize(size);
+    ev.setSizeHint(size);
   }
 
   void onPaint(PaintEvent& ev) override {

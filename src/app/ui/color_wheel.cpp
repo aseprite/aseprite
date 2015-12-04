@@ -24,7 +24,7 @@
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 
@@ -178,9 +178,9 @@ app::Color ColorWheel::getColorInHarmony(int j) const
                              m_mainColor.getValue());
 }
 
-void ColorWheel::onPreferredSize(PreferredSizeEvent& ev)
+void ColorWheel::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
+  ev.setSizeHint(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
 }
 
 void ColorWheel::onResize(ui::ResizeEvent& ev)
@@ -196,7 +196,7 @@ void ColorWheel::onResize(ui::ResizeEvent& ev)
                             rc.y+rc.h/2-r,
                             r*2, r*2);
 
-  gfx::Size prefSize = m_options.getPreferredSize();
+  gfx::Size prefSize = m_options.sizeHint();
   rc = getChildrenBounds();
   rc.x += rc.w-prefSize.w;
   rc.w = prefSize.w;

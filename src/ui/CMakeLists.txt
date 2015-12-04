@@ -32,13 +32,13 @@ add_library(ui-lib
   paint_event.cpp
   panel.cpp
   popup_window.cpp
-  preferred_size_event.cpp
   property.cpp
   register_message.cpp
   resize_event.cpp
   scroll_bar.cpp
   scroll_helper.cpp
   separator.cpp
+  size_hint_event.cpp
   slider.cpp
   splitter.cpp
   system.cpp

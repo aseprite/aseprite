@@ -29,7 +29,7 @@
 #include "she/system.h"
 #include "ui/box.h"
 #include "ui/button.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
@@ -79,11 +79,11 @@ private:
     }
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) override {
-    ListItem::onPreferredSize(ev);
+  void onSizeHint(SizeHintEvent& ev) override {
+    ListItem::onSizeHint(ev);
     if (m_image) {
-      gfx::Size sz = ev.getPreferredSize();
-      ev.setPreferredSize(
+      gfx::Size sz = ev.sizeHint();
+      ev.setSizeHint(
         sz.w + 4 + m_image->width(),
         MAX(sz.h, m_image->height()));
     }

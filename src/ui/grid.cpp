@@ -12,7 +12,7 @@
 #include "gfx/size.h"
 #include "ui/grid.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -146,7 +146,7 @@ void Grid::onResize(ResizeEvent& ev)
         calculateCellSize(col, cell->hspan, m_colstrip, w);
         calculateCellSize(row, cell->vspan, m_rowstrip, h);
 
-        reqSize = cell->child->getPreferredSize();
+        reqSize = cell->child->sizeHint();
 
         if (cell->align & LEFT) {
           w = reqSize.w;
@@ -189,7 +189,7 @@ void Grid::onResize(ResizeEvent& ev)
   }
 }
 
-void Grid::onPreferredSize(PreferredSizeEvent& ev)
+void Grid::onSizeHint(SizeHintEvent& ev)
 {
   int w, h;
 
@@ -204,7 +204,7 @@ void Grid::onPreferredSize(PreferredSizeEvent& ev)
   w += border().width();
   h += border().height();
 
-  ev.setPreferredSize(Size(w, h));
+  ev.setSizeHint(Size(w, h));
 }
 
 void Grid::onPaint(PaintEvent& ev)
@@ -286,7 +286,7 @@ void Grid::calculateStripSize(std::vector<Strip>& colstrip,
         if (cell->parent == NULL) {
           // If the widget isn't hidden then we can request its size
           if (!(cell->child->hasFlags(HIDDEN))) {
-            Size reqSize = cell->child->getPreferredSize();
+            Size reqSize = cell->child->sizeHint();
             cell->w = reqSize.w - (cell->hspan-1) * this->childSpacing();
             cell->h = reqSize.h - (cell->vspan-1) * this->childSpacing();
 

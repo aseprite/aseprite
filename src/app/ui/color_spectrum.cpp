@@ -18,7 +18,7 @@
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 
@@ -76,9 +76,9 @@ void ColorSpectrum::selectColor(const app::Color& color)
   invalidate();
 }
 
-void ColorSpectrum::onPreferredSize(PreferredSizeEvent& ev)
+void ColorSpectrum::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
+  ev.setSizeHint(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
 }
 
 void ColorSpectrum::onResize(ui::ResizeEvent& ev)

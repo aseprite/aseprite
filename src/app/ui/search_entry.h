@@ -20,7 +20,7 @@ namespace app {
   private:
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     gfx::Rect onGetEntryTextBounds() const override;
 
     gfx::Rect getCloseIconBounds() const;

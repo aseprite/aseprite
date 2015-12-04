@@ -18,7 +18,7 @@
 #include "ui/entry.h"
 #include "ui/graphics.h"
 #include "ui/label.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/slider.h"
 #include "ui/theme.h"
 
@@ -124,9 +124,9 @@ void ColorSliders::resetRelativeSliders()
     slider->setValue(0);
 }
 
-void ColorSliders::onPreferredSize(PreferredSizeEvent& ev)
+void ColorSliders::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setPreferredSize(m_grid.getPreferredSize());
+  ev.setSizeHint(m_grid.sizeHint());
 }
 
 void ColorSliders::addSlider(Channel channel, const char* labelText, int min, int max)

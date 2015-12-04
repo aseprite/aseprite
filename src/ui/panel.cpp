@@ -11,7 +11,7 @@
 #include "ui/panel.h"
 
 #include "ui/resize_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 
 namespace ui {
 
@@ -42,14 +42,14 @@ void Panel::onResize(ResizeEvent& ev)
   }
 }
 
-void Panel::onPreferredSize(PreferredSizeEvent& ev)
+void Panel::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Size maxSize(0, 0);
   gfx::Size reqSize;
 
   for (auto child : children()) {
     if (!child->isDecorative()) {
-      reqSize = child->getPreferredSize();
+      reqSize = child->sizeHint();
 
       maxSize.w = MAX(maxSize.w, reqSize.w);
       maxSize.h = MAX(maxSize.h, reqSize.h);
@@ -59,7 +59,7 @@ void Panel::onPreferredSize(PreferredSizeEvent& ev)
   if (hasText())
     maxSize.w = MAX(maxSize.w, getTextWidth());
 
-  ev.setPreferredSize(
+  ev.setSizeHint(
     maxSize.w + border().width(),
     maxSize.h + border().height());
 }

@@ -46,7 +46,7 @@ namespace app {
     Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
 
   private:
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;

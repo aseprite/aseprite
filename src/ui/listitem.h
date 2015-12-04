@@ -25,7 +25,7 @@ namespace ui {
   protected:
     void onPaint(PaintEvent& ev) override;
     void onResize(ResizeEvent& ev) override;
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
 
   private:
     std::string m_value;

@@ -320,7 +320,7 @@ void Menu::onResize(ResizeEvent& ev)
   bool isBar = (getParent()->type() == kMenuBarWidget);
 
   for (auto child : children()) {
-    Size reqSize = child->getPreferredSize();
+    Size reqSize = child->sizeHint();
 
     if (isBar)
       cpos.w = reqSize.w;
@@ -336,13 +336,13 @@ void Menu::onResize(ResizeEvent& ev)
   }
 }
 
-void Menu::onPreferredSize(PreferredSizeEvent& ev)
+void Menu::onSizeHint(SizeHintEvent& ev)
 {
   Size size(0, 0);
   Size reqSize;
 
   UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
-    reqSize = (*it)->getPreferredSize();
+    reqSize = (*it)->sizeHint();
 
     if (getParent() && getParent()->type() == kMenuBarWidget) {
       size.w += reqSize.w + ((it+1 != end) ? childSpacing(): 0);
@@ -357,7 +357,7 @@ void Menu::onPreferredSize(PreferredSizeEvent& ev)
   size.w += border().width();
   size.h += border().height();
 
-  ev.setPreferredSize(size);
+  ev.setSizeHint(size);
 }
 
 bool MenuBox::onProcessMessage(Message* msg)
@@ -668,17 +668,17 @@ void MenuBox::onResize(ResizeEvent& ev)
     menu->setBounds(getChildrenBounds());
 }
 
-void MenuBox::onPreferredSize(PreferredSizeEvent& ev)
+void MenuBox::onSizeHint(SizeHintEvent& ev)
 {
   Size size(0, 0);
 
   if (Menu* menu = getMenu())
-    size = menu->getPreferredSize();
+    size = menu->sizeHint();
 
   size.w += border().width();
   size.h += border().height();
 
-  ev.setPreferredSize(size);
+  ev.setSizeHint(size);
 }
 
 bool MenuItem::onProcessMessage(Message* msg)
@@ -880,7 +880,7 @@ void MenuItem::onClick()
   Click();
 }
 
-void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
+void MenuItem::onSizeHint(SizeHintEvent& ev)
 {
   Size size(0, 0);
 
@@ -895,7 +895,7 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
       + border().height();
   }
 
-  ev.setPreferredSize(size);
+  ev.setSizeHint(size);
 }
 
 // Climbs the hierarchy of menus to get the most-top menubox.

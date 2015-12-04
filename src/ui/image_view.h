@@ -22,7 +22,7 @@ namespace ui {
     ImageView(she::Surface* sur, int align);
 
   protected:
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
 
   private:

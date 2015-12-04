@@ -19,7 +19,7 @@ namespace ui {
 
   protected:
     // Events
-    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     void onResize(ResizeEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
   };

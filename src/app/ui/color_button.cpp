@@ -26,7 +26,7 @@
 #include "doc/layer.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -158,14 +158,14 @@ bool ColorButton::onProcessMessage(Message* msg)
   return ButtonBase::onProcessMessage(msg);
 }
 
-void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
+void ColorButton::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
   getTextIconInfo(&box);
   box.w = 64*guiscale();
 
-  ev.setPreferredSize(box.w + border().width(),
-                      box.h + border().height());
+  ev.setSizeHint(box.w + border().width(),
+                 box.h + border().height());
 }
 
 void ColorButton::onPaint(PaintEvent& ev)

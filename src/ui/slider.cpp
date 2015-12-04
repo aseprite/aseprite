@@ -13,7 +13,7 @@
 #include "she/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -214,7 +214,7 @@ not_used:;
   return Widget::onProcessMessage(msg);
 }
 
-void Slider::onPreferredSize(PreferredSizeEvent& ev)
+void Slider::onSizeHint(SizeHintEvent& ev)
 {
   int min_w = getFont()->textLength(convertValueToText(m_min));
   int max_w = getFont()->textLength(convertValueToText(m_max));
@@ -225,7 +225,7 @@ void Slider::onPreferredSize(PreferredSizeEvent& ev)
   w += border().width();
   h += border().height();
 
-  ev.setPreferredSize(w, h);
+  ev.setSizeHint(w, h);
 }
 
 void Slider::onPaint(PaintEvent& ev)

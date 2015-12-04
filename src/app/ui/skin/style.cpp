@@ -186,7 +186,7 @@ void Rules::paint(ui::Graphics* g,
   if (m_text) m_text->paint(g, bounds, text);
 }
 
-gfx::Size Rules::preferredSize(const char* text, int maxWidth)
+gfx::Size Rules::sizeHint(const char* text, int maxWidth)
 {
   gfx::Size sz(0, 0);
   if (m_icon) {
@@ -244,12 +244,12 @@ void Style::paint(ui::Graphics* g,
   getRulesFromState(state)->paint(g, bounds, text);
 }
 
-gfx::Size Style::preferredSize(
+gfx::Size Style::sizeHint(
   const char* text,
   const State& state,
   int maxWidth)
 {
-  return getRulesFromState(state)->preferredSize(text, maxWidth);
+  return getRulesFromState(state)->sizeHint(text, maxWidth);
 }
 
 } // namespace skin

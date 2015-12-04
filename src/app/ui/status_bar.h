@@ -66,7 +66,7 @@ namespace app {
 
   protected:
     void onResize(ui::ResizeEvent& ev) override;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
     // ContextObserver impl

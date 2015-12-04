@@ -397,7 +397,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
   }
 }
 
-void FileList::onPreferredSize(PreferredSizeEvent& ev)
+void FileList::onSizeHint(SizeHintEvent& ev)
 {
   if (!m_req_valid) {
     gfx::Size reqSize(0, 0);
@@ -416,7 +416,7 @@ void FileList::onPreferredSize(PreferredSizeEvent& ev)
     m_req_w = reqSize.w;
     m_req_h = reqSize.h;
   }
-  ev.setPreferredSize(Size(m_req_w, m_req_h));
+  ev.setSizeHint(Size(m_req_w, m_req_h));
 }
 
 void FileList::onFileSelected()

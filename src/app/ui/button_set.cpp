@@ -21,7 +21,7 @@
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -206,7 +206,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
+void ButtonSet::Item::onSizeHint(ui::SizeHintEvent& ev)
 {
   gfx::Size iconSize;
   if (m_icon) {
@@ -229,7 +229,7 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
   if (info.row == info.grid_rows-1)
     sz.h += 3*guiscale();
 
-  ev.setPreferredSize(sz);
+  ev.setSizeHint(sz);
 }
 
 ButtonSet::ButtonSet(int columns)

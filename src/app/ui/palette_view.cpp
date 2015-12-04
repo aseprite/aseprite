@@ -35,7 +35,7 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -599,7 +599,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
   Widget::onResize(ev);
 }
 
-void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
+void PaletteView::onSizeHint(ui::SizeHintEvent& ev)
 {
   div_t d = div(currentPalette()->size(), m_columns);
   int cols = m_columns;
@@ -613,7 +613,7 @@ void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
   sz.w = border().width() + cols*m_boxsize + (cols-1)*childSpacing();
   sz.h = border().height() + rows*m_boxsize + (rows-1)*childSpacing();
 
-  ev.setPreferredSize(sz);
+  ev.setSizeHint(sz);
 }
 
 void PaletteView::onDrawMarchingAnts()

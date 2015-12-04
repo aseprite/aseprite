@@ -111,7 +111,7 @@ namespace app {
         const gfx::Rect& bounds,
         const char* text);
 
-      gfx::Size preferredSize(const char* text, int maxWidth);
+      gfx::Size sizeHint(const char* text, int maxWidth);
 
     private:
       BackgroundRule* m_background;
@@ -137,7 +137,7 @@ namespace app {
         const char* text,
         const State& state);
 
-      gfx::Size preferredSize(
+      gfx::Size sizeHint(
         const char* text,
         const State& state,
         int maxWidth = 0);

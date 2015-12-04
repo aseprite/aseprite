@@ -11,7 +11,7 @@
 #include "ui/button.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/preferred_size_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -271,7 +271,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
+void ButtonBase::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
   gfx::Size iconSize = (m_iconInterface ? m_iconInterface->getSize(): gfx::Size(0, 0));
@@ -280,8 +280,8 @@ void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
                   iconSize.w,
                   iconSize.h);
 
-  ev.setPreferredSize(box.w + border().width(),
-                      box.h + border().height());
+  ev.setSizeHint(box.w + border().width(),
+                 box.h + border().height());
 }
 
 void ButtonBase::onPaint(PaintEvent& ev)

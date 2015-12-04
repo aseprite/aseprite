@@ -80,7 +80,7 @@ namespace app {
     Signal0<void> BrushChange;
 
   protected:
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onToolSetOpacity(const int& newOpacity);
     void onToolSetFreehandAlgorithm();
 
