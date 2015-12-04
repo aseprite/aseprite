@@ -28,8 +28,6 @@ namespace filters {
                                      TiledMode tiledMode,
                                      Delegate& delegate)
   {
-    int dx, dy;
-
     // Y position to get pixel.
     int getx, gety = y - centerY;
     int addx, addy = 0;
@@ -48,7 +46,7 @@ namespace filters {
         gety = sourceImage->height()-1;
     }
 
-    for (dy=0; dy<height; ++dy) {
+    for (int dy=0; dy<height; ++dy) {
       // X position to get pixel.
       getx = x - centerX;
       addx = 0;
@@ -70,7 +68,7 @@ namespace filters {
       typename Traits::const_address_t srcAddress =
         reinterpret_cast<typename Traits::const_address_t>(sourceImage->getPixelAddress(getx, gety));
 
-      for (dx=0; dx<width; dx++) {
+      for (int dx=0; dx<width; dx++) {
         // Call the delegate for each pixel value.
         delegate(*srcAddress);
 
