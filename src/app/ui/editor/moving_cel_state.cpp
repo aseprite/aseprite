@@ -83,7 +83,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
   // add an undoer before).
   if (m_celOffset != gfx::Point(0, 0)) {
     // Put the cels in the original position.
-    for (unsigned int i = 0; i < m_celList.size(); i++) {
+    for (size_t i=0; i<m_celList.size(); ++i) {
       Cel* cel = m_celList[i];
       gfx::Point* celStart = &m_celStarts[i];
 
