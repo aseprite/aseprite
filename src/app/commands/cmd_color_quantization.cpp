@@ -110,7 +110,7 @@ void ColorQuantizationCommand::onExecute(Context* context)
       if (entries.picks() > 1) {
         window.currentRange()->setTextf(
           "%s, %d color(s)",
-          window.currentRange()->getText().c_str(),
+          window.currentRange()->text().c_str(),
           entries.picks());
       }
       else
@@ -118,7 +118,7 @@ void ColorQuantizationCommand::onExecute(Context* context)
 
       window.currentPalette()->setTextf(
         "%s, %d color(s)",
-        window.currentPalette()->getText().c_str(),
+        window.currentPalette()->text().c_str(),
         curPalette->size());
     }
 
@@ -131,7 +131,7 @@ void ColorQuantizationCommand::onExecute(Context* context)
 
     bool createPal = false;
     if (window.newPalette()->isSelected()) {
-      int n = window.ncolors()->getTextInt();
+      int n = window.ncolors()->textInt();
       n = MAX(1, n);
       entries = PalettePicks(n);
       entries.all();

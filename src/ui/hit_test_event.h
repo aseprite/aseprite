@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,32 +12,30 @@
 
 namespace ui {
 
-  enum HitTest
-    {
-      HitTestNowhere,
-      HitTestCaption,
-      HitTestClient,
-      HitTestBorderNW,
-      HitTestBorderN,
-      HitTestBorderNE,
-      HitTestBorderE,
-      HitTestBorderSE,
-      HitTestBorderS,
-      HitTestBorderSW,
-      HitTestBorderW,
-    };
+  enum HitTest {
+    HitTestNowhere,
+    HitTestCaption,
+    HitTestClient,
+    HitTestBorderNW,
+    HitTestBorderN,
+    HitTestBorderNE,
+    HitTestBorderE,
+    HitTestBorderSE,
+    HitTestBorderS,
+    HitTestBorderSW,
+    HitTestBorderW,
+  };
 
-  class HitTestEvent : public Event
-  {
+  class HitTestEvent : public Event {
   public:
     HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
       : Event(source)
       , m_point(point)
       , m_hit(hit) { }
 
-    gfx::Point getPoint() const { return m_point; }
+    gfx::Point point() const { return m_point; }
 
-    HitTest getHit() const { return m_hit; }
+    HitTest hit() const { return m_hit; }
     void setHit(HitTest hit) { m_hit = hit; }
 
   private:

@@ -62,7 +62,7 @@ public:
   // h = max(point1.x, point2.x) - y
   //
   // See that point2 isn't included in the rectangle, it's like the
-  // point returned by getPoint2() member function.
+  // point returned by point2() member function.
   RectT(const PointT<T>& point1, const PointT<T>& point2) {
     PointT<T> leftTop = point1;
     PointT<T> rightBottom = point2;
@@ -96,23 +96,23 @@ public:
   }
 
   // Returns the middle point of the rectangle (x+w/2, y+h/2).
-  PointT<T> getCenter() const {
+  PointT<T> center() const {
     return PointT<T>(x+w/2, y+h/2);
   }
 
   // Returns the point in the upper-left corner (that is inside the
   // rectangle).
-  PointT<T> getOrigin() const {
+  PointT<T> origin() const {
     return PointT<T>(x, y);
   }
 
   // Returns point in the lower-right corner that is outside the
   // rectangle (x+w, y+h).
-  PointT<T> getPoint2() const {
+  PointT<T> point2() const {
     return PointT<T>(x+w, y+h);
   }
 
-  SizeT<T> getSize() const {
+  SizeT<T> size() const {
     return SizeT<T>(w, h);
   }
 

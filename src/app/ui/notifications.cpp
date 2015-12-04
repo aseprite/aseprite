@@ -60,13 +60,13 @@ void Notifications::onSizeHint(SizeHintEvent& ev)
 
 void Notifications::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   skin::Style::State state;
   if (hasMouseOver()) state += skin::Style::hover();
   if (m_withNotifications) state += skin::Style::active();
   if (isSelected()) state += skin::Style::clicked();
-  m_flagStyle->paint(g, getClientBounds(), NULL, state);
+  m_flagStyle->paint(g, clientBounds(), NULL, state);
 }
 
 void Notifications::onClick(ui::Event& ev)
@@ -74,7 +74,7 @@ void Notifications::onClick(ui::Event& ev)
   m_withNotifications = false;
   invalidate();
 
-  gfx::Rect bounds = getBounds();
+  gfx::Rect bounds = this->bounds();
   m_popup.showPopup(gfx::Point(
       bounds.x - m_popup.sizeHint().w,
       bounds.y + bounds.h));

@@ -119,7 +119,7 @@ void FramePropertiesCommand::onExecute(Context* context)
 
   window.openWindowInForeground();
   if (window.getKiller() == window.ok()) {
-    int num = window.frlen()->getTextInt();
+    int num = window.frlen()->textInt();
 
     ContextWriter writer(reader);
     Transaction transaction(writer.context(), "Frame Duration");

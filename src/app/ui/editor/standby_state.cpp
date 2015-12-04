@@ -664,7 +664,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   gfx::Rect box1, box2;
   if (StandbyState::Decorator::getSymmetryHandles(editor, box1, box2)) {
     skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
-    she::Surface* part = theme->parts.transformationHandle()->getBitmap(0);
+    she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
     ScreenGraphics g;
     g.drawRgbaSurface(part, box1.x, box1.y);
     g.drawRgbaSurface(part, box2.x, box2.y);
@@ -685,7 +685,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, gfx::Rect& box1
                         symmetry.yAxis());
       gfx::Rect spriteBounds = editor->sprite()->bounds();
       skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
-      she::Surface* part = theme->parts.transformationHandle()->getBitmap(0);
+      she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
       gfx::Point pt1, pt2;
       if (horz) {
         pt1 = gfx::Point(spriteBounds.x+pos, spriteBounds.y);

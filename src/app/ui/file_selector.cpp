@@ -112,14 +112,14 @@ protected:
     removeAllItems();
 
     // String to be autocompleted
-    std::string left_part = getEntryWidget()->getText();
+    std::string left_part = getEntryWidget()->text();
     closeListBox();
 
     if (left_part.empty())
       return;
 
     for (const IFileItem* child : m_fileList->getFileList()) {
-      std::string child_name = child->getDisplayName();
+      std::string child_name = child->displayName();
       std::string::const_iterator it1, it2;
 
       for (it1 = child_name.begin(), it2 = left_part.begin();
@@ -185,10 +185,10 @@ protected:
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
       case kOpenMessage:
-        getManager()->addMessageFilter(kKeyDownMessage, this);
+        manager()->addMessageFilter(kKeyDownMessage, this);
         break;
       case kCloseMessage:
-        getManager()->removeMessageFilter(kKeyDownMessage, this);
+        manager()->removeMessageFilter(kKeyDownMessage, this);
         break;
       case kKeyDownMessage: {
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
@@ -457,7 +457,7 @@ again:
 
     // up a level?
     if (fn == "..") {
-      enter_folder = folder->getParent();
+      enter_folder = folder->parent();
       if (!enter_folder)
         enter_folder = folder;
     }
@@ -476,14 +476,14 @@ again:
 #endif
 
       for (IFileItem* child : children) {
-        std::string child_name = child->getDisplayName();
+        std::string child_name = child->displayName();
 
 #ifdef _WIN32
         child_name = base::string_to_lower(child_name);
 #endif
         if (child_name == fn2) {
           enter_folder = child;
-          buf = enter_folder->getFileName();
+          buf = enter_folder->fileName();
           break;
         }
       }
@@ -493,7 +493,7 @@ again:
         if (base::is_path_separator(*fn.begin())) { // absolute path (UNIX style)
 #ifdef _WIN32
           // get the drive of the current folder
-          std::string drive = folder->getFileName();
+          std::string drive = folder->fileName();
           if (drive.size() >= 2 && drive[1] == ':') {
             buf += drive[0];
             buf += ':';
@@ -517,7 +517,7 @@ again:
         }
 #endif
         else {
-          buf = folder->getFileName();
+          buf = folder->fileName();
           buf = base::join_path(buf, fn);
         }
         buf = base::fix_path_separators(buf);
@@ -577,7 +577,7 @@ again:
     result = buf;
 
     // save the path in the configuration file
-    std::string lastpath = folder->getKeyName();
+    std::string lastpath = folder->keyName();
     set_config_string("FileSelect", "CurrentDirectory",
                       lastpath.c_str());
 
@@ -600,7 +600,7 @@ void FileSelector::updateLocation()
 
   while (fileItem != NULL) {
     locations.push_front(fileItem);
-    fileItem = fileItem->getParent();
+    fileItem = fileItem->parent();
   }
 
   // Clear all the items from the combo-box
@@ -618,7 +618,7 @@ void FileSelector::updateLocation()
       buf += "  ";
 
     // Location name
-    buf += fileItem->getDisplayName();
+    buf += fileItem->displayName();
 
     // Add the new location to the combo-box
     location()->addItem(new CustomFileNameItem(buf.c_str(), fileItem));
@@ -643,7 +643,7 @@ void FileSelector::updateLocation()
   // Select the location
   {
     location()->setSelectedItemIndex(selected_index);
-    location()->getEntryWidget()->setText(currentFolder->getDisplayName().c_str());
+    location()->getEntryWidget()->setText(currentFolder->displayName().c_str());
     location()->getEntryWidget()->deselectText();
   }
 }
@@ -735,17 +735,16 @@ void FileSelector::onNewFolder()
   if (window.getKiller() == window.ok()) {
     IFileItem* currentFolder = m_fileList->getCurrentFolder();
     if (currentFolder) {
-      std::string dirname = window.name()->getText();
+      std::string dirname = window.name()->text();
 
       // Create the new directory
       try {
         currentFolder->createDirectory(dirname);
 
         // Enter in the new folder
-        for (FileItemList::const_iterator it=currentFolder->getChildren().begin(),
-               end=currentFolder->getChildren().end(); it != end; ++it) {
-          if ((*it)->getDisplayName() == dirname) {
-            m_fileList->setCurrentFolder(*it);
+        for (auto child : currentFolder->children()) {
+          if (child->displayName() == dirname) {
+            m_fileList->setCurrentFolder(child);
             break;
           }
         }
@@ -771,7 +770,7 @@ void FileSelector::onLocationCloseListBox()
       dynamic_cast<CustomFolderNameItem*>(location()->getSelectedItem());
 
     if (comboFolderItem != NULL) {
-      std::string path = comboFolderItem->getText();
+      std::string path = comboFolderItem->text();
       fileItem = FileSystemModule::instance()->getFileItemFromPath(path);
     }
   }
@@ -781,7 +780,7 @@ void FileSelector::onLocationCloseListBox()
 
     // Refocus the 'fileview' (the focus in that widget is more
     // useful for the user)
-    getManager()->setFocus(m_fileList);
+    manager()->setFocus(m_fileList);
   }
 }
 
@@ -816,7 +815,7 @@ void FileSelector::onFileListFileSelected()
   IFileItem* fileitem = m_fileList->getSelectedFileItem();
 
   if (!fileitem->isFolder()) {
-    std::string filename = base::get_file_name(fileitem->getFileName());
+    std::string filename = base::get_file_name(fileitem->fileName());
 
     m_fileName->setValue(filename.c_str());
   }

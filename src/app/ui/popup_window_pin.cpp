@@ -47,7 +47,7 @@ void PopupWindowPin::onPinClick(Event& ev)
     makeFloating();
   }
   else {
-    gfx::Rect rc = getBounds();
+    gfx::Rect rc = bounds();
     rc.enlarge(8);
     setHotRegion(gfx::Region(rc));
     makeFixed();
@@ -76,11 +76,11 @@ void PopupWindowPin::onHitTest(HitTestEvent& ev)
 {
   PopupWindow::onHitTest(ev);
 
-  if (m_pin.isSelected() &&
-      ev.getHit() == HitTestClient) {
-    if (ev.getPoint().x <= getBounds().x+2)
+  if ((m_pin.isSelected()) &&
+      (ev.hit() == HitTestClient)) {
+    if (ev.point().x <= bounds().x+2)
       ev.setHit(HitTestBorderW);
-    else if (ev.getPoint().x >= getBounds().x2()-3)
+    else if (ev.point().x >= bounds().x2()-3)
       ev.setHit(HitTestBorderE);
     else
       ev.setHit(HitTestCaption);

@@ -61,8 +61,8 @@ public:
 private:
   void onSizeChange()
   {
-    m_filter.setSize(m_widthEntry->getTextInt(),
-                     m_heightEntry->getTextInt());
+    m_filter.setSize(m_widthEntry->textInt(),
+                     m_heightEntry->textInt());
     restartPreview();
   }
 

@@ -113,7 +113,7 @@ bool ColorButton::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* picked = getManager()->pick(mousePos);
+        Widget* picked = manager()->pick(mousePos);
         app::Color color = m_color;
 
         if (picked && picked != this) {
@@ -170,11 +170,11 @@ void ColorButton::onSizeHint(SizeHintEvent& ev)
 
 void ColorButton::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  gfx::Rect rc = getClientBounds();
+  Graphics* g = ev.graphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  gfx::Rect rc = clientBounds();
 
-  gfx::Color bg = getBgColor();
+  gfx::Color bg = bgColor();
   if (gfx::is_transparent(bg))
     bg = theme->colors.face();
   g->fillRect(bg, rc);
@@ -222,9 +222,9 @@ void ColorButton::onPaint(PaintEvent& ev)
     textcolor = color_utils::blackandwhite_neg(
       gfx::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
-  gfx::Rect text;
-  getTextIconInfo(NULL, &text);
-  g->drawUIString(getText(), textcolor, gfx::ColorNone, text.getOrigin());
+  gfx::Rect textrc;
+  getTextIconInfo(NULL, &textrc);
+  g->drawUIString(text(), textcolor, gfx::ColorNone, textrc.origin());
 }
 
 void ColorButton::onClick(Event& ev)
@@ -254,19 +254,19 @@ void ColorButton::openSelectorDialog()
   m_window->setColor(m_color, ColorSelector::ChangeType);
   m_window->openWindow();
 
-  x = MID(0, getBounds().x, ui::display_w()-m_window->getBounds().w);
-  if (getBounds().y2() <= ui::display_h()-m_window->getBounds().h)
-    y = MAX(0, getBounds().y2());
+  x = MID(0, bounds().x, ui::display_w()-m_window->bounds().w);
+  if (bounds().y2() <= ui::display_h()-m_window->bounds().h)
+    y = MAX(0, bounds().y2());
   else
-    y = MAX(0, getBounds().y-m_window->getBounds().h);
+    y = MAX(0, bounds().y-m_window->bounds().h);
 
   m_window->positionWindow(x, y);
 
-  m_window->getManager()->dispatchMessages();
+  m_window->manager()->dispatchMessages();
   m_window->layout();
 
   // Setup the hot-region
-  gfx::Rect rc = getBounds().createUnion(m_window->getBounds());
+  gfx::Rect rc = bounds().createUnion(m_window->bounds());
   rc.enlarge(8);
   gfx::Region rgn(rc);
   static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);

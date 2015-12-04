@@ -84,13 +84,13 @@ void View::showScrollBars()
 
 Size View::getScrollableSize()
 {
-  return Size(m_scrollbar_h.getSize(),
-              m_scrollbar_v.getSize());
+  return Size(m_scrollbar_h.size(),
+              m_scrollbar_v.size());
 }
 
 void View::setScrollableSize(const Size& sz)
 {
-  gfx::Rect viewportArea = getChildrenBounds();
+  gfx::Rect viewportArea = childrenBounds();
 
   if (m_hasBars) {
     setup_scrollbars(sz,
@@ -100,8 +100,8 @@ void View::setScrollableSize(const Size& sz)
                      m_scrollbar_v);
   }
   else {
-    if (m_scrollbar_h.getParent()) removeChild(&m_scrollbar_h);
-    if (m_scrollbar_v.getParent()) removeChild(&m_scrollbar_v);
+    if (m_scrollbar_h.parent()) removeChild(&m_scrollbar_h);
+    if (m_scrollbar_v.parent()) removeChild(&m_scrollbar_v);
     m_scrollbar_h.setVisible(false);
     m_scrollbar_v.setVisible(false);
     m_scrollbar_h.setSize(sz.w);
@@ -111,16 +111,16 @@ void View::setScrollableSize(const Size& sz)
   // Setup viewport
   invalidate();
   m_viewport.setBounds(viewportArea);
-  setViewScroll(getViewScroll()); // Setup the same scroll-point
+  setViewScroll(viewScroll()); // Setup the same scroll-point
 }
 
-Size View::getVisibleSize() const
+Size View::visibleSize() const
 {
-  return Size(m_viewport.getBounds().w - m_viewport.border().width(),
-              m_viewport.getBounds().h - m_viewport.border().height());
+  return Size(m_viewport.bounds().w - m_viewport.border().width(),
+              m_viewport.bounds().h - m_viewport.border().height());
 }
 
-Point View::getViewScroll() const
+Point View::viewScroll() const
 {
   return Point(m_scrollbar_h.getPos(),
                m_scrollbar_v.getPos());
@@ -128,9 +128,9 @@ Point View::getViewScroll() const
 
 void View::setViewScroll(const Point& pt)
 {
-  Point oldScroll = getViewScroll();
+  Point oldScroll = viewScroll();
   Size maxsize = getScrollableSize();
-  Size visible = getVisibleSize();
+  Size visible = visibleSize();
   Point newScroll(MID(0, pt.x, MAX(0, maxsize.w - visible.w)),
                   MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
 
@@ -148,7 +148,7 @@ void View::setViewScroll(const Point& pt)
 void View::updateView()
 {
   Widget* vw = UI_FIRST_WIDGET(m_viewport.children());
-  Point scroll = getViewScroll();
+  Point scroll = viewScroll();
 
   // Set minimum (remove scroll-bars)
   setScrollableSize(Size(0, 0));
@@ -168,24 +168,24 @@ void View::updateView()
     setViewScroll(Point(0, 0));
 }
 
-Viewport* View::getViewport()
+Viewport* View::viewport()
 {
   return &m_viewport;
 }
 
-Rect View::getViewportBounds()
+Rect View::viewportBounds()
 {
-  return m_viewport.getBounds() - m_viewport.border();
+  return m_viewport.bounds() - m_viewport.border();
 }
 
 // static
 View* View::getView(Widget* widget)
 {
-  if ((widget->getParent()) &&
-      (widget->getParent()->type() == kViewViewportWidget) &&
-      (widget->getParent()->getParent()) &&
-      (widget->getParent()->getParent()->type() == kViewWidget))
-    return static_cast<View*>(widget->getParent()->getParent());
+  if ((widget->parent()) &&
+      (widget->parent()->type() == kViewViewportWidget) &&
+      (widget->parent()->parent()) &&
+      (widget->parent()->parent()->type() == kViewWidget))
+    return static_cast<View*>(widget->parent()->parent());
   else
     return 0;
 }
@@ -211,7 +211,7 @@ bool View::onProcessMessage(Message* msg)
 
 void View::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
   updateView();
 }
 
@@ -225,7 +225,7 @@ void View::onSizeHint(SizeHintEvent& ev)
 
 void View::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintView(ev);
+  theme()->paintView(ev);
 }
 
 void View::onScrollChange()

@@ -32,10 +32,10 @@ void Panel::showChild(Widget* widget)
 void Panel::onResize(ResizeEvent& ev)
 {
   // Copy the new position rectangle
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
 
   // Set all the children to the same "cpos"
-  gfx::Rect cpos = getChildrenBounds();
+  gfx::Rect cpos = childrenBounds();
   for (auto child : children()) {
     if (!child->isDecorative())
       child->setBounds(cpos);
@@ -57,7 +57,7 @@ void Panel::onSizeHint(SizeHintEvent& ev)
   }
 
   if (hasText())
-    maxSize.w = MAX(maxSize.w, getTextWidth());
+    maxSize.w = MAX(maxSize.w, textWidth());
 
   ev.setSizeHint(
     maxSize.w + border().width(),

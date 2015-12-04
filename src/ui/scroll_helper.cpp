@@ -28,8 +28,8 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   hbar.setSize(scrollableSize.w);
   vbar.setSize(scrollableSize.h);
 
-  if (hbar.getParent()) parent.removeChild(&hbar);
-  if (vbar.getParent()) parent.removeChild(&vbar);
+  if (hbar.parent()) parent.removeChild(&hbar);
+  if (vbar.parent()) parent.removeChild(&vbar);
 
   if (NEED_BAR(w, h, width)) {
     viewportArea.h -= hbar.getBarWidth();

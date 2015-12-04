@@ -241,7 +241,7 @@ void update_screen_for_document(const Document* document)
 void load_window_pos(Widget* window, const char *section)
 {
   // Default position
-  Rect orig_pos = window->getBounds();
+  Rect orig_pos = window->bounds();
   Rect pos = orig_pos;
 
   // Load configurated position
@@ -258,7 +258,7 @@ void load_window_pos(Widget* window, const char *section)
 
 void save_window_pos(Widget* window, const char *section)
 {
-  set_config_rect(section, "WindowPos", window->getBounds());
+  set_config_rect(section, "WindowPos", window->bounds());
 }
 
 Widget* setup_mini_font(Widget* widget)
@@ -486,24 +486,26 @@ void CustomizedGuiManager::onNewDisplayConfiguration()
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)
 {
-  if (widget->getRoot() == NULL)
+  if (widget->window() == nullptr)
     return "";
 
-  std::string rootId = widget->getRoot()->getId();
-  std::string widgetId = widget->getId();
+  std::string windowId = widget->window()->id();
+  std::string widgetId = widget->id();
 
-  return get_config_string(("layout:"+rootId).c_str(), widgetId.c_str(), "");
+  return get_config_string(("layout:"+windowId).c_str(), widgetId.c_str(), "");
 }
 
 void CustomizedGuiManager::saveLayout(Widget* widget, const std::string& str)
 {
-  if (widget->getRoot() == NULL)
+  if (widget->window() == NULL)
     return;
 
-  std::string rootId = widget->getRoot()->getId();
-  std::string widgetId = widget->getId();
+  std::string windowId = widget->window()->id();
+  std::string widgetId = widget->id();
 
-  set_config_string(("layout:"+rootId).c_str(), widgetId.c_str(), str.c_str());
+  set_config_string(("layout:"+windowId).c_str(),
+                    widgetId.c_str(),
+                    str.c_str());
 }
 
 } // namespace app

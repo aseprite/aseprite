@@ -25,11 +25,11 @@ namespace ui {
   public:
     virtual ~IButtonIcon() { }
     virtual void destroy() = 0;
-    virtual gfx::Size getSize() = 0;
-    virtual she::Surface* getNormalIcon() = 0;
-    virtual she::Surface* getSelectedIcon() = 0;
-    virtual she::Surface* getDisabledIcon() = 0;
-    virtual int getIconAlign() = 0;
+    virtual gfx::Size size() = 0;
+    virtual she::Surface* normalIcon() = 0;
+    virtual she::Surface* selectedIcon() = 0;
+    virtual she::Surface* disabledIcon() = 0;
+    virtual int iconAlign() = 0;
   };
 
   // Generic button
@@ -41,15 +41,15 @@ namespace ui {
                WidgetType drawType);
     virtual ~ButtonBase();
 
-    WidgetType getBehaviorType() const;
-    WidgetType getDrawType() const;
+    WidgetType behaviorType() const;
+    WidgetType drawType() const;
 
     // Sets the interface used to get icons for the button depending its
     // state. This interface is deleted automatically in the ButtonBase dtor.
     void setIconInterface(IButtonIcon* iconInterface);
 
     // Used by the current theme to draw the button icon.
-    IButtonIcon* getIconInterface() const { return m_iconInterface; }
+    IButtonIcon* iconInterface() const { return m_iconInterface; }
 
     // Signals
     Signal1<void, Event&> Click;
@@ -76,22 +76,19 @@ namespace ui {
   };
 
   // Pushable button to execute commands
-  class Button : public ButtonBase
-  {
+  class Button : public ButtonBase {
   public:
     Button(const std::string& text);
   };
 
   // Check boxes
-  class CheckBox : public ButtonBase
-  {
+  class CheckBox : public ButtonBase {
   public:
     CheckBox(const std::string& text, WidgetType drawType = kCheckWidget);
   };
 
   // Radio buttons
-  class RadioButton : public ButtonBase
-  {
+  class RadioButton : public ButtonBase {
   public:
     RadioButton(const std::string& text, int radioGroup, WidgetType drawType = kRadioWidget);
 

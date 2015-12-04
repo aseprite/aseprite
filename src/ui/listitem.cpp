@@ -31,14 +31,14 @@ ListItem::ListItem(const std::string& text)
 
 void ListItem::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintListItem(ev);
+  theme()->paintListItem(ev);
 }
 
 void ListItem::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
 
-  Rect crect = getChildrenBounds();
+  Rect crect = childrenBounds();
   for (auto child : children())
     child->setBounds(crect);
 }
@@ -49,7 +49,7 @@ void ListItem::onSizeHint(SizeHintEvent& ev)
   Size maxSize;
 
   if (hasText())
-    maxSize = getTextSize();
+    maxSize = textSize();
   else
     maxSize.w = maxSize.h = 0;
 

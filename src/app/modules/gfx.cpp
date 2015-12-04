@@ -113,14 +113,14 @@ void draw_color_button(ui::Graphics* g,
   // Draw opaque border
   theme->drawRect(
     g, rc,
-    theme->parts.colorbar0()->getBitmapNW(),
-    theme->parts.colorbar0()->getBitmapN(),
-    theme->parts.colorbar1()->getBitmapNE(),
-    theme->parts.colorbar1()->getBitmapE(),
-    theme->parts.colorbar3()->getBitmapSE(),
-    theme->parts.colorbar2()->getBitmapS(),
-    theme->parts.colorbar2()->getBitmapSW(),
-    theme->parts.colorbar0()->getBitmapW());
+    theme->parts.colorbar0()->bitmapNW(),
+    theme->parts.colorbar0()->bitmapN(),
+    theme->parts.colorbar1()->bitmapNE(),
+    theme->parts.colorbar1()->bitmapE(),
+    theme->parts.colorbar3()->bitmapSE(),
+    theme->parts.colorbar2()->bitmapS(),
+    theme->parts.colorbar2()->bitmapSW(),
+    theme->parts.colorbar0()->bitmapW());
 
   // Draw hot
   if (hot) {

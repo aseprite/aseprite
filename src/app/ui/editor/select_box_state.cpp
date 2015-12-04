@@ -266,7 +266,7 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   Editor* editor = render->getEditor();
   render::Zoom zoom = editor->zoom();
   gfx::Rect sp = editor->sprite()->bounds();
-  gfx::Rect vp = View::getView(editor)->getViewportBounds();
+  gfx::Rect vp = View::getView(editor)->viewportBounds();
   vp.w += zoom.apply(1);
   vp.h += zoom.apply(1);
   vp = editor->screenToEditor(vp);

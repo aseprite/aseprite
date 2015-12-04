@@ -45,7 +45,7 @@ void ExtraCel::create(doc::Sprite* sprite,
     m_cel.reset(new doc::Cel(doc::frame_t(0), doc::ImageRef(nullptr)));
   }
 
-  m_cel->setPosition(bounds.getOrigin());
+  m_cel->setPosition(bounds.origin());
   m_cel->setOpacity(opacity);
   m_cel->setFrame(frame);
 }

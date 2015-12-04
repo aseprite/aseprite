@@ -61,7 +61,7 @@ namespace ui {
     WidgetType type() const { return m_type; }
     void setType(WidgetType type) { m_type = type; } // TODO remove this function
 
-    const std::string& getId() const { return m_id; }
+    const std::string& id() const { return m_id; }
     void setId(const char* id) { m_id = id; }
 
     int flags() const { return m_flags; }
@@ -69,7 +69,7 @@ namespace ui {
     void enableFlags(int flags) { m_flags |= flags; }
     void disableFlags(int flags) { m_flags &= ~flags; }
 
-    int getAlign() const { return (m_flags & ALIGN_MASK); }
+    int align() const { return (m_flags & ALIGN_MASK); }
     void setAlign(int align) {
       m_flags = ((m_flags & PROPERTIES_MASK) |
                  (align & ALIGN_MASK));
@@ -79,19 +79,19 @@ namespace ui {
 
     bool hasText() const { return hasFlags(HAS_TEXT); }
 
-    const std::string& getText() const { return m_text; }
-    int getTextInt() const;
-    double getTextDouble() const;
-    std::size_t getTextLength() const { return m_text.size(); }
+    const std::string& text() const { return m_text; }
+    int textInt() const;
+    double textDouble() const;
+    std::size_t textLength() const { return m_text.size(); }
     void setText(const std::string& text);
     void setTextf(const char* text, ...);
     void setTextQuiet(const std::string& text);
 
-    int getTextWidth() const;
-    int getTextHeight() const;
+    int textWidth() const;
+    int textHeight() const;
 
-    gfx::Size getTextSize() const {
-      return gfx::Size(getTextWidth(), getTextHeight());
+    gfx::Size textSize() const {
+      return gfx::Size(textWidth(), textHeight());
     }
 
     // ===============================================================
@@ -135,13 +135,13 @@ namespace ui {
     // LOOK & FEEL
     // ===============================================================
 
-    she::Font* getFont() const;
+    she::Font* font() const;
     void resetFont();
 
     // Gets the background color of the widget.
-    gfx::Color getBgColor() const {
+    gfx::Color bgColor() const {
       if (gfx::geta(m_bgColor) == 0 && m_parent)
-        return m_parent->getBgColor();
+        return m_parent->bgColor();
       else
         return m_bgColor;
     }
@@ -149,18 +149,17 @@ namespace ui {
     // Sets the background color of the widget
     void setBgColor(gfx::Color color);
 
-    Theme* getTheme() const { return m_theme; }
+    Theme* theme() const { return m_theme; }
     void setTheme(Theme* theme);
-
     void initTheme();
 
     // ===============================================================
     // PARENTS & CHILDREN
     // ===============================================================
 
-    Window* getRoot();
-    Widget* getParent() { return m_parent; }
-    Manager* getManager();
+    Window* window();
+    Widget* parent() { return m_parent; }
+    Manager* manager();
 
     // Returns a list of parents, if "ascendant" is true the list is
     // build from child to parents, else the list is from parent to
@@ -173,16 +172,16 @@ namespace ui {
     Widget* at(int index) { return m_children[index]; }
 
     // Returns the first/last child or NULL if it doesn't exist.
-    Widget* getFirstChild() {
+    Widget* firstChild() {
       return (!m_children.empty() ? m_children.front(): NULL);
     }
-    Widget* getLastChild() {
+    Widget* lastChild() {
       return (!m_children.empty() ? m_children.back(): NULL);
     }
 
     // Returns the next or previous siblings.
-    Widget* getNextSibling();
-    Widget* getPreviousSibling();
+    Widget* nextSibling();
+    Widget* previousSibling();
 
     Widget* pick(const gfx::Point& pt, bool checkParentsVisibility = true);
     bool hasChild(Widget* child);
@@ -228,16 +227,16 @@ namespace ui {
     // POSITION & GEOMETRY
     // ===============================================================
 
-    gfx::Rect getBounds() const { return m_bounds; }
-    gfx::Point getOrigin() const { return m_bounds.getOrigin(); }
-    gfx::Size getSize() const { return m_bounds.getSize(); }
+    gfx::Rect bounds() const { return m_bounds; }
+    gfx::Point origin() const { return m_bounds.origin(); }
+    gfx::Size size() const { return m_bounds.size(); }
 
-    gfx::Rect getClientBounds() const {
+    gfx::Rect clientBounds() const {
       return gfx::Rect(0, 0, m_bounds.w, m_bounds.h);
     }
 
-    gfx::Rect getChildrenBounds() const;
-    gfx::Rect getClientChildrenBounds() const;
+    gfx::Rect childrenBounds() const;
+    gfx::Rect clientChildrenBounds() const;
 
     // Sets the bounds of the widget generating a onResize() event.
     void setBounds(const gfx::Rect& rc);
@@ -271,7 +270,7 @@ namespace ui {
     void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags);
 
     gfx::Point toClient(const gfx::Point& pt) const {
-      return pt - m_bounds.getOrigin();
+      return pt - m_bounds.origin();
     }
     gfx::Rect toClient(const gfx::Rect& rc) const {
       return gfx::Rect(rc).offset(-m_bounds.x, -m_bounds.y);
@@ -346,7 +345,7 @@ namespace ui {
 
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).
-    int getMnemonicChar() const;
+    int mnemonicChar() const;
 
   protected:
     void offsetWidgets(int dx, int dy);

@@ -78,7 +78,7 @@ public:
   }
 
   int sizeValue() const {
-    int size = fontSize()->getTextInt();
+    int size = fontSize()->textInt();
     size = MID(1, size, 5000);
     return size;
   }
@@ -123,7 +123,7 @@ private:
     }
 
     if (!m_fontPopup->isVisible()) {
-      gfx::Rect bounds = fontFace()->getBounds();
+      gfx::Rect bounds = fontFace()->bounds();
       m_fontPopup->showPopup(
         gfx::Rect(bounds.x, bounds.y+bounds.h,
                   ui::display_w()/2, ui::display_h()/2));
@@ -159,7 +159,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   if (window.getKiller() != window.ok())
     return;
 
-  last_text_used = window.userText()->getText();
+  last_text_used = window.userText()->text();
 
   bool antialias = window.antialias()->isSelected();
   std::string faceName = window.faceValue();
@@ -170,7 +170,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   pref.textTool.antialias(antialias);
 
   try {
-    std::string text = window.userText()->getText();
+    std::string text = window.userText()->text();
     app::Color appColor = window.fontColor()->getColor();
     doc::color_t color = doc::rgba(appColor.getRed(),
                                    appColor.getGreen(),

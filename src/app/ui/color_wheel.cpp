@@ -187,7 +187,7 @@ void ColorWheel::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
 
-  gfx::Rect rc = getClientChildrenBounds();
+  gfx::Rect rc = clientChildrenBounds();
   int r = MIN(rc.w/2, rc.h/2);
 
   m_clientBounds = rc;
@@ -197,7 +197,7 @@ void ColorWheel::onResize(ui::ResizeEvent& ev)
                             r*2, r*2);
 
   gfx::Size prefSize = m_options.sizeHint();
-  rc = getChildrenBounds();
+  rc = childrenBounds();
   rc.x += rc.w-prefSize.w;
   rc.w = prefSize.w;
   rc.h = prefSize.h;
@@ -206,12 +206,12 @@ void ColorWheel::onResize(ui::ResizeEvent& ev)
 
 void ColorWheel::onPaint(ui::PaintEvent& ev)
 {
-  ui::Graphics* g = ev.getGraphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  ui::Graphics* g = ev.graphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
-  theme->drawRect(g, getClientBounds(),
+  theme->drawRect(g, clientBounds(),
                   theme->parts.editorNormal().get(),
-                  getBgColor());
+                  bgColor());
 
   const gfx::Rect& rc = m_clientBounds;
 
@@ -241,11 +241,11 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
       int hue = color.getHue()-30;
       int sat = color.getSaturation();
       gfx::Point pos =
-        m_wheelBounds.getCenter() +
+        m_wheelBounds.center() +
         gfx::Point(int(+std::cos(PI*hue/180)*double(m_wheelRadius)*sat/100.0),
                    int(-std::sin(PI*hue/180)*double(m_wheelRadius)*sat/100.0));
 
-      she::Surface* icon = theme->parts.colorWheelIndicator()->getBitmap(0);
+      she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
       g->drawRgbaSurface(icon,
                          pos.x-icon->width()/2,
                          pos.y-icon->height()/2);
@@ -273,7 +273,7 @@ bool ColorWheel::onProcessMessage(ui::Message* msg)
 
       app::Color color = pickColor(
         mouseMsg->position()
-        - getBounds().getOrigin());
+        - bounds().origin());
 
       if (color != app::Color::fromMask()) {
         base::ScopedValue<bool> switcher(m_lockColor, m_harmonyPicked, false);
@@ -295,7 +295,7 @@ bool ColorWheel::onProcessMessage(ui::Message* msg)
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       app::Color color = pickColor(
         mouseMsg->position()
-        - getBounds().getOrigin());
+        - bounds().origin());
 
       if (color.getType() != app::Color::MaskType) {
         ui::set_mouse_cursor(kEyedropperCursor);
@@ -354,7 +354,7 @@ void ColorWheel::onOptions()
   tetradic.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
   square.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
 
-  gfx::Rect rc = m_options.getBounds();
+  gfx::Rect rc = m_options.bounds();
   menu.showPopup(gfx::Point(rc.x+rc.w, rc.y));
 }
 

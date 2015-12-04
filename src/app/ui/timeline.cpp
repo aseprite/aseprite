@@ -205,7 +205,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   setFocusStop(true);
   regenerateLayers();
-  setViewScroll(getViewScroll());
+  setViewScroll(viewScroll());
   showCurrentCel();
 }
 
@@ -423,7 +423,7 @@ bool Timeline::onProcessMessage(Message* msg)
           // hitTestCel() and limiting the clicked cel inside the
           // range bounds.
           if (m_range.type() == Range::kCels) {
-            m_clk = hitTestCel(mouseMsg->position() - getBounds().getOrigin());
+            m_clk = hitTestCel(mouseMsg->position() - bounds().origin());
 
             if (m_clk.layer < m_range.layerBegin())
               m_clk.layer = m_range.layerBegin();
@@ -456,7 +456,7 @@ bool Timeline::onProcessMessage(Message* msg)
         break;
 
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position()
-        - getBounds().getOrigin();
+        - bounds().origin();
 
       Hit hit;
       setHot(hit = hitTest(msg, mousePos));
@@ -467,7 +467,7 @@ bool Timeline::onProcessMessage(Message* msg)
           case STATE_SCROLLING: {
             gfx::Point absMousePos = static_cast<MouseMessage*>(msg)->position();
             setViewScroll(
-              getViewScroll() - gfx::Point(
+              viewScroll() - gfx::Point(
                 (absMousePos.x - m_oldPos.x),
                 (absMousePos.y - m_oldPos.y)));
 
@@ -580,7 +580,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_HEADER_GEAR: {
             gfx::Rect gearBounds =
-              getPartBounds(Hit(PART_HEADER_GEAR)).offset(getBounds().getOrigin());
+              getPartBounds(Hit(PART_HEADER_GEAR)).offset(bounds().origin());
 
             if (!m_confPopup) {
               ConfigureTimelinePopup* popup =
@@ -593,9 +593,9 @@ bool Timeline::onProcessMessage(Message* msg)
             if (!m_confPopup->isVisible()) {
               m_confPopup->moveWindow(gfx::Rect(
                   gearBounds.x,
-                  gearBounds.y-m_confPopup->getBounds().h,
-                  m_confPopup->getBounds().w,
-                  m_confPopup->getBounds().h));
+                  gearBounds.y-m_confPopup->bounds().h,
+                  m_confPopup->bounds().w,
+                  m_confPopup->bounds().h));
               m_confPopup->openWindow();
             }
             else
@@ -722,7 +722,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         // Restore the cursor.
         m_state = STATE_STANDBY;
-        setCursor(msg, hitTest(msg, mouseMsg->position() - getBounds().getOrigin()));
+        setCursor(msg, hitTest(msg, mouseMsg->position() - bounds().origin()));
 
         releaseMouse();
         updateStatusBar(msg);
@@ -790,7 +790,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateByMousePos(msg,
-        ui::get_mouse_position() - getBounds().getOrigin());
+        ui::get_mouse_position() - bounds().origin());
 
       if (used)
         return true;
@@ -814,7 +814,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateByMousePos(msg,
-        ui::get_mouse_position() - getBounds().getOrigin());
+        ui::get_mouse_position() - bounds().origin());
 
       if (used)
         return true;
@@ -840,7 +840,7 @@ bool Timeline::onProcessMessage(Message* msg)
           dy *= 3;
         }
 
-        setViewScroll(getViewScroll() + gfx::Point(dx, dy));
+        setViewScroll(viewScroll() + gfx::Point(dx, dy));
       }
       break;
 
@@ -863,13 +863,13 @@ void Timeline::onSizeHint(SizeHintEvent& ev)
 
 void Timeline::onResize(ui::ResizeEvent& ev)
 {
-  gfx::Rect rc = ev.getBounds();
+  gfx::Rect rc = ev.bounds();
   setBoundsQuietly(rc);
 
   gfx::Size sz = m_aniControls.sizeHint();
   m_aniControls.setBounds(
     gfx::Rect(rc.x, rc.y, MIN(sz.w, m_separator_x),
-      getFont()->height() +
+      font()->height() +
       skinTheme()->dimensions.timelineTagsAreaHeight()));
 
   updateScrollBars();
@@ -877,7 +877,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
 
 void Timeline::onPaint(ui::PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   bool noDoc = (m_document == NULL);
   if (noDoc)
     goto paintNoDoc;
@@ -1004,12 +1004,12 @@ void Timeline::onPaint(ui::PaintEvent& ev)
   }
   catch (const LockedDocumentException&) {
     noDoc = true;
-    defer_invalid_rect(g->getClipBounds().offset(getBounds().getOrigin()));
+    defer_invalid_rect(g->getClipBounds().offset(bounds().origin()));
   }
 
 paintNoDoc:;
   if (noDoc)
-    drawPart(g, getClientBounds(), NULL,
+    drawPart(g, clientBounds(), NULL,
       skinTheme()->styles.timelinePadding());
 }
 
@@ -1186,8 +1186,8 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
 
 void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer)
 {
-  int hpx = (getClientBounds().h - HDRSIZE - topHeight());
-  LayerIndex i = lastLayer() - LayerIndex((getViewScroll().y+hpx) / LAYSIZE);
+  int hpx = (clientBounds().h - HDRSIZE - topHeight());
+  LayerIndex i = lastLayer() - LayerIndex((viewScroll().y+hpx) / LAYSIZE);
   i = MID(firstLayer(), i, lastLayer());
 
   LayerIndex j = i + LayerIndex(hpx / LAYSIZE + 1);
@@ -1202,9 +1202,9 @@ void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, Layer
 
 void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame)
 {
-  int availW = (getClientBounds().w - m_separator_x);
+  int availW = (clientBounds().w - m_separator_x);
 
-  *first_frame = frame_t(getViewScroll().x / FRMSIZE);
+  *first_frame = frame_t(viewScroll().x / FRMSIZE);
   *last_frame = *first_frame + frame_t(availW / FRMSIZE) + ((availW % FRMSIZE) > 0 ? 1: 0);
 }
 
@@ -1308,7 +1308,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
   char buf[256];
   std::sprintf(buf, "%d", (frame+1)%100); // Draw only the first two digits.
 
-  she::Font* oldFont = g->getFont();
+  she::Font* oldFont = g->font();
   g->setFont(skinTheme()->getMiniFont());
   drawPart(g, bounds, buf, skinTheme()->styles.timelineBox(), is_active, is_hover, is_clicked);
   g->setFont(oldFont);
@@ -1365,7 +1365,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
       skinTheme()->colors.timelineNormalText(),
       gfx::Rect(bounds.x+4*s,
         bounds.y+bounds.h-2*s,
-        getFont()->textLength(layer->name().c_str()), s));
+        font()->textLength(layer->name().c_str()), s));
   }
 
   // If this layer wasn't clicked but there are another layer clicked,
@@ -1474,8 +1474,8 @@ void Timeline::drawFrameTags(ui::Graphics* g)
 
   g->fillRect(theme->colors.workspace(),
     gfx::Rect(
-      0, getFont()->height(),
-      getClientBounds().w,
+      0, font()->height(),
+      clientBounds().w,
       theme->dimensions.timelineTagsAreaHeight()));
 
   for (FrameTag* frameTag : m_sprite->frameTags()) {
@@ -1515,7 +1515,7 @@ void Timeline::drawFrameTags(ui::Graphics* g)
         frameTag->name(),
         color_utils::blackandwhite_neg(bg),
         gfx::ColorNone,
-        bounds.getOrigin());
+        bounds.origin());
     }
   }
 }
@@ -1590,7 +1590,7 @@ void Timeline::drawPaddings(ui::Graphics* g)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
 
-  gfx::Rect client = getClientBounds();
+  gfx::Rect client = clientBounds();
   gfx::Rect bottomLayer;
   gfx::Rect lastFrame;
   int top = topHeight();
@@ -1624,7 +1624,7 @@ void Timeline::drawPaddings(ui::Graphics* g)
 
 gfx::Rect Timeline::getLayerHeadersBounds() const
 {
-  gfx::Rect rc = getClientBounds();
+  gfx::Rect rc = clientBounds();
   rc.w = m_separator_x;
   int h = topHeight() + HDRSIZE;
   rc.y += h;
@@ -1634,7 +1634,7 @@ gfx::Rect Timeline::getLayerHeadersBounds() const
 
 gfx::Rect Timeline::getFrameHeadersBounds() const
 {
-  gfx::Rect rc = getClientBounds();
+  gfx::Rect rc = clientBounds();
   rc.x += m_separator_x;
   rc.y += topHeight();
   rc.w -= m_separator_x;
@@ -1663,7 +1663,7 @@ gfx::Rect Timeline::getOnionskinFramesBounds() const
 
 gfx::Rect Timeline::getCelsBounds() const
 {
-  gfx::Rect rc = getClientBounds();
+  gfx::Rect rc = clientBounds();
   rc.x += m_separator_x;
   rc.w -= m_separator_x;
   rc.y += HDRSIZE + topHeight();
@@ -1673,7 +1673,7 @@ gfx::Rect Timeline::getCelsBounds() const
 
 gfx::Rect Timeline::getPartBounds(const Hit& hit) const
 {
-  gfx::Rect bounds = getClientBounds();
+  gfx::Rect bounds = clientBounds();
   int y = topHeight();
 
   switch (hit.part) {
@@ -1710,7 +1710,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_HEADER_FRAME:
       return gfx::Rect(
         bounds.x + m_separator_x + m_separator_w - 1
-        + FRMSIZE*MAX(firstFrame(), hit.frame) - getViewScroll().x,
+        + FRMSIZE*MAX(firstFrame(), hit.frame) - viewScroll().x,
         bounds.y + y, FRMSIZE, HDRSIZE);
 
     case PART_HEADER_FRAME_TAGS:
@@ -1722,7 +1722,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
           m_separator_x, LAYSIZE);
       }
       break;
@@ -1730,7 +1730,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER_EYE_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1738,7 +1738,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER_PADLOCK_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x + FRMSIZE,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1746,7 +1746,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER_CONTINUOUS_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x + 2*FRMSIZE,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1755,7 +1755,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       if (validLayer(hit.layer)) {
         int x = FRMSIZE*3;
         return gfx::Rect(bounds.x + x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
           m_separator_x - x, LAYSIZE);
       }
       break;
@@ -1763,8 +1763,8 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
         return gfx::Rect(
-          bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*hit.frame - getViewScroll().x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
+          bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*hit.frame - viewScroll().x,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1786,11 +1786,11 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         gfx::Rect bounds = bounds1.createUnion(bounds2);
         bounds.y -= skinTheme()->dimensions.timelineTagsAreaHeight();
 
-        int textHeight = getFont()->height();
+        int textHeight = font()->height();
         bounds.y -= textHeight + 2*ui::guiscale();
         bounds.x += 3*ui::guiscale();
-        bounds.w = getFont()->textLength(frameTag->name().c_str()) + 4*ui::guiscale();
-        bounds.h = getFont()->height() + 2*ui::guiscale();
+        bounds.w = font()->textLength(frameTag->name().c_str()) + 4*ui::guiscale();
+        bounds.h = font()->height() + 2*ui::guiscale();
         return bounds;
       }
       break;
@@ -1824,7 +1824,7 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
 
 void Timeline::invalidateHit(const Hit& hit)
 {
-  invalidateRect(getPartBounds(hit).offset(getOrigin()));
+  invalidateRect(getPartBounds(hit).offset(origin()));
 }
 
 void Timeline::regenerateLayers()
@@ -1848,8 +1848,8 @@ void Timeline::regenerateLayers()
 
 void Timeline::updateScrollBars()
 {
-  gfx::Rect rc = getBounds();
-  m_viewportArea = getCelsBounds().offset(rc.getOrigin());
+  gfx::Rect rc = bounds();
+  m_viewportArea = getCelsBounds().offset(rc.origin());
   ui::setup_scrollbars(getScrollableSize(),
                        m_viewportArea, *this,
                        m_hbar,
@@ -1878,7 +1878,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     hit.part = PART_SEPARATOR;
   }
   else {
-    gfx::Point scroll = getViewScroll();
+    gfx::Point scroll = viewScroll();
     int top = topHeight();
 
     hit.layer = lastLayer() - LayerIndex(
@@ -1994,7 +1994,7 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
   if (!m_document)
     return hit;
 
-  gfx::Point scroll = getViewScroll();
+  gfx::Point scroll = viewScroll();
   int top = topHeight();
 
   hit.layer = lastLayer() - LayerIndex(
@@ -2171,7 +2171,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
 void Timeline::showCel(LayerIndex layer, frame_t frame)
 {
-  gfx::Point scroll = getViewScroll();
+  gfx::Point scroll = viewScroll();
 
   gfx::Rect viewport = m_viewportArea;
 
@@ -2222,8 +2222,8 @@ gfx::Size Timeline::getScrollableSize() const
 {
   if (m_sprite) {
     return gfx::Size(
-      m_sprite->totalFrames() * FRMSIZE + getBounds().w/2,
-      m_layers.size() * LAYSIZE + getBounds().h/2);
+      m_sprite->totalFrames() * FRMSIZE + bounds().w/2,
+      m_layers.size() * LAYSIZE + bounds().h/2);
   }
   else
     return gfx::Size(0, 0);
@@ -2233,8 +2233,8 @@ gfx::Point Timeline::getMaxScrollablePos() const
 {
   if (m_sprite) {
     gfx::Size size = getScrollableSize();
-    int max_scroll_x = size.w - getBounds().w/2;
-    int max_scroll_y = size.h - getBounds().h/2;
+    int max_scroll_x = size.w - bounds().w/2;
+    int max_scroll_y = size.h - bounds().h/2;
     max_scroll_x = MAX(0, max_scroll_x);
     max_scroll_y = MAX(0, max_scroll_y);
     return gfx::Point(max_scroll_x, max_scroll_y);
@@ -2361,19 +2361,19 @@ void Timeline::dropRange(DropOp op)
   }
 }
 
-gfx::Size Timeline::getVisibleSize() const
+gfx::Size Timeline::visibleSize() const
 {
-  return getCelsBounds().getSize();
+  return getCelsBounds().size();
 }
 
-gfx::Point Timeline::getViewScroll() const
+gfx::Point Timeline::viewScroll() const
 {
   return gfx::Point(m_hbar.getPos(), m_vbar.getPos());
 }
 
 void Timeline::setViewScroll(const gfx::Point& pt)
 {
-  const gfx::Point oldScroll = getViewScroll();
+  const gfx::Point oldScroll = viewScroll();
   const gfx::Point maxPos = getMaxScrollablePos();
   gfx::Point newScroll = pt;
   newScroll.x = MID(0, newScroll.x, maxPos.x);
@@ -2494,7 +2494,7 @@ DocumentPreferences& Timeline::docPref() const
 
 skin::SkinTheme* Timeline::skinTheme() const
 {
-  return static_cast<SkinTheme*>(getTheme());
+  return static_cast<SkinTheme*>(theme());
 }
 
 int Timeline::topHeight() const
@@ -2502,7 +2502,7 @@ int Timeline::topHeight() const
   int h = 0;
   if (m_document && m_sprite) {
     h += skinTheme()->dimensions.timelineTopBorder();
-    h += getFont()->height();
+    h += font()->height();
     h += skinTheme()->dimensions.timelineTagsAreaHeight();
   }
   return h;

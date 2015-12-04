@@ -30,8 +30,8 @@ void Label::onSizeHint(SizeHintEvent& ev)
 
   if (hasText()) {
     // Labels are not UIString
-    sz.w = getFont()->textLength(getText().c_str());
-    sz.h = getTextHeight();
+    sz.w = font()->textLength(text().c_str());
+    sz.h = textHeight();
   }
 
   sz.w += border().width();
@@ -42,7 +42,7 @@ void Label::onSizeHint(SizeHintEvent& ev)
 
 void Label::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintLabel(ev);
+  theme()->paintLabel(ev);
 }
 
 } // namespace ui

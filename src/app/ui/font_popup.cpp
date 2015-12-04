@@ -66,7 +66,7 @@ private:
     ListItem::onPaint(ev);
 
     if (m_image) {
-      Graphics* g = ev.getGraphics();
+      Graphics* g = ev.graphics();
       she::Surface* sur = she::instance()->createRgbaSurface(m_image->width(),
                                                              m_image->height());
 
@@ -74,7 +74,7 @@ private:
         m_image.get(), nullptr, sur,
         0, 0, 0, 0, m_image->width(), m_image->height());
 
-      g->drawRgbaSurface(sur, getTextWidth()+4, 0);
+      g->drawRgbaSurface(sur, textWidth()+4, 0);
       sur->dispose();
     }
   }
@@ -93,7 +93,7 @@ private:
     if (m_image)
       return;
 
-    ListBox* listbox = static_cast<ListBox*>(getParent());
+    ListBox* listbox = static_cast<ListBox*>(parent());
     if (!listbox)
       return;
 

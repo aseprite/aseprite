@@ -67,7 +67,7 @@ protected:
   void onResize(ResizeEvent& ev) override {
     ListItem::onResize(ev);
 
-    gfx::Rect rc = ev.getBounds();
+    gfx::Rect rc = ev.bounds();
     gfx::Size sz1 = m_openButton.sizeHint();
     sz1.w *= 2*guiscale();
     gfx::Size sz2 = m_deleteButton.sizeHint();
@@ -86,7 +86,7 @@ protected:
   }
 
   void onDelete() {
-    Widget* parent = getParent();
+    Widget* parent = this->parent();
 
     if (m_backup) {
       // Delete one backup
@@ -97,7 +97,7 @@ protected:
 
       m_session->deleteBackup(m_backup);
 
-      Widget* parent = getParent();
+      Widget* parent = this->parent(); // TODO remove this line
       parent->removeChild(this);
       deferDelete();
     }
@@ -136,7 +136,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   : Box(VERTICAL)
   , m_dataRecovery(dataRecovery)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.workspace());
 
   addChild(&m_view);

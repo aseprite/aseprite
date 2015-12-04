@@ -67,7 +67,7 @@ protected:
   }
 
   void onPaint(PaintEvent& ev) override {
-    static_cast<SkinTheme*>(getTheme())->paintWindowButton(ev);
+    static_cast<SkinTheme*>(theme())->paintWindowButton(ev);
   }
 
   bool onProcessMessage(Message* msg) override {
@@ -78,7 +78,7 @@ protected:
         return true;
 
       case kKeyDownMessage:
-        if (getRoot()->isForeground() &&
+        if (window()->isForeground() &&
             static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
           setSelected(true);
           return true;
@@ -86,7 +86,7 @@ protected:
         break;
 
       case kKeyUpMessage:
-        if (getRoot()->isForeground() &&
+        if (window()->isForeground() &&
             static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
           if (isSelected()) {
             setSelected(false);
@@ -138,7 +138,7 @@ static const char* cursor_names[kCursorTypes] = {
 // static
 SkinTheme* SkinTheme::instance()
 {
-  return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme());
+  return static_cast<SkinTheme*>(ui::Manager::getDefault()->theme());
 }
 
 SkinTheme::SkinTheme()
@@ -372,7 +372,7 @@ void SkinTheme::loadXml(const std::string& skinId)
 
       if (w > 0 && h > 0) {
         part->setBitmap(0,
-          sliceSheet(part->getBitmap(0), gfx::Rect(x, y, w, h)));
+          sliceSheet(part->bitmap(0), gfx::Rect(x, y, w, h)));
       }
       else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
         int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
@@ -382,14 +382,14 @@ void SkinTheme::loadXml(const std::string& skinId)
         int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
         int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
 
-        part->setBitmap(0, sliceSheet(part->getBitmap(0), gfx::Rect(x, y, w1, h1))); // NW
-        part->setBitmap(1, sliceSheet(part->getBitmap(1), gfx::Rect(x+w1, y, w2, h1))); // N
-        part->setBitmap(2, sliceSheet(part->getBitmap(2), gfx::Rect(x+w1+w2, y, w3, h1))); // NE
-        part->setBitmap(3, sliceSheet(part->getBitmap(3), gfx::Rect(x+w1+w2, y+h1, w3, h2))); // E
-        part->setBitmap(4, sliceSheet(part->getBitmap(4), gfx::Rect(x+w1+w2, y+h1+h2, w3, h3))); // SE
-        part->setBitmap(5, sliceSheet(part->getBitmap(5), gfx::Rect(x+w1, y+h1+h2, w2, h3))); // S
-        part->setBitmap(6, sliceSheet(part->getBitmap(6), gfx::Rect(x, y+h1+h2, w1, h3))); // SW
-        part->setBitmap(7, sliceSheet(part->getBitmap(7), gfx::Rect(x, y+h1, w1, h2))); // W
+        part->setBitmap(0, sliceSheet(part->bitmap(0), gfx::Rect(x, y, w1, h1))); // NW
+        part->setBitmap(1, sliceSheet(part->bitmap(1), gfx::Rect(x+w1, y, w2, h1))); // N
+        part->setBitmap(2, sliceSheet(part->bitmap(2), gfx::Rect(x+w1+w2, y, w3, h1))); // NE
+        part->setBitmap(3, sliceSheet(part->bitmap(3), gfx::Rect(x+w1+w2, y+h1, w3, h2))); // E
+        part->setBitmap(4, sliceSheet(part->bitmap(4), gfx::Rect(x+w1+w2, y+h1+h2, w3, h3))); // SE
+        part->setBitmap(5, sliceSheet(part->bitmap(5), gfx::Rect(x+w1, y+h1+h2, w2, h3))); // S
+        part->setBitmap(6, sliceSheet(part->bitmap(6), gfx::Rect(x, y+h1+h2, w1, h3))); // SW
+        part->setBitmap(7, sliceSheet(part->bitmap(7), gfx::Rect(x, y+h1, w1, h2))); // W
       }
 
       xmlPart = xmlPart->NextSiblingElement();
@@ -544,10 +544,10 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kButtonWidget:
       BORDER4(
-        parts.buttonNormal()->getBitmapW()->width(),
-        parts.buttonNormal()->getBitmapN()->height(),
-        parts.buttonNormal()->getBitmapE()->width(),
-        parts.buttonNormal()->getBitmapS()->height());
+        parts.buttonNormal()->bitmapW()->width(),
+        parts.buttonNormal()->bitmapN()->height(),
+        parts.buttonNormal()->bitmapE()->width(),
+        parts.buttonNormal()->bitmapS()->height());
       widget->setChildSpacing(0);
       break;
 
@@ -564,10 +564,10 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kEntryWidget:
       BORDER4(
-        parts.sunkenNormal()->getBitmapW()->width(),
-        parts.sunkenNormal()->getBitmapN()->height(),
-        parts.sunkenNormal()->getBitmapE()->width(),
-        parts.sunkenNormal()->getBitmapS()->height());
+        parts.sunkenNormal()->bitmapW()->width(),
+        parts.sunkenNormal()->bitmapN()->height(),
+        parts.sunkenNormal()->bitmapE()->width(),
+        parts.sunkenNormal()->bitmapS()->height());
       widget->setChildSpacing(3 * scale);
       break;
 
@@ -639,12 +639,12 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kSeparatorWidget:
       // Frame
-      if ((widget->getAlign() & HORIZONTAL) &&
-          (widget->getAlign() & VERTICAL)) {
+      if ((widget->align() & HORIZONTAL) &&
+          (widget->align() & VERTICAL)) {
         BORDER(4 * scale);
       }
       // Horizontal bar
-      else if (widget->getAlign() & HORIZONTAL) {
+      else if (widget->align() & HORIZONTAL) {
         BORDER4(2 * scale, 4 * scale, 2 * scale, 0);
       }
       // Vertical bar
@@ -655,11 +655,11 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kSliderWidget:
       BORDER4(
-        parts.sliderEmpty()->getBitmapW()->width()-1*scale,
-        parts.sliderEmpty()->getBitmapN()->height(),
-        parts.sliderEmpty()->getBitmapE()->width()-1*scale,
-        parts.sliderEmpty()->getBitmapS()->height()-1*scale);
-      widget->setChildSpacing(widget->getTextHeight());
+        parts.sliderEmpty()->bitmapW()->width()-1*scale,
+        parts.sliderEmpty()->bitmapN()->height(),
+        parts.sliderEmpty()->bitmapE()->width()-1*scale,
+        parts.sliderEmpty()->bitmapS()->height()-1*scale);
+      widget->setChildSpacing(widget->textHeight());
       widget->setAlign(CENTER | MIDDLE);
       break;
 
@@ -670,10 +670,10 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kViewWidget:
       BORDER4(
-        parts.sunkenNormal()->getBitmapW()->width()-1*scale,
-        parts.sunkenNormal()->getBitmapN()->height(),
-        parts.sunkenNormal()->getBitmapE()->width()-1*scale,
-        parts.sunkenNormal()->getBitmapS()->height()-1*scale);
+        parts.sunkenNormal()->bitmapW()->width()-1*scale,
+        parts.sunkenNormal()->bitmapN()->height(),
+        parts.sunkenNormal()->bitmapE()->width()-1*scale,
+        parts.sunkenNormal()->bitmapS()->height()-1*scale);
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
       break;
@@ -692,7 +692,7 @@ void SkinTheme::initWidget(Widget* widget)
       if (!static_cast<Window*>(widget)->isDesktop()) {
         if (widget->hasText()) {
           BORDER4(6 * scale,
-                  (4+6) * scale + widget->getTextHeight(),
+                  (4+6) * scale + widget->textHeight(),
                   6 * scale,
                   6 * scale);
 
@@ -719,17 +719,17 @@ void SkinTheme::initWidget(Widget* widget)
 
 void SkinTheme::getWindowMask(Widget* widget, Region& region)
 {
-  region = widget->getBounds();
+  region = widget->bounds();
 }
 
 void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 {
-  if (widget->getId() == kThemeCloseButtonId) {
-    Widget* window = widget->getParent();
-    gfx::Rect rect(parts.windowCloseButtonNormal()->getSize());
+  if (widget->id() == kThemeCloseButtonId) {
+    Widget* window = widget->parent();
+    gfx::Rect rect(parts.windowCloseButtonNormal()->size());
 
-    rect.offset(window->getBounds().x2() - 3*guiscale() - rect.w,
-                window->getBounds().y + 3*guiscale());
+    rect.offset(window->bounds().x2() - 3*guiscale() - rect.w,
+                window->bounds().y + 3*guiscale());
 
     widget->setBounds(rect);
   }
@@ -742,7 +742,7 @@ int SkinTheme::getScrollbarSize()
 
 void SkinTheme::paintDesktop(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   g->fillRect(colors.disabled(), g->getClipBounds());
 }
@@ -750,7 +750,7 @@ void SkinTheme::paintDesktop(PaintEvent& ev)
 void SkinTheme::paintBox(PaintEvent& ev)
 {
   Widget* widget = static_cast<Widget*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   if (!is_transparent(BGCOLOR))
     g->fillRect(BGCOLOR, g->getClipBounds());
@@ -758,17 +758,17 @@ void SkinTheme::paintBox(PaintEvent& ev)
 
 void SkinTheme::paintButton(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  IButtonIcon* iconInterface = widget->getIconInterface();
+  IButtonIcon* iconInterface = widget->iconInterface();
   gfx::Rect box, text, icon;
   gfx::Color fg, bg;
   SkinPartPtr part_nw;
 
   widget->getTextIconInfo(&box, &text, &icon,
-    iconInterface ? iconInterface->getIconAlign(): 0,
-    iconInterface ? iconInterface->getSize().w: 0,
-    iconInterface ? iconInterface->getSize().h: 0);
+    iconInterface ? iconInterface->iconAlign(): 0,
+    iconInterface ? iconInterface->size().w: 0,
+    iconInterface ? iconInterface->size().h: 0);
 
   // Tool buttons are smaller
   LookType look = NormalLook;
@@ -816,11 +816,11 @@ void SkinTheme::paintButton(PaintEvent& ev)
 
   // draw borders
   if (part_nw)
-    drawRect(g, widget->getClientBounds(), part_nw.get(), bg);
+    drawRect(g, widget->clientBounds(), part_nw.get(), bg);
 
   // text
   drawTextString(g, NULL, fg, ColorNone, widget,
-                 widget->getClientChildrenBounds(), get_button_selected_offset());
+                 widget->clientChildrenBounds(), get_button_selected_offset());
 
   // Paint the icon
   if (iconInterface) {
@@ -828,23 +828,23 @@ void SkinTheme::paintButton(PaintEvent& ev)
       icon.offset(get_button_selected_offset(),
                   get_button_selected_offset());
 
-    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x, icon.y);
+    paintIcon(widget, ev.graphics(), iconInterface, icon.x, icon.y);
   }
 }
 
 void SkinTheme::paintCheckBox(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
-  IButtonIcon* iconInterface = widget->getIconInterface();
+  gfx::Rect bounds = widget->clientBounds();
+  IButtonIcon* iconInterface = widget->iconInterface();
   gfx::Rect box, text, icon;
   gfx::Color bg;
 
   widget->getTextIconInfo(&box, &text, &icon,
-    iconInterface ? iconInterface->getIconAlign(): 0,
-    iconInterface ? iconInterface->getSize().w: 0,
-    iconInterface ? iconInterface->getSize().h: 0);
+    iconInterface ? iconInterface->iconAlign(): 0,
+    iconInterface ? iconInterface->size().w: 0,
+    iconInterface ? iconInterface->size().h: 0);
 
   // Check box look
   LookType look = NormalLook;
@@ -878,7 +878,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 void SkinTheme::paintGrid(PaintEvent& ev)
 {
   Widget* widget = static_cast<Widget*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   if (!is_transparent(BGCOLOR))
     g->fillRect(BGCOLOR, g->getClipBounds());
@@ -886,12 +886,12 @@ void SkinTheme::paintGrid(PaintEvent& ev)
 
 void SkinTheme::paintEntry(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Entry* widget = static_cast<Entry*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
+  gfx::Rect bounds = widget->clientBounds();
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  const std::string& textString = widget->getText();
+  const std::string& textString = widget->text();
   int c, ch, x, y, w;
   int caret_x;
 
@@ -961,7 +961,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   if (!widget->getSuffix().empty()) {
     Rect sufBounds(x, y,
                    bounds.x2()-widget->childSpacing()*guiscale()-x,
-                   widget->getTextHeight());
+                   widget->textHeight());
     IntersectClip clip(g, sufBounds);
     if (clip) {
       drawTextString(
@@ -981,11 +981,11 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
 void SkinTheme::paintLabel(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Label* widget = static_cast<Label*>(ev.getSource());
   Style* style = styles.label();
   gfx::Color bg = BGCOLOR;
-  Rect text, rc = widget->getClientBounds();
+  Rect text, rc = widget->clientBounds();
 
   SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
   if (styleProp)
@@ -997,15 +997,15 @@ void SkinTheme::paintLabel(PaintEvent& ev)
   rc.shrink(widget->border());
 
   widget->getTextIconInfo(NULL, &text);
-  style->paint(g, text, widget->getText().c_str(), Style::State());
+  style->paint(g, text, widget->text().c_str(), Style::State());
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
   Style* style = styles.link();
-  gfx::Rect bounds = widget->getClientBounds();
+  gfx::Rect bounds = widget->clientBounds();
   gfx::Color bg = BGCOLOR;
 
   SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
@@ -1017,12 +1017,12 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   if (widget->isSelected()) state += Style::clicked();
 
   g->fillRect(bg, bounds);
-  style->paint(g, bounds, widget->getText().c_str(), state);
+  style->paint(g, bounds, widget->text().c_str(), state);
 }
 
 void SkinTheme::paintListBox(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   g->fillRect(colors.background(), g->getClipBounds());
 }
@@ -1030,8 +1030,8 @@ void SkinTheme::paintListBox(PaintEvent& ev)
 void SkinTheme::paintListItem(ui::PaintEvent& ev)
 {
   Widget* widget = static_cast<Widget*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
-  Graphics* g = ev.getGraphics();
+  gfx::Rect bounds = widget->clientBounds();
+  Graphics* g = ev.graphics();
   gfx::Color fg, bg;
 
   if (!widget->isEnabled()) {
@@ -1058,7 +1058,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
 void SkinTheme::paintMenu(PaintEvent& ev)
 {
   Widget* widget = static_cast<Widget*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   g->fillRect(BGCOLOR, g->getClipBounds());
 }
@@ -1066,17 +1066,17 @@ void SkinTheme::paintMenu(PaintEvent& ev)
 void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 {
   int scale = guiscale();
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   MenuItem* widget = static_cast<MenuItem*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
+  gfx::Rect bounds = widget->clientBounds();
   gfx::Color fg, bg;
   int c, bar;
 
   // TODO ASSERT?
-  if (!widget->getParent()->getParent())
+  if (!widget->parent()->parent())
     return;
 
-  bar = (widget->getParent()->getParent()->type() == kMenuBarWidget);
+  bar = (widget->parent()->parent()->type() == kMenuBarWidget);
 
   // Colors
   if (!widget->isEnabled()) {
@@ -1105,8 +1105,8 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   if (widget->isSelected()) {
     she::Surface* icon =
       (widget->isEnabled() ?
-       parts.checkSelected()->getBitmap(0):
-       parts.checkDisabled()->getBitmap(0));
+       parts.checkSelected()->bitmap(0):
+       parts.checkDisabled()->bitmap(0));
 
     int x = bounds.x+4*scale-icon->width()/2;
     int y = bounds.y+bounds.h/2-icon->height()/2;
@@ -1150,13 +1150,13 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
     }
     // Draw the keyboard shortcut
     else if (AppMenuItem* appMenuItem = dynamic_cast<AppMenuItem*>(widget)) {
-      if (appMenuItem->getKey() && !appMenuItem->getKey()->accels().empty()) {
-        int old_align = appMenuItem->getAlign();
+      if (appMenuItem->key() && !appMenuItem->key()->accels().empty()) {
+        int old_align = appMenuItem->align();
 
         pos = bounds;
         pos.w -= widget->childSpacing()/4;
 
-        std::string buf = appMenuItem->getKey()->accels().front().toString();
+        std::string buf = appMenuItem->key()->accels().front().toString();
 
         widget->setAlign(RIGHT | MIDDLE);
         drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
@@ -1168,24 +1168,24 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 
 void SkinTheme::paintSplitter(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
 
   g->fillRect(colors.splitterNormalFace(), g->getClipBounds());
 }
 
 void SkinTheme::paintRadioButton(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
-  IButtonIcon* iconInterface = widget->getIconInterface();
+  gfx::Rect bounds = widget->clientBounds();
+  IButtonIcon* iconInterface = widget->iconInterface();
   gfx::Color bg = BGCOLOR;
 
   gfx::Rect box, text, icon;
   widget->getTextIconInfo(&box, &text, &icon,
-    iconInterface ? iconInterface->getIconAlign(): 0,
-    iconInterface ? iconInterface->getSize().w: 0,
-    iconInterface ? iconInterface->getSize().h: 0);
+    iconInterface ? iconInterface->iconAlign(): 0,
+    iconInterface ? iconInterface->size().w: 0,
+    iconInterface ? iconInterface->size().h: 0);
 
   // Background
   g->fillRect(bg, g->getClipBounds());
@@ -1212,22 +1212,22 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
 
 void SkinTheme::paintSeparator(ui::PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
+  gfx::Rect bounds = widget->clientBounds();
 
   // background
   g->fillRect(BGCOLOR, bounds);
 
-  if (widget->getAlign() & HORIZONTAL) {
-    int h = parts.separatorHorz()->getBitmap(0)->height();
+  if (widget->align() & HORIZONTAL) {
+    int h = parts.separatorHorz()->bitmap(0)->height();
     drawHline(g, gfx::Rect(bounds.x, bounds.y+bounds.h/2-h/2,
                            bounds.w, h),
               parts.separatorHorz().get());
   }
 
-  if (widget->getAlign() & VERTICAL) {
-    int w = parts.separatorVert()->getBitmap(0)->width();
+  if (widget->align() & VERTICAL) {
+    int w = parts.separatorVert()->bitmap(0)->width();
     drawVline(g, gfx::Rect(bounds.x+bounds.w/2-w/2, bounds.y,
                            w, bounds.h),
               parts.separatorVert().get());
@@ -1235,11 +1235,11 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
 
   // text
   if (widget->hasText()) {
-    int h = widget->getTextHeight();
+    int h = widget->textHeight();
     Rect r(
       bounds.x + widget->border().left()/2 + h/2,
       bounds.y + bounds.h/2 - h/2,
-      widget->getTextWidth(), h);
+      widget->textWidth(), h);
 
     drawTextString(g, NULL,
       colors.separatorLabel(), BGCOLOR,
@@ -1249,13 +1249,13 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
 
 void SkinTheme::paintSlider(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Slider* widget = static_cast<Slider*>(ev.getSource());
-  Rect bounds = widget->getClientBounds();
+  Rect bounds = widget->clientBounds();
   int min, max, value;
 
   // Outside borders
-  gfx::Color bgcolor = widget->getBgColor();
+  gfx::Color bgcolor = widget->bgColor();
   if (!is_transparent(bgcolor))
     g->fillRect(bgcolor, bounds);
 
@@ -1268,7 +1268,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   else
     x = rc.x;
 
-  rc = widget->getClientBounds();
+  rc = widget->clientBounds();
 
   // The mini-look is used for sliders with tiny borders.
   bool isMiniLook = false;
@@ -1289,8 +1289,8 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   if (bgPainter) {
     SkinPartPtr nw = parts.miniSliderEmpty();
     she::Surface* thumb =
-      (widget->hasFocus() ? parts.miniSliderThumbFocused()->getBitmap(0):
-                            parts.miniSliderThumb()->getBitmap(0));
+      (widget->hasFocus() ? parts.miniSliderThumbFocused()->bitmap(0):
+                            parts.miniSliderThumb()->bitmap(0));
 
     // Draw background
     g->fillRect(BGCOLOR, rc);
@@ -1341,7 +1341,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
                 colors.sliderEmptyFace());
 
     // Draw text
-    std::string old_text = widget->getText();
+    std::string old_text = widget->text();
     widget->setTextQuiet(widget->convertValueToText(value));
 
     {
@@ -1368,12 +1368,12 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
 void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Entry* widget = static_cast<Entry*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
+  gfx::Rect bounds = widget->clientBounds();
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  const std::string& textString = widget->getText();
+  const std::string& textString = widget->text();
   int c, ch, x, y, w;
   int caret_x;
 
@@ -1391,7 +1391,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
 
   // Draw the text
   x = bounds.x + widget->border().left();
-  y = bounds.y + bounds.h/2 - widget->getTextHeight()/2;
+  y = bounds.y + bounds.h/2 - widget->textHeight()/2;
 
   base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
   int textlen = base::utf8_length(textString);
@@ -1445,8 +1445,8 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
 void SkinTheme::paintComboBoxButton(PaintEvent& ev)
 {
   Button* widget = static_cast<Button*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
-  IButtonIcon* iconInterface = widget->getIconInterface();
+  Graphics* g = ev.graphics();
+  IButtonIcon* iconInterface = widget->iconInterface();
   SkinPartPtr part_nw;
   gfx::Color bg;
 
@@ -1465,7 +1465,7 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
     part_nw = parts.toolbuttonLast();
   }
 
-  Rect rc = widget->getClientBounds();
+  Rect rc = widget->clientBounds();
 
   // external background
   g->fillRect(BGCOLOR, rc);
@@ -1476,16 +1476,16 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   // Paint the icon
   if (iconInterface) {
     // Icon
-    int x = rc.x + rc.w/2 - iconInterface->getSize().w/2;
-    int y = rc.y + rc.h/2 - iconInterface->getSize().h/2;
+    int x = rc.x + rc.w/2 - iconInterface->size().w/2;
+    int y = rc.y + rc.h/2 - iconInterface->size().h/2;
 
-    paintIcon(widget, ev.getGraphics(), iconInterface, x, y);
+    paintIcon(widget, ev.graphics(), iconInterface, x, y);
   }
 }
 
 void SkinTheme::paintTextBox(ui::PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
 
   drawTextBox(g, widget, NULL, NULL,
@@ -1495,9 +1495,9 @@ void SkinTheme::paintTextBox(ui::PaintEvent& ev)
 
 void SkinTheme::paintView(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   View* widget = static_cast<View*>(ev.getSource());
-  gfx::Rect bounds = widget->getClientBounds();
+  gfx::Rect bounds = widget->clientBounds();
   gfx::Color bg = BGCOLOR;
   Style* style = styles.view();
 
@@ -1517,7 +1517,7 @@ void SkinTheme::paintView(PaintEvent& ev)
 void SkinTheme::paintViewScrollbar(PaintEvent& ev)
 {
   ScrollBar* widget = static_cast<ScrollBar*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   int pos, len;
 
   bool isMiniLook = false;
@@ -1546,11 +1546,11 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
   Style::State state;
   if (widget->hasMouse()) state += Style::hover();
 
-  gfx::Rect rc = widget->getClientBounds();
+  gfx::Rect rc = widget->clientBounds();
   bgStyle->paint(g, rc, NULL, state);
 
   // Horizontal bar
-  if (widget->getAlign() & HORIZONTAL) {
+  if (widget->align() & HORIZONTAL) {
     rc.x += pos;
     rc.w = len;
   }
@@ -1566,19 +1566,19 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
 void SkinTheme::paintViewViewport(PaintEvent& ev)
 {
   Viewport* widget = static_cast<Viewport*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   gfx::Color bg = BGCOLOR;
 
   if (!is_transparent(bg))
-    g->fillRect(bg, widget->getClientBounds());
+    g->fillRect(bg, widget->clientBounds());
 }
 
 void SkinTheme::paintWindow(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   Window* window = static_cast<Window*>(ev.getSource());
-  Rect pos = window->getClientBounds();
-  Rect cpos = window->getClientChildrenBounds();
+  Rect pos = window->clientBounds();
+  Rect cpos = window->clientChildrenBounds();
 
   if (!window->isDesktop()) {
     // window frame
@@ -1586,8 +1586,8 @@ void SkinTheme::paintWindow(PaintEvent& ev)
       styles.window()->paint(g, pos, NULL, Style::State());
       styles.windowTitle()->paint(g,
         gfx::Rect(cpos.x, pos.y+5*guiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
-          window->getTextHeight()),
-        window->getText().c_str(), Style::State());
+          window->textHeight()),
+        window->text().c_str(), Style::State());
     }
     // menubox
     else {
@@ -1604,25 +1604,25 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
 {
   Widget* widget = static_cast<Widget*>(ev.getSource());
   Window* window = static_cast<Window*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
-  gfx::Rect pos = window->getClientBounds();
+  Graphics* g = ev.graphics();
+  gfx::Rect pos = window->clientBounds();
 
   if (!is_transparent(BGCOLOR))
     styles.menubox()->paint(g, pos, NULL, Style::State());
 
   pos.shrink(window->border());
 
-  g->drawAlignedUIString(window->getText(),
+  g->drawAlignedUIString(window->text(),
     colors.text(),
-    window->getBgColor(), pos,
-    window->getAlign());
+    window->bgColor(), pos,
+    window->align());
 }
 
 void SkinTheme::paintWindowButton(ui::PaintEvent& ev)
 {
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
-  Rect rc = widget->getClientBounds();
+  Graphics* g = ev.graphics();
+  Rect rc = widget->clientBounds();
   SkinPartPtr part;
 
   if (widget->isSelected())
@@ -1632,33 +1632,33 @@ void SkinTheme::paintWindowButton(ui::PaintEvent& ev)
   else
     part = parts.windowCloseButtonNormal();
 
-  g->drawRgbaSurface(part->getBitmap(0), rc.x, rc.y);
+  g->drawRgbaSurface(part->bitmap(0), rc.x, rc.y);
 }
 
 void SkinTheme::paintTooltip(PaintEvent& ev)
 {
   ui::TipWindow* widget = static_cast<ui::TipWindow*>(ev.getSource());
-  Graphics* g = ev.getGraphics();
-  Rect absRc = widget->getBounds();
-  Rect rc = widget->getClientBounds();
+  Graphics* g = ev.graphics();
+  Rect absRc = widget->bounds();
+  Rect rc = widget->clientBounds();
   gfx::Color fg = colors.tooltipText();
   gfx::Color bg = colors.tooltipFace();
   SkinPartPtr tooltipPart = parts.tooltip();
 
-  she::Surface* nw = tooltipPart->getBitmapNW();
-  she::Surface* n  = tooltipPart->getBitmapN();
-  she::Surface* ne = tooltipPart->getBitmapNE();
-  she::Surface* e  = tooltipPart->getBitmapE();
-  she::Surface* se = tooltipPart->getBitmapSE();
-  she::Surface* s  = tooltipPart->getBitmapS();
-  she::Surface* sw = tooltipPart->getBitmapSW();
-  she::Surface* w  = tooltipPart->getBitmapW();
+  she::Surface* nw = tooltipPart->bitmapNW();
+  she::Surface* n  = tooltipPart->bitmapN();
+  she::Surface* ne = tooltipPart->bitmapNE();
+  she::Surface* e  = tooltipPart->bitmapE();
+  she::Surface* se = tooltipPart->bitmapSE();
+  she::Surface* s  = tooltipPart->bitmapS();
+  she::Surface* sw = tooltipPart->bitmapSW();
+  she::Surface* w  = tooltipPart->bitmapW();
 
   switch (widget->getArrowAlign()) {
-    case TOP | LEFT:     nw = parts.tooltipArrow()->getBitmapNW(); break;
-    case TOP | RIGHT:    ne = parts.tooltipArrow()->getBitmapNE(); break;
-    case BOTTOM | LEFT:  sw = parts.tooltipArrow()->getBitmapSW(); break;
-    case BOTTOM | RIGHT: se = parts.tooltipArrow()->getBitmapSE(); break;
+    case TOP | LEFT:     nw = parts.tooltipArrow()->bitmapNW(); break;
+    case TOP | RIGHT:    ne = parts.tooltipArrow()->bitmapNE(); break;
+    case BOTTOM | LEFT:  sw = parts.tooltipArrow()->bitmapSW(); break;
+    case BOTTOM | RIGHT: se = parts.tooltipArrow()->bitmapSE(); break;
   }
 
   drawRect(g, rc, nw, n, ne, e, se, s, sw, w);
@@ -1667,29 +1667,29 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   she::Surface* arrow = NULL;
   gfx::Rect target(widget->target());
   target = target.createIntersection(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
-  target.offset(-absRc.getOrigin());
+  target.offset(-absRc.origin());
 
   switch (widget->getArrowAlign()) {
     case TOP:
-      arrow = parts.tooltipArrow()->getBitmapN();
+      arrow = parts.tooltipArrow()->bitmapN();
       g->drawRgbaSurface(arrow,
                          target.x+target.w/2-arrow->width()/2,
                          rc.y);
       break;
     case BOTTOM:
-      arrow = parts.tooltipArrow()->getBitmapS();
+      arrow = parts.tooltipArrow()->bitmapS();
       g->drawRgbaSurface(arrow,
                          target.x+target.w/2-arrow->width()/2,
                          rc.y+rc.h-arrow->height());
       break;
     case LEFT:
-      arrow = parts.tooltipArrow()->getBitmapW();
+      arrow = parts.tooltipArrow()->bitmapW();
       g->drawRgbaSurface(arrow,
                          rc.x,
                          target.y+target.h/2-arrow->height()/2);
       break;
     case RIGHT:
-      arrow = parts.tooltipArrow()->getBitmapE();
+      arrow = parts.tooltipArrow()->bitmapE();
       g->drawRgbaSurface(arrow,
                          rc.x+rc.w-arrow->width(),
                          target.y+target.h/2-arrow->height()/2);
@@ -1707,12 +1707,12 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 
   rc.shrink(widget->border());
 
-  g->drawAlignedUIString(widget->getText(), fg, bg, rc, widget->getAlign());
+  g->drawAlignedUIString(widget->text(), fg, bg, rc, widget->align());
 }
 
 gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
 {
-  gfx::Color c = widget->getBgColor();
+  gfx::Color c = widget->bgColor();
   bool decorative = widget->isDecorative();
 
   if (!is_transparent(c) || widget->type() == kWindowWidget)
@@ -1730,28 +1730,28 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
   if (t || widget->hasText()) {
     Rect textrc;
 
-    g->setFont(widget->getFont());
+    g->setFont(widget->font());
 
     if (!t)
-      t = widget->getText().c_str();
+      t = widget->text().c_str();
 
     textrc.setSize(g->measureUIString(t));
 
     // Horizontally text alignment
 
-    if (widget->getAlign() & RIGHT)
+    if (widget->align() & RIGHT)
       textrc.x = rc.x + rc.w - textrc.w - 1;
-    else if (widget->getAlign() & CENTER)
-      textrc.x = rc.getCenter().x - textrc.w/2;
+    else if (widget->align() & CENTER)
+      textrc.x = rc.center().x - textrc.w/2;
     else
       textrc.x = rc.x;
 
     // Vertically text alignment
 
-    if (widget->getAlign() & BOTTOM)
+    if (widget->align() & BOTTOM)
       textrc.y = rc.y + rc.h - textrc.h - 1;
-    else if (widget->getAlign() & MIDDLE)
-      textrc.y = rc.getCenter().y - textrc.h/2;
+    else if (widget->align() & MIDDLE)
+      textrc.y = rc.center().y - textrc.h/2;
     else
       textrc.y = rc.y;
 
@@ -1771,8 +1771,8 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     // Text
     Rect textWrap = textrc.createIntersection(
       // TODO add ui::Widget::getPadding() property
-      // Rect(widget->getClientBounds()).shrink(widget->border()));
-      widget->getClientBounds()).inflate(0, 1*guiscale());
+      // Rect(widget->clientBounds()).shrink(widget->border()));
+      widget->clientBounds()).inflate(0, 1*guiscale());
 
     IntersectClip clip(g, textWrap);
     if (clip) {
@@ -1781,7 +1781,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
         g->drawUIString(t,
           colors.background(),
           gfx::ColorNone,
-          textrc.getOrigin() + Point(guiscale(), guiscale()));
+          textrc.origin() + Point(guiscale(), guiscale()));
       }
 
       g->drawUIString(t,
@@ -1789,7 +1789,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
           colors.disabled():
           (gfx::geta(fg_color) > 0 ? fg_color :
             colors.text())),
-        bg_color, textrc.getOrigin());
+        bg_color, textrc.origin());
     }
   }
 }
@@ -1797,7 +1797,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
 void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
   gfx::Color color = colors.text();
-  int h = widget->getTextHeight();
+  int h = widget->textHeight();
 
   for (int u=x; u<x+2*guiscale(); ++u)
     g->drawVLine(color, u, y-1, h+2);
@@ -1876,23 +1876,23 @@ void SkinTheme::drawRect(Graphics* g, const Rect& rc,
 void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, gfx::Color bg)
 {
   drawRect(g, rc,
-    skinPart->getBitmap(0),
-    skinPart->getBitmap(1),
-    skinPart->getBitmap(2),
-    skinPart->getBitmap(3),
-    skinPart->getBitmap(4),
-    skinPart->getBitmap(5),
-    skinPart->getBitmap(6),
-    skinPart->getBitmap(7));
+    skinPart->bitmap(0),
+    skinPart->bitmap(1),
+    skinPart->bitmap(2),
+    skinPart->bitmap(3),
+    skinPart->bitmap(4),
+    skinPart->bitmap(5),
+    skinPart->bitmap(6),
+    skinPart->bitmap(7));
 
   // Center
   if (!is_transparent(bg)) {
     gfx::Rect inside = rc;
     inside.shrink(Border(
-        skinPart->getBitmap(7)->width(),
-        skinPart->getBitmap(1)->height(),
-        skinPart->getBitmap(3)->width(),
-        skinPart->getBitmap(5)->height()));
+        skinPart->bitmap(7)->width(),
+        skinPart->bitmap(1)->height(),
+        skinPart->bitmap(3)->width(),
+        skinPart->bitmap(5)->height()));
 
     IntersectClip clip(g, inside);
     if (clip)
@@ -1924,16 +1924,16 @@ void SkinTheme::drawHline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* part)
   int x;
 
   for (x = rc.x;
-       x < rc.x2()-part->getSize().w;
-       x += part->getSize().w) {
-    g->drawRgbaSurface(part->getBitmap(0), x, rc.y);
+       x < rc.x2()-part->size().w;
+       x += part->size().w) {
+    g->drawRgbaSurface(part->bitmap(0), x, rc.y);
   }
 
   if (x < rc.x2()) {
-    Rect rc2(x, rc.y, rc.w-(x-rc.x), part->getSize().h);
+    Rect rc2(x, rc.y, rc.w-(x-rc.x), part->size().h);
     IntersectClip clip(g, rc2);
     if (clip)
-      g->drawRgbaSurface(part->getBitmap(0), x, rc.y);
+      g->drawRgbaSurface(part->bitmap(0), x, rc.y);
   }
 }
 
@@ -1942,16 +1942,16 @@ void SkinTheme::drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* part)
   int y;
 
   for (y = rc.y;
-       y < rc.y2()-part->getSize().h;
-       y += part->getSize().h) {
-    g->drawRgbaSurface(part->getBitmap(0), rc.x, y);
+       y < rc.y2()-part->size().h;
+       y += part->size().h) {
+    g->drawRgbaSurface(part->bitmap(0), rc.x, y);
   }
 
   if (y < rc.y2()) {
-    Rect rc2(rc.x, y, part->getSize().w, rc.h-(y-rc.y));
+    Rect rc2(rc.x, y, part->size().w, rc.h-(y-rc.y));
     IntersectClip clip(g, rc2);
     if (clip)
-      g->drawRgbaSurface(part->getBitmap(0), rc.x, y);
+      g->drawRgbaSurface(part->bitmap(0), rc.x, y);
   }
 }
 
@@ -1979,13 +1979,13 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
   // enabled
   if (widget->isEnabled()) {
     if (widget->isSelected())   // selected
-      icon_bmp = iconInterface->getSelectedIcon();
+      icon_bmp = iconInterface->selectedIcon();
     else
-      icon_bmp = iconInterface->getNormalIcon();
+      icon_bmp = iconInterface->normalIcon();
   }
   // disabled
   else {
-    icon_bmp = iconInterface->getDisabledIcon();
+    icon_bmp = iconInterface->disabledIcon();
   }
 
   if (icon_bmp)

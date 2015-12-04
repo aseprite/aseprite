@@ -19,7 +19,7 @@ namespace cmd {
 
 SetMaskPosition::SetMaskPosition(Document* doc, const gfx::Point& pos)
   : WithDocument(doc)
-  , m_oldPosition(doc->mask()->bounds().getOrigin())
+  , m_oldPosition(doc->mask()->bounds().origin())
   , m_newPosition(pos)
 {
 }

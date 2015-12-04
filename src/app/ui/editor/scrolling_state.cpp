@@ -50,7 +50,7 @@ bool ScrollingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   View* view = View::getView(editor);
-  gfx::Point scroll = view->getViewScroll();
+  gfx::Point scroll = view->viewScroll();
   gfx::Point newPos = msg->position();
 
 #ifdef _WIN32

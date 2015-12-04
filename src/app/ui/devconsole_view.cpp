@@ -46,7 +46,7 @@ protected:
           switch (scancode) {
             case kKeyEnter:
             case kKeyEnterPad: {
-              std::string cmd = getText();
+              std::string cmd = text();
               ExecuteCommand(cmd);
               setText("");
               return true;
@@ -66,7 +66,7 @@ DevConsoleView::DevConsoleView()
   , m_entry(new CommmandEntry)
   , m_engine(this)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   addChild(&m_view);
   addChild(&m_bottomBox);
@@ -137,7 +137,7 @@ void DevConsoleView::onExecuteCommand(const std::string& cmd)
 void DevConsoleView::onConsolePrint(const char* text)
 {
   if (text)
-    m_textBox.setText(m_textBox.getText() + "\n" + text);
+    m_textBox.setText(m_textBox.text() + "\n" + text);
 }
 
 } // namespace app

@@ -184,7 +184,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       base::UniquePtr<tools::ToolLoop> loop(
         create_tool_loop_preview(
           m_editor, extraImage,
-          brushBounds.getOrigin()));
+          brushBounds.origin()));
       if (loop) {
         loop->getInk()->prepareInk(loop);
         loop->getIntertwine()->prepareIntertwine();

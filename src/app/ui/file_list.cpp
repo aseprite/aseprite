@@ -99,7 +99,7 @@ void FileList::setCurrentFolder(IFileItem* folder)
 void FileList::goUp()
 {
   IFileItem* folder = m_currentFolder;
-  IFileItem* parent = folder->getParent();
+  IFileItem* parent = folder->parent();
   if (parent) {
     setCurrentFolder(parent);
     m_selected = folder;
@@ -119,8 +119,8 @@ bool FileList::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        int th = getTextHeight();
-        int y = getBounds().y;
+        int th = textHeight();
+        int y = bounds().y;
         IFileItem* old_selected = m_selected;
         m_selected = NULL;
 
@@ -196,19 +196,19 @@ bool FileList::onProcessMessage(Message* msg)
           case kKeyPageUp:
           case kKeyPageDown: {
             int sgn = (scancode == kKeyPageUp) ? -1: 1;
-            gfx::Rect vp = view->getViewportBounds();
+            gfx::Rect vp = view->viewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (getTextHeight()+4*guiscale());
+            select += sgn * vp.h / (textHeight()+4*guiscale());
             break;
           }
 
           case kKeyLeft:
           case kKeyRight:
             if (select >= 0) {
-              gfx::Rect vp = view->getViewportBounds();
+              gfx::Rect vp = view->viewportBounds();
               int sgn = (scancode == kKeyLeft) ? -1: 1;
-              gfx::Point scroll = view->getViewScroll();
+              gfx::Point scroll = view->viewScroll();
               scroll.x += vp.w/2*sgn;
               view->setViewScroll(scroll);
             }
@@ -255,7 +255,7 @@ bool FileList::onProcessMessage(Message* msg)
 
               for (i=MAX(select, 0); i<bottom; ++i, ++link) {
                 IFileItem* fi = *link;
-                if (base::utf8_icmp(fi->getDisplayName(), m_isearch, chrs) == 0) {
+                if (base::utf8_icmp(fi->displayName(), m_isearch, chrs) == 0) {
                   select = i;
                   break;
                 }
@@ -277,8 +277,8 @@ bool FileList::onProcessMessage(Message* msg)
     case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
-        gfx::Point scroll = view->getViewScroll();
-        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(getTextHeight()+4*guiscale());
+        gfx::Point scroll = view->viewScroll();
+        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(textHeight()+4*guiscale());
         view->setViewScroll(scroll);
       }
       break;
@@ -304,11 +304,11 @@ bool FileList::onProcessMessage(Message* msg)
 
 void FileList::onPaint(ui::PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  Graphics* g = ev.graphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   View* view = View::getView(this);
-  gfx::Rect vp = view->getViewportBounds();
-  gfx::Rect bounds = getClientBounds();
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Rect bounds = clientBounds();
   int x, y = bounds.y;
   int evenRow = 0;
   gfx::Color bgcolor;
@@ -345,7 +345,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
     g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
 
     if (fi->isFolder()) {
-      int icon_w = getFont()->textLength("[+]");
+      int icon_w = font()->textLength("[+]");
 
       g->drawUIString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
       x += icon_w+2*guiscale();
@@ -353,7 +353,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
     // item name
     g->drawString(
-      fi->getDisplayName().c_str(),
+      fi->displayName().c_str(),
       fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
 
     // draw progress bars
@@ -386,10 +386,10 @@ void FileList::onPaint(ui::PaintEvent& ev)
   // Draw the thumbnail
   if (thumbnail) {
     x = vp.x+vp.w - 2*guiscale() - thumbnail->width();
-    y = thumbnail_y - thumbnail->height()/2 + getBounds().y;
+    y = thumbnail_y - thumbnail->height()/2 + this->bounds().y;
     y = MID(vp.y+2*guiscale(), y, vp.y+vp.h-3*guiscale()-thumbnail->height());
-    x -= getBounds().x;
-    y -= getBounds().y;
+    x -= this->bounds().x;
+    y -= this->bounds().y;
 
     g->blit(thumbnail, 0, 0, x, y, thumbnail->width(), thumbnail->height());
     g->drawRect(gfx::rgba(0, 0, 0),
@@ -454,20 +454,20 @@ gfx::Size FileList::getFileItemSize(IFileItem* fi) const
   int len = 0;
 
   if (fi->isFolder())
-    len += getFont()->textLength("[+]") + 2*guiscale();
+    len += font()->textLength("[+]") + 2*guiscale();
 
-  len += getFont()->textLength(fi->getDisplayName().c_str());
+  len += font()->textLength(fi->displayName().c_str());
 
-  return gfx::Size(len+4*guiscale(), getTextHeight()+4*guiscale());
+  return gfx::Size(len+4*guiscale(), textHeight()+4*guiscale());
 }
 
 void FileList::makeSelectedFileitemVisible()
 {
   View* view = View::getView(this);
-  gfx::Rect vp = view->getViewportBounds();
-  gfx::Point scroll = view->getViewScroll();
-  int th = getTextHeight();
-  int y = getBounds().y;
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Point scroll = view->viewScroll();
+  int th = textHeight();
+  int y = bounds().y;
 
   // rows
   for (FileItemList::iterator
@@ -478,9 +478,9 @@ void FileList::makeSelectedFileitemVisible()
 
     if (fi == m_selected) {
       if (y < vp.y)
-        scroll.y = y - getBounds().y;
+        scroll.y = y - bounds().y;
       else if (y > vp.y + vp.h - (th+4*guiscale()))
-        scroll.y = y - getBounds().y - vp.h + (th+4*guiscale());
+        scroll.y = y - bounds().y - vp.h + (th+4*guiscale());
 
       view->setViewScroll(scroll);
       break;
@@ -493,7 +493,7 @@ void FileList::makeSelectedFileitemVisible()
 void FileList::regenerateList()
 {
   // get the children of the current folder
-  m_list = m_currentFolder->getChildren();
+  m_list = m_currentFolder->children();
 
   // filter the list by the available extensions
   if (!m_exts.empty()) {

@@ -47,7 +47,7 @@ she::Surface* Overlay::setSurface(she::Surface* newSurface)
   return oldSurface;
 }
 
-gfx::Rect Overlay::getBounds() const
+gfx::Rect Overlay::bounds() const
 {
   if (m_surface)
     return gfx::Rect(m_pos.x, m_pos.y, m_surface->width(), m_surface->height());

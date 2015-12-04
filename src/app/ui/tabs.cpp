@@ -30,7 +30,7 @@
 #define ANI_REMOVING_TAB_TICKS    10
 #define ANI_REORDER_TABS_TICKS    5
 
-#define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
+#define HAS_ARROWS(tabs) ((m_button_left->parent() == (tabs)))
 
 namespace app {
 
@@ -66,7 +66,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   setDoubleBuffered(true);
   initTheme();
 
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   m_tabsHeight = theme->dimensions.tabsHeight();
   m_tabsBottomHeight = theme->dimensions.tabsBottomHeight();
   setBgColor(theme->colors.windowFace());
@@ -149,8 +149,8 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
 
 void Tabs::updateTabs()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  double availWidth = getBounds().w - m_border*ui::guiscale();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  double availWidth = bounds().w - m_border*ui::guiscale();
   double defTabWidth = theme->dimensions.tabsWidth();
   double tabWidth = defTabWidth;
   if (tabWidth * m_list.size() > availWidth) {
@@ -250,7 +250,7 @@ TabView* Tabs::getSelectedTab()
 
 void Tabs::setDockedStyle()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   m_docked = true;
   m_tabsHeight = theme->dimensions.dockedTabsHeight();
@@ -264,7 +264,7 @@ void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
   int newIndex = -1;
 
   if (!m_list.empty()) {
-    newIndex = (pos.x - getBounds().x) / m_list[0]->width;
+    newIndex = (pos.x - bounds().x) / m_list[0]->width;
     newIndex = MID(0, newIndex, (int)m_list.size());
   }
   else
@@ -274,7 +274,7 @@ void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
                    m_dropNewTab != view);
 
   m_dropNewIndex = newIndex;
-  m_dropNewPosX = (pos.x - getBounds().x);
+  m_dropNewPosX = (pos.x - bounds().x);
   m_dropNewTab = view;
 
   if (startAni)
@@ -316,10 +316,10 @@ bool Tabs::onProcessMessage(Message* msg)
         // We are dragging a tab...
         else {
           // Floating tab (to create a new window)
-          if (!getBounds().contains(mousePos) &&
+          if (!bounds().contains(mousePos) &&
               (ABS(delta.y) > 16*guiscale() ||
-                mousePos.x < getBounds().x-16*guiscale() ||
-                mousePos.x > getBounds().x2()+16*guiscale())) {
+                mousePos.x < bounds().x-16*guiscale() ||
+                mousePos.x > bounds().x2()+16*guiscale())) {
             DropViewPreviewResult result = DropViewPreviewResult::FLOATING;
 
             if (!m_floatingTab) {
@@ -370,7 +370,7 @@ bool Tabs::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         m_dragMousePos = mouseMsg->position();
         m_floatingOffset = mouseMsg->position() -
-          (getBounds().getOrigin() + getTabBounds(m_hot.get()).getOrigin());
+          (bounds().origin() + getTabBounds(m_hot.get()).origin());
 
         if (m_hotCloseButton) {
           if (!m_clickedCloseButton) {
@@ -468,12 +468,12 @@ bool Tabs::onProcessMessage(Message* msg)
 
 void Tabs::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  gfx::Rect rect = getClientBounds();
+  Graphics* g = ev.graphics();
+  gfx::Rect rect = clientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
     m_tabsHeight - m_tabsBottomHeight);
 
-  g->fillRect(getBgColor(), g->getClipBounds());
+  g->fillRect(bgColor(), g->getClipBounds());
 
   if (!m_docked)
     drawFiller(g, box);
@@ -522,7 +522,7 @@ void Tabs::onPaint(PaintEvent& ev)
 
   // New tab from other Tab that want to be dropped here.
   if (m_dropNewTab) {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Tab newTab(m_dropNewTab);
 
     newTab.width = newTab.oldWidth =
@@ -539,7 +539,7 @@ void Tabs::onPaint(PaintEvent& ev)
 
 void Tabs::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
   updateTabs();
 }
 
@@ -567,7 +567,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
   if (box.w < ui::guiscale()*8)
     box.w = ui::guiscale()*8;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   int clipTextRightSide;
 
   gfx::Rect closeBox = getTabCloseButtonBounds(tab, box);
@@ -621,7 +621,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
   // Tab bottom part
   if (!m_docked)
     theme->styles.tabBottom()->paint(g,
-      gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
+      gfx::Rect(box.x, box.y2(), box.w, bounds().y2()-box.y2()),
       nullptr, state);
 
   // Close button
@@ -655,8 +655,8 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
 void Tabs::drawFiller(ui::Graphics* g, const gfx::Rect& box)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  gfx::Rect rect = getClientBounds();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  gfx::Rect rect = clientBounds();
   skin::Style::State state;
 
   theme->styles.tabFiller()->paint(g,
@@ -697,7 +697,7 @@ void Tabs::calculateHot()
   if (m_isDragging)
     return;
 
-  gfx::Rect rect = getBounds();
+  gfx::Rect rect = bounds();
   gfx::Rect box(rect.x+m_border*guiscale(), rect.y, 0, rect.h-1);
   gfx::Point mousePos = ui::get_mouse_position();
   TabPtr hot(nullptr);
@@ -733,7 +733,7 @@ void Tabs::calculateHot()
 
 gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   int iconW = theme->dimensions.tabsCloseIconWidth();
   int iconH = theme->dimensions.tabsCloseIconHeight();
 
@@ -778,7 +778,7 @@ void Tabs::onAnimationFrame()
 void Tabs::onAnimationStop(int animation)
 {
   if (m_list.empty()) {
-    Widget* root = getRoot();
+    Widget* root = window();
     if (root)
       root->layout();
   }
@@ -873,7 +873,7 @@ void Tabs::stopDrag(DropTabResult result)
 
 gfx::Rect Tabs::getTabBounds(Tab* tab)
 {
-  gfx::Rect rect = getClientBounds();
+  gfx::Rect rect = clientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w, m_tabsHeight - m_tabsBottomHeight);
   int startX = m_border*guiscale();
   double t = animationTime();
@@ -927,7 +927,7 @@ void Tabs::createFloatingOverlay(Tab* tab)
   }
   {
     Graphics g(surface, 0, 0);
-    g.setFont(getFont());
+    g.setFont(font());
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
 #ifdef USE_ALLEG4_BACKEND
@@ -987,7 +987,7 @@ void Tabs::updateMouseCursor()
 void Tabs::updateDragTabIndexes(int mouseX, bool startAni)
 {
   if (m_dragTab) {
-    int i = (mouseX - m_border*guiscale() - getBounds().x) / m_dragTab->width;
+    int i = (mouseX - m_border*guiscale() - bounds().x) / m_dragTab->width;
 
     if (m_dragCopy) {
       i = MID(0, i, int(m_list.size()));

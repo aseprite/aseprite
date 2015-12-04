@@ -119,7 +119,7 @@ Grid::Info Grid::getChildInfo(Widget* child)
 
 void Grid::onResize(ResizeEvent& ev)
 {
-  gfx::Rect rect = ev.getBounds();
+  gfx::Rect rect = ev.bounds();
   int pos_x, pos_y;
   Size reqSize;
   int x, y, w, h;
@@ -209,7 +209,7 @@ void Grid::onSizeHint(SizeHintEvent& ev)
 
 void Grid::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintGrid(ev);
+  theme()->paintGrid(ev);
 }
 
 void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)

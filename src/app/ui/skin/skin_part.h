@@ -34,20 +34,20 @@ namespace app {
       // It doesn't destroy the previous bitmap in the given "index".
       void setBitmap(std::size_t index, she::Surface* bitmap);
 
-      she::Surface* getBitmap(std::size_t index) const {
+      she::Surface* bitmap(std::size_t index) const {
         return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
       }
 
-      she::Surface* getBitmapNW() const { return getBitmap(0); }
-      she::Surface* getBitmapN()  const { return getBitmap(1); }
-      she::Surface* getBitmapNE() const { return getBitmap(2); }
-      she::Surface* getBitmapE()  const { return getBitmap(3); }
-      she::Surface* getBitmapSE() const { return getBitmap(4); }
-      she::Surface* getBitmapS()  const { return getBitmap(5); }
-      she::Surface* getBitmapSW() const { return getBitmap(6); }
-      she::Surface* getBitmapW()  const { return getBitmap(7); }
+      she::Surface* bitmapNW() const { return bitmap(0); }
+      she::Surface* bitmapN()  const { return bitmap(1); }
+      she::Surface* bitmapNE() const { return bitmap(2); }
+      she::Surface* bitmapE()  const { return bitmap(3); }
+      she::Surface* bitmapSE() const { return bitmap(4); }
+      she::Surface* bitmapS()  const { return bitmap(5); }
+      she::Surface* bitmapSW() const { return bitmap(6); }
+      she::Surface* bitmapW()  const { return bitmap(7); }
 
-      gfx::Size getSize() const;
+      gfx::Size size() const;
 
     private:
       Bitmaps m_bitmaps;

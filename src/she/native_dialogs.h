@@ -22,7 +22,7 @@ namespace she {
     virtual void setTitle(const std::string& title) = 0;
     virtual void setDefaultExtension(const std::string& extension) = 0;
     virtual void addFilter(const std::string& extension, const std::string& description) = 0;
-    virtual std::string getFileName() = 0;
+    virtual std::string fileName() = 0;
     virtual void setFileName(const std::string& filename) = 0;
     virtual bool show(Display* parent) = 0;
   };

@@ -44,7 +44,7 @@ HomeView::HomeView()
   , m_dataRecovery(nullptr)
   , m_dataRecoveryView(nullptr)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.workspace());
   setChildSpacing(8 * guiscale());
 
@@ -64,7 +64,7 @@ HomeView::~HomeView()
 {
 #ifdef ENABLE_DATA_RECOVERY
   if (m_dataRecoveryView) {
-    if (m_dataRecoveryView->getParent())
+    if (m_dataRecoveryView->parent())
       App::instance()->getMainWindow()->getWorkspace()->removeView(m_dataRecoveryView);
     delete m_dataRecoveryView;
   }
@@ -122,9 +122,9 @@ void HomeView::onOpenFile()
 
 void HomeView::onResize(ui::ResizeEvent& ev)
 {
-  headerPlaceholder()->setVisible(ev.getBounds().h > 200*ui::guiscale());
-  foldersPlaceholder()->setVisible(ev.getBounds().h > 150*ui::guiscale());
-  newsPlaceholder()->setVisible(ev.getBounds().w > 200*ui::guiscale());
+  headerPlaceholder()->setVisible(ev.bounds().h > 200*ui::guiscale());
+  foldersPlaceholder()->setVisible(ev.bounds().h > 150*ui::guiscale());
+  newsPlaceholder()->setVisible(ev.bounds().w > 200*ui::guiscale());
 
   ui::VBox::onResize(ev);
 }
@@ -149,7 +149,7 @@ void HomeView::onUpToDate()
 
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
   checkUpdate()->setUrl(url);
@@ -184,7 +184,7 @@ void HomeView::onRecoverSprites()
       });
   }
 
-  if (!m_dataRecoveryView->getParent())
+  if (!m_dataRecoveryView->parent())
     App::instance()->getMainWindow()->getWorkspace()->addView(m_dataRecoveryView);
 
   App::instance()->getMainWindow()->getTabsBar()->selectTab(m_dataRecoveryView);

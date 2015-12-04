@@ -42,7 +42,7 @@ Workspace::Workspace()
   , m_dropPreviewPanel(nullptr)
   , m_dropPreviewTabs(nullptr)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.workspace());
 
   addChild(&m_mainPanel);
@@ -156,14 +156,14 @@ void Workspace::updateTabs()
 
 void Workspace::onPaint(PaintEvent& ev)
 {
-  ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
+  ev.graphics()->fillRect(bgColor(), clientBounds());
 }
 
 void Workspace::onResize(ui::ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
 
-  gfx::Rect rc = getChildrenBounds();
+  gfx::Rect rc = childrenBounds();
   for (auto child : children())
     child->setBounds(rc);
 }
@@ -271,31 +271,31 @@ WorkspacePanel* Workspace::getViewPanel(WorkspaceView* view)
     if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
 
-    widget = widget->getParent();
+    widget = widget->parent();
   }
   return nullptr;
 }
 
 WorkspacePanel* Workspace::getPanelAt(const gfx::Point& pos)
 {
-  Widget* widget = getManager()->pick(pos);
+  Widget* widget = manager()->pick(pos);
   while (widget) {
     if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
 
-    widget = widget->getParent();
+    widget = widget->parent();
   }
   return nullptr;
 }
 
 WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& pos)
 {
-  Widget* widget = getManager()->pick(pos);
+  Widget* widget = manager()->pick(pos);
   while (widget) {
     if (widget->type() == Tabs::Type())
       return static_cast<WorkspaceTabs*>(widget);
 
-    widget = widget->getParent();
+    widget = widget->parent();
   }
   return nullptr;
 }

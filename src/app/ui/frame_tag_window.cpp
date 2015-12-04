@@ -45,7 +45,7 @@ bool FrameTagWindow::show()
 
 std::string FrameTagWindow::nameValue()
 {
-  return name()->getText();
+  return name()->text();
 }
 
 void FrameTagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
@@ -53,8 +53,8 @@ void FrameTagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
   doc::frame_t first = 0;
   doc::frame_t last = m_sprite->lastFrame();
 
-  from = this->from()->getTextInt()-1;
-  to   = this->to()->getTextInt()-1;
+  from = this->from()->textInt()-1;
+  to   = this->to()->textInt()-1;
   from = MID(first, from, last);
   to   = MID(from, to, last);
 }

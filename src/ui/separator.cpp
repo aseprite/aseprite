@@ -31,7 +31,7 @@ Separator::Separator(const std::string& text, int align)
 
 void Separator::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintSeparator(ev);
+  theme()->paintSeparator(ev);
 }
 
 void Separator::onSizeHint(SizeHintEvent& ev)
@@ -45,8 +45,8 @@ void Separator::onSizeHint(SizeHintEvent& ev)
   }
 
   if (hasText()) {
-    maxSize.w = MAX(maxSize.w, getTextWidth());
-    maxSize.h = MAX(maxSize.h, getTextHeight());
+    maxSize.w = MAX(maxSize.w, textWidth());
+    maxSize.h = MAX(maxSize.h, textHeight());
   }
 
   int w = maxSize.w + border().width();

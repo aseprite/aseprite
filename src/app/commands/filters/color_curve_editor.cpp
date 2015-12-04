@@ -185,9 +185,9 @@ void ColorCurveEditor::onSizeHint(SizeHintEvent& ev)
 
 void ColorCurveEditor::onPaint(ui::PaintEvent& ev)
 {
-  ui::Graphics* g = ev.getGraphics();
-  gfx::Rect rc = getClientBounds();
-  gfx::Rect client = getClientChildrenBounds();
+  ui::Graphics* g = ev.graphics();
+  gfx::Rect rc = clientBounds();
+  gfx::Rect client = clientChildrenBounds();
   gfx::Point pt;
   int c;
 
@@ -267,8 +267,8 @@ bool ColorCurveEditor::editNodeManually(gfx::Point& viewPt)
   window.openWindowInForeground();
 
   if (window.getKiller() == window.ok()) {
-    viewPt.x = int(window.x()->getTextDouble());
-    viewPt.y = int(window.y()->getTextDouble());
+    viewPt.x = int(window.x()->textDouble());
+    viewPt.y = int(window.y()->textDouble());
     viewPt.x = MID(0, viewPt.x, 255);
     viewPt.y = MID(0, viewPt.y, 255);
     return true;
@@ -285,7 +285,7 @@ bool ColorCurveEditor::editNodeManually(gfx::Point& viewPt)
 
 gfx::Point ColorCurveEditor::viewToClient(const gfx::Point& viewPt)
 {
-  gfx::Rect client = getClientChildrenBounds();
+  gfx::Rect client = clientChildrenBounds();
   return gfx::Point(
     client.x + client.w * (viewPt.x - m_viewBounds.x) / m_viewBounds.w,
     client.y + client.h-1 - (client.h-1) * (viewPt.y - m_viewBounds.y) / m_viewBounds.h);
@@ -293,12 +293,12 @@ gfx::Point ColorCurveEditor::viewToClient(const gfx::Point& viewPt)
 
 gfx::Point ColorCurveEditor::screenToView(const gfx::Point& screenPt)
 {
-  return clientToView(screenPt - getBounds().getOrigin());
+  return clientToView(screenPt - bounds().origin());
 }
 
 gfx::Point ColorCurveEditor::clientToView(const gfx::Point& clientPt)
 {
-  gfx::Rect client = getClientChildrenBounds();
+  gfx::Rect client = clientChildrenBounds();
   return gfx::Point(
     m_viewBounds.x + m_viewBounds.w * (clientPt.x - client.x) / client.w,
     m_viewBounds.y + m_viewBounds.h-1 - (m_viewBounds.h-1) * (clientPt.y - client.y) / client.h);

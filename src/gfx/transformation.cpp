@@ -65,7 +65,7 @@ void Transformation::displacePivotTo(const Point& newPivot)
 
   // Change the new pivot.
   m_pivot = newPivot;
-  m_bounds = Rect(Point(newBoundsOrigin), m_bounds.getSize());
+  m_bounds = Rect(Point(newBoundsOrigin), m_bounds.size());
 }
 
 PointT<double> Transformation::rotatePoint(

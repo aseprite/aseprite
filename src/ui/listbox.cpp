@@ -94,14 +94,14 @@ void ListBox::makeChildVisible(Widget* child)
   if (!view)
     return;
 
-  gfx::Point scroll = view->getViewScroll();
-  gfx::Rect vp = view->getViewportBounds();
+  gfx::Point scroll = view->viewScroll();
+  gfx::Rect vp = view->viewportBounds();
 
-  if (child->getBounds().y < vp.y)
-    scroll.y = child->getBounds().y - getBounds().y;
-  else if (child->getBounds().y > vp.y + vp.h - child->getBounds().h)
-    scroll.y = (child->getBounds().y - getBounds().y
-                - vp.h + child->getBounds().h);
+  if (child->bounds().y < vp.y)
+    scroll.y = child->bounds().y - bounds().y;
+  else if (child->bounds().y > vp.y + vp.h - child->bounds().h)
+    scroll.y = (child->bounds().y - bounds().y
+                - vp.h + child->bounds().h);
 
   view->setViewScroll(scroll);
 }
@@ -113,18 +113,18 @@ void ListBox::centerScroll()
   Widget* item = getSelectedChild();
 
   if (view && item) {
-    gfx::Rect vp = view->getViewportBounds();
-    gfx::Point scroll = view->getViewScroll();
+    gfx::Rect vp = view->viewportBounds();
+    gfx::Point scroll = view->viewScroll();
 
-    scroll.y = ((item->getBounds().y - getBounds().y)
-                - vp.h/2 + item->getBounds().h/2);
+    scroll.y = ((item->bounds().y - bounds().y)
+                - vp.h/2 + item->bounds().h/2);
 
     view->setViewScroll(scroll);
   }
 }
 
 inline bool sort_by_text(Widget* a, Widget* b) {
-  return (base::compare_filenames(a->getText(), b->getText()) < 0);
+  return (base::compare_filenames(a->text(), b->text()) < 0);
 }
 
 void ListBox::sortItems()
@@ -157,7 +157,7 @@ bool ListBox::onProcessMessage(Message* msg)
         bool pick_item = true;
 
         if (view) {
-          gfx::Rect vp = view->getViewportBounds();
+          gfx::Rect vp = view->viewportBounds();
 
           if (mousePos.y < vp.y) {
             int num = MAX(1, (vp.y - mousePos.y) / 8);
@@ -175,7 +175,7 @@ bool ListBox::onProcessMessage(Message* msg)
           Widget* picked;
 
           if (view) {
-            picked = view->getViewport()->pick(mousePos);
+            picked = view->viewport()->pick(mousePos);
           }
           else {
             picked = pick(mousePos);
@@ -199,8 +199,8 @@ bool ListBox::onProcessMessage(Message* msg)
     case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
-        gfx::Point scroll = view->getViewScroll();
-        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
+        gfx::Point scroll = view->viewScroll();
+        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * textHeight()*3;
         view->setViewScroll(scroll);
       }
       break;
@@ -234,16 +234,16 @@ bool ListBox::onProcessMessage(Message* msg)
             break;
           case kKeyPageUp:
             if (view) {
-              gfx::Rect vp = view->getViewportBounds();
-              select -= vp.h / getTextHeight();
+              gfx::Rect vp = view->viewportBounds();
+              select -= vp.h / textHeight();
             }
             else
               select = 0;
             break;
           case kKeyPageDown:
             if (view) {
-              gfx::Rect vp = view->getViewportBounds();
-              select += vp.h / getTextHeight();
+              gfx::Rect vp = view->viewportBounds();
+              select += vp.h / textHeight();
             }
             else
               select = bottom;
@@ -251,8 +251,8 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyLeft:
           case kKeyRight:
             if (view) {
-              gfx::Rect vp = view->getViewportBounds();
-              gfx::Point scroll = view->getViewScroll();
+              gfx::Rect vp = view->viewportBounds();
+              gfx::Point scroll = view->viewScroll();
               int sgn = (keymsg->scancode() == kKeyLeft) ? -1: 1;
 
               scroll.x += vp.w/2*sgn;
@@ -279,20 +279,20 @@ bool ListBox::onProcessMessage(Message* msg)
 
 void ListBox::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintListBox(ev);
+  theme()->paintListBox(ev);
 }
 
 void ListBox::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
 
-  Rect cpos = getChildrenBounds();
+  Rect cpos = childrenBounds();
 
   for (auto child : children()) {
     cpos.h = child->sizeHint().h;
     child->setBounds(cpos);
 
-    cpos.y += child->getBounds().h + this->childSpacing();
+    cpos.y += child->bounds().h + this->childSpacing();
   }
 }
 

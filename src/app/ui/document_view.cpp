@@ -232,7 +232,7 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
   newEditor->setZoom(srcEditor->zoom());
 
   View::getView(newEditor)
-    ->setViewScroll(View::getView(srcEditor)->getViewScroll());
+    ->setViewScroll(View::getView(srcEditor)->viewScroll());
 }
 
 bool DocumentView::onCloseView(Workspace* workspace)

@@ -46,11 +46,11 @@ void StyledButton::onSizeHint(SizeHintEvent& ev) {
 }
 
 void StyledButton::onPaint(PaintEvent& ev) {
-  Graphics* g = ev.getGraphics();
+  Graphics* g = ev.graphics();
   skin::Style::State state;
   if (hasMouse()) state += skin::Style::hover();
   if (isSelected()) state += skin::Style::clicked();
-  m_style->paint(g, getClientBounds(), NULL, state);
+  m_style->paint(g, clientBounds(), NULL, state);
 }
 
 } // namespace app

@@ -147,11 +147,11 @@ namespace app {
     };
 
     inline SkinPartPtr get_part_by_id(const std::string& id) {
-      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getPartById(id);
+      return static_cast<SkinTheme*>(ui::Manager::getDefault()->theme())->getPartById(id);
     }
 
     inline gfx::Color get_color_by_id(const std::string& id) {
-      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getColorById(id);
+      return static_cast<SkinTheme*>(ui::Manager::getDefault()->theme())->getColorById(id);
     }
 
   } // namespace skin

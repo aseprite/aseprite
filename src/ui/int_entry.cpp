@@ -48,7 +48,7 @@ IntEntry::~IntEntry()
 
 int IntEntry::getValue() const
 {
-  int value = m_slider.convertTextToValue(getText());
+  int value = m_slider.convertTextToValue(text());
   return MID(m_min, value, m_max);
 }
 
@@ -85,7 +85,7 @@ bool IntEntry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = getManager()->pick(mouseMsg->position());
+        Widget* pick = manager()->pick(mouseMsg->position());
         if (pick == &m_slider) {
           releaseMouse();
 
@@ -129,11 +129,11 @@ bool IntEntry::onProcessMessage(Message* msg)
 
 void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
-  int min_w = getFont()->textLength(m_slider.convertValueToText(m_min));
-  int max_w = getFont()->textLength(m_slider.convertValueToText(m_max));
+  int min_w = font()->textLength(m_slider.convertValueToText(m_min));
+  int max_w = font()->textLength(m_slider.convertValueToText(m_max));
 
-  int w = MAX(min_w, max_w) + getFont()->charWidth('%');
-  int h = getTextHeight();
+  int w = MAX(min_w, max_w) + font()->charWidth('%');
+  int h = textHeight();
 
   w += border().width();
   h += border().height();
@@ -156,7 +156,7 @@ void IntEntry::openPopup()
 {
   m_slider.setValue(getValue());
 
-  Rect rc = getBounds();
+  Rect rc = bounds();
   int sliderH = m_slider.sizeHint().h;
 
   if (rc.y+rc.h+sliderH < ui::display_h())
@@ -167,7 +167,7 @@ void IntEntry::openPopup()
   rc.h = sliderH;
   rc.w = 128*guiscale();
   if (rc.x+rc.w > ui::display_w())
-    rc.x = rc.x - rc.w + getBounds().w;
+    rc.x = rc.x - rc.w + bounds().w;
 
   m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
@@ -176,8 +176,8 @@ void IntEntry::openPopup()
   m_popupWindow->setBounds(rc);
   m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
-  Region rgn(rc.createUnion(getBounds()));
-  rgn.createUnion(rgn, Region(getBounds()));
+  Region rgn(rc.createUnion(bounds()));
+  rgn.createUnion(rgn, Region(bounds()));
   m_popupWindow->setHotRegion(rgn);
 
   m_popupWindow->addChild(&m_slider);
@@ -213,7 +213,7 @@ void IntEntry::onPopupClose(CloseEvent& ev)
 void IntEntry::removeSlider()
 {
   if (m_popupWindow &&
-      m_slider.getParent() == m_popupWindow) {
+      m_slider.parent() == m_popupWindow) {
     m_popupWindow->removeChild(&m_slider);
   }
 }

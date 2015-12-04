@@ -41,8 +41,8 @@ namespace app {
 
     protected:
       void onPaint(ui::PaintEvent& ev) override {
-        gfx::Rect bounds(Base::getClientBounds());
-        ui::Graphics* g = ev.getGraphics();
+        gfx::Rect bounds(Base::clientBounds());
+        ui::Graphics* g = ev.graphics();
         SkinPartPtr part;
 
         if (Base::isSelected())
@@ -52,7 +52,7 @@ namespace app {
         else
           part = m_partNormal;
 
-        g->drawRgbaSurface(part->getBitmap(0), bounds.x, bounds.y);
+        g->drawRgbaSurface(part->bitmap(0), bounds.x, bounds.y);
       }
 
     private:

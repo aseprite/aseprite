@@ -76,8 +76,8 @@ namespace ui {
     // FONT & TEXT
     // ======================================================================
 
+    she::Font* font() { return m_font; }
     void setFont(she::Font* font);
-    she::Font* getFont() { return m_font; }
 
     void drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y);
     void drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);

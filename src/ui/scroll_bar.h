@@ -15,8 +15,8 @@ namespace ui {
   class ScrollableViewDelegate {
   public:
     virtual ~ScrollableViewDelegate() { }
-    virtual gfx::Size getVisibleSize() const = 0;
-    virtual gfx::Point getViewScroll() const = 0;
+    virtual gfx::Size visibleSize() const = 0;
+    virtual gfx::Point viewScroll() const = 0;
     virtual void setViewScroll(const gfx::Point& pt) = 0;
   };
 
@@ -30,7 +30,7 @@ namespace ui {
     int getPos() const { return m_pos; }
     void setPos(int pos);
 
-    int getSize() const { return m_size; }
+    int size() const { return m_size; }
     void setSize(int size);
 
     // For themes

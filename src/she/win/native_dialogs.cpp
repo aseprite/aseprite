@@ -60,7 +60,7 @@ public:
     m_filters.push_back(std::make_pair(extension, description));
   }
 
-  std::string getFileName() override {
+  std::string fileName() override {
     return base::to_utf8(&m_filename[0]);
   }
 

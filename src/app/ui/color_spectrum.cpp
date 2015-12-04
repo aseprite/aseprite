@@ -41,15 +41,15 @@ ColorSpectrum::~ColorSpectrum()
 
 app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
 {
-  gfx::Rect rc = getChildrenBounds();
+  gfx::Rect rc = childrenBounds();
   if (rc.isEmpty() || !rc.contains(pos))
     return app::Color::fromMask();
 
-  int vmid = (getAlign() & HORIZONTAL ? rc.h/2 : rc.w/2);
+  int vmid = (align() & HORIZONTAL ? rc.h/2 : rc.w/2);
   vmid = MAX(1, vmid);
 
   int u, v, umax;
-  if (getAlign() & HORIZONTAL) {
+  if (align() & HORIZONTAL) {
     u = pos.x - rc.x;
     v = pos.y - rc.y;
     umax = MAX(1, rc.w-1);
@@ -88,24 +88,24 @@ void ColorSpectrum::onResize(ui::ResizeEvent& ev)
 
 void ColorSpectrum::onPaint(ui::PaintEvent& ev)
 {
-  ui::Graphics* g = ev.getGraphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  ui::Graphics* g = ev.graphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
-  theme->drawRect(g, getClientBounds(),
+  theme->drawRect(g, clientBounds(),
                   theme->parts.editorNormal().get(),
-                  getBgColor());
+                  bgColor());
 
-  gfx::Rect rc = getClientChildrenBounds();
+  gfx::Rect rc = clientChildrenBounds();
   if (rc.isEmpty())
     return;
 
-  int vmid = (getAlign() & HORIZONTAL ? rc.h/2 : rc.w/2);
+  int vmid = (align() & HORIZONTAL ? rc.h/2 : rc.w/2);
   vmid = MAX(1, vmid);
 
   for (int y=0; y<rc.h; ++y) {
     for (int x=0; x<rc.w; ++x) {
       int u, v, umax;
-      if (getAlign() & HORIZONTAL) {
+      if (align() & HORIZONTAL) {
         u = x;
         v = y;
         umax = MAX(1, rc.w-1);
@@ -138,7 +138,7 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
     gfx::Point pos(rc.x + hue * rc.w / 360,
                    rc.y + rc.h - (lit * rc.h / 100));
 
-    she::Surface* icon = theme->parts.colorWheelIndicator()->getBitmap(0);
+    she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
     g->drawRgbaSurface(icon,
                        pos.x-icon->width()/2,
                        pos.y-icon->height()/2);
@@ -173,7 +173,7 @@ bool ColorSpectrum::onProcessMessage(ui::Message* msg)
 
     case kSetCursorMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      if (getChildrenBounds().contains(mouseMsg->position())) {
+      if (childrenBounds().contains(mouseMsg->position())) {
         ui::set_mouse_cursor(kEyedropperCursor);
         return true;
       }

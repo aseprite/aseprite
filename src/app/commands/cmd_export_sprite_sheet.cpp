@@ -411,24 +411,24 @@ public:
 
   int columnsValue() const {
     if (spriteSheetTypeValue() != SpriteSheetType::Columns)
-      return columns()->getTextInt();
+      return columns()->textInt();
     else
       return 0;
   }
 
   int rowsValue() const {
     if (spriteSheetTypeValue() == SpriteSheetType::Columns)
-      return rows()->getTextInt();
+      return rows()->textInt();
     else
       return 0;
   }
 
   int fitWidthValue() const {
-    return fitWidth()->getEntryWidget()->getTextInt();
+    return fitWidth()->getEntryWidget()->textInt();
   }
 
   int fitHeightValue() const {
-    return fitHeight()->getEntryWidget()->getTextInt();
+    return fitHeight()->getEntryWidget()->textInt();
   }
 
   bool bestFitValue() const {
@@ -451,7 +451,7 @@ public:
 
   int borderPaddingValue() const {
     if (paddingEnabled()->isSelected()) {
-      int value = borderPadding()->getTextInt();
+      int value = borderPadding()->textInt();
       return MID(0, value, 100);
     }
     else
@@ -460,7 +460,7 @@ public:
 
   int shapePaddingValue() const {
     if (paddingEnabled()->isSelected()) {
-      int value = shapePadding()->getTextInt();
+      int value = shapePadding()->textInt();
       return MID(0, value, 100);
     }
     else
@@ -469,7 +469,7 @@ public:
 
   int innerPaddingValue() const {
     if (paddingEnabled()->isSelected()) {
-      int value = innerPadding()->getTextInt();
+      int value = innerPadding()->textInt();
       return MID(0, value, 100);
     }
     else
@@ -634,7 +634,7 @@ private:
 
   void resize() {
     gfx::Size reqSize = sizeHint();
-    moveWindow(gfx::Rect(getOrigin(), reqSize));
+    moveWindow(gfx::Rect(origin(), reqSize));
     layout();
     invalidate();
   }

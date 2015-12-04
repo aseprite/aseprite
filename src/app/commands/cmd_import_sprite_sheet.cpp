@@ -130,12 +130,12 @@ protected:
   }
 
   gfx::Rect getRectFromEntries() {
-    int w = width()->getTextInt();
-    int h = height()->getTextInt();
+    int w = width()->textInt();
+    int h = height()->textInt();
 
     return gfx::Rect(
-      x()->getTextInt(),
-      y()->getTextInt(),
+      x()->textInt(),
+      y()->textInt(),
       std::max<int>(1, w),
       std::max<int>(1, h));
   }

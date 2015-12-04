@@ -51,7 +51,7 @@ public:
   void right(const T& right) { m_right = right; }
   void bottom(const T& bottom) { m_bottom = bottom; }
 
-  SizeT<T> getSize() const {
+  SizeT<T> size() const {
     return SizeT<T>(m_left + m_right, m_top + m_bottom);
   }
 

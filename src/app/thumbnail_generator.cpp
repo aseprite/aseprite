@@ -188,7 +188,7 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
   base::UniquePtr<FileOp> fop(
     FileOp::createLoadDocumentOperation(
       nullptr,
-      fileitem->getFileName().c_str(),
+      fileitem->fileName().c_str(),
       FILE_LOAD_SEQUENCE_NONE |
       FILE_LOAD_ONE_FRAME));
   if (!fop)

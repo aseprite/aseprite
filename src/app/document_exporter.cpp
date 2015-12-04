@@ -138,7 +138,7 @@ public:
   const gfx::Rect& inTextureBounds() const { return m_bounds->inTextureBounds(); }
 
   gfx::Size requiredSize() const {
-    gfx::Size size = m_bounds->trimmedBounds().getSize();
+    gfx::Size size = m_bounds->trimmedBounds().size();
     size.w += 2*m_innerPadding;
     size.h += 2*m_innerPadding;
     return size;

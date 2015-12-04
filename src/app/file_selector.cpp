@@ -50,7 +50,7 @@ std::string show_file_selector(
         dlg->addFilter(tok, tok + " files (*." + tok + ")");
 
       if (dlg->show(she::instance()->defaultDisplay()))
-        res = dlg->getFileName();
+        res = dlg->fileName();
 
       dlg->dispose();
       return res;

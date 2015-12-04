@@ -12,8 +12,7 @@
 
 namespace ui {
 
-  class Splitter : public Widget
-  {
+  class Splitter : public Widget {
   public:
     enum Type { ByPercentage, ByPixel };
 

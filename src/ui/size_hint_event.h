@@ -16,11 +16,7 @@ namespace ui {
   class Widget;
 
   class SizeHintEvent : public Event {
-    gfx::Size m_fitIn;
-    gfx::Size m_sizeHint;
-
   public:
-
     SizeHintEvent(Widget* source, const gfx::Size& fitIn);
     virtual ~SizeHintEvent();
 
@@ -32,6 +28,9 @@ namespace ui {
     void setSizeHint(const gfx::Size& sz);
     void setSizeHint(int w, int h);
 
+  private:
+    gfx::Size m_fitIn;
+    gfx::Size m_sizeHint;
   };
 
 } // namespace ui

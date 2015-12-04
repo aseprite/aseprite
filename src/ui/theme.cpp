@@ -64,7 +64,7 @@ void CurrentTheme::set(Theme* theme)
     current_theme->regenerate();
 
     Manager* manager = Manager::getDefault();
-    if (manager && !manager->getTheme())
+    if (manager && !manager->theme())
       manager->setTheme(theme);
   }
 }
@@ -78,32 +78,32 @@ void drawTextBox(Graphics* g, Widget* widget,
   int* w, int* h, gfx::Color bg, gfx::Color fg)
 {
   View* view = View::getView(widget);
-  char* text = const_cast<char*>(widget->getText().c_str());
+  char* text = const_cast<char*>(widget->text().c_str());
   char* beg, *end;
   int x1, y1, x2, y2;
   int x, y, chr, len;
   gfx::Point scroll;
   int viewport_w, viewport_h;
-  int textheight = widget->getTextHeight();
-  she::Font* font = widget->getFont();
+  int textheight = widget->textHeight();
+  she::Font* font = widget->font();
   char *beg_end, *old_end;
   int width;
 
   if (view) {
-    gfx::Rect vp = view->getViewportBounds()
-      .offset(-view->getViewport()->getBounds().getOrigin());
+    gfx::Rect vp = view->viewportBounds()
+      .offset(-view->viewport()->bounds().origin());
 
     x1 = vp.x;
     y1 = vp.y;
     viewport_w = vp.w;
     viewport_h = vp.h;
-    scroll = view->getViewScroll();
+    scroll = view->viewScroll();
   }
   else {
-    x1 = widget->getClientBounds().x + widget->border().left();
-    y1 = widget->getClientBounds().y + widget->border().top();
-    viewport_w = widget->getClientBounds().w - widget->border().width();
-    viewport_h = widget->getClientBounds().h - widget->border().height();
+    x1 = widget->clientBounds().x + widget->border().left();
+    y1 = widget->clientBounds().y + widget->border().top();
+    viewport_w = widget->clientBounds().w - widget->border().width();
+    viewport_h = widget->clientBounds().h - widget->border().height();
     scroll.x = scroll.y = 0;
   }
   x2 = x1 + viewport_w;
@@ -112,8 +112,8 @@ void drawTextBox(Graphics* g, Widget* widget,
   chr = 0;
 
   // Without word-wrap
-  if (!(widget->getAlign() & WORDWRAP)) {
-    width = widget->getClientBounds().w;
+  if (!(widget->align() & WORDWRAP)) {
+    width = widget->clientBounds().w;
   }
   // With word-wrap
   else {
@@ -145,7 +145,7 @@ void drawTextBox(Graphics* g, Widget* widget,
     x = x1 - scroll.x;
 
     // Without word-wrap
-    if (!(widget->getAlign() & WORDWRAP)) {
+    if (!(widget->align() & WORDWRAP)) {
       end = std::strchr(beg, '\n');
       if (end) {
         chr = *end;
@@ -195,9 +195,9 @@ void drawTextBox(Graphics* g, Widget* widget,
     if (g) {
       int xout;
 
-      if (widget->getAlign() & CENTER)
+      if (widget->align() & CENTER)
         xout = x + width/2 - len/2;
-      else if (widget->getAlign() & RIGHT)
+      else if (widget->align() & RIGHT)
         xout = x + width - len;
       else                      // Left align
         xout = x;

@@ -105,7 +105,7 @@ private:
 
     if (oldSelected) {
       for (auto child : m_stockListBox->children()) {
-        if (child->getText() == oldSelected) {
+        if (child->text() == oldSelected) {
           select_this = child;
           break;
         }
@@ -123,7 +123,7 @@ private:
   void onMatrixChange()
   {
     Widget* selected = m_stockListBox->getSelectedChild();
-    base::SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText().c_str());
+    base::SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->text().c_str());
     Target newTarget = matrix->getDefaultTarget();
 
     m_filter.setMatrix(matrix);

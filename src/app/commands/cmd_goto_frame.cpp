@@ -125,7 +125,7 @@ protected:
       if (window.getKiller() != window.ok())
         return editor->frame();
 
-      m_frame = window.frame()->getTextInt();
+      m_frame = window.frame()->textInt();
     }
 
     return MID(0, m_frame-1, editor->sprite()->lastFrame());

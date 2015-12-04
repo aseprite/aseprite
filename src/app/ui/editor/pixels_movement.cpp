@@ -142,7 +142,7 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
   // Flip the mask.
   doc::algorithm::flip_image(
     m_initialMask->bitmap(),
-    gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().getSize()),
+    gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().size()),
     flipType);
 
   {
@@ -465,7 +465,7 @@ void PixelsMovement::getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
   gfx::Rect bounds = m_currentData.transformedBounds();
   base::UniquePtr<Image> image(Image::create(m_sprite->pixelFormat(), bounds.w, bounds.h));
 
-  drawImage(image, bounds.getOrigin(), false);
+  drawImage(image, bounds.origin(), false);
 
   // Draw mask without shrinking it, so the mask size is equal to the
   // "image" render.
@@ -544,7 +544,7 @@ void PixelsMovement::dropImageTemporarily()
 
       // Get the a factor for the X/Y position of the initial pivot
       // position inside the initial non-rotated bounds.
-      gfx::PointT<double> pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().getOrigin());
+      gfx::PointT<double> pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().origin());
       pivotPosFactor.x /= m_initialData.bounds().w;
       pivotPosFactor.y /= m_initialData.bounds().h;
 
@@ -622,7 +622,7 @@ gfx::Rect PixelsMovement::getImageBounds()
 
 gfx::Size PixelsMovement::getInitialImageSize() const
 {
-  return m_initialData.bounds().getSize();
+  return m_initialData.bounds().size();
 }
 
 void PixelsMovement::setMaskColor(bool opaque, color_t mask_color)
@@ -651,7 +651,7 @@ void PixelsMovement::redrawExtraImage()
 
   // Draw the transformed pixels in the extra-cel which is the chunk
   // of pixels that the user is moving.
-  drawImage(m_extraCel->image(), bounds.getOrigin(), true);
+  drawImage(m_extraCel->image(), bounds.origin(), true);
 }
 
 void PixelsMovement::redrawCurrentMask()
@@ -707,7 +707,7 @@ void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
   drawParallelogram(mask->bitmap(),
                     m_initialMask->bitmap(),
                     nullptr,
-                    corners, bounds.getOrigin());
+                    corners, bounds.origin());
   if (shrink)
     mask->unfreeze();
 }
@@ -723,7 +723,7 @@ void PixelsMovement::drawParallelogram(
   // fast rotation algorithm, as it's pixel-perfect match with the
   // original selection when just a translation is applied.
   if (m_currentData.angle() == 0.0 &&
-      m_currentData.bounds().getSize() == src->size()) {
+      m_currentData.bounds().size() == src->size()) {
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 

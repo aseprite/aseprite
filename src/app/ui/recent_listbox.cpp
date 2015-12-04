@@ -45,7 +45,7 @@ public:
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Style* style = theme->styles.recentFile();
     Style* styleDetail = theme->styles.recentFileDetail();
     Style::State state;
@@ -55,16 +55,16 @@ protected:
   }
 
   void onPaint(PaintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-    Graphics* g = ev.getGraphics();
-    gfx::Rect bounds = getClientBounds();
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    Graphics* g = ev.graphics();
+    gfx::Rect bounds = clientBounds();
     Style* style = theme->styles.recentFile();
     Style* styleDetail = theme->styles.recentFileDetail();
 
     Style::State state;
-    if (hasMouse() && !getManager()->getCapture()) state += Style::hover();
+    if (hasMouse() && !manager()->getCapture()) state += Style::hover();
     if (isSelected()) state += Style::active();
-    if (getParent()->hasCapture()) state += Style::clicked();
+    if (parent()->hasCapture()) state += Style::clicked();
 
     std::string name = this->name();
     style->paint(g, bounds, name.c_str(), state);
@@ -77,12 +77,12 @@ protected:
   }
 
   void onClick() override {
-    static_cast<RecentListBox*>(getParent())->onClick(getText());
+    static_cast<RecentListBox*>(parent())->onClick(text());
   }
 
 private:
-  std::string name() const { return base::get_file_name(getText()); }
-  std::string path() const { return base::get_file_path(getText()); }
+  std::string name() const { return base::get_file_name(text()); }
+  std::string path() const { return base::get_file_path(text()); }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -97,8 +97,8 @@ RecentListBox::RecentListBox()
 
 void RecentListBox::rebuildList()
 {
-  while (getLastChild())
-    removeChild(getLastChild());
+  while (lastChild())
+    removeChild(lastChild());
 
   onRebuildList();
 

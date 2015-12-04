@@ -93,7 +93,7 @@ void MoveMaskCommand::onExecute(Context* context)
 {
   DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
-  gfx::Rect vp = view->getViewportBounds();
+  gfx::Rect vp = view->viewportBounds();
   gfx::Rect gridBounds = docPref.grid.bounds();
   int dx = 0;
   int dy = 0;
@@ -140,7 +140,7 @@ void MoveMaskCommand::onExecute(Context* context)
       Document* document(writer.document());
       {
         Transaction transaction(writer.context(), "Move Selection", DoesntModifyDocument);
-        gfx::Point pt = document->mask()->bounds().getOrigin();
+        gfx::Point pt = document->mask()->bounds().origin();
         document->getApi(transaction).setMaskPosition(pt.x+dx, pt.y+dy);
         transaction.commit();
       }

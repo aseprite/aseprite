@@ -49,9 +49,9 @@ protected:
   }
 
   void onPaint(PaintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-    Graphics* g = ev.getGraphics();
-    gfx::Rect bounds = getClientBounds();
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    Graphics* g = ev.graphics();
+    gfx::Rect bounds = clientBounds();
     gfx::Color bgcolor, fgcolor;
 
     if (isSelected()) {
@@ -65,7 +65,7 @@ protected:
 
     g->fillRect(bgcolor, bounds);
 
-    static_cast<ResourcesListBox*>(getParent())->
+    static_cast<ResourcesListBox*>(parent())->
       paintResource(g, bounds, m_resource);
 
     // for (int i=0; i<m_palette->size(); ++i) {
@@ -79,15 +79,15 @@ protected:
     //   box.x += box.w;
     // }
 
-    g->drawString(getText(), fgcolor, gfx::ColorNone,
+    g->drawString(text(), fgcolor, gfx::ColorNone,
       gfx::Point(
         bounds.x + guiscale()*2,
-        bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
+        bounds.y + bounds.h/2 - g->measureUIString(text()).h/2));
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
     ev.setSizeHint(
-      static_cast<ResourcesListBox*>(getParent())->
+      static_cast<ResourcesListBox*>(parent())->
         resourceSizeHint(m_resource));
   }
 

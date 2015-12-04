@@ -91,17 +91,17 @@ void AppMenuItem::onSizeHint(SizeHintEvent& ev)
 
   if (hasText()) {
     size.w =
-      + getTextWidth()
-      + (inBar() ? this->childSpacing()/4: this->childSpacing())
+      + textWidth()
+      + (inBar() ? childSpacing()/4: childSpacing())
       + border().width();
 
     size.h =
-      + getTextHeight()
+      + textHeight()
       + border().height();
 
     if (m_key && !m_key->accels().empty()) {
       size.w += Graphics::measureUIStringLength(
-        m_key->accels().front().toString().c_str(), getFont());
+        m_key->accels().front().toString().c_str(), font());
     }
   }
 

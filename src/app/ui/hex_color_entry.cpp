@@ -53,7 +53,7 @@ void HexColorEntry::setColor(const app::Color& color)
 
 void HexColorEntry::onEntryChange()
 {
-  std::string text = m_entry.getText();
+  std::string text = m_entry.text();
   int r, g, b;
 
   // Remove non hex digits

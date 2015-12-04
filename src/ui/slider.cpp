@@ -118,7 +118,7 @@ bool Slider::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         int value, accuracy, range;
-        gfx::Rect rc = getChildrenBounds();
+        gfx::Rect rc = childrenBounds();
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         range = m_max - m_min + 1;
@@ -216,11 +216,11 @@ not_used:;
 
 void Slider::onSizeHint(SizeHintEvent& ev)
 {
-  int min_w = getFont()->textLength(convertValueToText(m_min));
-  int max_w = getFont()->textLength(convertValueToText(m_max));
+  int min_w = font()->textLength(convertValueToText(m_min));
+  int max_w = font()->textLength(convertValueToText(m_max));
 
   int w = MAX(min_w, max_w);
-  int h = getTextHeight();
+  int h = textHeight();
 
   w += border().width();
   h += border().height();
@@ -230,7 +230,7 @@ void Slider::onSizeHint(SizeHintEvent& ev)
 
 void Slider::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintSlider(ev);
+  theme()->paintSlider(ev);
 }
 
 void Slider::onChange()

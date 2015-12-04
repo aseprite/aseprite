@@ -142,7 +142,7 @@ private:
   // Returns a little rectangle that can be used by the popup as the
   // first brush position.
   gfx::Rect getPopupBox() {
-    Rect rc = getBounds();
+    Rect rc = bounds();
     rc.y += rc.h - 2*guiscale();
     rc.setSize(sizeHint());
     return rc;
@@ -154,7 +154,7 @@ private:
     m_popupWindow.regenerate(getPopupBox(), m_owner->getBrushes());
     m_popupWindow.setBrush(brush.get());
 
-    Region rgn(m_popupWindow.getBounds().createUnion(getBounds()));
+    Region rgn(m_popupWindow.bounds().createUnion(bounds()));
     m_popupWindow.setHotRegion(rgn);
 
     m_popupWindow.openWindow();
@@ -375,7 +375,7 @@ protected:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
 
-    gfx::Rect bounds = getBounds();
+    gfx::Rect bounds = this->bounds();
 
     AppMenus::instance()
       ->getInkPopupMenu()
@@ -460,7 +460,7 @@ class ContextBar::InkShadesField : public HBox {
     void setShade(const Shade& shade) {
       m_shade = shade;
       invalidate();
-      getParent()->getParent()->layout();
+      parent()->parent()->layout();
     }
 
   private:
@@ -481,7 +481,7 @@ class ContextBar::InkShadesField : public HBox {
         ++i;
       }
 
-      getParent()->getParent()->layout();
+      parent()->parent()->layout();
     }
 
     bool onProcessMessage(ui::Message* msg) override {
@@ -535,7 +535,7 @@ class ContextBar::InkShadesField : public HBox {
 
             // Relayout the context bar if we have removed an entry.
             if (m_hotIndex < 0)
-              getParent()->getParent()->layout();
+              parent()->parent()->layout();
           }
 
           if (hasCapture())
@@ -545,8 +545,8 @@ class ContextBar::InkShadesField : public HBox {
 
         case kMouseMoveMessage: {
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-          gfx::Point mousePos = mouseMsg->position() - getBounds().getOrigin();
-          gfx::Rect bounds = getClientBounds();
+          gfx::Point mousePos = mouseMsg->position() - bounds().origin();
+          gfx::Rect bounds = clientBounds();
           int hot = -1;
 
           bounds.shrink(3*guiscale());
@@ -577,7 +577,7 @@ class ContextBar::InkShadesField : public HBox {
     void onSizeHint(SizeHintEvent& ev) override {
       int size = this->size();
       if (size < 2)
-        ev.setSizeHint(Size((16+m_boxSize)*guiscale()+getTextWidth(), 18*guiscale()));
+        ev.setSizeHint(Size((16+m_boxSize)*guiscale()+textWidth(), 18*guiscale()));
       else {
         if (m_click == Select && size > 16)
           size = 16;
@@ -587,10 +587,10 @@ class ContextBar::InkShadesField : public HBox {
 
     void onPaint(PaintEvent& ev) override {
       SkinTheme* theme = SkinTheme::instance();
-      Graphics* g = ev.getGraphics();
-      gfx::Rect bounds = getClientBounds();
+      Graphics* g = ev.graphics();
+      gfx::Rect bounds = clientBounds();
 
-      gfx::Color bg = getBgColor();
+      gfx::Color bg = bgColor();
       if (m_click == Select && hasMouseOver())
         bg = theme->colors.menuitemHighlightFace();
       g->fillRect(bg, bounds);
@@ -653,7 +653,7 @@ class ContextBar::InkShadesField : public HBox {
       }
       else {
         g->fillRect(theme->colors.editorFace(), bounds);
-        g->drawAlignedUIString(getText(), theme->colors.face(), gfx::ColorNone, bounds,
+        g->drawAlignedUIString(text(), theme->colors.face(), gfx::ColorNone, bounds,
                                ui::CENTER | ui::MIDDLE);
       }
     }
@@ -669,7 +669,7 @@ class ContextBar::InkShadesField : public HBox {
 
 public:
   InkShadesField()
-    : m_button(SkinTheme::instance()->parts.iconArrowDown()->getBitmap(0))
+    : m_button(SkinTheme::instance()->parts.iconArrowDown()->bitmap(0))
     , m_shade(Shade(), ShadeWidget::DragAndDrop)
     , m_loaded(false) {
     SkinTheme* theme = SkinTheme::instance();
@@ -699,7 +699,7 @@ public:
 private:
   void onShowMenu() {
     loadShades();
-    gfx::Rect bounds = m_button.getBounds();
+    gfx::Rect bounds = m_button.bounds();
 
     Menu menu;
     MenuItem
@@ -729,7 +729,7 @@ private:
             m_shade.setShade(shade);
           });
 
-        auto close = new IconButton(theme->parts.iconClose()->getBitmap(0));
+        auto close = new IconButton(theme->parts.iconClose()->bitmap(0));
         close->setBgColor(theme->colors.menuitemNormalFace());
         close->Click.connect(
           Bind<void>(
@@ -882,7 +882,7 @@ public:
 private:
 
   void onPopup() {
-    gfx::Rect bounds = getBounds();
+    gfx::Rect bounds = this->bounds();
 
     Menu menu;
     MenuItem
@@ -962,8 +962,8 @@ private:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
 
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-    gfx::Rect bounds = getBounds();
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    gfx::Rect bounds = this->bounds();
 
     Menu menu;
     CheckBox visible("Display pivot by default");
@@ -1111,7 +1111,7 @@ class ContextBar::SelectionModeField : public ButtonSet
 {
 public:
   SelectionModeField() : ButtonSet(3) {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
     addItem(theme->parts.selectionReplace());
     addItem(theme->parts.selectionAdd());
@@ -1144,7 +1144,7 @@ class ContextBar::DropPixelsField : public ButtonSet
 {
 public:
   DropPixelsField() : ButtonSet(2) {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
     addItem(theme->parts.dropPixelsOk());
     addItem(theme->parts.dropPixelsCancel());
@@ -1283,7 +1283,7 @@ ContextBar::ContextBar()
   border.bottom(2*guiscale());
   setBorder(border);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.workspace());
 
   addChild(m_selectionOptionsBox = new HBox());
@@ -1608,7 +1608,7 @@ void ContextBar::updateForMovingPixels()
 
 void ContextBar::updateForSelectingBox(const std::string& text)
 {
-  if (m_selectBoxHelp->isVisible() && m_selectBoxHelp->getText() == text)
+  if (m_selectBoxHelp->isVisible() && m_selectBoxHelp->text() == text)
     return;
 
   updateForTool(nullptr);

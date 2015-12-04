@@ -29,10 +29,10 @@ Viewport::Viewport()
 
 void Viewport::onResize(ResizeEvent& ev)
 {
-  Rect rect = ev.getBounds();
+  Rect rect = ev.bounds();
   setBoundsQuietly(rect);
 
-  Point scroll = static_cast<View*>(this->getParent())->getViewScroll();
+  Point scroll = static_cast<View*>(parent())->viewScroll();
 
   Rect cpos(0, 0, 0, 0);
   cpos.x = rect.x + border().left() - scroll.x;
@@ -56,7 +56,7 @@ void Viewport::onSizeHint(SizeHintEvent& ev)
 
 void Viewport::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintViewViewport(ev);
+  theme()->paintViewViewport(ev);
 }
 
 Size Viewport::calculateNeededSize()

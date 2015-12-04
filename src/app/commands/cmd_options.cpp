@@ -211,7 +211,7 @@ public:
     m_curPref->bg.color2(m_checked_bg_color2->getColor());
 
     int undo_size_limit_value;
-    undo_size_limit_value = undoSizeLimit()->getTextInt();
+    undo_size_limit_value = undoSizeLimit()->textInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
 
     m_preferences.undo.sizeLimit(undo_size_limit_value);

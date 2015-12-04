@@ -58,20 +58,20 @@ void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
 
 ButtonSet* ButtonSet::Item::buttonSet()
 {
-  return static_cast<ButtonSet*>(getParent());
+  return static_cast<ButtonSet*>(parent());
 }
 
 void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  Graphics* g = ev.getGraphics();
-  gfx::Rect rc = getClientBounds();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  Graphics* g = ev.graphics();
+  gfx::Rect rc = clientBounds();
   gfx::Color fg, bg;
   SkinPartPtr nw;
   gfx::Rect boxRc, textRc, iconRc;
   gfx::Size iconSize;
   if (m_icon)
-    iconSize = m_icon->getSize();
+    iconSize = m_icon->size();
 
   getTextIconInfo(
     &boxRc, &textRc, &iconRc,
@@ -87,8 +87,8 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     iconRc.y -= 1*guiscale();
   }
 
-  if (!gfx::is_transparent(getBgColor()))
-    g->fillRect(getBgColor(), g->getClipBounds());
+  if (!gfx::is_transparent(bgColor()))
+    g->fillRect(bgColor(), g->getClipBounds());
 
   if (isSelected() || hasMouseOver()) {
     if (hasCapture()) {
@@ -124,15 +124,15 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 
   if (m_icon) {
     if (isSelected() && hasCapture())
-      g->drawColoredRgbaSurface(m_icon->getBitmap(0), theme->colors.buttonSelectedText(),
+      g->drawColoredRgbaSurface(m_icon->bitmap(0), theme->colors.buttonSelectedText(),
                                 iconRc.x, iconRc.y);
     else
-      g->drawRgbaSurface(m_icon->getBitmap(0), iconRc.x, iconRc.y);
+      g->drawRgbaSurface(m_icon->bitmap(0), iconRc.x, iconRc.y);
   }
 
   if (hasText()) {
-    g->setFont(getFont());
-    g->drawUIString(getText(), fg, gfx::ColorNone, textRc.getOrigin(),
+    g->setFont(font());
+    g->drawUIString(text(), fg, gfx::ColorNone, textRc.origin(),
                     false);
   }
 }
@@ -154,8 +154,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         bool mnemonicPressed =
           (msg->altPressed() &&
-           getMnemonicChar() &&
-           getMnemonicChar() == tolower(keymsg->unicodeChar()));
+           mnemonicChar() &&
+           mnemonicChar() == tolower(keymsg->unicodeChar()));
 
         if (mnemonicPressed ||
             (hasFocus() && keymsg->scancode() == kKeySpace)) {
@@ -210,7 +210,7 @@ void ButtonSet::Item::onSizeHint(ui::SizeHintEvent& ev)
 {
   gfx::Size iconSize;
   if (m_icon) {
-    iconSize = m_icon->getSize();
+    iconSize = m_icon->size();
     iconSize.w = MAX(iconSize.w, 16*guiscale());
     iconSize.h = MAX(iconSize.h, 16*guiscale());
   }
@@ -221,7 +221,7 @@ void ButtonSet::Item::onSizeHint(ui::SizeHintEvent& ev)
     CENTER | (hasText() ? BOTTOM: MIDDLE),
     iconSize.w, iconSize.h);
 
-  gfx::Size sz = boxRc.getSize();
+  gfx::Size sz = boxRc.size();
   if (hasText())
     sz += 8*guiscale();
 

@@ -116,7 +116,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
           // the tooltip window.
           case kCloseOnClickInOtherWindow: {
             Widget* picked = pick(mousePos);
-            if (!picked || picked->getRoot() != this) {
+            if (!picked || picked->window() != this) {
               closeWindow(NULL);
             }
             break;
@@ -134,7 +134,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (!isMoveable() &&
           !m_hotRegion.isEmpty() &&
-          getManager()->getCapture() == NULL) {
+          manager()->getCapture() == NULL) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         // If the mouse is outside the hot-region we have to close the
@@ -152,13 +152,13 @@ bool PopupWindow::onProcessMessage(Message* msg)
 void PopupWindow::onSizeHint(SizeHintEvent& ev)
 {
   ScreenGraphics g;
-  g.setFont(getFont());
+  g.setFont(font());
   Size resultSize(0, 0);
 
   if (hasText())
-    resultSize = g.fitString(getText(),
-                             (getClientBounds() - border()).w,
-                             getAlign());
+    resultSize = g.fitString(text(),
+                             (clientBounds() - border()).w,
+                             align());
 
   resultSize.w += border().width();
   resultSize.h += border().height();
@@ -183,7 +183,7 @@ void PopupWindow::onSizeHint(SizeHintEvent& ev)
 
 void PopupWindow::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintPopupWindow(ev);
+  theme()->paintPopupWindow(ev);
 }
 
 void PopupWindow::onInitTheme(InitThemeEvent& ev)
@@ -195,7 +195,7 @@ void PopupWindow::onInitTheme(InitThemeEvent& ev)
 
 void PopupWindow::onHitTest(HitTestEvent& ev)
 {
-  Widget* picked = getManager()->pick(ev.getPoint());
+  Widget* picked = manager()->pick(ev.point());
   if (picked) {
     WidgetType type = picked->type();
     if ((type == kWindowWidget && picked == this) ||

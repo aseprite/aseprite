@@ -44,7 +44,7 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
       if (!gfx::is_transparent(m_color))
         g->fillRect(m_color, bounds);
 
-      she::Surface* bmp = m_part->getBitmap(0);
+      she::Surface* bmp = m_part->bitmap(0);
 
       if (m_repeat == BackgroundRepeat::NO_REPEAT) {
         g->drawRgbaSurface(bmp, bounds.x, bounds.y);
@@ -90,7 +90,7 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
 
 void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text)
 {
-  she::Surface* bmp = m_part->getBitmap(0);
+  she::Surface* bmp = m_part->bitmap(0);
   int x, y;
 
   if (m_align & ui::RIGHT)
@@ -190,8 +190,8 @@ gfx::Size Rules::sizeHint(const char* text, int maxWidth)
 {
   gfx::Size sz(0, 0);
   if (m_icon) {
-    sz.w += m_icon->getPart()->getBitmap(0)->width();
-    sz.h = m_icon->getPart()->getBitmap(0)->height();
+    sz.w += m_icon->getPart()->bitmap(0)->width();
+    sz.h = m_icon->getPart()->bitmap(0)->height();
   }
   if (m_text && text) {
     ui::ScreenGraphics g;

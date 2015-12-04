@@ -48,7 +48,7 @@ WorkspacePanel::WorkspacePanel(PanelType panelType)
   , m_topTime(0)
   , m_bottomTime(0)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.workspace());
 }
 
@@ -107,18 +107,18 @@ void WorkspacePanel::removeView(WorkspaceView* view)
 
   // Destroy this panel
   if (m_views.empty() && m_panelType == SUB_PANEL) {
-    Widget* self = getParent();
+    Widget* self = parent();
     ASSERT(self->type() == kBoxWidget);
 
-    Widget* splitter = self->getParent();
+    Widget* splitter = self->parent();
     ASSERT(splitter->type() == kSplitterWidget);
 
-    Widget* parent = splitter->getParent();
+    Widget* parent = splitter->parent();
 
     Widget* side =
-      (splitter->getFirstChild() == self ?
-        splitter->getLastChild():
-        splitter->getFirstChild());
+      (splitter->firstChild() == self ?
+        splitter->lastChild():
+        splitter->firstChild());
 
     splitter->removeChild(side);
     parent->replaceChild(splitter, side);
@@ -149,18 +149,18 @@ void WorkspacePanel::setActiveView(WorkspaceView* view)
 
 void WorkspacePanel::onPaint(PaintEvent& ev)
 {
-  ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
+  ev.graphics()->fillRect(bgColor(), clientBounds());
 }
 
 void WorkspacePanel::onResize(ui::ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
   adjustActiveViewBounds();
 }
 
 void WorkspacePanel::adjustActiveViewBounds()
 {
-  gfx::Rect rc = getChildrenBounds();
+  gfx::Rect rc = childrenBounds();
 
   // Preview to drop tabs in workspace
   if (m_leftTime+m_topTime+m_rightTime+m_bottomTime > 1e-4) {
@@ -269,10 +269,10 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
   Splitter* splitter = new Splitter(Splitter::ByPercentage, splitterAlign);
   splitter->setExpansive(true);
 
-  Widget* parent = getParent();
+  Widget* parent = this->parent();
   if (parent->type() == kBoxWidget) {
     self = parent;
-    parent = self->getParent();
+    parent = self->parent();
     ASSERT(parent->type() == kSplitterWidget);
   }
   if (parent->type() == Workspace::Type() ||
@@ -315,7 +315,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
 
 int WorkspacePanel::calculateDropArea(const gfx::Point& pos) const
 {
-  gfx::Rect rc = getChildrenBounds();
+  gfx::Rect rc = childrenBounds();
   if (rc.contains(pos)) {
     int left = ABS(rc.x - pos.x);
     int top = ABS(rc.y - pos.y);
@@ -342,7 +342,7 @@ int WorkspacePanel::calculateDropArea(const gfx::Point& pos) const
 
 int WorkspacePanel::getDropThreshold() const
 {
-  gfx::Rect cpos = getChildrenBounds();
+  gfx::Rect cpos = childrenBounds();
   int threshold = 32*guiscale();
   if (threshold > cpos.w/2) threshold = cpos.w/2;
   if (threshold > cpos.h/2) threshold = cpos.h/2;
@@ -356,7 +356,7 @@ Workspace* WorkspacePanel::getWorkspace()
     if (widget->type() == Workspace::Type())
       return static_cast<Workspace*>(widget);
 
-    widget = widget->getParent();
+    widget = widget->parent();
   }
   return nullptr;
 }

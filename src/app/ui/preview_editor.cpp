@@ -57,19 +57,19 @@ public:
 
 protected:
   void onSetDecorativeWidgetBounds() override {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-    Widget* window = getParent();
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size iconSize = theme->parts.windowPlayButtonNormal()->getSize();
-    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->getSize();
+    gfx::Size iconSize = theme->parts.windowPlayButtonNormal()->size();
+    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->size();
 
     rect.w = iconSize.w;
     rect.h = iconSize.h;
 
-    rect.offset(window->getBounds().x2() - 3*guiscale()
+    rect.offset(window->bounds().x2() - 3*guiscale()
       - iconSize.w - 1*guiscale()
       - iconSize.w - 1*guiscale() - closeSize.w,
-      window->getBounds().y + 3*guiscale());
+      window->bounds().y + 3*guiscale());
 
     setBounds(rect);
   }
@@ -113,18 +113,18 @@ private:
   }
 
   void onSetDecorativeWidgetBounds() override {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-    Widget* window = getParent();
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size playSize = theme->parts.windowPlayButtonNormal()->getSize();
-    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->getSize();
+    gfx::Size playSize = theme->parts.windowPlayButtonNormal()->size();
+    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->size();
 
     rect.w = playSize.w;
     rect.h = playSize.h;
 
-    rect.offset(window->getBounds().x2() - 3*guiscale()
+    rect.offset(window->bounds().x2() - 3*guiscale()
       - playSize.w - 1*guiscale() - closeSize.w,
-      window->getBounds().y + 3*guiscale());
+      window->bounds().y + 3*guiscale());
 
     setBounds(rect);
   }
@@ -219,8 +219,8 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
         int extra = 2*theme->dimensions.miniScrollbarSize();
         setBounds(
           gfx::Rect(
-            ui::display_w() - width - ToolBar::instance()->getBounds().w - extra,
-            ui::display_h() - height - StatusBar::instance()->getBounds().h - extra,
+            ui::display_w() - width - ToolBar::instance()->bounds().w - extra,
+            ui::display_h() - height - StatusBar::instance()->bounds().h - extra,
             width, height));
 
         load_window_pos(this, "MiniEditor");
@@ -241,7 +241,7 @@ void PreviewEditorWindow::onClose(ui::CloseEvent& ev)
 {
   Button* closeButton = dynamic_cast<Button*>(ev.getSource());
   if (closeButton != NULL &&
-      closeButton->getId() == SkinTheme::kThemeCloseButtonId) {
+      closeButton->id() == SkinTheme::kThemeCloseButtonId) {
     // Here we don't use "setMiniEditorEnabled" to change the state of
     // "m_isEnabled" because we're coming from a close event of the
     // window.
@@ -318,7 +318,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     openWindow();
 
   gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
-  gfx::Point centerPoint = visibleBounds.getCenter();
+  gfx::Point centerPoint = visibleBounds.center();
   bool center = (m_centerButton->isSelected());
 
   // Set the same location as in the given editor.

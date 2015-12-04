@@ -23,12 +23,11 @@ public:
   }
 
   void onPaint(PaintEvent& ev) override {
-    getTheme()->paintComboBoxButton(ev);
+    theme()->paintComboBoxButton(ev);
   }
 };
 
-class ComboBoxEntry : public Entry
-{
+class ComboBoxEntry : public Entry {
 public:
   ComboBoxEntry(ComboBox* comboBox)
     : Entry(256, ""),
@@ -43,8 +42,7 @@ private:
   ComboBox* m_comboBox;
 };
 
-class ComboBoxListBox : public ListBox
-{
+class ComboBoxListBox : public ListBox {
 public:
   ComboBoxListBox(ComboBox* comboBox)
     : m_comboBox(comboBox)
@@ -212,12 +210,12 @@ const std::string& ComboBox::getItemText(int itemIndex) const
 {
   if (itemIndex >= 0 && (std::size_t)itemIndex < m_items.size()) {
     ListItem* item = m_items[itemIndex];
-    return item->getText();
+    return item->text();
   }
   else {
     // Returns the text of the combo-box (it should be empty).
-    ASSERT(getText().empty());
-    return getText();
+    ASSERT(text().empty());
+    return text();
   }
 }
 
@@ -233,8 +231,8 @@ int ComboBox::findItemIndex(const std::string& text) const
 {
   int i = 0;
   for (const ListItem* item : m_items) {
-    if ((m_casesensitive && item->getText() == text) ||
-        (!m_casesensitive && item->getText() == text)) {
+    if ((m_casesensitive && item->text() == text) ||
+        (!m_casesensitive && item->text() == text)) {
       return i;
     }
     i++;
@@ -282,9 +280,9 @@ void ComboBox::setSelectedItemIndex(int itemIndex)
 
     ListItems::iterator it = m_items.begin() + itemIndex;
     ListItem* item = *it;
-    m_entry->setText(item->getText());
+    m_entry->setText(item->text());
     if (isEditable())
-      m_entry->selectText(m_entry->getTextLength(), m_entry->getTextLength());
+      m_entry->selectText(m_entry->textLength(), m_entry->textLength());
 
     onChange();
   }
@@ -293,7 +291,7 @@ void ComboBox::setSelectedItemIndex(int itemIndex)
 std::string ComboBox::getValue() const
 {
   if (isEditable())
-    return m_entry->getText();
+    return m_entry->text();
   else {
     int index = getSelectedItemIndex();
     if (index >= 0)
@@ -358,7 +356,7 @@ bool ComboBox::onProcessMessage(Message* msg)
           closeListBox();
 
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-          Widget* pick = getManager()->pick(mouseMsg->position());
+          Widget* pick = manager()->pick(mouseMsg->position());
           return (pick && pick->hasAncestor(this) ? true: false);
         }
       }
@@ -370,7 +368,7 @@ bool ComboBox::onProcessMessage(Message* msg)
       // the window was just opened and the combobox is the first
       // child or has the "focus magnet" flag enabled.)
       if ((isEditable()) &&
-          (getManager()->getFocus() == this)) {
+          (manager()->getFocus() == this)) {
         m_entry->requestFocus();
       }
       break;
@@ -382,7 +380,7 @@ bool ComboBox::onProcessMessage(Message* msg)
 
 void ComboBox::onResize(ResizeEvent& ev)
 {
-  gfx::Rect bounds = ev.getBounds();
+  gfx::Rect bounds = ev.bounds();
   setBoundsQuietly(bounds);
 
   // Button
@@ -405,7 +403,7 @@ void ComboBox::onSizeHint(SizeHintEvent& ev)
   for (it = m_items.begin(); it != end; ++it) {
     int item_w =
       2*guiscale()+
-      getFont()->textLength((*it)->getText().c_str())+
+      font()->textLength((*it)->text().c_str())+
       10*guiscale();
 
     reqSize.w = MAX(reqSize.w, item_w);
@@ -479,7 +477,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = getManager()->pick(mouseMsg->position());
+        Widget* pick = manager()->pick(mouseMsg->position());
         Widget* listbox = m_comboBox->m_listbox;
 
         if (pick != NULL && (pick == listbox || pick->hasAncestor(listbox))) {
@@ -506,7 +504,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         // of the text. We don't select the whole text so the user can
         // delete the last caracters using backspace and complete the
         // item name.
-        selectText(getTextLength(), getTextLength());
+        selectText(textLength(), textLength());
       }
       return result;
     }
@@ -518,7 +516,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
 
 void ComboBoxEntry::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintComboBoxEntry(ev);
+  theme()->paintComboBoxEntry(ev);
 }
 
 bool ComboBoxListBox::onProcessMessage(Message* msg)
@@ -581,12 +579,12 @@ void ComboBox::openListBox()
   m_window->setWantFocus(false);
   m_window->noBorderNoChildSpacing();
 
-  Widget* viewport = view->getViewport();
+  Widget* viewport = view->viewport();
   int size = getItemCount();
   viewport->setMinSize
     (gfx::Size(
-      m_button->getBounds().x2() - m_entry->getBounds().x - view->border().width(),
-      +(2*guiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
+      m_button->bounds().x2() - m_entry->bounds().x - view->border().width(),
+      +(2*guiscale()+m_listbox->textHeight())*MID(1, size, 16)+
       +viewport->border().height()));
 
   m_window->addChild(view);
@@ -600,8 +598,8 @@ void ComboBox::openListBox()
   m_window->positionWindow(rc.x, rc.y);
   m_window->openWindow();
 
-  getManager()->addMessageFilter(kMouseDownMessage, this);
-  getManager()->addMessageFilter(kKeyDownMessage, this);
+  manager()->addMessageFilter(kMouseDownMessage, this);
+  manager()->addMessageFilter(kKeyDownMessage, this);
 
   if (isEditable())
     m_entry->requestFocus();
@@ -621,8 +619,8 @@ void ComboBox::closeListBox()
     m_window = nullptr;
     m_listbox = nullptr;
 
-    getManager()->removeMessageFilter(kMouseDownMessage, this);
-    getManager()->removeMessageFilter(kKeyDownMessage, this);
+    manager()->removeMessageFilter(kMouseDownMessage, this);
+    manager()->removeMessageFilter(kKeyDownMessage, this);
     m_entry->requestFocus();
 
     onCloseListBox();
@@ -639,13 +637,13 @@ void ComboBox::switchListBox()
 
 gfx::Rect ComboBox::getListBoxPos() const
 {
-  gfx::Rect rc(gfx::Point(m_entry->getBounds().x,
-                          m_entry->getBounds().y2()),
-               gfx::Point(m_button->getBounds().x2(),
-                          m_entry->getBounds().y2()+m_window->getBounds().h));
+  gfx::Rect rc(gfx::Point(m_entry->bounds().x,
+                          m_entry->bounds().y2()),
+               gfx::Point(m_button->bounds().x2(),
+                          m_entry->bounds().y2()+m_window->bounds().h));
 
   if (rc.y2() > ui::display_h())
-    rc.offset(0, -(rc.h + m_entry->getBounds().h));
+    rc.offset(0, -(rc.h + m_entry->bounds().h));
 
   return rc;
 }

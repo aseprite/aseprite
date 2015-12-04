@@ -78,7 +78,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     else
       docCopy = document->duplicate(DuplicateExactCopy);
 
-    docCopy->setFilename(window.dstName()->getText().c_str());
+    docCopy->setFilename(window.dstName()->text().c_str());
     docCopy->setContext(context);
   }
 }

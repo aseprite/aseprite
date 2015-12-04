@@ -186,7 +186,7 @@ void update_cursor_overlay()
     gfx::Point newPos =
       get_mouse_position() - mouse_cursor->getFocus();
 
-    if (newPos != mouse_cursor_overlay->getPosition()) {
+    if (newPos != mouse_cursor_overlay->position()) {
       mouse_cursor_overlay->moveOverlay(newPos);
     }
   }

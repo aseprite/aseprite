@@ -287,8 +287,8 @@ void Menu::showPopup(const gfx::Point& pos)
 
   // Menubox position
   window->positionWindow(
-    MID(0, pos.x, ui::display_w() - window->getBounds().w),
-    MID(0, pos.y, ui::display_h() - window->getBounds().h));
+    MID(0, pos.x, ui::display_w() - window->bounds().w),
+    MID(0, pos.y, ui::display_h() - window->bounds().h));
 
   // Set the focus to the new menubox
   Manager::getDefault()->setFocus(menubox);
@@ -309,15 +309,15 @@ void Menu::showPopup(const gfx::Point& pos)
 
 void Menu::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintMenu(ev);
+  theme()->paintMenu(ev);
 }
 
 void Menu::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
 
-  Rect cpos = getChildrenBounds();
-  bool isBar = (getParent()->type() == kMenuBarWidget);
+  Rect cpos = childrenBounds();
+  bool isBar = (parent()->type() == kMenuBarWidget);
 
   for (auto child : children()) {
     Size reqSize = child->sizeHint();
@@ -344,7 +344,8 @@ void Menu::onSizeHint(SizeHintEvent& ev)
   UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
     reqSize = (*it)->sizeHint();
 
-    if (getParent() && getParent()->type() == kMenuBarWidget) {
+    if (parent() &&
+        parent()->type() == kMenuBarWidget) {
       size.w += reqSize.w + ((it+1 != end) ? childSpacing(): 0);
       size.h = MAX(size.h, reqSize.h);
     }
@@ -383,7 +384,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         // popuped menu-box) to detect if the user press outside of
         // the widget
         if (msg->type() == kMouseDownMessage && m_base != NULL) {
-          Widget* picked = getManager()->pick(mousePos);
+          Widget* picked = manager()->pick(mousePos);
 
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped
@@ -578,7 +579,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               else {
                 // Go to parent
                 if (menu->m_menuitem) {
-                  Widget* parent = menu->m_menuitem->getParent()->getParent();
+                  Widget* parent = menu->m_menuitem->parent()->parent();
 
                   // Go to the previous item in the parent
 
@@ -651,7 +652,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     default:
       if (msg->type() == kClosePopupMessage) {
-        getManager()->_closeWindow(getRoot(), true);
+        manager()->_closeWindow(window(), true);
       }
       break;
 
@@ -662,10 +663,10 @@ bool MenuBox::onProcessMessage(Message* msg)
 
 void MenuBox::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.getBounds());
+  setBoundsQuietly(ev.bounds());
 
   if (Menu* menu = getMenu())
-    menu->setBounds(getChildrenBounds());
+    menu->setBounds(childrenBounds());
 }
 
 void MenuBox::onSizeHint(SizeHintEvent& ev)
@@ -701,9 +702,9 @@ bool MenuItem::onProcessMessage(Message* msg)
       // Unhighlight this item if its submenu isn't opened
       if (isHighlighted() &&
           !m_submenu_menubox &&
-          getParent() &&
-          getParent()->type() == kMenuWidget) {
-        static_cast<Menu*>(getParent())->unhighlightItem();
+          parent() &&
+          parent()->type() == kMenuWidget) {
+        static_cast<Menu*>(parent())->unhighlightItem();
       }
 
       // TODO theme specific!!
@@ -723,7 +724,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        Rect old_pos = getRoot()->getBounds();
+        Rect old_pos = window()->bounds();
         old_pos.w -= 1*guiscale();
 
         MenuBox* menubox = new MenuBox();
@@ -734,16 +735,16 @@ bool MenuItem::onProcessMessage(Message* msg)
         Window* window = new CustomizedWindowForMenuBox(menubox);
 
         // Menubox position
-        Rect pos = window->getBounds();
+        Rect pos = window->bounds();
 
         if (inBar()) {
-          pos.x = MID(0, getBounds().x, ui::display_w()-pos.w);
-          pos.y = MID(0, getBounds().y2(), ui::display_h()-pos.h);
+          pos.x = MID(0, bounds().x, ui::display_w()-pos.w);
+          pos.y = MID(0, bounds().y2(), ui::display_h()-pos.h);
         }
         else {
           int x_left = old_pos.x - pos.w;
           int x_right = old_pos.x2();
-          int x, y = getBounds().y-3*guiscale();
+          int x, y = bounds().y-3*guiscale();
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
           r1.x = x_left = MID(0, x_left, ui::display_w()-pos.w);
@@ -815,7 +816,7 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         ASSERT(menubox != NULL);
 
-        window = (Window*)menubox->getParent();
+        window = (Window*)menubox->parent();
         ASSERT(window && window->type() == kWindowWidget);
 
         // Fetch the "menu" to avoid destroy it with 'delete'.
@@ -826,9 +827,9 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         // Set the focus to this menu-box of this menu-item
         if (base->close_all)
-          getManager()->freeFocus();
+          manager()->freeFocus();
         else
-          getManager()->setFocus(this->getParent()->getParent());
+          manager()->setFocus(this->parent()->parent());
 
         // It is not necessary to delete this window because it's
         // automatically destroyed by the manager
@@ -871,7 +872,7 @@ bool MenuItem::onProcessMessage(Message* msg)
 
 void MenuItem::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintMenuItem(ev);
+  theme()->paintMenuItem(ev);
 }
 
 void MenuItem::onClick()
@@ -886,12 +887,12 @@ void MenuItem::onSizeHint(SizeHintEvent& ev)
 
   if (hasText()) {
     size.w =
-      + getTextWidth()
+      + textWidth()
       + (inBar() ? childSpacing()/4: childSpacing())
       + border().width();
 
     size.h =
-      + getTextHeight()
+      + textHeight()
       + border().height();
   }
 
@@ -920,7 +921,7 @@ static MenuBox* get_base_menubox(Widget* widget)
       }
     }
     else {
-      widget = widget->getParent();
+      widget = widget->parent();
     }
   }
   return nullptr;
@@ -969,7 +970,7 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
 
     // Highlight parents
     if (getOwnerMenuItem() != NULL) {
-      static_cast<Menu*>(getOwnerMenuItem()->getParent())
+      static_cast<Menu*>(getOwnerMenuItem()->parent())
         ->highlightItem(getOwnerMenuItem(), false, false, false);
     }
 
@@ -1000,9 +1001,9 @@ void Menu::unhighlightItem()
 bool MenuItem::inBar()
 {
   return
-    (getParent() &&
-     getParent()->getParent() &&
-     getParent()->getParent()->type() == kMenuBarWidget);
+    (parent() &&
+     parent()->parent() &&
+     parent()->parent()->type() == kMenuBarWidget);
 }
 
 void MenuItem::openSubmenu(bool select_first)
@@ -1012,7 +1013,7 @@ void MenuItem::openSubmenu(bool select_first)
 
   ASSERT(hasSubmenu());
 
-  menu = this->getParent();
+  menu = this->parent();
 
   // The menu item is already opened?
   ASSERT(m_submenu_menubox == NULL);
@@ -1020,7 +1021,7 @@ void MenuItem::openSubmenu(bool select_first)
   ASSERT_VALID_WIDGET(menu);
 
   // Close all siblings of 'menuitem'
-  if (menu->getParent()) {
+  if (menu->parent()) {
     for (auto child : menu->children()) {
       if (child->type() != kMenuItemWidget)
         continue;
@@ -1114,10 +1115,10 @@ void Menu::closeAll()
   MenuItem* menuitem = NULL;
   while (menu->m_menuitem) {
     menuitem = menu->m_menuitem;
-    menu = static_cast<Menu*>(menuitem->getParent());
+    menu = static_cast<Menu*>(menuitem->parent());
   }
 
-  MenuBox* base_menubox = get_base_menubox(menu->getParent());
+  MenuBox* base_menubox = get_base_menubox(menu->parent());
   ASSERT(base_menubox);
   if (!base_menubox)
     return;
@@ -1194,7 +1195,7 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
-    int mnemonic = menuitem->getMnemonicChar();
+    int mnemonic = menuitem->mnemonicChar();
     if (mnemonic > 0 && mnemonic == tolower(ascii))
       return menuitem;
   }

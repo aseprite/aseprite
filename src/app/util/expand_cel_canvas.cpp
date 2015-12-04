@@ -168,7 +168,7 @@ void ExpandCelCanvas::commit()
     // If the size of each image is the same, we can create an undo
     // with only the differences between both images.
     if (m_cel->position() == m_origCelPos &&
-        m_bounds.getOrigin() == m_origCelPos &&
+        m_bounds.origin() == m_origCelPos &&
         m_celImage->width() == m_dstImage->width() &&
         m_celImage->height() == m_dstImage->height()) {
       int dx = -m_bounds.x + m_origCelPos.x;
@@ -255,7 +255,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
   getSourceCanvas();
 
   gfx::Region rgnToValidate(rgn);
-  rgnToValidate.offset(-m_bounds.getOrigin());
+  rgnToValidate.offset(-m_bounds.origin());
   rgnToValidate.createSubtraction(rgnToValidate, m_validSrcRegion);
   rgnToValidate.createIntersection(rgnToValidate, gfx::Region(m_srcImage->bounds()));
 
@@ -264,7 +264,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
     rgnToClear.createSubtraction(rgnToValidate,
       gfx::Region(m_celImage->bounds()
         .offset(m_origCelPos)
-        .offset(-m_bounds.getOrigin())));
+        .offset(-m_bounds.origin())));
     for (const auto& rc : rgnToClear)
       fill_rect(m_srcImage.get(), rc, m_srcImage->maskColor());
 
@@ -301,7 +301,7 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
   getDestCanvas();
 
   gfx::Region rgnToValidate(rgn);
-  rgnToValidate.offset(-m_bounds.getOrigin());
+  rgnToValidate.offset(-m_bounds.origin());
   rgnToValidate.createSubtraction(rgnToValidate, m_validDstRegion);
   rgnToValidate.createIntersection(rgnToValidate, gfx::Region(m_dstImage->bounds()));
 
@@ -310,7 +310,7 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
     rgnToClear.createSubtraction(rgnToValidate,
       gfx::Region(src->bounds()
         .offset(src_x, src_y)
-        .offset(-m_bounds.getOrigin())));
+        .offset(-m_bounds.origin())));
     for (const auto& rc : rgnToClear)
       fill_rect(m_dstImage.get(), rc, m_dstImage->maskColor());
 
@@ -336,14 +336,14 @@ void ExpandCelCanvas::invalidateDestCanvas()
 void ExpandCelCanvas::invalidateDestCanvas(const gfx::Region& rgn)
 {
   gfx::Region rgnToInvalidate(rgn);
-  rgnToInvalidate.offset(-m_bounds.getOrigin());
+  rgnToInvalidate.offset(-m_bounds.origin());
   m_validDstRegion.createSubtraction(m_validDstRegion, rgnToInvalidate);
 }
 
 void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
 {
   gfx::Region rgn2(rgn);
-  rgn2.offset(-m_bounds.getOrigin());
+  rgn2.offset(-m_bounds.origin());
   rgn2.createIntersection(rgn2, m_validSrcRegion);
   rgn2.createIntersection(rgn2, m_validDstRegion);
   for (const auto& rc : rgn2)

@@ -7,7 +7,7 @@
 
 /* Some of the original code to handle PIDLs come from the
    MiniExplorer example of the Vaca library:
-   http://vaca.sourceforge.net/
+   https://github.com/dacap/vaca
    Copyright (C) by David Capello (MIT License)
  */
 
@@ -54,19 +54,19 @@ namespace app {
 // a position in the file-system
 class FileItem : public IFileItem {
 public:
-  std::string keyname;
-  std::string filename;
-  std::string displayname;
-  FileItem* parent;
-  FileItemList children;
-  unsigned int version;
-  bool removed;
-  bool is_folder;
+  std::string m_keyname;
+  std::string m_filename;
+  std::string m_displayname;
+  FileItem* m_parent;
+  FileItemList m_children;
+  unsigned int m_version;
+  bool m_removed;
+  bool m_is_folder;
 #ifdef _WIN32
-  LPITEMIDLIST pidl;            // relative to parent
-  LPITEMIDLIST fullpidl;        // relative to the Desktop folder
-                                // (like a full path-name, because the
-                                // desktop is the root on Windows)
+  LPITEMIDLIST m_pidl;            // relative to parent
+  LPITEMIDLIST m_fullpidl;        // relative to the Desktop folder
+                                  // (like a full path-name, because the
+                                  // desktop is the root on Windows)
 #endif
 
   FileItem(FileItem* parent);
@@ -86,12 +86,12 @@ public:
   bool isBrowsable() const;
   bool isHidden() const;
 
-  std::string getKeyName() const;
-  std::string getFileName() const;
-  std::string getDisplayName() const;
+  std::string keyName() const;
+  std::string fileName() const;
+  std::string displayName() const;
 
-  IFileItem* getParent() const;
-  const FileItemList& getChildren();
+  IFileItem* parent() const;
+  const FileItemList& children();
   void createDirectory(const std::string& dirname);
 
   bool hasExtension(const std::string& csv_extensions);
@@ -234,8 +234,8 @@ IFileItem* FileSystemModule::getRootFileItem()
       ASSERT(false);
       exit(1);
     }
-    fileitem->pidl = pidl;
-    fileitem->fullpidl = pidl;
+    fileitem->m_pidl = pidl;
+    fileitem->m_fullpidl = pidl;
 
     SFGAOF attrib = SFGAO_FOLDER;
     shl_idesktop->GetAttributesOf(1, (LPCITEMIDLIST *)&pidl, &attrib);
@@ -246,9 +246,9 @@ IFileItem* FileSystemModule::getRootFileItem()
   {
     const char* root = "/";
 
-    fileitem->filename = root;
-    fileitem->displayname = root;
-    fileitem->is_folder = true;
+    fileitem->m_filename = root;
+    fileitem->m_displayname = root;
+    fileitem->m_is_folder = true;
   }
 #endif
 
@@ -304,75 +304,75 @@ IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
 
 bool FileItem::isFolder() const
 {
-  return is_folder;
+  return m_is_folder;
 }
 
 bool FileItem::isBrowsable() const
 {
-  ASSERT(this->filename != NOTINITIALIZED);
+  ASSERT(m_filename != NOTINITIALIZED);
 
-  return is_folder;
+  return m_is_folder;
 }
 
 bool FileItem::isHidden() const
 {
-  ASSERT(this->displayname != NOTINITIALIZED);
+  ASSERT(m_displayname != NOTINITIALIZED);
 
 #ifdef _WIN32
   return false;
 #else
-  return this->displayname[0] == '.';
+  return m_displayname[0] == '.';
 #endif
 }
 
-std::string FileItem::getKeyName() const
+std::string FileItem::keyName() const
 {
-  ASSERT(this->keyname != NOTINITIALIZED);
+  ASSERT(m_keyname != NOTINITIALIZED);
 
-  return this->keyname;
+  return m_keyname;
 }
 
-std::string FileItem::getFileName() const
+std::string FileItem::fileName() const
 {
-  ASSERT(this->filename != NOTINITIALIZED);
+  ASSERT(m_filename != NOTINITIALIZED);
 
-  return this->filename;
+  return m_filename;
 }
 
-std::string FileItem::getDisplayName() const
+std::string FileItem::displayName() const
 {
-  ASSERT(this->displayname != NOTINITIALIZED);
+  ASSERT(m_displayname != NOTINITIALIZED);
 
-  return this->displayname;
+  return m_displayname;
 }
 
-IFileItem* FileItem::getParent() const
+IFileItem* FileItem::parent() const
 {
   if (this == rootitem)
     return NULL;
   else {
-    ASSERT(this->parent);
-    return this->parent;
+    ASSERT(m_parent);
+    return m_parent;
   }
 }
 
-const FileItemList& FileItem::getChildren()
+const FileItemList& FileItem::children()
 {
   // Is the file-item a folder?
   if (isFolder() &&
       // if the children list is empty, or the file-system version
-      // change (it's like to say: the current this->children list
+      // change (it's like to say: the current m_children list
       // is outdated)...
-      (this->children.empty() ||
-       current_file_system_version > this->version)) {
+      (m_children.empty() ||
+       current_file_system_version > m_version)) {
     FileItemList::iterator it;
     FileItem* child;
 
     // we have to mark current items as deprecated
-    for (it=this->children.begin();
-         it!=this->children.end(); ++it) {
+    for (it=m_children.begin();
+         it!=m_children.end(); ++it) {
       child = static_cast<FileItem*>(*it);
-      child->removed = true;
+      child->m_removed = true;
     }
 
     //LOG("FS: Loading files for %p (%s)\n", fileitem, fileitem->displayname);
@@ -384,7 +384,7 @@ const FileItemList& FileItem::getChildren()
       if (this == rootitem)
         pFolder = shl_idesktop;
       else {
-        hr = shl_idesktop->BindToObject(this->fullpidl,
+        hr = shl_idesktop->BindToObject(m_fullpidl,
           NULL, IID_IShellFolder, (LPVOID *)&pFolder);
 
         if (hr != S_OK)
@@ -414,26 +414,26 @@ const FileItemList& FileItem::getChildren()
 
             /* generate the FileItems */
             for (c=0; c<fetched; ++c) {
-              LPITEMIDLIST fullpidl = concat_pidl(this->fullpidl,
+              LPITEMIDLIST fullpidl = concat_pidl(m_fullpidl,
                                                   itempidl[c]);
 
               child = get_fileitem_by_fullpidl(fullpidl, false);
               if (!child) {
                 child = new FileItem(this);
 
-                child->pidl = itempidl[c];
-                child->fullpidl = fullpidl;
+                child->m_pidl = itempidl[c];
+                child->m_fullpidl = fullpidl;
 
                 update_by_pidl(child, attribs[c]);
                 put_fileitem(child);
               }
               else {
-                ASSERT(child->parent == this);
+                ASSERT(child->m_parent == this);
                 free_pidl(fullpidl);
                 free_pidl(itempidl[c]);
               }
 
-              this->insertChildSorted(child);
+              insertChildSorted(child);
             }
           }
 
@@ -446,13 +446,13 @@ const FileItemList& FileItem::getChildren()
     }
 #else
     {
-      DIR* dir = opendir(this->filename.c_str());
+      DIR* dir = opendir(m_filename.c_str());
       if (dir) {
         dirent* entry;
         while ((entry = readdir(dir)) != NULL) {
           FileItem* child;
           std::string fn = entry->d_name;
-          std::string fullfn = base::join_path(filename, fn);
+          std::string fullfn = base::join_path(m_filename, fn);
 
           if (fn == "." || fn == "..")
             continue;
@@ -469,14 +469,14 @@ const FileItemList& FileItem::getChildren()
               is_folder = (entry->d_type == DT_DIR);
             }
 
-            child->filename = fullfn;
-            child->displayname = fn;
-            child->is_folder = is_folder;
+            child->m_filename = fullfn;
+            child->m_displayname = fn;
+            child->m_is_folder = is_folder;
 
             put_fileitem(child);
           }
           else {
-            ASSERT(child->parent == this);
+            ASSERT(child->m_parent == this);
           }
 
           insertChildSorted(child);
@@ -487,15 +487,15 @@ const FileItemList& FileItem::getChildren()
 #endif
 
     // check old file-items (maybe removed directories or file-items)
-    for (it=this->children.begin();
-         it!=this->children.end(); ) {
+    for (it=m_children.begin();
+         it!=m_children.end(); ) {
       child = static_cast<FileItem*>(*it);
       ASSERT(child != NULL);
 
-      if (child && child->removed) {
-        it = this->children.erase(it);
+      if (child && child->m_removed) {
+        it = m_children.erase(it);
 
-        fileitems_map->erase(fileitems_map->find(child->keyname));
+        fileitems_map->erase(fileitems_map->find(child->m_keyname));
         delete child;
       }
       else
@@ -503,30 +503,30 @@ const FileItemList& FileItem::getChildren()
     }
 
     // now this file-item is updated
-    this->version = current_file_system_version;
+    m_version = current_file_system_version;
   }
 
-  return this->children;
+  return m_children;
 }
 
 void FileItem::createDirectory(const std::string& dirname)
 {
-  base::make_directory(base::join_path(filename, dirname));
+  base::make_directory(base::join_path(m_filename, dirname));
 
   // Invalidate the children list.
-  this->version = 0;
+  m_version = 0;
 }
 
 bool FileItem::hasExtension(const std::string& csv_extensions)
 {
-  ASSERT(this->filename != NOTINITIALIZED);
+  ASSERT(m_filename != NOTINITIALIZED);
 
-  return base::has_file_extension(this->filename, csv_extensions);
+  return base::has_file_extension(m_filename, csv_extensions);
 }
 
 she::Surface* FileItem::getThumbnail()
 {
-  ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
+  ThumbnailMap::iterator it = thumbnail_map->find(m_filename);
   if (it != thumbnail_map->end())
     return it->second;
   else
@@ -536,46 +536,46 @@ she::Surface* FileItem::getThumbnail()
 void FileItem::setThumbnail(she::Surface* thumbnail)
 {
   // destroy the current thumbnail of the file (if exists)
-  ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
+  ThumbnailMap::iterator it = thumbnail_map->find(m_filename);
   if (it != thumbnail_map->end()) {
     it->second->dispose();
     thumbnail_map->erase(it);
   }
 
   // insert the new one in the map
-  thumbnail_map->insert(std::make_pair(this->filename, thumbnail));
+  thumbnail_map->insert(std::make_pair(m_filename, thumbnail));
 }
 
 FileItem::FileItem(FileItem* parent)
 {
   //LOG("FS: Creating %p fileitem with parent %p\n", this, parent);
 
-  this->keyname = NOTINITIALIZED;
-  this->filename = NOTINITIALIZED;
-  this->displayname = NOTINITIALIZED;
-  this->parent = parent;
-  this->version = current_file_system_version;
-  this->removed = false;
-  this->is_folder = false;
+  m_keyname = NOTINITIALIZED;
+  m_filename = NOTINITIALIZED;
+  m_displayname = NOTINITIALIZED;
+  m_parent = parent;
+  m_version = current_file_system_version;
+  m_removed = false;
+  m_is_folder = false;
 #ifdef _WIN32
-  this->pidl = NULL;
-  this->fullpidl = NULL;
+  m_pidl = NULL;
+  m_fullpidl = NULL;
 #endif
 }
 
 FileItem::~FileItem()
 {
-  LOG("FS: Destroying FileItem() with parent %p\n", parent);
+  LOG("FS: Destroying FileItem() with parent %p\n", m_parent);
 
 #ifdef _WIN32
-  if (this->fullpidl && this->fullpidl != this->pidl) {
-    free_pidl(this->fullpidl);
-    this->fullpidl = NULL;
+  if (m_fullpidl && m_fullpidl != m_pidl) {
+    free_pidl(m_fullpidl);
+    m_fullpidl = NULL;
   }
 
-  if (this->pidl) {
-    free_pidl(this->pidl);
-    this->pidl = NULL;
+  if (m_pidl) {
+    free_pidl(m_pidl);
+    m_pidl = NULL;
   }
 #endif
 }
@@ -583,21 +583,20 @@ FileItem::~FileItem()
 void FileItem::insertChildSorted(FileItem* child)
 {
   // this file-item wasn't removed from the last lookup
-  child->removed = false;
+  child->m_removed = false;
 
   // if the fileitem is already in the list we can go back
-  if (std::find(children.begin(), children.end(), child) != children.end())
+  if (std::find(m_children.begin(), m_children.end(), child) != m_children.end())
     return;
 
-  for (FileItemList::iterator
-         it=children.begin(); it!=children.end(); ++it) {
+  for (auto it=m_children.begin(), end=m_children.end(); it!=end; ++it) {
     if (*child < *static_cast<FileItem*>(*it)) {
-      children.insert(it, child);
+      m_children.insert(it, child);
       return;
     }
   }
 
-  children.push_back(child);
+  m_children.push_back(child);
 }
 
 int FileItem::compare(const FileItem& that) const
@@ -609,7 +608,7 @@ int FileItem::compare(const FileItem& that) const
   else if (that.isFolder())
     return 1;
 
-  return base::compare_filenames(this->displayname, that.displayname);
+  return base::compare_filenames(m_displayname, that.m_displayname);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -636,8 +635,8 @@ static void update_by_pidl(FileItem* fileitem, SFGAOF attrib)
   if (fileitem == rootitem)
     pFolder = shl_idesktop;
   else {
-    ASSERT(fileitem->parent);
-    hr = shl_idesktop->BindToObject(fileitem->parent->fullpidl,
+    ASSERT(fileitem->m_parent);
+    hr = shl_idesktop->BindToObject(fileitem->m_parent->m_fullpidl,
       NULL, IID_IShellFolder, (LPVOID *)&pFolder);
     if (hr != S_OK)
       pFolder = NULL;
@@ -646,44 +645,44 @@ static void update_by_pidl(FileItem* fileitem, SFGAOF attrib)
   // Get the file name
 
   if (pFolder != NULL &&
-      pFolder->GetDisplayNameOf(fileitem->pidl,
+      pFolder->GetDisplayNameOf(fileitem->m_pidl,
                                 SHGDN_NORMAL | SHGDN_FORPARSING,
                                 &strret) == S_OK) {
-    StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
-    fileitem->filename = base::to_utf8(pszName);
+    StrRetToBuf(&strret, fileitem->m_pidl, pszName, MAX_PATH);
+    fileitem->m_filename = base::to_utf8(pszName);
   }
-  else if (shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
+  else if (shl_idesktop->GetDisplayNameOf(fileitem->m_fullpidl,
                                           SHGDN_NORMAL | SHGDN_FORPARSING,
                                           &strret) == S_OK) {
-    StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
-    fileitem->filename = base::to_utf8(pszName);
+    StrRetToBuf(&strret, fileitem->m_fullpidl, pszName, MAX_PATH);
+    fileitem->m_filename = base::to_utf8(pszName);
   }
   else
-    fileitem->filename = "ERR";
+    fileitem->m_filename = "ERR";
 
   // Is it a folder?
 
-  fileitem->is_folder = calc_is_folder(fileitem->filename, attrib);
+  fileitem->m_is_folder = calc_is_folder(fileitem->m_filename, attrib);
 
   // Get the name to display
 
   if (fileitem->isFolder() &&
       pFolder &&
-      pFolder->GetDisplayNameOf(fileitem->pidl,
+      pFolder->GetDisplayNameOf(fileitem->m_pidl,
                                 SHGDN_INFOLDER,
                                 &strret) == S_OK) {
-    StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
-    fileitem->displayname = base::to_utf8(pszName);
+    StrRetToBuf(&strret, fileitem->m_pidl, pszName, MAX_PATH);
+    fileitem->m_displayname = base::to_utf8(pszName);
   }
   else if (fileitem->isFolder() &&
-           shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
+           shl_idesktop->GetDisplayNameOf(fileitem->m_fullpidl,
                                           SHGDN_INFOLDER,
                                           &strret) == S_OK) {
-    StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
-    fileitem->displayname = base::to_utf8(pszName);
+    StrRetToBuf(&strret, fileitem->m_fullpidl, pszName, MAX_PATH);
+    fileitem->m_displayname = base::to_utf8(pszName);
   }
   else {
-    fileitem->displayname = base::get_file_name(fileitem->filename);
+    fileitem->m_displayname = base::get_file_name(fileitem->m_filename);
   }
 
   if (pFolder != NULL && pFolder != shl_idesktop) {
@@ -860,16 +859,16 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
 
   // new file-item
   FileItem* fileitem = new FileItem(NULL);
-  fileitem->fullpidl = clone_pidl(fullpidl);
+  fileitem->m_fullpidl = clone_pidl(fullpidl);
 
   SFGAOF attrib = SFGAO_FOLDER;
-  HRESULT hr = shl_idesktop->GetAttributesOf(1, (LPCITEMIDLIST *)&fileitem->fullpidl, &attrib);
+  HRESULT hr = shl_idesktop->GetAttributesOf(1, (LPCITEMIDLIST *)&fileitem->m_fullpidl, &attrib);
   if (hr == S_OK) {
-    LPITEMIDLIST parent_fullpidl = clone_pidl(fileitem->fullpidl);
+    LPITEMIDLIST parent_fullpidl = clone_pidl(fileitem->m_fullpidl);
     remove_last_pidl(parent_fullpidl);
 
-    fileitem->pidl = get_last_pidl(fileitem->fullpidl);
-    fileitem->parent = get_fileitem_by_fullpidl(parent_fullpidl, true);
+    fileitem->m_pidl = get_last_pidl(fileitem->m_fullpidl);
+    fileitem->m_parent = get_fileitem_by_fullpidl(parent_fullpidl, true);
 
     free_pidl(parent_fullpidl);
   }
@@ -887,20 +886,20 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
  */
 static void put_fileitem(FileItem* fileitem)
 {
-  ASSERT(fileitem->filename != NOTINITIALIZED);
-  ASSERT(fileitem->keyname == NOTINITIALIZED);
+  ASSERT(fileitem->m_filename != NOTINITIALIZED);
+  ASSERT(fileitem->m_keyname == NOTINITIALIZED);
 
-  fileitem->keyname = get_key_for_pidl(fileitem->fullpidl);
+  fileitem->m_keyname = get_key_for_pidl(fileitem->m_fullpidl);
 
-  ASSERT(fileitem->keyname != NOTINITIALIZED);
+  ASSERT(fileitem->m_keyname != NOTINITIALIZED);
 
 #ifdef _DEBUG
-  FileItemMap::iterator it = fileitems_map->find(get_key_for_pidl(fileitem->fullpidl));
+  auto it = fileitems_map->find(get_key_for_pidl(fileitem->m_fullpidl));
   ASSERT(it == fileitems_map->end());
 #endif
 
   // insert this file-item in the hash-table
-  fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));
+  fileitems_map->insert(std::make_pair(fileitem->m_keyname, fileitem));
 }
 
 #else
@@ -933,14 +932,14 @@ static FileItem* get_fileitem_by_path(const std::string& path, bool create_if_no
   // new file-item
   FileItem* fileitem = new FileItem(NULL);
 
-  fileitem->filename = path;
-  fileitem->displayname = base::get_file_name(path);
-  fileitem->is_folder = is_folder;
+  fileitem->m_filename = path;
+  fileitem->m_displayname = base::get_file_name(path);
+  fileitem->m_is_folder = is_folder;
 
   // get the parent
   {
     std::string parent_path = remove_backslash_if_needed(base::join_path(base::get_file_path(path), ""));
-    fileitem->parent = get_fileitem_by_path(parent_path, true);
+    fileitem->m_parent = get_fileitem_by_path(parent_path, true);
   }
 
   put_fileitem(fileitem);
@@ -971,15 +970,15 @@ static std::string get_key_for_filename(const std::string& filename)
 
 static void put_fileitem(FileItem* fileitem)
 {
-  ASSERT(fileitem->filename != NOTINITIALIZED);
-  ASSERT(fileitem->keyname == NOTINITIALIZED);
+  ASSERT(fileitem->m_filename != NOTINITIALIZED);
+  ASSERT(fileitem->m_keyname == NOTINITIALIZED);
 
-  fileitem->keyname = get_key_for_filename(fileitem->filename);
+  fileitem->m_keyname = get_key_for_filename(fileitem->m_filename);
 
-  ASSERT(fileitem->keyname != NOTINITIALIZED);
+  ASSERT(fileitem->m_keyname != NOTINITIALIZED);
 
   // insert this file-item in the hash-table
-  fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));
+  fileitems_map->insert(std::make_pair(fileitem->m_keyname, fileitem));
 }
 
 #endif

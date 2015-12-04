@@ -34,27 +34,27 @@ void ButtonIconImpl::destroy()
   delete this;
 }
 
-gfx::Size ButtonIconImpl::getSize()
+gfx::Size ButtonIconImpl::size()
 {
-  return m_normalIcon ? m_normalIcon->getSize(): gfx::Size(0, 0);
+  return m_normalIcon ? m_normalIcon->size(): gfx::Size(0, 0);
 }
 
-she::Surface* ButtonIconImpl::getNormalIcon()
+she::Surface* ButtonIconImpl::normalIcon()
 {
-  return m_normalIcon ? m_normalIcon->getBitmap(0): nullptr;
+  return m_normalIcon ? m_normalIcon->bitmap(0): nullptr;
 }
 
-she::Surface* ButtonIconImpl::getSelectedIcon()
+she::Surface* ButtonIconImpl::selectedIcon()
 {
-  return m_selectedIcon ? m_selectedIcon->getBitmap(0): nullptr;
+  return m_selectedIcon ? m_selectedIcon->bitmap(0): nullptr;
 }
 
-she::Surface* ButtonIconImpl::getDisabledIcon()
+she::Surface* ButtonIconImpl::disabledIcon()
 {
-  return m_disabledIcon ? m_disabledIcon->getBitmap(0): nullptr;
+  return m_disabledIcon ? m_disabledIcon->bitmap(0): nullptr;
 }
 
-int ButtonIconImpl::getIconAlign()
+int ButtonIconImpl::iconAlign()
 {
   return m_iconAlign;
 }

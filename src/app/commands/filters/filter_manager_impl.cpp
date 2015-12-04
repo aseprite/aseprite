@@ -125,7 +125,7 @@ void FilterManagerImpl::beginForPreview()
   {
     Editor* editor = current_editor;
     Sprite* sprite = m_site.sprite();
-    gfx::Rect vp = View::getView(editor)->getViewportBounds();
+    gfx::Rect vp = View::getView(editor)->viewportBounds();
     vp = editor->screenToEditor(vp);
     vp = vp.createIntersection(sprite->bounds());
 

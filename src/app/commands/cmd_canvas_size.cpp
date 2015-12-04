@@ -82,12 +82,12 @@ public:
 
   bool pressedOk() { return getKiller() == ok(); }
 
-  int getWidth()  { return width()->getTextInt(); }
-  int getHeight() { return height()->getTextInt(); }
-  int getLeft()   { return left()->getTextInt(); }
-  int getRight()  { return right()->getTextInt(); }
-  int getTop()    { return top()->getTextInt(); }
-  int getBottom() { return bottom()->getTextInt(); }
+  int getWidth()  { return width()->textInt(); }
+  int getHeight() { return height()->textInt(); }
+  int getLeft()   { return left()->textInt(); }
+  int getRight()  { return right()->textInt(); }
+  int getTop()    { return top()->textInt(); }
+  int getBottom() { return bottom()->textInt(); }
 
 protected:
 
@@ -214,7 +214,7 @@ private:
   }
 
   void updateIcons() {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
     int sel = dir()->selectedItem();
 

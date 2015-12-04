@@ -64,7 +64,7 @@ void NewLayerSetCommand::onExecute(Context* context)
   if (window->getKiller() != window->findChild("ok"))
     return;
 
-  std::string name = window->findChild("name")->getText();
+  std::string name = window->findChild("name")->text();
   Layer* layer;
   {
     Transaction transaction(writer.context(), "New Layer");

@@ -22,8 +22,8 @@ namespace ui {
     View();
 
     bool hasScrollBars();
-    ScrollBar* getHorizontalBar() { return &m_scrollbar_h; }
-    ScrollBar* getVerticalBar() { return &m_scrollbar_v; }
+    ScrollBar* horizontalBar() { return &m_scrollbar_h; }
+    ScrollBar* verticalBar() { return &m_scrollbar_v; }
 
     void attachToView(Widget* viewableWidget);
     Widget* attachedWidget();
@@ -38,14 +38,14 @@ namespace ui {
     void setScrollableSize(const gfx::Size& sz);
 
     // Returns the visible/available size to see the attached widget.
-    gfx::Size getVisibleSize() const override;
-    gfx::Point getViewScroll() const override;
+    gfx::Size visibleSize() const override;
+    gfx::Point viewScroll() const override;
     void setViewScroll(const gfx::Point& pt) override;
 
     void updateView();
 
-    Viewport* getViewport();
-    gfx::Rect getViewportBounds();
+    Viewport* viewport();
+    gfx::Rect viewportBounds();
 
     // For viewable widgets
     static View* getView(Widget* viewableWidget);

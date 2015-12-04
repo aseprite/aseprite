@@ -60,7 +60,7 @@ Window::Window(Type type, const std::string& text)
 
 Window::~Window()
 {
-  getManager()->_closeWindow(this, false);
+  manager()->_closeWindow(this, false);
 }
 
 Widget* Window::getKiller() const
@@ -97,7 +97,7 @@ HitTest Window::hitTest(const gfx::Point& point)
 {
   HitTestEvent ev(this, point, HitTestNowhere);
   onHitTest(ev);
-  return ev.getHit();
+  return ev.hit();
 }
 
 void Window::removeDecorativeWidgets()
@@ -121,15 +121,15 @@ void Window::onHitTest(HitTestEvent& ev)
       // TODO check why this is necessary, there should be a bug in
       // the manager where we are receiving mouse events and are not
       // the top most window.
-      getManager()->pick(ev.getPoint()) != this) {
+      this->manager()->pick(ev.point()) != this) {
     ev.setHit(ht);
     return;
   }
 
-  int x = ev.getPoint().x;
-  int y = ev.getPoint().y;
-  gfx::Rect pos = getBounds();
-  gfx::Rect cpos = getChildrenBounds();
+  int x = ev.point().x;
+  int y = ev.point().y;
+  gfx::Rect pos = bounds();
+  gfx::Rect cpos = childrenBounds();
 
   // Move
   if ((hasText())
@@ -194,7 +194,7 @@ void Window::remapWindow()
     this->setVisible(true);
   }
 
-  setBounds(Rect(Point(getBounds().x, getBounds().y),
+  setBounds(Rect(Point(bounds().x, bounds().y),
                  sizeHint()));
 
   // load layout
@@ -205,13 +205,13 @@ void Window::remapWindow()
 
 void Window::centerWindow()
 {
-  Widget* manager = getManager();
+  Widget* manager = this->manager();
 
   if (m_isAutoRemap)
     remapWindow();
 
-  positionWindow(manager->getBounds().w/2 - getBounds().w/2,
-                 manager->getBounds().h/2 - getBounds().h/2);
+  positionWindow(manager->bounds().w/2 - bounds().w/2,
+                 manager->bounds().h/2 - bounds().h/2);
 }
 
 void Window::positionWindow(int x, int y)
@@ -219,7 +219,7 @@ void Window::positionWindow(int x, int y)
   if (m_isAutoRemap)
     remapWindow();
 
-  setBounds(Rect(x, y, getBounds().w, getBounds().h));
+  setBounds(Rect(x, y, bounds().w, bounds().h));
 
   invalidate();
 }
@@ -231,7 +231,7 @@ void Window::moveWindow(const gfx::Rect& rect)
 
 void Window::openWindow()
 {
-  if (!getParent()) {
+  if (!parent()) {
     if (m_isAutoRemap)
       centerWindow();
 
@@ -245,7 +245,7 @@ void Window::openWindowInForeground()
 
   openWindow();
 
-  MessageLoop loop(getManager());
+  MessageLoop loop(manager());
   while (!hasFlags(HIDDEN))
     loop.pumpMessages();
 
@@ -256,7 +256,7 @@ void Window::closeWindow(Widget* killer)
 {
   m_killer = killer;
 
-  getManager()->_closeWindow(this, true);
+  manager()->_closeWindow(this, true);
 
   // Close event
   CloseEvent ev(killer);
@@ -265,7 +265,7 @@ void Window::closeWindow(Widget* killer)
 
 bool Window::isTopLevel()
 {
-  Widget* manager = getManager();
+  Widget* manager = this->manager();
   if (!manager->children().empty())
     return (this == UI_FIRST_WIDGET(manager->children()));
   else
@@ -294,9 +294,9 @@ bool Window::onProcessMessage(Message* msg)
       if (m_hitTest != HitTestNowhere &&
           m_hitTest != HitTestClient) {
         if (clickedWindowPos == NULL)
-          clickedWindowPos = new gfx::Rect(getBounds());
+          clickedWindowPos = new gfx::Rect(bounds());
         else
-          *clickedWindowPos = getBounds();
+          *clickedWindowPos = bounds();
 
         captureMouse();
         return true;
@@ -333,8 +333,8 @@ bool Window::onProcessMessage(Message* msg)
           int x = clickedWindowPos->x + (mousePos.x - clickedMousePos.x);
           int y = clickedWindowPos->y + (mousePos.y - clickedMousePos.y);
           moveWindow(gfx::Rect(x, y,
-                               getBounds().w,
-                               getBounds().h), true);
+                               bounds().w,
+                               bounds().h), true);
         }
         else {
           int x, y, w, h;
@@ -371,17 +371,17 @@ bool Window::onProcessMessage(Message* msg)
 
           limitSize(&w, &h);
 
-          if ((getBounds().w != w) ||
-              (getBounds().h != h)) {
+          if ((bounds().w != w) ||
+              (bounds().h != h)) {
             if (hitLeft)
               x = clickedWindowPos->x - (w - clickedWindowPos->w);
             else
-              x = getBounds().x;
+              x = bounds().x;
 
             if (hitTop)
               y = clickedWindowPos->y - (h - clickedWindowPos->h);
             else
-              y = getBounds().y;
+              y = bounds().y;
 
             moveWindow(gfx::Rect(x, y, w, h), false);
             invalidate();
@@ -420,15 +420,15 @@ bool Window::onProcessMessage(Message* msg)
 
 void Window::onResize(ResizeEvent& ev)
 {
-  windowSetPosition(ev.getBounds());
+  windowSetPosition(ev.bounds());
 }
 
 void Window::onSizeHint(SizeHintEvent& ev)
 {
-  Widget* manager = getManager();
+  Widget* manager = this->manager();
 
   if (m_isDesktop) {
-    Rect cpos = manager->getChildrenBounds();
+    Rect cpos = manager->childrenBounds();
     ev.setSizeHint(cpos.w, cpos.h);
   }
   else {
@@ -445,7 +445,7 @@ void Window::onSizeHint(SizeHintEvent& ev)
     }
 
     if (hasText())
-      maxSize.w = MAX(maxSize.w, getTextWidth());
+      maxSize.w = MAX(maxSize.w, textWidth());
 
     ev.setSizeHint(maxSize.w + border().width(),
                    maxSize.h + border().height());
@@ -454,7 +454,7 @@ void Window::onSizeHint(SizeHintEvent& ev)
 
 void Window::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintWindow(ev);
+  theme()->paintWindow(ev);
 }
 
 void Window::onBroadcastMouseMessage(WidgetsList& targets)
@@ -466,7 +466,7 @@ void Window::onBroadcastMouseMessage(WidgetsList& targets)
   if (isForeground() || isDesktop())
     return;
 
-  Widget* sibling = getNextSibling();
+  Widget* sibling = nextSibling();
   if (sibling)
     sibling->broadcastMouseMessage(targets);
 }
@@ -481,7 +481,7 @@ void Window::windowSetPosition(const gfx::Rect& rect)
 {
   // Copy the new position rectangle
   setBoundsQuietly(rect);
-  Rect cpos = getChildrenBounds();
+  Rect cpos = childrenBounds();
 
   // Set all the children to the same "cpos"
   for (auto child : children()) {
@@ -504,18 +504,18 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 {
 #define FLAGS (DrawableRegionFlags)(kCutTopWindows | kUseChildArea)
 
-  Manager* manager = getManager();
+  Manager* manager = this->manager();
   Message* msg;
 
   manager->dispatchMessages();
 
   // Get the window's current position
-  Rect old_pos = getBounds();
+  Rect old_pos = bounds();
   int dx = rect.x - old_pos.x;
   int dy = rect.y - old_pos.y;
 
   // Get the manager's current position
-  Rect man_pos = manager->getBounds();
+  Rect man_pos = manager->bounds();
 
   // Send a kWinMoveMessage message to the window
   msg = new Message(kWinMoveMessage);

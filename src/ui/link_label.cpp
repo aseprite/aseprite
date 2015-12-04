@@ -87,7 +87,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
 
 void LinkLabel::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintLinkLabel(ev);
+  theme()->paintLinkLabel(ev);
 }
 
 void LinkLabel::onClick()

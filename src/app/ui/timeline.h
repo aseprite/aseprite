@@ -99,8 +99,8 @@ namespace app {
     void dropRange(DropOp op);
 
     // ScrollableViewDelegate impl
-    gfx::Size getVisibleSize() const override;
-    gfx::Point getViewScroll() const override;
+    gfx::Size visibleSize() const override;
+    gfx::Point viewScroll() const override;
     void setViewScroll(const gfx::Point& pt) override;
 
   protected:

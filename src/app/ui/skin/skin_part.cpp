@@ -44,7 +44,7 @@ void SkinPart::setBitmap(std::size_t index, she::Surface* bitmap)
   m_bitmaps[index] = bitmap;
 }
 
-gfx::Size SkinPart::getSize() const
+gfx::Size SkinPart::size() const
 {
   if (!m_bitmaps.empty())
     return gfx::Size(m_bitmaps[0]->width(),

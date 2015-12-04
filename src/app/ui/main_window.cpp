@@ -56,7 +56,7 @@ MainWindow::MainWindow()
   m_notifications = new Notifications();
   m_contextBar = new ContextBar();
   m_statusBar = new StatusBar();
-  m_colorBar = new ColorBar(colorBarPlaceholder()->getAlign());
+  m_colorBar = new ColorBar(colorBarPlaceholder()->align());
   m_toolBar = new ToolBar();
   m_tabsBar = new WorkspaceTabs(this);
   m_workspace = new Workspace();
@@ -105,12 +105,12 @@ MainWindow::MainWindow()
 MainWindow::~MainWindow()
 {
   if (m_devConsoleView) {
-    if (m_devConsoleView->getParent())
+    if (m_devConsoleView->parent())
       m_workspace->removeView(m_devConsoleView);
     delete m_devConsoleView;
   }
   if (m_homeView) {
-    if (m_homeView->getParent())
+    if (m_homeView->parent())
       m_workspace->removeView(m_homeView);
     delete m_homeView;
   }
@@ -158,12 +158,12 @@ void MainWindow::showNotification(INotificationDelegate* del)
 {
   m_notifications->addLink(del);
   m_notifications->setVisible(true);
-  m_notifications->getParent()->layout();
+  m_notifications->parent()->layout();
 }
 
 void MainWindow::showHomeOnOpen()
 {
-  if (!getHomeView()->getParent()) {
+  if (!getHomeView()->parent()) {
     TabView* selectedTab = m_tabsBar->getSelectedTab();
 
     // Show "Home" tab in the first position, and select it only if
@@ -178,7 +178,7 @@ void MainWindow::showHomeOnOpen()
 
 void MainWindow::showHome()
 {
-  if (!getHomeView()->getParent()) {
+  if (!getHomeView()->parent()) {
     m_workspace->addView(m_homeView, 0);
   }
   m_tabsBar->selectTab(m_homeView);
@@ -194,7 +194,7 @@ void MainWindow::showDevConsole()
   if (!m_devConsoleView)
     m_devConsoleView = new DevConsoleView;
 
-  if (!m_devConsoleView->getParent()) {
+  if (!m_devConsoleView->parent()) {
     m_workspace->addView(m_devConsoleView);
     m_tabsBar->selectTab(m_devConsoleView);
   }

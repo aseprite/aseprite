@@ -107,7 +107,7 @@ ColorSelector::ColorSelector()
 
 ColorSelector::~ColorSelector()
 {
-  getPin()->getParent()->removeChild(getPin());
+  getPin()->parent()->removeChild(getPin());
 }
 
 void ColorSelector::setColor(const app::Color& color, SetColorOptions options)

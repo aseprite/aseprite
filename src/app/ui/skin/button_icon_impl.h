@@ -26,11 +26,11 @@ namespace app {
 
       // IButtonIcon implementation
       void destroy();
-      gfx::Size getSize();
-      she::Surface* getNormalIcon();
-      she::Surface* getSelectedIcon();
-      she::Surface* getDisabledIcon();
-      int getIconAlign();
+      gfx::Size size();
+      she::Surface* normalIcon();
+      she::Surface* selectedIcon();
+      she::Surface* disabledIcon();
+      int iconAlign();
 
     public:
       SkinPartPtr m_normalIcon;

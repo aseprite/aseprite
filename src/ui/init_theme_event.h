@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,14 +14,13 @@ namespace ui {
 
   class Theme;
 
-  class InitThemeEvent : public Event
-  {
+  class InitThemeEvent : public Event {
   public:
     InitThemeEvent(Component* source, Theme* theme)
       : Event(source)
       , m_theme(theme){ }
 
-    Theme* getTheme() const { return m_theme; }
+    Theme* theme() const { return m_theme; }
 
   private:
     Theme* m_theme;

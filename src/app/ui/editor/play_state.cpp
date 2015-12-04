@@ -153,7 +153,7 @@ void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   // This check just in case we stay connected to context signals when
   // the editor is already deleted.
   ASSERT(m_editor);
-  ASSERT(m_editor->getManager() == ui::Manager::getDefault());
+  ASSERT(m_editor->manager() == ui::Manager::getDefault());
 
   // If the command is for other editor, we don't stop the animation.
   if (!m_editor->isActive())

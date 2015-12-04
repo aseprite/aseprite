@@ -192,7 +192,7 @@ void ColorSliders::onSliderChange(int i)
 void ColorSliders::onEntryChange(int i)
 {
   // Update the slider related to the changed entry widget.
-  int value = m_entry[i]->getTextInt();
+  int value = m_entry[i]->textInt();
 
   Slider* slider = (m_mode == Absolute ? m_absSlider[i]: m_relSlider[i]);
   value = MID(slider->getMinValue(), value, slider->getMaxValue());

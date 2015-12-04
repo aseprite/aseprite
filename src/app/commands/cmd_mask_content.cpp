@@ -74,7 +74,7 @@ void MaskContentCommand::onExecute(Context* context)
     Mask newMask;
     gfx::Rect imgBounds = cel->image()->bounds();
     if (algorithm::shrink_bounds(cel->image(), imgBounds, color)) {
-      newMask.replace(imgBounds.offset(cel->bounds().getOrigin()));
+      newMask.replace(imgBounds.offset(cel->bounds().origin()));
     }
     else {
       newMask.replace(cel->bounds());

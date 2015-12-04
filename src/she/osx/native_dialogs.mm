@@ -113,7 +113,7 @@ public:
     m_filters.push_back(std::make_pair(description, extension));
   }
 
-  std::string getFileName() override {
+  std::string fileName() override {
     return m_filename;
   }
 

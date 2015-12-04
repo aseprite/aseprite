@@ -93,7 +93,7 @@ protected:
     // if (isEnabled())
       StyledButton::onPaint(ev);
     // else
-    //   ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
+    //   ev.graphics()->fillRect(getBgColor(), clientBounds());
   }
 };
 
@@ -102,22 +102,22 @@ protected:
 
 ColorBar::ScrollableView::ScrollableView()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int l = theme->parts.editorSelected()->getBitmapW()->width();
-  int t = theme->parts.editorSelected()->getBitmapN()->height();
-  int r = theme->parts.editorSelected()->getBitmapE()->width();
-  int b = theme->parts.editorSelected()->getBitmapS()->height();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  int l = theme->parts.editorSelected()->bitmapW()->width();
+  int t = theme->parts.editorSelected()->bitmapN()->height();
+  int r = theme->parts.editorSelected()->bitmapE()->width();
+  int b = theme->parts.editorSelected()->bitmapS()->height();
 
   setBorder(gfx::Border(l, t, r, b));
 }
 
 void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
 {
-  ui::Graphics* g = ev.getGraphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  ui::Graphics* g = ev.graphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   theme->drawRect(
-    g, getClientBounds(),
+    g, clientBounds(),
     (hasFocus() ? theme->parts.editorSelected().get():
                   theme->parts.editorNormal().get()),
     gfx::ColorNone);
@@ -149,7 +149,7 @@ ColorBar::ColorBar(int align)
 {
   m_instance = this;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
   setChildSpacing(2*guiscale());
@@ -160,10 +160,10 @@ ColorBar::ColorBar(int align)
 
   // TODO hardcoded scroll bar width should be get from skin.xml file
   int scrollBarWidth = 6*guiscale();
-  m_scrollableView.getHorizontalBar()->setBarWidth(scrollBarWidth);
-  m_scrollableView.getVerticalBar()->setBarWidth(scrollBarWidth);
-  setup_mini_look(m_scrollableView.getHorizontalBar());
-  setup_mini_look(m_scrollableView.getVerticalBar());
+  m_scrollableView.horizontalBar()->setBarWidth(scrollBarWidth);
+  m_scrollableView.verticalBar()->setBarWidth(scrollBarWidth);
+  setup_mini_look(m_scrollableView.horizontalBar());
+  setup_mini_look(m_scrollableView.verticalBar());
 
   m_scrollableView.attachToView(&m_paletteView);
   m_scrollableView.setExpansive(true);
@@ -410,7 +410,7 @@ void ColorBar::onPaletteButtonClick()
     }
 
     case PalButton::SORT: {
-      gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
+      gfx::Rect bounds = m_buttons.getItem(item)->bounds();
 
       Menu menu;
       MenuItem
@@ -474,7 +474,7 @@ void ColorBar::onPaletteButtonClick()
       }
 
       if (!m_palettePopup->isVisible()) {
-        gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
+        gfx::Rect bounds = m_buttons.getItem(item)->bounds();
 
         m_palettePopup->showPopup(
           gfx::Rect(bounds.x, bounds.y+bounds.h,
@@ -489,7 +489,7 @@ void ColorBar::onPaletteButtonClick()
     case PalButton::OPTIONS: {
       Menu* menu = AppMenus::instance()->getPalettePopupMenu();
       if (menu) {
-        gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
+        gfx::Rect bounds = m_buttons.getItem(item)->bounds();
 
         menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
       }
@@ -629,7 +629,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
   }
 
   set_current_palette(newPalette, false);
-  getManager()->invalidate();
+  manager()->invalidate();
 }
 
 void ColorBar::setTransparentIndex(int index)
@@ -1005,7 +1005,7 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
     ui::Manager::getDefault()->invalidate();
 
     warningIcon->setVisible(false);
-    warningIcon->getParent()->layout();
+    warningIcon->parent()->layout();
   }
   catch (base::Exception& e) {
     Console::showException(e);
@@ -1033,7 +1033,7 @@ void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIco
   }
 
   warningIcon->setVisible(index < 0);
-  warningIcon->getParent()->layout();
+  warningIcon->parent()->layout();
 }
 
 // static

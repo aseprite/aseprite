@@ -40,11 +40,11 @@ EditorView::EditorView(EditorView::Type type)
   : View()
   , m_type(type)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int l = theme->parts.editorSelected()->getBitmapW()->width();
-  int t = theme->parts.editorSelected()->getBitmapN()->height();
-  int r = theme->parts.editorSelected()->getBitmapE()->width();
-  int b = theme->parts.editorSelected()->getBitmapS()->height();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  int l = theme->parts.editorSelected()->bitmapW()->width();
+  int t = theme->parts.editorSelected()->bitmapN()->height();
+  int r = theme->parts.editorSelected()->bitmapE()->width();
+  int b = theme->parts.editorSelected()->bitmapS()->height();
 
   setBorder(gfx::Border(l, t, r, b));
   setBgColor(gfx::rgba(0, 0, 0));
@@ -57,8 +57,8 @@ EditorView::EditorView(EditorView::Type type)
 
 void EditorView::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  Graphics* g = ev.graphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   bool selected = false;
 
   switch (m_type) {
@@ -76,11 +76,11 @@ void EditorView::onPaint(PaintEvent& ev)
   }
 
   theme->drawRect(
-    g, getClientBounds(),
+    g, clientBounds(),
     (selected ?
      theme->parts.editorSelected().get():
      theme->parts.editorNormal().get()),
-    getBgColor());
+    bgColor());
 }
 
 void EditorView::onResize(ResizeEvent& ev)
@@ -93,7 +93,7 @@ void EditorView::onResize(ResizeEvent& ev)
         oldPos = editor->editorToScreen(gfx::Point(0, 0));
         break;
       case KeepCenter:
-        oldPos = editor->screenToEditor(getViewportBounds().getCenter());
+        oldPos = editor->screenToEditor(viewportBounds().center());
         break;
     }
   }
@@ -105,7 +105,7 @@ void EditorView::onResize(ResizeEvent& ev)
       case KeepOrigin: {
         // This keeps the same scroll position for the editor
         gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
-        gfx::Point oldScroll = getViewScroll();
+        gfx::Point oldScroll = viewScroll();
         editor->setEditorScroll(oldScroll + newPos - oldPos, false);
         break;
       }
@@ -133,14 +133,14 @@ void EditorView::setupScrollbars()
     hideScrollBars();
   }
   else {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     int barsize = theme->dimensions.miniScrollbarSize();
 
-    getHorizontalBar()->setBarWidth(barsize);
-    getVerticalBar()->setBarWidth(barsize);
+    horizontalBar()->setBarWidth(barsize);
+    verticalBar()->setBarWidth(barsize);
 
-    setup_mini_look(getHorizontalBar());
-    setup_mini_look(getVerticalBar());
+    setup_mini_look(horizontalBar());
+    setup_mini_look(verticalBar());
 
     showScrollBars();
   }

@@ -184,7 +184,7 @@ int PaletteView::getSelectedEntriesCount() const
 
 app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 {
-  gfx::Point relPos = pos - getBounds().getOrigin();
+  gfx::Point relPos = pos - bounds().origin();
   Palette* palette = currentPalette();
   for (int i=0; i<palette->size(); ++i) {
     if (getPaletteEntryBounds(i).contains(relPos))
@@ -395,7 +395,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         setBoxSize(m_boxsize + z);
       }
       else {
-        gfx::Point scroll = view->getViewScroll();
+        gfx::Point scroll = view->viewScroll();
         scroll += delta * 3 * m_boxsize;
         view->setViewScroll(scroll);
       }
@@ -410,7 +410,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kSetCursorMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      Hit hit = hitTest(mouseMsg->position() - getBounds().getOrigin());
+      Hit hit = hitTest(mouseMsg->position() - bounds().origin());
       if (hit != m_hot) {
         m_hot = hit;
         invalidate();
@@ -426,10 +426,10 @@ bool PaletteView::onProcessMessage(Message* msg)
 
 void PaletteView::onPaint(ui::PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
-  ui::Graphics* g = ev.getGraphics();
-  gfx::Rect bounds = getClientBounds();
+  ui::Graphics* g = ev.graphics();
+  gfx::Rect bounds = clientBounds();
   Palette* palette = currentPalette();
   int fgIndex = -1;
   int bgIndex = -1;
@@ -477,7 +477,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       case SelectOneColor:
         if (m_currentEntry == i)
           g->fillRect(color_utils::blackandwhite_neg(gfxColor),
-                      gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
+                      gfx::Rect(box.center(), gfx::Size(1, 1)));
         break;
 
       case FgBgColors:
@@ -495,7 +495,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
         if (transparentIndex == i)
           g->fillRect(color_utils::blackandwhite_neg(gfxColor),
-                      gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
+                      gfx::Rect(box.center(), gfx::Size(1, 1)));
         break;
     }
   }
@@ -503,7 +503,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   // Handle to resize palette
 
   if (m_editable && !dragging) {
-    she::Surface* handle = theme->parts.palResize()->getBitmap(0);
+    she::Surface* handle = theme->parts.palResize()->bitmap(0);
     gfx::Rect box = getPaletteEntryBounds(palSize);
     g->drawRgbaSurface(handle,
                        box.x+box.w/2-handle->width()/2,
@@ -589,7 +589,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
     View* view = View::getView(this);
     if (view) {
       int columns =
-        (view->getViewportBounds().w-this->childSpacing()*2)
+        (view->viewportBounds().w-this->childSpacing()*2)
         / (m_boxsize+this->childSpacing());
       setColumns(MAX(1, columns));
     }
@@ -627,12 +627,12 @@ void PaletteView::update_scroll(int color)
   if (!view)
     return;
 
-  gfx::Rect vp = view->getViewportBounds();
+  gfx::Rect vp = view->viewportBounds();
   gfx::Point scroll;
   int x, y, cols;
   div_t d;
 
-  scroll = view->getViewScroll();
+  scroll = view->viewScroll();
 
   d = div(currentPalette()->size(), m_columns);
   cols = m_columns;
@@ -664,7 +664,7 @@ void PaletteView::onAppPaletteChange()
 
 gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
 {
-  gfx::Rect bounds = getClientBounds();
+  gfx::Rect bounds = clientBounds();
   int cols = m_columns;
   int col = index % cols;
   int row = index / cols;
@@ -677,7 +677,7 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
 
 PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
   Palette* palette = currentPalette();
 
@@ -711,7 +711,7 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 
   // Check if we are inside a color.
   View* view = View::getView(this);
-  gfx::Rect vp = view->getViewportBounds();
+  gfx::Rect vp = view->viewportBounds();
   for (int i=0; ; ++i) {
     gfx::Rect box = getPaletteEntryBounds(i);
     if (i >= palette->size() && box.y2() > vp.h)
@@ -972,7 +972,7 @@ void PaletteView::setNewPalette(doc::Palette* oldPalette,
   }
 
   set_current_palette(newPalette, false);
-  getManager()->invalidate();
+  manager()->invalidate();
 }
 
 gfx::Color PaletteView::drawEntry(ui::Graphics* g, const gfx::Rect& box, int palIdx)

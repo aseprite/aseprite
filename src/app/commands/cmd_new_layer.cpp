@@ -99,7 +99,7 @@ void NewLayerCommand::onExecute(Context* context)
     if (window->getKiller() != window->findChild("ok"))
       return;
 
-    name = window->findChild("name")->getText();
+    name = window->findChild("name")->text();
   }
 
   Layer* activeLayer = writer.layer();

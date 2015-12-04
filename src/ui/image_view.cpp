@@ -31,7 +31,7 @@ void ImageView::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
   getTextIconInfo(&box, NULL, NULL,
-    getAlign(), m_sur->width(), m_sur->height());
+    align(), m_sur->width(), m_sur->height());
 
   ev.setSizeHint(
     gfx::Size(
@@ -41,13 +41,14 @@ void ImageView::onSizeHint(SizeHintEvent& ev)
 
 void ImageView::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  gfx::Rect bounds = getClientBounds();
+  Graphics* g = ev.graphics();
+  gfx::Rect bounds = clientBounds();
   gfx::Rect icon;
-  getTextIconInfo(NULL, NULL, &icon, getAlign(),
+  getTextIconInfo(
+    nullptr, nullptr, &icon, align(),
     m_sur->width(), m_sur->height());
 
-  g->fillRect(getBgColor(), bounds);
+  g->fillRect(bgColor(), bounds);
   g->drawRgbaSurface(m_sur, icon.x, icon.y);
 }
 

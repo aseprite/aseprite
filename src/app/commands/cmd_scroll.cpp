@@ -89,8 +89,8 @@ void ScrollCommand::onExecute(Context* context)
 {
   DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
-  gfx::Rect vp = view->getViewportBounds();
-  gfx::Point scroll = view->getViewScroll();
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Point scroll = view->viewScroll();
   gfx::Rect gridBounds = docPref.grid.bounds();
   gfx::Point delta(0, 0);
   int pixels = 0;

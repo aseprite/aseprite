@@ -169,10 +169,10 @@ void GridSettingsCommand::onExecute(Context* context)
   window->openWindowInForeground();
 
   if (window->getKiller() == button_ok) {
-    bounds.x = grid_x->getTextInt();
-    bounds.y = grid_y->getTextInt();
-    bounds.w = grid_w->getTextInt();
-    bounds.h = grid_h->getTextInt();
+    bounds.x = grid_x->textInt();
+    bounds.y = grid_y->textInt();
+    bounds.w = grid_w->textInt();
+    bounds.h = grid_h->textInt();
     bounds.w = MAX(bounds.w, 1);
     bounds.h = MAX(bounds.h, 1);
 

@@ -101,15 +101,15 @@ bool TooltipManager::onProcessMessage(Message* msg)
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {
-    gfx::Rect bounds = m_target.widget->getBounds();
+    gfx::Rect bounds = m_target.widget->bounds();
 
     m_tipWindow.reset(new TipWindow(m_target.tipInfo.text, bounds));
     int x = get_mouse_position().x+12*guiscale();
     int y = get_mouse_position().y+12*guiscale();
 
     m_tipWindow->remapWindow();
-    int w = m_tipWindow->getBounds().w;
-    int h = m_tipWindow->getBounds().h;
+    int w = m_tipWindow->bounds().w;
+    int h = m_tipWindow->bounds().h;
 
     int arrowAlign = m_target.tipInfo.arrowAlign;
     int trycount = 0;
@@ -235,10 +235,11 @@ bool TipWindow::onProcessMessage(Message* msg)
 void TipWindow::onSizeHint(SizeHintEvent& ev)
 {
   ScreenGraphics g;
-  g.setFont(getFont());
-  Size resultSize = g.fitString(getText(),
-                                (getClientBounds() - border()).w,
-                                getAlign());
+  g.setFont(font());
+  Size resultSize =
+    g.fitString(text(),
+                (clientBounds() - border()).w,
+                align());
 
   resultSize.w += border().width();
   resultSize.h += border().height();
@@ -277,7 +278,7 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
 
 void TipWindow::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintTooltip(ev);
+  theme()->paintTooltip(ev);
 }
 
 } // namespace ui

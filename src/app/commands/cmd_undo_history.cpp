@@ -158,7 +158,7 @@ private:
 
   void clearList() {
     ui::Widget* child;
-    while ((child = actions()->getFirstChild()))
+    while ((child = actions()->firstChild()))
       delete child;
 
     actions()->layout();

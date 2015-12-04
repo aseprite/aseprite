@@ -63,13 +63,13 @@ public:
     m_tiled = (filters::TiledMode)docPref.tiled.mode();
 
     // Free mouse
-    editor->getManager()->freeMouse();
+    editor->manager()->freeMouse();
 
     // Clear extras (e.g. pen preview)
     m_doc->setExtraCel(ExtraCelRef(nullptr));
 
-    gfx::Rect vp = view->getViewportBounds();
-    gfx::Point scroll = view->getViewScroll();
+    gfx::Rect vp = view->viewportBounds();
+    gfx::Point scroll = view->viewScroll();
 
     m_oldMousePos = ui::get_mouse_position();
     m_pos.x = -scroll.x + vp.x + editor->padding().x;
@@ -91,7 +91,7 @@ protected:
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         gfx::Point mousePos = mouseMsg->position();
 
-        gfx::Rect bounds = getBounds();
+        gfx::Rect bounds = this->bounds();
         gfx::Border border;
         if (bounds.w > 64*guiscale()) {
           border.left(32*guiscale());
@@ -172,7 +172,7 @@ protected:
   }
 
   virtual void onPaint(PaintEvent& ev) override {
-    Graphics* g = ev.getGraphics();
+    Graphics* g = ev.graphics();
     AppRender& render = m_editor->renderEngine();
     render.disableOnionskin();
     render.setBgType(render::BgType::TRANSPARENT);

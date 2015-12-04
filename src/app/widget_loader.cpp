@@ -136,7 +136,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     if (!widget)
       widget = new Box(align);
     else
-      widget->setAlign(widget->getAlign() | align);
+      widget->setAlign(widget->align() | align);
   }
   else if (elem_name == "vbox") {
     if (!widget)
@@ -367,7 +367,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget = new Separator(text ? text: "", align);
     }
     else
-      widget->setAlign(widget->getAlign() | align);
+      widget->setAlign(widget->align() | align);
   }
   else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
@@ -386,7 +386,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget->setText(elem->GetText());
 
     if (wordwrap)
-      widget->setAlign(widget->getAlign() | WORDWRAP);
+      widget->setAlign(widget->align() | WORDWRAP);
   }
   else if (elem_name == "view") {
     if (!widget)
@@ -543,7 +543,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     widget->setExpansive(true);
 
   if (homogeneous)
-    widget->setAlign(widget->getAlign() | HOMOGENEOUS);
+    widget->setAlign(widget->align() | HOMOGENEOUS);
 
   if (magnet)
     widget->setFocusMagnet(true);
@@ -572,7 +572,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   }
 
   if (styleid) {
-    SkinTheme* theme = static_cast<SkinTheme*>(root->getTheme());
+    SkinTheme* theme = static_cast<SkinTheme*>(root->theme());
     skin::Style* style = theme->getStyle(styleid);
     ASSERT(style);
     SkinStylePropertyPtr prop(new SkinStyleProperty(style));

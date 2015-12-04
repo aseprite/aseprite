@@ -118,7 +118,7 @@ private:
   }
 
   std::string nameValue() const {
-    return name()->getText();
+    return name()->text();
   }
 
   BlendMode blendModeValue() const {

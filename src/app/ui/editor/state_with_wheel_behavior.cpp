@@ -134,14 +134,14 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WHEEL_HSCROLL:
     case WHEEL_VSCROLL: {
       View* view = View::getView(editor);
-      gfx::Point scroll = view->getViewScroll();
+      gfx::Point scroll = view->viewScroll();
       gfx::Point delta(0, 0);
 
       if (msg->preciseWheel()) {
         delta = msg->wheelDelta();
       }
       else {
-        gfx::Rect vp = view->getViewportBounds();
+        gfx::Rect vp = view->viewportBounds();
 
         if (wheelAction == WHEEL_HSCROLL) {
           delta.x = dz * vp.w;

@@ -88,7 +88,7 @@ void UndoCommand::onExecute(Context* context)
       current_editor->drawSpriteClipped(
         gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
-      current_editor->getManager()->flipDisplay();
+      current_editor->manager()->flipDisplay();
       base::this_thread::sleep_for(0.01);
     }
   }

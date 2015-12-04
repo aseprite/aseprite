@@ -102,8 +102,8 @@ void Entry::hideCaret()
 
 void Entry::setCaretPos(int pos)
 {
-  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
-  int textlen = base::utf8_length(getText());
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
+  int textlen = base::utf8_length(text());
   int x, c;
 
   m_caret = pos;
@@ -115,13 +115,13 @@ void Entry::setCaretPos(int pos)
   // Forward scroll
   m_scroll--;
   do {
-    x = getBounds().x + border().left();
+    x = bounds().x + border().left();
     for (c=++m_scroll; ; c++) {
       int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
-      x += getFont()->charWidth(ch);
+      x += font()->charWidth(ch);
 
-      if (x >= getBounds().x2()-border().right())
+      if (x >= bounds().x2()-border().right())
         break;
     }
   } while (m_caret >= c);
@@ -134,7 +134,7 @@ void Entry::setCaretPos(int pos)
 
 void Entry::selectText(int from, int to)
 {
-  int end = base::utf8_length(getText());
+  int end = base::utf8_length(text());
 
   m_select = from;
   setCaretPos(from); // to move scroll
@@ -294,7 +294,7 @@ bool Entry::onProcessMessage(Message* msg)
                 case kKeyA: cmd = EntryCmd::SelectAll; break;
               }
             }
-            else if (getManager()->isFocusMovementKey(msg)) {
+            else if (manager()->isFocusMovementKey(msg)) {
               break;
             }
             else if (keymsg->unicodeChar() >= 32) {
@@ -322,16 +322,16 @@ bool Entry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
-        base::utf8_const_iterator utf8_end = base::utf8_const_iterator(getText().end());
-        int textlen = base::utf8_length(getText());
+        base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
+        base::utf8_const_iterator utf8_end = base::utf8_const_iterator(text().end());
+        int textlen = base::utf8_length(text());
         int c, x;
 
         bool move = true;
         bool is_dirty = false;
 
         // Backward scroll
-        if (mousePos.x < getBounds().x) {
+        if (mousePos.x < bounds().x) {
           if (m_scroll > 0) {
             m_caret = --m_scroll;
             move = false;
@@ -340,15 +340,15 @@ bool Entry::onProcessMessage(Message* msg)
           }
         }
         // Forward scroll
-        else if (mousePos.x >= getBounds().x2()) {
+        else if (mousePos.x >= bounds().x2()) {
           if (m_scroll < textlen - getAvailableTextLength()) {
             m_scroll++;
-            x = getBounds().x + border().left();
+            x = bounds().x + border().left();
             for (c=m_scroll; utf8_begin != utf8_end; ++c) {
               int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
-              x += getFont()->charWidth(ch);
-              if (x > getBounds().x2()-border().right()) {
+              x += font()->charWidth(ch);
+              if (x > bounds().x2()-border().right()) {
                 c--;
                 break;
               }
@@ -428,14 +428,14 @@ bool Entry::onProcessMessage(Message* msg)
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
   int w =
-    + getFont()->charWidth('w') * MIN(m_maxsize, 6)
+    + font()->charWidth('w') * MIN(m_maxsize, 6)
     + 2*guiscale()
     + border().width();
 
   w = MIN(w, ui::display_w()/2);
 
   int h =
-    + getFont()->height()
+    + font()->height()
     + border().height();
 
   ev.setSizeHint(w, h);
@@ -443,15 +443,15 @@ void Entry::onSizeHint(SizeHintEvent& ev)
 
 void Entry::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintEntry(ev);
+  theme()->paintEntry(ev);
 }
 
 void Entry::onSetText()
 {
   Widget::onSetText();
 
-  if (m_caret >= 0 && (std::size_t)m_caret > getTextLength())
-    m_caret = (int)getTextLength();
+  if (m_caret >= 0 && (std::size_t)m_caret > textLength())
+    m_caret = (int)textLength();
 }
 
 void Entry::onChange()
@@ -461,21 +461,21 @@ void Entry::onChange()
 
 gfx::Rect Entry::onGetEntryTextBounds() const
 {
-  gfx::Rect bounds = getClientBounds();
+  gfx::Rect bounds = clientBounds();
   bounds.x += border().left();
-  bounds.y += bounds.h/2 - getTextHeight()/2;
+  bounds.y += bounds.h/2 - textHeight()/2;
   bounds.w -= border().width();
-  bounds.h = getTextHeight();
+  bounds.h = textHeight();
   return bounds;
 }
 
 int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 {
-  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
-  base::utf8_const_iterator utf8_end = base::utf8_const_iterator(getText().end());
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
+  base::utf8_const_iterator utf8_end = base::utf8_const_iterator(text().end());
   int caret = m_caret;
-  int textlen = base::utf8_length(getText());
-  gfx::Rect bounds = getEntryTextBounds().offset(getBounds().getOrigin());
+  int textlen = base::utf8_length(text());
+  gfx::Rect bounds = getEntryTextBounds().offset(this->bounds().origin());
 
   int mx = mousemsg->position().x;
   mx = MID(bounds.x, mx, bounds.x2()-1);
@@ -489,8 +489,8 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
   int c = m_scroll;
   for (; utf8_it != utf8_end; ++c, ++utf8_it) {
-    int w = getFont()->charWidth(*utf8_it);
-    if (x+w >= getBounds().x2()-border().right())
+    int w = font()->charWidth(*utf8_it);
+    if (x+w >= bounds.x2()-border().right())
       break;
     if ((mx >= x) && (mx < x+w)) {
       caret = c;
@@ -510,7 +510,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 {
-  std::wstring text = base::from_utf8(getText());
+  std::wstring text = base::from_utf8(this->text());
   int c, selbeg, selend;
 
   getEntryThemeInfo(NULL, NULL, NULL, &selbeg, &selend);
@@ -694,7 +694,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
   }
 
   std::string newText = base::to_utf8(text);
-  if (newText != getText()) {
+  if (newText != this->text()) {
     setText(newText.c_str());
     onChange();
   }
@@ -709,8 +709,8 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
 void Entry::forwardWord()
 {
-  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
-  int textlen = base::utf8_length(getText());
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
+  int textlen = base::utf8_length(text());
   int ch;
 
   for (; m_caret < textlen; m_caret++) {
@@ -730,7 +730,7 @@ void Entry::forwardWord()
 
 void Entry::backwardWord()
 {
-  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
   int ch;
 
   for (--m_caret; m_caret >= 0; --m_caret) {
@@ -753,7 +753,7 @@ void Entry::backwardWord()
 
 int Entry::getAvailableTextLength()
 {
-  return getClientChildrenBounds().w / getFont()->charWidth('w');
+  return clientChildrenBounds().w / font()->charWidth('w');
 }
 
 bool Entry::isPosInSelection(int pos)

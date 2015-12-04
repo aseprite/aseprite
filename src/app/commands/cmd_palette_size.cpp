@@ -61,7 +61,7 @@ void PaletteSizeCommand::onExecute(Context* context)
   window.colors()->setTextf("%d", palette.size());
   window.openWindowInForeground();
   if (window.getKiller() == window.ok()) {
-    int ncolors = window.colors()->getTextInt();
+    int ncolors = window.colors()->textInt();
     if (ncolors == palette.size())
       return;
 

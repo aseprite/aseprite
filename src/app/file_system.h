@@ -34,7 +34,7 @@ namespace app {
     static FileSystemModule* instance();
 
     // Marks all FileItems as deprecated to be refresh the next time
-    // they are queried through @ref FileItem::getChildren().
+    // they are queried through @ref FileItem::children().
     void refresh();
 
     IFileItem* getRootFileItem();
@@ -70,12 +70,12 @@ namespace app {
     virtual bool isBrowsable() const = 0;
     virtual bool isHidden() const = 0;
 
-    virtual std::string getKeyName() const = 0;
-    virtual std::string getFileName() const = 0;
-    virtual std::string getDisplayName() const = 0;
+    virtual std::string keyName() const = 0;
+    virtual std::string fileName() const = 0;
+    virtual std::string displayName() const = 0;
 
-    virtual IFileItem* getParent() const = 0;
-    virtual const FileItemList& getChildren() = 0;
+    virtual IFileItem* parent() const = 0;
+    virtual const FileItemList& children() = 0;
     virtual void createDirectory(const std::string& dirname) = 0;
 
     virtual bool hasExtension(const std::string& csv_extensions) = 0;
