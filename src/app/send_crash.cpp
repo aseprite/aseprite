@@ -66,7 +66,7 @@ void SendCrash::notificationClick()
   dlg.filename()->Click.connect(Bind(&SendCrash::onClickFilename, this));
 
   dlg.openWindowInForeground();
-  if (dlg.getKiller() == dlg.deleteFile()) {
+  if (dlg.closer() == dlg.deleteFile()) {
     try {
       base::delete_file(m_dumpFilename);
       m_dumpFilename = "";

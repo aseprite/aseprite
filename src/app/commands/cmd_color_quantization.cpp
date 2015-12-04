@@ -123,7 +123,7 @@ void ColorQuantizationCommand::onExecute(Context* context)
     }
 
     window.openWindowInForeground();
-    if (window.getKiller() != window.ok())
+    if (window.closer() != window.ok())
       return;
 
     bool withAlpha = window.alphaChannel()->isSelected();

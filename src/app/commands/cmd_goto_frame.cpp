@@ -122,7 +122,7 @@ protected:
       window.frame()->setTextf("%d", editor->frame()+1);
 
       window.openWindowInForeground();
-      if (window.getKiller() != window.ok())
+      if (window.closer() != window.ok())
         return editor->frame();
 
       m_frame = window.frame()->textInt();

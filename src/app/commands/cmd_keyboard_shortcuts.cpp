@@ -544,7 +544,7 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   window.setVisible(true);
   window.openWindowInForeground();
 
-  if (window.getKiller() == window.ok()) {
+  if (window.closer() == window.ok()) {
     // Save keyboard shortcuts in configuration file
     {
       ResourceFinder rf;

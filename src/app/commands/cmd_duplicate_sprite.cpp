@@ -68,7 +68,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   // Open the window
   window.openWindowInForeground();
 
-  if (window.getKiller() == window.ok()) {
+  if (window.closer() == window.ok()) {
     set_config_bool("DuplicateSprite", "Flatten", window.flatten()->isSelected());
 
     // Make a copy of the document

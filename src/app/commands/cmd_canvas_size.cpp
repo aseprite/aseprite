@@ -80,7 +80,7 @@ public:
     m_editor->backToPreviousState();
   }
 
-  bool pressedOk() { return getKiller() == ok(); }
+  bool pressedOk() { return closer() == ok(); }
 
   int getWidth()  { return width()->textInt(); }
   int getHeight() { return height()->textInt(); }

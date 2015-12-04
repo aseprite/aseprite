@@ -402,7 +402,7 @@ public:
   }
 
   bool ok() const {
-    return getKiller() == exportButton();
+    return closer() == exportButton();
   }
 
   app::SpriteSheetType spriteSheetTypeValue() const {

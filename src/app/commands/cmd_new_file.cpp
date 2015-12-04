@@ -105,7 +105,7 @@ void NewFileCommand::onExecute(Context* context)
   // Open the window
   window.openWindowInForeground();
 
-  if (window.getKiller() == window.okButton()) {
+  if (window.closer() == window.okButton()) {
     bool ok = false;
 
     // Get the options

@@ -24,7 +24,7 @@ namespace ui {
     explicit Window(Type type, const std::string& text = "");
     ~Window();
 
-    Widget* getKiller() const;
+    Widget* closer() const { return m_closer; }
 
     void setAutoRemap(bool state);
     void setMoveable(bool state);
@@ -39,7 +39,7 @@ namespace ui {
 
     void openWindow();
     void openWindowInForeground();
-    void closeWindow(Widget* killer);
+    void closeWindow(Widget* closer);
 
     bool isTopLevel();
     bool isForeground() const { return m_isForeground; }
@@ -74,7 +74,7 @@ namespace ui {
     void limitSize(int* w, int* h);
     void moveWindow(const gfx::Rect& rect, bool use_blit);
 
-    Widget* m_killer;
+    Widget* m_closer;
     bool m_isDesktop : 1;
     bool m_isMoveable : 1;
     bool m_isSizeable : 1;

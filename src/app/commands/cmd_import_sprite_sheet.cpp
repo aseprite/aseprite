@@ -93,7 +93,7 @@ public:
   }
 
   bool ok() const {
-    return getKiller() == import();
+    return closer() == import();
   }
 
   Document* document() const {

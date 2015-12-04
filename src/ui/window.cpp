@@ -41,7 +41,7 @@ static gfx::Rect* clickedWindowPos = NULL;
 Window::Window(Type type, const std::string& text)
   : Widget(kWindowWidget)
 {
-  m_killer = NULL;
+  m_closer = NULL;
   m_isDesktop = (type == DesktopWindow);
   m_isMoveable = !m_isDesktop;
   m_isSizeable = !m_isDesktop;
@@ -61,11 +61,6 @@ Window::Window(Type type, const std::string& text)
 Window::~Window()
 {
   manager()->_closeWindow(this, false);
-}
-
-Widget* Window::getKiller() const
-{
-  return m_killer;
 }
 
 void Window::setAutoRemap(bool state)
@@ -252,14 +247,14 @@ void Window::openWindowInForeground()
   m_isForeground = false;
 }
 
-void Window::closeWindow(Widget* killer)
+void Window::closeWindow(Widget* closer)
 {
-  m_killer = killer;
+  m_closer = closer;
 
   manager()->_closeWindow(this, true);
 
   // Close event
-  CloseEvent ev(killer);
+  CloseEvent ev(closer);
   onClose(ev);
 }
 
@@ -277,7 +272,7 @@ bool Window::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      m_killer = NULL;
+      m_closer = NULL;
       break;
 
     case kCloseMessage:

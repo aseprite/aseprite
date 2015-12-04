@@ -156,7 +156,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   window.userText()->setText(last_text_used);
 
   window.openWindowInForeground();
-  if (window.getKiller() != window.ok())
+  if (window.closer() != window.ok())
     return;
 
   last_text_used = window.userText()->text();

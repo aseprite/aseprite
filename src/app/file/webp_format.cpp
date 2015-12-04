@@ -349,7 +349,7 @@ base::SharedPtr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
 
     win.openWindowInForeground();
 
-    if (win.getKiller() == win.ok()) {
+    if (win.closer() == win.ok()) {
       webp_options->setQuality(win.quality()->getValue());
       webp_options->setMethod(win.compression()->getValue());
       webp_options->setLossless(win.lossless()->isSelected());

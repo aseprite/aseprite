@@ -169,7 +169,7 @@ public:
   }
 
   bool ok() {
-    return (getKiller() == buttonOk());
+    return (closer() == buttonOk());
   }
 
   void saveConfig() {

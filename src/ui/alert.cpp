@@ -112,11 +112,11 @@ int Alert::show(const char* format, ...)
   // Open it
   window->openWindowInForeground();
 
-  // Check the killer
+  // Check the closer
   int ret = 0;
-  if (Widget* killer = window->getKiller()) {
+  if (Widget* closer = window->closer()) {
     for (int i=0; i<(int)buttons.size(); ++i) {
-      if (killer == buttons[i]) {
+      if (closer == buttons[i]) {
         ret = i+1;
         break;
       }

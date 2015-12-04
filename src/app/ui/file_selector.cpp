@@ -445,8 +445,8 @@ std::string FileSelector::show(
   // open the window and run... the user press ok?
 again:
   openWindowInForeground();
-  if (getKiller() == ok ||
-      getKiller() == m_fileList) {
+  if (closer() == ok ||
+      closer() == m_fileList) {
     // open the selected file
     IFileItem* folder = m_fileList->getCurrentFolder();
     ASSERT(folder);
@@ -732,7 +732,7 @@ void FileSelector::onNewFolder()
   app::gen::NewFolderWindow window;
 
   window.openWindowInForeground();
-  if (window.getKiller() == window.ok()) {
+  if (window.closer() == window.ok()) {
     IFileItem* currentFolder = m_fileList->getCurrentFolder();
     if (currentFolder) {
       std::string dirname = window.name()->text();

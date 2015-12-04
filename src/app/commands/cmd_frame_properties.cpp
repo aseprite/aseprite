@@ -118,7 +118,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   window.frlen()->setTextf("%d", sprite->frameDuration(firstFrame));
 
   window.openWindowInForeground();
-  if (window.getKiller() == window.ok()) {
+  if (window.closer() == window.ok()) {
     int num = window.frlen()->textInt();
 
     ContextWriter writer(reader);

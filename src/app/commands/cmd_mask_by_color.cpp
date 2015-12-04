@@ -151,7 +151,7 @@ void MaskByColorCommand::onExecute(Context* context)
   // Open the window
   m_window->openWindowInForeground();
 
-  bool apply = (m_window->getKiller() == button_ok);
+  bool apply = (m_window->closer() == button_ok);
 
   ContextWriter writer(reader);
   Document* document(writer.document());

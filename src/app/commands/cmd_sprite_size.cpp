@@ -310,7 +310,7 @@ void SpriteSizeCommand::onExecute(Context* context)
     window.openWindowInForeground();
     save_window_pos(&window, "SpriteSize");
 
-    if (window.getKiller() != window.ok())
+    if (window.closer() != window.ok())
       return;
 
     new_width = window.widthPx()->textInt();

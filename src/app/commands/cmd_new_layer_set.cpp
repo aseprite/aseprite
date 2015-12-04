@@ -61,7 +61,7 @@ void NewLayerSetCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
 
-  if (window->getKiller() != window->findChild("ok"))
+  if (window->closer() != window->findChild("ok"))
     return;
 
   std::string name = window->findChild("name")->text();

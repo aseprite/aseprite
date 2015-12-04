@@ -40,7 +40,7 @@ FrameTagWindow::FrameTagWindow(const doc::Sprite* sprite, const doc::FrameTag* f
 bool FrameTagWindow::show()
 {
   openWindowInForeground();
-  return (getKiller() == ok());
+  return (closer() == ok());
 }
 
 std::string FrameTagWindow::nameValue()

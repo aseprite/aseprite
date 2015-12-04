@@ -121,7 +121,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
   window.setVisible(true);
   window.openWindowInForeground();
 
-  if (window.getKiller() == window.ok()) {
+  if (window.closer() == window.ok()) {
     if (color_button) {
       ContextWriter writer(context);
       Sprite* sprite(writer.sprite());

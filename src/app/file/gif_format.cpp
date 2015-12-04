@@ -1326,7 +1326,7 @@ base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 
     win.openWindowInForeground();
 
-    if (win.getKiller() == win.ok()) {
+    if (win.closer() == win.ok()) {
       gif_options->setInterlaced(win.interlaced()->isSelected());
       gif_options->setLoop(win.loop()->isSelected());
 

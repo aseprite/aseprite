@@ -100,7 +100,7 @@ bool FilterWindow::doModal()
   openWindowInForeground();
 
   // Did the user press OK?
-  if (getKiller() == &m_okButton) {
+  if (closer() == &m_okButton) {
     m_preview.stop();
 
     // Apply the filter in background
