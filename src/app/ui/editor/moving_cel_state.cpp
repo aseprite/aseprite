@@ -85,9 +85,9 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
     // Put the cels in the original position.
     for (size_t i=0; i<m_celList.size(); ++i) {
       Cel* cel = m_celList[i];
-      gfx::Point* celStart = &m_celStarts[i];
+      const gfx::Point& celStart = m_celStarts[i];
 
-      cel->setPosition(*celStart);
+      cel->setPosition(celStart);
     }
 
     // If the user didn't cancel the operation...
