@@ -91,7 +91,7 @@ void Context::executeCommand(Command* command, const Params& params)
 
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
-#ifndef DEBUGMODE
+#ifdef NDEBUG
   catch (...) {
     LOG("Context: Unknown exception executing '%s' command\n",
         command->id().c_str());

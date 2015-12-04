@@ -894,7 +894,7 @@ static void put_fileitem(FileItem* fileitem)
 
   ASSERT(fileitem->keyname != NOTINITIALIZED);
 
-#ifdef DEBUGMODE
+#ifdef _DEBUG
   FileItemMap::iterator it = fileitems_map->find(get_key_for_pidl(fileitem->fullpidl));
   ASSERT(it == fileitems_map->end());
 #endif

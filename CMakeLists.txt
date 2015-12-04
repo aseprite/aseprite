@@ -76,7 +76,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 if(MSVC)
-    set(CMAKE_C_FLAGS_PROFILE "/MD /Zi /Ox /Gd /D NDEBUG"
+    set(CMAKE_C_FLAGS_PROFILE "/MD /Zi /Ox /Gd"
         CACHE STRING "Profiling C flags")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_C_FLAGS_PROFILE}"
         CACHE STRING "Profiling C++ flags")
