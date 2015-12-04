@@ -1,0 +1,25 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2015 by David Capello -->
+<gui>
+<window id="modify_selection" text="Modify Selection">
+  <vbox>
+    <grid columns="2">
+
+      <label id="by_label" text="By:" />
+      <entry id="quantity" expansive="true" maxsize="4" magnet="true" suffix="px" />
+
+      <hbox />
+      <vbox>
+        <radio id="circle" text="Circle Brush" group="1" />
+        <radio id="square" text="Square Brush" group="1" />
+      </vbox>
+
+    </grid>
+    <separator horizontal="true" cell_hspan="3" />
+    <hbox homogeneous="true" cell_hspan="3" cell_align="right">
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="&amp;Cancel" closewindow="true" />
+    </hbox>
+  </vbox>
+</window>
+</gui>

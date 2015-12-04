@@ -667,6 +667,17 @@
         <item command="InvertMask" text="&amp;Inverse" />
         <separator />
         <item command="MaskByColor" text="&amp;Color Range" />
+        <menu text="&amp;Modify">
+          <item command="ModifySelection" text="&amp;Border">
+            <param name="modifier" value="border" />
+          </item>
+          <item command="ModifySelection" text="&amp;Expand">
+            <param name="modifier" value="expand" />
+          </item>
+          <item command="ModifySelection" text="&amp;Contract">
+            <param name="modifier" value="contract" />
+          </item>
+        </menu>
         <separator />
         <item command="LoadMask" text="&amp;Load from MSK file" />
         <item command="SaveMask" text="&amp;Save to MSK file" />

@@ -136,6 +136,8 @@
       <option id="auto_opaque" type="bool" default="true" />
       <option id="transparent_color" type="app::Color" />
       <option id="rotation_algorithm" type="app::tools::RotationAlgorithm" default="app::tools::RotationAlgorithm::DEFAULT" />
+      <option id="modify_selection_quantity" type="int" default="1" />
+      <option id="modify_selection_brush" type="BrushType" default="BrushType::CIRCLE" />
     </section>
     <section id="quantization">
       <option id="with_alpha" type="bool" default="true" />
