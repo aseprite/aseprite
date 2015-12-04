@@ -202,11 +202,11 @@ ColorBar::ColorBar(int align)
   m_fgColor.setExpansive(true);
   m_bgColor.setExpansive(true);
 
-  m_remapButton.Click.connect(Bind<void>(&ColorBar::onRemapButtonClick, this));
+  m_remapButton.Click.connect(base::Bind<void>(&ColorBar::onRemapButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
-  m_fgWarningIcon->Click.connect(Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
-  m_bgWarningIcon->Click.connect(Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
+  m_fgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
+  m_bgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
 
   m_tooltips.addTooltipFor(&m_fgColor, "Foreground color", LEFT);
   m_tooltips.addTooltipFor(&m_bgColor, "Background color", LEFT);
@@ -227,7 +227,7 @@ ColorBar::ColorBar(int align)
   m_paletteView.setBgColor(theme->colors.tabActiveFace());
 
   // Change labels foreground color
-  m_buttons.ItemChange.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
+  m_buttons.ItemChange.connect(base::Bind<void>(&ColorBar::onPaletteButtonClick, this));
 
   m_buttons.addItem(theme->parts.palEdit());
   m_buttons.addItem(theme->parts.palSort());
@@ -248,8 +248,8 @@ ColorBar::ColorBar(int align)
   UIContext::instance()->addObserver(this);
   m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
   m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
-  m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
-  m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
+  m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
+  m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
 }
@@ -445,18 +445,18 @@ void ColorBar::onPaletteButtonClick()
       if (m_ascending) asc.setSelected(true);
       else des.setSelected(true);
 
-      rev.Click.connect(Bind<void>(&ColorBar::onReverseColors, this));
-      grd.Click.connect(Bind<void>(&ColorBar::onGradient, this));
-      hue.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
-      sat.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
-      bri.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
-      lum.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
-      red.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::RED));
-      grn.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::GREEN));
-      blu.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::BLUE));
-      alp.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::ALPHA));
-      asc.Click.connect(Bind<void>(&ColorBar::setAscending, this, true));
-      des.Click.connect(Bind<void>(&ColorBar::setAscending, this, false));
+      rev.Click.connect(base::Bind<void>(&ColorBar::onReverseColors, this));
+      grd.Click.connect(base::Bind<void>(&ColorBar::onGradient, this));
+      hue.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
+      sat.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
+      bri.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
+      lum.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
+      red.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::RED));
+      grn.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::GREEN));
+      blu.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::BLUE));
+      alp.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::ALPHA));
+      asc.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, true));
+      des.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, false));
 
       menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
       break;

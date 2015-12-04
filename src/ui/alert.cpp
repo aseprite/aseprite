@@ -173,7 +173,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
           sprintf(buttonId, "button-%lu", buttons.size());
           button_widget->setId(buttonId);
-          button_widget->Click.connect(Bind<void>(&Window::closeWindow, this, button_widget));
+          button_widget->Click.connect(base::Bind<void>(&Window::closeWindow, this, button_widget));
         }
 
         buf[c] = chr;

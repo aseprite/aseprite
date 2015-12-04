@@ -48,9 +48,9 @@ HomeView::HomeView()
   setBgColor(theme->colors.workspace());
   setChildSpacing(8 * guiscale());
 
-  newFile()->Click.connect(Bind(&HomeView::onNewFile, this));
-  openFile()->Click.connect(Bind(&HomeView::onOpenFile, this));
-  recoverSprites()->Click.connect(Bind(&HomeView::onRecoverSprites, this));
+  newFile()->Click.connect(base::Bind(&HomeView::onNewFile, this));
+  openFile()->Click.connect(base::Bind(&HomeView::onOpenFile, this));
+  recoverSprites()->Click.connect(base::Bind(&HomeView::onRecoverSprites, this));
 
   filesView()->attachToView(m_files);
   foldersView()->attachToView(m_folders);

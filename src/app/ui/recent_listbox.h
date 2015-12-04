@@ -27,7 +27,7 @@ namespace app {
   private:
     void rebuildList();
 
-    ScopedConnection m_recentFilesConn;
+    base::ScopedConnection m_recentFilesConn;
   };
 
   class RecentFilesListBox : public RecentListBox {

@@ -28,7 +28,7 @@ BackupObserver::BackupObserver(Session* session, doc::Context* ctx)
   : m_session(session)
   , m_ctx(ctx)
   , m_done(false)
-  , m_thread(Bind<void>(&BackupObserver::backgroundThread, this))
+  , m_thread(base::Bind<void>(&BackupObserver::backgroundThread, this))
 {
   m_ctx->addObserver(this);
   m_ctx->documents().addObserver(this);

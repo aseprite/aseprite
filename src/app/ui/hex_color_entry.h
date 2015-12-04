@@ -25,7 +25,7 @@ namespace app {
     void setColor(const app::Color& color);
 
     // Signals
-    Signal1<void, const app::Color&> ColorChange;
+    base::Signal1<void, const app::Color&> ColorChange;
 
   protected:
     void onEntryChange();

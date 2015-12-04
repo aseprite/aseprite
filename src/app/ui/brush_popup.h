@@ -47,7 +47,7 @@ namespace app {
       m_tooltipManager = tooltipManager;
     }
 
-    Signal1<void, const doc::BrushRef&> BrushChange;
+    base::Signal1<void, const doc::BrushRef&> BrushChange;
 
     static she::Surface* createSurfaceForBrush(const doc::BrushRef& brush);
 

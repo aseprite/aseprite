@@ -52,7 +52,7 @@ namespace ui {
     IButtonIcon* iconInterface() const { return m_iconInterface; }
 
     // Signals
-    Signal1<void, Event&> Click;
+    base::Signal1<void, Event&> Click;
 
   protected:
     // Events

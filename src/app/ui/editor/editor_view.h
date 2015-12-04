@@ -34,7 +34,7 @@ namespace app {
     void setupScrollbars();
 
     Type m_type;
-    ScopedConnection m_scrollSettingsConn;
+    base::ScopedConnection m_scrollSettingsConn;
     static Method g_scrollUpdateMethod;
   };
 

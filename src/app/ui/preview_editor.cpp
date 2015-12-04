@@ -101,7 +101,7 @@ public:
 
   bool isPlaying() const { return m_isPlaying; }
 
-  Signal0<void> Popup;
+  base::Signal0<void> Popup;
 
 private:
 
@@ -185,9 +185,9 @@ PreviewEditorWindow::PreviewEditorWindow()
 
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
-  m_centerButton->Click.connect(Bind<void>(&PreviewEditorWindow::onCenterClicked, this));
-  m_playButton->Click.connect(Bind<void>(&PreviewEditorWindow::onPlayClicked, this));
-  m_playButton->Popup.connect(Bind<void>(&PreviewEditorWindow::onPopupSpeed, this));
+  m_centerButton->Click.connect(base::Bind<void>(&PreviewEditorWindow::onCenterClicked, this));
+  m_playButton->Click.connect(base::Bind<void>(&PreviewEditorWindow::onPlayClicked, this));
+  m_playButton->Popup.connect(base::Bind<void>(&PreviewEditorWindow::onPopupSpeed, this));
 
   addChild(m_centerButton);
   addChild(m_playButton);

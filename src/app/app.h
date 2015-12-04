@@ -76,8 +76,8 @@ namespace app {
     InputChain& inputChain();
 
     // App Signals
-    Signal0<void> Exit;
-    Signal0<void> PaletteChange;
+    base::Signal0<void> Exit;
+    base::Signal0<void> PaletteChange;
 
   private:
     typedef std::vector<std::string> FileList;

@@ -52,7 +52,7 @@ EditorView::EditorView(EditorView::Type type)
 
   m_scrollSettingsConn =
     Preferences::instance().editor.showScrollbars.AfterChange.connect(
-      Bind(&EditorView::setupScrollbars, this));
+      base::Bind(&EditorView::setupScrollbars, this));
 }
 
 void EditorView::onPaint(PaintEvent& ev)

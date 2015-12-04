@@ -92,7 +92,7 @@ RecentListBox::RecentListBox()
 {
   m_recentFilesConn =
     App::instance()->getRecentFiles()->Changed.connect(
-      Bind(&RecentListBox::rebuildList, this));
+      base::Bind(&RecentListBox::rebuildList, this));
 }
 
 void RecentListBox::rebuildList()

@@ -72,7 +72,7 @@ namespace app {
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 
-    Signal0<void> ActiveViewChanged;
+    base::Signal0<void> ActiveViewChanged;
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;

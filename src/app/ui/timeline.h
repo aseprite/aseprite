@@ -277,7 +277,7 @@ namespace app {
     gfx::Point m_oldPos;
     // Configure timeline
     ConfigureTimelinePopup* m_confPopup;
-    ScopedConnection m_ctxConn;
+    base::ScopedConnection m_ctxConn;
 
     // Marching ants stuff to show the range in the clipboard.
     // TODO merge this with the marching ants of the sprite editor (ui::Editor)

@@ -770,9 +770,9 @@ void Entry::showEditPopupMenu(const gfx::Point& pt)
   menu.addChild(&cut);
   menu.addChild(&copy);
   menu.addChild(&paste);
-  cut.Click.connect(Bind(&Entry::executeCmd, this, EntryCmd::Cut, 0, false));
-  copy.Click.connect(Bind(&Entry::executeCmd, this, EntryCmd::Copy, 0, false));
-  paste.Click.connect(Bind(&Entry::executeCmd, this, EntryCmd::Paste, 0, false));
+  cut.Click.connect(base::Bind(&Entry::executeCmd, this, EntryCmd::Cut, 0, false));
+  copy.Click.connect(base::Bind(&Entry::executeCmd, this, EntryCmd::Copy, 0, false));
+  paste.Click.connect(base::Bind(&Entry::executeCmd, this, EntryCmd::Paste, 0, false));
 
   if (isReadOnly()) {
     cut.setEnabled(false);

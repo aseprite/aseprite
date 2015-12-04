@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,8 @@
 #pragma once
 
 #include "base/disable_copying.h"
+
+namespace base {
 
 class Slot {
 public:
@@ -180,5 +182,7 @@ public:
   ~Slot2_mem() { }
   void operator()(A1 a1, A2 a2) { return (t->*m)(a1, a2); }
 };
+
+} // namespace base
 
 #endif

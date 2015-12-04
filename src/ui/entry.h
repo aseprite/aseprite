@@ -43,7 +43,7 @@ namespace ui {
     gfx::Rect getEntryTextBounds() const;
 
     // Signals
-    Signal0<void> Change;
+    base::Signal0<void> Change;
 
   protected:
     // Events

@@ -22,7 +22,7 @@ namespace app {
 
     void setZoom(const render::Zoom& zoom);
 
-    Signal1<void, const render::Zoom&> ZoomChange;
+    base::Signal1<void, const render::Zoom&> ZoomChange;
 
   private:
     // SliderDelegate impl

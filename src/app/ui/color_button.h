@@ -31,7 +31,7 @@ namespace app {
     void setColor(const app::Color& color);
 
     // Signals
-    Signal1<void, const app::Color&> Change;
+    base::Signal1<void, const app::Color&> Change;
 
   protected:
     // Events

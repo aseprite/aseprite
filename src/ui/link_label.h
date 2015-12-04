@@ -23,7 +23,7 @@ namespace ui {
     const std::string& getUrl() const { return m_url; }
     void setUrl(const std::string& url);
 
-    Signal0<void> Click;
+    base::Signal0<void> Click;
 
   protected:
     bool onProcessMessage(Message* msg) override;

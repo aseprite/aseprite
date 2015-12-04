@@ -76,8 +76,8 @@ namespace app {
     void onPivotChange(Editor* editor);
 
     Decorator* m_decorator;
-    ScopedConnection m_pivotVisConn;
-    ScopedConnection m_pivotPosConn;
+    base::ScopedConnection m_pivotVisConn;
+    base::ScopedConnection m_pivotPosConn;
   };
 
 } // namespace app

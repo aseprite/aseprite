@@ -26,7 +26,7 @@ ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
   : m_delegate(delegate)
   , m_done(false)
   , m_cancel(false)
-  , m_thread(Bind<void>(&ResourcesLoader::threadLoadResources, this))
+  , m_thread(base::Bind<void>(&ResourcesLoader::threadLoadResources, this))
 {
   LOG("ResourcesLoader::ResourcesLoader()\n");
 }

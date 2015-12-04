@@ -121,7 +121,7 @@ namespace ui {
     }
 
     // Fired when the menu item is clicked.
-    Signal0<void> Click;
+    base::Signal0<void> Click;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;

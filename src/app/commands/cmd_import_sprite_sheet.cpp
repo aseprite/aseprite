@@ -67,12 +67,12 @@ public:
     sheetType()->addItem("By Columns");
     sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
 
-    sheetType()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onSheetTypeChange, this));
-    x()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    y()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    width()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    height()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    selectFile()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onSelectFile, this));
+    sheetType()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onSheetTypeChange, this));
+    x()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    y()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    width()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    height()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    selectFile()->Click.connect(base::Bind<void>(&ImportSpriteSheetWindow::onSelectFile, this));
 
     remapWindow();
     centerWindow();

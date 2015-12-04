@@ -124,7 +124,7 @@ ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
   , m_resourcesTimer(100)
   , m_loadingItem(NULL)
 {
-  m_resourcesTimer.Tick.connect(Bind<void>(&ResourcesListBox::onTick, this));
+  m_resourcesTimer.Tick.connect(base::Bind<void>(&ResourcesListBox::onTick, this));
 }
 
 Resource* ResourcesListBox::selectedResource()

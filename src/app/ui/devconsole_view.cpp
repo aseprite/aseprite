@@ -33,7 +33,7 @@ public:
     setFocusMagnet(true);
   }
 
-  Signal1<void, const std::string&> ExecuteCommand;
+  base::Signal1<void, const std::string&> ExecuteCommand;
 
 protected:
   bool onProcessMessage(Message* msg) override {

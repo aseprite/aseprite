@@ -40,8 +40,8 @@ namespace ui {
     int convertTextToValue(const std::string& text) const;
 
     // Signals
-    Signal0<void> Change;
-    Signal0<void> SliderReleased;
+    base::Signal0<void> Change;
+    base::Signal0<void> SliderReleased;
 
   protected:
     // Events

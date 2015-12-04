@@ -48,14 +48,14 @@ public:
     addChild(&m_openButton);
     addChild(&m_deleteButton);
 
-    m_openButton.Click.connect(Bind(&Item::onOpen, this));
-    m_deleteButton.Click.connect(Bind(&Item::onDelete, this));
+    m_openButton.Click.connect(base::Bind(&Item::onOpen, this));
+    m_deleteButton.Click.connect(base::Bind(&Item::onDelete, this));
 
     setup_mini_look(&m_openButton);
     setup_mini_look(&m_deleteButton);
   }
 
-  Signal0<void> Regenerate;
+  base::Signal0<void> Regenerate;
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {

@@ -63,7 +63,7 @@ void SendCrash::notificationClick()
 
   app::gen::SendCrash dlg;
   dlg.filename()->setText(m_dumpFilename);
-  dlg.filename()->Click.connect(Bind(&SendCrash::onClickFilename, this));
+  dlg.filename()->Click.connect(base::Bind(&SendCrash::onClickFilename, this));
 
   dlg.openWindowInForeground();
   if (dlg.closer() == dlg.deleteFile()) {

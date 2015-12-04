@@ -47,15 +47,15 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box = new app::gen::TimelineConf();
   addChild(m_box);
 
-  m_box->merge()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
-  m_box->tint()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
-  m_box->opacity()->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
-  m_box->opacityStep()->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacityStep, this));
-  m_box->resetOnionskin()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
-  m_box->loopTag()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onLoopTagChange, this));
-  m_box->currentLayer()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
-  m_box->behind()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
-  m_box->infront()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
+  m_box->merge()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
+  m_box->tint()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
+  m_box->opacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
+  m_box->opacityStep()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onOpacityStep, this));
+  m_box->resetOnionskin()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
+  m_box->loopTag()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onLoopTagChange, this));
+  m_box->currentLayer()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
+  m_box->behind()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
+  m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
 }
 
 app::Document* ConfigureTimelinePopup::doc()

@@ -61,7 +61,7 @@ public:
     getContainer()->addChild(m_controlsWidget);
 
     m_reloadButton->Click.connect(&ConvolutionMatrixWindow::onReloadStock, this);
-    m_stockListBox->Change.connect(Bind<void>(&ConvolutionMatrixWindow::onMatrixChange, this));
+    m_stockListBox->Change.connect(base::Bind<void>(&ConvolutionMatrixWindow::onMatrixChange, this));
 
     fillStockListBox();
   }

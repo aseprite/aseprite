@@ -19,8 +19,8 @@ namespace app {
     Section(const std::string& name) : m_name(name) { }
     const char* name() const { return m_name.c_str(); }
 
-    Signal0<void> BeforeChange;
-    Signal0<void> AfterChange;
+    base::Signal0<void> BeforeChange;
+    base::Signal0<void> AfterChange;
 
   private:
     std::string m_name;
@@ -88,8 +88,8 @@ namespace app {
         m_section->AfterChange();
     }
 
-    Signal1<void, const T&> BeforeChange;
-    Signal1<void, const T&> AfterChange;
+    base::Signal1<void, const T&> BeforeChange;
+    base::Signal1<void, const T&> AfterChange;
 
   private:
     Section* m_section;

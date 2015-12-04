@@ -378,23 +378,23 @@ public:
         m_dataFilename == kSpecifiedFilename)
       m_dataFilename = base + ".json";
 
-    exportButton()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
+    exportButton()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onExport, this));
     sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
-    columns()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
-    rows()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onRowsChange, this));
-    fitWidth()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
-    fitHeight()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
-    bestFit()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onBestFit, this));
-    borderPadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
-    shapePadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
-    innerPadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
-    imageEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onImageEnabledChange, this));
-    imageFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
-    dataEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
-    dataFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));
-    paddingEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingEnabledChange, this));
-    frames()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onFramesChange, this));
-    openGenerated()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onOpenGeneratedChange, this));
+    columns()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
+    rows()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onRowsChange, this));
+    fitWidth()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
+    fitHeight()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
+    bestFit()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onBestFit, this));
+    borderPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    shapePadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    innerPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    imageEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageEnabledChange, this));
+    imageFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
+    dataEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
+    dataFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));
+    paddingEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingEnabledChange, this));
+    frames()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onFramesChange, this));
+    openGenerated()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onOpenGeneratedChange, this));
 
     onSheetTypeChange();
     onFileNamesChange();

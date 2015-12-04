@@ -29,7 +29,7 @@ namespace app {
 
     void showPopup(const gfx::Rect& bounds);
 
-    Signal1<void, const std::string&> Load;
+    base::Signal1<void, const std::string&> Load;
 
   protected:
     void onChangeFont();

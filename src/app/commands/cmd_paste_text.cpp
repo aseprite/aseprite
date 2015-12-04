@@ -67,8 +67,8 @@ public:
       updateFontFaceButton();
 
     fontSize()->setTextf("%d", size);
-    fontFace()->Click.connect(Bind<void>(&PasteTextWindow::onSelectFontFile, this));
-    fontFace()->DropDownClick.connect(Bind<void>(&PasteTextWindow::onSelectSystemFont, this));
+    fontFace()->Click.connect(base::Bind<void>(&PasteTextWindow::onSelectFontFile, this));
+    fontFace()->DropDownClick.connect(base::Bind<void>(&PasteTextWindow::onSelectSystemFont, this));
     fontColor()->setColor(color);
     this->antialias()->setSelected(antialias);
   }
@@ -114,7 +114,7 @@ private:
       try {
         m_fontPopup.reset(new FontPopup());
         m_fontPopup->Load.connect(&PasteTextWindow::setFontFace, this);
-        m_fontPopup->Close.connect(Bind<void>(&PasteTextWindow::onCloseFontPopup, this));
+        m_fontPopup->Close.connect(base::Bind<void>(&PasteTextWindow::onCloseFontPopup, this));
       }
       catch (const std::exception& ex) {
         Console::showException(ex);

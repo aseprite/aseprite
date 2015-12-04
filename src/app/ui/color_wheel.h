@@ -43,7 +43,7 @@ namespace app {
     void setHarmony(Harmony harmony);
 
     // Signals
-    Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
+    base::Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
 
   private:
     void onSizeHint(ui::SizeHintEvent& ev) override;

@@ -79,7 +79,7 @@ namespace app {
     void pasteFromClipboard();
     void discardClipboardSelection();
 
-    Signal0<void> FocusEnter;
+    base::Signal0<void> FocusEnter;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -149,7 +149,7 @@ namespace app {
     int m_rangeAnchor;
     doc::PalettePicks m_selectedEntries;
     bool m_isUpdatingColumns;
-    ScopedConnection m_conn;
+    base::ScopedConnection m_conn;
     Hit m_hot;
     bool m_copy;
   };

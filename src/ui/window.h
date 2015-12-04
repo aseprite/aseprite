@@ -53,7 +53,7 @@ namespace ui {
     void removeDecorativeWidgets();
 
     // Signals
-    Signal1<void, CloseEvent&> Close;
+    base::Signal1<void, CloseEvent&> Close;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;

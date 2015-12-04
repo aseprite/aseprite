@@ -180,7 +180,7 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
   while (((slot-1) % columns) > 0)
     m_buttons->addItem(new Item(this, m_delegate, BrushRef(nullptr), slot++));
 
-  m_buttons->ItemChange.connect(Bind<void>(&BrushPopup::onButtonChange, this));
+  m_buttons->ItemChange.connect(base::Bind<void>(&BrushPopup::onButtonChange, this));
   m_buttons->setTransparent(true);
   m_buttons->setBgColor(gfx::ColorNone);
   addChild(m_buttons.get());

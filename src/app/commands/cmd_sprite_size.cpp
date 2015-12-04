@@ -159,11 +159,11 @@ protected:
 class SpriteSizeWindow : public app::gen::SpriteSize {
 public:
   SpriteSizeWindow(Context* ctx, int new_width, int new_height) : m_ctx(ctx) {
-    lockRatio()->Click.connect(Bind<void>(&SpriteSizeWindow::onLockRatioClick, this));
-    widthPx()->Change.connect(Bind<void>(&SpriteSizeWindow::onWidthPxChange, this));
-    heightPx()->Change.connect(Bind<void>(&SpriteSizeWindow::onHeightPxChange, this));
-    widthPerc()->Change.connect(Bind<void>(&SpriteSizeWindow::onWidthPercChange, this));
-    heightPerc()->Change.connect(Bind<void>(&SpriteSizeWindow::onHeightPercChange, this));
+    lockRatio()->Click.connect(base::Bind<void>(&SpriteSizeWindow::onLockRatioClick, this));
+    widthPx()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onWidthPxChange, this));
+    heightPx()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onHeightPxChange, this));
+    widthPerc()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onWidthPercChange, this));
+    heightPerc()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onHeightPercChange, this));
 
     widthPx()->setTextf("%d", new_width);
     heightPx()->setTextf("%d", new_height);

@@ -217,12 +217,12 @@ private:
               m_hotAccel = i;
 
               m_changeButton.reset(new Button(""));
-              m_changeButton->Click.connect(Bind<void>(&KeyItem::onChangeAccel, this, i));
+              m_changeButton->Click.connect(base::Bind<void>(&KeyItem::onChangeAccel, this, i));
               setup_mini_look(m_changeButton.get());
               addChild(m_changeButton.get());
 
               m_deleteButton.reset(new Button(""));
-              m_deleteButton->Click.connect(Bind<void>(&KeyItem::onDeleteAccel, this, i));
+              m_deleteButton->Click.connect(base::Bind<void>(&KeyItem::onDeleteAccel, this, i));
               setup_mini_look(m_deleteButton.get());
               addChild(m_deleteButton.get());
 
@@ -247,7 +247,7 @@ private:
           if (i == 0 && !m_addButton &&
               (!m_menuitem || m_menuitem->getCommand())) {
             m_addButton.reset(new Button(""));
-            m_addButton->Click.connect(Bind<void>(&KeyItem::onAddAccel, this));
+            m_addButton->Click.connect(base::Bind<void>(&KeyItem::onAddAccel, this));
             setup_mini_look(m_addButton.get());
             addChild(m_addButton.get());
 
@@ -295,11 +295,11 @@ public:
     section()->addChild(new ListItem("Tools"));
     section()->addChild(new ListItem("Action Modifiers"));
 
-    search()->Change.connect(Bind<void>(&KeyboardShortcutsWindow::onSearchChange, this));
-    section()->Change.connect(Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
-    importButton()->Click.connect(Bind<void>(&KeyboardShortcutsWindow::onImport, this));
-    exportButton()->Click.connect(Bind<void>(&KeyboardShortcutsWindow::onExport, this));
-    resetButton()->Click.connect(Bind<void>(&KeyboardShortcutsWindow::onReset, this));
+    search()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSearchChange, this));
+    section()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
+    importButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onImport, this));
+    exportButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onExport, this));
+    resetButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onReset, this));
 
     fillAllLists();
   }

@@ -26,8 +26,8 @@ namespace app {
     ui::Button* mainButton() { return m_button; }
     ui::Button* dropDown() { return m_dropDown; }
 
-    Signal0<void> Click;
-    Signal0<void> DropDownClick;
+    base::Signal0<void> Click;
+    base::Signal0<void> DropDownClick;
 
   protected:
     void onButtonClick(ui::Event& ev);

@@ -31,7 +31,7 @@ namespace app {
     Target getTarget() const { return m_target; }
     void setTarget(Target target);
 
-    Signal0<void> TargetChange;
+    base::Signal0<void> TargetChange;
 
   protected:
     void onItemChange(Item* item) override;

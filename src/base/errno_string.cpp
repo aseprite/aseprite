@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,8 @@
 #endif
 
 #include <string>
+
+namespace base {
 
 // Like 'strerror' but thread-safe.
 std::string get_errno_string(int errnum)
@@ -68,3 +70,5 @@ std::string get_errno_string(int errnum)
     return "Unknown error";
   }
 }
+
+} // namespace base

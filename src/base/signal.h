@@ -14,6 +14,8 @@
 
 #include <vector>
 
+namespace base {
+
 class Signal {
 public:
   virtual ~Signal() { }
@@ -321,5 +323,7 @@ public:
   }
 
 };
+
+} // namespace base
 
 #endif

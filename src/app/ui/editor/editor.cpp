@@ -172,15 +172,15 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   m_currentToolChangeConn =
     Preferences::instance().toolBox.activeTool.AfterChange.connect(
-      Bind<void>(&Editor::onCurrentToolChange, this));
+      base::Bind<void>(&Editor::onCurrentToolChange, this));
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
-      Bind<void>(&Editor::onFgColorChange, this));
+      base::Bind<void>(&Editor::onFgColorChange, this));
 
   m_contextBarBrushChangeConn =
     App::instance()->getMainWindow()->getContextBar()->BrushChange.connect(
-      Bind<void>(&Editor::onContextBarBrushChange, this));
+      base::Bind<void>(&Editor::onContextBarBrushChange, this));
 
   DocumentPreferences& docPref = Preferences::instance().document(m_document);
 
@@ -192,10 +192,10 @@ Editor::Editor(Document* document, EditorFlags flags)
   if (preferredLayer)
     setLayer(preferredLayer);
 
-  m_tiledConn = docPref.tiled.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_gridConn = docPref.grid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_onionskinConn = docPref.onionskin.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_tiledConn = docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_gridConn = docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_onionskinConn = docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
 
   m_document->addObserver(this);
 
@@ -1615,7 +1615,7 @@ void Editor::showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions)
 
   for (double option : options) {
     MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
-    item->Click.connect(Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
+    item->Click.connect(base::Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
   }

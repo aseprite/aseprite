@@ -25,7 +25,7 @@ namespace app {
     void selectColor(const app::Color& color);
 
     // Signals
-    Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
+    base::Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;

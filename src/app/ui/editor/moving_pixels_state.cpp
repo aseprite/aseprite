@@ -88,10 +88,10 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // Listen to any change to the transparent color from the ContextBar.
   m_opaqueConn =
     Preferences::instance().selection.opaque.AfterChange.connect(
-      Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
+      base::Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
   m_transparentConn =
     Preferences::instance().selection.transparentColor.AfterChange.connect(
-      Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
+      base::Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
 
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the

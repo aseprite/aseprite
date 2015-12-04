@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,8 @@
 
 #include "base/signal.h"
 
+namespace base {
+
 void Connection::disconnect()
 {
   if (!m_slot)
@@ -21,3 +23,5 @@ void Connection::disconnect()
   delete m_slot;
   m_slot = NULL;
 }
+
+} // namespace base

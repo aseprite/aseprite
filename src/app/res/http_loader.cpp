@@ -29,7 +29,7 @@ HttpLoader::HttpLoader(const std::string& url)
   : m_url(url)
   , m_done(false)
   , m_cancel(false)
-  , m_thread(Bind<void>(&HttpLoader::threadHttpRequest, this))
+  , m_thread(base::Bind<void>(&HttpLoader::threadHttpRequest, this))
 {
 }
 

@@ -84,7 +84,7 @@ namespace app {
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 
-    Signal0<void> ChangeSelection;
+    base::Signal0<void> ChangeSelection;
 
   protected:
     void onAppPaletteChange();
@@ -152,11 +152,11 @@ namespace app {
     base::UniquePtr<doc::Palette> m_oldPalette;
     const doc::Document* m_lastDocument;
     bool m_ascending;
-    ScopedConnection m_beforeCmdConn;
-    ScopedConnection m_afterCmdConn;
-    ScopedConnection m_fgConn;
-    ScopedConnection m_bgConn;
-    ScopedConnection m_appPalChangeConn;
+    base::ScopedConnection m_beforeCmdConn;
+    base::ScopedConnection m_afterCmdConn;
+    base::ScopedConnection m_fgConn;
+    base::ScopedConnection m_bgConn;
+    base::ScopedConnection m_appPalChangeConn;
   };
 
 } // namespace app

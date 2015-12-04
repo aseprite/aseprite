@@ -78,13 +78,13 @@ PixelsMovement::PixelsMovement(
 
   m_pivotVisConn =
     Preferences::instance().selection.pivotVisibility.AfterChange.connect(
-      Bind<void>(&PixelsMovement::onPivotChange, this));
+      base::Bind<void>(&PixelsMovement::onPivotChange, this));
   m_pivotPosConn =
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      Bind<void>(&PixelsMovement::onPivotChange, this));
+      base::Bind<void>(&PixelsMovement::onPivotChange, this));
   m_rotAlgoConn =
     Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
-      Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
+      base::Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
 
   // The extra cel must be null, because if it's not null, it means
   // that someone else is using it (e.g. the editor brush preview),

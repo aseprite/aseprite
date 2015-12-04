@@ -48,7 +48,7 @@ public:
 
   ToolGroup* toolGroup() { return m_group; }
 
-  Signal1<void, Tool*> ToolSelected;
+  base::Signal1<void, Tool*> ToolSelected;
 
 protected:
   bool onProcessMessage(Message* msg) override;
@@ -396,7 +396,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   // In case this tool contains more than just one tool, show the popup window
   m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickOutsideHotRegion);
-  m_closeConn = m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
+  m_closeConn = m_popupWindow->Close.connect(base::Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
   m_openedRecently = true;
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);

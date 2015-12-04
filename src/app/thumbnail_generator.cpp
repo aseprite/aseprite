@@ -38,7 +38,7 @@ public:
     , m_fileitem(fileitem)
     , m_thumbnail(NULL)
     , m_palette(NULL)
-    , m_thread(Bind<void>(&Worker::loadBgThread, this)) {
+    , m_thread(base::Bind<void>(&Worker::loadBgThread, this)) {
   }
 
   ~Worker() {
@@ -133,7 +133,7 @@ ThumbnailGenerator* ThumbnailGenerator::instance()
   static ThumbnailGenerator* singleton = NULL;
   if (singleton == NULL) {
     singleton = new ThumbnailGenerator();
-    App::instance()->Exit.connect(Bind<void>(&delete_singleton, singleton));
+    App::instance()->Exit.connect(base::Bind<void>(&delete_singleton, singleton));
   }
   return singleton;
 }
@@ -210,7 +210,7 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
 
 void ThumbnailGenerator::stopAllWorkers()
 {
-  base::thread* ptr = new base::thread(Bind<void>(&ThumbnailGenerator::stopAllWorkersBackground, this));
+  base::thread* ptr = new base::thread(base::Bind<void>(&ThumbnailGenerator::stopAllWorkersBackground, this));
   m_stopThread.reset(ptr);
 }
 

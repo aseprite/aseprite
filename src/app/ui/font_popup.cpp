@@ -139,10 +139,10 @@ FontPopup::FontPopup()
 
   addChild(m_popup);
 
-  m_popup->loadFont()->Click.connect(Bind<void>(&FontPopup::onLoadFont, this));
+  m_popup->loadFont()->Click.connect(base::Bind<void>(&FontPopup::onLoadFont, this));
   m_listBox.setFocusMagnet(true);
-  m_listBox.Change.connect(Bind<void>(&FontPopup::onChangeFont, this));
-  m_listBox.DoubleClickItem.connect(Bind<void>(&FontPopup::onLoadFont, this));
+  m_listBox.Change.connect(base::Bind<void>(&FontPopup::onChangeFont, this));
+  m_listBox.DoubleClickItem.connect(base::Bind<void>(&FontPopup::onLoadFont, this));
 
   m_popup->view()->attachToView(&m_listBox);
 

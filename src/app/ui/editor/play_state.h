@@ -50,7 +50,7 @@ namespace app {
     bool m_pingPongForward;
     doc::frame_t m_refFrame;
 
-    ScopedConnection m_ctxConn;
+    base::ScopedConnection m_ctxConn;
   };
 
 } // namespace app

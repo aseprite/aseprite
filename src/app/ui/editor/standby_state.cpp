@@ -103,10 +103,10 @@ void StandbyState::onEnterState(Editor* editor)
 
   m_pivotVisConn =
     Preferences::instance().selection.pivotVisibility.AfterChange.connect(
-      Bind<void>(&StandbyState::onPivotChange, this, editor));
+      base::Bind<void>(&StandbyState::onPivotChange, this, editor));
   m_pivotPosConn =
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      Bind<void>(&StandbyState::onPivotChange, this, editor));
+      base::Bind<void>(&StandbyState::onPivotChange, this, editor));
 }
 
 void StandbyState::onCurrentToolChange(Editor* editor)

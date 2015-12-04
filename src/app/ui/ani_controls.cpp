@@ -72,7 +72,7 @@ AniControls::AniControls()
   addItem(theme->parts.aniPlay());
   addItem(theme->parts.aniNext());
   addItem(theme->parts.aniLast());
-  ItemChange.connect(Bind(&AniControls::onClickButton, this));
+  ItemChange.connect(base::Bind(&AniControls::onClickButton, this));
 
   setTriggerOnMouseUp(true);
   setTransparent(true);

@@ -86,7 +86,7 @@ namespace app {
     ui::Timer m_tipTimer;
     bool m_tipOpened;
 
-    Connection m_closeConn;
+    base::Connection m_closeConn;
   };
 
 } // namespace app

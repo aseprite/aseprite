@@ -43,7 +43,7 @@ namespace app {
     void resetRelativeSliders();
 
     // Signals
-    Signal1<void, ColorSlidersChangeEvent&> ColorChange;
+    base::Signal1<void, ColorSlidersChangeEvent&> ColorChange;
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev);

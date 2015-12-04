@@ -31,8 +31,8 @@ namespace ui {
     void centerScroll();
     void sortItems();
 
-    Signal0<void> Change;
-    Signal0<void> DoubleClickItem;
+    base::Signal0<void> Change;
+    base::Signal0<void> DoubleClickItem;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;

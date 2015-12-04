@@ -88,7 +88,7 @@ namespace app {
     int m_animation;
     int m_animationTime;
     int m_animationLifespan;
-    ScopedConnection m_scopedConn;
+    base::ScopedConnection m_scopedConn;
   };
 
 } // namespace app

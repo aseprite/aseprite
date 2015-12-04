@@ -87,7 +87,7 @@ void AboutCommand::onExecute(Context* context)
       close_button->border().right() + 16*guiscale(),
       close_button->border().bottom()));
 
-  close_button->Click.connect(Bind<void>(&Window::closeWindow, window.get(), close_button));
+  close_button->Click.connect(base::Bind<void>(&Window::closeWindow, window.get(), close_button));
 
   window->openWindowInForeground();
 }

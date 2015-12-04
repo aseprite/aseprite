@@ -49,8 +49,8 @@ namespace app {
     void setTriggerOnMouseUp(bool state);
     void setMultipleSelection(bool state);
 
-    Signal1<void, Item*> ItemChange;
-    Signal1<void, Item*> RightClick;
+    base::Signal1<void, Item*> ItemChange;
+    base::Signal1<void, Item*> RightClick;
 
   protected:
     virtual void onItemChange(Item* item);

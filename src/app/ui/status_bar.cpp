@@ -95,7 +95,7 @@ public:
     makeFloating();
 
     addChild(&m_button);
-    m_button.Click.connect(Bind<void>(&SnapToGridWindow::onDisableSnapToGrid, this));
+    m_button.Click.connect(base::Bind<void>(&SnapToGridWindow::onDisableSnapToGrid, this));
   }
 
   void setDocument(app::Document* doc) {
@@ -198,7 +198,7 @@ StatusBar::StatusBar()
     m_frameLabel = new Label("Frame:");
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
-    m_newFrame->Click.connect(Bind<void>(&StatusBar::newFrame, this));
+    m_newFrame->Click.connect(base::Bind<void>(&StatusBar::newFrame, this));
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
@@ -224,7 +224,7 @@ StatusBar::StatusBar()
   tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
 
   Preferences::instance().toolBox.activeTool.AfterChange.connect(
-    Bind<void>(&StatusBar::onCurrentToolChange, this));
+    base::Bind<void>(&StatusBar::onCurrentToolChange, this));
 
   UIContext::instance()->addObserver(this);
   UIContext::instance()->documents().addObserver(this);

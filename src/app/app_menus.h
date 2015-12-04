@@ -69,7 +69,7 @@ namespace app {
     base::UniquePtr<Menu> m_frameTagPopupMenu;
     base::UniquePtr<Menu> m_palettePopupMenu;
     base::UniquePtr<Menu> m_inkPopupMenu;
-    ScopedConnection m_recentFilesConn;
+    base::ScopedConnection m_recentFilesConn;
   };
 
 } // namespace app

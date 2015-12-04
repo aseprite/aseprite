@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,8 @@
 #ifndef BASE_CONNETION_H_INCLUDED
 #define BASE_CONNETION_H_INCLUDED
 #pragma once
+
+namespace base {
 
 class Signal;
 class Slot;
@@ -52,5 +54,7 @@ public:
 private:
   Connection m_conn;
 };
+
+} // namespace base
 
 #endif

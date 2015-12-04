@@ -34,7 +34,7 @@ public:
     updateText();
   }
 
-  Signal1<void, const ui::Accelerator*> AccelChange;
+  base::Signal1<void, const ui::Accelerator*> AccelChange;
 
 protected:
   bool onProcessMessage(Message* msg) override {
@@ -90,16 +90,16 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext ke
 
   keyPlaceholder()->addChild(m_keyField);
 
-  alt()->Click.connect(Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyAltModifier, alt()));
-  cmd()->Click.connect(Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCmdModifier, cmd()));
-  ctrl()->Click.connect(Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCtrlModifier, ctrl()));
-  shift()->Click.connect(Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyShiftModifier, shift()));
-  space()->Click.connect(Bind<void>(&SelectAccelerator::onModifierChange, this, kKeySpaceModifier, space()));
+  alt()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyAltModifier, alt()));
+  cmd()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCmdModifier, cmd()));
+  ctrl()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCtrlModifier, ctrl()));
+  shift()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyShiftModifier, shift()));
+  space()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeySpaceModifier, space()));
 
   m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
-  clearButton()->Click.connect(Bind<void>(&SelectAccelerator::onClear, this));
-  okButton()->Click.connect(Bind<void>(&SelectAccelerator::onOK, this));
-  cancelButton()->Click.connect(Bind<void>(&SelectAccelerator::onCancel, this));
+  clearButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onClear, this));
+  okButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onOK, this));
+  cancelButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onCancel, this));
 }
 
 void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)

@@ -50,7 +50,7 @@ public:
     , m_cursorColor(new ColorButton(m_preferences.editor.cursorColor(), IMAGE_RGB))
     , m_curSection(curSection)
   {
-    sectionListbox()->Change.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
+    sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
     cursorColorBox()->addChild(m_cursorColor);
 
     // Grid color
@@ -104,7 +104,7 @@ public:
     if (context->activeDocument()) {
       gridScope()->addItem("Current Document");
       gridScope()->setSelectedItemIndex(1);
-      gridScope()->Change.connect(Bind<void>(&OptionsWindow::onChangeGridScope, this));
+      gridScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeGridScope, this));
     }
 
     // Screen/UI Scale
@@ -145,12 +145,12 @@ public:
     checkedBgColor2Box()->addChild(m_checked_bg_color2);
 
     // Reset button
-    reset()->Click.connect(Bind<void>(&OptionsWindow::onReset, this));
+    reset()->Click.connect(base::Bind<void>(&OptionsWindow::onReset, this));
 
     // Links
-    locateFile()->Click.connect(Bind<void>(&OptionsWindow::onLocateConfigFile, this));
+    locateFile()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateConfigFile, this));
 #if _WIN32
-    locateCrashFolder()->Click.connect(Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
+    locateCrashFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
 #else
     locateCrashFolder()->setVisible(false);
 #endif
@@ -161,8 +161,8 @@ public:
     undoAllowNonlinearHistory()->setSelected(m_preferences.undo.allowNonlinearHistory());
 
     // Theme buttons
-    selectTheme()->Click.connect(Bind<void>(&OptionsWindow::onSelectTheme, this));
-    openThemeFolder()->Click.connect(Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
+    selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
+    openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);

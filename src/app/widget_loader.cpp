@@ -185,7 +185,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     if (closewindow) {
       static_cast<Button*>(widget)
-        ->Click.connect(Bind<void>(&Widget::closeWindow, widget));
+        ->Click.connect(base::Bind<void>(&Widget::closeWindow, widget));
     }
   }
   else if (elem_name == "check") {

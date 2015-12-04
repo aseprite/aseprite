@@ -283,15 +283,15 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
   fileView()->attachToView(m_fileList);
   m_fileName->setAssociatedFileList(m_fileList);
 
-  goBackButton()->Click.connect(Bind<void>(&FileSelector::onGoBack, this));
-  goForwardButton()->Click.connect(Bind<void>(&FileSelector::onGoForward, this));
-  goUpButton()->Click.connect(Bind<void>(&FileSelector::onGoUp, this));
-  newFolderButton()->Click.connect(Bind<void>(&FileSelector::onNewFolder, this));
-  location()->CloseListBox.connect(Bind<void>(&FileSelector::onLocationCloseListBox, this));
-  fileType()->Change.connect(Bind<void>(&FileSelector::onFileTypeChange, this));
-  m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
-  m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
-  m_fileList->CurrentFolderChanged.connect(Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
+  goBackButton()->Click.connect(base::Bind<void>(&FileSelector::onGoBack, this));
+  goForwardButton()->Click.connect(base::Bind<void>(&FileSelector::onGoForward, this));
+  goUpButton()->Click.connect(base::Bind<void>(&FileSelector::onGoUp, this));
+  newFolderButton()->Click.connect(base::Bind<void>(&FileSelector::onNewFolder, this));
+  location()->CloseListBox.connect(base::Bind<void>(&FileSelector::onLocationCloseListBox, this));
+  fileType()->Change.connect(base::Bind<void>(&FileSelector::onFileTypeChange, this));
+  m_fileList->FileSelected.connect(base::Bind<void>(&FileSelector::onFileListFileSelected, this));
+  m_fileList->FileAccepted.connect(base::Bind<void>(&FileSelector::onFileListFileAccepted, this));
+  m_fileList->CurrentFolderChanged.connect(base::Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
 
   resizeOptions()->setVisible(withResizeOptions);
   if (withResizeOptions) {

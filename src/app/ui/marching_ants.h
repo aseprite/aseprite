@@ -56,7 +56,7 @@ namespace app {
 
     ui::Timer m_timer;
     int m_offset;
-    ScopedConnection m_scopedConn;
+    base::ScopedConnection m_scopedConn;
   };
 
 } // namespace app

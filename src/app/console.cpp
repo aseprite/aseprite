@@ -62,7 +62,7 @@ Console::Console(Context* ctx)
     return;
 
   // The "button" closes the console
-  button->Click.connect(Bind<void>(&Window::closeWindow, window, button));
+  button->Click.connect(base::Bind<void>(&Window::closeWindow, window, button));
 
   view->attachToView(textbox);
 

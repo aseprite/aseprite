@@ -67,8 +67,8 @@ namespace app {
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
 
-    Signal1<void, CommandExecutionEvent&> BeforeCommandExecution;
-    Signal1<void, CommandExecutionEvent&> AfterCommandExecution;
+    base::Signal1<void, CommandExecutionEvent&> BeforeCommandExecution;
+    base::Signal1<void, CommandExecutionEvent&> AfterCommandExecution;
 
   protected:
     virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;

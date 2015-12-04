@@ -50,8 +50,8 @@ public:
     , m_document(nullptr)
     , m_cel(nullptr)
     , m_selfUpdate(false) {
-    opacity()->Change.connect(Bind<void>(&CelPropertiesWindow::onStartTimer, this));
-    m_timer.Tick.connect(Bind<void>(&CelPropertiesWindow::onCommitChange, this));
+    opacity()->Change.connect(base::Bind<void>(&CelPropertiesWindow::onStartTimer, this));
+    m_timer.Tick.connect(base::Bind<void>(&CelPropertiesWindow::onCommitChange, this));
 
     remapWindow();
     centerWindow();

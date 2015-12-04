@@ -39,7 +39,7 @@ namespace app {
 
     // Triggered when the list is empty (because the user deleted all
     // sessions).
-    Signal0<void> Empty;
+    base::Signal0<void> Empty;
 
   private:
     void fillList();

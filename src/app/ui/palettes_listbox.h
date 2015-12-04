@@ -23,7 +23,7 @@ namespace app {
 
     doc::Palette* selectedPalette();
 
-    Signal1<void, doc::Palette*> PalChange;
+    base::Signal1<void, doc::Palette*> PalChange;
 
   protected:
     virtual void onResourceChange(Resource* resource) override;

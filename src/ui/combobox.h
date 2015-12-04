@@ -85,9 +85,9 @@ namespace ui {
     gfx::Rect getListBoxPos() const;
 
     // Signals
-    Signal0<void> Change;
-    Signal0<void> OpenListBox;
-    Signal0<void> CloseListBox;
+    base::Signal0<void> Change;
+    base::Signal0<void> OpenListBox;
+    base::Signal0<void> CloseListBox;
 
   protected:
     bool onProcessMessage(Message* msg) override;

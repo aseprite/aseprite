@@ -393,7 +393,7 @@ class ContextBar::InkShadesField : public HBox {
   public:
     enum ClickType { DragAndDrop, Select };
 
-    Signal0<void> Click;
+    base::Signal0<void> Click;
 
     ShadeWidget(const Shade& colors, ClickType click)
       : Widget(kGenericWidget)
@@ -490,7 +490,7 @@ class ContextBar::InkShadesField : public HBox {
         case kOpenMessage:
           if (m_click == DragAndDrop) {
             m_conn = ColorBar::instance()->ChangeSelection.connect(
-              Bind<void>(&ShadeWidget::onChangeColorBarSelection, this));
+              base::Bind<void>(&ShadeWidget::onChangeColorBarSelection, this));
           }
           break;
 
@@ -664,7 +664,7 @@ class ContextBar::InkShadesField : public HBox {
     int m_dragIndex;
     bool m_dropBefore;
     int m_boxSize;
-    ScopedConnection m_conn;
+    base::ScopedConnection m_conn;
   };
 
 public:
@@ -681,7 +681,7 @@ public:
     addChild(&m_shade);
 
     m_button.setFocusStop(false);
-    m_button.Click.connect(Bind<void>(&InkShadesField::onShowMenu, this));
+    m_button.Click.connect(base::Bind<void>(&InkShadesField::onShowMenu, this));
   }
 
   ~InkShadesField() {
@@ -711,8 +711,8 @@ private:
     bool hasShade = (m_shade.size() >= 2);
     reverse.setEnabled(hasShade);
     save.setEnabled(hasShade);
-    reverse.Click.connect(Bind<void>(&InkShadesField::reverseShadeColors, this));
-    save.Click.connect(Bind<void>(&InkShadesField::onSaveShade, this));
+    reverse.Click.connect(base::Bind<void>(&InkShadesField::reverseShadeColors, this));
+    save.Click.connect(base::Bind<void>(&InkShadesField::onSaveShade, this));
 
     if (!m_shades.empty()) {
       SkinTheme* theme = SkinTheme::instance();
@@ -732,7 +732,7 @@ private:
         auto close = new IconButton(theme->parts.iconClose()->bitmap(0));
         close->setBgColor(theme->colors.menuitemNormalFace());
         close->Click.connect(
-          Bind<void>(
+          base::Bind<void>(
             [this, i, close]{
               m_shades.erase(m_shades.begin()+i);
               close->closeWindow();
@@ -870,11 +870,11 @@ public:
     sz.w += 2*guiscale();
     m_icon.getItem(0)->setMinSize(sz);
 
-    m_icon.ItemChange.connect(Bind<void>(&TransparentColorField::onPopup, this));
-    m_maskColor.Change.connect(Bind<void>(&TransparentColorField::onChangeColor, this));
+    m_icon.ItemChange.connect(base::Bind<void>(&TransparentColorField::onPopup, this));
+    m_maskColor.Change.connect(base::Bind<void>(&TransparentColorField::onChangeColor, this));
 
     Preferences::instance().selection.opaque.AfterChange.connect(
-      Bind<void>(&TransparentColorField::onOpaqueChange, this));
+      base::Bind<void>(&TransparentColorField::onOpaqueChange, this));
 
     onOpaqueChange();
   }
@@ -900,9 +900,9 @@ private:
       masked.setSelected(true);
     automatic.setSelected(Preferences::instance().selection.autoOpaque());
 
-    opaque.Click.connect(Bind<void>(&TransparentColorField::setOpaque, this, true));
-    masked.Click.connect(Bind<void>(&TransparentColorField::setOpaque, this, false));
-    automatic.Click.connect(Bind<void>(&TransparentColorField::onAutomatic, this));
+    opaque.Click.connect(base::Bind<void>(&TransparentColorField::setOpaque, this, true));
+    masked.Click.connect(base::Bind<void>(&TransparentColorField::setOpaque, this, false));
+    automatic.Click.connect(base::Bind<void>(&TransparentColorField::onAutomatic, this));
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
@@ -952,7 +952,7 @@ public:
     addItem(SkinTheme::instance()->parts.pivotCenter());
 
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      Bind<void>(&PivotField::onPivotChange, this));
+      base::Bind<void>(&PivotField::onPivotChange, this));
 
     onPivotChange();
   }
@@ -1156,7 +1156,7 @@ public:
     tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", BOTTOM);
   }
 
-  Signal1<void, ContextBarObserver::DropAction> DropPixels;
+  base::Signal1<void, ContextBarObserver::DropAction> DropPixels;
 
 protected:
   void onItemChange(Item* item) override {
@@ -1192,8 +1192,8 @@ public:
     addChild(new Label("Sample:"));
     addChild(&m_sample);
 
-    m_channel.Change.connect(Bind<void>(&EyedropperField::onChannelChange, this));
-    m_sample.Change.connect(Bind<void>(&EyedropperField::onSampleChange, this));
+    m_channel.Change.connect(base::Bind<void>(&EyedropperField::onChannelChange, this));
+    m_sample.Change.connect(base::Bind<void>(&EyedropperField::onSampleChange, this));
   }
 
   void updateFromPreferences(app::Preferences::Eyedropper& prefEyedropper) {
@@ -1361,10 +1361,10 @@ ContextBar::ContextBar()
   m_symmetry->setupTooltips(tooltipManager);
 
   Preferences::instance().toolBox.activeTool.AfterChange.connect(
-    Bind<void>(&ContextBar::onCurrentToolChange, this));
+    base::Bind<void>(&ContextBar::onCurrentToolChange, this));
 
   Preferences::instance().symmetryMode.enabled.AfterChange.connect(
-    Bind<void>(&ContextBar::onSymmetryModeChange, this));
+    base::Bind<void>(&ContextBar::onSymmetryModeChange, this));
 
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
@@ -1453,10 +1453,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
   }
 
   if (toolPref) {
-    m_sizeConn = brushPref->size.AfterChange.connect(Bind<void>(&ContextBar::onBrushSizeChange, this));
-    m_angleConn = brushPref->angle.AfterChange.connect(Bind<void>(&ContextBar::onBrushAngleChange, this));
+    m_sizeConn = brushPref->size.AfterChange.connect(base::Bind<void>(&ContextBar::onBrushSizeChange, this));
+    m_angleConn = brushPref->angle.AfterChange.connect(base::Bind<void>(&ContextBar::onBrushAngleChange, this));
     m_opacityConn = toolPref->opacity.AfterChange.connect(&ContextBar::onToolSetOpacity, this);
-    m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(Bind<void>(&ContextBar::onToolSetFreehandAlgorithm, this));
+    m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(base::Bind<void>(&ContextBar::onToolSetFreehandAlgorithm, this));
   }
 
   if (tool)

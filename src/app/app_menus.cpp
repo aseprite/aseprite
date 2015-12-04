@@ -49,7 +49,7 @@ AppMenus* AppMenus::instance()
   static AppMenus* instance = NULL;
   if (!instance) {
     instance = new AppMenus;
-    App::instance()->Exit.connect(Bind<void>(&destroy_instance, instance));
+    App::instance()->Exit.connect(base::Bind<void>(&destroy_instance, instance));
   }
   return instance;
 }
@@ -59,7 +59,7 @@ AppMenus::AppMenus()
 {
   m_recentFilesConn =
     App::instance()->getRecentFiles()->Changed.connect(
-      Bind(&AppMenus::rebuildRecentList, this));
+      base::Bind(&AppMenus::rebuildRecentList, this));
 }
 
 void AppMenus::reload()

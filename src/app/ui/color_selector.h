@@ -39,7 +39,7 @@ namespace app {
     app::Color getColor() const;
 
     // Signals
-    Signal1<void, const app::Color&> ColorChange;
+    base::Signal1<void, const app::Color&> ColorChange;
 
   protected:
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
@@ -66,7 +66,7 @@ namespace app {
     HsvSliders m_hsvSliders;
     GraySlider m_graySlider;
     ui::Label m_maskLabel;
-    ScopedConnection m_onPaletteChangeConn;
+    base::ScopedConnection m_onPaletteChangeConn;
 
     // This variable is used to avoid updating the m_hexColorEntry text
     // when the color change is generated from a

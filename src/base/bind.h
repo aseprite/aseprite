@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,8 @@
 #ifndef BASE_BIND_H_INCLUDED
 #define BASE_BIND_H_INCLUDED
 #pragma once
+
+namespace base {
 
 // BindAdapter0_fun
 template<typename R, typename F>
@@ -642,5 +644,7 @@ RefWrapper<T> Ref(T& ref)
 {
   return RefWrapper<T>(ref);
 }
+
+} // namespace base
 
 #endif

@@ -61,7 +61,7 @@ ColorWheel::ColorWheel()
 
   setBorder(gfx::Border(3*ui::guiscale()));
 
-  m_options.Click.connect(Bind<void>(&ColorWheel::onOptions, this));
+  m_options.Click.connect(base::Bind<void>(&ColorWheel::onOptions, this));
   m_options.setBgColor(theme->colors.editorFace());
   m_options.setIconInterface(
     new ButtonIconImpl(theme->parts.palOptions(),
@@ -344,15 +344,15 @@ void ColorWheel::onOptions()
     case Harmony::SQUARE: square.setSelected(true); break;
   }
 
-  discrete.Click.connect(Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));
-  none.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::NONE));
-  complementary.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::COMPLEMENTARY));
-  monochromatic.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::MONOCHROMATIC));
-  analogous.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::ANALOGOUS));
-  split.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::SPLIT));
-  triadic.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::TRIADIC));
-  tetradic.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
-  square.Click.connect(Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
+  discrete.Click.connect(base::Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));
+  none.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::NONE));
+  complementary.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::COMPLEMENTARY));
+  monochromatic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::MONOCHROMATIC));
+  analogous.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::ANALOGOUS));
+  split.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SPLIT));
+  triadic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TRIADIC));
+  tetradic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
+  square.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
 
   gfx::Rect rc = m_options.bounds();
   menu.showPopup(gfx::Point(rc.x+rc.w, rc.y));

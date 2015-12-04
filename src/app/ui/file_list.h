@@ -34,9 +34,9 @@ namespace app {
 
     void goUp();
 
-    Signal0<void> FileSelected;
-    Signal0<void> FileAccepted;
-    Signal0<void> CurrentFolderChanged;
+    base::Signal0<void> FileSelected;
+    base::Signal0<void> FileAccepted;
+    base::Signal0<void> CurrentFolderChanged;
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;

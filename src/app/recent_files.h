@@ -36,7 +36,7 @@ namespace app {
     void addRecentFile(const char* filename);
     void removeRecentFile(const char* filename);
 
-    Signal0<void> Changed;
+    base::Signal0<void> Changed;
 
   private:
     std::string normalizePath(std::string fn);
