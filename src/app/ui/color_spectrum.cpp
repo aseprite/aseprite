@@ -139,9 +139,11 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
                    rc.y + rc.h - (lit * rc.h / 100));
 
     she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
-    g->drawRgbaSurface(icon,
-                       pos.x-icon->width()/2,
-                       pos.y-icon->height()/2);
+    g->drawColoredRgbaSurface(
+      icon,
+      lit > 50 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
+      pos.x-icon->width()/2,
+      pos.y-icon->height()/2);
   }
 }
 
