@@ -11,9 +11,11 @@
 
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
+#include "doc/frame_tag.h"
 #include "doc/sprite.h"
 #include "ui/window.h"
 
@@ -22,6 +24,7 @@
 namespace app {
 
 using namespace ui;
+using namespace doc;
 
 class GotoCommand : public Command {
 protected:
@@ -85,6 +88,46 @@ protected:
       return frame+1;
     else
       return frame_t(0);
+  }
+};
+
+class GotoNextFrameWithSameTagCommand : public GotoCommand {
+public:
+  GotoNextFrameWithSameTagCommand() : GotoCommand("GotoNextFrameWithSameTag",
+                                                  "Go to Next Frame with same tag") { }
+  Command* clone() const override { return new GotoNextFrameWithSameTagCommand(*this); }
+
+protected:
+  frame_t onGetFrame(Editor* editor) override {
+    Sprite* sprite = editor->sprite();
+    frame_t currentFrame = editor->frame();
+    FrameTag* tag = get_animation_tag(sprite, currentFrame);
+    frame_t frameToGo = currentFrame + frame_t(1);
+
+    if (frameToGo > tag->toFrame())
+      frameToGo = tag->fromFrame();
+
+    return frameToGo;
+  }
+};
+
+class GotoPreviousFrameWithSameTagCommand : public GotoCommand {
+public:
+  GotoPreviousFrameWithSameTagCommand() : GotoCommand("GotoPreviousFrameWithSameTag",
+                                                      "Go to Previous Frame with same tag") { }
+  Command* clone() const override { return new GotoPreviousFrameWithSameTagCommand(*this); }
+
+protected:
+  frame_t onGetFrame(Editor* editor) override {
+    Sprite* sprite = editor->sprite();
+    frame_t currentFrame = editor->frame();
+    FrameTag* tag = get_animation_tag(sprite, currentFrame);
+    frame_t frameToGo = currentFrame - frame_t(1);
+
+    if (frameToGo < tag->fromFrame())
+      frameToGo = tag->toFrame();
+
+    return frameToGo;
   }
 };
 
@@ -155,6 +198,16 @@ Command* CommandFactory::createGotoNextFrameCommand()
 Command* CommandFactory::createGotoLastFrameCommand()
 {
   return new GotoLastFrameCommand;
+}
+
+Command* CommandFactory::createGotoNextFrameWithSameTagCommand()
+{
+  return new GotoNextFrameWithSameTagCommand;
+}
+
+Command* CommandFactory::createGotoPreviousFrameWithSameTagCommand()
+{
+  return new GotoPreviousFrameWithSameTagCommand;
 }
 
 Command* CommandFactory::createGotoFrameCommand()

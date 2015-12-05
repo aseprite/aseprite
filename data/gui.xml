@@ -85,8 +85,8 @@
       <key command="GotoFirstFrame" shortcut="Home" />
       <key command="GotoPreviousFrame" shortcut="Left" context="Normal" />
       <key command="GotoNextFrame" shortcut="Right" context="Normal" />
-      <key command="GotoPreviousFrame" shortcut="," />
-      <key command="GotoNextFrame" shortcut="." />
+      <key command="GotoPreviousFrameWithSameTag" shortcut="," />
+      <key command="GotoNextFrameWithSameTag" shortcut="." />
       <key command="GotoLastFrame" shortcut="End" />
       <key command="GotoFrame" shortcut="Alt+G" />
       <key command="PlayAnimation" shortcut="Enter" />
