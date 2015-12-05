@@ -16,9 +16,10 @@
 
 #ifdef _WIN32
   #include <windows.h>
-  #include <sys/stat.h>
   #include <io.h>
 #endif
+
+#include <sys/stat.h>
 #include <fcntl.h>
 
 #ifndef O_BINARY
