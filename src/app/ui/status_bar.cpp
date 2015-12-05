@@ -88,7 +88,7 @@ private:
 class StatusBar::SnapToGridWindow : public ui::PopupWindow {
 public:
   SnapToGridWindow()
-    : ui::PopupWindow("", kDoNothingOnClick)
+    : ui::PopupWindow("", ClickBehavior::DoNothingOnClick)
     , m_button("Disable Snap to Grid") {
     setBorder(gfx::Border(2 * guiscale()));
     setBgColor(gfx::rgba(255, 255, 200));

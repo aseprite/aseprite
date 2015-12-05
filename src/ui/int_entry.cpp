@@ -169,7 +169,7 @@ void IntEntry::openPopup()
   if (rc.x+rc.w > ui::display_w())
     rc.x = rc.x - rc.w + bounds().w;
 
-  m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
+  m_popupWindow = new PopupWindow("", PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setTransparent(true);
   m_popupWindow->setBgColor(gfx::ColorNone);

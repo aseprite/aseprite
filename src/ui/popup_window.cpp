@@ -97,7 +97,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
         if (scancode == kKeyEsc)
           closeWindow(nullptr);
 
-        if (m_enterBehavior == kCloseOnEnter &&
+        if (m_enterBehavior == EnterBehavior::CloseOnEnter &&
             (scancode == kKeyEnter ||
              scancode == kKeyEnterPad)) {
           closeWindow(this);
@@ -114,7 +114,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
 
           // If the user click outside the window, we have to close
           // the tooltip window.
-          case kCloseOnClickInOtherWindow: {
+          case ClickBehavior::CloseOnClickInOtherWindow: {
             Widget* picked = pick(mousePos);
             if (!picked || picked->window() != this) {
               closeWindow(NULL);
@@ -122,7 +122,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
             break;
           }
 
-          case kCloseOnClickOutsideHotRegion:
+          case ClickBehavior::CloseOnClickOutsideHotRegion:
             if (!m_hotRegion.contains(mousePos)) {
               closeWindow(NULL);
             }

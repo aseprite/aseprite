@@ -50,7 +50,7 @@ enum {
 };
 
 ColorSelector::ColorSelector()
-  : PopupWindowPin("Color Selector", PopupWindow::kCloseOnClickInOtherWindow)
+  : PopupWindowPin("Color Selector", ClickBehavior::CloseOnClickInOtherWindow)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
   , m_color(app::Color::fromMask())

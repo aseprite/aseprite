@@ -112,7 +112,7 @@ private:
 static BrushRef defBrushes[3];
 
 BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
-  : PopupWindow("", kCloseOnClickInOtherWindow)
+  : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
   , m_delegate(delegate)
 {
   setAutoRemap(false);

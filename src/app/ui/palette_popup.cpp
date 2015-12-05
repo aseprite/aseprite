@@ -30,7 +30,7 @@ namespace app {
 using namespace ui;
 
 PalettePopup::PalettePopup()
-  : PopupWindow("Palettes", kCloseOnClickInOtherWindow)
+  : PopupWindow("Palettes", ClickBehavior::CloseOnClickInOtherWindow)
   , m_popup(new gen::PalettePopup())
 {
   setAutoRemap(false);

@@ -38,7 +38,7 @@ namespace app {
 using namespace ui;
 
 ConfigureTimelinePopup::ConfigureTimelinePopup()
-  : PopupWindow("Timeline Settings", kCloseOnClickInOtherWindow)
+  : PopupWindow("Timeline Settings", ClickBehavior::CloseOnClickInOtherWindow)
   , m_lockUpdates(false)
 {
   setAutoRemap(false);

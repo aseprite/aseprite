@@ -130,8 +130,8 @@ private:
 
 FontPopup::FontPopup()
   : PopupWindow("Fonts",
-                kCloseOnClickInOtherWindow,
-                kDoNothingOnEnter)
+                ClickBehavior::CloseOnClickInOtherWindow,
+                EnterBehavior::DoNothingOnEnter)
   , m_popup(new gen::FontPopup())
 {
   setAutoRemap(false);

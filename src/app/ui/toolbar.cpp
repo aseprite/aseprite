@@ -395,7 +395,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     return;
 
   // In case this tool contains more than just one tool, show the popup window
-  m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickOutsideHotRegion);
+  m_popupWindow = new PopupWindow("", PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion);
   m_closeConn = m_popupWindow->Close.connect(base::Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
   m_openedRecently = true;
 
