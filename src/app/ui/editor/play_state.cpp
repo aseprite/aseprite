@@ -141,10 +141,10 @@ void PlayState::onPlaybackTick()
 
     m_editor->setFrame(frame);
     m_nextFrameTime += getNextFrameTime();
+    m_editor->invalidate();
   }
 
   m_curFrameTick = ui::clock();
-  m_editor->invalidate();
 }
 
 // Before executing any command, we stop the animation
