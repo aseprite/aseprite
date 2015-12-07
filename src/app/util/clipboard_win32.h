@@ -95,18 +95,22 @@ static void set_win32_clipboard_bitmap(const Image* image, const Mask* mask, Pal
     if (mask) doc::write_mask(os, mask);
     if (palette) doc::write_palette(os, palette);
 
-    size_t size = (size_t)os.tellp();
-
-    HGLOBAL hmem = GlobalAlloc(GHND, size+4);
-    char* p = (char*)GlobalLock(hmem);
-
-    *((uint32_t*)p) = size;
-    os.seekp(0);
-    os.read(p+4, size);
-
-    GlobalUnlock(hmem);
-    SetClipboardData(custom_clipboard_format, hmem);
-    GlobalFree(hmem);
+    if (os.good()) {
+      size_t size = (size_t)os.tellp();
+      HGLOBAL hmem = GlobalAlloc(GHND, size+4);
+      if (hmem) {
+        char* p = (char*)GlobalLock(hmem);
+        if (p) {
+          *((uint32_t*)p) = size;
+          os.seekp(0);
+          os.read(p+4, size);
+        }
+        GlobalUnlock(hmem);
+        if (p)
+          SetClipboardData(custom_clipboard_format, hmem);
+        GlobalFree(hmem);
+      }
+    }
   }
 
   // information to create the memory necessary for the bitmap
@@ -141,6 +145,12 @@ static void set_win32_clipboard_bitmap(const Image* image, const Mask* mask, Pal
                              sizeof(BITMAPV5HEADER)
                              + palette_entries*sizeof(RGBQUAD)
                              + scanline*image->height());
+  if (!hmem) {
+    // TODO cannot copy exception
+    CloseClipboard();
+    return;
+  }
+
   BITMAPV5HEADER* bi = (BITMAPV5HEADER*)GlobalLock(hmem);
 
   bi->bV5Size = sizeof(BITMAPV5HEADER);
