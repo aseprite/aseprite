@@ -86,6 +86,7 @@ namespace app {
     // EditorDecorator overrides
     virtual void preRenderDecorator(EditorPreRender* render) override;
     virtual void postRenderDecorator(EditorPostRender* render) override;
+    virtual void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override;
 
   private:
     typedef std::vector<Ruler> Rulers;

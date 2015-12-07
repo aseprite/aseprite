@@ -65,6 +65,7 @@ namespace app {
       // EditorDecorator overrides
       void preRenderDecorator(EditorPreRender* render) override;
       void postRenderDecorator(EditorPostRender* render) override;
+      void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override;
 
     private:
       TransformHandles* m_transfHandles;

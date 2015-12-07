@@ -671,6 +671,15 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   }
 }
 
+void StandbyState::Decorator::getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region)
+{
+  gfx::Rect box1, box2;
+  if (getSymmetryHandles(editor, box1, box2)) {
+    region.createUnion(region, gfx::Region(box1));
+    region.createUnion(region, gfx::Region(box2));
+  }
+}
+
 bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, gfx::Rect& box1, gfx::Rect& box2)
 {
   // Draw transformation handles (if the mask is visible and isn't frozen).

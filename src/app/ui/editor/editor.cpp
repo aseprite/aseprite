@@ -362,10 +362,20 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blitValidRegion)
   View* view = View::getView(this);
   Point oldScroll;
   Region region;
+  Region invalidRegion;
 
   if (blitValidRegion) {
     getDrawableRegion(region, kCutTopWindows);
     oldScroll = view->viewScroll();
+
+    // Remove decorated region that cannot be just moved because it
+    // must be redrawn in another position when the Editor's scroll
+    // changes (e.g. symmetry handles).
+    if ((m_flags & kShowDecorators) && m_decorator) {
+      m_decorator->getInvalidDecoratoredRegion(this, invalidRegion);
+      if (!invalidRegion.isEmpty())
+        region.createSubtraction(region, invalidRegion);
+    }
   }
 
   view->setViewScroll(scroll);

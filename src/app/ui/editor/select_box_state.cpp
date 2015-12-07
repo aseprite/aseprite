@@ -321,6 +321,11 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   }
 }
 
+void SelectBoxState::getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region)
+{
+  // Do nothing
+}
+
 void SelectBoxState::updateContextBar()
 {
   ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();

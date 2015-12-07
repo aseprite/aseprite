@@ -12,6 +12,10 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 
+namespace gfx {
+  class Region;
+}
+
 namespace doc {
   class Image;
 }
@@ -49,6 +53,7 @@ namespace app {
     virtual ~EditorDecorator() { }
     virtual void preRenderDecorator(EditorPreRender* render) = 0;
     virtual void postRenderDecorator(EditorPostRender* render) = 0;
+    virtual void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) = 0;
   };
 
 } // namespace app
