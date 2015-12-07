@@ -243,6 +243,7 @@ add_library(app-lib
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
+  commands/cmd_scroll_center.cpp
   commands/cmd_set_color_selector.cpp
   commands/cmd_set_ink_type.cpp
   commands/cmd_set_loop_section.cpp
