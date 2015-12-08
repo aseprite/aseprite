@@ -218,6 +218,10 @@
         <param name="action" value="in" />
       </key>
 
+      <!-- Scroll to center -->
+      <key command="ScrollCenter" shortcut="C">
+      </key>
+
       <!-- Scroll with arrows -->
       <key command="Scroll" shortcut="Space+Left">
         <param name="direction" value="left" />
