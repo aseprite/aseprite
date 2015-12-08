@@ -693,15 +693,18 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, gfx::Rect& box1
       int pos = (horz ? symmetry.xAxis():
                         symmetry.yAxis());
       gfx::Rect spriteBounds = editor->sprite()->bounds();
+      gfx::Rect editorViewport = View::getView(editor)->viewportBounds();
       skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
       she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
       gfx::Point pt1, pt2;
+
       if (horz) {
         pt1 = gfx::Point(spriteBounds.x+pos, spriteBounds.y);
         pt1 = editor->editorToScreen(pt1);
         pt2 = gfx::Point(spriteBounds.x+pos, spriteBounds.y+spriteBounds.h);
         pt2 = editor->editorToScreen(pt2);
-        pt1.y -= part->height();
+        pt1.y = std::max(pt1.y-part->height(), editorViewport.y);
+        pt2.y = std::min(pt2.y, editorViewport.point2().y-part->height());
         pt1.x -= part->width()/2;
         pt2.x -= part->width()/2;
       }
@@ -710,7 +713,8 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, gfx::Rect& box1
         pt1 = editor->editorToScreen(pt1);
         pt2 = gfx::Point(spriteBounds.x+spriteBounds.w, spriteBounds.y+pos);
         pt2 = editor->editorToScreen(pt2);
-        pt1.x -= part->width();
+        pt1.x = std::max(pt1.x-part->width(), editorViewport.x);
+        pt2.x = std::min(pt2.x, editorViewport.point2().x-part->width());
         pt1.y -= part->height()/2;
         pt2.y -= part->height()/2;
       }
