@@ -219,8 +219,7 @@
       </key>
 
       <!-- Scroll to center -->
-      <key command="ScrollCenter" shortcut="C">
-      </key>
+      <key command="ScrollCenter" shortcut="Shift+C" />
 
       <!-- Scroll with arrows -->
       <key command="Scroll" shortcut="Space+Left">
