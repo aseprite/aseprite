@@ -16,6 +16,8 @@
 
 #if __APPLE__
 #include <mach-o/dyld.h>
+#elif __FreeBSD__
+#include <sys/sysctl.h>
 #endif
 
 #include "base/path.h"
@@ -120,15 +122,16 @@ std::string get_app_path()
   std::vector<char> path(MAXPATHLEN);
 
 #if __APPLE__
-
   uint32_t size = path.size();
   while (_NSGetExecutablePath(&path[0], &size) == -1)
     path.resize(size);
-
-#else
-
+#elif __FreeBSD__
+  size_t size = path.size();
+  const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
+  while (sysctl(mib, 4, &path[0], &size, NULL, 0) == -1)
+      path.resize(size);
+#else  /* linux */
   readlink("/proc/self/exe", &path[0], path.size());
-
 #endif
 
   return std::string(&path[0]);
