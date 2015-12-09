@@ -13,6 +13,7 @@ add_library(doc-lib
   algorithm/shrink_bounds.cpp
   anidir.cpp
   blend_funcs.cpp
+  blend_mode.cpp
   brush.cpp
   cel.cpp
   cel_data.cpp

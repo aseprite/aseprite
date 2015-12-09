@@ -8,6 +8,8 @@
 #define DOC_BLEND_MODE_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace doc {
 
   enum class BlendMode {
@@ -37,6 +39,8 @@ namespace doc {
     HSL_COLOR       = 14,
     HSL_LUMINOSITY  = 15
   };
+
+  std::string blend_mode_to_string(BlendMode blendMode);
 
 } // namespace doc
 

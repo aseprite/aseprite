@@ -729,7 +729,12 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
           firstLayer = false;
         else
           os << ",";
-        os << "\n   { \"name\": \"" << escape_for_json(layer->name()) << "\" }";
+        os << "\n   { \"name\": \"" << escape_for_json(layer->name()) << "\"";
+        if (LayerImage* layerImg = dynamic_cast<LayerImage*>(layer)) {
+          os << ", \"opacity\": " << layerImg->opacity()
+             << ", \"blendMode\": \"" << blend_mode_to_string(layerImg->blendMode()) << "\"";
+        }
+        os << " }";
       }
     }
     os << "\n  ]";
