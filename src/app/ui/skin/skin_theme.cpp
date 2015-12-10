@@ -708,8 +708,14 @@ void SkinTheme::initWidget(Widget* widget)
       else {
         BORDER(0);
       }
+
       widget->setChildSpacing(4 * scale); // TODO this hard-coded 4 should be configurable in skin.xml
-      widget->setBgColor(colors.windowFace());
+
+      // Tooltip background color
+      if (dynamic_cast<TipWindow*>(widget))
+        widget->setBgColor(SkinTheme::instance()->colors.tooltipFace());
+      else
+        widget->setBgColor(colors.windowFace());
       break;
 
     default:

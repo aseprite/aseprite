@@ -271,9 +271,6 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
                 6 * guiscale(),
                 6 * guiscale(),
                 7 * guiscale()));
-
-  // Setup the background color.
-  setBgColor(gfx::rgba(255, 255, 200));
 }
 
 void TipWindow::onPaint(PaintEvent& ev)
