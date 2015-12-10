@@ -25,8 +25,8 @@ namespace ui {
       CloseOnEnter,
     };
 
-    PopupWindow(const std::string& text,
-                ClickBehavior clickBehavior,
+    PopupWindow(const std::string& text = "",
+                ClickBehavior clickBehavior = ClickBehavior::CloseOnClickOutsideHotRegion,
                 EnterBehavior enterBehavior = EnterBehavior::CloseOnEnter);
     ~PopupWindow();
 
