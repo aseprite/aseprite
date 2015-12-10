@@ -18,7 +18,7 @@
 namespace doc {
 
 CelData::CelData(const ImageRef& image)
-  : Object(ObjectType::CelData)
+  : WithUserData(ObjectType::CelData)
   , m_image(image)
   , m_position(0, 0)
   , m_opacity(255)
@@ -26,7 +26,7 @@ CelData::CelData(const ImageRef& image)
 }
 
 CelData::CelData(const CelData& celData)
-  : Object(ObjectType::CelData)
+  : WithUserData(ObjectType::CelData)
   , m_image(celData.m_image)
   , m_position(celData.m_position)
   , m_opacity(celData.m_opacity)

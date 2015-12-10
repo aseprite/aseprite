@@ -411,6 +411,7 @@
     <part id="icon_arrow_down"                  x="144" y="256" w="7" h="4" />
     <part id="icon_close"                       x="152" y="256" w="7" h="7" />
     <part id="icon_search"                      x="160" y="256" w="8" h="8" />
+    <part id="icon_user_data"                   x="168" y="256" w="8" h="8" />
   </parts>
 
   <stylesheet>

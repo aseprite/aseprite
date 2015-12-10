@@ -12,6 +12,11 @@
 
       <label text="Opacity:" />
       <slider id="opacity" min="0" max="255" width="128" />
+
+      <label text="Extras:" />
+      <hbox>
+	<button id="user_data" icon="icon_user_data" tooltip="User Data" />
+      </hbox>
     </grid>
   </vbox>
 </window>

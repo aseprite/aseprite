@@ -11,10 +11,11 @@
 #include "base/shared_ptr.h"
 #include "doc/image_ref.h"
 #include "doc/object.h"
+#include "doc/with_user_data.h"
 
 namespace doc {
 
-  class CelData : public Object {
+  class CelData : public WithUserData {
   public:
     CelData(const ImageRef& image);
     CelData(const CelData& celData);

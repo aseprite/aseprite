@@ -146,6 +146,7 @@ add_library(app-lib
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
+  cmd/set_user_data.cpp
   cmd/shift_masked_cel.cpp
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp
@@ -398,6 +399,7 @@ add_library(app-lib
   ui/tabs.cpp
   ui/timeline.cpp
   ui/toolbar.cpp
+  ui/user_data_popup.cpp
   ui/workspace.cpp
   ui/workspace_panel.cpp
   ui/workspace_tabs.cpp

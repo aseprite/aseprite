@@ -13,6 +13,7 @@
 #include "doc/frame.h"
 #include "doc/layer_list.h"
 #include "doc/object.h"
+#include "doc/with_user_data.h"
 
 #include <string>
 
@@ -38,7 +39,7 @@ namespace doc {
     BackgroundLayerFlags = LockMove | Background,
   };
 
-  class Layer : public Object {
+  class Layer : public WithUserData {
   protected:
     Layer(ObjectType type, Sprite* sprite);
 
