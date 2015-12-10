@@ -507,20 +507,15 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   else
     return;
 
-  Rect toolrc = getToolGroupBounds(group_index);
-  Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
-
-  m_tipWindow = new TipWindow(tooltip, gfx::Rect(arrow, toolrc.size()));
-  m_tipWindow->setArrowAlign(TOP | RIGHT);
+  m_tipWindow = new TipWindow(tooltip);
   m_tipWindow->remapWindow();
 
-  int w = m_tipWindow->bounds().w;
-  int h = m_tipWindow->bounds().h;
-  int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->bounds().w: 0);
-  int y = toolrc.y + toolrc.h;
+  Rect toolrc = getToolGroupBounds(group_index);
+  Point arrow = (tool ? getToolPositionInGroup(group_index, tool): Point(0, 0));
+  if (tool && m_popupWindow && m_popupWindow->isVisible())
+    toolrc.x += arrow.x - m_popupWindow->bounds().w;
 
-  m_tipWindow->positionWindow(MID(0, x, ui::display_w()-w),
-    MID(0, y, ui::display_h()-h));
+  m_tipWindow->pointAt(TOP | RIGHT, toolrc);
 
   if (m_tipOpened)
     m_tipWindow->openWindow();

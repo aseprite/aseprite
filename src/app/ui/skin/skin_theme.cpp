@@ -1660,7 +1660,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   she::Surface* sw = tooltipPart->bitmapSW();
   she::Surface* w  = tooltipPart->bitmapW();
 
-  switch (widget->getArrowAlign()) {
+  switch (widget->arrowAlign()) {
     case TOP | LEFT:     nw = parts.tooltipArrow()->bitmapNW(); break;
     case TOP | RIGHT:    ne = parts.tooltipArrow()->bitmapNE(); break;
     case BOTTOM | LEFT:  sw = parts.tooltipArrow()->bitmapSW(); break;
@@ -1675,7 +1675,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   target = target.createIntersection(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
   target.offset(-absRc.origin());
 
-  switch (widget->getArrowAlign()) {
+  switch (widget->arrowAlign()) {
     case TOP:
       arrow = parts.tooltipArrow()->bitmapN();
       g->drawRgbaSurface(arrow,

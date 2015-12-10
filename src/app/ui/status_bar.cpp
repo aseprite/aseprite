@@ -59,7 +59,7 @@ using namespace doc;
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
   CustomizedTipWindow(const std::string& text)
-    : ui::TipWindow(text, gfx::Rect())
+    : ui::TipWindow(text)
   {
   }
 
