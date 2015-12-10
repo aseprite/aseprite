@@ -17,6 +17,7 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
+#include "app/ui/icon_button.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
@@ -151,8 +152,21 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget = new BoxFiller();
   }
   else if (elem_name == "button") {
-    if (!widget)
-      widget = new Button("");
+    const char* icon_name = elem->Attribute("icon");
+
+    if (!widget) {
+      if (icon_name) {
+        SkinPartPtr part = SkinTheme::instance()->getPartById(icon_name);
+        if (!part)
+          throw base::Exception("<button> element found with invalid 'icon' attribute '%s'",
+                                icon_name);
+
+        widget = new IconButton(part->bitmap(0));
+      }
+      else {
+        widget = new Button("");
+      }
+    }
 
     bool left   = bool_attr_is_true(elem, "left");
     bool right  = bool_attr_is_true(elem, "right");
