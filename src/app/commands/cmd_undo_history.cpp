@@ -17,6 +17,7 @@
 #include "app/document_access.h"
 #include "app/document_undo.h"
 #include "app/document_undo_observer.h"
+#include "app/modules/gui.h"
 #include "base/bind.h"
 #include "doc/context_observer.h"
 #include "doc/documents_observer.h"
@@ -59,6 +60,8 @@ private:
     switch (msg->type()) {
 
       case ui::kOpenMessage:
+        load_window_pos(this, "UndoHistory");
+
         m_ctx->addObserver(this);
         m_ctx->documents().addObserver(this);
         if (m_ctx->activeDocument()) {
@@ -68,6 +71,8 @@ private:
         break;
 
       case ui::kCloseMessage:
+        save_window_pos(this, "UndoHistory");
+
         if (m_document)
           detachDocument();
         m_ctx->documents().removeObserver(this);
