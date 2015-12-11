@@ -1,0 +1,14 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
+<gui>
+  <tipwindow text="User Data" id="user_data">
+    <vbox>
+      <label text="User Data:" />
+      <entry id="text" magnet="true" maxsize="65535" minwidth="128" expansive="true" />
+      <hbox>
+	<label text="Color:" />
+	<colorpicker id="color" expansive="true" />
+      </hbox>
+    </vbox>
+  </tipwindow>
+</gui>
