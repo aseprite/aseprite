@@ -282,9 +282,10 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
     dstFlags = (LayerFlags)((int)dstFlags & ~(int)(LayerFlags::BackgroundLayerFlags));
   }
 
-  // Copy the layer name
+  // Copy the layer name/flags/user data
   destLayer0->setName(sourceLayer0->name());
   destLayer0->setFlags(dstFlags);
+  destLayer0->setUserData(sourceLayer0->userData());
 
   if (sourceLayer0->isImage() && destLayer0->isImage()) {
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
