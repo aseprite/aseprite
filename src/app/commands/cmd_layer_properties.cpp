@@ -96,7 +96,6 @@ public:
   }
 
   void setLayer(LayerImage* layer) {
-    // Save uncommited changes
     if (m_layer) {
       document()->removeObserver(this);
       m_layer = nullptr;
@@ -233,8 +232,9 @@ private:
 
   void onPopupUserData() {
     if (m_layer) {
+      m_userData = m_layer->userData();
       if (show_user_data_popup(userData()->bounds(), m_userData)) {
-        onStartTimer();
+        onCommitChange();
       }
     }
   }

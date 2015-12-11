@@ -195,8 +195,9 @@ private:
 
   void onPopupUserData() {
     if (m_cel) {
+      m_userData = m_cel->data()->userData();
       if (show_user_data_popup(userData()->bounds(), m_userData)) {
-        onStartTimer();
+        onCommitChange();
       }
     }
   }
