@@ -18,9 +18,7 @@ namespace doc {
     WithUserData(ObjectType type) : Object(type) {
     }
 
-    const UserData& userData() const {
-      return m_userData;
-    }
+    const UserData& userData() const { return m_userData; }
 
     void setUserData(const UserData& userData) {
       m_userData = userData;

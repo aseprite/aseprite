@@ -22,6 +22,7 @@
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
+#include "doc/user_data_io.h"
 
 #include <iostream>
 #include <vector>
@@ -99,6 +100,8 @@ void write_layer(std::ostream& os, const Layer* layer)
     }
 
   }
+
+  write_user_data(os, layer->userData());
 }
 
 Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
@@ -107,7 +110,6 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
   std::string name = read_string(is);
   uint32_t flags = read32(is);                     // Flags
   uint16_t layer_type = read16(is);                // Type
-
   base::UniquePtr<Layer> layer;
 
   switch (static_cast<ObjectType>(layer_type)) {
@@ -169,10 +171,13 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
 
   }
 
+  UserData userData = read_user_data(is);
+
   if (layer) {
     layer->setName(name);
     layer->setFlags(static_cast<LayerFlags>(flags));
     layer->setId(id);
+    layer->setUserData(userData);
   }
 
   return layer.release();
