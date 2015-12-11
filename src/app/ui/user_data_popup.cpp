@@ -19,13 +19,31 @@ namespace app {
 
 using namespace ui;
 
+namespace {
+
+class UserDataPopup : public app::gen::UserData {
+public:
+  UserDataPopup() {
+    makeFixed();
+    setClickBehavior(ClickBehavior::CloseOnClickInOtherWindow);
+    setEnterBehavior(EnterBehavior::CloseOnEnter);
+    setCloseOnKeyDown(false);
+
+    // The whole manager as hot region
+    setHotRegion(gfx::Region(manager()->bounds()));
+  }
+};
+
+} // anonymous namespace
+
 bool show_user_data_popup(const gfx::Rect& bounds,
                           doc::UserData& userData)
 {
-  app::gen::UserData window;
+  UserDataPopup window;
+
   window.text()->setText(userData.text());
-  window.setCloseOnKeyDown(false);
   window.pointAt(TOP, bounds);
+
   window.openWindowInForeground();
 
   if (userData.text() != window.text()->text()) {
