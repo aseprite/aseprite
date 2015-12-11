@@ -37,6 +37,8 @@ namespace she {
     void setMousePosition(const gfx::Point& position) override;
     void captureMouse() override;
     void releaseMouse() override;
+    std::string getLayout() override;
+    void setLayout(const std::string& layout) override;
     void* nativeHandle() override;
 
   private:

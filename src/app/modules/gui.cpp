@@ -90,7 +90,8 @@ static ui::Timer* defered_invalid_timer = nullptr;
 static gfx::Region defered_invalid_region;
 
 // Load & save graphics configuration
-static void load_gui_config(int& w, int& h, bool& maximized);
+static void load_gui_config(int& w, int& h, bool& maximized,
+                            std::string& windowLayout);
 static void save_gui_config();
 
 static int get_screen_scale()
@@ -106,7 +107,8 @@ static bool create_main_display(bool gpuAccel,
 {
   int w, h;
   int scale = get_screen_scale();
-  load_gui_config(w, h, maximized);
+  std::string windowLayout;
+  load_gui_config(w, h, maximized, windowLayout);
 
   she::instance()->setGpuAcceleration(gpuAccel);
 
@@ -135,6 +137,9 @@ static bool create_main_display(bool gpuAccel,
       }
     }
   }
+
+  if (main_display && !windowLayout.empty())
+    main_display->setLayout(windowLayout);
 
   return (main_display != nullptr);
 }
@@ -201,11 +206,13 @@ void exit_module_gui()
   main_display->dispose();
 }
 
-static void load_gui_config(int& w, int& h, bool& maximized)
+static void load_gui_config(int& w, int& h, bool& maximized,
+                            std::string& windowLayout)
 {
   w = get_config_int("GfxMode", "Width", 0);
   h = get_config_int("GfxMode", "Height", 0);
   maximized = get_config_bool("GfxMode", "Maximized", false);
+  windowLayout = get_config_string("GfxMode", "WindowLayout", "");
 }
 
 static void save_gui_config()
@@ -215,6 +222,10 @@ static void save_gui_config()
     set_config_bool("GfxMode", "Maximized", display->isMaximized());
     set_config_int("GfxMode", "Width", display->originalWidth());
     set_config_int("GfxMode", "Height", display->originalHeight());
+
+    std::string windowLayout = display->getLayout();
+    if (!windowLayout.empty())
+      set_config_string("GfxMode", "WindowLayout", windowLayout.c_str());
   }
 }
 

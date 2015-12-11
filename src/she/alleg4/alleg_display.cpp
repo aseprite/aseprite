@@ -24,9 +24,7 @@
 
 #ifdef _WIN32
   #include <winalleg.h>
-
   #include <windowsx.h>
-
   #include <commctrl.h>
 
   #if defined STRICT || defined __GNUC__
@@ -53,6 +51,7 @@
 
 #include <cassert>
 #include <list>
+#include <sstream>
 #include <vector>
 
 #include "she/alleg4/clock.h"
@@ -591,6 +590,63 @@ void Alleg4Display::releaseMouse()
 
   XUngrabPointer(_xwin.display, CurrentTime);
 
+#endif
+}
+
+std::string Alleg4Display::getLayout()
+{
+#ifdef _WIN32
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(WINDOWPLACEMENT);
+  if (GetWindowPlacement((HWND)nativeHandle(), &wp)) {
+    std::ostringstream s;
+    s << 1 << ' '
+      << wp.flags << ' '
+      << wp.showCmd << ' '
+      << wp.ptMinPosition.x << ' '
+      << wp.ptMinPosition.y << ' '
+      << wp.ptMaxPosition.x << ' '
+      << wp.ptMaxPosition.y << ' '
+      << wp.rcNormalPosition.left << ' '
+      << wp.rcNormalPosition.top << ' '
+      << wp.rcNormalPosition.right << ' '
+      << wp.rcNormalPosition.bottom;
+    return s.str();
+  }
+#endif
+  return "";
+}
+
+void Alleg4Display::setLayout(const std::string& layout)
+{
+#ifdef _WIN32
+
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(WINDOWPLACEMENT);
+
+  std::istringstream s(layout);
+  int ver;
+  s >> ver;
+  if (ver == 1) {
+    s >> wp.flags
+      >> wp.showCmd
+      >> wp.ptMinPosition.x
+      >> wp.ptMinPosition.y
+      >> wp.ptMaxPosition.x
+      >> wp.ptMaxPosition.y
+      >> wp.rcNormalPosition.left
+      >> wp.rcNormalPosition.top
+      >> wp.rcNormalPosition.right
+      >> wp.rcNormalPosition.bottom;
+  }
+  else
+    return;
+
+  if (SetWindowPlacement((HWND)nativeHandle(), &wp)) {
+    // TODO use the return value
+  }
+#else
+  // Do nothing
 #endif
 }
 
