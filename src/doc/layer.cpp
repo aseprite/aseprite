@@ -21,7 +21,7 @@
 namespace doc {
 
 Layer::Layer(ObjectType type, Sprite* sprite)
-  : Object(type)
+  : WithUserData(type)
   , m_sprite(sprite)
   , m_parent(NULL)
   , m_flags(LayerFlags(

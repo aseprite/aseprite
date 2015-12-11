@@ -12,8 +12,7 @@
 
 namespace ui {
 
-  class TextBox : public Widget
-  {
+  class TextBox : public Widget {
   public:
     TextBox(const std::string& text, int align);
 

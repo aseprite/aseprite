@@ -158,11 +158,6 @@ void ExpandCelCanvas::commit()
 
     // And finally we add the cel again in the layer.
     m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
-
-    // As we've created the cel, the active context site has changed
-    // (context->site().cel() to be precise).
-    if (m_document->context())
-      m_document->context()->notifyActiveSiteChanged();
   }
   else if (m_celImage) {
     // If the size of each image is the same, we can create an undo

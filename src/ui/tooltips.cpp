@@ -101,82 +101,18 @@ bool TooltipManager::onProcessMessage(Message* msg)
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {
-    gfx::Rect bounds = m_target.widget->bounds();
-
-    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text, bounds));
-    int x = get_mouse_position().x+12*guiscale();
-    int y = get_mouse_position().y+12*guiscale();
-
-    m_tipWindow->remapWindow();
-    int w = m_tipWindow->bounds().w;
-    int h = m_tipWindow->bounds().h;
+    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text));
 
     int arrowAlign = m_target.tipInfo.arrowAlign;
-    int trycount = 0;
-    for (; trycount < 4; ++trycount) {
-      switch (arrowAlign) {
-        case TOP | LEFT:
-          x = bounds.x + bounds.w;
-          y = bounds.y + bounds.h;
-          break;
-        case TOP | RIGHT:
-          x = bounds.x - w;
-          y = bounds.y + bounds.h;
-          break;
-        case BOTTOM | LEFT:
-          x = bounds.x + bounds.w;
-          y = bounds.y - h;
-          break;
-        case BOTTOM | RIGHT:
-          x = bounds.x - w;
-          y = bounds.y - h;
-          break;
-        case TOP:
-          x = bounds.x + bounds.w/2 - w/2;
-          y = bounds.y + bounds.h;
-          break;
-        case BOTTOM:
-          x = bounds.x + bounds.w/2 - w/2;
-          y = bounds.y - h;
-          break;
-        case LEFT:
-          x = bounds.x + bounds.w;
-          y = bounds.y + bounds.h/2 - h/2;
-          break;
-        case RIGHT:
-          x = bounds.x - w;
-          y = bounds.y + bounds.h/2 - h/2;
-          break;
-      }
+    gfx::Rect target = m_target.widget->bounds();
+    if (!arrowAlign)
+      target.setOrigin(ui::get_mouse_position()+12*guiscale());
 
-      x = MID(0, x, ui::display_w()-w);
-      y = MID(0, y, ui::display_h()-h);
-
-      if (bounds.intersects(gfx::Rect(x, y, w, h))) {
-        switch (trycount) {
-          case 0:
-          case 2:
-            // Switch position
-            if (arrowAlign & (TOP | BOTTOM)) arrowAlign ^= TOP | BOTTOM;
-            if (arrowAlign & (LEFT | RIGHT)) arrowAlign ^= LEFT | RIGHT;
-            break;
-          case 1:
-            // Rotate positions
-            if (arrowAlign & (TOP | LEFT)) arrowAlign ^= TOP | LEFT;
-            if (arrowAlign & (BOTTOM | RIGHT)) arrowAlign ^= BOTTOM | RIGHT;
-            break;
-        }
-      }
-      else {
-        m_tipWindow->setArrowAlign(arrowAlign);
-        m_tipWindow->positionWindow(x, y);
-        m_tipWindow->openWindow();
-        break;
-      }
+    if (m_tipWindow->pointAt(arrowAlign, target)) {
+      m_tipWindow->openWindow();
     }
-
-    // No enough room for the tooltip
-    if (trycount == 4) {
+    else {
+      // No enough room for the tooltip
       m_tipWindow.reset();
       m_timer->stop();
     }
@@ -186,10 +122,9 @@ void TooltipManager::onTick()
 
 // TipWindow
 
-TipWindow::TipWindow(const std::string& text, const gfx::Rect& target)
+TipWindow::TipWindow(const std::string& text)
   : PopupWindow(text, ClickBehavior::CloseOnClickInOtherWindow)
   , m_arrowAlign(0)
-  , m_target(target)
   , m_closeOnKeyDown(true)
 {
   setTransparent(true);
@@ -198,23 +133,86 @@ TipWindow::TipWindow(const std::string& text, const gfx::Rect& target)
   initTheme();
 }
 
-TipWindow::~TipWindow()
-{
-}
-
-int TipWindow::getArrowAlign() const
-{
-  return m_arrowAlign;
-}
-
-void TipWindow::setArrowAlign(int arrowAlign)
-{
-  m_arrowAlign = arrowAlign;
-}
-
 void TipWindow::setCloseOnKeyDown(bool state)
 {
   m_closeOnKeyDown = state;
+}
+
+bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
+{
+  m_target = target;
+  m_arrowAlign = arrowAlign;
+
+  remapWindow();
+
+  int x = target.x;
+  int y = target.y;
+  int w = bounds().w;
+  int h = bounds().h;
+
+  int trycount = 0;
+  for (; trycount < 4; ++trycount) {
+    switch (arrowAlign) {
+      case TOP | LEFT:
+        x = m_target.x + m_target.w;
+        y = m_target.y + m_target.h;
+        break;
+      case TOP | RIGHT:
+        x = m_target.x - w;
+        y = m_target.y + m_target.h;
+        break;
+      case BOTTOM | LEFT:
+        x = m_target.x + m_target.w;
+        y = m_target.y - h;
+        break;
+      case BOTTOM | RIGHT:
+        x = m_target.x - w;
+        y = m_target.y - h;
+        break;
+      case TOP:
+        x = m_target.x + m_target.w/2 - w/2;
+        y = m_target.y + m_target.h;
+        break;
+      case BOTTOM:
+        x = m_target.x + m_target.w/2 - w/2;
+        y = m_target.y - h;
+        break;
+      case LEFT:
+        x = m_target.x + m_target.w;
+        y = m_target.y + m_target.h/2 - h/2;
+        break;
+      case RIGHT:
+        x = m_target.x - w;
+        y = m_target.y + m_target.h/2 - h/2;
+        break;
+    }
+
+    x = MID(0, x, ui::display_w()-w);
+    y = MID(0, y, ui::display_h()-h);
+
+    if (m_target.intersects(gfx::Rect(x, y, w, h))) {
+      switch (trycount) {
+        case 0:
+        case 2:
+          // Switch position
+          if (arrowAlign & (TOP | BOTTOM)) arrowAlign ^= TOP | BOTTOM;
+          if (arrowAlign & (LEFT | RIGHT)) arrowAlign ^= LEFT | RIGHT;
+          break;
+        case 1:
+          // Rotate positions
+          if (arrowAlign & (TOP | LEFT)) arrowAlign ^= TOP | LEFT;
+          if (arrowAlign & (BOTTOM | RIGHT)) arrowAlign ^= BOTTOM | RIGHT;
+          break;
+      }
+    }
+    else {
+      m_arrowAlign = arrowAlign;
+      positionWindow(x, y);
+      break;
+    }
+  }
+
+  return (trycount < 4);
 }
 
 bool TipWindow::onProcessMessage(Message* msg)
@@ -271,9 +269,6 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
                 6 * guiscale(),
                 6 * guiscale(),
                 7 * guiscale()));
-
-  // Setup the background color.
-  setBgColor(gfx::rgba(255, 255, 200));
 }
 
 void TipWindow::onPaint(PaintEvent& ev)

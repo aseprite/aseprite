@@ -63,10 +63,12 @@ static std::string convert_type(const std::string& name)
   if (name == "link") return "ui::LinkLabel";
   if (name == "listbox") return "ui::ListBox";
   if (name == "panel") return "ui::Panel";
+  if (name == "popupwindow") return "ui::PopupWindow";
   if (name == "radio") return "ui::RadioButton";
   if (name == "search") return "app::SearchEntry";
   if (name == "slider") return "ui::Slider";
   if (name == "splitter") return "ui::Splitter";
+  if (name == "tipwindow") return "ui::TipWindow";
   if (name == "vbox") return "ui::VBox";
   if (name == "view") return "ui::View";
   if (name == "window") return "ui::Window";

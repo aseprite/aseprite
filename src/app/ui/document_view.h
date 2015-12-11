@@ -69,6 +69,8 @@ namespace app {
     void onBeforeRemoveLayer(doc::DocumentEvent& ev) override;
     void onAddFrame(doc::DocumentEvent& ev) override;
     void onRemoveFrame(doc::DocumentEvent& ev) override;
+    void onAddCel(doc::DocumentEvent& ev) override;
+    void onRemoveCel(doc::DocumentEvent& ev) override;
     void onTotalFramesChanged(doc::DocumentEvent& ev) override;
     void onLayerRestacked(doc::DocumentEvent& ev) override;
 

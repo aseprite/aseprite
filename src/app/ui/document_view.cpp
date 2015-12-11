@@ -411,6 +411,16 @@ void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
   }
 }
 
+void DocumentView::onAddCel(doc::DocumentEvent& ev)
+{
+  UIContext::instance()->notifyActiveSiteChanged();
+}
+
+void DocumentView::onRemoveCel(doc::DocumentEvent& ev)
+{
+  UIContext::instance()->notifyActiveSiteChanged();
+}
+
 void DocumentView::onTotalFramesChanged(doc::DocumentEvent& ev)
 {
   if (m_editor->frame() >= m_editor->sprite()->totalFrames()) {

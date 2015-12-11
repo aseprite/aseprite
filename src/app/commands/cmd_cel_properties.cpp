@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/cmd/set_cel_opacity.h"
+#include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context_access.h"
@@ -20,6 +21,7 @@
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
+#include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
@@ -51,6 +53,7 @@ public:
     , m_cel(nullptr)
     , m_selfUpdate(false) {
     opacity()->Change.connect(base::Bind<void>(&CelPropertiesWindow::onStartTimer, this));
+    userData()->Click.connect(base::Bind<void>(&CelPropertiesWindow::onPopupUserData, this));
     m_timer.Tick.connect(base::Bind<void>(&CelPropertiesWindow::onCommitChange, this));
 
     remapWindow();
@@ -154,14 +157,18 @@ private:
     int count = countCels();
 
     if ((count > 1) ||
-        (count == 1 && newOpacity != m_cel->opacity())) {
+        (count == 1 && (newOpacity != m_cel->opacity() ||
+                        m_userData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
-        Transaction transaction(writer.context(), "Cel Opacity Change");
+        Transaction transaction(writer.context(), "Set Cel Properties");
 
         if (count == 1) {
           if (newOpacity != m_cel->opacity())
             transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
+
+          if (m_userData != m_cel->data()->userData())
+            transaction.execute(new cmd::SetUserData(writer.cel()->data(), m_userData));
         }
         else {
           for (Cel* cel : m_document->sprite()->uniqueCels()) {
@@ -170,6 +177,9 @@ private:
                                 cel->frame())) {
               transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
             }
+
+            if (m_userData != cel->data()->userData())
+              transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
           }
         }
 
@@ -180,6 +190,15 @@ private:
       }
 
       update_screen_for_document(m_document);
+    }
+  }
+
+  void onPopupUserData() {
+    if (m_cel) {
+      m_userData = m_cel->data()->userData();
+      if (show_user_data_popup(userData()->bounds(), m_userData)) {
+        onCommitChange();
+      }
     }
   }
 
@@ -208,15 +227,20 @@ private:
 
     int count = countCels();
 
+    m_userData = UserData();
+
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
         opacity()->setEnabled(
           (count > 1) ||
           (count == 1 && !m_cel->layer()->isBackground()));
+
+        m_userData = m_cel->data()->userData();
       }
-      else                  // Enable slider to change the whole range
+      else {                  // Enable slider to change the whole range
         opacity()->setEnabled(true);
+      }
     }
     else {
       opacity()->setEnabled(false);
@@ -228,6 +252,7 @@ private:
   Cel* m_cel;
   DocumentRange m_range;
   bool m_selfUpdate;
+  UserData m_userData;
 };
 
 class CelPropertiesCommand : public Command {

@@ -25,12 +25,14 @@ namespace ui {
       CloseOnEnter,
     };
 
-    PopupWindow(const std::string& text,
-                ClickBehavior clickBehavior,
+    PopupWindow(const std::string& text = "",
+                ClickBehavior clickBehavior = ClickBehavior::CloseOnClickOutsideHotRegion,
                 EnterBehavior enterBehavior = EnterBehavior::CloseOnEnter);
     ~PopupWindow();
 
     void setHotRegion(const gfx::Region& region);
+    void setClickBehavior(ClickBehavior behavior);
+    void setEnterBehavior(EnterBehavior behavior);
 
     void makeFloating();
     void makeFixed();

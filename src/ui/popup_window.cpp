@@ -54,6 +54,16 @@ void PopupWindow::setHotRegion(const gfx::Region& region)
   m_hotRegion = region;
 }
 
+void PopupWindow::setClickBehavior(ClickBehavior behavior)
+{
+  m_clickBehavior = behavior;
+}
+
+void PopupWindow::setEnterBehavior(EnterBehavior behavior)
+{
+  m_enterBehavior = behavior;
+}
+
 void PopupWindow::makeFloating()
 {
   stopFilteringMessages();

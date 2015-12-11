@@ -13,11 +13,13 @@
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
+#include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
@@ -26,6 +28,7 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "doc/user_data.h"
 #include "ui/ui.h"
 
 #include "layer_properties.xml.h"
@@ -79,6 +82,7 @@ public:
     mode()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     opacity()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     m_timer.Tick.connect(base::Bind<void>(&LayerPropertiesWindow::onCommitChange, this));
+    userData()->Click.connect(base::Bind<void>(&LayerPropertiesWindow::onPopupUserData, this));
 
     remapWindow();
     centerWindow();
@@ -92,7 +96,6 @@ public:
   }
 
   void setLayer(LayerImage* layer) {
-    // Save uncommited changes
     if (m_layer) {
       document()->removeObserver(this);
       m_layer = nullptr;
@@ -175,7 +178,8 @@ private:
 
     if (newName != m_layer->name() ||
         newOpacity != m_layer->opacity() ||
-        newBlendMode != m_layer->blendMode()) {
+        newBlendMode != m_layer->blendMode() ||
+        m_userData != m_layer->userData()) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Layer Properties");
@@ -188,6 +192,9 @@ private:
 
         if (newBlendMode != m_layer->blendMode())
           transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
+
+        if (m_userData != m_layer->userData())
+          transaction.execute(new cmd::SetUserData(writer.layer(), m_userData));
 
         transaction.commit();
       }
@@ -223,6 +230,15 @@ private:
       updateFromLayer();
   }
 
+  void onPopupUserData() {
+    if (m_layer) {
+      m_userData = m_layer->userData();
+      if (show_user_data_popup(userData()->bounds(), m_userData)) {
+        onCommitChange();
+      }
+    }
+  }
+
   void updateFromLayer() {
     if (m_selfUpdate)
       return;
@@ -238,18 +254,21 @@ private:
       mode()->setEnabled(!m_layer->isBackground());
       opacity()->setValue(m_layer->opacity());
       opacity()->setEnabled(!m_layer->isBackground());
+      m_userData = m_layer->userData();
     }
     else {
       name()->setText("No Layer");
       name()->setEnabled(false);
       mode()->setEnabled(false);
       opacity()->setEnabled(false);
+      m_userData = UserData();
     }
   }
 
   Timer m_timer;
   LayerImage* m_layer;
   bool m_selfUpdate;
+  UserData m_userData;
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()

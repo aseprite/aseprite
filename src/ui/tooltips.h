@@ -20,8 +20,7 @@ namespace ui {
 
   class TipWindow;
 
-  class TooltipManager : public Widget
-  {
+  class TooltipManager : public Widget {
   public:
     TooltipManager();
     ~TooltipManager();
@@ -57,15 +56,16 @@ namespace ui {
 
   class TipWindow : public PopupWindow {
   public:
-    TipWindow(const std::string& text, const gfx::Rect& target);
-    ~TipWindow();
+    TipWindow(const std::string& text = "");
 
-    int getArrowAlign() const;
-    void setArrowAlign(int arrowAlign);
+    int arrowAlign() const { return m_arrowAlign; }
+    const gfx::Rect& target() const { return m_target; }
 
     void setCloseOnKeyDown(bool state);
 
-    const gfx::Rect& target() const { return m_target; }
+    // Returns false there is no enough screen space to show the
+    // window.
+    bool pointAt(int arrowAlign, const gfx::Rect& target);
 
   protected:
     bool onProcessMessage(Message* msg) override;
