@@ -73,6 +73,7 @@ Cel* create_cel_copy(const Cel* srcCel,
 
   dstCel->setPosition(srcCel->position());
   dstCel->setOpacity(srcCel->opacity());
+  dstCel->data()->setUserData(srcCel->data()->userData());
 
   return dstCel.release();
 }
