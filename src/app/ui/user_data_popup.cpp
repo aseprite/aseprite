@@ -11,6 +11,8 @@
 
 #include "app/ui/user_data_popup.h"
 
+#include "app/color_utils.h"
+#include "app/ui/color_button.h"
 #include "doc/user_data.h"
 
 #include "user_data.xml.h"
@@ -42,12 +44,28 @@ bool show_user_data_popup(const gfx::Rect& bounds,
   UserDataPopup window;
 
   window.text()->setText(userData.text());
-  window.pointAt(TOP, bounds);
 
+  doc::color_t color = userData.color();
+  window.color()->setPixelFormat(IMAGE_RGB);
+  window.color()->setColor(
+    app::Color::fromRgb(doc::rgba_getr(color),
+                        doc::rgba_getg(color),
+                        doc::rgba_getb(color),
+                        doc::rgba_geta(color)));
+
+  window.pointAt(TOP, bounds);
   window.openWindowInForeground();
 
-  if (userData.text() != window.text()->text()) {
+  app::Color appColor = window.color()->getColor();
+  color = doc::rgba(appColor.getRed(),
+                    appColor.getGreen(),
+                    appColor.getBlue(),
+                    appColor.getAlpha());
+
+  if (userData.text() != window.text()->text() ||
+      userData.color() != color) {
     userData.setText(window.text()->text());
+    userData.setColor(color);
     return true;
   }
   else {

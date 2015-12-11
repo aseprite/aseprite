@@ -24,12 +24,14 @@ using namespace base::serialization::little_endian;
 void write_user_data(std::ostream& os, const UserData& userData)
 {
   write_string(os, userData.text());
+  write32(os, userData.color());
 }
 
 UserData read_user_data(std::istream& is)
 {
   UserData userData;
   userData.setText(read_string(is));
+  userData.setColor(read32(is));
   return userData;
 }
 

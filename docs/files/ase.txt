@@ -278,8 +278,14 @@ belongs to that cel, etc.
 
   DWORD         Flags
                    1 = Has text
+                   2 = Has color
   + If flags has bit 1:
     STRING        Text
+  + If flags has bit 2:
+    BYTE          Color Red (0-255)
+    BYTE          Color Green (0-255)
+    BYTE          Color Blue (0-255)
+    BYTE          Color Alpha (0-255)
 
 
 Notes

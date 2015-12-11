@@ -49,6 +49,7 @@
 #define ASE_PALETTE_FLAG_HAS_NAME           1
 
 #define ASE_USER_DATA_FLAG_HAS_TEXT         1
+#define ASE_USER_DATA_FLAG_HAS_COLOR        2
 
 namespace app {
 
@@ -1459,17 +1460,41 @@ static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_head
 static void ase_file_read_user_data_chunk(FILE* f, UserData* userData)
 {
   size_t flags = fgetl(f);
+
   if (flags & ASE_USER_DATA_FLAG_HAS_TEXT) {
     std::string text = ase_file_read_string(f);
     userData->setText(text);
+  }
+
+  if (flags & ASE_USER_DATA_FLAG_HAS_COLOR) {
+    int r = fgetc(f);
+    int g = fgetc(f);
+    int b = fgetc(f);
+    int a = fgetc(f);
+    userData->setColor(doc::rgba(r, g, b, a));
   }
 }
 
 static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_USER_DATA);
-  fputl(ASE_USER_DATA_FLAG_HAS_TEXT, f);
-  ase_file_write_string(f, userData->text().c_str());
+
+  int flags = 0;
+  if (!userData->text().empty())
+    flags |= ASE_USER_DATA_FLAG_HAS_TEXT;
+  if (doc::rgba_geta(userData->color()))
+    flags |= ASE_USER_DATA_FLAG_HAS_COLOR;
+  fputl(flags, f);
+
+  if (flags & ASE_USER_DATA_FLAG_HAS_TEXT)
+    ase_file_write_string(f, userData->text().c_str());
+
+  if (flags & ASE_USER_DATA_FLAG_HAS_COLOR) {
+    fputc(doc::rgba_getr(userData->color()), f);
+    fputc(doc::rgba_getg(userData->color()), f);
+    fputc(doc::rgba_getb(userData->color()), f);
+    fputc(doc::rgba_geta(userData->color()), f);
+  }
 }
 
 } // namespace app
