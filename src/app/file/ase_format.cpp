@@ -34,6 +34,7 @@
 #define ASE_FILE_CHUNK_PATH                 0x2017
 #define ASE_FILE_CHUNK_FRAME_TAGS           0x2018
 #define ASE_FILE_CHUNK_PALETTE              0x2019
+#define ASE_FILE_CHUNK_USER_DATA            0x2020
 
 #define ASE_FILE_RAW_CEL                    0
 #define ASE_FILE_LINK_CEL                   1
@@ -46,6 +47,8 @@
 #define ASE_LAYER_FLAG_PREFER_LINKED_CELS   16
 
 #define ASE_PALETTE_FLAG_HAS_NAME           1
+
+#define ASE_USER_DATA_FLAG_HAS_TEXT         1
 
 namespace app {
 
@@ -116,6 +119,8 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
 #endif
 static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags);
 static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags);
+static void ase_file_read_user_data_chunk(FILE* f, UserData* userData);
+static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData);
 
 class ChunkWriter {
 public:
@@ -189,6 +194,7 @@ bool AseFormat::onLoad(FileOp* fop)
 
   // Prepare variables for layer chunks
   Layer* last_layer = sprite->folder();
+  WithUserData* last_object_with_user_data = nullptr;
   int current_level = -1;
 
   // Read frame by frame to end-of-file
@@ -244,44 +250,48 @@ bool AseFormat::onLoad(FileOp* fop)
           }
 
           case ASE_FILE_CHUNK_LAYER: {
-            /* fop->setError("Layer chunk\n"); */
-
-            ase_file_read_layer_chunk(f, &header, sprite,
-                                      &last_layer,
-                                      &current_level);
+            last_object_with_user_data =
+              ase_file_read_layer_chunk(f, &header, sprite,
+                                        &last_layer,
+                                        &current_level);
             break;
           }
 
           case ASE_FILE_CHUNK_CEL: {
-            /* fop->setError("Cel chunk\n"); */
-
-            ase_file_read_cel_chunk(f, sprite, frame,
-                                    sprite->pixelFormat(), fop, &header,
-                                    chunk_pos+chunk_size);
+            Cel* cel =
+              ase_file_read_cel_chunk(f, sprite, frame,
+                                      sprite->pixelFormat(), fop, &header,
+                                      chunk_pos+chunk_size);
+            if (cel) {
+              last_object_with_user_data = cel->data();
+            }
             break;
           }
 
           case ASE_FILE_CHUNK_MASK: {
-            Mask* mask;
-
-            /* fop->setError("Mask chunk\n"); */
-
-            mask = ase_file_read_mask_chunk(f);
+            Mask* mask = ase_file_read_mask_chunk(f);
             if (mask)
               delete mask;      // TODO add the mask in some place?
             else
               fop->setError("Warning: error loading a mask chunk\n");
-
             break;
           }
 
           case ASE_FILE_CHUNK_PATH:
-            /* fop->setError("Path chunk\n"); */
+            // Ignore
             break;
 
           case ASE_FILE_CHUNK_FRAME_TAGS:
             ase_file_read_frame_tags_chunk(f, &sprite->frameTags());
             break;
+
+          case ASE_FILE_CHUNK_USER_DATA: {
+            UserData userData;
+            ase_file_read_user_data_chunk(f, &userData);
+            if (last_object_with_user_data)
+              last_object_with_user_data->setUserData(userData);
+            break;
+          }
 
           default:
             fop->setError("Warning: Unsupported chunk type %d (skipping)\n", chunk_type);
@@ -530,6 +540,8 @@ static void ase_file_write_frame_header(FILE* f, ASE_FrameHeader* frame_header)
 static void ase_file_write_layers(FILE* f, ASE_FrameHeader* frame_header, const Layer* layer)
 {
   ase_file_write_layer_chunk(f, frame_header, layer);
+  if (!layer->userData().isEmpty())
+    ase_file_write_user_data_chunk(f, frame_header, &layer->userData());
 
   if (layer->isFolder()) {
     auto it = static_cast<const LayerFolder*>(layer)->getLayerBegin(),
@@ -549,6 +561,12 @@ static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header, const Sp
 /*                   frame, sprite_layer2index(sprite, layer)); */
 
       ase_file_write_cel_chunk(f, frame_header, cel, static_cast<const LayerImage*>(layer), sprite);
+
+      if (!cel->link() &&
+          !cel->data()->userData().isEmpty()) {
+        ase_file_write_user_data_chunk(f, frame_header,
+                                       &cel->data()->userData());
+      }
     }
   }
 
@@ -1436,6 +1454,22 @@ static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_head
 
     ase_file_write_string(f, tag->name().c_str());
   }
+}
+
+static void ase_file_read_user_data_chunk(FILE* f, UserData* userData)
+{
+  size_t flags = fgetl(f);
+  if (flags & ASE_USER_DATA_FLAG_HAS_TEXT) {
+    std::string text = ase_file_read_string(f);
+    userData->setText(text);
+  }
+}
+
+static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_USER_DATA);
+  fputl(ASE_USER_DATA_FLAG_HAS_TEXT, f);
+  ase_file_write_string(f, userData->text().c_str());
 }
 
 } // namespace app

@@ -174,7 +174,8 @@ Layer Chunk (0x2004)
                   Saturation     = 13
                   Color          = 14
                   Luminosity     = 15
-  BYTE          Opacity (valid if "flags" field has bit 32 set)
+  BYTE          Opacity
+                  Note: valid only if file header flags field has bit 1 set
   BYTE[3]       For future (set to zero)
   STRING        Layer name
 
@@ -266,6 +267,19 @@ Palette Chunk (0x2019)
     BYTE        Alpha (0-255)
     + If has name bit in entry flags
       STRING    Color name
+
+
+User Data Chunk (0x2020)
+----------------------------------------
+
+Insert this user data in the last read chunk.  E.g. If we've read a
+layer, this user data belongs to that layer, if we've read a cel, it
+belongs to that cel, etc.
+
+  DWORD         Flags
+                   1 = Has text
+  + If flags has bit 1:
+    STRING        Text
 
 
 Notes
