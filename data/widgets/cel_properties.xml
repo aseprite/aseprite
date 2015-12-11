@@ -2,14 +2,10 @@
 <!-- Copyright (C) 2001-2013, 2015 by David Capello -->
 <gui>
 <window text="Cel Properties" id="cel_properties">
-  <grid columns="2">
+  <grid columns="3">
     <label text="Opacity:" />
     <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" />
-
-    <label text="Extras:" />
-    <hbox>
-      <button id="user_data" icon="icon_user_data" tooltip="User Data" />
-    </hbox>
+    <button id="user_data" icon="icon_user_data" tooltip="User Data" />
   </grid>
 </window>
 </gui>
