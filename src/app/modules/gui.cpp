@@ -138,8 +138,11 @@ static bool create_main_display(bool gpuAccel,
     }
   }
 
-  if (main_display && !windowLayout.empty())
+  if (main_display && !windowLayout.empty()) {
     main_display->setLayout(windowLayout);
+    if (main_display->isMinimized())
+      main_display->maximize();
+  }
 
   return (main_display != nullptr);
 }

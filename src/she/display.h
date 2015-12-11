@@ -53,6 +53,7 @@ namespace she {
 
     virtual void maximize() = 0;
     virtual bool isMaximized() const = 0;
+    virtual bool isMinimized() const = 0;
 
     virtual void setTitleBar(const std::string& title) = 0;
 

@@ -504,6 +504,15 @@ bool Alleg4Display::isMaximized() const
 #endif
 }
 
+bool Alleg4Display::isMinimized() const
+{
+#ifdef _WIN32
+  return (::GetWindowLong(win_get_window(), GWL_STYLE) & WS_MINIMIZE ? true: false);
+#else
+  return false;
+#endif
+}
+
 void Alleg4Display::setTitleBar(const std::string& title)
 {
   set_window_title(title.c_str());

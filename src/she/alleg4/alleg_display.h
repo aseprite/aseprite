@@ -31,6 +31,7 @@ namespace she {
     void flip(const gfx::Rect& bounds) override;
     void maximize() override;
     bool isMaximized() const override;
+    bool isMinimized() const override;
     void setTitleBar(const std::string& title) override;
     NativeCursor nativeMouseCursor() override;
     bool setNativeMouseCursor(NativeCursor cursor) override;
