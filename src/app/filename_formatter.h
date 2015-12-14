@@ -63,6 +63,9 @@ namespace app {
     int m_tagFrame;
   };
 
+  // If "replaceFrame" is false, this function doesn't replace all the
+  // information that depends on the current frame ({frame},
+  // {tagframe}, {tag}, etc.)
   std::string filename_formatter(
     const std::string& format,
     FilenameInfo& info,

@@ -64,11 +64,11 @@ std::string filename_formatter(
   base::replace_string(output, "{title}", base::get_file_title(filename));
   base::replace_string(output, "{extension}", base::get_file_extension(filename));
   base::replace_string(output, "{layer}", info.layerName());
-  base::replace_string(output, "{tag}", info.innerTagName());
-  base::replace_string(output, "{innertag}", info.innerTagName());
-  base::replace_string(output, "{outertag}", info.outerTagName());
 
   if (replaceFrame) {
+    base::replace_string(output, "{tag}", info.innerTagName());
+    base::replace_string(output, "{innertag}", info.innerTagName());
+    base::replace_string(output, "{outertag}", info.outerTagName());
     replace_frame("{frame", info.frame(), output);
     replace_frame("{tagframe", info.tagFrame(), output);
   }
