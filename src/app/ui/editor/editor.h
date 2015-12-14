@@ -296,6 +296,7 @@ namespace app {
     base::ScopedConnection m_tiledConn;
     base::ScopedConnection m_gridConn;
     base::ScopedConnection m_pixelGridConn;
+    base::ScopedConnection m_bgConn;
     base::ScopedConnection m_onionskinConn;
 
     EditorObservers m_observers;
