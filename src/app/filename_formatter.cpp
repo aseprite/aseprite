@@ -20,6 +20,33 @@
 
 namespace app {
 
+static bool replace_frame(const char* frameKey, // E.g. = "{frame"
+                          int frameBase,
+                          std::string& str)
+{
+  size_t i = str.find(frameKey);
+  if (i != std::string::npos) {
+    int keyLen = std::strlen(frameKey);
+
+    size_t j = str.find("}", i+keyLen);
+    if (j != std::string::npos) {
+      std::string from = str.substr(i, j - i + 1);
+      if (frameBase >= 0) {
+        std::vector<char> to(32);
+        int offset = std::strtol(from.c_str()+keyLen, NULL, 10);
+
+        std::sprintf(&to[0], "%0*d", (int(j)-int(i+keyLen)), frameBase + offset);
+        base::replace_string(str, from, &to[0]);
+      }
+      else
+        base::replace_string(str, from, "");
+    }
+    return true;
+  }
+  else
+    return false;
+}
+
 std::string filename_formatter(
   const std::string& format,
   FilenameInfo& info,
@@ -42,22 +69,8 @@ std::string filename_formatter(
   base::replace_string(output, "{outertag}", info.outerTagName());
 
   if (replaceFrame) {
-    size_t i = output.find("{frame");
-    if (i != std::string::npos) {
-      size_t j = output.find("}", i+6);
-      if (j != std::string::npos) {
-        std::string from = output.substr(i, j - i + 1);
-        if (info.frame() >= 0) {
-          std::vector<char> to(32);
-          int offset = std::strtol(from.c_str()+6, NULL, 10);
-
-          std::sprintf(&to[0], "%0*d", (int(j)-int(i+6)), info.frame() + offset);
-          base::replace_string(output, from, &to[0]);
-        }
-        else
-          base::replace_string(output, from, "");
-      }
-    }
+    replace_frame("{frame", info.frame(), output);
+    replace_frame("{tagframe", info.tagFrame(), output);
   }
 
   return output;
@@ -87,7 +100,9 @@ std::string add_frame_format(
   std::string output = format;
 
   size_t i = output.find("{frame");
-  if (i == std::string::npos) {
+  size_t j = output.find("{tagframe");
+  if (i == std::string::npos &&
+      j == std::string::npos) {
     output =
       base::join_path(
         base::get_file_path(format),

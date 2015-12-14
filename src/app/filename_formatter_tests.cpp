@@ -165,3 +165,24 @@ TEST(AddFrameFormat, Tests)
       "{path}/{title}{frame1}.{extension}",
       "{frame001}"));
 }
+
+TEST(FilenameFormatter, WithTagFrame)
+{
+  EXPECT_EQ(
+    "./file_2_0.png",
+    filename_formatter(
+      "{path}/{title}_{frame}_{tagframe}.{extension}",
+      FilenameInfo().filename("./file.png").frame(2).tagFrame(0)));
+
+  EXPECT_EQ(
+    "./file_2_1.png",
+    filename_formatter(
+      "{path}/{title}_{frame}_{tagframe1}.{extension}",
+      FilenameInfo().filename("./file.png").frame(2).tagFrame(0)));
+
+  EXPECT_EQ(
+    "./file_2_25.png",
+    filename_formatter(
+      "{path}/{title}_{frame}_{tagframe24}.{extension}",
+      FilenameInfo().filename("./file.png").frame(2).tagFrame(1)));
+}
