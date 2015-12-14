@@ -16,6 +16,7 @@
 #include "base/replace_string.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <vector>
 
 namespace app {
