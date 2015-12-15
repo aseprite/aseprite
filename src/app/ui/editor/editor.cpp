@@ -195,6 +195,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   m_tiledConn = docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_gridConn = docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_bgConn = docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_onionskinConn = docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
 
   m_document->addObserver(this);

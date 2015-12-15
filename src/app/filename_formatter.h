@@ -15,13 +15,14 @@ namespace app {
 
   class FilenameInfo {
   public:
-    FilenameInfo() : m_frame(-1) { }
+    FilenameInfo() : m_frame(-1), m_tagFrame(-1) { }
 
     const std::string& filename() const { return m_filename; }
     const std::string& layerName() const { return m_layerName; }
     const std::string& innerTagName() const { return m_innerTagName; }
     const std::string& outerTagName() const { return m_outerTagName; }
     int frame() const { return m_frame; }
+    int tagFrame() const { return m_tagFrame; }
 
     FilenameInfo& filename(const std::string& value) {
       m_filename = value;
@@ -48,14 +49,23 @@ namespace app {
       return *this;
     }
 
+    FilenameInfo& tagFrame(int value) {
+      m_tagFrame = value;
+      return *this;
+    }
+
   private:
     std::string m_filename;
     std::string m_layerName;
     std::string m_innerTagName;
     std::string m_outerTagName;
     int m_frame;
+    int m_tagFrame;
   };
 
+  // If "replaceFrame" is false, this function doesn't replace all the
+  // information that depends on the current frame ({frame},
+  // {tagframe}, {tag}, etc.)
   std::string filename_formatter(
     const std::string& format,
     FilenameInfo& info,

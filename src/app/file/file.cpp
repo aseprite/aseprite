@@ -435,7 +435,9 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
           .filename(fn)
           .innerTagName(innerTag ? innerTag->name(): "")
           .outerTagName(outerTag ? outerTag->name(): "")
-          .frame(start_from+frame);
+          .frame(start_from+frame)
+          .tagFrame(innerTag ? frame-innerTag->fromFrame():
+                               start_from+frame);
 
         std::string frame_fn =
           filename_formatter(fn_format, fnInfo);
