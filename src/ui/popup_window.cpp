@@ -22,7 +22,7 @@ using namespace gfx;
 PopupWindow::PopupWindow(const std::string& text,
                          ClickBehavior clickBehavior,
                          EnterBehavior enterBehavior)
-  : Window(WithTitleBar, text)
+  : Window(text.empty() ? WithoutTitleBar: WithTitleBar, text)
   , m_clickBehavior(clickBehavior)
   , m_enterBehavior(enterBehavior)
   , m_filtering(false)
