@@ -277,7 +277,7 @@ void BrushPopup::regenerate(const gfx::Rect& box)
     m_customBrushes->addItem(new BrushOptionsItem(this, m_delegate, slot));
   }
 
-  m_customBrushes->addItem(new NewCustomBrushItem, 3, 1);
+  m_customBrushes->addItem(new NewCustomBrushItem(m_delegate), 3, 1);
   m_customBrushes->setExpansive(true);
   m_box.addChild(m_customBrushes);
 
