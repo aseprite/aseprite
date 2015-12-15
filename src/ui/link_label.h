@@ -17,7 +17,7 @@ namespace ui {
 
   class LinkLabel : public CustomLabel {
   public:
-    LinkLabel(const std::string& urlOrText);
+    LinkLabel(const std::string& urlOrText = "");
     LinkLabel(const std::string& url, const std::string& text);
 
     const std::string& getUrl() const { return m_url; }
