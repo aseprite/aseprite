@@ -289,8 +289,13 @@ void BrushPopup::regenerate(const gfx::Rect& box)
 void BrushPopup::onBrushChanges()
 {
   if (isVisible()) {
+    gfx::Region rgn;
+    getDrawableRegion(rgn, DrawableRegionFlags(kCutTopWindows | kUseChildArea));
+
     regenerate(bounds());
     invalidate();
+
+    parent()->invalidateRegion(rgn);
   }
 }
 
