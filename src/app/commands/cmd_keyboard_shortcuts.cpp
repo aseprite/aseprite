@@ -287,7 +287,8 @@ private:
 
 class KeyboardShortcutsWindow : public app::gen::KeyboardShortcuts {
 public:
-  KeyboardShortcutsWindow() : m_searchChange(false) {
+  KeyboardShortcutsWindow(const std::string& searchText)
+    : m_searchChange(false) {
     setAutoRemap(false);
 
     section()->addChild(new ListItem("Menus"));
@@ -302,6 +303,11 @@ public:
     resetButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onReset, this));
 
     fillAllLists();
+
+    if (!searchText.empty()) {
+      search()->setText(searchText);
+      onSearchChange();
+    }
   }
 
   void restoreKeys() {
@@ -523,7 +529,11 @@ public:
   Command* clone() const override { return new KeyboardShortcutsCommand(*this); }
 
 protected:
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+
+private:
+  std::string m_search;
 };
 
 KeyboardShortcutsCommand::KeyboardShortcutsCommand()
@@ -533,9 +543,19 @@ KeyboardShortcutsCommand::KeyboardShortcutsCommand()
 {
 }
 
+void KeyboardShortcutsCommand::onLoadParams(const Params& params)
+{
+  m_search = params.get("search");
+}
+
 void KeyboardShortcutsCommand::onExecute(Context* context)
 {
-  KeyboardShortcutsWindow window;
+  // Here we copy the m_search field because
+  // KeyboardShortcutsWindow::fillAllLists() modifies this same
+  // KeyboardShortcutsCommand instance (so m_search will be "")
+  // TODO Seeing this, we need a complete new way to handle UI commands execution
+  std::string neededSearchCopy = m_search;
+  KeyboardShortcutsWindow window(neededSearchCopy);
 
   window.setBounds(gfx::Rect(0, 0, ui::display_w()*3/4, ui::display_h()*3/4));
   g_sep = window.bounds().w / 2;

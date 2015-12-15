@@ -11,12 +11,18 @@
 
 #include "app/ui/brush_popup.h"
 
+#include "app/app.h"
+#include "app/app_brushes.h"
+#include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/brush.h"
@@ -28,10 +34,12 @@
 #include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
+#include "ui/button.h"
+#include "ui/link_label.h"
+#include "ui/listitem.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/separator.h"
-#include "ui/tooltips.h"
 
 namespace app {
 
@@ -41,11 +49,10 @@ using namespace ui;
 
 namespace {
 
-class Item : public ButtonSet::Item {
+class SelectBrushItem : public ButtonSet::Item {
 public:
-  Item(BrushPopup* popup, BrushPopupDelegate* delegate, const BrushRef& brush, int slot = -1)
-    : m_popup(popup)
-    , m_delegate(delegate)
+  SelectBrushItem(BrushPopupDelegate* delegate, const BrushRef& brush, int slot = -1)
+    : m_delegate(delegate)
     , m_brush(brush)
     , m_slot(slot) {
     SkinPartPtr icon(new SkinPart);
@@ -57,35 +64,84 @@ public:
     return m_brush;
   }
 
-protected:
-  bool onProcessMessage(Message* msg) override {
-    if (msg->type() == kMouseUpMessage && m_slot > 0) {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      if (mouseMsg->buttons() == kButtonRight) {
-        Menu menu;
-        AppMenuItem lockItem(m_delegate->onIsBrushSlotLocked(m_slot) ? "Unlock Brush": "Lock Brush");
-        AppMenuItem deleteItem("Delete");
-        AppMenuItem deleteAllItem("Delete All");
-        lockItem.Click.connect(&Item::onLockBrush, this);
-        deleteItem.Click.connect(&Item::onDeleteBrush, this);
-        deleteAllItem.Click.connect(&Item::onDeleteAllBrushes, this);
-        menu.addChild(&lockItem);
-        menu.addChild(&deleteItem);
-        menu.addChild(new MenuSeparator);
-        menu.addChild(&deleteAllItem);
+private:
 
-        // Here we make the popup window temporaly floating, so it's
-        // not closed by the popup menu.
-        m_popup->makeFloating();
-        menu.showPopup(mouseMsg->position());
-        m_popup->makeFixed();
-        m_popup->closeWindow(nullptr);
-      }
-    }
-    return ButtonSet::Item::onProcessMessage(msg);
+  void onClick() override {
+    if (m_slot >= 0)
+      m_delegate->onSelectBrushSlot(m_slot);
+    else
+      m_delegate->onSelectBrush(m_brush);
   }
 
 private:
+
+  BrushPopupDelegate* m_delegate;
+  BrushRef m_brush;
+  int m_slot;
+};
+
+class BrushShortcutItem : public ButtonSet::Item {
+public:
+  BrushShortcutItem(const std::string& text, int slot)
+    : m_slot(slot) {
+    setText(text);
+  }
+
+private:
+  void onClick() override {
+    Params params;
+    params.set("change", "custom");
+    params.set("slot", base::convert_to<std::string>(m_slot).c_str());
+    Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::ChangeBrush);
+    cmd->loadParams(params);
+    std::string search = cmd->friendlyName();
+    if (!search.empty()) {
+      params.clear();
+      params.set("search", search.c_str());
+      cmd = CommandsModule::instance()->getCommandByName(CommandId::KeyboardShortcuts);
+      ASSERT(cmd);
+      if (cmd)
+        UIContext::instance()->executeCommand(cmd, params);
+    }
+  }
+
+  int m_slot;
+};
+
+class BrushOptionsItem : public ButtonSet::Item {
+public:
+  BrushOptionsItem(BrushPopup* popup, BrushPopupDelegate* delegate, int slot)
+    : m_popup(popup)
+    , m_delegate(delegate)
+    , m_slot(slot) {
+    setIcon(SkinTheme::instance()->parts.iconArrowDown(), true);
+  }
+
+private:
+
+  void onClick() override {
+    Menu menu;
+    AppMenuItem lockItem(m_delegate->onIsBrushSlotLocked(m_slot) ? "Unlock Brush": "Lock Brush");
+    AppMenuItem deleteItem("Delete");
+    AppMenuItem deleteAllItem("Delete All");
+    lockItem.Click.connect(&BrushOptionsItem::onLockBrush, this);
+    deleteItem.Click.connect(&BrushOptionsItem::onDeleteBrush, this);
+    deleteAllItem.Click.connect(&BrushOptionsItem::onDeleteAllBrushes, this);
+    menu.addChild(&lockItem);
+    menu.addChild(&deleteItem);
+    menu.addChild(new MenuSeparator);
+    menu.addChild(&deleteAllItem);
+
+    // Here we make the popup window temporaly floating, so it's
+    // not closed by the popup menu.
+    m_popup->makeFloating();
+    menu.showPopup(gfx::Point(origin().x, origin().y+bounds().h));
+    m_popup->makeFixed();
+    m_popup->closeWindow(nullptr);
+  }
+
+private:
+
   void onLockBrush() {
     if (m_delegate->onIsBrushSlotLocked(m_slot))
       m_delegate->onUnlockBrushSlot(m_slot);
@@ -107,98 +163,122 @@ private:
   int m_slot;
 };
 
-} // anonymous namespace
+class NewCustomBrushItem : public ButtonSet::Item {
+public:
+  NewCustomBrushItem() {
+    setText("Save Brush");
+  }
 
-static BrushRef defBrushes[3];
+private:
+  void onClick() override {
+    AppBrushes& brushes = App::instance()->brushes();
+    auto slot = brushes.addCustomBrush(
+      ContextBar::createBrushFromPreferences());
+    brushes.lockCustomBrush(slot);
+  }
+};
+
+} // anonymous namespace
 
 BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
   : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
+  , m_tooltipManager(nullptr)
+  , m_standardBrushes(3)
+  , m_customBrushes(nullptr)
   , m_delegate(delegate)
 {
   setAutoRemap(false);
-  setBorder(gfx::Border(0));
+  setBorder(gfx::Border(2)*guiscale());
   setChildSpacing(0);
+  m_box.noBorderNoChildSpacing();
+
+  addChild(&m_box);
+
+  HBox* top = new HBox;
+  top->addChild(&m_standardBrushes);
+  top->addChild(new BoxFiller);
+
+  m_box.addChild(top);
+  m_box.addChild(new Separator("", HORIZONTAL));
+
+  const doc::Brushes& brushes = App::instance()->brushes().getStandardBrushes();
+  for (const auto& brush : brushes)
+    m_standardBrushes.addItem(new SelectBrushItem(m_delegate, brush));
+
+  m_standardBrushes.setTransparent(true);
+  m_standardBrushes.setBgColor(gfx::ColorNone);
+
+  App::instance()->brushes()
+    .ItemsChange.connect(&BrushPopup::onBrushChanges, this);
 }
 
 void BrushPopup::setBrush(Brush* brush)
 {
-  for (auto child : m_buttons->children()) {
-    Item* item = static_cast<Item*>(child);
+  for (auto child : m_standardBrushes.children()) {
+    SelectBrushItem* item = static_cast<SelectBrushItem*>(child);
 
     // Same type and same image
     if (item->brush() &&
         item->brush()->type() == brush->type() &&
         (brush->type() != kImageBrushType ||
          item->brush()->image() == brush->image())) {
-      m_buttons->setSelectedItem(item);
-      break;
+      m_standardBrushes.setSelectedItem(item);
+      return;
     }
   }
 }
 
-void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
+void BrushPopup::regenerate(const gfx::Rect& box)
 {
-  int columns = 3;
+  const doc::Brushes& brushes = App::instance()->brushes().getCustomBrushes();
 
-  if (m_buttons) {
-    for (auto child : m_buttons->children())
-      m_tooltipManager->removeTooltipFor(child);
-    removeChild(m_buttons.get());
-    m_buttons.reset();
+  if (m_customBrushes) {
+    // As BrushPopup::regenerate() can be called when a
+    // "m_customBrushes" button is clicked we cannot delete
+    // "m_customBrushes" right now.
+    m_customBrushes->parent()->removeChild(m_customBrushes);
+    m_customBrushes->deferDelete();
   }
 
-  if (!defBrushes[0]) {
-    defBrushes[0].reset(new Brush(kCircleBrushType, 7, 0));
-    defBrushes[1].reset(new Brush(kSquareBrushType, 7, 0));
-    defBrushes[2].reset(new Brush(kLineBrushType, 7, 44));
-  }
+  m_customBrushes = new ButtonSet(3);
+  m_customBrushes->setTriggerOnMouseUp(true);
 
-  m_buttons.reset(new ButtonSet(columns));
-  m_buttons->addItem(new Item(this, m_delegate, defBrushes[0]));
-  m_buttons->addItem(new Item(this, m_delegate, defBrushes[1]));
-  m_buttons->addItem(new Item(this, m_delegate, defBrushes[2]));
-
-  int slot = 1;
+  auto& parts = SkinTheme::instance()->parts;
+  int slot = 0;
   for (const auto& brush : brushes) {
-    Item* item = new Item(this, m_delegate, brush, slot);
-    m_buttons->addItem(item);
+    ++slot;
 
-    Params params;
-    params.set("change", "custom");
-    params.set("slot", base::convert_to<std::string>(slot).c_str());
-    Key* key = KeyboardShortcuts::instance()->command(
-      CommandId::ChangeBrush, params);
-    if (key && !key->accels().empty()) {
-      std::string tooltip;
-      tooltip += "Shortcut: ";
-      tooltip += key->accels().front().toString();
-      m_tooltipManager->addTooltipFor(item, tooltip, TOP);
+    // Get shortcut
+    std::string shortcut;
+    {
+      Params params;
+      params.set("change", "custom");
+      params.set("slot", base::convert_to<std::string>(slot).c_str());
+      Key* key = KeyboardShortcuts::instance()->command(
+        CommandId::ChangeBrush, params);
+      if (key && !key->accels().empty())
+        shortcut = key->accels().front().toString();
     }
-    slot++;
+    m_customBrushes->addItem(new SelectBrushItem(m_delegate, brush, slot));
+    m_customBrushes->addItem(new BrushShortcutItem(shortcut, slot));
+    m_customBrushes->addItem(new BrushOptionsItem(this, m_delegate, slot));
   }
-  // Add empty spaces
-  while (((slot-1) % columns) > 0)
-    m_buttons->addItem(new Item(this, m_delegate, BrushRef(nullptr), slot++));
 
-  m_buttons->ItemChange.connect(base::Bind<void>(&BrushPopup::onButtonChange, this));
-  m_buttons->setTransparent(true);
-  m_buttons->setBgColor(gfx::ColorNone);
-  addChild(m_buttons.get());
+  m_customBrushes->addItem(new NewCustomBrushItem, 3, 1);
+  m_customBrushes->setExpansive(true);
+  m_box.addChild(m_customBrushes);
 
-  gfx::Rect rc = box;
-  int buttons = m_buttons->children().size();
-  int rows = (buttons/columns + ((buttons%columns) > 0 ? 1: 0));
-  rc.w *= columns;
-  rc.h = rows * (rc.h-2*guiscale()) + 2*guiscale();
-
-  setBounds(rc);
+  // Resize the window and change the hot region.
+  setBounds(gfx::Rect(box.origin(), sizeHint()));
+  setHotRegion(gfx::Region(bounds()));
 }
 
-void BrushPopup::onButtonChange()
+void BrushPopup::onBrushChanges()
 {
-  Item* item = static_cast<Item*>(m_buttons->getItem(m_buttons->selectedItem()));
-  if (item->brush())
-    BrushChange(item->brush());
+  if (isVisible()) {
+    regenerate(bounds());
+    invalidate();
+  }
 }
 
 // static

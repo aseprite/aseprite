@@ -90,6 +90,7 @@ endif()
 
 add_library(app-lib
   app.cpp
+  app_brushes.cpp
   app_menus.cpp
   app_options.cpp
   app_render.cpp

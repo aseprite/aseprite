@@ -149,9 +149,8 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
   brush->setImage(image.get());
   brush->setPatternOrigin(mask->bounds().origin());
 
-  // TODO add a active stock property in app::Context
   ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
-  int slot = ctxBar->addBrush(brush);
+  auto slot = App::instance()->brushes().addCustomBrush(brush);
   ctxBar->setActiveBrush(brush);
 
   // Get the shortcut for this brush and show it to the user
