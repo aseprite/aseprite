@@ -77,6 +77,15 @@ BrushRef AppBrushes::getCustomBrush(slot_id slot) const
     return BrushRef();
 }
 
+void AppBrushes::setCustomBrush(slot_id slot, const doc::BrushRef& brush)
+{
+  --slot;
+  if (slot >= 0 && slot < (int)m_slots.size()) {
+    m_slots[slot].setBrush(brush);
+    ItemsChange();
+  }
+}
+
 Brushes AppBrushes::getCustomBrushes()
 {
   Brushes brushes;

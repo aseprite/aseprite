@@ -121,12 +121,16 @@ private:
 
   void onClick() override {
     Menu menu;
+    AppMenuItem save("Save Brush Here");
     AppMenuItem lockItem(m_delegate->onIsBrushSlotLocked(m_slot) ? "Unlock Brush": "Lock Brush");
     AppMenuItem deleteItem("Delete");
     AppMenuItem deleteAllItem("Delete All");
+    save.Click.connect(&BrushOptionsItem::onSaveBrush, this);
     lockItem.Click.connect(&BrushOptionsItem::onLockBrush, this);
     deleteItem.Click.connect(&BrushOptionsItem::onDeleteBrush, this);
     deleteAllItem.Click.connect(&BrushOptionsItem::onDeleteAllBrushes, this);
+    menu.addChild(&save);
+    menu.addChild(new MenuSeparator);
     menu.addChild(&lockItem);
     menu.addChild(&deleteItem);
     menu.addChild(new MenuSeparator);
@@ -141,6 +145,13 @@ private:
   }
 
 private:
+
+  void onSaveBrush() {
+    AppBrushes& brushes = App::instance()->brushes();
+    brushes.setCustomBrush(
+      m_slot, ContextBar::createBrushFromPreferences());
+    brushes.lockCustomBrush(m_slot);
+  }
 
   void onLockBrush() {
     if (m_delegate->onIsBrushSlotLocked(m_slot))

@@ -32,6 +32,7 @@ namespace app {
     bool hasCustomBrush(slot_id slot) const;
     const doc::Brushes& getStandardBrushes() { return m_standard; }
     doc::BrushRef getCustomBrush(slot_id slot) const;
+    void setCustomBrush(slot_id slot, const doc::BrushRef& brush);
     doc::Brushes getCustomBrushes();
 
     void lockCustomBrush(slot_id slot);
