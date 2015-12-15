@@ -20,7 +20,7 @@ namespace ui {
     LinkLabel(const std::string& urlOrText = "");
     LinkLabel(const std::string& url, const std::string& text);
 
-    const std::string& getUrl() const { return m_url; }
+    const std::string& url() const { return m_url; }
     void setUrl(const std::string& url);
 
     base::Signal0<void> Click;
