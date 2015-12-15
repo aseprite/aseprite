@@ -19,7 +19,6 @@
 #include "app/modules/palettes.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
-#include "app/ui/context_bar.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
@@ -149,7 +148,7 @@ private:
   void onSaveBrush() {
     AppBrushes& brushes = App::instance()->brushes();
     brushes.setCustomBrush(
-      m_slot, ContextBar::createBrushFromPreferences());
+      m_slot, m_delegate->onCreateBrushFromActivePreferences());
     brushes.lockCustomBrush(m_slot);
   }
 
@@ -176,7 +175,8 @@ private:
 
 class NewCustomBrushItem : public ButtonSet::Item {
 public:
-  NewCustomBrushItem() {
+  NewCustomBrushItem(BrushPopupDelegate* delegate)
+    : m_delegate(delegate) {
     setText("Save Brush");
   }
 
@@ -184,9 +184,11 @@ private:
   void onClick() override {
     AppBrushes& brushes = App::instance()->brushes();
     auto slot = brushes.addCustomBrush(
-      ContextBar::createBrushFromPreferences());
+      m_delegate->onCreateBrushFromActivePreferences());
     brushes.lockCustomBrush(slot);
   }
+
+  BrushPopupDelegate* m_delegate;
 };
 
 } // anonymous namespace

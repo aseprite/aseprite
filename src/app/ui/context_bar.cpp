@@ -123,6 +123,10 @@ protected:
   }
 
   // BrushPopupDelegate impl
+  BrushRef onCreateBrushFromActivePreferences() {
+    return ContextBar::createBrushFromPreferences();
+  }
+
   void onSelectBrush(const BrushRef& brush) {
     if (brush->type() == kImageBrushType)
       m_owner->setActiveBrush(brush);
