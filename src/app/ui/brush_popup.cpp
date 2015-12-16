@@ -138,9 +138,17 @@ private:
     // Here we make the popup window temporaly floating, so it's
     // not closed by the popup menu.
     m_popup->makeFloating();
+
     menu.showPopup(gfx::Point(origin().x, origin().y+bounds().h));
+
+    // Add the menu popup region to the hot region so the BrushPopup (m_popup)
+    // isn't closed after we click the menu popup.
     m_popup->makeFixed();
-    m_popup->closeWindow(nullptr);
+
+    gfx::Region rgn;
+    rgn.createUnion(gfx::Region(m_popup->bounds()),
+                    gfx::Region(menu.bounds()));
+    m_popup->setHotRegion(rgn);
   }
 
 private:
