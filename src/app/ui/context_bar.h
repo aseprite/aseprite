@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/pref/preferences.h"
+#include "app/shade.h"
 #include "app/tools/ink_type.h"
 #include "app/tools/selection_mode.h"
 #include "app/ui/context_bar_observer.h"
@@ -61,6 +62,7 @@ namespace app {
 
     doc::Remap* createShadeRemap(bool left);
     void reverseShadeColors();
+    Shade getShade() const;
 
     void setInkType(tools::InkType type);
 

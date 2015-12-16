@@ -22,27 +22,27 @@ AppBrushes::AppBrushes()
   m_standard.push_back(BrushRef(new Brush(kLineBrushType, 7, 44)));
 }
 
-AppBrushes::slot_id AppBrushes::addCustomBrush(const BrushRef& brush)
+AppBrushes::slot_id AppBrushes::addBrushSlot(const BrushSlot& brush)
 {
   // Use an empty slot
   for (size_t i=0; i<m_slots.size(); ++i) {
     if (!m_slots[i].locked() ||
         !m_slots[i].brush()) {
-      m_slots[i].setBrush(brush);
+      m_slots[i] = brush;
       return i+1;
     }
   }
 
-  m_slots.push_back(BrushSlot(brush));
+  m_slots.push_back(brush);
   ItemsChange();
-  return (int)m_slots.size(); // Returns the slot
+  return slot_id(m_slots.size()); // Returns the slot
 }
 
-void AppBrushes::removeCustomBrush(slot_id slot)
+void AppBrushes::removeBrushSlot(slot_id slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size()) {
-    m_slots[slot].setBrush(BrushRef(nullptr));
+    m_slots[slot] = BrushSlot();
 
     // Erase empty trailing slots
     while (!m_slots.empty() &&
@@ -53,7 +53,7 @@ void AppBrushes::removeCustomBrush(slot_id slot)
   }
 }
 
-void AppBrushes::removeAllCustomBrushes()
+void AppBrushes::removeAllBrushSlots()
 {
   while (!m_slots.empty())
     m_slots.erase(--m_slots.end());
@@ -61,40 +61,32 @@ void AppBrushes::removeAllCustomBrushes()
   ItemsChange();
 }
 
-bool AppBrushes::hasCustomBrush(slot_id slot) const
+bool AppBrushes::hasBrushSlot(slot_id slot) const
 {
   --slot;
   return (slot >= 0 && slot < (int)m_slots.size() &&
-          m_slots[slot].brush());
+          !m_slots[slot].isEmpty());
 }
 
-BrushRef AppBrushes::getCustomBrush(slot_id slot) const
+BrushSlot AppBrushes::getBrushSlot(slot_id slot) const
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size())
-    return m_slots[slot].brush();
+    return m_slots[slot];
   else
-    return BrushRef();
+    return BrushSlot();
 }
 
-void AppBrushes::setCustomBrush(slot_id slot, const doc::BrushRef& brush)
+void AppBrushes::setBrushSlot(slot_id slot, const BrushSlot& brush)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size()) {
-    m_slots[slot].setBrush(brush);
+    m_slots[slot] = brush;
     ItemsChange();
   }
 }
 
-Brushes AppBrushes::getCustomBrushes()
-{
-  Brushes brushes;
-  for (const auto& slot : m_slots)
-    brushes.push_back(slot.brush());
-  return brushes;
-}
-
-void AppBrushes::lockCustomBrush(slot_id slot)
+void AppBrushes::lockBrushSlot(slot_id slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size() &&
@@ -103,7 +95,7 @@ void AppBrushes::lockCustomBrush(slot_id slot)
   }
 }
 
-void AppBrushes::unlockCustomBrush(slot_id slot)
+void AppBrushes::unlockBrushSlot(slot_id slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size() &&
@@ -112,11 +104,11 @@ void AppBrushes::unlockCustomBrush(slot_id slot)
   }
 }
 
-bool AppBrushes::isCustomBrushLocked(slot_id slot) const
+bool AppBrushes::isBrushSlotLocked(slot_id slot) const
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size() &&
-      m_slots[slot].brush()) {
+      !m_slots[slot].isEmpty()) {
     return m_slots[slot].locked();
   }
   else

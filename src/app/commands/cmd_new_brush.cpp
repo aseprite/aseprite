@@ -150,7 +150,8 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
   brush->setPatternOrigin(mask->bounds().origin());
 
   ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
-  auto slot = App::instance()->brushes().addCustomBrush(brush);
+  int slot = App::instance()->brushes().addBrushSlot(
+    BrushSlot(BrushSlot::Flags::BrushType, brush));
   ctxBar->setActiveBrush(brush);
 
   // Get the shortcut for this brush and show it to the user

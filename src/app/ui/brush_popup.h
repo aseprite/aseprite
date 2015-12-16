@@ -18,10 +18,12 @@
 
 namespace app {
 
+  class BrushSlot;
+
   class BrushPopupDelegate {
   public:
     virtual ~BrushPopupDelegate() { }
-    virtual doc::BrushRef onCreateBrushFromActivePreferences() = 0;
+    virtual BrushSlot onCreateBrushSlotFromActivePreferences() = 0;
     virtual void onSelectBrush(const doc::BrushRef& brush) = 0;
     virtual void onSelectBrushSlot(int slot) = 0;
     virtual void onDeleteBrushSlot(int slot) = 0;

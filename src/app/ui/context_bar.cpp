@@ -123,11 +123,34 @@ protected:
   }
 
   // BrushPopupDelegate impl
-  BrushRef onCreateBrushFromActivePreferences() {
-    return ContextBar::createBrushFromPreferences();
+  BrushSlot onCreateBrushSlotFromActivePreferences() override {
+    auto& pref = Preferences::instance();
+    auto& saveBrush = pref.saveBrush;
+    auto& toolPref = pref.tool(App::instance()->activeTool());
+
+    int flags = 0;
+    if (saveBrush.brushType()) flags |= int(BrushSlot::Flags::BrushType);
+    if (saveBrush.brushSize()) flags |= int(BrushSlot::Flags::BrushSize);
+    if (saveBrush.brushAngle()) flags |= int(BrushSlot::Flags::BrushAngle);
+    if (saveBrush.fgColor()) flags |= int(BrushSlot::Flags::FgColor);
+    if (saveBrush.bgColor()) flags |= int(BrushSlot::Flags::BgColor);
+    if (saveBrush.inkType()) flags |= int(BrushSlot::Flags::InkType);
+    if (saveBrush.inkOpacity()) flags |= int(BrushSlot::Flags::InkOpacity);
+    if (saveBrush.shade()) flags |= int(BrushSlot::Flags::Shade);
+    if (saveBrush.pixelPerfect()) flags |= int(BrushSlot::Flags::PixelPerfect);
+
+    return BrushSlot(
+      BrushSlot::Flags(flags),
+      ContextBar::createBrushFromPreferences(),
+      pref.colorBar.fgColor(),
+      pref.colorBar.bgColor(),
+      toolPref.ink(),
+      toolPref.opacity(),
+      m_owner->getShade(),
+      toolPref.freehandAlgorithm() == tools::FreehandAlgorithm::PIXEL_PERFECT);
   }
 
-  void onSelectBrush(const BrushRef& brush) {
+  void onSelectBrush(const BrushRef& brush) override {
     if (brush->type() == kImageBrushType)
       m_owner->setActiveBrush(brush);
     else {
@@ -141,41 +164,28 @@ protected:
     }
   }
 
-  void onSelectBrushSlot(int slot) {
-    doc::BrushRef brush = App::instance()->brushes().getCustomBrush(slot);
-
-    // Is this an empty custom brush slot?
-    if (!brush)
-      return;
-
-    Tool* tool = App::instance()->activeTool();
-    ToolPreferences::Brush& brushPref = Preferences::instance().tool(tool).brush;
-
-    brushPref.type(static_cast<app::gen::BrushType>(brush->type()));
-    brushPref.size(brush->size());
-    brushPref.angle(brush->angle());
-
-    m_owner->setActiveBrush(brush);
+  void onSelectBrushSlot(int slot) override {
+    m_owner->setActiveBrushBySlot(slot);
   }
 
   void onDeleteBrushSlot(int slot) override {
-    m_brushes.removeCustomBrush(slot);
+    m_brushes.removeBrushSlot(slot);
   }
 
   void onDeleteAllBrushes() override {
-    m_brushes.removeAllCustomBrushes();
+    m_brushes.removeAllBrushSlots();
   }
 
   bool onIsBrushSlotLocked(int slot) const override {
-    return m_brushes.isCustomBrushLocked(slot);
+    return m_brushes.isBrushSlotLocked(slot);
   }
 
   void onLockBrushSlot(int slot) override {
-    m_brushes.lockCustomBrush(slot);
+    m_brushes.lockBrushSlot(slot);
   }
 
   void onUnlockBrushSlot(int slot) override {
-    m_brushes.unlockCustomBrush(slot);
+    m_brushes.unlockBrushSlot(slot);
   }
 
 private:
@@ -721,6 +731,14 @@ public:
 
   doc::Remap* createShadeRemap(bool left) {
     return m_shade.createShadeRemap(left);
+  }
+
+  Shade getShade() const {
+    return m_shade.getShade();
+  }
+
+  void setShade(const Shade& shade) {
+    m_shade.setShade(shade);
   }
 
 private:
@@ -1663,10 +1681,53 @@ void ContextBar::updateAutoSelectLayer(bool state)
 void ContextBar::setActiveBrushBySlot(int slot)
 {
   AppBrushes& brushes = App::instance()->brushes();
+  BrushSlot brush = brushes.getBrushSlot(slot);
+  if (!brush.isEmpty()) {
+    brushes.lockBrushSlot(slot);
 
-  if (brushes.hasCustomBrush(slot)) {
-    brushes.lockCustomBrush(slot);
-    setActiveBrush(brushes.getCustomBrush(slot));
+    Tool* tool = App::instance()->activeTool();
+    Preferences& pref = Preferences::instance();
+    ToolPreferences& toolPref = pref.tool(tool);
+    ToolPreferences::Brush& brushPref = toolPref.brush;
+
+    if (brush.brush()) {
+      if (brush.brush()->type() == doc::kImageBrushType) {
+        setActiveBrush(brush.brush());
+      }
+      else {
+        setActiveBrush(ContextBar::createBrushFromPreferences());
+
+        if (brush.hasFlag(BrushSlot::Flags::BrushType))
+          brushPref.type(static_cast<app::gen::BrushType>(brush.brush()->type()));
+
+        if (brush.hasFlag(BrushSlot::Flags::BrushSize))
+          brushPref.size(brush.brush()->size());
+
+        if (brush.hasFlag(BrushSlot::Flags::BrushAngle))
+          brushPref.angle(brush.brush()->angle());
+      }
+    }
+
+    if (brush.hasFlag(BrushSlot::Flags::FgColor))
+      pref.colorBar.fgColor(brush.fgColor());
+
+    if (brush.hasFlag(BrushSlot::Flags::BgColor))
+      pref.colorBar.bgColor(brush.bgColor());
+
+    if (brush.hasFlag(BrushSlot::Flags::InkType))
+      setInkType(brush.inkType());
+
+    if (brush.hasFlag(BrushSlot::Flags::InkOpacity))
+      toolPref.opacity(brush.inkOpacity());
+
+    if (brush.hasFlag(BrushSlot::Flags::Shade))
+      m_inkShades->setShade(brush.shade());
+
+    if (brush.hasFlag(BrushSlot::Flags::PixelPerfect))
+      toolPref.freehandAlgorithm(
+        (brush.pixelPerfect() ?
+         tools::FreehandAlgorithm::PIXEL_PERFECT:
+         tools::FreehandAlgorithm::REGULAR));
   }
   else {
     updateForTool(App::instance()->activeTool());
@@ -1715,6 +1776,11 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
       brushPref->size(),
       brushPref->angle()));
   return brush;
+}
+
+Shade ContextBar::getShade() const
+{
+  return m_inkShades->getShade();
 }
 
 doc::Remap* ContextBar::createShadeRemap(bool left)

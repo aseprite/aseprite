@@ -128,6 +128,17 @@
     <section id="brush">
       <option id="pattern" type="doc::BrushPattern" default="doc::BrushPattern::DEFAULT" />
     </section>
+    <section id="save_brush">
+      <option id="brush_type" type="bool" default="true" />
+      <option id="brush_size" type="bool" default="true" />
+      <option id="brush_angle" type="bool" default="true" />
+      <option id="fg_color" type="bool" default="false" />
+      <option id="bg_color" type="bool" default="false" />
+      <option id="ink_type" type="bool" default="true" />
+      <option id="ink_opacity" type="bool" default="true" />
+      <option id="shade" type="bool" default="true" />
+      <option id="pixel_perfect" type="bool" default="false" />
+    </section>
     <section id="selection">
       <option id="mode" type="app::tools::SelectionMode" default="app::tools::SelectionMode::DEFAULT" />
       <option id="pivot_visibility" type="bool" default="false" />

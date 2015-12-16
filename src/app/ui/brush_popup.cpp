@@ -13,10 +13,12 @@
 
 #include "app/app.h"
 #include "app/app_brushes.h"
+#include "app/brush_slot.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
 #include "app/ui/keyboard_shortcuts.h"
@@ -69,16 +71,18 @@ void show_popup_menu(PopupWindow* popupWindow, Menu* popupMenu,
 
 class SelectBrushItem : public ButtonSet::Item {
 public:
-  SelectBrushItem(BrushPopupDelegate* delegate, const BrushRef& brush, int slot = -1)
+  SelectBrushItem(BrushPopupDelegate* delegate, const BrushSlot& brush, int slot = -1)
     : m_delegate(delegate)
     , m_brush(brush)
     , m_slot(slot) {
-    SkinPartPtr icon(new SkinPart);
-    icon->setBitmap(0, BrushPopup::createSurfaceForBrush(brush));
-    setIcon(icon);
+    if (m_brush.hasBrush()) {
+      SkinPartPtr icon(new SkinPart);
+      icon->setBitmap(0, BrushPopup::createSurfaceForBrush(m_brush.brush()));
+      setIcon(icon);
+    }
   }
 
-  const BrushRef& brush() const {
+  const BrushSlot& brush() const {
     return m_brush;
   }
 
@@ -87,14 +91,14 @@ private:
   void onClick() override {
     if (m_slot >= 0)
       m_delegate->onSelectBrushSlot(m_slot);
-    else
-      m_delegate->onSelectBrush(m_brush);
+    else if (m_brush.hasBrush())
+      m_delegate->onSelectBrush(m_brush.brush());
   }
 
 private:
 
   BrushPopupDelegate* m_delegate;
-  BrushRef m_brush;
+  BrushSlot m_brush;
   int m_slot;
 };
 
@@ -162,9 +166,9 @@ private:
 
   void onSaveBrush() {
     AppBrushes& brushes = App::instance()->brushes();
-    brushes.setCustomBrush(
-      m_slot, m_delegate->onCreateBrushFromActivePreferences());
-    brushes.lockCustomBrush(m_slot);
+    brushes.setBrushSlot(
+      m_slot, m_delegate->onCreateBrushSlotFromActivePreferences());
+    brushes.lockBrushSlot(m_slot);
   }
 
   void onLockBrush() {
@@ -198,12 +202,93 @@ public:
 private:
   void onClick() override {
     AppBrushes& brushes = App::instance()->brushes();
-    auto slot = brushes.addCustomBrush(
-      m_delegate->onCreateBrushFromActivePreferences());
-    brushes.lockCustomBrush(slot);
+    auto slot = brushes.addBrushSlot(
+      m_delegate->onCreateBrushSlotFromActivePreferences());
+    brushes.lockBrushSlot(slot);
   }
 
   BrushPopupDelegate* m_delegate;
+};
+
+class NewBrushOptionsItem : public ButtonSet::Item {
+public:
+  NewBrushOptionsItem() {
+    setIcon(SkinTheme::instance()->parts.iconArrowDown(), true);
+  }
+
+private:
+  void onClick() override {
+    Menu menu;
+
+    menu.addChild(new Separator("Parameters to Save", HORIZONTAL));
+
+    Grid* grid = new Grid(2, false);
+    ButtonSet* brushParams = new ButtonSet(3);
+    ButtonSet::Item* brushType = brushParams->addItem("Type");
+    ButtonSet::Item* brushSize = brushParams->addItem("Size");
+    ButtonSet::Item* brushAngle = brushParams->addItem("Angle");
+    brushParams->setMultipleSelection(true);
+
+    ButtonSet* colorParams = new ButtonSet(2);
+    ButtonSet::Item* fgColor = colorParams->addItem("Foreground");
+    ButtonSet::Item* bgColor = colorParams->addItem("Background");
+    colorParams->setMultipleSelection(true);
+
+    ButtonSet* inkParams = new ButtonSet(2);
+    ButtonSet::Item* inkType = inkParams->addItem("Type");
+    ButtonSet::Item* inkOpacity = inkParams->addItem("Opacity");
+    inkParams->setMultipleSelection(true);
+
+    ButtonSet* extrasParams = new ButtonSet(2);
+    ButtonSet::Item* shade = extrasParams->addItem("Shade");
+    ButtonSet::Item* pixelPerfect = extrasParams->addItem("Pixel-Perfect");
+    extrasParams->setMultipleSelection(true);
+
+    grid->addChildInCell(new Label("Brush:"), 1, 1, 0);
+    grid->addChildInCell(brushParams, 1, 1, 0);
+    grid->addChildInCell(new Label("Color:"), 1, 1, 0);
+    grid->addChildInCell(colorParams, 1, 1, 0);
+    grid->addChildInCell(new Label("Ink:"), 1, 1, 0);
+    grid->addChildInCell(inkParams, 1, 1, 0);
+    grid->addChildInCell(new Label("Extras:"), 1, 1, 0);
+    grid->addChildInCell(extrasParams, 1, 1, 0);
+    menu.addChild(grid);
+
+    // Load preferences
+    auto& saveBrush = Preferences::instance().saveBrush;
+    brushType->setSelected(saveBrush.brushType());
+    brushSize->setSelected(saveBrush.brushSize());
+    brushAngle->setSelected(saveBrush.brushAngle());
+    fgColor->setSelected(saveBrush.fgColor());
+    bgColor->setSelected(saveBrush.bgColor());
+    inkType->setSelected(saveBrush.inkType());
+    inkOpacity->setSelected(saveBrush.inkOpacity());
+    shade->setSelected(saveBrush.shade());
+    pixelPerfect->setSelected(saveBrush.pixelPerfect());
+
+    show_popup_menu(static_cast<PopupWindow*>(window()), &menu,
+                    gfx::Point(origin().x, origin().y+bounds().h));
+
+    // Save preferences
+    if (saveBrush.brushType() != brushType->isSelected())
+      saveBrush.brushType(brushType->isSelected());
+    if (saveBrush.brushSize() != brushSize->isSelected())
+      saveBrush.brushSize(brushSize->isSelected());
+    if (saveBrush.brushAngle() != brushAngle->isSelected())
+      saveBrush.brushAngle(brushAngle->isSelected());
+    if (saveBrush.fgColor() != fgColor->isSelected())
+      saveBrush.fgColor(fgColor->isSelected());
+    if (saveBrush.bgColor() != bgColor->isSelected())
+      saveBrush.bgColor(bgColor->isSelected());
+    if (saveBrush.inkType() != inkType->isSelected())
+      saveBrush.inkType(inkType->isSelected());
+    if (saveBrush.inkOpacity() != inkOpacity->isSelected())
+      saveBrush.inkOpacity(inkOpacity->isSelected());
+    if (saveBrush.shade() != shade->isSelected())
+      saveBrush.shade(shade->isSelected());
+    if (saveBrush.pixelPerfect() != pixelPerfect->isSelected())
+      saveBrush.pixelPerfect(pixelPerfect->isSelected());
+  }
 };
 
 } // anonymous namespace
@@ -232,7 +317,9 @@ BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
 
   const doc::Brushes& brushes = App::instance()->brushes().getStandardBrushes();
   for (const auto& brush : brushes)
-    m_standardBrushes.addItem(new SelectBrushItem(m_delegate, brush));
+    m_standardBrushes.addItem(
+      new SelectBrushItem(
+        m_delegate, BrushSlot(BrushSlot::Flags::BrushType, brush)));
 
   m_standardBrushes.setTransparent(true);
   m_standardBrushes.setBgColor(gfx::ColorNone);
@@ -247,10 +334,10 @@ void BrushPopup::setBrush(Brush* brush)
     SelectBrushItem* item = static_cast<SelectBrushItem*>(child);
 
     // Same type and same image
-    if (item->brush() &&
-        item->brush()->type() == brush->type() &&
+    if (item->brush().hasBrush() &&
+        item->brush().brush()->type() == brush->type() &&
         (brush->type() != kImageBrushType ||
-         item->brush()->image() == brush->image())) {
+         item->brush().brush()->image() == brush->image())) {
       m_standardBrushes.setSelectedItem(item);
       return;
     }
@@ -259,7 +346,7 @@ void BrushPopup::setBrush(Brush* brush)
 
 void BrushPopup::regenerate(const gfx::Rect& box)
 {
-  const doc::Brushes& brushes = App::instance()->brushes().getCustomBrushes();
+  auto& brushSlots = App::instance()->brushes().getBrushSlots();
 
   if (m_customBrushes) {
     // As BrushPopup::regenerate() can be called when a
@@ -274,7 +361,7 @@ void BrushPopup::regenerate(const gfx::Rect& box)
 
   auto& parts = SkinTheme::instance()->parts;
   int slot = 0;
-  for (const auto& brush : brushes) {
+  for (const auto& brush : brushSlots) {
     ++slot;
 
     // Get shortcut
@@ -293,7 +380,8 @@ void BrushPopup::regenerate(const gfx::Rect& box)
     m_customBrushes->addItem(new BrushOptionsItem(this, m_delegate, slot));
   }
 
-  m_customBrushes->addItem(new NewCustomBrushItem(m_delegate), 3, 1);
+  m_customBrushes->addItem(new NewCustomBrushItem(m_delegate), 2, 1);
+  m_customBrushes->addItem(new NewBrushOptionsItem);
   m_customBrushes->setExpansive(true);
   m_box.addChild(m_customBrushes);
 
