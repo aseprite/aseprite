@@ -22,15 +22,18 @@ namespace app {
     class Item : public ui::Widget {
     public:
       Item();
-      void setIcon(const skin::SkinPartPtr& icon);
+      void setIcon(const skin::SkinPartPtr& icon, bool mono = false);
       skin::SkinPartPtr icon() const { return m_icon; }
       ButtonSet* buttonSet();
     protected:
       void onPaint(ui::PaintEvent& ev) override;
       bool onProcessMessage(ui::Message* msg) override;
       void onSizeHint(ui::SizeHintEvent& ev) override;
+      virtual void onClick();
+      virtual void onRightClick();
     private:
       skin::SkinPartPtr m_icon;
+      bool m_mono;
     };
 
     ButtonSet(int columns);

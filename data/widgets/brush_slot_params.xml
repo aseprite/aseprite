@@ -1,0 +1,34 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2015 by David Capello -->
+<gui>
+  <vbox id="brush_slot_params">
+    <grid columns="2">
+
+      <label text="Brush:" />
+      <buttonset id="brush_params" columns="3" multiple="true">
+        <item id="brush_type" text="Type" />
+        <item id="brush_size" text="Size" />
+        <item id="brush_angle" text="Angle" />
+      </buttonset>
+
+      <label text="Color:" />
+      <buttonset id="color_params" columns="2" multiple="true">
+        <item id="fg_color" text="Foreground" />
+        <item id="bg_color" text="Background" />
+      </buttonset>
+
+      <label text="Ink:" />
+      <buttonset id="ink_params" columns="2" multiple="true">
+        <item id="ink_type" text="Type" />
+        <item id="ink_opacity" text="Opacity" />
+      </buttonset>
+
+      <label text="Extras:" />
+      <buttonset id="extra_params" columns="2" multiple="true">
+        <item id="shade" text="Shade" />
+        <item id="pixel_perfect" text="Pixel-Perfect" />
+      </buttonset>
+
+    </grid>
+  </vbox>
+</gui>

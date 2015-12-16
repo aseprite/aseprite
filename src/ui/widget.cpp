@@ -1236,7 +1236,7 @@ void Widget::releaseMouse()
   }
 }
 
-void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
+bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 {
   if (hasCapture()) {
     Widget* pick = manager()->pick(mouseMsg->position());
@@ -1250,8 +1250,10 @@ void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
         mouseMsg->position());
       mouseMsg2->addRecipient(pick);
       manager()->enqueueMessage(mouseMsg2);
+      return true;
     }
   }
+  return false;
 }
 
 bool Widget::hasFocus()

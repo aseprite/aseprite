@@ -9,26 +9,23 @@
 #define APP_UI_BRUSH_POPUP_H_INCLUDED
 #pragma once
 
+#include "app/ui/button_set.h"
 #include "base/shared_ptr.h"
-#include "base/signal.h"
 #include "doc/brushes.h"
+#include "ui/box.h"
 #include "ui/popup_window.h"
-
-namespace doc {
-  class Brush;
-}
-
-namespace ui {
-  class Menu;
-  class TooltipManager;
-}
+#include "ui/tooltips.h"
 
 namespace app {
-  class ButtonSet;
+
+  class BrushSlot;
 
   class BrushPopupDelegate {
   public:
     virtual ~BrushPopupDelegate() { }
+    virtual BrushSlot onCreateBrushSlotFromActivePreferences() = 0;
+    virtual void onSelectBrush(const doc::BrushRef& brush) = 0;
+    virtual void onSelectBrushSlot(int slot) = 0;
     virtual void onDeleteBrushSlot(int slot) = 0;
     virtual void onDeleteAllBrushes() = 0;
     virtual bool onIsBrushSlotLocked(int slot) const = 0;
@@ -41,21 +38,22 @@ namespace app {
     BrushPopup(BrushPopupDelegate* delegate);
 
     void setBrush(doc::Brush* brush);
-    void regenerate(const gfx::Rect& box, const doc::Brushes& brushes);
+    void regenerate(const gfx::Rect& box);
 
     void setupTooltips(ui::TooltipManager* tooltipManager) {
       m_tooltipManager = tooltipManager;
     }
 
-    base::Signal1<void, const doc::BrushRef&> BrushChange;
-
     static she::Surface* createSurfaceForBrush(const doc::BrushRef& brush);
 
   private:
-    void onButtonChange();
+    void onStandardBrush();
+    void onBrushChanges();
 
-    base::SharedPtr<ButtonSet> m_buttons;
     ui::TooltipManager* m_tooltipManager;
+    ui::VBox m_box;
+    ButtonSet m_standardBrushes;
+    ButtonSet* m_customBrushes;
     BrushPopupDelegate* m_delegate;
   };
 

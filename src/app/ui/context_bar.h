@@ -10,13 +10,13 @@
 #pragma once
 
 #include "app/pref/preferences.h"
+#include "app/shade.h"
 #include "app/tools/ink_type.h"
 #include "app/tools/selection_mode.h"
 #include "app/ui/context_bar_observer.h"
 #include "base/connection.h"
 #include "base/observable.h"
 #include "doc/brush.h"
-#include "doc/brushes.h"
 #include "ui/box.h"
 
 #include <vector>
@@ -53,26 +53,16 @@ namespace app {
     void updateAutoSelectLayer(bool state);
 
     void setActiveBrush(const doc::BrushRef& brush);
+    void setActiveBrushBySlot(int slot);
     doc::BrushRef activeBrush(tools::Tool* tool = nullptr) const;
     void discardActiveBrush();
-
-    // Adds a new brush and returns the slot number where the brush
-    // is now available.
-    int addBrush(const doc::BrushRef& brush);
-    void removeBrush(int slot);
-    void removeAllBrushes();
-    void setActiveBrushBySlot(int slot);
-    doc::Brushes getBrushes();
-
-    void lockBrushSlot(int slot);
-    void unlockBrushSlot(int slot);
-    bool isBrushSlotLocked(int slot) const;
 
     static doc::BrushRef createBrushFromPreferences(
       ToolPreferences::Brush* brushPref = nullptr);
 
     doc::Remap* createShadeRemap(bool left);
     void reverseShadeColors();
+    Shade getShade() const;
 
     void setInkType(tools::InkType type);
 
@@ -90,21 +80,6 @@ namespace app {
     void onCurrentToolChange();
     void onSymmetryModeChange();
     void onDropPixels(ContextBarObserver::DropAction action);
-
-    struct BrushSlot {
-      // True if the user locked the brush using the shortcut key to
-      // access it.
-      bool locked;
-
-      // Can be null if the user deletes the brush.
-      doc::BrushRef brush;
-
-      BrushSlot(const doc::BrushRef& brush)
-        : locked(false), brush(brush) {
-      }
-    };
-
-    typedef std::vector<BrushSlot> BrushSlots;
 
     class BrushTypeField;
     class BrushAngleField;
@@ -155,7 +130,6 @@ namespace app {
     RotAlgorithmField* m_rotAlgo;
     DropPixelsField* m_dropPixels;
     doc::BrushRef m_activeBrush;
-    BrushSlots m_brushes;
     ui::Label* m_selectBoxHelp;
     SymmetryField* m_symmetry;
     base::ScopedConnection m_sizeConn;

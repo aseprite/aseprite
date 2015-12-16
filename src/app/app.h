@@ -9,6 +9,7 @@
 #define APP_APP_H_INCLUDED
 #pragma once
 
+#include "app/app_brushes.h"
 #include "base/signal.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
@@ -69,6 +70,7 @@ namespace app {
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
     Preferences& preferences() const;
+    AppBrushes& brushes() { return m_brushes; }
 
     void showNotification(INotificationDelegate* del);
     void updateDisplayTitleBar();
@@ -95,6 +97,7 @@ namespace app {
     base::UniquePtr<MainWindow> m_mainWindow;
     FileList m_files;
     base::UniquePtr<DocumentExporter> m_exporter;
+    AppBrushes m_brushes;
   };
 
   void app_refresh_screen();

@@ -33,6 +33,10 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
+// Last selected item for ButtonSet activated on mouse up when the
+// mouse capture is get.
+static int g_itemBeforeCapture = -1;
+
 WidgetType buttonset_item_type()
 {
   static WidgetType type = kGenericWidget;
@@ -50,9 +54,10 @@ ButtonSet::Item::Item()
   setFocusStop(true);
 }
 
-void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
+void ButtonSet::Item::setIcon(const SkinPartPtr& icon, bool mono)
 {
   m_icon = icon;
+  m_mono = mono;
   invalidate();
 }
 
@@ -123,11 +128,16 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   theme->drawRect(g, rc, nw.get(), bg);
 
   if (m_icon) {
+    she::Surface* bmp = m_icon->bitmap(0);
+
     if (isSelected() && hasCapture())
-      g->drawColoredRgbaSurface(m_icon->bitmap(0), theme->colors.buttonSelectedText(),
+      g->drawColoredRgbaSurface(bmp, theme->colors.buttonSelectedText(),
+                                iconRc.x, iconRc.y);
+    else if (m_mono)
+      g->drawColoredRgbaSurface(bmp, theme->colors.buttonNormalText(),
                                 iconRc.x, iconRc.y);
     else
-      g->drawRgbaSurface(m_icon->bitmap(0), iconRc.x, iconRc.y);
+      g->drawRgbaSurface(bmp, iconRc.x, iconRc.y);
   }
 
   if (hasText()) {
@@ -160,41 +170,64 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         if (mnemonicPressed ||
             (hasFocus() && keymsg->scancode() == kKeySpace)) {
           buttonSet()->setSelectedItem(this);
-          buttonSet()->onItemChange(this);
+          onClick();
         }
       }
       break;
 
     case ui::kMouseDownMessage:
+      // Only for single-item and trigerred on mouse up ButtonSets: We
+      // save the current selected item to restore it just in case the
+      // user leaves the ButtonSet without releasing the mouse button
+      // and the mouse capture if offered to other ButtonSet.
+      if (buttonSet()->m_triggerOnMouseUp) {
+        ASSERT(g_itemBeforeCapture < 0);
+        g_itemBeforeCapture = buttonSet()->selectedItem();
+      }
+
       captureMouse();
       buttonSet()->setSelectedItem(this);
       invalidate();
 
       if (static_cast<MouseMessage*>(msg)->left() &&
           !buttonSet()->m_triggerOnMouseUp) {
-        buttonSet()->onItemChange(this);
+        onClick();
       }
       break;
 
     case ui::kMouseUpMessage:
       if (hasCapture()) {
+        if (g_itemBeforeCapture >= 0)
+          g_itemBeforeCapture = -1;
+
         releaseMouse();
         invalidate();
 
         if (static_cast<MouseMessage*>(msg)->left()) {
           if (buttonSet()->m_triggerOnMouseUp)
-            buttonSet()->onItemChange(this);
+            onClick();
         }
         else if (static_cast<MouseMessage*>(msg)->right()) {
-          buttonSet()->onRightClick(this);
+          onRightClick();
         }
       }
       break;
 
     case ui::kMouseMoveMessage:
       if (hasCapture()) {
-        if (buttonSet()->m_offerCapture)
-          offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type());
+        if (buttonSet()->m_offerCapture) {
+          if (offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type())) {
+            // Only for ButtonSets trigerred on mouse up.
+            if (buttonSet()->m_triggerOnMouseUp &&
+                g_itemBeforeCapture >= 0) {
+              // As we never received a kMouseUpMessage (so we never
+              // called onClick()), we have to restore the selected
+              // item at the point when we received the mouse capture.
+              buttonSet()->setSelectedItem(g_itemBeforeCapture);
+              g_itemBeforeCapture = -1;
+            }
+          }
+        }
       }
       break;
 
@@ -230,6 +263,16 @@ void ButtonSet::Item::onSizeHint(ui::SizeHintEvent& ev)
     sz.h += 3*guiscale();
 
   ev.setSizeHint(sz);
+}
+
+void ButtonSet::Item::onClick()
+{
+  buttonSet()->onItemChange(this);
+}
+
+void ButtonSet::Item::onRightClick()
+{
+  buttonSet()->onRightClick(this);
 }
 
 ButtonSet::ButtonSet(int columns)
