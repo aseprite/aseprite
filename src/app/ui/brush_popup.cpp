@@ -42,6 +42,8 @@
 #include "ui/message.h"
 #include "ui/separator.h"
 
+#include "brush_slot_params.xml.h"
+
 namespace app {
 
 using namespace app::skin;
@@ -144,22 +146,61 @@ private:
   void onClick() override {
     Menu menu;
     AppMenuItem save("Save Brush Here");
-    AppMenuItem lockItem(m_delegate->onIsBrushSlotLocked(m_slot) ? "Unlock Brush": "Lock Brush");
+    AppMenuItem lockItem("Locked");
     AppMenuItem deleteItem("Delete");
     AppMenuItem deleteAllItem("Delete All");
+
+    lockItem.setSelected(m_delegate->onIsBrushSlotLocked(m_slot));
+
     save.Click.connect(&BrushOptionsItem::onSaveBrush, this);
     lockItem.Click.connect(&BrushOptionsItem::onLockBrush, this);
     deleteItem.Click.connect(&BrushOptionsItem::onDeleteBrush, this);
     deleteAllItem.Click.connect(&BrushOptionsItem::onDeleteAllBrushes, this);
+
     menu.addChild(&save);
     menu.addChild(new MenuSeparator);
     menu.addChild(&lockItem);
     menu.addChild(&deleteItem);
     menu.addChild(new MenuSeparator);
     menu.addChild(&deleteAllItem);
+    menu.addChild(new Label(""));
+    menu.addChild(new Separator("Saved Parameters", HORIZONTAL));
+
+    app::gen::BrushSlotParams params;
+    menu.addChild(&params);
+
+    // Load preferences
+    AppBrushes& brushes = App::instance()->brushes();
+    BrushSlot brush = brushes.getBrushSlot(m_slot);
+
+    params.brushType()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushType));
+    params.brushSize()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushSize));
+    params.brushAngle()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushAngle));
+    params.fgColor()->setSelected(brush.hasFlag(BrushSlot::Flags::FgColor));
+    params.bgColor()->setSelected(brush.hasFlag(BrushSlot::Flags::BgColor));
+    params.inkType()->setSelected(brush.hasFlag(BrushSlot::Flags::InkType));
+    params.inkOpacity()->setSelected(brush.hasFlag(BrushSlot::Flags::InkOpacity));
+    params.shade()->setSelected(brush.hasFlag(BrushSlot::Flags::Shade));
+    params.pixelPerfect()->setSelected(brush.hasFlag(BrushSlot::Flags::PixelPerfect));
 
     show_popup_menu(m_popup, &menu,
                     gfx::Point(origin().x, origin().y+bounds().h));
+
+    int flags = 0;
+    if (params.brushType()->isSelected()) flags |= int(BrushSlot::Flags::BrushType);
+    if (params.brushSize()->isSelected()) flags |= int(BrushSlot::Flags::BrushSize);
+    if (params.brushAngle()->isSelected()) flags |= int(BrushSlot::Flags::BrushAngle);
+    if (params.fgColor()->isSelected()) flags |= int(BrushSlot::Flags::FgColor);
+    if (params.bgColor()->isSelected()) flags |= int(BrushSlot::Flags::BgColor);
+    if (params.inkType()->isSelected()) flags |= int(BrushSlot::Flags::InkType);
+    if (params.inkOpacity()->isSelected()) flags |= int(BrushSlot::Flags::InkOpacity);
+    if (params.shade()->isSelected()) flags |= int(BrushSlot::Flags::Shade);
+    if (params.pixelPerfect()->isSelected()) flags |= int(BrushSlot::Flags::PixelPerfect);
+
+    if (brush.flags() != BrushSlot::Flags(flags)) {
+      brush.setFlags(BrushSlot::Flags(flags));
+      brushes.setBrushSlot(m_slot, brush);
+    }
   }
 
 private:
@@ -222,72 +263,43 @@ private:
 
     menu.addChild(new Separator("Parameters to Save", HORIZONTAL));
 
-    Grid* grid = new Grid(2, false);
-    ButtonSet* brushParams = new ButtonSet(3);
-    ButtonSet::Item* brushType = brushParams->addItem("Type");
-    ButtonSet::Item* brushSize = brushParams->addItem("Size");
-    ButtonSet::Item* brushAngle = brushParams->addItem("Angle");
-    brushParams->setMultipleSelection(true);
-
-    ButtonSet* colorParams = new ButtonSet(2);
-    ButtonSet::Item* fgColor = colorParams->addItem("Foreground");
-    ButtonSet::Item* bgColor = colorParams->addItem("Background");
-    colorParams->setMultipleSelection(true);
-
-    ButtonSet* inkParams = new ButtonSet(2);
-    ButtonSet::Item* inkType = inkParams->addItem("Type");
-    ButtonSet::Item* inkOpacity = inkParams->addItem("Opacity");
-    inkParams->setMultipleSelection(true);
-
-    ButtonSet* extrasParams = new ButtonSet(2);
-    ButtonSet::Item* shade = extrasParams->addItem("Shade");
-    ButtonSet::Item* pixelPerfect = extrasParams->addItem("Pixel-Perfect");
-    extrasParams->setMultipleSelection(true);
-
-    grid->addChildInCell(new Label("Brush:"), 1, 1, 0);
-    grid->addChildInCell(brushParams, 1, 1, 0);
-    grid->addChildInCell(new Label("Color:"), 1, 1, 0);
-    grid->addChildInCell(colorParams, 1, 1, 0);
-    grid->addChildInCell(new Label("Ink:"), 1, 1, 0);
-    grid->addChildInCell(inkParams, 1, 1, 0);
-    grid->addChildInCell(new Label("Extras:"), 1, 1, 0);
-    grid->addChildInCell(extrasParams, 1, 1, 0);
-    menu.addChild(grid);
+    app::gen::BrushSlotParams params;
+    menu.addChild(&params);
 
     // Load preferences
     auto& saveBrush = Preferences::instance().saveBrush;
-    brushType->setSelected(saveBrush.brushType());
-    brushSize->setSelected(saveBrush.brushSize());
-    brushAngle->setSelected(saveBrush.brushAngle());
-    fgColor->setSelected(saveBrush.fgColor());
-    bgColor->setSelected(saveBrush.bgColor());
-    inkType->setSelected(saveBrush.inkType());
-    inkOpacity->setSelected(saveBrush.inkOpacity());
-    shade->setSelected(saveBrush.shade());
-    pixelPerfect->setSelected(saveBrush.pixelPerfect());
+    params.brushType()->setSelected(saveBrush.brushType());
+    params.brushSize()->setSelected(saveBrush.brushSize());
+    params.brushAngle()->setSelected(saveBrush.brushAngle());
+    params.fgColor()->setSelected(saveBrush.fgColor());
+    params.bgColor()->setSelected(saveBrush.bgColor());
+    params.inkType()->setSelected(saveBrush.inkType());
+    params.inkOpacity()->setSelected(saveBrush.inkOpacity());
+    params.shade()->setSelected(saveBrush.shade());
+    params.pixelPerfect()->setSelected(saveBrush.pixelPerfect());
 
     show_popup_menu(static_cast<PopupWindow*>(window()), &menu,
                     gfx::Point(origin().x, origin().y+bounds().h));
 
     // Save preferences
-    if (saveBrush.brushType() != brushType->isSelected())
-      saveBrush.brushType(brushType->isSelected());
-    if (saveBrush.brushSize() != brushSize->isSelected())
-      saveBrush.brushSize(brushSize->isSelected());
-    if (saveBrush.brushAngle() != brushAngle->isSelected())
-      saveBrush.brushAngle(brushAngle->isSelected());
-    if (saveBrush.fgColor() != fgColor->isSelected())
-      saveBrush.fgColor(fgColor->isSelected());
-    if (saveBrush.bgColor() != bgColor->isSelected())
-      saveBrush.bgColor(bgColor->isSelected());
-    if (saveBrush.inkType() != inkType->isSelected())
-      saveBrush.inkType(inkType->isSelected());
-    if (saveBrush.inkOpacity() != inkOpacity->isSelected())
-      saveBrush.inkOpacity(inkOpacity->isSelected());
-    if (saveBrush.shade() != shade->isSelected())
-      saveBrush.shade(shade->isSelected());
-    if (saveBrush.pixelPerfect() != pixelPerfect->isSelected())
-      saveBrush.pixelPerfect(pixelPerfect->isSelected());
+    if (saveBrush.brushType() != params.brushType()->isSelected())
+      saveBrush.brushType(params.brushType()->isSelected());
+    if (saveBrush.brushSize() != params.brushSize()->isSelected())
+      saveBrush.brushSize(params.brushSize()->isSelected());
+    if (saveBrush.brushAngle() != params.brushAngle()->isSelected())
+      saveBrush.brushAngle(params.brushAngle()->isSelected());
+    if (saveBrush.fgColor() != params.fgColor()->isSelected())
+      saveBrush.fgColor(params.fgColor()->isSelected());
+    if (saveBrush.bgColor() != params.bgColor()->isSelected())
+      saveBrush.bgColor(params.bgColor()->isSelected());
+    if (saveBrush.inkType() != params.inkType()->isSelected())
+      saveBrush.inkType(params.inkType()->isSelected());
+    if (saveBrush.inkOpacity() != params.inkOpacity()->isSelected())
+      saveBrush.inkOpacity(params.inkOpacity()->isSelected());
+    if (saveBrush.shade() != params.shade()->isSelected())
+      saveBrush.shade(params.shade()->isSelected());
+    if (saveBrush.pixelPerfect() != params.pixelPerfect()->isSelected())
+      saveBrush.pixelPerfect(params.pixelPerfect()->isSelected());
   }
 };
 

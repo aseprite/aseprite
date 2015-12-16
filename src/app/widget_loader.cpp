@@ -434,6 +434,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     if (!widget && columns)
       widget = new ButtonSet(strtol(columns, NULL, 10));
+
+    if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(widget)) {
+      bool multiple = bool_attr_is_true(elem, "multiple");
+      if (multiple)
+        buttonset->setMultipleSelection(multiple);
+    }
   }
   else if (elem_name == "item") {
     if (!parent)

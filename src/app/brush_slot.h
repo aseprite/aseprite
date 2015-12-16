@@ -50,6 +50,9 @@ public:
     , m_pixelPerfect(pixelPerfect) {
   }
 
+  Flags flags() const { return m_flags; }
+  void setFlags(Flags flags) { m_flags = flags; }
+
   bool isEmpty() const {
     return int(m_flags) == 0;
   }

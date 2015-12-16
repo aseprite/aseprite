@@ -49,6 +49,10 @@ static void collect_widgets_with_ids(TiXmlElement* elem, XmlElements& widgets)
 
 static std::string convert_type(const std::string& name)
 {
+  static std::string parent;
+  if (name != "item")
+    parent = name;
+
   if (name == "box") return "ui::Box";
   if (name == "button") return "ui::Button";
   if (name == "buttonset") return "app::ButtonSet";
@@ -59,6 +63,7 @@ static std::string convert_type(const std::string& name)
   if (name == "entry") return "ui::Entry";
   if (name == "grid") return "ui::Grid";
   if (name == "hbox") return "ui::HBox";
+  if (name == "item" && parent == "buttonset") return "app::ButtonSet::Item";
   if (name == "label") return "ui::Label";
   if (name == "link") return "ui::LinkLabel";
   if (name == "listbox") return "ui::ListBox";
