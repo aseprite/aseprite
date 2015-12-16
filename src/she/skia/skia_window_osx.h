@@ -31,6 +31,7 @@ public:
   void setVisible(bool visible);
   void maximize();
   bool isMaximized() const;
+  bool isMinimized() const;
   gfx::Size clientSize() const;
   gfx::Size restoredSize() const;
   void setTitle(const std::string& title);
@@ -39,6 +40,8 @@ public:
   void setMousePosition(const gfx::Point& position);
   bool setNativeMouseCursor(NativeCursor cursor);
   void updateWindow(const gfx::Rect& bounds);
+  std::string getLayout() { return ""; }
+  void setLayout(const std::string& layout) { }
   void* handle();
 
 private:

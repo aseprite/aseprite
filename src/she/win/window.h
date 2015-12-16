@@ -12,6 +12,7 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <shellapi.h>
+#include <sstream>
 
 #include "gfx/size.h"
 #include "she/event.h"
@@ -71,6 +72,10 @@ namespace she {
 
     bool isMaximized() const {
       return (IsZoomed(m_hwnd) ? true: false);
+    }
+
+    bool isMinimized() const {
+      return (GetWindowLong(m_hwnd, GWL_STYLE) & WS_MINIMIZE ? true: false);
     }
 
     gfx::Size clientSize() const {
@@ -160,6 +165,54 @@ namespace she {
                   bounds.y*m_scale+bounds.h*m_scale };
       InvalidateRect(m_hwnd, &rc, FALSE);
       UpdateWindow(m_hwnd);
+    }
+
+    std::string getLayout() {
+      WINDOWPLACEMENT wp;
+      wp.length = sizeof(WINDOWPLACEMENT);
+      if (GetWindowPlacement(m_hwnd, &wp)) {
+        std::ostringstream s;
+        s << 1 << ' '
+          << wp.flags << ' '
+          << wp.showCmd << ' '
+          << wp.ptMinPosition.x << ' '
+          << wp.ptMinPosition.y << ' '
+          << wp.ptMaxPosition.x << ' '
+          << wp.ptMaxPosition.y << ' '
+          << wp.rcNormalPosition.left << ' '
+          << wp.rcNormalPosition.top << ' '
+          << wp.rcNormalPosition.right << ' '
+          << wp.rcNormalPosition.bottom;
+        return s.str();
+      }
+      return "";
+    }
+
+    void setLayout(const std::string& layout) {
+      WINDOWPLACEMENT wp;
+      wp.length = sizeof(WINDOWPLACEMENT);
+
+      std::istringstream s(layout);
+      int ver;
+      s >> ver;
+      if (ver == 1) {
+        s >> wp.flags
+          >> wp.showCmd
+          >> wp.ptMinPosition.x
+          >> wp.ptMinPosition.y
+          >> wp.ptMaxPosition.x
+          >> wp.ptMaxPosition.y
+          >> wp.rcNormalPosition.left
+          >> wp.rcNormalPosition.top
+          >> wp.rcNormalPosition.right
+          >> wp.rcNormalPosition.bottom;
+      }
+      else
+        return;
+
+      if (SetWindowPlacement(m_hwnd, &wp)) {
+        // TODO use the return value
+      }
     }
 
     HWND handle() {

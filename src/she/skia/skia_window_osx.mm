@@ -195,7 +195,7 @@ private:
         [m_nsGL setView:m_window.contentView];
       }
       catch (const std::exception& ex) {
-        LOG("Cannot create GL context: %s\n", ex.what());
+        //LOG("Cannot create GL context: %s\n", ex.what());
         detachGL();
         return false;
       }
@@ -336,6 +336,11 @@ void SkiaWindow::maximize()
 }
 
 bool SkiaWindow::isMaximized() const
+{
+  return false;
+}
+
+bool SkiaWindow::isMinimized() const
 {
   return false;
 }

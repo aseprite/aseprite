@@ -109,6 +109,11 @@ bool SkiaDisplay::isMaximized() const
   return m_window.isMaximized();
 }
 
+bool SkiaDisplay::isMinimized() const
+{
+  return m_window.isMinimized();
+}
+
 void SkiaDisplay::setTitleBar(const std::string& title)
 {
   m_window.setTitle(title);
@@ -138,6 +143,16 @@ void SkiaDisplay::captureMouse()
 void SkiaDisplay::releaseMouse()
 {
   m_window.releaseMouse();
+}
+
+std::string SkiaDisplay::getLayout()
+{
+  return m_window.getLayout();
+}
+
+void SkiaDisplay::setLayout(const std::string& layout)
+{
+  m_window.setLayout(layout);
 }
 
 DisplayHandle SkiaDisplay::nativeHandle()

@@ -157,7 +157,7 @@ bool SkiaWindow::attachGL()
                                       (GrBackendContext)m_glCtx->gl()));
     }
     catch (const std::exception& ex) {
-      LOG("Cannot create GL context: %s\n", ex.what());
+      //LOG("Cannot create GL context: %s\n", ex.what());
       detachGL();
     }
   }
