@@ -340,8 +340,9 @@ namespace ui {
     bool hasMouseOver();
     bool hasCapture();
 
-    // Offer the capture to widgets of the given type
-    void offerCapture(ui::MouseMessage* mouseMsg, int widget_type);
+    // Offer the capture to widgets of the given type. Returns true if
+    // the capture was passed to other widget.
+    bool offerCapture(ui::MouseMessage* mouseMsg, int widget_type);
 
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).

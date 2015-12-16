@@ -219,6 +219,7 @@ BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
   setBorder(gfx::Border(2)*guiscale());
   setChildSpacing(0);
   m_box.noBorderNoChildSpacing();
+  m_standardBrushes.setTriggerOnMouseUp(true);
 
   addChild(&m_box);
 

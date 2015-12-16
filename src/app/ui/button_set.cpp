@@ -33,6 +33,10 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
+// Last selected item for ButtonSet activated on mouse up when the
+// mouse capture is get.
+static int g_itemBeforeCapture = -1;
+
 WidgetType buttonset_item_type()
 {
   static WidgetType type = kGenericWidget;
@@ -172,6 +176,15 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       break;
 
     case ui::kMouseDownMessage:
+      // Only for single-item and trigerred on mouse up ButtonSets: We
+      // save the current selected item to restore it just in case the
+      // user leaves the ButtonSet without releasing the mouse button
+      // and the mouse capture if offered to other ButtonSet.
+      if (buttonSet()->m_triggerOnMouseUp) {
+        ASSERT(g_itemBeforeCapture < 0);
+        g_itemBeforeCapture = buttonSet()->selectedItem();
+      }
+
       captureMouse();
       buttonSet()->setSelectedItem(this);
       invalidate();
@@ -184,6 +197,9 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
     case ui::kMouseUpMessage:
       if (hasCapture()) {
+        if (g_itemBeforeCapture >= 0)
+          g_itemBeforeCapture = -1;
+
         releaseMouse();
         invalidate();
 
@@ -199,8 +215,19 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
     case ui::kMouseMoveMessage:
       if (hasCapture()) {
-        if (buttonSet()->m_offerCapture)
-          offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type());
+        if (buttonSet()->m_offerCapture) {
+          if (offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type())) {
+            // Only for ButtonSets trigerred on mouse up.
+            if (buttonSet()->m_triggerOnMouseUp &&
+                g_itemBeforeCapture >= 0) {
+              // As we never received a kMouseUpMessage (so we never
+              // called onClick()), we have to restore the selected
+              // item at the point when we received the mouse capture.
+              buttonSet()->setSelectedItem(g_itemBeforeCapture);
+              g_itemBeforeCapture = -1;
+            }
+          }
+        }
       }
       break;
 
