@@ -48,6 +48,25 @@ using namespace ui;
 
 namespace {
 
+void show_popup_menu(PopupWindow* popupWindow, Menu* popupMenu,
+                     const gfx::Point& pt)
+{
+  // Here we make the popup window temporaly floating, so it's
+  // not closed by the popup menu.
+  popupWindow->makeFloating();
+
+  popupMenu->showPopup(pt);
+
+  // Add the menu popup region to the window popup hot region so it's
+  // not closed after we close the menu.
+  popupWindow->makeFixed();
+
+  gfx::Region rgn;
+  rgn.createUnion(gfx::Region(popupWindow->bounds()),
+                  gfx::Region(popupMenu->bounds()));
+  popupWindow->setHotRegion(rgn);
+}
+
 class SelectBrushItem : public ButtonSet::Item {
 public:
   SelectBrushItem(BrushPopupDelegate* delegate, const BrushRef& brush, int slot = -1)
@@ -135,20 +154,8 @@ private:
     menu.addChild(new MenuSeparator);
     menu.addChild(&deleteAllItem);
 
-    // Here we make the popup window temporaly floating, so it's
-    // not closed by the popup menu.
-    m_popup->makeFloating();
-
-    menu.showPopup(gfx::Point(origin().x, origin().y+bounds().h));
-
-    // Add the menu popup region to the hot region so the BrushPopup (m_popup)
-    // isn't closed after we click the menu popup.
-    m_popup->makeFixed();
-
-    gfx::Region rgn;
-    rgn.createUnion(gfx::Region(m_popup->bounds()),
-                    gfx::Region(menu.bounds()));
-    m_popup->setHotRegion(rgn);
+    show_popup_menu(m_popup, &menu,
+                    gfx::Point(origin().x, origin().y+bounds().h));
   }
 
 private:
