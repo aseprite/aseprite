@@ -1627,8 +1627,6 @@ void ContextBar::setActiveBrushBySlot(int slot)
         setActiveBrush(brush.brush());
       }
       else {
-        setActiveBrush(ContextBar::createBrushFromPreferences());
-
         if (brush.hasFlag(BrushSlot::Flags::BrushType))
           brushPref.type(static_cast<app::gen::BrushType>(brush.brush()->type()));
 
@@ -1637,6 +1635,8 @@ void ContextBar::setActiveBrushBySlot(int slot)
 
         if (brush.hasFlag(BrushSlot::Flags::BrushAngle))
           brushPref.angle(brush.brush()->angle());
+
+        setActiveBrush(ContextBar::createBrushFromPreferences());
       }
     }
 
