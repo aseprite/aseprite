@@ -61,7 +61,7 @@ namespace app {
     template<typename T>
     const T get_as(const char* name) const {
       std::istringstream stream(m_params[name]);
-      T value;
+      T value = T();
       stream >> value;
       return value;
     }
