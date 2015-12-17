@@ -113,7 +113,8 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      if (m_filtering) {
+      if (m_filtering &&
+          manager()->getTopWindow() == this) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         switch (m_clickBehavior) {
