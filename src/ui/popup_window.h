@@ -30,6 +30,8 @@ namespace ui {
                 EnterBehavior enterBehavior = EnterBehavior::CloseOnEnter);
     ~PopupWindow();
 
+    // Sets the hot region. This region indicates the area where the
+    // mouse can be located and the window will be kept open.
     void setHotRegion(const gfx::Region& region);
     void setClickBehavior(ClickBehavior behavior);
     void setEnterBehavior(EnterBehavior behavior);

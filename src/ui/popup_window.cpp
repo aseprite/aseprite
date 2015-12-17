@@ -43,10 +43,6 @@ PopupWindow::~PopupWindow()
   stopFilteringMessages();
 }
 
-/**
- * @param region The new hot-region. This pointer is holded by the @a widget.
- * So you cannot destroy it after calling this routine.
- */
 void PopupWindow::setHotRegion(const gfx::Region& region)
 {
   startFilteringMessages();
