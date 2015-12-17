@@ -144,6 +144,10 @@ if(NOT WIN32 AND NOT APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu89")
 endif()
 
+if(APPLE AND USE_SKIA_BACKEND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+endif()
+
 if(NOT USE_SHARED_CURL)
   set(CURL_STATICLIB ON BOOL)
 endif()
