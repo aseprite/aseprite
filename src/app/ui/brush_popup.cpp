@@ -172,7 +172,6 @@ private:
 
     // Load preferences
     BrushSlot brush = m_brushes.getBrushSlot(m_slot);
-
     params.brushType()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushType));
     params.brushSize()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushSize));
     params.brushAngle()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushAngle));
@@ -183,23 +182,28 @@ private:
     params.shade()->setSelected(brush.hasFlag(BrushSlot::Flags::Shade));
     params.pixelPerfect()->setSelected(brush.hasFlag(BrushSlot::Flags::PixelPerfect));
 
+    m_changeFlags = true;
     show_popup_menu(m_popup, &menu,
                     gfx::Point(origin().x, origin().y+bounds().h));
 
-    int flags = 0;
-    if (params.brushType()->isSelected()) flags |= int(BrushSlot::Flags::BrushType);
-    if (params.brushSize()->isSelected()) flags |= int(BrushSlot::Flags::BrushSize);
-    if (params.brushAngle()->isSelected()) flags |= int(BrushSlot::Flags::BrushAngle);
-    if (params.fgColor()->isSelected()) flags |= int(BrushSlot::Flags::FgColor);
-    if (params.bgColor()->isSelected()) flags |= int(BrushSlot::Flags::BgColor);
-    if (params.inkType()->isSelected()) flags |= int(BrushSlot::Flags::InkType);
-    if (params.inkOpacity()->isSelected()) flags |= int(BrushSlot::Flags::InkOpacity);
-    if (params.shade()->isSelected()) flags |= int(BrushSlot::Flags::Shade);
-    if (params.pixelPerfect()->isSelected()) flags |= int(BrushSlot::Flags::PixelPerfect);
+    if (m_changeFlags) {
+      brush = m_brushes.getBrushSlot(m_slot);
 
-    if (brush.flags() != BrushSlot::Flags(flags)) {
-      brush.setFlags(BrushSlot::Flags(flags));
-      m_brushes.setBrushSlot(m_slot, brush);
+      int flags = (int(brush.flags()) & int(BrushSlot::Flags::Locked));
+      if (params.brushType()->isSelected()) flags |= int(BrushSlot::Flags::BrushType);
+      if (params.brushSize()->isSelected()) flags |= int(BrushSlot::Flags::BrushSize);
+      if (params.brushAngle()->isSelected()) flags |= int(BrushSlot::Flags::BrushAngle);
+      if (params.fgColor()->isSelected()) flags |= int(BrushSlot::Flags::FgColor);
+      if (params.bgColor()->isSelected()) flags |= int(BrushSlot::Flags::BgColor);
+      if (params.inkType()->isSelected()) flags |= int(BrushSlot::Flags::InkType);
+      if (params.inkOpacity()->isSelected()) flags |= int(BrushSlot::Flags::InkOpacity);
+      if (params.shade()->isSelected()) flags |= int(BrushSlot::Flags::Shade);
+      if (params.pixelPerfect()->isSelected()) flags |= int(BrushSlot::Flags::PixelPerfect);
+
+      if (brush.flags() != BrushSlot::Flags(flags)) {
+        brush.setFlags(BrushSlot::Flags(flags));
+        m_brushes.setBrushSlot(m_slot, brush);
+      }
     }
   }
 
@@ -212,6 +216,8 @@ private:
     m_brushes.setBrushSlot(
       m_slot, contextBar->createBrushSlotFromPreferences());
     m_brushes.lockBrushSlot(m_slot);
+
+    m_changeFlags = false;
   }
 
   void onLockBrush() {
@@ -223,16 +229,19 @@ private:
 
   void onDeleteBrush() {
     m_brushes.removeBrushSlot(m_slot);
+    m_changeFlags = false;
   }
 
   void onDeleteAllBrushes() {
     m_brushes.removeAllBrushSlots();
+    m_changeFlags = false;
   }
 
   BrushPopup* m_popup;
   AppBrushes& m_brushes;
   BrushRef m_brush;
   int m_slot;
+  bool m_changeFlags;
 };
 
 class NewCustomBrushItem : public ButtonSet::Item {
