@@ -26,8 +26,7 @@ AppBrushes::slot_id AppBrushes::addBrushSlot(const BrushSlot& brush)
 {
   // Use an empty slot
   for (size_t i=0; i<m_slots.size(); ++i) {
-    if (!m_slots[i].locked() ||
-        !m_slots[i].brush()) {
+    if (!m_slots[i].locked() || m_slots[i].isEmpty()) {
       m_slots[i] = brush;
       return i+1;
     }
@@ -46,7 +45,7 @@ void AppBrushes::removeBrushSlot(slot_id slot)
 
     // Erase empty trailing slots
     while (!m_slots.empty() &&
-           !m_slots[m_slots.size()-1].brush())
+           m_slots[m_slots.size()-1].isEmpty())
       m_slots.erase(--m_slots.end());
 
     ItemsChange();
@@ -90,7 +89,7 @@ void AppBrushes::lockBrushSlot(slot_id slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size() &&
-      m_slots[slot].brush()) {
+      !m_slots[slot].isEmpty()) {
     m_slots[slot].setLocked(true);
   }
 }
@@ -99,7 +98,7 @@ void AppBrushes::unlockBrushSlot(slot_id slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size() &&
-      m_slots[slot].brush()) {
+      !m_slots[slot].isEmpty()) {
     m_slots[slot].setLocked(false);
   }
 }

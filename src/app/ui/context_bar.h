@@ -37,8 +37,7 @@ namespace tools {
 
 namespace app {
 
-  class IBrushSettings;
-  class IToolSettings;
+  class BrushSlot;
 
   class ContextBar : public ui::Box,
                      public base::Observable<ContextBarObserver> {
@@ -57,6 +56,7 @@ namespace app {
     doc::BrushRef activeBrush(tools::Tool* tool = nullptr) const;
     void discardActiveBrush();
 
+    BrushSlot createBrushSlotFromPreferences();
     static doc::BrushRef createBrushFromPreferences(
       ToolPreferences::Brush* brushPref = nullptr);
 

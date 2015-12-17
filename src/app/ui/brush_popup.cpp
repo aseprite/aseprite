@@ -12,7 +12,6 @@
 #include "app/ui/brush_popup.h"
 
 #include "app/app.h"
-#include "app/app_brushes.h"
 #include "app/brush_slot.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -21,7 +20,9 @@
 #include "app/pref/preferences.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -73,8 +74,8 @@ void show_popup_menu(PopupWindow* popupWindow, Menu* popupMenu,
 
 class SelectBrushItem : public ButtonSet::Item {
 public:
-  SelectBrushItem(BrushPopupDelegate* delegate, const BrushSlot& brush, int slot = -1)
-    : m_delegate(delegate)
+  SelectBrushItem(const BrushSlot& brush, int slot = -1)
+    : m_brushes(App::instance()->brushes())
     , m_brush(brush)
     , m_slot(slot) {
     if (m_brush.hasBrush()) {
@@ -89,17 +90,17 @@ public:
   }
 
 private:
-
   void onClick() override {
+    ContextBar* contextBar =
+      App::instance()->getMainWindow()->getContextBar();
+
     if (m_slot >= 0)
-      m_delegate->onSelectBrushSlot(m_slot);
+      contextBar->setActiveBrushBySlot(m_slot);
     else if (m_brush.hasBrush())
-      m_delegate->onSelectBrush(m_brush.brush());
+      contextBar->setActiveBrush(m_brush.brush());
   }
 
-private:
-
-  BrushPopupDelegate* m_delegate;
+  AppBrushes& m_brushes;
   BrushSlot m_brush;
   int m_slot;
 };
@@ -134,9 +135,9 @@ private:
 
 class BrushOptionsItem : public ButtonSet::Item {
 public:
-  BrushOptionsItem(BrushPopup* popup, BrushPopupDelegate* delegate, int slot)
+  BrushOptionsItem(BrushPopup* popup, int slot)
     : m_popup(popup)
-    , m_delegate(delegate)
+    , m_brushes(App::instance()->brushes())
     , m_slot(slot) {
     setIcon(SkinTheme::instance()->parts.iconArrowDown(), true);
   }
@@ -150,7 +151,7 @@ private:
     AppMenuItem deleteItem("Delete");
     AppMenuItem deleteAllItem("Delete All");
 
-    lockItem.setSelected(m_delegate->onIsBrushSlotLocked(m_slot));
+    lockItem.setSelected(m_brushes.isBrushSlotLocked(m_slot));
 
     save.Click.connect(&BrushOptionsItem::onSaveBrush, this);
     lockItem.Click.connect(&BrushOptionsItem::onLockBrush, this);
@@ -170,8 +171,7 @@ private:
     menu.addChild(&params);
 
     // Load preferences
-    AppBrushes& brushes = App::instance()->brushes();
-    BrushSlot brush = brushes.getBrushSlot(m_slot);
+    BrushSlot brush = m_brushes.getBrushSlot(m_slot);
 
     params.brushType()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushType));
     params.brushSize()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushSize));
@@ -199,56 +199,58 @@ private:
 
     if (brush.flags() != BrushSlot::Flags(flags)) {
       brush.setFlags(BrushSlot::Flags(flags));
-      brushes.setBrushSlot(m_slot, brush);
+      m_brushes.setBrushSlot(m_slot, brush);
     }
   }
 
 private:
 
   void onSaveBrush() {
-    AppBrushes& brushes = App::instance()->brushes();
-    brushes.setBrushSlot(
-      m_slot, m_delegate->onCreateBrushSlotFromActivePreferences());
-    brushes.lockBrushSlot(m_slot);
+    ContextBar* contextBar =
+      App::instance()->getMainWindow()->getContextBar();
+
+    m_brushes.setBrushSlot(
+      m_slot, contextBar->createBrushSlotFromPreferences());
+    m_brushes.lockBrushSlot(m_slot);
   }
 
   void onLockBrush() {
-    if (m_delegate->onIsBrushSlotLocked(m_slot))
-      m_delegate->onUnlockBrushSlot(m_slot);
+    if (m_brushes.isBrushSlotLocked(m_slot))
+      m_brushes.unlockBrushSlot(m_slot);
     else
-      m_delegate->onLockBrushSlot(m_slot);
+      m_brushes.lockBrushSlot(m_slot);
   }
 
   void onDeleteBrush() {
-    m_delegate->onDeleteBrushSlot(m_slot);
+    m_brushes.removeBrushSlot(m_slot);
   }
 
   void onDeleteAllBrushes() {
-    m_delegate->onDeleteAllBrushes();
+    m_brushes.removeAllBrushSlots();
   }
 
   BrushPopup* m_popup;
-  BrushPopupDelegate* m_delegate;
+  AppBrushes& m_brushes;
   BrushRef m_brush;
   int m_slot;
 };
 
 class NewCustomBrushItem : public ButtonSet::Item {
 public:
-  NewCustomBrushItem(BrushPopupDelegate* delegate)
-    : m_delegate(delegate) {
+  NewCustomBrushItem() {
     setText("Save Brush");
   }
 
 private:
   void onClick() override {
-    AppBrushes& brushes = App::instance()->brushes();
-    auto slot = brushes.addBrushSlot(
-      m_delegate->onCreateBrushSlotFromActivePreferences());
+    ContextBar* contextBar =
+      App::instance()->getMainWindow()->getContextBar();
+
+    auto& brushes = App::instance()->brushes();
+    int slot = brushes.addBrushSlot(
+      contextBar->createBrushSlotFromPreferences());
     brushes.lockBrushSlot(slot);
   }
-
-  BrushPopupDelegate* m_delegate;
 };
 
 class NewBrushOptionsItem : public ButtonSet::Item {
@@ -305,13 +307,14 @@ private:
 
 } // anonymous namespace
 
-BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
+BrushPopup::BrushPopup()
   : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
   , m_tooltipManager(nullptr)
   , m_standardBrushes(3)
   , m_customBrushes(nullptr)
-  , m_delegate(delegate)
 {
+  auto& brushes = App::instance()->brushes();
+
   setAutoRemap(false);
   setBorder(gfx::Border(2)*guiscale());
   setChildSpacing(0);
@@ -327,17 +330,15 @@ BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
   m_box.addChild(top);
   m_box.addChild(new Separator("", HORIZONTAL));
 
-  const doc::Brushes& brushes = App::instance()->brushes().getStandardBrushes();
-  for (const auto& brush : brushes)
+  for (const auto& brush : brushes.getStandardBrushes())
     m_standardBrushes.addItem(
       new SelectBrushItem(
-        m_delegate, BrushSlot(BrushSlot::Flags::BrushType, brush)));
+        BrushSlot(BrushSlot::Flags::BrushType, brush)));
 
   m_standardBrushes.setTransparent(true);
   m_standardBrushes.setBgColor(gfx::ColorNone);
 
-  App::instance()->brushes()
-    .ItemsChange.connect(&BrushPopup::onBrushChanges, this);
+  brushes.ItemsChange.connect(&BrushPopup::onBrushChanges, this);
 }
 
 void BrushPopup::setBrush(Brush* brush)
@@ -387,12 +388,12 @@ void BrushPopup::regenerate(const gfx::Rect& box)
       if (key && !key->accels().empty())
         shortcut = key->accels().front().toString();
     }
-    m_customBrushes->addItem(new SelectBrushItem(m_delegate, brush, slot));
+    m_customBrushes->addItem(new SelectBrushItem(brush, slot));
     m_customBrushes->addItem(new BrushShortcutItem(shortcut, slot));
-    m_customBrushes->addItem(new BrushOptionsItem(this, m_delegate, slot));
+    m_customBrushes->addItem(new BrushOptionsItem(this, slot));
   }
 
-  m_customBrushes->addItem(new NewCustomBrushItem(m_delegate), 2, 1);
+  m_customBrushes->addItem(new NewCustomBrushItem, 2, 1);
   m_customBrushes->addItem(new NewBrushOptionsItem);
   m_customBrushes->setExpansive(true);
   m_box.addChild(m_customBrushes);

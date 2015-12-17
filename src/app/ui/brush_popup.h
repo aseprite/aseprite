@@ -18,24 +18,9 @@
 
 namespace app {
 
-  class BrushSlot;
-
-  class BrushPopupDelegate {
-  public:
-    virtual ~BrushPopupDelegate() { }
-    virtual BrushSlot onCreateBrushSlotFromActivePreferences() = 0;
-    virtual void onSelectBrush(const doc::BrushRef& brush) = 0;
-    virtual void onSelectBrushSlot(int slot) = 0;
-    virtual void onDeleteBrushSlot(int slot) = 0;
-    virtual void onDeleteAllBrushes() = 0;
-    virtual bool onIsBrushSlotLocked(int slot) const = 0;
-    virtual void onLockBrushSlot(int slot) = 0;
-    virtual void onUnlockBrushSlot(int slot) = 0;
-  };
-
   class BrushPopup : public ui::PopupWindow {
   public:
-    BrushPopup(BrushPopupDelegate* delegate);
+    BrushPopup();
 
     void setBrush(doc::Brush* brush);
     void regenerate(const gfx::Rect& box);
@@ -54,7 +39,6 @@ namespace app {
     ui::VBox m_box;
     ButtonSet m_standardBrushes;
     ButtonSet* m_customBrushes;
-    BrushPopupDelegate* m_delegate;
   };
 
 } // namespace app
