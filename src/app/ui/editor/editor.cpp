@@ -1594,14 +1594,14 @@ void Editor::notifyScrollChanged()
   m_observers.notifyScrollChanged(this);
 }
 
-void Editor::play()
+void Editor::play(bool playOnce)
 {
   ASSERT(m_state);
   if (!m_state)
     return;
 
   if (!dynamic_cast<PlayState*>(m_state.get()))
-    setState(EditorStatePtr(new PlayState));
+    setState(EditorStatePtr(new PlayState(playOnce)));
 }
 
 void Editor::stop()
@@ -1619,7 +1619,8 @@ bool Editor::isPlaying() const
   return (dynamic_cast<PlayState*>(m_state.get()) != nullptr);
 }
 
-void Editor::showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions)
+void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
+                                               bool withStopBehaviorOptions)
 {
   double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
   Menu menu;
@@ -1631,8 +1632,20 @@ void Editor::showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions)
     menu.addChild(item);
   }
 
+  menu.addChild(new MenuSeparator);
+
+  // Play once option
+  {
+    MenuItem* item = new MenuItem("Play Once");
+    item->Click.connect(
+      [&playOnce]() {
+        playOnce(!playOnce());
+      });
+    item->setSelected(playOnce());
+    menu.addChild(item);
+  }
+
   if (withStopBehaviorOptions) {
-    menu.addChild(new MenuSeparator);
     MenuItem* item = new MenuItem("Rewind on Stop");
     item->Click.connect(
       []() {

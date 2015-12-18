@@ -12,6 +12,7 @@
 #include "app/app_render.h"
 #include "app/color.h"
 #include "app/document.h"
+#include "app/pref/option.h"
 #include "app/tools/selection_mode.h"
 #include "app/ui/editor/brush_preview.h"
 #include "app/ui/editor/editor_observers.h"
@@ -194,12 +195,13 @@ namespace app {
     void notifyScrollChanged();
 
     // Animation control
-    void play();
+    void play(bool playOnce);
     void stop();
     bool isPlaying() const;
 
     // Shows a popup menu to change the editor animation speed.
-    void showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions);
+    void showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
+                                           bool withStopBehaviorOptions);
     double getAnimationSpeedMultiplier() const;
     void setAnimationSpeedMultiplier(double speed);
 

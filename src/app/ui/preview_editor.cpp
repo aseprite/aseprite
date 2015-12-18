@@ -21,6 +21,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
+#include "app/ui/editor/play_state.h"
 #include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -100,6 +101,11 @@ public:
   }
 
   bool isPlaying() const { return m_isPlaying; }
+
+  void stop() {
+    m_isPlaying = false;
+    setupIcons();
+  }
 
   base::Signal0<void> Popup;
 
@@ -251,8 +257,7 @@ void PreviewEditorWindow::onClose(ui::CloseEvent& ev)
     // state. TODO abstract this event
     ToolBar::instance()->invalidate();
 
-    delete m_docView;
-    m_docView = NULL;
+    destroyDocView();
   }
 }
 
@@ -282,7 +287,7 @@ void PreviewEditorWindow::onPlayClicked()
 
   if (m_playButton->isPlaying()) {
     m_refFrame = miniEditor->frame();
-    miniEditor->play();
+    miniEditor->play(Preferences::instance().preview.playOnce());
   }
   else
     miniEditor->stop();
@@ -294,7 +299,8 @@ void PreviewEditorWindow::onPopupSpeed()
   if (!miniEditor || !miniEditor->document())
     return;
 
-  miniEditor->showAnimationSpeedMultiplierPopup(false);
+  miniEditor->showAnimationSpeedMultiplierPopup(
+    Preferences::instance().preview.playOnce, false);
   m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
 }
 
@@ -323,7 +329,8 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 
   // Set the same location as in the given editor.
   if (!miniEditor || miniEditor->document() != document) {
-    delete m_docView;
+    destroyDocView();
+
     m_docView = new DocumentView(document, DocumentView::Preview);
     addChild(m_docView);
 
@@ -333,6 +340,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->setFrame(editor->frame());
     miniEditor->setState(EditorStatePtr(new NavigateState));
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
+    miniEditor->addObserver(this);
     layout();
     center = true;
   }
@@ -356,7 +364,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     if (!miniEditor->isPlaying())
       miniEditor->setFrame(m_refFrame = editor->frame());
 
-    miniEditor->play();
+    miniEditor->play(Preferences::instance().preview.playOnce());
   }
 }
 
@@ -366,13 +374,33 @@ void PreviewEditorWindow::uncheckCenterButton()
     m_centerButton->setSelected(false);
 }
 
+void PreviewEditorWindow::onStateChanged(Editor* editor)
+{
+  EditorStatePtr state = editor->getState();
+  PlayState* playState = (state ? dynamic_cast<PlayState*>(state.get()): nullptr);
+  if (!playState) {
+    // We have to switch the "play button" state to "play" because the
+    // editor animation has just stopped. This happens when we use
+    // "play once" option and the PlayState stops automatically.
+    m_playButton->stop();
+  }
+}
+
 void PreviewEditorWindow::hideWindow()
 {
-  delete m_docView;
-  m_docView = NULL;
-
+  destroyDocView();
   if (isVisible())
     closeWindow(NULL);
+}
+
+void PreviewEditorWindow::destroyDocView()
+{
+  if (m_docView) {
+    m_docView->getEditor()->removeObserver(this);
+
+    delete m_docView;
+    m_docView = nullptr;
+  }
 }
 
 } // namespace app

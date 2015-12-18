@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/document_view.h"
+#include "app/ui/editor/editor_observer.h"
 #include "doc/frame.h"
 #include "ui/window.h"
 
@@ -17,7 +18,8 @@ namespace app {
   class MiniCenterButton;
   class MiniPlayButton;
 
-  class PreviewEditorWindow : public ui::Window {
+  class PreviewEditorWindow : public ui::Window
+                            , public EditorObserver {
   public:
     PreviewEditorWindow();
     ~PreviewEditorWindow();
@@ -30,6 +32,9 @@ namespace app {
 
     Editor* relatedEditor() const { return m_relatedEditor; }
 
+    // EditorObserver impl
+    void onStateChanged(Editor* editor) override;
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onClose(ui::CloseEvent& ev) override;
@@ -40,6 +45,7 @@ namespace app {
     void onPlayClicked();
     void onPopupSpeed();
     void hideWindow();
+    void destroyDocView();
 
     bool m_isEnabled;
     DocumentView* m_docView;

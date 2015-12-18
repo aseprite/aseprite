@@ -89,6 +89,10 @@
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="Tools.CursorColor" />
+      <option id="play_once" type="bool" default="false" />
+    </section>
+    <section id="preview" text="Preview">
+      <option id="play_once" type="bool" default="false" />
     </section>
     <section id="theme" text="Theme">
       <option id="selected" type="std::string" default="&quot;default&quot;" migrate="Skin.Selected" />

@@ -13,6 +13,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 
 namespace app {
@@ -59,7 +60,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   if (current_editor->isPlaying())
     current_editor->stop();
   else
-    current_editor->play();
+    current_editor->play(Preferences::instance().editor.playOnce());
 }
 
 Command* CommandFactory::createPlayAnimationCommand()

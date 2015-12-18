@@ -18,6 +18,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
+#include "doc/frame_tag.h"
 #include "doc/handle_anidir.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -27,8 +28,9 @@ namespace app {
 
 using namespace ui;
 
-PlayState::PlayState()
+PlayState::PlayState(bool playOnce)
   : m_editor(nullptr)
+  , m_playOnce(playOnce)
   , m_toScroll(false)
   , m_playTimer(10)
   , m_nextFrameTime(-1)
@@ -51,6 +53,21 @@ void PlayState::onEnterState(Editor* editor)
     m_refFrame = editor->frame();
   }
 
+  // Go to the first frame of the animation or active frame tag
+  if (m_playOnce) {
+    frame_t frame = 0;
+
+    doc::FrameTag* tag = get_animation_tag(
+      m_editor->sprite(), m_refFrame);
+    if (tag) {
+      frame = (tag->aniDir() == AniDir::REVERSE ?
+               tag->toFrame():
+               tag->fromFrame());
+    }
+
+    m_editor->setFrame(frame);
+  }
+
   m_toScroll = false;
   m_nextFrameTime = getNextFrameTime();
   m_curFrameTick = ui::clock();
@@ -65,7 +82,7 @@ void PlayState::onEnterState(Editor* editor)
 EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* newState)
 {
   if (!m_toScroll) {
-    if (Preferences::instance().general.rewindOnStop())
+    if (m_playOnce || Preferences::instance().general.rewindOnStop())
       m_editor->setFrame(m_refFrame);
 
     // We don't stop the timer if we are going to the ScrollingState
@@ -135,8 +152,35 @@ void PlayState::onPlaybackTick()
   doc::FrameTag* tag = get_animation_tag(sprite, m_refFrame);
 
   while (m_nextFrameTime <= 0) {
-    doc::frame_t frame = calculate_next_frame(
-      sprite, m_editor->frame(), frame_t(1), tag,
+    doc::frame_t frame = m_editor->frame();
+
+    if (m_playOnce) {
+      bool atEnd = false;
+      if (tag) {
+        switch (tag->aniDir()) {
+          case AniDir::FORWARD:
+            atEnd = (frame == tag->toFrame());
+            break;
+          case AniDir::REVERSE:
+            atEnd = (frame == tag->fromFrame());
+            break;
+          case AniDir::PING_PONG:
+            atEnd = (!m_pingPongForward &&
+                     frame == tag->fromFrame());
+            break;
+        }
+      }
+      else {
+        atEnd = (frame == sprite->lastFrame());
+      }
+      if (atEnd) {
+        m_editor->stop();
+        break;
+      }
+    }
+
+    frame = calculate_next_frame(
+      sprite, frame, frame_t(1), tag,
       m_pingPongForward);
 
     m_editor->setFrame(frame);

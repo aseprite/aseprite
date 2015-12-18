@@ -110,7 +110,8 @@ void AniControls::onRightClick(Item* item)
   ButtonSet::onRightClick(item);
 
   if (item == getItem(ACTION_PLAY) && current_editor)
-    current_editor->showAnimationSpeedMultiplierPopup(true);
+    current_editor->showAnimationSpeedMultiplierPopup(
+      Preferences::instance().editor.playOnce, true);
 }
 
 const char* AniControls::getCommandId(int index) const

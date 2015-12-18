@@ -20,7 +20,7 @@ namespace app {
 
   class PlayState : public StateWithWheelBehavior {
   public:
-    PlayState();
+    PlayState(bool playOnce);
 
     void onEnterState(Editor* editor) override;
     LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
@@ -39,6 +39,7 @@ namespace app {
     double getNextFrameTime();
 
     Editor* m_editor;
+    bool m_playOnce;
     bool m_toScroll;
     ui::Timer m_playTimer;
 
