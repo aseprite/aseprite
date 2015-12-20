@@ -164,6 +164,9 @@ public:
     selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
     openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
+    // Apply button
+    buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::saveConfig, this));
+
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
   }
