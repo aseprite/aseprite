@@ -65,3 +65,4 @@ if(NOT USE_SHARED_FREETYPE)
 endif()
 
 add_subdirectory(simpleini)
+add_subdirectory(modp_b64)

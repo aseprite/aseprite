@@ -39,8 +39,10 @@ set(BASE_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}
     CACHE INTERNAL "Extra include directory for base lib")
 
 include_directories(${BASE_INCLUDE_DIR})
+include_directories(${MODP_B64_DIR})
 
 set(BASE_SOURCES
+  base64.cpp
   cfile.cpp
   chrono.cpp
   connection.cpp
@@ -76,6 +78,7 @@ if(WIN32)
 endif()
 
 add_library(base-lib ${BASE_SOURCES})
+target_link_libraries(base-lib modp_b64)
 
 if(WIN32)
   target_link_libraries(base-lib dbghelp shlwapi)

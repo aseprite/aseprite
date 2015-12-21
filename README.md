@@ -92,6 +92,7 @@ And it uses the following third-party libraries:
 * [simpleini](https://github.com/aseprite/simpleini/) - [MIT license](https://github.com/aseprite/simpleini/blob/aseprite/LICENCE.txt)
 * [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [modp_b64](https://github.com/aseprite/aseprite/tree/master/third_party/modp_b64/modp_b64.h) - [BSD license](https://github.com/aseprite/aseprite/tree/master/third_party/modp_b64/LICENSE)
 
 ## License
 
