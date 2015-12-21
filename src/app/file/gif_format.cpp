@@ -189,10 +189,10 @@ public:
     , m_remap(256)
     , m_hasLocalColormaps(false)
     , m_firstLocalColormap(nullptr) {
-    DLOG("[GifDecoder] GIF background index=%d\n", (int)m_gifFile->SBackGroundColor);
-    DLOG("[GifDecoder] GIF global colormap=%d, ncolors=%d\n",
-         (m_gifFile->SColorMap ? 1: 0),
-         (m_gifFile->SColorMap ? m_gifFile->SColorMap->ColorCount: 0));
+    TRACE("[GifDecoder] GIF background index=%d\n", (int)m_gifFile->SBackGroundColor);
+    TRACE("[GifDecoder] GIF global colormap=%d, ncolors=%d\n",
+          (m_gifFile->SColorMap ? 1: 0),
+          (m_gifFile->SColorMap ? m_gifFile->SColorMap->ColorCount: 0));
   }
 
   ~GifDecoder() {
@@ -310,7 +310,7 @@ private:
     UniquePtr<Image> frameImage(
       readFrameIndexedImage(frameBounds));
 
-    DLOG("[GifDecoder] Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
+    TRACE("[GifDecoder] Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
 
     if (m_frameNum == 0) {
       if (m_localTransparentIndex >= 0)
@@ -325,8 +325,8 @@ private:
     // Convert the sprite to RGB if we have more than 256 colors
     if ((m_sprite->pixelFormat() == IMAGE_INDEXED) &&
         (m_sprite->palette(m_frameNum)->size() > 256)) {
-      DLOG("[GifDecoder] Converting to RGB because we have %d colors\n",
-           m_sprite->palette(m_frameNum)->size());
+      TRACE("[GifDecoder] Converting to RGB because we have %d colors\n",
+            m_sprite->palette(m_frameNum)->size());
 
       convertIndexedSpriteToRgb();
     }
@@ -444,7 +444,7 @@ private:
     int ncolors = colormap->ColorCount;
     bool isLocalColormap = (m_gifFile->Image.ColorMap ? true: false);
 
-    DLOG("[GifDecoder] Local colormap=%d, ncolors=%d\n", isLocalColormap, ncolors);
+    TRACE("[GifDecoder] Local colormap=%d, ncolors=%d\n", isLocalColormap, ncolors);
 
     // We'll calculate the list of used colormap indexes in this
     // frameImage.
@@ -527,17 +527,17 @@ private:
     // Number of colors in the image that aren't in the palette.
     int missing = (usedNColors - found);
 
-    DLOG("[GifDecoder] Bg index=%d,\n"
-         "  Local transparent index=%d,\n"
-         "  Need extra index to show bg color=%d,\n  "
-         "  Found colors in palette=%d,\n"
-         "  Used colors in local pixels=%d,\n"
-         "  Base for new colors in palette=%d,\n"
-         "  Colors in the image missing in the palette=%d,\n"
-         "  New palette size=%d\n",
-         m_bgIndex, m_localTransparentIndex, needsExtraBgColor,
-         found, usedNColors, base, missing,
-         base + missing + (needsExtraBgColor ? 1: 0));
+    TRACE("[GifDecoder] Bg index=%d,\n"
+          "  Local transparent index=%d,\n"
+          "  Need extra index to show bg color=%d,\n  "
+          "  Found colors in palette=%d,\n"
+          "  Used colors in local pixels=%d,\n"
+          "  Base for new colors in palette=%d,\n"
+          "  Colors in the image missing in the palette=%d,\n"
+          "  New palette size=%d\n",
+          m_bgIndex, m_localTransparentIndex, needsExtraBgColor,
+          found, usedNColors, base, missing,
+          base + missing + (needsExtraBgColor ? 1: 0));
 
     Palette oldPalette(*palette);
     palette->resize(base + missing + (needsExtraBgColor ? 1: 0));
@@ -645,8 +645,8 @@ private:
         m_localTransparentIndex = (extension[1] & 1) ? extension[4]: -1;
         m_frameDelay            = (extension[3] << 8) | extension[2];
 
-        DLOG("[GifDecoder] Disposal method: %d\n  Transparent index: %d\n  Frame delay: %d\n",
-             m_disposalMethod, m_localTransparentIndex, m_frameDelay);
+        TRACE("[GifDecoder] Disposal method: %d\n  Transparent index: %d\n  Frame delay: %d\n",
+              m_disposalMethod, m_localTransparentIndex, m_frameDelay);
       }
     }
 
@@ -1046,10 +1046,10 @@ private:
         }
       }
 
-      DLOG("[GifEncoder] frameBounds=%d %d %d %d  prev=%d %d %d %d  next=%d %d %d %d\n",
-           frameBounds.x, frameBounds.y, frameBounds.w, frameBounds.h,
-           prev.x, prev.y, prev.w, prev.h,
-           next.x, next.y, next.w, next.h);
+      TRACE("[GifEncoder] frameBounds=%d %d %d %d  prev=%d %d %d %d  next=%d %d %d %d\n",
+            frameBounds.x, frameBounds.y, frameBounds.w, frameBounds.h,
+            prev.x, prev.y, prev.w, prev.h,
+            next.x, next.y, next.w, next.h);
     }
   }
 

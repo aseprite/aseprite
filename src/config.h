@@ -36,11 +36,6 @@
 #define COPYRIGHT               "Copyright (C) 2001-2015 David Capello"
 
 #define LOG                     verbose_log
-#ifdef _DEBUG
-#define DLOG                    LOG
-#else
-#define DLOG(...)               ((void)0)
-#endif
 
 // verbose_log() is defined in src/app/log.cpp and used through LOG macro
 void verbose_log(const char* format, ...);

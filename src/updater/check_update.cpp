@@ -117,8 +117,8 @@ public:
     HttpResponse response(&body);
     request.send(response);
 
-    DLOG("Checking updates: %s (User-Agent: %s)\n", url.c_str(), getUserAgent().c_str());
-    DLOG("Response:\n--\n%s--\n", body.str().c_str());
+    TRACE("Checking updates: %s (User-Agent: %s)\n", url.c_str(), getUserAgent().c_str());
+    TRACE("Response:\n--\n%s--\n", body.str().c_str());
 
     CheckUpdateResponse data(body.str());
     delegate->onResponse(data);

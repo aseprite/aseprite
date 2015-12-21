@@ -28,7 +28,7 @@ Cmd::~Cmd()
 
 void Cmd::execute(Context* ctx)
 {
-  DLOG("Cmd: Executing cmd '%s'\n", typeid(*this).name());
+  TRACE("Cmd: Executing cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::NotExecuted);
 
   m_ctx = ctx;
@@ -43,7 +43,7 @@ void Cmd::execute(Context* ctx)
 
 void Cmd::undo()
 {
-  DLOG("Cmd: Undo cmd '%s'\n", typeid(*this).name());
+  TRACE("Cmd: Undo cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::Executed || m_state == State::Redone);
 
   onUndo();
@@ -56,7 +56,7 @@ void Cmd::undo()
 
 void Cmd::redo()
 {
-  DLOG("Cmd: Redo cmd '%s'\n", typeid(*this).name());
+  TRACE("Cmd: Redo cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::Undone);
 
   onRedo();
