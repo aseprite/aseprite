@@ -35,10 +35,6 @@
 #define UPDATE_URL              WEBSITE "update/?xml=1"
 #define COPYRIGHT               "Copyright (C) 2001-2015 David Capello"
 
-#define LOG                     verbose_log
-
-// verbose_log() is defined in src/app/log.cpp and used through LOG macro
-void verbose_log(const char* format, ...);
-
 #include "base/base.h"
 #include "base/debug.h"
+#include "base/log.h"

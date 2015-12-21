@@ -51,6 +51,7 @@ set(BASE_SOURCES
   file_handle.cpp
   fs.cpp
   launcher.cpp
+  log.cpp
   mem_utils.cpp
   memory.cpp
   memory_dump.cpp
