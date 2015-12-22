@@ -1481,7 +1481,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
        (isEffect));
 
     hasInkShades =
-      (isPaint && toolPref->ink() == InkType::SHADING);
+      (isPaint && !isEffect && toolPref->ink() == InkType::SHADING);
 
     m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
 
