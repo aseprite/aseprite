@@ -395,8 +395,8 @@ void ComboBox::onResize(ResizeEvent& ev)
 
 void ComboBox::onSizeHint(SizeHintEvent& ev)
 {
-  Size reqSize(0, 0);
   Size entrySize = m_entry->sizeHint();
+  Size reqSize = entrySize;
 
   // Get the text-length of every item and put in 'w' the maximum value
   ListItems::iterator it, end = m_items.end();
@@ -404,13 +404,10 @@ void ComboBox::onSizeHint(SizeHintEvent& ev)
     int item_w =
       2*guiscale()+
       font()->textLength((*it)->text().c_str())+
-      10*guiscale();
+      16*guiscale();
 
     reqSize.w = MAX(reqSize.w, item_w);
   }
-
-  reqSize.w += entrySize.w;
-  reqSize.h += entrySize.h;
 
   Size buttonSize = m_button->sizeHint();
   reqSize.w += buttonSize.w;
