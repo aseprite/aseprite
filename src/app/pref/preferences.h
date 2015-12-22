@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/document_exporter.h"
 #include "app/pref/option.h"
 #include "app/sprite_sheet_type.h"
 #include "app/tools/freehand_algorithm.h"

@@ -359,6 +359,7 @@ public:
 
     m_dataFilename = m_docPref.spriteSheet.dataFilename();
     dataEnabled()->setSelected(!m_dataFilename.empty());
+    dataFormat()->setSelectedItemIndex(int(m_docPref.spriteSheet.dataFormat()));
     listLayers()->setSelected(m_docPref.spriteSheet.listLayers());
     listTags()->setSelected(m_docPref.spriteSheet.listFrameTags());
     updateDataFields();
@@ -447,6 +448,13 @@ public:
       return m_dataFilename;
     else
       return std::string();
+  }
+
+  DocumentExporter::DataFormat dataFormatValue() const {
+    if (dataEnabled()->isSelected())
+      return DocumentExporter::DataFormat(dataFormat()->getSelectedItemIndex());
+    else
+      return DocumentExporter::DefaultDataFormat;
   }
 
   int borderPaddingValue() const {
@@ -758,6 +766,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.bestFit(window.bestFitValue());
     docPref.spriteSheet.textureFilename(window.filenameValue());
     docPref.spriteSheet.dataFilename(window.dataFilenameValue());
+    docPref.spriteSheet.dataFormat(window.dataFormatValue());
     docPref.spriteSheet.borderPadding(window.borderPaddingValue());
     docPref.spriteSheet.shapePadding(window.shapePaddingValue());
     docPref.spriteSheet.innerPadding(window.innerPaddingValue());
@@ -787,6 +796,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   bool bestFit = docPref.spriteSheet.bestFit();
   std::string filename = docPref.spriteSheet.textureFilename();
   std::string dataFilename = docPref.spriteSheet.dataFilename();
+  DocumentExporter::DataFormat dataFormat = docPref.spriteSheet.dataFormat();
   std::string layerName = docPref.spriteSheet.layer();
   std::string frameTagName = docPref.spriteSheet.frameTag();
   int borderPadding = docPref.spriteSheet.borderPadding();
@@ -877,8 +887,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   DocumentExporter exporter;
   if (!filename.empty())
     exporter.setTextureFilename(filename);
-  if (!dataFilename.empty())
+  if (!dataFilename.empty()) {
     exporter.setDataFilename(dataFilename);
+    exporter.setDataFormat(dataFormat);
+  }
   exporter.setTextureWidth(sheet_w);
   exporter.setTextureHeight(sheet_h);
   exporter.setSpriteSheetType(type);

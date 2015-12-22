@@ -49,6 +49,10 @@
 
     <hbox />
     <hbox id="data_meta" cell_hspan="3">
+      <combobox id="data_format">
+        <listitem text="Hash" value="0" />
+        <listitem text="Array" value="1" />
+      </combobox>
       <label text="Meta:" />
       <check id="list_layers" text="Layers" />
       <check id="list_tags" text="Frame Tags" />
