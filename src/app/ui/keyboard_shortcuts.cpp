@@ -484,6 +484,9 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   keyboard.InsertEndChild(tools);
   keyboard.InsertEndChild(quicktools);
   keyboard.InsertEndChild(actions);
+
+  TiXmlDeclaration declaration("1.0", "utf-8", "");
+  doc->InsertEndChild(declaration);
   doc->InsertEndChild(keyboard);
   save_xml(doc, filename);
 }
