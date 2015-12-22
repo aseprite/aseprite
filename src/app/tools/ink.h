@@ -51,6 +51,9 @@ namespace app {
       // Returns true if this ink picks colors from the image
       virtual bool isEyedropper() const { return false; }
 
+      // Returns true if this ink is shading
+      virtual bool isShading() const { return false; }
+
       // Returns true if this ink moves the scroll only
       virtual bool isScrollMovement() const { return false; }
 
