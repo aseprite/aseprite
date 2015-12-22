@@ -648,7 +648,9 @@ void FileOp::operate(IFileOpProgress* progress)
 
         m_seq.progress_offset += m_seq.progress_fraction;
       }
+
       m_filename = *m_seq.filename_list.begin();
+      m_document->setFilename(m_filename);
 
       // Destroy the image
       m_seq.image.reset(NULL);
