@@ -29,7 +29,7 @@ GuiXml* GuiXml::instance()
 
 GuiXml::GuiXml()
 {
-  LOG("Loading gui.xml file...");
+  LOG("Loading gui.xml file...\n");
 
   ResourceFinder rf;
   rf.includeDataDir("gui.xml");
