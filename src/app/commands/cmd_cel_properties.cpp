@@ -167,8 +167,13 @@ private:
           if (newOpacity != m_cel->opacity())
             transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
 
-          if (m_userData != m_cel->data()->userData())
+          if (m_userData != m_cel->data()->userData()) {
             transaction.execute(new cmd::SetUserData(writer.cel()->data(), m_userData));
+
+            // Redraw timeline because the cel's user data/color
+            // might have changed.
+            App::instance()->getMainWindow()->getTimeline()->invalidate();
+          }
         }
         else {
           for (Cel* cel : m_document->sprite()->uniqueCels()) {
@@ -178,8 +183,13 @@ private:
               transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
             }
 
-            if (m_userData != cel->data()->userData())
+            if (m_userData != cel->data()->userData()) {
               transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
+
+              // Redraw timeline because the cel's user data/color
+              // might have changed.
+              App::instance()->getMainWindow()->getTimeline()->invalidate();
+            }
           }
         }
 

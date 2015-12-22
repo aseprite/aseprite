@@ -19,6 +19,8 @@
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -193,8 +195,13 @@ private:
         if (newBlendMode != m_layer->blendMode())
           transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
 
-        if (m_userData != m_layer->userData())
+        if (m_userData != m_layer->userData()) {
           transaction.execute(new cmd::SetUserData(writer.layer(), m_userData));
+
+          // Redraw timeline because the layer's user data/color
+          // might have changed.
+          App::instance()->getMainWindow()->getTimeline()->invalidate();
+        }
 
         transaction.commit();
       }
