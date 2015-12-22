@@ -21,6 +21,7 @@
 #include "app/document_access.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -524,8 +525,11 @@ bool DocumentView::onClear(Context* ctx)
   {
     Transaction transaction(writer.context(), "Clear");
     transaction.execute(new cmd::ClearMask(writer.cel()));
-    if (visibleMask)
+
+    if (visibleMask &&
+        !Preferences::instance().selection.keepSelectionAfterClear())
       transaction.execute(new cmd::DeselectMask(document));
+
     transaction.commit();
   }
 

@@ -72,6 +72,7 @@
 
           <separator text="Selection" horizontal="true" />
           <check text="Adjust opaque/transparent mode automatically" id="auto_opaque" tooltip="Depending on the layer (background/transparent),&#10;the pasted selection will be adjusted&#10;automatically (opaque/transparent)" />
+          <check text="Keep selection after &quot;Edit &gt; Clear&quot; command" id="keep_selection_after_clear" tooltip="Check this if you want to keep the selection&#10;after deleting it." />
         </vbox>
 
         <!-- Timeline -->
