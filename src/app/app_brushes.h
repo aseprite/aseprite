@@ -24,6 +24,7 @@ namespace app {
     typedef std::vector<BrushSlot> BrushSlots;
 
     AppBrushes();
+    ~AppBrushes();
 
     // Adds a new brush and returns the slot number where the brush
     // is now available.
@@ -43,6 +44,10 @@ namespace app {
     base::Signal0<void> ItemsChange;
 
   private:
+    void load(const std::string& filename);
+    void save(const std::string& filename) const;
+    static std::string userBrushesFilename();
+
     doc::Brushes m_standard;
     BrushSlots m_slots;
   };

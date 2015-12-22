@@ -15,6 +15,7 @@ add_library(doc-lib
   blend_funcs.cpp
   blend_mode.cpp
   brush.cpp
+  brush_type.cpp
   cel.cpp
   cel_data.cpp
   cel_data_io.cpp

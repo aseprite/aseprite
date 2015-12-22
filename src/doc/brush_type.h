@@ -8,6 +8,8 @@
 #define DOC_BRUSH_TYPE_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace doc {
 
   enum BrushType {
@@ -19,6 +21,9 @@ namespace doc {
     kFirstBrushType = kCircleBrushType,
     kLastBrushType = kImageBrushType,
   };
+
+  std::string brush_type_to_string_id(BrushType brushType);
+  BrushType string_id_to_brush_type(const std::string& s);
 
 } // namespace doc
 

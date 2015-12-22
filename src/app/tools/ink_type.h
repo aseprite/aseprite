@@ -29,6 +29,8 @@ namespace tools {
   }
 
   std::string ink_type_to_string(InkType inkType);
+  std::string ink_type_to_string_id(InkType inkType);
+  InkType string_id_to_ink_type(const std::string& s);
 
 } // namespace tools
 } // namespace app
