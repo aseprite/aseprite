@@ -197,6 +197,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_bgConn = docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_onionskinConn = docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(base::Bind<void>(&Editor::invalidateIfActive, this));
 
   m_document->addObserver(this);
 
@@ -1711,6 +1712,12 @@ void Editor::dropMovingPixels()
 {
   ASSERT(isMovingPixels());
   backToPreviousState();
+}
+
+void Editor::invalidateIfActive()
+{
+  if (isActive())
+    invalidate();
 }
 
 } // namespace app

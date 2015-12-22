@@ -249,6 +249,8 @@ namespace app {
 
     gfx::Point calcExtraPadding(const render::Zoom& zoom);
 
+    void invalidateIfActive();
+
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;
 
@@ -300,6 +302,7 @@ namespace app {
     base::ScopedConnection m_pixelGridConn;
     base::ScopedConnection m_bgConn;
     base::ScopedConnection m_onionskinConn;
+    base::ScopedConnection m_symmetryModeConn;
 
     EditorObservers m_observers;
 
