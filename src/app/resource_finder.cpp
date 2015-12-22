@@ -53,18 +53,17 @@ bool ResourceFinder::findFirst()
 {
   while (next()) {
     if (m_log)
-      LOG("Loading resource from \"%s\"...\n", filename().c_str());
+      LOG("Searching file \"%s\"...", filename().c_str());
 
     if (base::is_file(filename())) {
       if (m_log)
-        LOG("- OK\n");
+        LOG(" (found)\n");
 
       return true;
     }
+    else if (m_log)
+      LOG(" (not found)\n");
   }
-
-  if (m_log)
-    LOG("- Resource not found.\n");
 
   return false;
 }
