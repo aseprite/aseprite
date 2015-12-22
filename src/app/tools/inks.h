@@ -118,6 +118,7 @@ public:
   Ink* clone() override { return new ShadingInk(*this); }
 
   bool isPaint() const override { return true; }
+  bool isShading() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
     m_proc = ink_processing[INK_SHADING][MID(0, loop->sprite()->pixelFormat(), 2)];
