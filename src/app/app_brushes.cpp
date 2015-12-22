@@ -16,6 +16,7 @@
 #include "app/xml_exception.h"
 #include "base/base64.h"
 #include "base/convert_to.h"
+#include "base/fs.h"
 #include "base/path.h"
 #include "base/serialization.h"
 #include "doc/brush.h"
@@ -168,7 +169,14 @@ AppBrushes::AppBrushes()
   m_standard.push_back(BrushRef(new Brush(kSquareBrushType, 7, 0)));
   m_standard.push_back(BrushRef(new Brush(kLineBrushType, 7, 44)));
 
-  load(userBrushesFilename());
+  try {
+    std::string fn = userBrushesFilename();
+    if (base::is_file(fn))
+      load(fn);
+  }
+  catch (const std::exception& ex) {
+    LOG("Error loading user brushes: %s", ex.what());
+  }
 }
 
 AppBrushes::~AppBrushes()

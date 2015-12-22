@@ -163,6 +163,7 @@ void App::initialize(const AppOptions& options)
   m_coreModules = new CoreModules;
   m_modules = new Modules(options.verbose());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
+  m_brushes.reset(new AppBrushes);
 
   if (options.hasExporterParams())
     m_exporter.reset(new DocumentExporter);
@@ -672,6 +673,9 @@ App::~App()
 
     // Finalize modules, configuration and core.
     Editor::destroyEditorSharedInternals();
+
+    // Save brushes
+    m_brushes.reset(nullptr);
 
     delete m_legacy;
     delete m_modules;

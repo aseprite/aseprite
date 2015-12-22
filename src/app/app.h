@@ -70,7 +70,11 @@ namespace app {
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
     Preferences& preferences() const;
-    AppBrushes& brushes() { return m_brushes; }
+
+    AppBrushes& brushes() {
+      ASSERT(m_brushes.get());
+      return *m_brushes;
+    }
 
     void showNotification(INotificationDelegate* del);
     void updateDisplayTitleBar();
@@ -97,7 +101,7 @@ namespace app {
     base::UniquePtr<MainWindow> m_mainWindow;
     FileList m_files;
     base::UniquePtr<DocumentExporter> m_exporter;
-    AppBrushes m_brushes;
+    base::UniquePtr<AppBrushes> m_brushes;
   };
 
   void app_refresh_screen();
