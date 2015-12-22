@@ -444,6 +444,17 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
         fop->m_seq.filename_list.push_back(frame_fn);
       }
+
+      if (fop->m_seq.filename_list.size() > 1 &&
+          ui::Alert::show("Notice"
+                          "<<Do you want to export the animation in %d files?"
+                          "<<%s, %s..."
+                          "||&Agree||&Cancel",
+                          int(fop->m_seq.filename_list.size()),
+                          base::get_file_name(fop->m_seq.filename_list[0]).c_str(),
+                          base::get_file_name(fop->m_seq.filename_list[1]).c_str()) != 1) {
+        return nullptr;
+      }
     }
   }
   else
