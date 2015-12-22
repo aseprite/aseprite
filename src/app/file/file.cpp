@@ -145,7 +145,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
 
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_LOAD)) {
-    fop->setError("ASEPRITE can't load \"%s\" files\n", extension.c_str());
+    fop->setError("%s can't load \"%s\" files\n", PACKAGE, extension.c_str());
     goto done;
   }
 
@@ -239,7 +239,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_SAVE)) {
-    fop->setError("ASEPRITE can't save \"%s\" files\n", extension.c_str());
+    fop->setError("%s can't save \"%s\" files\n", PACKAGE, extension.c_str());
     return fop.release();
   }
 
