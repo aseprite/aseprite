@@ -39,6 +39,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <list>
 
@@ -52,6 +53,24 @@ std::string escape_for_json(const std::string& path)
   base::replace_string(res, "\\", "\\\\");
   base::replace_string(res, "\"", "\\\"");
   return res;
+}
+
+std::ostream& operator<<(std::ostream& os, const doc::UserData& data)
+{
+  doc::color_t color = data.color();
+  if (doc::rgba_geta(color)) {
+    os << ", \"color\": \"#"
+       << std::hex << std::setfill('0')
+       << std::setw(2) << (int)doc::rgba_getr(color)
+       << std::setw(2) << (int)doc::rgba_getg(color)
+       << std::setw(2) << (int)doc::rgba_getb(color)
+       << std::setw(2) << (int)doc::rgba_geta(color)
+       << std::dec
+       << "\"";
+  }
+  if (!data.text().empty())
+    os << ", \"data\": \"" << escape_for_json(data.text()) << "\"";
+  return os;
 }
 
 } // anonymous namespace
@@ -734,6 +753,38 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
           os << ", \"opacity\": " << layerImg->opacity()
              << ", \"blendMode\": \"" << blend_mode_to_string(layerImg->blendMode()) << "\"";
         }
+        os << layer->userData();
+
+        // Cels
+        CelList cels;
+        layer->getCels(cels);
+        bool someCelWithData = false;
+        for (const Cel* cel : cels) {
+          if (!cel->data()->userData().isEmpty()) {
+            someCelWithData = true;
+            break;
+          }
+        }
+
+        if (someCelWithData) {
+          bool firstCel = true;
+
+          os << ", \"cels\": [";
+          for (const Cel* cel : cels) {
+            if (!cel->data()->userData().isEmpty()) {
+              if (firstCel)
+                firstCel = false;
+              else
+                os << ", ";
+
+              os << "{ \"frame\": " << cel->frame()
+                 << cel->data()->userData()
+                 << " }";
+            }
+          }
+          os << "]";
+        }
+
         os << " }";
       }
     }
