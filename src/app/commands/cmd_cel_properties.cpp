@@ -177,18 +177,18 @@ private:
         }
         else {
           for (Cel* cel : m_document->sprite()->uniqueCels()) {
-            if (!cel->layer()->isBackground() &&
-                m_range.inRange(cel->sprite()->layerToIndex(cel->layer()),
-                                cel->frame())) {
-              transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
-            }
+            if (m_range.inRange(cel->sprite()->layerToIndex(cel->layer()), cel->frame())) {
+              if (!cel->layer()->isBackground()) {
+                transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
+              }
 
-            if (m_userData != cel->data()->userData()) {
-              transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
+              if (m_userData != cel->data()->userData()) {
+                transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
 
-              // Redraw timeline because the cel's user data/color
-              // might have changed.
-              App::instance()->getMainWindow()->getTimeline()->invalidate();
+                // Redraw timeline because the cel's user data/color
+                // might have changed.
+                App::instance()->getMainWindow()->getTimeline()->invalidate();
+              }
             }
           }
         }
