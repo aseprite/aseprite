@@ -135,6 +135,14 @@ static const char* cursor_names[kCursorTypes] = {
   "magnifier"                   // kMagnifierCursor
 };
 
+static css::Value value_or_none(const char* valueStr)
+{
+  if (strcmp(valueStr, "none") == 0)
+    return css::Value();
+  else
+    return css::Value(valueStr);
+}
+
 // static
 SkinTheme* SkinTheme::instance()
 {
@@ -445,9 +453,9 @@ void SkinTheme::loadXml(const std::string& skinId)
         if (ruleName == "background") {
           const char* repeat_id = xmlRule->Attribute("repeat");
 
-          if (color_id) (*style)[StyleSheet::backgroundColorRule()] = css::Value(color_id);
-          if (part_id) (*style)[StyleSheet::backgroundPartRule()] = css::Value(part_id);
-          if (repeat_id) (*style)[StyleSheet::backgroundRepeatRule()] = css::Value(repeat_id);
+          if (color_id) (*style)[StyleSheet::backgroundColorRule()] = value_or_none(color_id);
+          if (part_id) (*style)[StyleSheet::backgroundPartRule()] = value_or_none(part_id);
+          if (repeat_id) (*style)[StyleSheet::backgroundRepeatRule()] = value_or_none(repeat_id);
         }
         else if (ruleName == "icon") {
           if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);

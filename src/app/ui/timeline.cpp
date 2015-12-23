@@ -1354,10 +1354,33 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   bounds = getPartBounds(Hit(PART_LAYER_TEXT, layerIdx));
 
   // Draw layer name.
-  drawPart(g, bounds, layer->name().c_str(), styles.timelineLayer(),
-    is_active,
-    (hotlayer && m_hot.part == PART_LAYER_TEXT),
-    (clklayer && m_clk.part == PART_LAYER_TEXT));
+  doc::color_t layerColor = layer->userData().color();
+  if (doc::rgba_geta(layerColor) > 0) {
+    drawPart(g, bounds, nullptr, styles.timelineLayer(),
+             is_active,
+             (hotlayer && m_hot.part == PART_LAYER_TEXT),
+             (clklayer && m_clk.part == PART_LAYER_TEXT));
+
+    // Fill with an user-defined custom color.
+    auto b2 = bounds;
+    b2.shrink(1*guiscale()).inflate(1*guiscale());
+    g->fillRect(gfx::rgba(doc::rgba_getr(layerColor),
+                          doc::rgba_getg(layerColor),
+                          doc::rgba_getb(layerColor),
+                          doc::rgba_geta(layerColor)),
+                b2);
+
+    drawPart(g, bounds, layer->name().c_str(), styles.timelineLayerTextOnly(),
+             is_active,
+             (hotlayer && m_hot.part == PART_LAYER_TEXT),
+             (clklayer && m_clk.part == PART_LAYER_TEXT));
+  }
+  else {
+    drawPart(g, bounds, layer->name().c_str(), styles.timelineLayer(),
+             is_active,
+             (hotlayer && m_hot.part == PART_LAYER_TEXT),
+             (clklayer && m_clk.part == PART_LAYER_TEXT));
+  }
 
   if (layer->isBackground()) {
     int s = ui::guiscale();
@@ -1368,18 +1391,6 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
       gfx::Rect(bounds.x+4*s,
         bounds.y+bounds.h-2*s,
         font()->textLength(layer->name().c_str()), s));
-  }
-
-  // Fill with an user-defined custom color.
-  doc::color_t layerColor = layer->userData().color();
-  if (doc::rgba_geta(layerColor) > 0) {
-    int alpha = doc::rgba_geta(layerColor) * 3 / 4;
-    auto b2 = bounds;
-    b2.shrink(1*guiscale()).inflate(1*guiscale());
-    g->fillRect(gfx::rgba(doc::rgba_getr(layerColor),
-                          doc::rgba_getg(layerColor),
-                          doc::rgba_getb(layerColor), alpha),
-                b2);
   }
 
   // If this layer wasn't clicked but there are another layer clicked,
@@ -1412,6 +1423,20 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     drawPart(g, bounds, NULL, styles.timelineSelectedCel(), false, false, true);
   else
     drawPart(g, bounds, NULL, styles.timelineBox(), is_active, is_hover);
+
+  // Fill with an user-defined custom color.
+  if (cel && cel->data()) {
+    doc::color_t celColor = cel->data()->userData().color();
+    if (doc::rgba_geta(celColor) > 0) {
+      auto b2 = bounds;
+      b2.shrink(1*guiscale()).inflate(1*guiscale());
+      g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
+                            doc::rgba_getg(celColor),
+                            doc::rgba_getb(celColor),
+                            doc::rgba_geta(celColor)),
+                  b2);
+    }
+  }
 
   skin::Style* style;
   bool fromLeft = false;
@@ -1446,20 +1471,6 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   // Draw decorators to link the activeCel with its links.
   if (data->activeIt != data->end)
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
-
-  // Fill with an user-defined custom color.
-  if (cel && cel->data()) {
-    doc::color_t celColor = cel->data()->userData().color();
-    if (doc::rgba_geta(celColor) > 0) {
-      int alpha = doc::rgba_geta(celColor) * 3 / 4;
-      auto b2 = bounds;
-      b2.shrink(1*guiscale()).inflate(1*guiscale());
-      g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
-                            doc::rgba_getg(celColor),
-                            doc::rgba_getb(celColor), alpha),
-                  b2);
-    }
-  }
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,

@@ -564,6 +564,18 @@
     <style id="timeline_layer" base="timeline_box">
       <text align="left" valign="middle" padding-left="4" />
     </style>
+    <style id="timeline_layer_text_only" base="timeline_layer">
+      <background color="none" part="none" repeat="none" />
+    </style>
+    <style id="timeline_layer_text_only:hover" base="timeline_layer">
+      <background color="none" part="none" repeat="none" />
+    </style>
+    <style id="timeline_layer_text_only:active" base="timeline_layer">
+      <background color="none" part="none" repeat="none" />
+    </style>
+    <style id="timeline_layer_text_only:active:hover" base="timeline_layer">
+      <background color="none" part="none" repeat="none" />
+    </style>
 
     <!-- timeline_selected_cel -->
     <style id="timeline_selected_cel">
