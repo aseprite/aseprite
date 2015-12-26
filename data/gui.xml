@@ -453,6 +453,10 @@
 
       <!-- Modifiers for freehand tool controller  -->
       <key action="StraightLineFromLastPoint" shortcut="Shift" />
+
+      <!-- Without default shortcuts -->
+      <key action="LeftMouseButton" />
+      <key action="RightMouseButton" />
     </actions>
 
   </keyboard>

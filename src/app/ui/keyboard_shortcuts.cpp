@@ -375,13 +375,12 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     const char* tool_key = get_shortcut(xmlKey);
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
-    if (tool_id && tool_key) {
+    if (tool_id) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-        LOG(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
-
         Key* key = this->tool(tool);
-        if (key) {
+        if (key && tool_key) {
+          LOG(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
           Accelerator accel(tool_key);
 
           if (!removed)
@@ -404,13 +403,12 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     const char* tool_key = get_shortcut(xmlKey);
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
-    if (tool_id && tool_key) {
+    if (tool_id) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-        LOG(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
-
         Key* key = this->quicktool(tool);
-        if (key) {
+        if (key && tool_key) {
+          LOG(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
           Accelerator accel(tool_key);
 
           if (!removed)
@@ -433,14 +431,12 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     const char* tool_key = get_shortcut(xmlKey);
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
-    if (tool_action && tool_key) {
-      LOG(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
-
+    if (tool_action) {
       KeyAction action = base::convert_to<KeyAction, std::string>(tool_action);
-
       if (action != KeyAction::None) {
         Key* key = this->action(action);
-        if (key) {
+        if (key && tool_key) {
+          LOG(" - Shortcut for action '%s': <%s>\n", tool_action, tool_key);
           Accelerator accel(tool_key);
 
           if (!removed)
