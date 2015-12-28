@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "base/memory.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "she/she.h"
@@ -66,10 +67,21 @@ extern int app_main(int argc, char* argv[]);
 
 #if _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-  LPSTR lpCmdLine, int nCmdShow)
+                   LPSTR lpCmdLine, int nCmdShow)
 {
-  int argc = 1;
-  char* argv[] = { "" };
+  int argc = 0;
+  LPWSTR* argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
+  char** argv;
+  if (argvW && argc > 0) {
+    argv = new char*[argc];
+    for (int i=0; i<argc; ++i)
+      argv[i] = base_strdup(base::to_utf8(std::wstring(argvW[i])).c_str());
+    LocalFree(argvW);
+  }
+  else {
+    argv = new char*[1];
+    argv[0] = base_strdup("");
+  }
 #else
 int main(int argc, char* argv[])
 {
