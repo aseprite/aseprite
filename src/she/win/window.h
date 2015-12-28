@@ -234,7 +234,10 @@ namespace she {
           Event ev;
           ev.setType(Event::CloseDisplay);
           queueEvent(ev);
-          break;
+
+          // Don't close the window, it must be closed manually after
+          // the CloseDisplay event is processed.
+          return 0;
         }
 
         case WM_PAINT: {
