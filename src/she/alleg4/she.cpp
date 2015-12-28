@@ -163,6 +163,10 @@ public:
     // Do nothing
   }
 
+  gfx::Size defaultNewDisplaySize() override {
+    return gfx::Size(0, 0);
+  }
+
   Display* defaultDisplay() override {
     return unique_display;
   }

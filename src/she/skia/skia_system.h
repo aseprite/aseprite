@@ -67,6 +67,19 @@ public:
     m_gpuAcceleration = state;
   }
 
+  gfx::Size defaultNewDisplaySize() override {
+    gfx::Size sz;
+#ifdef _WIN32
+    sz.w = GetSystemMetrics(SM_CXMAXIMIZED);
+    sz.h = GetSystemMetrics(SM_CYMAXIMIZED);
+    sz.w -= GetSystemMetrics(SM_CXSIZEFRAME)*4;
+    sz.h -= GetSystemMetrics(SM_CYSIZEFRAME)*4;
+    sz.w = MAX(0, sz.w);
+    sz.h = MAX(0, sz.h);
+#endif
+    return sz;
+  }
+
   Display* defaultDisplay() override {
     return m_defaultDisplay;
   }

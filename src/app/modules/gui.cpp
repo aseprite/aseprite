@@ -212,8 +212,10 @@ void exit_module_gui()
 static void load_gui_config(int& w, int& h, bool& maximized,
                             std::string& windowLayout)
 {
-  w = get_config_int("GfxMode", "Width", 0);
-  h = get_config_int("GfxMode", "Height", 0);
+  gfx::Size defSize = she::instance()->defaultNewDisplaySize();
+
+  w = get_config_int("GfxMode", "Width", defSize.w);
+  h = get_config_int("GfxMode", "Height", defSize.h);
   maximized = get_config_bool("GfxMode", "Maximized", false);
   windowLayout = get_config_string("GfxMode", "WindowLayout", "");
 }
