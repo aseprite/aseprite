@@ -49,6 +49,7 @@ using namespace she;
   [self setDelegate:m_delegate];
   [self setContentView:view];
   [self center];
+  [self makeKeyAndOrderFront:self];
 
   return self;
 }

@@ -38,6 +38,7 @@ int OSXApp::run(int argc, char* argv[])
 
   [app setActivationPolicy:NSApplicationActivationPolicyRegular];
   [app setDelegate:appDelegate];
+  [app activateIgnoringOtherApps:YES];
 
   app_main(argc, argv);
   return 0;
