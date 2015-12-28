@@ -381,7 +381,6 @@ void BrushPopup::regenerate(const gfx::Rect& box)
   m_customBrushes = new ButtonSet(3);
   m_customBrushes->setTriggerOnMouseUp(true);
 
-  auto& parts = SkinTheme::instance()->parts;
   int slot = 0;
   for (const auto& brush : brushSlots) {
     ++slot;
