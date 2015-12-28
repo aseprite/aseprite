@@ -10,6 +10,7 @@
 
 #include "she/skia/skia_window_win.h"
 
+#include "base/log.h"
 #include "she/event_queue.h"
 #include "she/skia/skia_display.h"
 #include "she/system.h"
@@ -157,7 +158,7 @@ bool SkiaWindow::attachGL()
                                       (GrBackendContext)m_glCtx->gl()));
     }
     catch (const std::exception& ex) {
-      //LOG("Cannot create GL context: %s\n", ex.what());
+      LOG("Cannot create GL context: %s\n", ex.what());
       detachGL();
     }
   }
@@ -179,6 +180,9 @@ bool SkiaWindow::attachANGLE()
 
 void SkiaWindow::detachGL()
 {
+  if (m_glCtx && m_display)
+    m_display->resetSkiaSurface();
+
   m_skSurfaceDirect.reset(nullptr);
   m_skSurface.reset(nullptr);
   m_grRenderTarget.reset(nullptr);

@@ -23,7 +23,8 @@ SkiaDisplay::SkiaDisplay(int width, int height, int scale)
   , m_customSurface(false)
   , m_nativeCursor(kArrowCursor)
 {
-  m_surface->create(width, height);
+  m_surface->create(width / scale,
+                    height / scale);
   m_window.setScale(scale);
   m_window.setVisible(true);
 }
@@ -33,6 +34,19 @@ void SkiaDisplay::setSkiaSurface(SkiaSurface* surface)
   m_surface->dispose();
   m_surface = surface;
   m_customSurface = true;
+}
+
+void SkiaDisplay::resetSkiaSurface()
+{
+  if (m_surface) {
+    m_surface->dispose();
+    m_surface = nullptr;
+  }
+
+  gfx::Size size = m_window.clientSize() / m_window.scale();
+  m_surface = new SkiaSurface;
+  m_surface->create(size.w, size.h);
+  m_customSurface = false;
 }
 
 void SkiaDisplay::resize(const gfx::Size& size)

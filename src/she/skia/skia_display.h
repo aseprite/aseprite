@@ -21,6 +21,7 @@ public:
   SkiaDisplay(int width, int height, int scale);
 
   void setSkiaSurface(SkiaSurface* surface);
+  void resetSkiaSurface();
 
   void resize(const gfx::Size& size);
   void dispose() override;
