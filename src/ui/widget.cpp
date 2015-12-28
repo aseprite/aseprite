@@ -1041,17 +1041,25 @@ void Widget::scrollRegion(const Region& region, const Point& delta)
   if (delta.x == 0 && delta.y == 0)
     return;
 
-  Region reg2 = region;
-  reg2.offset(delta);
-  reg2.createIntersection(reg2, region);
+  // The movable region includes the given region in the "region"
+  // parameter without the invalid widget region (i.e. m_updateRegion,
+  // as we cannot move invalid/non-updated screen areas), and
+  // intersecting with the moved "region" area (so we don't overlap
+  // regions outside the "region" parameters)
+  Region movable = region;
+  movable.createSubtraction(movable, m_updateRegion);
+  movable.offset(delta);
+  movable.createIntersection(movable, region);
 
+  // Now we invalidate the given "region" without the moved region
+  // ("movable" variable).
   m_updateRegion.createUnion(m_updateRegion, region);
-  m_updateRegion.createSubtraction(m_updateRegion, reg2);
+  m_updateRegion.createSubtraction(m_updateRegion, movable);
   mark_dirty_flag(this);
 
   // Move screen pixels
-  reg2.offset(-delta);
-  ui::move_region(manager(), reg2, delta.x, delta.y);
+  movable.offset(-delta);
+  ui::move_region(manager(), movable, delta.x, delta.y);
 
   // Generate the kPaintMessage messages for the widget's m_updateRegion
   flushRedraw();
