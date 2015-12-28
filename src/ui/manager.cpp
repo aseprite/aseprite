@@ -272,8 +272,6 @@ static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
 
 void Manager::generateMessagesFromSheEvents()
 {
-  she::Event lastMouseMoveEvent;
-
   // Events from "she" layer.
   she::Event sheEvent;
   for (;;) {
@@ -336,12 +334,10 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseMove: {
-        // TODO Currently we cannot handleMouseMove() for each
-        // she::Event::MouseMove as the UI library is not prepared yet
-        // to process more than one kMouseMoveMessage message for
-        // loop-cycle. The main problem are the functions to control
-        // scroll (Window::moveWindow() and Widget::scrollRegion()).
-        lastMouseMoveEvent = sheEvent;
+        _internal_set_mouse_position(sheEvent.position());
+
+        handleMouseMove(sheEvent.position(), m_mouseButtons,
+                        sheEvent.modifiers());
         break;
       }
 
@@ -380,13 +376,6 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
     }
-  }
-
-  if (lastMouseMoveEvent.type() != she::Event::None) {
-    _internal_set_mouse_position(lastMouseMoveEvent.position());
-
-    handleMouseMove(lastMouseMoveEvent.position(), m_mouseButtons,
-                    lastMouseMoveEvent.modifiers());
   }
 }
 
