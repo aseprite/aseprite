@@ -349,9 +349,22 @@ void ColorBar::setPaletteEditorButtonState(bool state)
 void ColorBar::onActiveSiteChange(const doc::Site& site)
 {
   if (m_lastDocument != site.document()) {
-    m_lastDocument = site.document();
+    if (m_lastDocument)
+      m_lastDocument->removeObserver(this);
+
+    m_lastDocument = const_cast<doc::Document*>(site.document());
+
+    if (m_lastDocument)
+      m_lastDocument->addObserver(this);
+
     hideRemap();
   }
+}
+
+void ColorBar::onGeneralUpdate(doc::DocumentEvent& ev)
+{
+  // TODO Observe palette changes only
+  invalidate();
 }
 
 void ColorBar::onAppPaletteChange()

@@ -18,6 +18,8 @@
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "doc/context_observer.h"
+#include "doc/document_observer.h"
+#include "doc/documents_observer.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
 #include "ui/box.h"
@@ -39,6 +41,7 @@ namespace app {
   class ColorBar : public ui::Box
                  , public PaletteViewDelegate
                  , public doc::ContextObserver
+                 , public doc::DocumentObserver
                  , public app::InputChainElement {
     static ColorBar* m_instance;
   public:
@@ -71,6 +74,9 @@ namespace app {
 
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
+
+    // DocumentObserver impl
+    void onGeneralUpdate(doc::DocumentEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element) override;
@@ -150,7 +156,7 @@ namespace app {
     bool m_lock;
     bool m_syncingWithPref;
     base::UniquePtr<doc::Palette> m_oldPalette;
-    const doc::Document* m_lastDocument;
+    doc::Document* m_lastDocument;
     bool m_ascending;
     base::ScopedConnection m_beforeCmdConn;
     base::ScopedConnection m_afterCmdConn;

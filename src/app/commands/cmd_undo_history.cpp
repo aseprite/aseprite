@@ -18,6 +18,7 @@
 #include "app/document_undo.h"
 #include "app/document_undo_observer.h"
 #include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "base/bind.h"
 #include "doc/context_observer.h"
 #include "doc/documents_observer.h"
@@ -65,6 +66,8 @@ private:
         m_ctx->addObserver(this);
         m_ctx->documents().addObserver(this);
         if (m_ctx->activeDocument()) {
+          m_frame = m_ctx->activeSite().frame();
+
           attachDocument(
             static_cast<app::Document*>(m_ctx->activeDocument()));
         }
@@ -92,6 +95,11 @@ private:
         DocumentWriter writer(m_document, 100);
         m_document->undoHistory()->moveToState(item->state());
         m_document->generateMaskBoundaries();
+
+        // TODO this should be an observer of the current document palette
+        set_current_palette(m_document->sprite()->palette(m_frame),
+                            false);
+
         m_document->notifyGeneralUpdate();
       }
       catch (const std::exception& ex) {
@@ -103,6 +111,8 @@ private:
 
   // ContextObserver
   void onActiveSiteChange(const doc::Site& site) override {
+    m_frame = site.frame();
+
     if (m_document == site.document())
       return;
 
@@ -205,6 +215,7 @@ private:
 
   Context* m_ctx;
   app::Document* m_document;
+  doc::frame_t m_frame;
 };
 
 class UndoHistoryCommand : public Command {
