@@ -456,7 +456,7 @@ namespace she {
           Event ev;
           ev.setType(Event::KeyDown);
           ev.setScancode(win32vk_to_scancode(vk));
-          ev.setRepeat(lparam & 15);
+          ev.setRepeat(lparam & 0xffff);
 
           if (charsInBuffer < 1) {
             ev.setUnicodeChar(0);
@@ -477,7 +477,7 @@ namespace she {
           ev.setType(Event::KeyUp);
           ev.setScancode(win32vk_to_scancode(wparam));
           ev.setUnicodeChar(0);
-          ev.setRepeat(lparam & 15);
+          ev.setRepeat(lparam & 0xffff);
           queueEvent(ev);
 
           // TODO If we use native menus, this message should be given
