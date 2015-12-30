@@ -55,24 +55,30 @@ the repository clone in a directory called `aseprite-source`):
 
    If you have nmake (MSVC compilers):
 
-        C:\...\aseprite-source\build>cmake .. -G "NMake Makefiles"
+        C:\...\aseprite-source\build>cmake -G "NMake Makefiles" ..
 
    If you have Visual Studio you can generate a solution:
 
-        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 12 2013"
+        C:\...\aseprite-source\build>cmake -G "Visual Studio 12 2013" ..
 
    If you are on Linux:
 
-        /.../aseprite-source/build$ cmake .. -G "Unix Makefiles"
+        /.../aseprite-source/build$ cmake -G "Unix Makefiles" ..
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
+   
+   Additionally you can change build settings by passing them on the command line, like so:
 
-3. After you have executed one of the `cmake .. -G <generator>`
+        /.../aseprite-source/build$ cmake -DCMAKE_INSTALL_PREFIX=~/software ..
+
+   or later on with a tool like `ccmake`.
+
+3. After you have executed one of the `cmake -G <generator> ..`
    commands, you have to compile the project executing make, nmake,
    opening the solution, etc.
 
 4. When the project is compiled, you can find the executable file
-   inside `build/bin/aseprite.exe`.
+   inside `build/bin/aseprite.exe`. If you invoked `make install` it will be copied to an appropriate location (e.g. `/usr/local/bin/aseprite` on Linux).
 
 ## Mac OS X details
 
