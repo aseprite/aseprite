@@ -71,7 +71,7 @@ the repository clone in a directory called `aseprite-source`):
 
         /.../aseprite-source/build$ cmake -DCMAKE_INSTALL_PREFIX=~/software ..
 
-   or later on with a tool like `ccmake`.
+   or later on with a tool like [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html) or [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
 
 3. After you have executed one of the `cmake -G <generator> ..`
    commands, you have to compile the project executing make, nmake,
