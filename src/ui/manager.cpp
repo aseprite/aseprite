@@ -272,6 +272,8 @@ static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
 
 void Manager::generateMessagesFromSheEvents()
 {
+  she::Event lastMouseMoveEvent;
+
   // Events from "she" layer.
   she::Event sheEvent;
   for (;;) {
@@ -338,6 +340,8 @@ void Manager::generateMessagesFromSheEvents()
 
         handleMouseMove(sheEvent.position(), m_mouseButtons,
                         sheEvent.modifiers());
+
+        lastMouseMoveEvent = sheEvent;
         break;
       }
 
@@ -377,6 +381,12 @@ void Manager::generateMessagesFromSheEvents()
       }
     }
   }
+
+  // Generate just one kSetCursorMessage for the last mouse position
+  if (lastMouseMoveEvent.type() != she::Event::None) {
+    generateSetCursorMessage(lastMouseMoveEvent.position(),
+                             lastMouseMoveEvent.modifiers());
+  }
 }
 
 void Manager::handleMouseMove(const gfx::Point& mousePos,
@@ -409,8 +419,6 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
     newMouseMessage(
       kMouseMoveMessage, dst,
       mousePos, mouseButtons, modifiers));
-
-  generateSetCursorMessage(mousePos, modifiers);
 }
 
 void Manager::handleMouseDown(const gfx::Point& mousePos,
