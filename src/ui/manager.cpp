@@ -1235,8 +1235,8 @@ void Manager::pumpQueue()
             lock->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
           }
 
-          if (!m_display->flip())
-            surface = NULL;
+          if (m_display)
+            m_display->flip(gfx::Rect(0, 0, display_w(), display_h()));
 
           base::this_thread::sleep_for(0.002);
 #endif
