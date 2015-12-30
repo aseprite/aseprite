@@ -20,6 +20,7 @@
 #include "app/ui_context.h"
 #include "doc/palette.h"
 #include "ui/message.h"
+#include "ui/theme.h"
 
 namespace app {
 
@@ -111,14 +112,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WHEEL_ZOOM: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       render::Zoom zoom = editor->zoom();
-      if (dz < 0) {
-        while (dz++ < 0)
-          zoom.in();
-      }
-      else {
-        while (dz-- > 0)
-          zoom.out();
-      }
+
+      zoom = render::Zoom::fromLinearScale(zoom.linearScale() - dz);
 
       if (editor->zoom() != zoom) {
         bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
