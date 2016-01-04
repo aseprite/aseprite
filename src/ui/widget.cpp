@@ -894,9 +894,9 @@ void Widget::flushRedraw()
     if (!widget->m_updateRegion.isEmpty()) {
       // Intersect m_updateRegion with drawable area.
       {
-        Region region;
-        widget->getDrawableRegion(region, kCutTopWindows);
-        widget->m_updateRegion.createIntersection(widget->m_updateRegion, region);
+        Region drawable;
+        widget->getDrawableRegion(drawable, kCutTopWindows);
+        widget->m_updateRegion &= drawable;
       }
 
       std::size_t c, nrects = widget->m_updateRegion.size();
