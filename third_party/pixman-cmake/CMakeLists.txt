@@ -1,4 +1,4 @@
-# Copyright (C) 2014 by David Capello
+# Copyright (C) 2014, 2016 by David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -7,7 +7,7 @@ if(UNIX OR APPLE)
 endif()
 
 set(PIXMAN_VERSION_MAJOR 0)
-set(PIXMAN_VERSION_MINOR 32)
+set(PIXMAN_VERSION_MINOR 33)
 set(PIXMAN_VERSION_MICRO 6)
 
 configure_file(
