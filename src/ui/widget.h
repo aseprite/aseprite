@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -246,6 +246,7 @@ namespace ui {
     // onResize() and want to change the size of the widget without
     // generating recursive onResize() events.
     void setBoundsQuietly(const gfx::Rect& rc);
+    void offsetWidgets(int dx, int dy);
 
     const gfx::Size& minSize() const { return m_minSize; }
     const gfx::Size& maxSize() const { return m_maxSize; }
@@ -349,8 +350,6 @@ namespace ui {
     int mnemonicChar() const;
 
   protected:
-    void offsetWidgets(int dx, int dy);
-
     // ===============================================================
     // MESSAGE PROCESSING
     // ===============================================================
