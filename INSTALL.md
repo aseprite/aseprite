@@ -90,6 +90,7 @@ cmake with the following parameters:
     -DCMAKE_OSX_ARCHITECTURES:STRING=i386
     -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
     -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk
+    -DWITH_HarfBuzz=OFF
 
 ### Issues with Retina displays
 
