@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -617,8 +617,8 @@ void Widget::setBounds(const Rect& rc)
 
 void Widget::setBoundsQuietly(const gfx::Rect& rc)
 {
-  m_updateRegion.offset(rc.x - m_bounds.x, rc.y - m_bounds.y);
   m_bounds = rc;
+  invalidate();
 }
 
 void Widget::setBorder(const Border& br)
@@ -874,6 +874,9 @@ void Widget::flushRedraw()
     processing.push(this);
   }
 
+  Manager* manager = this->manager();
+  ASSERT(manager);
+
   while (!processing.empty()) {
     Widget* widget = processing.front();
     processing.pop();
@@ -910,9 +913,10 @@ void Widget::flushRedraw()
         msg->addRecipient(widget);
 
         // Enqueue the draw message
-        manager()->enqueueMessage(msg);
+        manager->enqueueMessage(msg);
       }
 
+      manager->addInvalidRegion(widget->m_updateRegion);
       widget->m_updateRegion.clear();
     }
   }
@@ -1034,35 +1038,6 @@ void Widget::invalidateRect(const gfx::Rect& rect)
 void Widget::invalidateRegion(const Region& region)
 {
   onInvalidateRegion(region);
-}
-
-void Widget::scrollRegion(const Region& region, const Point& delta)
-{
-  if (delta.x == 0 && delta.y == 0)
-    return;
-
-  // The movable region includes the given region in the "region"
-  // parameter without the invalid widget region (i.e. m_updateRegion,
-  // as we cannot move invalid/non-updated screen areas), and
-  // intersecting with the moved "region" area (so we don't overlap
-  // regions outside the "region" parameters)
-  Region movable = region;
-  movable.createSubtraction(movable, m_updateRegion);
-  movable.offset(delta);
-  movable.createIntersection(movable, region);
-
-  // Now we invalidate the given "region" without the moved region
-  // ("movable" variable).
-  m_updateRegion.createUnion(m_updateRegion, region);
-  m_updateRegion.createSubtraction(m_updateRegion, movable);
-  mark_dirty_flag(this);
-
-  // Move screen pixels
-  movable.offset(-delta);
-  ui::move_region(manager(), movable, delta.x, delta.y);
-
-  // Generate the kPaintMessage messages for the widget's m_updateRegion
-  flushRedraw();
 }
 
 class DeleteGraphicsAndSurface {

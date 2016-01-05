@@ -306,8 +306,6 @@ namespace ui {
     // Generates paint messages for the current update region.
     void flushRedraw();
 
-    void scrollRegion(const gfx::Region& region, const gfx::Point& delta);
-
     GraphicsPtr getGraphics(const gfx::Rect& clip);
 
     // ===============================================================

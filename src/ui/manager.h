@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -86,6 +86,19 @@ namespace ui {
 
     bool isFocusMovementKey(Message* msg);
 
+    // Returns the invalid region in the screen to being updated with
+    // PaintMessages. This region is cleared when each widget receives
+    // a paint message.
+    const gfx::Region& getInvalidRegion() const {
+      return m_invalidRegion;
+    }
+
+    void addInvalidRegion(const gfx::Region& b) {
+      m_invalidRegion |= b;
+    }
+
+    // Mark the given rectangle as a area to be flipped to the real
+    // screen
     void dirtyRect(const gfx::Rect& bounds);
 
     void _openWindow(Window* window);
@@ -130,6 +143,7 @@ namespace ui {
     she::Display* m_display;
     she::Clipboard* m_clipboard;
     she::EventQueue* m_eventQueue;
+    gfx::Region m_invalidRegion;  // Invalid region (we didn't receive paint messages yet for this).
 
     // This member is used to make freeWidget() a no-op when we
     // restack a window if the user clicks on it.

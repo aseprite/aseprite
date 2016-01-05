@@ -288,6 +288,15 @@ void Editor::backToPreviousState()
   setStateInternal(EditorStatePtr(NULL));
 }
 
+void Editor::getInvalidDecoratoredRegion(gfx::Region& region)
+{
+  // Remove decorated region that cannot be just moved because it
+  // must be redrawn in another position when the Editor's scroll
+  // changes (e.g. symmetry handles).
+  if ((m_flags & kShowDecorators) && m_decorator)
+    m_decorator->getInvalidDecoratoredRegion(this, region);
+}
+
 void Editor::setLayer(const Layer* layer)
 {
   bool changed = (m_layer != layer);
@@ -354,39 +363,13 @@ void Editor::setDefaultScroll()
   setEditorScroll(
     gfx::Point(
       m_padding.x - vp.w/2 + m_zoom.apply(m_sprite->width())/2,
-      m_padding.y - vp.h/2 + m_zoom.apply(m_sprite->height())/2), false);
+      m_padding.y - vp.h/2 + m_zoom.apply(m_sprite->height())/2));
 }
 
 // Sets the scroll position of the editor
-void Editor::setEditorScroll(const gfx::Point& scroll, bool blitValidRegion)
+void Editor::setEditorScroll(const gfx::Point& scroll)
 {
-  HideBrushPreview hide(m_brushPreview);
-  View* view = View::getView(this);
-  Point oldScroll;
-  Region region;
-  Region invalidRegion;
-
-  if (blitValidRegion) {
-    getDrawableRegion(region, kCutTopWindows);
-    oldScroll = view->viewScroll();
-
-    // Remove decorated region that cannot be just moved because it
-    // must be redrawn in another position when the Editor's scroll
-    // changes (e.g. symmetry handles).
-    if ((m_flags & kShowDecorators) && m_decorator) {
-      m_decorator->getInvalidDecoratoredRegion(this, invalidRegion);
-      if (!invalidRegion.isEmpty())
-        region.createSubtraction(region, invalidRegion);
-    }
-  }
-
-  view->setViewScroll(scroll);
-  Point newScroll = view->viewScroll();
-
-  if (blitValidRegion) {
-    // Move screen with blits
-    scrollRegion(region, oldScroll - newScroll);
-  }
+  View::getView(this)->setViewScroll(scroll);
 }
 
 void Editor::setEditorZoom(const render::Zoom& zoom)
@@ -862,7 +845,7 @@ void Editor::flashCurrentLayer()
   }
 }
 
-gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blitValidRegion)
+gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
 {
   // // Hide the brush preview
   // HideBrushPreview hide(editor->brushPreview());
@@ -891,7 +874,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blitValidR
     else {
       scroll -= deltaScroll;
     }
-    setEditorScroll(scroll, blitValidRegion);
+    setEditorScroll(scroll);
 
 #if defined(_WIN32) || defined(__APPLE__)
     mousePos -= delta;
@@ -1101,7 +1084,7 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
     m_padding.y - (vp.h/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.y));
 
   updateEditor();
-  setEditorScroll(scroll, false);
+  setEditorScroll(scroll);
   invalidate();
 }
 
@@ -1498,12 +1481,10 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
     padding.y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
 
   if ((m_zoom != zoom) || (screenPos != view->viewScroll())) {
-    bool blitValidRegion = (m_zoom == zoom);
-
     m_zoom = zoom;
 
     updateEditor();
-    setEditorScroll(scrollPos, blitValidRegion);
+    setEditorScroll(scrollPos);
   }
 
   flushRedraw();

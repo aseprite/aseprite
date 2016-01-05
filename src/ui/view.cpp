@@ -1,8 +1,10 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
+
+// #define DEBUG_SCROLL_EVENTS
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -10,14 +12,25 @@
 
 #include "gfx/size.h"
 #include "ui/intern.h"
+#include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/size_hint_event.h"
+#include "ui/move_region.h"
 #include "ui/resize_event.h"
 #include "ui/scroll_helper.h"
+#include "ui/scroll_region_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+
+#ifdef DEBUG_SCROLL_EVENTS
+#include "base/thread.h"
+#include "she/display.h"
+#include "she/scoped_surface_lock.h"
+#endif
+
+#include <queue>
 
 #define HBAR_SIZE (m_scrollbar_h.getBarWidth())
 #define VBAR_SIZE (m_scrollbar_v.getBarWidth())
@@ -33,7 +46,7 @@ View::View()
 {
   m_hasBars = true;
 
-  this->setFocusStop(true);
+  setFocusStop(true);
   addChild(&m_viewport);
   setScrollableSize(Size(0, 0));
 
@@ -128,21 +141,7 @@ Point View::viewScroll() const
 
 void View::setViewScroll(const Point& pt)
 {
-  Point oldScroll = viewScroll();
-  Size maxsize = getScrollableSize();
-  Size visible = visibleSize();
-  Point newScroll(MID(0, pt.x, MAX(0, maxsize.w - visible.w)),
-                  MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
-
-  if (newScroll == oldScroll)
-    return;
-
-  m_scrollbar_h.setPos(newScroll.x);
-  m_scrollbar_v.setPos(newScroll.y);
-
-  m_viewport.layout();
-
-  onScrollChange();
+  onSetViewScroll(pt);
 }
 
 void View::updateView()
@@ -226,6 +225,137 @@ void View::onSizeHint(SizeHintEvent& ev)
 void View::onPaint(PaintEvent& ev)
 {
   theme()->paintView(ev);
+}
+
+void View::onSetViewScroll(const gfx::Point& pt)
+{
+  Point oldScroll = viewScroll();
+  Size maxsize = getScrollableSize();
+  Size visible = visibleSize();
+  Point newScroll(MID(0, pt.x, MAX(0, maxsize.w - visible.w)),
+                  MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
+
+  if (newScroll == oldScroll)
+    return;
+
+  // This is the movement for the scrolled region (which is inverse to
+  // the scroll position delta/movement).
+  Point delta = oldScroll - newScroll;
+
+  // Visible viewport region that is not overlapped by windows
+  Region drawableRegion;
+  m_viewport.getDrawableRegion(
+    drawableRegion, DrawableRegionFlags(kCutTopWindows | kUseChildArea));
+
+  // Start the region to scroll equal to the drawable viewport region.
+  Rect cpos = m_viewport.childrenBounds();
+  Region validRegion(cpos);
+  validRegion &= drawableRegion;
+
+  // Remove all children invalid regions from this "validRegion"
+  {
+    std::queue<Widget*> items;
+    items.push(&m_viewport);
+    while (!items.empty()) {
+      Widget* item = items.front();
+      items.pop();
+      for (Widget* child : item->children())
+        items.push(child);
+
+      if (item->isVisible())
+        validRegion -= item->getUpdateRegion();
+    }
+  }
+
+  // Remove invalid region in the screen (areas that weren't
+  // re-painted yet)
+  Manager* manager = this->manager();
+  if (manager)
+    validRegion -= manager->getInvalidRegion();
+
+  // Add extra regions that cannot be scrolled (this can be customized
+  // by subclassing ui::View). We use two ScrollRegionEvent, this
+  // first one with the old scroll position. And the next one with the
+  // new scroll position.
+  {
+    ScrollRegionEvent ev(this, validRegion);
+    onScrollRegion(ev);
+  }
+
+  // Move viewport children
+  cpos.offset(-newScroll);
+  for (auto child : m_viewport.children()) {
+    Size reqSize = child->sizeHint();
+    cpos.w = MAX(reqSize.w, cpos.w);
+    cpos.h = MAX(reqSize.h, cpos.h);
+    if (cpos.w != child->bounds().w ||
+        cpos.h != child->bounds().h)
+      child->setBounds(cpos);
+    else
+      child->offsetWidgets(cpos.x - child->bounds().x,
+                           cpos.y - child->bounds().y);
+  }
+
+  // Change scroll bar positions
+  m_scrollbar_h.setPos(newScroll.x);
+  m_scrollbar_v.setPos(newScroll.y);
+
+  // Region to invalidate (new visible children/child parts)
+  Region invalidRegion(cpos);
+  invalidRegion &= drawableRegion;
+
+  // Move the valid screen region.
+  {
+    // The movable region includes the given "validRegion"
+    // intersecting itself when it's in the new position, so we don't
+    // overlap regions outside the "validRegion".
+    Region movable = validRegion;
+    movable.offset(delta);
+    movable &= validRegion;
+    invalidRegion -= movable;   // Remove the moved region as invalid
+    movable.offset(-delta);
+
+    ui::move_region(manager, movable, delta.x, delta.y);
+  }
+
+#ifdef DEBUG_SCROLL_EVENTS
+  // Paint invalid region with red fill
+  {
+    auto display = manager->getDisplay();
+    if (display)
+      display->flip(gfx::Rect(0, 0, display_w(), display_h()));
+    base::this_thread::sleep_for(0.002);
+    {
+      she::ScopedSurfaceLock lock(display->getSurface());
+      for (const auto& rc : invalidRegion)
+        lock->fillRect(gfx::rgba(255, 0, 0), rc);
+    }
+    if (display)
+      display->flip(gfx::Rect(0, 0, display_w(), display_h()));
+    base::this_thread::sleep_for(0.002);
+  }
+#endif
+
+  // Don't re-invalidate the already invalid region.
+  if (manager)
+    invalidRegion -= manager->getInvalidRegion();
+
+  // Invalidate viewport's children regions
+  m_viewport.invalidateRegion(invalidRegion);
+
+  // Notify about the new scroll position
+  onScrollChange();
+
+  // Generate PaintMessages right now when the invalid region is too
+  // disaggregated. This is useful to avoid a lot of PaintMessage with
+  // small rectangles.
+  if (manager->getInvalidRegion().size() > 4)
+    flushRedraw();
+}
+
+void View::onScrollRegion(ScrollRegionEvent& ev)
+{
+  // Do nothing
 }
 
 void View::onScrollChange()

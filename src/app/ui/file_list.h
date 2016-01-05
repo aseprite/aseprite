@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -15,6 +15,10 @@
 #include "ui/widget.h"
 
 #include <string>
+
+namespace she {
+  class Surface;
+}
 
 namespace app {
 
@@ -33,6 +37,8 @@ namespace app {
     const FileItemList& getFileList() const { return m_list; }
 
     void goUp();
+
+    gfx::Rect thumbnailBounds();
 
     base::Signal0<void> FileSelected;
     base::Signal0<void> FileAccepted;
@@ -55,6 +61,7 @@ namespace app {
     int getSelectedIndex();
     void selectIndex(int index);
     void generatePreviewOfSelectedItem();
+    int thumbnailY();
 
     IFileItem* m_currentFolder;
     FileItemList m_list;
@@ -78,6 +85,7 @@ namespace app {
     // thumbnail to generate when the m_generateThumbnailTimer ticks.
     IFileItem* m_itemToGenerateThumbnail;
 
+    she::Surface* m_thumbnail;
   };
 
 } // namespace app

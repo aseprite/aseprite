@@ -169,7 +169,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   HideBrushPreview hide(editor->brushPreview());
 
   // Infinite scroll
-  gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, true);
+  gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
   tools::ToolLoopManager::Pointer pointer(editor->screenToEditor(mousePos),
                                           button_from_msg(msg));
 

@@ -153,7 +153,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         }
       }
 
-      editor->setEditorScroll(scroll+delta, true);
+      editor->setEditorScroll(scroll+delta);
       break;
     }
 

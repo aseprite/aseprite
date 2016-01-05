@@ -129,7 +129,7 @@ void ScrollCommand::onExecute(Context* context)
     case Down:  delta.y = +m_quantity * pixels; break;
   }
 
-  current_editor->setEditorScroll(scroll+delta, true);
+  current_editor->setEditorScroll(scroll+delta);
 }
 
 std::string ScrollCommand::onGetFriendlyName() const

@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <window id="file_selector" text="">
   <vbox id="main">
@@ -12,7 +12,7 @@
       <button text="" id="new_folder_button" tooltip="New folder" />
       <combobox id="location" expansive="true" />
     </box>
-    <view id="file_view" expansive="true" />
+    <vbox id="file_view_placeholder" expansive="true" />
     <grid columns="2">
       <label text="File name:" />
       <box id="file_name_placeholder" cell_align="horizontal" />
