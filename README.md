@@ -56,7 +56,7 @@ You can ask for help in:
 * Ilija Melentijevic <br />
   New GUI skin for Aseprite v0.8. A lot of good ideas. <br />
   http://ilkke.blogspot.com/ <br />
-  http://www.pixeljoint.com/p/9270.htm
+  http://pixeljoint.com/p/9270.htm
 * Contributors <br />
   http://www.aseprite.org/contributors/
 
@@ -77,7 +77,7 @@ It tries to replicate some pixel-art algorithms:
 
 And it uses the following third-party libraries:
 
-* [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
+* [Allegro 4](http://liballeg.org/) - [allegro4 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
 * [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/FTL.txt)
 * [Google Test](https://github.com/google/googletest) - [gtest license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
 * [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
@@ -87,10 +87,10 @@ And it uses the following third-party libraries:
 * [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
 * [libwebp](https://developers.google.com/speed/webp/) - [libwebp license](https://chromium.googlesource.com/webm/libwebp/+/master/COPYING)
 * [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
-* [mongoose](https://github.com/valenok/mongoose) - [MIT license](https://github.com/valenok/mongoose/blob/master/LICENSE)
+* [mongoose](https://github.com/cesanta/mongoose) - [MIT license](https://github.com/valenok/mongoose/blob/master/LICENSE)
 * [pixman](http://www.pixman.org/) - [MIT license](http://cgit.freedesktop.org/pixman/plain/COPYING)
 * [simpleini](https://github.com/aseprite/simpleini/) - [MIT license](https://github.com/aseprite/simpleini/blob/aseprite/LICENCE.txt)
-* [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [tinyxml](http://sourceforge.net/projects/tinyxml/) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [modp_b64](https://github.com/aseprite/aseprite/tree/master/third_party/modp_b64/modp_b64.h) - [BSD license](https://github.com/aseprite/aseprite/tree/master/third_party/modp_b64/LICENSE)
 
