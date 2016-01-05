@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -35,6 +35,7 @@ FileList::FileList()
   : Widget(kGenericWidget)
   , m_generateThumbnailTimer(200, this)
   , m_monitoringTimer(50, this)
+  , m_thumbnail(nullptr)
 {
   setFocusStop(true);
   setDoubleBuffered(true);
@@ -302,6 +303,22 @@ bool FileList::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+int FileList::thumbnailY()
+{
+  int y = 0;
+  for (IFileItem* fi : m_list) {
+    gfx::Size itemSize = getFileItemSize(fi);
+    if (fi == m_selected) {
+      if (fi->getThumbnail())
+        return y + itemSize.h/2;
+      else
+        break;
+    }
+    y += itemSize.h;
+  }
+  return 0;
+}
+
 void FileList::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
@@ -313,15 +330,12 @@ void FileList::onPaint(ui::PaintEvent& ev)
   int evenRow = 0;
   gfx::Color bgcolor;
   gfx::Color fgcolor;
-  she::Surface* thumbnail = NULL;
-  int thumbnail_y = 0;
 
   g->fillRect(theme->colors.background(), bounds);
 
   // rows
-  for (FileItemList::iterator
-         it=m_list.begin(), end=m_list.end(); it!=end; ++it) {
-    IFileItem* fi = *it;
+  m_thumbnail = nullptr;
+  for (IFileItem* fi : m_list) {
     gfx::Size itemSize = getFileItemSize(fi);
 
     if (fi == m_selected) {
@@ -373,28 +387,36 @@ void FileList::onPaint(ui::PaintEvent& ev)
     }
 
     // Thumbnail position
-    if (fi == m_selected) {
-      thumbnail = fi->getThumbnail();
-      if (thumbnail)
-        thumbnail_y = y + itemSize.h/2;
-    }
+    if (fi == m_selected)
+      m_thumbnail = fi->getThumbnail();
 
     y += itemSize.h;
     evenRow ^= 1;
   }
 
   // Draw the thumbnail
-  if (thumbnail) {
-    x = vp.x+vp.w - 2*guiscale() - thumbnail->width();
-    y = thumbnail_y - thumbnail->height()/2 + this->bounds().y;
-    y = MID(vp.y+2*guiscale(), y, vp.y+vp.h-3*guiscale()-thumbnail->height());
-    x -= this->bounds().x;
-    y -= this->bounds().y;
-
-    g->blit(thumbnail, 0, 0, x, y, thumbnail->width(), thumbnail->height());
-    g->drawRect(gfx::rgba(0, 0, 0),
-      gfx::Rect(x-1, y-1, thumbnail->width()+1, thumbnail->height()+1));
+  if (m_thumbnail) {
+    gfx::Rect tbounds = thumbnailBounds();
+    g->blit(m_thumbnail, 0, 0, tbounds.x, tbounds.y, tbounds.w, tbounds.h);
+    g->drawRect(gfx::rgba(0, 0, 0), tbounds.enlarge(1));
   }
+}
+
+gfx::Rect FileList::thumbnailBounds()
+{
+  if (!m_selected ||
+      !m_selected->getThumbnail())
+    return gfx::Rect();
+
+  she::Surface* thumbnail = m_selected->getThumbnail();
+  View* view = View::getView(this);
+  gfx::Rect vp = view->viewportBounds();
+  int x = vp.x+vp.w - 2*guiscale() - thumbnail->width();
+  int y = thumbnailY() - thumbnail->height()/2 + bounds().y;
+  y = MID(vp.y+2*guiscale(), y, vp.y+vp.h-3*guiscale()-thumbnail->height());
+  x -= bounds().x;
+  y -= bounds().y;
+  return gfx::Rect(x, y, thumbnail->width(), thumbnail->height());
 }
 
 void FileList::onSizeHint(SizeHintEvent& ev)

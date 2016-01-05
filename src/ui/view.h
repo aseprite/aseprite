@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2013, 2015, 2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,6 +15,7 @@
 #include "ui/widget.h"
 
 namespace ui {
+  class ScrollRegionEvent;
 
   class View : public Widget
              , public ScrollableViewDelegate {
@@ -57,6 +58,8 @@ namespace ui {
     void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
 
+    virtual void onSetViewScroll(const gfx::Point& pt);
+    virtual void onScrollRegion(ScrollRegionEvent& ev);
     virtual void onScrollChange();
 
   private:

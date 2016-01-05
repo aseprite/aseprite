@@ -109,6 +109,7 @@ namespace app {
     // the Editor, so it must be deleted by the caller.
     EditorDecorator* decorator() { return m_decorator; }
     void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
+    void getInvalidDecoratoredRegion(gfx::Region& region);
 
     EditorFlags editorFlags() const { return m_flags; }
     void setEditorFlags(EditorFlags flags) { m_flags = flags; }
@@ -129,7 +130,7 @@ namespace app {
 
     void setZoom(const render::Zoom& zoom) { m_zoom = zoom; }
     void setDefaultScroll();
-    void setEditorScroll(const gfx::Point& scroll, bool blitValidRegion);
+    void setEditorScroll(const gfx::Point& scroll);
     void setEditorZoom(const render::Zoom& zoom);
 
     // Updates the Editor's view.
@@ -164,7 +165,7 @@ namespace app {
     void updateStatusBar();
 
     // Control scroll when cursor goes out of the editor viewport.
-    gfx::Point autoScroll(ui::MouseMessage* msg, AutoScroll dir, bool blitValidRegion);
+    gfx::Point autoScroll(ui::MouseMessage* msg, AutoScroll dir);
 
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();

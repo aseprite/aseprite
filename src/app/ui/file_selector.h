@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -26,6 +26,7 @@ namespace ui {
 namespace app {
   class CustomFileNameEntry;
   class FileList;
+  class FileListView;
   class IFileItem;
 
   class FileSelector : public app::gen::FileSelector {
@@ -62,6 +63,7 @@ namespace app {
     std::string m_defExtension;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
+    FileListView* m_fileView;
 
     // If true the navigation_history isn't
     // modified if the current folder changes

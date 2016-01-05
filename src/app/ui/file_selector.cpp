@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -19,6 +19,7 @@
 #include "app/modules/gui.h"
 #include "app/recent_files.h"
 #include "app/ui/file_list.h"
+#include "app/ui/file_list_view.h"
 #include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
@@ -280,8 +281,12 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
 
   m_fileList = new FileList();
   m_fileList->setId("fileview");
-  fileView()->attachToView(m_fileList);
   m_fileName->setAssociatedFileList(m_fileList);
+
+  m_fileView = new FileListView();
+  m_fileView->attachToView(m_fileList);
+  m_fileView->setExpansive(true);
+  fileViewPlaceholder()->addChild(m_fileView);
 
   goBackButton()->Click.connect(base::Bind<void>(&FileSelector::onGoBack, this));
   goForwardButton()->Click.connect(base::Bind<void>(&FileSelector::onGoForward, this));

@@ -1058,6 +1058,9 @@ void Manager::onResize(ResizeEvent& ev)
   gfx::Rect new_pos = ev.bounds();
   setBoundsQuietly(new_pos);
 
+  // The whole manager area is invalid now.
+  m_invalidRegion = gfx::Region(new_pos);
+
   int dx = new_pos.x - old_pos.x;
   int dy = new_pos.y - old_pos.y;
   int dw = new_pos.w - old_pos.w;
@@ -1266,6 +1269,10 @@ void Manager::pumpQueue()
             // Restore clip region for paint messages.
             surface->setClipBounds(oldClip);
           }
+
+          // As this kPaintMessage's rectangle was updated, we can
+          // remove it from "m_invalidRegion".
+          m_invalidRegion -= gfx::Region(paintMsg->rect());
         }
       }
       else {

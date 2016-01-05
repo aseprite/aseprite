@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2015  David Capello
+# Copyright (C) 2001-2016  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
@@ -366,6 +366,7 @@ add_library(app-lib
   ui/editor/transform_handles.cpp
   ui/editor/zooming_state.cpp
   ui/file_list.cpp
+  ui/file_list_view.cpp
   ui/file_selector.cpp
   ui/font_popup.cpp
   ui/frame_tag_window.cpp

@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013, 2015 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -98,6 +98,11 @@ namespace gfx {
 
     Rect operator[](int i);
     const Rect operator[](int i) const;
+
+    Region& operator+=(const Region& b) { return createUnion(*this, b); }
+    Region& operator|=(const Region& b) { return createUnion(*this, b); }
+    Region& operator&=(const Region& b) { return createIntersection(*this, b); }
+    Region& operator-=(const Region& b) { return createSubtraction(*this, b); }
 
   private:
     mutable details::Region m_region;

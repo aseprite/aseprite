@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,6 +21,7 @@
 #include "she/surface.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
+#include "ui/scroll_region_event.h"
 
 namespace app {
 
@@ -106,13 +107,39 @@ void EditorView::onResize(ResizeEvent& ev)
         // This keeps the same scroll position for the editor
         gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
         gfx::Point oldScroll = viewScroll();
-        editor->setEditorScroll(oldScroll + newPos - oldPos, false);
+        editor->setEditorScroll(oldScroll + newPos - oldPos);
         break;
       }
       case KeepCenter:
         editor->centerInSpritePoint(oldPos);
         break;
     }
+  }
+}
+
+void EditorView::onSetViewScroll(const gfx::Point& pt)
+{
+  Editor* editor = this->editor();
+  if (editor) {
+    // We have to hide the brush preview to scroll (without this,
+    // keyboard shortcuts to scroll when the brush preview is visible
+    // will leave brush previews all over the screen).
+    HideBrushPreview hide(editor->brushPreview());
+    View::onSetViewScroll(pt);
+  }
+}
+
+void EditorView::onScrollRegion(ui::ScrollRegionEvent& ev)
+{
+  View::onScrollRegion(ev);
+
+  gfx::Region& region = ev.region();
+  Editor* editor = this->editor();
+  ASSERT(editor);
+  if (editor) {
+    gfx::Region invalidRegion;
+    editor->getInvalidDecoratoredRegion(invalidRegion);
+    region.createSubtraction(region, invalidRegion);
   }
 }
 
