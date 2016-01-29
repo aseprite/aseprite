@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -33,7 +33,20 @@
 {
   she::Event ev;
   ev.setType(she::Event::CloseDisplay);
-  she::instance()->eventQueue()->queueEvent(ev);
+  she::queue_event(ev);
+}
+
+- (BOOL)application:(NSApplication*)app openFile:(NSString*)filename
+{
+  she::Event ev;
+  ev.setType(she::Event::DropFiles);
+
+  std::vector<std::string> files;
+  files.push_back([filename UTF8String]);
+
+  ev.setFiles(files);
+  she::queue_event(ev);
+  return YES;
 }
 
 @end
