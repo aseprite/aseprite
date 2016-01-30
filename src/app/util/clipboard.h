@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -36,6 +36,14 @@ namespace app {
     };
 
     // TODO Horrible API: refactor it (maybe a merge with she::clipboard).
+
+    class ClipboardManager {
+    public:
+      ClipboardManager();
+      ~ClipboardManager();
+
+      static ClipboardManager* instance();
+    };
 
     ClipboardFormat get_current_format();
     void get_document_range_info(Document** document, DocumentRange* range);

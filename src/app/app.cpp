@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -51,6 +51,7 @@
 #include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
+#include "app/util/clipboard.h"
 #include "app/webserver.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -100,6 +101,7 @@ public:
   UIContext m_ui_context;
   RecentFiles m_recent_files;
   InputChain m_inputChain;
+  clipboard::ClipboardManager m_clipboardManager;
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
 

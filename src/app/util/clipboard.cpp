@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -50,17 +50,29 @@ namespace app {
 
 namespace {
 
-  class ClipboardRange {
+  class ClipboardRange : public doc::DocumentsObserver {
   public:
-    ClipboardRange() : m_doc(NULL) {
+    ClipboardRange() : m_doc(nullptr) {
+    }
+
+    ~ClipboardRange() {
+      ASSERT(!m_doc);
+    }
+
+    void observeUIContext() {
+      UIContext::instance()->documents().addObserver(this);
+    }
+
+    void unobserveUIContext() {
+      UIContext::instance()->documents().removeObserver(this);
     }
 
     bool valid() {
-      return m_doc != NULL;
+      return (m_doc != nullptr);
     }
 
     void invalidate() {
-      m_doc = NULL;
+      m_doc = nullptr;
     }
 
     void setRange(Document* doc, const DocumentRange& range) {
@@ -71,6 +83,12 @@ namespace {
     Document* document() const { return m_doc; }
     DocumentRange range() const { return m_range; }
 
+    // DocumentsObserver impl
+    void onRemoveDocument(doc::Document* doc) override {
+      if (doc == m_doc)
+        invalidate();
+    }
+
   private:
     Document* m_doc;
     DocumentRange m_range;
@@ -78,29 +96,47 @@ namespace {
 
 }
 
+namespace clipboard {
+
 using namespace doc;
 
-static bool first_time = true;
 static base::SharedPtr<Palette> clipboard_palette;
 static PalettePicks clipboard_picks;
 static ImageRef clipboard_image;
 static base::SharedPtr<Mask> clipboard_mask;
 static ClipboardRange clipboard_range;
 
-static void on_exit_delete_clipboard()
+static ClipboardManager* g_instance = nullptr;
+
+ClipboardManager::ClipboardManager()
 {
+  ASSERT(!g_instance);
+  g_instance = this;
+
+  clipboard_range.observeUIContext();
+}
+
+ClipboardManager::~ClipboardManager()
+{
+  clipboard_range.invalidate();
+  clipboard_range.unobserveUIContext();
+
+  // Clean the whole clipboard
   clipboard_palette.reset();
   clipboard_image.reset();
   clipboard_mask.reset();
+
+  ASSERT(g_instance = this);
+  g_instance = nullptr;
+}
+
+ClipboardManager* ClipboardManager::instance()
+{
+  return g_instance;
 }
 
 static void set_clipboard_image(Image* image, Mask* mask, Palette* palette, bool set_system_clipboard)
 {
-  if (first_time) {
-    first_time = false;
-    App::instance()->Exit.connect(&on_exit_delete_clipboard);
-  }
-
   clipboard_palette.reset(palette);
   clipboard_picks.clear();
   clipboard_image.reset(image);
@@ -135,7 +171,7 @@ static bool copy_from_document(const Site& site)
   return true;
 }
 
-clipboard::ClipboardFormat clipboard::get_current_format()
+ClipboardFormat get_current_format()
 {
 #ifdef USE_NATIVE_WIN32_CLIPBOARD
   if (win32_clipboard_contains_bitmap())
@@ -152,7 +188,7 @@ clipboard::ClipboardFormat clipboard::get_current_format()
     return ClipboardNone;
 }
 
-void clipboard::get_document_range_info(Document** document, DocumentRange* range)
+void get_document_range_info(Document** document, DocumentRange* range)
 {
   if (clipboard_range.valid()) {
     *document = clipboard_range.document();
@@ -163,12 +199,12 @@ void clipboard::get_document_range_info(Document** document, DocumentRange* rang
   }
 }
 
-void clipboard::clear_content()
+void clear_content()
 {
   set_clipboard_image(nullptr, nullptr, nullptr, true);
 }
 
-void clipboard::cut(ContextWriter& writer)
+void cut(ContextWriter& writer)
 {
   ASSERT(writer.document() != NULL);
   ASSERT(writer.sprite() != NULL);
@@ -190,7 +226,7 @@ void clipboard::cut(ContextWriter& writer)
   }
 }
 
-void clipboard::copy(const ContextReader& reader)
+void copy(const ContextReader& reader)
 {
   ASSERT(reader.document() != NULL);
 
@@ -201,7 +237,7 @@ void clipboard::copy(const ContextReader& reader)
   }
 }
 
-void clipboard::copy_range(const ContextReader& reader, const DocumentRange& range)
+void copy_range(const ContextReader& reader, const DocumentRange& range)
 {
   ASSERT(reader.document() != NULL);
 
@@ -216,7 +252,7 @@ void clipboard::copy_range(const ContextReader& reader, const DocumentRange& ran
     ->getTimeline()->activateClipboardRange();
 }
 
-void clipboard::copy_image(const Image* image, const Mask* mask, const Palette* pal)
+void copy_image(const Image* image, const Mask* mask, const Palette* pal)
 {
   set_clipboard_image(
     Image::createCopy(image),
@@ -224,7 +260,7 @@ void clipboard::copy_image(const Image* image, const Mask* mask, const Palette* 
     (pal ? new Palette(*pal): nullptr), true);
 }
 
-void clipboard::copy_palette(const Palette* palette, const doc::PalettePicks& picks)
+void copy_palette(const Palette* palette, const doc::PalettePicks& picks)
 {
   if (!picks.picks())
     return;                     // Do nothing case
@@ -235,7 +271,7 @@ void clipboard::copy_palette(const Palette* palette, const doc::PalettePicks& pi
   clipboard_picks = picks;
 }
 
-void clipboard::paste()
+void paste()
 {
   Editor* editor = current_editor;
   if (editor == NULL)
@@ -472,7 +508,7 @@ void clipboard::paste()
   }
 }
 
-bool clipboard::get_image_size(gfx::Size& size)
+bool get_image_size(gfx::Size& size)
 {
 #ifdef USE_NATIVE_WIN32_CLIPBOARD
   // Get the image from the clipboard.
@@ -488,7 +524,7 @@ bool clipboard::get_image_size(gfx::Size& size)
 #endif
 }
 
-Palette* clipboard::get_palette()
+Palette* get_palette()
 {
   if (clipboard::get_current_format() == ClipboardPaletteEntries) {
     ASSERT(clipboard_palette);
@@ -498,9 +534,11 @@ Palette* clipboard::get_palette()
     return nullptr;
 }
 
-const PalettePicks& clipboard::get_palette_picks()
+const PalettePicks& get_palette_picks()
 {
   return clipboard_picks;
 }
+
+}  // namespace clipboard
 
 } // namespace app
