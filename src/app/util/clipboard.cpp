@@ -126,7 +126,7 @@ ClipboardManager::~ClipboardManager()
   clipboard_image.reset();
   clipboard_mask.reset();
 
-  ASSERT(g_instance = this);
+  ASSERT(g_instance == this);
   g_instance = nullptr;
 }
 
