@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -46,28 +46,30 @@ namespace {
 
     void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
       gfx::Color color = gfx::ColorNone;
-      for (int x=0; x < rc.w; ++x) {
+      int w = MAX(rc.w-1, 1);
+
+      for (int x=0; x <= w; ++x) {
         switch (m_channel) {
           case ColorSliders::Red:
-            color = gfx::rgba(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
+            color = gfx::rgba(255 * x / w, m_color.getGreen(), m_color.getBlue());
             break;
           case ColorSliders::Green:
-            color = gfx::rgba(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
+            color = gfx::rgba(m_color.getRed(), 255 * x / w, m_color.getBlue());
             break;
           case ColorSliders::Blue:
-            color = gfx::rgba(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
+            color = gfx::rgba(m_color.getRed(), m_color.getGreen(), 255 * x / w);
             break;
           case ColorSliders::Hue:
-            color = color_utils::color_for_ui(app::Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()));
+            color = color_utils::color_for_ui(app::Color::fromHsv(360 * x / w, m_color.getSaturation(), m_color.getValue()));
             break;
           case ColorSliders::Saturation:
-            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()));
+            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), 100 * x / w, m_color.getValue()));
             break;
           case ColorSliders::Value:
-            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)));
+            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / w));
             break;
           case ColorSliders::Gray:
-            color = color_utils::color_for_ui(app::Color::fromGray(255 * x / (rc.w-1)));
+            color = color_utils::color_for_ui(app::Color::fromGray(255 * x / w));
             break;
         }
         g->drawVLine(color, rc.x+x, rc.y, rc.h);
