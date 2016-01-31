@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -62,8 +62,20 @@ void SendCrash::notificationClick()
   }
 
   app::gen::SendCrash dlg;
-  dlg.filename()->setText(m_dumpFilename);
-  dlg.filename()->Click.connect(base::Bind(&SendCrash::onClickFilename, this));
+
+  // The current version is a "development" version if the VERSION
+  // macro contains the "dev" word.
+  bool isDev = (std::string(VERSION).find("dev") != std::string::npos);
+  if (isDev) {
+    dlg.official()->setVisible(false);
+    dlg.devFilename()->setText(m_dumpFilename);
+    dlg.devFilename()->Click.connect(base::Bind(&SendCrash::onClickDevFilename, this));
+  }
+  else {
+    dlg.dev()->setVisible(false);
+    dlg.filename()->setText(m_dumpFilename);
+    dlg.filename()->Click.connect(base::Bind(&SendCrash::onClickFilename, this));
+  }
 
   dlg.openWindowInForeground();
   if (dlg.closer() == dlg.deleteFile()) {
@@ -80,6 +92,11 @@ void SendCrash::notificationClick()
 void SendCrash::onClickFilename()
 {
   base::launcher::open_folder(m_dumpFilename);
+}
+
+void SendCrash::onClickDevFilename()
+{
+  base::launcher::open_file(m_dumpFilename);
 }
 
 } // namespace app

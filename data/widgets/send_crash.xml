@@ -1,14 +1,22 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014 by David Capello -->
+<!-- Copyright (C) 2014, 2016 by David Capello -->
 <gui>
 <window text="Crash Report" id="send_crash">
   <vbox>
 
-    <label text="Please send the following file:" />
-    <link id="filename" text="" url="" />
-    <label text="to this email:" />
-    <entry readonly="true" text="support@aseprite.org" maxsize="256" />
-    <label text="explaining what you was doing when the program crashed." />
+    <vbox id="official">
+      <label text="Please send the following file:" />
+      <link id="filename" text="" url="" />
+      <label text="to this email:" />
+      <entry readonly="true" text="support@aseprite.org" maxsize="256" />
+      <label text="explaining what you was doing when the program crashed." />
+    </vbox>
+
+    <vbox id="dev">
+      <label text="You are using a development version." />
+      <label text="Open the following file to debug your compilation:" />
+      <link id="dev_filename" text="" url="" />
+    </vbox>
 
     <separator horizontal="true" />
 
