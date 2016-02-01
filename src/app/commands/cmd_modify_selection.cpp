@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015, 2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -186,7 +186,7 @@ void ModifySelectionCommand::applyModifier(const Mask* srcMask, Mask* dstMask,
                                            const doc::BrushType brush) const
 {
   const doc::Image* srcImage = srcMask->bitmap();
-  const doc::Image* dstImage = dstMask->bitmap();
+  doc::Image* dstImage = dstMask->bitmap();
 
   // Image bounds to clip get/put pixels
   const gfx::Rect srcBounds = srcImage->bounds();
@@ -240,7 +240,7 @@ void ModifySelectionCommand::applyModifier(const Mask* srcMask, Mask* dstMask,
       }
 
       if (c)
-        doc::put_pixel(dstMask->bitmap(),
+        doc::put_pixel(dstImage,
                        srcMask->bounds().x+x,
                        srcMask->bounds().y+y, 1);
     }
