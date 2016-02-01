@@ -51,7 +51,8 @@ public:
     : m_timer(250, this)
     , m_document(nullptr)
     , m_cel(nullptr)
-    , m_selfUpdate(false) {
+    , m_selfUpdate(false)
+    , m_newUserData(false) {
     opacity()->Change.connect(base::Bind<void>(&CelPropertiesWindow::onStartTimer, this));
     userData()->Click.connect(base::Bind<void>(&CelPropertiesWindow::onPopupUserData, this));
     m_timer.Tick.connect(base::Bind<void>(&CelPropertiesWindow::onCommitChange, this));
@@ -193,7 +194,8 @@ private:
                 transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
               }
 
-              if (m_userData != cel->data()->userData()) {
+              if (m_newUserData &&
+                  m_userData != cel->data()->userData()) {
                 transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
 
                 // Redraw timeline because the cel's user data/color
@@ -216,12 +218,14 @@ private:
 
   void onPopupUserData() {
     if (countCels() > 0) {
+      m_newUserData = false;
       if (m_cel)
         m_userData = m_cel->data()->userData();
       else
         m_userData = UserData();
 
       if (show_user_data_popup(userData()->bounds(), m_userData)) {
+        m_newUserData = true;
         onCommitChange();
       }
     }
@@ -254,6 +258,7 @@ private:
     int count = countCels(&bgCount);
 
     m_userData = UserData();
+    m_newUserData = false;
 
     if (count > 0) {
       if (m_cel) {
@@ -273,6 +278,7 @@ private:
   DocumentRange m_range;
   bool m_selfUpdate;
   UserData m_userData;
+  bool m_newUserData;
 };
 
 class CelPropertiesCommand : public Command {
