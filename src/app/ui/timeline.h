@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -110,6 +110,7 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
 
     // DocumentObserver impl.
+    void onGeneralUpdate(DocumentEvent& ev) override;
     void onAddLayer(doc::DocumentEvent& ev) override;
     void onAfterRemoveLayer(doc::DocumentEvent& ev) override;
     void onAddFrame(doc::DocumentEvent& ev) override;

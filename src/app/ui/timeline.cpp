@@ -1029,6 +1029,11 @@ void Timeline::onRemoveDocument(doc::Document* document)
     detachDocument();
 }
 
+void Timeline::onGeneralUpdate(DocumentEvent& ev)
+{
+  invalidate();
+}
+
 void Timeline::onAddLayer(doc::DocumentEvent& ev)
 {
   ASSERT(ev.layer() != NULL);
