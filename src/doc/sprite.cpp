@@ -555,6 +555,11 @@ CelsRange Sprite::uniqueCels() const
   return CelsRange(this, frame_t(0), lastFrame(), CelsRange::UNIQUE);
 }
 
+CelsRange Sprite::uniqueCels(frame_t from, frame_t to) const
+{
+  return CelsRange(this, from, to, CelsRange::UNIQUE);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count)

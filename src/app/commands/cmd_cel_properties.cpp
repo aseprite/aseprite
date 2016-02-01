@@ -106,10 +106,11 @@ private:
       return 1;
     }
     else if (m_range.enabled()) {
+      Sprite* sprite = m_document->sprite();
       int count = 0;
-      for (Cel* cel : m_document->sprite()->uniqueCels()) {
-        if (m_range.inRange(cel->sprite()->layerToIndex(cel->layer()),
-                            cel->frame())) {
+      for (Cel* cel : sprite->uniqueCels(m_range.frameBegin(),
+                                         m_range.frameEnd())) {
+        if (m_range.inRange(sprite->layerToIndex(cel->layer()))) {
           if (backgroundCount && cel->layer()->isBackground())
             ++(*backgroundCount);
           ++count;
@@ -183,11 +184,12 @@ private:
             App::instance()->getMainWindow()->getTimeline()->invalidate();
           }
         }
-        else {
-          for (Cel* cel : m_document->sprite()->uniqueCels()) {
-            if (m_range.inRange(cel->sprite()->layerToIndex(cel->layer()), cel->frame())) {
-              if (!cel->layer()->isBackground() &&
-                  newOpacity != cel->opacity()) {
+        else if (m_range.enabled()) {
+          Sprite* sprite = m_document->sprite();
+          for (Cel* cel : sprite->uniqueCels(m_range.frameBegin(),
+                                             m_range.frameEnd())) {
+            if (m_range.inRange(sprite->layerToIndex(cel->layer()))) {
+              if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
                 transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
               }
 
