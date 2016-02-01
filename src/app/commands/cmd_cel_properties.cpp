@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -91,21 +91,27 @@ private:
     return opacity()->getValue();
   }
 
-  int countCels() const {
+  int countCels(int* backgroundCount = nullptr) const {
+    if (backgroundCount)
+      *backgroundCount = 0;
+
     if (!m_document)
       return 0;
     else if (m_cel &&
              (!m_range.enabled() ||
               (m_range.frames() == 1 &&
                m_range.layers() == 1))) {
+      if (backgroundCount && m_cel->layer()->isBackground())
+        *backgroundCount = 1;
       return 1;
     }
     else if (m_range.enabled()) {
       int count = 0;
       for (Cel* cel : m_document->sprite()->uniqueCels()) {
-        if (!cel->layer()->isBackground() &&
-            m_range.inRange(cel->sprite()->layerToIndex(cel->layer()),
+        if (m_range.inRange(cel->sprite()->layerToIndex(cel->layer()),
                             cel->frame())) {
+          if (backgroundCount && cel->layer()->isBackground())
+            ++(*backgroundCount);
           ++count;
         }
       }
@@ -157,15 +163,17 @@ private:
     int count = countCels();
 
     if ((count > 1) ||
-        (count == 1 && (newOpacity != m_cel->opacity() ||
-                        m_userData != m_cel->data()->userData()))) {
+        (count == 1 && m_cel && (newOpacity != m_cel->opacity() ||
+                                 m_userData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Cel Properties");
 
-        if (count == 1) {
-          if (newOpacity != m_cel->opacity())
+        if (count == 1 && m_cel) {
+          if (!m_cel->layer()->isBackground() &&
+              newOpacity != m_cel->opacity()) {
             transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
+          }
 
           if (m_userData != m_cel->data()->userData()) {
             transaction.execute(new cmd::SetUserData(writer.cel()->data(), m_userData));
@@ -178,7 +186,8 @@ private:
         else {
           for (Cel* cel : m_document->sprite()->uniqueCels()) {
             if (m_range.inRange(cel->sprite()->layerToIndex(cel->layer()), cel->frame())) {
-              if (!cel->layer()->isBackground()) {
+              if (!cel->layer()->isBackground() &&
+                  newOpacity != cel->opacity()) {
                 transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
               }
 
@@ -204,8 +213,12 @@ private:
   }
 
   void onPopupUserData() {
-    if (m_cel) {
-      m_userData = m_cel->data()->userData();
+    if (countCels() > 0) {
+      if (m_cel)
+        m_userData = m_cel->data()->userData();
+      else
+        m_userData = UserData();
+
       if (show_user_data_popup(userData()->bounds(), m_userData)) {
         onCommitChange();
       }
@@ -235,22 +248,17 @@ private:
 
     base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
 
-    int count = countCels();
+    int bgCount = 0;
+    int count = countCels(&bgCount);
 
     m_userData = UserData();
 
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
-        opacity()->setEnabled(
-          (count > 1) ||
-          (count == 1 && !m_cel->layer()->isBackground()));
-
         m_userData = m_cel->data()->userData();
       }
-      else {                  // Enable slider to change the whole range
-        opacity()->setEnabled(true);
-      }
+      opacity()->setEnabled(bgCount < count);
     }
     else {
       opacity()->setEnabled(false);
