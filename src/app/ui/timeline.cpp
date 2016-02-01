@@ -354,10 +354,10 @@ bool Timeline::onProcessMessage(Message* msg)
           bool selectFrame = (mouseMsg->left() || !isFrameActive(m_clk.frame));
 
           if (selectFrame) {
-            setFrame(m_clk.frame);
-
             m_state = STATE_SELECTING_FRAMES;
             m_range.startRange(getLayerIndex(m_layer), m_clk.frame, Range::kFrames);
+
+            setFrame(m_clk.frame);
           }
           break;
         }
@@ -367,6 +367,9 @@ bool Timeline::onProcessMessage(Message* msg)
           bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk.layer));
 
           if (selectLayer) {
+            m_state = STATE_SELECTING_LAYERS;
+            m_range.startRange(m_clk.layer, m_frame, Range::kLayers);
+
             // Did the user select another layer?
             if (old_layer != m_clk.layer) {
               setLayer(m_layers[m_clk.layer]);
@@ -376,11 +379,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
           // Change the scroll to show the new selected layer/cel.
           showCel(m_clk.layer, m_frame);
-
-          if (selectLayer) {
-            m_state = STATE_SELECTING_LAYERS;
-            m_range.startRange(m_clk.layer, m_frame, Range::kLayers);
-          }
           break;
         }
         case PART_LAYER_EYE_ICON:
@@ -397,6 +395,11 @@ bool Timeline::onProcessMessage(Message* msg)
             || !isFrameActive(m_clk.frame));
           frame_t old_frame = m_frame;
 
+          if (selectCel) {
+            m_state = STATE_SELECTING_CELS;
+            m_range.startRange(m_clk.layer, m_clk.frame, Range::kCels);
+          }
+
           // Select the new clicked-part.
           if (old_layer != m_clk.layer
             || old_frame != m_clk.frame) {
@@ -407,11 +410,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
           // Change the scroll to show the new selected cel.
           showCel(m_clk.layer, m_frame);
-
-          if (selectCel) {
-            m_state = STATE_SELECTING_CELS;
-            m_range.startRange(m_clk.layer, m_clk.frame, Range::kCels);
-          }
           invalidate();
           break;
         }
