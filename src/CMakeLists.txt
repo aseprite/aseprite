@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2015  David Capello
+# Copyright (C) 2001-2016  David Capello
 
 ######################################################################
 # Common definitions for all Aseprite libraries/projects
@@ -37,10 +37,7 @@ if(MSVC)
 endif(MSVC)
 
 if(ENABLE_UPDATER)
-  set(updater_lib updater-lib)
   add_definitions(-DENABLE_UPDATER)
-else()
-  set(updater_lib)
 endif()
 
 # Directories where .h files can be found
