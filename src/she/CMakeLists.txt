@@ -1,5 +1,5 @@
 # SHE
-# Copyright (C) 2012-2015  David Capello
+# Copyright (C) 2012-2016  David Capello
 
 set(SHE_SOURCES)
 
@@ -143,7 +143,8 @@ if(USE_SKIA_BACKEND)
   if(WIN32)
     list(APPEND SHE_SOURCES
       skia/skia_window_win.cpp
-      win/vk.cpp)
+      win/vk.cpp
+      win/window_dde.cpp)
   endif()
 
   if(APPLE)

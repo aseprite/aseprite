@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,7 @@
 #include "she/event.h"
 #include "she/keys.h"
 #include "she/native_cursor.h"
+#include "she/win/window_dde.h"
 
 #ifndef WM_MOUSEHWHEEL
   #define WM_MOUSEHWHEEL 0x020E
@@ -553,6 +554,10 @@ namespace she {
         }
 
       }
+
+      LRESULT result = FALSE;
+      if (handle_dde_messages(m_hwnd, msg, wparam, lparam, result))
+        return result;
 
       return DefWindowProc(m_hwnd, msg, wparam, lparam);
     }

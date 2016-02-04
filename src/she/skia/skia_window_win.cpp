@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,6 +21,14 @@
   #include "she/gl/gl_context_wgl.h"
 
 #endif
+
+#ifdef _WIN32
+
+  #include <windows.h>
+  #include "she/win/window_dde.h" // Include this one time to
+
+#endif
+
 
 namespace she {
 

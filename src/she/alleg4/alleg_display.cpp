@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -82,6 +82,21 @@ bool capture_mouse = false;
 
 static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  // Don't process DDE messages here because we cannot get the first
+  // DDE message correctly. The problem is that the message pump
+  // starts before we can subclass the Allegro HWND, so we don't have
+  // enough time to inject the code to process this kind of message.
+  //
+  // For more info see "Once you go input-idle, your application is
+  // deemed ready to receive DDE messages":
+  //   https://blogs.msdn.microsoft.com/oldnewthing/20140620-00/?p=693
+  //
+  // Anyway a possible solution would be to avoid processing the
+  // message loop until we subclass the HWND. I've tested this and it
+  // doesn't work, maybe because the message pump on Allegro 4 isn't
+  // in the main thread, I really don't know. But it just crash the
+  // whole system (Windows 10).
+
   switch (msg) {
 
     case WM_DROPFILES: {
