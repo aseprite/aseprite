@@ -584,7 +584,7 @@ namespace she {
       wcex.cbClsExtra    = 0;
       wcex.cbWndExtra    = 0;
       wcex.hInstance     = instance;
-      wcex.hIcon         = nullptr;
+      wcex.hIcon         = LoadIcon(instance, L"0");
       wcex.hCursor       = NULL;
       wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
       wcex.lpszMenuName  = nullptr;
