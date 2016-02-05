@@ -19,7 +19,7 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "http://aseprite.org/"
+            VALUE "Comments", "http://www.aseprite.org/"
             VALUE "FileDescription", "Aseprite - Animated sprites editor & pixel art tool"
             VALUE "FileVersion", "1,1,2,0"
             VALUE "InternalName", "aseprite"
