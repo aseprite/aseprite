@@ -39,6 +39,7 @@ SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display,
   , m_display(display)
   , m_backend(Backend::NONE)
 #if SK_SUPPORT_GPU
+  , m_skSurface(nullptr)
   , m_sampleCount(0)
   , m_stencilBits(0)
 #endif
@@ -191,8 +192,8 @@ void SkiaWindow::detachGL()
   if (m_glCtx && m_display)
     m_display->resetSkiaSurface();
 
+  setSurface(nullptr);
   m_skSurfaceDirect.reset(nullptr);
-  m_skSurface.reset(nullptr);
   m_grRenderTarget.reset(nullptr);
   m_grCtx.reset(nullptr);
   m_glCtx.reset(nullptr);
@@ -212,14 +213,16 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
   desc.fStencilBits = m_stencilBits;
   desc.fRenderTargetHandle = 0; // direct frame buffer
   m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
+
+  setSurface(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
   m_skSurfaceDirect.reset(
     SkSurface::NewRenderTargetDirect(m_grRenderTarget));
 
   if (scale == 1) {
-    m_skSurface.reset(m_skSurfaceDirect);
+    setSurface(m_skSurfaceDirect);
   }
   else {
-    m_skSurface.reset(
+    setSurface(
       SkSurface::NewRenderTarget(
         m_grCtx,
         SkSurface::kYes_Budgeted,
@@ -232,6 +235,13 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
     throw std::runtime_error("Error creating OpenGL surface for main display");
 
   m_display->setSkiaSurface(new SkiaSurface(m_skSurface));
+}
+
+void SkiaWindow::setSurface(SkSurface* surface)
+{
+  if (m_skSurface && m_skSurface != m_skSurfaceDirect)
+    delete m_skSurface;
+  m_skSurface = surface;
 }
 
 #endif // SK_SUPPORT_GPU

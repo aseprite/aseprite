@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -45,6 +45,7 @@ private:
 #endif // SK_ANGLE
   void detachGL();
   void createRenderTarget(const gfx::Size& size);
+  void setSurface(SkSurface* surface);
 #endif // SK_SUPPORT_GPU
 
   EventQueue* m_queue;
@@ -55,7 +56,7 @@ private:
   SkAutoTUnref<GrContext> m_grCtx;
   SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
   SkAutoTDelete<SkSurface> m_skSurfaceDirect;
-  SkAutoTDelete<SkSurface> m_skSurface;
+  SkSurface* m_skSurface;
   int m_sampleCount;
   int m_stencilBits;
   gfx::Size m_lastSize;
