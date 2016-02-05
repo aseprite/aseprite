@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -25,6 +25,7 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   ColorBar::ColorSelector m_type;
@@ -58,6 +59,25 @@ bool SetColorSelectorCommand::onChecked(Context* context)
 void SetColorSelectorCommand::onExecute(Context* context)
 {
   ColorBar::instance()->setColorSelector(m_type);
+}
+
+std::string SetColorSelectorCommand::onGetFriendlyName() const
+{
+  std::string result = "Set Color Selector: ";
+
+  switch (m_type) {
+    case ColorBar::ColorSelector::SPECTRUM:
+      result += "Color Spectrum";
+      break;
+    case ColorBar::ColorSelector::WHEEL:
+      result += "Color Wheel";
+      break;
+    default:
+      result += "Unknown";
+      break;
+  }
+
+  return result;
 }
 
 Command* CommandFactory::createSetColorSelectorCommand()

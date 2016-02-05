@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui version="1.1.2-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
@@ -377,6 +377,12 @@
       <key command="SetInkType"><param name="type" value="lock-alpha" /></key>
       <key command="SetInkType"><param name="type" value="shading" /></key>
       <key command="SetSameInk" />
+      <key command="SetColorSelector">
+        <param name="type" value="spectrum" />
+      </key>
+      <key command="SetColorSelector">
+        <param name="type" value="wheel" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
