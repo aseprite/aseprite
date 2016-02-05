@@ -35,13 +35,19 @@ namespace she {
   public:
     WinWindow(int width, int height, int scale)
       : m_clientSize(1, 1)
-      , m_restoredSize(0, 0) {
+      , m_restoredSize(0, 0)
+      , m_isCreated(false)
+      , m_hasMouse(false)
+      , m_captureMouse(false) {
       registerClass();
       m_hwnd = createHwnd(this, width, height);
       m_hcursor = NULL;
-      m_hasMouse = false;
-      m_captureMouse = false;
       m_scale = scale;
+
+      // This flag is used to avoid calling T::resizeImpl() when we
+      // add the scrollbars to the window. (As the T type could not be
+      // fully initialized yet.)
+      m_isCreated = true;
     }
 
     void queueEvent(Event& ev) {
@@ -241,33 +247,36 @@ namespace she {
           return 0;
         }
 
-        case WM_PAINT: {
-          PAINTSTRUCT ps;
-          HDC hdc = BeginPaint(m_hwnd, &ps);
-          static_cast<T*>(this)->paintImpl(hdc);
-          EndPaint(m_hwnd, &ps);
-          return true;
-        }
-
-        case WM_SIZE: {
-          int w = GET_X_LPARAM(lparam);
-          int h = GET_Y_LPARAM(lparam);
-
-          if (w > 0 && h > 0) {
-            m_clientSize.w = w;
-            m_clientSize.h = h;
-            static_cast<T*>(this)->resizeImpl(m_clientSize);
-          }
-
-          WINDOWPLACEMENT pl;
-          pl.length = sizeof(pl);
-          if (GetWindowPlacement(m_hwnd, &pl)) {
-            m_restoredSize = gfx::Size(
-              pl.rcNormalPosition.right - pl.rcNormalPosition.left,
-              pl.rcNormalPosition.bottom - pl.rcNormalPosition.top);
+        case WM_PAINT:
+          if (m_isCreated) {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(m_hwnd, &ps);
+            static_cast<T*>(this)->paintImpl(hdc);
+            EndPaint(m_hwnd, &ps);
+            return true;
           }
           break;
-        }
+
+        case WM_SIZE:
+          if (m_isCreated) {
+            int w = GET_X_LPARAM(lparam);
+            int h = GET_Y_LPARAM(lparam);
+
+            if (w > 0 && h > 0) {
+              m_clientSize.w = w;
+              m_clientSize.h = h;
+              static_cast<T*>(this)->resizeImpl(m_clientSize);
+            }
+
+            WINDOWPLACEMENT pl;
+            pl.length = sizeof(pl);
+            if (GetWindowPlacement(m_hwnd, &pl)) {
+              m_restoredSize = gfx::Size(
+                pl.rcNormalPosition.right - pl.rcNormalPosition.left,
+                pl.rcNormalPosition.bottom - pl.rcNormalPosition.top);
+            }
+          }
+          break;
 
         case WM_MOUSEMOVE: {
           // Adjust capture
@@ -650,6 +659,7 @@ namespace she {
     gfx::Size m_clientSize;
     gfx::Size m_restoredSize;
     int m_scale;
+    bool m_isCreated;
     bool m_hasMouse;
     bool m_captureMouse;
   };
