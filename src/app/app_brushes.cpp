@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -395,7 +395,8 @@ void AppBrushes::save(const std::string& filename) const
       // Flags
       int flags = int(slot.flags());
 
-      ASSERT(slot.brush());
+      // This slot might not have a brush. (E.g. a slot that changes
+      // the pixel perfect mode only.)
       if (!slot.hasBrush())
         flags &= ~kBrushFlags;
 
