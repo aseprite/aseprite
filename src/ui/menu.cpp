@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -739,7 +739,7 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         if (inBar()) {
           pos.x = MID(0, bounds().x, ui::display_w()-pos.w);
-          pos.y = MID(0, bounds().y2(), ui::display_h()-pos.h);
+          pos.y = MAX(0, bounds().y2());
         }
         else {
           int x_left = old_pos.x - pos.w;
