@@ -293,9 +293,6 @@ void SkiaWindow::resizeImpl(const gfx::Size& size)
   bool gpu = instance()->gpuAcceleration();
   (void)gpu;
 
-  // Disable GPU acceleration.
-  gpu = false;
-
 #if SK_SUPPORT_GPU
 #if SK_ANGLE
   if (gpu && attachANGLE()) {

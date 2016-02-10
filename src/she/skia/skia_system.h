@@ -48,8 +48,9 @@ public:
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
       int(Capabilities::DisplayScale)
-      // GPU acceleration is disabled at this moment
-      //| int(Capabilities::GpuAccelerationSwitch)
+#if SK_SUPPORT_GPU
+      | int(Capabilities::GpuAccelerationSwitch)
+#endif
       );
   }
 
