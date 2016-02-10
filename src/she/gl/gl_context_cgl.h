@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015, 2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,9 +17,7 @@ namespace she {
 
 class GLContextCGL : public GLContext {
 public:
-  typedef void* NativeHandle;
-
-  GLContextCGL(NativeHandle window)
+  GLContextCGL()
     : m_glctx(nullptr)
     , m_stencilBits(0)
     , m_sampleCount(0) {

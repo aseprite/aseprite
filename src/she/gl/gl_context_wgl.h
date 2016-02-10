@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,8 +16,6 @@ namespace she {
 
 class GLContextWGL : public GLContext {
 public:
-  typedef HWND NativeHandle;
-
   GLContextWGL(HWND hwnd)
     : m_hwnd(hwnd)
     , m_glrc(nullptr) {

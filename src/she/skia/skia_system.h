@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -48,10 +48,8 @@ public:
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
       int(Capabilities::DisplayScale)
-#ifdef _WIN32
-      // GPU acceleration is available on Windows at this moment
-      | int(Capabilities::GpuAccelerationSwitch)
-#endif
+      // GPU acceleration is disabled at this moment
+      //| int(Capabilities::GpuAccelerationSwitch)
       );
   }
 

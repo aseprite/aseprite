@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,8 +23,8 @@
 #if SK_SUPPORT_GPU
 
   #include "GrContext.h"
+  #include "gl/GrGLInterface.h"
   #include "she/gl/gl_context_cgl.h"
-  #include "she/skia/gl_context_skia.h"
   #include "she/skia/skia_surface.h"
 
 #endif
@@ -39,6 +39,7 @@ public:
     , m_backend(Backend::NONE)
 #if SK_SUPPORT_GPU
     , m_nsGL(nil)
+    , m_skSurface(nullptr)
 #endif
   {
     m_closing = false;
@@ -123,7 +124,7 @@ public:
     bool gpu = she::instance()->gpuAcceleration();
     (void)gpu;
 
-    // Disable GPU acceleration because it isn't ready yet.
+    // Disable GPU acceleration.
     gpu = false;
 
 #if SK_SUPPORT_GPU
@@ -183,19 +184,29 @@ private:
   bool attachGL() {
     if (!m_glCtx) {
       try {
-        auto ctx = new GLContextSkia<GLContextCGL>(nullptr);
+        SkAutoTDelete<GLContext> ctx(new GLContextCGL);
+        if (!ctx->createGLContext())
+          throw std::runtime_error("Cannot create CGL context");
+
+        m_glInterfaces.reset(GrGLCreateNativeInterface());
+        if (!m_glInterfaces || !m_glInterfaces->validate()) {
+          LOG("Cannot create GL interfaces\n");
+          detachGL();
+          return false;
+        }
 
         m_glCtx.reset(ctx);
         m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
-                                        (GrBackendContext)m_glCtx->gl()));
+                                        (GrBackendContext)m_glInterfaces.get()));
 
         m_nsGL = [[NSOpenGLContext alloc]
-                   initWithCGLContextObj:m_glCtx->cglContext()];
+                   initWithCGLContextObj:static_cast<GLContextCGL*>(m_glCtx.get())->cglContext()];
 
         [m_nsGL setView:m_window.contentView];
+        LOG("Using CGL backend\n");
       }
       catch (const std::exception& ex) {
-        //LOG("Cannot create GL context: %s\n", ex.what());
+        LOG("Cannot create GL context: %s\n", ex.what());
         detachGL();
         return false;
       }
@@ -206,6 +217,11 @@ private:
   void detachGL() {
     if (m_nsGL)
       m_nsGL = nil;
+
+    setSurface(nullptr);
+    m_skSurfaceDirect.reset(nullptr);
+    m_grRenderTarget.reset(nullptr);
+    m_grCtx.reset(nullptr);
     m_glCtx.reset(nullptr);
   }
 
@@ -222,14 +238,16 @@ private:
     desc.fStencilBits = m_glCtx->getStencilBits();
     desc.fRenderTargetHandle = 0; // direct frame buffer
     m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
+
+    setSurface(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
     m_skSurfaceDirect.reset(
       SkSurface::NewRenderTargetDirect(m_grRenderTarget));
 
     if (scale == 1) {
-      m_skSurface.reset(m_skSurfaceDirect);
+      setSurface(m_skSurfaceDirect);
     }
     else {
-      m_skSurface.reset(
+      setSurface(
         SkSurface::NewRenderTarget(
           m_grCtx,
           SkSurface::kYes_Budgeted,
@@ -239,13 +257,20 @@ private:
     }
 
     if (!m_skSurface)
-      throw std::runtime_error("Error creating OpenGL surface for main display");
+      throw std::runtime_error("Error creating surface for main display");
 
     m_display->setSkiaSurface(new SkiaSurface(m_skSurface));
 
     if (m_nsGL)
       [m_nsGL update];
   }
+
+  void setSurface(SkSurface* surface) {
+    if (m_skSurface && m_skSurface != m_skSurfaceDirect)
+      delete m_skSurface;
+    m_skSurface = surface;
+  }
+
 #endif
 
   void paintGC(const gfx::Rect& rect) {
@@ -281,12 +306,13 @@ private:
   bool m_closing;
   OSXWindow* m_window;
 #if SK_SUPPORT_GPU
-  base::UniquePtr<GLContextSkia<GLContextCGL> > m_glCtx;
+  base::UniquePtr<GLContext> m_glCtx;
+  SkAutoTUnref<const GrGLInterface> m_glInterfaces;
   NSOpenGLContext* m_nsGL;
   SkAutoTUnref<GrContext> m_grCtx;
   SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
   SkAutoTDelete<SkSurface> m_skSurfaceDirect;
-  SkAutoTDelete<SkSurface> m_skSurface;
+  SkSurface* m_skSurface;
   gfx::Size m_lastSize;
 #endif
 };

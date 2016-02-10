@@ -19,13 +19,16 @@
 
   #include "GrContext.h"
   #include "she/gl/gl_context_wgl.h"
+  #if SK_ANGLE
+    #include "she/gl/gl_context_egl.h"
+  #endif
 
 #endif
 
 #ifdef _WIN32
 
   #include <windows.h>
-  #include "she/win/window_dde.h" // Include this one time to
+  #include "she/win/window_dde.h"
 
 #endif
 
@@ -117,7 +120,8 @@ void SkiaWindow::paintImpl(HDC hdc)
       }
 
       // Flush GL context
-      m_glCtx->gl()->fFunctions.fFlush();
+      m_glInterfaces->fFunctions.fFlush();
+      m_glCtx->swapBuffers();
       break;
 
 #endif // SK_SUPPORT_GPU
@@ -154,20 +158,32 @@ void SkiaWindow::paintHDC(HDC hdc)
 
 #if SK_SUPPORT_GPU
 
-bool SkiaWindow::attachGL()
+#if SK_ANGLE
+
+bool SkiaWindow::attachANGLE()
 {
   if (!m_glCtx) {
     try {
-      auto ctx = new GLContextSkia<GLContextWGL>(handle());
+      SkAutoTDelete<GLContext> ctx(new GLContextEGL(handle()));
+      if (!ctx->createGLContext())
+        throw std::runtime_error("Cannot create EGL context");
+
+      m_glInterfaces.reset(GrGLCreateANGLEInterface());
+      if (!m_glInterfaces || !m_glInterfaces->validate())
+        throw std::runtime_error("Cannot create EGL interfaces\n");
+
       m_stencilBits = ctx->getStencilBits();
       m_sampleCount = ctx->getSampleCount();
 
-      m_glCtx.reset(ctx);
-      m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
-                                      (GrBackendContext)m_glCtx->gl()));
+      m_glCtx.reset(ctx.detach());
+      m_grCtx.reset(
+        GrContext::Create(kOpenGL_GrBackend,
+                          (GrBackendContext)m_glInterfaces.get()));
+
+      LOG("Using EGL backend\n");
     }
     catch (const std::exception& ex) {
-      LOG("Cannot create GL context: %s\n", ex.what());
+      LOG("Error initializing EGL backend: %s\n", ex.what());
       detachGL();
     }
   }
@@ -178,14 +194,40 @@ bool SkiaWindow::attachGL()
     return false;
 }
 
-#if SK_ANGLE
-
-bool SkiaWindow::attachANGLE()
-{
-  return false;                 // TODO
-}
-
 #endif // SK_ANGLE
+
+bool SkiaWindow::attachGL()
+{
+  if (!m_glCtx) {
+    try {
+      SkAutoTDelete<GLContext> ctx(new GLContextWGL(handle()));
+      if (!ctx->createGLContext())
+        throw std::runtime_error("Cannot create WGL context\n");
+
+      m_glInterfaces.reset(GrGLCreateNativeInterface());
+      if (!m_glInterfaces || !m_glInterfaces->validate())
+        throw std::runtime_error("Cannot create WGL interfaces\n");
+
+      m_stencilBits = ctx->getStencilBits();
+      m_sampleCount = ctx->getSampleCount();
+
+      m_glCtx.reset(ctx.detach());
+      m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
+                                      (GrBackendContext)m_glInterfaces.get()));
+
+      LOG("Using WGL backend\n");
+    }
+    catch (const std::exception& ex) {
+      LOG("Error initializing WGL backend: %s\n", ex.what());
+      detachGL();
+    }
+  }
+
+  if (m_glCtx)
+    return true;
+  else
+    return false;
+}
 
 void SkiaWindow::detachGL()
 {
@@ -232,7 +274,7 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
   }
 
   if (!m_skSurface)
-    throw std::runtime_error("Error creating OpenGL surface for main display");
+    throw std::runtime_error("Error creating surface for main display");
 
   m_display->setSkiaSurface(new SkiaSurface(m_skSurface));
 }
@@ -250,6 +292,9 @@ void SkiaWindow::resizeImpl(const gfx::Size& size)
 {
   bool gpu = instance()->gpuAcceleration();
   (void)gpu;
+
+  // Disable GPU acceleration.
+  gpu = false;
 
 #if SK_SUPPORT_GPU
 #if SK_ANGLE

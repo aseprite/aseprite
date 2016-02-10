@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015, 2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,6 +17,7 @@ public:
   virtual void destroyGLContext() = 0;
   virtual int getStencilBits() = 0;
   virtual int getSampleCount() = 0;
+  virtual void swapBuffers() { }
 };
 
 } // namespace she

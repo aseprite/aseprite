@@ -14,8 +14,8 @@
 #include "she/win/window.h"
 
 #if SK_SUPPORT_GPU
-  #include "she/gl/gl_context_wgl.h"
-  #include "she/skia/gl_context_skia.h"
+  #include "gl/GrGLInterface.h"
+  #include "she/gl/gl_context.h"
 #endif
 
 namespace she {
@@ -39,10 +39,10 @@ private:
   void paintHDC(HDC dc);
 
 #if SK_SUPPORT_GPU
-  bool attachGL();
 #if SK_ANGLE
   bool attachANGLE();
 #endif // SK_ANGLE
+  bool attachGL();
   void detachGL();
   void createRenderTarget(const gfx::Size& size);
   void setSurface(SkSurface* surface);
@@ -52,7 +52,8 @@ private:
   SkiaDisplay* m_display;
   Backend m_backend;
 #if SK_SUPPORT_GPU
-  base::UniquePtr<GLContextSkia<GLContextWGL> > m_glCtx;
+  base::UniquePtr<GLContext> m_glCtx;
+  SkAutoTUnref<const GrGLInterface> m_glInterfaces;
   SkAutoTUnref<GrContext> m_grCtx;
   SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
   SkAutoTDelete<SkSurface> m_skSurfaceDirect;
