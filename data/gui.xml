@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui version="1.1.2-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
@@ -299,13 +299,13 @@
       <key command="MoveMask" shortcut="Shift+Right" context="Selection">
         <param name="target" value="content" />
         <param name="direction" value="right" />
-        <param name="units" value="tile-height" />
+        <param name="units" value="tile-width" />
         <param name="quantity" value="1" />
       </key>
       <key command="MoveMask" shortcut="Shift+Up" context="Selection">
         <param name="target" value="content" />
         <param name="direction" value="up" />
-        <param name="units" value="tile-width" />
+        <param name="units" value="tile-height" />
         <param name="quantity" value="1" />
       </key>
       <key command="MoveMask" shortcut="Shift+Down" context="Selection">
@@ -350,13 +350,13 @@
       <key command="MoveMask" shortcut="Alt+Shift+Right" context="Selection">
         <param name="target" value="boundaries" />
         <param name="direction" value="right" />
-        <param name="units" value="tile-height" />
+        <param name="units" value="tile-width" />
         <param name="quantity" value="1" />
       </key>
       <key command="MoveMask" shortcut="Alt+Shift+Up" context="Selection">
         <param name="target" value="boundaries" />
         <param name="direction" value="up" />
-        <param name="units" value="tile-width" />
+        <param name="units" value="tile-height" />
         <param name="quantity" value="1" />
       </key>
       <key command="MoveMask" shortcut="Alt+Shift+Down" context="Selection">
