@@ -79,8 +79,4 @@ AL_FUNC(void, _xwin_keyboard_handler, (XKeyEvent *event, int dga2_hack));
 AL_FUNC(void, _xwin_get_keyboard_mapping, (void));
 AL_FUNC(void, _xwin_keyboard_focus_handler, (XFocusChangeEvent *event));
 
-/* Defined in xmouse.c. */
-AL_FUNC(void, _xwin_mouse_leave_notify, (void));
-AL_FUNC(void, _xwin_mouse_enter_notify, (void));
-
 #endif /* !__bma_xwin_h */

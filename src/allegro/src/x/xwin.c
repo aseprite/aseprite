@@ -2428,7 +2428,6 @@ static void _xwin_private_process_event(XEvent *event)
       case EnterNotify:
          /* Mouse entered window.  */
          _mouse_on = TRUE;
-         _xwin_mouse_enter_notify();
          mouse_savedx = event->xcrossing.x;
          mouse_savedy = event->xcrossing.y;
          mouse_was_warped = 0;
@@ -2446,7 +2445,6 @@ static void _xwin_private_process_event(XEvent *event)
          _mouse_on = FALSE;
          if (_xwin_mouse_interrupt)
             (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
-         _xwin_mouse_leave_notify();
          break;
       case Expose:
          /* Request to redraw part of the window.  */
