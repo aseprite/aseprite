@@ -19,6 +19,7 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 
+#include <cmath>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
