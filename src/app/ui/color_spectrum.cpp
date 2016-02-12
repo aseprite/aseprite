@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -60,14 +60,14 @@ app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
     umax = MAX(1, rc.h-1);
   }
 
-  int hue = 360 * u / umax;
-  int sat = (v < vmid ? 100 * v / vmid : 100);
-  int val = (v < vmid ? 100 : 100-(100 * (v-vmid) / vmid));
+  double hue = 360.0 * u / umax;
+  double sat = (v < vmid ? 100.0 * v / vmid : 100.0);
+  double val = (v < vmid ? 100.0 : 100.0-(100.0 * (v-vmid) / vmid));
 
   return app::Color::fromHsv(
-    MID(0, hue, 360),
-    MID(0, sat, 100),
-    MID(0, val, 100));
+    MID(0.0, hue, 360.0),
+    MID(0.0, sat, 100.0),
+    MID(0.0, val, 100.0));
 }
 
 void ColorSpectrum::selectColor(const app::Color& color)
@@ -116,32 +116,32 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
         umax = MAX(1, rc.h-1);
       }
 
-      int hue = 360 * u / umax;
-      int sat = (v < vmid ? 100 * v / vmid : 100);
-      int val = (v < vmid ? 100 : 100-(100 * (v-vmid) / vmid));
+      double hue = 360.0 * u / umax;
+      double sat = (v < vmid ? 100.0 * v / vmid : 100.0);
+      double val = (v < vmid ? 100.0 : 100.0-(100.0 * (v-vmid) / vmid));
 
       gfx::Color color = color_utils::color_for_ui(
         app::Color::fromHsv(
-          MID(0, hue, 360),
-          MID(0, sat, 100),
-          MID(0, val, 100)));
+          MID(0.0, hue, 360.0),
+          MID(0.0, sat, 100.0),
+          MID(0.0, val, 100.0)));
 
       g->putPixel(color, rc.x+x, rc.y+y);
     }
   }
 
   if (m_color.getType() != app::Color::MaskType) {
-    int hue = m_color.getHue();
-    int sat = m_color.getSaturation();
-    int val = m_color.getValue();
-    int lit = (200 - sat) * val / 200;
-    gfx::Point pos(rc.x + hue * rc.w / 360,
-                   rc.y + rc.h - (lit * rc.h / 100));
+    double hue = m_color.getHue();
+    double sat = m_color.getSaturation();
+    double val = m_color.getValue();
+    double lit = (200.0 - sat) * val / 200.0;
+    gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
+                   rc.y + rc.h - int(lit * rc.h / 100.0));
 
     she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
     g->drawColoredRgbaSurface(
       icon,
-      lit > 50 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
+      lit > 50.0 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
       pos.x-icon->width()/2,
       pos.y-icon->height()/2);
   }

@@ -283,9 +283,9 @@ HsvSliders::HsvSliders()
 
 void HsvSliders::onSetColor(const app::Color& color)
 {
-  setAbsSliderValue(0, color.getHue());
-  setAbsSliderValue(1, color.getSaturation());
-  setAbsSliderValue(2, color.getValue());
+  setAbsSliderValue(0, int(color.getHue()));
+  setAbsSliderValue(1, int(color.getSaturation()));
+  setAbsSliderValue(2, int(color.getValue()));
   setAbsSliderValue(3, color.getAlpha());
 }
 

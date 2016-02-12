@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -43,7 +43,7 @@ namespace app {
 
     static Color fromMask();
     static Color fromRgb(int r, int g, int b, int a = 255);
-    static Color fromHsv(int h, int s, int v, int a = 255); // h=[0,360], s=[0,100], v=[0,100]
+    static Color fromHsv(double h, double s, double v, int a = 255); // h=[0,360], s=[0,100], v=[0,100]
     static Color fromGray(int g, int a = 255);
     static Color fromIndex(int index);
 
@@ -69,9 +69,9 @@ namespace app {
     int getRed() const;
     int getGreen() const;
     int getBlue() const;
-    int getHue() const;
-    int getSaturation() const;
-    int getValue() const;
+    double getHue() const;
+    double getSaturation() const;
+    double getValue() const;
     int getGray() const;
     int getIndex() const;
     int getAlpha() const;
@@ -88,7 +88,8 @@ namespace app {
         int r, g, b, a;
       } rgb;
       struct {
-        int h, s, v, a;
+        double h, s, v;
+        int a;
       } hsv;
       struct {
         int g, a;

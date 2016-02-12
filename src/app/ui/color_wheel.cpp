@@ -132,7 +132,7 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
                     boxsize, boxsize).contains(pos)) {
         m_harmonyPicked = true;
 
-        color = app::Color::fromHsv(convertHueAngle(color.getHue(), 1),
+        color = app::Color::fromHsv(convertHueAngle(int(color.getHue()), 1),
                                     color.getSaturation(),
                                     color.getValue());
         return color;
@@ -186,10 +186,10 @@ app::Color ColorWheel::getColorInHarmony(int j) const
 {
   int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
   j = MID(0, j, harmonies[i].n-1);
-  int hue = convertHueAngle(m_mainColor.getHue(), -1) + harmonies[i].hues[j];
-  int sat = m_mainColor.getSaturation() * harmonies[i].sats[j] / 100;
-  return app::Color::fromHsv(hue % 360,
-                             MID(0, sat, 100),
+  double hue = convertHueAngle(int(m_mainColor.getHue()), -1) + harmonies[i].hues[j];
+  double sat = m_mainColor.getSaturation() * harmonies[i].sats[j] / 100.0;
+  return app::Color::fromHsv(std::fmod(hue, 360),
+                             MID(0.0, sat, 100.0),
                              m_mainColor.getValue());
 }
 
@@ -253,17 +253,17 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
-      int angle = color.getHue()-30;
-      int dist = color.getSaturation();
+      double angle = color.getHue()-30.0;
+      double dist = color.getSaturation();
 
-      color = app::Color::fromHsv(convertHueAngle(color.getHue(), 1),
+      color = app::Color::fromHsv(convertHueAngle(int(color.getHue()), 1),
                                   color.getSaturation(),
                                   color.getValue());
 
       gfx::Point pos =
         m_wheelBounds.center() +
-        gfx::Point(int(+std::cos(PI*angle/180)*double(m_wheelRadius)*dist/100.0),
-                   int(-std::sin(PI*angle/180)*double(m_wheelRadius)*dist/100.0));
+        gfx::Point(int(+std::cos(PI*angle/180.0)*double(m_wheelRadius)*dist/100.0),
+                   int(-std::sin(PI*angle/180.0)*double(m_wheelRadius)*dist/100.0));
 
       she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
       g->drawRgbaSurface(icon,
