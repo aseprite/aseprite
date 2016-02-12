@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -50,6 +50,12 @@ bool mouse_left = false;
 DlbClk double_click_level;
 Event::MouseButton double_click_button = Event::NoneButton;
 int double_click_ticks;
+
+#if !defined(__APPLE__) && !defined(_WIN32)
+// Mouse enter/leave
+int old_mouse_on = 0;
+extern "C" int _mouse_on;
+#endif
 
 inline int display_w()
 {
@@ -191,6 +197,15 @@ void she_mouse_callback(int flags)
   update_mouse_position();
   Event ev;
   ev.setPosition(gfx::Point(she_mouse_x, she_mouse_y));
+
+  // Mouse enter/leave for Linux
+#if !defined(__APPLE__) && !defined(_WIN32)
+  if (old_mouse_on != _mouse_on) {
+    old_mouse_on = _mouse_on;
+    ev.setType(_mouse_on ? Event::MouseEnter: Event::MouseLeave);
+    queue_event(ev);
+  }
+#endif
 
   // move
   if (flags & MOUSE_FLAG_MOVE) {

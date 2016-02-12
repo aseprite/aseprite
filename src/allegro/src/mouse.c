@@ -57,6 +57,7 @@ int _mouse_z = 0;
 int _mouse_w = 0;
 int _mouse_b = 0;
 int _mouse_on = FALSE;
+int _mouse_on_old = FALSE;
 
 static int mon = TRUE;
 
@@ -261,6 +262,7 @@ END_OF_STATIC_FUNCTION(draw_mouse);
 static void update_mouse(void)
 {
    int x, y, z, w, b, flags = 0;
+   int mouse_on_changed = FALSE;
 
    if (freeze_mouse_flag) {
       x = mx;
@@ -280,11 +282,17 @@ static void update_mouse(void)
          b = 4;
    }
 
+   if (_mouse_on_old != _mouse_on) {
+      _mouse_on_old = _mouse_on;
+      mouse_on_changed = TRUE;
+   }
+
    if ((mouse_x != x) ||
        (mouse_y != y) ||
        (mouse_z != z) ||
        (mouse_w != w) ||
-       (mouse_b != b)) {
+       (mouse_b != b) ||
+       (mouse_on_changed)) {
 
       if (mouse_callback) {
          if ((mouse_x != x) || (mouse_y != y))
