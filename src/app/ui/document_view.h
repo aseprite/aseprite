@@ -27,6 +27,14 @@ namespace app {
   class Document;
   class Editor;
 
+  class DocumentViewPreviewDelegate {
+  public:
+    virtual ~DocumentViewPreviewDelegate() { }
+    virtual void onScrollOtherEditor(Editor* editor) = 0;
+    virtual void onDisposeOtherEditor(Editor* editor) = 0;
+    virtual void onPreviewOtherEditor(Editor* editor) = 0;
+  };
+
   class DocumentView : public ui::Box
                      , public TabView
                      , public doc::DocumentObserver
@@ -38,7 +46,8 @@ namespace app {
       Preview
     };
 
-    DocumentView(Document* document, Type type);
+    DocumentView(Document* document, Type type,
+                 DocumentViewPreviewDelegate* previewDelegate);
     ~DocumentView();
 
     Document* getDocument() const { return m_document; }
@@ -93,6 +102,7 @@ namespace app {
     Type m_type;
     Document* m_document;
     ui::View* m_view;
+    DocumentViewPreviewDelegate* m_previewDelegate;
     Editor* m_editor;
   };
 

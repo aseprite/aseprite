@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -143,6 +143,28 @@ bool get_config_bool(const char* section, const char* name, bool value)
 void set_config_bool(const char* section, const char* name, bool value)
 {
   g_configs.back()->setBoolValue(section, name, value);
+}
+
+Point get_config_point(const char* section, const char* name, const Point& point)
+{
+  Point point2(point);
+  const char* value = get_config_string(section, name, "");
+  if (value) {
+    std::vector<std::string> parts;
+    base::split_string(value, parts, " ");
+    if (parts.size() == 2) {
+      point2.x = strtol(parts[0].c_str(), NULL, 10);
+      point2.y = strtol(parts[1].c_str(), NULL, 10);
+    }
+  }
+  return point2;
+}
+
+void set_config_point(const char* section, const char* name, const Point& point)
+{
+  char buf[128];
+  sprintf(buf, "%d %d", point.x, point.y);
+  set_config_string(section, name, buf);
 }
 
 Rect get_config_rect(const char* section, const char* name, const Rect& rect)

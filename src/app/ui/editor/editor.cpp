@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -353,6 +353,14 @@ Site Editor::getSite() const
   Site site;
   getSite(&site);
   return site;
+}
+
+void Editor::setZoom(const render::Zoom& zoom)
+{
+  if (m_zoom != zoom) {
+    m_zoom = zoom;
+    notifyZoomChanged();
+  }
 }
 
 void Editor::setDefaultScroll()
@@ -1481,7 +1489,7 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
     padding.y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
 
   if ((m_zoom != zoom) || (screenPos != view->viewScroll())) {
-    m_zoom = zoom;
+    setZoom(zoom);
 
     updateEditor();
     setEditorScroll(scrollPos);
@@ -1574,6 +1582,11 @@ void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
 void Editor::notifyScrollChanged()
 {
   m_observers.notifyScrollChanged(this);
+}
+
+void Editor::notifyZoomChanged()
+{
+  m_observers.notifyZoomChanged(this);
 }
 
 void Editor::play(bool playOnce)

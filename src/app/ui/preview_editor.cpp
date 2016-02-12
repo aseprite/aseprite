@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -270,13 +270,26 @@ void PreviewEditorWindow::onWindowResize()
     updateUsingEditor(view->getEditor());
 }
 
+bool PreviewEditorWindow::hasDocument() const
+{
+  return (m_docView && m_docView->getDocument() != nullptr);
+}
+
+DocumentPreferences& PreviewEditorWindow::docPref()
+{
+  Document* doc = (m_docView ? m_docView->getDocument(): nullptr);
+  return Preferences::instance().document(doc);
+}
+
 void PreviewEditorWindow::onCenterClicked()
 {
-  if (m_centerButton->isSelected()) {
-    DocumentView* view = UIContext::instance()->activeView();
-    if (view)
-      updateUsingEditor(view->getEditor());
-  }
+  if (!m_relatedEditor || !hasDocument())
+    return;
+
+  bool autoScroll = m_centerButton->isSelected();
+  docPref().preview.autoScroll(autoScroll);
+  if (autoScroll)
+    updateUsingEditor(m_relatedEditor);
 }
 
 void PreviewEditorWindow::onPlayClicked()
@@ -323,30 +336,37 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
   if (!isVisible())
     openWindow();
 
-  gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
-  gfx::Point centerPoint = visibleBounds.center();
-  bool center = (m_centerButton->isSelected());
+  // Document preferences used to store the preferred zoom/scroll point
+  auto& docPref = Preferences::instance().document(document);
+  bool autoScroll = docPref.preview.autoScroll();
 
   // Set the same location as in the given editor.
   if (!miniEditor || miniEditor->document() != document) {
     destroyDocView();
 
-    m_docView = new DocumentView(document, DocumentView::Preview);
+    m_docView = new DocumentView(document, DocumentView::Preview, this);
     addChild(m_docView);
 
     miniEditor = m_docView->getEditor();
-    miniEditor->setZoom(render::Zoom(1, 1));
+    miniEditor->setZoom(render::Zoom::fromScale(docPref.preview.zoom()));
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
     miniEditor->setState(EditorStatePtr(new NavigateState));
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
     miniEditor->addObserver(this);
     layout();
-    center = true;
+
+    if (!autoScroll)
+      miniEditor->setEditorScroll(docPref.preview.scroll());
   }
 
-  if (center)
+  m_centerButton->setSelected(autoScroll);
+  if (autoScroll) {
+    gfx::Point centerPoint = editor->getVisibleSpriteBounds().center();
     miniEditor->centerInSpritePoint(centerPoint);
+
+    saveScrollPref();
+  }
 
   if (!m_playButton->isPlaying()) {
     miniEditor->stop();
@@ -370,8 +390,10 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 
 void PreviewEditorWindow::uncheckCenterButton()
 {
-  if (m_centerButton->isSelected())
+  if (m_centerButton->isSelected()) {
     m_centerButton->setSelected(false);
+    onCenterClicked();
+  }
 }
 
 void PreviewEditorWindow::onStateChanged(Editor* editor)
@@ -384,6 +406,48 @@ void PreviewEditorWindow::onStateChanged(Editor* editor)
     // "play once" option and the PlayState stops automatically.
     m_playButton->stop();
   }
+}
+
+void PreviewEditorWindow::onScrollChanged(Editor* miniEditor)
+{
+  if (miniEditor->hasCapture()) {
+    saveScrollPref();
+    uncheckCenterButton();
+  }
+}
+
+void PreviewEditorWindow::onZoomChanged(Editor* miniEditor)
+{
+  saveScrollPref();
+}
+
+void PreviewEditorWindow::saveScrollPref()
+{
+  ASSERT(m_docView);
+  if (!m_docView)
+    return;
+
+  Editor* miniEditor = m_docView->getEditor();
+  ASSERT(miniEditor);
+
+  docPref().preview.scroll(View::getView(miniEditor)->viewScroll());
+  docPref().preview.zoom(miniEditor->zoom().scale());
+}
+
+void PreviewEditorWindow::onScrollOtherEditor(Editor* editor)
+{
+  updateUsingEditor(editor);
+}
+
+void PreviewEditorWindow::onDisposeOtherEditor(Editor* editor)
+{
+  if (m_relatedEditor == editor)
+    updateUsingEditor(nullptr);
+}
+
+void PreviewEditorWindow::onPreviewOtherEditor(Editor* editor)
+{
+  updateUsingEditor(editor);
 }
 
 void PreviewEditorWindow::hideWindow()

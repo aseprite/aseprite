@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -128,7 +128,7 @@ namespace app {
     const render::Zoom& zoom() const { return m_zoom; }
     const gfx::Point& padding() const { return m_padding; }
 
-    void setZoom(const render::Zoom& zoom) { m_zoom = zoom; }
+    void setZoom(const render::Zoom& zoom);
     void setDefaultScroll();
     void setEditorScroll(const gfx::Point& scroll);
     void setEditorZoom(const render::Zoom& zoom);
@@ -194,6 +194,7 @@ namespace app {
     // Used by EditorView to notify changes in the view's scroll
     // position.
     void notifyScrollChanged();
+    void notifyZoomChanged();
 
     // Animation control
     void play(bool playOnce);

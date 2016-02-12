@@ -28,7 +28,6 @@
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
-#include "app/ui/preview_editor.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
@@ -54,7 +53,10 @@ class AppEditor : public Editor,
                   public EditorObserver,
                   public EditorCustomizationDelegate {
 public:
-  AppEditor(Document* document) : Editor(document) {
+  AppEditor(Document* document,
+            DocumentViewPreviewDelegate* previewDelegate)
+    : Editor(document)
+    , m_previewDelegate(previewDelegate) {
     addObserver(this);
     setCustomizationDelegate(this);
   }
@@ -66,29 +68,25 @@ public:
 
   // EditorObserver implementation
   void dispose() override {
-    PreviewEditorWindow* preview =
-      App::instance()->getMainWindow()->getPreviewEditor();
-
-    if (preview->relatedEditor() == this)
-      updatePreviewEditor(nullptr);
+    m_previewDelegate->onDisposeOtherEditor(this);
   }
 
   void onScrollChanged(Editor* editor) override {
-    updatePreviewEditor(this);
+    m_previewDelegate->onScrollOtherEditor(this);
 
     if (isActive())
       StatusBar::instance()->updateFromEditor(this);
   }
 
   void onAfterFrameChanged(Editor* editor) override {
-    updatePreviewEditor(this);
+    m_previewDelegate->onPreviewOtherEditor(this);
 
     if (isActive())
       set_current_palette(editor->sprite()->palette(editor->frame()), true);
   }
 
   void onAfterLayerChanged(Editor* editor) override {
-    updatePreviewEditor(this);
+    m_previewDelegate->onPreviewOtherEditor(this);
   }
 
   // EditorCustomizationDelegate implementation
@@ -144,44 +142,28 @@ protected:
   }
 
 private:
-
-  void updatePreviewEditor(Editor* editor) {
-    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(editor);
-  }
-
+  DocumentViewPreviewDelegate* m_previewDelegate;
 };
 
-class PreviewEditor : public Editor,
-                      public EditorObserver {
+class PreviewEditor : public Editor {
 public:
   PreviewEditor(Document* document)
     : Editor(document, Editor::kShowOutside) // Don't show grid/mask in preview preview
   {
-    addObserver(this);
-  }
-
-  ~PreviewEditor() {
-    removeObserver(this);
-  }
-
-private:
-  void onScrollChanged(Editor* editor) override {
-    if (hasCapture()) {
-      // TODO create a signal
-      App::instance()->getMainWindow()->getPreviewEditor()->uncheckCenterButton();
-    }
   }
 };
 
-DocumentView::DocumentView(Document* document, Type type)
+DocumentView::DocumentView(Document* document, Type type,
+                           DocumentViewPreviewDelegate* previewDelegate)
   : Box(VERTICAL)
   , m_type(type)
   , m_document(document)
   , m_view(new EditorView(type == Normal ? EditorView::CurrentEditorMode:
                                            EditorView::AlwaysSelected))
+  , m_previewDelegate(previewDelegate)
   , m_editor((type == Normal ?
-      (Editor*)new AppEditor(document):
-      (Editor*)new PreviewEditor(document)))
+              (Editor*)new AppEditor(document, previewDelegate):
+              (Editor*)new PreviewEditor(document)))
 {
   addChild(m_view);
 
@@ -215,7 +197,7 @@ TabIcon DocumentView::getTabIcon()
 
 WorkspaceView* DocumentView::cloneWorkspaceView()
 {
-  return new DocumentView(m_document, Normal);
+  return new DocumentView(m_document, Normal, m_previewDelegate);
 }
 
 void DocumentView::onWorkspaceViewSelected()

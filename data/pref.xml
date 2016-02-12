@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2015 by David Capello -->
+<!-- Copyright (C) 2014-2016 by David Capello -->
 <preferences>
 
   <types>
@@ -274,6 +274,11 @@
     <section id="import_sprite_sheet">
       <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::Rows" />
       <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
+    </section>
+    <section id="preview" text="Preview">
+      <option id="zoom" type="double" default="1.0" />
+      <option id="scroll" type="gfx::Point" />
+      <option id="auto_scroll" type="bool" default="true" />
     </section>
   </document>
 

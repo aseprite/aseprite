@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,8 +9,9 @@
 #define APP_INI_FILE_H_INCLUDED
 #pragma once
 
-#include "gfx/rect.h"
 #include "app/color.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 namespace app {
 
@@ -41,6 +42,9 @@ namespace app {
 
   bool get_config_bool(const char* section, const char* name, bool value);
   void set_config_bool(const char* section, const char* name, bool value);
+
+  gfx::Point get_config_point(const char* section, const char* name, const gfx::Point& point);
+  void set_config_point(const char* section, const char* name, const gfx::Point& point);
 
   gfx::Rect get_config_rect(const char* section, const char* name, const gfx::Rect& rect);
   void set_config_rect(const char* section, const char* name, const gfx::Rect& rect);
@@ -77,6 +81,10 @@ namespace app {
     return get_config_double(section, name, value);
   }
 
+  inline gfx::Point get_config_value(const char* section, const char* name, const gfx::Point& value) {
+    return get_config_point(section, name, value);
+  }
+
   inline gfx::Rect get_config_value(const char* section, const char* name, const gfx::Rect& value) {
     return get_config_rect(section, name, value);
   }
@@ -108,6 +116,10 @@ namespace app {
 
   inline void set_config_value(const char* section, const char* name, double value) {
     set_config_double(section, name, value);
+  }
+
+  inline void set_config_value(const char* section, const char* name, const gfx::Point& value) {
+    set_config_point(section, name, value);
   }
 
   inline void set_config_value(const char* section, const char* name, const gfx::Rect& value) {

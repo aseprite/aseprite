@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -194,7 +194,10 @@ void UIContext::onAddDocument(doc::Document* doc)
     return;
 
   // Add a new view for this document
-  DocumentView* view = new DocumentView(m_lastSelectedDoc, DocumentView::Normal);
+  DocumentView* view = new DocumentView(
+    m_lastSelectedDoc,
+    DocumentView::Normal,
+    App::instance()->getMainWindow()->getPreviewEditor());
 
   // Add a tab with the new view for the document
   App::instance()->getMainWindow()->getWorkspace()->addView(view);
