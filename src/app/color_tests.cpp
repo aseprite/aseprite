@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -35,7 +35,7 @@ TEST(Color, fromHsv)
 
 TEST(Color, fromString)
 {
-  EXPECT_EQ(Color::fromRgb(0, 0, 0), Color::fromString("rgb{0,0,0}"));
+  EXPECT_EQ(Color::fromRgb(0, 0, 0), Color::fromString("rgb{0,0.0,0}"));
   EXPECT_EQ(Color::fromRgb(32, 16, 255), Color::fromString("rgb{32,16,255}"));
   EXPECT_EQ(Color::fromHsv(32, 64, 99), Color::fromString("hsv{32,64,99}"));
 }
@@ -44,5 +44,5 @@ TEST(Color, toString)
 {
   EXPECT_EQ("rgb{0,0,0,255}", Color::fromRgb(0, 0, 0).toString());
   EXPECT_EQ("rgb{32,16,255,255}", Color::fromRgb(32, 16, 255).toString());
-  EXPECT_EQ("hsv{32,64,99,255}", Color::fromHsv(32, 64, 99).toString());
+  EXPECT_EQ("hsv{32.00,64.00,99.00,255}", Color::fromHsv(32, 64, 99).toString());
 }
