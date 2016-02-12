@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -325,7 +325,8 @@ void ColorBar::setColorSelector(ColorSelector selector)
       m_spectrum->setVisible(true);
       break;
 
-    case ColorSelector::WHEEL:
+    case ColorSelector::RGB_WHEEL:
+    case ColorSelector::RYB_WHEEL:
       if (!m_wheel) {
         m_wheel = new ColorWheel;
         m_wheel->setExpansive(true);
@@ -333,6 +334,10 @@ void ColorBar::setColorSelector(ColorSelector selector)
         m_wheel->ColorChange.connect(&ColorBar::onPickSpectrum, this);
         m_selectorPlaceholder.addChild(m_wheel);
       }
+      m_wheel->setColorModel(
+        (m_selector == ColorSelector::RGB_WHEEL ?
+         ColorWheel::ColorModel::RGB:
+         ColorWheel::ColorModel::RYB));
       m_wheel->setVisible(true);
       break;
 

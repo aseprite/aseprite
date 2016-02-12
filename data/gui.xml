@@ -377,6 +377,15 @@
       <key command="SetInkType"><param name="type" value="lock-alpha" /></key>
       <key command="SetInkType"><param name="type" value="shading" /></key>
       <key command="SetSameInk" />
+      <key command="SetColorSelector">
+        <param name="type" value="spectrum" />
+      </key>
+      <key command="SetColorSelector">
+        <param name="type" value="rgb-wheel" />
+      </key>
+      <key command="SetColorSelector">
+        <param name="type" value="ryb-wheel" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
@@ -849,8 +858,11 @@
       <item command="SetColorSelector" text="Color Spectrum">
         <param name="type" value="spectrum" />
       </item>
-      <item command="SetColorSelector" text="Color Wheel">
-        <param name="type" value="wheel" />
+      <item command="SetColorSelector" text="RGB Color Wheel">
+        <param name="type" value="rgb-wheel" />
+      </item>
+      <item command="SetColorSelector" text="RYB Color Wheel">
+        <param name="type" value="ryb-wheel" />
       </item>
       <separator />
       <item command="LoadPalette" text="L&amp;oad Palette" />

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -19,6 +19,11 @@ namespace app {
 
   class ColorWheel : public ui::Widget {
   public:
+    enum class ColorModel {
+      RGB,
+      RYB,
+    };
+
     enum class Harmony {
       NONE,
       COMPLEMENTARY,
@@ -40,6 +45,7 @@ namespace app {
     bool isDiscrete() const { return m_discrete; }
     void setDiscrete(bool state);
 
+    void setColorModel(ColorModel colorModel);
     void setHarmony(Harmony harmony);
 
     // Signals
@@ -54,10 +60,16 @@ namespace app {
     int getHarmonies() const;
     app::Color getColorInHarmony(int i) const;
 
+    // Converts an hue angle from HSV <-> current color model hue.
+    // With dir == +1, the angle is from the color model and it's converted to HSV hue.
+    // With dir == -1, the angle came from HSV and is converted to the current color model.
+    int convertHueAngle(int angle, int dir) const;
+
     gfx::Rect m_clientBounds;
     gfx::Rect m_wheelBounds;
     int m_wheelRadius;
     bool m_discrete;
+    ColorModel m_colorModel;
     Harmony m_harmony;
     ui::ButtonBase m_options;
     app::Color m_mainColor;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -19,13 +19,14 @@
 #include "base/bind.h"
 #include "base/pi.h"
 #include "base/scoped_value.h"
+#include "filters/color_curve.h"
 #include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 
 namespace app {
@@ -52,6 +53,7 @@ static struct {
 ColorWheel::ColorWheel()
   : Widget(kGenericWidget)
   , m_discrete(Preferences::instance().colorBar.discreteWheel())
+  , m_colorModel((ColorModel)Preferences::instance().colorBar.wheelModel())
   , m_harmony((Harmony)Preferences::instance().colorBar.harmony())
   , m_options("", kButtonWidget, kButtonWidget, kCheckWidget)
   , m_harmonyPicked(false)
@@ -98,6 +100,7 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
       hue *= 30;
     }
     hue %= 360;                 // To leave hue in [0,360) range
+    hue = convertHueAngle(hue, 1);
 
     int sat;
     if (m_discrete) {
@@ -128,6 +131,10 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
                     rc.y+rc.h-boxsize,
                     boxsize, boxsize).contains(pos)) {
         m_harmonyPicked = true;
+
+        color = app::Color::fromHsv(convertHueAngle(color.getHue(), 1),
+                                    color.getSaturation(),
+                                    color.getValue());
         return color;
       }
     }
@@ -153,6 +160,14 @@ void ColorWheel::setDiscrete(bool state)
   invalidate();
 }
 
+void ColorWheel::setColorModel(ColorModel colorModel)
+{
+  m_colorModel = colorModel;
+  Preferences::instance().colorBar.wheelModel((int)m_colorModel);
+
+  invalidate();
+}
+
 void ColorWheel::setHarmony(Harmony harmony)
 {
   m_harmony = harmony;
@@ -171,7 +186,7 @@ app::Color ColorWheel::getColorInHarmony(int j) const
 {
   int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
   j = MID(0, j, harmonies[i].n-1);
-  int hue = m_mainColor.getHue() + harmonies[i].hues[j];
+  int hue = convertHueAngle(m_mainColor.getHue(), -1) + harmonies[i].hues[j];
   int sat = m_mainColor.getSaturation() * harmonies[i].sats[j] / 100;
   return app::Color::fromHsv(hue % 360,
                              MID(0, sat, 100),
@@ -238,12 +253,17 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
-      int hue = color.getHue()-30;
-      int sat = color.getSaturation();
+      int angle = color.getHue()-30;
+      int dist = color.getSaturation();
+
+      color = app::Color::fromHsv(convertHueAngle(color.getHue(), 1),
+                                  color.getSaturation(),
+                                  color.getValue());
+
       gfx::Point pos =
         m_wheelBounds.center() +
-        gfx::Point(int(+std::cos(PI*hue/180)*double(m_wheelRadius)*sat/100.0),
-                   int(-std::sin(PI*hue/180)*double(m_wheelRadius)*sat/100.0));
+        gfx::Point(int(+std::cos(PI*angle/180)*double(m_wheelRadius)*dist/100.0),
+                   int(-std::sin(PI*angle/180)*double(m_wheelRadius)*dist/100.0));
 
       she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
       g->drawRgbaSurface(icon,
@@ -356,6 +376,53 @@ void ColorWheel::onOptions()
 
   gfx::Rect rc = m_options.bounds();
   menu.showPopup(gfx::Point(rc.x+rc.w, rc.y));
+}
+
+int ColorWheel::convertHueAngle(int hue, int dir) const
+{
+  switch (m_colorModel) {
+
+    case ColorModel::RGB:
+      return hue;
+
+    case ColorModel::RYB: {
+      static std::vector<int> map1;
+      static std::vector<int> map2;
+
+      if (map2.empty()) {
+        filters::ColorCurve curve1(filters::ColorCurve::Linear);
+        curve1.addPoint(gfx::Point(0, 0));
+        curve1.addPoint(gfx::Point(60, 35));
+        curve1.addPoint(gfx::Point(122, 60));
+        curve1.addPoint(gfx::Point(165, 120));
+        curve1.addPoint(gfx::Point(218, 180));
+        curve1.addPoint(gfx::Point(275, 240));
+        curve1.addPoint(gfx::Point(330, 300));
+        curve1.addPoint(gfx::Point(360, 360));
+
+        filters::ColorCurve curve2(filters::ColorCurve::Linear);
+        for (const auto& pt : curve1)
+          curve2.addPoint(gfx::Point(pt.y, pt.x));
+
+        map1.resize(360);
+        map2.resize(360);
+        curve1.getValues(0, 359, map1);
+        curve2.getValues(0, 359, map2);
+      }
+
+      if (hue < 0)
+        hue += 360;
+      hue %= 360;
+
+      ASSERT(hue >= 0 && hue < 360);
+      if (dir > 0)
+        return map1[hue];
+      else if (dir < 0)
+        return map2[hue];
+    }
+
+  }
+  return hue;
 }
 
 } // namespace app
