@@ -16,6 +16,7 @@
 #include "she/event_queue.h"
 #include "she/osx/window.h"
 #include "she/skia/skia_display.h"
+#include "she/skia/skia_surface.h"
 #include "she/system.h"
 
 #include "mac/SkCGUtils.h"
@@ -160,7 +161,7 @@ public:
         paintGC(rect);
         break;
 
-#ifdef SK_SUPPORT_GPU
+#if SK_SUPPORT_GPU
       case Backend::GL:
         if (m_nsGL)
           [m_nsGL flushBuffer];
@@ -170,7 +171,7 @@ public:
   }
 
   void onWindowChanged() override {
-#ifdef SK_SUPPORT_GPU
+#if SK_SUPPORT_GPU
     if (m_nsGL)
       [m_nsGL setView:[m_window contentView]];
 #endif
