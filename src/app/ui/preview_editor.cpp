@@ -21,7 +21,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
-#include "app/ui/editor/play_state.h"
 #include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -102,8 +101,8 @@ public:
 
   bool isPlaying() const { return m_isPlaying; }
 
-  void stop() {
-    m_isPlaying = false;
+  void setPlaying(bool state) {
+    m_isPlaying = state;
     setupIcons();
   }
 
@@ -398,14 +397,9 @@ void PreviewEditorWindow::uncheckCenterButton()
 
 void PreviewEditorWindow::onStateChanged(Editor* editor)
 {
-  EditorStatePtr state = editor->getState();
-  PlayState* playState = (state ? dynamic_cast<PlayState*>(state.get()): nullptr);
-  if (!playState) {
-    // We have to switch the "play button" state to "play" because the
-    // editor animation has just stopped. This happens when we use
-    // "play once" option and the PlayState stops automatically.
-    m_playButton->stop();
-  }
+  // Sync editor playing state with MiniPlayButton state
+  if (m_playButton->isPlaying() != editor->isPlaying())
+    m_playButton->setPlaying(editor->isPlaying());
 }
 
 void PreviewEditorWindow::onScrollChanged(Editor* miniEditor)
