@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,8 @@
 
 namespace she {
 
-KeyScancode win32vk_to_scancode(int vk) {
+KeyScancode win32vk_to_scancode(int vk)
+{
   static KeyScancode keymap[256] = {
     // 0x00
     kKeyNil, // 0x00
@@ -34,9 +35,9 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0x0E - Undefined
     kKeyNil, // 0x0F - Undefined
     // 0x10
-    kKeyNil, // 0x10 - VK_SHIFT
-    kKeyNil, // 0x11 - VK_CONTROL
-    kKeyNil, // 0x12 - VK_MENU
+    kKeyLShift, // 0x10 - VK_SHIFT
+    kKeyLControl, // 0x11 - VK_CONTROL
+    kKeyAlt, // 0x12 - VK_MENU
     kKeyPause, // 0x13 - VK_PAUSE
     kKeyCapsLock, // 0x14 - VK_CAPITAL
     kKeyKana, // 0x15 - VK_KANA
@@ -294,7 +295,25 @@ KeyScancode win32vk_to_scancode(int vk) {
   return keymap[vk];
 }
 
-static int scancode_to_win32vk(KeyScancode scancode) {
+KeyModifiers get_modifiers_from_last_win32_message()
+{
+  int modifiers = kKeyNoneModifier;
+  if ((GetKeyState(VK_LSHIFT) & 0x8000) ||
+      (GetKeyState(VK_RSHIFT) & 0x8000))
+    modifiers |= kKeyShiftModifier;
+  if ((GetKeyState(VK_LCONTROL) & 0x8000) ||
+      (GetKeyState(VK_RCONTROL) & 0x8000))
+    modifiers |= kKeyCtrlModifier;
+  if ((GetKeyState(VK_LMENU) & 0x8000) ||
+      (GetKeyState(VK_RMENU) & 0x8000))
+    modifiers |= kKeyAltModifier;
+  if (GetKeyState(VK_SPACE) & 0x8000)
+    modifiers |= kKeySpaceModifier;
+  return (KeyModifiers)modifiers;
+}
+
+static int scancode_to_win32vk(KeyScancode scancode)
+{
   static int initialized = false;
   static int keymap[kKeyScancodes];
 
@@ -319,7 +338,7 @@ bool is_key_pressed(KeyScancode scancode)
 {
   int vk = scancode_to_win32vk(scancode);
   if (vk)
-    return (GetKeyState(vk) & 0xf000 ? true: false);
+    return (GetAsyncKeyState(vk) & 0x8000 ? true: false);
   else
     return false;
 }

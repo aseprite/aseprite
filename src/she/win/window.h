@@ -27,6 +27,7 @@
 namespace she {
 
   KeyScancode win32vk_to_scancode(int vk);
+  KeyModifiers get_modifiers_from_last_win32_message();
 
   #define SHE_WND_CLASS_NAME L"Aseprite.Window"
 
@@ -290,6 +291,7 @@ namespace she {
           }
 
           Event ev;
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(
               GET_X_LPARAM(lparam) / m_scale,
               GET_Y_LPARAM(lparam) / m_scale));
@@ -320,6 +322,7 @@ namespace she {
 
             Event ev;
             ev.setType(Event::MouseLeave);
+            ev.setModifiers(get_modifiers_from_last_win32_message());
             queueEvent(ev);
           }
           break;
@@ -329,6 +332,7 @@ namespace she {
         case WM_MBUTTONDOWN: {
           Event ev;
           ev.setType(Event::MouseDown);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(
               GET_X_LPARAM(lparam) / m_scale,
               GET_Y_LPARAM(lparam) / m_scale));
@@ -345,6 +349,7 @@ namespace she {
         case WM_MBUTTONUP: {
           Event ev;
           ev.setType(Event::MouseUp);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(
               GET_X_LPARAM(lparam) / m_scale,
               GET_Y_LPARAM(lparam) / m_scale));
@@ -366,6 +371,7 @@ namespace she {
         case WM_RBUTTONDBLCLK: {
           Event ev;
           ev.setType(Event::MouseDoubleClick);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(
               GET_X_LPARAM(lparam) / m_scale,
               GET_Y_LPARAM(lparam) / m_scale));
@@ -385,6 +391,7 @@ namespace she {
 
           Event ev;
           ev.setType(Event::MouseWheel);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(pos.x, pos.y) / m_scale);
 
           int z = ((short)HIWORD(wparam)) / WHEEL_DELTA;
@@ -407,6 +414,7 @@ namespace she {
 
           Event ev;
           ev.setType(Event::MouseWheel);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(pos.x, pos.y) / m_scale);
 
           int bar = (msg == WM_HSCROLL ? SB_HORZ: SB_VERT);
@@ -465,6 +473,7 @@ namespace she {
 
           Event ev;
           ev.setType(Event::KeyDown);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setScancode(win32vk_to_scancode(vk));
           ev.setRepeat(lparam & 0xffff);
 
@@ -485,6 +494,7 @@ namespace she {
         case WM_KEYUP: {
           Event ev;
           ev.setType(Event::KeyUp);
+          ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setScancode(win32vk_to_scancode(wparam));
           ev.setUnicodeChar(0);
           ev.setRepeat(lparam & 0xffff);
