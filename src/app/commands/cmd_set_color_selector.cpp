@@ -46,8 +46,12 @@ void SetColorSelectorCommand::onLoadParams(const Params& params)
   if (type == "spectrum") {
     m_type = ColorBar::ColorSelector::SPECTRUM;
   }
-  else if (type == "wheel") {
-    m_type = ColorBar::ColorSelector::WHEEL;
+  else if (type == "wheel" ||
+           type == "rgb-wheel") {
+    m_type = ColorBar::ColorSelector::RGB_WHEEL;
+  }
+  else if (type == "ryb-wheel") {
+    m_type = ColorBar::ColorSelector::RYB_WHEEL;
   }
 }
 
@@ -69,8 +73,11 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
     case ColorBar::ColorSelector::SPECTRUM:
       result += "Color Spectrum";
       break;
-    case ColorBar::ColorSelector::WHEEL:
-      result += "Color Wheel";
+    case ColorBar::ColorSelector::RGB_WHEEL:
+      result += "RGB Color Wheel";
+      break;
+    case ColorBar::ColorSelector::RYB_WHEEL:
+      result += "RYB Color Wheel";
       break;
     default:
       result += "Unknown";

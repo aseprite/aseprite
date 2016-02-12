@@ -381,7 +381,10 @@
         <param name="type" value="spectrum" />
       </key>
       <key command="SetColorSelector">
-        <param name="type" value="wheel" />
+        <param name="type" value="rgb-wheel" />
+      </key>
+      <key command="SetColorSelector">
+        <param name="type" value="ryb-wheel" />
       </key>
     </commands>
 
@@ -855,8 +858,11 @@
       <item command="SetColorSelector" text="Color Spectrum">
         <param name="type" value="spectrum" />
       </item>
-      <item command="SetColorSelector" text="Color Wheel">
-        <param name="type" value="wheel" />
+      <item command="SetColorSelector" text="RGB Color Wheel">
+        <param name="type" value="rgb-wheel" />
+      </item>
+      <item command="SetColorSelector" text="RYB Color Wheel">
+        <param name="type" value="ryb-wheel" />
       </item>
       <separator />
       <item command="LoadPalette" text="L&amp;oad Palette" />
