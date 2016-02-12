@@ -475,7 +475,7 @@ namespace she {
           ev.setType(Event::KeyDown);
           ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setScancode(win32vk_to_scancode(vk));
-          ev.setRepeat(lparam & 0xffff);
+          ev.setRepeat(MAX(0, (lparam & 0xffff)-1));
 
           if (charsInBuffer < 1) {
             ev.setUnicodeChar(0);
@@ -497,7 +497,7 @@ namespace she {
           ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setScancode(win32vk_to_scancode(wparam));
           ev.setUnicodeChar(0);
-          ev.setRepeat(lparam & 0xffff);
+          ev.setRepeat(MAX(0, (lparam & 0xffff)-1));
           queueEvent(ev);
 
           // TODO If we use native menus, this message should be given
