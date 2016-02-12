@@ -139,11 +139,11 @@ Color Color::fromString(const std::string& str)
       }
 
       if (str[0] == 'r')
-        color = Color::fromRgb(table[0], table[1], table[2], int(table[3]));
+        color = Color::fromRgb(int(table[0]), int(table[1]), int(table[2]), int(table[3]));
       else if (str[0] == 'h')
         color = Color::fromHsv(table[0], table[1], table[2], int(table[3]));
       else if (str[0] == 'g')
-        color = Color::fromGray(table[0], (c >= 2 ? int(table[1]): 255));
+        color = Color::fromGray(int(table[0]), (c >= 2 ? int(table[1]): 255));
     }
     else if (str.find("index{") == 0) {
       color = Color::fromIndex(std::strtol(str.c_str()+6, NULL, 10));
