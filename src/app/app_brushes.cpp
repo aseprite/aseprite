@@ -40,7 +40,7 @@ ImageRef load_xml_image(const TiXmlElement* imageElem)
   int w, h;
   if (!imageElem->QueryIntAttribute("width", &w) == TIXML_SUCCESS ||
       !imageElem->QueryIntAttribute("height", &h) == TIXML_SUCCESS ||
-      w < 0 || w > 9999 &&
+      w < 0 || w > 9999 ||
       h < 0 || h > 9999)
     return image;
 
