@@ -266,17 +266,17 @@ void PreviewEditorWindow::onWindowResize()
 
   DocumentView* view = UIContext::instance()->activeView();
   if (view)
-    updateUsingEditor(view->getEditor());
+    updateUsingEditor(view->editor());
 }
 
 bool PreviewEditorWindow::hasDocument() const
 {
-  return (m_docView && m_docView->getDocument() != nullptr);
+  return (m_docView && m_docView->document() != nullptr);
 }
 
 DocumentPreferences& PreviewEditorWindow::docPref()
 {
-  Document* doc = (m_docView ? m_docView->getDocument(): nullptr);
+  Document* doc = (m_docView ? m_docView->document(): nullptr);
   return Preferences::instance().document(doc);
 }
 
@@ -293,7 +293,7 @@ void PreviewEditorWindow::onCenterClicked()
 
 void PreviewEditorWindow::onPlayClicked()
 {
-  Editor* miniEditor = (m_docView ? m_docView->getEditor(): nullptr);
+  Editor* miniEditor = (m_docView ? m_docView->editor(): nullptr);
   if (!miniEditor || !miniEditor->document())
     return;
 
@@ -307,7 +307,7 @@ void PreviewEditorWindow::onPlayClicked()
 
 void PreviewEditorWindow::onPopupSpeed()
 {
-  Editor* miniEditor = (m_docView ? m_docView->getEditor(): nullptr);
+  Editor* miniEditor = (m_docView ? m_docView->editor(): nullptr);
   if (!miniEditor || !miniEditor->document())
     return;
 
@@ -330,7 +330,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
   m_relatedEditor = editor;
 
   Document* document = editor->document();
-  Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
+  Editor* miniEditor = (m_docView ? m_docView->editor(): nullptr);
 
   if (!isVisible())
     openWindow();
@@ -346,7 +346,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     m_docView = new DocumentView(document, DocumentView::Preview, this);
     addChild(m_docView);
 
-    miniEditor = m_docView->getEditor();
+    miniEditor = m_docView->editor();
     miniEditor->setZoom(render::Zoom::fromScale(docPref.preview.zoom()));
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
@@ -421,7 +421,7 @@ void PreviewEditorWindow::saveScrollPref()
   if (!m_docView)
     return;
 
-  Editor* miniEditor = m_docView->getEditor();
+  Editor* miniEditor = m_docView->editor();
   ASSERT(miniEditor);
 
   docPref().preview.scroll(View::getView(miniEditor)->viewScroll());
@@ -454,7 +454,7 @@ void PreviewEditorWindow::hideWindow()
 void PreviewEditorWindow::destroyDocView()
 {
   if (m_docView) {
-    m_docView->getEditor()->removeObserver(this);
+    m_docView->editor()->removeObserver(this);
 
     delete m_docView;
     m_docView = nullptr;

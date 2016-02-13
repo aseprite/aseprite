@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -207,8 +207,8 @@ void DocumentView::onWorkspaceViewSelected()
 
 void DocumentView::onClonedFrom(WorkspaceView* from)
 {
-  Editor* newEditor = getEditor();
-  Editor* srcEditor = static_cast<DocumentView*>(from)->getEditor();
+  Editor* newEditor = this->editor();
+  Editor* srcEditor = static_cast<DocumentView*>(from)->editor();
 
   newEditor->setLayer(srcEditor->layer());
   newEditor->setFrame(srcEditor->frame());
@@ -227,7 +227,7 @@ bool DocumentView::onCloseView(Workspace* workspace)
   for (auto view : *workspace) {
     DocumentView* docView = dynamic_cast<DocumentView*>(view);
     if (docView && docView != this &&
-        docView->getDocument() == getDocument()) {
+        docView->document() == document()) {
       workspace->removeView(this);
       delete this;
       return true;

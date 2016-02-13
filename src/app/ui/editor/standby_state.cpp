@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -464,9 +464,9 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   Document* document = editor->document();
 
   for (auto docView : UIContext::instance()->getAllDocumentViews(document)) {
-    if (docView->getEditor()->isMovingPixels()) {
+    if (docView->editor()->isMovingPixels()) {
       // TODO Transfer moving pixels state to this editor
-      docView->getEditor()->dropMovingPixels();
+      docView->editor()->dropMovingPixels();
     }
   }
 

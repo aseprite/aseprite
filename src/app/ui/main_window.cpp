@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -267,7 +267,7 @@ void MainWindow::onActiveViewChange()
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
 {
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
-    Document* document = docView->getDocument();
+    Document* document = docView->document();
     return document->isModified();
   }
   else {
@@ -327,7 +327,7 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
-    Document* document = docView->getDocument();
+    Document* document = docView->document();
     m_statusBar->setStatusText(250, "%s",
       document->filename().c_str());
   }

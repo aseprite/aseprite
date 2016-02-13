@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -50,9 +50,9 @@ namespace app {
                  DocumentViewPreviewDelegate* previewDelegate);
     ~DocumentView();
 
-    Document* getDocument() const { return m_document; }
+    Document* document() const { return m_document; }
+    Editor* editor() { return m_editor; }
     void getSite(doc::Site* site) const;
-    Editor* getEditor() { return m_editor; }
 
     bool isPreview() { return m_type == Preview; }
 

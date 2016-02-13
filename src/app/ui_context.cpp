@@ -100,7 +100,7 @@ void UIContext::setActiveView(DocumentView* docView)
       mainWin->getWorkspace()->setActiveView(docView);
   }
 
-  current_editor = (docView ? docView->getEditor(): NULL);
+  current_editor = (docView ? docView->editor(): nullptr);
 
   if (current_editor)
     current_editor->requestFocus();
@@ -151,7 +151,7 @@ DocumentView* UIContext::getFirstDocumentView(doc::Document* document) const
 
   for (WorkspaceView* view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
-      if (docView->getDocument() == document) {
+      if (docView->document() == document) {
         return docView;
       }
     }
@@ -167,7 +167,7 @@ DocumentViews UIContext::getAllDocumentViews(doc::Document* document) const
 
   for (WorkspaceView* view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
-      if (docView->getDocument() == document) {
+      if (docView->document() == document) {
         docViews.push_back(docView);
       }
     }
@@ -180,7 +180,7 @@ Editor* UIContext::activeEditor()
 {
   DocumentView* view = activeView();
   if (view)
-    return view->getEditor();
+    return view->editor();
   else
     return NULL;
 }
@@ -203,7 +203,7 @@ void UIContext::onAddDocument(doc::Document* doc)
   App::instance()->getMainWindow()->getWorkspace()->addView(view);
 
   setActiveView(view);
-  view->getEditor()->setDefaultScroll();
+  view->editor()->setDefaultScroll();
 }
 
 void UIContext::onRemoveDocument(doc::Document* doc)

@@ -749,7 +749,7 @@ void App::updateDisplayTitleBar()
   DocumentView* docView = UIContext::instance()->activeView();
   if (docView) {
     // Prepend the document's filename.
-    title += docView->getDocument()->name();
+    title += docView->document()->name();
     title += " - ";
   }
 
