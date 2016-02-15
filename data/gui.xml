@@ -710,7 +710,7 @@
           <item command="TiledMode" text="&amp;None">
             <param name="axis" value="none" />
 	  </item>
-          <item command="TiledMode" text="Tiled in &amp;Both Axis">
+          <item command="TiledMode" text="Tiled in &amp;Both Axes">
             <param name="axis" value="both" />
 	  </item>
           <item command="TiledMode" text="Tiled in &amp;X Axis">
