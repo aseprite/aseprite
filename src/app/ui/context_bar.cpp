@@ -1550,7 +1550,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
   m_brushPatternField->setVisible(supportOpacity && hasImageBrush);
-  m_inkType->setVisible(hasInk && !hasImageBrush);
+  m_inkType->setVisible(hasInk);
   m_inkOpacityLabel->setVisible(showOpacity);
   m_inkOpacity->setVisible(showOpacity);
   m_inkShades->setVisible(hasInkShades);
