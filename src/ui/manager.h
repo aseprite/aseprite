@@ -74,6 +74,7 @@ namespace ui {
     void freeWidget(Widget* widget);
     void removeMessage(Message* msg);
     void removeMessagesFor(Widget* widget);
+    void removeMessagesFor(Widget* widget, MessageType type);
     void removeMessagesForTimer(Timer* timer);
 
     void addMessageFilter(int message, Widget* widget);

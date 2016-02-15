@@ -336,21 +336,14 @@ void View::onSetViewScroll(const gfx::Point& pt)
   }
 #endif
 
-  // Don't re-invalidate the already invalid region.
-  if (manager)
-    invalidRegion -= manager->getInvalidRegion();
-
   // Invalidate viewport's children regions
   m_viewport.invalidateRegion(invalidRegion);
 
   // Notify about the new scroll position
   onScrollChange();
 
-  // Generate PaintMessages right now when the invalid region is too
-  // disaggregated. This is useful to avoid a lot of PaintMessage with
-  // small rectangles.
-  if (manager->getInvalidRegion().size() > 4)
-    flushRedraw();
+  // Generate PaintMessages right now.
+  flushRedraw();
 }
 
 void View::onScrollRegion(ScrollRegionEvent& ev)

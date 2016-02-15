@@ -618,6 +618,11 @@ void Widget::setBounds(const Rect& rc)
 void Widget::setBoundsQuietly(const gfx::Rect& rc)
 {
   m_bounds = rc;
+
+  // Remove all paint messages for this widget.
+  if (Manager* manager = this->manager())
+    manager->removeMessagesFor(this, kPaintMessage);
+
   invalidate();
 }
 
@@ -1456,6 +1461,10 @@ void Widget::offsetWidgets(int dx, int dy)
 {
   m_updateRegion.offset(dx, dy);
   m_bounds.offset(dx, dy);
+
+  // Remove all paint messages for this widget.
+  if (Manager* manager = this->manager())
+    manager->removeMessagesFor(this, kPaintMessage);
 
   for (auto child : m_children)
     child->offsetWidgets(dx, dy);

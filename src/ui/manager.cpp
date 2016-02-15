@@ -835,21 +835,27 @@ void Manager::freeWidget(Widget* widget)
 
 void Manager::removeMessage(Message* msg)
 {
-  Messages::iterator it = std::find(msg_queue.begin(), msg_queue.end(), msg);
+  auto it = std::find(msg_queue.begin(), msg_queue.end(), msg);
   ASSERT(it != msg_queue.end());
   msg_queue.erase(it);
 }
 
 void Manager::removeMessagesFor(Widget* widget)
 {
-  for (Messages::iterator it=msg_queue.begin(), end=msg_queue.end();
-       it != end; ++it)
-    removeWidgetFromRecipients(widget, *it);
+  for (Message* msg : msg_queue)
+    removeWidgetFromRecipients(widget, msg);
+}
+
+void Manager::removeMessagesFor(Widget* widget, MessageType type)
+{
+  for (Message* msg : msg_queue)
+    if (msg->type() == type)
+      removeWidgetFromRecipients(widget, msg);
 }
 
 void Manager::removeMessagesForTimer(Timer* timer)
 {
-  for (Messages::iterator it=msg_queue.begin(); it != msg_queue.end(); ) {
+  for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* msg = *it;
 
     if (!msg->isUsed() &&
@@ -1269,11 +1275,11 @@ void Manager::pumpQueue()
             // Restore clip region for paint messages.
             surface->setClipBounds(oldClip);
           }
-
-          // As this kPaintMessage's rectangle was updated, we can
-          // remove it from "m_invalidRegion".
-          m_invalidRegion -= gfx::Region(paintMsg->rect());
         }
+
+        // As this kPaintMessage's rectangle was updated, we can
+        // remove it from "m_invalidRegion".
+        m_invalidRegion -= gfx::Region(paintMsg->rect());
       }
       else {
         // Call the message handler
