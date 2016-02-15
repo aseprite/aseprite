@@ -383,7 +383,10 @@ class ContextBar::InkShadesField : public HBox {
       base::UniquePtr<doc::Remap> remap;
       Shade colors = getShade();
 
-      if (colors.size() > 0) {
+      // We need two or more colors to create a shading remap. In
+      // other case, the ShadingInkProcessing will use the full
+      // color palette.
+      if (colors.size() > 1) {
         remap.reset(new doc::Remap(get_current_palette()->size()));
 
         for (int i=0; i<remap->size(); ++i)
