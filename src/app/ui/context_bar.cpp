@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -477,7 +477,8 @@ class ContextBar::InkShadesField : public HBox {
 
         case kMouseDownMessage: {
           if (m_click == DragAndDrop) {
-            if (m_hotIndex >= 0) {
+            if (m_hotIndex >= 0 &&
+                m_hotIndex < int(m_shade.size())) {
               m_dragIndex = m_hotIndex;
               m_dropBefore = false;
               captureMouse();
@@ -494,6 +495,8 @@ class ContextBar::InkShadesField : public HBox {
           }
 
           if (m_dragIndex >= 0) {
+            ASSERT(m_dragIndex < int(m_shade.size()));
+
             auto color = m_shade[m_dragIndex];
             m_shade.erase(m_shade.begin()+m_dragIndex);
             if (m_hotIndex >= 0)
