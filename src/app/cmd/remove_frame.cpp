@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,6 +27,7 @@ RemoveFrame::RemoveFrame(Sprite* sprite, frame_t frame)
   , m_frame(frame)
   , m_firstTime(true)
 {
+  m_frameDuration = sprite->frameDuration(frame);
   for (Cel* cel : sprite->cels(m_frame))
     m_seq.add(new cmd::RemoveCel(cel));
 }
@@ -59,6 +60,7 @@ void RemoveFrame::onUndo()
   Document* doc = sprite->document();
 
   sprite->addFrame(m_frame);
+  sprite->setFrameDuration(m_frame, m_frameDuration);
   sprite->incrementVersion();
   m_seq.undo();
 
