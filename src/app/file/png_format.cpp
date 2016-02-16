@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -69,7 +69,7 @@ bool PngFormat::onLoad(FileOp* fop)
   int pass, number_passes;
   int num_palette;
   png_colorp palette;
-  png_bytep row_pointer;
+  png_bytepp rows_pointer;
   PixelFormat pixelFormat;
 
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
@@ -227,95 +227,13 @@ bool PngFormat::onLoad(FileOp* fop)
   }
 
   // Allocate the memory to hold the image using the fields of info_ptr.
-  row_pointer = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+  rows_pointer = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytep) * height);
+  for (y = 0; y < height; y++)
+    rows_pointer[y] = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+
   for (pass = 0; pass < number_passes; pass++) {
     for (y = 0; y < height; y++) {
-      // Read the line
-      png_read_row(png_ptr, row_pointer, (png_byte*)NULL);
-
-      // RGB_ALPHA
-      if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
-        uint8_t* src_address = row_pointer;
-        uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-        unsigned int x, r, g, b, a;
-
-        for (x=0; x<width; x++) {
-          r = *(src_address++);
-          g = *(src_address++);
-          b = *(src_address++);
-          a = *(src_address++);
-          *(dst_address++) = rgba(r, g, b, a);
-        }
-      }
-      // RGB
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
-        uint8_t* src_address = row_pointer;
-        uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-        unsigned int x, r, g, b, a;
-
-        for (x=0; x<width; x++) {
-          r = *(src_address++);
-          g = *(src_address++);
-          b = *(src_address++);
-
-          // Transparent color
-          if (png_trans_color &&
-              r == png_trans_color->red &&
-              g == png_trans_color->green &&
-              b == png_trans_color->blue) {
-            a = 0;
-            if (!fop->sequenceGetHasAlpha())
-              fop->sequenceSetHasAlpha(true);
-          }
-          else
-            a = 255;
-
-          *(dst_address++) = rgba(r, g, b, a);
-        }
-      }
-      // GRAY_ALPHA
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        uint8_t* src_address = row_pointer;
-        uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-        unsigned int x, k, a;
-
-        for (x=0; x<width; x++) {
-          k = *(src_address++);
-          a = *(src_address++);
-          *(dst_address++) = graya(k, a);
-        }
-      }
-      // GRAY
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
-        uint8_t* src_address = row_pointer;
-        uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-        unsigned int x, k, a;
-
-        for (x=0; x<width; x++) {
-          k = *(src_address++);
-
-          // Transparent color
-          if (png_trans_color &&
-              k == png_trans_color->gray) {
-            a = 0;
-            if (!fop->sequenceGetHasAlpha())
-              fop->sequenceSetHasAlpha(true);
-          }
-          else
-            a = 255;
-
-          *(dst_address++) = graya(k, a);
-        }
-      }
-      // PALETTE
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
-        uint8_t* src_address = row_pointer;
-        uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
-        unsigned int x;
-
-        for (x=0; x<width; x++)
-          *(dst_address++) = *(src_address++);
-      }
+      png_read_rows(png_ptr, rows_pointer+y, nullptr, 1);
 
       fop->setProgress(
         (double)((double)pass + (double)(y+1) / (double)(height))
@@ -325,7 +243,95 @@ bool PngFormat::onLoad(FileOp* fop)
         break;
     }
   }
-  png_free(png_ptr, row_pointer);
+
+  // Convert rows_pointer into the doc::Image
+  for (y = 0; y < height; y++) {
+    // RGB_ALPHA
+    if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
+      uint8_t* src_address = rows_pointer[y];
+      uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
+      unsigned int x, r, g, b, a;
+
+      for (x=0; x<width; x++) {
+        r = *(src_address++);
+        g = *(src_address++);
+        b = *(src_address++);
+        a = *(src_address++);
+        *(dst_address++) = rgba(r, g, b, a);
+      }
+    }
+    // RGB
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
+      uint8_t* src_address = rows_pointer[y];
+      uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
+      unsigned int x, r, g, b, a;
+
+      for (x=0; x<width; x++) {
+        r = *(src_address++);
+        g = *(src_address++);
+        b = *(src_address++);
+
+        // Transparent color
+        if (png_trans_color &&
+            r == png_trans_color->red &&
+            g == png_trans_color->green &&
+            b == png_trans_color->blue) {
+          a = 0;
+          if (!fop->sequenceGetHasAlpha())
+            fop->sequenceSetHasAlpha(true);
+        }
+        else
+          a = 255;
+
+        *(dst_address++) = rgba(r, g, b, a);
+      }
+    }
+    // GRAY_ALPHA
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
+      uint8_t* src_address = rows_pointer[y];
+      uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
+      unsigned int x, k, a;
+
+      for (x=0; x<width; x++) {
+        k = *(src_address++);
+        a = *(src_address++);
+        *(dst_address++) = graya(k, a);
+      }
+    }
+    // GRAY
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
+      uint8_t* src_address = rows_pointer[y];
+      uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
+      unsigned int x, k, a;
+
+      for (x=0; x<width; x++) {
+        k = *(src_address++);
+
+        // Transparent color
+        if (png_trans_color &&
+            k == png_trans_color->gray) {
+          a = 0;
+          if (!fop->sequenceGetHasAlpha())
+            fop->sequenceSetHasAlpha(true);
+        }
+        else
+          a = 255;
+
+        *(dst_address++) = graya(k, a);
+      }
+    }
+    // PALETTE
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
+      uint8_t* src_address = rows_pointer[y];
+      uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
+      unsigned int x;
+
+      for (x=0; x<width; x++)
+        *(dst_address++) = *(src_address++);
+    }
+    png_free(png_ptr, rows_pointer[y]);
+  }
+  png_free(png_ptr, rows_pointer);
 
   // Clean up after the read, and free any memory allocated
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
