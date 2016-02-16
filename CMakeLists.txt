@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2015  David Capello
+# Copyright (C) 2001-2016  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
@@ -111,7 +111,6 @@ set(LIBJPEG_DIR         ${CMAKE_SOURCE_DIR}/third_party/jpeg)
 set(LIBPNG_DIR          ${CMAKE_SOURCE_DIR}/third_party/libpng)
 set(LOADPNG_DIR         ${CMAKE_SOURCE_DIR}/third_party/loadpng)
 set(LIBWEBP_DIR         ${CMAKE_SOURCE_DIR}/third_party/libwebp)
-set(MONGOOSE_DIR        ${CMAKE_SOURCE_DIR}/third_party/mongoose)
 set(PIXMAN_DIR          ${CMAKE_SOURCE_DIR}/third_party/pixman)
 set(FREETYPE_DIR        ${CMAKE_SOURCE_DIR}/third_party/freetype2)
 set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
@@ -269,13 +268,6 @@ else()
   set(LIBCURL_INCLUDE_DIR ${CURL_DIR}/include)
 endif()
 include_directories(${LIBCURL_INCLUDE_DIR})
-
-# mongoose
-if(ENABLE_WEBSERVER)
-  set(MONGOOSE_LIBRARY mongoose)
-  include_directories(${MONGOOSE_DIR})
-  add_definitions(-DENABLE_WEBSERVER)
-endif()
 
 # simpleini
 set(SIMPLEINI_LIBRARY simpleini)

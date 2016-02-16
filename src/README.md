@@ -27,7 +27,7 @@ because they don't depend on any other component.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [gfx](gfx/) (fixmath): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [net](net/) (base): Networking library to send HTTP requests.
-  * [webserver](webserver/) (base): HTTP web server (based on [mongoose](https://github.com/valenok/mongoose))
+  * [webserver](webserver/) (base): HTTP web server
 
 ## Level 2
 

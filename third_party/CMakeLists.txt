@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2015  David Capello
+# Copyright (C) 2001-2016  David Capello
 
 include_directories(.)
 
@@ -50,10 +50,6 @@ endif()
 
 if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_LIBLOADPNG)
   add_subdirectory(loadpng)
-endif()
-
-if(ENABLE_WEBSERVER)
-  add_subdirectory(mongoose)
 endif()
 
 if(NOT USE_SHARED_PIXMAN)
