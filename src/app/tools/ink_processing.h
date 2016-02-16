@@ -724,13 +724,19 @@ public:
 
   void processPixel(int x, int y) {
     color_t src = *m_srcAddress;
-    int i = m_rgbmap->mapColor(rgba_getr(src),
-                               rgba_getg(src),
-                               rgba_getb(src),
-                               rgba_geta(src));
 
-    // The color must be an exact match
-    if (src != m_palette->getEntry(i)) {
+    // We cannot use the m_rgbmap->mapColor() function because RgbMaps
+    // are created with findBestfit(), and findBestfit() limits the
+    // returned indexes to [0,255] range (it's mainly used for RGBA ->
+    // Indexed image conversion).
+    int i = m_palette->findExactMatch(rgba_getr(src),
+                                      rgba_getg(src),
+                                      rgba_getb(src),
+                                      rgba_geta(src),
+                                      -1);
+
+    // If we didn't find the exact match.
+    if (i < 0) {
       *m_dstAddress = src;
       return;
     }
