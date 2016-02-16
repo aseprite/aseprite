@@ -96,16 +96,15 @@ And it uses the following third-party libraries:
 
 ## License
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.
+This program is distributed under three different licenses:
 
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+1. Source code is distributed under
+   [GNU General Public License](LICENSE.txt) version 2,
+   which means that compiled versions can be generated under GPL terms.
+   (Useful for Linux distributions.)
+2. Official releases are distributed under a [commercial EULA](EULA.txt).
+3. And Steam releases are distributed under the terms of the
+   [Steam Subscriber Agreement](http://store.steampowered.com/subscriber_agreement/).
 
-You should have received a copy of the [GNU General Public License](docs/licenses/GPL.txt)
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-USA
+As a side note, to distribute Aseprite under these licenses we don't
+use third party GPL libraries.
