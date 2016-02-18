@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -18,8 +18,9 @@ namespace gfx {
 }
 
 namespace ui {
-  class MouseMessage;
   class KeyMessage;
+  class MouseMessage;
+  class TouchMessage;
 }
 
 namespace app {
@@ -84,6 +85,9 @@ namespace app {
 
     // Called when the user moves the mouse wheel over the editor.
     virtual bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) { return false; }
+
+    // Called when the user wants to zoom in/out using a pinch gesture in the trackpad.
+    virtual bool onTouchMagnify(Editor* editor, ui::TouchMessage* msg) { return false; }
 
     // Called each time the mouse changes its position so we can set an
     // appropiated cursor depending on the new coordinates of the mouse

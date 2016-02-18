@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -127,6 +127,25 @@ namespace ui {
     gfx::Point m_pos;           // Mouse position
     gfx::Point m_wheelDelta;    // Wheel axis variation
     bool m_preciseWheel;
+  };
+
+  class TouchMessage : public Message {
+  public:
+    TouchMessage(MessageType type,
+                 KeyModifiers modifiers,
+                 const gfx::Point& pos,
+                 double magnification)
+      : Message(type, modifiers),
+        m_pos(pos),
+        m_magnification(magnification) {
+    }
+
+    const gfx::Point& position() const { return m_pos; }
+    double magnification() const { return m_magnification; }
+
+  private:
+    gfx::Point m_pos;           // Mouse position
+    double m_magnification;
   };
 
   class TimerMessage : public Message {

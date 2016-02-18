@@ -380,6 +380,16 @@ void Manager::generateMessagesFromSheEvents()
                          sheEvent.preciseWheel());
         break;
       }
+
+      case she::Event::TouchMagnify: {
+        _internal_set_mouse_position(sheEvent.position());
+
+        handleTouchMagnify(sheEvent.position(),
+                           sheEvent.modifiers(),
+                           sheEvent.magnification());
+        break;
+      }
+
     }
   }
 
@@ -477,6 +487,24 @@ void Manager::handleMouseWheel(const gfx::Point& mousePos,
       (capture_widget ? capture_widget: mouse_widget),
       mousePos, mouseButtons, modifiers,
       wheelDelta, preciseWheel));
+}
+
+void Manager::handleTouchMagnify(const gfx::Point& mousePos,
+                                 const KeyModifiers modifiers,
+                                 const double magnification)
+{
+  Widget* widget = (capture_widget ? capture_widget: mouse_widget);
+  if (widget) {
+    Message* msg = new TouchMessage(
+      kTouchMagnifyMessage,
+      modifiers,
+      mousePos,
+      magnification);
+
+    msg->addRecipient(widget);
+
+    enqueueMessage(msg);
+  }
 }
 
 // Handles Z order: Send the window to top (only when you click in a
@@ -1222,6 +1250,7 @@ void Manager::pumpQueue()
           "kMouseMoveMessage",
           "kSetCursorMessage",
           "kMouseWheelMessage",
+          "kTouchMagnifyMessage",
         };
         const char* string =
           (msg->type() >= kOpenMessage &&

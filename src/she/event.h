@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -35,6 +35,7 @@ namespace she {
       MouseDoubleClick,
       KeyDown,
       KeyUp,
+      TouchMagnify,
     };
 
     enum MouseButton {
@@ -67,6 +68,7 @@ namespace she {
     gfx::Point wheelDelta() const { return m_wheelDelta; }
     bool preciseWheel() const { return m_preciseWheel; }
     MouseButton button() const { return m_button; }
+    double magnification() const { return m_magnification; }
 
     void setType(Type type) { m_type = type; }
     void setDisplay(Display* display) { m_display = display; }
@@ -80,6 +82,7 @@ namespace she {
     void setWheelDelta(const gfx::Point& delta) { m_wheelDelta = delta; }
     void setPreciseWheel(bool precise) { m_preciseWheel = precise; }
     void setButton(MouseButton button) { m_button = button; }
+    void setMagnification(double magnification) { m_magnification = magnification; }
 
   private:
     Type m_type;
@@ -93,6 +96,7 @@ namespace she {
     gfx::Point m_wheelDelta;
     bool m_preciseWheel;
     MouseButton m_button;
+    double m_magnification;
   };
 
 } // namespace she

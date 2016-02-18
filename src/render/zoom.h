@@ -14,13 +14,16 @@ namespace render {
 
   class Zoom {
   public:
-    Zoom(int num, int den)
-      : m_num(num), m_den(den) {
-      ASSERT(m_num > 0);
-      ASSERT(m_den > 0);
+    Zoom(int num, int den);
+
+    double scale() const {
+      return static_cast<double>(m_num) / static_cast<double>(m_den);
     }
 
-    double scale() const { return static_cast<double>(m_num) / static_cast<double>(m_den); }
+    // This value isn't used in operator==() or operator!=()
+    double internalScale() const {
+      return m_internalScale;
+    }
 
     template<typename T>
     T apply(T x) const {
@@ -72,6 +75,9 @@ namespace render {
 
     int m_num;
     int m_den;
+
+    // Internal scale value used for precise zooming purposes.
+    double m_internalScale;
   };
 
 } // namespace render

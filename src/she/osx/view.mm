@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -366,6 +366,17 @@ bool is_key_pressed(KeyScancode scancode)
     ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX,
                                 -event.scrollingDeltaY));
   }
+
+  queue_event(ev);
+}
+
+- (void)magnifyWithEvent:(NSEvent*)event
+{
+  Event ev;
+  ev.setType(Event::TouchMagnify);
+  ev.setMagnification(event.magnification);
+  ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
 
   queue_event(ev);
 }

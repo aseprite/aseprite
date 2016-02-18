@@ -123,6 +123,9 @@ namespace ui {
     void handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers);
     void handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers,
                           const gfx::Point& wheelDelta, bool preciseWheel);
+    void handleTouchMagnify(const gfx::Point& mousePos,
+                            const KeyModifiers modifiers,
+                            const double magnification);
     void handleWindowZOrder();
 
     void pumpQueue();

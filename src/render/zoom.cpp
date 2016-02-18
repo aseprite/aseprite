@@ -34,6 +34,15 @@ static int scales[][2] = {
 
 static int scales_size = sizeof(scales) / sizeof(scales[0]);
 
+Zoom::Zoom(int num, int den)
+  : m_num(num)
+  , m_den(den)
+{
+  ASSERT(m_num > 0);
+  ASSERT(m_den > 0);
+  m_internalScale = scale();
+}
+
 void Zoom::in()
 {
   int i = linearScale();
@@ -41,6 +50,7 @@ void Zoom::in()
     ++i;
     m_num = scales[i][0];
     m_den = scales[i][1];
+    m_internalScale = scale();
   }
 }
 
@@ -51,6 +61,7 @@ void Zoom::out()
     --i;
     m_num = scales[i][0];
     m_den = scales[i][1];
+    m_internalScale = scale();
   }
 }
 
@@ -69,7 +80,9 @@ int Zoom::linearScale() const
 // static
 Zoom Zoom::fromScale(double scale)
 {
-  return fromLinearScale(findClosestLinearScale(scale));
+  Zoom zoom = fromLinearScale(findClosestLinearScale(scale));
+  zoom.m_internalScale = scale;
+  return zoom;
 }
 
 // static

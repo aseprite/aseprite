@@ -361,6 +361,12 @@ void Editor::setZoom(const render::Zoom& zoom)
     m_zoom = zoom;
     notifyZoomChanged();
   }
+  else {
+    // Just copy the zoom as the internal "Zoom::m_internalScale"
+    // value might be different and we want to keep this value updated
+    // for better zooming experience in StateWithWheelBehavior.
+    m_zoom = zoom;
+  }
 }
 
 void Editor::setDefaultScroll()
@@ -1273,6 +1279,13 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
+    case kTouchMagnifyMessage:
+      if (m_sprite) {
+        EditorStatePtr holdState(m_state);
+        return m_state->onTouchMagnify(this, static_cast<TouchMessage*>(msg));
+      }
+      break;
+
     case kKeyDownMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
@@ -1488,9 +1501,9 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
     padding.x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.x)),
     padding.y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
 
-  if ((m_zoom != zoom) || (screenPos != view->viewScroll())) {
-    setZoom(zoom);
+  setZoom(zoom);
 
+  if ((m_zoom != zoom) || (screenPos != view->viewScroll())) {
     updateEditor();
     setEditorScroll(scrollPos);
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -36,7 +36,7 @@ enum WHEEL_ACTION { WHEEL_NONE,
 
 bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
-  int dz = msg->wheelDelta().x + msg->wheelDelta().y;
+  double dz = msg->wheelDelta().x + msg->wheelDelta().y;
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 
@@ -79,7 +79,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         if (ColorBar::instance()->getFgColor().getType() == app::Color::IndexType) {
           int lastIndex = get_current_palette()->size()-1;
 
-          newIndex = ColorBar::instance()->getFgColor().getIndex() + dz;
+          newIndex = ColorBar::instance()->getFgColor().getIndex() + int(dz);
           newIndex = MID(0, newIndex, lastIndex);
         }
         ColorBar::instance()->setFgColor(app::Color::fromIndex(newIndex));
@@ -92,7 +92,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         if (ColorBar::instance()->getBgColor().getType() == app::Color::IndexType) {
           int lastIndex = get_current_palette()->size()-1;
 
-          newIndex = ColorBar::instance()->getBgColor().getIndex() + dz;
+          newIndex = ColorBar::instance()->getBgColor().getIndex() + int(dz);
           newIndex = MID(0, newIndex, lastIndex);
         }
         ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
@@ -102,27 +102,25 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WHEEL_FRAME:
       {
         Command* command = CommandsModule::instance()->getCommandByName
-          ((dz < 0) ? CommandId::GotoNextFrame:
-                      CommandId::GotoPreviousFrame);
+          ((dz < 0.0) ? CommandId::GotoNextFrame:
+                        CommandId::GotoPreviousFrame);
         if (command)
           UIContext::instance()->executeCommand(command);
       }
       break;
 
     case WHEEL_ZOOM: {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       render::Zoom zoom = editor->zoom();
 
-      zoom = render::Zoom::fromLinearScale(zoom.linearScale() - dz);
-
-      if (editor->zoom() != zoom) {
-        bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
-
-        editor->setZoomAndCenterInMouse(
-          zoom, mouseMsg->position(),
-          (center ? Editor::ZoomBehavior::CENTER:
-                    Editor::ZoomBehavior::MOUSE));
+      if (msg->preciseWheel()) {
+        dz /= 1.5;
+        if (dz < -1.0) dz = -1.0;
+        else if (dz > 1.0) dz = 1.0;
       }
+
+      zoom = render::Zoom::fromLinearScale(zoom.linearScale() - int(dz));
+
+      setZoom(editor, zoom, msg->position());
       break;
     }
 
@@ -139,10 +137,10 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         gfx::Rect vp = view->viewportBounds();
 
         if (wheelAction == WHEEL_HSCROLL) {
-          delta.x = dz * vp.w;
+          delta.x = int(dz * vp.w);
         }
         else {
-          delta.y = dz * vp.h;
+          delta.y = int(dz * vp.h);
         }
 
         if (scrollBigSteps) {
@@ -160,6 +158,28 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
   }
 
   return true;
+}
+
+bool StateWithWheelBehavior::onTouchMagnify(Editor* editor, ui::TouchMessage* msg)
+{
+  render::Zoom zoom = editor->zoom();
+  zoom = render::Zoom::fromScale(
+    zoom.internalScale() + zoom.internalScale() * msg->magnification());
+
+  setZoom(editor, zoom, msg->position());
+  return true;
+}
+
+void StateWithWheelBehavior::setZoom(Editor* editor,
+                                     const render::Zoom& zoom,
+                                     const gfx::Point& mousePos)
+{
+  bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
+
+  editor->setZoomAndCenterInMouse(
+    zoom, mousePos,
+    (center ? Editor::ZoomBehavior::CENTER:
+              Editor::ZoomBehavior::MOUSE));
 }
 
 } // namespace app
