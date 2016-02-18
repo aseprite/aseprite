@@ -1729,9 +1729,10 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
 
 BrushSlot ContextBar::createBrushSlotFromPreferences()
 {
+  tools::Tool* activeTool = App::instance()->activeTool();
   auto& pref = Preferences::instance();
   auto& saveBrush = pref.saveBrush;
-  auto& toolPref = pref.tool(App::instance()->activeTool());
+  auto& toolPref = pref.tool(activeTool);
 
   int flags = 0;
   if (saveBrush.brushType()) flags |= int(BrushSlot::Flags::BrushType);
@@ -1746,7 +1747,7 @@ BrushSlot ContextBar::createBrushSlotFromPreferences()
 
   return BrushSlot(
     BrushSlot::Flags(flags),
-    createBrushFromPreferences(),
+    activeBrush(activeTool),
     pref.colorBar.fgColor(),
     pref.colorBar.bgColor(),
     toolPref.ink(),
