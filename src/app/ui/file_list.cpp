@@ -323,7 +323,6 @@ void FileList::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  View* view = View::getView(this);
   gfx::Rect bounds = clientBounds();
   int x, y = bounds.y;
   int evenRow = 0;
