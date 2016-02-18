@@ -99,6 +99,8 @@ StandbyState::~StandbyState()
 
 void StandbyState::onEnterState(Editor* editor)
 {
+  StateWithWheelBehavior::onEnterState(editor);
+
   editor->setDecorator(m_decorator);
 
   m_pivotVisConn =
