@@ -67,7 +67,7 @@
 
   <global>
     <section id="general">
-      <option id="screen_scale" type="int" default="2" />
+      <option id="screen_scale" type="int" default="0" />
       <option id="gpu_acceleration" type="bool" default="false" />
       <option id="visible_timeline" type="bool" default="false" />
       <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />

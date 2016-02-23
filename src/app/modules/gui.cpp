@@ -94,27 +94,25 @@ static void load_gui_config(int& w, int& h, bool& maximized,
                             std::string& windowLayout);
 static void save_gui_config();
 
-static int get_screen_scale()
-{
-  int scale = Preferences::instance().general.screenScale();
-  scale = MID(1, scale, 4);
-  return scale;
-}
-
 static bool create_main_display(bool gpuAccel,
                                 bool& maximized,
                                 std::string& lastError)
 {
   int w, h;
-  int scale = get_screen_scale();
   std::string windowLayout;
   load_gui_config(w, h, maximized, windowLayout);
+
+  // Scale is equal to 0 when it's the first time the program is
+  // executed.
+  int scale = Preferences::instance().general.screenScale();
 
   she::instance()->setGpuAcceleration(gpuAccel);
 
   try {
-    if (w > 0 && h > 0)
-      main_display = she::instance()->createDisplay(w, h, scale);
+    if (w > 0 && h > 0) {
+      main_display = she::instance()->createDisplay(
+        w, h, (scale == 0 ? 2: MID(1, scale, 4)));
+    }
   }
   catch (const she::DisplayCreationException& e) {
     lastError = e.what();
@@ -124,12 +122,10 @@ static bool create_main_display(bool gpuAccel,
     for (int c=0; try_resolutions[c].width; ++c) {
       try {
         main_display =
-          she::instance()->createDisplay(try_resolutions[c].width,
-                                         try_resolutions[c].height,
-                                         try_resolutions[c].scale);
-
-        scale = try_resolutions[c].scale;
-        Preferences::instance().general.screenScale(scale);
+          she::instance()->createDisplay(
+            try_resolutions[c].width,
+            try_resolutions[c].height,
+            (scale == 0 ? try_resolutions[c].scale: scale));
         break;
       }
       catch (const she::DisplayCreationException& e) {
@@ -139,6 +135,11 @@ static bool create_main_display(bool gpuAccel,
   }
 
   if (main_display && !windowLayout.empty()) {
+    // Change the scale value only in the first run (this will be
+    // saved when the program is closed).
+    if (scale == 0)
+      Preferences::instance().general.screenScale(main_display->scale());
+
     main_display->setLayout(windowLayout);
     if (main_display->isMinimized())
       main_display->maximize();
