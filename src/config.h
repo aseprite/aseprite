@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -33,7 +33,7 @@
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
 #define WEBSITE_NEWS_RSS        "http://blog.aseprite.org/rss"
 #define UPDATE_URL              WEBSITE "update/?xml=1"
-#define COPYRIGHT               "Copyright (C) 2001-2015 David Capello"
+#define COPYRIGHT               "Copyright (C) 2001-2016 David Capello"
 
 #include "base/base.h"
 #include "base/debug.h"
