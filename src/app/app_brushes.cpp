@@ -310,7 +310,7 @@ void AppBrushes::load(const std::string& filename)
       if (angle) flags |= int(BrushSlot::Flags::BrushAngle);
       brush.reset(
         new Brush(
-          string_id_to_brush_type(type),
+          (type ? string_id_to_brush_type(type): kFirstBrushType),
           (size ? base::convert_to<int>(std::string(size)): 1),
           (angle ? base::convert_to<int>(std::string(angle)): 0)));
     }
