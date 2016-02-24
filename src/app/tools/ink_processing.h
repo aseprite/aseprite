@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -14,6 +14,8 @@
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
 #include "filters/neighboring_pixels.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 
 namespace app {
 namespace tools {
@@ -777,9 +779,20 @@ public:
     m_left(loop->getMouseButton() == ToolLoop::Left) {
   }
 
+  // Works as the RGBA version
   void processPixel(int x, int y) {
     color_t src = *m_srcAddress;
-    int i = graya_getv(src);
+
+    int i = m_palette->findExactMatch(graya_getv(src),
+                                      graya_getv(src),
+                                      graya_getv(src),
+                                      graya_geta(src),
+                                      -1);
+
+    if (i < 0) {
+      *m_dstAddress = src;
+      return;
+    }
 
     if (m_remap) {
       i = (*m_remap)[i];
@@ -797,7 +810,12 @@ public:
       }
     }
 
-    *m_dstAddress = graya(i, graya_geta(src));
+    color_t rgba = m_palette->getEntry(i);
+    *m_dstAddress = graya(
+      int(255.0 * Hsv(Rgb(rgba_getr(rgba),
+                          rgba_getg(rgba),
+                          rgba_getb(rgba))).value()),
+      rgba_geta(rgba));
   }
 
 private:
@@ -954,6 +972,7 @@ void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
     }
     case IMAGE_GRAYSCALE: {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      // TODO review this line
       c = graya(m_palette->getEntry(c), graya_geta(c));
       break;
     }
@@ -1023,7 +1042,10 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     }
     case IMAGE_GRAYSCALE: {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
-      c = m_palette->findBestfit(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c), 0);
+      c = m_palette->findBestfit(graya_getv(c),
+                                 graya_getv(c),
+                                 graya_getv(c),
+                                 graya_geta(c), 0);
       break;
     }
     case IMAGE_BITMAP: {
