@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -209,7 +209,9 @@ void ColorButton::onPaint(PaintEvent& ev)
   }
 
   draw_color_button(g, rc,
-    color, hasMouseOver(), false);
+                    color,
+                    (doc::ColorMode)m_pixelFormat,
+                    hasMouseOver(), false);
 
   // Draw text
   std::string str = m_color.toHumanReadableString(m_pixelFormat,

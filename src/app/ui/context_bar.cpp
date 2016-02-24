@@ -609,7 +609,8 @@ class ContextBar::InkShadesField : public HBox {
               color = app::Color::fromMask();
           }
 
-          draw_color(g, box, color);
+          draw_color(g, box, color,
+                     (doc::ColorMode)app_get_current_pixel_format());
 
           if (m_hotIndex == i)
             hotBounds = box;

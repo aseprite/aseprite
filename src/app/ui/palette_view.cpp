@@ -992,7 +992,7 @@ gfx::Color PaletteView::drawEntry(ui::Graphics* g, const gfx::Rect& box, int pal
     rgba_geta(palColor));
 
   g->drawRect(gfx::rgba(0, 0, 0), gfx::Rect(box).enlarge(guiscale()));
-  draw_color(g, box, appColor);
+  draw_color(g, box, appColor, doc::ColorMode::RGB);
   return gfxColor;
 }
 

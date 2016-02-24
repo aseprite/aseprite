@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -62,12 +62,16 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
   }
 }
 
-void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
+void draw_color(ui::Graphics* g,
+                const Rect& rc,
+                const app::Color& _color,
+                const doc::ColorMode colorMode)
 {
   if (rc.w < 1 || rc.h < 1)
     return;
 
-  app::Color::Type type = color.getType();
+  app::Color color = _color;
+
   int alpha = color.getAlpha();
 
   if (alpha < 255) {
@@ -78,7 +82,13 @@ void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
   }
 
   if (alpha > 0) {
-    if (type == app::Color::IndexType) {
+    if (colorMode == doc::ColorMode::GRAYSCALE) {
+      color = app::Color::fromGray(
+        color.getGray(),
+        color.getAlpha());
+    }
+
+    if (color.getType() == app::Color::IndexType) {
       int index = color.getIndex();
 
       if (index >= 0 && index < get_current_palette()->size()) {
@@ -91,24 +101,30 @@ void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
                     gfx::Point(rc.x+1, rc.y+rc.h-2));
       }
     }
-    else
+    else {
       g->fillRect(color_utils::color_for_ui(color), rc);
+    }
   }
 }
 
 void draw_color_button(ui::Graphics* g,
-  const Rect& rc, const app::Color& color,
-  bool hot, bool drag)
+                       const Rect& rc,
+                       const app::Color& color,
+                       const doc::ColorMode colorMode,
+                       const bool hot,
+                       const bool drag)
 {
   SkinTheme* theme = SkinTheme::instance();
   int scale = ui::guiscale();
 
   // Draw background (the color)
   draw_color(g,
-    Rect(rc.x+1*scale,
-      rc.y+1*scale,
-      rc.w-2*scale,
-      rc.h-2*scale), color);
+             Rect(rc.x+1*scale,
+                  rc.y+1*scale,
+                  rc.w-2*scale,
+                  rc.h-2*scale),
+             color,
+             colorMode);
 
   // Draw opaque border
   theme->drawRect(

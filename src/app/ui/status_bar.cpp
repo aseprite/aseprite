@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -435,13 +435,16 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     }
 
     // Draw color
-    draw_color_button(g, gfx::Rect(x, rc.y, 32*guiscale(), rc.h),
-      m_color, false, false);
+    draw_color_button(
+      g, gfx::Rect(x, rc.y, 32*guiscale(), rc.h),
+      m_color,
+      (doc::ColorMode)app_get_current_pixel_format(), false, false);
 
     x += (32+4)*guiscale();
 
     // Draw color description
-    std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
+    std::string str = m_color.toHumanReadableString(
+      app_get_current_pixel_format(),
       app::Color::LongHumanReadableString);
     if (m_color.getAlpha() < 255) {
       char buf[256];
