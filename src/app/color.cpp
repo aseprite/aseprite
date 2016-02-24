@@ -585,7 +585,7 @@ int Color::getGray() const
     case Color::RgbType:
       return int(255.0 * Hsv(Rgb(m_value.rgb.r,
                                  m_value.rgb.g,
-                                 m_value.rgb.b)).value() / 100.0);
+                                 m_value.rgb.b)).value());
 
     case Color::HsvType:
       return int(255.0 * m_value.hsv.v / 100.0);
@@ -599,7 +599,7 @@ int Color::getGray() const
         uint32_t c = get_current_palette()->getEntry(i);
         return int(255.0 * Hsv(Rgb(rgba_getr(c),
                                    rgba_getg(c),
-                                   rgba_getb(c))).value() / 100.0);
+                                   rgba_getb(c))).value());
       }
       else
         return 0;
