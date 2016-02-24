@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -200,7 +200,7 @@ int PaletteView::getBoxSize() const
 
 void PaletteView::setBoxSize(int boxsize)
 {
-  m_boxsize = MID(4*guiscale(), boxsize, 32*guiscale());
+  m_boxsize = MID(4, boxsize, 32)*guiscale();
 
   if (m_delegate)
     m_delegate->onPaletteViewChangeSize(m_boxsize / guiscale());
