@@ -1,5 +1,5 @@
 # Aseprite Base Library
-# Copyright (c) 2001-2015 David Capello
+# Copyright (c) 2001-2016 David Capello
 
 include(CheckCSourceCompiles)
 include(CheckCXXSourceCompiles)
@@ -48,6 +48,7 @@ set(BASE_SOURCES
   connection.cpp
   convert_to.cpp
   debug.cpp
+  dll.cpp
   errno_string.cpp
   exception.cpp
   file_handle.cpp
@@ -83,4 +84,6 @@ target_link_libraries(base-lib modp_b64)
 
 if(WIN32)
   target_link_libraries(base-lib dbghelp shlwapi)
+else()
+  target_link_libraries(base-lib dl)
 endif()
