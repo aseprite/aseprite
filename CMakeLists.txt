@@ -54,6 +54,7 @@ option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" o
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(ENABLE_WEBSERVER   "Enable support to run a webserver (for HTML5 gamedev)" off)
 option(ENABLE_TRIAL_MODE  "Compile the trial version" off)
+option(ENABLE_STEAM       "Compile with Steam library" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 

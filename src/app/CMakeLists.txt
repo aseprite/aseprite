@@ -454,3 +454,8 @@ endif()
 if(ENABLE_WEBSERVER)
   target_link_libraries(app-lib webserver-lib)
 endif()
+
+if(ENABLE_STEAM)
+  add_definitions(-DENABLE_STEAM)
+  target_link_libraries(app-lib steam-lib)
+endif()

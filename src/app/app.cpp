@@ -76,6 +76,10 @@
 
 #include <iostream>
 
+#ifdef ENABLE_STEAM
+  #include "steam/steam.h"
+#endif
+
 namespace app {
 
 using namespace ui;
@@ -600,6 +604,10 @@ void App::run()
 {
   // Run the GUI
   if (isGui()) {
+#ifdef ENABLE_STEAM
+    steam::SteamAPI steam;
+#endif
+
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
     app::CheckUpdateThreadLauncher checkUpdate(

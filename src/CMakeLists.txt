@@ -116,6 +116,10 @@ if(ENABLE_WEBSERVER)
   add_subdirectory(webserver)
 endif()
 
+if(ENABLE_STEAM)
+  add_subdirectory(steam)
+endif()
+
 add_subdirectory(app)
 
 ######################################################################
