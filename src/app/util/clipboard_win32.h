@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -43,8 +43,11 @@ static uint32_t get_shift_from_mask(uint32_t mask)
 
 bool win32_open_clipboard(HWND hwnd)
 {
-  if (!custom_clipboard_format)
+  if (!custom_clipboard_format) {
     custom_clipboard_format = RegisterClipboardFormat(L"Aseprite.Image.1");
+    if (!custom_clipboard_format)
+      LOG("Error registering custom clipboard format: %d\n", GetLastError());
+  }
 
   for (int i=0; i<5; ++i) {
     if (OpenClipboard(hwnd))
@@ -85,7 +88,7 @@ static void set_win32_clipboard_bitmap(const Image* image, const Mask* mask, Pal
   }
 
   // Set custom clipboard formats
-  {
+  if (custom_clipboard_format) {
     std::stringstream os;
     write32(os,
             (image   ? 1: 0) |
@@ -242,7 +245,8 @@ static void get_win32_clipboard_bitmap(Image*& image, Mask*& mask, Palette*& pal
     return;
 
   // Prefer the custom format (to avoid losing data)
-  if (IsClipboardFormatAvailable(custom_clipboard_format)) {
+  if (custom_clipboard_format &&
+      IsClipboardFormatAvailable(custom_clipboard_format)) {
     const char* ptr = (const char*)GetClipboardData(custom_clipboard_format);
     if (ptr) {
       size_t size = *((uint32_t*)ptr);
