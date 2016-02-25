@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,10 +14,14 @@ namespace render {
 
 static int scales[][2] = {
   { 1, 64 },
+  { 1, 48 },
   { 1, 32 },
+  { 1, 24 },
   { 1, 16 },
+  { 1, 12 },
   { 1, 8 },
   { 1, 6 },
+  { 1, 5 },
   { 1, 4 },
   { 1, 3 },
   { 1, 2 },
@@ -25,10 +29,14 @@ static int scales[][2] = {
   { 2, 1 },
   { 3, 1 },
   { 4, 1 },
+  { 5, 1 },
   { 6, 1 },
   { 8, 1 },
+  { 12, 1 },
   { 16, 1 },
+  { 24, 1 },
   { 32, 1 },
+  { 48, 1 },
   { 64, 1 },
 };
 
