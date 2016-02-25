@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "doc/brush_pattern.h"
 #include "doc/brush_type.h"
+#include "doc/color.h"
 #include "doc/image_ref.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -22,6 +23,8 @@ namespace doc {
   public:
     static const int kMinBrushSize = 1;
     static const int kMaxBrushSize = 64;
+
+    enum class ImageColor { MainColor, BackgroundColor };
 
     Brush();
     Brush(BrushType type, int size, int angle);
@@ -43,6 +46,7 @@ namespace doc {
     void setSize(int size);
     void setAngle(int angle);
     void setImage(const Image* image);
+    void setImageColor(ImageColor imageColor, color_t color);
     void setPattern(BrushPattern pattern) {
       m_pattern = pattern;
     }

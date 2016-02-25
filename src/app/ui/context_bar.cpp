@@ -1344,11 +1344,15 @@ ContextBar::ContextBar()
   m_freehandAlgo->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
 
-  Preferences::instance().toolBox.activeTool.AfterChange.connect(
+  auto& pref = Preferences::instance();
+  pref.toolBox.activeTool.AfterChange.connect(
     base::Bind<void>(&ContextBar::onCurrentToolChange, this));
-
-  Preferences::instance().symmetryMode.enabled.AfterChange.connect(
+  pref.symmetryMode.enabled.AfterChange.connect(
     base::Bind<void>(&ContextBar::onSymmetryModeChange, this));
+  pref.colorBar.fgColor.AfterChange.connect(
+    base::Bind<void>(&ContextBar::onFgOrBgColorChange, this, doc::Brush::ImageColor::MainColor));
+  pref.colorBar.bgColor.AfterChange.connect(
+    base::Bind<void>(&ContextBar::onFgOrBgColorChange, this, doc::Brush::ImageColor::BackgroundColor));
 
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
@@ -1403,6 +1407,25 @@ void ContextBar::onCurrentToolChange()
 void ContextBar::onSymmetryModeChange()
 {
   updateForCurrentTool();
+}
+
+void ContextBar::onFgOrBgColorChange(doc::Brush::ImageColor imageColor)
+{
+  if (!m_activeBrush)
+    return;
+
+  if (m_activeBrush->type() == kImageBrushType) {
+    ASSERT(m_activeBrush->image());
+
+    auto& pref = Preferences::instance();
+    m_activeBrush->setImageColor(
+      imageColor,
+      color_utils::color_for_image(
+        (imageColor == doc::Brush::ImageColor::MainColor ?
+         pref.colorBar.fgColor():
+         pref.colorBar.bgColor()),
+        m_activeBrush->image()->pixelFormat()));
+  }
 }
 
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)

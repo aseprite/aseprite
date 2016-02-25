@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,6 +14,7 @@
 #include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
 #include "doc/image.h"
+#include "doc/image_impl.h"
 #include "doc/primitives.h"
 
 #include <cmath>
@@ -90,6 +91,113 @@ void Brush::setImage(const Image* image)
   m_bounds = gfx::Rect(
     -m_image.get()->width()/2, -m_image.get()->height()/2,
     m_image.get()->width(), m_image.get()->height());
+}
+
+template<class ImageTraits,
+         color_t color_mask,
+         color_t alpha_mask>
+static void replace_image_colors(Image* image,
+                                 Brush::ImageColor imageColor,
+                                 color_t color)
+{
+  typename LockImageBits<ImageTraits> bits(image, Image::ReadWriteLock);
+  bool hasAlpha = false; // True if "image" has a pixel with alpha < 255
+  color_t mainColor, bgColor;
+  color_t maskColor = image->maskColor();
+
+  mainColor = bgColor = 0;
+
+  for (const auto& pixel : bits) {
+    if ((pixel & alpha_mask) != alpha_mask) {  // If alpha != 255
+      hasAlpha = true;
+    }
+    else if (bgColor == 0) {
+      mainColor = bgColor = pixel;
+    }
+    else if (pixel != bgColor && mainColor == bgColor) {
+      mainColor = pixel;
+    }
+  }
+
+  color &= color_mask;
+
+  if (hasAlpha) {
+    for (auto& pixel : bits)
+      pixel = (pixel & alpha_mask) | color;
+  }
+  else {
+    for (auto& pixel : bits) {
+      if ((mainColor == bgColor) ||
+          (pixel != bgColor && imageColor == Brush::ImageColor::MainColor) ||
+          (pixel == bgColor && imageColor == Brush::ImageColor::BackgroundColor)) {
+        pixel = (pixel & alpha_mask) | color;
+      }
+    }
+  }
+}
+
+static void replace_image_colors_indexed(Image* image,
+                                         Brush::ImageColor imageColor,
+                                         color_t color)
+{
+  LockImageBits<IndexedTraits> bits(image, Image::ReadWriteLock);
+  bool hasAlpha = false; // True if "image" has a pixel with the mask color
+  color_t mainColor, bgColor;
+  color_t maskColor = image->maskColor();
+
+  mainColor = bgColor = maskColor;
+
+  for (const auto& pixel : bits) {
+    if (pixel == maskColor) {
+      hasAlpha = true;
+    }
+    else if (bgColor == maskColor) {
+      mainColor = bgColor = pixel;
+    }
+    else if (pixel != bgColor && mainColor == bgColor) {
+      mainColor = pixel;
+    }
+  }
+
+  if (hasAlpha) {
+    for (auto& pixel : bits)
+      if (pixel != maskColor)
+        pixel = color;
+  }
+  else {
+    for (auto& pixel : bits) {
+      if ((mainColor == bgColor) ||
+          (pixel != bgColor && imageColor == Brush::ImageColor::MainColor) ||
+          (pixel == bgColor && imageColor == Brush::ImageColor::BackgroundColor)) {
+        pixel = color;
+      }
+    }
+  }
+}
+
+void Brush::setImageColor(ImageColor imageColor, color_t color)
+{
+  ASSERT(m_image);
+  if (!m_image)
+    return;
+
+  switch (m_image->pixelFormat()) {
+
+    case IMAGE_RGB:
+      replace_image_colors<RgbTraits, rgba_rgb_mask, rgba_a_mask>(
+        m_image.get(), imageColor, color);
+      break;
+
+    case IMAGE_GRAYSCALE:
+      replace_image_colors<GrayscaleTraits, graya_v_mask, graya_a_mask>(
+        m_image.get(), imageColor, color);
+      break;
+
+    case IMAGE_INDEXED:
+      replace_image_colors_indexed(
+        m_image.get(), imageColor, color);
+      break;
+  }
 }
 
 // Cleans the brush's data (image and region).
