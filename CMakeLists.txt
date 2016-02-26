@@ -271,7 +271,6 @@ endif()
 include_directories(${LIBCURL_INCLUDE_DIR})
 
 # simpleini
-set(SIMPLEINI_LIBRARY simpleini)
 include_directories(${SIMPLEINI_DIR})
 
 ######################################################################
