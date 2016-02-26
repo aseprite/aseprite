@@ -42,7 +42,7 @@ ColorSpectrum::~ColorSpectrum()
 app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
 {
   gfx::Rect rc = childrenBounds();
-  if (rc.isEmpty() || !rc.contains(pos))
+  if (rc.isEmpty())
     return app::Color::fromMask();
 
   int vmid = (align() & HORIZONTAL ? rc.h/2 : rc.w/2);
