@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,7 +22,7 @@ CopyRegion::CopyRegion(Image* dst, Image* src,
   const gfx::Region& region, int dst_dx, int dst_dy)
   : WithImage(dst)
 {
-  // Save region pixels
+  // Create region to save/swap later
   for (const auto& rc : region) {
     gfx::Clip clip(
       rc.x+dst_dx, rc.y+dst_dy,
@@ -33,12 +33,14 @@ CopyRegion::CopyRegion(Image* dst, Image* src,
       continue;
 
     m_region.createUnion(m_region, gfx::Region(clip.dstBounds()));
+  }
 
-    for (int y=0; y<clip.size.h; ++y)  {
+  // Save region pixels
+  for (const auto& rc : m_region) {
+    for (int y=0; y<rc.h; ++y)
       m_stream.write(
-        (const char*)src->getPixelAddress(clip.src.x, clip.src.y+y),
-        src->getRowStrideSize(clip.size.w));
-    }
+        (const char*)src->getPixelAddress(rc.x, rc.y+y),
+        src->getRowStrideSize(rc.w));
   }
 }
 
