@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -19,6 +19,12 @@ namespace app {
 
 class AppOptions {
 public:
+  enum VerboseLevel {
+    kNoVerbose,
+    kVerbose,
+    kHighlyVerbose,
+  };
+
   typedef base::ProgramOptions PO;
   typedef PO::Option Option;
   typedef PO::ValueList ValueList;
@@ -27,7 +33,7 @@ public:
 
   bool startUI() const { return m_startUI; }
   bool startShell() const { return m_startShell; }
-  bool verbose() const { return m_verboseEnabled; }
+  VerboseLevel verboseLevel() const { return m_verboseLevel; }
 
   const std::string& paletteFileName() const { return m_paletteFileName; }
 
@@ -70,7 +76,7 @@ private:
   base::ProgramOptions m_po;
   bool m_startUI;
   bool m_startShell;
-  bool m_verboseEnabled;
+  VerboseLevel m_verboseLevel;
   std::string m_paletteFileName;
 
   Option& m_palette;
@@ -101,6 +107,7 @@ private:
   Option& m_listTags;
 
   Option& m_verbose;
+  Option& m_debug;
   Option& m_help;
   Option& m_version;
 

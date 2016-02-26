@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,47 +10,99 @@
 
 #include "base/log.h"
 
-#include "base/file_handle.h"
+#include "base/fstream_path.h"
 
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
+#include <iostream>
 #include <string>
 
-static FILE* log_fileptr = nullptr;
-static std::string log_filename;
+namespace {
 
-void base_set_log_filename(const char* filename)
-{
-  if (log_fileptr) {
-    fclose(log_fileptr);
-    log_fileptr = nullptr;
+class nullbuf : public std::streambuf {
+protected:
+  int_type overflow(int_type ch) override {
+    return traits_type::not_eof(ch);
   }
+};
+
+class nullstream : public std::ostream {
+public:
+  nullstream()
+    : std::basic_ios<char_type, traits_type>(&m_buf)
+    , std::ostream(&m_buf) { }
+private:
+  nullbuf m_buf;
+};
+
+LogLevel log_level = LogLevel::NONE;
+nullstream null_stream;
+std::ofstream log_stream;
+std::string log_filename;
+
+bool open_log_stream()
+{
+  if (!log_stream) {
+    if (log_filename.empty())
+      return false;
+
+    log_stream.open(FSTREAM_PATH(log_filename));
+  }
+  return (bool)log_stream;
+}
+
+void log_text(const char* text)
+{
+  if (!open_log_stream())
+    return;
+
+  log_stream.write(text, strlen(text));
+  log_stream.flush();
+}
+
+} // anonymous namespace
+
+void base::set_log_filename(const char* filename)
+{
+  if (log_stream)
+    log_stream.close();
+
   log_filename = filename;
 }
 
-void base_log(const char* format, ...)
+void base::set_log_level(LogLevel level)
 {
-  if (!log_fileptr) {
-    if (log_filename.empty())
-      return;
+  log_level = level;
+}
 
-    log_fileptr = base::open_file_raw(log_filename, "w");
-  }
+std::ostream& base::get_log_stream(LogLevel level)
+{
+  ASSERT(level != NONE);
 
-  if (log_fileptr) {
-    va_list ap;
-    va_start(ap, format);
+  if ((log_level < level) ||
+      (!log_stream && !open_log_stream()))
+    return null_stream;
+  else
+    return log_stream;
+}
 
-    vfprintf(log_fileptr, format, ap);
-    fflush(log_fileptr);
+void LOG(const char* format, ...)
+{
+  if (log_level < INFO)
+    return;
+
+  char buf[2048];
+  va_list ap;
+  va_start(ap, format);
+  std::vsnprintf(buf, sizeof(buf)-1, format, ap);
+  log_text(buf);
 
 #ifdef _DEBUG
-    va_start(ap, format);
-    vfprintf(stderr, format, ap);
-    fflush(stderr);
+  fputs(buf, stderr);
+  fflush(stderr);
 #endif
 
-    va_end(ap);
-  }
+  va_end(ap);
 }
