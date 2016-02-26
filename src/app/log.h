@@ -13,7 +13,7 @@ namespace app {
 
   class LoggerModule {
   public:
-    LoggerModule();
+    LoggerModule(bool createLogInDesktop);
     ~LoggerModule();
   };
 

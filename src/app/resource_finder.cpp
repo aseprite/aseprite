@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -18,6 +18,11 @@
 
 #include <cstdio>
 #include <cstdlib>
+
+#ifdef _WIN32
+  #include <windows.h>
+  #include <shlobj.h>
+#endif
 
 namespace app {
 
@@ -159,6 +164,41 @@ void ResourceFinder::includeUserDir(const char* filename)
 
   // $HOME/.config/aseprite/filename
   includeHomeDir((std::string(".config/aseprite/") + filename).c_str());
+
+#endif
+}
+
+void ResourceFinder::includeDesktopDir(const char* filename)
+{
+#ifdef _WIN32
+
+  std::vector<wchar_t> buf(MAX_PATH);
+  HRESULT hr = SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL,
+                               SHGFP_TYPE_DEFAULT, &buf[0]);
+  if (hr == S_OK) {
+    addPath(base::join_path(base::to_utf8(&buf[0]), filename));
+  }
+  else {
+    includeHomeDir(filename);
+  }
+
+#elif defined(__APPLE__)
+
+  // TODO get the desktop folder
+  // $HOME/Desktop/filename
+  includeHomeDir(base::join_path(std::string("Desktop"), filename).c_str());
+
+#else
+
+  char* desktopDir = std::getenv("XDG_DESKTOP_DIR");
+  if (desktopDir) {
+    // $XDG_DESKTOP_DIR/filename
+    addPath(base::join_path(desktopDir, filename));
+  }
+  else {
+    // $HOME/Desktop/filename
+    includeHomeDir(base::join_path(std::string("Desktop"), filename).c_str());
+  }
 
 #endif
 }

@@ -17,10 +17,15 @@
 
 namespace app {
 
-LoggerModule::LoggerModule()
+LoggerModule::LoggerModule(bool createLogInDesktop)
 {
   app::ResourceFinder rf(false);
-  rf.includeUserDir("aseprite.log");
+
+  if (createLogInDesktop)
+    rf.includeDesktopDir(PACKAGE "-v" VERSION "-DebugOutput.txt");
+  else
+    rf.includeUserDir("aseprite.log");
+
   auto filename = rf.defaultFilename();
   base::set_log_filename(filename.c_str());
 }

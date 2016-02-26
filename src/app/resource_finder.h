@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -50,6 +50,8 @@ namespace app {
     // For Unix-like platforms:
     // - The filename will be in $HOME/.config/aseprite/
     void includeUserDir(const char* filename);
+
+    void includeDesktopDir(const char* filename);
 
     // Returns the first file found or creates the whole directory
     // structure to create the file in its default location.

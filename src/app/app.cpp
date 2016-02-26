@@ -109,7 +109,10 @@ public:
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
 
-  Modules() : m_recovery(nullptr) { }
+  Modules(bool createLogInDesktop)
+    : m_loggerModule(createLogInDesktop)
+    , m_recovery(nullptr) {
+  }
 
   app::crash::DataRecovery* recovery() {
     return m_recovery;
@@ -163,6 +166,7 @@ void App::initialize(const AppOptions& options)
 
   m_coreModules = new CoreModules;
 
+  bool createLogInDesktop = false;
   switch (options.verboseLevel()) {
     case AppOptions::kNoVerbose:
       base::set_log_level(ERROR);
@@ -172,10 +176,11 @@ void App::initialize(const AppOptions& options)
       break;
     case AppOptions::kHighlyVerbose:
       base::set_log_level(VERBOSE);
+      createLogInDesktop = true;
       break;
   }
 
-  m_modules = new Modules;
+  m_modules = new Modules(createLogInDesktop);
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
   m_brushes.reset(new AppBrushes);
 
