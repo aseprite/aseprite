@@ -25,7 +25,7 @@ namespace she {
       return m_text;
     }
 
-    void setText(DisplayHandle, const std::string& text) {
+    void setText(DisplayHandle, const std::string& text) override {
       m_text = text;
     }
 
