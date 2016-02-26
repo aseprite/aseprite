@@ -32,6 +32,7 @@ namespace app {
 
   class ColorButton;
   class ColorSpectrum;
+  class ColorTintShadeTone;
   class ColorWheel;
   class CommandExecutionEvent;
   class PaletteIndexChangeEvent;
@@ -50,6 +51,7 @@ namespace app {
       SPECTRUM,
       RGB_WHEEL,
       RYB_WHEEL,
+      TINT_SHADE_TONE,
     };
 
     static ColorBar* instance() { return m_instance; }
@@ -148,6 +150,7 @@ namespace app {
     PaletteView m_paletteView;
     ui::Button m_remapButton;
     ColorSelector m_selector;
+    ColorTintShadeTone* m_tintShadeTone;
     ColorSpectrum* m_spectrum;
     ColorWheel* m_wheel;
     ColorButton m_fgColor;

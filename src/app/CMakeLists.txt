@@ -339,6 +339,7 @@ add_library(app-lib
   ui/color_selector.cpp
   ui/color_sliders.cpp
   ui/color_spectrum.cpp
+  ui/color_tint_shade_tone.cpp
   ui/color_wheel.cpp
   ui/configure_timeline_popup.cpp
   ui/context_bar.cpp

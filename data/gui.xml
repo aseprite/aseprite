@@ -378,6 +378,9 @@
       <key command="SetInkType"><param name="type" value="shading" /></key>
       <key command="SetSameInk" />
       <key command="SetColorSelector">
+        <param name="type" value="tint-shade-tone" />
+      </key>
+      <key command="SetColorSelector">
         <param name="type" value="spectrum" />
       </key>
       <key command="SetColorSelector">
@@ -855,6 +858,9 @@
         <param name="size" value="17" />
       </item>
       <separator />
+      <item command="SetColorSelector" text="Color Tint/Shade/Tone">
+        <param name="type" value="tint-shade-tone" />
+      </item>
       <item command="SetColorSelector" text="Color Spectrum">
         <param name="type" value="spectrum" />
       </item>

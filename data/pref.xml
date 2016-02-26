@@ -112,7 +112,7 @@
       <option id="box_size" type="int" default="11" />
       <option id="fg_color" type="app::Color" default="app::Color::fromRgb(255, 255, 255)" />
       <option id="bg_color" type="app::Color" default="app::Color::fromRgb(0, 0, 0)" />
-      <option id="selector" type="app::ColorBar::ColorSelector" default="app::ColorBar::ColorSelector::SPECTRUM" />
+      <option id="selector" type="app::ColorBar::ColorSelector" default="app::ColorBar::ColorSelector::TINT_SHADE_TONE" />
       <option id="discrete_wheel" type="bool" default="false" />
       <option id="wheel_model" type="int" default="0" />
       <option id="harmony" type="int" default="0" />
