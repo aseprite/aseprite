@@ -174,6 +174,7 @@ ColorBar::ColorBar(int align)
 
   m_palettePlaceholder.addChild(&m_scrollableView);
   m_palettePlaceholder.addChild(&m_remapButton);
+  m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
   m_splitter.addChild(&m_palettePlaceholder);
