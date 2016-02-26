@@ -11,6 +11,8 @@
 #include "steam/steam.h"
 
 #include "base/dll.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "base/string.h"
 
 namespace steam {
@@ -33,7 +35,9 @@ typedef void (*SteamAPI_Shutdown_Func)();
 class SteamAPI::Impl {
 public:
   Impl() {
-    m_steamLib = base::load_dll(STEAM_API_DLL_FILENAME);
+    m_steamLib = base::load_dll(
+      base::join_path(base::get_file_path(base::get_app_path()),
+                      STEAM_API_DLL_FILENAME));
     if (!m_steamLib)
       return;
 
