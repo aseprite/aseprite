@@ -40,9 +40,9 @@ using namespace base;
 
 class WebPFormat : public FileFormat {
 
-  const char* onGetName() const { return "webp"; }
-  const char* onGetExtensions() const { return "webp"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "webp"; }
+  const char* onGetExtensions() const override { return "webp"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |
