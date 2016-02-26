@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -295,20 +295,12 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
   if (m_pos < 0) m_pos = 0;
   if (m_type == ByPixel)
     m_pos *= guiscale();
-
-  // Do for all children
-  for (auto child : children())
-    child->loadLayout();
 }
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
   double pos = (m_type == ByPixel ? m_pos / guiscale(): m_pos);
   ev.stream() << pos;
-
-  // Do for all children
-  for (auto child : children())
-    child->saveLayout();
 }
 
 Widget* Splitter::panel1() const

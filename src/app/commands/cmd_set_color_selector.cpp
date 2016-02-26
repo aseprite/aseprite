@@ -46,6 +46,9 @@ void SetColorSelectorCommand::onLoadParams(const Params& params)
   if (type == "spectrum") {
     m_type = ColorBar::ColorSelector::SPECTRUM;
   }
+  else if (type == "tint-shade-tone") {
+    m_type = ColorBar::ColorSelector::TINT_SHADE_TONE;
+  }
   else if (type == "wheel" ||
            type == "rgb-wheel") {
     m_type = ColorBar::ColorSelector::RGB_WHEEL;
@@ -72,6 +75,9 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
   switch (m_type) {
     case ColorBar::ColorSelector::SPECTRUM:
       result += "Color Spectrum";
+      break;
+    case ColorBar::ColorSelector::TINT_SHADE_TONE:
+      result += "Color Tint/Shade/Tone";
       break;
     case ColorBar::ColorSelector::RGB_WHEEL:
       result += "RGB Color Wheel";

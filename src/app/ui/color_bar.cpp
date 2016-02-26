@@ -31,6 +31,7 @@
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_spectrum.h"
+#include "app/ui/color_tint_shade_tone.h"
 #include "app/ui/color_wheel.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/hex_color_entry.h"
@@ -136,6 +137,7 @@ ColorBar::ColorBar(int align)
       Preferences::instance().colorBar.boxSize() * guiscale())
   , m_remapButton("Remap")
   , m_selector(ColorSelector::NONE)
+  , m_tintShadeTone(nullptr)
   , m_spectrum(nullptr)
   , m_wheel(nullptr)
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
@@ -172,6 +174,7 @@ ColorBar::ColorBar(int align)
 
   m_palettePlaceholder.addChild(&m_scrollableView);
   m_palettePlaceholder.addChild(&m_remapButton);
+  m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
   m_splitter.addChild(&m_palettePlaceholder);
@@ -306,6 +309,7 @@ void ColorBar::setColorSelector(ColorSelector selector)
   if (m_selector == selector)
     return;
 
+  if (m_tintShadeTone) m_tintShadeTone->setVisible(false);
   if (m_spectrum) m_spectrum->setVisible(false);
   if (m_wheel) m_wheel->setVisible(false);
 
@@ -313,6 +317,17 @@ void ColorBar::setColorSelector(ColorSelector selector)
   Preferences::instance().colorBar.selector(m_selector);
 
   switch (m_selector) {
+
+    case ColorSelector::TINT_SHADE_TONE:
+      if (!m_tintShadeTone) {
+        m_tintShadeTone = new ColorTintShadeTone;
+        m_tintShadeTone->setExpansive(true);
+        m_tintShadeTone->selectColor(m_fgColor.getColor());
+        m_tintShadeTone->ColorChange.connect(&ColorBar::onPickSpectrum, this);
+        m_selectorPlaceholder.addChild(m_tintShadeTone);
+      }
+      m_tintShadeTone->setVisible(true);
+      break;
 
     case ColorSelector::SPECTRUM:
       if (!m_spectrum) {
@@ -790,6 +805,9 @@ void ColorBar::onColorButtonChange(const app::Color& color)
     // palette view fg/bg indicators.
     m_paletteView.invalidate();
   }
+
+  if (m_tintShadeTone && m_tintShadeTone->isVisible())
+    m_tintShadeTone->selectColor(color);
 
   if (m_spectrum && m_spectrum->isVisible())
     m_spectrum->selectColor(color);
