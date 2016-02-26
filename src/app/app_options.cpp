@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -24,7 +24,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   : m_exeName(base::get_file_name(argv[0]))
   , m_startUI(true)
   , m_startShell(false)
-  , m_verboseEnabled(false)
+  , m_verboseLevel(kNoVerbose)
   , m_palette(m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default"))
   , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
   , m_batch(m_po.add("batch").mnemonic('b').description("Do not start the UI"))
@@ -52,13 +52,18 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_listLayers(m_po.add("list-layers").description("List layers of the next given sprite\nor include layers in JSON data"))
   , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite sprite\nor include frame tags in JSON data"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
+  , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
   , m_help(m_po.add("help").mnemonic('?').description("Display this help and exits"))
   , m_version(m_po.add("version").description("Output version information and exit"))
 {
   try {
     m_po.parse(argc, argv);
 
-    m_verboseEnabled = m_po.enabled(m_verbose);
+    if (m_po.enabled(m_debug))
+      m_verboseLevel = kHighlyVerbose;
+    else if (m_po.enabled(m_verbose))
+      m_verboseLevel = kVerbose;
+
     m_paletteFileName = m_po.value_of(m_palette);
     m_startShell = m_po.enabled(m_shell);
 
