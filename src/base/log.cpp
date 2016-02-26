@@ -44,13 +44,13 @@ std::string log_filename;
 
 bool open_log_stream()
 {
-  if (!log_stream) {
+  if (!log_stream.is_open()) {
     if (log_filename.empty())
       return false;
 
     log_stream.open(FSTREAM_PATH(log_filename));
   }
-  return (bool)log_stream;
+  return log_stream.is_open();
 }
 
 void log_text(const char* text)
@@ -66,7 +66,7 @@ void log_text(const char* text)
 
 void base::set_log_filename(const char* filename)
 {
-  if (log_stream)
+  if (log_stream.is_open())
     log_stream.close();
 
   log_filename = filename;
@@ -82,7 +82,7 @@ std::ostream& base::get_log_stream(LogLevel level)
   ASSERT(level != NONE);
 
   if ((log_level < level) ||
-      (!log_stream && !open_log_stream()))
+      (!log_stream.is_open() && !open_log_stream()))
     return null_stream;
   else
     return log_stream;
