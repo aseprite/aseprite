@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,7 +22,7 @@ using namespace base::serialization::little_endian;
 
 void write_string(std::ostream& os, const std::string& str)
 {
-  write16(os, (int)str.size());
+  write16(os, (uint16_t)str.size());
   if (!str.empty())
     os.write(str.c_str(), str.size());
 }
