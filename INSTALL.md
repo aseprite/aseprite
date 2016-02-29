@@ -67,18 +67,24 @@ the repository clone in a directory called `aseprite`):
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
 
-   Additionally you can change build settings by passing them on the command line, like so:
+   Additionally you can change build settings by passing them on the
+   command line, like so:
 
         /.../aseprite/build$ cmake -DCMAKE_INSTALL_PREFIX=~/software ..
 
-   or later on with a tool like [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html) or [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
+   or later on with a tool like
+   [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html)
+   or
+   [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
 
 3. After you have executed one of the `cmake -G <generator> ..`
    commands, you have to compile the project executing make, nmake,
    opening the solution, etc.
 
 4. When the project is compiled, you can find the executable file
-   inside `build/bin/aseprite.exe`. If you invoked `make install` it will be copied to an appropriate location (e.g. `/usr/local/bin/aseprite` on Linux).
+   inside `build/bin/aseprite.exe`. If you invoked `make install` it
+   will be copied to an appropriate location
+   (e.g. `/usr/local/bin/aseprite` on Linux).
 
 ## Mac OS X details
 
@@ -110,9 +116,9 @@ If you don't want to use the embedded code of third party libraries
 (i.e. to use your installed versions), you can disable static linking
 configuring each `USE_SHARED_` option.
 
-After running `cmake -G`, you can edit `build/CMakeCache.txt` file, and
-enable the `USE_SHARED_` flag (set its value to `ON`) of the library
-that you want to be linked dynamically.
+After running `cmake -G`, you can edit `build/CMakeCache.txt` file,
+and enable the `USE_SHARED_` flag (set its value to `ON`) of the
+library that you want to be linked dynamically.
 
 # Profiling
 
