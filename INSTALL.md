@@ -37,13 +37,13 @@ dependencies, even a modified version of the Allegro library is
 included in master branch.
 
 The following are the steps to compile Aseprite (in this case we have
-the repository clone in a directory called `aseprite-source`):
+the repository clone in a directory called `aseprite`):
 
 1. Make a build directory to leave all the files that are result of
    the compilation process (`.exe`, `.lib`, `.obj`, `.a`, `.o`, etc).
 
-        C:\...\>cd aseprite-source
-        C:\...\aseprite-source>mkdir build
+        C:\...\>cd aseprite
+        C:\...\aseprite>mkdir build
 
    In this way, if you want to start with a fresh copy of Aseprite
    source code, you can remove the `build` directory and start again.
@@ -51,25 +51,25 @@ the repository clone in a directory called `aseprite-source`):
 2. Enter in the new directory and execute cmake giving to it
    your compiler as generator:
 
-        C:\...\aseprite-source>cd build
+        C:\...\aseprite>cd build
 
    If you have nmake (MSVC compilers):
 
-        C:\...\aseprite-source\build>cmake -G "NMake Makefiles" ..
+        C:\...\aseprite\build>cmake -G "NMake Makefiles" ..
 
    If you have Visual Studio you can generate a solution:
 
-        C:\...\aseprite-source\build>cmake -G "Visual Studio 12 2013" ..
+        C:\...\aseprite\build>cmake -G "Visual Studio 12 2013" ..
 
    If you are on Linux:
 
-        /.../aseprite-source/build$ cmake -G "Unix Makefiles" ..
+        /.../aseprite/build$ cmake -G "Unix Makefiles" ..
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
-   
+
    Additionally you can change build settings by passing them on the command line, like so:
 
-        /.../aseprite-source/build$ cmake -DCMAKE_INSTALL_PREFIX=~/software ..
+        /.../aseprite/build$ cmake -DCMAKE_INSTALL_PREFIX=~/software ..
 
    or later on with a tool like [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html) or [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
 
@@ -118,4 +118,4 @@ that you want to be linked dynamically.
 
 You must compile with `Profile` configuration. For example on Linux:
 
-    /.../aseprite-source/build$ cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Profile -DCOMPILER_GCC:BOOL=ON
+    /.../aseprite/build$ cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Profile -DCOMPILER_GCC:BOOL=ON
