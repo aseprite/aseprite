@@ -19,7 +19,9 @@ because they don't depend on any other component.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](flic/): Library to load/save FLI/FLC files.
   * [scripting](scripting/): JavaScript engine.
+  * [steam](steam/): Steam API wrapper to avoid static linking to the .lib file.
   * [undo](undo/): Generic library to manage a history of undoable commands.
+  * [wacom](wacom/): Wacom definitions to use Wintab API.
 
 ## Level 1
 
@@ -27,6 +29,7 @@ because they don't depend on any other component.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [gfx](gfx/) (fixmath): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [net](net/) (base): Networking library to send HTTP requests.
+  * [pen](pen/) (base, wacom): Library to handle graphics tablet input.
   * [webserver](webserver/) (base): HTTP web server
 
 ## Level 2
@@ -47,7 +50,7 @@ because they don't depend on any other component.
 
 ## Level 5
 
-  * [app](app/) (allegro, base, doc, filters, fixmath, gfx, iff, render, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (allegro, base, doc, filters, fixmath, gfx, iff, pen, render, scripting, she, ui, undo, updater, webserver)
 
 ## Level 6
 
