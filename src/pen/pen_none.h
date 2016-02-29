@@ -8,7 +8,7 @@ namespace pen {
 
 class PenAPI::Impl {
 public:
-  Impl() { }
+  Impl(void*) { }
   ~Impl() { }
 };
 
