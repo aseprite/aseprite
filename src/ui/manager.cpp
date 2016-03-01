@@ -345,12 +345,9 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseMove: {
-#ifndef USE_ALLEG4_BACKEND
         _internal_set_mouse_position(sheEvent.position());
-
         handleMouseMove(sheEvent.position(), m_mouseButtons,
                         sheEvent.modifiers());
-#endif
         lastMouseMoveEvent = sheEvent;
         break;
       }
@@ -405,14 +402,6 @@ void Manager::generateMessagesFromSheEvents()
   // Generate just one kSetCursorMessage for the last mouse position
   if (lastMouseMoveEvent.type() != she::Event::None) {
     sheEvent = lastMouseMoveEvent;
-
-#ifdef USE_ALLEG4_BACKEND
-    _internal_set_mouse_position(sheEvent.position());
-
-    handleMouseMove(sheEvent.position(), m_mouseButtons,
-                    sheEvent.modifiers());
-#endif
-
     generateSetCursorMessage(sheEvent.position(),
                              sheEvent.modifiers());
   }
