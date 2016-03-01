@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -225,7 +225,7 @@ void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg
   base::utf8_const_iterator it(str.begin()), end(str.end());
   int x = m_dx+pt.x;
   int y = m_dy+pt.y;
-  int underscored_x;
+  int underscored_x = 0;
   int underscored_w = -1;
 
   while (it != end) {
