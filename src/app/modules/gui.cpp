@@ -134,15 +134,17 @@ static bool create_main_display(bool gpuAccel,
     }
   }
 
-  if (main_display && !windowLayout.empty()) {
+  if (main_display) {
     // Change the scale value only in the first run (this will be
     // saved when the program is closed).
     if (scale == 0)
       Preferences::instance().general.screenScale(main_display->scale());
 
-    main_display->setLayout(windowLayout);
-    if (main_display->isMinimized())
-      main_display->maximize();
+    if (!windowLayout.empty()) {
+      main_display->setLayout(windowLayout);
+      if (main_display->isMinimized())
+        main_display->maximize();
+    }
   }
 
   return (main_display != nullptr);
