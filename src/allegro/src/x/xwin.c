@@ -2426,6 +2426,11 @@ static void _xwin_private_process_event(XEvent *event)
          }
          break;
       case EnterNotify:
+        /* Do not generate Enter/Leave notifications when
+           XGrabPointer/XUngrabPointer() are called
+           (NotifyGrab/NotifyUngrab modes). */
+        if (event->xcrossing.mode != NotifyNormal)
+           break;
          /* Mouse entered window.  */
          _mouse_on = TRUE;
          mouse_savedx = event->xcrossing.x;
@@ -2442,6 +2447,8 @@ static void _xwin_private_process_event(XEvent *event)
             (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
          break;
       case LeaveNotify:
+        if (event->xcrossing.mode != NotifyNormal)
+           break;
          _mouse_on = FALSE;
          if (_xwin_mouse_interrupt)
             (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
