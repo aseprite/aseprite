@@ -91,7 +91,7 @@ Accelerator::Accelerator(const std::string& str)
     else if (tok == "cmd") {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyCmdModifier);
     }
-    else if (tok == "windows") {
+    else if (tok == base::string_to_lower(winKeyName)) {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyWinModifier);
     }
 
@@ -352,7 +352,7 @@ std::string Accelerator::toString() const
   if (m_modifiers & kKeyAltModifier) buf += "Alt+";
   if (m_modifiers & kKeyShiftModifier) buf += "Shift+";
   if (m_modifiers & kKeySpaceModifier) buf += "Space+";
-  if (m_modifiers & kKeyWinModifier) buf += "Windows+";
+  if (m_modifiers & kKeyWinModifier) { buf += winKeyName; buf += "+"; }
 
   // Key
   if (m_unicodeChar) {

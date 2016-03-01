@@ -15,6 +15,12 @@
 
 namespace ui {
 
+#ifdef _WIN32
+  const std::string winKeyName = "Win";
+#else
+  const std::string winKeyName = "Super";
+#endif
+
   class Accelerator {
   public:
     Accelerator();

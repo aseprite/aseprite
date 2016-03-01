@@ -95,7 +95,7 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext ke
   ctrl()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCtrlModifier, ctrl()));
   shift()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyShiftModifier, shift()));
   space()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeySpaceModifier, space()));
-  windows()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyWinModifier, windows()));
+  win()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyWinModifier, win()));
 
   m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
   clearButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onClear, this));
@@ -157,10 +157,13 @@ void SelectAccelerator::updateModifiers()
   shift()->setSelected(m_accel.modifiers() & kKeyShiftModifier ? true: false);
   space()->setSelected(m_accel.modifiers() & kKeySpaceModifier ? true: false);
 #if __APPLE__
-  windows()->setVisible(false);
+  win()->setVisible(false);
   cmd()->setSelected(m_accel.modifiers() & kKeyCmdModifier ? true: false);
 #else
-  windows()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true: false);
+  #if __linux__
+    win()->setText(winKeyName);
+  #endif
+  win()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true: false);
   cmd()->setVisible(false);
 #endif
 }
