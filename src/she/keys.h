@@ -17,7 +17,8 @@ namespace she {
     kKeyAltModifier           = 4,
     kKeyCmdModifier           = 8,
     kKeySpaceModifier         = 16,
-    kKeyUninitializedModifier = 32,
+    kKeyWinModifier           = 32,
+    kKeyUninitializedModifier = 64,
   };
 
   enum KeyScancode {

@@ -42,10 +42,12 @@ namespace ui {
     bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
     bool altPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
     bool cmdPressed() const { return (m_modifiers & kKeyCmdModifier) == kKeyCmdModifier; }
+    bool winPressed() const { return (m_modifiers & kKeyWinModifier) == kKeyWinModifier; }
     bool onlyShiftPressed() const { return m_modifiers == kKeyShiftModifier; }
     bool onlyCtrlPressed() const { return m_modifiers == kKeyCtrlModifier; }
     bool onlyAltPressed() const { return m_modifiers == kKeyAltModifier; }
     bool onlyCmdPressed() const { return m_modifiers == kKeyCmdModifier; }
+    bool onlyWinPressed() const { return m_modifiers == kKeyWinModifier; }
 
     void addRecipient(Widget* widget);
     void prependRecipient(Widget* widget);

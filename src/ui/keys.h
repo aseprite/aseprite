@@ -21,6 +21,7 @@ namespace ui {
   using she::kKeyAltModifier;
   using she::kKeyCmdModifier;
   using she::kKeySpaceModifier;
+  using she::kKeyWinModifier;
   using she::kKeyUninitializedModifier;
 
   using she::kKeyNil;

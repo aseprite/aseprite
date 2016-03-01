@@ -15,6 +15,7 @@
           <check text="Alt" id="alt" />
           <check text="Shift" id="shift" />
           <check text="Space" id="space" />
+          <check text="Windows" id="windows" />
         </hbox>
 
         <label text="Assigned to:" />
