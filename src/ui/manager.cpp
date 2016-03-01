@@ -249,6 +249,9 @@ bool Manager::generateMessages()
 void Manager::generateSetCursorMessage(const gfx::Point& mousePos,
                                        KeyModifiers modifiers)
 {
+  if (get_mouse_cursor() == kOutsideDisplay)
+    return;
+
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
   if (dst)
     enqueueMessage(
@@ -323,7 +326,9 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseEnter: {
+        _internal_set_mouse_position(sheEvent.position());
         set_mouse_cursor(kArrowCursor);
+        lastMouseMoveEvent = sheEvent;
         break;
       }
 
@@ -332,6 +337,10 @@ void Manager::generateMessagesFromSheEvents()
         setMouse(NULL);
 
         _internal_no_mouse_position();
+
+        // To avoid calling kSetCursorMessage when the mouse leaves
+        // the window.
+        lastMouseMoveEvent = she::Event();
         break;
       }
 
