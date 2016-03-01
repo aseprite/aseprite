@@ -86,6 +86,17 @@ the repository clone in a directory called `aseprite`):
    will be copied to an appropriate location
    (e.g. `/usr/local/bin/aseprite` on Linux).
 
+## Linux details
+
+You will need the following dependencies:
+
+    sudo apt-get update -qq
+    sudo apt-get install -y g++ libx11-dev libxcursor-dev cmake ninja-build
+
+The `libxcursor-dev` package is needed to hide the hardware cursor:
+
+    https://github.com/aseprite/aseprite/issues/913
+
 ## Mac OS X details
 
 You need the old Mac OS X 10.4 SDK universal, which can be obtained
