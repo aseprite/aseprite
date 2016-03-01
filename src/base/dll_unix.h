@@ -5,7 +5,12 @@
 // Read LICENSE.txt for more information.
 
 #include "base/string.h"
-#include <dlfcn.h>
+
+#ifdef HAVE_DLFCN_H
+  #include <dlfcn.h>
+#else
+  #error dlfcn.h is needed or include a file that defines dlopen/dlclose
+#endif
 
 namespace base {
 

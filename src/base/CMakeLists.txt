@@ -20,6 +20,13 @@ int main() {
 }
 " HAVE_SCHED_YIELD)
 
+check_c_source_compiles("
+#include <dlfcn.h>
+int main() {
+  return 0;
+}
+" HAVE_DLFCN_H)
+
 check_c_source_runs("
 int main() {
   unsigned long value = 0x40302010ul;
@@ -85,5 +92,8 @@ target_link_libraries(base-lib modp_b64)
 if(WIN32)
   target_link_libraries(base-lib dbghelp shlwapi)
 else()
-  target_link_libraries(base-lib dl)
+  find_library(DL_LIBRARY NAMES dl)
+  if(DL_LIBRARY_FOUND)
+    target_link_libraries(base-lib ${DL_LIBRARY})
+  endif()
 endif()

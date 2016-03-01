@@ -1,5 +1,5 @@
 // Aseprite Base Library                                      -*- C++ -*-
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_SCHED_YIELD
+#cmakedefine HAVE_DLFCN_H
 
 #cmakedefine ASEPRITE_LITTLE_ENDIAN
 #cmakedefine ASEPRITE_BIG_ENDIAN
