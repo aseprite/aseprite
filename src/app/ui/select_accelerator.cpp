@@ -101,6 +101,8 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext ke
   clearButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onClear, this));
   okButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onOK, this));
   cancelButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onCancel, this));
+
+  addChild(&m_tooltipManager);
 }
 
 void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
@@ -162,6 +164,7 @@ void SelectAccelerator::updateModifiers()
 #else
   #if __linux__
     win()->setText(kWinKeyName);
+    m_tooltipManager.addTooltipFor(win(), "Also known as Windows key, logo key,\ncommand key, or system key.", TOP);
   #endif
   win()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true: false);
   cmd()->setVisible(false);
