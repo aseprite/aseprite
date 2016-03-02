@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -95,11 +95,14 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext ke
   ctrl()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCtrlModifier, ctrl()));
   shift()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyShiftModifier, shift()));
   space()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeySpaceModifier, space()));
+  win()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyWinModifier, win()));
 
   m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
   clearButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onClear, this));
   okButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onOK, this));
   cancelButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onCancel, this));
+
+  addChild(&m_tooltipManager);
 }
 
 void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
@@ -156,8 +159,14 @@ void SelectAccelerator::updateModifiers()
   shift()->setSelected(m_accel.modifiers() & kKeyShiftModifier ? true: false);
   space()->setSelected(m_accel.modifiers() & kKeySpaceModifier ? true: false);
 #if __APPLE__
+  win()->setVisible(false);
   cmd()->setSelected(m_accel.modifiers() & kKeyCmdModifier ? true: false);
 #else
+  #if __linux__
+    win()->setText(kWinKeyName);
+    m_tooltipManager.addTooltipFor(win(), "Also known as Windows key, logo key,\ncommand key, or system key.", TOP);
+  #endif
+  win()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true: false);
   cmd()->setVisible(false);
 #endif
 }

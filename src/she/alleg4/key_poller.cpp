@@ -46,7 +46,9 @@ void she_keyboard_lowlevel_callback(int scancode)
         scancode == KEY_LSHIFT ||
         scancode == KEY_LCONTROL ||
         scancode == KEY_ALT ||
-        scancode == KEY_COMMAND) {
+        scancode == KEY_COMMAND ||
+        scancode == KEY_LWIN ||
+        scancode == KEY_RWIN ) {
       she_keyboard_ucallback(-1, &scancode);
     }
     return;

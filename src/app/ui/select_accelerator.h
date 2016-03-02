@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,6 +11,7 @@
 
 #include "app/ui/keyboard_shortcuts.h"
 #include "ui/accelerator.h"
+#include "ui/tooltips.h"
 
 #include "select_accelerator.xml.h"
 
@@ -34,6 +35,7 @@ namespace app {
 
     class KeyField;
 
+    ui::TooltipManager m_tooltipManager;
     KeyField* m_keyField;
     KeyContext m_keyContext;
     ui::Accelerator m_origAccel;

@@ -30,7 +30,8 @@ Message::Message(MessageType type, KeyModifiers modifiers)
        (she::is_key_pressed(kKeyLControl) || she::is_key_pressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
        (she::is_key_pressed(kKeyAlt) ? kKeyAltModifier: 0) |
        (she::is_key_pressed(kKeyCommand) ? kKeyCmdModifier: 0) |
-       (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0));
+       (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0) |
+       (she::is_key_pressed(kKeyLWin) || she::is_key_pressed(kKeyRWin) ? kKeyWinModifier: 0));
   }
   else {
     m_modifiers = modifiers;

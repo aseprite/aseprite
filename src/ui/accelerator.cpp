@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,6 +27,12 @@
 
 namespace ui {
 
+#ifdef _WIN32
+  const char* kWinKeyName = "Win";
+#else
+  const char* kWinKeyName = "Super";
+#endif
+
 static KeyModifiers get_pressed_modifiers_from_she()
 {
   KeyModifiers mods = kKeyNoneModifier;
@@ -36,6 +42,8 @@ static KeyModifiers get_pressed_modifiers_from_she()
   if (she::is_key_pressed(kKeyRControl)) mods = KeyModifiers(int(mods) | int(kKeyCtrlModifier));
   if (she::is_key_pressed(kKeyAlt)     ) mods = KeyModifiers(int(mods) | int(kKeyAltModifier));
   if (she::is_key_pressed(kKeyCommand) ) mods = KeyModifiers(int(mods) | int(kKeyCmdModifier));
+  if (she::is_key_pressed(kKeyLWin)    ) mods = KeyModifiers(int(mods) | int(kKeyWinModifier));
+  if (she::is_key_pressed(kKeyRWin)    ) mods = KeyModifiers(int(mods) | int(kKeyWinModifier));
   return mods;
 }
 
@@ -88,6 +96,9 @@ Accelerator::Accelerator(const std::string& str)
     }
     else if (tok == "cmd") {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyCmdModifier);
+    }
+    else if (tok == base::string_to_lower(kWinKeyName)) {
+      m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyWinModifier);
     }
 
     // Scancode
@@ -347,6 +358,10 @@ std::string Accelerator::toString() const
   if (m_modifiers & kKeyAltModifier) buf += "Alt+";
   if (m_modifiers & kKeyShiftModifier) buf += "Shift+";
   if (m_modifiers & kKeySpaceModifier) buf += "Space+";
+  if (m_modifiers & kKeyWinModifier) {
+    buf += kWinKeyName;
+    buf += "+";
+  }
 
   // Key
   if (m_unicodeChar) {
