@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,11 +15,7 @@
 
 namespace ui {
 
-#ifdef _WIN32
-  const std::string winKeyName = "Win";
-#else
-  const std::string winKeyName = "Super";
-#endif
+  extern const char* kWinKeyName;
 
   class Accelerator {
   public:
