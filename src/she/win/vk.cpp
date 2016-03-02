@@ -309,8 +309,8 @@ KeyModifiers get_modifiers_from_last_win32_message()
     modifiers |= kKeyAltModifier;
   if (GetKeyState(VK_SPACE) & 0x8000)
     modifiers |= kKeySpaceModifier;
-  if (GetKeyState(kKeyLWin) & 0x8000) ||
-     (GetKeyState(kKeyRWin) & 0x8000))
+  if ((GetKeyState(VK_LWIN) & 0x8000) ||
+      (GetKeyState(VK_RWIN) & 0x8000))
     modifiers |= kKeyWinModifier;
   return (KeyModifiers)modifiers;
 }
