@@ -32,7 +32,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "sha1_rfc3174.h"
+#include "base/ints.h"
+#include "base/sha1_rfc3174.h"
 
 /*
  *  Define the SHA1 circular left shift macro

@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,10 +11,6 @@
 #include "base/config.h"
 
 #include <math.h>
-
-#ifdef HAVE_STDINT_H
-  #include <stdint.h>
-#endif
 
 #undef NULL
 #ifdef __cplusplus
