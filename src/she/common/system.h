@@ -14,6 +14,9 @@
 #elif defined(__APPLE__)
   #include "she/osx/clipboard.h"
   #include "she/osx/native_dialogs.h"
+#elif defined(ASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT) && defined(__linux__)
+  #include "she/clipboard_simple.h"
+  #include "she/gtk/native_dialogs.h"
 #else
   #include "she/clipboard_simple.h"
   #include "she/native_dialogs.h"
@@ -56,6 +59,9 @@ public:
 #elif defined(__APPLE__)
     if (!m_nativeDialogs)
       m_nativeDialogs = new NativeDialogsOSX();
+#elif defined(ASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT) && defined(__linux__)
+    if (!m_nativeDialogs)
+      m_nativeDialogs = new NativeDialogsGTK3();
 #endif
     return m_nativeDialogs;
   }
