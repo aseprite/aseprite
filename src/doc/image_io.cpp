@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "doc/image_io.h"
 
+#include "base/base.h"
 #include "base/exception.h"
 #include "base/serialization.h"
 #include "base/unique_ptr.h"

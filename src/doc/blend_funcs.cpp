@@ -18,6 +18,7 @@
 
 #include "doc/blend_funcs.h"
 
+#include "base/base.h"
 #include "base/debug.h"
 #include "doc/blend_internals.h"
 

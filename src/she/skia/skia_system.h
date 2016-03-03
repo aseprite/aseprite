@@ -8,6 +8,7 @@
 #define SHE_SKIA_SKIA_SYSTEM_INCLUDED
 #pragma once
 
+#include "base/base.h"
 #include "base/file_handle.h"
 
 #include "SkImageDecoder.h"
