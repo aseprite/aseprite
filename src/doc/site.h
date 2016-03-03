@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,9 +26,9 @@ namespace doc {
   class Site {
   public:
     Site()
-      : m_document(NULL)
-      , m_sprite(NULL)
-      , m_layer(NULL)
+      : m_document(nullptr)
+      , m_sprite(nullptr)
+      , m_layer(nullptr)
       , m_frame(0) { }
 
     const Document* document() const { return m_document; }
@@ -50,7 +50,7 @@ namespace doc {
     LayerIndex layerIndex() const;
     void layerIndex(LayerIndex layerIndex);
     Palette* palette();
-    Image* image(int* x = NULL, int* y = NULL, int* opacity = NULL) const;
+    Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
     Palette* palette() const;
 
   private:

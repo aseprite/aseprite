@@ -19,7 +19,7 @@ Cursor::Cursor(she::Surface* surface, const gfx::Point& focus)
   : m_surface(surface)
   , m_focus(focus)
 {
-  ASSERT(m_surface != NULL);
+  ASSERT(m_surface != nullptr);
 }
 
 Cursor::~Cursor()

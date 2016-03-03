@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,7 +15,7 @@ class Slot;
 
 class Connection {
 public:
-  Connection() : m_signal(NULL), m_slot(NULL) {
+  Connection() : m_signal(nullptr), m_slot(nullptr) {
   }
 
   Connection(Signal* signal, Slot* slot) :
@@ -25,7 +25,7 @@ public:
   void disconnect();
 
   operator bool() {
-    return (m_slot != NULL);
+    return (m_slot != nullptr);
   }
 
 private:
