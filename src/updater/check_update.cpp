@@ -99,6 +99,11 @@ public:
     using namespace base;
     using namespace net;
 
+#ifndef UPDATE_URL
+#define UPDATE_URL ""
+#endif
+#pragma message("warning: Define UPDATE_URL macro")
+
     std::string url = UPDATE_URL;
     if (!uuid.empty()) {
       url += "&uuid=";

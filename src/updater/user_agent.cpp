@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -34,7 +34,17 @@ std::string getUserAgent()
 {
   std::stringstream userAgent;
 
-  // ASEPRITE name and version
+  // App name and version
+
+#ifndef PACKAGE
+#define PACKAGE ""
+#pragma message("warning: Define PACKAGE macro")
+#endif
+
+#ifndef VERSION
+#define VERSION ""
+#pragma message("warning: Define VERSION macro")
+#endif
 
   userAgent << PACKAGE << "/" << VERSION << " (";
 
