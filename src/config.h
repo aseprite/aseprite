@@ -14,7 +14,9 @@
 // In MSVC
 #ifdef _MSC_VER
   // Avoid warnings about insecure standard C++ functions
+  #ifndef _CRT_SECURE_NO_WARNINGS
   #define _CRT_SECURE_NO_WARNINGS
+  #endif
 
   // Disable warning C4355 in MSVC: 'this' used in base member initializer list
   #pragma warning(disable:4355)

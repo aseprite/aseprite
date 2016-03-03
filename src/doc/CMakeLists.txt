@@ -1,5 +1,9 @@
 # Aseprite Document Library
-# Copyright (C) 2001-2015 David Capello
+# Copyright (C) 2001-2016 David Capello
+
+if(WIN32)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 add_library(doc-lib
   algo.cpp

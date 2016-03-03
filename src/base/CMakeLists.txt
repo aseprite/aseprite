@@ -90,6 +90,7 @@ add_library(base-lib ${BASE_SOURCES})
 target_link_libraries(base-lib modp_b64)
 
 if(WIN32)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   target_link_libraries(base-lib dbghelp shlwapi)
 else()
   find_library(DL_LIBRARY NAMES dl)
