@@ -4,6 +4,7 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#include "base/debug.h"
 #include "base/dll.h"
 #include "base/fs.h"
 #include "base/path.h"

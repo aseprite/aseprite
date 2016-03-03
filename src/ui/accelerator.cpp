@@ -10,6 +10,7 @@
 
 #include "ui/accelerator.h"
 
+#include "base/debug.h"
 #include "base/replace_string.h"
 #include "base/split_string.h"
 #include "base/string.h"

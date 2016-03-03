@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,8 @@
 #ifndef BASE_OBSERVERS_H_INCLUDED
 #define BASE_OBSERVERS_H_INCLUDED
 #pragma once
+
+#include "base/debug.h"
 
 #include <algorithm>
 #include <vector>
