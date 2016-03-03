@@ -93,9 +93,8 @@ You will need the following dependencies:
     sudo apt-get update -qq
     sudo apt-get install -y g++ libx11-dev libxcursor-dev cmake ninja-build
 
-The `libxcursor-dev` package is needed to hide the hardware cursor:
-
-    https://github.com/aseprite/aseprite/issues/913
+The `libxcursor-dev` package is needed to
+[hide the hardware cursor](https://github.com/aseprite/aseprite/issues/913).
 
 ## Mac OS X details
 
