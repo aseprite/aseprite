@@ -8,6 +8,10 @@
 #define BASE_LOG_H_INCLUDED
 #pragma once
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 enum LogLevel {
   NONE    = 0, // Default log level: do not log
   FATAL   = 1, // Something failed and we CANNOT continue the execution

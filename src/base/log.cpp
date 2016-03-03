@@ -10,6 +10,7 @@
 
 #include "base/log.h"
 
+#include "base/debug.h"
 #include "base/fstream_path.h"
 
 #include <cstdarg>

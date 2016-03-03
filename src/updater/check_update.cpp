@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,7 @@
 #include "updater/check_update.h"
 
 #include "base/bind.h"
+#include "base/debug.h"
 #include "base/convert_to.h"
 #include "net/http_headers.h"
 #include "net/http_request.h"
@@ -97,6 +98,11 @@ public:
   {
     using namespace base;
     using namespace net;
+
+#ifndef UPDATE_URL
+#define UPDATE_URL ""
+#endif
+#pragma message("warning: Define UPDATE_URL macro")
 
     std::string url = UPDATE_URL;
     if (!uuid.empty()) {

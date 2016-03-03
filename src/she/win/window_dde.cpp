@@ -131,6 +131,11 @@ bool handle_dde_messages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, LRES
       std::string topic = get_atom_string((ATOM)topicAtom, useUnicode);
       FreeDDElParam(msg, lparam);
 
+#ifndef PACKAGE
+#define PACKAGE ""
+#pragma message("warning: Define PACKAGE macro with your app name")
+#endif
+
       if (app != PACKAGE) {
         return false;
       }

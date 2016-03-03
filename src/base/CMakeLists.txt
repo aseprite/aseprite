@@ -44,6 +44,8 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.cmakein
 
 set(BASE_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}
     CACHE INTERNAL "Extra include directory for base lib")
+set(MODP_B64_DIR "${CMAKE_CURRENT_LIST_DIR}/../../third_party/modp_b64"
+    CACHE STRING "modp_b64 directory")
 
 include_directories(${BASE_INCLUDE_DIR})
 include_directories(${MODP_B64_DIR})
@@ -90,6 +92,7 @@ add_library(base-lib ${BASE_SOURCES})
 target_link_libraries(base-lib modp_b64)
 
 if(WIN32)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   target_link_libraries(base-lib dbghelp shlwapi)
 else()
   find_library(DL_LIBRARY NAMES dl)

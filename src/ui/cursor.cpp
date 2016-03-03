@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "ui/cursor.h"
 
+#include "base/debug.h"
 #include "she/surface.h"
 
 namespace ui {
@@ -18,7 +19,7 @@ Cursor::Cursor(she::Surface* surface, const gfx::Point& focus)
   : m_surface(surface)
   , m_focus(focus)
 {
-  ASSERT(m_surface != NULL);
+  ASSERT(m_surface != nullptr);
 }
 
 Cursor::~Cursor()

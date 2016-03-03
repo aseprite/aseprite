@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include "base/base.h"
+#include "base/debug.h"
 #include "render/zoom.h"
 
 namespace render {

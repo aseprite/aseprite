@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2015 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,8 @@
 #ifndef GFX_COLOR_H_INCLUDED
 #define GFX_COLOR_H_INCLUDED
 #pragma once
+
+#include "base/ints.h"
 
 namespace gfx {
 

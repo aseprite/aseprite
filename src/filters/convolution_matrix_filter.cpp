@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,6 +11,7 @@
 
 #include "filters/convolution_matrix_filter.h"
 
+#include "base/base.h"
 #include "filters/convolution_matrix.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"

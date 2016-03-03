@@ -1,5 +1,5 @@
 // Aseprite Network Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "net/http_request.h"
 
+#include "base/debug.h"
 #include "net/http_headers.h"
 #include "net/http_response.h"
 

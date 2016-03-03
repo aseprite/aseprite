@@ -6,6 +6,7 @@
 #ifndef FIXMATH_FIXMATH_H
 #define FIXMATH_FIXMATH_H
 
+#include "base/ints.h"
 #include <cerrno>
 
 namespace fixmath {

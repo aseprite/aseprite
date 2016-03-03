@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "render/quantization.h"
 
+#include "base/base.h"
 #include "doc/image_impl.h"
 #include "doc/images_collector.h"
 #include "doc/layer.h"

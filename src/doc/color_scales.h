@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define DOC_COLOR_SCALES_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
 #include "doc/frame.h"
 #include "doc/object.h"
 

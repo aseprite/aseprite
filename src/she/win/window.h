@@ -14,6 +14,7 @@
 #include <shellapi.h>
 #include <sstream>
 
+#include "base/base.h"
 #include "gfx/size.h"
 #include "she/event.h"
 #include "she/keys.h"

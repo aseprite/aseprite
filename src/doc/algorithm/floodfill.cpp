@@ -15,6 +15,7 @@
 #include "config.h"
 #endif
 
+#include "base/base.h"
 #include "doc/algo.h"
 #include "doc/image.h"
 #include "doc/mask.h"
