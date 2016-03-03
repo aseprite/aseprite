@@ -13,7 +13,8 @@
 
 #include "she/native_dialogs.h"
 
-#include <gtkmm.h>
+#include <gtkmm/application.h>
+#include <glibmm/refptr.h>
 
 namespace she {
 

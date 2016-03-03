@@ -17,7 +17,11 @@
 #include "she/display.h"
 #include "she/error.h"
 
-#include <gtkmm.h>
+#include <gtkmm/application.h>
+#include <gtkmm/filechooserdialog.h>
+#include <gtkmm/button.h>
+#include <gtkmm/filefilter.h>
+#include <glibmm/refptr.h>
 
 #include <string>
 #include <map>
