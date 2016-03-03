@@ -1,5 +1,5 @@
 // Aseprite Config Library
-// Copyright (c) 2014, 2015 David Capello
+// Copyright (c) 2014-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 #include "cfg/cfg.h"
 
 #include "base/file_handle.h"
+#include "base/log.h"
 #include "base/string.h"
 
 #include <stdlib.h>

@@ -12,6 +12,7 @@
 
 #include "base/dll.h"
 #include "base/fs.h"
+#include "base/log.h"
 #include "base/path.h"
 #include "base/string.h"
 
