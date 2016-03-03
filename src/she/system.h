@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013, 2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define SHE_SYSTEM_H_INCLUDED
 #pragma once
 
+#include "gfx/fwd.h"
 #include "she/capabilities.h"
 
 #include <stdexcept>
