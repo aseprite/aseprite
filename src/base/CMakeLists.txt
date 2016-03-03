@@ -44,6 +44,8 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.cmakein
 
 set(BASE_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}
     CACHE INTERNAL "Extra include directory for base lib")
+set(MODP_B64_DIR "${CMAKE_CURRENT_LIST_DIR}/../../third_party/modp_b64"
+    CACHE STRING "modp_b64 directory")
 
 include_directories(${BASE_INCLUDE_DIR})
 include_directories(${MODP_B64_DIR})
