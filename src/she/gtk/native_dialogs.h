@@ -23,7 +23,7 @@ namespace she {
     NativeDialogsGTK3();
     FileDialog* createFileDialog() override;
   private:
-  	Glib::RefPtr<Gtk::Application> app;
+    Glib::RefPtr<Gtk::Application> m_app;
   };
 
 } // namespace she

@@ -20,6 +20,7 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/path.h"
+#include "she/native_dialogs.h"
 #include "ui/graphics.h"
 #include "ui/link_label.h"
 #include "ui/listitem.h"
@@ -129,6 +130,7 @@ void RecentFilesListBox::onRebuildList()
 
 void RecentFilesListBox::onClick(const std::string& path)
 {
+  she::FileDialog::g_lastUsedDir = base::get_file_path(path);
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
   Params params;
   params.set("filename", path.c_str());
