@@ -30,8 +30,6 @@
 
 namespace she {
 
-std::string FileDialog::g_lastUsedDir;
-
 class FileDialogGTK3 : public FileDialog, public Gtk::FileChooserDialog {
 public:
   FileDialogGTK3(Glib::RefPtr<Gtk::Application> app) :
@@ -42,11 +40,11 @@ public:
     m_filter_all = Gtk::FileFilter::create();
     m_filter_all->set_name("All formats");
     this->set_do_overwrite_confirmation();
-    if (FileDialog::g_lastUsedDir.empty()) {
+    if (FileDialog::g_lastUsedDir().empty()) {
     #ifdef ASEPRITE_DEPRECATED_GLIB_SUPPORT
-      FileDialog::g_lastUsedDir = Glib::get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS);
+      FileDialog::g_lastUsedDir() = Glib::get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS);
     #else
-       FileDialog::g_lastUsedDir = Glib::get_user_special_dir(Glib::USER_DIRECTORY_DOCUMENTS);
+       FileDialog::g_lastUsedDir() = Glib::get_user_special_dir(Glib::USER_DIRECTORY_DOCUMENTS);
     #endif
     }
   }
@@ -60,12 +58,12 @@ public:
         if (Glib::file_test(m_file_name, Glib::FILE_TEST_EXISTS)) {
           this->set_filename(m_file_name);
         } else {
-          this->set_current_folder(FileDialog::g_lastUsedDir);
+          this->set_current_folder(FileDialog::g_lastUsedDir());
           this->set_current_name(m_file_name);
         }
       }
     } else {
-      this->set_current_folder(FileDialog::g_lastUsedDir);
+      this->set_current_folder(FileDialog::g_lastUsedDir());
     }
     //TODO set position centered to parent window, need she::screen to provide info
     this->set_position(Gtk::WIN_POS_CENTER);
@@ -78,7 +76,7 @@ public:
       case(Gtk::RESPONSE_OK): {
         m_cancel = false;
         m_file_name = this->get_filename();
-        FileDialog::g_lastUsedDir = this->get_current_folder();
+        FileDialog::g_lastUsedDir() = this->get_current_folder();
         break;
       }
     }

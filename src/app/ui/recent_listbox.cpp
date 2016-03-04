@@ -130,7 +130,7 @@ void RecentFilesListBox::onRebuildList()
 
 void RecentFilesListBox::onClick(const std::string& path)
 {
-  she::FileDialog::g_lastUsedDir = base::get_file_path(path);
+  she::FileDialog::g_lastUsedDir() = base::get_file_path(path);
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
   Params params;
   params.set("filename", path.c_str());

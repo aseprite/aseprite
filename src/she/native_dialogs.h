@@ -25,7 +25,7 @@ namespace she {
     virtual std::string fileName() = 0;
     virtual void setFileName(const std::string& filename) = 0;
     virtual bool show(Display* parent) = 0;
-    static std::string g_lastUsedDir;
+    static std::string& g_lastUsedDir() { static std::string lastUsedDir{""}; return lastUsedDir; }
   };
 
   class NativeDialogs {
