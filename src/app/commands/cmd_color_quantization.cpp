@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -75,7 +75,7 @@ private:
 
 ColorQuantizationCommand::ColorQuantizationCommand()
   : Command("ColorQuantization",
-            "Color Quantization",
+            "Create Palette from Current Sprite (Color Quantization)",
             CmdRecordableFlag)
 {
 }
