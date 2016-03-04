@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -40,7 +40,9 @@ using namespace skin;
 class RecentFileItem : public LinkLabel {
 public:
   RecentFileItem(const std::string& file)
-    : LinkLabel(file) {
+    : LinkLabel(file)
+    , m_name(base::get_file_name(file))
+    , m_path(base::get_file_path(file)) {
   }
 
 protected:
@@ -49,8 +51,8 @@ protected:
     Style* style = theme->styles.recentFile();
     Style* styleDetail = theme->styles.recentFileDetail();
     Style::State state;
-    gfx::Size sz1 = style->sizeHint(name().c_str(), state);
-    gfx::Size sz2 = styleDetail->sizeHint(path().c_str(), state);
+    gfx::Size sz1 = style->sizeHint(m_name.c_str(), state);
+    gfx::Size sz2 = styleDetail->sizeHint(m_path.c_str(), state);
     ev.setSizeHint(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
   }
 
@@ -66,14 +68,13 @@ protected:
     if (isSelected()) state += Style::active();
     if (parent()->hasCapture()) state += Style::clicked();
 
-    std::string name = this->name();
-    style->paint(g, bounds, name.c_str(), state);
+    style->paint(g, bounds, m_name.c_str(), state);
 
-    gfx::Size textSize = style->sizeHint(name.c_str(), state);
+    gfx::Size textSize = style->sizeHint(m_name.c_str(), state);
     gfx::Rect detailsBounds(
       bounds.x+textSize.w, bounds.y,
       bounds.w-textSize.w, bounds.h);
-    styleDetail->paint(g, detailsBounds, path().c_str(), state);
+    styleDetail->paint(g, detailsBounds, m_path.c_str(), state);
   }
 
   void onClick() override {
@@ -81,8 +82,8 @@ protected:
   }
 
 private:
-  std::string name() const { return base::get_file_name(text()); }
-  std::string path() const { return base::get_file_path(text()); }
+  std::string m_name;
+  std::string m_path;
 };
 
 //////////////////////////////////////////////////////////////////////
