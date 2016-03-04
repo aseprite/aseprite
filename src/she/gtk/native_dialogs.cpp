@@ -49,7 +49,6 @@ public:
 
   void on_show() override {
     //setting the filename only works properly when the dialog is shown
-    std::cout << FileDialog::g_lastUsedDir << std::endl;
     if (!m_file_name.empty()) {
       if (this->get_action() == Gtk::FILE_CHOOSER_ACTION_OPEN) {
         this->set_current_folder(m_file_name);
