@@ -293,12 +293,6 @@
     <part id="brush_square_selected"            x="160" y="152" w="7" h="8" />
     <part id="brush_line"                       x="176" y="144" w="6" h="6" />
     <part id="brush_line_selected"              x="176" y="152" w="6" h="6" />
-    <part id="scale_arrow_1"                    x="96" y="224" w="11" h="11" />
-    <part id="scale_arrow_2"                    x="112" y="224" w="7" h="12" />
-    <part id="scale_arrow_3"                    x="128" y="224" w="12" h="7" />
-    <part id="rotate_arrow_1"                   x="96" y="240" w="11" h="11" />
-    <part id="rotate_arrow_2"                   x="112" y="240" w="15" h="10" />
-    <part id="rotate_arrow_3"                   x="128" y="240" w="10" h="15" />
     <part id="selection_replace"                x="176" y="160" w="7" h="7" />
     <part id="selection_replace_selected"       x="176" y="168" w="7" h="7" />
     <part id="selection_add"                    x="192" y="160" w="7" h="7" />
@@ -366,12 +360,6 @@
     <part id="drop_pixels_cancel"               x="192" y="176" w="7" h="8" />
     <part id="drop_pixels_cancel_selected"      x="192" y="184" w="7" h="8" />
     <part id="warning_box"                      x="112" y="80" w="9" h="10" />
-    <part id="freehand_algo_default"            x="144" y="208" w="8" h="8" />
-    <part id="freehand_algo_default_selected"   x="152" y="208" w="8" h="8" />
-    <part id="freehand_algo_pixel_perfect"      x="160" y="208" w="8" h="8" />
-    <part id="freehand_algo_pixel_perfect_selected" x="168" y="208" w="8" h="8" />
-    <part id="freehand_algo_dots"               x="176" y="208" w="8" h="8" />
-    <part id="freehand_algo_dots_selected"      x="184" y="208" w="8" h="8" />
     <part id="canvas_nw"                        x="96" y="96" w="16" h="16" />
     <part id="canvas_n"                         x="112" y="96" w="16" h="16" />
     <part id="canvas_ne"                        x="128" y="96" w="16" h="16" />
