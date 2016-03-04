@@ -103,7 +103,6 @@ static void replace_image_colors(Image* image,
   LockImageBits<ImageTraits> bits(image, Image::ReadWriteLock);
   bool hasAlpha = false; // True if "image" has a pixel with alpha < 255
   color_t mainColor, bgColor;
-  color_t maskColor = image->maskColor();
 
   mainColor = bgColor = 0;
 
