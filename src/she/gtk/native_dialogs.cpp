@@ -43,7 +43,11 @@ public:
     m_filter_all->set_name("All formats");
     this->set_do_overwrite_confirmation();
     if (FileDialog::g_lastUsedDir.empty()) {
-      FileDialog::g_lastUsedDir = Glib::get_user_special_dir(Glib::USER_DIRECTORY_DOCUMENTS);
+    #ifdef ASEPRITE_DEPRECATED_GLIB_SUPPORT
+      FileDialog::g_lastUsedDir = Glib::get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS);
+    #else
+       FileDialog::g_lastUsedDir = Glib::get_user_special_dir(Glib::USER_DIRECTORY_DOCUMENTS);
+    #endif
     }
   }
 
@@ -143,7 +147,7 @@ public:
     this->add_filter(filter_any);
 
     //Run dialog in context of a gtk application so it can be destroys properly
-    int result = m_app->run(*this);
+    m_app->run(*this);
     return !m_cancel;
   }
 
