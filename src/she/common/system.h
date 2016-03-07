@@ -70,7 +70,7 @@ public:
 #endif
   }
 
-  Font* loadBitmapFont(const char* filename, int scale) override {
+  Font* loadSpriteSheetFont(const char* filename, int scale) override {
     Surface* sheet = loadRgbaSurface(filename);
     Font* font = nullptr;
     if (sheet) {

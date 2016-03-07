@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -2017,7 +2017,7 @@ she::Font* SkinTheme::loadFont(const std::string& userFont, const std::string& t
   // Try to load the font
   while (rf.next()) {
     try {
-      she::Font* f = she::instance()->loadBitmapFont(rf.filename().c_str(), guiscale());
+      she::Font* f = she::instance()->loadSpriteSheetFont(rf.filename().c_str(), guiscale());
       if (f->isScalable())
         f->setSize(8);
       return f;

@@ -46,7 +46,7 @@ namespace she {
     virtual Surface* createRgbaSurface(int width, int height) = 0;
     virtual Surface* loadSurface(const char* filename) = 0;
     virtual Surface* loadRgbaSurface(const char* filename) = 0;
-    virtual Font* loadBitmapFont(const char* filename, int scale = 1) = 0;
+    virtual Font* loadSpriteSheetFont(const char* filename, int scale = 1) = 0;
     virtual Clipboard* createClipboard() = 0;
   };
 
