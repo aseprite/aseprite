@@ -21,6 +21,8 @@
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/button.h>
 #include <gtkmm/filefilter.h>
+#include <gtkmm/image.h>
+#include <gdkmm/pixbuf.h>
 #include <glibmm/refptr.h>
 #include <glibmm/miscutils.h>
 #include <glibmm/fileutils.h>
@@ -47,6 +49,9 @@ public:
        FileDialogGTK3::lastUsedDir() = Glib::get_user_special_dir(Glib::USER_DIRECTORY_DOCUMENTS);
     #endif
     }
+    this->set_use_preview_label(false);
+    this->set_preview_widget(m_preview);
+    this->signal_update_preview().connect(sigc::mem_fun(this, &FileDialogGTK3::updatePreview));
   }
 
   void on_show() override {
@@ -125,6 +130,18 @@ public:
     m_file_name = filename;
   }
 
+  void updatePreview() {
+    this->set_preview_widget_active(false);
+    std::string fileName = this->get_filename();
+    try {
+      if (!Glib::file_test(fileName, Glib::FILE_TEST_IS_DIR)) {
+          auto previewPixbuf = Gdk::Pixbuf::create_from_file(fileName, 256, 256, true);
+          m_preview.set(previewPixbuf);
+          this->set_preview_widget_active();
+      }
+    } catch(Glib::Error e) {}
+  }
+
   bool show(Display* parent) override {
     //keep pointer on parent display to get information later
     m_display = parent;
@@ -156,6 +173,7 @@ private:
   std::map<std::string, Glib::RefPtr<Gtk::FileFilter>> m_filters;
   Gtk::Button* m_ok_button;
   Glib::RefPtr<Gtk::Application> m_app;
+  Gtk::Image m_preview;
   Display* m_display;
   bool m_cancel;
   static std::string& lastUsedDir() { static std::string lastUsedDir; return lastUsedDir; }
