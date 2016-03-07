@@ -222,5 +222,6 @@ endif()
 
 if(WITH_GTK_FILE_DIALOG_SUPPORT)
   target_link_libraries(she
-    ${GTKMM_LIBRARIES})
+    ${GTKMM_LIBRARIES}
+    app-lib)
 endif()
