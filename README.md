@@ -101,7 +101,8 @@ This program is distributed under three different licenses:
    [GNU General Public License](LICENSE.txt) version 2,
    which means that compiled versions can be generated under GPL terms.
    (Useful for Linux distributions.)
-2. Official releases are distributed under a [commercial EULA](EULA.txt).
+2. Official releases are distributed under a
+   [commercial EULA](EULA.txt) or a special [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license).
 3. And Steam releases are distributed under the terms of the
    [Steam Subscriber Agreement](http://store.steampowered.com/subscriber_agreement/).
 
