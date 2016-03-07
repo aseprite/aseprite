@@ -4,8 +4,8 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef SHE_COMMON_FONT_H
-#define SHE_COMMON_FONT_H
+#ifndef SHE_SPRITE_SHEET_FONT_H
+#define SHE_SPRITE_SHEET_FONT_H
 #pragma once
 
 #include "base/debug.h"
@@ -20,13 +20,13 @@
 
 namespace she {
 
-class CommonFont : public Font {
+class SpriteSheetFont : public Font {
 public:
 
-  CommonFont() : m_sheet(nullptr) {
+  SpriteSheetFont() : m_sheet(nullptr) {
   }
 
-  ~CommonFont() {
+  ~SpriteSheetFont() {
     ASSERT(m_sheet);
     m_sheet->dispose();
   }
@@ -74,7 +74,7 @@ public:
   }
 
   static Font* fromSurface(Surface* sur) {
-    CommonFont* font = new CommonFont;
+    SpriteSheetFont* font = new SpriteSheetFont;
     font->m_sheet = sur;
 
     ScopedSurfaceLock surLock(sur);

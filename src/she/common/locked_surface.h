@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -90,11 +90,11 @@ public:
   }
 
   void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
-    CommonFont* commonFont = static_cast<CommonFont*>(font);
+    SpriteSheetFont* ssFont = static_cast<SpriteSheetFont*>(font);
 
-    gfx::Rect charBounds = commonFont->getCharBounds(chr);
+    gfx::Rect charBounds = ssFont->getCharBounds(chr);
     if (!charBounds.isEmpty()) {
-      ScopedSurfaceLock lock(commonFont->getSurfaceSheet());
+      ScopedSurfaceLock lock(ssFont->getSurfaceSheet());
       drawColoredRgbaSurface(lock, fg, bg, gfx::Clip(x, y, charBounds));
     }
   }
