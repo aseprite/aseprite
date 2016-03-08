@@ -9,7 +9,7 @@
 #pragma once
 
 #include "gfx/clip.h"
-#include "she/common/font.h"
+#include "she/common/sprite_sheet_font.h"
 #include "she/locked_surface.h"
 #include "she/scoped_surface_lock.h"
 
