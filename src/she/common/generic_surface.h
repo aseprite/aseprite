@@ -4,14 +4,12 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef SHE_COMMON_LOCKED_SURFACE_H
-#define SHE_COMMON_LOCKED_SURFACE_H
+#ifndef SHE_COMMON_GENERIC_SURFACE_H
+#define SHE_COMMON_GENERIC_SURFACE_H
 #pragma once
 
 #include "gfx/clip.h"
 #include "she/common/sprite_sheet_font.h"
-#include "she/locked_surface.h"
-#include "she/scoped_surface_lock.h"
 
 namespace she {
 
@@ -52,12 +50,13 @@ gfx::Color blend(const gfx::Color backdrop, gfx::Color src)
 
 } // anoynmous namespace
 
-class CommonLockedSurface : public LockedSurface {
+template<typename Base>
+class GenericSurface : public Base {
 public:
 
-  void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
+  void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
     gfx::Clip clip(clipbase);
-    if (!clip.clip(lockedWidth(), lockedHeight(), src->lockedWidth(), src->lockedHeight()))
+    if (!clip.clip(width(), height(), src->width(), src->height()))
       return;
 
     SurfaceFormatData format;
@@ -94,8 +93,9 @@ public:
 
     gfx::Rect charBounds = ssFont->getCharBounds(chr);
     if (!charBounds.isEmpty()) {
-      ScopedSurfaceLock lock(ssFont->getSurfaceSheet());
-      drawColoredRgbaSurface(lock, fg, bg, gfx::Clip(x, y, charBounds));
+      Surface* sheet = ssFont->getSurfaceSheet();
+      SurfaceLock lock(sheet);
+      drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
     }
   }
 

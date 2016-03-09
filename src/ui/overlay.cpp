@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,8 +10,7 @@
 
 #include "ui/overlay.h"
 
-#include "she/locked_surface.h"
-#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
 #include "she/system.h"
 #include "ui/manager.h"
 
@@ -55,13 +54,13 @@ gfx::Rect Overlay::bounds() const
     return gfx::Rect(0, 0, 0, 0);
 }
 
-void Overlay::drawOverlay(she::LockedSurface* screen)
+void Overlay::drawOverlay(she::Surface* screen)
 {
   if (!m_surface)
     return;
 
-  she::ScopedSurfaceLock lockedSurface(m_surface);
-  screen->drawRgbaSurface(lockedSurface, m_pos.x, m_pos.y);
+  she::SurfaceLock lock(m_surface);
+  screen->drawRgbaSurface(m_surface, m_pos.x, m_pos.y);
 
   Manager::getDefault()->dirtyRect(
     gfx::Rect(m_pos.x, m_pos.y,
@@ -74,7 +73,7 @@ void Overlay::moveOverlay(const gfx::Point& newPos)
   m_pos = newPos;
 }
 
-void Overlay::captureOverlappedArea(she::LockedSurface* screen)
+void Overlay::captureOverlappedArea(she::Surface* screen)
 {
   if (!m_surface)
     return;
@@ -82,12 +81,12 @@ void Overlay::captureOverlappedArea(she::LockedSurface* screen)
   if (!m_overlap)
     m_overlap = she::instance()->createSurface(m_surface->width(), m_surface->height());
 
-  she::ScopedSurfaceLock lock(m_overlap);
-  screen->blitTo(lock, m_pos.x, m_pos.y, 0, 0,
+  she::SurfaceLock lock(m_overlap);
+  screen->blitTo(m_overlap, m_pos.x, m_pos.y, 0, 0,
                  m_overlap->width(), m_overlap->height());
 }
 
-void Overlay::restoreOverlappedArea(she::LockedSurface* screen)
+void Overlay::restoreOverlappedArea(she::Surface* screen)
 {
   if (!m_surface)
     return;
@@ -95,9 +94,9 @@ void Overlay::restoreOverlappedArea(she::LockedSurface* screen)
   if (!m_overlap)
     return;
 
-  she::ScopedSurfaceLock lock(m_overlap);
-  lock->blitTo(screen, 0, 0, m_pos.x, m_pos.y,
-               m_overlap->width(), m_overlap->height());
+  she::SurfaceLock lock(m_overlap);
+  m_overlap->blitTo(screen, 0, 0, m_pos.x, m_pos.y,
+                    m_overlap->width(), m_overlap->height());
 
   Manager::getDefault()->dirtyRect(
     gfx::Rect(m_pos.x, m_pos.y,

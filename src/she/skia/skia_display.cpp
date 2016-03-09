@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -100,9 +100,9 @@ void SkiaDisplay::setScale(int scale)
   m_window.setScale(scale);
 }
 
-NonDisposableSurface* SkiaDisplay::getSurface()
+Surface* SkiaDisplay::getSurface()
 {
-  return static_cast<NonDisposableSurface*>(m_surface);
+  return m_surface;
 }
 
 // Flips all graphics in the surface to the real display.  Returns

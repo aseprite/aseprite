@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -80,23 +80,27 @@ inline gfx::Color from_allegro(int color_depth, int color)
 Alleg4Surface::Alleg4Surface(BITMAP* bmp, DestroyFlag destroy)
   : m_bmp(bmp)
   , m_destroy(destroy)
+  , m_lock(0)
 {
 }
 
 Alleg4Surface::Alleg4Surface(int width, int height, DestroyFlag destroy)
   : m_bmp(create_bitmap(width, height))
   , m_destroy(destroy)
+  , m_lock(0)
 {
 }
 
 Alleg4Surface::Alleg4Surface(int width, int height, int bpp, DestroyFlag destroy)
   : m_bmp(create_bitmap_ex(bpp, width, height))
   , m_destroy(destroy)
+  , m_lock(0)
 {
 }
 
 Alleg4Surface::~Alleg4Surface()
 {
+  ASSERT(m_lock == 0);
   if (m_destroy & DestroyHandle) {
     if (m_bmp)
       destroy_bitmap(m_bmp);
@@ -157,10 +161,18 @@ bool Alleg4Surface::intersectClipRect(const gfx::Rect& rc)
      m_bmp->ct < m_bmp->cb);
 }
 
-LockedSurface* Alleg4Surface::lock()
+void Alleg4Surface::lock()
 {
-  acquire_bitmap(m_bmp);
-  return this;
+  ASSERT(m_lock >= 0);
+  if (m_lock++ == 0)
+    acquire_bitmap(m_bmp);
+}
+
+void Alleg4Surface::unlock()
+{
+  ASSERT(m_lock > 0);
+  if (--m_lock == 0)
+    release_bitmap(m_bmp);
 }
 
 void Alleg4Surface::setDrawMode(DrawMode mode, int param)
@@ -196,23 +208,6 @@ void Alleg4Surface::applyScale(int scale)
 void* Alleg4Surface::nativeHandle()
 {
   return reinterpret_cast<void*>(m_bmp);
-}
-
-// LockedSurface implementation
-
-int Alleg4Surface::lockedWidth() const
-{
-  return m_bmp->w;
-}
-
-int Alleg4Surface::lockedHeight() const
-{
-  return m_bmp->h;
-}
-
-void Alleg4Surface::unlock()
-{
-  release_bitmap(m_bmp);
 }
 
 void Alleg4Surface::clear()
@@ -358,7 +353,7 @@ void Alleg4Surface::fillRect(gfx::Color color, const gfx::Rect& rc)
   solid_mode();
 }
 
-void Alleg4Surface::blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const
+void Alleg4Surface::blitTo(Surface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const
 {
   ASSERT(m_bmp);
   ASSERT(dest);
@@ -379,12 +374,12 @@ void Alleg4Surface::scrollTo(const gfx::Rect& rc, int dx, int dy)
        rc.w, rc.h);
 }
 
-void Alleg4Surface::drawSurface(const LockedSurface* src, int dstx, int dsty)
+void Alleg4Surface::drawSurface(const Surface* src, int dstx, int dsty)
 {
   draw_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
 }
 
-void Alleg4Surface::drawRgbaSurface(const LockedSurface* src, int dstx, int dsty)
+void Alleg4Surface::drawRgbaSurface(const Surface* src, int dstx, int dsty)
 {
   set_alpha_blender();
   draw_trans_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);

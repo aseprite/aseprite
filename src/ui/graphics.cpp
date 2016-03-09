@@ -18,7 +18,6 @@
 #include "gfx/size.h"
 #include "she/display.h"
 #include "she/font.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/manager.h"
@@ -83,32 +82,32 @@ void Graphics::setDrawMode(DrawMode mode, int param)
 
 gfx::Color Graphics::getPixel(int x, int y)
 {
-  she::ScopedSurfaceLock dst(m_surface);
-  return dst->getPixel(m_dx+x, m_dy+y);
+  she::SurfaceLock lock(m_surface);
+  return m_surface->getPixel(m_dx+x, m_dy+y);
 }
 
 void Graphics::putPixel(gfx::Color color, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, 1, 1));
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->putPixel(color, m_dx+x, m_dy+y);
+  she::SurfaceLock lock(m_surface);
+  m_surface->putPixel(color, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, w, 1));
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawHLine(color, m_dx+x, m_dy+y, w);
+  she::SurfaceLock lock(m_surface);
+  m_surface->drawHLine(color, m_dx+x, m_dy+y, w);
 }
 
 void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, 1, h));
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawVLine(color, m_dx+x, m_dy+y, h);
+  she::SurfaceLock lock(m_surface);
+  m_surface->drawVLine(color, m_dx+x, m_dy+y, h);
 }
 
 void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point& _b)
@@ -117,8 +116,8 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
   gfx::Point b(m_dx+_b.x, m_dy+_b.y);
   dirty(gfx::Rect(a, b));
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawLine(color, a, b);
+  she::SurfaceLock lock(m_surface);
+  m_surface->drawLine(color, a, b);
 }
 
 void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
@@ -127,8 +126,8 @@ void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
   rc.offset(m_dx, m_dy);
   dirty(rc);
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawRect(color, rc);
+  she::SurfaceLock lock(m_surface);
+  m_surface->drawRect(color, rc);
 }
 
 void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
@@ -137,8 +136,8 @@ void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
   rc.offset(m_dx, m_dy);
   dirty(rc);
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->fillRect(color, rc);
+  she::SurfaceLock lock(m_surface);
+  m_surface->fillRect(color, rc);
 }
 
 void Graphics::fillRegion(gfx::Color color, const gfx::Region& rgn)
@@ -163,27 +162,27 @@ void Graphics::drawSurface(she::Surface* surface, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
 
-  she::ScopedSurfaceLock src(surface);
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawSurface(src, m_dx+x, m_dy+y);
+  she::SurfaceLock lockSrc(surface);
+  she::SurfaceLock lockDst(m_surface);
+  m_surface->drawSurface(surface, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
 
-  she::ScopedSurfaceLock src(surface);
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawRgbaSurface(src, m_dx+x, m_dy+y);
+  she::SurfaceLock lockSrc(surface);
+  she::SurfaceLock lockDst(m_surface);
+  m_surface->drawRgbaSurface(surface, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
 
-  she::ScopedSurfaceLock src(surface);
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawColoredRgbaSurface(src, color, gfx::ColorNone,
+  she::SurfaceLock lockSrc(surface);
+  she::SurfaceLock lockDst(m_surface);
+  m_surface->drawColoredRgbaSurface(surface, color, gfx::ColorNone,
     gfx::Clip(m_dx+x, m_dy+y, 0, 0, surface->width(), surface->height()));
 }
 
@@ -191,9 +190,9 @@ void Graphics::blit(she::Surface* srcSurface, int srcx, int srcy, int dstx, int 
 {
   dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
 
-  she::ScopedSurfaceLock src(srcSurface);
-  she::ScopedSurfaceLock dst(m_surface);
-  src->blitTo(dst, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
+  she::SurfaceLock lockSrc(srcSurface);
+  she::SurfaceLock lockDst(m_surface);
+  srcSurface->blitTo(m_surface, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
 void Graphics::setFont(she::Font* font)
@@ -205,8 +204,8 @@ void Graphics::drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y)
 {
   dirty(gfx::Rect(gfx::Point(m_dx+x, m_dy+y), measureChar(chr)));
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawChar(m_font, fg, bg, m_dx+x, m_dy+y, chr);
+  she::SurfaceLock lock(m_surface);
+  m_surface->drawChar(m_font, fg, bg, m_dx+x, m_dy+y, chr);
 }
 
 void Graphics::drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& ptOrig)
@@ -214,14 +213,14 @@ void Graphics::drawString(const std::string& str, gfx::Color fg, gfx::Color bg, 
   gfx::Point pt(m_dx+ptOrig.x, m_dy+ptOrig.y);
   dirty(gfx::Rect(pt.x, pt.y, m_font->textLength(str), m_font->height()));
 
-  she::ScopedSurfaceLock dst(m_surface);
-  dst->drawString(m_font, fg, bg, pt.x, pt.y, str);
+  she::SurfaceLock lock(m_surface);
+  m_surface->drawString(m_font, fg, bg, pt.x, pt.y, str);
 }
 
 void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
                             bool drawUnderscore)
 {
-  she::ScopedSurfaceLock dst(m_surface);
+  she::SurfaceLock lock(m_surface);
   base::utf8_const_iterator it(str.begin()), end(str.end());
   int x = m_dx+pt.x;
   int y = m_dy+pt.y;
@@ -236,14 +235,14 @@ void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg
         underscored_w = m_font->charWidth(*it);
       }
     }
-    dst->drawChar(m_font, fg, bg, x, y, *it);
+    m_surface->drawChar(m_font, fg, bg, x, y, *it);
     x += m_font->charWidth(*it);
     ++it;
   }
 
   y += m_font->height();
   if (drawUnderscore && underscored_w > 0) {
-    dst->fillRect(fg,
+    m_surface->fillRect(fg,
       gfx::Rect(underscored_x, y, underscored_w, guiscale()));
     y += guiscale();
   }
