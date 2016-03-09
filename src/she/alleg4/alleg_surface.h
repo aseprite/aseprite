@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,12 +11,11 @@
 #include <allegro.h>
 
 #include "she/surface.h"
-#include "she/common/locked_surface.h"
+#include "she/common/generic_surface.h"
 
 namespace she {
 
-  class Alleg4Surface : public Surface
-                      , public CommonLockedSurface {
+  class Alleg4Surface : public GenericSurface<Surface> {
   public:
     enum DestroyFlag {
       None = 0,
@@ -38,15 +37,11 @@ namespace she {
     gfx::Rect getClipBounds() override;
     void setClipBounds(const gfx::Rect& rc) override;
     bool intersectClipRect(const gfx::Rect& rc) override;
-    LockedSurface* lock() override;
+    void lock() override;
+    void unlock() override;
     void setDrawMode(DrawMode mode, int param) override;
     void applyScale(int scale) override;
     void* nativeHandle() override;
-
-    // LockedSurface implementation
-    int lockedWidth() const override;
-    int lockedHeight() const override;
-    void unlock() override;
     void clear() override;
     uint8_t* getData(int x, int y) const override;
     void getFormat(SurfaceFormatData* formatData) const override;
@@ -57,14 +52,15 @@ namespace she {
     void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) override;
     void drawRect(gfx::Color color, const gfx::Rect& rc) override;
     void fillRect(gfx::Color color, const gfx::Rect& rc) override;
-    void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override;
+    void blitTo(Surface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override;
     void scrollTo(const gfx::Rect& rc, int dx, int dy) override;
-    void drawSurface(const LockedSurface* src, int dstx, int dsty) override;
-    void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override;
+    void drawSurface(const Surface* src, int dstx, int dsty) override;
+    void drawRgbaSurface(const Surface* src, int dstx, int dsty) override;
 
   private:
     BITMAP* m_bmp;
     DestroyFlag m_destroy;
+    int m_lock;
   };
 
 } // namespace she

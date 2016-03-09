@@ -4,7 +4,7 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-/* #define REPORT_SIGNALS */
+// #define REPORT_SIGNALS
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -15,7 +15,6 @@
 #include "base/memory.h"
 #include "she/display.h"
 #include "she/font.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/init_theme_event.h"
@@ -1055,9 +1054,11 @@ public:
 
   void operator()(Graphics* graphics) {
     {
-      she::ScopedSurfaceLock src(m_surface);
-      she::ScopedSurfaceLock dst(she::instance()->defaultDisplay()->getSurface());
-      src->blitTo(dst, 0, 0, m_pt.x, m_pt.y,
+      she::Surface* dst = she::instance()->defaultDisplay()->getSurface();
+      she::SurfaceLock lockSrc(m_surface);
+      she::SurfaceLock lockDst(dst);
+      m_surface->blitTo(
+        dst, 0, 0, m_pt.x, m_pt.y,
         m_surface->width(), m_surface->height());
     }
     m_surface->dispose();

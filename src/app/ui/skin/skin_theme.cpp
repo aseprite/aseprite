@@ -33,7 +33,6 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "she/font.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
@@ -504,9 +503,9 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
     sur = she::instance()->createRgbaSurface(bounds.w, bounds.h);
 
   {
-    she::ScopedSurfaceLock src(m_sheet);
-    she::ScopedSurfaceLock dst(sur);
-    src->blitTo(dst, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
+    she::SurfaceLock lockSrc(m_sheet);
+    she::SurfaceLock lockDst(sur);
+    m_sheet->blitTo(sur, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
   }
 
   sur->applyScale(guiscale());

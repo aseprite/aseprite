@@ -18,7 +18,6 @@
 #include "she/display.h"
 #include "she/event.h"
 #include "she/event_queue.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
@@ -573,7 +572,7 @@ void Manager::enqueueMessage(Message* msg)
 #ifdef REPORT_EVENTS
   if (msg->type() == kKeyDownMessage ||
       msg->type() == kKeyUpMessage) {
-    int mods = (int)static_cast<KeyMessage*>(msg)->keyModifiers();
+    int mods = (int)static_cast<KeyMessage*>(msg)->modifiers();
     TRACE("Key%s scancode=%d unicode=%d mods=%s%s%s\n",
           (msg->type() == kKeyDownMessage ? "Down": "Up"),
           static_cast<KeyMessage*>(msg)->scancode(),
@@ -715,8 +714,8 @@ void Manager::setMouse(Widget* widget)
   std::cout << "Manager::setMouse ";
   if (widget) {
     std::cout << typeid(*widget).name();
-    if (!widget->getId().empty())
-      std::cout << " (" << widget->getId() << ")";
+    if (!widget->id().empty())
+      std::cout << " (" << widget->id() << ")";
   }
   else {
     std::cout << "null";
@@ -1257,8 +1256,8 @@ void Manager::pumpQueue()
 
         std::cout << "Event " << msg->type() << " (" << string << ") "
                   << "for " << typeid(*widget).name();
-        if (!widget->getId().empty())
-          std::cout << " (" << widget->getId() << ")";
+        if (!widget->id().empty())
+          std::cout << " (" << widget->id() << ")";
         std::cout << std::endl;
       }
 #endif
@@ -1270,7 +1269,7 @@ void Manager::pumpQueue()
           continue;
 
         PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
-        she::NonDisposableSurface* surface = m_display->getSurface();
+        she::Surface* surface = m_display->getSurface();
         gfx::Rect oldClip = surface->getClipBounds();
 
         if (surface->intersectClipRect(paintMsg->rect())) {
@@ -1285,8 +1284,8 @@ void Manager::pumpQueue()
 
 #ifdef DEBUG_PAINT_EVENTS
           {
-            she::ScopedSurfaceLock lock(surface);
-            lock->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
+            she::SurfaceLock lock(surface);
+            surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
           }
 
           if (m_display)

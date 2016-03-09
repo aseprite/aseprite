@@ -12,8 +12,6 @@
 #include "base/string.h"
 #include "gfx/rect.h"
 #include "she/font.h"
-#include "she/locked_surface.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 
 #include <vector>
@@ -77,10 +75,10 @@ public:
     SpriteSheetFont* font = new SpriteSheetFont;
     font->m_sheet = sur;
 
-    ScopedSurfaceLock surLock(sur);
+    SurfaceLock lock(sur);
     gfx::Rect bounds(0, 0, 1, 1);
 
-    while (font->findChar(surLock, sur->width(), sur->height(), bounds)) {
+    while (font->findChar(sur, sur->width(), sur->height(), bounds)) {
       font->m_chars.push_back(bounds);
       bounds.x += bounds.w;
     }
@@ -90,7 +88,7 @@ public:
 
 private:
 
-  bool findChar(const LockedSurface* sur, int width, int height, gfx::Rect& bounds) {
+  bool findChar(const Surface* sur, int width, int height, gfx::Rect& bounds) {
     gfx::Color keyColor = sur->getPixel(0, 0);
 
     while (sur->getPixel(bounds.x, bounds.y) == keyColor) {
