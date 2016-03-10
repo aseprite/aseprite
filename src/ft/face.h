@@ -14,12 +14,13 @@
 
 namespace ft {
 
-  class Face {
+  template<typename Cache>
+  class FaceT {
   public:
-    Face(FT_Face face = nullptr) : m_face(face) {
+    FaceT(FT_Face face = nullptr) : m_face(face) {
     }
 
-    ~Face() {
+    ~FaceT() {
       if (m_face)
         FT_Done_Face(m_face);
     }
@@ -37,10 +38,12 @@ namespace ft {
 
     void setAntialias(bool antialias) {
       m_antialias = antialias;
+      m_cache.invalidate();
     }
 
     void setSize(int size) {
       FT_Set_Pixel_Sizes(m_face, size, size);
+      m_cache.invalidate();
     }
 
     template<typename Iterator,
@@ -51,7 +54,7 @@ namespace ft {
       FT_UInt prev_glyph = 0;
       int x = 0;
       for (; first != end; ++first) {
-        FT_UInt glyph_index = FT_Get_Char_Index(m_face, *first);
+        FT_UInt glyph_index = m_cache.getGlyphIndex(m_face, *first);
 
         if (use_kerning && prev_glyph && glyph_index) {
           FT_Vector kerning;
@@ -60,16 +63,10 @@ namespace ft {
           x += kerning.x >> 6;
         }
 
-        FT_Error err = FT_Load_Glyph(
-          m_face, glyph_index,
-          FT_LOAD_RENDER |
-          FT_LOAD_NO_BITMAP |
-          (m_antialias ? FT_LOAD_TARGET_NORMAL:
-                         FT_LOAD_TARGET_MONO));
-
-        if (!err) {
-          callback(m_face->glyph, x);
-          x += m_face->glyph->advance.x >> 6;
+        FT_GlyphSlot glyph = m_cache.loadGlyph(m_face, glyph_index, m_antialias);
+        if (glyph) {
+          callback(glyph, x);
+          x += glyph->advance.x >> 6;
         }
 
         prev_glyph = glyph_index;
@@ -95,9 +92,37 @@ namespace ft {
   private:
     FT_Face m_face;
     bool m_antialias;
+    Cache m_cache;
 
-    DISABLE_COPYING(Face);
+    DISABLE_COPYING(FaceT);
   };
+
+  class NoCache {
+  public:
+    void invalidate() {
+      // Do nothing
+    }
+
+    FT_UInt getGlyphIndex(FT_Face face, int charCode) {
+      return FT_Get_Char_Index(face, charCode);
+    }
+
+    FT_GlyphSlot loadGlyph(FT_Face face, FT_UInt glyphIndex, bool antialias) {
+      FT_Error err = FT_Load_Glyph(
+        face, glyphIndex,
+        FT_LOAD_RENDER |
+        FT_LOAD_NO_BITMAP |
+        (antialias ? FT_LOAD_TARGET_NORMAL:
+                     FT_LOAD_TARGET_MONO));
+      if (!err)
+        return face->glyph;
+      else
+        return nullptr;
+    }
+
+  };
+
+  typedef FaceT<NoCache> Face;
 
 } // namespace ft
 
