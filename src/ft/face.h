@@ -8,7 +8,9 @@
 #define FT_FACE_H_INCLUDED
 #pragma once
 
+#include "base/disable_copying.h"
 #include "ft/freetype_headers.h"
+#include "gfx/rect.h"
 
 namespace ft {
 
@@ -22,8 +24,11 @@ namespace ft {
         FT_Done_Face(m_face);
     }
 
-    operator FT_Face() {
-      return m_face;
+    operator FT_Face() { return m_face; }
+    FT_Face operator->() { return m_face; }
+
+    bool isValid() const {
+      return (m_face != nullptr);
     }
 
     bool antialias() const {
@@ -75,13 +80,14 @@ namespace ft {
     gfx::Rect calcTextBounds(Iterator first, Iterator end) {
       gfx::Rect bounds(0, 0, 0, 0);
 
-      forEachGlyph(first, end,
-              [&bounds](FT_GlyphSlot glyph, int x) {
-                bounds |= gfx::Rect(x + glyph->bitmap_left,
-                                    -glyph->bitmap_top,
-                                    (int)glyph->bitmap.width,
-                                    (int)glyph->bitmap.rows);
-              });
+      forEachGlyph(
+        first, end,
+        [&bounds](FT_GlyphSlot glyph, int x) {
+          bounds |= gfx::Rect(x + glyph->bitmap_left,
+                              -glyph->bitmap_top,
+                              (int)glyph->bitmap.width,
+                              (int)glyph->bitmap.rows);
+        });
 
       return bounds;
     }
@@ -89,6 +95,8 @@ namespace ft {
   private:
     FT_Face m_face;
     bool m_antialias;
+
+    DISABLE_COPYING(Face);
   };
 
 } // namespace ft

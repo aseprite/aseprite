@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gfx/clip.h"
+#include "she/common/generic_surface.h"
 #include "she/common/sprite_sheet_font.h"
 
 #include "SkBitmap.h"
@@ -29,7 +30,7 @@ inline SkIRect to_skia(const gfx::Rect& rc) {
   return SkIRect::MakeXYWH(rc.x, rc.y, rc.w, rc.h);
 }
 
-class SkiaSurface : public Surface {
+class SkiaSurface : public GenericDrawTextSurface<Surface> {
 public:
   SkiaSurface() : m_surface(nullptr)
                 , m_canvas(nullptr)
@@ -425,26 +426,6 @@ public:
       ((SkiaSurface*)src)->m_bitmap,
       srcRect, dstRect, &paint,
       SkCanvas::kStrict_SrcRectConstraint);
-  }
-
-  void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
-    SpriteSheetFont* commonFont = static_cast<SpriteSheetFont*>(font);
-
-    gfx::Rect charBounds = commonFont->getCharBounds(chr);
-    if (!charBounds.isEmpty()) {
-      Surface* sheet = commonFont->getSurfaceSheet();
-      SurfaceLock lock(sheet);
-      drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
-    }
-  }
-
-  void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
-    base::utf8_const_iterator it(str.begin()), end(str.end());
-    while (it != end) {
-      drawChar(font, fg, bg, x, y, *it);
-      x += font->charWidth(*it);
-      ++it;
-    }
   }
 
   SkBitmap& bitmap() {

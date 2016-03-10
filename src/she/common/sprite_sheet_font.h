@@ -33,6 +33,10 @@ public:
     delete this;
   }
 
+  FontType type() override {
+    return FontType::kSpriteSheet;
+  }
+
   int height() const override {
     return getCharBounds(' ').h;
   }

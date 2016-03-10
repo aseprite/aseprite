@@ -19,6 +19,7 @@
   #include "she/native_dialogs.h"
 #endif
 
+#include "she/common/freetype_font.h"
 #include "she/common/sprite_sheet_font.h"
 
 namespace she {
@@ -78,6 +79,10 @@ public:
       font = SpriteSheetFont::fromSurface(sheet);
     }
     return font;
+  }
+
+  Font* loadTrueTypeFont(const char* filename, int height) override {
+    return loadFreeTypeFont(filename, height);
   }
 
 private:

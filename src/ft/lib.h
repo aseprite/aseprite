@@ -8,7 +8,10 @@
 #define FT_LIB_H_INCLUDED
 #pragma once
 
+#include "base/disable_copying.h"
 #include "ft/freetype_headers.h"
+
+#include <string>
 
 namespace ft {
 
@@ -19,7 +22,8 @@ namespace ft {
     }
 
     ~Lib() {
-      FT_Done_FreeType(m_ft);
+      if (m_ft)
+        FT_Done_FreeType(m_ft);
     }
 
     operator FT_Library() {
@@ -39,6 +43,8 @@ namespace ft {
 
   private:
     FT_Library m_ft;
+
+    DISABLE_COPYING(Lib);
   };
 
 } // namespace ft

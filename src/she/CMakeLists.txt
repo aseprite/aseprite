@@ -1,7 +1,8 @@
 # SHE
 # Copyright (C) 2012-2016  David Capello
 
-set(SHE_SOURCES)
+set(SHE_SOURCES
+  common/freetype_font.cpp)
 
 ######################################################################
 # Allegro 4 backend
@@ -197,7 +198,8 @@ add_library(she ${SHE_SOURCES})
 
 target_link_libraries(she
   gfx-lib
-  base-lib)
+  base-lib
+  ${FREETYPE_LIBRARY})
 
 if(USE_ALLEG4_BACKEND)
   target_link_libraries(she

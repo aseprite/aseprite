@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gfx/clip.h"
+#include "she/common/freetype_font.h"
 #include "she/common/sprite_sheet_font.h"
 
 namespace she {
@@ -51,7 +52,7 @@ gfx::Color blend(const gfx::Color backdrop, gfx::Color src)
 } // anoynmous namespace
 
 template<typename Base>
-class GenericSurface : public Base {
+class GenericDrawColoredRgbaSurface : public Base {
 public:
 
   void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
@@ -87,24 +88,127 @@ public:
       }
     }
   }
+};
+
+template<typename Base>
+class GenericDrawTextSurface : public Base {
+public:
 
   void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
-    SpriteSheetFont* ssFont = static_cast<SpriteSheetFont*>(font);
+    switch (font->type()) {
 
-    gfx::Rect charBounds = ssFont->getCharBounds(chr);
-    if (!charBounds.isEmpty()) {
-      Surface* sheet = ssFont->getSurfaceSheet();
-      SurfaceLock lock(sheet);
-      drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
+      case FontType::kSpriteSheet: {
+        SpriteSheetFont* ssFont = static_cast<SpriteSheetFont*>(font);
+
+        gfx::Rect charBounds = ssFont->getCharBounds(chr);
+        if (!charBounds.isEmpty()) {
+          Surface* sheet = ssFont->getSurfaceSheet();
+          SurfaceLock lock(sheet);
+          drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
+        }
+        break;
+      }
+
+      case FontType::kTrueType: {
+        std::string str;
+        str.push_back(chr);
+        drawString(font, fg, bg, x, y, str);
+        break;
+      }
+
     }
   }
 
   void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
-    base::utf8_const_iterator it(str.begin()), end(str.end());
-    while (it != end) {
-      drawChar(font, fg, bg, x, y, *it);
-      x += font->charWidth(*it);
-      ++it;
+    switch (font->type()) {
+
+      case FontType::kSpriteSheet: {
+        base::utf8_const_iterator it(str.begin()), end(str.end());
+        while (it != end) {
+          drawChar(font, fg, bg, x, y, *it);
+          x += font->charWidth(*it);
+          ++it;
+        }
+        break;
+      }
+
+      case FontType::kTrueType: {
+        FreeTypeFont* ttFont = static_cast<FreeTypeFont*>(font);
+        bool antialias = ttFont->face().antialias();
+        int fg_alpha = gfx::geta(fg);
+
+        gfx::Rect bounds =
+          ttFont->face().calcTextBounds(str.begin(), str.end());
+
+        she::SurfaceFormatData fd;
+        getFormat(&fd);
+
+        gfx::Rect clip = getClipBounds();
+
+        ttFont->face().forEachGlyph(
+          str.begin(), str.end(),
+          [&](FT_GlyphSlot glyph, int local_x) {
+            int t;
+
+            for (int v=0; v<(int)glyph->bitmap.rows; ++v) {
+              const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
+              int bit = 0;
+              int dst_x = x + local_x - bounds.x + glyph->bitmap_left;
+              int dst_y = y - bounds.y - glyph->bitmap_top + v;
+
+              if (!clip.contains(gfx::Point(dst_x, dst_y)))
+                break;
+
+              uint32_t* dst_address = (uint32_t*)getData(dst_x, dst_y);
+
+              for (int u=0; u<(int)glyph->bitmap.width; ++u) {
+                int alpha;
+
+                if (antialias) {
+                  alpha = *(p++);
+                }
+                else {
+                  alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
+                  if (bit == 8) {
+                    bit = 0;
+                    ++p;
+                  }
+                }
+
+                uint32_t backdrop = *dst_address;
+                gfx::Color backdropColor =
+                  gfx::rgba(
+                    ((backdrop & fd.redMask) >> fd.redShift),
+                    ((backdrop & fd.greenMask) >> fd.greenShift),
+                    ((backdrop & fd.blueMask) >> fd.blueShift),
+                    ((backdrop & fd.alphaMask) >> fd.alphaShift));
+
+                gfx::Color output = gfx::rgba(gfx::getr(fg),
+                                              gfx::getg(fg),
+                                              gfx::getb(fg),
+                                              MUL_UN8(fg_alpha, alpha, t));
+                if (gfx::geta(bg) > 0)
+                  output = blend(blend(backdropColor, bg), output);
+                else
+                  output = blend(backdropColor, output);
+
+                *dst_address =
+                  ((gfx::getr(output) << fd.redShift  ) & fd.redMask  ) |
+                  ((gfx::getg(output) << fd.greenShift) & fd.greenMask) |
+                  ((gfx::getb(output) << fd.blueShift ) & fd.blueMask ) |
+                  ((gfx::geta(output) << fd.alphaShift) & fd.alphaMask);
+
+                ++dst_x;
+                if (dst_x >= clip.x2())
+                  break;
+
+                ++dst_address;
+              }
+            }
+          });
+        break;
+      }
+
     }
   }
 

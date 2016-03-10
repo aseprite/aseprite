@@ -15,7 +15,7 @@
 
 namespace she {
 
-  class Alleg4Surface : public GenericSurface<Surface> {
+  class Alleg4Surface : public GenericDrawTextSurface<GenericDrawColoredRgbaSurface<Surface> > {
   public:
     enum DestroyFlag {
       None = 0,
