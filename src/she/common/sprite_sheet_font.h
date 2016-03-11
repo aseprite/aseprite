@@ -63,6 +63,10 @@ public:
     // Do nothing
   }
 
+  void setAntialias(bool antialias) override {
+    // Do nothing
+  }
+
   Surface* getSurfaceSheet() const {
     return m_sheet;
   }

@@ -28,6 +28,7 @@ namespace she {
     int textLength(const std::string& str) const override;
     bool isScalable() const override;
     void setSize(int size) override;
+    void setAntialias(bool antialias) override;
 
     ft::Face& face() { return m_face; }
 

@@ -28,6 +28,7 @@ namespace she {
     virtual int textLength(const std::string& str) const = 0;
     virtual bool isScalable() const = 0;
     virtual void setSize(int size) = 0;
+    virtual void setAntialias(bool antialias) = 0;
   };
 
 } // namespace she

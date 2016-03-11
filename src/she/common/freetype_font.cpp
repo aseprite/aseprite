@@ -79,6 +79,11 @@ void FreeTypeFont::setSize(int size)
   m_face.setSize(size);
 }
 
+void FreeTypeFont::setAntialias(bool antialias)
+{
+  m_face.setAntialias(antialias);
+}
+
 FreeTypeFont* loadFreeTypeFont(const char* filename, int height)
 {
   FreeTypeFont* font = new FreeTypeFont(filename, height);
