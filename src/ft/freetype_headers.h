@@ -8,6 +8,7 @@
 #define FT_FREETYPE_HEADERS_H_INCLUDED
 #pragma once
 
+#include "freetype/ftglyph.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
 

@@ -50,12 +50,12 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
 
       face.forEachGlyph(
         begin, end,
-        [&bounds, &image, color, antialias](FT_GlyphSlot glyph, int x) {
-          int t, yimg = - bounds.y - glyph->bitmap_top;
+        [&bounds, &image, color, antialias](FT_BitmapGlyph glyph, int x) {
+          int t, yimg = - bounds.y - glyph->top;
 
           for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++yimg) {
             const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
-            int ximg = x - bounds.x + glyph->bitmap_left;
+            int ximg = x - bounds.x + glyph->left;
             int bit = 0;
 
             for (int u=0; u<(int)glyph->bitmap.width; ++u, ++ximg) {

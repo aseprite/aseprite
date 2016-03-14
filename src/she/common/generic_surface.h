@@ -149,14 +149,14 @@ public:
 
         ttFont->face().forEachGlyph(
           str.begin(), str.end(),
-          [&](FT_GlyphSlot glyph, int local_x) {
+          [this, x, y, fg, fg_alpha, bg, antialias, &clip, &bounds, &fd](FT_BitmapGlyph glyph, int local_x) {
+            int dst_y = y - bounds.y - glyph->top;
             int t;
 
-            for (int v=0; v<(int)glyph->bitmap.rows; ++v) {
+            for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++dst_y) {
               const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
               int bit = 0;
-              int dst_x = x + local_x - bounds.x + glyph->bitmap_left;
-              int dst_y = y - bounds.y - glyph->bitmap_top + v;
+              int dst_x = x + local_x - bounds.x + glyph->left;
 
               if (!clip.contains(gfx::Point(dst_x, dst_y)))
                 break;
