@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
 
 #include <cstdlib>
 #include <ctime>
