@@ -44,19 +44,8 @@ FontType FreeTypeFont::type()
 
 int FreeTypeFont::height() const
 {
-  FT_UInt glyph_index = FT_Get_Char_Index(m_face, 'A');
-
-  FT_Error err = FT_Load_Glyph(
-    m_face, glyph_index,
-    FT_LOAD_RENDER |
-    FT_LOAD_NO_BITMAP |
-    (m_face.antialias() ? FT_LOAD_TARGET_NORMAL:
-                          FT_LOAD_TARGET_MONO));
-
-  if (!err)
-    return (int)m_face->glyph->bitmap.rows;
-  else
-    return m_face->height >> 6;
+  static std::string str = "Tgjp";
+  return m_face.calcTextBounds(str.begin(), str.end()).h;
 }
 
 int FreeTypeFont::charWidth(int chr) const
