@@ -13,6 +13,7 @@
 #include "ui/widget.h"
 
 #include "base/memory.h"
+#include "base/string.h"
 #include "she/display.h"
 #include "she/font.h"
 #include "she/surface.h"
@@ -122,6 +123,11 @@ int Widget::textInt() const
 double Widget::textDouble() const
 {
   return strtod(m_text.c_str(), NULL);
+}
+
+int Widget::textLength() const
+{
+  return base::utf8_length(text());
 }
 
 void Widget::setText(const std::string& text)
