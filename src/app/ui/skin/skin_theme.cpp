@@ -958,7 +958,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     w = g->measureChar(ch).w;
-    if (x+w > bounds.x2()-widget->childSpacing()*guiscale())
+    if (x+w > bounds.x2())
       return;
 
     caret_x = x;
