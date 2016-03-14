@@ -38,6 +38,8 @@ namespace ft {
 
       FT_Face face = nullptr;
       FT_Error err = FT_Open_Face(m_ft, &args, 0, &face);
+      if (!err)
+        FT_Select_Charmap(face, FT_ENCODING_UNICODE);
       return face;
     }
 
