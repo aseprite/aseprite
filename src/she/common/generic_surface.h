@@ -57,7 +57,9 @@ public:
 
   void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
     gfx::Clip clip(clipbase);
-    if (!clip.clip(width(), height(), src->width(), src->height()))
+    if (!clip.clip(static_cast<Base*>(this)->width(),
+                   static_cast<Base*>(this)->height(),
+                   src->width(), src->height()))
       return;
 
     SurfaceFormatData format;
@@ -71,7 +73,7 @@ public:
         clip.src.x, clip.src.y+v);
 
       for (int u=0; u<clip.size.w; ++u) {
-        gfx::Color dstColor = getPixel(clip.dst.x+u, clip.dst.y+v);
+        gfx::Color dstColor = static_cast<Base*>(this)->getPixel(clip.dst.x+u, clip.dst.y+v);
         if (gfx::geta(bg) > 0)
           dstColor = blend(dstColor, bg);
 
@@ -83,7 +85,7 @@ public:
           dstColor = blend(dstColor, src);
         }
 
-        putPixel(dstColor, clip.dst.x+u, clip.dst.y+v);
+        static_cast<Base*>(this)->putPixel(dstColor, clip.dst.x+u, clip.dst.y+v);
         ++ptr;
       }
     }
@@ -104,7 +106,7 @@ public:
         if (!charBounds.isEmpty()) {
           Surface* sheet = ssFont->getSurfaceSheet();
           SurfaceLock lock(sheet);
-          drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
+          static_cast<Base*>(this)->drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
         }
         break;
       }
@@ -141,9 +143,9 @@ public:
           ttFont->face().calcTextBounds(str.begin(), str.end());
 
         she::SurfaceFormatData fd;
-        getFormat(&fd);
+        static_cast<Base*>(this)->getFormat(&fd);
 
-        gfx::Rect clip = getClipBounds();
+        gfx::Rect clip = static_cast<Base*>(this)->getClipBounds();
 
         ttFont->face().forEachGlyph(
           str.begin(), str.end(),
@@ -159,7 +161,8 @@ public:
               if (!clip.contains(gfx::Point(dst_x, dst_y)))
                 break;
 
-              uint32_t* dst_address = (uint32_t*)getData(dst_x, dst_y);
+              uint32_t* dst_address =
+                (uint32_t*)static_cast<Base*>(this)->getData(dst_x, dst_y);
 
               for (int u=0; u<(int)glyph->bitmap.width; ++u) {
                 int alpha;
