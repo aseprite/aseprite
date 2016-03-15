@@ -10,6 +10,7 @@
 
 #include "she/common/freetype_font.h"
 
+#include "base/string.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 
@@ -45,17 +46,20 @@ FontType FreeTypeFont::type()
 int FreeTypeFont::height() const
 {
   static std::string str = "Tgjp";
-  return m_face.calcTextBounds(str.begin(), str.end()).h;
+  return m_face.calcTextBounds(str).h;
 }
 
 int FreeTypeFont::charWidth(int chr) const
 {
-  return m_face.calcTextBounds(&chr, (&chr)+1).w;
+  // TODO avoid creating a temporary string
+  std::wstring tmp;
+  tmp.push_back(chr);
+  return m_face.calcTextBounds(base::to_utf8(tmp)).w;
 }
 
 int FreeTypeFont::textLength(const std::string& str) const
 {
-  return m_face.calcTextBounds(str.begin(), str.end()).w;
+  return m_face.calcTextBounds(str).w;
 }
 
 bool FreeTypeFont::isScalable() const

@@ -11,7 +11,6 @@
 
 #include "app/util/freetype_utils.h"
 
-#include "base/string.h"
 #include "base/unique_ptr.h"
 #include "doc/blend_funcs.h"
 #include "doc/blend_internals.h"
@@ -34,14 +33,13 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
   ft::Lib ft;
 
   ft::Face face(ft.open(fontfile));
-  if (face) {
+  if (face.isValid()) {
     // Set font size
     face.setSize(fontsize);
     face.setAntialias(antialias);
 
     // Calculate text size
-    base::utf8_const_iterator begin(text.begin()), end(text.end());
-    gfx::Rect bounds = face.calcTextBounds(begin, end);
+    gfx::Rect bounds = face.calcTextBounds(text);
 
     // Render the image and copy it to the clipboard
     if (!bounds.isEmpty()) {
@@ -49,16 +47,16 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
       doc::clear_image(image, 0);
 
       face.forEachGlyph(
-        begin, end,
-        [&bounds, &image, color, antialias](FT_BitmapGlyph glyph, int x) {
-          int t, yimg = - bounds.y - glyph->top;
+        text,
+        [&bounds, &image, color, antialias](const ft::Face::Glyph& glyph) {
+          int t, yimg = - bounds.y + int(glyph.y);
 
-          for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++yimg) {
-            const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
-            int ximg = x - bounds.x + glyph->left;
+          for (int v=0; v<int(glyph.bitmap->rows); ++v, ++yimg) {
+            const uint8_t* p = glyph.bitmap->buffer + v*glyph.bitmap->pitch;
+            int ximg = - bounds.x + int(glyph.x);
             int bit = 0;
 
-            for (int u=0; u<(int)glyph->bitmap.width; ++u, ++ximg) {
+            for (int u=0; u<int(glyph.bitmap->width); ++u, ++ximg) {
               int alpha;
 
               if (antialias) {

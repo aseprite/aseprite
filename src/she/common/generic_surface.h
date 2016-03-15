@@ -140,34 +140,52 @@ public:
         bool antialias = ttFont->face().antialias();
         int fg_alpha = gfx::geta(fg);
 
-        gfx::Rect bounds =
-          ttFont->face().calcTextBounds(str.begin(), str.end());
+        gfx::Rect bounds = ttFont->face().calcTextBounds(str);
+        gfx::Rect clipBounds = static_cast<Base*>(this)->getClipBounds();
 
         she::SurfaceFormatData fd;
         static_cast<Base*>(this)->getFormat(&fd);
 
-        gfx::Rect clip = static_cast<Base*>(this)->getClipBounds();
-
         ttFont->face().forEachGlyph(
-          str.begin(), str.end(),
-          [this, x, y, fg, fg_alpha, bg, antialias, &clip, &bounds, &fd](FT_BitmapGlyph glyph, int local_x) {
-            int dst_y = y - bounds.y - glyph->top;
+          str,
+          [this, x, y, fg, fg_alpha, bg, antialias, &clipBounds, &bounds, &fd](const ft::Face::Glyph& glyph) {
+            gfx::Rect origDstBounds(x - bounds.x + int(glyph.x),
+                                    y - bounds.y + int(glyph.y),
+                                    int(glyph.bitmap->width),
+                                    int(glyph.bitmap->rows));
+            gfx::Rect dstBounds = origDstBounds;
+            dstBounds &= clipBounds;
+            if (dstBounds.isEmpty())
+              return;
+
+            int clippedRows = dstBounds.y - origDstBounds.y;
+            int dst_y = dstBounds.y;
             int t;
-
-            for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++dst_y) {
-              const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
+            for (int v=0; v<dstBounds.h; ++v, ++dst_y) {
               int bit = 0;
-              int dst_x = x + local_x - bounds.x + glyph->left;
-
-              if (!clip.contains(gfx::Point(dst_x, dst_y)))
-                break;
-
+              const uint8_t* p = glyph.bitmap->buffer
+                + (v+clippedRows)*glyph.bitmap->pitch;
+              int dst_x = dstBounds.x;
               uint32_t* dst_address =
                 (uint32_t*)static_cast<Base*>(this)->getData(dst_x, dst_y);
 
-              for (int u=0; u<(int)glyph->bitmap.width; ++u) {
-                int alpha;
+              // Skip first clipped pixels
+              for (int u=0; u<dstBounds.x-origDstBounds.x; ++u) {
+                if (antialias) {
+                  ++p;
+                }
+                else {
+                  if (bit == 8) {
+                    bit = 0;
+                    ++p;
+                  }
+                }
+              }
 
+              for (int u=0; u<dstBounds.w; ++u, ++dst_x) {
+                ASSERT(clipBounds.contains(gfx::Point(dst_x, dst_y)));
+
+                int alpha;
                 if (antialias) {
                   alpha = *(p++);
                 }
@@ -201,10 +219,6 @@ public:
                   ((gfx::getg(output) << fd.greenShift) & fd.greenMask) |
                   ((gfx::getb(output) << fd.blueShift ) & fd.blueMask ) |
                   ((gfx::geta(output) << fd.alphaShift) & fd.alphaMask);
-
-                ++dst_x;
-                if (dst_x >= clip.x2())
-                  break;
 
                 ++dst_address;
               }

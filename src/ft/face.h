@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "base/string.h"
 #include "ft/freetype_headers.h"
 #include "gfx/rect.h"
 
@@ -17,18 +18,22 @@
 namespace ft {
 
   template<typename Cache>
-  class FaceT {
+  class FaceBase {
   public:
-    FaceT(FT_Face face = nullptr) : m_face(face) {
+    struct Glyph {
+      FT_UInt glyph_index;
+      FT_Bitmap* bitmap;
+      double x;
+      double y;
+    };
+
+    FaceBase(FT_Face face) : m_face(face) {
     }
 
-    ~FaceT() {
+    ~FaceBase() {
       if (m_face)
         FT_Done_Face(m_face);
     }
-
-    operator FT_Face() { return m_face; }
-    FT_Face operator->() { return m_face; }
 
     bool isValid() const {
       return (m_face != nullptr);
@@ -48,56 +53,74 @@ namespace ft {
       m_cache.invalidate();
     }
 
-    template<typename Iterator,
-             typename Callback>
-    void forEachGlyph(Iterator first, Iterator end, Callback callback) {
-      bool use_kerning = (FT_HAS_KERNING(m_face) ? true: false);
+  protected:
+    FT_Face m_face;
+    bool m_antialias;
+    Cache m_cache;
 
+  private:
+    DISABLE_COPYING(FaceBase);
+  };
+
+  template<typename Cache>
+  class FaceFT : public FaceBase<Cache> {
+  public:
+    FaceFT(FT_Face face)
+      : FaceBase<Cache>(face) {
+    }
+
+    template<typename Callback>
+    void forEachGlyph(const std::string& str, Callback callback) {
+      bool use_kerning = (FT_HAS_KERNING(m_face) ? true: false);
       FT_UInt prev_glyph = 0;
-      int x = 0;
-      for (; first != end; ++first) {
-        FT_UInt glyph_index = m_cache.getGlyphIndex(m_face, *first);
+      double x = 0, y = 0;
+
+      auto it = base::utf8_const_iterator(str.begin());
+      auto end = base::utf8_const_iterator(str.end());
+      for (; it != end; ++it) {
+        FT_UInt glyph_index = m_cache.getGlyphIndex(m_face, *it);
 
         if (use_kerning && prev_glyph && glyph_index) {
           FT_Vector kerning;
           FT_Get_Kerning(m_face, prev_glyph, glyph_index,
                          FT_KERNING_DEFAULT, &kerning);
-          x += kerning.x >> 6;
+          x += kerning.x / 64.0;
         }
 
-        FT_Glyph glyph = m_cache.loadGlyph(m_face, glyph_index, m_antialias);
-        if (glyph) {
-          callback((FT_BitmapGlyph)glyph, x);
-          x += glyph->advance.x >> 16;
-          m_cache.doneGlyph(glyph);
+        FT_Glyph bitmapGlyph = m_cache.loadGlyph(m_face, glyph_index, m_antialias);
+        if (bitmapGlyph) {
+          Glyph glyph;
+          glyph.glyph_index = glyph_index;
+          glyph.bitmap = &FT_BitmapGlyph(bitmapGlyph)->bitmap;
+          glyph.x = x + FT_BitmapGlyph(bitmapGlyph)->left;
+          glyph.y = y - FT_BitmapGlyph(bitmapGlyph)->top;
+
+          callback(glyph);
+
+          x += bitmapGlyph->advance.x / double(1 << 16);
+          y += bitmapGlyph->advance.y / double(1 << 16);
+
+          m_cache.doneGlyph(bitmapGlyph);
         }
 
         prev_glyph = glyph_index;
       }
     }
 
-    template<typename Iterator>
-    gfx::Rect calcTextBounds(Iterator first, Iterator end) {
+    gfx::Rect calcTextBounds(const std::string& str) {
       gfx::Rect bounds(0, 0, 0, 0);
 
       forEachGlyph(
-        first, end,
-        [&bounds](FT_BitmapGlyph glyph, int x) {
-          bounds |= gfx::Rect(x + glyph->left,
-                              -glyph->top,
-                              glyph->bitmap.width,
-                              glyph->bitmap.rows);
+        str,
+        [&bounds](Glyph& glyph) {
+          bounds |= gfx::Rect(int(glyph.x),
+                              int(glyph.y),
+                              glyph.bitmap->width,
+                              glyph.bitmap->rows);
         });
 
       return bounds;
     }
-
-  private:
-    FT_Face m_face;
-    bool m_antialias;
-    Cache m_cache;
-
-    DISABLE_COPYING(FaceT);
   };
 
   class NoCache {
@@ -180,7 +203,7 @@ namespace ft {
     std::map<FT_UInt, FT_Glyph> m_glyphMap;
   };
 
-  typedef FaceT<SimpleCache> Face;
+  typedef FaceFT<SimpleCache> Face;
 
 } // namespace ft
 
