@@ -17,16 +17,18 @@
 
 namespace ft {
 
+  struct Glyph {
+    FT_UInt glyph_index;
+    FT_Glyph ft_glyph;
+    FT_Bitmap* bitmap;
+    double bearingY;
+    double x;
+    double y;
+  };
+
   template<typename Cache>
   class FaceBase {
   public:
-    struct Glyph {
-      FT_UInt glyph_index;
-      FT_Bitmap* bitmap;
-      double x;
-      double y;
-    };
-
     FaceBase(FT_Face face) : m_face(face) {
     }
 
@@ -34,6 +36,9 @@ namespace ft {
       if (m_face)
         FT_Done_Face(m_face);
     }
+
+    operator FT_Face() { return m_face; }
+    FT_Face operator->() { return m_face; }
 
     bool isValid() const {
       return (m_face != nullptr);
@@ -53,6 +58,27 @@ namespace ft {
       m_cache.invalidate();
     }
 
+    double height() const {
+      FT_Size_Metrics* metrics = &m_face->size->metrics;
+      double em_size = 1.0 * m_face->units_per_EM;
+      double y_scale = metrics->y_ppem / em_size;
+      return int(m_face->height * y_scale) - 1;
+    }
+
+    double ascender() const {
+      FT_Size_Metrics* metrics = &m_face->size->metrics;
+      double em_size = 1.0 * m_face->units_per_EM;
+      double y_scale = metrics->y_ppem / em_size;
+      return int(m_face->ascender * y_scale);
+    }
+
+    double descender() const {
+      FT_Size_Metrics* metrics = &m_face->size->metrics;
+      double em_size = 1.0 * m_face->units_per_EM;
+      double y_scale = metrics->y_ppem / em_size;
+      return int(m_face->descender * y_scale);
+    }
+
   protected:
     FT_Face m_face;
     bool m_antialias;
@@ -65,7 +91,6 @@ namespace ft {
   template<typename Cache>
   class FaceFT : public FaceBase<Cache> {
   public:
-    using FaceBase<Cache>::Glyph;
     using FaceBase<Cache>::m_face;
     using FaceBase<Cache>::m_cache;
 
@@ -92,21 +117,22 @@ namespace ft {
           x += kerning.x / 64.0;
         }
 
-        FT_Glyph bitmapGlyph = this->m_cache.loadGlyph(
+        Glyph* glyph = this->m_cache.loadGlyph(
           this->m_face, glyph_index, this->m_antialias);
-        if (bitmapGlyph) {
-          Glyph glyph;
-          glyph.glyph_index = glyph_index;
-          glyph.bitmap = &FT_BitmapGlyph(bitmapGlyph)->bitmap;
-          glyph.x = x + FT_BitmapGlyph(bitmapGlyph)->left;
-          glyph.y = y - FT_BitmapGlyph(bitmapGlyph)->top;
+        if (glyph) {
+          glyph->bitmap = &FT_BitmapGlyph(glyph->ft_glyph)->bitmap;
+          glyph->x = x;
+          glyph->y = y
+            + this->height()
+            + this->descender() // descender is negative
+            - glyph->bearingY;
 
-          callback(glyph);
+          callback(*glyph);
 
-          x += bitmapGlyph->advance.x / double(1 << 16);
-          y += bitmapGlyph->advance.y / double(1 << 16);
+          x += glyph->ft_glyph->advance.x / double(1 << 16);
+          y += glyph->ft_glyph->advance.y / double(1 << 16);
 
-          this->m_cache.doneGlyph(bitmapGlyph);
+          this->m_cache.doneGlyph(glyph);
         }
 
         prev_glyph = glyph_index;
@@ -118,7 +144,7 @@ namespace ft {
 
       forEachGlyph(
         str,
-        [&bounds](Glyph& glyph) {
+        [&bounds, this](Glyph& glyph) {
           bounds |= gfx::Rect(int(glyph.x),
                               int(glyph.y),
                               glyph.bitmap->width,
@@ -139,7 +165,7 @@ namespace ft {
       return FT_Get_Char_Index(face, charCode);
     }
 
-    FT_Glyph loadGlyph(FT_Face face, FT_UInt glyphIndex, bool antialias) {
+    Glyph* loadGlyph(FT_Face face, FT_UInt glyphIndex, bool antialias) {
       FT_Error err = FT_Load_Glyph(
         face, glyphIndex,
         FT_LOAD_RENDER |
@@ -148,26 +174,32 @@ namespace ft {
       if (err)
         return nullptr;
 
-      FT_Glyph glyph;
-      err = FT_Get_Glyph(face->glyph, &glyph);
+      FT_Glyph ft_glyph;
+      err = FT_Get_Glyph(face->glyph, &ft_glyph);
       if (err)
         return nullptr;
 
-      if (glyph->format != FT_GLYPH_FORMAT_BITMAP) {
-        err = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, 0, 1);
+      if (ft_glyph->format != FT_GLYPH_FORMAT_BITMAP) {
+        err = FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
         if (!err) {
-          FT_Done_Glyph(glyph);
+          FT_Done_Glyph(ft_glyph);
           return nullptr;
         }
       }
 
-      return glyph;
+      m_glyph.ft_glyph = ft_glyph;
+      m_glyph.bearingY = face->glyph->metrics.horiBearingY / 64.0;
+
+      return &m_glyph;
     }
 
-    void doneGlyph(FT_Glyph glyph) {
-      FT_Done_Glyph(glyph);
+    void doneGlyph(Glyph* glyph) {
+      ASSERT(glyph);
+      FT_Done_Glyph(glyph->ft_glyph);
     }
 
+  private:
+    Glyph m_glyph;
   };
 
   class SimpleCache : public NoCache {
@@ -177,36 +209,43 @@ namespace ft {
     }
 
     void invalidate() {
-      for (auto& it : m_glyphMap)
-        FT_Done_Glyph(it.second);
+      for (auto& it : m_glyphMap) {
+        FT_Done_Glyph(it.second->ft_glyph);
+        delete it.second;
+      }
 
       m_glyphMap.clear();
     }
 
-    FT_Glyph loadGlyph(FT_Face face, FT_UInt glyphIndex, bool antialias) {
+    Glyph* loadGlyph(FT_Face face, FT_UInt glyphIndex, bool antialias) {
       auto it = m_glyphMap.find(glyphIndex);
       if (it != m_glyphMap.end())
         return it->second;
 
-      FT_Glyph glyph = NoCache::loadGlyph(face, glyphIndex, antialias);
-      if (glyph) {
-        FT_Glyph newGlyph = nullptr;
-        FT_Glyph_Copy(glyph, &newGlyph);
-        if (newGlyph) {
-          m_glyphMap[glyphIndex] = newGlyph;
-          FT_Done_Glyph(glyph);
-          return newGlyph;
-        }
-      }
-      return glyph;
+      Glyph* glyph = NoCache::loadGlyph(face, glyphIndex, antialias);
+      if (!glyph)
+        return nullptr;
+
+      FT_Glyph new_ft_glyph = nullptr;
+      FT_Glyph_Copy(glyph->ft_glyph, &new_ft_glyph);
+      if (!new_ft_glyph)
+        return nullptr;
+
+      Glyph* newGlyph = new Glyph(*glyph);
+      newGlyph->ft_glyph = new_ft_glyph;
+
+      m_glyphMap[glyphIndex] = newGlyph;
+      FT_Done_Glyph(glyph->ft_glyph);
+
+      return newGlyph;
     }
 
-    void doneGlyph(FT_Glyph glyph) {
+    void doneGlyph(Glyph* glyph) {
       // Do nothing
     }
 
   private:
-    std::map<FT_UInt, FT_Glyph> m_glyphMap;
+    std::map<FT_UInt, Glyph*> m_glyphMap;
   };
 
   typedef FaceFT<SimpleCache> Face;

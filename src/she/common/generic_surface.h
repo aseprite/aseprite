@@ -140,7 +140,6 @@ public:
         bool antialias = ttFont->face().antialias();
         int fg_alpha = gfx::geta(fg);
 
-        gfx::Rect bounds = ttFont->face().calcTextBounds(str);
         gfx::Rect clipBounds = this->getClipBounds();
 
         she::SurfaceFormatData fd;
@@ -148,9 +147,9 @@ public:
 
         ttFont->face().forEachGlyph(
           str,
-          [this, x, y, fg, fg_alpha, bg, antialias, &clipBounds, &bounds, &fd](const ft::Face::Glyph& glyph) {
-            gfx::Rect origDstBounds(x - bounds.x + int(glyph.x),
-                                    y - bounds.y + int(glyph.y),
+          [this, x, y, fg, fg_alpha, bg, antialias, &clipBounds, &fd](const ft::Glyph& glyph) {
+            gfx::Rect origDstBounds(x + int(glyph.x),
+                                    y + int(glyph.y),
                                     int(glyph.bitmap->width),
                                     int(glyph.bitmap->rows));
             gfx::Rect dstBounds = origDstBounds;

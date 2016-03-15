@@ -45,8 +45,7 @@ FontType FreeTypeFont::type()
 
 int FreeTypeFont::height() const
 {
-  static std::string str = "Tgjp";
-  return m_face.calcTextBounds(str).h;
+  return int(m_face.height());
 }
 
 int FreeTypeFont::charWidth(int chr) const

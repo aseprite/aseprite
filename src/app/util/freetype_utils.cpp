@@ -48,7 +48,7 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
 
       face.forEachGlyph(
         text,
-        [&bounds, &image, color, antialias](const ft::Face::Glyph& glyph) {
+        [&bounds, &image, color, antialias](const ft::Glyph& glyph) {
           int t, yimg = - bounds.y + int(glyph.y);
 
           for (int v=0; v<int(glyph.bitmap->rows); ++v, ++yimg) {
