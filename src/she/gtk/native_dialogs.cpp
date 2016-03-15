@@ -13,12 +13,8 @@
 
 #include "she/gtk/native_dialogs.h"
 
-#include "app/thumbnail_generator.h"
-#include "app/file_system.h"
 #include "base/string.h"
 #include "she/display.h"
-#include "she/surface.h"
-#include "she/locked_surface.h"
 #include "she/error.h"
 
 #include <gtkmm/application.h>
@@ -32,6 +28,7 @@
 #include <glibmm/fileutils.h>
 
 #include <string>
+#include <map>
 
 namespace she {
 
@@ -137,25 +134,8 @@ public:
     this->set_preview_widget_active(false);
     std::string fileName = this->get_filename();
     try {
-      if (!fileName.empty() && !Glib::file_test(fileName, Glib::FILE_TEST_IS_DIR)) {
-          app::IFileItem* fileItem = app::FileSystemModule::instance()->getFileItemFromPath(fileName);
-          app::ThumbnailGenerator* generator = app::ThumbnailGenerator::instance();
-          generator->addWorkerToGenerateThumbnail(fileItem);
-          while(generator->checkWorkers()){};
-          she::LockedSurface* thumbnailSurface = fileItem->getThumbnail()->lock();
-          she::SurfaceFormatData* formatData = new she::SurfaceFormatData();
-          thumbnailSurface->getFormat(formatData);
-          uint8_t* data = thumbnailSurface->getData(0, 0);
-          auto tempPixbuf = Gdk::Pixbuf::create(Gdk::COLORSPACE_RGB,
-                                                true,
-                                                8,
-                                                thumbnailSurface->lockedWidth(),
-                                                thumbnailSurface->lockedHeight());
-          ConvertBetweenBGRAandRGBA(data, thumbnailSurface->lockedWidth(),
-                                    thumbnailSurface->lockedHeight(), tempPixbuf->get_pixels());
-          auto previewPixbuf = tempPixbuf->scale_simple(thumbnailSurface->lockedWidth() * 2,
-                                                        thumbnailSurface->lockedHeight() * 2,
-                                                        Gdk::INTERP_NEAREST);
+      if (!Glib::file_test(fileName, Glib::FILE_TEST_IS_DIR)) {
+          auto previewPixbuf = Gdk::Pixbuf::create_from_file(fileName, 256, 256, true);
           m_preview.set(previewPixbuf);
           this->set_preview_widget_active();
       }
@@ -197,18 +177,6 @@ private:
   Display* m_display;
   bool m_cancel;
   static std::string& lastUsedDir() { static std::string lastUsedDir; return lastUsedDir; }
-  void ConvertBetweenBGRAandRGBA(uint8_t* input, int pixel_width, int pixel_height, uint8_t* output) {
-    int offset = 0;
-    for (int y = 0; y < pixel_height; y++) {
-        for (int x = 0; x < pixel_width; x++) {
-            output[offset] = input[offset + 2];
-            output[offset + 1] = input[offset + 1];
-            output[offset + 2] = input[offset];
-            output[offset + 3] = input[offset + 3];
-            offset += 4;
-        }
-    }
-  }
 };
 
 NativeDialogsGTK3::NativeDialogsGTK3()
