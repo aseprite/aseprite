@@ -57,8 +57,8 @@ public:
 
   void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
     gfx::Clip clip(clipbase);
-    if (!clip.clip(static_cast<Base*>(this)->width(),
-                   static_cast<Base*>(this)->height(),
+    if (!clip.clip(this->width(),
+                   this->height(),
                    src->width(), src->height()))
       return;
 
@@ -73,7 +73,7 @@ public:
         clip.src.x, clip.src.y+v);
 
       for (int u=0; u<clip.size.w; ++u) {
-        gfx::Color dstColor = static_cast<Base*>(this)->getPixel(clip.dst.x+u, clip.dst.y+v);
+        gfx::Color dstColor = this->getPixel(clip.dst.x+u, clip.dst.y+v);
         if (gfx::geta(bg) > 0)
           dstColor = blend(dstColor, bg);
 
@@ -85,7 +85,7 @@ public:
           dstColor = blend(dstColor, src);
         }
 
-        static_cast<Base*>(this)->putPixel(dstColor, clip.dst.x+u, clip.dst.y+v);
+        this->putPixel(dstColor, clip.dst.x+u, clip.dst.y+v);
         ++ptr;
       }
     }
@@ -106,7 +106,7 @@ public:
         if (!charBounds.isEmpty()) {
           Surface* sheet = ssFont->getSurfaceSheet();
           SurfaceLock lock(sheet);
-          static_cast<Base*>(this)->drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
+          this->drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
         }
         break;
       }
@@ -141,10 +141,10 @@ public:
         int fg_alpha = gfx::geta(fg);
 
         gfx::Rect bounds = ttFont->face().calcTextBounds(str);
-        gfx::Rect clipBounds = static_cast<Base*>(this)->getClipBounds();
+        gfx::Rect clipBounds = this->getClipBounds();
 
         she::SurfaceFormatData fd;
-        static_cast<Base*>(this)->getFormat(&fd);
+        this->getFormat(&fd);
 
         ttFont->face().forEachGlyph(
           str,
@@ -167,7 +167,7 @@ public:
                 + (v+clippedRows)*glyph.bitmap->pitch;
               int dst_x = dstBounds.x;
               uint32_t* dst_address =
-                (uint32_t*)static_cast<Base*>(this)->getData(dst_x, dst_y);
+                (uint32_t*)this->getData(dst_x, dst_y);
 
               // Skip first clipped pixels
               for (int u=0; u<dstBounds.x-origDstBounds.x; ++u) {
