@@ -65,6 +65,9 @@ namespace ft {
   template<typename Cache>
   class FaceFT : public FaceBase<Cache> {
   public:
+    using FaceBase<Cache>::m_face;
+    using FaceBase<Cache>::m_cache;
+
     FaceFT(FT_Face face)
       : FaceBase<Cache>(face) {
     }
