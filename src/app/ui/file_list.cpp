@@ -359,7 +359,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
     if (fi->isFolder()) {
       int icon_w = font()->textLength("[+]");
 
-      g->drawUIString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
+      g->drawString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
       x += icon_w+2*guiscale();
     }
 
