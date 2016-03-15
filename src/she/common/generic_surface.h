@@ -112,9 +112,10 @@ public:
       }
 
       case FontType::kTrueType: {
-        std::string str;
+        // TODO avoid a temporary string
+        std::wstring str;
         str.push_back(chr);
-        drawString(font, fg, bg, x, y, str);
+        drawString(font, fg, bg, x, y, base::to_utf8(str).c_str());
         break;
       }
 
