@@ -65,6 +65,7 @@ namespace ft {
   template<typename Cache>
   class FaceFT : public FaceBase<Cache> {
   public:
+    using FaceBase<Cache>::Glyph;
     using FaceBase<Cache>::m_face;
     using FaceBase<Cache>::m_cache;
 
@@ -74,23 +75,25 @@ namespace ft {
 
     template<typename Callback>
     void forEachGlyph(const std::string& str, Callback callback) {
-      bool use_kerning = (FT_HAS_KERNING(m_face) ? true: false);
+      bool use_kerning = (FT_HAS_KERNING(this->m_face) ? true: false);
       FT_UInt prev_glyph = 0;
       double x = 0, y = 0;
 
       auto it = base::utf8_const_iterator(str.begin());
       auto end = base::utf8_const_iterator(str.end());
       for (; it != end; ++it) {
-        FT_UInt glyph_index = m_cache.getGlyphIndex(m_face, *it);
+        FT_UInt glyph_index = this->m_cache.getGlyphIndex(
+          this->m_face, *it);
 
         if (use_kerning && prev_glyph && glyph_index) {
           FT_Vector kerning;
-          FT_Get_Kerning(m_face, prev_glyph, glyph_index,
+          FT_Get_Kerning(this->m_face, prev_glyph, glyph_index,
                          FT_KERNING_DEFAULT, &kerning);
           x += kerning.x / 64.0;
         }
 
-        FT_Glyph bitmapGlyph = m_cache.loadGlyph(m_face, glyph_index, m_antialias);
+        FT_Glyph bitmapGlyph = this->m_cache.loadGlyph(
+          this->m_face, glyph_index, this->m_antialias);
         if (bitmapGlyph) {
           Glyph glyph;
           glyph.glyph_index = glyph_index;
@@ -103,7 +106,7 @@ namespace ft {
           x += bitmapGlyph->advance.x / double(1 << 16);
           y += bitmapGlyph->advance.y / double(1 << 16);
 
-          m_cache.doneGlyph(bitmapGlyph);
+          this->m_cache.doneGlyph(bitmapGlyph);
         }
 
         prev_glyph = glyph_index;
