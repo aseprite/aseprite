@@ -50,16 +50,8 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-WidgetType palette_view_type()
-{
-  static WidgetType type = kGenericWidget;
-  if (type == kGenericWidget)
-    type = register_widget_type();
-  return type;
-}
-
 PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDelegate* delegate, int boxsize)
-  : Widget(palette_view_type())
+  : Widget(kGenericWidget)
   , m_state(State::WAITING)
   , m_editable(editable)
   , m_style(style)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/color_source.h"
 #include "app/ui/marching_ants.h"
 #include "base/connection.h"
 #include "doc/palette_picks.h"
@@ -44,7 +45,8 @@ namespace app {
   };
 
   class PaletteView : public ui::Widget
-                    , public MarchingAnts {
+                    , public MarchingAnts
+                    , public IColorSource {
   public:
     enum PaletteViewStyle {
       SelectOneColor,
@@ -68,7 +70,8 @@ namespace app {
     void getSelectedEntries(doc::PalettePicks& entries) const;
     int getSelectedEntriesCount() const;
 
-    app::Color getColorByPosition(const gfx::Point& pos);
+    // IColorSource
+    app::Color getColorByPosition(const gfx::Point& pos) override;
 
     int getBoxSize() const;
     void setBoxSize(int boxsize);
@@ -153,8 +156,6 @@ namespace app {
     Hit m_hot;
     bool m_copy;
   };
-
-  ui::WidgetType palette_view_type();
 
 } // namespace app
 

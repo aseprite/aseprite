@@ -13,7 +13,6 @@
 
 #include "app/app.h"
 #include "app/color.h"
-#include "app/color_picker.h"
 #include "app/color_utils.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -94,6 +93,12 @@ void ColorButton::setColor(const app::Color& color)
   invalidate();
 }
 
+app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
+{
+  // Ignore the position
+  return m_color;
+}
+
 bool ColorButton::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -118,25 +123,9 @@ bool ColorButton::onProcessMessage(Message* msg)
         app::Color color = m_color;
 
         if (picked && picked != this) {
-          // Pick a color from another color-button
-          if (ColorButton* pickedColBut = dynamic_cast<ColorButton*>(picked)) {
-            color = pickedColBut->getColor();
-          }
-          // Pick a color from the color-bar
-          else if (picked->type() == palette_view_type()) {
-            color = ((PaletteView*)picked)->getColorByPosition(mousePos);
-          }
-          // Pick a color from a editor
-          else if (picked->type() == editor_type()) {
-            Editor* editor = static_cast<Editor*>(picked);
-            Site site = editor->getSite();
-            if (site.sprite()) {
-              gfx::Point editorPos = editor->screenToEditor(mousePos);
-
-              ColorPicker picker;
-              picker.pickColor(site, editorPos, ColorPicker::FromComposition);
-              color = picker.color();
-            }
+          // Pick a color from a IColorSource
+          if (IColorSource* colorSource = dynamic_cast<IColorSource*>(picked)) {
+            color = colorSource->getColorByPosition(mousePos);
           }
         }
 

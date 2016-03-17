@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/color.h"
+#include "app/color_picker.h"
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
@@ -1199,6 +1200,20 @@ void Editor::updateContextBarFromModifiers()
     m_autoSelectLayer = autoSelectLayer;
     ctxBar->updateAutoSelectLayer(autoSelectLayer);
   }
+}
+
+app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
+{
+  Site site = getSite();
+  if (site.sprite()) {
+    gfx::Point editorPos = screenToEditor(mousePos);
+
+    ColorPicker picker;
+    picker.pickColor(site, editorPos, ColorPicker::FromComposition);
+    return picker.color();
+  }
+  else
+    return app::Color::fromMask();
 }
 
 //////////////////////////////////////////////////////////////////////

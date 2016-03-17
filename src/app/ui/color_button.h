@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/color_source.h"
 #include "base/signal.h"
 #include "doc/context_observer.h"
 #include "doc/pixel_format.h"
@@ -19,7 +20,8 @@ namespace app {
   class ColorPopup;
 
   class ColorButton : public ui::ButtonBase
-                    , public doc::ContextObserver {
+                    , public doc::ContextObserver
+                    , public IColorSource {
   public:
     ColorButton(const app::Color& color, PixelFormat pixelFormat);
     ~ColorButton();
@@ -29,6 +31,9 @@ namespace app {
 
     app::Color getColor() const;
     void setColor(const app::Color& color);
+
+    // IColorSource
+    app::Color getColorByPosition(const gfx::Point& pos) override;
 
     // Signals
     base::Signal1<void, const app::Color&> Change;

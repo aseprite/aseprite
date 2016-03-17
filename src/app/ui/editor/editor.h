@@ -14,6 +14,7 @@
 #include "app/document.h"
 #include "app/pref/option.h"
 #include "app/tools/selection_mode.h"
+#include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
@@ -60,7 +61,8 @@ namespace app {
   };
 
   class Editor : public ui::Widget,
-                 public doc::DocumentObserver {
+                 public doc::DocumentObserver
+               , public IColorSource {
   public:
     enum EditorFlags {
       kNoneFlag = 0,
@@ -219,6 +221,9 @@ namespace app {
     static ImageBufferPtr getRenderImageBuffer();
 
     AppRender& renderEngine() { return m_renderEngine; }
+
+    // IColorSource
+    app::Color getColorByPosition(const gfx::Point& pos) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
