@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -445,7 +445,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
         fop->m_seq.filename_list.push_back(frame_fn);
       }
 
-      if (fop->m_seq.filename_list.size() > 1 &&
+      if (context && context->isUIAvailable() &&
+          fop->m_seq.filename_list.size() > 1 &&
           ui::Alert::show("Notice"
                           "<<Do you want to export the animation in %d files?"
                           "<<%s, %s..."
