@@ -148,7 +148,7 @@ ColorBar::ColorBar(int align)
   , m_syncingWithPref(false)
   , m_lastDocument(nullptr)
   , m_ascending(true)
-  , m_lastButtons(kButtonNone)
+  , m_lastButtons(kButtonLeft)
 {
   m_instance = this;
 
