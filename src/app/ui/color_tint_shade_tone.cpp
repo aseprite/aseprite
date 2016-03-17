@@ -177,7 +177,7 @@ bool ColorTintShadeTone::onProcessMessage(ui::Message* msg)
 
   }
 
-  return Widget::onProcessMessage(msg);
+  return ColorSelector::onProcessMessage(msg);
 }
 
 bool ColorTintShadeTone::inHueBarArea(const gfx::Point& pos) const

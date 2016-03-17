@@ -167,6 +167,7 @@ namespace app {
     base::ScopedConnection m_fgConn;
     base::ScopedConnection m_bgConn;
     base::ScopedConnection m_appPalChangeConn;
+    ui::MouseButtons m_lastButtons;
   };
 
 } // namespace app

@@ -163,7 +163,7 @@ bool ColorSpectrum::onProcessMessage(ui::Message* msg)
 
   }
 
-  return Widget::onProcessMessage(msg);
+  return ColorSelector::onProcessMessage(msg);
 }
 
 } // namespace app

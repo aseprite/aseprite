@@ -306,7 +306,7 @@ bool ColorWheel::onProcessMessage(ui::Message* msg)
 
   }
 
-  return Widget::onProcessMessage(msg);
+  return ColorSelector::onProcessMessage(msg);
 }
 
 void ColorWheel::onOptions()

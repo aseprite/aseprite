@@ -27,6 +27,7 @@ namespace app {
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;
+    bool onProcessMessage(ui::Message* msg) override;
 
     app::Color m_color;
 

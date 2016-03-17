@@ -148,6 +148,7 @@ ColorBar::ColorBar(int align)
   , m_syncingWithPref(false)
   , m_lastDocument(nullptr)
   , m_ascending(true)
+  , m_lastButtons(kButtonNone)
 {
   m_instance = this;
 
@@ -818,10 +819,15 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
 {
+  if (buttons == kButtonNone)
+    buttons = m_lastButtons;
+
   if ((buttons & kButtonRight) == kButtonRight)
     setBgColor(color);
-  else
+  else if ((buttons & kButtonLeft) == kButtonLeft)
     setFgColor(color);
+
+  m_lastButtons = buttons;
 }
 
 void ColorBar::onReverseColors()

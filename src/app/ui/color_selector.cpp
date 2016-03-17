@@ -11,8 +11,11 @@
 
 #include "app/ui/color_selector.h"
 
+#include "ui/message.h"
 #include "ui/size_hint_event.h"
 #include "ui/theme.h"
+
+#include <cmath>
 
 namespace app {
 
@@ -36,6 +39,44 @@ void ColorSelector::selectColor(const app::Color& color)
 void ColorSelector::onSizeHint(SizeHintEvent& ev)
 {
   ev.setSizeHint(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
+}
+
+bool ColorSelector::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+
+    case kMouseWheelMessage:
+      if (!hasCapture()) {
+        double scale = 1.0;
+        if (msg->shiftPressed() ||
+            msg->ctrlPressed() ||
+            msg->altPressed()) {
+          scale = 15.0;
+        }
+
+        double newHue = m_color.getHue()
+          + scale*(+ static_cast<MouseMessage*>(msg)->wheelDelta().x
+                   - static_cast<MouseMessage*>(msg)->wheelDelta().y);
+
+        while (newHue < 0.0)
+          newHue += 360.0;
+        newHue = std::fmod(newHue, 360.0);
+
+        if (newHue != m_color.getHue()) {
+          app::Color newColor =
+            app::Color::fromHsv(
+              newHue,
+              m_color.getSaturation(),
+              m_color.getValue());
+
+          ColorChange(newColor, kButtonNone);
+        }
+      }
+      break;
+
+  }
+
+  return Widget::onProcessMessage(msg);
 }
 
 } // namespace app
