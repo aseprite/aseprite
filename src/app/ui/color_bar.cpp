@@ -997,55 +997,12 @@ void ColorBar::onCancel(Context* ctx)
 
 void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIcon)
 {
-  try {
-    Palette* newPalette = get_current_palette(); // System current pal
-    app::Color appColor = colorButton->getColor();
-    color_t color = doc::rgba(
-      appColor.getRed(),
-      appColor.getGreen(),
-      appColor.getBlue(),
-      appColor.getAlpha());
-    int index = newPalette->findExactMatch(
-      appColor.getRed(),
-      appColor.getGreen(),
-      appColor.getBlue(),
-      appColor.getAlpha(), -1);
+  Command* command = CommandsModule::instance()->getCommandByName(CommandId::AddColor);
+  Params params;
+  params.set("source", "color");
+  params.set("color", colorButton->getColor().toString().c_str());
 
-    // It should be -1, because the user has pressed the warning
-    // button that is available only when the color isn't in the
-    // palette.
-    ASSERT(index < 0);
-    if (index >= 0)
-      return;
-
-    ContextWriter writer(UIContext::instance(), 500);
-    Document* document(writer.document());
-    Sprite* sprite = writer.sprite();
-    if (!document || !sprite) {
-      ASSERT(false);
-      return;
-    }
-
-    newPalette->addEntry(color);
-    index = newPalette->size()-1;
-
-    if (document) {
-      frame_t frame = writer.frame();
-
-      Transaction transaction(writer.context(), "Add palette entry", ModifyDocument);
-      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
-      transaction.commit();
-    }
-
-    set_current_palette(newPalette, true);
-    ui::Manager::getDefault()->invalidate();
-
-    warningIcon->setVisible(false);
-    warningIcon->parent()->layout();
-  }
-  catch (base::Exception& e) {
-    Console::showException(e);
-  }
+  UIContext::instance()->executeCommand(command, params);
 }
 
 void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIcon)
