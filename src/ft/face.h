@@ -21,6 +21,7 @@ namespace ft {
     FT_UInt glyph_index;
     FT_Glyph ft_glyph;
     FT_Bitmap* bitmap;
+    double bearingX;
     double bearingY;
     double x;
     double y;
@@ -121,7 +122,7 @@ namespace ft {
           this->m_face, glyph_index, this->m_antialias);
         if (glyph) {
           glyph->bitmap = &FT_BitmapGlyph(glyph->ft_glyph)->bitmap;
-          glyph->x = x;
+          glyph->x = x + glyph->bearingX;
           glyph->y = y
             + this->height()
             + this->descender() // descender is negative
@@ -188,6 +189,7 @@ namespace ft {
       }
 
       m_glyph.ft_glyph = ft_glyph;
+      m_glyph.bearingX = face->glyph->metrics.horiBearingX / 64.0;
       m_glyph.bearingY = face->glyph->metrics.horiBearingY / 64.0;
 
       return &m_glyph;
