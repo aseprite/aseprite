@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -16,7 +16,7 @@
 #include "ui/button.h"
 
 namespace app {
-  class ColorSelector;
+  class ColorPopup;
 
   class ColorButton : public ui::ButtonBase
                     , public doc::ContextObserver {
@@ -48,7 +48,7 @@ namespace app {
 
     app::Color m_color;
     PixelFormat m_pixelFormat;
-    ColorSelector* m_window;
+    ColorPopup* m_window;
     bool m_dependOnLayer;
   };
 

@@ -9,6 +9,8 @@
 #include "config.h"
 #endif
 
+#include "app/ui/color_button.h"
+
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_picker.h"
@@ -17,8 +19,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
-#include "app/ui/color_button.h"
-#include "app/ui/color_selector.h"
+#include "app/ui/color_popup.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -85,7 +86,7 @@ void ColorButton::setColor(const app::Color& color)
 
   // Change the color in its related window
   if (m_window)
-    m_window->setColor(m_color, ColorSelector::DoNotChangeType);
+    m_window->setColor(m_color, ColorPopup::DoNotChangeType);
 
   // Emit signal
   Change(color);
@@ -249,11 +250,11 @@ void ColorButton::openSelectorDialog()
   int x, y;
 
   if (m_window == NULL) {
-    m_window = new ColorSelector();
+    m_window = new ColorPopup();
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 
-  m_window->setColor(m_color, ColorSelector::ChangeType);
+  m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->openWindow();
 
   x = MID(0, bounds().x, ui::display_w()-m_window->bounds().w);

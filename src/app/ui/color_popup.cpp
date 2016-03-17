@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include <vector>
+#include "app/ui/color_popup.h"
 
 #include "app/app.h"
 #include "app/cmd/set_palette.h"
@@ -22,7 +22,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/transaction.h"
-#include "app/ui/color_selector.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
@@ -49,7 +48,7 @@ enum {
   MASK_MODE
 };
 
-ColorSelector::ColorSelector()
+ColorPopup::ColorPopup()
   : PopupWindowPin("Color Selector", ClickBehavior::CloseOnClickInOtherWindow)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
@@ -89,28 +88,28 @@ ColorSelector::ColorSelector()
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
 
-  m_colorType.ItemChange.connect(base::Bind<void>(&ColorSelector::onColorTypeClick, this));
+  m_colorType.ItemChange.connect(base::Bind<void>(&ColorPopup::onColorTypeClick, this));
 
-  m_rgbSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
-  m_hsvSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
-  m_graySlider.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
-  m_hexColorEntry.ColorChange.connect(&ColorSelector::onColorHexEntryChange, this);
+  m_rgbSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
+  m_hsvSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
+  m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
+  m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
 
   selectColorType(app::Color::RgbType);
   setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
 
   m_onPaletteChangeConn =
-    App::instance()->PaletteChange.connect(&ColorSelector::onPaletteChange, this);
+    App::instance()->PaletteChange.connect(&ColorPopup::onPaletteChange, this);
 
   initTheme();
 }
 
-ColorSelector::~ColorSelector()
+ColorPopup::~ColorPopup()
 {
   getPin()->parent()->removeChild(getPin());
 }
 
-void ColorSelector::setColor(const app::Color& color, SetColorOptions options)
+void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
 {
   m_color = color;
 
@@ -129,23 +128,23 @@ void ColorSelector::setColor(const app::Color& color, SetColorOptions options)
     selectColorType(m_color.getType());
 }
 
-app::Color ColorSelector::getColor() const
+app::Color ColorPopup::getColor() const
 {
   return m_color;
 }
 
-void ColorSelector::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
+void ColorPopup::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
   setColorWithSignal(app::Color::fromIndex(index));
 }
 
-void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)
+void ColorPopup::onColorSlidersChange(ColorSlidersChangeEvent& ev)
 {
   setColorWithSignal(ev.color());
   findBestfitIndex(ev.color());
 }
 
-void ColorSelector::onColorHexEntryChange(const app::Color& color)
+void ColorPopup::onColorHexEntryChange(const app::Color& color)
 {
   // Disable updating the hex entry so we don't override what the user
   // is writting in the text field.
@@ -157,7 +156,7 @@ void ColorSelector::onColorHexEntryChange(const app::Color& color)
   m_disableHexUpdate = false;
 }
 
-void ColorSelector::onColorTypeClick()
+void ColorPopup::onColorTypeClick()
 {
   app::Color newColor = getColor();
 
@@ -189,13 +188,13 @@ void ColorSelector::onColorTypeClick()
   setColorWithSignal(newColor);
 }
 
-void ColorSelector::onPaletteChange()
+void ColorPopup::onPaletteChange()
 {
   setColor(getColor(), DoNotChangeType);
   invalidate();
 }
 
-void ColorSelector::findBestfitIndex(const app::Color& color)
+void ColorPopup::findBestfitIndex(const app::Color& color)
 {
   // Find bestfit palette entry
   int r = color.getRed();
@@ -211,7 +210,7 @@ void ColorSelector::findBestfitIndex(const app::Color& color)
   }
 }
 
-void ColorSelector::setColorWithSignal(const app::Color& color)
+void ColorPopup::setColorWithSignal(const app::Color& color)
 {
   setColor(color, ChangeType);
 
@@ -219,7 +218,7 @@ void ColorSelector::setColorWithSignal(const app::Color& color)
   ColorChange(color);
 }
 
-void ColorSelector::selectColorType(app::Color::Type type)
+void ColorPopup::selectColorType(app::Color::Type type)
 {
   m_colorPaletteContainer.setVisible(type == app::Color::IndexType);
   m_rgbSliders.setVisible(type == app::Color::RgbType);
