@@ -29,14 +29,9 @@ using namespace gfx;
 using namespace ui;
 
 ColorSpectrum::ColorSpectrum()
-  : Widget(kGenericWidget)
 {
   setAlign(HORIZONTAL);
   setBorder(gfx::Border(3*ui::guiscale()));
-}
-
-ColorSpectrum::~ColorSpectrum()
-{
 }
 
 app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
@@ -68,22 +63,6 @@ app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
     MID(0.0, hue, 360.0),
     MID(0.0, sat, 100.0),
     MID(0.0, val, 100.0));
-}
-
-void ColorSpectrum::selectColor(const app::Color& color)
-{
-  m_color = color;
-  invalidate();
-}
-
-void ColorSpectrum::onSizeHint(SizeHintEvent& ev)
-{
-  ev.setSizeHint(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
-}
-
-void ColorSpectrum::onResize(ui::ResizeEvent& ev)
-{
-  Widget::onResize(ev);
 }
 
 void ColorSpectrum::onPaint(ui::PaintEvent& ev)

@@ -9,26 +9,15 @@
 #define APP_UI_COLOR_TINT_SHADE_TONE_H_INCLUDED
 #pragma once
 
-#include "app/color.h"
-#include "base/signal.h"
-#include "ui/mouse_buttons.h"
-#include "ui/widget.h"
+#include "app/ui/color_selector.h"
 
 namespace app {
 
-  class ColorTintShadeTone : public ui::Widget {
+  class ColorTintShadeTone : public ColorSelector {
   public:
     ColorTintShadeTone();
-    ~ColorTintShadeTone();
-
-    void selectColor(const app::Color& color);
-
-    // Signals
-    base::Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
 
   protected:
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
 
@@ -36,8 +25,6 @@ namespace app {
     app::Color pickColor(const gfx::Point& pos) const;
     bool inHueBarArea(const gfx::Point& pos) const;
     int getHueBarSize() const;
-
-    app::Color m_color;
 
     // True when the user pressed the mouse button in the hue slider.
     // It's used to avoid swapping in both areas (tint/shades/tones

@@ -51,13 +51,11 @@ static struct {
 };
 
 ColorWheel::ColorWheel()
-  : Widget(kGenericWidget)
-  , m_discrete(Preferences::instance().colorBar.discreteWheel())
+  : m_discrete(Preferences::instance().colorBar.discreteWheel())
   , m_colorModel((ColorModel)Preferences::instance().colorBar.wheelModel())
   , m_harmony((Harmony)Preferences::instance().colorBar.harmony())
   , m_options("", kButtonWidget, kButtonWidget, kCheckWidget)
   , m_harmonyPicked(false)
-  , m_lockColor(false)
 {
   SkinTheme* theme = SkinTheme::instance();
 
@@ -72,10 +70,6 @@ ColorWheel::ColorWheel()
                        CENTER | MIDDLE));
 
   addChild(&m_options);
-}
-
-ColorWheel::~ColorWheel()
-{
 }
 
 app::Color ColorWheel::pickColor(const gfx::Point& pos) const
@@ -119,7 +113,7 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
   }
 
   // Pick harmonies
-  if (m_mainColor.getAlpha() > 0) {
+  if (m_color.getAlpha() > 0) {
     const gfx::Rect& rc = m_clientBounds;
     int n = getHarmonies();
     int boxsize = MIN(rc.w/10, rc.h/10);
@@ -141,15 +135,6 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
   }
 
   return app::Color::fromMask();
-}
-
-void ColorWheel::selectColor(const app::Color& color)
-{
-  if (m_lockColor)
-    return;
-
-  m_mainColor = color;
-  invalidate();
 }
 
 void ColorWheel::setDiscrete(bool state)
@@ -186,21 +171,16 @@ app::Color ColorWheel::getColorInHarmony(int j) const
 {
   int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
   j = MID(0, j, harmonies[i].n-1);
-  double hue = convertHueAngle(int(m_mainColor.getHue()), -1) + harmonies[i].hues[j];
-  double sat = m_mainColor.getSaturation() * harmonies[i].sats[j] / 100.0;
+  double hue = convertHueAngle(int(m_color.getHue()), -1) + harmonies[i].hues[j];
+  double sat = m_color.getSaturation() * harmonies[i].sats[j] / 100.0;
   return app::Color::fromHsv(std::fmod(hue, 360),
                              MID(0.0, sat, 100.0),
-                             m_mainColor.getValue());
-}
-
-void ColorWheel::onSizeHint(SizeHintEvent& ev)
-{
-  ev.setSizeHint(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
+                             m_color.getValue());
 }
 
 void ColorWheel::onResize(ui::ResizeEvent& ev)
 {
-  Widget::onResize(ev);
+  ColorSelector::onResize(ev);
 
   gfx::Rect rc = clientChildrenBounds();
   int r = MIN(rc.w/2, rc.h/2);
@@ -247,7 +227,7 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
     }
   }
 
-  if (m_mainColor.getAlpha() > 0) {
+  if (m_color.getAlpha() > 0) {
     int n = getHarmonies();
     int boxsize = MIN(rc.w/10, rc.h/10);
 

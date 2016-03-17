@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,32 +9,20 @@
 #define APP_UI_COLOR_SPECTRUM_H_INCLUDED
 #pragma once
 
-#include "app/color.h"
-#include "base/signal.h"
-#include "ui/mouse_buttons.h"
-#include "ui/widget.h"
+#include "app/ui/color_selector.h"
+#include "ui/button.h"
 
 namespace app {
 
-  class ColorSpectrum : public ui::Widget {
+  class ColorSpectrum : public ColorSelector {
   public:
     ColorSpectrum();
-    ~ColorSpectrum();
 
     app::Color pickColor(const gfx::Point& pos) const;
-    void selectColor(const app::Color& color);
-
-    // Signals
-    base::Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
 
   protected:
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
-
-  private:
-    app::Color m_color;
   };
 
 } // namespace app

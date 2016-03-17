@@ -9,15 +9,12 @@
 #define APP_UI_COLOR_WHEEL_H_INCLUDED
 #pragma once
 
-#include "app/color.h"
-#include "base/signal.h"
+#include "app/ui/color_selector.h"
 #include "ui/button.h"
-#include "ui/mouse_buttons.h"
-#include "ui/widget.h"
 
 namespace app {
 
-  class ColorWheel : public ui::Widget {
+  class ColorWheel : public ColorSelector {
   public:
     enum class ColorModel {
       RGB,
@@ -37,10 +34,8 @@ namespace app {
     };
 
     ColorWheel();
-    ~ColorWheel();
 
     app::Color pickColor(const gfx::Point& pos) const;
-    void selectColor(const app::Color& color);
 
     bool isDiscrete() const { return m_discrete; }
     void setDiscrete(bool state);
@@ -48,11 +43,7 @@ namespace app {
     void setColorModel(ColorModel colorModel);
     void setHarmony(Harmony harmony);
 
-    // Signals
-    base::Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
-
   private:
-    void onSizeHint(ui::SizeHintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
@@ -72,16 +63,10 @@ namespace app {
     ColorModel m_colorModel;
     Harmony m_harmony;
     ui::ButtonBase m_options;
-    app::Color m_mainColor;
 
     // Internal flag used to know if after pickColor() we selected an
     // harmony.
     mutable bool m_harmonyPicked;
-
-    // Internal flag used to lock the modification of m_mainColor.
-    // When the user picks a color harmony, we don't want to change
-    // the main color.
-    bool m_lockColor;
   };
 
 } // namespace app

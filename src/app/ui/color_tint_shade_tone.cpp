@@ -29,14 +29,9 @@ using namespace gfx;
 using namespace ui;
 
 ColorTintShadeTone::ColorTintShadeTone()
-  : Widget(kGenericWidget)
-  , m_capturedInHue(false)
+  : m_capturedInHue(false)
 {
   setBorder(gfx::Border(3*ui::guiscale()));
-}
-
-ColorTintShadeTone::~ColorTintShadeTone()
-{
 }
 
 app::Color ColorTintShadeTone::pickColor(const gfx::Point& pos) const
@@ -69,22 +64,6 @@ app::Color ColorTintShadeTone::pickColor(const gfx::Point& pos) const
     MID(0.0, hue, 360.0),
     MID(0.0, sat, 100.0),
     MID(0.0, val, 100.0));
-}
-
-void ColorTintShadeTone::selectColor(const app::Color& color)
-{
-  m_color = color;
-  invalidate();
-}
-
-void ColorTintShadeTone::onSizeHint(SizeHintEvent& ev)
-{
-  ev.setSizeHint(gfx::Size(32*ui::guiscale(), 32*ui::guiscale()));
-}
-
-void ColorTintShadeTone::onResize(ui::ResizeEvent& ev)
-{
-  Widget::onResize(ev);
 }
 
 void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
