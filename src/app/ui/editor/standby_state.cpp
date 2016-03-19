@@ -350,6 +350,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
       CommandsModule::instance()->getCommandByName(CommandId::SelectTile);
 
     UIContext::instance()->executeCommand(selectTileCmd);
+    return true;
   }
 
   return false;
