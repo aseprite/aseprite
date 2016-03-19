@@ -32,20 +32,37 @@ public:
   Command* clone() const override { return new SelectTileCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context) override;
-  void onExecute(Context* context) override;
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* ctx) override;
+  void onExecute(Context* ctx) override;
+  std::string onGetFriendlyName() const override;
+
+private:
+  tools::SelectionMode m_mode;
 };
 
 SelectTileCommand::SelectTileCommand()
   : Command("SelectTile",
             "Select Tile",
             CmdRecordableFlag)
+  , m_mode(tools::SelectionMode::DEFAULT)
 {
 }
 
-bool SelectTileCommand::onEnabled(Context* context)
+void SelectTileCommand::onLoadParams(const Params& params)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  std::string mode = params.get("mode");
+  if (mode == "add")
+    m_mode = tools::SelectionMode::ADD;
+  else if (mode == "subtract")
+    m_mode = tools::SelectionMode::SUBTRACT;
+  else
+    m_mode = tools::SelectionMode::DEFAULT;
+}
+
+bool SelectTileCommand::onEnabled(Context* ctx)
+{
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void SelectTileCommand::onExecute(Context* ctx)
@@ -60,12 +77,20 @@ void SelectTileCommand::onExecute(Context* ctx)
   auto& docPref = Preferences::instance().document(doc);
 
   base::UniquePtr<Mask> mask(new Mask());
+
+  if (m_mode != tools::SelectionMode::DEFAULT)
+    mask->copyFrom(doc->mask());
+
   {
-    const gfx::Rect gridBounds = docPref.grid.bounds();
+    gfx::Rect gridBounds = docPref.grid.bounds();
     gfx::Point pos = current_editor->screenToEditor(ui::get_mouse_position());
     pos = snap_to_grid(gridBounds, pos, PreferSnapTo::BoxOrigin);
+    gridBounds.setOrigin(pos);
 
-    mask->add(gfx::Rect(pos, gridBounds.size()));
+    if (m_mode != tools::SelectionMode::SUBTRACT)
+      mask->add(gridBounds);
+    else
+      mask->subtract(gridBounds);
   }
 
   // Set the new mask
@@ -77,6 +102,18 @@ void SelectTileCommand::onExecute(Context* ctx)
 
   doc->generateMaskBoundaries();
   update_screen_for_document(doc);
+}
+
+std::string SelectTileCommand::onGetFriendlyName() const
+{
+  std::string text = "Select Tile";
+
+  switch (m_mode) {
+    case tools::SelectionMode::ADD: text += " (Add)"; break;
+    case tools::SelectionMode::SUBTRACT: text += " (Subtract)"; break;
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createSelectTileCommand()

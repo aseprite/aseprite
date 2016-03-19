@@ -349,7 +349,17 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
     Command* selectTileCmd =
       CommandsModule::instance()->getCommandByName(CommandId::SelectTile);
 
-    UIContext::instance()->executeCommand(selectTileCmd);
+    Params params;
+    switch (editor->getSelectionMode()) {
+      case tools::SelectionMode::ADD:
+        params.set("mode", "add");
+        break;
+      case tools::SelectionMode::SUBTRACT:
+        params.set("mode", "subtract");
+        break;
+    }
+
+    UIContext::instance()->executeCommand(selectTileCmd, params);
     return true;
   }
 
