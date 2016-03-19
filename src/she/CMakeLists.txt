@@ -97,7 +97,7 @@ if(USE_SKIA_BACKEND)
       find_library(SKIA_OPENGL_LIBRARY opengl32)
       find_library(SKIA_LIBEGL_LIBRARY libEGL.dll PATH "${SKIA_BUILD_OUT_DIR}")
       if(SKIA_LIBEGL_LIBRARY)
-	add_definitions(-DSK_ANGLE=1)
+        add_definitions(-DSK_ANGLE=1)
       endif()
     endif()
   else()
@@ -193,6 +193,15 @@ if(APPLE)
     osx/native_dialogs.mm)
 endif()
 
+if(WITH_GTK_FILE_DIALOG_SUPPORT AND UNIX AND NOT APPLE AND NOT BEOS)
+  if(WITH_DEPRECATED_GLIB_SUPPORT)
+    add_definitions(-DASEPRITE_DEPRECATED_GLIB_SUPPORT)
+  endif()
+  add_definitions(-DASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT)
+  list(APPEND SHE_SOURCES
+    gtk/native_dialogs.cpp)
+endif()
+
 add_library(she ${SHE_SOURCES})
 
 target_link_libraries(she
@@ -209,4 +218,9 @@ endif()
 if(USE_SKIA_BACKEND)
   target_link_libraries(she
     ${SKIA_LIBRARIES})
+endif()
+
+if(WITH_GTK_FILE_DIALOG_SUPPORT)
+  target_link_libraries(she
+    ${GTKMM_LIBRARIES})
 endif()

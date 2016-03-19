@@ -35,6 +35,8 @@ project(aseprite C CXX)
 # CMakeCache.txt)
 
 option(WITH_WEBP_SUPPORT  "Enable support to load/save .webp files" off)
+option(WITH_GTK_FILE_DIALOG_SUPPORT "Enable support for the experimental native GTK File Dialog" off)
+option(WITH_DEPRECATED_GLIB_SUPPORT "Enable support for older glib versions" off)
 
 option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
 option(USE_SHARED_CURL    "Use your installed copy of curl" off)
@@ -359,6 +361,13 @@ if(UNIX AND NOT APPLE AND NOT BEOS)
 
   if(XDGA_FOUND)
     list(APPEND PLATFORM_LIBS Xxf86dga ${X11_LIBRARIES})
+  endif()
+
+  if(WITH_GTK_FILE_DIALOG_SUPPORT)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTKMM gtkmm-3.0)
+    include_directories(${GTKMM_INCLUDE_DIRS})
+    link_directories(${GTKMM_LIBRARY_DIRS})
   endif()
 endif()
 
