@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -268,7 +268,8 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
         gfx::Rect gridBounds = App::instance()
           ->preferences().document(m_document).grid.bounds();
         gfx::Point gridOffset(x1, y1);
-        gridOffset = snap_to_grid(gridBounds, gridOffset);
+        gridOffset = snap_to_grid(gridBounds, gridOffset,
+                                  PreferSnapTo::ClosestGridVertex);
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).

@@ -337,6 +337,24 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
   return true;
 }
 
+bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
+{
+  if (editor->hasCapture())
+    return false;
+
+  tools::Ink* ink = editor->getCurrentEditorInk();
+
+  // Select a tile with double-click
+  if (ink->isSelection()) {
+    Command* selectTileCmd =
+      CommandsModule::instance()->getCommandByName(CommandId::SelectTile);
+
+    UIContext::instance()->executeCommand(selectTileCmd);
+  }
+
+  return false;
+}
+
 bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();

@@ -89,6 +89,9 @@ namespace app {
     // Called when the user wants to zoom in/out using a pinch gesture in the trackpad.
     virtual bool onTouchMagnify(Editor* editor, ui::TouchMessage* msg) { return false; }
 
+    // Called when the user moves the mouse wheel over the editor.
+    virtual bool onDoubleClick(Editor* editor, ui::MouseMessage* msg) { return false; }
+
     // Called each time the mouse changes its position so we can set an
     // appropiated cursor depending on the new coordinates of the mouse
     // pointer.

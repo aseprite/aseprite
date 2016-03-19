@@ -398,6 +398,7 @@
       <key command="AddColor">
         <param name="source" value="bg" />
       </key>
+      <key command="SelectTile" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
