@@ -17,12 +17,14 @@ namespace app {
   public:
     ColorTintShadeTone();
 
+    // IColorSource
+    app::Color getColorByPosition(const gfx::Point& pos) override;
+
   protected:
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
 
   private:
-    app::Color pickColor(const gfx::Point& pos) const;
     bool inHueBarArea(const gfx::Point& pos) const;
     int getHueBarSize() const;
 

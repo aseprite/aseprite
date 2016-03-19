@@ -18,7 +18,8 @@ namespace app {
   public:
     ColorSpectrum();
 
-    app::Color pickColor(const gfx::Point& pos) const;
+    // IColorSource
+    app::Color getColorByPosition(const gfx::Point& pos) override;
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;

@@ -72,7 +72,12 @@ ColorWheel::ColorWheel()
   addChild(&m_options);
 }
 
-app::Color ColorWheel::pickColor(const gfx::Point& pos) const
+app::Color ColorWheel::getColorByPosition(const gfx::Point& mousePos)
+{
+  return getColorInClientPos(mousePos - bounds().origin());
+}
+
+app::Color ColorWheel::getColorInClientPos(const gfx::Point& pos)
 {
   m_harmonyPicked = false;
 
@@ -213,7 +218,7 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
   for (int y=rc.y; y<rc.y+rc.h; ++y) {
     for (int x=rc.x; x<rc.x+rc.w; ++x) {
       app::Color appColor =
-        ColorWheel::pickColor(gfx::Point(x, y));
+        ColorWheel::getColorInClientPos(gfx::Point(x, y));
 
       gfx::Color color;
       if (appColor.getType() != app::Color::MaskType) {
@@ -271,7 +276,7 @@ bool ColorWheel::onProcessMessage(ui::Message* msg)
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      app::Color color = pickColor(
+      app::Color color = getColorInClientPos(
         mouseMsg->position()
         - bounds().origin());
 
@@ -293,7 +298,7 @@ bool ColorWheel::onProcessMessage(ui::Message* msg)
 
     case kSetCursorMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      app::Color color = pickColor(
+      app::Color color = getColorInClientPos(
         mouseMsg->position()
         - bounds().origin());
 

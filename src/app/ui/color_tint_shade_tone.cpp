@@ -34,7 +34,7 @@ ColorTintShadeTone::ColorTintShadeTone()
   setBorder(gfx::Border(3*ui::guiscale()));
 }
 
-app::Color ColorTintShadeTone::pickColor(const gfx::Point& pos) const
+app::Color ColorTintShadeTone::getColorByPosition(const gfx::Point& pos)
 {
   gfx::Rect rc = childrenBounds();
   if (rc.isEmpty())
@@ -49,7 +49,11 @@ app::Color ColorTintShadeTone::pickColor(const gfx::Point& pos) const
 
   double hue, sat, val;
 
-  if (m_capturedInHue) {
+  bool inHue =
+    (( hasCapture() && m_capturedInHue) ||
+     (!hasCapture() && inHueBarArea(pos)));
+
+  if (inHue) {
     hue = (360.0 * u / umax);
     sat = m_color.getSaturation();
     val = m_color.getValue();
@@ -142,23 +146,28 @@ bool ColorTintShadeTone::onProcessMessage(ui::Message* msg)
   switch (msg->type()) {
 
     case kMouseDownMessage:
+      if (manager()->getCapture())
+        break;
+
       captureMouse();
+
       // Continue...
 
-    case kMouseMoveMessage: {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+    case kMouseMoveMessage:
+      if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      if (msg->type() == kMouseDownMessage)
-        m_capturedInHue = inHueBarArea(mouseMsg->position());
+        if (msg->type() == kMouseDownMessage)
+          m_capturedInHue = inHueBarArea(mouseMsg->position());
 
-      app::Color color = pickColor(mouseMsg->position());
-      if (color != app::Color::fromMask()) {
-        StatusBar::instance()->showColor(0, "", color);
-        if (hasCapture())
-          ColorChange(color, mouseMsg->buttons());
+        app::Color color = getColorByPosition(mouseMsg->position());
+        if (color != app::Color::fromMask()) {
+          StatusBar::instance()->showColor(0, "", color);
+          if (hasCapture())
+            ColorChange(color, mouseMsg->buttons());
+        }
       }
       break;
-    }
 
     case kMouseUpMessage:
       if (hasCapture()) {

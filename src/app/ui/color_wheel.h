@@ -35,7 +35,8 @@ namespace app {
 
     ColorWheel();
 
-    app::Color pickColor(const gfx::Point& pos) const;
+    // IColorSource
+    app::Color getColorByPosition(const gfx::Point& pos) override;
 
     bool isDiscrete() const { return m_discrete; }
     void setDiscrete(bool state);
@@ -44,6 +45,7 @@ namespace app {
     void setHarmony(Harmony harmony);
 
   private:
+    app::Color getColorInClientPos(const gfx::Point& pos);
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;

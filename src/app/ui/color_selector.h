@@ -10,13 +10,15 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/color_source.h"
 #include "base/signal.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
 namespace app {
 
-  class ColorSelector : public ui::Widget {
+  class ColorSelector : public ui::Widget
+                      , public IColorSource {
   public:
     ColorSelector();
 

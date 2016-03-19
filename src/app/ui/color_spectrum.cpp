@@ -34,7 +34,7 @@ ColorSpectrum::ColorSpectrum()
   setBorder(gfx::Border(3*ui::guiscale()));
 }
 
-app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
+app::Color ColorSpectrum::getColorByPosition(const gfx::Point& pos)
 {
   gfx::Rect rc = childrenBounds();
   if (rc.isEmpty())
@@ -137,7 +137,7 @@ bool ColorSpectrum::onProcessMessage(ui::Message* msg)
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      app::Color color = pickColor(mouseMsg->position());
+      app::Color color = getColorByPosition(mouseMsg->position());
       if (color != app::Color::fromMask()) {
         StatusBar::instance()->showColor(0, "", color);
         if (hasCapture())
