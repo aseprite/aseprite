@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -234,7 +234,8 @@ void ToolLoopManager::snapToGrid(Point& point)
       !m_toolLoop->getSnapToGrid())
     return;
 
-  point = snap_to_grid(m_toolLoop->getGridBounds(), point);
+  point = snap_to_grid(m_toolLoop->getGridBounds(), point,
+                       PreferSnapTo::ClosestGridVertex);
 }
 
 // Strokes are relative to sprite origin.

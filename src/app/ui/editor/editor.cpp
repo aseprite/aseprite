@@ -1294,6 +1294,16 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
+    case kDoubleClickMessage:
+      if (m_sprite) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        EditorStatePtr holdState(m_state);
+        bool used = m_state->onDoubleClick(this, mouseMsg);
+        if (used)
+          return true;
+      }
+      break;
+
     case kTouchMagnifyMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);

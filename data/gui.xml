@@ -393,10 +393,17 @@
       <key command="SavePalette" />
       <key command="ColorQuantization" />
       <key command="AddColor">
-	<param name="source" value="fg" />
+        <param name="source" value="fg" />
       </key>
       <key command="AddColor">
         <param name="source" value="bg" />
+      </key>
+      <key command="SelectTile" />
+      <key command="SelectTile">
+        <param name="mode" value="add" />
+      </key>
+      <key command="SelectTile">
+        <param name="mode" value="subtract" />
       </key>
     </commands>
 

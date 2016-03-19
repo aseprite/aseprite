@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -32,6 +32,7 @@ namespace app {
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onDoubleClick(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
