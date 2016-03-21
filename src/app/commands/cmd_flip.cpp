@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/cmd/flip_mask.h"
 #include "app/cmd/flip_masked_cel.h"
+#include "app/cmd/set_mask_position.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -75,8 +76,8 @@ void FlipCommand::onExecute(Context* context)
         "Flip Canvas Vertical"));
     DocumentApi api = document->getApi(transaction);
 
+    Mask* mask = document->mask();
     if (m_flipMask) {
-      Mask* mask = document->mask();
       CelList cels;
 
       Site site = *writer.site();
@@ -133,13 +134,6 @@ void FlipCommand::onExecute(Context* context)
           api.flipImage(image, bounds, m_flipType);
         }
       }
-
-      // Flip the mask.
-      Image* maskBitmap = mask->bitmap();
-      if (maskBitmap) {
-        transaction.execute(new cmd::FlipMask(document, m_flipType));
-        document->generateMaskBoundaries();
-      }
     }
     else {
       for (Cel* cel : sprite->uniqueCels()) {
@@ -156,6 +150,27 @@ void FlipCommand::onExecute(Context* context)
 
         api.flipImage(image, image->bounds(), m_flipType);
       }
+    }
+
+    // Flip the mask.
+    Image* maskBitmap = mask->bitmap();
+    if (maskBitmap) {
+      transaction.execute(new cmd::FlipMask(document, m_flipType));
+
+      // Flip the mask position because the
+      if (!m_flipMask)
+        transaction.execute(
+          new cmd::SetMaskPosition(
+            document,
+            gfx::Point(
+              (m_flipType == doc::algorithm::FlipHorizontal ?
+               sprite->width() - mask->bounds().x2():
+               mask->bounds().x),
+              (m_flipType == doc::algorithm::FlipVertical ?
+               sprite->height() - mask->bounds().y2():
+               mask->bounds().y))));
+
+      document->generateMaskBoundaries();
     }
 
     transaction.commit();
