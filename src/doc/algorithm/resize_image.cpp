@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "doc/algorithm/resize_image.h"
 
+#include "doc/algorithm/rotsprite.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
@@ -23,8 +24,7 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
   switch (method) {
 
     // TODO optimize this
-    case RESIZE_METHOD_NEAREST_NEIGHBOR:
-    {
+    case RESIZE_METHOD_NEAREST_NEIGHBOR: {
       int o_width = src->width(), o_height = src->height();
       int n_width = dst->width(), n_height = dst->height();
       double x_ratio = o_width / (double)n_width;
@@ -138,6 +138,16 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
         u = 0.0;
         v += dv;
       }
+      break;
+    }
+
+    case RESIZE_METHOD_ROTSPRITE: {
+      rotsprite_image(
+        dst, src, nullptr,
+        0, 0,
+        dst->width(), 0,
+        dst->width(), dst->height(),
+        0, dst->height());
       break;
     }
 

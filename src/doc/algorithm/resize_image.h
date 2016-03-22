@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,6 +21,7 @@ namespace doc {
     enum ResizeMethod {
       RESIZE_METHOD_NEAREST_NEIGHBOR,
       RESIZE_METHOD_BILINEAR,
+      RESIZE_METHOD_ROTSPRITE,
     };
 
     // Resizes the source image 'src' to the destination image 'dst'.

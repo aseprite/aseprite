@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -168,10 +168,16 @@ public:
     widthPx()->setTextf("%d", new_width);
     heightPx()->setTextf("%d", new_height);
 
+    static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
+                  doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
+                  doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
+                  "ResizeMethod enum has changed");
     method()->addItem("Nearest-neighbor");
     method()->addItem("Bilinear");
-    method()->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
-                                                  doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
+    method()->addItem("RotSprite");
+    method()->setSelectedItemIndex(
+      get_config_int("SpriteSize", "Method",
+                     doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
   }
 
 private:
@@ -279,6 +285,8 @@ void SpriteSizeCommand::onLoadParams(const Params& params)
   if (!resize_method.empty()) {
     if (resize_method == "bilinear")
       m_resizeMethod = doc::algorithm::RESIZE_METHOD_BILINEAR;
+    else if (resize_method == "rotsprite")
+      m_resizeMethod = doc::algorithm::RESIZE_METHOD_ROTSPRITE;
     else
       m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
   }
