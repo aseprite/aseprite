@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -156,7 +156,7 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
                   doc::rgba(doc::rgba_getr(color),
                             doc::rgba_getg(color),
                             doc::rgba_getb(color),
-                            MUL_UN8(doc::rgba_geta(color), alpha, t)), 255));
+                            MUL_UN8(doc::rgba_geta(color), alpha, t))));
             }
           }
         });

@@ -78,11 +78,11 @@ static void image_scale_tpl(
 }
 
 static color_t rgba_blender(color_t back, color_t front) {
-  return rgba_blender_normal(back, front, 255);
+  return rgba_blender_normal(back, front);
 }
 
 static color_t grayscale_blender(color_t back, color_t front) {
-  return graya_blender_normal(back, front, 255);
+  return graya_blender_normal(back, front);
 }
 
 class if_blender {
@@ -254,7 +254,7 @@ public:
 
     int c = get_pixel_fast<RgbTraits>(spr, spr_x, spr_y);
     if ((rgba_geta(m_mask_color) == 0) || ((c & rgba_rgb_mask) != (m_mask_color & rgba_rgb_mask)))
-      *m_it = rgba_blender_normal(*m_it, c, 255);
+      *m_it = rgba_blender_normal(*m_it, c);
   }
 
 private:
