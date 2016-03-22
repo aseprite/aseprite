@@ -176,8 +176,8 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
   int xmax = MAX(x1, MAX(x2, MAX(x3, x4)));
   int ymin = MIN(y1, MIN(y2, MIN(y3, y4)));
   int ymax = MAX(y1, MAX(y2, MAX(y3, y4)));
-  int rot_width = xmax - xmin + 1;
-  int rot_height = ymax - ymin + 1;
+  int rot_width = xmax - xmin;
+  int rot_height = ymax - ymin;
 
   int scale = 8;
   base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf[0]));
