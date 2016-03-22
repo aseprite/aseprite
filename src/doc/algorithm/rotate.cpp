@@ -47,21 +47,32 @@ static void image_scale_tpl(
 {
   LockImageBits<ImageTraits> dst_bits(dst, gfx::Rect(dst_x, dst_y, dst_w, dst_h));
   typename LockImageBits<ImageTraits>::iterator dst_it = dst_bits.begin();
-  fixed x;
+  fixed x, first_x = itofix(src_x);
   fixed y = itofix(src_y);
   fixed dx = fixdiv(itofix(src_w-1), itofix(dst_w-1));
   fixed dy = fixdiv(itofix(src_h-1), itofix(dst_h-1));
+  int old_x, new_x;
 
   for (int v=0; v<dst_h; ++v) {
-    x = itofix(src_x);
+    old_x = fixtoi(x = first_x);
+
+    const LockImageBits<ImageTraits> src_bits(src, gfx::Rect(src_x, fixtoi(y), src_w, 1));
+    auto src_it = src_bits.begin();
+
     for (int u=0; u<dst_w; ++u) {
       ASSERT(dst_it != dst_bits.end());
-      color_t src_color = get_pixel_fast<ImageTraits>(src, fixtoi(x), fixtoi(y));
-      *dst_it = blend(*dst_it, src_color);
+
+      *dst_it = blend(*dst_it, *src_it);
       ++dst_it;
 
       x = fixadd(x, dx);
+      new_x = fixtoi(x);
+      if (old_x != new_x) {
+        src_it += (new_x - old_x);
+        old_x = new_x;
+      }
     }
+
     y = fixadd(y, dy);
   }
 }
