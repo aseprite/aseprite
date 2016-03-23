@@ -44,6 +44,7 @@ public:
   // Export options
   const Option& saveAs() const { return m_saveAs; }
   const Option& scale() const { return m_scale; }
+  const Option& shrinkTo() const { return m_shrinkTo; }
   const Option& data() const { return m_data; }
   const Option& format() const { return m_format; }
   const Option& sheet() const { return m_sheet; }
@@ -55,6 +56,7 @@ public:
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
   const Option& frameTag() const { return m_frameTag; }
+  const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
   const Option& borderPadding() const { return m_borderPadding; }
   const Option& shapePadding() const { return m_shapePadding; }
@@ -84,6 +86,7 @@ private:
   Option& m_batch;
   Option& m_saveAs;
   Option& m_scale;
+  Option& m_shrinkTo;
   Option& m_data;
   Option& m_format;
   Option& m_sheet;
@@ -95,6 +98,7 @@ private:
   Option& m_layer;
   Option& m_allLayers;
   Option& m_frameTag;
+  Option& m_frameRange;
   Option& m_ignoreEmpty;
   Option& m_borderPadding;
   Option& m_shapePadding;
