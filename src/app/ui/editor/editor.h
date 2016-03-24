@@ -120,6 +120,7 @@ namespace app {
     Sprite* sprite() { return m_sprite; }
     Layer* layer() { return m_layer; }
     frame_t frame() { return m_frame; }
+    DocumentPreferences& docPref() { return m_docPref; }
 
     void getSite(Site* site) const;
     Site getSite() const;

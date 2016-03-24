@@ -726,6 +726,8 @@
           <item command="ShowSelectionEdges" text="&amp;Selection Edges" />
           <item command="ShowGrid" text="&amp;Grid" />
           <item command="ShowPixelGrid" text="&amp;Pixel Grid" />
+          <separator />
+          <item command="ShowBrushPreview" text="&amp;Brush Preview" />
         </menu>
         <separator />
         <menu text="&amp;Grid">

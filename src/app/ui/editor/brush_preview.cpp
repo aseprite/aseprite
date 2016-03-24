@@ -96,7 +96,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
                                      m_editor->getUpdateRegion());
 
   // Get cursor color
-  app::Color app_cursor_color = Preferences::instance().editor.cursorColor();
+  const auto& pref = Preferences::instance();
+  app::Color app_cursor_color = pref.editor.cursorColor();
   gfx::Color ui_cursor_color = color_utils::color_for_ui(app_cursor_color);
   m_blackAndWhiteNegative = (app_cursor_color.getType() == app::Color::MaskType);
 
@@ -138,7 +139,21 @@ void BrushPreview::show(const gfx::Point& screenPos)
   }
 
   bool usePreview = false;
-  switch (Preferences::instance().editor.brushPreview()) {
+
+  auto brushPreview = pref.editor.brushPreview();
+
+  // If the brush preview is hidden, we step down one level. E.g. If
+  // we have full-brush preview, we move to edges, or if it's edges,
+  // we don't show it at all.
+  if (!m_editor->docPref().show.brushPreview()) {
+    switch (brushPreview) {
+      case app::gen::BrushPreview::NONE: break;
+      case app::gen::BrushPreview::EDGES: brushPreview = app::gen::BrushPreview::NONE; break;
+      case app::gen::BrushPreview::FULL: brushPreview = app::gen::BrushPreview::EDGES; break;
+    }
+  }
+
+  switch (brushPreview) {
     case app::gen::BrushPreview::NONE:
       m_type = CROSS;
       break;

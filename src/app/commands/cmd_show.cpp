@@ -11,6 +11,7 @@
 
 #include "app/commands/command.h"
 #include "app/context.h"
+#include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 
 namespace app {
@@ -118,6 +119,33 @@ protected:
   }
 };
 
+class ShowBrushPreviewCommand : public Command {
+public:
+  ShowBrushPreviewCommand()
+    : Command("ShowBrushPreview",
+              "Show Brush Preview",
+              CmdUIOnlyFlag) {
+  }
+
+  Command* clone() const override { return new ShowBrushPreviewCommand(*this); }
+
+protected:
+  bool onChecked(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    return docPref.show.brushPreview();
+  }
+
+  void onExecute(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    docPref.show.brushPreview(!docPref.show.brushPreview());
+
+    // TODO we shouldn't need this, but it happens to be that the
+    // Preview editor isn't being updated correctly when we change the
+    // brush preview state.
+    update_screen_for_document(ctx->activeDocument());
+  }
+};
+
 Command* CommandFactory::createShowExtrasCommand()
 {
   return new ShowExtrasCommand;
@@ -136,6 +164,11 @@ Command* CommandFactory::createShowPixelGridCommand()
 Command* CommandFactory::createShowSelectionEdgesCommand()
 {
   return new ShowSelectionEdgesCommand;
+}
+
+Command* CommandFactory::createShowBrushPreviewCommand()
+{
+  return new ShowBrushPreviewCommand;
 }
 
 } // namespace app
