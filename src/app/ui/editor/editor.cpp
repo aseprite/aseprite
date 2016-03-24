@@ -728,9 +728,11 @@ void Editor::drawMask(Graphics* g)
     CheckedDrawMode checked(g, m_antsOffset);
     gfx::Rect bounds = m_zoom.apply(seg.bounds());
 
-    if (!seg.open()) {
-      if (seg.vertical()) --bounds.x;
-      else --bounds.y;
+    if (m_zoom.scale() >= 1.0) {
+      if (!seg.open()) {
+        if (seg.vertical()) --bounds.x;
+        else --bounds.y;
+      }
     }
 
     // The color doesn't matter, we are using CheckedDrawMode
