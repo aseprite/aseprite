@@ -220,14 +220,12 @@
     </section>
     <section id="grid">
       <option id="snap" type="bool" default="false" migrate="Grid.SnapTo" />
-      <option id="visible" type="bool" default="false" migrate="Grid.Visible" />
       <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" migrate="Grid.Bounds" />
       <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" migrate="Grid.Color" />
       <option id="opacity" type="int" default="160" migrate="Grid.Opacity" />
       <option id="auto_opacity" type="bool" default="true" migrate="Grid.AutoOpacity" />
     </section>
     <section id="pixel_grid">
-      <option id="visible" type="bool" default="false" migrate="PixelGrid.Visible" />
       <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" migrate="PixelGrid.Color" />
       <option id="opacity" type="int" default="160" migrate="PixelGrid.Opacity" />
       <option id="auto_opacity" type="bool" default="true" migrate="PixelGrid.AutoOpacity" />
@@ -280,6 +278,11 @@
       <option id="zoom" type="double" default="1.0" />
       <option id="scroll" type="gfx::Point" />
       <option id="auto_scroll" type="bool" default="true" />
+    </section>
+    <section id="show">
+      <option id="selection_edges" type="bool" default="true" />
+      <option id="grid" type="bool" default="false" migrate="grid.visible" />
+      <option id="pixel_grid" type="bool" default="false" migrate="pixel_grid.visible" />
     </section>
   </document>
 

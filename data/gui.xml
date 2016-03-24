@@ -111,6 +111,7 @@
       <key command="PaletteEditor" shortcut="F4">
         <param name="switch" value="true" />
       </key>
+      <key command="ShowExtras" shortcut="Ctrl+H" />
       <!-- Tabs -->
       <key command="GotoNextTab" shortcut="Ctrl+Tab" />
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
@@ -718,28 +719,35 @@
         <item command="SaveMask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
-	<item command="DuplicateView" text="Duplicate &amp;View" />
+        <item command="DuplicateView" text="Duplicate &amp;View" />
         <separator />
-        <item command="ShowPixelGrid" text="Show &amp;Pixel Grid" />
-        <item command="ShowGrid" text="Show &amp;Grid" />
-        <item command="SnapToGrid" text="&amp;Snap to Grid" />
-        <item command="GridSettings" text="Gri&amp;d Settings" />
-        <item command="SelectionAsGrid" text="Select&amp;ion as Grid" />
-	<menu text="Tiled &amp;Mode">
+        <item command="ShowExtras" text="&amp;Extras" />
+        <menu text="&amp;Show">
+          <item command="ShowSelectionEdges" text="&amp;Selection Edges" />
+          <item command="ShowGrid" text="&amp;Grid" />
+          <item command="ShowPixelGrid" text="&amp;Pixel Grid" />
+        </menu>
+        <separator />
+        <menu text="&amp;Grid">
+          <item command="GridSettings" text="Gri&amp;d Settings" />
+          <item command="SelectionAsGrid" text="Select&amp;ion as Grid" />
+          <item command="SnapToGrid" text="&amp;Snap to Grid" />
+        </menu>
+        <menu text="Tiled &amp;Mode">
           <item command="TiledMode" text="&amp;None">
             <param name="axis" value="none" />
-	  </item>
+          </item>
           <item command="TiledMode" text="Tiled in &amp;Both Axes">
             <param name="axis" value="both" />
-	  </item>
+          </item>
           <item command="TiledMode" text="Tiled in &amp;X Axis">
             <param name="axis" value="x" />
-	  </item>
+          </item>
           <item command="TiledMode" text="Tiled in &amp;Y Axis">
             <param name="axis" value="y" />
-	  </item>
-	</menu>
-	<item command="SymmetryMode" text="S&amp;ymmetry Options" />
+          </item>
+        </menu>
+        <item command="SymmetryMode" text="S&amp;ymmetry Options" />
         <separator />
         <item command="SetLoopSection" text="Set &amp;Loop Section" />
         <item command="ShowOnionSkin" text="Show &amp;Onion Skin" />

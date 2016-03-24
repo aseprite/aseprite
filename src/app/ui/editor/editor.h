@@ -12,7 +12,7 @@
 #include "app/app_render.h"
 #include "app/color.h"
 #include "app/document.h"
-#include "app/pref/option.h"
+#include "app/pref/preferences.h"
 #include "app/tools/selection_mode.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
@@ -234,6 +234,7 @@ namespace app {
     void onCurrentToolChange();
     void onFgColorChange();
     void onContextBarBrushChange();
+    void onShowExtrasChange();
     void onExposeSpritePixels(doc::DocumentEvent& ev) override;
 
   private:
@@ -271,8 +272,9 @@ namespace app {
     Document* m_document;         // Active document in the editor
     Sprite* m_sprite;             // Active sprite in the editor
     Layer* m_layer;               // Active layer in the editor
-    frame_t m_frame;          // Active frame in the editor
+    frame_t m_frame;              // Active frame in the editor
     render::Zoom m_zoom;          // Zoom in the editor
+    DocumentPreferences& m_docPref;
 
     // Brush preview
     BrushPreview m_brushPreview;
@@ -302,6 +304,7 @@ namespace app {
     base::ScopedConnection m_currentToolChangeConn;
     base::ScopedConnection m_fgColorChangeConn;
     base::ScopedConnection m_contextBarBrushChangeConn;
+    base::ScopedConnection m_showExtrasConn;
 
     // Slots listeing document preferences.
     base::ScopedConnection m_tiledConn;

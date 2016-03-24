@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -205,14 +205,14 @@ public:
   bool getContiguous() override { return m_contiguous; }
   tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
-  bool getGridVisible() override { return m_docPref.grid.visible(); }
+  bool getGridVisible() override { return m_docPref.show.grid(); }
   bool getSnapToGrid() override { return m_docPref.grid.snap(); }
   bool getStopAtGrid() override {
     switch (m_toolPref.floodfill.stopAtGrid()) {
       case app::gen::StopAtGrid::NEVER:
         return false;
       case app::gen::StopAtGrid::IF_VISIBLE:
-        return m_docPref.grid.visible();
+        return m_docPref.show.grid();
       case app::gen::StopAtGrid::ALWAYS:
         return true;
     }
@@ -357,6 +357,9 @@ public:
       else if (getInk()->isSelection()) {
         m_document->generateMaskBoundaries();
         redraw = true;
+
+        // Show selection edges
+        m_docPref.show.selectionEdges(true);
       }
 
       m_transaction.commit();

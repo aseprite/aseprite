@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -28,50 +28,6 @@ namespace app {
 
 using namespace ui;
 using namespace gfx;
-
-class ShowGridCommand : public Command {
-public:
-  ShowGridCommand()
-    : Command("ShowGrid",
-              "Show Grid",
-              CmdUIOnlyFlag) {
-  }
-
-  Command* clone() const override { return new ShowGridCommand(*this); }
-
-protected:
-  bool onChecked(Context* ctx) override {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    return docPref.grid.visible();
-  }
-
-  void onExecute(Context* ctx) override {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    docPref.grid.visible(!docPref.grid.visible());
-  }
-};
-
-class ShowPixelGridCommand : public Command {
-public:
-  ShowPixelGridCommand()
-    : Command("ShowPixelGrid",
-              "Show Pixel Grid",
-              CmdUIOnlyFlag) {
-  }
-
-  Command* clone() const override { return new ShowPixelGridCommand(*this); }
-
-protected:
-  bool onChecked(Context* ctx) override {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    return docPref.pixelGrid.visible();
-  }
-
-  void onExecute(Context* ctx) override {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    docPref.pixelGrid.visible(!docPref.pixelGrid.visible());
-  }
-};
 
 class SnapToGridCommand : public Command {
 public:
@@ -122,8 +78,10 @@ protected:
       Preferences::instance().document(ctx->activeDocument());
 
     docPref.grid.bounds(mask->bounds());
-    if (!docPref.grid.visible())
-      docPref.grid.visible(true);
+
+    // Make grid visible
+    if (!docPref.show.grid())
+      docPref.show.grid(true);
   }
 };
 
@@ -177,17 +135,11 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.h = MAX(bounds.h, 1);
 
     docPref.grid.bounds(bounds);
+
+    // Make grid visible
+    if (!docPref.show.grid())
+      docPref.show.grid(true);
   }
-}
-
-Command* CommandFactory::createShowGridCommand()
-{
-  return new ShowGridCommand;
-}
-
-Command* CommandFactory::createShowPixelGridCommand()
-{
-  return new ShowPixelGridCommand;
 }
 
 Command* CommandFactory::createSnapToGridCommand()

@@ -153,6 +153,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(frame_t(0))
   , m_zoom(1, 1)
+  , m_docPref(Preferences::instance().document(document))
   , m_brushPreview(this)
   , m_lastDrawingPosition(-1, -1)
   , m_quicktool(NULL)
@@ -183,22 +184,23 @@ Editor::Editor(Document* document, EditorFlags flags)
     App::instance()->getMainWindow()->getContextBar()->BrushChange.connect(
       base::Bind<void>(&Editor::onContextBarBrushChange, this));
 
-  DocumentPreferences& docPref = Preferences::instance().document(m_document);
-
   // Restore last site in preferences
-  frame_t preferredFrame = docPref.site.frame();
-  Layer* preferredLayer = m_sprite->indexToLayer(docPref.site.layer());
+  frame_t preferredFrame = m_docPref.site.frame();
+  Layer* preferredLayer = m_sprite->indexToLayer(m_docPref.site.layer());
   if (preferredFrame >= 0 && preferredFrame <= m_sprite->lastFrame())
     setFrame(preferredFrame);
   if (preferredLayer)
     setLayer(preferredLayer);
 
-  m_tiledConn = docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_gridConn = docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_bgConn = docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_onionskinConn = docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_bgConn = m_docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_onionskinConn = m_docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(base::Bind<void>(&Editor::invalidateIfActive, this));
+  m_showExtrasConn =
+    m_docPref.show.AfterChange.connect(
+      base::Bind<void>(&Editor::onShowExtrasChange, this));
 
   m_document->addObserver(this);
 
@@ -208,10 +210,8 @@ Editor::Editor(Document* document, EditorFlags flags)
 Editor::~Editor()
 {
   if (m_document && m_sprite) {
-    DocumentPreferences& docPref = Preferences::instance()
-      .document(m_document);
-    docPref.site.frame(frame());
-    docPref.site.layer(m_sprite->layerToIndex(layer()));
+    m_docPref.site.frame(frame());
+    m_docPref.site.layer(m_sprite->layerToIndex(layer()));
   }
 
   m_observers.notifyDestroyEditor(this);
@@ -309,8 +309,7 @@ void Editor::setLayer(const Layer* layer)
   // If the onion skinning depends on the active layer, we've to
   // redraw the whole editor.
   if (m_document && changed) {
-    DocumentPreferences& docPref = Preferences::instance().document(m_document);
-    if (docPref.onionskin.currentLayer())
+    if (m_docPref.onionskin.currentLayer())
       invalidate();
   }
 
@@ -464,26 +463,23 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     m_renderEngine.disableOnionskin();
 
     if ((m_flags & kShowOnionskin) == kShowOnionskin) {
-      DocumentPreferences& docPref = Preferences::instance()
-        .document(m_document);
-
-      if (docPref.onionskin.active()) {
+      if (m_docPref.onionskin.active()) {
         OnionskinOptions opts(
-          (docPref.onionskin.type() == app::gen::OnionskinType::MERGE ?
+          (m_docPref.onionskin.type() == app::gen::OnionskinType::MERGE ?
            render::OnionskinType::MERGE:
-           (docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
+           (m_docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
             render::OnionskinType::RED_BLUE_TINT:
             render::OnionskinType::NONE)));
 
-        opts.position(docPref.onionskin.position());
-        opts.prevFrames(docPref.onionskin.prevFrames());
-        opts.nextFrames(docPref.onionskin.nextFrames());
-        opts.opacityBase(docPref.onionskin.opacityBase());
-        opts.opacityStep(docPref.onionskin.opacityStep());
-        opts.layer(docPref.onionskin.currentLayer() ? m_layer: nullptr);
+        opts.position(m_docPref.onionskin.position());
+        opts.prevFrames(m_docPref.onionskin.prevFrames());
+        opts.nextFrames(m_docPref.onionskin.nextFrames());
+        opts.opacityBase(m_docPref.onionskin.opacityBase());
+        opts.opacityStep(m_docPref.onionskin.opacityStep());
+        opts.layer(m_docPref.onionskin.currentLayer() ? m_layer: nullptr);
 
         FrameTag* tag = nullptr;
-        if (docPref.onionskin.loopTag())
+        if (m_docPref.onionskin.loopTag())
           tag = m_sprite->frameTags().innerTag(m_frame);
         opts.loopTag(tag);
 
@@ -563,10 +559,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   outside.createSubtraction(outside, gfx::Region(spriteRect));
 
   // Document preferences
-  DocumentPreferences& docPref =
-      Preferences::instance().document(m_document);
-
-  if (int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
+  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
     drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, 0);
 
@@ -574,7 +567,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
-  if (int(docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
+  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, 0, -spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, 0, +spriteRect.h);
 
@@ -582,7 +575,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
-  if (docPref.tiled.mode() == filters::TiledMode::BOTH) {
+  if (m_docPref.tiled.mode() == filters::TiledMode::BOTH) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, -spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, -spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, +spriteRect.h);
@@ -610,34 +603,34 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       IntersectClip clip(g, cliprc);
 
       // Draw the pixel grid
-      if ((m_zoom.scale() > 2.0) && docPref.pixelGrid.visible()) {
-        int alpha = docPref.pixelGrid.opacity();
+      if ((m_zoom.scale() > 2.0) && m_docPref.show.pixelGrid()) {
+        int alpha = m_docPref.pixelGrid.opacity();
 
-        if (docPref.pixelGrid.autoOpacity()) {
+        if (m_docPref.pixelGrid.autoOpacity()) {
           alpha = int(alpha * (m_zoom.scale()-2.) / (16.-2.));
           alpha = MID(0, alpha, 255);
         }
 
         drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
-          docPref.pixelGrid.color(), alpha);
+          m_docPref.pixelGrid.color(), alpha);
       }
 
       // Draw the grid
-      if (docPref.grid.visible()) {
-        gfx::Rect gridrc = docPref.grid.bounds();
+      if (m_docPref.show.grid()) {
+        gfx::Rect gridrc = m_docPref.grid.bounds();
         if (m_zoom.apply(gridrc.w) > 2 &&
           m_zoom.apply(gridrc.h) > 2) {
-          int alpha = docPref.grid.opacity();
+          int alpha = m_docPref.grid.opacity();
 
-          if (docPref.grid.autoOpacity()) {
+          if (m_docPref.grid.autoOpacity()) {
             double len = (m_zoom.apply(gridrc.w) + m_zoom.apply(gridrc.h)) / 2.;
             alpha = int(alpha * len / 32.);
             alpha = MID(0, alpha, 255);
           }
 
           if (alpha > 8)
-            drawGrid(g, enclosingRect, docPref.grid.bounds(),
-              docPref.grid.color(), alpha);
+            drawGrid(g, enclosingRect, m_docPref.grid.bounds(),
+              m_docPref.grid.color(), alpha);
         }
       }
     }
@@ -647,14 +640,14 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   if (isActive() &&
       (m_flags & Editor::kShowSymmetryLine) &&
       Preferences::instance().symmetryMode.enabled()) {
-    switch (docPref.symmetry.mode()) {
+    switch (m_docPref.symmetry.mode()) {
       case app::gen::SymmetryMode::NONE:
         // Do nothing
         break;
       case app::gen::SymmetryMode::HORIZONTAL: {
-        int x = docPref.symmetry.xAxis();
+        int x = m_docPref.symmetry.xAxis();
         if (x > 0) {
-          gfx::Color color = color_utils::color_for_ui(docPref.grid.color());
+          gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawVLine(color,
                        spriteRect.x + m_zoom.apply(x),
                        enclosingRect.y,
@@ -663,9 +656,9 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         break;
       }
       case app::gen::SymmetryMode::VERTICAL: {
-        int y = docPref.symmetry.yAxis();
+        int y = m_docPref.symmetry.yAxis();
         if (y > 0) {
-          gfx::Color color = color_utils::color_for_ui(docPref.grid.color());
+          gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawHLine(color,
                        enclosingRect.x,
                        spriteRect.y + m_zoom.apply(y),
@@ -722,7 +715,8 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
  */
 void Editor::drawMask(Graphics* g)
 {
-  if ((m_flags & kShowMask) == 0)
+  if ((m_flags & kShowMask) == 0 ||
+      !m_docPref.show.selectionEdges())
     return;
 
   ASSERT(m_document->getMaskBoundaries());
@@ -1445,6 +1439,11 @@ void Editor::onFgColorChange()
 void Editor::onContextBarBrushChange()
 {
   m_brushPreview.redraw();
+}
+
+void Editor::onShowExtrasChange()
+{
+  invalidate();
 }
 
 void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
