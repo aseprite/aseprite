@@ -102,6 +102,14 @@ Remap create_remap_to_change_palette(
       continue;
 
     const color_t color = oldPalette->getEntry(i);
+
+    // If in both palettes, it's the same color, we don't need to
+    // remap this entry.
+    if (color == newPalette->getEntry(i)) {
+      remap.map(i, i);
+      continue;
+    }
+
     int j = newPalette->findExactMatch(
       rgba_getr(color),
       rgba_getg(color),
