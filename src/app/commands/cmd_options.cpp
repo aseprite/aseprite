@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -39,19 +39,35 @@ using namespace ui;
 class OptionsWindow : public app::gen::Options {
 public:
   OptionsWindow(Context* context, int& curSection)
-    : m_preferences(Preferences::instance())
-    , m_globPref(m_preferences.document(nullptr))
-    , m_docPref(m_preferences.document(context->activeDocument()))
+    : m_pref(Preferences::instance())
+    , m_globPref(m_pref.document(nullptr))
+    , m_docPref(m_pref.document(context->activeDocument()))
     , m_curPref(&m_docPref)
     , m_checked_bg_color1(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_cursorColor(new ColorButton(m_preferences.editor.cursorColor(), IMAGE_RGB))
+    , m_cursorColor(new ColorButton(m_pref.editor.cursorColor(), IMAGE_RGB))
     , m_curSection(curSection)
   {
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
-    cursorColorBox()->addChild(m_cursorColor);
+
+    // Cursor
+    cursorColorPlaceholder()->addChild(m_cursorColor);
+
+    if (m_cursorColor->getColor().getType() == app::Color::MaskType) {
+      cursorColorType()->setSelectedItemIndex(0);
+      m_cursorColor->setVisible(false);
+    }
+    else {
+      cursorColorType()->setSelectedItemIndex(1);
+      m_cursorColor->setVisible(true);
+    }
+    cursorColorType()->Change.connect(base::Bind<void>(&OptionsWindow::onCursorColorType, this));
+
+    // Brush preview
+    brushPreview()->setSelectedItemIndex(
+      (int)m_pref.editor.brushPreview());
 
     // Grid color
     m_gridColor->setId("grid_color");
@@ -62,44 +78,44 @@ public:
     pixelGridColorPlaceholder()->addChild(m_pixelGridColor);
 
     // Others
-    if (m_preferences.general.autoshowTimeline())
+    if (m_pref.general.autoshowTimeline())
       autotimeline()->setSelected(true);
 
-    if (m_preferences.general.rewindOnStop())
+    if (m_pref.general.rewindOnStop())
       rewindOnStop()->setSelected(true);
 
-    if (m_preferences.general.expandMenubarOnMouseover())
+    if (m_pref.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
 
-    if (m_preferences.general.dataRecovery())
+    if (m_pref.general.dataRecovery())
       enableDataRecovery()->setSelected(true);
 
     dataRecoveryPeriod()->setSelectedItemIndex(
       dataRecoveryPeriod()->findItemIndexByValue(
-        base::convert_to<std::string>(m_preferences.general.dataRecoveryPeriod())));
+        base::convert_to<std::string>(m_pref.general.dataRecoveryPeriod())));
 
-    if (m_preferences.editor.zoomFromCenterWithWheel())
+    if (m_pref.editor.zoomFromCenterWithWheel())
       zoomFromCenterWithWheel()->setSelected(true);
 
-    if (m_preferences.editor.zoomFromCenterWithKeys())
+    if (m_pref.editor.zoomFromCenterWithKeys())
       zoomFromCenterWithKeys()->setSelected(true);
 
-    if (m_preferences.selection.autoOpaque())
+    if (m_pref.selection.autoOpaque())
       autoOpaque()->setSelected(true);
 
-    if (m_preferences.selection.keepSelectionAfterClear())
+    if (m_pref.selection.keepSelectionAfterClear())
       keepSelectionAfterClear()->setSelected(true);
 
-    if (m_preferences.experimental.useNativeCursor())
+    if (m_pref.experimental.useNativeCursor())
       nativeCursor()->setSelected(true);
 
-    if (m_preferences.experimental.useNativeFileDialog())
+    if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
 
-    if (m_preferences.experimental.flashLayer())
+    if (m_pref.experimental.flashLayer())
       flashLayer()->setSelected(true);
 
-    if (m_preferences.editor.showScrollbars())
+    if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
     // Scope
@@ -113,15 +129,15 @@ public:
     // Screen/UI Scale
     screenScale()->setSelectedItemIndex(
       screenScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_preferences.general.screenScale())));
+        base::convert_to<std::string>(m_pref.general.screenScale())));
 
     uiScale()->setSelectedItemIndex(
       uiScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_preferences.experimental.uiScale())));
+        base::convert_to<std::string>(m_pref.experimental.uiScale())));
 
     if ((int(she::instance()->capabilities()) &
          int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
-      gpuAcceleration()->setSelected(m_preferences.general.gpuAcceleration());
+      gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
     else {
       gpuAcceleration()->setVisible(false);
@@ -132,10 +148,10 @@ public:
     rightClickBehavior()->addItem("Pick foreground color");
     rightClickBehavior()->addItem("Erase");
     rightClickBehavior()->addItem("Scroll");
-    rightClickBehavior()->setSelectedItemIndex((int)m_preferences.editor.rightClickMode());
+    rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
 
     // Zoom with Scroll Wheel
-    wheelZoom()->setSelected(m_preferences.editor.zoomWithWheel());
+    wheelZoom()->setSelected(m_pref.editor.zoomWithWheel());
 
     // Checked background size
     checkedBgSize()->addItem("16x16");
@@ -159,9 +175,9 @@ public:
 #endif
 
     // Undo preferences
-    undoSizeLimit()->setTextf("%d", m_preferences.undo.sizeLimit());
-    undoGotoModified()->setSelected(m_preferences.undo.gotoModified());
-    undoAllowNonlinearHistory()->setSelected(m_preferences.undo.allowNonlinearHistory());
+    undoSizeLimit()->setTextf("%d", m_pref.undo.sizeLimit());
+    undoGotoModified()->setSelected(m_pref.undo.gotoModified());
+    undoAllowNonlinearHistory()->setSelected(m_pref.undo.allowNonlinearHistory());
 
     // Theme buttons
     selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
@@ -176,32 +192,33 @@ public:
   }
 
   void saveConfig() {
-    m_preferences.general.autoshowTimeline(autotimeline()->isSelected());
-    m_preferences.general.rewindOnStop(rewindOnStop()->isSelected());
+    m_pref.general.autoshowTimeline(autotimeline()->isSelected());
+    m_pref.general.rewindOnStop(rewindOnStop()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
-    m_preferences.general.expandMenubarOnMouseover(expandOnMouseover);
+    m_pref.general.expandMenubarOnMouseover(expandOnMouseover);
     ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
 
     std::string warnings;
 
     int newPeriod = base::convert_to<int>(dataRecoveryPeriod()->getValue());
-    if (enableDataRecovery()->isSelected() != m_preferences.general.dataRecovery() ||
-        newPeriod != m_preferences.general.dataRecoveryPeriod()) {
-      m_preferences.general.dataRecovery(enableDataRecovery()->isSelected());
-      m_preferences.general.dataRecoveryPeriod(newPeriod);
+    if (enableDataRecovery()->isSelected() != m_pref.general.dataRecovery() ||
+        newPeriod != m_pref.general.dataRecoveryPeriod()) {
+      m_pref.general.dataRecovery(enableDataRecovery()->isSelected());
+      m_pref.general.dataRecoveryPeriod(newPeriod);
 
       warnings += "<<- Automatically save recovery data every";
     }
 
-    m_preferences.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
-    m_preferences.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
-    m_preferences.editor.showScrollbars(showScrollbars()->isSelected());
-    m_preferences.editor.zoomWithWheel(wheelZoom()->isSelected());
-    m_preferences.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
-    m_preferences.editor.cursorColor(m_cursorColor->getColor());
-    m_preferences.selection.autoOpaque(autoOpaque()->isSelected());
-    m_preferences.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
+    m_pref.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
+    m_pref.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
+    m_pref.editor.showScrollbars(showScrollbars()->isSelected());
+    m_pref.editor.zoomWithWheel(wheelZoom()->isSelected());
+    m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
+    m_pref.editor.cursorColor(m_cursorColor->getColor());
+    m_pref.editor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.selection.autoOpaque(autoOpaque()->isSelected());
+    m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
 
     m_curPref->grid.color(m_gridColor->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());
@@ -218,37 +235,37 @@ public:
     undo_size_limit_value = undoSizeLimit()->textInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
 
-    m_preferences.undo.sizeLimit(undo_size_limit_value);
-    m_preferences.undo.gotoModified(undoGotoModified()->isSelected());
-    m_preferences.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
+    m_pref.undo.sizeLimit(undo_size_limit_value);
+    m_pref.undo.gotoModified(undoGotoModified()->isSelected());
+    m_pref.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
     // Experimental features
-    m_preferences.experimental.useNativeCursor(nativeCursor()->isSelected());
-    m_preferences.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
-    m_preferences.experimental.flashLayer(flashLayer()->isSelected());
+    m_pref.experimental.useNativeCursor(nativeCursor()->isSelected());
+    m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
+    m_pref.experimental.flashLayer(flashLayer()->isSelected());
     ui::set_use_native_cursors(
-      m_preferences.experimental.useNativeCursor());
+      m_pref.experimental.useNativeCursor());
 
     bool reset_screen = false;
     int newScreenScale = base::convert_to<int>(screenScale()->getValue());
-    if (newScreenScale != m_preferences.general.screenScale()) {
-      m_preferences.general.screenScale(newScreenScale);
+    if (newScreenScale != m_pref.general.screenScale()) {
+      m_pref.general.screenScale(newScreenScale);
       reset_screen = true;
     }
 
     int newUIScale = base::convert_to<int>(uiScale()->getValue());
-    if (newUIScale != m_preferences.experimental.uiScale()) {
-      m_preferences.experimental.uiScale(newUIScale);
+    if (newUIScale != m_pref.experimental.uiScale()) {
+      m_pref.experimental.uiScale(newUIScale);
       warnings += "<<- UI Elements Scale";
     }
 
     bool newGpuAccel = gpuAcceleration()->isSelected();
-    if (newGpuAccel != m_preferences.general.gpuAcceleration()) {
-      m_preferences.general.gpuAcceleration(newGpuAccel);
+    if (newGpuAccel != m_pref.general.gpuAcceleration()) {
+      m_pref.general.gpuAcceleration(newGpuAccel);
       reset_screen = true;
     }
 
-    m_preferences.save();
+    m_pref.save();
 
     if (!warnings.empty()) {
       ui::Alert::show(PACKAGE
@@ -361,7 +378,7 @@ private:
       themeList()->addChild(item);
 
       // Selected theme
-      if (fn == m_preferences.theme.selected())
+      if (fn == m_pref.theme.selected())
         themeList()->selectChild(item);
     }
 
@@ -372,8 +389,8 @@ private:
   void onSelectTheme() {
     ListItem* item = dynamic_cast<ListItem*>(themeList()->getSelectedChild());
     if (item &&
-        item->getValue() != m_preferences.theme.selected()) {
-      m_preferences.theme.selected(item->getValue());
+        item->getValue() != m_pref.theme.selected()) {
+      m_pref.theme.selected(item->getValue());
 
       ui::Alert::show(PACKAGE
                       "<<You must restart the program to see the selected theme"
@@ -385,13 +402,27 @@ private:
     launcher::open_folder(themeFolder());
   }
 
+  void onCursorColorType() {
+    switch (cursorColorType()->getSelectedItemIndex()) {
+      case 0:
+        m_cursorColor->setColor(app::Color::fromMask());
+        m_cursorColor->setVisible(false);
+        break;
+      case 1:
+        m_cursorColor->setColor(app::Color::fromRgb(0, 0, 0, 255));
+        m_cursorColor->setVisible(true);
+        break;
+    }
+    layout();
+  }
+
   static std::string themeFolder() {
     ResourceFinder rf;
     rf.includeDataDir("skins");
     return rf.defaultFilename();
   }
 
-  Preferences& m_preferences;
+  Preferences& m_pref;
   DocumentPreferences& m_globPref;
   DocumentPreferences& m_docPref;
   DocumentPreferences* m_curPref;

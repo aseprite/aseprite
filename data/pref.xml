@@ -20,6 +20,11 @@
       <value id="SQUARE" value="1" />
       <value id="LINE" value="2" />
     </enum>
+    <enum id="BrushPreview">
+      <value id="NONE" value="0" />
+      <value id="EDGES" value="1" />
+      <value id="FULL" value="2" />
+    </enum>
     <enum id="BgType">
       <value id="CHECKED_16x16" value="0" />
       <value id="CHECKED_8x8" value="1" />
@@ -89,6 +94,7 @@
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="Tools.CursorColor" />
+      <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" />
       <option id="play_once" type="bool" default="false" />
     </section>
     <section id="preview" text="Preview">

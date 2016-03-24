@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -137,13 +137,25 @@ void BrushPreview::show(const gfx::Point& screenPos)
     m_type = CROSS;
   }
 
+  bool usePreview = false;
+  switch (Preferences::instance().editor.brushPreview()) {
+    case app::gen::BrushPreview::NONE:
+      m_type = CROSS;
+      break;
+    case app::gen::BrushPreview::EDGES:
+      m_type = BRUSH_BOUNDARIES;
+      break;
+    case app::gen::BrushPreview::FULL:
+      usePreview = m_editor->getState()->requireBrushPreview();
+      break;
+  }
+
   // For cursor type 'bounds' we have to generate cursor boundaries
   if (m_type & BRUSH_BOUNDARIES)
     generateBoundaries();
 
   // Draw pixel/brush preview
-  if ((m_type & CROSS) &&
-      m_editor->getState()->requireBrushPreview()) {
+  if ((m_type & CROSS) && usePreview) {
     gfx::Rect origBrushBounds = (isFloodfill ? gfx::Rect(0, 0, 1, 1): brush->bounds());
     gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);

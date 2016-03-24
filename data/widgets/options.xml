@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <window id="options" text="Preferences">
   <vbox>
@@ -9,6 +9,7 @@
           <listitem text="General" value="section_general" />
           <listitem text="Editor" value="section_editor" />
           <listitem text="Timeline" value="section_timeline" />
+          <listitem text="Cursors" value="section_cursors" />
           <listitem text="Grid &amp;&amp; Background" value="section_grid" />
           <listitem text="Undo" value="section_undo" />
           <listitem text="Theme" value="section_theme" />
@@ -65,10 +66,6 @@
             <label text="Right-click:" />
             <combobox id="right_click_behavior" expansive="true" />
           </hbox>
-          <hbox>
-            <label text="Cursor Color:" />
-            <box id="cursor_color_box" /><!-- custom widget -->
-          </hbox>
 
           <separator text="Selection" horizontal="true" />
           <check text="Adjust opaque/transparent mode automatically" id="auto_opaque" tooltip="Depending on the layer (background/transparent),&#10;the pasted selection will be adjusted&#10;automatically (opaque/transparent)" />
@@ -81,6 +78,26 @@
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Rewind on Stop" id="rewind_on_stop" tooltip="The 'Stop' button should rewind the animation&#10;where it was started." />
 	</vbox>
+
+        <!-- Cursors -->
+        <vbox id="section_cursors">
+          <separator text="Painting Cursors" horizontal="true" />
+          <label text="Precise Cursor Color:" />
+	  <hbox>
+	    <combobox group="1" id="cursor_color_type">
+	      <listitem text="Negative Black and White" value="0" />
+	      <listitem text="Specific Color" value="1" />
+	    </combobox>
+	    <box id="cursor_color_placeholder" /><!-- custom widget -->
+	  </hbox>
+
+	  <label text="Brush Preview:" />
+          <combobox id="brush_preview">
+            <listitem text="None" value="0" />
+            <listitem text="Brush Edges" value="1" />
+            <listitem text="Full Real-time Brush Preview" value="2" />
+          </combobox>
+        </vbox>
 
         <!-- Grid & background -->
         <vbox id="section_grid">
