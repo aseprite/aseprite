@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -116,15 +116,9 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Notify the mouse button down to the tool loop manager.
   m_toolLoopManager->pressButton(pointer_from_msg(editor, msg));
 
-  // Cancel drawing loop
-  if (m_toolLoopManager->isCanceled()) {
-    destroyLoop(editor);
-
-    // Change to standby state
-    editor->backToPreviousState();
-    editor->releaseMouse();
-  }
-
+  // The user might have canceled by the tool loop clicking with the
+  // secondary mouse button.
+  destroyLoopIfCanceled(editor);
   return true;
 }
 
@@ -216,15 +210,8 @@ bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   m_toolLoopManager->releaseKey(msg->scancode());
 
-  // Cancel drawing loop
-  if (m_toolLoopManager->isCanceled()) {
-    destroyLoop(editor);
-
-    // Change to standby state
-    editor->backToPreviousState();
-    editor->releaseMouse();
-  }
-
+  // The user might have canceled the tool loop pressing the 'Esc' key.
+  destroyLoopIfCanceled(editor);
   return true;
 }
 
@@ -239,6 +226,18 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
 {
   if (m_toolLoop)
     m_toolLoop->validateDstImage(rgn);
+}
+
+void DrawingState::destroyLoopIfCanceled(Editor* editor)
+{
+  // Cancel drawing loop
+  if (m_toolLoopManager->isCanceled()) {
+    destroyLoop(editor);
+
+    // Change to standby state
+    editor->backToPreviousState();
+    editor->releaseMouse();
+  }
 }
 
 void DrawingState::destroyLoop(Editor* editor)
