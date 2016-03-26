@@ -451,7 +451,7 @@ target_link_libraries(app-lib
   ${PNG_LIBRARIES}
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
-  ${FREETYPE_LIBRARY})
+  ${FREETYPE_LIBRARIES})
 
 if(ENABLE_UPDATER)
   target_link_libraries(app-lib updater-lib)

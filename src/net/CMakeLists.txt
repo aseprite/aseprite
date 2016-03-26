@@ -7,4 +7,4 @@ add_library(net-lib
   http_response.cpp)
 
 target_link_libraries(net-lib
-  ${LIBCURL_LIBRARY})
+  ${LIBCURL_LIBRARIES})
