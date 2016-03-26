@@ -235,7 +235,7 @@ if(USE_SHARED_JPEGLIB)
   find_package(JPEG REQUIRED)
 else()
   set(JPEG_LIBRARIES jpeg)
-  set(JPEG_INCLUDE_DIRS ${LIBJPEG_DIRS})
+  set(JPEG_INCLUDE_DIRS ${LIBJPEG_DIR})
 endif()
 include_directories(${JPEG_INCLUDE_DIRS})
 
