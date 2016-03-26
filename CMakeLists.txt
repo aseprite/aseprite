@@ -253,10 +253,10 @@ endif()
 if(USE_SHARED_CURL)
   find_package(CURL REQUIRED)
 else()
-  set(LIBCURL_LIBRARIES libcurl)
-  set(LIBCURL_INCLUDE_DIRS ${CURL_DIR}/include)
+  set(CURL_LIBRARIES libcurl)
+  set(CURL_INCLUDE_DIRS ${CURL_DIR}/include)
 endif()
-include_directories(${LIBCURL_INCLUDE_DIRS})
+include_directories(${CURL_INCLUDE_DIRS})
 
 # simpleini
 include_directories(${SIMPLEINI_DIR})
