@@ -215,6 +215,16 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   m_toolLoopManager->releaseKey(msg->scancode());
+
+  // Cancel drawing loop
+  if (m_toolLoopManager->isCanceled()) {
+    destroyLoop(editor);
+
+    // Change to standby state
+    editor->backToPreviousState();
+    editor->releaseMouse();
+  }
+
   return true;
 }
 
