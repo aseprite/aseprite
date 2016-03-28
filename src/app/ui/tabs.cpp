@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -760,10 +760,10 @@ void Tabs::resetOldPositions(double t)
     if (tab == m_floatingTab)
       continue;
 
-    ASSERT(tab->x != 0xfefefefe);
-    ASSERT(tab->width != 0xfefefefe);
-    ASSERT(tab->oldX != 0xfefefefe);
-    ASSERT(tab->oldWidth != 0xfefefefe);
+    ASSERT(tab->x != (int)0xfefefefe);
+    ASSERT(tab->width != (int)0xfefefefe);
+    ASSERT(tab->oldX != (int)0xfefefefe);
+    ASSERT(tab->oldWidth != (int)0xfefefefe);
 
     tab->oldX = int(inbetween(tab->oldX, tab->x, t));
     tab->oldWidth = int(inbetween(tab->oldWidth, tab->width, t));
@@ -883,10 +883,10 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
     box.w = tab->width;
   }
   else {
-    ASSERT(tab->x != 0xfefefefe);
-    ASSERT(tab->width != 0xfefefefe);
-    ASSERT(tab->oldX != 0xfefefefe);
-    ASSERT(tab->oldWidth != 0xfefefefe);
+    ASSERT(tab->x != (int)0xfefefefe);
+    ASSERT(tab->width != (int)0xfefefefe);
+    ASSERT(tab->oldX != (int)0xfefefefe);
+    ASSERT(tab->oldWidth != (int)0xfefefefe);
 
     box.x = startX + int(inbetween(tab->oldX, tab->x, t));
     box.w = int(inbetween(tab->oldWidth, tab->width, t));
