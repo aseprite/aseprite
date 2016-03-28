@@ -211,6 +211,9 @@ void she_mouse_callback(int flags)
   if (flags & MOUSE_FLAG_MOVE) {
     ev.setType(Event::MouseMove);
     queue_event(ev);
+
+    // Reset double click status
+    double_click_level = DOUBLE_CLICK_NONE;
   }
 
   // buttons
