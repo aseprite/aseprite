@@ -697,9 +697,11 @@ static int x_keyboard_init(void)
 
 #ifdef ALLEGRO_XWINDOWS_WITH_XIM
    /* Otherwise we are restricted to ISO-8859-1 characters. */
+/* [dacap] Don't call setlocale()
    if (setlocale(LC_ALL, "") == NULL) {
       TRACE(PREFIX_W "Could not set default locale.\n");
    }
+*/
 
 /* TODO: is this needed?
    modifiers = XSetLocaleModifiers("@im=none");

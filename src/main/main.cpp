@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,6 +22,7 @@
 #include "she/scoped_handle.h"
 #include "she/system.h"
 
+#include <clocale>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -48,8 +49,14 @@ namespace {
 // Aseprite entry point. (Called from she library.)
 int app_main(int argc, char* argv[])
 {
+  // Initialize the locale. Aseprite isn't ready to handle numeric
+  // fields with other locales (e.g. we expect strings like "10.32" be
+  // used in std::strtod(), not something like "10,32").
+  std::setlocale(LC_ALL, "en-US");
+  ASSERT(std::strtod("10.32", nullptr) == 10.32);
+
   // Initialize the random seed.
-  std::srand(static_cast<unsigned int>(std::time(NULL)));
+  std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
 #ifdef _WIN32
   ::CoInitialize(NULL);
