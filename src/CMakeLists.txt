@@ -166,7 +166,7 @@ install(DIRECTORY ../data
 # Tests
 
 if(ENABLE_TESTS)
-  include(Find-tests)
+  include(FindTests)
 
   find_tests(base base-lib)
   find_tests(undo undo-lib)
@@ -179,4 +179,3 @@ if(ENABLE_TESTS)
   find_tests(app app-lib)
   find_tests(. app-lib)
 endif()
-
