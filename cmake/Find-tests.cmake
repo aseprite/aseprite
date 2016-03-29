@@ -2,7 +2,6 @@
 # Find tests and run them
 #
 #  find_test(dir dependencies)
-#  DXGUID_FOUND       - True if dxguid found.
 
 
 function(find_tests dir dependencies)
