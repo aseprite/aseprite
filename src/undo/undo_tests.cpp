@@ -1,5 +1,5 @@
 // Aseprite Undo Library
-// Copyright (C) 2015 David Capello
+// Copyright (C) 2015-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -75,7 +75,7 @@ TEST(Undo, Basics)
 TEST(Undo, Tree)
 {
   // 1 --- 2
-  //  \
+  //  |
   //   ------ 3 --- 4
   int model = 0;
   Cmd cmd1(model, 1, 0);
@@ -114,7 +114,7 @@ TEST(Undo, Tree)
 TEST(Undo, ComplexTree)
 {
   // 1 --- 2 --- 3 --- 4      ------ 7 --- 8
-  //        \                /
+  //        |                |
   //         ------------- 5 --- 6
   int model = 0;
   Cmd cmd1(model, 1, 0);
