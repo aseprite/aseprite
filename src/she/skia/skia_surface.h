@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define SHE_SKIA_SKIA_SURFACE_INCLUDED
 #pragma once
 
+#include "base/exception.h"
 #include "gfx/clip.h"
 #include "she/common/font.h"
 #include "she/locked_surface.h"
@@ -56,20 +57,22 @@ public:
   void create(int width, int height) {
     ASSERT(!m_surface);
 
-    m_bitmap.tryAllocPixels(
-      SkImageInfo::MakeN32Premul(width, height));
-    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
+    if (!m_bitmap.tryAllocPixels(
+          SkImageInfo::MakeN32Premul(width, height)))
+      throw base::Exception("Cannot create Skia surface");
 
+    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
     rebuild();
   }
 
   void createRgba(int width, int height) {
     ASSERT(!m_surface);
 
-    m_bitmap.tryAllocPixels(
-      SkImageInfo::MakeN32Premul(width, height));
-    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
+    if (!m_bitmap.tryAllocPixels(
+          SkImageInfo::MakeN32Premul(width, height)))
+      throw base::Exception("Cannot create Skia surface");
 
+    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
     rebuild();
   }
 
@@ -131,7 +134,9 @@ public:
         m_paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         {
           SkBitmap bitmap;
-          bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(8, 8));
+          if (!bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(8, 8)))
+            throw base::Exception("Cannot create temporary Skia surface");
+
           {
             bitmap.lockPixels();
             SkPMColor bg = SkPreMultiplyARGB(255, 0, 0, 0);
@@ -164,8 +169,9 @@ public:
     ASSERT(!m_surface);
 
     SkBitmap result;
-    result.tryAllocPixels(
-      SkImageInfo::MakeN32Premul(width()*scaleFactor, height()*scaleFactor));
+    if (!result.tryAllocPixels(
+          SkImageInfo::MakeN32Premul(width()*scaleFactor, height()*scaleFactor)))
+      throw base::Exception("Cannot create temporary Skia surface to change scale");
 
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
