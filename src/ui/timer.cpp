@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,9 +10,9 @@
 
 #include "ui/timer.h"
 
+#include "base/time.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/system.h"
 #include "ui/widget.h"
 
 #include <algorithm>
@@ -27,9 +27,10 @@ static Timers timers; // Registered timers
 Timer::Timer(int interval, Widget* owner)
   : m_owner(owner ? owner: Manager::getDefault())
   , m_interval(interval)
-  , m_lastTime(-1)
+  , m_running(false)
+  , m_lastTick(0)
 {
-  ASSERT(m_owner != NULL);
+  ASSERT(m_owner != nullptr);
 
   timers.push_back(this);
 }
@@ -44,19 +45,15 @@ Timer::~Timer()
   Manager::getDefault()->removeMessagesForTimer(this);
 }
 
-bool Timer::isRunning() const
-{
-  return (m_lastTime >= 0);
-}
-
 void Timer::start()
 {
-  m_lastTime = ui::clock();
+  m_lastTick = base::current_tick();
+  m_running = true;
 }
 
 void Timer::stop()
 {
-  m_lastTime = -1;
+  m_running = false;
 }
 
 void Timer::tick()
@@ -79,26 +76,16 @@ void Timer::pollTimers()
 {
   // Generate messages for timers
   if (!timers.empty()) {
-    int t = ui::clock();
-    int count;
+    base::tick_t t = base::current_tick();
 
     for (Timers::iterator it=timers.begin(), end=timers.end(); it != end; ++it) {
       Timer* timer = *it;
-      if (timer && timer->m_lastTime >= 0) {
-        count = 0;
-        while (t - timer->m_lastTime > timer->m_interval) {
-          timer->m_lastTime += timer->m_interval;
-          ++count;
-
-          /* we spend too much time here */
-          if (ui::clock() - t > timer->m_interval) {
-            timer->m_lastTime = ui::clock();
-            break;
-          }
-        }
-
+      if (timer && timer->isRunning()) {
+        int64_t count = ((t - timer->m_lastTick) / timer->m_interval);
         if (count > 0) {
-          ASSERT(timer->m_owner != NULL);
+          timer->m_lastTick += count * timer->m_interval;
+
+          ASSERT(timer->m_owner != nullptr);
 
           Message* msg = new TimerMessage(count, timer);
           msg->addRecipient(timer->m_owner);

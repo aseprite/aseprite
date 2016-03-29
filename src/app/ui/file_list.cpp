@@ -15,6 +15,7 @@
 #include "app/thumbnail_generator.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/string.h"
+#include "base/time.h"
 #include "she/font.h"
 #include "she/surface.h"
 #include "ui/ui.h"
@@ -245,7 +246,7 @@ bool FileList::onProcessMessage(Message* msg)
                  std::tolower(unicodeChar) <= 'z') ||
                 (unicodeChar >= '0' &&
                  unicodeChar <= '9')) {
-              if (ui::clock() - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
+              if ((base::current_tick() - m_isearchClock) > ISEARCH_KEYPRESS_INTERVAL_MSECS)
                 m_isearch.clear();
 
               m_isearch.push_back(unicodeChar);
@@ -261,7 +262,7 @@ bool FileList::onProcessMessage(Message* msg)
                   break;
                 }
               }
-              m_isearchClock = ui::clock();
+              m_isearchClock = base::current_tick();
               // Go to selectIndex...
             }
             else

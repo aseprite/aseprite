@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,7 +20,6 @@
 #if __APPLE__
   #include "she/osx/app.h"
   #include <CoreServices/CoreServices.h>
-  #include <mach/mach_time.h>
 #endif
 
 namespace she {
@@ -45,20 +44,6 @@ void error_message(const char* msg)
 void clear_keyboard_buffer()
 {
   // Do nothing
-}
-
-int clock_value()
-{
-#if _WIN32
-  return (int)GetTickCount();
-#elif defined(__APPLE__)
-  static mach_timebase_info_data_t timebase = { 0, 0 };
-  if (timebase.denom == 0)
-    (void)mach_timebase_info(&timebase);
-  return int(float(mach_absolute_time()) * float(timebase.numer) / float(timebase.denom) / 1.0e6f);
-#else
-  return 0; // TODO
-#endif
 }
 
 } // namespace she

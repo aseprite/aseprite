@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -55,7 +55,6 @@
 #include <list>
 #include <vector>
 
-#include "she/alleg4/clock.h"
 #include "she/alleg4/display_events.h"
 #ifdef USE_KEY_POLLER
   #include "she/alleg4/key_poller.h"
@@ -123,7 +122,6 @@ public:
     register_bitmap_file_type("png", load_png, save_png);
 
     // Init event sources
-    clock_init();
     display_events_init();
 #ifdef USE_KEY_POLLER
     key_poller_init();
@@ -136,7 +134,6 @@ public:
   }
 
   ~Alleg4System() {
-    clock_exit();
     remove_timer();
     allegro_exit();
 

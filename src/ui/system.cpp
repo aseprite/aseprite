@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,7 +11,6 @@
 #include "ui/system.h"
 
 #include "gfx/point.h"
-#include "she/clock.h"
 #include "she/display.h"
 #include "she/surface.h"
 #include "she/system.h"
@@ -148,11 +147,6 @@ UISystem::~UISystem()
 
   _internal_set_mouse_display(NULL);
   update_mouse_overlay(NULL);
-}
-
-int clock()
-{
-  return she::clock_value();
 }
 
 void _internal_set_mouse_display(she::Display* display)

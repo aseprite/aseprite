@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,6 +11,7 @@
 
 #include "app/ui/editor/state_with_wheel_behavior.h"
 #include "base/connection.h"
+#include "base/time.h"
 #include "doc/frame.h"
 #include "ui/timer.h"
 
@@ -46,7 +47,7 @@ namespace app {
     // Number of milliseconds to go to the next frame if m_playTimer
     // is activated.
     double m_nextFrameTime;
-    int m_curFrameTick;
+    base::tick_t m_curFrameTick;
 
     bool m_pingPongForward;
     doc::frame_t m_refFrame;

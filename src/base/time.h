@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,9 +8,14 @@
 #define BASE_TIME_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
+
 #include <string>
 
 namespace base {
+
+  // ~1000 per second
+  typedef uint64_t tick_t;
 
   class Time {
   public:
@@ -47,6 +52,7 @@ namespace base {
   };
 
   Time current_time();
+  tick_t current_tick();
 
 }
 

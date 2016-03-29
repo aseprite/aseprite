@@ -54,7 +54,6 @@
 #include <sstream>
 #include <vector>
 
-#include "she/alleg4/clock.h"
 #include "she/alleg4/display_events.h"
 
 #ifdef USE_KEY_POLLER

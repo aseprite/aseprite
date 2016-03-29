@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,6 +11,7 @@
 
 #include "app/color.h"
 #include "base/observers.h"
+#include "base/time.h"
 #include "doc/context_observer.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
@@ -86,7 +87,7 @@ namespace app {
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
-    int m_timeout;
+    base::tick_t m_timeout;
     State m_state;
 
     // Showing a tool

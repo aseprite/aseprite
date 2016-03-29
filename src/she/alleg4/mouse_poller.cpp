@@ -8,8 +8,8 @@
 #include "config.h"
 #endif
 
+#include "base/time.h"
 #include "she/alleg4/alleg_display.h"
-#include "she/clock.h"
 #include "she/display.h"
 #include "she/event.h"
 #include "she/event_queue.h"
@@ -49,7 +49,7 @@ bool mouse_left = false;
 
 DlbClk double_click_level;
 Event::MouseButton double_click_button = Event::NoneButton;
-int double_click_ticks;
+base::tick_t double_click_ticks;
 
 #if !defined(__APPLE__) && !defined(_WIN32)
 // Mouse enter/leave
@@ -121,11 +121,11 @@ void generate_mouse_event_for_button(Event::MouseButton button, int old_b, int n
   ev.setButton(button);
 
   // Double Click
-  int current_ticks = clock_value();
+  base::tick_t current_ticks = base::current_tick();
   if (ev.type() == Event::MouseDown) {
     if (double_click_level != DOUBLE_CLICK_NONE) {
       // Time out, back to NONE
-      if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
+      if ((current_ticks - double_click_ticks) > DOUBLE_CLICK_TIMEOUT_MSECS) {
         double_click_level = DOUBLE_CLICK_NONE;
       }
       else if (double_click_button == button) {
@@ -152,7 +152,7 @@ void generate_mouse_event_for_button(Event::MouseButton button, int old_b, int n
   else if (ev.type() == Event::MouseUp) {
     if (double_click_level != DOUBLE_CLICK_NONE) {
       // Time out, back to NONE
-      if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
+      if ((current_ticks - double_click_ticks) > DOUBLE_CLICK_TIMEOUT_MSECS) {
         double_click_level = DOUBLE_CLICK_NONE;
       }
       else if (double_click_level == DOUBLE_CLICK_DOWN) {

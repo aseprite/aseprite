@@ -11,6 +11,7 @@
 
 #include "app/file_system.h"
 #include "base/signal.h"
+#include "base/time.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -72,7 +73,7 @@ namespace app {
 
     // Incremental-search
     std::string m_isearch;
-    int m_isearchClock;
+    base::tick_t m_isearchClock;
 
     // Timer to start generating the thumbnail after an item is
     // selected.

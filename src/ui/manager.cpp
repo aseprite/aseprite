@@ -15,6 +15,7 @@
 #include "ui/manager.h"
 
 #include "base/scoped_value.h"
+#include "base/time.h"
 #include "she/display.h"
 #include "she/event.h"
 #include "she/event_queue.h"
@@ -1189,13 +1190,13 @@ void Manager::onSizeHint(SizeHintEvent& ev)
 void Manager::pumpQueue()
 {
 #ifdef LIMIT_DISPATCH_TIME
-  int t = ui::clock();
+  base::tick_t t = base::current_tick();
 #endif
 
   Messages::iterator it = msg_queue.begin();
   while (it != msg_queue.end()) {
 #ifdef LIMIT_DISPATCH_TIME
-    if (ui::clock()-t > 250)
+    if (base::current_tick()-t > 250)
       break;
 #endif
 

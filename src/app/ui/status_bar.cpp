@@ -263,7 +263,7 @@ void StatusBar::updateFromEditor(Editor* editor)
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
-  if ((ui::clock() > m_timeout) || (msecs > 0)) {
+  if ((base::current_tick() > m_timeout) || (msecs > 0)) {
     char buf[256];              // TODO warning buffer overflow
     va_list ap;
 
@@ -271,7 +271,7 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
     vsprintf(buf, format, ap);
     va_end(ap);
 
-    m_timeout = ui::clock() + msecs;
+    m_timeout = base::current_tick() + msecs;
     m_state = SHOW_TEXT;
 
     setText(buf);
@@ -315,7 +315,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
-  m_timeout = ui::clock();
+  m_timeout = base::current_tick();
   setText(buf);
   invalidate();
 }

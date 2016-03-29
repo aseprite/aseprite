@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -70,7 +70,7 @@ void PlayState::onEnterState(Editor* editor)
 
   m_toScroll = false;
   m_nextFrameTime = getNextFrameTime();
-  m_curFrameTick = ui::clock();
+  m_curFrameTick = base::current_tick();
   m_pingPongForward = true;
 
   // Maybe we came from ScrollingState and the timer is already
@@ -146,7 +146,7 @@ void PlayState::onPlaybackTick()
   if (m_nextFrameTime < 0)
     return;
 
-  m_nextFrameTime -= (ui::clock() - m_curFrameTick);
+  m_nextFrameTime -= (base::current_tick() - m_curFrameTick);
 
   doc::Sprite* sprite = m_editor->sprite();
   doc::FrameTag* tag = get_animation_tag(sprite, m_refFrame);
@@ -188,7 +188,7 @@ void PlayState::onPlaybackTick()
     m_editor->invalidate();
   }
 
-  m_curFrameTick = ui::clock();
+  m_curFrameTick = base::current_tick();
 }
 
 // Before executing any command, we stop the animation
