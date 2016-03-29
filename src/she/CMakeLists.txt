@@ -25,7 +25,6 @@ if(USE_ALLEG4_BACKEND)
   list(APPEND SHE_SOURCES
     alleg4/alleg_display.cpp
     alleg4/alleg_surface.cpp
-    alleg4/clock.cpp
     alleg4/display_events.cpp
     alleg4/key_poller.cpp
     alleg4/mouse_poller.cpp
@@ -136,6 +135,10 @@ if(USE_SKIA_BACKEND)
     endif()
   endif()
 
+  # Patch for Skia (branch m50) as we don't link with skia_codec library
+  add_library(skia_missing_files ${SKIA_DIR}/src/ports/SkImageGenerator_none.cpp)
+  set(SKIA_MISSING_FILES skia_missing_files)
+
   set(SKIA_LIBRARIES
     ${SKIA_ETC1_LIBRARY}
     ${SKIA_LIBSKKTX_LIBRARY}
@@ -153,6 +156,7 @@ if(USE_SKIA_BACKEND)
     ${SKIA_PORTS_LIBRARY}
     ${SKIA_SFNT_LIBRARY}
     ${SKIA_UTILS_LIBRARY}
+    ${SKIA_MISSING_FILES}
     CACHE INTERNAL "Skia libraries")
 
   list(APPEND SHE_SOURCES
