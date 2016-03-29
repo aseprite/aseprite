@@ -96,6 +96,20 @@ You will need the following dependencies:
 The `libxcursor-dev` package is needed to
 [hide the hardware cursor](https://github.com/aseprite/aseprite/issues/913).
 
+### Known issues
+
+If you use the official version of Allegro 4.4 library (i.e. you
+compile with `USE_SHARED_ALLEGRO4=ON`) you will experience a couple of
+known issues solved in
+[our patched version of Allegro 4.4 library](https://github.com/aseprite/aseprite/tree/master/src/allegro):
+
+* You will
+  [not be able to resize the window](https://github.com/aseprite/aseprite/issues/192)
+  ([patch](https://github.com/aseprite/aseprite/commit/920f6275d55113507121afcbcda80adb44cc0563)).
+* You will have problems
+  [adding HSV colors in non-English systems](https://github.com/aseprite/aseprite/commit/27b55030e26e93c5e8d9e7e21206c8709d46ff22)
+  using the warning icon.
+
 ## Mac OS X details
 
 You need the old Mac OS X 10.4 SDK universal, which can be obtained
