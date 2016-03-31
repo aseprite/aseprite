@@ -13,7 +13,7 @@ if(COMMAND cmake_policy)
   if(CMAKE_MAJOR_VERSION GREATER 2)
     # CMP0046: Old behavior to silently ignore non-existent dependencies.
     cmake_policy(SET CMP0046 OLD)
-  endif(CMAKE_MAJOR_VERSION GREATER 2)
+  endif()
 endif(COMMAND cmake_policy)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -160,20 +160,23 @@ endif()
 if(USE_SHARED_ZLIB)
   find_package(ZLIB REQUIRED)
 else()
-  set(ZLIB_LIBRARIES zlib)
-  set(ZLIB_INCLUDE_DIRS ${ZLIB_DIR})
-  # Zlib generated zconf.h file
-  include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
+  set(ZLIB_LIBRARIES zlibstatic)
+  set(ZLIB_INCLUDE_DIRS
+    ${ZLIB_DIR}
+    ${CMAKE_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
 endif()
 include_directories(${ZLIB_INCLUDE_DIRS})
+message(${ZLIB_INCLUDE_DIRS})
 
 # libpng
 if(USE_SHARED_LIBPNG)
   find_package(PNG REQUIRED)
   add_definitions(${PNG_DEFINITIONS})
 else()
-  set(PNG_LIBRARIES libpng)
-  set(PNG_INCLUDE_DIRS ${LIBPNG_DIR})
+  set(PNG_LIBRARIES png_static)
+  set(PNG_INCLUDE_DIRS
+    ${LIBPNG_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/third_party/libpng) # Libpng generated pnglibconf.h file
 endif()
 include_directories(${PNG_INCLUDE_DIRS})
 add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
@@ -209,9 +212,9 @@ if(USE_SHARED_PIXMAN)
   find_path(PIXMAN_INCLUDE_DIR NAMES pixman.h PATH_SUFFIXES pixman-1)
 else()
   set(PIXMAN_LIBRARY pixman)
-  set(PIXMAN_INCLUDE_DIR ${PIXMAN_DIR}/pixman)
-  # For pixman-version.h
-  include_directories(${CMAKE_BINARY_DIR})
+  set(PIXMAN_INCLUDE_DIR
+    ${PIXMAN_DIR}/pixman
+    ${CMAKE_BINARY_DIR}) # For pixman-version.h
 endif()
 include_directories(${PIXMAN_INCLUDE_DIR})
 

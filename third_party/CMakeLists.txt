@@ -12,11 +12,17 @@ if(NOT USE_SHARED_JPEGLIB)
 endif()
 
 if(NOT USE_SHARED_ZLIB)
-  include_directories(zlib)
+  set(SKIP_INSTALL_ALL on)
+  set(ZLIB_LIBRARY zlibstatic)
   add_subdirectory(zlib)
 endif()
 
 if(NOT USE_SHARED_LIBPNG)
+  set(SKIP_INSTALL_ALL on)
+  set(PNG_SHARED off)
+  set(PNG_STATIC on)
+  set(PNG_TESTS off)
+  set(ZLIB_INCLUDE_DIR "${ZLIB_INCLUDE_DIRS}")
   add_subdirectory(libpng)
 endif()
 
@@ -57,6 +63,23 @@ if(NOT USE_SHARED_PIXMAN)
 endif()
 
 if(NOT USE_SHARED_FREETYPE)
+  set(SKIP_INSTALL_ALL on)
+
+  # If we don't do this, the compilation fails because it looks like
+  # ftgzip.c includes our zlib.h, but uses the zconf.h in the
+  # freetype2 library.
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/src/gzip/zlib.h)
+    file(RENAME
+      ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/src/gzip/zlib.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/src/gzip/zlib.h.included)
+  endif()
+
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/src/gzip/zconf.h)
+    file(RENAME
+      ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/src/gzip/zconf.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/src/gzip/zconf.h.included)
+  endif()
+
   add_subdirectory(freetype2)
 endif()
 
