@@ -14,6 +14,8 @@ endif()
 if(NOT USE_SHARED_ZLIB)
   set(SKIP_INSTALL_ALL on)
   set(ZLIB_LIBRARY zlibstatic)
+  # Don't build zlib tests
+  set(ZLIB_TESTS OFF CACHE BOOL "Build zlib tests")
   add_subdirectory(zlib)
 endif()
 
