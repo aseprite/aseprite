@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Service
+Name=Aseprite Pixel Art
+MimeType=image/bmp;image/gif;image/jpeg;image/png;image/x-pcx;image/x-tga;image/vnd.microsoft.icon;video/x-flic;image/webp;image/x-aseprite;
+X-KDE-ServiceTypes=ThumbCreator
+X-KDE-Library=asepritethumbnail
+CacheThumbnail=true
+ThumbnailerVersion=1

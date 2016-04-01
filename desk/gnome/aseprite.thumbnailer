@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=aseprite-thumbnailer
+Exec=aseprite-thumbnailer %i %o %s
+MimeType=image/bmp;image/gif;image/jpeg;image/png;image/x-pcx;image/x-tga;image/vnd.microsoft.icon;video/x-flic;image/webp;image/x-aseprite;

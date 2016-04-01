@@ -38,6 +38,9 @@ option(WITH_WEBP_SUPPORT  "Enable support to load/save .webp files" off)
 option(WITH_GTK_FILE_DIALOG_SUPPORT "Enable support for the experimental native GTK File Dialog" off)
 option(WITH_DEPRECATED_GLIB_SUPPORT "Enable support for older glib versions" off)
 
+option(WITH_DESKTOP_INTEGRATION "Enable desktop integration modules" on)
+option(WITH_QT_THUMBNAILER "Enable kde5/qt5 thumnailer" off)
+
 option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
 option(USE_SHARED_CURL    "Use your installed copy of curl" off)
 option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
@@ -395,6 +398,10 @@ if(APPLE)
         set(WFLAGS "${WFLAGS} -Wno-deprecated-declarations")
     endif(COMPILER_GCC)
 endif(APPLE)
+
+if(WITH_DESKTOP_INTEGRATION)
+  add_subdirectory(desk)
+endif()
 
 ######################################################################
 # Main ASE targets

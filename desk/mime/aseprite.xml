@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="image/x-aseprite">
+         <comment xml:lang="en">Aseprite Pixel Art</comment>
+         <magic priority="50">
+                <match type="little16" value="0xA5E0" offset="4"/>
+         </magic>
+         <glob pattern="*.ase"/>
+         <glob pattern="*.aseprite"/>
+        <icon name="aseprite"/>
+  </mime-type>
+</mime-info>
