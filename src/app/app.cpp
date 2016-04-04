@@ -53,6 +53,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/webserver.h"
+#include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/path.h"
@@ -253,6 +254,7 @@ void App::initialize(const AppOptions& options)
     std::string importLayerSaveAs;
     std::string filenameFormat;
     std::string frameTagName;
+    std::string frameRange;
 
     for (const auto& value : options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -327,6 +329,10 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.frameTag()) {
           frameTagName = value.value();
         }
+        // --frame-range from,to
+        else if (opt == &options.frameRange()) {
+          frameRange = value.value();
+        }
         // --ignore-empty
         else if (opt == &options.ignoreEmpty()) {
           ignoreEmpty = true;
@@ -350,16 +356,19 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.trim()) {
           trim = true;
         }
-        // --crop
+        // --crop x,y,width,height
         else if (opt == &options.crop()) {
           std::vector<std::string> parts;
           base::split_string(value.value(), parts, ",");
-          if (parts.size() == 4) {
-            cropParams.set("x", parts[0].c_str());
-            cropParams.set("y", parts[1].c_str());
-            cropParams.set("width", parts[2].c_str());
-            cropParams.set("height", parts[3].c_str());
-          }
+          if (parts.size() < 4)
+            throw std::runtime_error("--crop needs four parameters separated by comma (,)\n"
+                                     "Usage: --crop x,y,width,height\n"
+                                     "E.g. --crop 0,0,32,32");
+
+          cropParams.set("x", parts[0].c_str());
+          cropParams.set("y", parts[1].c_str());
+          cropParams.set("width", parts[2].c_str());
+          cropParams.set("height", parts[3].c_str());
         }
         // --filename-format
         else if (opt == &options.filenameFormat()) {
@@ -489,6 +498,32 @@ void App::initialize(const AppOptions& options)
             ctx->executeCommand(command);
           }
         }
+        // --shrink-to <width,height>
+        else if (opt == &options.shrinkTo()) {
+          std::vector<std::string> dimensions;
+          base::split_string(value.value(), dimensions, ",");
+          if (dimensions.size() < 2)
+            throw std::runtime_error("--shrink-to needs two parameters separated by comma (,)\n"
+                                     "Usage: --shrink-to width,height\n"
+                                     "E.g. --shrink-to 128,64");
+
+          double maxWidth = base::convert_to<double>(dimensions[0]);
+          double maxHeight = base::convert_to<double>(dimensions[1]);
+          double scaleWidth, scaleHeight, scale;
+
+          // Shrink all sprites if needed
+          for (auto doc : ctx->documents()) {
+            ctx->setActiveDocument(static_cast<app::Document*>(doc));
+            scaleWidth = (doc->width() > maxWidth ? maxWidth / doc->width() : 1.0);
+            scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
+            if (scaleWidth < 1.0 || scaleHeight < 1.0) {
+              scale = MIN(scaleWidth, scaleHeight);
+              Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+              static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
+              ctx->executeCommand(command);
+            }
+          }
+        }
         // --script <filename>
         else if (opt == &options.script()) {
           std::string script = value.value();
@@ -549,11 +584,22 @@ void App::initialize(const AppOptions& options)
             for (FrameTag* tag : doc->sprite()->frameTags())
               std::cout << tag->name() << "\n";
           }
-
           if (m_exporter) {
             FrameTag* frameTag = nullptr;
-            if (!frameTagName.empty())
+            if (!frameTagName.empty()) {
               frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+            }
+            else if (!frameRange.empty()) {
+                std::vector<std::string> splitRange;
+                base::split_string(frameRange, splitRange, ",");
+                if (splitRange.size() < 2)
+                  throw std::runtime_error("--frame-range needs two parameters separated by comma (,)\n"
+                                           "Usage: --frame-range from,to\n"
+                                           "E.g. --frame-range 0,99");
+
+                frameTag = new FrameTag(base::convert_to<frame_t>(splitRange[0]),
+                                        base::convert_to<frame_t>(splitRange[1]));
+            }
 
             if (!importLayer.empty()) {
               Layer* foundLayer = NULL;
