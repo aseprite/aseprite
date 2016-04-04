@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -39,6 +39,7 @@ namespace app {
     RotatingSelection,
     MoveTool,
     FreehandTool,
+    ShapeTool,
   };
 
   enum class KeySource {
@@ -66,7 +67,10 @@ namespace app {
     AutoSelectLayer           = 0x00000080,
     LeftMouseButton           = 0x00000100,
     RightMouseButton          = 0x00000200,
-    StraightLineFromLastPoint = 0x00000400
+    StraightLineFromLastPoint = 0x00000400,
+    MoveOrigin                = 0x00000800,
+    SquareAspect              = 0x00001000,
+    DrawFromCenter            = 0x00002000,
   };
 
   inline KeyAction operator&(KeyAction a, KeyAction b) {

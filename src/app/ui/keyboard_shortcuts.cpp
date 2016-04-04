@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -42,8 +42,11 @@ namespace {
     { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
     { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
     { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
-    { "AutoSelectLayer"     , "Auto Select Layer" , app::KeyAction::AutoSelectLayer },
+    { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer },
     { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint },
+    { "MoveOrigin"          , "Move Origin"      , app::KeyAction::MoveOrigin },
+    { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect },
+    { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter },
     { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton },
     { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton },
     { NULL                  , NULL                 , app::KeyAction::None }
@@ -136,9 +139,8 @@ Key::Key(KeyAction action)
       m_keycontext = KeyContext::Any;
       break;
     case KeyAction::CopySelection:
-      m_keycontext = KeyContext::TranslatingSelection;
-      break;
     case KeyAction::SnapToGrid:
+    case KeyAction::LockAxis:
       m_keycontext = KeyContext::TranslatingSelection;
       break;
     case KeyAction::AngleSnap:
@@ -147,12 +149,7 @@ Key::Key(KeyAction action)
     case KeyAction::MaintainAspectRatio:
       m_keycontext = KeyContext::ScalingSelection;
       break;
-    case KeyAction::LockAxis:
-      m_keycontext = KeyContext::TranslatingSelection;
-      break;
     case KeyAction::AddSelection:
-      m_keycontext = KeyContext::SelectionTool;
-      break;
     case KeyAction::SubtractSelection:
       m_keycontext = KeyContext::SelectionTool;
       break;
@@ -161,6 +158,11 @@ Key::Key(KeyAction action)
       break;
     case KeyAction::StraightLineFromLastPoint:
       m_keycontext = KeyContext::FreehandTool;
+      break;
+    case KeyAction::MoveOrigin:
+    case KeyAction::SquareAspect:
+    case KeyAction::DrawFromCenter:
+      m_keycontext = KeyContext::ShapeTool;
       break;
     case KeyAction::LeftMouseButton:
       m_keycontext = KeyContext::Any;
@@ -537,6 +539,9 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
           break;
         case KeyContext::FreehandTool:
           keycontextStr = "FreehandTool";
+          break;
+        case KeyContext::ShapeTool:
+          keycontextStr = "ShapeTool";
           break;
       }
 

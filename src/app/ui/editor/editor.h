@@ -13,7 +13,7 @@
 #include "app/color.h"
 #include "app/document.h"
 #include "app/pref/preferences.h"
-#include "app/tools/selection_mode.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
 #include "app/ui/editor/editor_observers.h"
@@ -173,9 +173,8 @@ namespace app {
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();
 
-    tools::SelectionMode getSelectionMode() const { return m_selectionMode; }
+    tools::ToolLoopModifiers getToolLoopModifiers() const { return m_toolLoopModifiers; }
     bool isAutoSelectLayer() const { return m_autoSelectLayer; }
-
     bool isSecondaryButton() const { return m_secondaryButton; }
 
     gfx::Point lastDrawingPosition() const { return m_lastDrawingPosition; }
@@ -241,7 +240,7 @@ namespace app {
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
-    void updateContextBarFromModifiers();
+    void updateToolLoopModifiersIndicators();
     bool isCurrentToolAffectedByRightClickMode();
 
     void drawMaskSafe();
@@ -288,7 +287,7 @@ namespace app {
     // the user is not pressing any keyboard key).
     tools::Tool* m_quicktool;
 
-    tools::SelectionMode m_selectionMode;
+    tools::ToolLoopModifiers m_toolLoopModifiers;
     bool m_autoSelectLayer;
 
     // Extra space around the sprite.

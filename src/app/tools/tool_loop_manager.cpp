@@ -48,8 +48,7 @@ bool ToolLoopManager::isCanceled() const
  return m_toolLoop->isCanceled();
 }
 
-void ToolLoopManager::prepareLoop(const Pointer& pointer,
-                                  ui::KeyModifiers modifiers)
+void ToolLoopManager::prepareLoop(const Pointer& pointer)
 {
   // Start with no points at all
   m_stroke.reset();
@@ -57,35 +56,16 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer,
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
   m_toolLoop->getIntertwine()->prepareIntertwine();
-  m_toolLoop->getController()->prepareController(modifiers);
   m_toolLoop->getPointShape()->preparePointShape(m_toolLoop);
 }
 
-void ToolLoopManager::pressKey(ui::KeyScancode key)
+void ToolLoopManager::notifyToolLoopModifiersChange()
 {
   if (isCanceled())
     return;
 
-  if (m_toolLoop->getController()->pressKey(key)) {
-    if (m_lastPointer.getButton() != Pointer::None)
-      movement(m_lastPointer);
-  }
-}
-
-void ToolLoopManager::releaseKey(ui::KeyScancode key)
-{
-  if (isCanceled())
-    return;
-
-  if (key == ui::kKeyEsc) {
-    m_toolLoop->cancel();
-    return;
-  }
-
-  if (m_toolLoop->getController()->releaseKey(key)) {
-    if (m_lastPointer.getButton() != Pointer::None)
-      movement(m_lastPointer);
-  }
+  if (m_lastPointer.getButton() != Pointer::None)
+    movement(m_lastPointer);
 }
 
 void ToolLoopManager::pressButton(const Pointer& pointer)

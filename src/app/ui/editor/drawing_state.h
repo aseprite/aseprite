@@ -35,6 +35,7 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
     void initToolLoop(Editor* editor, ui::MouseMessage* msg);
+    void notifyToolLoopModifiersChange(Editor* editor);
 
   private:
     void destroyLoopIfCanceled(Editor* editor);

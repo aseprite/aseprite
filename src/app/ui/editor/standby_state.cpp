@@ -350,14 +350,10 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
       CommandsModule::instance()->getCommandByName(CommandId::SelectTile);
 
     Params params;
-    switch (editor->getSelectionMode()) {
-      case tools::SelectionMode::ADD:
-        params.set("mode", "add");
-        break;
-      case tools::SelectionMode::SUBTRACT:
-        params.set("mode", "subtract");
-        break;
-    }
+    if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kAddSelection))
+      params.set("mode", "add");
+    else if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kSubtractSelection))
+      params.set("mode", "subtract");
 
     UIContext::instance()->executeCommand(selectTileCmd, params);
     return true;

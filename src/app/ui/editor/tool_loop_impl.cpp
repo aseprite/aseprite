@@ -203,7 +203,7 @@ public:
   int getOpacity() override { return m_opacity; }
   int getTolerance() override { return m_tolerance; }
   bool getContiguous() override { return m_contiguous; }
-  tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
+  tools::ToolLoopModifiers getModifiers() override { return m_editor->getToolLoopModifiers(); }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.show.grid(); }
   bool getSnapToGrid() override { return m_docPref.grid.snap(); }
@@ -324,7 +324,7 @@ public:
     // Start with an empty mask if the user is selecting with "default selection mode"
     if (getInk()->isSelection() &&
         (!m_document->isMaskVisible() ||
-         getSelectionMode() == tools::SelectionMode::DEFAULT)) {
+         (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)))) {
       Mask emptyMask;
       m_transaction.execute(new cmd::SetMask(m_document, &emptyMask));
     }

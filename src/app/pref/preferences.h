@@ -16,7 +16,6 @@
 #include "app/tools/freehand_algorithm.h"
 #include "app/tools/ink_type.h"
 #include "app/tools/rotation_algorithm.h"
-#include "app/tools/selection_mode.h"
 #include "app/ui/color_bar.h"
 #include "doc/anidir.h"
 #include "doc/brush_pattern.h"

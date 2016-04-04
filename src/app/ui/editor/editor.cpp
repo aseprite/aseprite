@@ -30,6 +30,7 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/moving_pixels_state.h"
@@ -157,7 +158,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_brushPreview(this)
   , m_lastDrawingPosition(-1, -1)
   , m_quicktool(NULL)
-  , m_selectionMode(tools::SelectionMode::DEFAULT)
+  , m_toolLoopModifiers(tools::ToolLoopModifiers::kNone)
   , m_padding(0, 0)
   , m_antsTimer(100, this)
   , m_antsOffset(0)
@@ -1110,7 +1111,7 @@ void Editor::updateStatusBar()
 
 void Editor::updateQuicktool()
 {
-  if (m_customizationDelegate) {
+  if (m_customizationDelegate && !hasCapture()) {
     tools::Tool* current_tool = App::instance()->activeTool();
 
     // Don't change quicktools if we are in a selection tool and using
@@ -1156,41 +1157,66 @@ void Editor::updateQuicktool()
   }
 }
 
-void Editor::updateContextBarFromModifiers()
+void Editor::updateToolLoopModifiersIndicators()
 {
-  // We update the selection mode only if we're not selecting.
-  if (hasCapture())
-    return;
+  int modifiers = int(tools::ToolLoopModifiers::kNone);
+  bool autoSelectLayer = Preferences::instance().editor.autoSelectLayer();
+  KeyAction action;
+
+  if (m_customizationDelegate) {
+    // When the mouse is captured, is when we are scrolling, or
+    // drawing, or moving, or selecting, etc. So several
+    // parameters/tool-loop-modifiers are static.
+    if (hasCapture()) {
+      modifiers |= (int(m_toolLoopModifiers) &
+                    (int(tools::ToolLoopModifiers::kReplaceSelection) |
+                     int(tools::ToolLoopModifiers::kAddSelection) |
+                     int(tools::ToolLoopModifiers::kSubtractSelection)));
+      autoSelectLayer = m_autoSelectLayer;
+
+      // Shape tools (line, curves, rectangles, etc.)
+      action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
+      if (int(action & KeyAction::MoveOrigin))
+        modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
+      if (int(action & KeyAction::SquareAspect))
+        modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
+      if (int(action & KeyAction::DrawFromCenter))
+        modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
+    }
+    else {
+      // We update the selection mode only if we're not selecting.
+      action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
+
+      gen::SelectionMode mode = Preferences::instance().selection.mode();
+      if (int(action & KeyAction::AddSelection))
+        mode = gen::SelectionMode::ADD;
+      if (int(action & KeyAction::SubtractSelection) || m_secondaryButton)
+        mode = gen::SelectionMode::SUBTRACT;
+      switch (mode) {
+        case gen::SelectionMode::DEFAULT:  modifiers |= int(tools::ToolLoopModifiers::kReplaceSelection);  break;
+        case gen::SelectionMode::ADD:      modifiers |= int(tools::ToolLoopModifiers::kAddSelection);      break;
+        case gen::SelectionMode::SUBTRACT: modifiers |= int(tools::ToolLoopModifiers::kSubtractSelection); break;
+      }
+
+      // For move tool
+      action = m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool);
+      if (int(action & KeyAction::AutoSelectLayer))
+        autoSelectLayer = true;
+    }
+  }
 
   ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
 
-  // Selection mode
+  if (int(m_toolLoopModifiers) != modifiers) {
+    m_toolLoopModifiers = tools::ToolLoopModifiers(modifiers);
 
-  tools::SelectionMode mode = Preferences::instance().selection.mode();
+    // TODO the contextbar should be a observer of the current editor
+    ctxBar->updateToolLoopModifiersIndicators(m_toolLoopModifiers);
 
-  KeyAction action = KeyAction::None;
-  if (m_customizationDelegate)
-    action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
-
-  if (int(action & KeyAction::AddSelection))
-    mode = tools::SelectionMode::ADD;
-  if (int(action & KeyAction::SubtractSelection))
-    mode = tools::SelectionMode::SUBTRACT;
-  else if (m_secondaryButton)
-    mode = tools::SelectionMode::SUBTRACT;
-
-  if (mode != m_selectionMode) {
-    m_selectionMode = mode;
-    ctxBar->updateSelectionMode(mode);
+    if (auto drawingState = dynamic_cast<DrawingState*>(m_state.get())) {
+      drawingState->notifyToolLoopModifiersChange(this);
+    }
   }
-
-  // Move tool options
-
-  bool autoSelectLayer = Preferences::instance().editor.autoSelectLayer();
-
-  if ((m_customizationDelegate) &&
-      int(m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool) & KeyAction::AutoSelectLayer))
-    autoSelectLayer = true;
 
   if (m_autoSelectLayer != autoSelectLayer) {
     m_autoSelectLayer = autoSelectLayer;
@@ -1238,7 +1264,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseEnterMessage:
       updateQuicktool();
-      updateContextBarFromModifiers();
+      updateToolLoopModifiersIndicators();
       break;
 
     case kMouseLeaveMessage:
@@ -1255,7 +1281,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = mouseMsg->right();
 
           updateQuicktool();
-          updateContextBarFromModifiers();
+          updateToolLoopModifiersIndicators();
           setCursor(mouseMsg->position());
         }
 
@@ -1281,7 +1307,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = false;
 
           updateQuicktool();
-          updateContextBarFromModifiers();
+          updateToolLoopModifiersIndicators();
           setCursor(mouseMsg->position());
         }
 
@@ -1314,9 +1340,9 @@ bool Editor::onProcessMessage(Message* msg)
 
         if (hasMouse()) {
           updateQuicktool();
-          updateContextBarFromModifiers();
           setCursor(ui::get_mouse_position());
         }
+        updateToolLoopModifiersIndicators();
 
         if (used)
           return true;
@@ -1330,9 +1356,9 @@ bool Editor::onProcessMessage(Message* msg)
 
         if (hasMouse()) {
           updateQuicktool();
-          updateContextBarFromModifiers();
           setCursor(ui::get_mouse_position());
         }
+        updateToolLoopModifiersIndicators();
 
         if (used)
           return true;
@@ -1481,7 +1507,7 @@ bool Editor::isInsideSelection()
 {
   gfx::Point spritePos = screenToEditor(ui::get_mouse_position());
   return
-    (m_selectionMode != tools::SelectionMode::SUBTRACT) &&
+    ((int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kSubtractSelection)) == 0) &&
      m_document != NULL &&
      m_document->isMaskVisible() &&
      m_document->mask()->containsPoint(spritePos.x, spritePos.y);

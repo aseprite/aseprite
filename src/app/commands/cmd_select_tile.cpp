@@ -38,14 +38,14 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
-  tools::SelectionMode m_mode;
+  gen::SelectionMode m_mode;
 };
 
 SelectTileCommand::SelectTileCommand()
   : Command("SelectTile",
             "Select Tile",
             CmdRecordableFlag)
-  , m_mode(tools::SelectionMode::DEFAULT)
+  , m_mode(gen::SelectionMode::DEFAULT)
 {
 }
 
@@ -53,11 +53,11 @@ void SelectTileCommand::onLoadParams(const Params& params)
 {
   std::string mode = params.get("mode");
   if (mode == "add")
-    m_mode = tools::SelectionMode::ADD;
+    m_mode = gen::SelectionMode::ADD;
   else if (mode == "subtract")
-    m_mode = tools::SelectionMode::SUBTRACT;
+    m_mode = gen::SelectionMode::SUBTRACT;
   else
-    m_mode = tools::SelectionMode::DEFAULT;
+    m_mode = gen::SelectionMode::DEFAULT;
 }
 
 bool SelectTileCommand::onEnabled(Context* ctx)
@@ -78,7 +78,7 @@ void SelectTileCommand::onExecute(Context* ctx)
 
   base::UniquePtr<Mask> mask(new Mask());
 
-  if (m_mode != tools::SelectionMode::DEFAULT)
+  if (m_mode != gen::SelectionMode::DEFAULT)
     mask->copyFrom(doc->mask());
 
   {
@@ -87,7 +87,7 @@ void SelectTileCommand::onExecute(Context* ctx)
     pos = snap_to_grid(gridBounds, pos, PreferSnapTo::BoxOrigin);
     gridBounds.setOrigin(pos);
 
-    if (m_mode != tools::SelectionMode::SUBTRACT)
+    if (m_mode != gen::SelectionMode::SUBTRACT)
       mask->add(gridBounds);
     else
       mask->subtract(gridBounds);
@@ -109,8 +109,8 @@ std::string SelectTileCommand::onGetFriendlyName() const
   std::string text = "Select Tile";
 
   switch (m_mode) {
-    case tools::SelectionMode::ADD: text += " (Add)"; break;
-    case tools::SelectionMode::SUBTRACT: text += " (Subtract)"; break;
+    case gen::SelectionMode::ADD: text += " (Add)"; break;
+    case gen::SelectionMode::SUBTRACT: text += " (Subtract)"; break;
   }
 
   return text;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -18,29 +18,15 @@ using namespace gfx;
 // using the space bar.
 class MoveOriginCapability : public Controller {
 public:
-  void prepareController(ui::KeyModifiers modifiers) override {
-    m_movingOrigin = false;
-  }
-
   void pressButton(Stroke& stroke, const Point& point) override {
     m_last = point;
   }
 
-  bool pressKey(ui::KeyScancode key) override {
-    TRACE("pressKey(%d)\n", key);
-    return processKey(key, true);
-  }
-
-  bool releaseKey(ui::KeyScancode key) override {
-    TRACE("releaseKey(%d)\n", key);
-    return processKey(key, false);
-  }
-
 protected:
-  bool isMovingOrigin(Stroke& stroke, const Point& point) {
+  bool isMovingOrigin(ToolLoop* loop, Stroke& stroke, const Point& point) {
     bool used = false;
 
-    if (m_movingOrigin) {
+    if (int(loop->getModifiers()) & int(ToolLoopModifiers::kMoveOrigin)) {
       Point delta = (point - m_last);
       stroke.offset(delta);
 
@@ -57,18 +43,6 @@ protected:
   }
 
 private:
-  bool processKey(ui::KeyScancode key, bool state) {
-    if (key == ui::kKeySpace) {
-      m_movingOrigin = state;
-      return true;
-    }
-    return false;
-  }
-
-  // Flag used to know if the space bar is pressed, i.e., we have
-  // displace all points.
-  bool m_movingOrigin;
-
   // Last known mouse position used to calculate delta values (dx, dy)
   // with the new mouse position to displace all points.
   Point m_last;
@@ -120,13 +94,6 @@ public:
 // Controls clicks for tools like line
 class TwoPointsController : public MoveOriginCapability {
 public:
-  void prepareController(ui::KeyModifiers modifiers) override {
-    MoveOriginCapability::prepareController(modifiers);
-
-    m_squareAspect = (modifiers & ui::kKeyShiftModifier) ? true: false;
-    m_fromCenter = (modifiers & ui::kKeyCtrlModifier) ? true: false;
-  }
-
   void pressButton(Stroke& stroke, const Point& point) override {
     MoveOriginCapability::pressButton(stroke, point);
 
@@ -140,31 +107,17 @@ public:
     return false;
   }
 
-  bool pressKey(ui::KeyScancode key) override {
-    if (MoveOriginCapability::pressKey(key))
-      return true;
-
-    return processKey(key, true);
-  }
-
-  bool releaseKey(ui::KeyScancode key) override {
-    if (MoveOriginCapability::releaseKey(key))
-      return true;
-
-    return processKey(key, false);
-  }
-
   void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
     ASSERT(stroke.size() >= 2);
     if (stroke.size() < 2)
       return;
 
-    if (MoveOriginCapability::isMovingOrigin(stroke, point))
+    if (MoveOriginCapability::isMovingOrigin(loop, stroke, point))
       return;
 
     stroke[1] = point;
 
-    if (m_squareAspect) {
+    if (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) {
       int dx = stroke[1].x - m_first.x;
       int dy = stroke[1].y - m_first.y;
       int minsize = MIN(ABS(dx), ABS(dy));
@@ -209,7 +162,7 @@ public:
 
     stroke[0] = m_first;
 
-    if (m_fromCenter) {
+    if (int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter)) {
       int rx = stroke[1].x - m_first.x;
       int ry = stroke[1].y - m_first.y;
       stroke[0].x = m_first.x - rx;
@@ -264,23 +217,7 @@ private:
     m_first += delta;
   }
 
-  bool processKey(ui::KeyScancode key, bool state) {
-    switch (key) {
-      case ui::kKeyLShift:
-      case ui::kKeyRShift:
-        m_squareAspect = state;
-        return true;
-      case ui::kKeyLControl:
-      case ui::kKeyRControl:
-        m_fromCenter = state;
-        return true;
-    }
-    return false;
-  }
-
   Point m_first;
-  bool m_squareAspect;
-  bool m_fromCenter;
 };
 
 // Controls clicks for tools like polygon
@@ -311,7 +248,7 @@ public:
     if (stroke.empty())
       return;
 
-    if (MoveOriginCapability::isMovingOrigin(stroke, point))
+    if (MoveOriginCapability::isMovingOrigin(loop, stroke, point))
       return;
 
     stroke[stroke.size()-1] = point;
@@ -392,7 +329,7 @@ public:
   }
 
   void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    if (MoveOriginCapability::isMovingOrigin(stroke, point))
+    if (MoveOriginCapability::isMovingOrigin(loop, stroke, point))
       return;
 
     switch (m_clickCounter) {

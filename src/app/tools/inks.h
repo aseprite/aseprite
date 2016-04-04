@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -322,16 +322,15 @@ public:
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     if (m_modify_selection) {
+      int modifiers = int(loop->getModifiers());
       Point origin = loop->getCelOrigin();
 
-      switch (loop->getSelectionMode()) {
-        case SelectionMode::DEFAULT:
-        case SelectionMode::ADD:
-          m_mask.add(gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1));
-          break;
-        case SelectionMode::SUBTRACT:
-          m_mask.subtract(gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1));
-          break;
+      if ((modifiers & (int(ToolLoopModifiers::kReplaceSelection) |
+                        int(ToolLoopModifiers::kAddSelection))) != 0) {
+        m_mask.add(gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1));
+      }
+      else if ((modifiers & int(ToolLoopModifiers::kSubtractSelection)) != 0) {
+        m_mask.subtract(gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1));
       }
 
       m_maxBounds |= gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1);

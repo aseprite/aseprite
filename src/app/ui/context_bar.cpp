@@ -27,9 +27,9 @@
 #include "app/tools/ink.h"
 #include "app/tools/ink_type.h"
 #include "app/tools/point_shape.h"
-#include "app/tools/selection_mode.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/brush_popup.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
@@ -1110,7 +1110,7 @@ public:
     tooltipManager->addTooltipFor(at(2), "Subtract from selection\n(Shift+Alt)", BOTTOM);
   }
 
-  void setSelectionMode(SelectionMode mode) {
+  void setSelectionMode(gen::SelectionMode mode) {
     setSelectedItem((int)mode);
     invalidate();
   }
@@ -1120,7 +1120,7 @@ protected:
     ButtonSet::onItemChange(item);
 
     Preferences::instance().selection.mode(
-      (tools::SelectionMode)selectedItem());
+      (gen::SelectionMode)selectedItem());
   }
 };
 
@@ -1624,10 +1624,16 @@ void ContextBar::updateForSelectingBox(const std::string& text)
   layout();
 }
 
-void ContextBar::updateSelectionMode(SelectionMode mode)
+void ContextBar::updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modifiers)
 {
   if (!m_selectionMode->isVisible())
     return;
+
+  gen::SelectionMode mode = gen::SelectionMode::DEFAULT;
+  if (int(modifiers) & int(tools::ToolLoopModifiers::kAddSelection))
+    mode = gen::SelectionMode::ADD;
+  else if (int(modifiers) & int(tools::ToolLoopModifiers::kSubtractSelection))
+    mode = gen::SelectionMode::SUBTRACT;
 
   m_selectionMode->setSelectionMode(mode);
 }

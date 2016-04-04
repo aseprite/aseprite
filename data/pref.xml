@@ -52,6 +52,11 @@
       <value id="ALL_LAYERS" value="0" />
       <value id="CURRENT_LAYER" value="1" />
     </enum>
+    <enum id="SelectionMode">
+      <value id="DEFAULT" value="0" />
+      <value id="ADD" value="1" />
+!      <value id="SUBTRACT" value="2" />
+    </enum>
     <enum id="PivotPosition">
       <value id="NORTHWEST" value="0" />
       <value id="NORTH" value="1" />
@@ -151,7 +156,7 @@
       <option id="pixel_perfect" type="bool" default="false" />
     </section>
     <section id="selection">
-      <option id="mode" type="app::tools::SelectionMode" default="app::tools::SelectionMode::DEFAULT" />
+      <option id="mode" type="SelectionMode" default="SelectionMode::DEFAULT" />
       <option id="pivot_visibility" type="bool" default="false" />
       <option id="pivot_position" type="PivotPosition" default="PivotPosition::CENTER" />
       <option id="opaque" type="bool" default="false" />

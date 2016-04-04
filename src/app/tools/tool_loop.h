@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,7 +9,7 @@
 #define APP_TOOLS_TOOL_LOOP_H_INCLUDED
 #pragma once
 
-#include "app/tools/selection_mode.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "app/tools/trace_policy.h"
 #include "doc/color.h"
 #include "doc/frame.h"
@@ -159,8 +159,9 @@ namespace app {
       // contiguous pixels or not.
       virtual bool getContiguous() = 0;
 
-      // Returns the selection mode (if the ink is of selection type).
-      virtual tools::SelectionMode getSelectionMode() = 0;
+      // Returns flags/modifiers that change the way each part of the
+      // tool (ink/controllers/etc.) work.
+      virtual tools::ToolLoopModifiers getModifiers() = 0;
 
       // Returns the preferred "tiled" mode of the document.
       // See the method PointShape::doInkHline to check how this member is

@@ -483,6 +483,13 @@
       <!-- Modifiers for freehand tool controller  -->
       <key action="StraightLineFromLastPoint" shortcut="Shift" />
 
+      <!-- Modifiers for two-points tool controller -->
+      <key action="SquareAspect" shortcut="Shift" />
+      <key action="DrawFromCenter" shortcut="Ctrl" />
+
+      <!-- Modifiers for two-or-more-points tools -->
+      <key action="MoveOrigin" shortcut="Space" />
+
       <!-- Without default shortcuts -->
       <key action="LeftMouseButton" />
       <key action="RightMouseButton" />

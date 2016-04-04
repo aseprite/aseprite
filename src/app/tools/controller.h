@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "gfx/point.h"
-#include "ui/keys.h"
 
 #include <string>
 #include <vector>
@@ -29,13 +28,6 @@ namespace app {
       virtual bool canSnapToGrid() { return true; }
       virtual bool isFreehand() { return false; }
       virtual bool isOnePoint() { return false; }
-
-      virtual void prepareController(ui::KeyModifiers modifiers) { }
-
-      // Called when the user presses or releases a key. Returns true
-      // if the key is used (so a new mouse point is generated).
-      virtual bool pressKey(ui::KeyScancode key) { return false; }
-      virtual bool releaseKey(ui::KeyScancode key) { return false; }
 
       // Called when the user starts drawing and each time a new button is
       // pressed. The controller could be sure that this method is called

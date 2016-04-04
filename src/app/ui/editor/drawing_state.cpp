@@ -94,7 +94,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
     pointer = pointer_from_msg(editor, msg);
   }
 
-  m_toolLoopManager->prepareLoop(pointer, msg->modifiers());
+  m_toolLoopManager->prepareLoop(pointer);
   m_toolLoopManager->pressButton(pointer);
 
   // This first movement is done when the user pressed Shift+click in
@@ -106,6 +106,12 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
 
   editor->setLastDrawingPosition(pointer.point());
   editor->captureMouse();
+}
+
+void DrawingState::notifyToolLoopModifiersChange(Editor* editor)
+{
+  if (!m_toolLoopManager->isCanceled())
+    m_toolLoopManager->notifyToolLoopModifiersChange();
 }
 
 bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
@@ -190,9 +196,6 @@ bool DrawingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 
 bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  if (msg->repeat() == 0)
-    m_toolLoopManager->pressKey(msg->scancode());
-
   Command* command = NULL;
   Params params;
   if (KeyboardShortcuts::instance()
@@ -208,7 +211,8 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 
 bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
-  m_toolLoopManager->releaseKey(msg->scancode());
+  if (msg->scancode() == ui::kKeyEsc)
+    m_toolLoop->cancel();
 
   // The user might have canceled the tool loop pressing the 'Esc' key.
   destroyLoopIfCanceled(editor);

@@ -12,7 +12,7 @@
 #include "app/pref/preferences.h"
 #include "app/shade.h"
 #include "app/tools/ink_type.h"
-#include "app/tools/selection_mode.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/context_bar_observer.h"
 #include "base/connection.h"
 #include "base/observable.h"
@@ -48,7 +48,7 @@ namespace app {
     void updateForTool(tools::Tool* tool);
     void updateForMovingPixels();
     void updateForSelectingBox(const std::string& text);
-    void updateSelectionMode(app::tools::SelectionMode mode);
+    void updateToolLoopModifiersIndicators(app::tools::ToolLoopModifiers modifiers);
     void updateAutoSelectLayer(bool state);
 
     void setActiveBrush(const doc::BrushRef& brush);

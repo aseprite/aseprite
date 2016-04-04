@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,7 +12,6 @@
 #include "app/tools/stroke.h"
 #include "gfx/point.h"
 #include "gfx/region.h"
-#include "ui/keys.h"
 
 #include <vector>
 
@@ -69,11 +68,11 @@ namespace app {
 
       // Should be called when the user start a tool-trace (pressing the
       // left or right button for first time in the editor).
-      void prepareLoop(const Pointer& pointer,
-                       ui::KeyModifiers modifiers);
+      void prepareLoop(const Pointer& pointer);
 
-      void pressKey(ui::KeyScancode key);
-      void releaseKey(ui::KeyScancode key);
+      // Should be called when the ToolLoop::getModifiers()
+      // value was modified (e.g. when the user press/release a key).
+      void notifyToolLoopModifiersChange();
 
       // Should be called each time the user presses a mouse button.
       void pressButton(const Pointer& pointer);
