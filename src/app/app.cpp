@@ -53,6 +53,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/webserver.h"
+#include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/path.h"
@@ -253,6 +254,7 @@ void App::initialize(const AppOptions& options)
     std::string importLayerSaveAs;
     std::string filenameFormat;
     std::string frameTagName;
+    std::string frameRange;
 
     for (const auto& value : options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -326,6 +328,10 @@ void App::initialize(const AppOptions& options)
         // --frame-tag <tag-name>
         else if (opt == &options.frameTag()) {
           frameTagName = value.value();
+        }
+        // --frame-range <range>
+        else if (opt == &options.frameRange()) {
+          frameRange = value.value();
         }
         // --ignore-empty
         else if (opt == &options.ignoreEmpty()) {
@@ -489,6 +495,27 @@ void App::initialize(const AppOptions& options)
             ctx->executeCommand(command);
           }
         }
+        // --shrink-to <widthxheight>
+        else if (opt == &options.shrinkTo()) {
+          std::vector<std::string> dimensions;
+          base::split_string(value.value(), dimensions, "x");
+          double maxWidth = base::convert_to<double>(dimensions.at(0));
+          double maxHeight = base::convert_to<double>(dimensions.at(1));
+          double scaleWidth, scaleHeight, scale;
+
+          // Shrink all sprites if needed
+          for (auto doc : ctx->documents()) {
+            ctx->setActiveDocument(static_cast<app::Document*>(doc));
+            scaleWidth = doc->width() > maxWidth ? maxWidth / doc->width() : 1.0;
+            scaleHeight = doc->height() > maxHeight ? maxHeight / doc->height() : 1.0;
+            if (scaleWidth < 1.0 || scaleHeight < 1.0) {
+              scale = scaleWidth < scaleHeight ? scaleWidth : scaleHeight;
+              Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+              static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
+              ctx->executeCommand(command);
+            }
+          }
+        }
         // --script <filename>
         else if (opt == &options.script()) {
           std::string script = value.value();
@@ -549,11 +576,16 @@ void App::initialize(const AppOptions& options)
             for (FrameTag* tag : doc->sprite()->frameTags())
               std::cout << tag->name() << "\n";
           }
-
           if (m_exporter) {
             FrameTag* frameTag = nullptr;
-            if (!frameTagName.empty())
+            if (!frameTagName.empty()) {
               frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+            } else if (!frameRange.empty()) {
+                std::vector<std::string> splitRange;
+                base::split_string(frameRange, splitRange, ":");
+                frameTag = new FrameTag(base::convert_to<frame_t>(splitRange.at(0)),
+                                        base::convert_to<frame_t>(splitRange.at(1)));
+            }
 
             if (!importLayer.empty()) {
               Layer* foundLayer = NULL;
