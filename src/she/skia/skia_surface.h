@@ -58,7 +58,7 @@ public:
     ASSERT(!m_surface);
 
     if (!m_bitmap.tryAllocPixels(
-          SkImageInfo::MakeN32Premul(width, height)))
+          SkImageInfo::MakeN32(width, height, kOpaque_SkAlphaType)))
       throw base::Exception("Cannot create Skia surface");
 
     m_bitmap.eraseColor(SK_ColorTRANSPARENT);
