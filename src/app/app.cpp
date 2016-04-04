@@ -360,12 +360,15 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.crop()) {
           std::vector<std::string> parts;
           base::split_string(value.value(), parts, ",");
-          if (parts.size() == 4) {
-            cropParams.set("x", parts[0].c_str());
-            cropParams.set("y", parts[1].c_str());
-            cropParams.set("width", parts[2].c_str());
-            cropParams.set("height", parts[3].c_str());
-          }
+          if (parts.size() < 4)
+            throw std::runtime_error("--crop needs four parameters separated by comma (,)\n"
+                                     "Usage: --crop x,y,width,height\n"
+                                     "E.g. --crop 0,0,32,32");
+
+          cropParams.set("x", parts[0].c_str());
+          cropParams.set("y", parts[1].c_str());
+          cropParams.set("width", parts[2].c_str());
+          cropParams.set("height", parts[3].c_str());
         }
         // --filename-format
         else if (opt == &options.filenameFormat()) {
@@ -499,8 +502,13 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.shrinkTo()) {
           std::vector<std::string> dimensions;
           base::split_string(value.value(), dimensions, ",");
-          double maxWidth = base::convert_to<double>(dimensions.at(0));
-          double maxHeight = base::convert_to<double>(dimensions.at(1));
+          if (dimensions.size() < 2)
+            throw std::runtime_error("--shrink-to needs two parameters separated by comma (,)\n"
+                                     "Usage: --shrink-to width,height\n"
+                                     "E.g. --shrink-to 128,64");
+
+          double maxWidth = base::convert_to<double>(dimensions[0]);
+          double maxHeight = base::convert_to<double>(dimensions[1]);
           double scaleWidth, scaleHeight, scale;
 
           // Shrink all sprites if needed
@@ -584,8 +592,13 @@ void App::initialize(const AppOptions& options)
             else if (!frameRange.empty()) {
                 std::vector<std::string> splitRange;
                 base::split_string(frameRange, splitRange, ",");
-                frameTag = new FrameTag(base::convert_to<frame_t>(splitRange.at(0)),
-                                        base::convert_to<frame_t>(splitRange.at(1)));
+                if (splitRange.size() < 2)
+                  throw std::runtime_error("--frame-range needs two parameters separated by comma (,)\n"
+                                           "Usage: --frame-range from,to\n"
+                                           "E.g. --frame-range 0,99");
+
+                frameTag = new FrameTag(base::convert_to<frame_t>(splitRange[0]),
+                                        base::convert_to<frame_t>(splitRange[1]));
             }
 
             if (!importLayer.empty()) {
