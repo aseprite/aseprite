@@ -506,10 +506,10 @@ void App::initialize(const AppOptions& options)
           // Shrink all sprites if needed
           for (auto doc : ctx->documents()) {
             ctx->setActiveDocument(static_cast<app::Document*>(doc));
-            scaleWidth = doc->width() > maxWidth ? maxWidth / doc->width() : 1.0;
-            scaleHeight = doc->height() > maxHeight ? maxHeight / doc->height() : 1.0;
+            scaleWidth = (doc->width() > maxWidth ? maxWidth / doc->width() : 1.0);
+            scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
             if (scaleWidth < 1.0 || scaleHeight < 1.0) {
-              scale = scaleWidth < scaleHeight ? scaleWidth : scaleHeight;
+              scale = MIN(scaleWidth, scaleHeight);
               Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
               static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
               ctx->executeCommand(command);
@@ -580,7 +580,8 @@ void App::initialize(const AppOptions& options)
             FrameTag* frameTag = nullptr;
             if (!frameTagName.empty()) {
               frameTag = doc->sprite()->frameTags().getByName(frameTagName);
-            } else if (!frameRange.empty()) {
+            }
+            else if (!frameRange.empty()) {
                 std::vector<std::string> splitRange;
                 base::split_string(frameRange, splitRange, ":");
                 frameTag = new FrameTag(base::convert_to<frame_t>(splitRange.at(0)),
