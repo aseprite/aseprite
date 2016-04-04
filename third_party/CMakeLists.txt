@@ -84,6 +84,10 @@ if(NOT USE_SHARED_FREETYPE)
   endif()
 
   add_subdirectory(freetype2)
+
+  if(NOT USE_SHARED_LIBPNG)
+    add_dependencies(freetype png_static)
+  endif()
 endif()
 
 add_subdirectory(simpleini)
