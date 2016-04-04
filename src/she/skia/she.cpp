@@ -20,6 +20,8 @@
 #if __APPLE__
   #include "she/osx/app.h"
   #include <CoreServices/CoreServices.h>
+#elif !defined(_WIN32)
+  #include "she/x11/x11.h"
 #endif
 
 namespace she {
@@ -76,6 +78,11 @@ int main(int argc, char* argv[])
   she::OSXApp app;
   return app.run(argc, argv);
 #else
+
+#ifndef _WIN32
+  she::X11 x11;
+#endif
+
   return app_main(argc, argv);
 #endif
 }

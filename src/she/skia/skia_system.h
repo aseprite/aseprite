@@ -23,7 +23,7 @@
 #elif __APPLE__
   #include "she/osx/event_queue.h"
 #else
-  #error There is no EventQueue implementation for your platform
+  #include "she/x11/event_queue.h"
 #endif
 
 namespace she {
@@ -35,6 +35,13 @@ public:
   SkiaSystem()
     : m_defaultDisplay(nullptr)
     , m_gpuAcceleration(false) {
+#if !defined(__APPLE__) && !defined(_WIN32)
+    // Create one decoder on Linux to load .png files with
+    // libpng. Without this, SkImageDecoder::Factory() returns null
+    // for .png files.
+    SkAutoTDelete<SkImageDecoder> decoder(
+      CreatePNGImageDecoder());
+#endif
   }
 
   ~SkiaSystem() {

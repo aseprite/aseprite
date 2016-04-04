@@ -61,6 +61,8 @@ if(USE_SKIA_BACKEND)
 
     # Use Automatic Reference Counting
     add_definitions(-fobjc-arc)
+  else()
+    add_definitions(-DSK_SAMPLES_FOR_X)
   endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -75,7 +77,9 @@ if(USE_SKIA_BACKEND)
   find_library(SKIA_IMAGES_LIBRARY skia_images PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_LIBRARY skia_opts PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_AVX2_LIBRARY skia_opts_avx2 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSE41_LIBRARY skia_opts_sse41 PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_SSE42_LIBRARY skia_opts_sse42 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSSE3_LIBRARY skia_opts_ssse3 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_PORTS_LIBRARY skia_ports PATH "${SKIA_BUILD_OUT_DIR}")
@@ -89,9 +93,14 @@ if(USE_SKIA_BACKEND)
     set(SKIA_GPU_LIBRARY "")
   endif()
 
+  find_library(SKIA_ETC1_LIBRARY etc1 PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
+  find_library(SKIA_FLAGS_LIBRARY flags PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
+  if(NOT SKIA_FLAGS_LIBRARY_FOUND)
+    set(SKIA_FLAGS_LIBRARY "")
+  endif()
+
+  find_library(SKIA_LIBSKKTX_LIBRARY SkKTX PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
   if(WIN32)
-    find_library(SKIA_ETC1_LIBRARY libetc1 PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
-    find_library(SKIA_LIBSKKTX_LIBRARY libSkKTX PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
     if(SKIA_GPU_LIBRARY_FOUND)
       find_library(SKIA_OPENGL_LIBRARY opengl32)
       find_library(SKIA_LIBEGL_LIBRARY libEGL.dll PATH "${SKIA_BUILD_OUT_DIR}")
@@ -100,8 +109,6 @@ if(USE_SKIA_BACKEND)
       endif()
     endif()
   else()
-    find_library(SKIA_ETC1_LIBRARY etc1 PATH "${SKIA_BUILD_OUT_DIR}")
-    find_library(SKIA_LIBSKKTX_LIBRARY SkKTX PATH "${SKIA_BUILD_OUT_DIR}")
     if(SKIA_GPU_LIBRARY_FOUND)
       find_library(SKIA_OPENGL_LIBRARY opengl)
     endif()
@@ -141,22 +148,27 @@ if(USE_SKIA_BACKEND)
 
   set(SKIA_LIBRARIES
     ${SKIA_ETC1_LIBRARY}
+    ${SKIA_FLAGS_LIBRARY}
     ${SKIA_LIBSKKTX_LIBRARY}
-    ${SKIA_OPENGL_LIBRARY}
-    ${SKIA_LIBEGL_LIBRARY}
     ${SKIA_CORE_LIBRARY}
-    ${SKIA_EFFECTS_LIBRARY}
-    ${SKIA_GPU_LIBRARY}
     ${SKIA_IMAGES_LIBRARY}
     ${SKIA_OPTS_LIBRARY}
-    ${SKIA_OPTS_AVX_LIBRARY}
-    ${SKIA_OPTS_SSE41_LIBRARY}
     ${SKIA_OPTS_SSSE3_LIBRARY}
+    ${SKIA_OPTS_SSE41_LIBRARY}
+    ${SKIA_OPTS_SSE42_LIBRARY}
     ${SKIA_OPTS_AVX_LIBRARY}
+    ${SKIA_OPTS_AVX2_LIBRARY}
     ${SKIA_PORTS_LIBRARY}
-    ${SKIA_SFNT_LIBRARY}
-    ${SKIA_UTILS_LIBRARY}
+    ${SKIA_EFFECTS_LIBRARY}
+    # We've to include two times skia_core as a dependency as it looks
+    # like Skia libraries depends one each other (core+ports+effects)
+    ${SKIA_CORE_LIBRARY}
     ${SKIA_MISSING_FILES}
+    ${SKIA_UTILS_LIBRARY}
+    ${SKIA_SFNT_LIBRARY}
+    ${SKIA_OPENGL_LIBRARY}
+    ${SKIA_LIBEGL_LIBRARY}
+    ${SKIA_GPU_LIBRARY}
     CACHE INTERNAL "Skia libraries")
 
   list(APPEND SHE_SOURCES
@@ -168,9 +180,7 @@ if(USE_SKIA_BACKEND)
       skia/skia_window_win.cpp
       win/vk.cpp
       win/window_dde.cpp)
-  endif()
-
-  if(APPLE)
+  elseif(APPLE)
     list(APPEND SHE_SOURCES
       osx/app.mm
       osx/app_delegate.mm
@@ -179,6 +189,11 @@ if(USE_SKIA_BACKEND)
       osx/vk.mm
       osx/window.mm
       skia/skia_window_osx.mm)
+  else()
+    list(APPEND SHE_SOURCES
+      skia/skia_window_x11.cpp
+      x11/keys.cpp
+      x11/x11.cpp)
   endif()
 endif()
 
@@ -222,6 +237,10 @@ endif()
 if(USE_SKIA_BACKEND)
   target_link_libraries(she
     ${SKIA_LIBRARIES})
+
+  if(UNIX AND NOT APPLE)
+    target_link_libraries(she fontconfig)
+  endif()
 endif()
 
 if(WITH_GTK_FILE_DIALOG_SUPPORT)

@@ -15,6 +15,9 @@
 #include <string>
 #include <vector>
 
+#pragma push_macro("None")
+#undef None // Undefine the X11 None macro
+
 namespace she {
 
   class Display;
@@ -100,5 +103,7 @@ namespace she {
   };
 
 } // namespace she
+
+#pragma pop_macro("None")
 
 #endif
