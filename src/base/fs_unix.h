@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <climits>              // Required for PATH_MAX
+#include <cstdio>               // Required for rename()
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
@@ -56,7 +58,7 @@ size_t file_size(const std::string& path)
 
 void move_file(const std::string& src, const std::string& dst)
 {
-  int result = rename(src.c_str(), dst.c_str());
+  int result = std::rename(src.c_str(), dst.c_str());
   if (result != 0)
     // TODO add errno into the exception
     throw std::runtime_error("Error moving file");
