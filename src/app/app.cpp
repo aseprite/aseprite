@@ -329,7 +329,7 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.frameTag()) {
           frameTagName = value.value();
         }
-        // --frame-range <range>
+        // --frame-range from,to
         else if (opt == &options.frameRange()) {
           frameRange = value.value();
         }
@@ -356,7 +356,7 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.trim()) {
           trim = true;
         }
-        // --crop
+        // --crop x,y,width,height
         else if (opt == &options.crop()) {
           std::vector<std::string> parts;
           base::split_string(value.value(), parts, ",");
@@ -495,10 +495,10 @@ void App::initialize(const AppOptions& options)
             ctx->executeCommand(command);
           }
         }
-        // --shrink-to <widthxheight>
+        // --shrink-to <width,height>
         else if (opt == &options.shrinkTo()) {
           std::vector<std::string> dimensions;
-          base::split_string(value.value(), dimensions, "x");
+          base::split_string(value.value(), dimensions, ",");
           double maxWidth = base::convert_to<double>(dimensions.at(0));
           double maxHeight = base::convert_to<double>(dimensions.at(1));
           double scaleWidth, scaleHeight, scale;
@@ -583,7 +583,7 @@ void App::initialize(const AppOptions& options)
             }
             else if (!frameRange.empty()) {
                 std::vector<std::string> splitRange;
-                base::split_string(frameRange, splitRange, ":");
+                base::split_string(frameRange, splitRange, ",");
                 frameTag = new FrameTag(base::convert_to<frame_t>(splitRange.at(0)),
                                         base::convert_to<frame_t>(splitRange.at(1)));
             }
