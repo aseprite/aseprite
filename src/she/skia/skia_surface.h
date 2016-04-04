@@ -170,7 +170,9 @@ public:
 
     SkBitmap result;
     if (!result.tryAllocPixels(
-          SkImageInfo::MakeN32Premul(width()*scaleFactor, height()*scaleFactor)))
+          SkImageInfo::Make(width()*scaleFactor, height()*scaleFactor,
+                            m_bitmap.info().colorType(),
+                            m_bitmap.info().alphaType())))
       throw base::Exception("Cannot create temporary Skia surface to change scale");
 
     SkPaint paint;
