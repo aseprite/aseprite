@@ -17,7 +17,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "she/font.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
@@ -918,11 +917,11 @@ void Tabs::createFloatingOverlay(Tab* tab)
 
   // Fill the surface with pink color
   {
-    she::ScopedSurfaceLock lock(surface);
+    she::SurfaceLock lock(surface);
 #ifdef USE_ALLEG4_BACKEND
-    lock->fillRect(gfx::rgba(255, 0, 255), gfx::Rect(0, 0, surface->width(), surface->height()));
+    surface->fillRect(gfx::rgba(255, 0, 255), gfx::Rect(0, 0, surface->width(), surface->height()));
 #else
-    lock->fillRect(gfx::rgba(0, 0, 0, 0), gfx::Rect(0, 0, surface->width(), surface->height()));
+    surface->fillRect(gfx::rgba(0, 0, 0, 0), gfx::Rect(0, 0, surface->width(), surface->height()));
 #endif
   }
   {
@@ -933,16 +932,16 @@ void Tabs::createFloatingOverlay(Tab* tab)
 #ifdef USE_ALLEG4_BACKEND
   // Make pink parts transparent (TODO remove this hack when we change the back-end to Skia)
   {
-    she::ScopedSurfaceLock lock(surface);
+    she::SurfaceLock lock(surface);
 
     for (int y=0; y<surface->height(); ++y)
       for (int x=0; x<surface->width(); ++x) {
-        gfx::Color c = lock->getPixel(x, y);
+        gfx::Color c = surface->getPixel(x, y);
         c = (c != gfx::rgba(255, 0, 255, 0) &&
              c != gfx::rgba(255, 0, 255, 255) ?
              gfx::rgba(gfx::getr(c), gfx::getg(c), gfx::getb(c), 255):
              gfx::ColorNone);
-        lock->putPixel(c, x, y);
+        surface->putPixel(c, x, y);
       }
   }
 #endif

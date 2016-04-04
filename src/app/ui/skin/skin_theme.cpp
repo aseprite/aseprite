@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -33,7 +33,6 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "she/font.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
@@ -504,9 +503,9 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
     sur = she::instance()->createRgbaSurface(bounds.w, bounds.h);
 
   {
-    she::ScopedSurfaceLock src(m_sheet);
-    she::ScopedSurfaceLock dst(sur);
-    src->blitTo(dst, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
+    she::SurfaceLock lockSrc(m_sheet);
+    she::SurfaceLock lockDst(sur);
+    m_sheet->blitTo(sur, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
   }
 
   sur->applyScale(guiscale());
@@ -959,7 +958,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     w = g->measureChar(ch).w;
-    if (x+w > bounds.x2()-widget->childSpacing()*guiscale())
+    if (x+w > bounds.x2())
       return;
 
     caret_x = x;
@@ -2017,7 +2016,7 @@ she::Font* SkinTheme::loadFont(const std::string& userFont, const std::string& t
   // Try to load the font
   while (rf.next()) {
     try {
-      she::Font* f = she::instance()->loadBitmapFont(rf.filename().c_str(), guiscale());
+      she::Font* f = she::instance()->loadSpriteSheetFont(rf.filename().c_str(), guiscale());
       if (f->isScalable())
         f->setSize(8);
       return f;

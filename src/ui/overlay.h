@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,6 @@
 
 namespace she {
   class Surface;
-  class LockedSurface;
 }
 
 namespace ui {
@@ -34,10 +33,10 @@ namespace ui {
     const gfx::Point& position() const { return m_pos; }
     gfx::Rect bounds() const;
 
-    void captureOverlappedArea(she::LockedSurface* screen);
-    void restoreOverlappedArea(she::LockedSurface* screen);
+    void captureOverlappedArea(she::Surface* screen);
+    void restoreOverlappedArea(she::Surface* screen);
 
-    void drawOverlay(she::LockedSurface* screen);
+    void drawOverlay(she::Surface* screen);
     void moveOverlay(const gfx::Point& newPos);
 
     bool operator<(const Overlay& other) const {

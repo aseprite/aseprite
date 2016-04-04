@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,7 +18,6 @@
 #include "doc/rgbmap.h"
 #include "she/surface.h"
 #include "she/surface_format.h"
-#include "she/scoped_surface_lock.h"
 
 #include <stdexcept>
 
@@ -71,7 +70,7 @@ uint32_t convert_color_to_surface<BitmapTraits, she::kRgbaSurfaceFormat>(color_t
 }
 
 template<typename ImageTraits, typename AddressType>
-void convert_image_to_surface_templ(const Image* image, she::LockedSurface* dst,
+void convert_image_to_surface_templ(const Image* image, she::Surface* dst,
   int src_x, int src_y, int dst_x, int dst_y, int w, int h, const Palette* palette, const she::SurfaceFormatData* fd)
 {
   const LockImageBits<ImageTraits> bits(image, gfx::Rect(src_x, src_y, w, h));
@@ -105,7 +104,7 @@ struct Address24bpp
 };
 
 template<typename ImageTraits>
-void convert_image_to_surface_selector(const Image* image, she::LockedSurface* surface,
+void convert_image_to_surface_selector(const Image* image, she::Surface* surface,
   int src_x, int src_y, int dst_x, int dst_y, int w, int h, const Palette* palette, const she::SurfaceFormatData* fd)
 {
   switch (fd->bitsPerPixel) {
@@ -156,26 +155,26 @@ void convert_image_to_surface(const Image* image, const Palette* palette,
   w = dstBounds.w;
   h = dstBounds.h;
 
-  she::ScopedSurfaceLock dst(surface);
+  she::SurfaceLock lockDst(surface);
   she::SurfaceFormatData fd;
-  dst->getFormat(&fd);
+  surface->getFormat(&fd);
 
   switch (image->pixelFormat()) {
 
     case IMAGE_RGB:
-      convert_image_to_surface_selector<RgbTraits>(image, dst, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
+      convert_image_to_surface_selector<RgbTraits>(image, surface, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
       break;
 
     case IMAGE_GRAYSCALE:
-      convert_image_to_surface_selector<GrayscaleTraits>(image, dst, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
+      convert_image_to_surface_selector<GrayscaleTraits>(image, surface, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
       break;
 
     case IMAGE_INDEXED:
-      convert_image_to_surface_selector<IndexedTraits>(image, dst, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
+      convert_image_to_surface_selector<IndexedTraits>(image, surface, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
       break;
 
     case IMAGE_BITMAP:
-      convert_image_to_surface_selector<BitmapTraits>(image, dst, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
+      convert_image_to_surface_selector<BitmapTraits>(image, surface, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
       break;
 
     default:

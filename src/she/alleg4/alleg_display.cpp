@@ -477,9 +477,9 @@ void Alleg4Display::recreateSurface()
   m_surface = newSurface;
 }
 
-NonDisposableSurface* Alleg4Display::getSurface()
+Surface* Alleg4Display::getSurface()
 {
-  return static_cast<NonDisposableSurface*>(m_surface);
+  return m_surface;
 }
 
 void Alleg4Display::flip(const gfx::Rect& bounds)

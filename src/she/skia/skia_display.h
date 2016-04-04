@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -39,7 +39,7 @@ public:
 
   // Returns the main surface to draw into this display.
   // You must not dispose this surface.
-  NonDisposableSurface* getSurface() override;
+  Surface* getSurface() override;
 
   // Flips all graphics in the surface to the real display.
   void flip(const gfx::Rect& bounds) override;

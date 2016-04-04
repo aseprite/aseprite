@@ -27,7 +27,7 @@
 #ifdef DEBUG_SCROLL_EVENTS
 #include "base/thread.h"
 #include "she/display.h"
-#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
 #endif
 
 #include <queue>
@@ -326,9 +326,10 @@ void View::onSetViewScroll(const gfx::Point& pt)
       display->flip(gfx::Rect(0, 0, display_w(), display_h()));
     base::this_thread::sleep_for(0.002);
     {
-      she::ScopedSurfaceLock lock(display->getSurface());
+      she::Surface* surface = display->getSurface();
+      she::SurfaceLock lock(surface);
       for (const auto& rc : invalidRegion)
-        lock->fillRect(gfx::rgba(255, 0, 0), rc);
+        surface->fillRect(gfx::rgba(255, 0, 0), rc);
     }
     if (display)
       display->flip(gfx::Rect(0, 0, display_w(), display_h()));

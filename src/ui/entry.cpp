@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -102,29 +102,33 @@ void Entry::hideCaret()
 
 void Entry::setCaretPos(int pos)
 {
-  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
+  auto utf8_begin = base::utf8_const_iterator(text().begin());
+  auto utf8_end = base::utf8_const_iterator(text().end());
   int textlen = base::utf8_length(text());
-  int x, c;
 
-  m_caret = pos;
+  m_caret = MID(0, pos, textlen);
 
   // Backward scroll
-  if (m_caret < m_scroll)
+  if (m_scroll > m_caret)
     m_scroll = m_caret;
 
   // Forward scroll
-  m_scroll--;
-  do {
-    x = bounds().x + border().left();
-    for (c=++m_scroll; ; c++) {
-      int ch = (c < textlen ? *(utf8_begin+c) : ' ');
-
+  --m_scroll;
+  int c;
+  while (true) {
+    c = ++m_scroll;
+    auto utf8_it = utf8_begin + MID(0, c, textlen);
+    int x = bounds().x + border().left()
+      - font()->charWidth(' '); // Space for the carret
+    for (; utf8_it != utf8_end; ++c, ++utf8_it) {
+      int ch = *utf8_it;
       x += font()->charWidth(ch);
-
       if (x >= bounds().x2()-border().right())
         break;
     }
-  } while (m_caret >= c);
+    if (m_caret < c || utf8_it == utf8_end)
+      break;
+  }
 
   m_timer.start();
   m_state = true;
@@ -322,8 +326,8 @@ bool Entry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
-        base::utf8_const_iterator utf8_end = base::utf8_const_iterator(text().end());
+        auto utf8_begin = base::utf8_const_iterator(text().begin());
+        auto utf8_end = base::utf8_const_iterator(text().end());
         int textlen = base::utf8_length(text());
         int c, x;
 
@@ -342,10 +346,12 @@ bool Entry::onProcessMessage(Message* msg)
         // Forward scroll
         else if (mousePos.x >= bounds().x2()) {
           if (m_scroll < textlen - getAvailableTextLength()) {
-            m_scroll++;
+            ++m_scroll;
             x = bounds().x + border().left();
-            for (c=m_scroll; utf8_begin != utf8_end; ++c) {
-              int ch = (c < textlen ? *(utf8_begin+c) : ' ');
+
+            auto utf8_it = utf8_begin + MID(0, m_scroll, textlen);
+            for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
+              int ch = (c < textlen ? *utf8_it: ' ');
 
               x += font()->charWidth(ch);
               if (x > bounds().x2()-border().right()) {
@@ -353,7 +359,7 @@ bool Entry::onProcessMessage(Message* msg)
                 break;
               }
             }
-            m_caret = c;
+            m_caret = MID(0, c, textlen);
             move = false;
             is_dirty = true;
             invalidate();
@@ -450,8 +456,9 @@ void Entry::onSetText()
 {
   Widget::onSetText();
 
-  if (m_caret >= 0 && (std::size_t)m_caret > textLength())
-    m_caret = (int)textLength();
+  int textlen = textLength();
+  if (m_caret >= 0 && m_caret > textlen)
+    m_caret = textlen;
 }
 
 void Entry::onChange()
@@ -482,11 +489,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
   int x = bounds.x;
 
-  base::utf8_const_iterator utf8_it =
-    (m_scroll < textlen ?
-      utf8_begin + m_scroll:
-      utf8_end);
-
+  auto utf8_it = utf8_begin + MID(0, m_scroll, textlen);
   int c = m_scroll;
   for (; utf8_it != utf8_end; ++c, ++utf8_it) {
     int w = font()->charWidth(*utf8_it);
@@ -505,7 +508,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
     }
   }
 
-  return caret;
+  return MID(0, caret, textlen);
 }
 
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,7 +16,6 @@
 
 namespace she {
 
-  class NonDisposableSurface;
   class Surface;
   class Font;
 
@@ -46,7 +45,7 @@ namespace she {
 
     // Returns the main surface to draw into this display.
     // You must not dispose this surface.
-    virtual NonDisposableSurface* getSurface() = 0;
+    virtual Surface* getSurface() = 0;
 
     // Flips all graphics in the surface to the real display.
     virtual void flip(const gfx::Rect& bounds) = 0;

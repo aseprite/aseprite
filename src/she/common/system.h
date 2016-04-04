@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,7 +22,8 @@
   #include "she/native_dialogs.h"
 #endif
 
-#include "she/common/font.h"
+#include "she/common/freetype_font.h"
+#include "she/common/sprite_sheet_font.h"
 
 namespace she {
 
@@ -76,14 +77,18 @@ public:
 #endif
   }
 
-  Font* loadBitmapFont(const char* filename, int scale) override {
+  Font* loadSpriteSheetFont(const char* filename, int scale) override {
     Surface* sheet = loadRgbaSurface(filename);
     Font* font = nullptr;
     if (sheet) {
       sheet->applyScale(scale);
-      font = CommonFont::fromSurface(sheet);
+      font = SpriteSheetFont::fromSurface(sheet);
     }
     return font;
+  }
+
+  Font* loadTrueTypeFont(const char* filename, int height) override {
+    return loadFreeTypeFont(filename, height);
   }
 
 private:

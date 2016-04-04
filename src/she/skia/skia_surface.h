@@ -10,9 +10,8 @@
 
 #include "base/exception.h"
 #include "gfx/clip.h"
-#include "she/common/font.h"
-#include "she/locked_surface.h"
-#include "she/scoped_surface_lock.h"
+#include "she/common/generic_surface.h"
+#include "she/common/sprite_sheet_font.h"
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
@@ -32,17 +31,18 @@ inline SkIRect to_skia(const gfx::Rect& rc) {
   return SkIRect::MakeXYWH(rc.x, rc.y, rc.w, rc.h);
 }
 
-class SkiaSurface : public NonDisposableSurface
-                  , public LockedSurface {
+class SkiaSurface : public GenericDrawTextSurface<Surface> {
 public:
   SkiaSurface() : m_surface(nullptr)
-                , m_canvas(nullptr) {
+                , m_canvas(nullptr)
+                , m_lock(0) {
   }
 
   SkiaSurface(SkSurface* surface)
     : m_surface(surface)
     , m_canvas(nullptr)
     , m_clip(0, 0, width(), height())
+    , m_lock(0)
   {
     ASSERT(m_surface);
     if (m_surface)
@@ -50,6 +50,7 @@ public:
   }
 
   ~SkiaSurface() {
+    ASSERT(m_lock == 0);
     if (!m_surface)
       delete m_canvas;
   }
@@ -160,9 +161,16 @@ public:
     }
   }
 
-  LockedSurface* lock() override {
-    m_bitmap.lockPixels();
-    return this;
+  void lock() override {
+    ASSERT(m_lock >= 0);
+    if (m_lock++ == 0)
+      m_bitmap.lockPixels();
+  }
+
+  void unlock() override {
+    ASSERT(m_lock > 0);
+    if (--m_lock == 0)
+      m_bitmap.unlockPixels();
   }
 
   void applyScale(int scaleFactor) override {
@@ -189,20 +197,6 @@ public:
 
   void* nativeHandle() override {
     return (void*)this;
-  }
-
-  // LockedSurface impl
-
-  int lockedWidth() const override {
-    return width();
-  }
-
-  int lockedHeight() const override {
-    return height();
-  }
-
-  void unlock() override {
-    m_bitmap.unlockPixels();
   }
 
   void clear() override {
@@ -329,11 +323,12 @@ public:
     m_canvas->drawIRect(to_skia(rc), m_paint);
   }
 
-  void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
+  void blitTo(Surface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
     SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
     std::vector<uint32_t> pixels(width * height * 4);
     m_canvas->readPixels(info, (void*)&pixels[0], 4*width, srcx, srcy);
-    ((SkiaSurface*)dest)->m_canvas->writePixels(info, (void*)&pixels[0], 4*width, dstx, dsty);
+    static_cast<SkiaSurface*>(dest)
+      ->m_canvas->writePixels(info, (void*)&pixels[0], 4*width, dstx, dsty);
   }
 
   void scrollTo(const gfx::Rect& rc, int dx, int dy) override {
@@ -344,6 +339,7 @@ public:
       return;
 
     if (m_surface) {
+      SurfaceLock lock(this);
       blitTo(this, clip.src.x, clip.src.y, clip.dst.x, clip.dst.y, clip.size.w, clip.size.h);
       return;
     }
@@ -374,7 +370,7 @@ public:
     }
   }
 
-  void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
+  void drawSurface(const Surface* src, int dstx, int dsty) override {
     gfx::Clip clip(dstx, dsty, 0, 0,
       ((SkiaSurface*)src)->width(),
       ((SkiaSurface*)src)->height());
@@ -393,7 +389,7 @@ public:
       SkCanvas::kStrict_SrcRectConstraint);
   }
 
-  void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
+  void drawRgbaSurface(const Surface* src, int dstx, int dsty) override {
     gfx::Clip clip(dstx, dsty, 0, 0,
       ((SkiaSurface*)src)->width(),
       ((SkiaSurface*)src)->height());
@@ -412,9 +408,9 @@ public:
       SkCanvas::kStrict_SrcRectConstraint);
   }
 
-  void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
+  void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
     gfx::Clip clip(clipbase);
-    if (!clip.clip(lockedWidth(), lockedHeight(), src->lockedWidth(), src->lockedHeight()))
+    if (!clip.clip(width(), height(), src->width(), src->height()))
       return;
 
     SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(clip.src.x, clip.src.y, clip.size.w, clip.size.h));
@@ -438,25 +434,6 @@ public:
       ((SkiaSurface*)src)->m_bitmap,
       srcRect, dstRect, &paint,
       SkCanvas::kStrict_SrcRectConstraint);
-  }
-
-  void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
-    CommonFont* commonFont = static_cast<CommonFont*>(font);
-
-    gfx::Rect charBounds = commonFont->getCharBounds(chr);
-    if (!charBounds.isEmpty()) {
-      ScopedSurfaceLock lock(commonFont->getSurfaceSheet());
-      drawColoredRgbaSurface(lock, fg, bg, gfx::Clip(x, y, charBounds));
-    }
-  }
-
-  void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
-    base::utf8_const_iterator it(str.begin()), end(str.end());
-    while (it != end) {
-      drawChar(font, fg, bg, x, y, *it);
-      x += font->charWidth(*it);
-      ++it;
-    }
   }
 
   SkBitmap& bitmap() {
@@ -484,6 +461,7 @@ private:
   SkCanvas* m_canvas;
   SkPaint m_paint;
   gfx::Rect m_clip;
+  int m_lock;
 };
 
 } // namespace she
