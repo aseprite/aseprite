@@ -400,7 +400,7 @@ if(APPLE)
 endif(APPLE)
 
 if(WITH_DESKTOP_INTEGRATION)
-  add_subdirectory(desk)
+  add_subdirectory(desktop)
 endif()
 
 ######################################################################

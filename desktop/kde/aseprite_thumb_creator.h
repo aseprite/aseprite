@@ -9,8 +9,8 @@ Q_DECLARE_LOGGING_CATEGORY(LOG_ASEPRITE_THUMBCREATOR)
 
 class AsepriteThumbCreator : public ThumbCreator {
   public:
-    virtual bool create(const QString& path, int width, int height, QImage& img);
-    virtual Flags flags() const;
+    bool create(const QString& path, int width, int height, QImage& img) override;
+    Flags flags() const override;
 };
 
 #endif
