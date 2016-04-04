@@ -68,8 +68,14 @@ static void image_scale_tpl(
       x = fixadd(x, dx);
       new_x = fixtoi(x);
       if (old_x != new_x) {
-        src_it += (new_x - old_x);
-        old_x = new_x;
+        // We don't want to move the "src_it" iterator outside the src
+        // image bounds.
+        if (new_x < src_w) {
+          src_it += (new_x - old_x);
+          old_x = new_x;
+        }
+        else
+          break;
       }
     }
 
