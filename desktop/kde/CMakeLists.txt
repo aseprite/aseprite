@@ -1,3 +1,10 @@
+# Aseprite Desktop Integration Module
+# Copyright (C) 2016  Gabriel Rauter
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+
 cmake_minimum_required(VERSION 2.8.12)
 set(QT_MIN_VERSION "5.2.0")
 project(asepritethumbnail)
