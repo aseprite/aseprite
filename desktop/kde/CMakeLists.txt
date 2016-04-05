@@ -1,9 +1,12 @@
 # Aseprite Desktop Integration Module
 # Copyright (C) 2016  Gabriel Rauter
 #
+# Dual licensed under the MIT and GPL 2 licenses.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# published by the Free Software Foundation or the MIT License
+# (https://opensource.org/licenses/MIT).
 
 cmake_minimum_required(VERSION 2.8.12)
 set(QT_MIN_VERSION "5.2.0")
