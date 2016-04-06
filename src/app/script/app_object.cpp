@@ -11,7 +11,9 @@
 
 #include "app/script/console_object.h"
 
-#include "app/script/sprite_class.h"
+#include "app/document.h"
+#include "app/script/app_scripting.h"
+#include "app/script/sprite_wrap.h"
 #include "app/ui_context.h"
 #include "script/engine.h"
 
@@ -29,7 +31,20 @@ script::result_t App_get_activeSprite(script::ContextHandle handle)
   script::Context ctx(handle);
   app::Document* doc = UIContext::instance()->activeDocument();
   if (doc)
-    ctx.pushObject(wrap_sprite(doc), "Sprite");
+    ctx.pushObject(unwrap_engine(ctx)->wrapSprite(doc), "Sprite");
+  else
+    ctx.pushNull();
+  return 1;
+}
+
+script::result_t App_get_activeImage(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  app::Document* doc = UIContext::instance()->activeDocument();
+  if (doc) {
+    SpriteWrap* wrap = unwrap_engine(ctx)->wrapSprite(doc);
+    ctx.pushObject(wrap->activeImage(), "Image");
+  }
   else
     ctx.pushNull();
   return 1;
@@ -55,6 +70,7 @@ const script::FunctionEntry App_methods[] = {
 };
 
 const script::PropertyEntry App_props[] = {
+  { "activeImage", App_get_activeImage, nullptr },
   { "activeSprite", App_get_activeSprite, nullptr },
   { "pixelColor", App_get_pixelColor, nullptr },
   { "version", App_get_version, nullptr },

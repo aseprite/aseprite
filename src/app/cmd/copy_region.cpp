@@ -19,8 +19,11 @@ namespace app {
 namespace cmd {
 
 CopyRegion::CopyRegion(Image* dst, const Image* src,
-  const gfx::Region& region, int dst_dx, int dst_dy)
+                       const gfx::Region& region,
+                       int dst_dx, int dst_dy,
+                       bool alreadyCopied)
   : WithImage(dst)
+  , m_alreadyCopied(alreadyCopied)
 {
   // Create region to save/swap later
   for (const auto& rc : region) {
@@ -46,7 +49,8 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
 
 void CopyRegion::onExecute()
 {
-  swap();
+  if (!m_alreadyCopied)
+    swap();
 }
 
 void CopyRegion::onUndo()

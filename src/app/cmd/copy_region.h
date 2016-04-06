@@ -22,8 +22,13 @@ namespace cmd {
   class CopyRegion : public Cmd
                    , public WithImage {
   public:
+    // If alreadyCopied is false, it means that onExecute() will copy
+    // pixels from src to dst. If it's true, it means that "onExecute"
+    // should do nothing, because modified pixels are alreadt on "dst"
+    // (so we use "src" as the original image).
     CopyRegion(Image* dst, const Image* src,
-      const gfx::Region& region, int src_dx, int src_dy);
+               const gfx::Region& region, int src_dx, int src_dy,
+               bool alreadyCopied = false);
 
   protected:
     void onExecute() override;
@@ -37,6 +42,7 @@ namespace cmd {
   private:
     void swap();
 
+    bool m_alreadyCopied;
     gfx::Region m_region;
     std::stringstream m_stream;
   };

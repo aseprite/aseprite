@@ -21,6 +21,8 @@ namespace script {
   typedef struct duk_hthread* ContextHandle;
   typedef result_t (*Function)(ContextHandle ctx);
 
+  extern const char* kPtrId;
+
   struct FunctionEntry {
     const char* id;
     Function value;
@@ -48,6 +50,7 @@ namespace script {
 
     void dump();
     void pop();
+    void pop(index_t count);
     void remove(index_t idx);
     void duplicateTop();
 
@@ -68,6 +71,7 @@ namespace script {
     unsigned int getUInt(index_t i);
     const char* getString(index_t i);
     const char* toString(index_t i);
+    void* getPointer(index_t i);
     void* getThis();
 
     bool hasProp(index_t i, const char* propName);
@@ -91,6 +95,7 @@ namespace script {
     void pushString(const char* str);
     void pushThis();
     void pushThis(void* ptr);
+    void pushPointer(void* ptr);
     index_t pushObject();
     index_t pushObject(void* ptr, const char* className);
     void pushGlobalObject();
@@ -133,6 +138,10 @@ namespace script {
     Context& context() { return m_ctx; }
 
     void registerModule(Module* module);
+
+  protected:
+    virtual void onBeforeEval() { }
+    virtual void onAfterEval(bool err) { }
 
   private:
     Context m_ctx;

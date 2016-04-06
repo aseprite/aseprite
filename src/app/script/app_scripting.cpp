@@ -11,9 +11,13 @@
 
 #include "app/script/app_scripting.h"
 
+#include "app/document.h"
 #include "app/script/app_object.h"
 #include "app/script/console_object.h"
+#include "app/script/image_class.h"
+#include "app/script/image_wrap.h"
 #include "app/script/sprite_class.h"
+#include "app/script/sprite_wrap.h"
 
 namespace app {
 
@@ -25,8 +29,51 @@ AppScripting::AppScripting(script::EngineDelegate* delegate)
   register_console_object(ctx);
 
   ctx.pushGlobalObject();
+  register_image_class(-1, ctx);
   register_sprite_class(-1, ctx);
+
+  ctx.pushPointer(this);
+  ctx.setProp(-2, script::kPtrId);
+
   ctx.pop();
+}
+
+SpriteWrap* AppScripting::wrapSprite(app::Document* doc)
+{
+  auto it = m_sprites.find(doc->id());
+  if (it != m_sprites.end())
+    return it->second;
+  else {
+    auto wrap = new SpriteWrap(doc);
+    m_sprites[doc->id()] = wrap;
+    return wrap;
+  }
+}
+
+void AppScripting::onAfterEval(bool err)
+{
+  // Commit all transactions
+  if (!err) {
+    for (auto& it : m_sprites)
+      it.second->commit();
+  }
+  destroyWrappers();
+}
+
+void AppScripting::destroyWrappers()
+{
+  for (auto& it : m_sprites)
+    delete it.second;
+  m_sprites.clear();
+}
+
+AppScripting* unwrap_engine(script::Context& ctx)
+{
+  ctx.pushGlobalObject();
+  ctx.getProp(-1, script::kPtrId);
+  void* ptr = ctx.getPointer(-1);
+  ctx.pop(2);
+  return (AppScripting*)ptr;
 }
 
 }

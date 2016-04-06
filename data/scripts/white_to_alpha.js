@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 by David Capello
 
 var col = app.pixelColor
-var img = app.activeSprite
+var img = app.activeImage
 
 for (y=0; y<img.height; ++y) {
   for (x=0; x<img.width; ++x) {

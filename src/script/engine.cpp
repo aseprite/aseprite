@@ -30,6 +30,8 @@ public:
 
 namespace script {
 
+const char* kPtrId = "\xFF" "\xFF" "ptr";
+
 namespace {
 
 // TODO classes in modules isn't supported yet
@@ -106,6 +108,11 @@ void Context::dump()
 void Context::pop()
 {
   duk_pop(m_handle);
+}
+
+void Context::pop(index_t count)
+{
+  duk_pop_n(m_handle, count);
 }
 
 void Context::remove(index_t idx)
@@ -193,6 +200,11 @@ const char* Context::toString(index_t i)
   return duk_to_string(m_handle, i);
 }
 
+void* Context::getPointer(index_t i)
+{
+  return duk_get_pointer(m_handle, i);
+}
+
 bool Context::requireBool(index_t i)
 {
   return (duk_require_boolean(m_handle, i) ? true: false);
@@ -220,7 +232,7 @@ const char* Context::requireString(index_t i)
 
 void* Context::requireObject(index_t i, const char* className)
 {
-  duk_get_prop_string(m_handle, i, "\xFF" "\xFF" "ptr");
+  duk_get_prop_string(m_handle, i, kPtrId);
   void* result = (void*)duk_to_pointer(m_handle, -1);
   // TODO check pointer type
   duk_pop(m_handle);
@@ -276,7 +288,12 @@ void Context::pushThis(void* ptr)
 {
   duk_push_this(m_handle);
   duk_push_pointer(m_handle, ptr);
-  duk_put_prop_string(m_handle, -2, "\xFF" "\xFF" "ptr");
+  duk_put_prop_string(m_handle, -2, kPtrId);
+}
+
+void Context::pushPointer(void* ptr)
+{
+  duk_push_pointer(m_handle, ptr);
 }
 
 index_t Context::pushObject()
@@ -288,7 +305,7 @@ index_t Context::pushObject(void* ptr, const char* className)
 {
   index_t obj = duk_push_object(m_handle);
   duk_push_pointer(m_handle, ptr);
-  duk_put_prop_string(m_handle, obj, "\xFF" "\xFF" "ptr");
+  duk_put_prop_string(m_handle, obj, kPtrId);
 
   // TODO classes in modules isn't supported yet
   duk_get_global_string(m_handle, className);
@@ -395,7 +412,7 @@ void Context::registerClass(index_t idx,
 void* Context::getThis()
 {
   duk_push_this(m_handle);
-  duk_get_prop_string(m_handle, -1, "\xFF" "\xFF" "ptr");
+  duk_get_prop_string(m_handle, -1, kPtrId);
   void* result = (void*)duk_to_pointer(m_handle, -1);
   duk_pop_2(m_handle);
   return result;
@@ -445,6 +462,8 @@ void Engine::printLastResult()
 
 void Engine::eval(const std::string& jsCode)
 {
+  bool errFlag = true;
+  onBeforeEval();
   try {
     ContextHandle handle = m_ctx.handle();
 
@@ -453,18 +472,23 @@ void Engine::eval(const std::string& jsCode)
     if (m_printLastResult &&
         !duk_is_null_or_undefined(handle, -1)) {
       m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
+    }
 
     duk_pop(handle);
+    errFlag = false;
   }
   catch (const std::exception& ex) {
     std::string err = "Error: ";
     err += ex.what();
     m_delegate->onConsolePrint(err.c_str());
   }
+  onAfterEval(errFlag);
 }
 
 void Engine::evalFile(const std::string& file)
 {
+  bool errFlag = true;
+  onBeforeEval();
   try {
     ContextHandle handle = m_ctx.handle();
 
@@ -497,14 +521,17 @@ void Engine::evalFile(const std::string& file)
     if (m_printLastResult &&
         !duk_is_null_or_undefined(handle, -1)) {
       m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
+    }
 
     duk_pop(handle);
+    errFlag = false;
   }
   catch (const std::exception& ex) {
     std::string err = "Error: ";
     err += ex.what();
     m_delegate->onConsolePrint(err.c_str());
   }
+  onAfterEval(errFlag);
 }
 
 void Engine::registerModule(Module* module)
