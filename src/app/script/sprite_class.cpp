@@ -12,6 +12,8 @@
 #include "app/script/sprite_class.h"
 
 #include "app/cmd/set_sprite_size.h"
+#include "app/commands/commands.h"
+#include "app/commands/params.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/script/app_scripting.h"
@@ -80,6 +82,28 @@ script::result_t Sprite_crop(script::ContextHandle handle)
   return 0;
 }
 
+script::result_t Sprite_saveAs(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  const char* fn = ctx.requireString(0);
+
+  auto wrap = (SpriteWrap*)ctx.getThis();
+  if (fn && wrap) {
+    Document* doc = wrap->document();
+
+    auto uiCtx = UIContext::instance();
+    uiCtx->setActiveDocument(doc);
+
+    Command* saveAsCommand = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
+
+    Params params;
+    params.set("filename", fn);
+    uiCtx->executeCommand(saveAsCommand, params);
+  }
+
+  return 0;
+}
+
 script::result_t Sprite_get_width(script::ContextHandle handle)
 {
   script::Context ctx(handle);
@@ -127,6 +151,7 @@ script::result_t Sprite_set_height(script::ContextHandle handle)
 const script::FunctionEntry Sprite_methods[] = {
   { "resize", Sprite_resize, 2 },
   { "crop", Sprite_crop, 4 },
+  { "saveAs", Sprite_saveAs, 2 },
   { nullptr, nullptr, 0 }
 };
 
