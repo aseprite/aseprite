@@ -397,7 +397,7 @@ void* Context::getThis()
   duk_push_this(m_handle);
   duk_get_prop_string(m_handle, -1, "\xFF" "\xFF" "ptr");
   void* result = (void*)duk_to_pointer(m_handle, -1);
-  duk_pop(m_handle);
+  duk_pop_2(m_handle);
   return result;
 }
 
