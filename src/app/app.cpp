@@ -696,6 +696,7 @@ void App::run()
   if (m_isShell) {
     StdoutEngineDelegate delegate;
     AppScripting engine(&delegate);
+    engine.printLastResult();
     Shell shell;
     shell.run(engine);
   }

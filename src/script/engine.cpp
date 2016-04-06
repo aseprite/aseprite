@@ -423,6 +423,7 @@ Engine::Engine(EngineDelegate* delegate)
                           (void*)this,
                           &on_fatal_handler))
   , m_delegate(delegate)
+  , m_printLastResult(false)
 {
   // Set 'on_search_module' as the function to search modules with
   // require('modulename') on JavaScript.
@@ -437,6 +438,11 @@ Engine::~Engine()
   duk_destroy_heap(m_ctx.handle());
 }
 
+void Engine::printLastResult()
+{
+  m_printLastResult = true;
+}
+
 void Engine::eval(const std::string& jsCode)
 {
   try {
@@ -444,7 +450,8 @@ void Engine::eval(const std::string& jsCode)
 
     duk_eval_string(handle, jsCode.c_str());
 
-    if (!duk_is_null_or_undefined(handle, -1))
+    if (m_printLastResult &&
+        !duk_is_null_or_undefined(handle, -1)) {
       m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
 
     duk_pop(handle);
@@ -487,7 +494,8 @@ void Engine::evalFile(const std::string& file)
     duk_push_string(handle, duk_to_string(handle, -1));
     duk_eval_raw(handle, nullptr, 0, DUK_COMPILE_EVAL);
 
-    if (!duk_is_null_or_undefined(handle, -1))
+    if (m_printLastResult &&
+        !duk_is_null_or_undefined(handle, -1)) {
       m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
 
     duk_pop(handle);

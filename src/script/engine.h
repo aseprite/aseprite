@@ -126,6 +126,7 @@ namespace script {
     Engine(EngineDelegate* delegate);
     ~Engine();
 
+    void printLastResult();
     void eval(const std::string& jsCode);
     void evalFile(const std::string& file);
 
@@ -136,6 +137,7 @@ namespace script {
   private:
     Context m_ctx;
     EngineDelegate* m_delegate;
+    bool m_printLastResult;
   };
 
 }
