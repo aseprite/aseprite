@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -13,16 +13,16 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/resource_finder.h"
-#include "app/scripting/app_scripting.h"
+#include "app/script/app_scripting.h"
 #include "base/path.h"
-#include "scripting/engine_delegate.h"
+#include "script/engine_delegate.h"
 #include "ui/manager.h"
 
 #include <cstdio>
 
 namespace app {
 
-class ConsoleEngineDelegate : public scripting::EngineDelegate {
+class ConsoleEngineDelegate : public script::EngineDelegate {
 public:
   void onConsolePrint(const char* text) override {
     m_console.printf("%s\n", text);

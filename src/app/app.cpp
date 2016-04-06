@@ -36,7 +36,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
-#include "app/scripting/app_scripting.h"
+#include "app/script/app_scripting.h"
 #include "app/send_crash.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
@@ -69,7 +69,7 @@
 #include "doc/sprite.h"
 #include "pen/pen.h"
 #include "render/render.h"
-#include "scripting/engine_delegate.h"
+#include "script/engine_delegate.h"
 #include "she/display.h"
 #include "she/error.h"
 #include "she/system.h"
@@ -138,7 +138,7 @@ public:
 
 };
 
-class StdoutEngineDelegate : public scripting::EngineDelegate {
+class StdoutEngineDelegate : public script::EngineDelegate {
 public:
   void onConsolePrint(const char* text) override {
     printf("%s\n", text);

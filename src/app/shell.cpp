@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,7 +11,7 @@
 
 #include "app/shell.h"
 
-#include "scripting/engine.h"
+#include "script/engine.h"
 
 #include <iostream>
 #include <string>
@@ -26,7 +26,7 @@ Shell::~Shell()
 {
 }
 
-void Shell::run(scripting::Engine& engine)
+void Shell::run(script::Engine& engine)
 {
   std::cout << "Welcome to " PACKAGE " v" VERSION " interactive console" << std::endl;
   std::string line;

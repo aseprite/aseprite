@@ -318,7 +318,10 @@ add_library(app-lib
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
-  scripting/app_scripting.cpp
+  script/app_object.cpp
+  script/app_scripting.cpp
+  script/console_object.cpp
+  script/sprite_class.cpp
   send_crash.cpp
   shade.cpp
   shell.cpp
@@ -441,7 +444,7 @@ target_link_libraries(app-lib
   net-lib
   pen-lib
   render-lib
-  scripting-lib
+  script-lib
   she
   ui-lib
   undo-lib

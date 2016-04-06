@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,10 +9,10 @@
 #define APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
 #pragma once
 
-#include "app/scripting/app_scripting.h"
+#include "app/script/app_scripting.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "scripting/engine_delegate.h"
+#include "script/engine_delegate.h"
 #include "ui/box.h"
 #include "ui/label.h"
 #include "ui/textbox.h"
@@ -22,7 +22,7 @@ namespace app {
   class DevConsoleView : public ui::Box
                        , public TabView
                        , public WorkspaceView
-                       , public scripting::EngineDelegate {
+                       , public script::EngineDelegate {
   public:
     DevConsoleView();
     ~DevConsoleView();
