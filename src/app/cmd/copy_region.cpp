@@ -18,7 +18,7 @@
 namespace app {
 namespace cmd {
 
-CopyRegion::CopyRegion(Image* dst, Image* src,
+CopyRegion::CopyRegion(Image* dst, const Image* src,
   const gfx::Region& region, int dst_dx, int dst_dy)
   : WithImage(dst)
 {

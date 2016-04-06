@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,7 +22,7 @@ namespace cmd {
   class CopyRegion : public Cmd
                    , public WithImage {
   public:
-    CopyRegion(Image* dst, Image* src,
+    CopyRegion(Image* dst, const Image* src,
       const gfx::Region& region, int src_dx, int src_dy);
 
   protected:
