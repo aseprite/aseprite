@@ -378,5 +378,63 @@ app::Document* read_document(const std::string& dir)
   return Reader(dir).loadDocument();
 }
 
+app::Document* read_document_with_raw_images(const std::string& dir,
+                                             RawImagesAs as)
+{
+  Reader reader(dir);
+
+  DocumentInfo info;
+  if (!reader.loadDocumentInfo(info)) {
+    info.format = IMAGE_RGB;
+    info.width = 256;
+    info.height = 256;
+    info.filename = "Unknown";
+  }
+  info.width = MID(1, info.width, 99999);
+  info.height = MID(1, info.height, 99999);
+  Sprite* spr = new Sprite(info.format, info.width, info.height, 256);
+
+  // Load each image as a new frame
+  auto lay = new LayerImage(spr);
+  spr->folder()->addLayer(lay);
+
+  frame_t frame = 0;
+  for (const auto& fn : base::list_files(dir)) {
+    if (fn.compare(0, 3, "img") != 0)
+      continue;
+
+    std::ifstream s(FSTREAM_PATH(base::join_path(dir, fn)), std::ifstream::binary);
+    if (!s)
+      continue;
+
+    ImageRef img;
+    if (read32(s) == MAGIC_NUMBER)
+      img.reset(read_image(s, false));
+
+    if (img) {
+      lay->addCel(new Cel(frame, img));
+    }
+
+    switch (as) {
+      case RawImagesAs::kFrames:
+        ++frame;
+        break;
+      case RawImagesAs::kLayers:
+        lay = new LayerImage(spr);
+        spr->folder()->addLayer(lay);
+        break;
+    }
+  }
+  if (as == RawImagesAs::kFrames) {
+    if (frame > 1)
+      spr->setTotalFrames(frame);
+  }
+
+  app::Document* doc = new app::Document(spr);
+  doc->setFilename(info.filename);
+  doc->impossibleToBackToSavedState();
+  return doc;
+}
+
 } // namespace crash
 } // namespace app

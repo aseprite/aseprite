@@ -765,8 +765,10 @@ void SkinTheme::paintBox(PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
   Graphics* g = ev.graphics();
 
-  if (!is_transparent(BGCOLOR))
+  if (!widget->isTransparent() &&
+      !is_transparent(BGCOLOR)) {
     g->fillRect(BGCOLOR, g->getClipBounds());
+  }
 }
 
 void SkinTheme::paintButton(PaintEvent& ev)

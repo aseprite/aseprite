@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -15,6 +15,7 @@
 #include "app/crash/data_recovery.h"
 #include "app/crash/session.h"
 #include "app/modules/gui.h"
+#include "app/ui/drop_down_button.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
@@ -24,8 +25,8 @@
 #include "ui/entry.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
 
@@ -45,10 +46,14 @@ public:
     , m_openButton(backup ? "Open": "Open All")
     , m_deleteButton(backup ? "Delete": "Delete All")
   {
-    addChild(&m_openButton);
-    addChild(&m_deleteButton);
+    m_hbox.setBgColor(gfx::ColorNone);
+    m_hbox.setTransparent(true);
+    m_hbox.addChild(&m_openButton);
+    m_hbox.addChild(&m_deleteButton);
+    addChild(&m_hbox);
 
     m_openButton.Click.connect(base::Bind(&Item::onOpen, this));
+    m_openButton.DropDownClick.connect(base::Bind<void>(&Item::onOpenMenu, this));
     m_deleteButton.Click.connect(base::Bind(&Item::onDelete, this));
 
     setup_mini_look(&m_openButton);
@@ -68,13 +73,10 @@ protected:
     ListItem::onResize(ev);
 
     gfx::Rect rc = ev.bounds();
-    gfx::Size sz1 = m_openButton.sizeHint();
-    sz1.w *= 2*guiscale();
-    gfx::Size sz2 = m_deleteButton.sizeHint();
-    int h = rc.h*3/4;
-    int sep = 8*guiscale();
-    m_openButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w-sz1.w-2*sep, rc.y+rc.h/2-h/2, sz1.w, h));
-    m_deleteButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w-sep, rc.y+rc.h/2-h/2, sz2.w, h));
+    gfx::Size sz = m_hbox.sizeHint();
+    m_hbox.setBounds(
+      gfx::Rect(
+        rc.x+rc.w-sz.w-2*guiscale(), rc.y+rc.h/2-sz.h/2, sz.w, sz.h));
   }
 
   void onOpen() {
@@ -83,6 +85,29 @@ protected:
     else
       for (auto backup : m_session->backups())
         m_session->restoreBackup(backup);
+  }
+
+  void onOpenRaw(crash::RawImagesAs as) {
+    if (m_backup)
+      m_session->restoreRawImages(m_backup, as);
+    else
+      for (auto backup : m_session->backups())
+        m_session->restoreRawImages(backup, as);
+  }
+
+  void onOpenMenu() {
+    gfx::Rect bounds = m_openButton.bounds();
+
+    Menu menu;
+    MenuItem rawFrames("Raw Images as Frames");
+    MenuItem rawLayers("Raw Images as Layers");
+    menu.addChild(&rawFrames);
+    menu.addChild(&rawLayers);
+
+    rawFrames.Click.connect(base::Bind(&Item::onOpenRaw, this, crash::RawImagesAs::kFrames));
+    rawLayers.Click.connect(base::Bind(&Item::onOpenRaw, this, crash::RawImagesAs::kLayers));
+
+    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
 
   void onDelete() {
@@ -126,7 +151,8 @@ protected:
 private:
   crash::Session* m_session;
   crash::Session::Backup* m_backup;
-  ui::Button m_openButton;
+  ui::HBox m_hbox;
+  DropDownButton m_openButton;
   ui::Button m_deleteButton;
 };
 

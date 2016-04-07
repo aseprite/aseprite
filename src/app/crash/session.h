@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,6 +9,7 @@
 #define APP_CRASH_SESSION_H_INCLUDED
 #pragma once
 
+#include "app/crash/raw_images_as.h"
 #include "base/disable_copying.h"
 #include "base/process.h"
 #include "base/shared_ptr.h"
@@ -52,6 +53,7 @@ namespace crash {
     void removeDocument(app::Document* doc);
 
     void restoreBackup(Backup* backup);
+    void restoreRawImages(Backup* backup, RawImagesAs as);
     void deleteBackup(Backup* backup);
 
   private:
@@ -59,6 +61,7 @@ namespace crash {
     std::string pidFilename() const;
     std::string verFilename() const;
     void deleteDirectory(const std::string& dir);
+    void fixFilename(app::Document* doc);
 
     base::pid m_pid;
     std::string m_path;

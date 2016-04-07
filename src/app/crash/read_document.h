@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,6 +9,7 @@
 #define APP_CRASH_READ_DOCUMENT_H_INCLUDED
 #pragma once
 
+#include "app/crash/raw_images_as.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
 
@@ -35,6 +36,8 @@ namespace crash {
 
   bool read_document_info(const std::string& dir, DocumentInfo& info);
   app::Document* read_document(const std::string& dir);
+  app::Document* read_document_with_raw_images(const std::string& dir,
+                                               RawImagesAs as);
 
 } // namespace crash
 } // namespace app

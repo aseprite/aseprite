@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -166,18 +166,22 @@ void Session::restoreBackup(Backup* backup)
   try {
     app::Document* doc = read_document(backup->dir());
     if (doc) {
-      std::string fn = doc->filename();
-      if (!fn.empty()) {
-        std::string ext = base::get_file_extension(fn);
-        if (!ext.empty())
-          ext = "." + ext;
+      fixFilename(doc);
+      UIContext::instance()->documents().add(doc);
+    }
+  }
+  catch (const std::exception& ex) {
+    Console::showException(ex);
+  }
+}
 
-        doc->setFilename(
-          base::join_path(
-            base::get_file_path(fn),
-            base::get_file_title(fn) + "-Recovered" + ext));
-      }
-
+void Session::restoreRawImages(Backup* backup, RawImagesAs as)
+{
+  Console console;
+  try {
+    app::Document* doc = read_document_with_raw_images(backup->dir(), as);
+    if (doc) {
+      fixFilename(doc);
       UIContext::instance()->documents().add(doc);
     }
   }
@@ -239,6 +243,22 @@ void Session::deleteDirectory(const std::string& dir)
     }
   }
   base::remove_directory(dir);
+}
+
+void Session::fixFilename(app::Document* doc)
+{
+  std::string fn = doc->filename();
+  if (fn.empty())
+    return;
+
+  std::string ext = base::get_file_extension(fn);
+  if (!ext.empty())
+    ext = "." + ext;
+
+  doc->setFilename(
+    base::join_path(
+      base::get_file_path(fn),
+      base::get_file_title(fn) + "-Recovered" + ext));
 }
 
 } // namespace crash
