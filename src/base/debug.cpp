@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -68,7 +68,7 @@ void base_trace(const char* msg, ...)
 
 #else
 
-  std::cerr << buf << std::endl;
+  std::cerr << buf << std::flush;
 
 #endif
 }
