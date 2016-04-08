@@ -39,6 +39,7 @@ namespace {
     { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid },
     { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap },
     { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio },
+    { "ScaleFromCenter"     , "Scale From Center"   , app::KeyAction::ScaleFromCenter },
     { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
     { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
     { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
@@ -147,6 +148,7 @@ Key::Key(KeyAction action)
       m_keycontext = KeyContext::RotatingSelection;
       break;
     case KeyAction::MaintainAspectRatio:
+    case KeyAction::ScaleFromCenter:
       m_keycontext = KeyContext::ScalingSelection;
       break;
     case KeyAction::AddSelection:

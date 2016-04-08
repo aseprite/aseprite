@@ -71,6 +71,7 @@ namespace app {
     MoveOrigin                = 0x00000800,
     SquareAspect              = 0x00001000,
     DrawFromCenter            = 0x00002000,
+    ScaleFromCenter           = 0x00004000,
   };
 
   inline KeyAction operator&(KeyAction a, KeyAction b) {

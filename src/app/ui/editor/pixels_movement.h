@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -44,7 +44,8 @@ namespace app {
       SnapToGridMovement = 2,
       AngleSnapMovement = 4,
       MaintainAspectRatioMovement = 8,
-      LockAxisMovement = 16
+      LockAxisMovement = 16,
+      ScaleFromPivot = 32,
     };
 
     PixelsMovement(Context* context,

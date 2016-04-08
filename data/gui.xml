@@ -473,6 +473,10 @@
            keyboard shortcut you maintain aspect ratio -->
       <key action="MaintainAspectRatio" shortcut="Shift" />
 
+      <!-- When you scale the selection, pressing this key the
+           selectino will be scaled from the pivot point -->
+      <key action="ScaleFromCenter" shortcut="Alt" />
+
       <!-- Modifiers for selection tool -->
       <key action="AddSelection" shortcut="Shift" />
       <key action="SubtractSelection" shortcut="Shift+Alt" />

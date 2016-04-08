@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -354,6 +354,9 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
     if (int(action & KeyAction::MaintainAspectRatio))
       moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
+
+    if (int(action & KeyAction::ScaleFromCenter))
+      moveModifier |= PixelsMovement::ScaleFromPivot;
 
     if (int(action & KeyAction::LockAxis))
       moveModifier |= PixelsMovement::LockAxisMovement;

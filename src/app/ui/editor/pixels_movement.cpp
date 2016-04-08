@@ -228,147 +228,123 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   m_currentData.transformBox(oldCorners);
 
   ContextWriter writer(m_reader, 1000);
-  int x1, y1, x2, y2;
-
-  x1 = m_initialData.bounds().x;
-  y1 = m_initialData.bounds().y;
-  x2 = m_initialData.bounds().x + m_initialData.bounds().w;
-  y2 = m_initialData.bounds().y + m_initialData.bounds().h;
-
+  gfx::Rect bounds = m_initialData.bounds();
   bool updateBounds = false;
-  int dx, dy;
+  double dx, dy;
 
-  dx = int((pos.x - m_catchPos.x) *  cos(m_currentData.angle()) +
-           (pos.y - m_catchPos.y) * -sin(m_currentData.angle()));
-  dy = int((pos.x - m_catchPos.x) *  sin(m_currentData.angle()) +
-           (pos.y - m_catchPos.y) *  cos(m_currentData.angle()));
+  dx = ((pos.x - m_catchPos.x) *  cos(m_currentData.angle()) +
+        (pos.y - m_catchPos.y) * -sin(m_currentData.angle()));
+  dy = ((pos.x - m_catchPos.x) *  sin(m_currentData.angle()) +
+        (pos.y - m_catchPos.y) *  cos(m_currentData.angle()));
 
   switch (m_handle) {
 
     case MoveHandle:
-      x1 += dx;
-      y1 += dy;
-      x2 += dx;
-      y2 += dy;
-      updateBounds = true;
-
       if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
-        if (ABS(dx) < ABS(dy)) {
-          x1 -= dx;
-          x2 -= dx;
-        }
-        else {
-          y1 -= dy;
-          y2 -= dy;
-        }
+        if (ABS(dx) < ABS(dy))
+          dx = 0.0;
+        else
+          dy = 0.0;
       }
+
+      bounds.offset(int(dx), int(dy));
+      updateBounds = true;
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Rect gridBounds = App::instance()
           ->preferences().document(m_document).grid.bounds();
-        gfx::Point gridOffset(x1, y1);
+        gfx::Point gridOffset(bounds.origin());
         gridOffset = snap_to_grid(gridBounds, gridOffset,
                                   PreferSnapTo::ClosestGridVertex);
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
-        gridOffset -= gfx::Point(x1, y1);
-
-        x1 += gridOffset.x;
-        y1 += gridOffset.y;
-        x2 += gridOffset.x;
-        y2 += gridOffset.y;
+        gridOffset -= bounds.origin();
+        bounds.offset(gridOffset);
       }
       break;
 
     case ScaleNWHandle:
-      x1 = MIN(x1+dx, x2-1);
-      y1 = MIN(y1+dy, y2-1);
-
-      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
-        if (1000 * (x2-x1) / getInitialImageSize().w >
-            1000 * (y2-y1) / getInitialImageSize().h) {
-          y1 = y2 - getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
-        }
-        else {
-          x1 = x2 - getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
-        }
-      }
-
-      updateBounds = true;
-      break;
-
     case ScaleNHandle:
-      y1 = MIN(y1+dy, y2-1);
-      updateBounds = true;
-      break;
-
     case ScaleNEHandle:
-      x2 = MAX(x2+dx, x1+1);
-      y1 = MIN(y1+dy, y2-1);
-
-      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
-        if (1000 * (x2-x1) / getInitialImageSize().w >
-            1000 * (y2-y1) / getInitialImageSize().h) {
-          y1 = y2 - getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
-        }
-        else {
-          x2 = x1 + getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
-        }
-      }
-
-      updateBounds = true;
-      break;
-
     case ScaleWHandle:
-      x1 = MIN(x1+dx, x2-1);
-      updateBounds = true;
-      break;
-
     case ScaleEHandle:
-      x2 = MAX(x2+dx, x1+1);
-      updateBounds = true;
-      break;
-
     case ScaleSWHandle:
-      x1 = MIN(x1+dx, x2-1);
-      y2 = MAX(y2+dy, y1+1);
-
-      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
-        if (1000 * (x2-x1) / getInitialImageSize().w >
-            1000 * (y2-y1) / getInitialImageSize().h) {
-          y2 = y1 + getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
-        }
-        else {
-          x1 = x2 - getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
-        }
-      }
-
-      updateBounds = true;
-      break;
-
     case ScaleSHandle:
-      y2 = MAX(y2+dy, y1+1);
-      updateBounds = true;
-      break;
+    case ScaleSEHandle: {
+      static double handles[][2] = {
+        { 0.0, 0.0 }, { 0.5, 0.0 }, { 1.0, 0.0 },
+        { 0.0, 0.5 },               { 1.0, 0.5 },
+        { 0.0, 1.0 }, { 0.5, 1.0 }, { 1.0, 1.0 }
+      };
+      gfx::PointT<double> pivot;
+      gfx::PointT<double> handle(
+        handles[m_handle-ScaleNWHandle][0],
+        handles[m_handle-ScaleNWHandle][1]);
 
-    case ScaleSEHandle:
-      x2 = MAX(x2+dx, x1+1);
-      y2 = MAX(y2+dy, y1+1);
-
-      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
-        if (1000 * (x2-x1) / getInitialImageSize().w >
-            1000 * (y2-y1) / getInitialImageSize().h) {
-          y2 = y1 + getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
-        }
-        else {
-          x2 = x1 + getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
-        }
+      if ((moveModifier & ScaleFromPivot) == ScaleFromPivot) {
+        pivot.x = m_currentData.pivot().x;
+        pivot.y = m_currentData.pivot().y;
+      }
+      else {
+        pivot.x = 1.0 - handle.x;
+        pivot.y = 1.0 - handle.y;
+        pivot.x = bounds.x + bounds.w*pivot.x;
+        pivot.y = bounds.y + bounds.h*pivot.y;
       }
 
+      gfx::Point a = bounds.origin();
+      gfx::Point b = bounds.point2();
+
+      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
+        auto u = point2Vector(gfx::PointT<double>(m_catchPos) - pivot);
+        auto v = point2Vector(gfx::PointT<double>(pos) - pivot);
+        auto w = v.projectOn(u);
+        double scale = u.magnitude();
+        if (scale != 0.0)
+          scale = (std::fabs(w.angle()-u.angle()) < PI/2.0 ? 1.0: -1.0) * w.magnitude() / scale;
+        else
+          scale = 1.0;
+
+        a.x = int((a.x-pivot.x)*scale + pivot.x);
+        a.y = int((a.y-pivot.y)*scale + pivot.y);
+        b.x = int((b.x-pivot.x)*scale + pivot.x);
+        b.y = int((b.y-pivot.y)*scale + pivot.y);
+      }
+      else {
+        handle.x = bounds.x + bounds.w*handle.x;
+        handle.y = bounds.y + bounds.h*handle.y;
+
+        double w = (handle.x-pivot.x);
+        double h = (handle.y-pivot.y);
+
+        if (m_handle == ScaleNHandle || m_handle == ScaleSHandle) {
+          dx = 0.0;
+          w = 1.0;              // Any value != 0.0 to avoid div by zero
+        }
+        else if (m_handle == ScaleWHandle || m_handle == ScaleEHandle) {
+          dy = 0.0;
+          h = 1.0;
+        }
+
+        a.x = (a.x-pivot.x)*(1.0+dx/w) + pivot.x;
+        a.y = (a.y-pivot.y)*(1.0+dy/h) + pivot.y;
+        b.x = (b.x-pivot.x)*(1.0+dx/w) + pivot.x;
+        b.y = (b.y-pivot.y)*(1.0+dy/h) + pivot.y;
+      }
+
+      // Do not use "gfx::Rect(a, b)" here because if a > b we want to
+      // keep a rectangle with negative width or height (to know that
+      // it was flipped).
+      bounds.x = a.x;
+      bounds.y = a.y;
+      bounds.w = b.x - a.x;
+      bounds.h = b.y - a.y;
+
       updateBounds = true;
       break;
+    }
 
     case RotateNWHandle:
     case RotateNHandle:
@@ -432,7 +408,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   }
 
   if (updateBounds) {
-    m_currentData.bounds(gfx::Rect(x1, y1, x2 - x1, y2 - y1));
+    m_currentData.bounds(bounds);
     m_adjustPivot = true;
   }
 
