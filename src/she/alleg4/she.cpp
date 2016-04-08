@@ -224,6 +224,15 @@ void error_message(const char* msg)
 
 bool is_key_pressed(KeyScancode scancode)
 {
+  if (scancode == kKeyLShift || scancode == kKeyRShift) {
+    return key_shifts & KB_SHIFT_FLAG;
+  }
+  else if (scancode == kKeyLControl || scancode == kKeyRControl) {
+    return key_shifts & KB_CTRL_FLAG;
+  }
+  else if (scancode == kKeyAlt) {
+    return key_shifts & KB_ALT_FLAG;
+  }
   return key[scancode] ? true: false;
 }
 
