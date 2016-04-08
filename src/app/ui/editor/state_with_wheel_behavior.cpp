@@ -51,7 +51,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
   else if (Preferences::instance().editor.zoomWithWheel()) {
     if (msg->ctrlPressed())
       wheelAction = WHEEL_FRAME;
-    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
+    else if ((msg->wheelDelta().x != 0 && !msg->preciseWheel()) ||
+             (msg->shiftPressed()))
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_ZOOM;
