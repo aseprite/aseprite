@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -39,6 +39,10 @@ namespace base {
 
   // Replaces all separators with the system separator.
   std::string fix_path_separators(const std::string& filename);
+
+  // Calls get_canonical_path() and fix_path_separators() for the
+  // given filename.
+  std::string normalize_path(const std::string& filename);
 
   // Returns true if the filename contains one of the specified
   // extensions. The cvs_extensions parameter must be a set of

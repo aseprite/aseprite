@@ -12,6 +12,7 @@
 
 #include "she/osx/app_delegate.h"
 
+#include "base/path.h"
 #include "she/event.h"
 #include "she/event_queue.h"
 #include "she/osx/app.h"
@@ -41,7 +42,7 @@
   std::vector<std::string> files;
   for (int i=0; i<[filenames count]; ++i) {
     NSString* fn = [filenames objectAtIndex: i];
-    files.push_back([fn UTF8String]);
+    files.push_back(base::normalize_path([fn UTF8String]));
   }
 
   she::Event ev;

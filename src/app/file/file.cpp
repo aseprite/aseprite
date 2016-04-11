@@ -711,10 +711,12 @@ void FileOp::postLoad()
     return;
 
   // Set the filename.
+  std::string fn;
   if (isSequence())
-    m_document->setFilename(m_seq.filename_list.begin()->c_str());
+    fn = m_seq.filename_list.begin()->c_str();
   else
-    m_document->setFilename(m_filename.c_str());
+    fn = m_filename.c_str();
+  m_document->setFilename(fn);
 
   bool result = m_format->postLoad(this);
   if (!result) {

@@ -547,7 +547,7 @@ void App::initialize(const AppOptions& options)
       }
       // File names aren't associated to any option
       else {
-        const std::string& filename = value.value();
+        const std::string& filename = base::normalize_path(value.value());
 
         app::Document* oldDoc = ctx->activeDocument();
 

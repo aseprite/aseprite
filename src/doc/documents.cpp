@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -106,9 +106,9 @@ Document* Documents::getByName(const std::string& name) const
 
 Document* Documents::getByFileName(const std::string& filename) const
 {
-  std::string fixfn = base::fix_path_separators(filename);
+  std::string fn = base::normalize_path(filename);
   for (const auto& doc : *this) {
-    if (base::fix_path_separators(doc->filename()) == fixfn)
+    if (doc->filename() == fn)
       return doc;
   }
   return NULL;

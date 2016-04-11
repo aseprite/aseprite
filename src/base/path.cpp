@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "base/path.h"
 
+#include "base/fs.h"            // TODO we should merge base/path.h and base/fs.h
 #include "base/string.h"
 
 #include <algorithm>
@@ -140,6 +141,13 @@ std::string fix_path_separators(const std::string& filename)
                   is_path_separator, path_separator);
 
   return result;
+}
+
+std::string normalize_path(const std::string& filename)
+{
+  std::string fn = base::get_canonical_path(filename);
+  fn = base::fix_path_separators(fn);
+  return fn;
 }
 
 bool has_file_extension(const std::string& filename, const std::string& csv_extensions)
