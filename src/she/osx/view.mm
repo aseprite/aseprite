@@ -59,6 +59,19 @@ inline KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
   return (KeyModifiers)modifiers;
 }
 
+inline int get_unicodechar_from_nsevent(NSEvent* event)
+{
+  int chr = 0;
+  // TODO we should use "event.characters" for a new kind of event (Event::Char or something like that)
+  NSString* chars = event.charactersIgnoringModifiers;
+  if (chars && chars.length >= 1) {
+    chr = [chars characterAtIndex:0];
+    if (chr < 32)
+      chr = 0;
+  }
+  return chr;
+}
+
 } // anonymous namespace
 
 namespace she {
@@ -142,11 +155,7 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setScancode(scancode);
   ev.setModifiers(get_modifiers_from_nsevent(event));
   ev.setRepeat(event.ARepeat ? 1: 0);
-
-  // TODO we should use event.characters
-  NSString* chars = event.charactersIgnoringModifiers;
-  if (chars && chars.length >= 1)
-    ev.setUnicodeChar([chars characterAtIndex:0]);
+  ev.setUnicodeChar(get_unicodechar_from_nsevent(event));
 
   queue_event(ev);
 }
@@ -164,11 +173,7 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setScancode(scancode);
   ev.setModifiers(get_modifiers_from_nsevent(event));
   ev.setRepeat(event.ARepeat ? 1: 0);
-
-  // TODO we should use event.characters
-  NSString* chars = event.charactersIgnoringModifiers;
-  if (chars && chars.length >= 1)
-    ev.setUnicodeChar([chars characterAtIndex:0]);
+  ev.setUnicodeChar(get_unicodechar_from_nsevent(event));
 
   queue_event(ev);
 }
