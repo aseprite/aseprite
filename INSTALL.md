@@ -44,7 +44,10 @@ On Windows you can use programs like
 Aseprite uses the latest version of [CMake](http://www.cmake.org/)
 (3.0 or greater) as its build system. Also we use
 [Ninja](https://ninja-build.org) build files regularly instead of
-Visual Studio or Xcode projects.
+Visual Studio or Xcode projects. Finally, you will need `awk` utility
+to compile the embedded (non-shared version of) libpng library (on
+Windows you can get this utility from MSYS2 distributions,
+e.g. [MozillaBuild](https://wiki.mozilla.org/MozillaBuild)).
 
 Aseprite can be compiled with two different back-ends:
 
