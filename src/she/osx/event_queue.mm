@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #endif
 
 #include <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h>
 
 #include "she/osx/event_queue.h"
 
@@ -30,8 +31,19 @@ retry:;
                              untilDate:[NSDate distantPast]
                                 inMode:NSDefaultRunLoopMode
                                dequeue:YES];
-    if (event)
-      [app sendEvent: event];
+    if (event) {
+      // Intercept Control+Tab and send it to the main NSView. Without
+      // this, the NSApplication intercepts the key combination and
+      // use it to go to the next key view.
+      if (event.type == NSKeyDown &&
+          event.modifierFlags & NSControlKeyMask &&
+          event.keyCode == kVK_Tab) {
+        [app.mainWindow.contentView keyDown:event];
+      }
+      else {
+        [app sendEvent:event];
+      }
+    }
   } while (event);
 
   if (!m_events.try_pop(ev)) {
