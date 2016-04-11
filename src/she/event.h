@@ -69,7 +69,12 @@ namespace she {
     int repeat() const { return m_repeat; }
     gfx::Point position() const { return m_position; }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
+
+    // We suppose that if we are receiving precise scrolling deltas,
+    // it means that the user is using a touch-like surface (trackpad,
+    // magic mouse scrolling, touch wacom tablet, etc.)
     bool preciseWheel() const { return m_preciseWheel; }
+
     MouseButton button() const { return m_button; }
     double magnification() const { return m_magnification; }
 
