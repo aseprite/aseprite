@@ -19,29 +19,36 @@ extern int app_main(int argc, char* argv[]);
 
 namespace she {
 
-OSXApp* OSXApp::g_instance = nullptr;
+class OSXApp::Impl {
+public:
+  bool init() {
+    m_app = [NSApplication sharedApplication];
+    m_appDelegate = [OSXAppDelegate new];
+
+    [m_app setActivationPolicy:NSApplicationActivationPolicyRegular];
+    [m_app setDelegate:m_appDelegate];
+    [m_app activateIgnoringOtherApps:YES];
+
+    return true;
+  }
+
+private:
+  NSApplication* m_app;
+  id m_appDelegate;
+};
 
 OSXApp::OSXApp()
+  : m_impl(new Impl)
 {
-  g_instance = this;
 }
 
 OSXApp::~OSXApp()
 {
-  g_instance = nullptr;
 }
 
-int OSXApp::run(int argc, char* argv[])
+bool OSXApp::init()
 {
-  NSApplication* app = [NSApplication sharedApplication];
-  id appDelegate = [OSXAppDelegate new];
-
-  [app setActivationPolicy:NSApplicationActivationPolicyRegular];
-  [app setDelegate:appDelegate];
-  [app activateIgnoringOtherApps:YES];
-
-  app_main(argc, argv);
-  return 0;
+  return m_impl->init();
 }
 
 } // namespace she

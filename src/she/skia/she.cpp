@@ -54,8 +54,7 @@ extern int app_main(int argc, char* argv[]);
 
 #if _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nCmdShow)
-{
+                   LPSTR lpCmdLine, int nCmdShow) {
   int argc = 0;
   LPWSTR* argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
   char** argv;
@@ -70,19 +69,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     argv[0] = base_strdup("");
   }
 #else
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 #endif
 
 #if __APPLE__
   she::OSXApp app;
-  return app.run(argc, argv);
-#else
-
-#ifndef _WIN32
+  if (!app.init())
+    return 1;
+#elif !defined(_WIN32)
   she::X11 x11;
 #endif
 
   return app_main(argc, argv);
-#endif
 }

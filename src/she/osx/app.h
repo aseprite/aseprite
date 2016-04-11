@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,15 +16,14 @@ namespace she {
 
   class OSXApp {
   public:
-    static OSXApp* instance() { return g_instance; }
-
     OSXApp();
     ~OSXApp();
 
-    int run(int argc, char* argv[]);
+    bool init();
 
   private:
-    static OSXApp* g_instance;
+    class Impl;
+    Impl* m_impl;
   };
 
 } // namespace she
