@@ -10,7 +10,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-@interface OSXAppDelegate : NSObject
+@interface OSXAppDelegate : NSObject<NSApplicationDelegate>
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender;
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app;
 - (void)applicationWillTerminate:(NSNotification*)notification;

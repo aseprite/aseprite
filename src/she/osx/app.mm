@@ -1,5 +1,4 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
 // Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,7 +35,7 @@ public:
 
 private:
   NSApplication* m_app;
-  id m_appDelegate;
+  OSXAppDelegate* m_appDelegate;
 };
 
 OSXApp::OSXApp()
