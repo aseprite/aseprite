@@ -101,8 +101,8 @@ public:
 
 #ifndef UPDATE_URL
 #define UPDATE_URL ""
-#endif
 #pragma message("warning: Define UPDATE_URL macro")
+#endif
 
     std::string url = UPDATE_URL;
     if (!uuid.empty()) {
