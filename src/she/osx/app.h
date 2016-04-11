@@ -16,10 +16,13 @@ namespace she {
 
   class OSXApp {
   public:
+    static OSXApp* instance();
+
     OSXApp();
     ~OSXApp();
 
     bool init();
+    void finishLaunching();
 
   private:
     class Impl;

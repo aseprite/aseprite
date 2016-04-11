@@ -144,6 +144,10 @@ public:
     delete this;
   }
 
+  void finishLaunching() override {
+    // Do nothing
+  }
+
   Capabilities capabilities() const override {
     return (Capabilities)(Capabilities::CanResizeDisplay);
   }
@@ -197,6 +201,7 @@ public:
     set_color_conversion(old_color_conv);
     return sur;
   }
+
 };
 
 System* create_system() {

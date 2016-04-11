@@ -21,6 +21,7 @@
 #ifdef _WIN32
   #include "she/win/event_queue.h"
 #elif __APPLE__
+  #include "she/osx/app.h"
   #include "she/osx/event_queue.h"
 #else
   #include "she/x11/event_queue.h"
@@ -49,6 +50,15 @@ public:
 
   void dispose() override {
     delete this;
+  }
+
+  void finishLaunching() override {
+#if __APPLE__
+    // Start processing NSApplicationDelegate events. (E.g. after
+    // calling this we'll receive application:openFiles: and we'll
+    // generate DropFiles events.)  events
+    OSXApp::instance()->finishLaunching();
+#endif
   }
 
   Capabilities capabilities() const override {

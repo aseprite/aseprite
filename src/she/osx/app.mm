@@ -28,9 +28,12 @@ public:
     [m_app setActivationPolicy:NSApplicationActivationPolicyRegular];
     [m_app setDelegate:m_appDelegate];
     [m_app activateIgnoringOtherApps:YES];
-    [m_app finishLaunching];
 
     return true;
+  }
+
+  void finishLaunching() {
+    [m_app finishLaunching];
   }
 
 private:
@@ -38,18 +41,35 @@ private:
   OSXAppDelegate* m_appDelegate;
 };
 
+static OSXApp* g_instance = nullptr;
+
+// static
+OSXApp* OSXApp::instance()
+{
+  return g_instance;
+}
+
 OSXApp::OSXApp()
   : m_impl(new Impl)
 {
+  ASSERT(!g_instance);
+  g_instance = this;
 }
 
 OSXApp::~OSXApp()
 {
+  ASSERT(g_instance == this);
+  g_instance = nullptr;
 }
 
 bool OSXApp::init()
 {
   return m_impl->init();
+}
+
+void OSXApp::finishLaunching()
+{
+  m_impl->finishLaunching();
 }
 
 } // namespace she

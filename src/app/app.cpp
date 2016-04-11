@@ -658,6 +658,8 @@ void App::initialize(const AppOptions& options)
 
     LOG("Export sprite sheet: Done\n");
   }
+
+  she::instance()->finishLaunching();
 }
 
 void App::run()
