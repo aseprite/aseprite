@@ -36,15 +36,20 @@
   she::queue_event(ev);
 }
 
-- (BOOL)application:(NSApplication*)app openFile:(NSString*)filename
+- (BOOL)application:(NSApplication*)app openFiles:(NSArray*)filenames
 {
   std::vector<std::string> files;
-  files.push_back([filename UTF8String]);
+  for (int i=0; i<[filenames count]; ++i) {
+    NSString* fn = [filenames objectAtIndex: i];
+    files.push_back([fn UTF8String]);
+  }
 
   she::Event ev;
   ev.setType(she::Event::DropFiles);
   ev.setFiles(files);
   she::queue_event(ev);
+
+  [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
   return YES;
 }
 

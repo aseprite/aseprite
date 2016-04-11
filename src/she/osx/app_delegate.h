@@ -14,7 +14,7 @@
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender;
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app;
 - (void)applicationWillTerminate:(NSNotification*)notification;
-- (BOOL)application:(NSApplication*)app openFile:(NSString*)filename;
+- (BOOL)application:(NSApplication*)app openFiles:(NSArray*)filenames;
 @end
 
 #endif
