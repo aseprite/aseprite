@@ -47,12 +47,14 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     else
       wheelAction = WHEEL_FG;
   }
-  // Normal behavior: mouse wheel zooms
-  else if (Preferences::instance().editor.zoomWithWheel()) {
+  // Normal behavior: mouse wheel zooms If the message is from a
+  // precise wheel i.e. a trackpad/touch-like device, we scroll by
+  // default.
+  else if (Preferences::instance().editor.zoomWithWheel() &&
+           !msg->preciseWheel()) {
     if (msg->ctrlPressed())
       wheelAction = WHEEL_FRAME;
-    else if ((msg->wheelDelta().x != 0 && !msg->preciseWheel()) ||
-             (msg->shiftPressed()))
+    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_ZOOM;
