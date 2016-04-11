@@ -38,12 +38,11 @@
 
 - (BOOL)application:(NSApplication*)app openFile:(NSString*)filename
 {
-  she::Event ev;
-  ev.setType(she::Event::DropFiles);
-
   std::vector<std::string> files;
   files.push_back([filename UTF8String]);
 
+  she::Event ev;
+  ev.setType(she::Event::DropFiles);
   ev.setFiles(files);
   she::queue_event(ev);
   return YES;
