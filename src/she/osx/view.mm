@@ -131,9 +131,7 @@ bool is_key_pressed(KeyScancode scancode)
 
 - (void)keyDown:(NSEvent*)event
 {
-#if 0 // Avoid beeps TODO comment this when the OS X menus are ready
   [super keyDown:event];
-#endif
 
   KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
   if (scancode >= 0 && scancode < kKeyScancodes)
@@ -155,9 +153,7 @@ bool is_key_pressed(KeyScancode scancode)
 
 - (void)keyUp:(NSEvent*)event
 {
-#if 0
   [super keyUp:event];
-#endif
 
   KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
   if (scancode >= 0 && scancode < kKeyScancodes)

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -156,6 +156,16 @@ using namespace she;
 
   [self.contentView setCursor:nsCursor];
   return (nsCursor != nil ? YES: NO);
+}
+
+- (void)noResponderFor:(SEL)eventSelector
+{
+  if (eventSelector == @selector(keyDown:)) {
+    // Do nothing (avoid beep)
+  }
+  else {
+    [super noResponderFor:eventSelector];
+  }
 }
 
 @end
