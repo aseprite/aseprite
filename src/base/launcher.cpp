@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -121,8 +121,10 @@ bool open_folder(const std::string& _file)
 
 #else
 
-  int ret;
-  ret = std::system(("xdg-open \"" + file + "\"").c_str());
+  if (!base::is_directory(file))
+    file = base::get_file_path(file);
+
+  int ret = std::system(("xdg-open \"" + file + "\"").c_str());
   return (ret == 0);
 
 #endif
