@@ -302,7 +302,8 @@ bool is_key_pressed(KeyScancode scancode)
 - (void)handleMouseDown:(NSEvent*)event
 {
   Event ev;
-  ev.setType(Event::MouseDown);
+  ev.setType(event.clickCount == 2 ? Event::MouseDoubleClick:
+                                     Event::MouseDown);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
