@@ -229,6 +229,7 @@ void error_message(const char* msg)
 
 bool is_key_pressed(KeyScancode scancode)
 {
+#ifdef ALLEGRO_UNIX
   if (scancode == kKeyLShift || scancode == kKeyRShift) {
     return key_shifts & KB_SHIFT_FLAG;
   }
@@ -238,6 +239,7 @@ bool is_key_pressed(KeyScancode scancode)
   else if (scancode == kKeyAlt) {
     return key_shifts & KB_ALT_FLAG;
   }
+#endif
   return key[scancode] ? true: false;
 }
 
