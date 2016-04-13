@@ -18,7 +18,8 @@
 namespace she {
 
 SkiaDisplay::SkiaDisplay(int width, int height, int scale)
-  : m_window(instance()->eventQueue(), this, width, height, scale)
+  : m_initialized(false)
+  , m_window(instance()->eventQueue(), this, width, height, scale)
   , m_surface(new SkiaSurface)
   , m_customSurface(false)
   , m_nativeCursor(kArrowCursor)
@@ -27,6 +28,8 @@ SkiaDisplay::SkiaDisplay(int width, int height, int scale)
                     height / scale);
   m_window.setScale(scale);
   m_window.setVisible(true);
+
+  m_initialized = true;
 }
 
 void SkiaDisplay::setSkiaSurface(SkiaSurface* surface)
@@ -56,7 +59,7 @@ void SkiaDisplay::resize(const gfx::Size& size)
   ev.setDisplay(this);
   she::queue_event(ev);
 
-  if (m_customSurface)
+  if (!m_initialized || m_customSurface)
     return;
 
   m_surface->dispose();

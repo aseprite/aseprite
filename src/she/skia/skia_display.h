@@ -60,6 +60,10 @@ public:
   DisplayHandle nativeHandle() override;
 
 private:
+  // Flag used to avoid accessing to an invalid m_surface in the first
+  // SkiaDisplay::resize() call when the SkiaWindow is created (as the
+  // window is created, it send a first resize event.)
+  bool m_initialized;
   SkiaWindow m_window;
   SkiaSurface* m_surface;
   bool m_customSurface;
