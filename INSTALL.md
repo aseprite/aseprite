@@ -133,21 +133,13 @@ the repository clone in a directory called `aseprite`):
 
 # Mac OS X details
 
-You need the old Mac OS X 10.4 SDK universal, which can be obtained
-from Xcode 3.1 Developer Tools (Xcode 3.1 Developer DVD,
-`xcode31_2199_developerdvd.dmg`). You can get it from Apple developer
-website (you need to be registered):
+From v1.1.4 we compile with Mac OS X 10.11 SDK universal. You should
+run cmake with the following parameters:
 
-  https://developer.apple.com/downloads/
-
-Inside the `Packages` folder, there is a `MacOSX10.4.Universal.pkg`,
-install it (it will be installed in `/SDKs/MacOSX10.4u.sdk`), and run
-cmake with the following parameters:
-
-    -DCMAKE_OSX_ARCHITECTURES:STRING=i386
-    -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
-    -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk
-    -DWITH_HarfBuzz=OFF
+    -D "CMAKE_OSX_ARCHITECTURES:STRING=x86_64"
+    -D "CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7"
+    -D "CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
+    -D "WITH_HarfBuzz:BOOL=OFF"
 
 ## Issues with Retina displays
 
