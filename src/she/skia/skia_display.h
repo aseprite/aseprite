@@ -20,6 +20,7 @@ class SkiaDisplay : public Display {
 public:
   SkiaDisplay(int width, int height, int scale);
 
+  bool isInitialized() const { return m_initialized; }
   void setSkiaSurface(SkiaSurface* surface);
   void resetSkiaSurface();
 

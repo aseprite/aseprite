@@ -272,6 +272,9 @@ private:
 #endif
 
   void paintGC(const gfx::Rect& rect) {
+    if (!m_display->isInitialized())
+      return;
+
     SkiaSurface* surface = static_cast<SkiaSurface*>(m_display->getSurface());
     const SkBitmap& bitmap = surface->bitmap();
 
