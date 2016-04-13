@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -75,9 +75,11 @@ void AppMenus::reload()
 
   m_rootMenu.reset(loadMenuById(handle, "main_menu"));
 
+#if _DEBUG
   // Add a warning element because the user is not using the last well-known gui.xml file.
   if (GuiXml::instance()->version() != VERSION)
     m_rootMenu->insertChild(0, createInvalidVersionMenuitem());
+#endif
 
   LOG("Main menu loaded.\n");
 
