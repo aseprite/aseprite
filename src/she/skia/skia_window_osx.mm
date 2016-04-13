@@ -139,7 +139,7 @@ public:
     }
 
 #if SK_SUPPORT_GPU
-    if (m_glCtx)
+    if (m_glCtx && m_display->isInitialized())
       createRenderTarget(size);
 #endif
 
@@ -149,7 +149,7 @@ public:
   void onDrawRect(const gfx::Rect& rect) override {
 #if SK_SUPPORT_GPU
     // Flush operations to the SkCanvas
-    {
+    if (m_display->isInitialized()) {
       SkiaSurface* surface = static_cast<SkiaSurface*>(m_display->getSurface());
       surface->flush();
     }
