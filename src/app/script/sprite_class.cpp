@@ -16,11 +16,13 @@
 #include "app/commands/params.h"
 #include "app/document.h"
 #include "app/document_api.h"
+#include "app/file/palette_file.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
 #include "app/transaction.h"
 #include "app/ui/document_view.h"
 #include "app/ui_context.h"
+#include "doc/palette.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
 #include "script/engine.h"
@@ -82,26 +84,79 @@ script::result_t Sprite_crop(script::ContextHandle handle)
   return 0;
 }
 
+script::result_t Sprite_save(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+
+  auto wrap = (SpriteWrap*)ctx.getThis();
+  if (wrap) {
+    wrap->commit();
+
+    auto doc = wrap->document();
+    auto uiCtx = UIContext::instance();
+    uiCtx->setActiveDocument(doc);
+    Command* saveCommand = CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
+    uiCtx->executeCommand(saveCommand);
+  }
+
+  return 0;
+}
+
 script::result_t Sprite_saveAs(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  const char* fn = ctx.requireString(0);
+  bool asCopy = ctx.getBool(1);
+
+  auto wrap = (SpriteWrap*)ctx.getThis();
+  if (fn && wrap) {
+    wrap->commit();
+
+    auto doc = wrap->document();
+    auto uiCtx = UIContext::instance();
+    uiCtx->setActiveDocument(doc);
+
+    Command* saveCommand =
+      CommandsModule::instance()->getCommandByName(
+        (asCopy ? CommandId::SaveFileCopyAs:
+                  CommandId::SaveFile));
+
+    Params params;
+    if (asCopy)
+      params.set("filename", fn);
+    else
+      doc->setFilename(fn);
+    uiCtx->executeCommand(saveCommand, params);
+  }
+
+  return 0;
+}
+
+script::result_t Sprite_loadPalette(script::ContextHandle handle)
 {
   script::Context ctx(handle);
   const char* fn = ctx.requireString(0);
 
   auto wrap = (SpriteWrap*)ctx.getThis();
   if (fn && wrap) {
-    Document* doc = wrap->document();
-
-    auto uiCtx = UIContext::instance();
-    uiCtx->setActiveDocument(doc);
-
-    Command* saveAsCommand = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
-
-    Params params;
-    params.set("filename", fn);
-    uiCtx->executeCommand(saveAsCommand, params);
+    auto doc = wrap->document();
+    base::UniquePtr<doc::Palette> palette(load_palette(fn));
+    if (palette) {
+      // TODO Merge this with the code in LoadPaletteCommand
+      doc->getApi(wrap->transaction()).setPalette(
+        wrap->sprite(), 0, palette);
+    }
   }
 
   return 0;
+}
+
+script::result_t Sprite_get_filename(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  auto wrap = (SpriteWrap*)ctx.getThis();
+  ctx.pushString(wrap->document()->filename().c_str());
+  return 1;
 }
 
 script::result_t Sprite_get_width(script::ContextHandle handle)
@@ -151,11 +206,14 @@ script::result_t Sprite_set_height(script::ContextHandle handle)
 const script::FunctionEntry Sprite_methods[] = {
   { "resize", Sprite_resize, 2 },
   { "crop", Sprite_crop, 4 },
+  { "save", Sprite_save, 2 },
   { "saveAs", Sprite_saveAs, 2 },
+  { "loadPalette", Sprite_loadPalette, 1 },
   { nullptr, nullptr, 0 }
 };
 
 const script::PropertyEntry Sprite_props[] = {
+  { "filename", Sprite_get_filename, nullptr },
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
   { nullptr, nullptr, 0 }
