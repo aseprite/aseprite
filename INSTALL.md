@@ -63,7 +63,8 @@ Aseprite can be compiled with two different back-ends:
    Aseprite, you'll need to give some variables to CMake:
    `-DUSE_SKIA_ALLEG4=OFF`, `-DUSE_SKIA_BACKEND=ON`, and
    `-DSKIA_DIR=...` pointing to the Skia checkout directory. (Note:
-   The GPU support is a work-in-progress, so next versions .)
+   The GPU support is a work-in-progress, so it will be available in a
+   future.)
 
 ## Linux dependencies
 
