@@ -32,6 +32,7 @@ namespace app {
     ~SpriteWrap();
 
     void commit();
+    void commitImages();
     Transaction& transaction();
 
     app::Document* document();

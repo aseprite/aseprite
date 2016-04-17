@@ -58,6 +58,8 @@ script::result_t Sprite_resize(script::ContextHandle handle)
 
   auto wrap = (SpriteWrap*)ctx.getThis();
   if (wrap) {
+    wrap->commitImages();
+
     Document* doc = wrap->document();
     DocumentApi api(doc, wrap->transaction());
     api.setSpriteSize(doc->sprite(), w, h);
@@ -76,6 +78,8 @@ script::result_t Sprite_crop(script::ContextHandle handle)
 
   auto wrap = (SpriteWrap*)ctx.getThis();
   if (wrap) {
+    wrap->commitImages();
+
     Document* doc = wrap->document();
     DocumentApi api(doc, wrap->transaction());
     api.cropSprite(doc->sprite(), gfx::Rect(x, y, w, h));
