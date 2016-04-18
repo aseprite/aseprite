@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014, 2015 David Capello
+// Copyright (c) 2014-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -35,8 +35,15 @@ static void run(int argc, const char* argv[])
     base::FileHandle inputFile(base::open_file(inputFilename, "rb"));
     doc = new TiXmlDocument();
     doc->SetValue(inputFilename.c_str());
-    if (!doc->LoadFile(inputFile.get()))
+    if (!doc->LoadFile(inputFile.get())) {
+      std::cerr << doc->Value() << ":"
+                << doc->ErrorRow() << ":"
+                << doc->ErrorCol() << ": "
+                << "error " << doc->ErrorId() << ": "
+                << doc->ErrorDesc() << "\n";
+
       throw std::runtime_error("invalid input file");
+    }
   }
 
   if (doc) {
