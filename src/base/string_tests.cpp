@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #include "base/string.h"
 
 #include <algorithm>
+#include <clocale>
 
 using namespace base;
 
@@ -85,6 +86,35 @@ TEST(String, Utf8ICmp)
   EXPECT_EQ(1, utf8_icmp("z", "b"));
   EXPECT_EQ(1, utf8_icmp("z", "b", 1));
   EXPECT_EQ(1, utf8_icmp("z", "b", 2));
+}
+
+TEST(String, StringToLowerByUnicodeCharIssue1065)
+{
+  // Required to make old string_to_lower() version fail.
+  std::setlocale(LC_ALL, "en-US");
+
+  std::string  a = "\xC2\xBA";
+  std::wstring b = from_utf8(a);
+  std::string  c = to_utf8(b);
+
+  ASSERT_EQ(a, c);
+  ASSERT_EQ("\xC2\xBA", c);
+
+  ASSERT_EQ(1, utf8_length(a));
+  ASSERT_EQ(1, b.size());
+  ASSERT_EQ(1, utf8_length(c));
+
+  std::string d = string_to_lower(c);
+  ASSERT_EQ(a, d);
+  ASSERT_EQ(c, d);
+  ASSERT_EQ(1, utf8_length(d));
+
+  auto it = utf8_iterator(d.begin());
+  auto end = utf8_iterator(d.end());
+  int i = 0;
+  for (; it != end; ++it) {
+    ASSERT_EQ(b[i++], *it);
+  }
 }
 
 int main(int argc, char** argv)

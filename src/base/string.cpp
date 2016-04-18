@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,22 +21,26 @@ namespace base {
 
 std::string string_to_lower(const std::string& original)
 {
-  std::string result(original);
-
-  for (std::string::iterator it=result.begin(); it!=result.end(); ++it)
+  std::wstring result(from_utf8(original));
+  auto it(result.begin());
+  auto end(result.end());
+  while (it != end) {
     *it = std::tolower(*it);
-
-  return result;
+    ++it;
+  }
+  return to_utf8(result);
 }
 
 std::string string_to_upper(const std::string& original)
 {
-  std::string result(original);
-
-  for (std::string::iterator it=result.begin(); it!=result.end(); ++it)
+  std::wstring result(from_utf8(original));
+  auto it(result.begin());
+  auto end(result.end());
+  while (it != end) {
     *it = std::toupper(*it);
-
-  return result;
+    ++it;
+  }
+  return to_utf8(result);
 }
 
 #ifdef _WIN32
