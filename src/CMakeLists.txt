@@ -142,7 +142,9 @@ add_custom_target(copy_data DEPENDS ${out_data_files})
 # Aseprite application
 
 if(WIN32)
-  set(win32_resources main/resources_win32.rc)
+  set(win32_resources
+    main/resources_win32.rc
+    main/settings.manifest)
 endif()
 
 if(UNIX AND NOT APPLE AND USE_ALLEG4_BACKEND)

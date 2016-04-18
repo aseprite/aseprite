@@ -43,7 +43,7 @@ On Windows you can use programs like
 # Dependencies
 
 Aseprite uses the latest version of [CMake](http://www.cmake.org/)
-(3.0 or greater) as its build system. Also we use
+(3.4 or greater) as its build system. Also we use
 [Ninja](https://ninja-build.org) build files regularly instead of
 Visual Studio or Xcode projects. Finally, you will need `awk` utility
 to compile the embedded (non-shared version of) libpng library (on

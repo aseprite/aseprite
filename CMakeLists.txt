@@ -4,7 +4,14 @@
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
 # CMake setup
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+if(WIN32)
+  # We need 3.4 to use manifests in the source files list for the main
+  # application target.
+  cmake_minimum_required(VERSION 3.4)
+else()
+  cmake_minimum_required(VERSION 2.6)
+endif()
+
 enable_testing()
 
 if(COMMAND cmake_policy)
