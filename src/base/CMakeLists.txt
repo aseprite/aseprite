@@ -1,41 +1,18 @@
 # Aseprite Base Library
 # Copyright (c) 2001-2016 David Capello
 
-include(CheckCSourceCompiles)
-include(CheckCXXSourceCompiles)
-include(CheckCSourceRuns)
+include(CheckIncludeFiles)
+include(CheckFunctionExists)
+include(TestBigEndian)
 
-check_c_source_compiles("
-#include <stdint.h>
-int main() {
-  return 0;
-}
-" HAVE_STDINT_H)
+check_include_files(stdint.h HAVE_STDINT_H)
+check_include_files(dlfcn.h HAVE_DLFCN_H)
+check_function_exists(sched_yield HAVE_SCHED_YIELD)
 
-check_c_source_compiles("
-#include <unistd.h>
-int main() {
-  sched_yield();
-  return 0;
-}
-" HAVE_SCHED_YIELD)
+test_big_endian(ASEPRITE_BIG_ENDIAN)
 
-check_c_source_compiles("
-#include <dlfcn.h>
-int main() {
-  return 0;
-}
-" HAVE_DLFCN_H)
-
-check_c_source_runs("
-int main() {
-  unsigned long value = 0x40302010ul;
-  return (((unsigned char*)&value)[0] == 0x10) ? 0: 1;
-}
-" ASEPRITE_LITTLE_ENDIAN)
-
-if(NOT ASEPRITE_LITTLE_ENDIAN)
-  set(ASEPRITE_BIG_ENDIAN TRUE)
+if(NOT ASEPRITE_BIG_ENDIAN)
+  set(ASEPRITE_LITTLE_ENDIAN TRUE)
 endif()
 
 # Generate config.h file
