@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "base/string.h"
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"

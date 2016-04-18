@@ -11,7 +11,6 @@
 
 #include "app/app_brushes.h"
 #include "base/signal.h"
-#include "base/string.h"
 #include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
 

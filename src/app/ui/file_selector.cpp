@@ -11,6 +11,7 @@
 
 #include "app/ui/file_selector.h"
 
+#include "base/string.h"
 #include "app/app.h"
 #include "app/console.h"
 #include "app/file/file.h"
