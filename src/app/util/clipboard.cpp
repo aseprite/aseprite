@@ -439,6 +439,7 @@ void paste()
 
           for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
             api.addFrame(dstSpr, dstFrame);
+            api.setFrameDuration(dstSpr, dstFrame, srcSpr->frameDuration(frame));
 
             for (LayerIndex
                    i = LayerIndex(srcLayers.size()-1),
