@@ -56,6 +56,7 @@
 #include "ui/view.h"
 
 #include <cmath>
+#include <cstring>
 
 namespace app {
 
@@ -463,7 +464,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       (mask ? mask->bounds().h: sprite->height()));
     if (sprite->totalFrames() > 1) {
       sprintf(
-        buf+strlen(buf), " :frame: %d :clock: %d",
+        buf+std::strlen(buf), " :frame: %d :clock: %d",
         editor->frame()+1,
         sprite->frameDuration(editor->frame()));
     }
