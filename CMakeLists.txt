@@ -173,7 +173,6 @@ else()
     ${CMAKE_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
 endif()
 include_directories(${ZLIB_INCLUDE_DIRS})
-message(${ZLIB_INCLUDE_DIRS})
 
 # libpng
 if(USE_SHARED_LIBPNG)
