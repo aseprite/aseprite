@@ -57,8 +57,6 @@ option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_FREETYPE "Use shared FreeType library" off)
 option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support)" off)
-option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
-option(USE_SKIA_BACKEND   "Use Skia backend" off)
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(ENABLE_WEBSERVER   "Enable support to run a webserver (for HTML5 gamedev)" off)
@@ -67,6 +65,15 @@ option(ENABLE_TRIAL_MODE  "Compile the trial version" off)
 option(ENABLE_STEAM       "Compile with Steam library" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
+
+if(APPLE)
+  # On OS X Allegro isn't supported anymore
+  set(USE_ALLEG4_BACKEND off)
+  set(USE_SKIA_BACKEND on)
+else()
+  option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
+  option(USE_SKIA_BACKEND   "Use Skia backend" off)
+endif()
 
 ######################################################################
 # Profile build type
