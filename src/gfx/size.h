@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013, 2015 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -40,8 +40,8 @@ public:
   }
 
   SizeT createUnion(const SizeT& sz) const {
-    return Size(std::max(w, sz.w),
-                std::max(h, sz.h));
+    return SizeT(std::max(w, sz.w),
+                 std::max(h, sz.h));
   }
 
   SizeT createIntersection(const SizeT& sz) const {
