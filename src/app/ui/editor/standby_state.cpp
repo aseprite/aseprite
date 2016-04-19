@@ -445,7 +445,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     cmd.pickSample(editor->getSite(), spritePos, color);
 
     char buf[256];
-    sprintf(buf, "- Pos %d %d", spritePos.x, spritePos.y);
+    sprintf(buf, " :pos: %d %d", spritePos.x, spritePos.y);
 
     StatusBar::instance()->showColor(0, buf, color);
   }
@@ -454,13 +454,21 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       (editor->document()->isMaskVisible() ?
        editor->document()->mask(): NULL);
 
-    StatusBar::instance()->setStatusText(0,
-      "Pos %d %d, Size %d %d, Frame %d [%d msecs]",
+    char buf[1024];
+    sprintf(
+      buf, ":pos: %d %d :%s: %d %d",
       spritePos.x, spritePos.y,
+      (mask ? "selsize": "size"),
       (mask ? mask->bounds().w: sprite->width()),
-      (mask ? mask->bounds().h: sprite->height()),
-      editor->frame()+1,
-      sprite->frameDuration(editor->frame()));
+      (mask ? mask->bounds().h: sprite->height()));
+    if (sprite->totalFrames() > 1) {
+      sprintf(
+        buf+strlen(buf), " :frame: %d :clock: %d",
+        editor->frame()+1,
+        sprite->frameDuration(editor->frame()));
+    }
+
+    StatusBar::instance()->setStatusText(0, buf);
   }
 
   return true;

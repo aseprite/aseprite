@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -163,7 +163,7 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
 {
   StatusBar::instance()->setStatusText
     (0,
-     "Pos %3d %3d Offset %3d %3d",
+     ":pos: %3d %3d :offset: %3d %3d",
      (int)m_cursorStart.x,
      (int)m_cursorStart.y,
      (int)m_celOffset.x,

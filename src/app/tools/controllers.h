@@ -81,7 +81,7 @@ public:
       return;
 
     char buf[1024];
-    sprintf(buf, "Start %3d %3d End %3d %3d",
+    sprintf(buf, ":start: %3d %3d :end: %3d %3d",
             stroke.firstPoint().x,
             stroke.firstPoint().y,
             stroke.lastPoint().x,
@@ -202,7 +202,7 @@ public:
       return;
 
     char buf[1024];
-    sprintf(buf, "Start %3d %3d End %3d %3d (Size %3d %3d) Angle %.1f",
+    sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :angle: %.1f",
             stroke[0].x, stroke[0].y,
             stroke[1].x, stroke[1].y,
             ABS(stroke[1].x-stroke[0].x)+1,
@@ -264,7 +264,7 @@ public:
       return;
 
     char buf[1024];
-    sprintf(buf, "Start %3d %3d End %3d %3d",
+    sprintf(buf, ":start: %3d %3d :end: %3d %3d",
             stroke.firstPoint().x,
             stroke.firstPoint().y,
             stroke.lastPoint().x,
@@ -303,7 +303,7 @@ public:
       return;
 
     char buf[1024];
-    sprintf(buf, "Pos %3d %3d", stroke[0].x, stroke[0].y);
+    sprintf(buf, ":pos: %3d %3d", stroke[0].x, stroke[0].y);
     text = buf;
   }
 
@@ -358,7 +358,7 @@ public:
       return;
 
     char buf[1024];
-    sprintf(buf, "Start %3d %3d End %3d %3d (%3d %3d - %3d %3d)",
+    sprintf(buf, ":start: %3d %3d :end: %3d %3d (%3d %3d - %3d %3d)",
             stroke[0].x, stroke[0].y,
             stroke[3].x, stroke[3].y,
             stroke[1].x, stroke[1].y,

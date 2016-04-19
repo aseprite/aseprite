@@ -17,7 +17,7 @@
 #include "doc/documents_observer.h"
 #include "doc/layer_index.h"
 #include "ui/base.h"
-#include "ui/widget.h"
+#include "ui/box.h"
 
 #include <string>
 #include <vector>
@@ -43,7 +43,7 @@ namespace app {
     class Tool;
   }
 
-  class StatusBar : public ui::Widget
+  class StatusBar : public ui::HBox
                   , public doc::ContextObserver
                   , public doc::DocumentsObserver
                   , public doc::DocumentObserver {
@@ -67,8 +67,6 @@ namespace app {
 
   protected:
     void onResize(ui::ResizeEvent& ev) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
 
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
@@ -85,16 +83,12 @@ namespace app {
     void newFrame();
     void onChangeZoom(const render::Zoom& zoom);
 
-    enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
-
     base::tick_t m_timeout;
-    State m_state;
 
-    // Showing a tool
-    tools::Tool* m_tool;
-
-    // Showing a color
-    Color m_color;
+    // Indicators
+    class Indicators;
+    class IndicatorsGeneration;
+    Indicators* m_indicators;
 
     // Box of main commands
     ui::Widget* m_docControls;

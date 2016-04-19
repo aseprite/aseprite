@@ -45,9 +45,11 @@
 #include "ui/ui.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 namespace app {
 
@@ -55,6 +57,313 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 using namespace doc;
+
+class StatusBar::Indicators : public HBox {
+
+  class Indicator : public Widget {
+  public:
+    enum IndicatorType {
+      kText,
+      kIcon,
+      kColor
+    };
+    Indicator(IndicatorType type) : m_type(type) { }
+    IndicatorType indicatorType() const { return m_type; }
+  private:
+    IndicatorType m_type;
+  };
+
+  class TextIndicator : public Indicator {
+  public:
+    TextIndicator(const char* text) : Indicator(kText) {
+      updateIndicator(text);
+    }
+
+    void updateIndicator(const char* text) {
+      if (this->text() == text)
+        return;
+
+      setText(text);
+
+      if (minSize().w > textSize().w*2)
+        setMinSize(textSize());
+      else
+        setMinSize(minSize().createUnion(textSize()));
+    }
+
+  private:
+    void onPaint(ui::PaintEvent& ev) override {
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      gfx::Color textColor = theme->colors.statusBarText();
+      Rect rc = clientBounds();
+      Graphics* g = ev.graphics();
+
+      g->fillRect(bgColor(), rc);
+      if (textLength() > 0) {
+        g->drawString(text(), textColor, ColorNone,
+                      Point(rc.x, rc.y + rc.h/2 - font()->height()/2));
+      }
+    }
+  };
+
+  class IconIndicator : public Indicator {
+  public:
+    IconIndicator(she::Surface* icon, bool colored)
+      : Indicator(kIcon)
+      , m_icon(nullptr)
+      , m_colored(colored) {
+      updateIndicator(icon, colored);
+    }
+
+    void updateIndicator(she::Surface* icon, bool colored) {
+      if (m_icon == icon && m_colored == colored)
+        return;
+
+      ASSERT(icon);
+
+      m_icon = icon;
+      m_colored = colored;
+      setMinSize(minSize().createUnion(Size(m_icon->width(),
+                                            m_icon->height())));
+    }
+
+  private:
+    void onPaint(ui::PaintEvent& ev) override {
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      gfx::Color textColor = theme->colors.statusBarText();
+      Rect rc = clientBounds();
+      Graphics* g = ev.graphics();
+
+      g->fillRect(bgColor(), rc);
+      if (m_colored)
+        g->drawColoredRgbaSurface(
+          m_icon, textColor,
+          rc.x, rc.y + rc.h/2 - m_icon->height()/2);
+      else
+        g->drawRgbaSurface(
+          m_icon,
+          rc.x, rc.y + rc.h/2 - m_icon->height()/2);
+    }
+
+    she::Surface* m_icon;
+    bool m_colored;
+  };
+
+  class ColorIndicator : public Indicator {
+  public:
+    ColorIndicator(const app::Color& color)
+      : Indicator(kColor)
+      , m_color(Color::fromMask()) {
+      updateIndicator(color, true);
+    }
+
+    void updateIndicator(const app::Color& color, bool first = false) {
+      if (m_color == color && !first)
+        return;
+
+      m_color = color;
+      setMinSize(minSize().createUnion(Size(32*guiscale(), 1)));
+    }
+
+  private:
+    void onPaint(ui::PaintEvent& ev) override {
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      Rect rc = clientBounds();
+      Graphics* g = ev.graphics();
+
+      g->fillRect(bgColor(), rc);
+      draw_color_button(
+        g, Rect(rc.x, rc.y, 32*guiscale(), rc.h),
+        m_color,
+        (doc::ColorMode)app_get_current_pixel_format(), false, false);
+    }
+
+    app::Color m_color;
+  };
+
+public:
+
+  Indicators() {
+  }
+
+  void startIndicators() {
+    m_iterator = m_indicators.begin();
+  }
+
+  void endIndicators() {
+    removeAllNextIndicators();
+    layout();
+  }
+
+  void addTextIndicator(const char* text) {
+    // Re-use indicator
+    if (m_iterator != m_indicators.end()) {
+      if ((*m_iterator)->indicatorType() == Indicator::kText) {
+        static_cast<TextIndicator*>(*m_iterator)
+          ->updateIndicator(text);
+        ++m_iterator;
+        return;
+      }
+      else
+        removeAllNextIndicators();
+    }
+
+    auto indicator = new TextIndicator(text);
+    m_indicators.push_back(indicator);
+    m_iterator = m_indicators.end();
+    addChild(indicator);
+  }
+
+  void addIconIndicator(she::Surface* icon, bool colored) {
+    if (m_iterator != m_indicators.end()) {
+      if ((*m_iterator)->indicatorType() == Indicator::kIcon) {
+        static_cast<IconIndicator*>(*m_iterator)
+          ->updateIndicator(icon, colored);
+        ++m_iterator;
+        return;
+      }
+      else
+        removeAllNextIndicators();
+    }
+
+    auto indicator = new IconIndicator(icon, colored);
+    m_indicators.push_back(indicator);
+    m_iterator = m_indicators.end();
+    addChild(indicator);
+  }
+
+  void addColorIndicator(const app::Color& color) {
+    if (m_iterator != m_indicators.end()) {
+      if ((*m_iterator)->indicatorType() == Indicator::kColor) {
+        static_cast<ColorIndicator*>(*m_iterator)
+          ->updateIndicator(color);
+        ++m_iterator;
+        return;
+      }
+      else
+        removeAllNextIndicators();
+    }
+
+    auto indicator = new ColorIndicator(color);
+    m_indicators.push_back(indicator);
+    m_iterator = m_indicators.end();
+    addChild(indicator);
+  }
+
+private:
+  void removeAllNextIndicators() {
+    auto it = m_iterator;
+    auto end = m_indicators.end();
+    for (; it != end; ++it) {
+      auto indicator = *it;
+      removeChild(indicator);
+      delete indicator;
+    }
+    m_indicators.erase(m_iterator, end);
+  }
+
+  std::vector<Indicator*> m_indicators;
+  std::vector<Indicator*>::iterator m_iterator;
+};
+
+class StatusBar::IndicatorsGeneration {
+public:
+  IndicatorsGeneration(StatusBar::Indicators* indicators)
+    : m_indicators(indicators) {
+    m_indicators->startIndicators();
+  }
+
+  ~IndicatorsGeneration() {
+    m_indicators->endIndicators();
+  }
+
+  IndicatorsGeneration& add(const char* text) {
+    auto theme = SkinTheme::instance();
+
+    for (auto i = text; *i; ) {
+      // Icon
+      if (*i == ':' && (i == text || *(i-1) == ' ')) {
+        const char* j = i+1;
+        for (; *j; ++j) {
+          if (*j == ':')
+            break;
+        }
+
+        if (*(j+1) == 0 || *(j+1) == ' ') {
+          if (i != text) {
+            // Here i is ':' and i-1 is a whitespace ' '
+            m_indicators->addTextIndicator(std::string(text, i-1).c_str());
+          }
+
+          auto part = theme->getPartById("icon_" + std::string(i+1, j));
+          if (part)
+            add(part.get(), true);
+
+          text = i = (*(j+1) == ' ' ? j+2: j+1);
+        }
+      }
+      else
+        ++i;
+    }
+
+    if (*text != 0)
+      m_indicators->addTextIndicator(text);
+
+    return *this;
+  }
+
+  IndicatorsGeneration& add(she::Surface* icon, bool colored) {
+    if (icon)
+      m_indicators->addIconIndicator(icon, colored);
+    return *this;
+  }
+
+  IndicatorsGeneration& add(const skin::SkinPart* part, bool colored) {
+    return add(part->bitmap(0), colored);
+  }
+
+  IndicatorsGeneration& add(const app::Color& color) {
+    auto theme = SkinTheme::instance();
+
+    // Eyedropper icon
+    add(theme->getToolIcon("eyedropper"), false);
+
+    // Color
+    m_indicators->addColorIndicator(color);
+
+    // Color description
+    std::string str = color.toHumanReadableString(
+      app_get_current_pixel_format(),
+      app::Color::LongHumanReadableString);
+    if (color.getAlpha() < 255) {
+      char buf[256];
+      sprintf(buf, " \xCE\xB1%d", color.getAlpha());
+      str += buf;
+    }
+    m_indicators->addTextIndicator(str.c_str());
+
+    return *this;
+  }
+
+  IndicatorsGeneration& add(tools::Tool* tool) {
+    auto theme = SkinTheme::instance();
+
+    // Tool icon + text
+    add(theme->getToolIcon(tool->getId().c_str()), false);
+    m_indicators->addTextIndicator(tool->getText().c_str());
+
+    // Tool shortcut
+    Key* key = KeyboardShortcuts::instance()->tool(tool);
+    if (key && !key->accels().empty()) {
+      add(theme->parts.iconKey()->bitmap(0), true);
+      m_indicators->addTextIndicator(key->accels().front().toString().c_str());
+    }
+    return *this;
+  }
+
+private:
+  StatusBar::Indicators* m_indicators;
+};
 
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
@@ -77,7 +386,14 @@ public:
   }
 
 protected:
-  bool onProcessMessage(Message* msg);
+  bool onProcessMessage(Message* msg) override {
+    switch (msg->type()) {
+      case kTimerMessage:
+        closeWindow(NULL);
+        break;
+    }
+    return ui::TipWindow::onProcessMessage(msg);
+  }
 
 private:
   base::UniquePtr<ui::Timer> m_timer;
@@ -111,14 +427,6 @@ private:
   app::Document* m_doc;
   ui::Button m_button;
 };
-
-static WidgetType statusbar_type()
-{
-  static WidgetType type = kGenericWidget;
-  if (type == kGenericWidget)
-    type = register_widget_type();
-  return type;
-}
 
 // This widget is used to show the current frame.
 class GotoFrameEntry : public Entry {
@@ -164,10 +472,8 @@ public:
 StatusBar* StatusBar::m_instance = NULL;
 
 StatusBar::StatusBar()
-  : Widget(statusbar_type())
-  , m_timeout(0)
-  , m_state(SHOW_TEXT)
-  , m_color(app::Color::fromMask())
+  : m_timeout(0)
+  , m_indicators(new Indicators)
   , m_docControls(new HBox)
   , m_doc(nullptr)
   , m_tipwindow(nullptr)
@@ -180,14 +486,15 @@ StatusBar::StatusBar()
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.statusBarFace());
 
-  this->setFocusStop(true);
+  setFocusStop(true);
+  setBorder(gfx::Border(6*guiscale(), 0, 6*guiscale(), 0));
 
-  // The extra pixel in left and right borders are necessary so
-  // m_commandsBox and m_movePixelsBox do not overlap the upper-left
-  // and upper-right pixels drawn in onPaint() event (see putpixels)
-  setBorder(gfx::Border(1*guiscale(), 0, 1*guiscale(), 0));
+  setMinSize(Size(0, textHeight()+8*guiscale()));
+  setMaxSize(Size(INT_MAX, textHeight()+8*guiscale()));
 
+  m_indicators->setExpansive(true);
   m_docControls->setVisible(false);
+  addChild(m_indicators);
   addChild(m_docControls);
 
   // Construct the commands box
@@ -271,12 +578,8 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
     vsprintf(buf, format, ap);
     va_end(ap);
 
+    IndicatorsGeneration(m_indicators).add(buf);
     m_timeout = base::current_tick() + msecs;
-    m_state = SHOW_TEXT;
-
-    setText(buf);
-    invalidate();
-
     return true;
   }
   else
@@ -315,39 +618,21 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
+  IndicatorsGeneration(m_indicators).add(buf);
   m_timeout = base::current_tick();
-  setText(buf);
-  invalidate();
 }
 
 void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
 {
   if (setStatusText(msecs, text)) {
-    m_state = SHOW_COLOR;
-    m_color = color;
+    IndicatorsGeneration(m_indicators).add(color);
   }
 }
 
 void StatusBar::showTool(int msecs, tools::Tool* tool)
 {
   ASSERT(tool != NULL);
-
-  // Tool name
-  std::string text = tool->getText();
-
-  // Tool shortcut
-  Key* key = KeyboardShortcuts::instance()->tool(tool);
-  if (key && !key->accels().empty()) {
-    text += ", Shortcut: ";
-    text += key->accels().front().toString();
-  }
-
-  // Set text
-  if (setStatusText(msecs, text.c_str())) {
-    // Show tool
-    m_state = SHOW_TOOL;
-    m_tool = tool;
-  }
+  IndicatorsGeneration(m_indicators).add(tool);
 }
 
 void StatusBar::showSnapToGridWarning(bool state)
@@ -387,106 +672,10 @@ void StatusBar::showSnapToGridWarning(bool state)
 
 void StatusBar::onResize(ResizeEvent& ev)
 {
-  setBoundsQuietly(ev.bounds());
-
-  Border border = this->border();
   Rect rc = ev.bounds();
-  bool docControls = (rc.w > 300*ui::guiscale());
-  if (docControls) {
-    int prefWidth = m_docControls->sizeHint().w;
-    int toolBarWidth = ToolBar::instance()->sizeHint().w;
+  m_docControls->setVisible(m_doc && rc.w > 300*ui::guiscale());
 
-    rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
-    rc.w = prefWidth;
-
-    m_docControls->setVisible(m_doc != nullptr);
-    m_docControls->setBounds(rc);
-  }
-  else
-    m_docControls->setVisible(false);
-}
-
-void StatusBar::onSizeHint(SizeHintEvent& ev)
-{
-  int s = 4*guiscale() + textHeight() + 4*guiscale();
-  ev.setSizeHint(Size(s, s));
-}
-
-void StatusBar::onPaint(ui::PaintEvent& ev)
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  gfx::Color textColor = theme->colors.statusBarText();
-  Rect rc = clientBounds();
-  Graphics* g = ev.graphics();
-
-  g->fillRect(bgColor(), rc);
-
-  rc.shrink(Border(2, 1, 2, 2)*guiscale());
-
-  int x = rc.x + 4*guiscale();
-
-  // Color
-  if (m_state == SHOW_COLOR) {
-    // Draw eyedropper icon
-    she::Surface* icon = theme->getToolIcon("eyedropper");
-    if (icon) {
-      g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
-      x += icon->width() + 4*guiscale();
-    }
-
-    // Draw color
-    draw_color_button(
-      g, gfx::Rect(x, rc.y, 32*guiscale(), rc.h),
-      m_color,
-      (doc::ColorMode)app_get_current_pixel_format(), false, false);
-
-    x += (32+4)*guiscale();
-
-    // Draw color description
-    std::string str = m_color.toHumanReadableString(
-      app_get_current_pixel_format(),
-      app::Color::LongHumanReadableString);
-    if (m_color.getAlpha() < 255) {
-      char buf[256];
-      sprintf(buf, " \xCE\xB1%d", m_color.getAlpha());
-      str += buf;
-    }
-
-    g->drawString(str, textColor, ColorNone,
-      gfx::Point(x, rc.y + rc.h/2 - font()->height()/2));
-
-    x += font()->textLength(str.c_str()) + 4*guiscale();
-  }
-
-  // Show tool
-  if (m_state == SHOW_TOOL) {
-    // Draw eyedropper icon
-    she::Surface* icon = theme->getToolIcon(m_tool->getId().c_str());
-    if (icon) {
-      g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
-      x += icon->width() + 4*guiscale();
-    }
-  }
-
-  // Status bar text
-  if (textLength() > 0) {
-    g->drawString(text(), textColor, ColorNone,
-      gfx::Point(x, rc.y + rc.h/2 - font()->height()/2));
-
-    x += font()->textLength(text().c_str()) + 4*guiscale();
-  }
-}
-
-bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
-{
-  switch (msg->type()) {
-
-    case kTimerMessage:
-      closeWindow(NULL);
-      break;
-  }
-
-  return ui::TipWindow::onProcessMessage(msg);
+  HBox::onResize(ev);
 }
 
 void StatusBar::onActiveSiteChange(const doc::Site& site)
