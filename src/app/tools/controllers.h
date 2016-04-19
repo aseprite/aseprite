@@ -201,12 +201,15 @@ public:
     if (stroke.size() < 2)
       return;
 
+    int w = ABS(stroke[1].x-stroke[0].x)+1;
+    int h = ABS(stroke[1].y-stroke[0].y)+1;
+
     char buf[1024];
-    sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :angle: %.1f",
+    sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :distance: %.1f :angle: %.1f",
             stroke[0].x, stroke[0].y,
             stroke[1].x, stroke[1].y,
-            ABS(stroke[1].x-stroke[0].x)+1,
-            ABS(stroke[1].y-stroke[0].y)+1,
+            w, h,
+            std::sqrt(w*w + h*h),
             180.0 * std::atan2(static_cast<double>(stroke[0].y-stroke[1].y),
                                static_cast<double>(stroke[1].x-stroke[0].x)) / PI);
     text = buf;

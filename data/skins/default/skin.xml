@@ -409,6 +409,7 @@
     <part id="icon_end"                         x="192" y="264" w="8" h="8" />
     <part id="icon_angle"                       x="200" y="264" w="8" h="8" />
     <part id="icon_key"                         x="208" y="264" w="8" h="8" />
+    <part id="icon_distance"                    x="216" y="264" w="8" h="8" />
   </parts>
 
   <stylesheet>
