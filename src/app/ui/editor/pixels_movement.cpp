@@ -599,7 +599,8 @@ gfx::Rect PixelsMovement::getImageBounds()
 
 gfx::Size PixelsMovement::getInitialImageSize() const
 {
-  return m_initialData.bounds().size();
+  return gfx::Size(m_originalImage->width(),
+                   m_originalImage->height());
 }
 
 void PixelsMovement::setMaskColor(bool opaque, color_t mask_color)
