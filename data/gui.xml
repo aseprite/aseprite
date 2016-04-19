@@ -115,6 +115,8 @@
       <!-- Tabs -->
       <key command="GotoNextTab" shortcut="Ctrl+Tab" />
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
+      <key command="GotoNextTab" shortcut="Ctrl+PgDn" />
+      <key command="GotoPreviousTab" shortcut="Ctrl+PgUp" />
       <!-- Others -->
       <key command="SwitchColors" shortcut="X" />
       <key command="ChangeColor" shortcut="9">
