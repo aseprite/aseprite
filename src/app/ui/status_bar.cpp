@@ -624,8 +624,13 @@ void StatusBar::showTip(int msecs, const char *format, ...)
 
 void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
 {
-  if (setStatusText(msecs, text)) {
-    IndicatorsGeneration(m_indicators).add(color);
+  if ((base::current_tick() > m_timeout) || (msecs > 0)) {
+    IndicatorsGeneration gen(m_indicators);
+    gen.add(color);
+    if (text)
+      gen.add(text);
+
+    m_timeout = base::current_tick() + msecs;
   }
 }
 
