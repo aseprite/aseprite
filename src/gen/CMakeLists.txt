@@ -15,5 +15,4 @@ endif()
 
 target_link_libraries(gen
   base-lib
-  ${TINYXML_LIBRARY}
-  ${CMAKE_THREAD_LIBS_INIT})
+  ${TINYXML_LIBRARY})

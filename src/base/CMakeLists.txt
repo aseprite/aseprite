@@ -66,7 +66,7 @@ if(WIN32)
 endif()
 
 add_library(base-lib ${BASE_SOURCES})
-target_link_libraries(base-lib modp_b64)
+target_link_libraries(base-lib modp_b64 ${CMAKE_THREAD_LIBS_INIT})
 
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
