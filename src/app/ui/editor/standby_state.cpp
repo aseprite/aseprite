@@ -462,11 +462,20 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       (mask ? "selsize": "size"),
       (mask ? mask->bounds().w: sprite->width()),
       (mask ? mask->bounds().h: sprite->height()));
+
     if (sprite->totalFrames() > 1) {
       sprintf(
         buf+std::strlen(buf), " :frame: %d :clock: %d",
         editor->frame()+1,
         sprite->frameDuration(editor->frame()));
+    }
+
+    if (editor->docPref().show.grid()) {
+      auto gb = editor->docPref().grid.bounds();
+      int col = (spritePos.x - (gb.x % gb.w)) / gb.w;
+      int row = (spritePos.y - (gb.y % gb.h)) / gb.h;
+      sprintf(
+        buf+std::strlen(buf), " :grid: %d %d", col, row);
     }
 
     StatusBar::instance()->setStatusText(0, buf);
