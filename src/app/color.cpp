@@ -235,6 +235,11 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
 
           if (pixelFormat == IMAGE_INDEXED)
             result << " Index " << color_utils::color_for_image(*this, pixelFormat);
+
+          result << " (RGB "
+                 << getRed() << " "
+                 << getGreen() << " "
+                 << getBlue() << ")";
         }
         break;
 
