@@ -153,21 +153,20 @@ bool ColorTintShadeTone::onProcessMessage(ui::Message* msg)
 
       // Continue...
 
-    case kMouseMoveMessage:
-      if (hasCapture()) {
-        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+    case kMouseMoveMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        if (msg->type() == kMouseDownMessage)
+      if (msg->type() == kMouseDownMessage)
           m_capturedInHue = inHueBarArea(mouseMsg->position());
 
-        app::Color color = getColorByPosition(mouseMsg->position());
-        if (color != app::Color::fromMask()) {
-          StatusBar::instance()->showColor(0, "", color);
-          if (hasCapture())
-            ColorChange(color, mouseMsg->buttons());
-        }
+      app::Color color = getColorByPosition(mouseMsg->position());
+      if (color != app::Color::fromMask()) {
+        StatusBar::instance()->showColor(0, "", color);
+        if (hasCapture())
+          ColorChange(color, mouseMsg->buttons());
       }
       break;
+    }
 
     case kMouseUpMessage:
       if (hasCapture()) {
