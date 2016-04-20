@@ -19,12 +19,14 @@
 typedef UINT (API* WTInfoW_Func)(UINT, UINT, LPVOID);
 typedef HCTX (API* WTOpenW_Func)(HWND, LPLOGCONTEXTW, BOOL);
 typedef BOOL (API* WTClose_Func)(HCTX);
+typedef BOOL (API* WTPacket_Func)(HCTX, UINT, LPVOID);
 
 namespace she {
 
 static WTInfoW_Func WTInfo;
 static WTOpenW_Func WTOpen;
 static WTClose_Func WTClose;
+static WTPacket_Func WTPacket;
 
 PenAPI::PenAPI()
   : m_wintabLib(nullptr)
@@ -40,18 +42,25 @@ PenAPI::~PenAPI()
   m_wintabLib = nullptr;
 }
 
-HCTX PenAPI::attachDisplay(HWND hwnd)
+HCTX PenAPI::open(HWND hwnd)
 {
   if (!m_wintabLib && !loadWintab())
     return nullptr;
 
   LOGCONTEXTW logctx;
   memset(&logctx, 0, sizeof(LOGCONTEXTW));
-  logctx.lcOptions |= CXO_SYSTEM;
   UINT infoRes = WTInfo(WTI_DEFSYSCTX, 0, &logctx);
   ASSERT(infoRes == sizeof(LOGCONTEXTW));
   ASSERT(logctx.lcOptions & CXO_SYSTEM);
-  logctx.lcOptions |= CXO_SYSTEM;
+
+  logctx.lcOptions =
+    CXO_SYSTEM |
+    CXO_MESSAGES |
+    CXO_CSRMESSAGES;
+  logctx.lcPktData = PACKETDATA;
+  logctx.lcPktMode = PACKETMODE;
+  logctx.lcMoveMask = PACKETDATA;
+
   HCTX ctx = WTOpen(hwnd, &logctx, TRUE);
   if (!ctx) {
     LOG("Error attaching pen to display\n");
@@ -62,13 +71,18 @@ HCTX PenAPI::attachDisplay(HWND hwnd)
   return ctx;
 }
 
-void PenAPI::detachDisplay(HCTX ctx)
+void PenAPI::close(HCTX ctx)
 {
   if (ctx) {
     ASSERT(m_wintabLib);
     LOG("Pen detached from window\n");
     WTClose(ctx);
   }
+}
+
+bool PenAPI::packet(HCTX ctx, UINT serial, LPVOID packet)
+{
+  return (WTPacket(ctx, serial, packet) ? true: false);
 }
 
 bool PenAPI::loadWintab()
@@ -84,7 +98,8 @@ bool PenAPI::loadWintab()
   WTInfo = base::get_dll_proc<WTInfoW_Func>(m_wintabLib, "WTInfoW");
   WTOpen = base::get_dll_proc<WTOpenW_Func>(m_wintabLib, "WTOpenW");
   WTClose = base::get_dll_proc<WTClose_Func>(m_wintabLib, "WTClose");
-  if (!WTInfo || !WTOpen || !WTClose) {
+  WTPacket = base::get_dll_proc<WTPacket_Func>(m_wintabLib, "WTPacket");
+  if (!WTInfo || !WTOpen || !WTClose || !WTPacket) {
     LOG("wintab32.dll does not contain all required functions\n");
     return false;
   }

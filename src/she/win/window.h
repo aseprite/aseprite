@@ -41,11 +41,13 @@ namespace she {
       , m_restoredSize(0, 0)
       , m_isCreated(false)
       , m_hasMouse(false)
-      , m_captureMouse(false) {
+      , m_captureMouse(false)
+      , m_hpenctx(nullptr)
+      , m_device(Event::UnknownDevice)
+      , m_pressure(0.0) {
       registerClass();
       m_hwnd = createHwnd(this, width, height);
       m_hcursor = nullptr;
-      m_hpenctx = nullptr;
       m_scale = scale;
 
       // This flag is used to avoid calling T::resizeImpl() when we
@@ -55,13 +57,13 @@ namespace she {
 
       // Attach Wacom context
       m_hpenctx = static_cast<WindowSystem*>(she::instance())
-        ->penApi().attachDisplay(m_hwnd);
+        ->penApi().open(m_hwnd);
     }
 
     ~WinWindow() {
       if (m_hpenctx)
         static_cast<WindowSystem*>(she::instance())
-          ->penApi().detachDisplay(m_hpenctx);
+          ->penApi().close(m_hpenctx);
     }
 
     void queueEvent(Event& ev) {
@@ -323,6 +325,11 @@ namespace she {
             _TrackMouseEvent(&tme);
           }
 
+          if (m_device != Event::UnknownDevice) {
+            ev.setDevice(m_device);
+            ev.setPressure(m_pressure);
+          }
+
           ev.setType(Event::MouseMove);
           queueEvent(ev);
           break;
@@ -353,6 +360,12 @@ namespace she {
             msg == WM_LBUTTONDOWN ? Event::LeftButton:
             msg == WM_RBUTTONDOWN ? Event::RightButton:
             msg == WM_MBUTTONDOWN ? Event::MiddleButton: Event::NoneButton);
+
+          if (m_device != Event::UnknownDevice) {
+            ev.setDevice(m_device);
+            ev.setPressure(m_pressure);
+          }
+
           queueEvent(ev);
           break;
         }
@@ -370,6 +383,12 @@ namespace she {
             msg == WM_LBUTTONUP ? Event::LeftButton:
             msg == WM_RBUTTONUP ? Event::RightButton:
             msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
+
+          if (m_device != Event::UnknownDevice) {
+            ev.setDevice(m_device);
+            ev.setPressure(m_pressure);
+          }
+
           queueEvent(ev);
 
           // Avoid popup menu for scrollbars
@@ -585,6 +604,48 @@ namespace she {
           return result;
         }
 
+        case WT_PROXIMITY: {
+          bool entering_ctx = (LOWORD(lparam) ? true: false);
+          if (!entering_ctx)
+            m_device = Event::UnknownDevice;
+          break;
+        }
+
+        case WT_CSRCHANGE: {    // From Wintab 1.1
+          auto& api = static_cast<WindowSystem*>(she::instance())->penApi();
+          UINT serial = wparam;
+          HCTX ctx = (HCTX)lparam;
+          PACKET packet;
+
+          if (api.packet(ctx, serial, &packet)) {
+            if (packet.pkCursor == 2 || packet.pkCursor == 5)
+              m_device = Event::EraserDevice;
+            else
+              m_device = Event::StylusDevice;
+          }
+          else
+            m_device = Event::UnknownDevice;
+        }
+
+        case WT_PACKET: {
+          auto& api = static_cast<WindowSystem*>(she::instance())->penApi();
+          UINT serial = wparam;
+          HCTX ctx = (HCTX)lparam;
+          PACKET packet;
+
+          if (api.packet(ctx, serial, &packet)) {
+            m_pressure = packet.pkNormalPressure / 1000.0; // TODO get the maximum value
+
+            if (packet.pkCursor == 2 || packet.pkCursor == 5)
+              m_device = Event::EraserDevice;
+            else
+              m_device = Event::StylusDevice;
+          }
+          else
+            m_device = Event::UnknownDevice;
+          break;
+        }
+
       }
 
       LRESULT result = FALSE;
@@ -679,13 +740,17 @@ namespace she {
 
     mutable HWND m_hwnd;
     HCURSOR m_hcursor;
-    HCTX m_hpenctx;             // Wacom Pen context
     gfx::Size m_clientSize;
     gfx::Size m_restoredSize;
     int m_scale;
     bool m_isCreated;
     bool m_hasMouse;
     bool m_captureMouse;
+
+    // Wintab API data
+    HCTX m_hpenctx;
+    Event::InputDevice m_device;
+    double m_pressure;
   };
 
 } // namespace she

@@ -13,15 +13,22 @@
 #include <windows.h>
 #include "wacom/wintab.h"
 
+#define PACKETDATA (PK_CURSOR | PK_BUTTONS | PK_X | PK_Y | PK_NORMAL_PRESSURE)
+#define PACKETMODE (PK_BUTTONS)
+#include "wacom/pktdef.h"
+
 namespace she {
 
+  // Wintab API wrapper
+  // Read http://www.wacomeng.com/windows/docs/Wintab_v140.htm for more information.
   class PenAPI {
   public:
     PenAPI();
     ~PenAPI();
 
-    HCTX attachDisplay(HWND hwnd);
-    void detachDisplay(HCTX ctx);
+    HCTX open(HWND hwnd);
+    void close(HCTX ctx);
+    bool packet(HCTX ctx, UINT serial, LPVOID packet);
 
   private:
     bool loadWintab();
