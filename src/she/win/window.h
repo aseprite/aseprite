@@ -19,6 +19,7 @@
 #include "she/event.h"
 #include "she/keys.h"
 #include "she/native_cursor.h"
+#include "she/win/system.h"
 #include "she/win/window_dde.h"
 
 #ifndef WM_MOUSEHWHEEL
@@ -43,13 +44,24 @@ namespace she {
       , m_captureMouse(false) {
       registerClass();
       m_hwnd = createHwnd(this, width, height);
-      m_hcursor = NULL;
+      m_hcursor = nullptr;
+      m_hpenctx = nullptr;
       m_scale = scale;
 
       // This flag is used to avoid calling T::resizeImpl() when we
       // add the scrollbars to the window. (As the T type could not be
       // fully initialized yet.)
       m_isCreated = true;
+
+      // Attach Wacom context
+      m_hpenctx = static_cast<WindowSystem*>(she::instance())
+        ->penApi().attachDisplay(m_hwnd);
+    }
+
+    ~WinWindow() {
+      if (m_hpenctx)
+        static_cast<WindowSystem*>(she::instance())
+          ->penApi().detachDisplay(m_hpenctx);
     }
 
     void queueEvent(Event& ev) {
@@ -667,6 +679,7 @@ namespace she {
 
     mutable HWND m_hwnd;
     HCURSOR m_hcursor;
+    HCTX m_hpenctx;             // Wacom Pen context
     gfx::Size m_clientSize;
     gfx::Size m_restoredSize;
     int m_scale;
