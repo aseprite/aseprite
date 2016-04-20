@@ -33,7 +33,7 @@ public:
     LOGCONTEXTW logctx;
     memset(&logctx, 0, sizeof(LOGCONTEXTW));
     logctx.lcOptions |= CXO_SYSTEM;
-    UINT infoRes = WTInfo(WTI_DEFSYSCTX, 0, &logctx);
+    UINT infoRes = WTInfoW(WTI_DEFSYSCTX, 0, &logctx);
     ASSERT(infoRes == sizeof(LOGCONTEXTW));
     ASSERT(logctx.lcOptions & CXO_SYSTEM);
 
