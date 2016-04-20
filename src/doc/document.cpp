@@ -64,7 +64,12 @@ std::string Document::name() const
 
 void Document::setFilename(const std::string& filename)
 {
-  m_filename = base::normalize_path(filename);
+  // Normalize the path (if the filename has a path)
+  if (!base::get_file_path(filename).empty())
+    m_filename = base::normalize_path(filename);
+  else
+    m_filename = filename;
+
   notifyObservers(&DocumentObserver::onFileNameChanged, this);
 }
 
