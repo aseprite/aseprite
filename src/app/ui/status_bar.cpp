@@ -167,7 +167,6 @@ class StatusBar::Indicators : public HBox {
 
   private:
     void onPaint(ui::PaintEvent& ev) override {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
       Rect rc = clientBounds();
       Graphics* g = ev.graphics();
 
