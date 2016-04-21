@@ -624,10 +624,22 @@ namespace she {
           PACKET packet;
 
           if (api.packet(ctx, serial, &packet)) {
-            if (packet.pkCursor == 2 || packet.pkCursor == 5)
-              m_pointerType = PointerType::Eraser;
-            else
-              m_pointerType = PointerType::Pen;
+            switch (packet.pkCursor) {
+              case 0:
+              case 3:
+                m_pointerType = PointerType::Cursor;
+                break;
+              case 1:
+              case 4:
+                m_pointerType = PointerType::Pen;
+                break;
+              case 2
+              case 5:
+                m_pointerType = PointerType::Eraser;
+                break;
+              default:
+                m_pointerType = PointerType::Unknown;
+                break;
           }
           else
             m_pointerType = PointerType::Unknown;

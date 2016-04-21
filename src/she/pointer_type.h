@@ -10,12 +10,14 @@
 
 namespace she {
 
+  // Source of a mouse like event
   enum class PointerType {
     Unknown,
-    Mouse,
-    Multitouch,
-    Pen,
-    Eraser
+    Mouse,                      // A regular mouse
+    Multitouch,                 // Trackpad/multitouch surface
+    Pen,                        // Stylus pen
+    Cursor,                     // Puck like device
+    Eraser                      // Eraser end of a stylus pen
   };
 
 } // namespace she
