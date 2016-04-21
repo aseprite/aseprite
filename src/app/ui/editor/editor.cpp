@@ -1157,6 +1157,12 @@ void Editor::updateQuicktool()
   }
 }
 
+void Editor::updateContextBar()
+{
+  App::instance()->getMainWindow()->getContextBar()
+    ->updateForTool(getCurrentEditorTool());
+}
+
 void Editor::updateToolLoopModifiersIndicators()
 {
   int modifiers = int(tools::ToolLoopModifiers::kNone);
@@ -1281,6 +1287,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = mouseMsg->right();
 
           updateQuicktool();
+          updateContextBar();
           updateToolLoopModifiersIndicators();
           setCursor(mouseMsg->position());
         }
@@ -1307,6 +1314,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = false;
 
           updateQuicktool();
+          updateContextBar();
           updateToolLoopModifiersIndicators();
           setCursor(mouseMsg->position());
         }

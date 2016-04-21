@@ -240,6 +240,7 @@ namespace app {
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
+    void updateContextBar();
     void updateToolLoopModifiersIndicators();
     bool isCurrentToolAffectedByRightClickMode();
 
