@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -221,6 +221,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
+            mouseMsg->pointerType(),
             mouseMsg->buttons(),
             mouseMsg->modifiers(),
             mouseMsg->position());
@@ -635,6 +636,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
 
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
+            mouseMsg->pointerType(),
             mouseMsg->buttons(),
             mouseMsg->modifiers(),
             mouseMsg->position());

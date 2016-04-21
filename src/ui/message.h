@@ -14,6 +14,7 @@
 #include "ui/keys.h"
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
+#include "ui/pointer_type.h"
 #include "ui/widgets_list.h"
 
 #include <string>
@@ -103,18 +104,21 @@ namespace ui {
   class MouseMessage : public Message {
   public:
     MouseMessage(MessageType type,
+                 PointerType pointerType,
                  MouseButtons buttons,
                  KeyModifiers modifiers,
                  const gfx::Point& pos,
                  const gfx::Point& wheelDelta = gfx::Point(0, 0),
                  bool preciseWheel = false)
       : Message(type, modifiers),
+        m_pointerType(pointerType),
         m_buttons(buttons),
         m_pos(pos),
         m_wheelDelta(wheelDelta),
         m_preciseWheel(preciseWheel) {
     }
 
+    PointerType pointerType() const { return m_pointerType; }
     MouseButtons buttons() const { return m_buttons; }
     bool left() const { return (m_buttons & kButtonLeft) == kButtonLeft; }
     bool right() const { return (m_buttons & kButtonRight) == kButtonRight; }
@@ -125,6 +129,7 @@ namespace ui {
     const gfx::Point& position() const { return m_pos; }
 
   private:
+    PointerType m_pointerType;
     MouseButtons m_buttons;     // Pressed buttons
     gfx::Point m_pos;           // Mouse position
     gfx::Point m_wheelDelta;    // Wheel axis variation

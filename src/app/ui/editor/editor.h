@@ -28,6 +28,7 @@
 #include "render/zoom.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/pointer_type.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -324,6 +325,7 @@ namespace app {
     DocumentView* m_docView;
 
     gfx::Point m_oldPos;
+    ui::PointerType m_lastPointerType;
 
     EditorFlags m_flags;
 
