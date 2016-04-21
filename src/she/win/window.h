@@ -633,13 +633,14 @@ namespace she {
               case 4:
                 m_pointerType = PointerType::Pen;
                 break;
-              case 2
+              case 2:
               case 5:
                 m_pointerType = PointerType::Eraser;
                 break;
               default:
                 m_pointerType = PointerType::Unknown;
                 break;
+            }
           }
           else
             m_pointerType = PointerType::Unknown;
