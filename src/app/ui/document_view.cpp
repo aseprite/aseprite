@@ -113,6 +113,7 @@ protected:
           if (lmb->isPressed(msg) || rmb->isPressed(msg)) {
             MouseMessage mouseMsg(
               (msg->type() == kKeyDownMessage ? kMouseDownMessage: kMouseUpMessage),
+              PointerType::Unknown,
               (lmb->isPressed(msg) ? kButtonLeft: kButtonRight),
               msg->modifiers(),
               ui::get_mouse_position());

@@ -12,6 +12,7 @@
 #include "ui/keys.h"
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
+#include "ui/pointer_type.h"
 #include "ui/widget.h"
 
 namespace she {
@@ -115,14 +116,32 @@ namespace ui {
     virtual void onNewDisplayConfiguration();
 
   private:
-    void generateSetCursorMessage(const gfx::Point& mousePos, KeyModifiers modifiers);
+    void generateSetCursorMessage(const gfx::Point& mousePos,
+                                  KeyModifiers modifiers,
+                                  PointerType pointerType);
     void generateMessagesFromSheEvents();
-    void handleMouseMove(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers);
-    void handleMouseDown(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers);
-    void handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers);
-    void handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers);
-    void handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, KeyModifiers modifiers,
-                          const gfx::Point& wheelDelta, bool preciseWheel);
+    void handleMouseMove(const gfx::Point& mousePos,
+                         MouseButtons mouseButtons,
+                         KeyModifiers modifiers,
+                         PointerType pointerType);
+    void handleMouseDown(const gfx::Point& mousePos,
+                         MouseButtons mouseButtons,
+                         KeyModifiers modifiers,
+                         PointerType pointerType);
+    void handleMouseUp(const gfx::Point& mousePos,
+                       MouseButtons mouseButtons,
+                       KeyModifiers modifiers,
+                       PointerType pointerType);
+    void handleMouseDoubleClick(const gfx::Point& mousePos,
+                                MouseButtons mouseButtons,
+                                KeyModifiers modifiers,
+                                PointerType pointerType);
+    void handleMouseWheel(const gfx::Point& mousePos,
+                          MouseButtons mouseButtons,
+                          KeyModifiers modifiers,
+                          PointerType pointerType,
+                          const gfx::Point& wheelDelta,
+                          bool preciseWheel);
     void handleTouchMagnify(const gfx::Point& mousePos,
                             const KeyModifiers modifiers,
                             const double magnification);
@@ -135,7 +154,9 @@ namespace ui {
     static Message* newMouseMessage(
       MessageType type,
       Widget* widget, const gfx::Point& mousePos,
-      MouseButtons buttons, KeyModifiers modifiers,
+      PointerType pointerType,
+      MouseButtons buttons,
+      KeyModifiers modifiers,
       const gfx::Point& wheelDelta = gfx::Point(0, 0),
       bool preciseWheel = false);
     void broadcastKeyMsg(Message* msg);

@@ -24,6 +24,7 @@
 
 #include "she/common/freetype_font.h"
 #include "she/common/sprite_sheet_font.h"
+#include "she/system.h"
 
 namespace she {
 

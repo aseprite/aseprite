@@ -187,6 +187,7 @@ if(USE_SKIA_BACKEND)
   if(WIN32)
     list(APPEND SHE_SOURCES
       skia/skia_window_win.cpp
+      win/pen.cpp
       win/vk.cpp
       win/window_dde.cpp)
   elseif(APPLE)

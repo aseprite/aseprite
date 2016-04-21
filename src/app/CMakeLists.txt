@@ -445,7 +445,6 @@ target_link_libraries(app-lib
   flic-lib
   gfx-lib
   net-lib
-  pen-lib
   render-lib
   script-lib
   she

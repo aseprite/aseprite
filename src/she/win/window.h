@@ -19,6 +19,7 @@
 #include "she/event.h"
 #include "she/keys.h"
 #include "she/native_cursor.h"
+#include "she/win/system.h"
 #include "she/win/window_dde.h"
 
 #ifndef WM_MOUSEHWHEEL
@@ -40,16 +41,29 @@ namespace she {
       , m_restoredSize(0, 0)
       , m_isCreated(false)
       , m_hasMouse(false)
-      , m_captureMouse(false) {
+      , m_captureMouse(false)
+      , m_hpenctx(nullptr)
+      , m_pointerType(PointerType::Unknown)
+      , m_pressure(0.0) {
       registerClass();
       m_hwnd = createHwnd(this, width, height);
-      m_hcursor = NULL;
+      m_hcursor = nullptr;
       m_scale = scale;
 
       // This flag is used to avoid calling T::resizeImpl() when we
       // add the scrollbars to the window. (As the T type could not be
       // fully initialized yet.)
       m_isCreated = true;
+
+      // Attach Wacom context
+      m_hpenctx = static_cast<WindowSystem*>(she::instance())
+        ->penApi().open(m_hwnd);
+    }
+
+    ~WinWindow() {
+      if (m_hpenctx)
+        static_cast<WindowSystem*>(she::instance())
+          ->penApi().close(m_hpenctx);
     }
 
     void queueEvent(Event& ev) {
@@ -311,6 +325,11 @@ namespace she {
             _TrackMouseEvent(&tme);
           }
 
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
+            ev.setPressure(m_pressure);
+          }
+
           ev.setType(Event::MouseMove);
           queueEvent(ev);
           break;
@@ -341,6 +360,12 @@ namespace she {
             msg == WM_LBUTTONDOWN ? Event::LeftButton:
             msg == WM_RBUTTONDOWN ? Event::RightButton:
             msg == WM_MBUTTONDOWN ? Event::MiddleButton: Event::NoneButton);
+
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
+            ev.setPressure(m_pressure);
+          }
+
           queueEvent(ev);
           break;
         }
@@ -358,6 +383,12 @@ namespace she {
             msg == WM_LBUTTONUP ? Event::LeftButton:
             msg == WM_RBUTTONUP ? Event::RightButton:
             msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
+
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
+            ev.setPressure(m_pressure);
+          }
+
           queueEvent(ev);
 
           // Avoid popup menu for scrollbars
@@ -380,6 +411,12 @@ namespace she {
             msg == WM_LBUTTONDBLCLK ? Event::LeftButton:
             msg == WM_RBUTTONDBLCLK ? Event::RightButton:
             msg == WM_MBUTTONDBLCLK ? Event::MiddleButton: Event::NoneButton);
+
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
+            ev.setPressure(m_pressure);
+          }
+
           queueEvent(ev);
           break;
         }
@@ -573,6 +610,60 @@ namespace she {
           return result;
         }
 
+        case WT_PROXIMITY: {
+          bool entering_ctx = (LOWORD(lparam) ? true: false);
+          if (!entering_ctx)
+            m_pointerType = PointerType::Unknown;
+          break;
+        }
+
+        case WT_CSRCHANGE: {    // From Wintab 1.1
+          auto& api = static_cast<WindowSystem*>(she::instance())->penApi();
+          UINT serial = wparam;
+          HCTX ctx = (HCTX)lparam;
+          PACKET packet;
+
+          if (api.packet(ctx, serial, &packet)) {
+            switch (packet.pkCursor) {
+              case 0:
+              case 3:
+                m_pointerType = PointerType::Cursor;
+                break;
+              case 1:
+              case 4:
+                m_pointerType = PointerType::Pen;
+                break;
+              case 2
+              case 5:
+                m_pointerType = PointerType::Eraser;
+                break;
+              default:
+                m_pointerType = PointerType::Unknown;
+                break;
+          }
+          else
+            m_pointerType = PointerType::Unknown;
+        }
+
+        case WT_PACKET: {
+          auto& api = static_cast<WindowSystem*>(she::instance())->penApi();
+          UINT serial = wparam;
+          HCTX ctx = (HCTX)lparam;
+          PACKET packet;
+
+          if (api.packet(ctx, serial, &packet)) {
+            m_pressure = packet.pkNormalPressure / 1000.0; // TODO get the maximum value
+
+            if (packet.pkCursor == 2 || packet.pkCursor == 5)
+              m_pointerType = PointerType::Eraser;
+            else
+              m_pointerType = PointerType::Pen;
+          }
+          else
+            m_pointerType = PointerType::Unknown;
+          break;
+        }
+
       }
 
       LRESULT result = FALSE;
@@ -673,6 +764,11 @@ namespace she {
     bool m_isCreated;
     bool m_hasMouse;
     bool m_captureMouse;
+
+    // Wintab API data
+    HCTX m_hpenctx;
+    PointerType m_pointerType;
+    double m_pressure;
   };
 
 } // namespace she

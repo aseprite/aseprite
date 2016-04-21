@@ -164,6 +164,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_antsOffset(0)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
+  , m_lastPointerType(ui::PointerType::Unknown)
   , m_flags(flags)
   , m_secondaryButton(false)
   , m_aniSpeed(1.0)
@@ -919,6 +920,12 @@ tools::Tool* Editor::getCurrentEditorTool()
   if (m_quicktool)
     return m_quicktool;
 
+  // Eraser tip
+  if (m_lastPointerType == ui::PointerType::Eraser) {
+    tools::ToolBox* toolbox = App::instance()->getToolBox();
+    return toolbox->getToolById(tools::WellKnownTools::Eraser);
+  }
+
   tools::Tool* tool = App::instance()->activeTool();
 
   if (m_secondaryButton &&
@@ -1283,6 +1290,8 @@ bool Editor::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
         m_oldPos = mouseMsg->position();
+        m_lastPointerType = mouseMsg->pointerType();
+
         if (!m_secondaryButton && mouseMsg->right()) {
           m_secondaryButton = mouseMsg->right();
 
@@ -1300,6 +1309,9 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
+
+        m_lastPointerType = static_cast<MouseMessage*>(msg)->pointerType();
+
         return m_state->onMouseMove(this, static_cast<MouseMessage*>(msg));
       }
       break;
@@ -1309,6 +1321,8 @@ bool Editor::onProcessMessage(Message* msg)
         EditorStatePtr holdState(m_state);
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         bool result = m_state->onMouseUp(this, mouseMsg);
+
+        m_lastPointerType = mouseMsg->pointerType();
 
         if (!hasCapture()) {
           m_secondaryButton = false;
@@ -1328,6 +1342,9 @@ bool Editor::onProcessMessage(Message* msg)
       if (m_sprite) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         EditorStatePtr holdState(m_state);
+
+        m_lastPointerType = mouseMsg->pointerType();
+
         bool used = m_state->onDoubleClick(this, mouseMsg);
         if (used)
           return true;

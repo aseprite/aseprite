@@ -67,7 +67,6 @@
 #include "doc/palette.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
-#include "pen/pen.h"
 #include "render/render.h"
 #include "script/engine_delegate.h"
 #include "she/display.h"
@@ -666,9 +665,6 @@ void App::run()
 {
   // Run the GUI
   if (isGui()) {
-    // Initialize Wacom tablet API
-    pen::PenAPI pen(she::instance()->defaultDisplay()->nativeHandle());
-
     // Initialize Steam API
 #ifdef ENABLE_STEAM
     steam::SteamAPI steam;

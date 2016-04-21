@@ -15,23 +15,28 @@
 #include "SkPixelRef.h"
 #include "SkStream.h"
 
+#include "she/common/system.h"
 #include "she/skia/skia_display.h"
 #include "she/skia/skia_surface.h"
 
 #ifdef _WIN32
   #include "she/win/event_queue.h"
+  #include "she/win/system.h"
+  #define SkiaSystemBase WindowSystem
 #elif __APPLE__
   #include "she/osx/app.h"
   #include "she/osx/event_queue.h"
+  #define SkiaSystemBase CommonSystem
 #else
   #include "she/x11/event_queue.h"
+  #define SkiaSystemBase CommonSystem
 #endif
 
 namespace she {
 
 EventQueueImpl g_queue;
 
-class SkiaSystem : public CommonSystem {
+class SkiaSystem : public SkiaSystemBase {
 public:
   SkiaSystem()
     : m_defaultDisplay(nullptr)

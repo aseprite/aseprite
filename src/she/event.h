@@ -11,6 +11,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "she/keys.h"
+#include "she/pointer_type.h"
 
 #include <string>
 #include <vector>
@@ -57,7 +58,10 @@ namespace she {
               m_unicodeChar(0),
               m_repeat(0),
               m_preciseWheel(false),
-              m_button(NoneButton) {
+              m_pointerType(PointerType::Unknown),
+              m_button(NoneButton),
+              m_magnification(0.0),
+              m_pressure(0.0) {
     }
 
     Type type() const { return m_type; }
@@ -73,10 +77,13 @@ namespace she {
     // We suppose that if we are receiving precise scrolling deltas,
     // it means that the user is using a touch-like surface (trackpad,
     // magic mouse scrolling, touch wacom tablet, etc.)
+    // TODO change this with the new PointerType::Multitouch
     bool preciseWheel() const { return m_preciseWheel; }
 
+    PointerType pointerType() const { return m_pointerType; }
     MouseButton button() const { return m_button; }
     double magnification() const { return m_magnification; }
+    double pressure() const { return m_pressure; }
 
     void setType(Type type) { m_type = type; }
     void setDisplay(Display* display) { m_display = display; }
@@ -89,8 +96,10 @@ namespace she {
     void setPosition(const gfx::Point& pos) { m_position = pos; }
     void setWheelDelta(const gfx::Point& delta) { m_wheelDelta = delta; }
     void setPreciseWheel(bool precise) { m_preciseWheel = precise; }
+    void setPointerType(PointerType pointerType) { m_pointerType = pointerType; }
     void setButton(MouseButton button) { m_button = button; }
     void setMagnification(double magnification) { m_magnification = magnification; }
+    void setPressure(double pressure) { m_pressure = pressure; }
 
   private:
     Type m_type;
@@ -103,8 +112,14 @@ namespace she {
     gfx::Point m_position;
     gfx::Point m_wheelDelta;
     bool m_preciseWheel;
+    PointerType m_pointerType;
     MouseButton m_button;
+
+    // For TouchMagnify event
     double m_magnification;
+
+    // Pressure of stylus used in mouse-like events
+    double m_pressure;
   };
 
 } // namespace she

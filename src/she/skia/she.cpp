@@ -13,8 +13,6 @@
 #include "gfx/size.h"
 #include "she/she.h"
 
-#include "she/common/system.h"
-
 #include "she/skia/skia_system.h"
 
 #if __APPLE__
