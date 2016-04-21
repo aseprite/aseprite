@@ -11,6 +11,7 @@
 
 #include "app/extra_cel.h"
 #include "base/shared_ptr.h"
+#include "doc/brush.h"
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/mask_boundaries.h"
@@ -22,7 +23,6 @@
 #include <vector>
 
 namespace doc {
-  class Brush;
   class Layer;
   class Sprite;
 }
@@ -58,7 +58,7 @@ namespace app {
   private:
     typedef void (BrushPreview::*PixelDelegate)(ui::Graphics*, const gfx::Point&, gfx::Color);
 
-    static doc::Brush* getCurrentBrush();
+    doc::BrushRef getCurrentBrush();
     static doc::color_t getBrushColor(doc::Sprite* sprite, doc::Layer* layer);
 
     void generateBoundaries();

@@ -53,10 +53,12 @@ BrushPreview::~BrushPreview()
 {
 }
 
-// static
-Brush* BrushPreview::getCurrentBrush()
+BrushRef BrushPreview::getCurrentBrush()
 {
-  return App::instance()->getMainWindow()->getContextBar()->activeBrush().get();
+  return App::instance()
+    ->getMainWindow()
+    ->getContextBar()
+    ->activeBrush(m_editor->getCurrentEditorTool());
 }
 
 // static
@@ -114,7 +116,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Setup the cursor type depending on several factors (current tool,
   // foreground color, layer transparency, brush size, etc.).
-  Brush* brush = getCurrentBrush();
+  BrushRef brush = getCurrentBrush();
   color_t brush_color = getBrushColor(sprite, layer);
   color_t mask_index = sprite->transparentColor();
 
@@ -297,7 +299,7 @@ void BrushPreview::invalidateRegion(const gfx::Region& region)
 
 void BrushPreview::generateBoundaries()
 {
-  Brush* brush = getCurrentBrush();
+  BrushRef brush = getCurrentBrush();
 
   if (m_brushBoundaries &&
       m_brushGen == brush->gen())

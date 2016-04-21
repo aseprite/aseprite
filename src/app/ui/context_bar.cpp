@@ -1724,7 +1724,8 @@ void ContextBar::setActiveBrush(const doc::BrushRef& brush)
 
 doc::BrushRef ContextBar::activeBrush(tools::Tool* tool) const
 {
-  if (!tool ||
+  if ((!tool) ||
+      (tool == App::instance()->activeTool()) ||
       (tool->getInk(0)->isPaint() &&
        m_activeBrush->type() == kImageBrushType)) {
     m_activeBrush->setPattern(Preferences::instance().brush.pattern());
