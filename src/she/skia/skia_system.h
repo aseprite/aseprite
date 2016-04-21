@@ -137,8 +137,6 @@ public:
         kN32_SkColorType, SkImageDecoder::kDecodePixels_Mode);
 
       if (res == SkImageDecoder::kSuccess) {
-        bm.pixelRef()->setURI(filename);
-
         SkiaSurface* sur = new SkiaSurface();
         sur->swapBitmap(bm);
         return sur;
