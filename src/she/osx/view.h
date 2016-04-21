@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,8 @@
 #define SHE_OSX_VIEW_H_INCLUDED
 #pragma once
 
+#include "she/pointer_type.h"
+
 #include <Cocoa/Cocoa.h>
 
 @interface OSXView : NSView {
@@ -15,6 +17,7 @@
   NSTrackingArea* m_trackingArea;
   NSCursor* m_nsCursor;
   bool m_visibleMouse;
+  she::PointerType m_pointerType;
 }
 - (id)initWithFrame:(NSRect)frameRect;
 - (BOOL)acceptsFirstResponder;

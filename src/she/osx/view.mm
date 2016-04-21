@@ -92,6 +92,7 @@ bool is_key_pressed(KeyScancode scancode)
 {
   m_nsCursor = [NSCursor arrowCursor];
   m_visibleMouse = true;
+  m_pointerType = she::PointerType::Unknown;
 
   self = [super initWithFrame:frameRect];
   if (self != nil) {
@@ -307,6 +308,10 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
+
+  if (m_pointerType != she::PointerType::Unknown)
+    ev.setPointerType(m_pointerType);
+
   queue_event(ev);
 }
 
@@ -317,6 +322,10 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
+
+  if (m_pointerType != she::PointerType::Unknown)
+    ev.setPointerType(m_pointerType);
+
   queue_event(ev);
 }
 
@@ -327,6 +336,10 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
+
+  if (m_pointerType != she::PointerType::Unknown)
+    ev.setPointerType(m_pointerType);
+
   queue_event(ev);
 }
 
@@ -360,11 +373,13 @@ bool is_key_pressed(KeyScancode scancode)
     scale = [(OSXWindow*)self.window scale];
 
   if (event.hasPreciseScrollingDeltas) {
+    ev.setPointerType(she::PointerType::Multitouch);
     ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX / scale,
                                 -event.scrollingDeltaY / scale));
     ev.setPreciseWheel(true);
   }
   else {
+    ev.setPointerType(she::PointerType::Mouse);
     ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX,
                                 -event.scrollingDeltaY));
   }
@@ -379,8 +394,25 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setMagnification(event.magnification);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
-
+  ev.setPointerType(she::PointerType::Multitouch);
   queue_event(ev);
+}
+
+- (void)tabletProximity:(NSEvent*)event
+{
+  if (event.isEnteringProximity == YES) {
+    switch (event.pointingDeviceType) {
+      case NSPenPointingDevice: m_pointerType = she::PointerType::Pen; break;
+      case NSCursorPointingDevice: m_pointerType = she::PointerType::Cursor; break;
+      case NSEraserPointingDevice: m_pointerType = she::PointerType::Eraser; break;
+      default:
+        m_pointerType = she::PointerType::Unknown;
+        break;
+    }
+  }
+  else {
+    m_pointerType = she::PointerType::Unknown;
+  }
 }
 
 - (void)cursorUpdate:(NSEvent*)event
