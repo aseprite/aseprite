@@ -411,6 +411,12 @@ namespace she {
             msg == WM_LBUTTONDBLCLK ? Event::LeftButton:
             msg == WM_RBUTTONDBLCLK ? Event::RightButton:
             msg == WM_MBUTTONDBLCLK ? Event::MiddleButton: Event::NoneButton);
+
+          if (m_device != Event::UnknownDevice) {
+            ev.setDevice(m_device);
+            ev.setPressure(m_pressure);
+          }
+
           queueEvent(ev);
           break;
         }
