@@ -1310,7 +1310,13 @@ bool Editor::onProcessMessage(Message* msg)
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
 
-        m_lastPointerType = static_cast<MouseMessage*>(msg)->pointerType();
+        PointerType newPointerType = static_cast<MouseMessage*>(msg)->pointerType();
+        if (m_lastPointerType != newPointerType) {
+          m_lastPointerType = newPointerType;
+
+          updateQuicktool();
+          updateContextBar();
+        }
 
         return m_state->onMouseMove(this, static_cast<MouseMessage*>(msg));
       }
