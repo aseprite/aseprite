@@ -11,6 +11,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "she/keys.h"
+#include "she/pointer_type.h"
 
 #include <string>
 #include <vector>
@@ -41,14 +42,6 @@ namespace she {
       TouchMagnify,
     };
 
-    enum InputDevice {
-      UnknownDevice,
-      MouseDevice,
-      MultitouchDevice,         // Multitouch device with finger gestures
-      StylusDevice,             // Pen/stylus device
-      EraserDevice,             // Inverted-stylus device
-    };
-
     enum MouseButton {
       NoneButton,
       LeftButton,
@@ -65,7 +58,7 @@ namespace she {
               m_unicodeChar(0),
               m_repeat(0),
               m_preciseWheel(false),
-              m_device(UnknownDevice),
+              m_pointerType(PointerType::Unknown),
               m_button(NoneButton),
               m_magnification(0.0),
               m_pressure(0.0) {
@@ -84,10 +77,10 @@ namespace she {
     // We suppose that if we are receiving precise scrolling deltas,
     // it means that the user is using a touch-like surface (trackpad,
     // magic mouse scrolling, touch wacom tablet, etc.)
-    // TODO change this with the new InputDevice::MultitouchDevice
+    // TODO change this with the new PointerType::Multitouch
     bool preciseWheel() const { return m_preciseWheel; }
 
-    InputDevice device() const { return m_device; }
+    PointerType pointerType() const { return m_pointerType; }
     MouseButton button() const { return m_button; }
     double magnification() const { return m_magnification; }
     double pressure() const { return m_pressure; }
@@ -103,7 +96,7 @@ namespace she {
     void setPosition(const gfx::Point& pos) { m_position = pos; }
     void setWheelDelta(const gfx::Point& delta) { m_wheelDelta = delta; }
     void setPreciseWheel(bool precise) { m_preciseWheel = precise; }
-    void setDevice(InputDevice device) { m_device = device; }
+    void setPointerType(PointerType pointerType) { m_pointerType = pointerType; }
     void setButton(MouseButton button) { m_button = button; }
     void setMagnification(double magnification) { m_magnification = magnification; }
     void setPressure(double pressure) { m_pressure = pressure; }
@@ -119,7 +112,7 @@ namespace she {
     gfx::Point m_position;
     gfx::Point m_wheelDelta;
     bool m_preciseWheel;
-    InputDevice m_device;
+    PointerType m_pointerType;
     MouseButton m_button;
 
     // For TouchMagnify event

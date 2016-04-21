@@ -276,18 +276,6 @@ static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
   }
 }
 
-static PointerType pointer_type_from_she_event(const she::Event& sheEvent)
-{
-  switch (sheEvent.device()) {
-    case she::Event::MouseDevice: return PointerType::Mouse; break;
-    case she::Event::MultitouchDevice: return PointerType::Multitouch; break;
-    case she::Event::StylusDevice: return PointerType::Pen; break;
-    case she::Event::EraserDevice: return PointerType::Eraser; break;
-    default:
-      return PointerType::Unknown;
-  }
-}
-
 void Manager::generateMessagesFromSheEvents()
 {
   she::Event lastMouseMoveEvent;
@@ -365,7 +353,7 @@ void Manager::generateMessagesFromSheEvents()
           sheEvent.position(),
           m_mouseButtons,
           sheEvent.modifiers(),
-          pointer_type_from_she_event(sheEvent));
+          sheEvent.pointerType());
         lastMouseMoveEvent = sheEvent;
         break;
       }
@@ -379,7 +367,7 @@ void Manager::generateMessagesFromSheEvents()
           sheEvent.position(),
           pressedButton,
           sheEvent.modifiers(),
-          pointer_type_from_she_event(sheEvent));
+          sheEvent.pointerType());
         break;
       }
 
@@ -392,7 +380,7 @@ void Manager::generateMessagesFromSheEvents()
           sheEvent.position(),
           releasedButton,
           sheEvent.modifiers(),
-          pointer_type_from_she_event(sheEvent));
+          sheEvent.pointerType());
         break;
       }
 
@@ -402,14 +390,14 @@ void Manager::generateMessagesFromSheEvents()
           sheEvent.position(),
           clickedButton,
           sheEvent.modifiers(),
-          pointer_type_from_she_event(sheEvent));
+          sheEvent.pointerType());
         break;
       }
 
       case she::Event::MouseWheel: {
         handleMouseWheel(sheEvent.position(), m_mouseButtons,
                          sheEvent.modifiers(),
-                         pointer_type_from_she_event(sheEvent),
+                         sheEvent.pointerType(),
                          sheEvent.wheelDelta(),
                          sheEvent.preciseWheel());
         break;
@@ -432,7 +420,7 @@ void Manager::generateMessagesFromSheEvents()
     sheEvent = lastMouseMoveEvent;
     generateSetCursorMessage(sheEvent.position(),
                              sheEvent.modifiers(),
-                             pointer_type_from_she_event(sheEvent));
+                             sheEvent.pointerType());
   }
 }
 

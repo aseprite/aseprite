@@ -43,7 +43,7 @@ namespace she {
       , m_hasMouse(false)
       , m_captureMouse(false)
       , m_hpenctx(nullptr)
-      , m_device(Event::UnknownDevice)
+      , m_pointerType(PointerType::Unknown)
       , m_pressure(0.0) {
       registerClass();
       m_hwnd = createHwnd(this, width, height);
@@ -325,8 +325,8 @@ namespace she {
             _TrackMouseEvent(&tme);
           }
 
-          if (m_device != Event::UnknownDevice) {
-            ev.setDevice(m_device);
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
             ev.setPressure(m_pressure);
           }
 
@@ -361,8 +361,8 @@ namespace she {
             msg == WM_RBUTTONDOWN ? Event::RightButton:
             msg == WM_MBUTTONDOWN ? Event::MiddleButton: Event::NoneButton);
 
-          if (m_device != Event::UnknownDevice) {
-            ev.setDevice(m_device);
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
             ev.setPressure(m_pressure);
           }
 
@@ -384,8 +384,8 @@ namespace she {
             msg == WM_RBUTTONUP ? Event::RightButton:
             msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
 
-          if (m_device != Event::UnknownDevice) {
-            ev.setDevice(m_device);
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
             ev.setPressure(m_pressure);
           }
 
@@ -412,8 +412,8 @@ namespace she {
             msg == WM_RBUTTONDBLCLK ? Event::RightButton:
             msg == WM_MBUTTONDBLCLK ? Event::MiddleButton: Event::NoneButton);
 
-          if (m_device != Event::UnknownDevice) {
-            ev.setDevice(m_device);
+          if (m_pointerType != PointerType::Unknown) {
+            ev.setPointerType(m_pointerType);
             ev.setPressure(m_pressure);
           }
 
@@ -613,7 +613,7 @@ namespace she {
         case WT_PROXIMITY: {
           bool entering_ctx = (LOWORD(lparam) ? true: false);
           if (!entering_ctx)
-            m_device = Event::UnknownDevice;
+            m_pointerType = PointerType::Unknown;
           break;
         }
 
@@ -625,12 +625,12 @@ namespace she {
 
           if (api.packet(ctx, serial, &packet)) {
             if (packet.pkCursor == 2 || packet.pkCursor == 5)
-              m_device = Event::EraserDevice;
+              m_pointerType = PointerType::Eraser;
             else
-              m_device = Event::StylusDevice;
+              m_pointerType = PointerType::Pen;
           }
           else
-            m_device = Event::UnknownDevice;
+            m_pointerType = PointerType::Unknown;
         }
 
         case WT_PACKET: {
@@ -643,12 +643,12 @@ namespace she {
             m_pressure = packet.pkNormalPressure / 1000.0; // TODO get the maximum value
 
             if (packet.pkCursor == 2 || packet.pkCursor == 5)
-              m_device = Event::EraserDevice;
+              m_pointerType = PointerType::Eraser;
             else
-              m_device = Event::StylusDevice;
+              m_pointerType = PointerType::Pen;
           }
           else
-            m_device = Event::UnknownDevice;
+            m_pointerType = PointerType::Unknown;
           break;
         }
 
@@ -755,7 +755,7 @@ namespace she {
 
     // Wintab API data
     HCTX m_hpenctx;
-    Event::InputDevice m_device;
+    PointerType m_pointerType;
     double m_pressure;
   };
 

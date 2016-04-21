@@ -8,15 +8,11 @@
 #define UI_POINTER_TYPE_H_INCLUDED
 #pragma once
 
+#include "she/pointer_type.h"
+
 namespace ui {
 
-  enum class PointerType {
-    Unknown,
-    Mouse,
-    Multitouch,
-    Pen,
-    Eraser
-  };
+  typedef she::PointerType PointerType;
 
 } // namespace ui
 
