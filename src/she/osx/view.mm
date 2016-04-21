@@ -236,6 +236,10 @@ bool is_key_pressed(KeyScancode scancode)
   ev.setType(Event::MouseMove);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
+
+  if (m_pointerType != she::PointerType::Unknown)
+    ev.setPointerType(m_pointerType);
+
   queue_event(ev);
 }
 
