@@ -63,14 +63,10 @@ void base_trace(const char* msg, ...)
   va_end(ap);
 
 #ifdef _WIN32
-
   _CrtDbgReport(_CRT_WARN, NULL, 0, NULL, buf);
-
-#else
+#endif
 
   std::cerr << buf << std::flush;
-
-#endif
 }
 
 #endif
