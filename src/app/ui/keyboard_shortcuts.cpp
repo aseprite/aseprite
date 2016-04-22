@@ -380,7 +380,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (tool_id) {
-      tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
+      tools::Tool* tool = App::instance()->toolBox()->getToolById(tool_id);
       if (tool) {
         Key* key = this->tool(tool);
         if (key && tool_key) {
@@ -408,7 +408,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (tool_id) {
-      tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
+      tools::Tool* tool = App::instance()->toolBox()->getToolById(tool_id);
       if (tool) {
         Key* key = this->quicktool(tool);
         if (key && tool_key) {
@@ -689,7 +689,7 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
       return NULL;
   }
 
-  tools::ToolBox* toolbox = App::instance()->getToolBox();
+  tools::ToolBox* toolbox = App::instance()->toolBox();
 
   // Iterate over all tools
   for (tools::Tool* tool : *toolbox) {

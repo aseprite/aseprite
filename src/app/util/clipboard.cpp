@@ -24,7 +24,6 @@
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
@@ -248,8 +247,7 @@ void copy_range(const ContextReader& reader, const DocumentRange& range)
 
   // TODO Replace this with a signal, because here the timeline
   // depends on the clipboard and the clipboard on the timeline.
-  App::instance()->getMainWindow()
-    ->getTimeline()->activateClipboardRange();
+  App::instance()->timeline()->activateClipboardRange();
 }
 
 void copy_image(const Image* image, const Mask* mask, const Palette* pal)
@@ -341,7 +339,7 @@ void paste()
           // We can use a document range op (copy_range) to copy/paste
           // cels in the same document.
           if (srcDoc == dstDoc) {
-            Timeline* timeline = App::instance()->getMainWindow()->getTimeline();
+            Timeline* timeline = App::instance()->timeline();
             DocumentRange dstRange = timeline->range();
             LayerIndex dstLayer = srcSpr->layerToIndex(editor->layer());
             frame_t dstFrame = editor->frame();

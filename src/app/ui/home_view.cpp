@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -65,7 +65,7 @@ HomeView::~HomeView()
 #ifdef ENABLE_DATA_RECOVERY
   if (m_dataRecoveryView) {
     if (m_dataRecoveryView->parent())
-      App::instance()->getMainWindow()->getWorkspace()->removeView(m_dataRecoveryView);
+      App::instance()->workspace()->removeView(m_dataRecoveryView);
     delete m_dataRecoveryView;
   }
 #endif
@@ -185,9 +185,9 @@ void HomeView::onRecoverSprites()
   }
 
   if (!m_dataRecoveryView->parent())
-    App::instance()->getMainWindow()->getWorkspace()->addView(m_dataRecoveryView);
+    App::instance()->workspace()->addView(m_dataRecoveryView);
 
-  App::instance()->getMainWindow()->getTabsBar()->selectTab(m_dataRecoveryView);
+  App::instance()->mainWindow()->getTabsBar()->selectTab(m_dataRecoveryView);
 #endif
 }
 

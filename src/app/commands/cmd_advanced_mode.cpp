@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -43,7 +43,7 @@ AdvancedModeCommand::AdvancedModeCommand()
 void AdvancedModeCommand::onExecute(Context* context)
 {
   // Switch advanced mode.
-  MainWindow* mainWindow = App::instance()->getMainWindow();
+  MainWindow* mainWindow = App::instance()->mainWindow();
   MainWindow::Mode oldMode = mainWindow->getMode();
   MainWindow::Mode newMode = oldMode;
 

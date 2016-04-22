@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -121,7 +121,7 @@ static void save_document_in_background(const Context* context,
     const_cast<Document*>(document)->impossibleToBackToSavedState();
   }
   else if (context->isUIAvailable()) {
-    App::instance()->getRecentFiles()->addRecentFile(document->filename().c_str());
+    App::instance()->recentFiles()->addRecentFile(document->filename().c_str());
     if (mark_as_saved)
       const_cast<Document*>(document)->markAsSaved();
 

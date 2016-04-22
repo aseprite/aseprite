@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -15,7 +15,6 @@
 #include "app/context_access.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
 
@@ -40,13 +39,13 @@ DiscardBrushCommand::DiscardBrushCommand()
 
 bool DiscardBrushCommand::onEnabled(Context* context)
 {
-  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* ctxBar = App::instance()->contextBar();
   return (ctxBar->activeBrush()->type() == kImageBrushType);
 }
 
 void DiscardBrushCommand::onExecute(Context* context)
 {
-  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* ctxBar = App::instance()->contextBar();
   ctxBar->discardActiveBrush();
 }
 

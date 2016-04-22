@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,7 +22,6 @@
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/util/range_utils.h"
@@ -193,7 +192,7 @@ void RotateCommand::onExecute(Context* context)
 
     // Flip the mask or current cel
     if (m_flipMask) {
-      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      auto range = App::instance()->timeline()->range();
       if (range.enabled())
         cels = get_unique_cels(site.sprite(), range);
       else if (site.cel()) {
@@ -201,7 +200,7 @@ void RotateCommand::onExecute(Context* context)
         // we can go to MovingPixelsState.
         if (static_cast<app::Document*>(site.document())->isMaskVisible()) {
           // Select marquee tool
-          if (tools::Tool* tool = App::instance()->getToolBox()
+          if (tools::Tool* tool = App::instance()->toolBox()
               ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
             ToolBar::instance()->selectTool(tool);
             current_editor->startSelectionTransformation(gfx::Point(0, 0), m_angle);

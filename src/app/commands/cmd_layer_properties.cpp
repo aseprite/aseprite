@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -19,7 +19,6 @@
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
@@ -200,7 +199,7 @@ private:
 
           // Redraw timeline because the layer's user data/color
           // might have changed.
-          App::instance()->getMainWindow()->getTimeline()->invalidate();
+          App::instance()->timeline()->invalidate();
         }
 
         transaction.commit();

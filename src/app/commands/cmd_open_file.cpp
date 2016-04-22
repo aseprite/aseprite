@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -143,7 +143,7 @@ void OpenFileCommand::onExecute(Context* context)
         Document* document = fop->document();
         if (document) {
           if (context->isUIAvailable())
-            App::instance()->getRecentFiles()->addRecentFile(fop->filename().c_str());
+            App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
 
           document->setContext(context);
         }
@@ -155,7 +155,7 @@ void OpenFileCommand::onExecute(Context* context)
       // so we can remove it from the recent-file list
       if (unrecent) {
         if (context->isUIAvailable())
-          App::instance()->getRecentFiles()->removeRecentFile(m_filename.c_str());
+          App::instance()->recentFiles()->removeRecentFile(m_filename.c_str());
       }
     }
     else {

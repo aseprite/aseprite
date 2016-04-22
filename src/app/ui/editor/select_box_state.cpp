@@ -40,7 +40,7 @@ SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc,
 
 SelectBoxState::~SelectBoxState()
 {
-  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForCurrentTool();
 }
 
@@ -229,7 +229,7 @@ bool SelectBoxState::requireBrushPreview()
 tools::Ink* SelectBoxState::getStateInk()
 {
   if (hasFlag(Flags::QuickBox))
-    return App::instance()->getToolBox()->getInkById(
+    return App::instance()->toolBox()->getInkById(
       tools::WellKnownInks::Selection);
   else
     return nullptr;
@@ -330,7 +330,7 @@ void SelectBoxState::getInvalidDecoratoredRegion(Editor* editor, gfx::Region& re
 
 void SelectBoxState::updateContextBar()
 {
-  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForSelectingBox(m_delegate->onGetContextBarHelp());
 }
 

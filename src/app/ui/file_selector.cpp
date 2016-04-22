@@ -640,8 +640,8 @@ void FileSelector::updateLocation()
     location()->addItem("");
     location()->addItem("-------- Recent Paths --------");
 
-    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->paths_begin();
-    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->paths_end();
+    auto it = App::instance()->recentFiles()->paths_begin();
+    auto end = App::instance()->recentFiles()->paths_end();
     for (; it != end; ++it)
       location()->addItem(new CustomFolderNameItem(it->c_str()));
   }

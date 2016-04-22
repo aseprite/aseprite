@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -23,7 +23,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/keyboard_shortcuts.h"
-#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
@@ -127,8 +126,7 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
   // Update the context bar
   // TODO find a way to avoid all these singletons. Maybe a simple
   // signal in the context like "brush has changed" could be enough.
-  App::instance()->getMainWindow()->getContextBar()
-    ->updateForCurrentTool();
+  App::instance()->contextBar()->updateForCurrentTool();
 
   editor->backToPreviousState();
 }
@@ -149,7 +147,7 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
   brush->setImage(image.get());
   brush->setPatternOrigin(mask->bounds().origin());
 
-  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* ctxBar = App::instance()->contextBar();
   int slot = App::instance()->brushes().addBrushSlot(
     BrushSlot(BrushSlot::Flags::BrushType, brush));
   ctxBar->setActiveBrush(brush);

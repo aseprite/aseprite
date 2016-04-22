@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -17,7 +17,6 @@
 #include "app/context_access.h"
 #include "app/loop_tag.h"
 #include "app/transaction.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "base/convert_to.h"
 #include "doc/frame_tag.h"
@@ -85,7 +84,7 @@ void RemoveFrameTagCommand::onExecute(Context* context)
   transaction.execute(new cmd::RemoveFrameTag(sprite, foundTag));
   transaction.commit();
 
-  App::instance()->getMainWindow()->getTimeline()->invalidate();
+  App::instance()->timeline()->invalidate();
 }
 
 Command* CommandFactory::createRemoveFrameTagCommand()

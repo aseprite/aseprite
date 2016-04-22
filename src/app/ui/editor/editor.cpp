@@ -183,7 +183,7 @@ Editor::Editor(Document* document, EditorFlags flags)
       base::Bind<void>(&Editor::onFgColorChange, this));
 
   m_contextBarBrushChangeConn =
-    App::instance()->getMainWindow()->getContextBar()->BrushChange.connect(
+    App::instance()->contextBar()->BrushChange.connect(
       base::Bind<void>(&Editor::onContextBarBrushChange, this));
 
   // Restore last site in preferences
@@ -922,7 +922,7 @@ tools::Tool* Editor::getCurrentEditorTool()
 
   // Eraser tip
   if (m_lastPointerType == ui::PointerType::Eraser) {
-    tools::ToolBox* toolbox = App::instance()->getToolBox();
+    tools::ToolBox* toolbox = App::instance()->toolBox();
     return toolbox->getToolById(tools::WellKnownTools::Eraser);
   }
 
@@ -930,7 +930,7 @@ tools::Tool* Editor::getCurrentEditorTool()
 
   if (m_secondaryButton &&
       isCurrentToolAffectedByRightClickMode()) {
-    tools::ToolBox* toolbox = App::instance()->getToolBox();
+    tools::ToolBox* toolbox = App::instance()->toolBox();
 
     switch (Preferences::instance().editor.rightClickMode()) {
       case app::gen::RightClickMode::PAINT_BGCOLOR:
@@ -968,7 +968,7 @@ tools::Ink* Editor::getCurrentEditorInk()
   if (m_secondaryButton &&
       rightClickMode != app::gen::RightClickMode::DEFAULT &&
       isCurrentToolAffectedByRightClickMode()) {
-    tools::ToolBox* toolbox = App::instance()->getToolBox();
+    tools::ToolBox* toolbox = App::instance()->toolBox();
 
     switch (rightClickMode) {
       case app::gen::RightClickMode::DEFAULT:
@@ -1018,7 +1018,7 @@ tools::Ink* Editor::getCurrentEditorInk()
     }
 
     if (id)
-      ink = App::instance()->getToolBox()->getInkById(id);
+      ink = App::instance()->toolBox()->getInkById(id);
   }
 
   return ink;
@@ -1158,16 +1158,14 @@ void Editor::updateQuicktool()
 
       updateStatusBar();
 
-      App::instance()->getMainWindow()->getContextBar()
-        ->updateForTool(getCurrentEditorTool());
+      App::instance()->contextBar()->updateForTool(getCurrentEditorTool());
     }
   }
 }
 
 void Editor::updateContextBar()
 {
-  App::instance()->getMainWindow()->getContextBar()
-    ->updateForTool(getCurrentEditorTool());
+  App::instance()->contextBar()->updateForTool(getCurrentEditorTool());
 }
 
 void Editor::updateToolLoopModifiersIndicators()
@@ -1218,7 +1216,7 @@ void Editor::updateToolLoopModifiersIndicators()
     }
   }
 
-  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* ctxBar = App::instance()->contextBar();
 
   if (int(m_toolLoopModifiers) != modifiers) {
     m_toolLoopModifiers = tools::ToolLoopModifiers(modifiers);
@@ -1618,7 +1616,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   // the extra cel.
   if (!getCurrentEditorInk()->isSelection()) {
     tools::Tool* defaultSelectionTool =
-      App::instance()->getToolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
+      App::instance()->toolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
 
     ToolBar::instance()->selectTool(defaultSelectionTool);
   }

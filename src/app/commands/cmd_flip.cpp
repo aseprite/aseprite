@@ -21,7 +21,6 @@
 #include "app/document_range.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/util/range_utils.h"
 #include "doc/algorithm/flip_image.h"
@@ -81,7 +80,7 @@ void FlipCommand::onExecute(Context* context)
       CelList cels;
 
       Site site = *writer.site();
-      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      auto range = App::instance()->timeline()->range();
       if (range.enabled())
         cels = get_unique_cels(sprite, range);
       else if (writer.cel())

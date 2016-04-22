@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -16,7 +16,6 @@
 #include "app/document_access.h"
 #include "app/modules/editors.h"
 #include "app/ui/document_view.h"
-#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
@@ -42,13 +41,13 @@ public:
 protected:
 
   bool onEnabled(Context* context) override {
-    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+    Workspace* workspace = App::instance()->workspace();
     WorkspaceView* view = workspace->activeView();
     return (view != nullptr);
   }
 
   void onExecute(Context* context) override {
-    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+    Workspace* workspace = App::instance()->workspace();
     WorkspaceView* view = workspace->activeView();
     if (view)
       workspace->closeView(view);
@@ -68,7 +67,7 @@ public:
 protected:
 
   void onExecute(Context* context) override {
-    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+    Workspace* workspace = App::instance()->workspace();
 
     // Collect all document views
     DocumentViews docViews;

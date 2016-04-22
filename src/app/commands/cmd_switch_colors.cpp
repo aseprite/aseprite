@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -15,7 +15,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/main_window.h"
 #include "ui/base.h"
 
 namespace app {
@@ -51,8 +50,7 @@ void SwitchColorsCommand::onExecute(Context* context)
   if (tool) {
     const auto& toolPref(Preferences::instance().tool(tool));
     if (toolPref.ink() == tools::InkType::SHADING) {
-      App::instance()->getMainWindow()->
-        getContextBar()->reverseShadeColors();
+      App::instance()->contextBar()->reverseShadeColors();
     }
   }
 

@@ -97,7 +97,7 @@ public:
                const app::Color& bgColor)
     : m_editor(editor)
     , m_tool(tool)
-    , m_brush(App::instance()->getMainWindow()->getContextBar()->activeBrush(m_tool))
+    , m_brush(App::instance()->contextBar()->activeBrush(m_tool))
     , m_document(document)
     , m_sprite(editor->sprite())
     , m_layer(editor->layer())
@@ -124,7 +124,7 @@ public:
 
     if (m_tracePolicy == tools::TracePolicy::Accumulate ||
         m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
-      tools::ToolBox* toolbox = App::instance()->getToolBox();
+      tools::ToolBox* toolbox = App::instance()->toolBox();
 
       switch (algorithm) {
         case tools::FreehandAlgorithm::DEFAULT:
@@ -169,7 +169,7 @@ public:
 
     if (m_toolPref.ink() == tools::InkType::SHADING) {
       m_shadingRemap.reset(
-        App::instance()->getMainWindow()->getContextBar()->createShadeRemap(
+        App::instance()->contextBar()->createShadeRemap(
           button == tools::ToolLoop::Left));
     }
   }
@@ -504,11 +504,11 @@ public:
 
     // Avoid preview for spray and flood fill like tools
     if (m_pointShape->isSpray()) {
-      m_pointShape = App::instance()->getToolBox()->getPointShapeById(
+      m_pointShape = App::instance()->toolBox()->getPointShapeById(
         tools::WellKnownPointShapes::Brush);
     }
     else if (m_pointShape->isFloodFill()) {
-      m_pointShape = App::instance()->getToolBox()->getPointShapeById(
+      m_pointShape = App::instance()->toolBox()->getPointShapeById(
         tools::WellKnownPointShapes::Pixel);
     }
   }

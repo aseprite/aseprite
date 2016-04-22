@@ -59,7 +59,7 @@ AppMenus::AppMenus()
   : m_recentListMenuitem(NULL)
 {
   m_recentFilesConn =
-    App::instance()->getRecentFiles()->Changed.connect(
+    App::instance()->recentFiles()->Changed.connect(
       base::Bind(&AppMenus::rebuildRecentList, this));
 }
 
@@ -138,9 +138,8 @@ bool AppMenus::rebuildRecentList()
     submenu = new Menu();
     list_menuitem->setSubmenu(submenu);
 
-    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->files_begin();
-    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->files_end();
-
+    auto it = App::instance()->recentFiles()->files_begin();
+    auto end = App::instance()->recentFiles()->files_end();
     if (it != end) {
       Params params;
 

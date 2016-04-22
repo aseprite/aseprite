@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 
 #include "app/app.h"
-#include "app/ui/main_window.h"
 #include "app/ui/workspace.h"
 
 namespace app {
@@ -36,12 +35,12 @@ GotoNextTabCommand::GotoNextTabCommand()
 
 bool GotoNextTabCommand::onEnabled(Context* context)
 {
-  return App::instance()->getMainWindow()->getWorkspace()->canSelectOtherTab();
+  return App::instance()->workspace()->canSelectOtherTab();
 }
 
 void GotoNextTabCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->getWorkspace()->selectNextTab();
+  App::instance()->workspace()->selectNextTab();
 }
 
 class GotoPreviousTabCommand : public Command {
@@ -63,12 +62,12 @@ GotoPreviousTabCommand::GotoPreviousTabCommand()
 
 bool GotoPreviousTabCommand::onEnabled(Context* context)
 {
-  return App::instance()->getMainWindow()->getWorkspace()->canSelectOtherTab();
+  return App::instance()->workspace()->canSelectOtherTab();
 }
 
 void GotoPreviousTabCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->getWorkspace()->selectPreviousTab();
+  App::instance()->workspace()->selectPreviousTab();
 }
 
 Command* CommandFactory::createGotoNextTabCommand()

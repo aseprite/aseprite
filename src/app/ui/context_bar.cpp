@@ -314,7 +314,7 @@ public:
     Preferences& pref = Preferences::instance();
 
     if (pref.shared.shareInk()) {
-      for (Tool* tool : *App::instance()->getToolBox())
+      for (Tool* tool : *App::instance()->toolBox())
         pref.tool(tool).ink(inkType);
     }
     else {
@@ -793,7 +793,7 @@ protected:
     int newValue = getValue();
     Preferences& pref = Preferences::instance();
     if (pref.shared.shareInk()) {
-      for (Tool* tool : *App::instance()->getToolBox())
+      for (Tool* tool : *App::instance()->toolBox())
         pref.tool(tool).opacity(newValue);
     }
     else {
@@ -1602,7 +1602,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
 
 void ContextBar::updateForMovingPixels()
 {
-  tools::Tool* tool = App::instance()->getToolBox()->getToolById(
+  tools::Tool* tool = App::instance()->toolBox()->getToolById(
     tools::WellKnownTools::RectangularMarquee);
   if (tool)
     updateForTool(tool);

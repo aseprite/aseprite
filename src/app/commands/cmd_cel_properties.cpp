@@ -19,7 +19,6 @@
 #include "app/document_range.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
@@ -78,7 +77,7 @@ public:
     m_timer.stop();
     m_document = doc;
     m_cel = cel;
-    m_range = App::instance()->getMainWindow()->getTimeline()->range();
+    m_range = App::instance()->timeline()->range();
 
     if (m_document)
       m_document->addObserver(this);
@@ -182,7 +181,7 @@ private:
 
             // Redraw timeline because the cel's user data/color
             // might have changed.
-            App::instance()->getMainWindow()->getTimeline()->invalidate();
+            App::instance()->timeline()->invalidate();
           }
         }
         else if (m_range.enabled()) {
@@ -200,7 +199,7 @@ private:
 
                 // Redraw timeline because the cel's user data/color
                 // might have changed.
-                App::instance()->getMainWindow()->getTimeline()->invalidate();
+                App::instance()->timeline()->invalidate();
               }
             }
           }

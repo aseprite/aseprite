@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -40,12 +40,12 @@ HomeCommand::~HomeCommand()
 
 void HomeCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->showHome();
+  App::instance()->mainWindow()->showHome();
 }
 
 bool HomeCommand::onEnabled(Context* context)
 {
-  return !App::instance()->getMainWindow()->isHomeSelected();
+  return !App::instance()->mainWindow()->isHomeSelected();
 }
 
 Command* CommandFactory::createHomeCommand()

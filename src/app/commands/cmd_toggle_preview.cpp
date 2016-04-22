@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -43,7 +43,7 @@ bool TogglePreviewCommand::onEnabled(Context* context)
 
 bool TogglePreviewCommand::onChecked(Context* context)
 {
-  MainWindow* mainWin = App::instance()->getMainWindow();
+  MainWindow* mainWin = App::instance()->mainWindow();
   if (!mainWin)
     return false;
 
@@ -54,7 +54,7 @@ bool TogglePreviewCommand::onChecked(Context* context)
 void TogglePreviewCommand::onExecute(Context* context)
 {
   PreviewEditorWindow* previewWin =
-    App::instance()->getMainWindow()->getPreviewEditor();
+    App::instance()->mainWindow()->getPreviewEditor();
 
   bool state = previewWin->isPreviewEnabled();
   previewWin->setPreviewEnabled(!state);

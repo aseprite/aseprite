@@ -397,14 +397,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       for (const Key* key : *KeyboardShortcuts::instance()) {
         if (key->isPressed(msg)) {
           // Cancel menu-bar loops (to close any popup menu)
-          App::instance()->getMainWindow()->getMenuBar()->cancelMenuLoop();
+          App::instance()->mainWindow()->getMenuBar()->cancelMenuLoop();
 
           switch (key->type()) {
 
             case KeyType::Tool: {
               tools::Tool* current_tool = App::instance()->activeTool();
               tools::Tool* select_this_tool = key->tool();
-              tools::ToolBox* toolbox = App::instance()->getToolBox();
+              tools::ToolBox* toolbox = App::instance()->toolBox();
               std::vector<tools::Tool*> possibles;
 
               // Collect all tools with the pressed keyboard-shortcut
@@ -455,7 +455,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
                   break;
                 }
                 // Is it the desktop and the top-window=
-                else if (child->isDesktop() && child == App::instance()->getMainWindow()) {
+                else if (child->isDesktop() && child == App::instance()->mainWindow()) {
                   // OK, so we can execute the command represented
                   // by the pressed-key in the message...
                   UIContext::instance()->executeCommand(

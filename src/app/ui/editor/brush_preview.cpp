@@ -24,7 +24,6 @@
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
-#include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "doc/algo.h"
 #include "doc/blend_internals.h"
@@ -56,8 +55,7 @@ BrushPreview::~BrushPreview()
 BrushRef BrushPreview::getCurrentBrush()
 {
   return App::instance()
-    ->getMainWindow()
-    ->getContextBar()
+    ->contextBar()
     ->activeBrush(m_editor->getCurrentEditorTool());
 }
 

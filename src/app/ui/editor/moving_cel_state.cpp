@@ -38,7 +38,7 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
 {
   ContextWriter writer(UIContext::instance(), 500);
   Document* document = editor->document();
-  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+  auto range = App::instance()->timeline()->range();
   LayerImage* layer = static_cast<LayerImage*>(editor->layer());
   ASSERT(layer->isImage());
 

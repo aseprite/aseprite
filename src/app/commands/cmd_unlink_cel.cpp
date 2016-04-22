@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -15,7 +15,6 @@
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
-#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
 #include "doc/cel.h"
@@ -55,7 +54,7 @@ void UnlinkCelCommand::onExecute(Context* context)
     Transaction transaction(writer.context(), "Unlink Cel");
 
     // TODO the range of selected frames should be in doc::Site.
-    Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+    auto range = App::instance()->timeline()->range();
     if (range.enabled()) {
       Sprite* sprite = writer.sprite();
 

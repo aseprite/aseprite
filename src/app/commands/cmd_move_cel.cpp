@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,7 +12,6 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "ui/base.h"
 
@@ -37,12 +36,12 @@ MoveCelCommand::MoveCelCommand()
 
 bool MoveCelCommand::onEnabled(Context* context)
 {
-  return App::instance()->getMainWindow()->getTimeline()->isMovingCel();
+  return App::instance()->timeline()->isMovingCel();
 }
 
 void MoveCelCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->getTimeline()->dropRange(Timeline::kMove);
+  App::instance()->timeline()->dropRange(Timeline::kMove);
 }
 
 Command* CommandFactory::createMoveCelCommand()

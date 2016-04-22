@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -121,7 +121,7 @@ void NewLayerCommand::onExecute(Context* context)
   StatusBar::instance()->invalidate();
   StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
 
-  App::instance()->getMainWindow()->popTimeline();
+  App::instance()->mainWindow()->popTimeline();
 }
 
 static std::string get_unique_layer_name(Sprite* sprite)

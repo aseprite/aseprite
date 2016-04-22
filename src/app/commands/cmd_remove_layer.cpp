@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -14,7 +14,6 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
 #include "app/transaction.h"
@@ -63,7 +62,7 @@ void RemoveLayerCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     // TODO the range of selected layer should be in doc::Site.
-    Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+    auto range = App::instance()->timeline()->range();
     if (range.enabled()) {
       if (range.layers() == sprite->countLayers()) {
         ui::Alert::show("Error<<You cannot delete all layers.||&OK");

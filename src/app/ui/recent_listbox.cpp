@@ -92,7 +92,7 @@ private:
 RecentListBox::RecentListBox()
 {
   m_recentFilesConn =
-    App::instance()->getRecentFiles()->Changed.connect(
+    App::instance()->recentFiles()->Changed.connect(
       base::Bind(&RecentListBox::rebuildList, this));
 }
 
@@ -120,8 +120,7 @@ RecentFilesListBox::RecentFilesListBox()
 
 void RecentFilesListBox::onRebuildList()
 {
-  RecentFiles* recent = App::instance()->getRecentFiles();
-
+  auto recent = App::instance()->recentFiles();
   auto it = recent->files_begin();
   auto end = recent->files_end();
   for (; it != end; ++it)
@@ -146,8 +145,7 @@ RecentFoldersListBox::RecentFoldersListBox()
 
 void RecentFoldersListBox::onRebuildList()
 {
-  RecentFiles* recent = App::instance()->getRecentFiles();
-
+  auto recent = App::instance()->recentFiles();
   auto it = recent->paths_begin();
   auto end = recent->paths_end();
   for (; it != end; ++it)

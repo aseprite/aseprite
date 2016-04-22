@@ -95,7 +95,7 @@ ToolBar::ToolBar()
   m_tipWindow = NULL;
   m_tipOpened = false;
 
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end())
@@ -120,7 +120,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
     case kMouseDownMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      ToolBox* toolbox = App::instance()->getToolBox();
+      ToolBox* toolbox = App::instance()->toolBox();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
@@ -148,7 +148,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           mouseMsg->position().y < toolrc.y+toolrc.h) {
         // Toggle preview visibility
         PreviewEditorWindow* preview =
-          App::instance()->getMainWindow()->getPreviewEditor();
+          App::instance()->mainWindow()->getPreviewEditor();
         bool state = preview->isPreviewEnabled();
         preview->setPreviewEnabled(!state);
       }
@@ -157,7 +157,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      ToolBox* toolbox = App::instance()->getToolBox();
+      ToolBox* toolbox = App::instance()->toolBox();
       int groups = toolbox->getGroupsCount();
       Tool* new_hot_tool = NULL;
       int new_hot_index = NoneIndex;
@@ -292,7 +292,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   gfx::Color normalFace = theme->colors.buttonNormalFace();
   gfx::Color hotFace = theme->colors.buttonHotFace();
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
   Rect toolrc;
@@ -332,7 +332,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   toolrc = getToolGroupBounds(PreviewVisibilityIndex);
   toolrc.offset(-origin());
   bool isHot = (m_hotIndex == PreviewVisibilityIndex ||
-    App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled());
+    App::instance()->mainWindow()->getPreviewEditor()->isPreviewEnabled());
   theme->drawRect(
     g,
     toolrc,
@@ -350,7 +350,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
 
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
 
@@ -384,7 +384,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   closeTipWindow();
 
   // If this group contains only one tool, do not show the popup
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   int count = 0;
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
@@ -433,7 +433,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
 Rect ToolBar::getToolGroupBounds(int group_index)
 {
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   int groups = toolbox->getGroupsCount();
   Size iconsize = getToolIconSize(this);
   Rect rc(bounds());
@@ -458,7 +458,7 @@ Rect ToolBar::getToolGroupBounds(int group_index)
 
 Point ToolBar::getToolPositionInGroup(int group_index, Tool* tool)
 {
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   Size iconsize = getToolIconSize(this);
   int nth = 0;
 
@@ -500,7 +500,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     }
   }
   else if (group_index == PreviewVisibilityIndex) {
-    if (App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled())
+    if (App::instance()->mainWindow()->getPreviewEditor()->isPreviewEnabled())
       tooltip = "Hide Preview";
     else
       tooltip = "Show Preview";
@@ -595,7 +595,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       gfx::Point mousePos = mouseMsg->position();
-      ToolBox* toolbox = App::instance()->getToolBox();
+      ToolBox* toolbox = App::instance()->toolBox();
       Tool* hot_tool = NULL;
       Rect toolrc;
       int index = 0;
@@ -660,7 +660,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
 
 void ToolBar::ToolStrip::onSizeHint(SizeHintEvent& ev)
 {
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   int c = 0;
 
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
@@ -678,7 +678,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolBox* toolbox = App::instance()->toolBox();
   Rect toolrc;
   int index = 0;
 

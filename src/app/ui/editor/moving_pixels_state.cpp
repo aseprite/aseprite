@@ -101,14 +101,14 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   m_editor->addObserver(this);
   m_observingEditor = true;
 
-  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForMovingPixels();
   contextBar->addObserver(this);
 }
 
 MovingPixelsState::~MovingPixelsState()
 {
-  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* contextBar = App::instance()->contextBar();
   contextBar->removeObserver(this);
   contextBar->updateForCurrentTool();
 
@@ -221,7 +221,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   UIContext* ctx = UIContext::instance();
   ctx->setActiveView(editor->getDocumentView());
 
-  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForMovingPixels();
 
   // Start scroll loop

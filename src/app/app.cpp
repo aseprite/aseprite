@@ -785,7 +785,7 @@ bool App::isPortable()
   return *is_portable;
 }
 
-tools::ToolBox* App::getToolBox() const
+tools::ToolBox* App::toolBox() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_toolbox;
@@ -793,13 +793,37 @@ tools::ToolBox* App::getToolBox() const
 
 tools::Tool* App::activeTool() const
 {
-  return getToolBox()->getToolById(preferences().toolBox.activeTool());
+  return toolBox()->getToolById(preferences().toolBox.activeTool());
 }
 
-RecentFiles* App::getRecentFiles() const
+RecentFiles* App::recentFiles() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_recent_files;
+}
+
+Workspace* App::workspace() const
+{
+  if (m_mainWindow)
+    return m_mainWindow->getWorkspace();
+  else
+    return nullptr;
+}
+
+ContextBar* App::contextBar() const
+{
+  if (m_mainWindow)
+    return m_mainWindow->getContextBar();
+  else
+    return nullptr;
+}
+
+Timeline* App::timeline() const
+{
+  if (m_mainWindow)
+    return m_mainWindow->getTimeline();
+  else
+    return nullptr;
 }
 
 Preferences& App::preferences() const
@@ -856,7 +880,7 @@ void app_refresh_screen()
 void app_rebuild_documents_tabs()
 {
   if (App::instance()->isGui()) {
-    App::instance()->getMainWindow()->getWorkspace()->updateTabs();
+    App::instance()->workspace()->updateTabs();
     App::instance()->updateDisplayTitleBar();
   }
 }

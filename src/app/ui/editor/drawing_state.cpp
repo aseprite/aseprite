@@ -152,7 +152,7 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   editor->releaseMouse();
 
   // Update the timeline. TODO make this state observable by the timeline.
-  App::instance()->getMainWindow()->getTimeline()->updateUsingEditor(editor);
+  App::instance()->timeline()->updateUsingEditor(editor);
   return true;
 }
 

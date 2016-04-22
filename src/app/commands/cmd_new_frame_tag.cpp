@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -16,7 +16,6 @@
 #include "app/context_access.h"
 #include "app/transaction.h"
 #include "app/ui/frame_tag_window.h"
-#include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "doc/frame_tag.h"
 
@@ -56,7 +55,7 @@ void NewFrameTagCommand::onExecute(Context* context)
   frame_t from = reader.frame();
   frame_t to = reader.frame();
 
-  Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+  auto range = App::instance()->timeline()->range();
   if (range.enabled() &&
       (range.type() == DocumentRange::kFrames ||
        range.type() == DocumentRange::kCels)) {
@@ -83,7 +82,7 @@ void NewFrameTagCommand::onExecute(Context* context)
     transaction.commit();
   }
 
-  App::instance()->getMainWindow()->getTimeline()->invalidate();
+  App::instance()->timeline()->invalidate();
 }
 
 Command* CommandFactory::createNewFrameTagCommand()

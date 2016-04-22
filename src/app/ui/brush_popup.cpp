@@ -90,8 +90,7 @@ public:
 
 private:
   void onClick() override {
-    ContextBar* contextBar =
-      App::instance()->getMainWindow()->getContextBar();
+    ContextBar* contextBar = App::instance()->contextBar();
 
     if (m_slot >= 0)
       contextBar->setActiveBrushBySlot(m_slot);
@@ -209,8 +208,7 @@ private:
 private:
 
   void onSaveBrush() {
-    ContextBar* contextBar =
-      App::instance()->getMainWindow()->getContextBar();
+    ContextBar* contextBar = App::instance()->contextBar();
 
     m_brushes.setBrushSlot(
       m_slot, contextBar->createBrushSlotFromPreferences());
@@ -251,8 +249,7 @@ public:
 
 private:
   void onClick() override {
-    ContextBar* contextBar =
-      App::instance()->getMainWindow()->getContextBar();
+    ContextBar* contextBar = App::instance()->contextBar();
 
     auto& brushes = App::instance()->brushes();
     int slot = brushes.addBrushSlot(

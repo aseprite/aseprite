@@ -21,8 +21,8 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/main_window.h"
 #include "doc/palette.h"
+#include "ui/manager.h"
 
 namespace app {
 

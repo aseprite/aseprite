@@ -107,7 +107,7 @@ void NewFrameCommand::onExecute(Context* context)
       case Content::DUPLICATE_CELS:
       case Content::DUPLICATE_CELS_BLOCK: {
         // TODO the range of selected frames should be in doc::Site.
-        Timeline* timeline = App::instance()->getMainWindow()->getTimeline();
+        Timeline* timeline = App::instance()->timeline();
         Timeline::Range range = timeline->range();
         if (range.enabled()) {
           std::map<CelData*, Cel*> relatedCels;
@@ -184,7 +184,7 @@ void NewFrameCommand::onExecute(Context* context)
               (int)context->activeSite().frame()+1,
               (int)sprite->totalFrames());
 
-  App::instance()->getMainWindow()->popTimeline();
+  App::instance()->mainWindow()->popTimeline();
 }
 
 std::string NewFrameCommand::onGetFriendlyName() const

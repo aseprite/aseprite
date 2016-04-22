@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 
 #include "app/app.h"
-#include "app/ui/main_window.h"
 #include "app/ui/workspace.h"
 
 #include <cstdio>
@@ -40,14 +39,14 @@ DuplicateViewCommand::DuplicateViewCommand()
 
 bool DuplicateViewCommand::onEnabled(Context* context)
 {
-  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  Workspace* workspace = App::instance()->workspace();
   WorkspaceView* view = workspace->activeView();
   return (view != nullptr);
 }
 
 void DuplicateViewCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->getWorkspace()->duplicateActiveView();
+  App::instance()->workspace()->duplicateActiveView();
 }
 
 Command* CommandFactory::createDuplicateViewCommand()

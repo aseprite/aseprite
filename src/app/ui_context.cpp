@@ -65,11 +65,7 @@ DocumentView* UIContext::activeView() const
   if (!isUIAvailable())
     return nullptr;
 
-  MainWindow* mainWindow = App::instance()->getMainWindow();
-  if (!mainWindow)
-    return nullptr;
-
-  Workspace* workspace = mainWindow->getWorkspace();
+  Workspace* workspace = App::instance()->workspace();
   if (!workspace)
     return nullptr;
 
@@ -82,7 +78,7 @@ DocumentView* UIContext::activeView() const
 
 void UIContext::setActiveView(DocumentView* docView)
 {
-  MainWindow* mainWin = App::instance()->getMainWindow();
+  MainWindow* mainWin = App::instance()->mainWindow();
 
   // Prioritize workspace for user input.
   App::instance()->inputChain().prioritize(mainWin->getWorkspace());
@@ -143,11 +139,9 @@ void UIContext::setActiveDocument(Document* document)
 
 DocumentView* UIContext::getFirstDocumentView(doc::Document* document) const
 {
-  MainWindow* mainWindow = App::instance()->getMainWindow();
-  if (!mainWindow) // Main window can be null if we are in --batch mode
+  Workspace* workspace = App::instance()->workspace();
+  if (!workspace) // Workspace (main window) can be null if we are in --batch mode
     return nullptr;
-
-  Workspace* workspace = mainWindow->getWorkspace();
 
   for (WorkspaceView* view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
@@ -162,7 +156,7 @@ DocumentView* UIContext::getFirstDocumentView(doc::Document* document) const
 
 DocumentViews UIContext::getAllDocumentViews(doc::Document* document) const
 {
-  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  Workspace* workspace = App::instance()->workspace();
   DocumentViews docViews;
 
   for (WorkspaceView* view : *workspace) {
@@ -197,10 +191,10 @@ void UIContext::onAddDocument(doc::Document* doc)
   DocumentView* view = new DocumentView(
     m_lastSelectedDoc,
     DocumentView::Normal,
-    App::instance()->getMainWindow()->getPreviewEditor());
+    App::instance()->mainWindow()->getPreviewEditor());
 
   // Add a tab with the new view for the document
-  App::instance()->getMainWindow()->getWorkspace()->addView(view);
+  App::instance()->workspace()->addView(view);
 
   setActiveView(view);
   view->editor()->setDefaultScroll();
@@ -213,7 +207,7 @@ void UIContext::onRemoveDocument(doc::Document* doc)
 
   // We don't destroy views in batch mode.
   if (isUIAvailable()) {
-    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+    Workspace* workspace = App::instance()->workspace();
 
     for (DocumentView* docView : getAllDocumentViews(doc)) {
       workspace->removeView(docView);

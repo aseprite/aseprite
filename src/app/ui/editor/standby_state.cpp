@@ -188,7 +188,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       ColorPicker picker;
       picker.pickColor(site, cursor, ColorPicker::FromComposition);
 
-      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      auto range = App::instance()->timeline()->range();
 
       // Change layer only when the layer is diffrent from current one, and
       // the range we selected is not with multiple cels.

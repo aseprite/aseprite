@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -28,6 +28,7 @@ namespace ui {
 namespace app {
 
   class AppOptions;
+  class ContextBar;
   class Document;
   class DocumentExporter;
   class INotificationDelegate;
@@ -37,6 +38,8 @@ namespace app {
   class MainWindow;
   class Preferences;
   class RecentFiles;
+  class Timeline;
+  class Workspace;
 
   namespace tools {
     class Tool;
@@ -64,10 +67,13 @@ namespace app {
     void initialize(const AppOptions& options);
     void run();
 
-    tools::ToolBox* getToolBox() const;
+    tools::ToolBox* toolBox() const;
     tools::Tool* activeTool() const;
-    RecentFiles* getRecentFiles() const;
-    MainWindow* getMainWindow() const { return m_mainWindow; }
+    RecentFiles* recentFiles() const;
+    MainWindow* mainWindow() const { return m_mainWindow; }
+    Workspace* workspace() const;
+    ContextBar* contextBar() const;
+    Timeline* timeline() const;
     Preferences& preferences() const;
 
     AppBrushes& brushes() {
