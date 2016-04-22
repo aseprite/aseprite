@@ -242,7 +242,8 @@ if(USE_ALLEG4_BACKEND)
   target_link_libraries(she
     ${LOADPNG_LIBRARY}
     ${LIBALLEGRO4_LINK_FLAGS}
-    ${DXGUID_LIBRARIES})
+    ${DXGUID_LIBRARIES}
+    ${X11_LIBRARIES})
 endif()
 
 if(USE_SKIA_BACKEND)
