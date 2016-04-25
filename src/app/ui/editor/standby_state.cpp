@@ -90,6 +90,7 @@ static CursorType rotated_rotate_cursors[] = {
 
 StandbyState::StandbyState()
   : m_decorator(new Decorator(this))
+  , m_transformSelectionHandlesAreVisible(false)
 {
 }
 
@@ -116,9 +117,11 @@ void StandbyState::onActiveToolChange(Editor* editor, tools::Tool* tool)
 {
   // If the user change from a selection tool to a non-selection tool,
   // or viceversa, we've to show or hide the transformation handles.
-  // TODO Compare the ink (isSelection()) of the previous tool with
-  // the new one.
-  editor->invalidate();
+  bool needDecorators = (tool && tool->getInk(0)->isSelection());
+  if (m_transformSelectionHandlesAreVisible != needDecorators) {
+    m_transformSelectionHandlesAreVisible = false;
+    editor->invalidate();
+  }
 }
 
 bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
@@ -693,9 +696,12 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
     // And draw only when the user has a selection tool as active tool.
     tools::Ink* ink = editor->getCurrentEditorInk();
 
-    if (ink->isSelection())
+    if (ink->isSelection()) {
       getTransformHandles(editor)->drawHandles(editor,
         m_standbyState->getTransformation(editor));
+
+      m_standbyState->m_transformSelectionHandlesAreVisible = true;
+    }
   }
 
   // Draw transformation handles (if the mask is visible and isn't frozen).

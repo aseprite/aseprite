@@ -79,6 +79,7 @@ namespace app {
     Decorator* m_decorator;
     base::ScopedConnection m_pivotVisConn;
     base::ScopedConnection m_pivotPosConn;
+    bool m_transformSelectionHandlesAreVisible;
   };
 
 } // namespace app
