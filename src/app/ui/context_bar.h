@@ -11,6 +11,7 @@
 
 #include "app/pref/preferences.h"
 #include "app/shade.h"
+#include "app/tools/active_tool_observer.h"
 #include "app/tools/ink_type.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/context_bar_observer.h"
@@ -39,12 +40,14 @@ namespace app {
 
   class BrushSlot;
 
-  class ContextBar : public ui::Box,
-                     public base::Observable<ContextBarObserver> {
+  class ContextBar : public ui::Box
+                   , public base::Observable<ContextBarObserver>
+                   , public tools::ActiveToolObserver {
   public:
     ContextBar();
+    ~ContextBar();
 
-    void updateForCurrentTool();
+    void updateForActiveTool();
     void updateForTool(tools::Tool* tool);
     void updateForMovingPixels();
     void updateForSelectingBox(const std::string& text);
@@ -77,10 +80,12 @@ namespace app {
   private:
     void onBrushSizeChange();
     void onBrushAngleChange();
-    void onCurrentToolChange();
     void onSymmetryModeChange();
     void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
     void onDropPixels(ContextBarObserver::DropAction action);
+
+    // ActiveToolObserver impl
+    void onActiveToolChange(tools::Tool* tool) override;
 
     class BrushTypeField;
     class BrushAngleField;

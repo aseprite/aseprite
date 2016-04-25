@@ -42,6 +42,7 @@ namespace app {
   class Workspace;
 
   namespace tools {
+    class ActiveToolManager;
     class Tool;
     class ToolBox;
   }
@@ -69,6 +70,7 @@ namespace app {
 
     tools::ToolBox* toolBox() const;
     tools::Tool* activeTool() const;
+    tools::ActiveToolManager* activeToolManager() const;
     RecentFiles* recentFiles() const;
     MainWindow* mainWindow() const { return m_mainWindow; }
     Workspace* workspace() const;

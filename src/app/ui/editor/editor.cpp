@@ -25,6 +25,7 @@
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/pref/preferences.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -33,6 +34,7 @@
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_decorator.h"
+#include "app/ui/editor/glue.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/play_state.h"
@@ -157,14 +159,12 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_docPref(Preferences::instance().document(document))
   , m_brushPreview(this)
   , m_lastDrawingPosition(-1, -1)
-  , m_quicktool(NULL)
   , m_toolLoopModifiers(tools::ToolLoopModifiers::kNone)
   , m_padding(0, 0)
   , m_antsTimer(100, this)
   , m_antsOffset(0)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
-  , m_lastPointerType(ui::PointerType::Unknown)
   , m_flags(flags)
   , m_secondaryButton(false)
   , m_aniSpeed(1.0)
@@ -174,9 +174,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   this->setFocusStop(true);
 
-  m_currentToolChangeConn =
-    Preferences::instance().toolBox.activeTool.AfterChange.connect(
-      base::Bind<void>(&Editor::onCurrentToolChange, this));
+  App::instance()->activeToolManager()->addObserver(this);
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
@@ -218,6 +216,7 @@ Editor::~Editor()
 
   m_observers.notifyDestroyEditor(this);
   m_document->removeObserver(this);
+  App::instance()->activeToolManager()->removeObserver(this);
 
   setCustomizationDelegate(NULL);
 
@@ -905,50 +904,9 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
   return mousePos;
 }
 
-bool Editor::isCurrentToolAffectedByRightClickMode()
-{
-  tools::Tool* tool = App::instance()->activeTool();
-  bool shadingMode = (Preferences::instance().tool(tool).ink() == tools::InkType::SHADING);
-  return
-    ((tool->getInk(0)->isPaint() && !shadingMode) ||
-     (tool->getInk(0)->isEffect())) &&
-    (!tool->getInk(0)->isEraser());
-}
-
 tools::Tool* Editor::getCurrentEditorTool()
 {
-  if (m_quicktool)
-    return m_quicktool;
-
-  // Eraser tip
-  if (m_lastPointerType == ui::PointerType::Eraser) {
-    tools::ToolBox* toolbox = App::instance()->toolBox();
-    return toolbox->getToolById(tools::WellKnownTools::Eraser);
-  }
-
-  tools::Tool* tool = App::instance()->activeTool();
-
-  if (m_secondaryButton &&
-      isCurrentToolAffectedByRightClickMode()) {
-    tools::ToolBox* toolbox = App::instance()->toolBox();
-
-    switch (Preferences::instance().editor.rightClickMode()) {
-      case app::gen::RightClickMode::PAINT_BGCOLOR:
-        // Do nothing, use the current tool
-        break;
-      case app::gen::RightClickMode::PICK_FGCOLOR:
-        tool = toolbox->getToolById(tools::WellKnownTools::Eyedropper);
-        break;
-      case app::gen::RightClickMode::ERASE:
-        tool = toolbox->getToolById(tools::WellKnownTools::Eraser);
-        break;
-      case app::gen::RightClickMode::SCROLL:
-        tool = toolbox->getToolById(tools::WellKnownTools::Hand);
-        break;
-    }
-  }
-
-  return tool;
+  return App::instance()->activeTool();
 }
 
 tools::Ink* Editor::getCurrentEditorInk()
@@ -956,72 +914,8 @@ tools::Ink* Editor::getCurrentEditorInk()
   tools::Ink* ink = m_state->getStateInk();
   if (ink)
     return ink;
-
-  tools::Tool* tool = getCurrentEditorTool();
-  ink = tool->getInk(m_secondaryButton ? 1: 0);
-
-  if (m_quicktool)
-    return ink;
-
-  app::gen::RightClickMode rightClickMode = Preferences::instance().editor.rightClickMode();
-
-  if (m_secondaryButton &&
-      rightClickMode != app::gen::RightClickMode::DEFAULT &&
-      isCurrentToolAffectedByRightClickMode()) {
-    tools::ToolBox* toolbox = App::instance()->toolBox();
-
-    switch (rightClickMode) {
-      case app::gen::RightClickMode::DEFAULT:
-        // Do nothing
-        break;
-      case app::gen::RightClickMode::PICK_FGCOLOR:
-        ink = toolbox->getInkById(tools::WellKnownInks::PickFg);
-        break;
-      case app::gen::RightClickMode::ERASE:
-        ink = toolbox->getInkById(tools::WellKnownInks::Eraser);
-        break;
-      case app::gen::RightClickMode::SCROLL:
-        ink = toolbox->getInkById(tools::WellKnownInks::Scroll);
-        break;
-    }
-  }
-  // Only paint tools can have different inks
-  else if (ink->isPaint() && !ink->isEffect()) {
-    tools::InkType inkType = Preferences::instance().tool(tool).ink();
-    const char* id = NULL;
-
-    switch (inkType) {
-
-      case tools::InkType::SIMPLE: {
-        id = tools::WellKnownInks::Paint;
-
-        ColorBar* colorbar = ColorBar::instance();
-        app::Color color = (m_secondaryButton ? colorbar->getBgColor():
-                                                colorbar->getFgColor());
-        if (color.getAlpha() == 0)
-          id = tools::WellKnownInks::PaintCopy;
-        break;
-      }
-
-      case tools::InkType::ALPHA_COMPOSITING:
-        id = tools::WellKnownInks::Paint;
-        break;
-      case tools::InkType::COPY_COLOR:
-        id = tools::WellKnownInks::PaintCopy;
-        break;
-      case tools::InkType::LOCK_ALPHA:
-        id = tools::WellKnownInks::PaintLockAlpha;
-        break;
-      case tools::InkType::SHADING:
-        id = tools::WellKnownInks::Shading;
-        break;
-    }
-
-    if (id)
-      ink = App::instance()->toolBox()->getInkById(id);
-  }
-
-  return ink;
+  else
+    return App::instance()->activeToolManager()->activeInk();
 }
 
 gfx::Point Editor::screenToEditor(const gfx::Point& pt)
@@ -1119,53 +1013,38 @@ void Editor::updateStatusBar()
 void Editor::updateQuicktool()
 {
   if (m_customizationDelegate && !hasCapture()) {
-    tools::Tool* current_tool = App::instance()->activeTool();
+    auto activeToolManager = App::instance()->activeToolManager();
+    tools::Tool* selectedTool = activeToolManager->selectedTool();
+    tools::Tool* oldQuicktool = activeToolManager->quickTool();
 
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
-    if (current_tool->getInk(0)->isSelection() &&
+    if (selectedTool->getInk(0)->isSelection() &&
         int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0)
       return;
 
-    tools::Tool* old_quicktool = m_quicktool;
-    tools::Tool* new_quicktool = m_customizationDelegate->getQuickTool(current_tool);
+    tools::Tool* newQuicktool =
+      m_customizationDelegate->getQuickTool(selectedTool);
 
     // Check if the current state accept the given quicktool.
-    if (new_quicktool &&
-        !m_state->acceptQuickTool(new_quicktool))
+    if (newQuicktool && !m_state->acceptQuickTool(newQuicktool))
       return;
 
-    // If the quick tool has changed we update the brush cursor, the
-    // context bar, and the status bar. Things that depends on the
-    // current tool.
-    //
-    // TODO We could add a quick tool observer for this
-    if (old_quicktool != new_quicktool) {
-      // Hide the brush preview with the current tool brush size
-      // before we change the quicktool. In this way we avoid using
-      // the quicktool brush size to clean the current tool cursor.
-      //
-      // TODO Create a new Document concept of multiple extra cels: we
-      // need an extra cel for the drawing cursor, other for the moving
-      // pixels, etc. In this way we'll not have conflicts between
-      // different uses of the same extra cel.
-      {
-        HideBrushPreview hide(m_brushPreview);
-        m_quicktool = new_quicktool;
-      }
-
-      m_state->onQuickToolChange(this);
-
-      updateStatusBar();
-
-      App::instance()->contextBar()->updateForTool(getCurrentEditorTool());
-    }
+    activeToolManager
+      ->newQuickToolSelectedFromEditor(newQuicktool);
   }
 }
 
-void Editor::updateContextBar()
+void Editor::updateToolByTipProximity(ui::PointerType pointerType)
 {
-  App::instance()->contextBar()->updateForTool(getCurrentEditorTool());
+  auto activeToolManager = App::instance()->activeToolManager();
+
+  if (pointerType == ui::PointerType::Eraser) {
+    activeToolManager->eraserTipProximity();
+  }
+  else {
+    activeToolManager->regularTipProximity();
+  }
 }
 
 void Editor::updateToolLoopModifiersIndicators()
@@ -1288,16 +1167,18 @@ bool Editor::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
         m_oldPos = mouseMsg->position();
-        m_lastPointerType = mouseMsg->pointerType();
+        updateToolByTipProximity(mouseMsg->pointerType());
 
         if (!m_secondaryButton && mouseMsg->right()) {
           m_secondaryButton = mouseMsg->right();
 
           updateQuicktool();
-          updateContextBar();
           updateToolLoopModifiersIndicators();
           setCursor(mouseMsg->position());
         }
+
+        App::instance()->activeToolManager()
+          ->pressButton(pointer_from_msg(this, mouseMsg));
 
         EditorStatePtr holdState(m_state);
         return m_state->onMouseDown(this, mouseMsg);
@@ -1307,14 +1188,9 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        PointerType newPointerType = static_cast<MouseMessage*>(msg)->pointerType();
-        if (m_lastPointerType != newPointerType) {
-          m_lastPointerType = newPointerType;
-
-          updateQuicktool();
-          updateContextBar();
-        }
+        updateToolByTipProximity(mouseMsg->pointerType());
 
         return m_state->onMouseMove(this, static_cast<MouseMessage*>(msg));
       }
@@ -1326,13 +1202,13 @@ bool Editor::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         bool result = m_state->onMouseUp(this, mouseMsg);
 
-        m_lastPointerType = mouseMsg->pointerType();
+        updateToolByTipProximity(mouseMsg->pointerType());
 
         if (!hasCapture()) {
+          App::instance()->activeToolManager()->releaseButtons();
           m_secondaryButton = false;
 
           updateQuicktool();
-          updateContextBar();
           updateToolLoopModifiersIndicators();
           setCursor(mouseMsg->position());
         }
@@ -1347,7 +1223,7 @@ bool Editor::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         EditorStatePtr holdState(m_state);
 
-        m_lastPointerType = mouseMsg->pointerType();
+        updateToolByTipProximity(mouseMsg->pointerType());
 
         bool used = m_state->onDoubleClick(this, mouseMsg);
         if (used)
@@ -1483,9 +1359,9 @@ void Editor::onInvalidateRegion(const gfx::Region& region)
 }
 
 // When the current tool is changed
-void Editor::onCurrentToolChange()
+void Editor::onActiveToolChange(tools::Tool* tool)
 {
-  m_state->onCurrentToolChange(this);
+  m_state->onActiveToolChange(this, tool);
 }
 
 void Editor::onFgColorChange()

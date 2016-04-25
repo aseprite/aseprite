@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/tools/active_tool_observer.h"
 #include "base/observers.h"
 #include "base/time.h"
 #include "doc/context_observer.h"
@@ -46,7 +47,8 @@ namespace app {
   class StatusBar : public ui::HBox
                   , public doc::ContextObserver
                   , public doc::DocumentsObserver
-                  , public doc::DocumentObserver {
+                  , public doc::DocumentObserver
+                  , public tools::ActiveToolObserver {
     static StatusBar* m_instance;
   public:
     static StatusBar* instance() { return m_instance; }
@@ -77,8 +79,10 @@ namespace app {
     // DocumentObserver impl
     void onPixelFormatChanged(DocumentEvent& ev) override;
 
+    // ActiveToolObserver impl
+    void onSelectedToolChange(tools::Tool* tool) override;
+
   private:
-    void onCurrentToolChange();
     void onCelOpacitySliderChange();
     void newFrame();
     void onChangeZoom(const render::Zoom& zoom);

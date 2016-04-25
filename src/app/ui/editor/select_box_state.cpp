@@ -41,7 +41,7 @@ SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc,
 SelectBoxState::~SelectBoxState()
 {
   ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForCurrentTool();
+  contextBar->updateForActiveTool();
 }
 
 void SelectBoxState::setFlags(Flags flags)

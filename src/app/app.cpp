@@ -39,6 +39,7 @@
 #include "app/script/app_scripting.h"
 #include "app/send_crash.h"
 #include "app/shell.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/document_view.h"
@@ -89,12 +90,6 @@ class App::CoreModules {
 public:
   ConfigModule m_configModule;
   Preferences m_preferences;
-
-  CoreModules() {
-    // Reset the active tool ("pencil" is the default one).
-    // We don't want to keep the selected tool from previous session.
-    m_preferences.toolBox.activeTool(tools::WellKnownTools::Pencil);
-  }
 };
 
 class App::Modules {
@@ -102,6 +97,7 @@ public:
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
+  tools::ActiveToolManager m_activeToolManager;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
@@ -112,6 +108,7 @@ public:
 
   Modules(bool createLogInDesktop)
     : m_loggerModule(createLogInDesktop)
+    , m_activeToolManager(&m_toolbox)
     , m_recovery(nullptr) {
   }
 
@@ -793,7 +790,12 @@ tools::ToolBox* App::toolBox() const
 
 tools::Tool* App::activeTool() const
 {
-  return toolBox()->getToolById(preferences().toolBox.activeTool());
+  return m_modules->m_activeToolManager.activeTool();
+}
+
+tools::ActiveToolManager* App::activeToolManager() const
+{
+  return &m_modules->m_activeToolManager;
 }
 
 RecentFiles* App::recentFiles() const

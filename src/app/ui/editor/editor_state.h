@@ -71,8 +71,7 @@ namespace app {
     // useful for states which depends on the selected current tool (as
     // MovingPixelsState which drops the pixels in case the user selects
     // other drawing tool).
-    virtual void onCurrentToolChange(Editor* editor) { }
-    virtual void onQuickToolChange(Editor* editor) { }
+    virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) { }
 
     // Called when the user presses a mouse button over the editor.
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) { return false; }

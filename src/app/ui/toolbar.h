@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,6 +9,7 @@
 #define APP_UI_TOOLBAR_H_INCLUDED
 #pragma once
 
+#include "app/tools/active_tool_observer.h"
 #include "base/connection.h"
 #include "gfx/point.h"
 #include "ui/timer.h"
@@ -29,7 +30,8 @@ namespace app {
   }
 
   // Class to show selected tools for each tool (vertically)
-  class ToolBar : public ui::Widget {
+  class ToolBar : public ui::Widget
+                , public tools::ActiveToolObserver {
     static ToolBar* m_instance;
   public:
     static ToolBar* instance() { return m_instance; }
@@ -58,6 +60,9 @@ namespace app {
     gfx::Point getToolPositionInGroup(int group_index, tools::Tool* tool);
     void openTipWindow(int group_index, tools::Tool* tool);
     void onClosePopup();
+
+    // ActiveToolObserver impl
+    void onSelectedToolChange(tools::Tool* tool) override;
 
     // What tool is selected for each tool-group
     std::map<const tools::ToolGroup*, tools::Tool*> m_selectedInGroup;

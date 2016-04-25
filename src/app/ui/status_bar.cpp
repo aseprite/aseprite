@@ -20,6 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
@@ -529,15 +530,14 @@ StatusBar::StatusBar()
   tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
   tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
 
-  Preferences::instance().toolBox.activeTool.AfterChange.connect(
-    base::Bind<void>(&StatusBar::onCurrentToolChange, this));
-
   UIContext::instance()->addObserver(this);
   UIContext::instance()->documents().addObserver(this);
+  App::instance()->activeToolManager()->addObserver(this);
 }
 
 StatusBar::~StatusBar()
 {
+  App::instance()->activeToolManager()->removeObserver(this);
   UIContext::instance()->documents().removeObserver(this);
   UIContext::instance()->removeObserver(this);
 
@@ -545,14 +545,11 @@ StatusBar::~StatusBar()
   delete m_snapToGridWindow;
 }
 
-void StatusBar::onCurrentToolChange()
+void StatusBar::onSelectedToolChange(tools::Tool* tool)
 {
-  if (isVisible()) {
-    tools::Tool* tool = App::instance()->activeTool();
-    if (tool) {
-      showTool(500, tool);
-      setTextf("%s Selected", tool->getText().c_str());
-    }
+  if (isVisible() && tool) {
+    showTool(500, tool);
+    setTextf("%s Selected", tool->getText().c_str());
   }
 }
 

@@ -21,6 +21,7 @@
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
+#include "app/ui/editor/glue.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
 #include "ui/message.h"
@@ -36,21 +37,6 @@
 namespace app {
 
 using namespace ui;
-
-static tools::ToolLoopManager::Pointer::Button button_from_msg(MouseMessage* msg)
-{
-  return
-    (msg->right() ? tools::ToolLoopManager::Pointer::Right:
-     (msg->middle() ? tools::ToolLoopManager::Pointer::Middle:
-                      tools::ToolLoopManager::Pointer::Left));
-}
-
-static tools::ToolLoopManager::Pointer pointer_from_msg(Editor* editor, MouseMessage* msg)
-{
-  return
-    tools::ToolLoopManager::Pointer(editor->screenToEditor(msg->position()),
-                                    button_from_msg(msg));
-}
 
 DrawingState::DrawingState(tools::ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
@@ -79,7 +65,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
 
   m_lastPoint = editor->lastDrawingPosition();
 
-  tools::ToolLoopManager::Pointer pointer;
+  tools::Pointer pointer;
   bool movement = false;
 
   if (m_toolLoop->getController()->isFreehand() &&
@@ -87,7 +73,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
       (editor->getCustomizationDelegate()
          ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
       m_lastPoint.x >= 0) {
-    pointer = tools::ToolLoopManager::Pointer(m_lastPoint, button_from_msg(msg));
+    pointer = tools::Pointer(m_lastPoint, button_from_msg(msg));
     movement = true;
   }
   else {
@@ -170,8 +156,8 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // Infinite scroll
   gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
-  tools::ToolLoopManager::Pointer pointer(editor->screenToEditor(mousePos),
-                                          button_from_msg(msg));
+  tools::Pointer pointer(editor->screenToEditor(mousePos),
+                         button_from_msg(msg));
 
   // Notify mouse movement to the tool
   ASSERT(m_toolLoopManager != NULL);

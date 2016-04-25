@@ -112,19 +112,12 @@ void StandbyState::onEnterState(Editor* editor)
       base::Bind<void>(&StandbyState::onPivotChange, this, editor));
 }
 
-void StandbyState::onCurrentToolChange(Editor* editor)
+void StandbyState::onActiveToolChange(Editor* editor, tools::Tool* tool)
 {
-  //tools::Tool* currentTool = editor->getCurrentEditorTool();
-
   // If the user change from a selection tool to a non-selection tool,
   // or viceversa, we've to show or hide the transformation handles.
   // TODO Compare the ink (isSelection()) of the previous tool with
   // the new one.
-  editor->invalidate();
-}
-
-void StandbyState::onQuickToolChange(Editor* editor)
-{
   editor->invalidate();
 }
 

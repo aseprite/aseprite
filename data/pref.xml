@@ -128,9 +128,6 @@
       <option id="wheel_model" type="int" default="0" />
       <option id="harmony" type="int" default="0" />
     </section>
-    <section id="tool_box">
-      <option id="active_tool" type="std::string" default="&quot;pencil&quot;" />
-    </section>
     <section id="updater">
       <option id="inits" type="int" default="0" migrate="Updater.Inits" />
       <option id="exits" type="int" default="0" migrate="Updater.Exits" />

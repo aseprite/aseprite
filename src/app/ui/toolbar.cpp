@@ -16,7 +16,7 @@
 #include "app/commands/commands.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/pref/preferences.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
@@ -101,10 +101,14 @@ ToolBar::ToolBar()
     if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end())
       m_selectedInGroup[tool->getGroup()] = tool;
   }
+
+  App::instance()->activeToolManager()->addObserver(this);
 }
 
 ToolBar::~ToolBar()
 {
+  App::instance()->activeToolManager()->removeObserver(this);
+
   delete m_popupWindow;
   delete m_tipWindow;
 }
@@ -293,6 +297,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   gfx::Color normalFace = theme->colors.buttonNormalFace();
   gfx::Color hotFace = theme->colors.buttonHotFace();
   ToolBox* toolbox = App::instance()->toolBox();
+  Tool* activeTool = App::instance()->activeTool();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
   Rect toolrc;
@@ -305,7 +310,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     gfx::Color face;
     SkinPartPtr nw;
 
-    if (App::instance()->activeTool() == tool || m_hotIndex == c) {
+    if (activeTool == tool || m_hotIndex == c) {
       nw = theme->parts.toolbuttonHot();
       face = hotFace;
     }
@@ -541,8 +546,8 @@ void ToolBar::selectTool(Tool* tool)
 
   m_selectedInGroup[tool->getGroup()] = tool;
 
-  // Set active tool in preferences.
-  Preferences::instance().toolBox.activeTool(tool->getId());
+  // Inform to the active tool manager about this tool change.
+  App::instance()->activeToolManager()->setSelectedTool(tool);
 
   if (m_currentStrip)
     m_currentStrip->invalidate();
@@ -679,6 +684,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
   Graphics* g = ev.graphics();
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   ToolBox* toolbox = App::instance()->toolBox();
+  Tool* activeTool = App::instance()->activeTool();
   Rect toolrc;
   int index = 0;
 
@@ -688,8 +694,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       gfx::Color face;
       SkinPartPtr nw;
 
-      if (App::instance()->activeTool() == tool ||
-          m_hotTool == tool) {
+      if (activeTool == tool || m_hotTool == tool) {
         nw = theme->parts.toolbuttonHot();
         face = theme->colors.buttonHotFace();
       }
@@ -721,6 +726,14 @@ Rect ToolBar::ToolStrip::getToolBounds(int index)
 
   return Rect(bounds.x+index*(iconsize.w-1), bounds.y,
               iconsize.w, bounds.h);
+}
+
+void ToolBar::onSelectedToolChange(tools::Tool* tool)
+{
+  if (tool && m_selectedInGroup[tool->getGroup()] != tool)
+    m_selectedInGroup[tool->getGroup()] = tool;
+
+  invalidate();
 }
 
 } // namespace app

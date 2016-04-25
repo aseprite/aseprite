@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/document.h"
 #include "app/pref/preferences.h"
+#include "app/tools/active_tool_observer.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
@@ -61,9 +62,10 @@ namespace app {
     ScrollDir,
   };
 
-  class Editor : public ui::Widget,
-                 public doc::DocumentObserver
-               , public IColorSource {
+  class Editor : public ui::Widget
+               , public doc::DocumentObserver
+               , public IColorSource
+               , public tools::ActiveToolObserver {
   public:
     enum EditorFlags {
       kNoneFlag = 0,
@@ -232,18 +234,19 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onInvalidateRegion(const gfx::Region& region) override;
-    void onCurrentToolChange();
     void onFgColorChange();
     void onContextBarBrushChange();
     void onShowExtrasChange();
     void onExposeSpritePixels(doc::DocumentEvent& ev) override;
 
+    // ActiveToolObserver impl
+    void onActiveToolChange(tools::Tool* tool) override;
+
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
-    void updateContextBar();
+    void updateToolByTipProximity(ui::PointerType pointerType);
     void updateToolLoopModifiersIndicators();
-    bool isCurrentToolAffectedByRightClickMode();
 
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
@@ -285,10 +288,6 @@ namespace app {
     // (EditorCustomizationDelegate::isStraightLineFromLastPoint() modifier)
     gfx::Point m_lastDrawingPosition;
 
-    // Current selected quicktool (this genererally should be NULL if
-    // the user is not pressing any keyboard key).
-    tools::Tool* m_quicktool;
-
     tools::ToolLoopModifiers m_toolLoopModifiers;
     bool m_autoSelectLayer;
 
@@ -299,11 +298,6 @@ namespace app {
     ui::Timer m_antsTimer;
     int m_antsOffset;
 
-    // This slot is used to disconnect the Editor from CurrentToolChange
-    // signal (because the editor can be destroyed and the application
-    // still continue running and generating CurrentToolChange
-    // signals).
-    base::ScopedConnection m_currentToolChangeConn;
     base::ScopedConnection m_fgColorChangeConn;
     base::ScopedConnection m_contextBarBrushChangeConn;
     base::ScopedConnection m_showExtrasConn;

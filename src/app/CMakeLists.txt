@@ -330,6 +330,7 @@ add_library(app-lib
   shell.cpp
   snap_to_grid.cpp
   thumbnail_generator.cpp
+  tools/active_tool.cpp
   tools/ink_type.cpp
   tools/intertwine.cpp
   tools/pick_ink.cpp

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -39,7 +39,7 @@ namespace app {
     // EditorState
     virtual void onEnterState(Editor* editor) override;
     virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
-    virtual void onCurrentToolChange(Editor* editor) override;
+    virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;

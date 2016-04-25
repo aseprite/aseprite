@@ -23,6 +23,7 @@
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/shade.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/ink_type.h"
@@ -322,7 +323,7 @@ public:
       pref.tool(tool).ink(inkType);
     }
 
-    m_owner->updateForCurrentTool();
+    m_owner->updateForActiveTool();
   }
 
   void setInkTypeIcon(InkType inkType) {
@@ -1344,9 +1345,9 @@ ContextBar::ContextBar()
   m_freehandAlgo->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
 
+  App::instance()->activeToolManager()->addObserver(this);
+
   auto& pref = Preferences::instance();
-  pref.toolBox.activeTool.AfterChange.connect(
-    base::Bind<void>(&ContextBar::onCurrentToolChange, this));
   pref.symmetryMode.enabled.AfterChange.connect(
     base::Bind<void>(&ContextBar::onSymmetryModeChange, this));
   pref.colorBar.fgColor.AfterChange.connect(
@@ -1357,6 +1358,11 @@ ContextBar::ContextBar()
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
   setActiveBrush(createBrushFromPreferences());
+}
+
+ContextBar::~ContextBar()
+{
+  App::instance()->activeToolManager()->removeObserver(this);
 }
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)
@@ -1386,7 +1392,7 @@ void ContextBar::onBrushSizeChange()
   if (m_activeBrush->type() != kImageBrushType)
     discardActiveBrush();
 
-  updateForCurrentTool();
+  updateForActiveTool();
 }
 
 void ContextBar::onBrushAngleChange()
@@ -1395,18 +1401,18 @@ void ContextBar::onBrushAngleChange()
     discardActiveBrush();
 }
 
-void ContextBar::onCurrentToolChange()
+void ContextBar::onActiveToolChange(tools::Tool* tool)
 {
   if (m_activeBrush->type() != kImageBrushType)
     setActiveBrush(ContextBar::createBrushFromPreferences());
   else {
-    updateForCurrentTool();
+    updateForTool(tool);
   }
 }
 
 void ContextBar::onSymmetryModeChange()
 {
-  updateForCurrentTool();
+  updateForActiveTool();
 }
 
 void ContextBar::onFgOrBgColorChange(doc::Brush::ImageColor imageColor)
@@ -1433,7 +1439,7 @@ void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
   notifyObservers(&ContextBarObserver::onDropPixels, action);
 }
 
-void ContextBar::updateForCurrentTool()
+void ContextBar::updateForActiveTool()
 {
   updateForTool(App::instance()->activeTool());
 }
@@ -1719,7 +1725,7 @@ void ContextBar::setActiveBrush(const doc::BrushRef& brush)
 
   BrushChange();
 
-  updateForCurrentTool();
+  updateForActiveTool();
 }
 
 doc::BrushRef ContextBar::activeBrush(tools::Tool* tool) const

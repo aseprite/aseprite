@@ -16,6 +16,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
 #include "app/transaction.h"
@@ -126,7 +127,7 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
   // Update the context bar
   // TODO find a way to avoid all these singletons. Maybe a simple
   // signal in the context like "brush has changed" could be enough.
-  App::instance()->contextBar()->updateForCurrentTool();
+  App::instance()->contextBar()->updateForActiveTool();
 
   editor->backToPreviousState();
 }
@@ -168,8 +169,11 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
 
 void NewBrushCommand::selectPencilTool()
 {
-  if (App::instance()->activeTool()->getInk(0)->isSelection())
-    Preferences::instance().toolBox.activeTool(tools::WellKnownTools::Pencil);
+  App* app = App::instance();
+  if (app->activeToolManager()->selectedTool()->getInk(0)->isSelection()) {
+    app->activeToolManager()->setSelectedTool(
+      app->toolBox()->getToolById(tools::WellKnownTools::Pencil));
+  }
 }
 
 Command* CommandFactory::createNewBrushCommand()

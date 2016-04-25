@@ -27,8 +27,7 @@ namespace app {
     StandbyState();
     virtual ~StandbyState();
     virtual void onEnterState(Editor* editor) override;
-    virtual void onCurrentToolChange(Editor* editor) override;
-    virtual void onQuickToolChange(Editor* editor) override;
+    virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;

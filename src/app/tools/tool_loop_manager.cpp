@@ -64,7 +64,7 @@ void ToolLoopManager::notifyToolLoopModifiersChange()
   if (isCanceled())
     return;
 
-  if (m_lastPointer.getButton() != Pointer::None)
+  if (m_lastPointer.button() != Pointer::None)
     movement(m_lastPointer);
 }
 
@@ -76,8 +76,8 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
     return;
 
   // If the user pressed the other mouse button...
-  if ((m_toolLoop->getMouseButton() == ToolLoop::Left && pointer.getButton() == Pointer::Right) ||
-      (m_toolLoop->getMouseButton() == ToolLoop::Right && pointer.getButton() == Pointer::Left)) {
+  if ((m_toolLoop->getMouseButton() == ToolLoop::Left && pointer.button() == Pointer::Right) ||
+      (m_toolLoop->getMouseButton() == ToolLoop::Right && pointer.button() == Pointer::Left)) {
     // Cancel the tool-loop (the destination image should be completelly discarded)
     m_toolLoop->cancel();
     return;

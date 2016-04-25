@@ -110,7 +110,7 @@ MovingPixelsState::~MovingPixelsState()
 {
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->removeObserver(this);
-  contextBar->updateForCurrentTool();
+  contextBar->updateForActiveTool();
 
   m_pixelsMovement.reset(NULL);
 
@@ -192,18 +192,16 @@ EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorS
   }
 }
 
-void MovingPixelsState::onCurrentToolChange(Editor* editor)
+void MovingPixelsState::onActiveToolChange(Editor* editor, tools::Tool* tool)
 {
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
-  tools::Tool* current_tool = editor->getCurrentEditorTool();
-
   // If the user changed the tool when he/she is moving pixels,
   // we have to drop the pixels only if the new tool is not selection...
   if (m_pixelsMovement &&
-      (!current_tool->getInk(0)->isSelection() ||
-       !current_tool->getInk(1)->isSelection())) {
+      (!tool->getInk(0)->isSelection() ||
+       !tool->getInk(1)->isSelection())) {
     // We have to drop pixels
     dropPixels();
   }

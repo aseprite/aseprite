@@ -384,7 +384,7 @@ void MainWindow::configureWorkspaceLayout()
     Preferences::instance().general.visibleTimeline());
 
   if (m_contextBar->isVisible()) {
-    m_contextBar->updateForCurrentTool();
+    m_contextBar->updateForActiveTool();
   }
 
   layout();
