@@ -637,6 +637,8 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
 {
   ASSERT(tool != NULL);
   IndicatorsGeneration(m_indicators).add(tool);
+
+  m_timeout = base::current_tick() + msecs;
 }
 
 void StatusBar::showSnapToGridWarning(bool state)
