@@ -547,10 +547,8 @@ StatusBar::~StatusBar()
 
 void StatusBar::onSelectedToolChange(tools::Tool* tool)
 {
-  if (isVisible() && tool) {
+  if (isVisible() && tool)
     showTool(500, tool);
-    setTextf("%s Selected", tool->getText().c_str());
-  }
 }
 
 void StatusBar::clearText()
