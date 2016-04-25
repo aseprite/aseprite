@@ -25,14 +25,6 @@ if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
   endif()
 
-  if (CMAKE_CL_64)
-    # 64 bits
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X64")
-  else()
-    # Add support for Windows XP with 5.01 subsystem
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01")
-  endif()
-
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 endif(MSVC)
 

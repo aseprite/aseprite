@@ -18,6 +18,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/tools/tool.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
 #include "app/ui/context_bar.h"
@@ -94,8 +95,19 @@ private:
 
     if (m_slot >= 0)
       contextBar->setActiveBrushBySlot(m_slot);
-    else if (m_brush.hasBrush())
-      contextBar->setActiveBrush(m_brush.brush());
+    else if (m_brush.hasBrush()) {
+      tools::Tool* tool = App::instance()->activeTool();
+      auto& brushPref = Preferences::instance().tool(tool).brush;
+      BrushRef brush;
+
+      brush.reset(
+        new Brush(
+            static_cast<doc::BrushType>(m_brush.brush()->type()),
+            brushPref.size(),
+            brushPref.angle()));
+
+      contextBar->setActiveBrush(brush);
+    }
   }
 
   AppBrushes& m_brushes;
