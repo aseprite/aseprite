@@ -61,7 +61,7 @@ Aseprite can be compiled with two different back-ends:
    [Skia](http://skia.org/), `chrome/m50` branch, without GPU support,
    i.e.  compiled with `GYP_DEFINES='skia_gpu=0'`. When you compile
    Aseprite, you'll need to give some variables to CMake:
-   `-DUSE_SKIA_ALLEG4=OFF`, `-DUSE_SKIA_BACKEND=ON`, and
+   `-DUSE_ALLEG4_BACKEND=OFF`, `-DUSE_SKIA_BACKEND=ON`, and
    `-DSKIA_DIR=...` pointing to the Skia checkout directory. (Note:
    The GPU support is a work-in-progress, so it will be available in a
    future.)
@@ -141,6 +141,7 @@ run cmake with the following parameters:
     -D "CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7"
     -D "CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
     -D "WITH_HarfBuzz:BOOL=OFF"
+    -D "SKIA_DIR:PATH=/directory-which-contains-a-compiled-skia"
 
 ## Issues with Retina displays
 
