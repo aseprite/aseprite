@@ -280,7 +280,8 @@ bool PaletteView::onProcessMessage(Message* msg)
     case kKeyDownMessage:
     case kKeyUpMessage:
     case kMouseEnterMessage:
-      updateCopyFlag(msg);
+      if (hasMouse())
+        updateCopyFlag(msg);
       break;
 
     case kMouseDownMessage:

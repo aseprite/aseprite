@@ -1362,6 +1362,7 @@ void Editor::onInvalidateRegion(const gfx::Region& region)
 void Editor::onActiveToolChange(tools::Tool* tool)
 {
   m_state->onActiveToolChange(this, tool);
+  updateStatusBar();
 }
 
 void Editor::onFgColorChange()
