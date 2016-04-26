@@ -9,6 +9,8 @@
   * [Issues with Retina displays](#issues-with-retina-displays)
 * [Using shared third party libraries](#using-shared-third-party-libraries)
   * [Linux issues](#linux-issues)
+* [Building Skia dependency](#building-skia-dependency)
+  * [Linux, OS X, BSDs](#linux-os-x-bsd)
 
 # Platforms
 
@@ -68,13 +70,15 @@ Aseprite can be compiled with two different back-ends:
 
 ## Linux dependencies
 
-You will need the following dependencies:
+You will need the following dependencies (Ubuntu, Debian):
 
     sudo apt-get update -qq
     sudo apt-get install -y g++ libx11-dev libxcursor-dev cmake ninja-build
 
 The `libxcursor-dev` package is needed to
 [hide the hardware cursor](https://github.com/aseprite/aseprite/issues/913).
+
+Aseprite uses Ninja as the build system on POSIX-like platforms.
 
 # Compiling
 
@@ -95,7 +99,7 @@ the repository clone in a directory called `aseprite`):
 
         C:\aseprite>cd build
 
-   If you have ninja:
+   On Linux / OS X / BSD:
 
         C:\aseprite\build>cmake -G Ninja ..
 
@@ -106,10 +110,6 @@ the repository clone in a directory called `aseprite`):
    If you have Visual Studio you can generate a solution:
 
         C:\aseprite\build>cmake -G "Visual Studio 12 2013" ..
-
-   If you are on Linux:
-
-        ~/aseprite/build$ cmake -G "Unix Makefiles" ..
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
 
@@ -134,14 +134,26 @@ the repository clone in a directory called `aseprite`):
 
 # Mac OS X details
 
-From v1.1.4 we compile with Mac OS X 10.11 SDK universal. You should
-run cmake with the following parameters:
+From v1.1.4 we compile with Mac OS X 10.11 SDK universal and skia.
 
-    -D "CMAKE_OSX_ARCHITECTURES:STRING=x86_64"
-    -D "CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7"
-    -D "CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
-    -D "WITH_HarfBuzz:BOOL=OFF"
-    -D "SKIA_DIR:PATH=/directory-which-contains-a-compiled-skia"
+See the [skia instructions](#building-skia-dependency-os-xlinuxbsd)
+from how to build skia.
+
+You should run cmake with the following parameters:
+
+    cd aseprite
+    mkdir build
+    cd build
+
+```
+cmake -D "CMAKE_OSX_ARCHITECTURES:STRING=x86_64" -D "CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7" \
+-DUSE_ALLEG4_BACKEND=OFF -DUSE_SKIA_BACKEND=ON \
+-DSKIA_DIR=PATH/TO/SKIA \
+-D "CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk" \
+-D "WITH_HarfBuzz:BOOL=OFF" -GNinja ..
+```
+
+``ninja``
 
 ## Issues with Retina displays
 
@@ -172,3 +184,39 @@ known issues solved in
 * You will have problems
   [adding HSV colors in non-English systems](https://github.com/aseprite/aseprite/commit/27b55030e26e93c5e8d9e7e21206c8709d46ff22)
   using the warning icon.
+
+## Building Skia dependency
+
+### Linux, OS X, BSD
+
+Building aseprite with [skia](https://skia.org) as a back-end may require building from
+source since most package repositories don't package skia (as for April 2016).
+
+For "always up to date" info on building skia across platforms, see the
+[skia quickstart](https://skia.org/user/quick) and select the OS you are building for.
+
+Grab [depot tools](https://www.chromium.org/developers/how-tos/install-depot-tools):
+
+    git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' ~/.depot_tools
+
+Add depot tools to your `PATH` to `~/.bashrc`, `~/.zshrc`, etc:
+
+    export PATH=`pwd`/depot_tools:"$PATH"
+
+Clone skia
+
+    git clone 'https://skia.googlesource.com/skia'
+    cd skia
+
+Checkout chrome/m50:
+
+    git checkout chrome/m50
+
+Set terminal to build without graphic support
+
+    export GYP_DEFINES='skia_gpu=0'
+
+Sync and create ninja project file
+
+    python bin/sync-and-gyp
+    ninja -C out/Debug dm
