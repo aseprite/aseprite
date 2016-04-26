@@ -34,15 +34,15 @@ public:
     m_blend_func = SrcTraits::get_blender(blend_mode);
     m_mask_color = src->maskColor();
   }
-  inline void operator()(typename DstTraits::pixel_t& scanline,
-                         const typename DstTraits::pixel_t& dst,
-                         const typename SrcTraits::pixel_t& src,
-                         int opacity)
+  inline typename DstTraits::pixel_t
+  operator()(const typename DstTraits::pixel_t& dst,
+             const typename SrcTraits::pixel_t& src,
+             int opacity)
   {
     if (src != m_mask_color)
-      scanline = (*m_blend_func)(dst, src, opacity);
+      return (*m_blend_func)(dst, src, opacity);
     else
-      scanline = dst;
+      return dst;
   }
 };
 
@@ -56,17 +56,17 @@ public:
     m_blend_func = RgbTraits::get_blender(blend_mode);
     m_mask_color = src->maskColor();
   }
-  inline void operator()(RgbTraits::pixel_t& scanline,
-                         const RgbTraits::pixel_t& dst,
-                         const GrayscaleTraits::pixel_t& src,
-                         int opacity)
+  inline RgbTraits::pixel_t
+  operator()(const RgbTraits::pixel_t& dst,
+             const GrayscaleTraits::pixel_t& src,
+             int opacity)
   {
     if (src != m_mask_color) {
       int v = graya_getv(src);
-      scanline = (*m_blend_func)(dst, rgba(v, v, v, graya_geta(src)), opacity);
+      return (*m_blend_func)(dst, rgba(v, v, v, graya_geta(src)), opacity);
     }
     else
-      scanline = dst;
+      return dst;
   }
 };
 
@@ -84,20 +84,20 @@ public:
     m_mask_color = src->maskColor();
     m_pal = pal;
   }
-  inline void operator()(RgbTraits::pixel_t& scanline,
-                         const RgbTraits::pixel_t& dst,
-                         const IndexedTraits::pixel_t& src,
+  inline RgbTraits::pixel_t
+  operator()(const RgbTraits::pixel_t& dst,
+             const IndexedTraits::pixel_t& src,
                          int opacity)
   {
     if (m_blend_mode == BlendMode::SRC) {
-      scanline = m_pal->getEntry(src);
+      return m_pal->getEntry(src);
     }
     else {
       if (src != m_mask_color) {
-        scanline = (*m_blend_func)(dst, m_pal->getEntry(src), opacity);
+        return (*m_blend_func)(dst, m_pal->getEntry(src), opacity);
       }
       else
-        scanline = dst;
+        return dst;
     }
   }
 };
@@ -112,19 +112,19 @@ public:
     m_blend_mode = blend_mode;
     m_mask_color = src->maskColor();
   }
-  inline void operator()(IndexedTraits::pixel_t& scanline,
-                         const IndexedTraits::pixel_t& dst,
-                         const IndexedTraits::pixel_t& src,
-                         int opacity)
+  inline IndexedTraits::pixel_t
+  operator()(const IndexedTraits::pixel_t& dst,
+             const IndexedTraits::pixel_t& src,
+             int opacity)
   {
     if (m_blend_mode == BlendMode::SRC) {
-      scanline = src;
+      return src;
     }
     else {
       if (src != m_mask_color)
-        scanline = src;
+        return src;
       else
-        scanline = dst;
+        return dst;
     }
   }
 };
@@ -193,7 +193,7 @@ static void compose_scaled_image_scale_up(
       ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
       ASSERT(scanline_it >= scanline.begin() && scanline_it < scanline_end);
 
-      blender(*scanline_it, *dst_it, *src_it, opacity);
+      *scanline_it = blender(*dst_it, *src_it, opacity);
       ++src_it;
 
       int delta;
@@ -305,7 +305,7 @@ static void compose_scaled_image_scale_down(
       ASSERT(src_it >= srcBits.begin() && src_it < src_end);
       ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
 
-      blender(*dst_it, *dst_it, *src_it, opacity);
+      *dst_it = blender(*dst_it, *src_it, opacity);
 
       // Skip source pixels
       for (int delta=0; delta < unbox_w && src_it != src_end; ++delta)
