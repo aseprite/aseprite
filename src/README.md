@@ -29,13 +29,12 @@ because they don't depend on any other component.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [gfx](gfx/) (fixmath): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [net](net/) (base): Networking library to send HTTP requests.
-  * [pen](pen/) (base, wacom): Library to handle graphics tablet input.
   * [webserver](webserver/) (base): HTTP web server
 
 ## Level 2
 
   * [doc](doc/) (base, fixmath, gfx): Document model library.
-  * [she](she/) (allegro, base, gfx): A wrapper for the Allegro library.
+  * [she](she/) (allegro, base, gfx, wacom): A wrapper for the Allegro library.
 
 ## Level 3
 
