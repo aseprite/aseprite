@@ -144,11 +144,7 @@ with the following arguments:
     cd aseprite
     mkdir build
     cd build
-    cmake \
-      -DUSE_ALLEG4_BACKEND=OFF \
-      -DUSE_SKIA_BACKEND=ON \
-      -DSKIA_DIR=C:\deps\skia \
-      ..
+    cmake -DUSE_ALLEG4_BACKEND=OFF -DUSE_SKIA_BACKEND=ON -DSKIA_DIR=C:\deps\skia -G Ninja ..
     ninja aseprite
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
@@ -191,9 +187,7 @@ after a `ninja install` command. For example:
     cd aseprite
     mkdir build
     cd build
-    cmake \
-      -DCMAKE_INSTALL_PREFIX=~/software \
-      ..
+    cmake -DCMAKE_INSTALL_PREFIX=~/software -G Ninja ..
     ninja aseprite
 
 Then, you can invoke `ninja install` and it will copy the program in
