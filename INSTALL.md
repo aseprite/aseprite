@@ -44,7 +44,7 @@ To update an existing clone you can use the following commands:
     git pull
     git submodule update --init --recursive
 
-You can get [Git for Windows](https://git-for-windows.github.io/) to
+You can use [Git for Windows](https://git-for-windows.github.io/) to
 clone the repository on Windows.
 
 # Dependencies
