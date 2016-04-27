@@ -3,14 +3,19 @@
 * [Platforms](#platforms)
 * [Get the source code](#get-the-source-code)
 * [Dependencies](#dependencies)
+  * [Windows dependencies](#windows-dependencies)
+  * [Mac OS X dependencies](#mac-os-x-dependencies)
   * [Linux dependencies](#linux-dependencies)
 * [Compiling](#compiling)
-* [Mac OS X details](#mac-os-x-details)
-  * [Issues with Retina displays](#issues-with-retina-displays)
+  * [Windows details](#windows-details)
+  * [Mac OS X details](#mac-os-x-details)
+    * [Issues with Retina displays](#issues-with-retina-displays)
+  * [Linux details](#linux-details)
 * [Using shared third party libraries](#using-shared-third-party-libraries)
   * [Linux issues](#linux-issues)
 * [Building Skia dependency](#building-skia-dependency)
-  * [Linux, OS X, BSDs](#linux-os-x-bsd)
+  * [Skia on Windows](#skia-on-windows)
+  * [Skia on Mac OS X](#skia-on-mac-os-x)
 
 # Platforms
 
@@ -39,34 +44,52 @@ To update an existing clone you can use the following commands:
     git pull
     git submodule update --init --recursive
 
-On Windows you can use programs like
-[msysgit](http://msysgit.github.io/) to clone the repository.
+You can get [Git for Windows](https://git-for-windows.github.io/) to
+clone the repository on Windows.
 
 # Dependencies
 
-Aseprite uses the latest version of [CMake](http://www.cmake.org/)
-(3.4 or greater) as its build system. Also we use
-[Ninja](https://ninja-build.org) build files regularly instead of
-Visual Studio or Xcode projects. Finally, you will need `awk` utility
-to compile the embedded (non-shared version of) libpng library (on
-Windows you can get this utility from MSYS2 distributions,
-e.g. [MozillaBuild](https://wiki.mozilla.org/MozillaBuild)).
+To compile Aseprite you will need:
+
+* The latest version of [CMake](http://www.cmake.org/) (3.4 or greater)
+* [Ninja](https://ninja-build.org) build system
 
 Aseprite can be compiled with two different back-ends:
 
 1. Allegro back-end (Windows, Linux): You will not need any extra
    library because the repository already contains a modified version
-   of the Allegro library. This back-end is only available for Windows
-   and Linux and it'll be removed in following versions.
+   of the Allegro library. This back-end is deprecated and will be
+   removed in future versions. All new development is being done in
+   the new Skia back-end.
 
-2. Skia back-end (Windows, OS X): You will need a compiled version of
-   [Skia](http://skia.org/), `chrome/m50` branch, without GPU support,
-   i.e.  compiled with `GYP_DEFINES='skia_gpu=0'`. When you compile
-   Aseprite, you'll need to give some variables to CMake:
-   `-DUSE_ALLEG4_BACKEND=OFF`, `-DUSE_SKIA_BACKEND=ON`, and
-   `-DSKIA_DIR=...` pointing to the Skia checkout directory. (Note:
-   The GPU support is a work-in-progress, so it will be available in a
-   future.)
+2. Skia back-end (Windows, Mac OS X): You will need a compiled version
+   of the Skia library. Please check the details about
+   [how to build Skia](#building-skia-dependency) on your platform.
+
+## Windows dependencies
+
+First of all, you will need an extra little utility: `awk`, used to
+compile the libpng library. You can get this utility from MSYS2
+distributions like [MozillaBuild](https://wiki.mozilla.org/MozillaBuild).
+
+After that you have to choose the back-end:
+
+1. If you choose the Allegro back-end, you can jump directly to the
+   [Compiling](#compiling) section.
+
+2. If you choose the Skia back-end, you will need to
+   [compile Skia](#skia-on-windows) before and then continue in the
+   [Compiling](#compiling) section. Remember to check the
+   [Windows details](#windows-details) section to know how to call
+   `cmake` correctly.
+
+## Mac OS X dependencies
+
+On OS X you will need Mac OS X 10.11 SDK and Xcode 7.3 (maybe older
+versions might work).
+
+Also, you must compile [Skia](#skia-on-mac-os-x) before starting with
+the [compilation](#compiling).
 
 ## Linux dependencies
 
@@ -78,88 +101,103 @@ You will need the following dependencies (Ubuntu, Debian):
 The `libxcursor-dev` package is needed to
 [hide the hardware cursor](https://github.com/aseprite/aseprite/issues/913).
 
-Aseprite uses Ninja as the build system on POSIX-like platforms.
-
 # Compiling
 
-The following are the steps to compile Aseprite (in this case we have
-the repository clone in a directory called `aseprite`):
+1. [Get Aseprite code](#get-the-source-code), put it in a folder like
+   `C:\aseprite`, and create a `build` directory inside to leave all
+   the files that are result of the compilation process (`.exe`,
+   `.lib`, `.obj`, `.a`, `.o`, etc).
 
-1. Make a build directory to leave all the files that are result of
-   the compilation process (`.exe`, `.lib`, `.obj`, `.a`, `.o`, etc).
-
-        C:\>cd aseprite
-        C:\aseprite>mkdir build
+        cd C:\aseprite
+        mkdir build
 
    In this way, if you want to start with a fresh copy of Aseprite
    source code, you can remove the `build` directory and start again.
 
-2. Enter in the new directory and execute cmake giving to it
-   your compiler as generator:
+2. Enter in the new directory and execute `cmake`:
 
-        C:\aseprite>cd build
+        cd C:\aseprite\build
+        cmake -G Ninja ..
 
-   On Linux / OS X / BSD:
-
-        C:\aseprite\build>cmake -G Ninja ..
-
-   If you have nmake (MSVC compilers):
-
-        C:\aseprite\build>cmake -G "NMake Makefiles" ..
-
-   If you have Visual Studio you can generate a solution:
-
-        C:\aseprite\build>cmake -G "Visual Studio 12 2013" ..
-
-   For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
-
-   Additionally you can change build settings by passing them on the
-   command line, like so:
-
-        ~/aseprite/build$ cmake -DCMAKE_INSTALL_PREFIX=~/software ..
-
-   or later on with a tool like
+   Here `cmake` needs different options depending on your
+   platform. You must check the details for
+   [Windows](#windows-details), [OS X](#mac-os-x-details), and
+   [Linux](#linux-details). Some `cmake` options can be modified using tools like
    [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html)
-   or
-   [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
+   or [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
 
-3. After you have executed one of the `cmake -G <generator> ..`
-   commands, you have to compile the project executing make, nmake,
-   opening the solution, etc.
+3. After you have executed and configured `cmake`, you have to compile
+   the project:
 
-4. When the project is compiled, you can find the executable file
-   inside `build/bin/aseprite.exe`. If you invoked `make install` it
-   will be copied to an appropriate location
-   (e.g. `/usr/local/bin/aseprite` on Linux).
+        cd C:\aseprite\build
+        ninja aseprite
 
-# Mac OS X details
+4. When `ninja` finishes the compilation, you can find the executable
+   inside `C:\aseprite\build\bin\aseprite.exe`.
 
-From v1.1.4 we compile with Mac OS X 10.11 SDK universal and skia.
+## Windows details
 
-See the [skia instructions](#building-skia-dependency-os-xlinuxbsd)
-from how to build skia.
-
-You should run cmake with the following parameters:
+To choose the Skia back-end
+([after you've compiled Skia](#skia-on-windows)) you can execute `cmake`
+with the following arguments:
 
     cd aseprite
     mkdir build
     cd build
+    cmake \
+      -DUSE_ALLEG4_BACKEND=OFF \
+      -DUSE_SKIA_BACKEND=ON \
+      -DSKIA_DIR=C:\deps\skia \
+      ..
+    ninja aseprite
 
-```
-cmake -D "CMAKE_OSX_ARCHITECTURES:STRING=x86_64" -D "CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7" \
--DUSE_ALLEG4_BACKEND=OFF -DUSE_SKIA_BACKEND=ON \
--DSKIA_DIR=PATH/TO/SKIA \
--D "CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk" \
--D "WITH_HarfBuzz:BOOL=OFF" -GNinja ..
-```
+In this case, `C:\deps\skia` is the directory where Skia was compiled
+as described in [Skia on Windows](#skia-on-windows) section.
 
-``ninja``
+## Mac OS X details
 
-## Issues with Retina displays
+After [compiling Skia](#skia-on-mac-os-x), you should run `cmake` with
+the following parameters and then `ninja`:
 
-If you have a Retina display, check this issue:
+    cd aseprite
+    mkdir build
+    cd build
+    cmake \
+      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 \
+      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk \
+      -DUSE_ALLEG4_BACKEND=OFF \
+      -DUSE_SKIA_BACKEND=ON \
+      -DSKIA_DIR=$HOME/deps/skia \
+      -DWITH_HarfBuzz=OFF" \
+      -G Ninja \
+      ..
+    ninja aseprite
+
+In this case, `$HOME/deps/skia` is the directory where Skia was
+compiled as described in [Skia on Mac OS X](#skia-on-mac-os-x) section.
+
+### Issues with Retina displays
+
+If you have a Retina display, check the following issue:
 
   https://github.com/aseprite/aseprite/issues/589
+
+## Linux details
+
+On Linux you can specify a specific directory to install Aseprite
+after a `ninja install` command. For example:
+
+    cd aseprite
+    mkdir build
+    cd build
+    cmake \
+      -DCMAKE_INSTALL_PREFIX=~/software \
+      ..
+    ninja aseprite
+
+Then, you can invoke `ninja install` and it will copy the program in
+the given location (e.g. `~/software/bin/aseprite` on Linux).
 
 # Using shared third party libraries
 
@@ -185,38 +223,72 @@ known issues solved in
   [adding HSV colors in non-English systems](https://github.com/aseprite/aseprite/commit/27b55030e26e93c5e8d9e7e21206c8709d46ff22)
   using the warning icon.
 
-## Building Skia dependency
+# Building Skia dependency
 
-### Linux, OS X, BSD
+When you compile Aseprite with [Skia](https://skia.org) as back-end on
+Windows or OS X, you need to compile a specific version of Skia. In
+the following sections you will find straightforward steps to compile
+Skia.
 
-Building aseprite with [skia](https://skia.org) as a back-end may require building from
-source since most package repositories don't package skia (as for April 2016).
+You can always check the
+[official Skia instructions](https://skia.org/user/quick) and select
+the OS you are building for. Aseprite uses the `chrome/m50` Skia
+branch, without GPU support.
 
-For "always up to date" info on building skia across platforms, see the
-[skia quickstart](https://skia.org/user/quick) and select the OS you are building for.
+## Skia on Windows
 
-Grab [depot tools](https://www.chromium.org/developers/how-tos/install-depot-tools):
+Download
+[Google depot tools](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
+and uncompress it in some place like `C:\deps\depot_tools`.
 
-    git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' ~/.depot_tools
+Then open a command line follow these steps (for VS2015):
 
-Add depot tools to your `PATH` to `~/.bashrc`, `~/.zshrc`, etc:
+    call "%VS140COMNTOOLS%\vsvars32.bat"
+    set PATH=C:\deps\depot_tools;%PATH%
+    cd C:\deps\depot_tools
+    gclient sync
 
-    export PATH=`pwd`/depot_tools:"$PATH"
+(The `gclient` command might print an error like
+`Error: client not configured; see 'gclient config'`.
+Just ignore it.)
 
-Clone skia
-
-    git clone 'https://skia.googlesource.com/skia'
+    cd C:\deps
+    git clone https://skia.googlesource.com/skia
     cd skia
-
-Checkout chrome/m50:
-
     git checkout chrome/m50
-
-Set terminal to build without graphic support
-
-    export GYP_DEFINES='skia_gpu=0'
-
-Sync and create ninja project file
-
+    set GYP_DEFINES=skia_gpu=0
     python bin/sync-and-gyp
-    ninja -C out/Debug dm
+
+(The `bin/sync-and-gyp` will take some minutes because it downloads a
+lot of packages, please wait and re-run the same command in case it fails.)
+
+    ninja -C out/Release dm
+
+More information about these steps in the
+[official Skia documentation](https://skia.org/user/quick/windows).
+
+## Skia on Mac OS X
+
+These steps will create a `deps` folder in your home directory with a
+couple of subdirectories needed to build Skia (you can change the
+`$HOME/deps` with other directory). Some of these commands will take
+several minutes to finish:
+
+    mkdir $HOME/deps
+    cd $HOME/deps
+    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+    git clone https://skia.googlesource.com/skia
+    cd skia
+    git checkout chrome/m50
+    export PATH="${PWD}/depot_tools:${PATH}"
+    export GYP_DEFINES='skia_gpu=0'
+    python bin/sync-and-gyp
+    ninja -C out/Release dm
+
+After this you should have all Skia libraries compiled.  When you
+[compile Aseprite](#compiling), remember to add
+`-DSKIA_DIR=$HOME/deps/skia` parameter to your `cmake` call as
+described in the [Mac OS X details](#mac-os-x-details) section.
+
+More information about these steps in the
+[official Skia documentation](https://skia.org/user/quick/macos).
