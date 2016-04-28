@@ -88,6 +88,10 @@ void Brush::setImage(const Image* image)
 {
   m_type = kImageBrushType;
   m_image.reset(Image::createCopy(image));
+  m_backupImage.reset();
+  m_mainColor.reset();
+  m_bgColor.reset();
+
   m_bounds = gfx::Rect(
     -m_image.get()->width()/2, -m_image.get()->height()/2,
     m_image.get()->width(), m_image.get()->height());
@@ -96,79 +100,91 @@ void Brush::setImage(const Image* image)
 template<class ImageTraits,
          color_t color_mask,
          color_t alpha_mask>
-static void replace_image_colors(Image* image,
-                                 Brush::ImageColor imageColor,
-                                 color_t color)
+static void replace_image_colors(
+  Image* image,
+  const bool useMain, color_t mainColor,
+  const bool useBg, color_t bgColor)
 {
   LockImageBits<ImageTraits> bits(image, Image::ReadWriteLock);
   bool hasAlpha = false; // True if "image" has a pixel with alpha < 255
-  color_t mainColor, bgColor;
-
-  mainColor = bgColor = 0;
+  color_t srcMainColor, srcBgColor;
+  srcMainColor = srcBgColor = 0;
 
   for (const auto& pixel : bits) {
     if ((pixel & alpha_mask) != alpha_mask) {  // If alpha != 255
       hasAlpha = true;
     }
-    else if (bgColor == 0) {
-      mainColor = bgColor = pixel;
+    else if (srcBgColor == 0) {
+      srcMainColor = srcBgColor = pixel;
     }
-    else if (pixel != bgColor && mainColor == bgColor) {
-      mainColor = pixel;
+    else if (pixel != srcBgColor && srcMainColor == srcBgColor) {
+      srcMainColor = pixel;
     }
   }
 
-  color &= color_mask;
+  mainColor &= color_mask;
+  bgColor &= color_mask;
 
   if (hasAlpha) {
-    for (auto& pixel : bits)
-      pixel = (pixel & alpha_mask) | color;
+    for (auto& pixel : bits) {
+      if (useMain)
+        pixel = (pixel & alpha_mask) | mainColor;
+      else if (useBg)
+        pixel = (pixel & alpha_mask) | bgColor;
+    }
   }
   else {
     for (auto& pixel : bits) {
-      if ((mainColor == bgColor) ||
-          (pixel != bgColor && imageColor == Brush::ImageColor::MainColor) ||
-          (pixel == bgColor && imageColor == Brush::ImageColor::BackgroundColor)) {
-        pixel = (pixel & alpha_mask) | color;
+      if (useMain && ((pixel != srcBgColor) || (srcMainColor == srcBgColor))) {
+        pixel = (pixel & alpha_mask) | mainColor;
+      }
+      else if (useBg && (pixel == srcBgColor)) {
+        pixel = (pixel & alpha_mask) | bgColor;
       }
     }
   }
 }
 
-static void replace_image_colors_indexed(Image* image,
-                                         Brush::ImageColor imageColor,
-                                         color_t color)
+static void replace_image_colors_indexed(
+  Image* image,
+  const bool useMain, const color_t mainColor,
+  const bool useBg, const color_t bgColor)
 {
   LockImageBits<IndexedTraits> bits(image, Image::ReadWriteLock);
   bool hasAlpha = false; // True if "image" has a pixel with the mask color
-  color_t mainColor, bgColor;
   color_t maskColor = image->maskColor();
-
-  mainColor = bgColor = maskColor;
+  color_t srcMainColor, srcBgColor;
+  srcMainColor = srcBgColor = maskColor;
 
   for (const auto& pixel : bits) {
     if (pixel == maskColor) {
       hasAlpha = true;
     }
-    else if (bgColor == maskColor) {
-      mainColor = bgColor = pixel;
+    else if (srcBgColor == maskColor) {
+      srcMainColor = srcBgColor = pixel;
     }
-    else if (pixel != bgColor && mainColor == bgColor) {
-      mainColor = pixel;
+    else if (pixel != srcBgColor && srcMainColor == srcBgColor) {
+      srcMainColor = pixel;
     }
   }
 
   if (hasAlpha) {
-    for (auto& pixel : bits)
-      if (pixel != maskColor)
-        pixel = color;
+    for (auto& pixel : bits) {
+      if (pixel != maskColor) {
+        if (useMain)
+          pixel = mainColor;
+        else if (useBg)
+          pixel = bgColor;
+      }
+    }
   }
   else {
     for (auto& pixel : bits) {
-      if ((mainColor == bgColor) ||
-          (pixel != bgColor && imageColor == Brush::ImageColor::MainColor) ||
-          (pixel == bgColor && imageColor == Brush::ImageColor::BackgroundColor)) {
-        pixel = color;
+      if (useMain && ((pixel != srcBgColor) || (srcMainColor == srcBgColor))) {
+        pixel = mainColor;
+      }
+      else if (useBg && (pixel == srcBgColor)) {
+        pixel = bgColor;
       }
     }
   }
@@ -180,21 +196,41 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
   if (!m_image)
     return;
 
+  if (!m_backupImage)
+    m_backupImage.reset(Image::createCopy(m_image.get()));
+  else
+    m_image.reset(Image::createCopy(m_backupImage.get()));
+
+  switch (imageColor) {
+    case ImageColor::MainColor:
+      m_mainColor.reset(new color_t(color));
+      break;
+    case ImageColor::BackgroundColor:
+      m_bgColor.reset(new color_t(color));
+      break;
+  }
+
   switch (m_image->pixelFormat()) {
 
     case IMAGE_RGB:
       replace_image_colors<RgbTraits, rgba_rgb_mask, rgba_a_mask>(
-        m_image.get(), imageColor, color);
+        m_image.get(),
+        (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
+        (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
 
     case IMAGE_GRAYSCALE:
       replace_image_colors<GrayscaleTraits, graya_v_mask, graya_a_mask>(
-        m_image.get(), imageColor, color);
+        m_image.get(),
+        (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
+        (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
 
     case IMAGE_INDEXED:
       replace_image_colors_indexed(
-        m_image.get(), imageColor, color);
+        m_image.get(),
+        (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
+        (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
   }
 }
@@ -204,6 +240,7 @@ void Brush::clean()
 {
   m_gen = ++generation;
   m_image.reset();
+  m_backupImage.reset();
 }
 
 static void algo_hline(int x1, int y, int x2, void *data)

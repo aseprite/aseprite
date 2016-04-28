@@ -8,6 +8,7 @@
 #define DOC_BRUSH_H_INCLUDED
 #pragma once
 
+#include "base/unique_ptr.h"
 #include "doc/brush_pattern.h"
 #include "doc/brush_type.h"
 #include "doc/color.h"
@@ -66,6 +67,11 @@ namespace doc {
     BrushPattern m_pattern;               // How the image should be replicated
     gfx::Point m_patternOrigin;           // From what position the brush was taken
     int m_gen;
+
+    // Extra data used for setImageColor()
+    ImageRef m_backupImage; // Backup image to avoid losing original brush colors/pattern
+    base::UniquePtr<color_t> m_mainColor; // Main image brush color (nullptr if it wasn't specified)
+    base::UniquePtr<color_t> m_bgColor;   // Background color (nullptr if it wasn't specified)
   };
 
   typedef base::SharedPtr<Brush> BrushRef;
