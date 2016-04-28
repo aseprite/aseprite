@@ -20,7 +20,8 @@ extern "C"
   }
 };
 
-bool AsepriteThumbCreator::create(const QString& path, int width, int height, QImage& img ) {
+bool AsepriteThumbCreator::create(const QString& path, int width, int height, QImage& img)
+{
   QProcess process;
   QStringList list;
   QString tmpFile = QString(QCryptographicHash::hash(path.toLocal8Bit(),QCryptographicHash::Md5).toHex());

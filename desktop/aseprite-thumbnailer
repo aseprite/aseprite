@@ -15,5 +15,5 @@ if [ $# -ge 2 -a $# -lt 4 ]; then
   fi
   mkdir -p $(dirname "$2"); mv /tmp/Aseprite/$filename.png $2;
 else
-echo "Parameters for aseprite thumbnailer are: inputfile outputfile [size]"
+  echo "Parameters for aseprite thumbnailer are: inputfile outputfile [size]"
 fi

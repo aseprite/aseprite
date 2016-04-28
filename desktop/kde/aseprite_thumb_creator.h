@@ -13,9 +13,9 @@ Q_DECLARE_LOGGING_CATEGORY(LOG_ASEPRITE_THUMBCREATOR)
 #include <kio/thumbcreator.h>
 
 class AsepriteThumbCreator : public ThumbCreator {
-  public:
-    bool create(const QString& path, int width, int height, QImage& img) override;
-    Flags flags() const override;
+public:
+  bool create(const QString& path, int width, int height, QImage& img) override;
+  Flags flags() const override;
 };
 
 #endif
