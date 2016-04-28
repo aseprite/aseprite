@@ -11,6 +11,7 @@
 
 #include "app/ui/editor/standby_state.h"
 
+#include "app/context_access.h"
 #include "doc/cel_list.h"
 
 #include <vector>
@@ -34,6 +35,7 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
   private:
+    ContextReader m_reader;
     CelList m_celList;
     std::vector<gfx::Point> m_celStarts;
     gfx::Point m_celOffset;
