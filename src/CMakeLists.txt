@@ -85,8 +85,11 @@ add_subdirectory(base)
 # Directory where base/config.h file is located
 include_directories(${BASE_INCLUDE_DIR})
 
-add_subdirectory(cfg)
+# Disable clip
+set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
 add_subdirectory(clip)
+
+add_subdirectory(cfg)
 add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(filters)
