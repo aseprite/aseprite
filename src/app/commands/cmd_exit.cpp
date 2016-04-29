@@ -48,7 +48,7 @@ void ExitCommand::onExecute(Context* context)
   }
 
   if (modifiedFiles) {
-    if (ui::Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1)
+    if (ui::Alert::show("Warning<<There are sprites with changes.<<Do you want to quit anyway?||&Yes||&No") != 1)
       return; // In this case the user doesn't want to close with modified files
   }
 
