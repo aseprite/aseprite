@@ -320,7 +320,6 @@ namespace app {
     DocumentView* m_docView;
 
     gfx::Point m_oldPos;
-    ui::PointerType m_lastPointerType;
 
     EditorFlags m_flags;
 

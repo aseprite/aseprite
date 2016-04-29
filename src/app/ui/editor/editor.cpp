@@ -1015,7 +1015,6 @@ void Editor::updateQuicktool()
   if (m_customizationDelegate && !hasCapture()) {
     auto activeToolManager = App::instance()->activeToolManager();
     tools::Tool* selectedTool = activeToolManager->selectedTool();
-    tools::Tool* oldQuicktool = activeToolManager->quickTool();
 
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
