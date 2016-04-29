@@ -87,7 +87,6 @@ static int cmp_down(Widget* widget, int x, int y);
 Manager::Manager()
   : Widget(kManagerWidget)
   , m_display(NULL)
-  , m_clipboard(NULL)
   , m_eventQueue(NULL)
   , m_lockedWindow(NULL)
   , m_mouseButtons(kButtonNone)
@@ -152,11 +151,6 @@ void Manager::setDisplay(she::Display* display)
   m_eventQueue = she::instance()->eventQueue();
 
   onNewDisplayConfiguration();
-}
-
-void Manager::setClipboard(she::Clipboard* clipboard)
-{
-  m_clipboard = clipboard;
 }
 
 void Manager::run()

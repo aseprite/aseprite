@@ -86,6 +86,7 @@ add_subdirectory(base)
 include_directories(${BASE_INCLUDE_DIR})
 
 add_subdirectory(cfg)
+add_subdirectory(clip)
 add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(filters)

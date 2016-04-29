@@ -211,13 +211,11 @@ endif()
 
 if(WIN32)
   list(APPEND SHE_SOURCES
-    win/clipboard.cpp
     win/native_dialogs.cpp)
 endif()
 
 if(APPLE)
   list(APPEND SHE_SOURCES
-    osx/clipboard.mm
     osx/logger.mm
     osx/native_dialogs.mm)
 endif()

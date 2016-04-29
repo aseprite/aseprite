@@ -10,7 +10,6 @@ add_library(ui-lib
   alert.cpp
   box.cpp
   button.cpp
-  clipboard.cpp
   combobox.cpp
   component.cpp
   cursor.cpp

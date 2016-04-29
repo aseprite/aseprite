@@ -439,6 +439,7 @@ add_library(app-lib
 target_link_libraries(app-lib
   base-lib
   cfg-lib
+  clip
   css-lib
   doc-lib
   filters-lib

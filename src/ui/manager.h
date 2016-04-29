@@ -16,7 +16,6 @@
 #include "ui/widget.h"
 
 namespace she {
-  class Clipboard;
   class Display;
   class EventQueue;
 }
@@ -37,10 +36,8 @@ namespace ui {
     ~Manager();
 
     she::Display* getDisplay() { return m_display; }
-    she::Clipboard* getClipboard() { return m_clipboard; }
 
     void setDisplay(she::Display* display);
-    void setClipboard(she::Clipboard* clipboard);
 
     // Executes the main message loop.
     void run();
@@ -166,7 +163,6 @@ namespace ui {
 
     WidgetsList m_garbage;
     she::Display* m_display;
-    she::Clipboard* m_clipboard;
     she::EventQueue* m_eventQueue;
     gfx::Region m_invalidRegion;  // Invalid region (we didn't receive paint messages yet for this).
 

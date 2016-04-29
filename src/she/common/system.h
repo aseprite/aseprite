@@ -9,16 +9,12 @@
 #pragma once
 
 #ifdef _WIN32
-  #include "she/win/clipboard.h"
   #include "she/win/native_dialogs.h"
 #elif defined(__APPLE__)
-  #include "she/osx/clipboard.h"
   #include "she/osx/native_dialogs.h"
 #elif defined(ASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT) && defined(__linux__)
-  #include "she/clipboard_simple.h"
   #include "she/gtk/native_dialogs.h"
 #else
-  #include "she/clipboard_simple.h"
   #include "she/native_dialogs.h"
 #endif
 
@@ -66,16 +62,6 @@ public:
       m_nativeDialogs = new NativeDialogsGTK3();
 #endif
     return m_nativeDialogs;
-  }
-
-  Clipboard* createClipboard() override {
-#ifdef _WIN32
-    return new ClipboardWin32();
-#elif defined(__APPLE__)
-    return new ClipboardOSX();
-#else
-    return new ClipboardImpl();
-#endif
   }
 
   Font* loadSpriteSheetFont(const char* filename, int scale) override {

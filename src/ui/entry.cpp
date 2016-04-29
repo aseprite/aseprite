@@ -12,8 +12,8 @@
 
 #include "base/bind.h"
 #include "base/string.h"
+#include "clip/clip.h"
 #include "she/font.h"
-#include "ui/clipboard.h"
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -611,7 +611,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
         // *cut* text!
         if (cmd == EntryCmd::Cut) {
           std::wstring selected = text.substr(selbeg, selend - selbeg + 1);
-          clipboard::set_text(base::to_utf8(selected).c_str());
+          clip::set_text(base::to_utf8(selected));
         }
 
         // remove text
@@ -629,11 +629,8 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       break;
 
     case EntryCmd::Paste: {
-      const char* clipboard_str;
-
-      if ((clipboard_str = clipboard::get_text())) {
-        std::string clipboard(clipboard_str);
-
+      std::string clipboard;
+      if (clip::get_text(clipboard)) {
         // delete the entire selection
         if (selbeg >= 0) {
           text.erase(selbeg, selend-selbeg+1);
@@ -659,7 +656,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
     case EntryCmd::Copy:
       if (selbeg >= 0) {
         std::wstring selected = text.substr(selbeg, selend - selbeg + 1);
-        clipboard::set_text(base::to_utf8(selected).c_str());
+        clip::set_text(base::to_utf8(selected));
       }
       break;
 

@@ -37,7 +37,6 @@
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite.h"
-#include "she/clipboard.h"
 #include "she/display.h"
 #include "she/error.h"
 #include "she/surface.h"
@@ -82,7 +81,6 @@ protected:
 };
 
 static she::Display* main_display = NULL;
-static she::Clipboard* main_clipboard = NULL;
 static CustomizedGuiManager* manager = NULL;
 static Theme* gui_theme = NULL;
 
@@ -176,12 +174,9 @@ int init_module_gui()
     return -1;
   }
 
-  main_clipboard = she::instance()->createClipboard();
-
   // Create the default-manager
   manager = new CustomizedGuiManager();
   manager->setDisplay(main_display);
-  manager->setClipboard(main_clipboard);
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme();
@@ -208,7 +203,6 @@ void exit_module_gui()
   CurrentTheme::set(NULL);
   delete gui_theme;
 
-  main_clipboard->dispose();
   main_display->dispose();
 }
 

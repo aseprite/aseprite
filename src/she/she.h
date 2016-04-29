@@ -8,7 +8,6 @@
 #define SHE_H_INCLUDED
 #pragma once
 
-#include "she/clipboard.h"
 #include "she/display.h"
 #include "she/error.h"
 #include "she/event.h"

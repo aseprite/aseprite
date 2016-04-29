@@ -13,7 +13,6 @@
 #include "ui/base.h"
 #include "ui/box.h"
 #include "ui/button.h"
-#include "ui/clipboard.h"
 #include "ui/combobox.h"
 #include "ui/component.h"
 #include "ui/cursor.h"
