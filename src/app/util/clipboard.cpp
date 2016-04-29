@@ -28,20 +28,11 @@
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/clipboard_native.h"
 #include "app/util/new_image_from_mask.h"
 #include "base/shared_ptr.h"
 #include "doc/doc.h"
 #include "render/quantization.h"
-
-#ifdef _WIN32
-  #define USE_NATIVE_WIN32_CLIPBOARD
-#endif
-
-#ifdef USE_NATIVE_WIN32_CLIPBOARD
-  #include <windows.h>
-
-  #include "app/util/clipboard_win32.h"
-#endif
 
 #include <stdexcept>
 
@@ -112,6 +103,8 @@ ClipboardManager::ClipboardManager()
   ASSERT(!g_instance);
   g_instance = this;
 
+  register_native_clipboard_formats();
+
   clipboard_range.observeUIContext();
 }
 
@@ -134,18 +127,31 @@ ClipboardManager* ClipboardManager::instance()
   return g_instance;
 }
 
-static void set_clipboard_image(Image* image, Mask* mask, Palette* palette, bool set_system_clipboard)
+static void set_clipboard_image(Image* image,
+                                Mask* mask,
+                                Palette* palette,
+                                bool set_system_clipboard,
+                                bool image_source_is_transparent)
 {
   clipboard_palette.reset(palette);
   clipboard_picks.clear();
   clipboard_image.reset(image);
   clipboard_mask.reset(mask);
 
-  // copy to the Windows clipboard
-#ifdef USE_NATIVE_WIN32_CLIPBOARD
-  if (set_system_clipboard)
-    set_win32_clipboard_bitmap(image, mask, palette);
-#endif
+  // Copy image to the native clipboard
+  if (set_system_clipboard) {
+    color_t oldMask;
+    if (image) {
+      oldMask = image->maskColor();
+      if (!image_source_is_transparent)
+        image->setMaskColor(-1);
+    }
+
+    set_native_clipboard_bitmap(image, mask, palette);
+
+    if (image && !image_source_is_transparent)
+      image->setMaskColor(oldMask);
+  }
 
   clipboard_range.invalidate();
 }
@@ -164,20 +170,22 @@ static bool copy_from_document(const Site& site)
   const Mask* mask = document->mask();
   const Palette* pal = document->sprite()->palette(site.frame());
 
-  set_clipboard_image(image,
-                      (mask ? new Mask(*mask): nullptr),
-                      (pal ? new Palette(*pal): nullptr), true);
+  set_clipboard_image(
+    image,
+    (mask ? new Mask(*mask): nullptr),
+    (pal ? new Palette(*pal): nullptr),
+    true,
+    site.layer() && !site.layer()->isBackground());
+
   return true;
 }
 
 ClipboardFormat get_current_format()
 {
-#ifdef USE_NATIVE_WIN32_CLIPBOARD
-  if (win32_clipboard_contains_bitmap())
+  // Check if the native clipboard has an image
+  if (has_native_clipboard_bitmap())
     return ClipboardImage;
-#endif
-
-  if (clipboard_image)
+  else if (clipboard_image)
     return ClipboardImage;
   else if (clipboard_range.valid())
     return ClipboardDocumentRange;
@@ -200,7 +208,7 @@ void get_document_range_info(Document** document, DocumentRange* range)
 
 void clear_content()
 {
-  set_clipboard_image(nullptr, nullptr, nullptr, true);
+  set_clipboard_image(nullptr, nullptr, nullptr, true, false);
 }
 
 void cut(ContextWriter& writer)
@@ -255,7 +263,8 @@ void copy_image(const Image* image, const Mask* mask, const Palette* pal)
   set_clipboard_image(
     Image::createCopy(image),
     (mask ? new Mask(*mask): nullptr),
-    (pal ? new Palette(*pal): nullptr), true);
+    (pal ? new Palette(*pal): nullptr),
+    true, false);
 }
 
 void copy_palette(const Palette* palette, const doc::PalettePicks& picks)
@@ -265,7 +274,8 @@ void copy_palette(const Palette* palette, const doc::PalettePicks& picks)
 
   set_clipboard_image(nullptr,
                       nullptr,
-                      new Palette(*palette), true);
+                      new Palette(*palette),
+                      true, false);
   clipboard_picks = picks;
 }
 
@@ -281,17 +291,16 @@ void paste()
   switch (get_current_format()) {
 
     case clipboard::ClipboardImage: {
-#ifdef USE_NATIVE_WIN32_CLIPBOARD
       // Get the image from the clipboard.
       {
-        Image* win32_image = NULL;
-        Mask* win32_mask = NULL;
-        Palette* win32_palette = NULL;
-        get_win32_clipboard_bitmap(win32_image, win32_mask, win32_palette);
-        if (win32_image)
-          set_clipboard_image(win32_image, win32_mask, win32_palette, false);
+        Image* native_image = nullptr;
+        Mask* native_mask = nullptr;
+        Palette* native_palette = nullptr;
+        get_native_clipboard_bitmap(&native_image, &native_mask, &native_palette);
+        if (native_image)
+          set_clipboard_image(native_image, native_mask, native_palette,
+                              false, false);
       }
-#endif
 
       if (!clipboard_image)
         return;
@@ -509,18 +518,18 @@ void paste()
 
 bool get_image_size(gfx::Size& size)
 {
-#ifdef USE_NATIVE_WIN32_CLIPBOARD
-  // Get the image from the clipboard.
-  return get_win32_clipboard_bitmap_size(size);
+#if defined(_WIN32) || defined(__APPLE__)
+  if (get_native_clipboard_bitmap_size(&size))
+    return true;
 #else
   if (clipboard_image) {
     size.w = clipboard_image->width();
     size.h = clipboard_image->height();
     return true;
   }
-  else
-    return false;
 #endif
+
+  return false;
 }
 
 Palette* get_palette()
