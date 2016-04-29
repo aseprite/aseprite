@@ -56,6 +56,7 @@ add_library(ui-lib
 
 target_link_libraries(ui-lib
   she
+  clip
   gfx-lib
   base-lib
   ${PIXMAN_LIBRARY})
