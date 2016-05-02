@@ -500,7 +500,12 @@ void BrushPreview::clearPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx
     }
   }
 
-  ASSERT(m_savedPixelsIterator <= m_savedPixelsLimit);
+#if _DEBUG
+  if (!(m_savedPixelsIterator <= m_savedPixelsLimit)) {
+    TRACE("m_savedPixelsIterator <= m_savedPixelsLimit: %d <= %d failed\n",
+          m_savedPixelsIterator, m_savedPixelsLimit);
+  }
+#endif
 }
 
 } // namespace app
