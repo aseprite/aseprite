@@ -1152,8 +1152,8 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kMouseEnterMessage:
-      updateQuicktool();
       updateToolLoopModifiersIndicators();
+      updateQuicktool();
       break;
 
     case kMouseLeaveMessage:
@@ -1171,8 +1171,8 @@ bool Editor::onProcessMessage(Message* msg)
         if (!m_secondaryButton && mouseMsg->right()) {
           m_secondaryButton = mouseMsg->right();
 
-          updateQuicktool();
           updateToolLoopModifiersIndicators();
+          updateQuicktool();
           setCursor(mouseMsg->position());
         }
 
@@ -1207,8 +1207,8 @@ bool Editor::onProcessMessage(Message* msg)
           App::instance()->activeToolManager()->releaseButtons();
           m_secondaryButton = false;
 
-          updateQuicktool();
           updateToolLoopModifiersIndicators();
+          updateQuicktool();
           setCursor(mouseMsg->position());
         }
 
@@ -1242,11 +1242,11 @@ bool Editor::onProcessMessage(Message* msg)
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));
 
+        updateToolLoopModifiersIndicators();
         if (hasMouse()) {
           updateQuicktool();
           setCursor(ui::get_mouse_position());
         }
-        updateToolLoopModifiersIndicators();
 
         if (used)
           return true;
@@ -1258,11 +1258,11 @@ bool Editor::onProcessMessage(Message* msg)
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyUp(this, static_cast<KeyMessage*>(msg));
 
+        updateToolLoopModifiersIndicators();
         if (hasMouse()) {
           updateQuicktool();
           setCursor(ui::get_mouse_position());
         }
-        updateToolLoopModifiersIndicators();
 
         if (used)
           return true;
