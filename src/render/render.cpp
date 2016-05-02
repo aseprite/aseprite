@@ -348,6 +348,7 @@ Render::Render()
   , m_selectedLayer(nullptr)
   , m_selectedFrame(-1)
   , m_previewImage(nullptr)
+  , m_previewBlendMode(BlendMode::NORMAL)
   , m_onionskin(OnionskinType::NONE)
 {
 }
@@ -377,11 +378,13 @@ void Render::setBgCheckedSize(const gfx::Size& size)
   m_bgCheckedSize = size;
 }
 
-void Render::setPreviewImage(const Layer* layer, frame_t frame, Image* image)
+void Render::setPreviewImage(const Layer* layer, frame_t frame,
+                             Image* image, BlendMode blendMode)
 {
   m_selectedLayer = layer;
   m_selectedFrame = frame;
   m_previewImage = image;
+  m_previewBlendMode = blendMode;
 }
 
 void Render::setExtraImage(
@@ -400,7 +403,7 @@ void Render::setExtraImage(
 
 void Render::removePreviewImage()
 {
-  m_previewImage = NULL;
+  m_previewImage = nullptr;
 }
 
 void Render::removeExtraImage()
@@ -548,6 +551,22 @@ void Render::renderSprite(
   // Draw onion skin in front of the sprite.
   if (m_onionskin.position() == OnionskinPosition::INFRONT)
     renderOnionskin(dstImage, area, frame, zoom, scaled_func);
+
+  // Overlay preview image
+  if (m_previewImage &&
+      m_selectedLayer == nullptr &&
+      m_selectedFrame == frame) {
+    renderImage(
+      dstImage,
+      m_previewImage,
+      m_sprite->palette(frame),
+      0, 0,
+      area,
+      scaled_func,
+      255,
+      m_previewBlendMode,
+      zoom);
+  }
 }
 
 void Render::renderOnionskin(
@@ -827,13 +846,36 @@ void Render::renderCel(
   RenderScaledImage scaled_func,
   int opacity, BlendMode blend_mode, Zoom zoom)
 {
-  int cel_x = zoom.apply(cel->x());
-  int cel_y = zoom.apply(cel->y());
+  renderImage(dst_image,
+              cel_image,
+              pal,
+              cel->x(),
+              cel->y(),
+              area,
+              scaled_func,
+              opacity,
+              blend_mode,
+              zoom);
+}
+
+void Render::renderImage(
+  Image* dst_image,
+  const Image* cel_image,
+  const Palette* pal,
+  const int x,
+  const int y,
+  const gfx::Clip& area,
+  RenderScaledImage scaled_func,
+  int opacity, BlendMode blend_mode, Zoom zoom)
+{
+  int cel_x = zoom.apply(x);
+  int cel_y = zoom.apply(y);
 
   gfx::Rect src_bounds =
     area.srcBounds().createIntersection(
       gfx::Rect(
-        cel_x, cel_y,
+        cel_x,
+        cel_y,
         zoom.apply(cel_image->width()),
         zoom.apply(cel_image->height())));
   if (src_bounds.isEmpty())

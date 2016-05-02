@@ -24,6 +24,7 @@
 #include "app/ui/editor/glue.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
+#include "doc/layer.h"
 #include "ui/message.h"
 #include "ui/system.h"
 
@@ -61,7 +62,11 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
   editor->renderEngine().setPreviewImage(
     m_toolLoop->getLayer(),
     m_toolLoop->getFrame(),
-    m_toolLoop->getDstImage());
+    m_toolLoop->getDstImage(),
+    (m_toolLoop->getLayer() &&
+     m_toolLoop->getLayer()->isImage() ?
+     static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
+     BlendMode::NEG_BW));
 
   m_lastPoint = editor->lastDrawingPosition();
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,6 +27,7 @@
 #include "doc/primitives.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 
 namespace {
 
@@ -57,11 +58,13 @@ static void create_buffers()
 
 namespace app {
 
-ExpandCelCanvas::ExpandCelCanvas(Site site,
+ExpandCelCanvas::ExpandCelCanvas(
+  Site site, Layer* layer,
   TiledMode tiledMode, Transaction& transaction, Flags flags)
   : m_document(static_cast<app::Document*>(site.document()))
   , m_sprite(site.sprite())
-  , m_layer(site.layer())
+  , m_layer(layer)
+  , m_frame(site.frame())
   , m_cel(NULL)
   , m_celImage(NULL)
   , m_celCreated(false)
@@ -77,14 +80,14 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
 
   create_buffers();
 
-  if (m_layer->isImage()) {
+  if (m_layer && m_layer->isImage()) {
     m_cel = m_layer->cel(site.frame());
     if (m_cel)
       m_celImage = m_cel->imageRef();
   }
 
   // Create a new cel
-  if (m_cel == NULL) {
+  if (!m_cel) {
     m_celCreated = true;
     m_cel = new Cel(site.frame(), ImageRef(NULL));
   }
@@ -117,7 +120,9 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
   if (m_celCreated) {
     getDestCanvas();
     m_cel->data()->setImage(m_dstImage);
-    static_cast<LayerImage*>(m_layer)->addCel(m_cel);
+
+    if (m_layer && m_layer->isImage())
+      static_cast<LayerImage*>(m_layer)->addCel(m_cel);
   }
 }
 
@@ -140,6 +145,11 @@ void ExpandCelCanvas::commit()
   ASSERT(!m_closed);
   ASSERT(!m_committed);
 
+  if (!m_layer) {
+    m_committed = true;
+    return;
+  }
+
   // Was the cel created in the start of the tool-loop?
   if (m_celCreated) {
     ASSERT(m_cel);
@@ -150,6 +160,7 @@ void ExpandCelCanvas::commit()
     validateDestCanvas(gfx::Region(m_bounds));
 
     // We can temporary remove the cel.
+    ASSERT(m_layer->isImage());
     static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
     // Add a copy of m_dstImage in the sprite's image stock
@@ -213,7 +224,9 @@ void ExpandCelCanvas::rollback()
   m_cel->setPosition(m_origCelPos);
 
   if (m_celCreated) {
-    static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
+    if (m_layer && m_layer->isImage())
+      static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
+
     delete m_cel;
     m_celImage.reset(NULL);
   }

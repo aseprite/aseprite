@@ -378,9 +378,10 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
           editor->showMouseCursor(kArrowPlusCursor);
         else
           editor->showMouseCursor(kMoveCursor);
-
-        return true;
       }
+      else
+        editor->showBrushPreview(mouseScreenPos);
+      return true;
     }
     else if (ink->isEyedropper()) {
       editor->showMouseCursor(kEyedropperCursor);

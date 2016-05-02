@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -102,7 +102,8 @@ namespace render {
 
     // Sets the preview image. This preview image is an alternative
     // image to be used for the given layer/frame.
-    void setPreviewImage(const Layer* layer, frame_t frame, Image* drawable);
+    void setPreviewImage(const Layer* layer, frame_t frame,
+                         Image* image, BlendMode blendMode);
     void removePreviewImage();
 
     // Sets an extra cel/image to be drawn after the current
@@ -190,6 +191,16 @@ namespace render {
       RenderScaledImage scaled_func,
       int opacity, BlendMode blend_mode, Zoom zoom);
 
+    void renderImage(
+      Image* dst_image,
+      const Image* cel_image,
+      const Palette* pal,
+      const int x,
+      const int y,
+      const gfx::Clip& area,
+      RenderScaledImage scaled_func,
+      int opacity, BlendMode blend_mode, Zoom zoom);
+
     static RenderScaledImage getRenderScaledImageFunc(
       PixelFormat dstFormat,
       PixelFormat srcFormat);
@@ -211,6 +222,7 @@ namespace render {
     const Layer* m_selectedLayer;
     frame_t m_selectedFrame;
     Image* m_previewImage;
+    BlendMode m_previewBlendMode;
     OnionskinOptions m_onionskin;
   };
 

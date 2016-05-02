@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -14,6 +14,7 @@
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
+#include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -68,7 +69,8 @@ bool FilterPreview::onProcessMessage(Message* msg)
       current_editor->renderEngine().setPreviewImage(
         m_filterMgr->layer(),
         m_filterMgr->frame(),
-        m_filterMgr->destinationImage());
+        m_filterMgr->destinationImage(),
+        static_cast<doc::LayerImage*>(m_filterMgr->layer())->blendMode());
       break;
 
     case kCloseMessage:

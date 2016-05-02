@@ -479,7 +479,8 @@ void PixelsMovement::stampImage()
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
-      ExpandCelCanvas expand(m_site,
+      ExpandCelCanvas expand(
+        m_site, m_site.layer(),
         TiledMode::NONE, m_transaction,
         ExpandCelCanvas::None);
 

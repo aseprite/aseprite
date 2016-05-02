@@ -81,6 +81,7 @@ protected:
   tools::TracePolicy m_tracePolicy;
   base::UniquePtr<tools::Symmetry> m_symmetry;
   base::UniquePtr<doc::Remap> m_shadingRemap;
+  app::ColorTarget m_colorTarget;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
@@ -89,6 +90,7 @@ protected:
 
 public:
   ToolLoopBase(Editor* editor,
+               Layer* layer,
                tools::Tool* tool,
                tools::Ink* ink,
                Document* document,
@@ -100,7 +102,7 @@ public:
     , m_brush(App::instance()->contextBar()->activeBrush(m_tool))
     , m_document(document)
     , m_sprite(editor->sprite())
-    , m_layer(editor->layer())
+    , m_layer(layer)
     , m_frame(editor->frame())
     , m_rgbMap(nullptr)
     , m_docPref(Preferences::instance().document(m_document))
@@ -115,8 +117,12 @@ public:
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
     , m_symmetry(nullptr)
-    , m_fgColor(color_utils::color_for_target_mask(fgColor, ColorTarget(m_layer)))
-    , m_bgColor(color_utils::color_for_target_mask(bgColor, ColorTarget(m_layer)))
+    , m_colorTarget(m_layer ? ColorTarget(m_layer):
+                              ColorTarget(ColorTarget::BackgroundLayer,
+                                          m_sprite->pixelFormat(),
+                                          m_sprite->transparentColor()))
+    , m_fgColor(color_utils::color_for_target_mask(fgColor, m_colorTarget))
+    , m_bgColor(color_utils::color_for_target_mask(bgColor, m_colorTarget))
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
@@ -184,7 +190,8 @@ public:
   RgbMap* getRgbMap() override {
     if (!m_rgbMap) {
       Sprite::RgbMapFor forLayer =
-        ((m_layer->isBackground() ||
+        ((!m_layer ||
+          m_layer->isBackground() ||
           m_sprite->pixelFormat() == IMAGE_RGB) ?
          Sprite::RgbMapFor::OpaqueLayer:
          Sprite::RgbMapFor::TransparentLayer);
@@ -265,6 +272,7 @@ class ToolLoopImpl : public ToolLoopBase {
 
 public:
   ToolLoopImpl(Editor* editor,
+               Layer* layer,
                Context* context,
                tools::Tool* tool,
                tools::Ink* ink,
@@ -272,7 +280,7 @@ public:
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
                const app::Color& bgColor)
-    : ToolLoopBase(editor, tool, ink, document,
+    : ToolLoopBase(editor, layer, tool, ink, document,
                    button, fgColor, bgColor)
     , m_context(context)
     , m_canceled(false)
@@ -284,7 +292,9 @@ public:
                       getInk()->isSlice() ||
                       getInk()->isZoom()) ? DoesntModifyDocument:
                                             ModifyDocument))
-    , m_expandCelCanvas(editor->getSite(),
+    , m_expandCelCanvas(
+        editor->getSite(),
+        layer,
         m_docPref.tiled.mode(),
         m_transaction,
         ExpandCelCanvas::Flags(
@@ -424,24 +434,39 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
   if (!current_tool || !current_ink)
     return NULL;
 
-  Layer* layer = editor->layer();
-  if (!layer) {
-    StatusBar::instance()->showTip(1000,
-      "There is no active layer");
-    return NULL;
-  }
+  Layer* layer;
 
-  // If the active layer is not visible.
-  if (!layer->isVisible()) {
-    StatusBar::instance()->showTip(1000,
-      "Layer '%s' is hidden", layer->name().c_str());
-    return NULL;
+  // For selection tools, we can use any layer (even without layers at
+  // all), so we specify a nullptr here as the active layer. This is
+  // used as a special case by the render::Render class to show the
+  // preview image/selection stroke as a xor'd overlay in the render
+  // result.
+  //
+  // Anyway this cannot be used in 'magic wand' tool (isSelection +
+  // isFloodFill) because we need the original layer source
+  // image/pixels to stop the flood-fill algorithm.
+  if (current_ink->isSelection() &&
+      !current_tool->getPointShape(editor->isSecondaryButton() ? 1: 0)->isFloodFill()) {
+    layer = nullptr;
   }
-  // If the active layer is read-only.
-  else if (!layer->isEditable()) {
-    StatusBar::instance()->showTip(1000,
-      "Layer '%s' is locked", layer->name().c_str());
-    return NULL;
+  else {
+    layer = editor->layer();
+    if (!layer) {
+      StatusBar::instance()->showTip(
+        1000, "There is no active layer");
+      return nullptr;
+    }
+    else if (!layer->isVisible()) {
+      StatusBar::instance()->showTip(
+        1000, "Layer '%s' is hidden", layer->name().c_str());
+      return nullptr;
+    }
+    // If the active layer is read-only.
+    else if (!layer->isEditable()) {
+      StatusBar::instance()->showTip(
+        1000, "Layer '%s' is locked", layer->name().c_str());
+      return nullptr;
+    }
   }
 
   // Get fg/bg colors
@@ -463,7 +488,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
   // Create the new tool loop
   try {
     return new ToolLoopImpl(
-      editor, context,
+      editor, layer, context,
       current_tool,
       current_ink,
       editor->document(),
@@ -496,7 +521,7 @@ public:
     const app::Color& bgColor,
     Image* image,
     const gfx::Point& celOrigin)
-    : ToolLoopBase(editor, tool, ink, document,
+    : ToolLoopBase(editor, editor->layer(), tool, ink, document,
                    tools::ToolLoop::Left, fgColor, bgColor)
     , m_image(image)
   {
