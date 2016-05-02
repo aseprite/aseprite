@@ -86,14 +86,19 @@ private:
     this->window()->layout();
   }
 
-  void onDeleteAccel(int index)
-  {
-    if (Alert::show("Warning"
-        "<<Do you really want to delete this keyboard shortcut?"
-        "||&Yes||&No") != 1)
+  void onDeleteAccel(int index) {
+    // We need to create a copy of the accelerator because
+    // Key::disableAccel() will modify the accels() collection itself.
+    ui::Accelerator accel = m_key->accels()[index];
+
+    if (Alert::show(
+          "Warning"
+          "<<Do you really want to delete '%s' keyboard shortcut?"
+          "||&Yes||&No",
+          accel.toString().c_str()) != 1)
       return;
 
-    m_key->disableAccel(m_key->accels()[index]);
+    m_key->disableAccel(accel);
     window()->layout();
   }
 
