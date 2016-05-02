@@ -1112,7 +1112,7 @@ public:
   }
 
   void setSelectionMode(gen::SelectionMode mode) {
-    setSelectedItem((int)mode);
+    setSelectedItem((int)mode, false);
     invalidate();
   }
 

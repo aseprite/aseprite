@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -322,15 +322,15 @@ int ButtonSet::selectedItem() const
   return -1;
 }
 
-void ButtonSet::setSelectedItem(int index)
+void ButtonSet::setSelectedItem(int index, bool focusItem)
 {
   if (index >= 0 && index < (int)children().size())
-    setSelectedItem(static_cast<Item*>(at(index)));
+    setSelectedItem(static_cast<Item*>(at(index)), focusItem);
   else
-    setSelectedItem(static_cast<Item*>(NULL));
+    setSelectedItem(static_cast<Item*>(nullptr), focusItem);
 }
 
-void ButtonSet::setSelectedItem(Item* item)
+void ButtonSet::setSelectedItem(Item* item, bool focusItem)
 {
   if (!m_multipleSelection) {
     if (item && item->isSelected())
@@ -343,7 +343,8 @@ void ButtonSet::setSelectedItem(Item* item)
 
   if (item) {
     item->setSelected(!item->isSelected());
-    item->requestFocus();
+    if (focusItem)
+      item->requestFocus();
   }
 }
 

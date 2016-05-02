@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -44,8 +44,8 @@ namespace app {
     Item* getItem(int index);
 
     int selectedItem() const;
-    void setSelectedItem(int index);
-    void setSelectedItem(Item* item);
+    void setSelectedItem(int index, bool focusItem = true);
+    void setSelectedItem(Item* item, bool focusItem = true);
     void deselectItems();
 
     void setOfferCapture(bool state);
