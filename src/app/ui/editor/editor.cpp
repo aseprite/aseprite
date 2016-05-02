@@ -1411,11 +1411,12 @@ bool Editor::canDraw()
 bool Editor::isInsideSelection()
 {
   gfx::Point spritePos = screenToEditor(ui::get_mouse_position());
+  KeyAction action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
   return
-    ((int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kSubtractSelection)) == 0) &&
-     m_document != NULL &&
-     m_document->isMaskVisible() &&
-     m_document->mask()->containsPoint(spritePos.x, spritePos.y);
+    (action == KeyAction::None) &&
+    m_document &&
+    m_document->isMaskVisible() &&
+    m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
 
 void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
