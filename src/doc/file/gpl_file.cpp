@@ -53,8 +53,11 @@ Palette* load_gpl_file(const char *filename)
     std::istringstream lineIn(line);
     // TODO add support to read the color name
     lineIn >> r >> g >> b;
-    if (lineIn.good())
-      pal->addEntry(rgba(r, g, b, 255));
+
+    if (lineIn.fail())
+        continue;
+
+    pal->addEntry(rgba(r, g, b, 255));
   }
 
   return pal.release();
