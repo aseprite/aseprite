@@ -293,6 +293,7 @@
       <option id="auto_scroll" type="bool" default="true" />
     </section>
     <section id="show">
+      <option id="layer_edges" type="bool" default="false" />
       <option id="selection_edges" type="bool" default="true" />
       <option id="grid" type="bool" default="false" migrate="grid.visible" />
       <option id="pixel_grid" type="bool" default="false" migrate="pixel_grid.visible" />

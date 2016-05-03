@@ -307,11 +307,14 @@ void Editor::setLayer(const Layer* layer)
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
 
-  // If the onion skinning depends on the active layer, we've to
-  // redraw the whole editor.
   if (m_document && changed) {
-    if (m_docPref.onionskin.currentLayer())
+    if (// If the onion skinning depends on the active layer
+        m_docPref.onionskin.currentLayer() ||
+        // If the user want to see the active layer edges...
+        m_docPref.show.layerEdges()) {
+      // We've to redraw the whole editor
       invalidate();
+    }
   }
 
   // The active layer has changed.
@@ -677,6 +680,15 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     g->drawHLine(
       theme->colors.editorSpriteBottomBorder(),
       enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+  }
+
+  // Draw active cel edges
+  if (m_docPref.show.layerEdges()) {
+    Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
+    if (cel) {
+      g->drawRect(theme->colors.editorLayerEdges(),
+                  editorToScreen(cel->bounds()).offset(-bounds().origin()));
+    }
   }
 
   // Draw the mask

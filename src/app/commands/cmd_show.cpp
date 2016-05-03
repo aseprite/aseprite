@@ -38,11 +38,15 @@ protected:
     if (docPref.show.selectionEdges()) {
       globPref.show = docPref.show;
       docPref.show.selectionEdges(false);
+      docPref.show.layerEdges(false);
       docPref.show.grid(false);
       docPref.show.pixelGrid(false);
     }
     else {
       docPref.show.selectionEdges(true);
+      docPref.show.layerEdges(
+        docPref.show.layerEdges() ||
+        globPref.show.layerEdges());
       docPref.show.grid(
         docPref.show.grid() ||
         globPref.show.grid());
@@ -50,6 +54,28 @@ protected:
         docPref.show.pixelGrid() ||
         globPref.show.pixelGrid());
     }
+  }
+};
+
+class ShowLayerEdgesCommand : public Command {
+public:
+  ShowLayerEdgesCommand()
+    : Command("ShowLayerEdges",
+              "Show Layer Edges",
+              CmdUIOnlyFlag) {
+  }
+
+  Command* clone() const override { return new ShowLayerEdgesCommand(*this); }
+
+protected:
+  bool onChecked(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    return docPref.show.layerEdges();
+  }
+
+  void onExecute(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    docPref.show.layerEdges(!docPref.show.layerEdges());
   }
 };
 
@@ -159,6 +185,11 @@ Command* CommandFactory::createShowGridCommand()
 Command* CommandFactory::createShowPixelGridCommand()
 {
   return new ShowPixelGridCommand;
+}
+
+Command* CommandFactory::createShowLayerEdgesCommand()
+{
+  return new ShowLayerEdgesCommand;
 }
 
 Command* CommandFactory::createShowSelectionEdgesCommand()

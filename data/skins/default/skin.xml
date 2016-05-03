@@ -56,6 +56,7 @@
     <color id="editor_face" value="#655561" />
     <color id="editor_sprite_border" value="#000000" />
     <color id="editor_sprite_bottom_border" value="#41412c" />
+    <color id="editor_layer_edges" value="#0000ff" />
     <color id="listitem_normal_text" value="#000000" />
     <color id="listitem_normal_face" value="#ffffff" />
     <color id="listitem_selected_text" value="#ffffff" />

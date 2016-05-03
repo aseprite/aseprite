@@ -736,6 +736,7 @@
         <separator />
         <item command="ShowExtras" text="&amp;Extras" />
         <menu text="&amp;Show">
+          <item command="ShowLayerEdges" text="&amp;Layer Edges" />
           <item command="ShowSelectionEdges" text="&amp;Selection Edges" />
           <item command="ShowGrid" text="&amp;Grid" />
           <item command="ShowPixelGrid" text="&amp;Pixel Grid" />
