@@ -24,7 +24,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/pref/preferences.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
