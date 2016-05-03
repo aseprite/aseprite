@@ -365,13 +365,10 @@ public:
       m_area.b /= m_area.count;
       m_area.a /= 9;
 
-      RgbTraits::pixel_t c = *m_srcAddress;
-      m_area.r = rgba_getr(c) + (m_area.r-rgba_getr(c)) * m_opacity / 255;
-      m_area.g = rgba_getg(c) + (m_area.g-rgba_getg(c)) * m_opacity / 255;
-      m_area.b = rgba_getb(c) + (m_area.b-rgba_getb(c)) * m_opacity / 255;
-      m_area.a = rgba_geta(c) + (m_area.a-rgba_geta(c)) * m_opacity / 255;
-
-      *m_dstAddress = rgba(m_area.r, m_area.g, m_area.b, m_area.a);
+      *m_dstAddress =
+        rgba_blender_normal(*m_srcAddress,
+                            rgba(m_area.r, m_area.g, m_area.b, m_area.a),
+                            m_opacity);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -419,11 +416,10 @@ public:
       m_area.v /= m_area.count;
       m_area.a /= 9;
 
-      GrayscaleTraits::pixel_t c = *m_srcAddress;
-      m_area.v = graya_getv(c) + (m_area.v-graya_getv(c)) * m_opacity / 255;
-      m_area.a = graya_geta(c) + (m_area.a-graya_geta(c)) * m_opacity / 255;
-
-      *m_dstAddress = graya(m_area.v, m_area.a);
+      *m_dstAddress =
+        graya_blender_normal(*m_srcAddress,
+                             graya(m_area.v, m_area.a),
+                             m_opacity);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -475,13 +471,13 @@ public:
       m_area.b /= m_area.count;
       m_area.a /= 9;
 
-      uint32_t color32 = m_palette->getEntry(*m_srcAddress);
-      m_area.r = rgba_getr(color32) + (m_area.r-rgba_getr(color32)) * m_opacity / 255;
-      m_area.g = rgba_getg(color32) + (m_area.g-rgba_getg(color32)) * m_opacity / 255;
-      m_area.b = rgba_getb(color32) + (m_area.b-rgba_getb(color32)) * m_opacity / 255;
-      m_area.a = rgba_geta(color32) + (m_area.a-rgba_geta(color32)) * m_opacity / 255;
+      color_t c =
+        rgba_blender_normal(m_palette->getEntry(*m_srcAddress),
+                            rgba(m_area.r, m_area.g, m_area.b, m_area.a),
+                            m_opacity);
 
-      *m_dstAddress = m_rgbmap->mapColor(m_area.r, m_area.g, m_area.b, m_area.a);
+      *m_dstAddress = m_rgbmap->mapColor(
+        rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
     }
     else {
       *m_dstAddress = *m_srcAddress;
