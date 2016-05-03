@@ -279,28 +279,57 @@ protected:
   }
 };
 
-class ContextBar::StopAtGridField : public CheckBox
-{
+class ContextBar::PaintBucketSettingsField : public ButtonSet {
 public:
-  StopAtGridField() : CheckBox("Stop at Grid") {
-    setup_mini_font(this);
-  }
-
-  void setStopAtGrid(bool state) {
-    setSelected(state);
+  PaintBucketSettingsField() : ButtonSet(1) {
+    SkinTheme* theme = SkinTheme::instance();
+    addItem(theme->parts.timelineGear());
   }
 
 protected:
-  void onClick(Event& ev) override {
-    CheckBox::onClick(ev);
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+    const gfx::Rect bounds = this->bounds();
 
     Tool* tool = App::instance()->activeTool();
-    Preferences::instance().tool(tool).floodfill.stopAtGrid(
-      (isSelected() ? app::gen::StopAtGrid::IF_VISIBLE:
-                      app::gen::StopAtGrid::NEVER));
+    auto& toolPref = Preferences::instance().tool(tool);
 
-    releaseFocus();
+    Menu menu;
+    MenuItem
+      stopAtGrid("Stop at Grid"),
+      activeLayer("Refer only active layer"),
+      allLayers("Refer visible layers");
+    menu.addChild(&stopAtGrid);
+    menu.addChild(new MenuSeparator());
+    menu.addChild(&activeLayer);
+    menu.addChild(&allLayers);
+
+    stopAtGrid.setSelected(
+      toolPref.floodfill.stopAtGrid() == app::gen::StopAtGrid::IF_VISIBLE);
+    activeLayer.setSelected(
+      toolPref.floodfill.referTo() == app::gen::FillReferTo::ACTIVE_LAYER);
+    allLayers.setSelected(
+      toolPref.floodfill.referTo() == app::gen::FillReferTo::ALL_LAYERS);
+
+    stopAtGrid.Click.connect(
+      [&]{
+        toolPref.floodfill.stopAtGrid(
+          toolPref.floodfill.stopAtGrid() == app::gen::StopAtGrid::IF_VISIBLE ?
+          app::gen::StopAtGrid::NEVER: app::gen::StopAtGrid::IF_VISIBLE);
+      });
+    activeLayer.Click.connect(
+      [&]{
+        toolPref.floodfill.referTo(app::gen::FillReferTo::ACTIVE_LAYER);
+      });
+    allLayers.Click.connect(
+      [&]{
+        toolPref.floodfill.referTo(app::gen::FillReferTo::ALL_LAYERS);
+      });
+
+    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    deselectItems();
   }
+
 };
 
 class ContextBar::InkTypeField : public ButtonSet {
@@ -1286,7 +1315,7 @@ ContextBar::ContextBar()
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
   addChild(m_contiguous = new ContiguousField());
-  addChild(m_stopAtGrid = new StopAtGridField());
+  addChild(m_paintBucketSettings = new PaintBucketSettingsField());
 
   addChild(m_inkType = new InkTypeField(this));
   addChild(m_inkOpacityLabel = new Label("Opacity:"));
@@ -1506,8 +1535,6 @@ void ContextBar::updateForTool(tools::Tool* tool)
   if (toolPref) {
     m_tolerance->setTextf("%d", toolPref->tolerance());
     m_contiguous->setSelected(toolPref->contiguous());
-    m_stopAtGrid->setSelected(
-      toolPref->floodfill.stopAtGrid() == app::gen::StopAtGrid::IF_VISIBLE ? true: false);
 
     m_inkType->setInkTypeIcon(toolPref->ink());
     m_inkOpacity->setTextf("%d", toolPref->opacity());
@@ -1590,7 +1617,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_contiguous->setVisible(hasTolerance);
-  m_stopAtGrid->setVisible(hasTolerance);
+  m_paintBucketSettings->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);

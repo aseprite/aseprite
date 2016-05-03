@@ -46,6 +46,7 @@
 #include "doc/palette_picks.h"
 #include "doc/remap.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -269,6 +270,7 @@ class ToolLoopImpl : public ToolLoopBase {
   bool m_canceled;
   Transaction m_transaction;
   ExpandCelCanvas m_expandCelCanvas;
+  Image* m_floodfillSrcImage;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -344,6 +346,32 @@ public:
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-m_celOrigin.x,
                                                     m_mask->bounds().y-m_celOrigin.y):
                                          gfx::Point(0, 0));
+
+    // Prepare a special image for floodfill when it's configured to
+    // stop using all visible layers.
+    if (m_pointShape->isFloodFill() &&
+        m_toolPref.floodfill.referTo() == gen::FillReferTo::ALL_LAYERS) {
+      m_floodfillSrcImage = Image::create(m_sprite->pixelFormat(),
+                                          m_sprite->width(),
+                                          m_sprite->height());
+
+      m_floodfillSrcImage->clear(m_sprite->transparentColor());
+
+      render::Render().renderSprite(
+        m_floodfillSrcImage,
+        m_sprite,
+        m_frame,
+        gfx::Clip(m_sprite->bounds()),
+        render::Zoom(1, 1));
+    }
+    else {
+      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
+    }
+  }
+
+  ~ToolLoopImpl() {
+    if (m_floodfillSrcImage != getSrcImage())
+      delete m_floodfillSrcImage;
   }
 
   // IToolLoop interface
@@ -394,6 +422,7 @@ public:
   }
 
   const Image* getSrcImage() override { return m_expandCelCanvas.getSourceCanvas(); }
+  const Image* getFloodFillSrcImage() override { return m_floodfillSrcImage; }
   Image* getDstImage() override { return m_expandCelCanvas.getDestCanvas(); }
   void validateSrcImage(const gfx::Region& rgn) override {
     m_expandCelCanvas.validateSourceCanvas(rgn);
@@ -541,6 +570,7 @@ public:
   // IToolLoop interface
   void dispose() override { }
   const Image* getSrcImage() override { return m_image; }
+  const Image* getFloodFillSrcImage() override { return m_image; }
   Image* getDstImage() override { return m_image; }
   void validateSrcImage(const gfx::Region& rgn) override { }
   void validateDstImage(const gfx::Region& rgn) override { }

@@ -36,6 +36,10 @@
       <value id="IF_VISIBLE" value="1" />
       <value id="ALWAYS" value="2" />
     </enum>
+    <enum id="FillReferTo">
+      <value id="ACTIVE_LAYER" value="0" />
+      <value id="ALL_LAYERS" value="1" />
+    </enum>
     <enum id="EyedropperChannel">
       <value id="COLOR_ALPHA" value="0" />
       <value id="COLOR" value="1" />
@@ -210,6 +214,7 @@
     </section>
     <section id="floodfill">
       <option id="stop_at_grid" type="StopAtGrid" default="StopAtGrid::IF_VISIBLE" />
+      <option id="refer_to" type="FillReferTo" default="FillReferTo::ACTIVE_LAYER" />
     </section>
   </tool>
 

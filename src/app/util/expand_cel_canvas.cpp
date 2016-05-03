@@ -27,7 +27,6 @@
 #include "doc/primitives.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
-#include "render/render.h"
 
 namespace {
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -83,7 +83,7 @@ public:
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
     doc::algorithm::floodfill(
-      loop->getSrcImage(),
+      loop->getFloodFillSrcImage(),
       (loop->useMask() ? loop->getMask(): nullptr),
       x, y,
       floodfillBounds(loop, x, y),
@@ -104,7 +104,7 @@ private:
                      loop->sprite()->height());
 
     bounds = bounds.createIntersection(
-      loop->getSrcImage()->bounds());
+      loop->getFloodFillSrcImage()->bounds());
 
     // Limit the flood-fill to the current tile if the grid is visible.
     if (loop->getStopAtGrid()) {

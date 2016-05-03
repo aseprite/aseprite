@@ -83,6 +83,9 @@ namespace app {
       // Should return an image where we can read pixels (readonly image)
       virtual const Image* getSrcImage() = 0;
 
+      // The image used to get get pixels in floodfill algorithm.
+      virtual const Image* getFloodFillSrcImage() = 0;
+
       // Should return an image where we can write pixels
       virtual Image* getDstImage() = 0;
 
