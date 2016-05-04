@@ -15,6 +15,7 @@
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
+#include "app/cmd/trim_cel.h"
 #include "app/console.h"
 #include "app/document.h"
 #include "app/document_api.h"
@@ -176,8 +177,10 @@ void PixelsMovement::cutMask()
 {
   {
     ContextWriter writer(m_reader, 1000);
-    if (writer.cel())
+    if (writer.cel()) {
       m_transaction.execute(new cmd::ClearMask(writer.cel()));
+      m_transaction.execute(new cmd::TrimCel(writer.cel()));
+    }
   }
 
   copyMask();

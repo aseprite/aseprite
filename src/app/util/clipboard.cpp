@@ -12,6 +12,7 @@
 #include "app/app.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
+#include "app/cmd/trim_cel.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document.h"
@@ -225,6 +226,7 @@ void cut(ContextWriter& writer)
     {
       Transaction transaction(writer.context(), "Cut");
       transaction.execute(new cmd::ClearMask(writer.cel()));
+      transaction.execute(new cmd::TrimCel(writer.cel()));
       transaction.execute(new cmd::DeselectMask(writer.document()));
       transaction.commit();
     }

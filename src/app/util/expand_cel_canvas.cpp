@@ -16,6 +16,7 @@
 #include "app/cmd/copy_region.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_position.h"
+#include "app/cmd/trim_cel.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/transaction.h"
@@ -209,6 +210,14 @@ void ExpandCelCanvas::commit()
   }
   else {
     ASSERT(false);
+  }
+
+  ASSERT(m_cel);
+  ASSERT(m_cel->layer());
+  if (m_cel &&
+      m_cel->layer() &&
+      !m_cel->layer()->isBackground()) {
+    m_transaction.execute(new cmd::TrimCel(m_cel));
   }
 
   m_committed = true;

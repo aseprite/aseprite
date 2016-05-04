@@ -15,6 +15,7 @@
 #include "app/app_menus.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
+#include "app/cmd/trim_cel.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/context_access.h"
@@ -508,6 +509,7 @@ bool DocumentView::onClear(Context* ctx)
   {
     Transaction transaction(writer.context(), "Clear");
     transaction.execute(new cmd::ClearMask(writer.cel()));
+    transaction.execute(new cmd::TrimCel(writer.cel()));
 
     if (visibleMask &&
         !Preferences::instance().selection.keepSelectionAfterClear())

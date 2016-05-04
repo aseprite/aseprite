@@ -149,6 +149,7 @@ add_library(app-lib
   cmd/set_transparent_color.cpp
   cmd/set_user_data.cpp
   cmd/shift_masked_cel.cpp
+  cmd/trim_cel.cpp
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp
   cmd/with_document.cpp

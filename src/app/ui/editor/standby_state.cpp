@@ -298,6 +298,14 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Start the Tool-Loop
   if (layer) {
+    // Disable layer edges to avoid showing the modified cel
+    // information by ExpandCelCanvas (i.e. the cel origin is changed
+    // to 0,0 coordinate.)
+    auto& layerEdgesOption = editor->docPref().show.layerEdges;
+    bool layerEdges = layerEdgesOption();
+    if (layerEdges)
+      layerEdgesOption(false);
+
     tools::ToolLoop* toolLoop = create_tool_loop(editor, context);
     if (toolLoop) {
       EditorStatePtr newState(new DrawingState(toolLoop));
@@ -306,6 +314,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       static_cast<DrawingState*>(newState.get())
         ->initToolLoop(editor, msg);
     }
+
+    // Restore layer edges
+    if (layerEdges)
+      layerEdgesOption(true);
     return true;
   }
 
