@@ -509,7 +509,10 @@ bool DocumentView::onClear(Context* ctx)
   {
     Transaction transaction(writer.context(), "Clear");
     transaction.execute(new cmd::ClearMask(writer.cel()));
-    transaction.execute(new cmd::TrimCel(writer.cel()));
+
+    // If the cel wasn't deleted by cmd::ClearMask, we trim it.
+    if (writer.cel())
+      transaction.execute(new cmd::TrimCel(writer.cel()));
 
     if (visibleMask &&
         !Preferences::instance().selection.keepSelectionAfterClear())

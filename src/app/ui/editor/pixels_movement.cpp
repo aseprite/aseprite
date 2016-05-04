@@ -179,7 +179,10 @@ void PixelsMovement::cutMask()
     ContextWriter writer(m_reader, 1000);
     if (writer.cel()) {
       m_transaction.execute(new cmd::ClearMask(writer.cel()));
-      m_transaction.execute(new cmd::TrimCel(writer.cel()));
+
+      ASSERT(writer.cel());
+      if (writer.cel())
+        m_transaction.execute(new cmd::TrimCel(writer.cel()));
     }
   }
 

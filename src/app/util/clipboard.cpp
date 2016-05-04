@@ -226,7 +226,11 @@ void cut(ContextWriter& writer)
     {
       Transaction transaction(writer.context(), "Cut");
       transaction.execute(new cmd::ClearMask(writer.cel()));
-      transaction.execute(new cmd::TrimCel(writer.cel()));
+
+      ASSERT(writer.cel());
+      if (writer.cel())
+        transaction.execute(new cmd::TrimCel(writer.cel()));
+
       transaction.execute(new cmd::DeselectMask(writer.document()));
       transaction.commit();
     }
