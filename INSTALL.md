@@ -272,9 +272,9 @@ several minutes to finish:
     cd $HOME/deps
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
     git clone https://skia.googlesource.com/skia
+    export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
     git checkout chrome/m50
-    export PATH="${PWD}/depot_tools:${PATH}"
     export GYP_DEFINES='skia_gpu=0'
     python bin/sync-and-gyp
     ninja -C out/Release dm
