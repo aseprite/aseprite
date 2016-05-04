@@ -539,6 +539,7 @@ StatusBar::StatusBar()
   addChild(tooltipManager);
   tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
   tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
+  tooltipManager->addTooltipFor(m_newFrame, "New Frame", BOTTOM);
 
   UIContext::instance()->addObserver(this);
   UIContext::instance()->documents().addObserver(this);
