@@ -436,11 +436,14 @@ public:
 
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
+
       // When the mouse enter in this entry, it got the focus and the
       // text is automatically selected.
       case kMouseEnterMessage:
-        requestFocus();
-        selectText(0, -1);
+        if (Preferences::instance().statusBar.focusFrameFieldOnMouseover()) {
+          requestFocus();
+          selectText(0, -1);
+        }
         break;
 
       case kKeyDownMessage: {
@@ -459,12 +462,19 @@ public:
           }
           // Select the text again
           selectText(0, -1);
+          releaseFocus();
           return true;          // Key used.
         }
         break;
       }
     }
-    return Entry::onProcessMessage(msg);
+
+    bool result = Entry::onProcessMessage(msg);
+
+    if (msg->type() == kMouseDownMessage)
+      selectText(0, -1);
+
+    return result;
   }
 
 };
