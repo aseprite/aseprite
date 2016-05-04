@@ -1367,6 +1367,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", BOTTOM);
+  tooltipManager->addTooltipFor(m_paintBucketSettings, "Extra paint bucket options", BOTTOM);
 
   m_brushType->setupTooltips(tooltipManager);
   m_selectionMode->setupTooltips(tooltipManager);
