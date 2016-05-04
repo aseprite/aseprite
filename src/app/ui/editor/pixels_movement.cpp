@@ -328,10 +328,10 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
           h = 1.0;
         }
 
-        a.x = (a.x-pivot.x)*(1.0+dx/w) + pivot.x;
-        a.y = (a.y-pivot.y)*(1.0+dy/h) + pivot.y;
-        b.x = (b.x-pivot.x)*(1.0+dx/w) + pivot.x;
-        b.y = (b.y-pivot.y)*(1.0+dy/h) + pivot.y;
+        a.x = int((a.x-pivot.x)*(1.0+dx/w) + pivot.x);
+        a.y = int((a.y-pivot.y)*(1.0+dy/h) + pivot.y);
+        b.x = int((b.x-pivot.x)*(1.0+dx/w) + pivot.x);
+        b.y = int((b.y-pivot.y)*(1.0+dy/h) + pivot.y);
       }
 
       // Do not use "gfx::Rect(a, b)" here because if a > b we want to
