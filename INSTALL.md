@@ -165,7 +165,7 @@ the following parameters and then `ninja`:
       -DUSE_ALLEG4_BACKEND=OFF \
       -DUSE_SKIA_BACKEND=ON \
       -DSKIA_DIR=$HOME/deps/skia \
-      -DWITH_HarfBuzz=OFF" \
+      -DWITH_HarfBuzz=OFF \
       -G Ninja \
       ..
     ninja aseprite
