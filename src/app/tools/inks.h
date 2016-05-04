@@ -173,6 +173,8 @@ public:
   Ink* clone() override { return new SliceInk(*this); }
 
   bool isSlice() const override { return true; }
+  bool needsCelCoordinates() const override { return false; }
+
   void prepareInk(ToolLoop* loop) override { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     // TODO show the selection-preview with a XOR color or something like that
@@ -319,21 +321,23 @@ public:
   Ink* clone() override { return new SelectionInk(*this); }
 
   bool isSelection() const override { return true; }
+  bool needsCelCoordinates() const override {
+    return (m_modify_selection ? false: true);
+  }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     if (m_modify_selection) {
       int modifiers = int(loop->getModifiers());
-      Point origin = loop->getCelOrigin();
 
       if ((modifiers & (int(ToolLoopModifiers::kReplaceSelection) |
                         int(ToolLoopModifiers::kAddSelection))) != 0) {
-        m_mask.add(gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1));
+        m_mask.add(gfx::Rect(x1, y, x2-x1+1, 1));
       }
       else if ((modifiers & int(ToolLoopModifiers::kSubtractSelection)) != 0) {
-        m_mask.subtract(gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1));
+        m_mask.subtract(gfx::Rect(x1, y, x2-x1+1, 1));
       }
 
-      m_maxBounds |= gfx::Rect(x1+origin.x, y+origin.y, x2-x1+1, 1);
+      m_maxBounds |= gfx::Rect(x1, y, x2-x1+1, 1);
     }
     // TODO show the selection-preview with a XOR color or something like that
     else {

@@ -52,14 +52,14 @@ public:
       if (m_brush->type() == kImageBrushType) {
         if (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
             m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
-          m_brush->setPatternOrigin(gfx::Point(x, y)+loop->getCelOrigin());
+          m_brush->setPatternOrigin(gfx::Point(x, y));
         }
       }
     }
     else {
       if (m_brush->type() == kImageBrushType &&
           m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
-        m_brush->setPatternOrigin(gfx::Point(x, y)+loop->getCelOrigin());
+        m_brush->setPatternOrigin(gfx::Point(x, y));
       }
     }
 
@@ -98,13 +98,8 @@ public:
 
 private:
   gfx::Rect floodfillBounds(ToolLoop* loop, int x, int y) const {
-    gfx::Point origin = loop->getCelOrigin();
-    gfx::Rect bounds(-origin.x, -origin.y,
-                     loop->sprite()->width(),
-                     loop->sprite()->height());
-
-    bounds = bounds.createIntersection(
-      loop->getFloodFillSrcImage()->bounds());
+    gfx::Rect bounds = loop->sprite()->bounds();
+    bounds &= loop->getFloodFillSrcImage()->bounds();
 
     // Limit the flood-fill to the current tile if the grid is visible.
     if (loop->getStopAtGrid()) {
@@ -112,8 +107,8 @@ private:
       if (!grid.isEmpty()) {
         div_t d, dx, dy;
 
-        dx = div(grid.x-origin.x, grid.w);
-        dy = div(grid.y-origin.y, grid.h);
+        dx = div(grid.x, grid.w);
+        dy = div(grid.y, grid.h);
 
         if (dx.rem > 0) dx.rem -= grid.w;
         if (dy.rem > 0) dy.rem -= grid.h;

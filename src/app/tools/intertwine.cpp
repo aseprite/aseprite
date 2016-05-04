@@ -27,12 +27,10 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
 {
   Symmetry* symmetry = loop->getSymmetry();
   if (symmetry) {
-    Point origin(loop->getCelOrigin());
-
     // Convert the point to the sprite position so we can apply the
     // symmetry transformation.
     Stroke main_stroke;
-    main_stroke.addPoint(Point(x, y) + origin);
+    main_stroke.addPoint(Point(x, y));
 
     Strokes strokes;
     symmetry->generateStrokes(main_stroke, strokes, loop);
@@ -40,9 +38,7 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
       // We call transformPoint() moving back each point to the cel
       // origin.
       loop->getPointShape()->transformPoint(
-        loop,
-        stroke[0].x - origin.x,
-        stroke[0].y - origin.y);
+        loop, stroke[0].x, stroke[0].y);
     }
   }
   else {

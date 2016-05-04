@@ -188,9 +188,6 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   m_toolLoop->validateDstImage(m_dirtyArea);
 
-  // Move the stroke to be relative to the cel origin.
-  main_stroke.offset(-m_toolLoop->getCelOrigin());
-
   // Join or fill user points
   if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
     m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
@@ -229,8 +226,6 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   // Start with a fresh dirty area
   m_dirtyArea.clear();
 
-  const Point celOrigin = m_toolLoop->getCelOrigin();
-
   for (auto& stroke : strokes) {
     gfx::Rect strokeBounds = stroke.bounds();
     if (strokeBounds.isEmpty())
@@ -241,19 +236,16 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
 
     m_toolLoop->getPointShape()->getModifiedArea(
       m_toolLoop,
-      strokeBounds.x - celOrigin.x,
-      strokeBounds.y - celOrigin.y, r1);
+      strokeBounds.x,
+      strokeBounds.y, r1);
 
     m_toolLoop->getPointShape()->getModifiedArea(
       m_toolLoop,
-      strokeBounds.x+strokeBounds.w-1 - celOrigin.x,
-      strokeBounds.y+strokeBounds.h-1 - celOrigin.y, r2);
+      strokeBounds.x+strokeBounds.w-1,
+      strokeBounds.y+strokeBounds.h-1, r2);
 
     m_dirtyArea.createUnion(m_dirtyArea, Region(r1.createUnion(r2)));
   }
-
-  // Make the dirty area relative to the sprite.
-  m_dirtyArea.offset(celOrigin);
 
   // Merge new dirty area with the previous one (for tools like line
   // or rectangle it's needed to redraw the previous position and

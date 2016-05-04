@@ -27,13 +27,22 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
   TiledMode tiledMode = loop->getTiledMode();
   int x, w, size; // width or height
 
+  // In case the ink needs original cel coordinates, we have to
+  // translate the x1/y/x2 coordinate.
+  if (loop->getInk()->needsCelCoordinates()) {
+    gfx::Point origin = loop->getCelOrigin();
+    x1 -= origin.x;
+    x2 -= origin.x;
+    y -= origin.y;
+  }
+
   // Tiled in Y axis
   if (int(tiledMode) & int(TiledMode::Y_AXIS)) {
     size = loop->getDstImage()->height();      // size = image height
     y = wrap_value(y, size);
   }
   else if (y < 0 || y >= loop->getDstImage()->height())
-      return;
+    return;
 
   // Tiled in X axis
   if (int(tiledMode) & int(TiledMode::X_AXIS)) {

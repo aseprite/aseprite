@@ -209,7 +209,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
         loop->getIntertwine()->prepareIntertwine();
         loop->getPointShape()->preparePointShape(loop);
         loop->getPointShape()->transformPoint(
-          loop, -origBrushBounds.x, -origBrushBounds.y);
+          loop,
+          brushBounds.x-origBrushBounds.x,
+          brushBounds.y-origBrushBounds.y);
       }
     }
 

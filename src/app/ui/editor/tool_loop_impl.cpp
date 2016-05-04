@@ -269,7 +269,7 @@ class ToolLoopImpl : public ToolLoopBase {
   gfx::Point m_maskOrigin;
   bool m_canceled;
   Transaction m_transaction;
-  ExpandCelCanvas m_expandCelCanvas;
+  ExpandCelCanvas* m_expandCelCanvas;
   Image* m_floodfillSrcImage;
 
 public:
@@ -294,22 +294,57 @@ public:
                       getInk()->isSlice() ||
                       getInk()->isZoom()) ? DoesntModifyDocument:
                                             ModifyDocument))
-    , m_expandCelCanvas(
-        editor->getSite(),
-        layer,
-        m_docPref.tiled.mode(),
-        m_transaction,
-        ExpandCelCanvas::Flags(
-          ExpandCelCanvas::NeedsSource |
-          // If the tool is freehand-like, we can use the modified
-          // region directly as undo information to save the modified
-          // pixels (it's faster than creating a Dirty object).
-          // See ExpandCelCanvas::commit() for details about this flag.
-          (getController()->isFreehand() ?
-            ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
-            ExpandCelCanvas::None)))
+    , m_expandCelCanvas(nullptr)
+    , m_floodfillSrcImage(nullptr)
   {
     ASSERT(m_context->activeDocument() == m_editor->document());
+
+    if (m_pointShape->isFloodFill()) {
+      // Prepare a special image for floodfill when it's configured to
+      // stop using all visible layers.
+      if (m_toolPref.floodfill.referTo() == gen::FillReferTo::ALL_LAYERS) {
+        m_floodfillSrcImage = Image::create(m_sprite->pixelFormat(),
+                                            m_sprite->width(),
+                                            m_sprite->height());
+
+        m_floodfillSrcImage->clear(m_sprite->transparentColor());
+
+        render::Render().renderSprite(
+          m_floodfillSrcImage,
+          m_sprite,
+          m_frame,
+          gfx::Clip(m_sprite->bounds()),
+          render::Zoom(1, 1));
+      }
+      else {
+        Cel* cel = m_layer->cel(m_frame);
+        if (cel && (cel->x() != 0 || cel->y() != 0)) {
+          m_floodfillSrcImage = Image::create(m_sprite->pixelFormat(),
+                                              m_sprite->width(),
+                                              m_sprite->height());
+          m_floodfillSrcImage->clear(m_sprite->transparentColor());
+          copy_image(m_floodfillSrcImage, cel->image(), cel->x(), cel->y());
+        }
+      }
+    }
+
+    m_expandCelCanvas = new ExpandCelCanvas(
+      editor->getSite(),
+      layer,
+      m_docPref.tiled.mode(),
+      m_transaction,
+      ExpandCelCanvas::Flags(
+        ExpandCelCanvas::NeedsSource |
+        // If the tool is freehand-like, we can use the modified
+        // region directly as undo information to save the modified
+        // pixels (it's faster than creating a Dirty object).
+        // See ExpandCelCanvas::commit() for details about this flag.
+        (getController()->isFreehand() ?
+         ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
+         ExpandCelCanvas::None)));
+
+    if (!m_floodfillSrcImage)
+      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
 
     // Settings
     switch (tool->getFill(m_button)) {
@@ -341,37 +376,17 @@ public:
       m_transaction.execute(new cmd::SetMask(m_document, &emptyMask));
     }
 
-    m_celOrigin = m_expandCelCanvas.getCel()->position();
+    m_celOrigin = m_expandCelCanvas->getCel()->position();
     m_mask = m_document->mask();
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-m_celOrigin.x,
                                                     m_mask->bounds().y-m_celOrigin.y):
                                          gfx::Point(0, 0));
-
-    // Prepare a special image for floodfill when it's configured to
-    // stop using all visible layers.
-    if (m_pointShape->isFloodFill() &&
-        m_toolPref.floodfill.referTo() == gen::FillReferTo::ALL_LAYERS) {
-      m_floodfillSrcImage = Image::create(m_sprite->pixelFormat(),
-                                          m_sprite->width(),
-                                          m_sprite->height());
-
-      m_floodfillSrcImage->clear(m_sprite->transparentColor());
-
-      render::Render().renderSprite(
-        m_floodfillSrcImage,
-        m_sprite,
-        m_frame,
-        gfx::Clip(m_sprite->bounds()),
-        render::Zoom(1, 1));
-    }
-    else {
-      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
-    }
   }
 
   ~ToolLoopImpl() {
     if (m_floodfillSrcImage != getSrcImage())
       delete m_floodfillSrcImage;
+    delete m_expandCelCanvas;
   }
 
   // IToolLoop interface
@@ -385,7 +400,7 @@ public:
         try {
           ContextReader reader(m_context, 500);
           ContextWriter writer(reader, 500);
-          m_expandCelCanvas.commit();
+          m_expandCelCanvas->commit();
         }
         catch (const LockedDocumentException& ex) {
           Console::showException(ex);
@@ -410,7 +425,7 @@ public:
       try {
         ContextReader reader(m_context, 500);
         ContextWriter writer(reader, 500);
-        m_expandCelCanvas.rollback();
+        m_expandCelCanvas->rollback();
       }
       catch (const LockedDocumentException& ex) {
         Console::showException(ex);
@@ -421,23 +436,23 @@ public:
       update_screen_for_document(m_document);
   }
 
-  const Image* getSrcImage() override { return m_expandCelCanvas.getSourceCanvas(); }
+  const Image* getSrcImage() override { return m_expandCelCanvas->getSourceCanvas(); }
   const Image* getFloodFillSrcImage() override { return m_floodfillSrcImage; }
-  Image* getDstImage() override { return m_expandCelCanvas.getDestCanvas(); }
+  Image* getDstImage() override { return m_expandCelCanvas->getDestCanvas(); }
   void validateSrcImage(const gfx::Region& rgn) override {
-    m_expandCelCanvas.validateSourceCanvas(rgn);
+    m_expandCelCanvas->validateSourceCanvas(rgn);
   }
   void validateDstImage(const gfx::Region& rgn) override {
-    m_expandCelCanvas.validateDestCanvas(rgn);
+    m_expandCelCanvas->validateDestCanvas(rgn);
   }
   void invalidateDstImage() override {
-    m_expandCelCanvas.invalidateDestCanvas();
+    m_expandCelCanvas->invalidateDestCanvas();
   }
   void invalidateDstImage(const gfx::Region& rgn) override {
-    m_expandCelCanvas.invalidateDestCanvas(rgn);
+    m_expandCelCanvas->invalidateDestCanvas(rgn);
   }
   void copyValidDstToSrcImage(const gfx::Region& rgn) override {
-    m_expandCelCanvas.copyValidDestToSourceCanvas(rgn);
+    m_expandCelCanvas->copyValidDestToSourceCanvas(rgn);
   }
 
   bool useMask() override { return m_useMask; }

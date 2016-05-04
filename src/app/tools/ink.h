@@ -66,6 +66,11 @@ namespace app {
       // Returns true if this ink is used to mark slices
       virtual bool isSlice() const { return false; }
 
+      // Returns true if inkHline() needs source cel coordinates
+      // instead of sprite coordinates (i.e. relative to
+      // ToolLoop::getCelOrigin()).
+      virtual bool needsCelCoordinates() const { return true; }
+
       // Returns true if this ink needs a special source area.  For
       // example, blur tool needs one extra pixel to all sides of the
       // modified area, so it can use a 3x3 convolution matrix.
