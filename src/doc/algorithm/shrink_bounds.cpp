@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,37 +11,56 @@
 #include "doc/algorithm/shrink_bounds.h"
 
 #include "doc/image.h"
+#include "doc/image_impl.h"
+#include "doc/primitives_fast.h"
 
 namespace doc {
 namespace algorithm {
 
-static bool is_same_pixel(PixelFormat pixelFormat, color_t pixel1, color_t pixel2)
+namespace {
+
+template<typename ImageTraits>
+bool is_same_pixel(color_t pixel1, color_t pixel2)
 {
-  switch (pixelFormat) {
-    case IMAGE_RGB:
-      if (rgba_geta(pixel1) == 0 && rgba_geta(pixel2) == 0)
-        return true;
-      break;
-    case IMAGE_GRAYSCALE:
-      if (graya_geta(pixel1) == 0 && graya_geta(pixel2) == 0)
-        return true;
-      break;
-  }
+  static_assert(false, "No is_same_pixel impl");
+}
+
+template<>
+bool is_same_pixel<RgbTraits>(color_t pixel1, color_t pixel2)
+{
+  return (rgba_geta(pixel1) == 0 && rgba_geta(pixel2) == 0) || (pixel1 == pixel2);
+}
+
+template<>
+bool is_same_pixel<GrayscaleTraits>(color_t pixel1, color_t pixel2)
+{
+  return (graya_geta(pixel1) == 0 && graya_geta(pixel2) == 0) || (pixel1 == pixel2);
+}
+
+template<>
+bool is_same_pixel<IndexedTraits>(color_t pixel1, color_t pixel2)
+{
   return pixel1 == pixel2;
 }
 
-bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
+template<>
+bool is_same_pixel<BitmapTraits>(color_t pixel1, color_t pixel2)
+{
+  return pixel1 == pixel2;
+}
+
+template<typename ImageTraits>
+bool shrink_bounds_templ(Image* image, gfx::Rect& bounds, color_t refpixel)
 {
   bool shrink;
   int u, v;
-
-  bounds = image->bounds();
 
   // Shrink left side
   for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
     shrink = true;
     for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
-      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel<ImageTraits>(
+            get_pixel_fast<ImageTraits>(image, u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -56,7 +75,8 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   for (u=bounds.x+bounds.w-1; u>=bounds.x; --u) {
     shrink = true;
     for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
-      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel<ImageTraits>(
+            get_pixel_fast<ImageTraits>(image, u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -70,7 +90,8 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
     shrink = true;
     for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
-      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel<ImageTraits>(
+            get_pixel_fast<ImageTraits>(image, u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -85,7 +106,8 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   for (v=bounds.y+bounds.h-1; v>=bounds.y; --v) {
     shrink = true;
     for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
-      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel<ImageTraits>(
+            get_pixel_fast<ImageTraits>(image, u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -96,6 +118,29 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   }
 
   return (!bounds.isEmpty());
+}
+
+}
+
+bool shrink_bounds(Image* image,
+                   const gfx::Rect& start_bounds,
+                   gfx::Rect& bounds,
+                   color_t refpixel)
+{
+  bounds = (start_bounds & image->bounds());
+  switch (image->pixelFormat()) {
+    case IMAGE_RGB:       return shrink_bounds_templ<RgbTraits>(image, bounds, refpixel);
+    case IMAGE_GRAYSCALE: return shrink_bounds_templ<GrayscaleTraits>(image, bounds, refpixel);
+    case IMAGE_INDEXED:   return shrink_bounds_templ<IndexedTraits>(image, bounds, refpixel);
+    case IMAGE_BITMAP:    return shrink_bounds_templ<BitmapTraits>(image, bounds, refpixel);
+  }
+  ASSERT(false);
+  return false;
+}
+
+bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
+{
+  return shrink_bounds(image, image->bounds(), bounds, refpixel);
 }
 
 } // namespace algorithm
