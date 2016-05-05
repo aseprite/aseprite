@@ -508,8 +508,6 @@ void PixelsMovement::stampImage()
 
       expand.commit();
     }
-    // TODO
-    // m_transaction.commit();
   }
 }
 
