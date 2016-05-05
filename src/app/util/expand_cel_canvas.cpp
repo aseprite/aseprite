@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/cmd/add_cel.h"
+#include "app/cmd/clear_cel.h"
 #include "app/cmd/copy_region.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_position.h"
@@ -22,6 +23,7 @@
 #include "app/transaction.h"
 #include "app/util/range_utils.h"
 #include "base/unique_ptr.h"
+#include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -164,21 +166,35 @@ void ExpandCelCanvas::commit()
     static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
     // Add a copy of m_dstImage in the sprite's image stock
-    ImageRef newImage(Image::createCopy(m_dstImage.get()));
-    m_cel->data()->setImage(newImage);
+    gfx::Rect trimBounds = getTrimDstImageBounds();
+    if (!trimBounds.isEmpty()) {
+      ImageRef newImage(trimDstImage(trimBounds));
+      ASSERT(newImage);
 
-    // And finally we add the cel again in the layer.
-    m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
+      m_cel->data()->setImage(newImage);
+      m_cel->setPosition(m_cel->position() + trimBounds.origin());
+
+      // And finally we add the cel again in the layer.
+      m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
+    }
   }
   else if (m_celImage) {
+    // Restore cel position to its original position
+    gfx::Point newPos = m_cel->position();
+    m_cel->setPosition(m_origCelPos);
+
     // If the size of each image is the same, we can create an undo
     // with only the differences between both images.
-    if (m_cel->position() == m_origCelPos &&
+    //
+    // TODO check if the valid destination region is inside the
+    // m_celImage bounds, so we try to use CopyRegion instead of
+    // ReplaceImage in more cases.
+    if (newPos == m_origCelPos &&
         m_bounds.origin() == m_origCelPos &&
         m_celImage->width() == m_dstImage->width() &&
         m_celImage->height() == m_dstImage->height()) {
-      int dx = -m_bounds.x + m_origCelPos.x;
-      int dy = -m_bounds.y + m_origCelPos.y;
+      int dx = m_origCelPos.x - m_bounds.x;
+      int dy = m_origCelPos.y - m_bounds.y;
 
       if ((m_flags & UseModifiedRegionAsUndoInfo) != UseModifiedRegionAsUndoInfo) {
         // TODO Reduce m_validDstRegion to modified areas between
@@ -188,36 +204,44 @@ void ExpandCelCanvas::commit()
       // Copy the destination to the cel image.
       m_transaction.execute(new cmd::CopyRegion(
           m_celImage.get(), m_dstImage.get(), m_validDstRegion, dx, dy));
+
+      ASSERT(m_cel);
+      ASSERT(m_cel->layer());
+      if (m_cel &&
+          m_cel->layer() &&
+          !m_cel->layer()->isBackground()) {
+        m_transaction.execute(new cmd::TrimCel(m_cel));
+      }
     }
     // If the size of both images are different, we have to
     // replace the entire image.
     else {
-      if (m_cel->position() != m_origCelPos) {
-        gfx::Point newPos = m_cel->position();
-        m_cel->setPosition(m_origCelPos);
-        m_transaction.execute(new cmd::SetCelPosition(m_cel, newPos.x, newPos.y));
-      }
-
       // Validate the whole m_dstImage copying invalid areas from m_celImage
       validateDestCanvas(gfx::Region(m_bounds));
 
-      // Replace the image in the stock. We need to create a copy of
-      // image because m_dstImage's ImageBuffer cannot be shared.
-      ImageRef newImage(Image::createCopy(m_dstImage.get()));
-      m_transaction.execute(new cmd::ReplaceImage(
-          m_sprite, m_celImage, newImage));
+      gfx::Rect trimBounds = getTrimDstImageBounds();
+      if (!trimBounds.isEmpty()) {
+        newPos += trimBounds.origin();
+
+        // Replace the image in the stock. We need to create a copy of
+        // image because m_dstImage's ImageBuffer cannot be shared.
+        ImageRef newImage(trimDstImage(trimBounds));
+        ASSERT(newImage);
+
+        if (newPos != m_origCelPos) {
+          m_transaction.execute(new cmd::SetCelPosition(m_cel, newPos.x, newPos.y));
+        }
+
+        m_transaction.execute(
+          new cmd::ReplaceImage(m_sprite, m_celImage, newImage));
+      }
+      else {
+        m_transaction.execute(new cmd::ClearCel(m_cel));
+      }
     }
   }
   else {
     ASSERT(false);
-  }
-
-  ASSERT(m_cel);
-  ASSERT(m_cel->layer());
-  if (m_cel &&
-      m_cel->layer() &&
-      !m_cel->layer()->isBackground()) {
-    m_transaction.execute(new cmd::TrimCel(m_cel));
   }
 
   m_committed = true;
@@ -365,6 +389,27 @@ void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
   for (const auto& rc : rgn2)
     m_srcImage->copy(m_dstImage.get(),
       gfx::Clip(rc.x, rc.y, rc.x, rc.y, rc.w, rc.h));
+}
+
+gfx::Rect ExpandCelCanvas::getTrimDstImageBounds() const
+{
+  if (m_layer->isBackground())
+    return m_dstImage->bounds();
+  else {
+    gfx::Rect bounds;
+    algorithm::shrink_bounds(m_dstImage.get(), bounds,
+                             m_dstImage->maskColor());
+    return bounds;
+  }
+}
+
+ImageRef ExpandCelCanvas::trimDstImage(const gfx::Rect& bounds) const
+{
+  return ImageRef(
+    crop_image(m_dstImage.get(),
+               bounds.x, bounds.y,
+               bounds.w, bounds.h,
+               m_dstImage->maskColor()));
 }
 
 } // namespace app

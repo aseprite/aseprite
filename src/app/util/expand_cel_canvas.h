@@ -71,6 +71,9 @@ namespace app {
     const Cel* getCel() const { return m_cel; }
 
   private:
+    gfx::Rect getTrimDstImageBounds() const;
+    ImageRef trimDstImage(const gfx::Rect& bounds) const;
+
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
