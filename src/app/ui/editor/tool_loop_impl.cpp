@@ -337,8 +337,7 @@ public:
         ExpandCelCanvas::NeedsSource |
         // If the tool is freehand-like, we can use the modified
         // region directly as undo information to save the modified
-        // pixels (it's faster than creating a Dirty object).
-        // See ExpandCelCanvas::commit() for details about this flag.
+        // pixels. See ExpandCelCanvas::commit() for details about this flag.
         (getController()->isFreehand() ?
          ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
          ExpandCelCanvas::None)));
