@@ -79,7 +79,6 @@ namespace app {
     ImageRef m_celImage;
     bool m_celCreated;
     gfx::Point m_origCelPos;
-    gfx::Point m_celPos;
     Flags m_flags;
     gfx::Rect m_bounds;
     ImageRef m_srcImage;
