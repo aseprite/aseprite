@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -66,8 +66,8 @@ Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, co
 {
   ASSERT(image);
 
-  if (w < 1) throw std::invalid_argument("image_crop: Width is less than 1");
-  if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
+  if (w < 1) throw std::invalid_argument("crop_image: Width is less than 1");
+  if (h < 1) throw std::invalid_argument("crop_image: Height is less than 1");
 
   Image* trim = Image::create(image->pixelFormat(), w, h, buffer);
   trim->setMaskColor(image->maskColor());
