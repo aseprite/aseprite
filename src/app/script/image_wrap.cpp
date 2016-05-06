@@ -39,6 +39,9 @@ void ImageWrap::commit()
                         m_backup.get(),
                         m_modifiedRegion, 0, 0,
                         true));
+
+  m_backup.reset(nullptr);
+  m_modifiedRegion.clear();
 }
 
 void ImageWrap::modifyRegion(const gfx::Region& rgn)

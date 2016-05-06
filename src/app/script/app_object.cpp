@@ -12,6 +12,8 @@
 #include "app/script/console_object.h"
 
 #include "app/document.h"
+#include "app/commands/commands.h"
+#include "app/commands/params.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
 #include "app/ui_context.h"
@@ -25,6 +27,30 @@
 namespace app {
 
 namespace {
+
+script::result_t App_open(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  if (!ctx.isString(0) ||
+      !ctx.toString(0))
+    return 0;
+
+  const char* fn = ctx.toString(0);
+
+  app::Document* oldDoc = UIContext::instance()->activeDocument();
+
+  Command* openCommand = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+  Params params;
+  params.set("filename", fn);
+  UIContext::instance()->executeCommand(openCommand, params);
+
+  app::Document* newDoc = UIContext::instance()->activeDocument();
+  if (newDoc != oldDoc)
+    ctx.pushObject(unwrap_engine(ctx)->wrapSprite(newDoc), "Sprite");
+  else
+    ctx.pushNull();
+  return 1;
+}
 
 script::result_t App_get_activeSprite(script::ContextHandle handle)
 {
@@ -66,6 +92,7 @@ script::result_t App_get_version(script::ContextHandle handle)
 }
 
 const script::FunctionEntry App_methods[] = {
+  { "open", App_open, 1 },
   { nullptr, nullptr, 0 }
 };
 

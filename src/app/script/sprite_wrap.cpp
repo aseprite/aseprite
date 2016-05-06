@@ -51,14 +51,19 @@ Transaction& SpriteWrap::transaction()
 
 void SpriteWrap::commit()
 {
-  for (auto it : m_images)
-    it.second->commit();
+  commitImages();
 
   if (m_transaction) {
     m_transaction->commit();
     delete m_transaction;
     m_transaction = nullptr;
   }
+}
+
+void SpriteWrap::commitImages()
+{
+  for (auto it : m_images)
+    it.second->commit();
 }
 
 app::Document* SpriteWrap::document()
@@ -73,8 +78,11 @@ doc::Sprite* SpriteWrap::sprite()
 
 ImageWrap* SpriteWrap::activeImage()
 {
-  if (!m_view)
-    return nullptr;
+  if (!m_view) {
+    m_view = UIContext::instance()->getFirstDocumentView(m_doc);
+    if (!m_view)
+      return nullptr;
+  }
 
   doc::Site site;
   m_view->getSite(&site);
