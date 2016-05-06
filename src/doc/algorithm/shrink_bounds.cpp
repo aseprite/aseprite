@@ -22,7 +22,7 @@ namespace {
 template<typename ImageTraits>
 bool is_same_pixel(color_t pixel1, color_t pixel2)
 {
-  static_assert(false, "No is_same_pixel impl");
+  static_assert(false && sizeof(ImageTraits), "No is_same_pixel impl");
 }
 
 template<>
