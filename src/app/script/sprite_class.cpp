@@ -11,7 +11,6 @@
 
 #include "app/script/sprite_class.h"
 
-#include "app/cmd/set_mask.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
@@ -49,45 +48,6 @@ script::result_t Sprite_ctor(script::ContextHandle handle)
     doc->setContext(UIContext::instance());
     ctx.pushThis(unwrap_engine(ctx)->wrapSprite(doc.release()), "Sprite");
   }
-  return 0;
-}
-
-script::result_t Sprite_select(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  int x = ctx.requireInt(0);
-  int y = ctx.requireInt(1);
-  int w = ctx.requireInt(2);
-  int h = ctx.requireInt(3);
-
-  auto wrap = (SpriteWrap*)ctx.getThis();
-  if (wrap) {
-    Document* doc = wrap->document();
-
-    Mask newMask;
-    if (w > 0 && h > 0)
-      newMask.replace(gfx::Rect(x, y, w, h));
-
-    wrap->transaction().execute(new cmd::SetMask(doc, &newMask));
-  }
-
-  return 0;
-}
-
-script::result_t Sprite_selectAll(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-
-  auto wrap = (SpriteWrap*)ctx.getThis();
-  if (wrap) {
-    Document* doc = wrap->document();
-
-    Mask newMask;
-    newMask.replace(doc->sprite()->bounds());
-
-    wrap->transaction().execute(new cmd::SetMask(doc, &newMask));
-  }
-
   return 0;
 }
 
@@ -262,9 +222,15 @@ script::result_t Sprite_set_height(script::ContextHandle handle)
   return 0;
 }
 
+script::result_t Sprite_get_selection(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  auto wrap = (SpriteWrap*)ctx.getThis();
+  ctx.pushObject(wrap, "Selection");
+  return 1;
+}
+
 const script::FunctionEntry Sprite_methods[] = {
-  { "select", Sprite_select, 4 },
-  { "selectAll", Sprite_selectAll, 0 },
   { "resize", Sprite_resize, 2 },
   { "crop", Sprite_crop, 4 },
   { "save", Sprite_save, 2 },
@@ -277,6 +243,7 @@ const script::PropertyEntry Sprite_props[] = {
   { "filename", Sprite_get_filename, nullptr },
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
+  { "selection", Sprite_get_selection, nullptr },
   { nullptr, nullptr, 0 }
 };
 

@@ -324,6 +324,7 @@ add_library(app-lib
   script/console_object.cpp
   script/image_class.cpp
   script/image_wrap.cpp
+  script/selection_class.cpp
   script/sprite_class.cpp
   script/sprite_wrap.cpp
   send_crash.cpp

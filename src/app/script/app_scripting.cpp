@@ -16,6 +16,7 @@
 #include "app/script/console_object.h"
 #include "app/script/image_class.h"
 #include "app/script/image_wrap.h"
+#include "app/script/selection_class.h"
 #include "app/script/sprite_class.h"
 #include "app/script/sprite_wrap.h"
 
@@ -31,6 +32,7 @@ AppScripting::AppScripting(script::EngineDelegate* delegate)
   ctx.pushGlobalObject();
   register_image_class(-1, ctx);
   register_sprite_class(-1, ctx);
+  register_selection_class(-1, ctx);
 
   ctx.pushPointer(this);
   ctx.setProp(-2, script::kPtrId);
