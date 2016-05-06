@@ -233,11 +233,19 @@ bool get_native_clipboard_bitmap(doc::Image** image,
         const uint32_t* src = (const uint32_t*)(img.data()+spec.bytes_per_row*y);
         for (unsigned long x=0; x<spec.width; ++x, ++it, ++src) {
           const uint32_t c = *((const uint32_t*)src);
+
+          // On Windows, 32bpp images are used for performance only,
+          // the alpha mask is always zero (which means that the image
+          // is only RGB, without alpha information).
+          int alpha =
+            (spec.alpha_mask ?
+             uint8_t((c & spec.alpha_mask) >> spec.alpha_shift): 255);
+
           *it = doc::rgba(
             uint8_t((c & spec.red_mask  ) >> spec.red_shift  ),
             uint8_t((c & spec.green_mask) >> spec.green_shift),
             uint8_t((c & spec.blue_mask ) >> spec.blue_shift ),
-            uint8_t((c & spec.alpha_mask) >> spec.alpha_shift));
+            alpha);
         }
       }
       break;
