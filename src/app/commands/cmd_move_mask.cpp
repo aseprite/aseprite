@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -80,9 +80,7 @@ bool MoveMaskCommand::onEnabled(Context* context)
                                    ContextFlags::HasVisibleMask |
                                    ContextFlags::HasActiveImage);
       else
-        return context->checkFlags(ContextFlags::HasActiveDocument |
-                                   ContextFlags::HasVisibleMask |
-                                   ContextFlags::HasActiveImage);
+        return current_editor;
 
   }
 
