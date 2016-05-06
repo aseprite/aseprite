@@ -112,18 +112,32 @@ script::result_t Sprite_resize(script::ContextHandle handle)
 script::result_t Sprite_crop(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  int x = ctx.requireInt(0);
-  int y = ctx.requireInt(1);
-  int w = ctx.requireInt(2);
-  int h = ctx.requireInt(3);
+  gfx::Rect bounds;
 
   auto wrap = (SpriteWrap*)ctx.getThis();
   if (wrap) {
     wrap->commitImages();
 
     Document* doc = wrap->document();
-    DocumentApi api(doc, wrap->transaction());
-    api.cropSprite(doc->sprite(), gfx::Rect(x, y, w, h));
+
+    // Use mask bounds
+    if (ctx.isUndefined(0)) {
+      if (doc->isMaskVisible())
+        bounds = doc->mask()->bounds();
+      else
+        bounds = doc->sprite()->bounds();
+    }
+    else {
+      bounds.x = ctx.requireInt(0);
+      bounds.y = ctx.requireInt(1);
+      bounds.w = ctx.requireInt(2);
+      bounds.h = ctx.requireInt(3);
+    }
+
+    if (!bounds.isEmpty()) {
+      DocumentApi api(doc, wrap->transaction());
+      api.cropSprite(doc->sprite(), bounds);
+    }
   }
 
   return 0;
