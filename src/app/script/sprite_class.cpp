@@ -45,7 +45,7 @@ script::result_t Sprite_ctor(script::ContextHandle handle)
     sprite.release();
 
     doc->setContext(UIContext::instance());
-    ctx.pushThis(unwrap_engine(ctx)->wrapSprite(doc.release()));
+    ctx.pushThis(unwrap_engine(ctx)->wrapSprite(doc.release()), "Sprite");
   }
   return 0;
 }

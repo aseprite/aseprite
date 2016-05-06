@@ -94,7 +94,7 @@ namespace script {
     void pushUInt(unsigned int val);
     void pushString(const char* str);
     void pushThis();
-    void pushThis(void* ptr);
+    void pushThis(void* ptr, const char* className);
     void pushPointer(void* ptr);
     index_t pushObject();
     index_t pushObject(void* ptr, const char* className);

@@ -284,11 +284,17 @@ void Context::pushThis()
   duk_push_this(m_handle);
 }
 
-void Context::pushThis(void* ptr)
+void Context::pushThis(void* ptr, const char* className)
 {
   duk_push_this(m_handle);
   duk_push_pointer(m_handle, ptr);
   duk_put_prop_string(m_handle, -2, kPtrId);
+
+  // TODO classes in modules isn't supported yet
+  duk_get_global_string(m_handle, className);
+  duk_get_prototype(m_handle, -1);
+  duk_set_prototype(m_handle, -3);
+  duk_pop_2(m_handle);
 }
 
 void Context::pushPointer(void* ptr)
