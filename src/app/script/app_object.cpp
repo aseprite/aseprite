@@ -52,6 +52,13 @@ script::result_t App_open(script::ContextHandle handle)
   return 1;
 }
 
+script::result_t App_exit(script::ContextHandle handle)
+{
+  Command* exitCommand = CommandsModule::instance()->getCommandByName(CommandId::Exit);
+  UIContext::instance()->executeCommand(exitCommand);
+  return 0;
+}
+
 script::result_t App_get_activeSprite(script::ContextHandle handle)
 {
   script::Context ctx(handle);
@@ -93,6 +100,7 @@ script::result_t App_get_version(script::ContextHandle handle)
 
 const script::FunctionEntry App_methods[] = {
   { "open", App_open, 1 },
+  { "exit", App_exit, 1 },
   { nullptr, nullptr, 0 }
 };
 
