@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -54,6 +54,8 @@ ClearMask::ClearMask(Cel* cel)
 
   m_dstImage.reset(new WithImage(image));
   m_bgcolor = doc->bgColor(cel->layer());
+  m_boundsX = bounds.x;
+  m_boundsY = bounds.y;
 
   m_copy.reset(crop_image(image,
       bounds.x, bounds.y, bounds.w, bounds.h, m_bgcolor));
@@ -112,7 +114,7 @@ void ClearMask::clear()
 
 void ClearMask::restore()
 {
-  copy_image(m_dstImage->image(), m_copy.get(), m_offsetX, m_offsetY);
+  copy_image(m_dstImage->image(), m_copy.get(), m_boundsX, m_boundsY);
 }
 
 } // namespace cmd
