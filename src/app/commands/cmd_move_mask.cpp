@@ -80,7 +80,7 @@ bool MoveMaskCommand::onEnabled(Context* context)
                                    ContextFlags::HasVisibleMask |
                                    ContextFlags::HasActiveImage);
       else
-        return current_editor;
+        return (current_editor ? true: false);
 
   }
 
