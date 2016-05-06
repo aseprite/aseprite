@@ -15,6 +15,7 @@
 #include "app/cmd/flip_mask.h"
 #include "app/cmd/flip_masked_cel.h"
 #include "app/cmd/set_mask_position.h"
+#include "app/cmd/trim_cel.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -22,6 +23,7 @@
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/timeline.h"
+#include "app/util/expand_cel_canvas.h"
 #include "app/util/range_utils.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/cel.h"
@@ -75,16 +77,22 @@ void FlipCommand::onExecute(Context* context)
         "Flip Canvas Vertical"));
     DocumentApi api = document->getApi(transaction);
 
-    Mask* mask = document->mask();
+    CelList cels;
     if (m_flipMask) {
-      CelList cels;
-
-      Site site = *writer.site();
       auto range = App::instance()->timeline()->range();
       if (range.enabled())
         cels = get_unique_cels(sprite, range);
       else if (writer.cel())
         cels.push_back(writer.cel());
+    }
+    else {
+      for (Cel* cel : sprite->uniqueCels())
+        cels.push_back(cel);
+    }
+
+    Mask* mask = document->mask();
+    if (m_flipMask && document->isMaskVisible()) {
+      Site site = *writer.site();
 
       for (Cel* cel : cels) {
         site.frame(cel->frame());
@@ -95,47 +103,51 @@ void FlipCommand::onExecute(Context* context)
         if (!image)
           continue;
 
-        bool alreadyFlipped = false;
+        // When the mask is inside the cel, we can try to flip the
+        // pixels inside the image.
+        if (cel->bounds().contains(mask->bounds())) {
+          gfx::Rect flipBounds = mask->bounds();
+          flipBounds.offset(-x, -y);
+          flipBounds &= image->bounds();
+          if (flipBounds.isEmpty())
+            continue;
 
-        // This variable will be the area to be flipped inside the image.
-        gfx::Rect bounds(image->bounds());
-
-        // If there is some portion of sprite selected, we flip the
-        // selected region only. If the mask isn't visible, we flip the
-        // whole image.
-        if (document->isMaskVisible()) {
-          // Intersect the full area of the image with the mask's
-          // bounds, so we don't request to flip an area outside the
-          // image's bounds.
-          bounds = bounds.createIntersection(gfx::Rect(mask->bounds()).offset(-x, -y));
-
-          // If the mask isn't a rectangular area, we've to flip the mask too.
-          if (mask->bitmap() && !mask->isRectangular()) {
-            // Flip the portion of image specified by the mask.
+          if (mask->bitmap() && !mask->isRectangular())
             transaction.execute(new cmd::FlipMaskedCel(cel, m_flipType));
-            alreadyFlipped = true;
-          }
+          else
+            api.flipImage(image, flipBounds, m_flipType);
+
+          transaction.execute(new cmd::TrimCel(cel));
         }
+        // When the mask is bigger than the cel bounds, we have to
+        // expand the cel, make the flip, and shrink it again.
+        else {
+          gfx::Rect flipBounds = (sprite->bounds() & mask->bounds());
+          if (flipBounds.isEmpty())
+            continue;
 
-        // Flip the portion of image specified by "bounds" variable.
-        if (!alreadyFlipped) {
-          if (!document->isMaskVisible()) {
-            api.setCelPosition
-              (sprite, cel,
-                (m_flipType == doc::algorithm::FlipHorizontal ?
-                  sprite->width() - image->width() - cel->x():
-                  cel->x()),
-                (m_flipType == doc::algorithm::FlipVertical ?
-                  sprite->height() - image->height() - cel->y():
-                  cel->y()));
-          }
+          ExpandCelCanvas expand(
+            site, cel->layer(),
+            TiledMode::NONE, transaction,
+            ExpandCelCanvas::None);
 
-          api.flipImage(image, bounds, m_flipType);
+          expand.validateDestCanvas(gfx::Region(flipBounds));
+
+          if (mask->bitmap() && !mask->isRectangular())
+            doc::algorithm::flip_image_with_mask(
+              expand.getDestCanvas(), mask, m_flipType,
+              document->bgColor(cel->layer()));
+          else
+            doc::algorithm::flip_image(
+              expand.getDestCanvas(),
+              flipBounds, m_flipType);
+
+          expand.commit();
         }
       }
     }
     else {
-      for (Cel* cel : sprite->uniqueCels()) {
+      for (Cel* cel : cels) {
         Image* image = cel->image();
 
         api.setCelPosition
