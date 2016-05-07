@@ -208,6 +208,14 @@ script::result_t Sprite_get_height(script::ContextHandle handle)
   return 1;
 }
 
+script::result_t Sprite_get_colorMode(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  auto wrap = (SpriteWrap*)ctx.getThis();
+  ctx.pushInt(wrap->sprite()->pixelFormat());
+  return 1;
+}
+
 script::result_t Sprite_set_height(script::ContextHandle handle)
 {
   script::Context ctx(handle);
@@ -243,6 +251,7 @@ const script::PropertyEntry Sprite_props[] = {
   { "filename", Sprite_get_filename, nullptr },
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
+  { "colorMode", Sprite_get_colorMode, nullptr },
   { "selection", Sprite_get_selection, nullptr },
   { nullptr, nullptr, 0 }
 };

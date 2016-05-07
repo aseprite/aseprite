@@ -22,6 +22,17 @@
 
 namespace app {
 
+namespace {
+
+const script::ConstantEntry ColorMode_constants[] = {
+  { "RGB", double(IMAGE_RGB) },
+  { "GRAYSCALE", double(IMAGE_GRAYSCALE) },
+  { "INDEXED", double(IMAGE_INDEXED) },
+  { nullptr, 0.0 }
+};
+
+}
+
 AppScripting::AppScripting(script::EngineDelegate* delegate)
   : script::Engine(delegate)
 {
@@ -30,6 +41,13 @@ AppScripting::AppScripting(script::EngineDelegate* delegate)
   register_console_object(ctx);
 
   ctx.pushGlobalObject();
+
+  {
+    script::index_t obj = ctx.pushObject();
+    ctx.registerConstants(obj, ColorMode_constants);
+    ctx.setProp(-2, "ColorMode");
+  }
+
   register_image_class(-1, ctx);
   register_sprite_class(-1, ctx);
   register_selection_class(-1, ctx);

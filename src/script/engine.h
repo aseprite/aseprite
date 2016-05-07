@@ -35,6 +35,11 @@ namespace script {
     Function setter;
   };
 
+  struct ConstantEntry {
+    const char* id;
+    double value;
+  };
+
   class Module {
   public:
     virtual ~Module() { }
@@ -100,6 +105,8 @@ namespace script {
     index_t pushObject(void* ptr, const char* className);
     void pushGlobalObject();
 
+    void registerConstants(index_t idx,
+                           const ConstantEntry* consts);
     void registerProp(index_t idx,
                       const char* id,
                       Function getter,

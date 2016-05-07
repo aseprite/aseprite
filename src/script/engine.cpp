@@ -327,6 +327,12 @@ void Context::pushGlobalObject()
   duk_push_global_object(m_handle);
 }
 
+void Context::registerConstants(index_t idx,
+                                const ConstantEntry* consts)
+{
+  duk_put_number_list(m_handle, idx, (const duk_number_list_entry*)consts);
+}
+
 void Context::registerProp(index_t idx,
                            const char* id,
                            Function getter,
