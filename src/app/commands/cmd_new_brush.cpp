@@ -115,9 +115,11 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
   if (buttons & ui::kButtonRight) {
     try {
       ContextWriter writer(UIContext::instance(), 250);
-      Transaction transaction(writer.context(), "Clear");
-      transaction.execute(new cmd::ClearRect(writer.cel(), rect));
-      transaction.commit();
+      if (writer.cel()) {
+        Transaction transaction(writer.context(), "Clear");
+        transaction.execute(new cmd::ClearRect(writer.cel(), rect));
+        transaction.commit();
+      }
     }
     catch (const std::exception& ex) {
       Console::showException(ex);
