@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -368,6 +368,10 @@ void DocumentApi::copyCel(
   LayerImage* dstLayer, frame_t dstFrame, bool continuous)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
+
+  if (srcLayer == dstLayer && srcFrame == dstFrame)
+    return;                     // Nothing to be done
+
   m_transaction.execute(
     new cmd::CopyCel(
       srcLayer, srcFrame,
