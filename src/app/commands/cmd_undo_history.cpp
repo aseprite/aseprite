@@ -20,7 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "base/bind.h"
-#include "base/convert_to.h"
+#include "base/mem_utils.h"
 #include "doc/context_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/site.h"
@@ -42,7 +42,7 @@ public:
           (state ?
            static_cast<Cmd*>(state->cmd())->label()
 #if _DEBUG
-           + std::string(" ") + base::convert_to<std::string>(int(static_cast<Cmd*>(state->cmd())->memSize()))
+           + std::string(" ") + base::get_pretty_memory_size(static_cast<Cmd*>(state->cmd())->memSize())
 #endif
            : std::string("Initial State"))),
         m_state(state) {
