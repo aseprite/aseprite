@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,8 @@ typedef BorderT<int> Border;
 typedef PointT<int> Point;
 typedef RectT<int> Rect;
 typedef SizeT<int> Size;
+
+class Region;
 
 } // namespace gfx
 
