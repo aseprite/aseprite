@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -20,6 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "doc/context_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/site.h"
@@ -38,8 +39,12 @@ public:
   public:
     Item(const undo::UndoState* state)
       : ui::ListItem(
-          (state ? static_cast<Cmd*>(state->cmd())->label():
-                   std::string("Initial State"))),
+          (state ?
+           static_cast<Cmd*>(state->cmd())->label()
+#if _DEBUG
+           + std::string(" ") + base::convert_to<std::string>(int(static_cast<Cmd*>(state->cmd())->memSize()))
+#endif
+           : std::string("Initial State"))),
         m_state(state) {
     }
     const undo::UndoState* state() { return m_state; }
