@@ -33,7 +33,7 @@ std::string get_atom_string(ATOM atom, bool isUnicode)
     result = base::to_utf8(std::wstring(&buf[0]));
   }
   else {
-    std::vector<char> buf;
+    std::vector<char> buf(256, 0);
     UINT chars = GlobalGetAtomNameA(atom, &buf[0], buf.size());
     result = &buf[0];
   }
