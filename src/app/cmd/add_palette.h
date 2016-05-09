@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -33,11 +33,11 @@ namespace cmd {
     void onExecute() override;
     void onUndo() override;
     size_t onMemSize() const override {
-      return sizeof(*this) +
-        (size_t)const_cast<std::stringstream*>(&m_stream)->tellp();
+      return sizeof(*this) + m_size;
     }
 
   private:
+    size_t m_size;
     std::stringstream m_stream;
     frame_t m_frame;
   };

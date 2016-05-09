@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -26,6 +26,7 @@ AddLayer::AddLayer(Layer* folder, Layer* newLayer, Layer* afterThis)
   : m_folder(folder)
   , m_newLayer(newLayer)
   , m_afterThis(afterThis)
+  , m_size(0)
 {
 }
 
@@ -44,6 +45,7 @@ void AddLayer::onUndo()
   Layer* layer = m_newLayer.layer();
 
   write_layer(m_stream, layer);
+  m_size = size_t(m_stream.tellp());
 
   removeLayer(folder, layer);
 }
@@ -59,6 +61,7 @@ void AddLayer::onRedo()
 
   m_stream.str(std::string());
   m_stream.clear();
+  m_size = 0;
 }
 
 void AddLayer::addLayer(Layer* folder, Layer* newLayer, Layer* afterThis)

@@ -23,6 +23,7 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
                        int dst_dx, int dst_dy,
                        bool alreadyCopied)
   : WithImage(dst)
+  , m_size(0)
   , m_alreadyCopied(alreadyCopied)
 {
   // Create region to save/swap later
@@ -40,11 +41,13 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
 
   // Save region pixels
   for (const auto& rc : m_region) {
-    for (int y=0; y<rc.h; ++y)
+    for (int y=0; y<rc.h; ++y) {
       m_stream.write(
         (const char*)src->getPixelAddress(rc.x, rc.y+y),
         src->getRowStrideSize(rc.w));
+    }
   }
+  m_size = size_t(m_stream.tellp());
 }
 
 void CopyRegion::onExecute()
@@ -76,6 +79,7 @@ void CopyRegion::swap()
         image->getRowStrideSize(rc.w));
 
   // Restore m_stream into the image
+  m_stream.seekg(0, std::ios_base::beg);
   for (const auto& rc : m_region) {
     for (int y=0; y<rc.h; ++y) {
       m_stream.read(

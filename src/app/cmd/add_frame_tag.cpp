@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -23,6 +23,7 @@ using namespace doc;
 AddFrameTag::AddFrameTag(Sprite* sprite, FrameTag* frameTag)
   : WithSprite(sprite)
   , WithFrameTag(frameTag)
+  , m_size(0)
 {
 }
 
@@ -40,6 +41,7 @@ void AddFrameTag::onUndo()
   Sprite* sprite = this->sprite();
   FrameTag* frameTag = this->frameTag();
   write_frame_tag(m_stream, frameTag);
+  m_size = size_t(m_stream.tellp());
 
   sprite->frameTags().remove(frameTag);
   sprite->incrementVersion();
@@ -56,12 +58,7 @@ void AddFrameTag::onRedo()
 
   m_stream.str(std::string());
   m_stream.clear();
-}
-
-size_t AddFrameTag::onMemSize() const
-{
-  return sizeof(*this)
-    + (size_t)const_cast<std::stringstream*>(&m_stream)->tellp();
+  m_size = 0;
 }
 
 } // namespace cmd

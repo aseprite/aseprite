@@ -27,7 +27,8 @@ namespace cmd {
     // should do nothing, because modified pixels are alreadt on "dst"
     // (so we use "src" as the original image).
     CopyRegion(Image* dst, const Image* src,
-               const gfx::Region& region, int src_dx, int src_dy,
+               const gfx::Region& region,
+               int dst_dx, int dst_dy,
                bool alreadyCopied = false);
 
   protected:
@@ -35,13 +36,13 @@ namespace cmd {
     void onUndo() override;
     void onRedo() override;
     size_t onMemSize() const override {
-      return sizeof(*this) +
-        (size_t)const_cast<std::stringstream*>(&m_stream)->tellp();
+      return sizeof(*this) + m_size;
     }
 
   private:
     void swap();
 
+    size_t m_size;
     bool m_alreadyCopied;
     gfx::Region m_region;
     std::stringstream m_stream;

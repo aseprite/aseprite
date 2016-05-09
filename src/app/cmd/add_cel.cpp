@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -31,6 +31,7 @@ using namespace doc;
 AddCel::AddCel(Layer* layer, Cel* cel)
   : WithLayer(layer)
   , WithCel(cel)
+  , m_size(0)
 {
 }
 
@@ -55,6 +56,7 @@ void AddCel::onUndo()
     write_celdata(m_stream, cel->data());
   }
   write_cel(m_stream, cel);
+  m_size = size_t(m_stream.tellp());
 
   removeCel(layer, cel);
 }
@@ -78,6 +80,7 @@ void AddCel::onRedo()
 
   m_stream.str(std::string());
   m_stream.clear();
+  m_size = 0;
 }
 
 void AddCel::addCel(Layer* layer, Cel* cel)

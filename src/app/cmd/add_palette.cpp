@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,9 +22,11 @@ using namespace doc;
 
 AddPalette::AddPalette(Sprite* sprite, Palette* pal)
   : WithSprite(sprite)
+  , m_size(0)
   , m_frame(pal->frame())
 {
   write_palette(m_stream, pal);
+  m_size = size_t(m_stream.tellp());
 }
 
 void AddPalette::onExecute()
