@@ -448,25 +448,40 @@ void paste()
         case DocumentRange::kFrames: {
           Transaction transaction(UIContext::instance(), "Paste Frames");
           DocumentApi api = dstDoc->getApi(transaction);
-          frame_t dstFrame = frame_t(editor->frame() + 1);
+          frame_t dstFrame = editor->frame();
 
+          if (srcSpr == dstSpr) {
+            if (srcRange.inRange(dstFrame))
+              dstFrame = srcRange.frameEnd()+1;
+          }
+
+          frame_t srcFrame = srcRange.frameBegin();
           for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
-            api.addFrame(dstSpr, dstFrame);
-            api.setFrameDuration(dstSpr, dstFrame, srcSpr->frameDuration(frame));
+            api.addEmptyFrame(dstSpr, dstFrame);
+
+            // If we are copying frames from/to the same sprite, we
+            // have to adjust the source frame.
+            if (srcSpr == dstSpr) {
+              if (dstFrame < srcFrame)
+                ++srcFrame;
+            }
+
+            api.setFrameDuration(dstSpr, dstFrame, srcSpr->frameDuration(srcFrame));
 
             for (LayerIndex
                    i = LayerIndex(srcLayers.size()-1),
                    j = LayerIndex(dstLayers.size()-1);
                    i >= LayerIndex(0) &&
                    j >= LayerIndex(0); --i, --j) {
-              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->cel(frame);
+              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->cel(srcFrame);
               if (cel && cel->image()) {
                 api.copyCel(
-                  static_cast<LayerImage*>(srcLayers[i]), frame,
+                  static_cast<LayerImage*>(srcLayers[i]), srcFrame,
                   static_cast<LayerImage*>(dstLayers[j]), dstFrame);
               }
             }
 
+            ++srcFrame;
             ++dstFrame;
           }
 
