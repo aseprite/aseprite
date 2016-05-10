@@ -144,14 +144,14 @@ color_t rgba_blender_neg_bw(color_t backdrop, color_t src, int opacity)
 color_t rgba_blender_red_tint(color_t backdrop, color_t src, int opacity)
 {
   int v = rgba_luma(src);
-  src = rgba(v, 0, 0, rgba_geta(src));
+  src = rgba((255+v)/2, v/2, v/2, rgba_geta(src));
   return rgba_blender_normal(backdrop, src, opacity);
 }
 
 color_t rgba_blender_blue_tint(color_t backdrop, color_t src, int opacity)
 {
   int v = rgba_luma(src);
-  src = rgba(0, 0, v, rgba_geta(src));
+  src = rgba(v/2, v/2, (255+v)/2, rgba_geta(src));
   return rgba_blender_normal(backdrop, src, opacity);
 }
 
