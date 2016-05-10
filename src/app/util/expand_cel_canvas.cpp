@@ -182,13 +182,26 @@ void ExpandCelCanvas::commit()
 
     ASSERT(m_cel->image() == m_celImage.get());
 
-    // TODO create a new "dirty dst region" which is the region to be
-    // patched as m_validDstRegion includes more than it's needed.
+    gfx::Region* regionToPatch = &m_validDstRegion;
+    gfx::Region reduced;
+
+    if ((m_flags & NeedsSource) == NeedsSource) {
+      ASSERT(gfx::Region().createSubtraction(m_validDstRegion, m_validSrcRegion).isEmpty());
+
+      for (gfx::Rect rc : m_validDstRegion) {
+        if (algorithm::shrink_bounds2(getSourceCanvas(),
+                                      getDestCanvas(), rc, rc)) {
+          reduced |= gfx::Region(rc);
+        }
+      }
+      regionToPatch = &reduced;
+    }
+
     m_transaction.execute(
       new cmd::PatchCel(
         m_cel,
         m_dstImage.get(),
-        m_validDstRegion,
+        *regionToPatch,
         m_bounds.origin()));
   }
   else {

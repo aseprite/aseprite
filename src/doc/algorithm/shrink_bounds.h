@@ -17,14 +17,19 @@ namespace doc {
 
   namespace algorithm {
 
-    bool shrink_bounds(Image* image,
+    bool shrink_bounds(const Image* image,
                        const gfx::Rect& start_bounds,
                        gfx::Rect& bounds,
                        color_t refpixel);
 
-    bool shrink_bounds(Image* image,
+    bool shrink_bounds(const Image* image,
                        gfx::Rect& bounds,
                        color_t refpixel);
+
+    bool shrink_bounds2(const Image* a,
+                        const Image* b,
+                        const gfx::Rect& start_bounds,
+                        gfx::Rect& bounds);
 
   } // algorithm
 } // doc
