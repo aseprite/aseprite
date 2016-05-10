@@ -11,9 +11,10 @@
 
 #include "app/cmd/trim_cel.h"
 
+#include "app/cmd/crop_cel.h"
+#include "app/cmd/remove_cel.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
-#include "doc/primitives.h"
 
 namespace app {
 namespace cmd {
@@ -21,68 +22,31 @@ namespace cmd {
 using namespace doc;
 
 TrimCel::TrimCel(Cel* cel)
-  : WithCel(cel)
-  , m_originalBounds(cel->image()->bounds())
-  , m_color(cel->image()->maskColor())
-  , m_removeCel(nullptr)
 {
-  if (algorithm::shrink_bounds(cel->image(), m_bounds, m_color)) {
-    m_originalBounds.x = -m_bounds.x;
-    m_originalBounds.y = -m_bounds.y;
+  gfx::Rect newBounds;
+  if (algorithm::shrink_bounds(cel->image(), newBounds,
+                               cel->image()->maskColor())) {
+    newBounds.offset(cel->position());
+    m_subCmd = new cmd::CropCel(cel, newBounds);
   }
-  else
-    m_removeCel = new cmd::RemoveCel(cel);
+  else {
+    m_subCmd = new cmd::RemoveCel(cel);
+  }
 }
 
 void TrimCel::onExecute()
 {
-  if (m_removeCel)
-    m_removeCel->execute(context());
-  else
-    cropImage(m_bounds);
+  m_subCmd->execute(context());
 }
 
 void TrimCel::onUndo()
 {
-  if (m_removeCel)
-    m_removeCel->undo();
-  else
-    cropImage(m_originalBounds);
+  m_subCmd->undo();
 }
 
 void TrimCel::onRedo()
 {
-  if (m_removeCel)
-    m_removeCel->redo();
-  else
-    cropImage(m_bounds);
-}
-
-// Crops the cel image leaving the same ID in the image.
-void TrimCel::cropImage(const gfx::Rect& bounds)
-{
-  Cel* cel = this->cel();
-
-  if (bounds == cel->image()->bounds())
-    return;
-
-  ImageRef image(crop_image(cel->image(),
-                            bounds.x, bounds.y,
-                            bounds.w, bounds.h,
-                            m_color));
-
-  ObjectId id = cel->image()->id();
-  ObjectVersion ver = cel->image()->version();
-  gfx::Point newPos = cel->position() + bounds.origin();
-
-  cel->image()->setId(NullId);
-  image->setId(id);
-  image->setVersion(ver);
-  image->incrementVersion();
-
-  cel->data()->setImage(image);
-  cel->data()->setPosition(newPos);
-  cel->incrementVersion();
+  m_subCmd->redo();
 }
 
 } // namespace cmd

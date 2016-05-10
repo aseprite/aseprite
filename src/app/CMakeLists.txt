@@ -111,6 +111,7 @@ add_library(app-lib
   cmd/copy_frame.cpp
   cmd/copy_rect.cpp
   cmd/copy_region.cpp
+  cmd/crop_cel.cpp
   cmd/deselect_mask.cpp
   cmd/flatten_layers.cpp
   cmd/flip_image.cpp
