@@ -20,7 +20,7 @@ namespace cmd {
 
 CopyRegion::CopyRegion(Image* dst, const Image* src,
                        const gfx::Region& region,
-                       int dst_dx, int dst_dy,
+                       const gfx::Point& dstPos,
                        bool alreadyCopied)
   : WithImage(dst)
   , m_size(0)
@@ -29,7 +29,7 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
   // Create region to save/swap later
   for (const auto& rc : region) {
     gfx::Clip clip(
-      rc.x+dst_dx, rc.y+dst_dy,
+      rc.x+dstPos.x, rc.y+dstPos.y,
       rc.x, rc.y, rc.w, rc.h);
     if (!clip.clip(
           dst->width(), dst->height(),
@@ -43,7 +43,8 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
   for (const auto& rc : m_region) {
     for (int y=0; y<rc.h; ++y) {
       m_stream.write(
-        (const char*)src->getPixelAddress(rc.x, rc.y+y),
+        (const char*)src->getPixelAddress(rc.x-dstPos.x,
+                                          rc.y-dstPos.y+y),
         src->getRowStrideSize(rc.w));
     }
   }

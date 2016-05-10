@@ -120,6 +120,7 @@ add_library(app-lib
   cmd/layer_from_background.cpp
   cmd/move_cel.cpp
   cmd/move_layer.cpp
+  cmd/patch_cel.cpp
   cmd/remap_colors.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp

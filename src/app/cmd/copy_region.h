@@ -11,6 +11,7 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_image.h"
+#include "gfx/point.h"
 #include "gfx/region.h"
 
 #include <sstream>
@@ -28,7 +29,7 @@ namespace cmd {
     // (so we use "src" as the original image).
     CopyRegion(Image* dst, const Image* src,
                const gfx::Region& region,
-               int dst_dx, int dst_dy,
+               const gfx::Point& dstPos,
                bool alreadyCopied = false);
 
   protected:

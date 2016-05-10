@@ -14,10 +14,7 @@
 #include "app/app.h"
 #include "app/cmd/add_cel.h"
 #include "app/cmd/clear_cel.h"
-#include "app/cmd/copy_region.h"
-#include "app/cmd/replace_image.h"
-#include "app/cmd/set_cel_position.h"
-#include "app/cmd/trim_cel.h"
+#include "app/cmd/patch_cel.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/transaction.h"
@@ -183,62 +180,16 @@ void ExpandCelCanvas::commit()
     gfx::Point newPos = m_cel->position();
     m_cel->setPosition(m_origCelPos);
 
-    // If the size of each image is the same, we can create an undo
-    // with only the differences between both images.
-    //
-    // TODO check if the valid destination region is inside the
-    // m_celImage bounds, so we try to use CopyRegion instead of
-    // ReplaceImage in more cases.
-    if (newPos == m_origCelPos &&
-        m_bounds.origin() == m_origCelPos &&
-        m_celImage->width() == m_dstImage->width() &&
-        m_celImage->height() == m_dstImage->height()) {
-      int dx = m_origCelPos.x - m_bounds.x;
-      int dy = m_origCelPos.y - m_bounds.y;
+    ASSERT(m_cel->image() == m_celImage.get());
 
-      if ((m_flags & UseModifiedRegionAsUndoInfo) != UseModifiedRegionAsUndoInfo) {
-        // TODO Reduce m_validDstRegion to modified areas between
-        //      m_celImage and m_dstImage
-      }
-
-      // Copy the destination to the cel image.
-      m_transaction.execute(new cmd::CopyRegion(
-          m_celImage.get(), m_dstImage.get(), m_validDstRegion, dx, dy));
-
-      ASSERT(m_cel);
-      ASSERT(m_cel->layer());
-      if (m_cel &&
-          m_cel->layer() &&
-          !m_cel->layer()->isBackground()) {
-        m_transaction.execute(new cmd::TrimCel(m_cel));
-      }
-    }
-    // If the size of both images are different, we have to
-    // replace the entire image.
-    else {
-      // Validate the whole m_dstImage copying invalid areas from m_celImage
-      validateDestCanvas(gfx::Region(m_bounds));
-
-      gfx::Rect trimBounds = getTrimDstImageBounds();
-      if (!trimBounds.isEmpty()) {
-        newPos += trimBounds.origin();
-
-        // Replace the image in the stock. We need to create a copy of
-        // image because m_dstImage's ImageBuffer cannot be shared.
-        ImageRef newImage(trimDstImage(trimBounds));
-        ASSERT(newImage);
-
-        if (newPos != m_origCelPos) {
-          m_transaction.execute(new cmd::SetCelPosition(m_cel, newPos.x, newPos.y));
-        }
-
-        m_transaction.execute(
-          new cmd::ReplaceImage(m_sprite, m_celImage, newImage));
-      }
-      else {
-        m_transaction.execute(new cmd::ClearCel(m_cel));
-      }
-    }
+    // TODO create a new "dirty dst region" which is the region to be
+    // patched as m_validDstRegion includes more than it's needed.
+    m_transaction.execute(
+      new cmd::PatchCel(
+        m_cel,
+        m_dstImage.get(),
+        m_validDstRegion,
+        m_bounds.origin()));
   }
   else {
     ASSERT(false);

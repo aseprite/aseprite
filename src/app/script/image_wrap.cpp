@@ -37,7 +37,8 @@ void ImageWrap::commit()
   sprite()->transaction().execute(
     new cmd::CopyRegion(m_image,
                         m_backup.get(),
-                        m_modifiedRegion, 0, 0,
+                        m_modifiedRegion,
+                        gfx::Point(0, 0),
                         true));
 
   m_backup.reset(nullptr);
