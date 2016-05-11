@@ -91,6 +91,11 @@ namespace app {
     Transaction& m_transaction;
     gfx::Region m_validSrcRegion;
     gfx::Region m_validDstRegion;
+
+    // True if we can compare src image with dst image to patch the
+    // cel. This is false when dst is copied to the src, so we cannot
+    // reduce the patched region because both images will be the same.
+    bool m_canCompareSrcVsDst;
   };
 
 } // namespace app

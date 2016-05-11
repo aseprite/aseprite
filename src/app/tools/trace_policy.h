@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -38,7 +38,7 @@ namespace app {
 
       // Like accumulate, but the destination is copied to the source
       // on each ToolLoop step, so the tool overlaps its own effect.
-      // Used by blur, jumble, or spray.
+      // Used by jumble and spray.
       Overlap,
 
     };

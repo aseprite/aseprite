@@ -73,6 +73,7 @@ ExpandCelCanvas::ExpandCelCanvas(
   , m_closed(false)
   , m_committed(false)
   , m_transaction(transaction)
+  , m_canCompareSrcVsDst((m_flags & NeedsSource) == NeedsSource)
 {
   ASSERT(!singleton);
   singleton = this;
@@ -184,7 +185,7 @@ void ExpandCelCanvas::commit()
     gfx::Region* regionToPatch = &m_validDstRegion;
     gfx::Region reduced;
 
-    if ((m_flags & NeedsSource) == NeedsSource) {
+    if (m_canCompareSrcVsDst) {
       ASSERT(gfx::Region().createSubtraction(m_validDstRegion, m_validSrcRegion).isEmpty());
 
       for (gfx::Rect rc : m_validDstRegion) {
@@ -193,6 +194,7 @@ void ExpandCelCanvas::commit()
           reduced |= gfx::Region(rc);
         }
       }
+
       regionToPatch = &reduced;
     }
 
@@ -352,6 +354,11 @@ void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
   for (const auto& rc : rgn2)
     m_srcImage->copy(m_dstImage.get(),
       gfx::Clip(rc.x, rc.y, rc.x, rc.y, rc.w, rc.h));
+
+  // We cannot compare src vs dst in this case (e.g. on tools like
+  // spray and jumble that updated the source image form the modified
+  // destination).
+  m_canCompareSrcVsDst = false;
 }
 
 gfx::Rect ExpandCelCanvas::getTrimDstImageBounds() const
