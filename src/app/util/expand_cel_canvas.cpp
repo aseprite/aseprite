@@ -177,7 +177,6 @@ void ExpandCelCanvas::commit()
   }
   else if (m_celImage) {
     // Restore cel position to its original position
-    gfx::Point newPos = m_cel->position();
     m_cel->setPosition(m_origCelPos);
 
     ASSERT(m_cel->image() == m_celImage.get());
