@@ -34,6 +34,11 @@ TrimCel::TrimCel(Cel* cel)
   }
 }
 
+TrimCel::~TrimCel()
+{
+  delete m_subCmd;
+}
+
 void TrimCel::onExecute()
 {
   m_subCmd->execute(context());

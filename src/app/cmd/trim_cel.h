@@ -21,6 +21,7 @@ namespace cmd {
   class TrimCel : public Cmd {
   public:
     TrimCel(doc::Cel* cel);
+    ~TrimCel();
 
   protected:
     void onExecute() override;
