@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,10 +16,10 @@ namespace she {
 
 namespace ui {
 
-  class ImageView : public Widget
-  {
+  class ImageView : public Widget {
   public:
-    ImageView(she::Surface* sur, int align);
+    ImageView(she::Surface* sur, int align, bool disposeSurface);
+    ~ImageView();
 
   protected:
     void onSizeHint(SizeHintEvent& ev) override;
@@ -27,6 +27,7 @@ namespace ui {
 
   private:
     she::Surface* m_sur;
+    bool m_disposeSurface;
   };
 
 } // namespace ui

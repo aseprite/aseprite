@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -480,7 +480,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
       try {
         she::Surface* sur = she::instance()->loadRgbaSurface(rf.filename().c_str());
-        widget = new ImageView(sur, 0);
+        widget = new ImageView(sur, 0, true);
       }
       catch (...) {
         throw base::Exception("Error loading %s file", file);

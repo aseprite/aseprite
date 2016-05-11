@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,11 +20,18 @@
 
 namespace ui {
 
-ImageView::ImageView(she::Surface* sur, int align)
+ImageView::ImageView(she::Surface* sur, int align, bool dispose)
  : Widget(kImageViewWidget)
  , m_sur(sur)
+ , m_disposeSurface(dispose)
 {
   setAlign(align);
+}
+
+ImageView::~ImageView()
+{
+  if (m_disposeSurface)
+    delete m_sur;
 }
 
 void ImageView::onSizeHint(SizeHintEvent& ev)
