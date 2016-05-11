@@ -66,6 +66,7 @@ PixelsMovement::PixelsMovement(
   , m_adjustPivot(false)
   , m_handle(NoHandle)
   , m_originalImage(Image::createCopy(moveThis))
+  , m_opaque(false)
   , m_maskColor(m_sprite->transparentColor())
 {
   gfx::Transformation transform(mask->bounds());
