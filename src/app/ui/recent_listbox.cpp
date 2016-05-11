@@ -98,8 +98,11 @@ RecentListBox::RecentListBox()
 
 void RecentListBox::rebuildList()
 {
-  while (lastChild())
-    removeChild(lastChild());
+  while (lastChild()) {
+    auto child = lastChild();
+    removeChild(child);
+    child->deferDelete();
+  }
 
   onRebuildList();
 
