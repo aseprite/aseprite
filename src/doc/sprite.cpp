@@ -39,9 +39,7 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
 Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   : Object(ObjectType::Sprite)
   , m_document(NULL)
-  , m_format(format)
-  , m_width(width)
-  , m_height(height)
+  , m_spec((ColorMode)format, width, height, 0)
   , m_frames(1)
   , m_frameTags(this)
 {
@@ -74,10 +72,12 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   // Initial RGB map
   m_rgbMap = NULL;
 
-  // The transparent color for indexed images is 0 by default
-  m_transparentColor = 0;
-
   setPalette(&pal, true);
+}
+
+Sprite::Sprite(const ImageSpec& spec, int ncolors)
+  : Sprite((PixelFormat)spec.colorMode(), spec.width(), spec.height(), ncolors)
+{
 }
 
 Sprite::~Sprite()
@@ -135,7 +135,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
 
 void Sprite::setPixelFormat(PixelFormat format)
 {
-  m_format = format;
+  m_spec.setColorMode((ColorMode)format);
 }
 
 void Sprite::setSize(int width, int height)
@@ -143,13 +143,12 @@ void Sprite::setSize(int width, int height)
   ASSERT(width > 0);
   ASSERT(height > 0);
 
-  m_width = width;
-  m_height = height;
+  m_spec.setSize(width, height);
 }
 
 bool Sprite::needAlpha() const
 {
-  switch (m_format) {
+  switch (pixelFormat()) {
     case IMAGE_RGB:
     case IMAGE_GRAYSCALE: {
       Layer* bg = backgroundLayer();
@@ -161,7 +160,7 @@ bool Sprite::needAlpha() const
 
 bool Sprite::supportAlpha() const
 {
-  switch (m_format) {
+  switch (pixelFormat()) {
     case IMAGE_RGB:
     case IMAGE_GRAYSCALE:
       return true;
@@ -171,7 +170,7 @@ bool Sprite::supportAlpha() const
 
 void Sprite::setTransparentColor(color_t color)
 {
-  m_transparentColor = color;
+  m_spec.setMaskColor(color);
 
   // Change the mask color of all images.
   std::vector<Image*> images;
@@ -471,7 +470,7 @@ void Sprite::getImages(std::vector<Image*>& images) const
 
 void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 {
-  ASSERT(m_format == IMAGE_INDEXED);
+  ASSERT(pixelFormat() == IMAGE_INDEXED);
   //ASSERT(remap.size() == 256);
 
   for (const Cel* cel : uniqueCels()) {

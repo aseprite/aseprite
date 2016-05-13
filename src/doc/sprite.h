@@ -15,6 +15,7 @@
 #include "doc/frame.h"
 #include "doc/frame_tags.h"
 #include "doc/image_ref.h"
+#include "doc/image_spec.h"
 #include "doc/layer_index.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
@@ -51,6 +52,7 @@ namespace doc {
     // Constructors/Destructor
 
     Sprite(PixelFormat format, int width, int height, int ncolors);
+    Sprite(const ImageSpec& spec, int ncolors);
     virtual ~Sprite();
 
     static Sprite* createBasicSprite(PixelFormat format, int width, int height, int ncolors);
@@ -58,15 +60,17 @@ namespace doc {
     ////////////////////////////////////////
     // Main properties
 
+    const ImageSpec& spec() const { return m_spec; }
+
     Document* document() { return m_document; }
     void setDocument(Document* doc) { m_document = doc; }
 
-    PixelFormat pixelFormat() const { return m_format; }
+    PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
     void setPixelFormat(PixelFormat format);
 
-    gfx::Rect bounds() const { return gfx::Rect(0, 0, m_width, m_height); }
-    int width() const { return m_width; }
-    int height() const { return m_height; }
+    gfx::Rect bounds() const { return m_spec.bounds(); }
+    int width() const { return m_spec.width(); }
+    int height() const { return m_spec.height(); }
     void setSize(int width, int height);
 
     // Returns true if the rendered images will contain alpha values less
@@ -75,7 +79,7 @@ namespace doc {
     bool needAlpha() const;
     bool supportAlpha() const;
 
-    color_t transparentColor() const { return m_transparentColor; }
+    color_t transparentColor() const { return m_spec.maskColor(); }
     void setTransparentColor(color_t color);
 
     virtual int getMemSize() const override;
@@ -155,9 +159,7 @@ namespace doc {
 
   private:
     Document* m_document;
-    PixelFormat m_format;                  // pixel format
-    int m_width;                           // image width (in pixels)
-    int m_height;                          // image height (in pixels)
+    ImageSpec m_spec;
     frame_t m_frames;                      // how many frames has this sprite
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes
@@ -165,9 +167,6 @@ namespace doc {
 
     // Current rgb map
     mutable RgbMap* m_rgbMap;
-
-    // Transparent color used in indexed images
-    color_t m_transparentColor;
 
     FrameTags m_frameTags;
 

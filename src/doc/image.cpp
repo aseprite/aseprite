@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,11 +21,8 @@ namespace doc {
 
 Image::Image(PixelFormat format, int width, int height)
   : Object(ObjectType::Image)
-  , m_format(format)
+  , m_spec((ColorMode)format, width, height, 0)
 {
-  m_width = width;
-  m_height = height;
-  m_maskColor = 0;
 }
 
 Image::~Image()
@@ -34,12 +31,12 @@ Image::~Image()
 
 int Image::getMemSize() const
 {
-  return sizeof(Image) + getRowStrideSize()*m_height;
+  return sizeof(Image) + getRowStrideSize()*height();
 }
 
 int Image::getRowStrideSize() const
 {
-  return getRowStrideSize(m_width);
+  return getRowStrideSize(width());
 }
 
 int Image::getRowStrideSize(int pixels_per_row) const
