@@ -134,7 +134,7 @@ color_t rgba_blender_merge(color_t backdrop, color_t src, int opacity)
 color_t rgba_blender_neg_bw(color_t backdrop, color_t src, int opacity)
 {
   if (!(backdrop & rgba_a_mask))
-    return src;
+    return rgba(0, 0, 0, 255);
   else if (rgba_luma(backdrop) < 128)
     return rgba(255, 255, 255, 255);
   else
