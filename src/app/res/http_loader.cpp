@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -28,7 +28,7 @@ namespace app {
 HttpLoader::HttpLoader(const std::string& url)
   : m_url(url)
   , m_done(false)
-  , m_cancel(false)
+  , m_request(nullptr)
   , m_thread(base::Bind<void>(&HttpLoader::threadHttpRequest, this))
 {
 }
@@ -38,9 +38,10 @@ HttpLoader::~HttpLoader()
   m_thread.join();
 }
 
-void HttpLoader::cancel()
+void HttpLoader::abort()
 {
-  m_cancel = true;
+  if (m_request)
+    m_request->abort();
 }
 
 void HttpLoader::threadHttpRequest()
@@ -61,12 +62,12 @@ void HttpLoader::threadHttpRequest()
     fn = base::join_path(dir, fn);
 
     std::ofstream output(FSTREAM_PATH(fn), std::ofstream::binary);
-    net::HttpRequest http(m_url);
+    m_request = new net::HttpRequest(m_url);
     net::HttpResponse response(&output);
-    http.send(response);
-
-    if (response.status() == 200)
+    if (m_request->send(response) &&
+        response.status() == 200) {
       m_filename = fn;
+    }
 
     LOG("Response: %d\n", response.status());
   }
@@ -76,6 +77,9 @@ void HttpLoader::threadHttpRequest()
   catch (...) {
     LOG("Unexpected unknown exception sending http request\n");
   }
+
+  delete m_request;
+  m_request = nullptr;
 }
 
 } // namespace app

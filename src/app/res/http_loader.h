@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,10 @@
 #include "base/thread.h"
 #include <string>
 
+namespace net {
+  class HttpRequest;
+}
+
 namespace app {
 
   class HttpLoader {
@@ -19,7 +23,7 @@ namespace app {
     HttpLoader(const std::string& url);
     ~HttpLoader();
 
-    void cancel();
+    void abort();
     bool isDone() const { return m_done; }
     std::string filename() const { return m_filename; }
 
@@ -28,7 +32,7 @@ namespace app {
 
     std::string m_url;
     bool m_done;
-    bool m_cancel;
+    net::HttpRequest* m_request;
     base::thread m_thread;
     std::string m_filename;
   };
