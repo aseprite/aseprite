@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -62,10 +62,6 @@ namespace updater {
   class CheckUpdateDelegate {
   public:
     virtual ~CheckUpdateDelegate() { }
-
-    // Returns true when the user is quitting the application so he does
-    // not want to continue checking for updates.
-    // virtual bool abortRequest() = 0;
 
     // Called by CheckUpdate::checkNewVersion() when the response from
     // the "updates server" is received.

@@ -71,7 +71,7 @@ public:
 
   void abort()
   {
-    // TODO
+    curl_easy_cleanup(m_curl);
   }
 
 private:

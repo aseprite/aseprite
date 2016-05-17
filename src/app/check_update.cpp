@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,50 +27,33 @@ static const int kMonitoringPeriod = 100;
 
 namespace app {
 
-class CheckUpdateBackgroundJob : public updater::CheckUpdateDelegate
-{
+class CheckUpdateBackgroundJob : public updater::CheckUpdateDelegate {
 public:
   CheckUpdateBackgroundJob()
-    : m_canceled(false)
-    , m_received(false) { }
+    : m_received(false) { }
 
-  virtual ~CheckUpdateBackgroundJob() { }
-
-  void cancel()
-  {
-    m_canceled = true;
+  void abort() {
+    m_checker.abort();
   }
 
-  bool isCanceled() const
-  {
-    return m_canceled;
-  }
-
-  bool isReceived() const
-  {
+  bool isReceived() const {
     return m_received;
   }
 
-  void sendRequest(const updater::Uuid& uuid, const std::string& extraParams)
-  {
+  void sendRequest(const updater::Uuid& uuid, const std::string& extraParams) {
     m_checker.checkNewVersion(uuid, extraParams, this);
   }
 
-  const updater::CheckUpdateResponse& getResponse() const
-  {
+  const updater::CheckUpdateResponse& getResponse() const {
     return m_response;
   }
 
 private:
-
-  // CheckUpdateDelegate implementation
-  virtual void onResponse(updater::CheckUpdateResponse& data)
-  {
+  void onResponse(updater::CheckUpdateResponse& data) override {
     m_response = data;
     m_received = true;
   }
 
-  bool m_canceled;
   bool m_received;
   updater::CheckUpdate m_checker;
   updater::CheckUpdateResponse m_response;
@@ -117,7 +100,7 @@ CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
 
   if (m_thread) {
     if (m_bgJob)
-      m_bgJob->cancel();
+      m_bgJob->abort();
 
     m_thread->join();
   }

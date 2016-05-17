@@ -12,8 +12,9 @@
 #include "updater/check_update.h"
 
 #include "base/bind.h"
-#include "base/debug.h"
 #include "base/convert_to.h"
+#include "base/debug.h"
+#include "base/unique_ptr.h"
 #include "net/http_headers.h"
 #include "net/http_request.h"
 #include "net/http_response.h"
@@ -91,14 +92,12 @@ public:
 
   void abort()
   {
-    // TODO impl
+    if (m_request)
+      m_request->abort();
   }
 
   void checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
   {
-    using namespace base;
-    using namespace net;
-
 #ifndef UPDATE_URL
 #define UPDATE_URL ""
 #pragma message("warning: Define UPDATE_URL macro")
@@ -114,14 +113,14 @@ public:
       url += extraParams;
     }
 
-    HttpRequest request(url);
-    HttpHeaders headers;
+    m_request.reset(new net::HttpRequest(url));
+    net::HttpHeaders headers;
     headers.setHeader("User-Agent", getUserAgent());
-    request.setHeaders(headers);
+    m_request->setHeaders(headers);
 
     std::stringstream body;
-    HttpResponse response(&body);
-    request.send(response);
+    net::HttpResponse response(&body);
+    m_request->send(response);
 
     TRACE("Checking updates: %s (User-Agent: %s)\n", url.c_str(), getUserAgent().c_str());
     TRACE("Response:\n--\n%s--\n", body.str().c_str());
@@ -130,6 +129,8 @@ public:
     delegate->onResponse(data);
   }
 
+private:
+  base::UniquePtr<net::HttpRequest> m_request;
 };
 
 CheckUpdate::CheckUpdate()
