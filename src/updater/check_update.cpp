@@ -96,7 +96,7 @@ public:
       m_request->abort();
   }
 
-  void checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
+  bool checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
   {
 #ifndef UPDATE_URL
 #define UPDATE_URL ""
@@ -120,13 +120,16 @@ public:
 
     std::stringstream body;
     net::HttpResponse response(&body);
-    m_request->send(response);
+    if (m_request->send(response)) {
+      TRACE("Checking updates: %s (User-Agent: %s)\n", url.c_str(), getUserAgent().c_str());
+      TRACE("Response:\n--\n%s--\n", body.str().c_str());
 
-    TRACE("Checking updates: %s (User-Agent: %s)\n", url.c_str(), getUserAgent().c_str());
-    TRACE("Response:\n--\n%s--\n", body.str().c_str());
-
-    CheckUpdateResponse data(body.str());
-    delegate->onResponse(data);
+      CheckUpdateResponse data(body.str());
+      delegate->onResponse(data);
+      return true;
+    }
+    else
+      return false;
   }
 
 private:
@@ -148,9 +151,9 @@ void CheckUpdate::abort()
   m_impl->abort();
 }
 
-void CheckUpdate::checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
+bool CheckUpdate::checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
 {
-  m_impl->checkNewVersion(uuid, extraParams, delegate);
+  return m_impl->checkNewVersion(uuid, extraParams, delegate);
 }
 
 } // namespace updater

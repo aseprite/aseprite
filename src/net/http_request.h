@@ -1,5 +1,5 @@
 // Aseprite Network Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,14 +18,13 @@ class HttpHeaders;
 class HttpRequestImpl;
 class HttpResponse;
 
-class HttpRequest
-{
+class HttpRequest {
 public:
   HttpRequest(const std::string& url);
   ~HttpRequest();
 
   void setHeaders(const HttpHeaders& headers);
-  void send(HttpResponse& response);
+  bool send(HttpResponse& response);
   void abort();
 
 private:

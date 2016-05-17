@@ -18,30 +18,26 @@
 
 namespace net {
 
-class HttpRequestImpl
-{
+class HttpRequestImpl {
 public:
   HttpRequestImpl(const std::string& url)
     : m_curl(curl_easy_init())
-    , m_headerlist(NULL)
-    , m_response(NULL)
-  {
+    , m_headerlist(nullptr)
+    , m_response(nullptr) {
     curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, this);
     curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, &HttpRequestImpl::writeBodyCallback);
     curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(m_curl, CURLOPT_NOSIGNAL, 1);
   }
 
-  ~HttpRequestImpl()
-  {
+  ~HttpRequestImpl() {
     if (m_headerlist)
       curl_slist_free_all(m_headerlist);
 
     curl_easy_cleanup(m_curl);
   }
 
-  void setHeaders(const HttpHeaders& headers)
-  {
+  void setHeaders(const HttpHeaders& headers) {
     if (m_headerlist) {
       curl_slist_free_all(m_headerlist);
       m_headerlist = NULL;
@@ -59,31 +55,31 @@ public:
     curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, m_headerlist);
   }
 
-  void send(HttpResponse& response)
-  {
+  bool send(HttpResponse& response) {
     m_response = &response;
-    curl_easy_perform(m_curl);
+    int res = curl_easy_perform(m_curl);
+    if (res != CURLE_OK)
+      return false;
 
     long code;
     curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &code);
     m_response->setStatus(code);
+    return true;
   }
 
-  void abort()
-  {
-    curl_easy_cleanup(m_curl);
+  void abort() {
+    curl_easy_setopt(m_curl, CURLOPT_TIMEOUT_MS, 1);
+    curl_easy_setopt(m_curl, CURLOPT_CONNECTTIMEOUT_MS, 1);
   }
 
 private:
-  std::size_t writeBody(char* ptr, std::size_t bytes)
-  {
+  std::size_t writeBody(char* ptr, std::size_t bytes) {
     ASSERT(m_response != NULL);
     m_response->write(ptr, bytes);
     return bytes;
   }
 
-  static std::size_t writeBodyCallback(char* ptr, std::size_t size, std::size_t nmemb, void* userdata)
-  {
+  static std::size_t writeBodyCallback(char* ptr, std::size_t size, std::size_t nmemb, void* userdata) {
     HttpRequestImpl* req = reinterpret_cast<HttpRequestImpl*>(userdata);
     return req->writeBody(ptr, size*nmemb);
   }
@@ -108,9 +104,9 @@ void HttpRequest::setHeaders(const HttpHeaders& headers)
   m_impl->setHeaders(headers);
 }
 
-void HttpRequest::send(HttpResponse& response)
+bool HttpRequest::send(HttpResponse& response)
 {
-  m_impl->send(response);
+  return m_impl->send(response);
 }
 
 void HttpRequest::abort()

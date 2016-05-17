@@ -80,7 +80,7 @@ namespace updater {
 
     // Sends a request to the "updates server" and calls the delegate
     // when the response is received.
-    void checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate);
+    bool checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate);
 
   private:
     class CheckUpdateImpl;
