@@ -180,6 +180,7 @@ add_library(app-lib
   commands/cmd_color_quantization.cpp
   commands/cmd_copy.cpp
   commands/cmd_copy_cel.cpp
+  commands/cmd_copy_merged.cpp
   commands/cmd_crop.cpp
   commands/cmd_cut.cpp
   commands/cmd_deselect_mask.cpp

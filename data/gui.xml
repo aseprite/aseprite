@@ -12,7 +12,7 @@
       <key command="OpenFile" shortcut="Ctrl+O" mac="Cmd+O" />
       <key command="SaveFile" shortcut="Ctrl+S" mac="Cmd+S" />
       <key command="SaveFileAs" shortcut="Ctrl+Shift+S" mac="Cmd+Shift+S" />
-      <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" mac="Cmd+Shift+C" />
+      <key command="SaveFileCopyAs" shortcut="Ctrl+Alt+Shift+S" mac="Cmd+Alt+Shift+S" />
       <key command="CloseFile" shortcut="Ctrl+W" mac="Cmd+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" mac="Cmd+Shift+W" />
       <key command="ImportSpriteSheet" shortcut="Ctrl+I" mac="Cmd+I" />
@@ -35,6 +35,7 @@
       <key command="Cut" shortcut="Shift+Del" />
       <key command="Copy" shortcut="Ctrl+C" mac="Cmd+C" />
       <key command="Copy" shortcut="Ctrl+Ins" mac="Cmd+Ins" />
+      <key command="CopyMerged" shortcut="Ctrl+Shift+C" mac="Cmd+Shift+C" />
       <key command="Paste" shortcut="Ctrl+V" mac="Cmd+V" />
       <key command="Paste" shortcut="Shift+Ins" />
       <key command="Clear" shortcut="Del" />
@@ -530,6 +531,7 @@
         <separator />
         <item command="Cut" text="Cu&amp;t" />
         <item command="Copy" text="&amp;Copy" />
+        <item command="CopyMerged" text="Copy Mer&amp;ged" />
         <item command="Paste" text="&amp;Paste" />
         <item command="Clear" text="C&amp;lear" />
         <separator />
