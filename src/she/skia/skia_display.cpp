@@ -24,10 +24,10 @@ SkiaDisplay::SkiaDisplay(int width, int height, int scale)
   , m_customSurface(false)
   , m_nativeCursor(kArrowCursor)
 {
-  m_surface->create(width / scale,
-                    height / scale);
   m_window.setScale(scale);
   m_window.setVisible(true);
+
+  resetSkiaSurface();
 
   m_initialized = true;
 }
