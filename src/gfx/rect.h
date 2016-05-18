@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013, 2015 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -43,6 +43,12 @@ public:
   RectT(const RectT<T>& rect) :
     x(rect.x), y(rect.y),
     w(rect.w), h(rect.h) {
+  }
+
+  template<typename T2>
+  RectT(const RectT<T2>& rect) :
+    x(static_cast<T>(rect.x)), y(static_cast<T>(rect.y)),
+    w(static_cast<T>(rect.w)), h(static_cast<T>(rect.h)) {
   }
 
   RectT(const PointT<T>& point, const SizeT<T>& size) :
@@ -298,6 +304,7 @@ public:
 };
 
 typedef RectT<int> Rect;
+typedef RectT<double> RectF;
 
 } // namespace gfx
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -177,7 +177,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   gfx::Size partSize = theme->parts.pivotHandle()->size();
-  gfx::Point screenPivotPos = editor->editorToScreen(transform.pivot());
+  gfx::Point screenPivotPos = editor->editorToScreen(gfx::Point(transform.pivot()));
 
   screenPivotPos.x += editor->zoom().apply(1) / 2;
   screenPivotPos.y += editor->zoom().apply(1) / 2;

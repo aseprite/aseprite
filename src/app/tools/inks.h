@@ -364,7 +364,8 @@ public:
       m_mask.unfreeze();
 
       loop->setMask(&m_mask);
-      loop->getDocument()->setTransformation(Transformation(m_mask.bounds()));
+      loop->getDocument()->setTransformation(
+        Transformation(RectF(m_mask.bounds())));
 
       m_mask.clear();
     }
