@@ -435,7 +435,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
   StatusBar::instance()->setStatusText
-    (100, "Moving Pixels: :pos: %d %d :size: %3d %3d :selsize: %d %d [%.02f%% %.02f%%] :angle: %.1f",
+    (100, ":pos: %d %d :size: %3d %3d :selsize: %d %d [%.02f%% %.02f%%] :angle: %.1f",
      transform.bounds().x, transform.bounds().y,
      imageSize.w, imageSize.h,
      transform.bounds().w, transform.bounds().h,
