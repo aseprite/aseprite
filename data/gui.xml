@@ -112,7 +112,7 @@
       <key command="PaletteEditor" shortcut="F4">
         <param name="switch" value="true" />
       </key>
-      <key command="ShowExtras" shortcut="Ctrl+H" />
+      <key command="ShowExtras" shortcut="Ctrl+H" mac="Cmd+H" />
       <!-- Tabs -->
       <key command="GotoNextTab" shortcut="Ctrl+Tab" />
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
