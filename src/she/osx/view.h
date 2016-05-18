@@ -50,6 +50,8 @@
 - (void)createMouseTrackingArea;
 - (void)destroyMouseTrackingArea;
 - (void)updateCurrentCursor;
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender;
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender;
 @end
 
 #endif

@@ -14,6 +14,7 @@
 #include "she/event.h"
 #include "she/event_queue.h"
 #include "she/keys.h"
+#include "she/osx/generate_drop_files.h"
 #include "she/osx/window.h"
 
 using namespace she;
@@ -97,6 +98,10 @@ bool is_key_pressed(KeyScancode scancode)
   self = [super initWithFrame:frameRect];
   if (self != nil) {
     [self createMouseTrackingArea];
+    [self registerForDraggedTypes:
+      [NSArray arrayWithObjects:
+        NSFilenamesPboardType,
+        nil]];
   }
   return self;
 }
@@ -464,6 +469,24 @@ bool is_key_pressed(KeyScancode scancode)
     m_visibleMouse = false;
     [NSCursor hide];
   }
+}
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
+{
+  return NSDragOperationCopy;
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+  NSPasteboard* pasteboard = [sender draggingPasteboard];
+
+  if ([pasteboard.types containsObject:NSFilenamesPboardType]) {
+    NSArray* filenames = [pasteboard propertyListForType:NSFilenamesPboardType];
+    generate_drop_files_from_nsarray(filenames);
+    return YES;
+  }
+  else
+    return NO;
 }
 
 @end
