@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Aseprite
+Comment=Pixel-art paint program
+MimeType=image/bmp;image/gif;image/jpeg;image/png;image/x-pcx;image/x-tga;image/vnd.microsoft.icon;video/x-flic;image/webp;image/x-aseprite;
+Exec=aseprite %U
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;
+Icon=aseprite
