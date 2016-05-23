@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <window text="New Sprite" id="new_sprite">
     <box vertical="true">
@@ -25,6 +25,18 @@
         <item text="&amp;White" icon="icon_white" />
         <item text="&amp;Black" icon="icon_black" />
       </buttonset>
+
+      <check id="advanced_check" text="Advanced Options" />
+      <vbox id="advanced">
+	<grid columns="2">
+          <label text="Pixel Ratio:" />
+          <combobox id="pixel_ratio" cell_align="horizontal">
+	    <listitem text="Square Pixels (1:1)" value="1:1" />
+	    <listitem text="Double-wide Pixels (2:1)" value="2:1" />
+	    <listitem text="Double-high Pixels (1:2)" value="1:2" />
+          </combobox>
+	</grid>
+      </vbox>
 
       <box horizontal="true">
         <box horizontal="true" expansive="true" />
