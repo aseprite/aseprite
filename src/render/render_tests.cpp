@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -147,7 +147,7 @@ TEST(Render, CheckedBackground)
 
   render.setBgCheckedSize(gfx::Size(1, 1));
   render.renderSprite(dst, doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst, 
+  EXPECT_4X4_PIXELS(dst,
     1, 2, 1, 2,
     2, 1, 2, 1,
     1, 2, 1, 2,
@@ -155,7 +155,7 @@ TEST(Render, CheckedBackground)
 
   render.setBgCheckedSize(gfx::Size(2, 2));
   render.renderSprite(dst, doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst, 
+  EXPECT_4X4_PIXELS(dst,
     1, 1, 2, 2,
     1, 1, 2, 2,
     2, 2, 1, 1,
@@ -163,17 +163,15 @@ TEST(Render, CheckedBackground)
 
   render.setBgCheckedSize(gfx::Size(3, 3));
   render.renderSprite(dst, doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst, 
+  EXPECT_4X4_PIXELS(dst,
     1, 1, 1, 2,
     1, 1, 1, 2,
     1, 1, 1, 2,
     2, 2, 2, 1);
 
+  render.setProjection(Projection(PixelRatio(1, 1), Zoom(2, 1)));
   render.setBgCheckedSize(gfx::Size(1, 1));
-  render.renderSprite(dst,
-    doc->sprite(), frame_t(0),
-    gfx::Clip(dst->bounds()),
-    Zoom(2, 1));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst,
     1, 1, 2, 2,
     1, 1, 2, 2,
@@ -204,10 +202,10 @@ TEST(Render, ZoomAndDstBounds)
   render.setBgColor2(2);
   render.setBgCheckedSize(gfx::Size(1, 1));
 
-  render.renderSprite(dst, doc->sprite(), frame_t(0),
-    gfx::Clip(1, 1, 0, 0, 2, 2),
-    Zoom(1, 1));
-  EXPECT_4X4_PIXELS(dst, 
+  render.renderSprite(
+    dst, doc->sprite(), frame_t(0),
+    gfx::Clip(1, 1, 0, 0, 2, 2));
+  EXPECT_4X4_PIXELS(dst,
     0, 0, 0, 0,
     0, 1, 2, 0,
     0, 2, 4, 0,

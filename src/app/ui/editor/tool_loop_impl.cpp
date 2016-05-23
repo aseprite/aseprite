@@ -312,8 +312,7 @@ public:
           m_floodfillSrcImage,
           m_sprite,
           m_frame,
-          gfx::Clip(m_sprite->bounds()),
-          render::Zoom(1, 1));
+          gfx::Clip(m_sprite->bounds()));
       }
       else {
         Cel* cel = m_layer->cel(m_frame);

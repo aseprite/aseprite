@@ -17,7 +17,7 @@
 #include "gfx/size.h"
 #include "render/extra_type.h"
 #include "render/onionskin_position.h"
-#include "render/zoom.h"
+#include "render/projection.h"
 
 namespace gfx {
   class Clip;
@@ -93,6 +93,9 @@ namespace render {
   public:
     Render();
 
+    // Viewport configuration
+    void setProjection(const Projection& projection);
+
     // Background configuration
     void setBgType(BgType type);
     void setBgZoom(bool state);
@@ -123,12 +126,6 @@ namespace render {
       const Sprite* sprite,
       frame_t frame);
 
-    void renderSprite(
-      Image* dstImage,
-      const Sprite* sprite,
-      frame_t frame,
-      const gfx::Clip& area);
-
     void renderLayer(
       Image* dstImage,
       const Layer* layer,
@@ -139,7 +136,7 @@ namespace render {
       const Layer* layer,
       frame_t frame,
       const gfx::Clip& area,
-      BlendMode blend_mode = BlendMode::UNSPECIFIED);
+      BlendMode blendMode = BlendMode::UNSPECIFIED);
 
     // Main function used to render the sprite. Draws the given sprite
     // frame in a new image and return it. Note: zoomedRect must have
@@ -148,39 +145,41 @@ namespace render {
       Image* dstImage,
       const Sprite* sprite,
       frame_t frame,
-      const gfx::Clip& area,
-      Zoom zoom);
+      const gfx::Clip& area);
 
     // Extra functions
-    void renderBackground(Image* image,
-      const gfx::Clip& area,
-      Zoom zoom);
+    void renderBackground(
+      Image* image,
+      const gfx::Clip& area);
 
-    void renderImage(Image* dst_image, const Image* src_image,
-      const Palette* pal, int x, int y, Zoom zoom,
-      int opacity, BlendMode blend_mode);
+    void renderImage(
+      Image* dst_image, const Image* src_image,
+      const Palette* pal, int x, int y,
+      int opacity, BlendMode blendMode);
 
   private:
     typedef void (*RenderScaledImage)(
       Image* dst, const Image* src, const Palette* pal,
       const gfx::Clip& area,
-      int opacity, BlendMode blend_mode, Zoom zoom);
+      int opacity,
+      BlendMode blendMode,
+      const Projection& proj);
 
     void renderOnionskin(
       Image* image,
       const gfx::Clip& area,
-      frame_t frame, Zoom zoom,
+      frame_t frame,
       RenderScaledImage scaled_func);
 
     void renderLayer(
       const Layer* layer,
       Image* image,
       const gfx::Clip& area,
-      frame_t frame, Zoom zoom,
+      frame_t frame,
       RenderScaledImage renderScaledImage,
       bool render_background,
       bool render_transparent,
-      BlendMode blend_mode);
+      BlendMode blendMode);
 
     void renderCel(
       Image* dst_image,
@@ -189,7 +188,7 @@ namespace render {
       const Cel* cel,
       const gfx::Clip& area,
       RenderScaledImage scaled_func,
-      int opacity, BlendMode blend_mode, Zoom zoom);
+      int opacity, BlendMode blendMode);
 
     void renderImage(
       Image* dst_image,
@@ -199,7 +198,7 @@ namespace render {
       const int y,
       const gfx::Clip& area,
       RenderScaledImage scaled_func,
-      int opacity, BlendMode blend_mode, Zoom zoom);
+      int opacity, BlendMode blendMode);
 
     static RenderScaledImage getRenderScaledImageFunc(
       PixelFormat dstFormat,
@@ -208,11 +207,11 @@ namespace render {
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
     frame_t m_currentFrame;
+    Projection m_proj;
     ExtraType m_extraType;
     const Cel* m_extraCel;
     const Image* m_extraImage;
     BlendMode m_extraBlendMode;
-
     BgType m_bgType;
     bool m_bgZoom;
     color_t m_bgColor1;
@@ -229,7 +228,7 @@ namespace render {
   void composite_image(Image* dst, const Image* src,
                        const Palette* pal,
                        int x, int y,
-                       int opacity, BlendMode blend_mode);
+                       int opacity, BlendMode blendMode);
 
 } // namespace render
 

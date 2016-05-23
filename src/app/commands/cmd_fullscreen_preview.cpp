@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -51,7 +51,7 @@ public:
     , m_doc(editor->document())
     , m_sprite(editor->sprite())
     , m_pal(m_sprite->palette(editor->frame()))
-    , m_zoom(editor->zoom())
+    , m_proj(editor->projection())
     , m_index_bg_color(-1)
     , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
     , m_doublesur(she::instance()->createRgbaSurface(ui::display_w(), ui::display_h())) {
@@ -174,11 +174,12 @@ protected:
   virtual void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.graphics();
     AppRender& render = m_editor->renderEngine();
+    render.setProjection(render::Projection());
     render.disableOnionskin();
     render.setBgType(render::BgType::TRANSPARENT);
 
     // Render sprite and leave the result in 'm_render' variable
-    if (m_render == NULL) {
+    if (m_render == nullptr) {
       ImageBufferPtr buf = Editor::getRenderImageBuffer();
       m_render.reset(Image::create(IMAGE_RGB,
           m_sprite->width(), m_sprite->height(), buf));
@@ -188,19 +189,20 @@ protected:
     }
 
     int x, y, w, h, u, v;
-    x = m_pos.x + m_zoom.apply(m_zoom.remove(m_delta.x));
-    y = m_pos.y + m_zoom.apply(m_zoom.remove(m_delta.y));
-    w = m_zoom.apply(m_sprite->width());
-    h = m_zoom.apply(m_sprite->height());
+    x = m_pos.x + m_proj.applyX(m_proj.removeX(m_delta.x));
+    y = m_pos.y + m_proj.applyY(m_proj.removeY(m_delta.y));
+    w = m_proj.applyX(m_sprite->width());
+    h = m_proj.applyY(m_sprite->height());
 
     if (int(m_tiled) & int(TiledMode::X_AXIS)) x = SGN(x) * (ABS(x)%w);
     if (int(m_tiled) & int(TiledMode::Y_AXIS)) y = SGN(y) * (ABS(y)%h);
 
+    render.setProjection(m_proj);
     if (m_index_bg_color == -1) {
       render.setupBackground(m_doc, m_doublebuf->pixelFormat());
       render.renderBackground(m_doublebuf,
         gfx::Clip(0, 0, -m_pos.x, -m_pos.y,
-          m_doublebuf->width(), m_doublebuf->height()), m_zoom);
+          m_doublebuf->width(), m_doublebuf->height()));
     }
     else {
       doc::clear_image(m_doublebuf, m_pal->getEntry(m_index_bg_color));
@@ -209,23 +211,23 @@ protected:
     switch (m_tiled) {
       case TiledMode::NONE:
         render.renderImage(m_doublebuf, m_render, m_pal, x, y,
-                           m_zoom, 255, BlendMode::NORMAL);
+                           255, BlendMode::NORMAL);
         break;
       case TiledMode::X_AXIS:
         for (u=x-w; u<ui::display_w()+w; u+=w)
           render.renderImage(m_doublebuf, m_render, m_pal, u, y,
-                             m_zoom, 255, BlendMode::NORMAL);
+                             255, BlendMode::NORMAL);
         break;
       case TiledMode::Y_AXIS:
         for (v=y-h; v<ui::display_h()+h; v+=h)
           render.renderImage(m_doublebuf, m_render, m_pal, x, v,
-                             m_zoom, 255, BlendMode::NORMAL);
+                             255, BlendMode::NORMAL);
         break;
       case TiledMode::BOTH:
         for (v=y-h; v<ui::display_h()+h; v+=h)
           for (u=x-w; u<ui::display_w()+w; u+=w)
             render.renderImage(m_doublebuf, m_render, m_pal, u, v,
-                               m_zoom, 255, BlendMode::NORMAL);
+                               255, BlendMode::NORMAL);
         break;
     }
 
@@ -243,7 +245,7 @@ private:
   gfx::Point m_pos;
   gfx::Point m_oldMousePos;
   gfx::Point m_delta;
-  render::Zoom m_zoom;
+  render::Projection m_proj;
   int m_index_bg_color;
   base::UniquePtr<Image> m_render;
   base::UniquePtr<Image> m_doublebuf;
