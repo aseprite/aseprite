@@ -40,6 +40,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   : Object(ObjectType::Sprite)
   , m_document(NULL)
   , m_spec((ColorMode)format, width, height, 0)
+  , m_pixelRatio(1, 1)
   , m_frames(1)
   , m_frameTags(this)
 {
@@ -136,6 +137,11 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
 void Sprite::setPixelFormat(PixelFormat format)
 {
   m_spec.setColorMode((ColorMode)format);
+}
+
+void Sprite::setPixelRatio(const PixelRatio& pixelRatio)
+{
+  m_pixelRatio = pixelRatio;
 }
 
 void Sprite::setSize(int width, int height)
