@@ -3,8 +3,8 @@ allegro_icon ICON data/icons/ase.ico
 1 ICON data/icons/doc.ico
 
 1 VERSIONINFO
-  FILEVERSION 1,1,6,0
-  PRODUCTVERSION 1,1,6,0
+  FILEVERSION 1,2,0,0
+  PRODUCTVERSION 1,2,0,0
   FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
   FILEFLAGS 0x1L
@@ -21,12 +21,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "http://www.aseprite.org/"
             VALUE "FileDescription", "Aseprite - Animated sprites editor & pixel art tool"
-            VALUE "FileVersion", "1,1,6,0"
+            VALUE "FileVersion", "1,2,0,0"
             VALUE "InternalName", "aseprite"
             VALUE "LegalCopyright", "Copyright (C) 2001-2016 by David Capello"
             VALUE "OriginalFilename", "aseprite.exe"
             VALUE "ProductName", "ASEPRITE"
-            VALUE "ProductVersion", "1,1,6,0"
+            VALUE "ProductVersion", "1,2,0,0"
         END
     END
     BLOCK "VarFileInfo"
