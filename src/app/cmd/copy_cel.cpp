@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -126,6 +126,10 @@ void CopyCel::onExecute()
 void CopyCel::onFireNotifications()
 {
   CmdSequence::onFireNotifications();
+
+  ASSERT(m_srcLayer.layer());
+  ASSERT(m_dstLayer.layer());
+
   static_cast<app::Document*>(m_dstLayer.layer()->sprite()->document())
     ->notifyCelCopied(
       m_srcLayer.layer(), m_srcFrame,
