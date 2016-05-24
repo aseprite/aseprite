@@ -1417,6 +1417,12 @@ void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
     m_state->onExposeSpritePixels(ev.region());
 }
 
+void Editor::onSpritePixelRatioChanged(doc::DocumentEvent& ev)
+{
+  m_proj.setPixelRatio(ev.sprite()->pixelRatio());
+  invalidate();
+}
+
 void Editor::setCursor(const gfx::Point& mouseScreenPos)
 {
   bool used = false;

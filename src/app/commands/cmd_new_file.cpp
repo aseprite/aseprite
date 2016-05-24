@@ -22,9 +22,8 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/pixel_ratio.h"
 #include "base/bind.h"
-#include "base/convert_to.h"
-#include "base/split_string.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -169,19 +168,8 @@ void NewFileCommand::onExecute(Context* context)
       base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h, ncolors));
 
       if (window.advancedCheck()->isSelected()) {
-        std::string value = window.pixelRatio()->getValue();
-        std::vector<std::string> parts;
-        base::split_string(value, parts, ":");
-        PixelRatio pixelRatio(1, 1);
-
-        if (parts.size() == 2) {
-          pixelRatio.w = base::convert_to<int>(parts[0]);
-          pixelRatio.h = base::convert_to<int>(parts[1]);
-          pixelRatio.w = MAX(1, pixelRatio.w);
-          pixelRatio.h = MAX(1, pixelRatio.h);
-        }
-
-        sprite->setPixelRatio(pixelRatio);
+        sprite->setPixelRatio(
+          base::convert_to<PixelRatio>(window.pixelRatio()->getValue()));
       }
 
       if (sprite->pixelFormat() != IMAGE_GRAYSCALE)

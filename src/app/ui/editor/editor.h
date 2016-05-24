@@ -238,7 +238,10 @@ namespace app {
     void onFgColorChange();
     void onContextBarBrushChange();
     void onShowExtrasChange();
+
+    // DocumentObserver impl
     void onExposeSpritePixels(doc::DocumentEvent& ev) override;
+    void onSpritePixelRatioChanged(doc::DocumentEvent& ev) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
