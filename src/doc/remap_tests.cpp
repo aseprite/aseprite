@@ -215,7 +215,7 @@ TEST(Remap, BetweenPalettesNonInvertible)
   EXPECT_FALSE(map.isInvertible(all));
 }
 
-int main(int argc, char** argv)
+int app_main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

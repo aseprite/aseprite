@@ -57,7 +57,7 @@ TEST(BayerMatrix, CheckD8)
     EXPECT_EQ(expected[i], matrix[i]);
 }
 
-int main(int argc, char** argv)
+int app_main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
