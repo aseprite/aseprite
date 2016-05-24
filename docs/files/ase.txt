@@ -1,5 +1,5 @@
 ASE Files (.ASE) Format description
-Copyright (C) 2001-2015 by David Capello
+Copyright (C) 2001-2016 by David Capello
 ----------------------------------------------------------------------
 
 1. References
@@ -82,7 +82,10 @@ BYTE            Palette entry (index) which represent transparent
                 sprites).
 BYTE[3]         Ignore these bytes
 WORD            Number of colors (0 means 256 for old sprites)
-BYTE[94]        For future (set to zero)
+BYTE            Pixel width (pixel ratio is "pixel width/pixel height")
+                If this or pixel height field is zero, pixel ratio is 1:1
+BYTE            Pixel height
+BYTE[92]        For future (set to zero)
 
 
 ========================================

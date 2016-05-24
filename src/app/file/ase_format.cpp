@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -71,6 +71,8 @@ struct ASE_Header {
   uint8_t transparent_index;
   uint8_t ignore[3];
   uint16_t ncolors;
+  uint8_t pixel_width;
+  uint8_t pixel_height;
 };
 
 struct ASE_FrameHeader {
@@ -192,6 +194,9 @@ bool AseFormat::onLoad(FileOp* fop)
 
   // Set transparent entry
   sprite->setTransparentColor(header.transparent_index);
+
+  // Set pixel ratio
+  sprite->setPixelRatio(PixelRatio(header.pixel_width, header.pixel_height));
 
   // Prepare variables for layer chunks
   Layer* last_layer = sprite->folder();
@@ -436,8 +441,17 @@ static bool ase_file_read_header(FILE* f, ASE_Header* header)
   header->ignore[1]  = fgetc(f);
   header->ignore[2]  = fgetc(f);
   header->ncolors    = fgetw(f);
+  header->pixel_width = fgetc(f);
+  header->pixel_height = fgetc(f);
+
   if (header->ncolors == 0)     // 0 means 256 (old .ase files)
     header->ncolors = 256;
+
+  if (header->pixel_width == 0 ||
+      header->pixel_height == 0) {
+    header->pixel_width = 1;
+    header->pixel_height = 1;
+  }
 
   fseek(f, header->pos+128, SEEK_SET);
   return true;
@@ -464,6 +478,8 @@ static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* s
   header->ignore[1] = 0;
   header->ignore[2] = 0;
   header->ncolors = sprite->palette(frame_t(0))->size();
+  header->pixel_width = sprite->pixelRatio().w;
+  header->pixel_height = sprite->pixelRatio().h;
 }
 
 static void ase_file_write_header(FILE* f, ASE_Header* header)
@@ -485,6 +501,8 @@ static void ase_file_write_header(FILE* f, ASE_Header* header)
   fputc(header->ignore[1], f);
   fputc(header->ignore[2], f);
   fputw(header->ncolors, f);
+  fputc(header->pixel_width, f);
+  fputc(header->pixel_height, f);
 
   fseek(f, header->pos+128, SEEK_SET);
 }
