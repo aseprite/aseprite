@@ -242,7 +242,7 @@ void Timeline::setLayer(Layer* layer)
     m_editor->setLayer(m_layer);
 }
 
-void Timeline::setFrame(frame_t frame)
+void Timeline::setFrame(frame_t frame, bool byUser)
 {
   ASSERT(m_editor != NULL);
   // ASSERT(frame >= 0 && frame < m_sprite->totalFrames());
@@ -255,8 +255,17 @@ void Timeline::setFrame(frame_t frame)
   m_frame = frame;
   invalidate();
 
-  if (m_editor->frame() != frame)
+  if (m_editor->frame() != frame) {
+    bool isPlaying = m_editor->isPlaying();
+
+    if (isPlaying)
+      m_editor->stop();
+
     m_editor->setFrame(m_frame);
+
+    if (isPlaying)
+      m_editor->play(false);
+  }
 }
 
 void Timeline::prepareToMoveRange()
@@ -277,7 +286,7 @@ void Timeline::moveRange(Range& range)
   }
 
   if (range.frameBegin() >= frame_t(0))
-    setFrame(range.frameBegin() + m_moveRangeData.activeRelativeFrame);
+    setFrame(range.frameBegin() + m_moveRangeData.activeRelativeFrame, true);
 
   m_range = range;
 }
@@ -358,7 +367,7 @@ bool Timeline::onProcessMessage(Message* msg)
             m_state = STATE_SELECTING_FRAMES;
             m_range.startRange(getLayerIndex(m_layer), m_clk.frame, Range::kFrames);
 
-            setFrame(m_clk.frame);
+            setFrame(m_clk.frame, true);
           }
           break;
         }
@@ -405,7 +414,7 @@ bool Timeline::onProcessMessage(Message* msg)
           if (old_layer != m_clk.layer
             || old_frame != m_clk.frame) {
             setLayer(m_layers[m_clk.layer]);
-            setFrame(m_clk.frame);
+            setFrame(m_clk.frame, true);
             invalidate();
           }
 
@@ -513,7 +522,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case STATE_SELECTING_FRAMES: {
             m_range.endRange(getLayerIndex(m_layer), hit.frame);
-            setFrame(m_clk.frame = hit.frame);
+            setFrame(m_clk.frame = hit.frame, true);
             break;
           }
 
@@ -522,7 +531,7 @@ bool Timeline::onProcessMessage(Message* msg)
               || (m_frame != hit.frame)) {
               m_range.endRange(hit.layer, hit.frame);
               setLayer(m_layers[m_clk.layer = hit.layer]);
-              setFrame(m_clk.frame = hit.frame);
+              setFrame(m_clk.frame = hit.frame, true);
             }
             break;
         }
@@ -1073,7 +1082,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
 
 void Timeline::onAddFrame(doc::DocumentEvent& ev)
 {
-  setFrame(ev.frame());
+  setFrame(ev.frame(), false);
 
   showCurrentCel();
   clearClipboardRange();
@@ -1085,13 +1094,13 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
   if (getFrame() > ev.frame()) {
-    setFrame(getFrame()-1);
+    setFrame(getFrame()-1, false);
   }
   // If the editor was in the previous "last frame" (current value of
   // totalFrames()), we've to adjust it to the new last frame
   // (lastFrame())
   else if (getFrame() >= sprite()->totalFrames()) {
-    setFrame(sprite()->lastFrame());
+    setFrame(sprite()->lastFrame(), false);
   }
 
   showCurrentCel();
@@ -1120,7 +1129,7 @@ void Timeline::onAfterFrameChanged(Editor* editor)
   if (m_fromTimeline)
     return;
 
-  setFrame(editor->frame());
+  setFrame(editor->frame(), false);
 
   if (!hasCapture())
     m_range.disableRange();
