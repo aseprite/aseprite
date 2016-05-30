@@ -9,11 +9,10 @@
 #include "config.h"
 #endif
 
-#include "app/app_options.h"
+#include "app/cli/app_options.h"
 
 #include "base/path.h"
 
-#include <cstdlib>
 #include <iostream>
 
 namespace app {
@@ -24,10 +23,14 @@ AppOptions::AppOptions(int argc, const char* argv[])
   : m_exeName(base::get_file_name(argv[0]))
   , m_startUI(true)
   , m_startShell(false)
+  , m_previewCLI(false)
+  , m_showHelp(false)
+  , m_showVersion(false)
   , m_verboseLevel(kNoVerbose)
   , m_palette(m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default"))
   , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
   , m_batch(m_po.add("batch").mnemonic('b').description("Do not start the UI"))
+  , m_preview(m_po.add("preview").mnemonic('p').description("Do not execute actions, just print what will be done"))
   , m_saveAs(m_po.add("save-as").requiresValue("<filename>").description("Save the last given document with other format"))
   , m_scale(m_po.add("scale").requiresValue("<factor>").description("Resize all previous opened documents"))
   , m_shrinkTo(m_po.add("shrink-to").requiresValue("width,height").description("Shrink each sprite if it is\nlarger than width or height"))
@@ -67,18 +70,16 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_verboseLevel = kVerbose;
 
     m_paletteFileName = m_po.value_of(m_palette);
+
     m_startShell = m_po.enabled(m_shell);
+    m_previewCLI = m_po.enabled(m_preview);
+    m_showHelp = m_po.enabled(m_help);
+    m_showVersion = m_po.enabled(m_version);
 
-    if (m_po.enabled(m_help)) {
-      showHelp();
-      m_startUI = false;
-    }
-    else if (m_po.enabled(m_version)) {
-      showVersion();
-      m_startUI = false;
-    }
-
-    if (m_po.enabled(m_shell) || m_po.enabled(m_batch)) {
+    if (m_startShell ||
+        m_showHelp ||
+        m_showVersion ||
+        m_po.enabled(m_batch)) {
       m_startUI = false;
     }
   }
@@ -94,23 +95,6 @@ bool AppOptions::hasExporterParams() const
   return
     m_po.enabled(m_data) ||
     m_po.enabled(m_sheet);
-}
-
-void AppOptions::showHelp()
-{
-  std::cout
-    << PACKAGE << " v" << VERSION << " | A pixel art program\n" << COPYRIGHT
-    << "\n\nUsage:\n"
-    << "  " << m_exeName << " [OPTIONS] [FILES]...\n\n"
-    << "Options:\n"
-    << m_po
-    << "\nFind more information in " << PACKAGE
-    << " web site: " << WEBSITE << "\n\n";
-}
-
-void AppOptions::showVersion()
-{
-  std::cout << PACKAGE << ' ' << VERSION << '\n';
 }
 
 }

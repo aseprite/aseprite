@@ -5,8 +5,8 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef APP_APP_OPTIONS_H_INCLUDED
-#define APP_APP_OPTIONS_H_INCLUDED
+#ifndef APP_CLI_APP_OPTIONS_H_INCLUDED
+#define APP_CLI_APP_OPTIONS_H_INCLUDED
 #pragma once
 
 #include <stdexcept>
@@ -31,8 +31,14 @@ public:
 
   AppOptions(int argc, const char* argv[]);
 
+  const std::string& exeName() const { return m_exeName; }
+  const base::ProgramOptions& programOptions() const { return m_po; }
+
   bool startUI() const { return m_startUI; }
   bool startShell() const { return m_startShell; }
+  bool previewCLI() const { return m_previewCLI; }
+  bool showHelp() const { return m_showHelp; }
+  bool showVersion() const { return m_showVersion; }
   VerboseLevel verboseLevel() const { return m_verboseLevel; }
 
   const std::string& paletteFileName() const { return m_paletteFileName; }
@@ -71,19 +77,20 @@ public:
   bool hasExporterParams() const;
 
 private:
-  void showHelp();
-  void showVersion();
-
   std::string m_exeName;
   base::ProgramOptions m_po;
   bool m_startUI;
   bool m_startShell;
+  bool m_previewCLI;
+  bool m_showHelp;
+  bool m_showVersion;
   VerboseLevel m_verboseLevel;
   std::string m_paletteFileName;
 
   Option& m_palette;
   Option& m_shell;
   Option& m_batch;
+  Option& m_preview;
   Option& m_saveAs;
   Option& m_scale;
   Option& m_shrinkTo;
