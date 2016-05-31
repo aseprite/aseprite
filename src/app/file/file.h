@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+// Flags for FileOp::createLoadDocumentOperation()
 #define FILE_LOAD_SEQUENCE_NONE         0x00000001
 #define FILE_LOAD_SEQUENCE_ASK          0x00000002
 #define FILE_LOAD_SEQUENCE_YES          0x00000004
@@ -51,8 +52,7 @@ namespace app {
     FileOpSave
   } FileOpType;
 
-  class IFileOpProgress
-  {
+  class IFileOpProgress {
   public:
     virtual ~IFileOpProgress() { }
     virtual void ackFileOpProgress(double progress) = 0;
@@ -61,8 +61,14 @@ namespace app {
   // Structure to load & save files.
   class FileOp {
   public:
-    static FileOp* createLoadDocumentOperation(Context* context, const char* filename, int flags);
-    static FileOp* createSaveDocumentOperation(const Context* context, const Document* document, const char* filename, const char* fn_format);
+    static FileOp* createLoadDocumentOperation(Context* context,
+                                               const char* filename,
+                                               int flags);
+
+    static FileOp* createSaveDocumentOperation(const Context* context,
+                                               const Document* document,
+                                               const char* filename,
+                                               const char* filenameFormat);
 
     ~FileOp();
 
@@ -160,12 +166,10 @@ namespace app {
   };
 
   // Available extensions for each load/save operation.
-
   std::string get_readable_extensions();
   std::string get_writable_extensions();
 
   // High-level routines to load/save documents.
-
   app::Document* load_document(Context* context, const char* filename);
   int save_document(Context* context, doc::Document* document);
 

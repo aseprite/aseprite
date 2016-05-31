@@ -220,7 +220,7 @@ done:;
 FileOp* FileOp::createSaveDocumentOperation(const Context* context,
                                             const Document* document,
                                             const char* filename,
-                                            const char* fn_format_arg)
+                                            const char* filenameFormatArg)
 {
   base::UniquePtr<FileOp> fop(
     new FileOp(FileOpSave, const_cast<Context*>(context)));
@@ -247,7 +247,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   std::string warnings;
   bool fatal = false;
 
-  /* check image type support */
+  // Check image type support
   switch (fop->m_document->sprite()->pixelFormat()) {
 
     case IMAGE_RGB:
@@ -381,7 +381,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     fop->prepareForSequence();
 
     std::string fn = filename;
-    std::string fn_format = fn_format_arg;
+    std::string fn_format = filenameFormatArg;
     bool default_format = false;
 
     if (fn_format.empty()) {
