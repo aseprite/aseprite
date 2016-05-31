@@ -36,6 +36,7 @@ namespace app {
     };
 
     DocumentExporter();
+    ~DocumentExporter();
 
     DataFormat dataFormat() const { return m_dataFormat; }
     const std::string& dataFilename() { return m_dataFilename; }

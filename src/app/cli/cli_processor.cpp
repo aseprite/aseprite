@@ -307,6 +307,8 @@ bool CliProcessor::openFile(CliOpenFile& cof)
     // Add document to exporter
     if (m_exporter) {
       FrameTag* frameTag = nullptr;
+      bool isTemporalTag = false;
+
       if (!cof.frameTagName.empty()) {
         frameTag = doc->sprite()->frameTags().getByName(cof.frameTagName);
       }
@@ -320,6 +322,7 @@ bool CliProcessor::openFile(CliOpenFile& cof)
 
         frameTag = new FrameTag(base::convert_to<frame_t>(splitRange[0]),
                                 base::convert_to<frame_t>(splitRange[1]));
+        isTemporalTag = true;
       }
 
       if (!cof.importLayer.empty()) {
@@ -331,16 +334,16 @@ bool CliProcessor::openFile(CliOpenFile& cof)
           }
         }
         if (foundLayer)
-          m_exporter->addDocument(doc, foundLayer, frameTag);
+          m_exporter->addDocument(doc, foundLayer, frameTag, isTemporalTag);
       }
       else if (cof.splitLayers) {
         for (auto layer : doc->sprite()->layers()) {
           if (layer->isVisible())
-            m_exporter->addDocument(doc, layer, frameTag);
+            m_exporter->addDocument(doc, layer, frameTag, isTemporalTag);
         }
       }
       else {
-        m_exporter->addDocument(doc, nullptr, frameTag);
+        m_exporter->addDocument(doc, nullptr, frameTag, isTemporalTag);
       }
     }
   }

@@ -354,6 +354,14 @@ DocumentExporter::DocumentExporter()
 {
 }
 
+DocumentExporter::~DocumentExporter()
+{
+  for (auto& item : m_documents) {
+    if (item.temporalTag)
+      delete item.frameTag;
+  }
+}
+
 Document* DocumentExporter::exportSheet()
 {
   // We output the metadata to std::cout if the user didn't specify a file.
