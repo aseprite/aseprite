@@ -14,7 +14,10 @@
 #include "app/cli/cli_open_file.h"
 #include "app/document.h"
 #include "app/document_exporter.h"
+#include "app/file/file.h"
+#include "app/ui_context.h"
 #include "base/fs.h"
+#include "base/unique_ptr.h"
 #include "doc/sprite.h"
 
 #include <iostream>
@@ -97,8 +100,21 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
   }
 
   if (!cof.filenameFormat.empty()) {
-    std::cout << "  - Filename format: '"
-              << cof.filenameFormat << "'\n";
+    std::cout << "  - Filename format: '" << cof.filenameFormat << "'\n";
+  }
+
+  if (!cof.filenameFormat.empty()) {
+    base::UniquePtr<FileOp> fop(
+      FileOp::createSaveDocumentOperation(
+        UIContext::instance(),
+        cof.document,
+        cof.filename.c_str(),
+        cof.filenameFormat.c_str()));
+
+    std::vector<std::string> files;
+    fop->getFilenameList(files);
+    for (const auto& file : files)
+      std::cout << "  - Output file: '" << file << "'\n";
   }
 }
 

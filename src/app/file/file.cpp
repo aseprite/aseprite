@@ -878,6 +878,16 @@ void FileOp::setProgress(double progress)
     m_progressInterface->ackFileOpProgress(progress);
 }
 
+void FileOp::getFilenameList(std::vector<std::string>& output) const
+{
+  if (isSequence()) {
+    output = m_seq.filename_list;
+  }
+  else {
+    output.push_back(m_filename);
+  }
+}
+
 double FileOp::progress() const
 {
   double progress;
