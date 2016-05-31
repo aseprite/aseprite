@@ -9,6 +9,7 @@
 #define APP_CLI_CLI_OPEN_FILE_H_INCLUDED
 #pragma once
 
+#include "doc/frame.h"
 #include "gfx/rect.h"
 
 #include <string>
@@ -22,8 +23,8 @@ namespace app {
     std::string filename;
     std::string filenameFormat;
     std::string frameTagName;
-    std::string frameRange;
     std::string importLayer;
+    doc::frame_t frameFrom, frameTo;
     bool splitLayers;
     bool allLayers;
     bool listLayers;
@@ -34,6 +35,8 @@ namespace app {
 
     CliOpenFile() {
       document = nullptr;
+      frameFrom = -1;
+      frameTo = -1;
       splitLayers = false;
       allLayers = false;
       listLayers = false;
@@ -41,6 +44,14 @@ namespace app {
       ignoreEmpty = false;
       trim = false;
       crop = gfx::Rect();
+    }
+
+    bool hasFrameTagName() const {
+      return (!frameTagName.empty());
+    }
+
+    bool hasFrameRange() const {
+      return (frameFrom >= 0 && frameTo >= 0);
     }
 
   };

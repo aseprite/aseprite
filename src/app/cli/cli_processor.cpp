@@ -133,7 +133,15 @@ void CliProcessor::process()
         }
         // --frame-range from,to
         else if (opt == &m_options.frameRange()) {
-          cof.frameRange = value.value();
+          std::vector<std::string> splitRange;
+          base::split_string(value.value(), splitRange, ",");
+          if (splitRange.size() < 2)
+            throw std::runtime_error("--frame-range needs two parameters separated by comma (,)\n"
+                                     "Usage: --frame-range from,to\n"
+                                     "E.g. --frame-range 0,99");
+
+          cof.frameFrom = base::convert_to<frame_t>(splitRange[0]);
+          cof.frameTo = base::convert_to<frame_t>(splitRange[1]);
         }
         // --ignore-empty
         else if (opt == &m_options.ignoreEmpty()) {
@@ -309,19 +317,11 @@ bool CliProcessor::openFile(CliOpenFile& cof)
       FrameTag* frameTag = nullptr;
       bool isTemporalTag = false;
 
-      if (!cof.frameTagName.empty()) {
+      if (cof.hasFrameTagName()) {
         frameTag = doc->sprite()->frameTags().getByName(cof.frameTagName);
       }
-      else if (!cof.frameRange.empty()) {
-        std::vector<std::string> splitRange;
-        base::split_string(cof.frameRange, splitRange, ",");
-        if (splitRange.size() < 2)
-          throw std::runtime_error("--frame-range needs two parameters separated by comma (,)\n"
-                                   "Usage: --frame-range from,to\n"
-                                   "E.g. --frame-range 0,99");
-
-        frameTag = new FrameTag(base::convert_to<frame_t>(splitRange[0]),
-                                base::convert_to<frame_t>(splitRange[1]));
+      else if (cof.hasFrameRange()) {
+        frameTag = new FrameTag(cof.frameFrom, cof.frameTo);
         isTemporalTag = true;
       }
 
