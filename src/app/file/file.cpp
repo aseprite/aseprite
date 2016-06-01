@@ -103,7 +103,7 @@ int save_document(Context* context, doc::Document* document)
   UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      static_cast<app::Document*>(document),
+      FileOpROI(static_cast<app::Document*>(document)),
       document->filename().c_str(), ""));
   if (!fop)
     return -1;
@@ -118,6 +118,22 @@ int save_document(Context* context, doc::Document* document)
   }
 
   return (!fop->hasError() ? 0: -1);
+}
+
+FileOpROI::FileOpROI(const app::Document* doc, doc::FrameTag* frameTag)
+  : m_document(doc)
+  , m_frameTag(frameTag)
+  , m_fromFrame(frameTag ? frameTag->fromFrame(): (doc ? 0: -1))
+  , m_toFrame(frameTag ? frameTag->toFrame(): (doc ? doc->sprite()->lastFrame(): -1))
+{
+}
+
+FileOpROI::FileOpROI(const app::Document* doc, doc::frame_t fromFrame, doc::frame_t toFrame)
+  : m_document(doc)
+  , m_frameTag(nullptr)
+  , m_fromFrame(fromFrame)
+  , m_toFrame(toFrame)
+{
 }
 
 // static
@@ -218,7 +234,7 @@ done:;
 
 // static
 FileOp* FileOp::createSaveDocumentOperation(const Context* context,
-                                            const Document* document,
+                                            const FileOpROI& roi,
                                             const char* filename,
                                             const char* filenameFormatArg)
 {
@@ -226,7 +242,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     new FileOp(FileOpSave, const_cast<Context*>(context)));
 
   // Document to save
-  fop->m_document = const_cast<Document*>(document);
+  fop->m_document = const_cast<Document*>(roi.document());
+  fop->m_roi = roi;
 
   // Get the extension of the filename (in lower case)
   std::string extension = base::string_to_lower(base::get_file_extension(filename));
@@ -284,7 +301,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   }
 
   // Frames support
-  if (fop->m_document->sprite()->totalFrames() > 1) {
+  if (fop->m_roi.frames() > 1) {
     if (!fop->m_format->support(FILE_SUPPORT_FRAMES) &&
         !fop->m_format->support(FILE_SUPPORT_SEQUENCES)) {
       warnings += "<<- Frames";
@@ -385,7 +402,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     bool default_format = false;
 
     if (fn_format.empty()) {
-      if (fop->m_document->sprite()->totalFrames() == 1)
+      if (fop->m_roi.frames() == 1)
         fn_format = "{fullname}";
       else {
         fn_format = "{path}/{title}{frame}.{extension}";
@@ -394,7 +411,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     }
 
     // Save one frame
-    if (fop->m_document->sprite()->totalFrames() == 1) {
+    if (fop->m_roi.frames() == 1) {
       FilenameInfo fnInfo;
       fnInfo.filename(fn);
 
@@ -424,18 +441,18 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       std::sprintf(&buf[0], "{frame%0*d}", width, 0);
       if (default_format)
         fn_format = set_frame_format(fn_format, &buf[0]);
-      else if (spr->totalFrames() > 1)
+      else if (fop->m_roi.frames() > 1)
         fn_format = add_frame_format(fn_format, &buf[0]);
 
-      for (frame_t frame(0); frame<spr->totalFrames(); ++frame) {
-        FrameTag* innerTag = spr->frameTags().innerTag(frame);
-        FrameTag* outerTag = spr->frameTags().outerTag(frame);
+      for (frame_t frame = fop->m_roi.fromFrame(); frame <= fop->m_roi.toFrame(); ++frame) {
+        FrameTag* innerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().innerTag(frame));
+        FrameTag* outerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().outerTag(frame));
         FilenameInfo fnInfo;
         fnInfo
           .filename(fn)
           .innerTagName(innerTag ? innerTag->name(): "")
           .outerTagName(outerTag ? outerTag->name(): "")
-          .frame(start_from+frame)
+          .frame(start_from+frame-fop->m_roi.fromFrame())
           .tagFrame(innerTag ? frame-innerTag->fromFrame():
                                start_from+frame);
 
@@ -630,7 +647,7 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // For each frame in the sprite.
       render::Render render;
-      for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
+      for (frame_t frame = m_roi.fromFrame(); frame <= m_roi.toFrame(); ++frame) {
         // Draw the "frame" in "m_seq.image"
         render.renderSprite(m_seq.image.get(), sprite, frame);
 
@@ -638,7 +655,7 @@ void FileOp::operate(IFileOpProgress* progress)
         sprite->palette(frame)->copyColorsTo(m_seq.palette);
 
         // Setup the filename to be used.
-        m_filename = m_seq.filename_list[frame];
+        m_filename = m_seq.filename_list[frame - m_roi.fromFrame()];
 
         // Call the "save" procedure... did it fail?
         if (!m_format->save(this)) {

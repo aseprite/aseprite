@@ -19,6 +19,7 @@
 #include "app/document_exporter.h"
 #include "app/script/app_scripting.h"
 #include "app/ui_context.h"
+#include "base/convert_to.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/layers_range.h"
@@ -71,6 +72,15 @@ void DefaultCliDelegate::saveFile(const CliOpenFile& cof)
   Params params;
   params.set("filename", cof.filename.c_str());
   params.set("filename-format", cof.filenameFormat.c_str());
+
+  if (cof.hasFrameTag()) {
+    params.set("frame-tag", cof.frameTag.c_str());
+  }
+  else if (cof.hasFrameRange()) {
+    params.set("from-frame", base::convert_to<std::string>(cof.fromFrame).c_str());
+    params.set("to-frame", base::convert_to<std::string>(cof.toFrame).c_str());
+  }
+
   ctx->executeCommand(saveAsCommand, params);
 }
 

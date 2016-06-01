@@ -17,14 +17,15 @@
 namespace app {
 
   class Document;
+  class FileOpROI;
 
   struct CliOpenFile {
     app::Document* document;
     std::string filename;
     std::string filenameFormat;
-    std::string frameTagName;
+    std::string frameTag;
     std::string importLayer;
-    doc::frame_t frameFrom, frameTo;
+    doc::frame_t fromFrame, toFrame;
     bool splitLayers;
     bool allLayers;
     bool listLayers;
@@ -33,27 +34,17 @@ namespace app {
     bool trim;
     gfx::Rect crop;
 
-    CliOpenFile() {
-      document = nullptr;
-      frameFrom = -1;
-      frameTo = -1;
-      splitLayers = false;
-      allLayers = false;
-      listLayers = false;
-      listTags = false;
-      ignoreEmpty = false;
-      trim = false;
-      crop = gfx::Rect();
-    }
+    CliOpenFile();
 
-    bool hasFrameTagName() const {
-      return (!frameTagName.empty());
+    bool hasFrameTag() const {
+      return (!frameTag.empty());
     }
 
     bool hasFrameRange() const {
-      return (frameFrom >= 0 && frameTo >= 0);
+      return (fromFrame >= 0 && toFrame >= 0);
     }
 
+    FileOpROI roi() const;
   };
 
 } // namespace app

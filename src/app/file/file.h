@@ -27,6 +27,7 @@
 
 namespace doc {
   class Document;
+  class FrameTag;
 }
 
 namespace doc {
@@ -58,6 +59,29 @@ namespace app {
     virtual void ackFileOpProgress(double progress) = 0;
   };
 
+  class FileOpROI {             // Region of interest
+  public:
+    explicit FileOpROI(const app::Document* doc = nullptr, doc::FrameTag* frameTag = nullptr);
+    FileOpROI(const app::Document* doc, doc::frame_t fromFrame, doc::frame_t toFrame);
+
+    const app::Document* document() const { return m_document; }
+    doc::FrameTag* frameTag() const { return m_frameTag; }
+    doc::frame_t fromFrame() const { return m_fromFrame; }
+    doc::frame_t toFrame() const { return m_toFrame; }
+
+    doc::frame_t frames() const {
+      ASSERT(m_fromFrame >= 0);
+      ASSERT(m_toFrame >= 0);
+      return (m_toFrame - m_fromFrame + 1);
+    }
+
+  private:
+    const app::Document* m_document;
+    doc::FrameTag* m_frameTag;
+    doc::frame_t m_fromFrame;
+    doc::frame_t m_toFrame;
+  };
+
   // Structure to load & save files.
   class FileOp {
   public:
@@ -66,7 +90,7 @@ namespace app {
                                                int flags);
 
     static FileOp* createSaveDocumentOperation(const Context* context,
-                                               const Document* document,
+                                               const FileOpROI& roi,
                                                const char* filename,
                                                const char* filenameFormat);
 
@@ -83,6 +107,8 @@ namespace app {
       m_document = nullptr;
       return doc;
     }
+
+    const FileOpROI& roi() const { return m_roi; }
 
     void createDocument(Sprite* spr);
     void operate(IFileOpProgress* progress = nullptr);
@@ -134,6 +160,7 @@ namespace app {
     //      releaseDocument() member function)
     Document* m_document;       // Loaded document, or document to be saved.
     std::string m_filename;     // File-name to load/save.
+    FileOpROI m_roi;
 
     // Shared fields between threads.
     mutable base::mutex m_mutex; // Mutex to access to the next two fields.

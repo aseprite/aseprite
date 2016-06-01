@@ -105,6 +105,14 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_filenameFormat = params.get("filename-format");
+  m_frameTag = params.get("frame-tag");
+
+  m_fromFrame = m_toFrame = -1;
+  if (params.has_param("from-frame") ||
+      params.has_param("to-frame")) {
+    m_fromFrame = params.get_as<doc::frame_t>("from-frame");
+    m_toFrame = params.get_as<doc::frame_t>("to-frame");
+  }
 }
 
 // Returns true if there is a current sprite to save.
@@ -211,9 +219,22 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
                                                    const app::Document* document,
                                                    bool markAsSaved) const
 {
+  FileOpROI roi;
+
+  if (!m_frameTag.empty()) {
+    FrameTag* frameTag = document->sprite()->frameTags().getByName(m_frameTag);
+    roi = FileOpROI(document, frameTag);
+  }
+  else if (m_fromFrame >= 0 && m_toFrame >= 0) {
+    roi = FileOpROI(document, m_fromFrame, m_toFrame);
+  }
+  else {
+    roi = FileOpROI(document);
+  }
+
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
-      context, document,
+      context, roi,
       document->filename().c_str(),
       m_filenameFormat.c_str()));
   if (!fop)

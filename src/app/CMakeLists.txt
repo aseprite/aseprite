@@ -95,6 +95,7 @@ add_library(app-lib
   app_render.cpp
   check_update.cpp
   cli/app_options.cpp
+  cli/cli_open_file.cpp
   cli/cli_processor.cpp
   cli/default_cli_delegate.cpp
   cli/preview_cli_delegate.cpp

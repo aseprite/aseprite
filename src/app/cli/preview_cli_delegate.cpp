@@ -99,6 +99,15 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     std::cout << "  - Trim\n";
   }
 
+  if (cof.hasFrameTag()) {
+    std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
+  }
+  else if (cof.hasFrameRange()) {
+    std::cout << "  - Frame range: from "
+              << cof.fromFrame << " to "
+              << cof.toFrame << "\n";
+  }
+
   if (!cof.filenameFormat.empty()) {
     std::cout << "  - Filename format: '" << cof.filenameFormat << "'\n";
   }
@@ -107,7 +116,7 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     base::UniquePtr<FileOp> fop(
       FileOp::createSaveDocumentOperation(
         UIContext::instance(),
-        cof.document,
+        cof.roi(),
         cof.filename.c_str(),
         cof.filenameFormat.c_str()));
 

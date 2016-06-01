@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "doc/frame.h"
 
 #include <string>
 
@@ -38,6 +39,8 @@ namespace app {
     std::string m_filename;
     std::string m_filenameFormat;
     std::string m_selectedFilename;
+    std::string m_frameTag;
+    doc::frame_t m_fromFrame, m_toFrame;
   };
 
 } // namespace app

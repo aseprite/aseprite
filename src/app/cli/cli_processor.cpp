@@ -129,7 +129,7 @@ void CliProcessor::process()
         }
         // --frame-tag <tag-name>
         else if (opt == &m_options.frameTag()) {
-          cof.frameTagName = value.value();
+          cof.frameTag = value.value();
         }
         // --frame-range from,to
         else if (opt == &m_options.frameRange()) {
@@ -140,8 +140,8 @@ void CliProcessor::process()
                                      "Usage: --frame-range from,to\n"
                                      "E.g. --frame-range 0,99");
 
-          cof.frameFrom = base::convert_to<frame_t>(splitRange[0]);
-          cof.frameTo = base::convert_to<frame_t>(splitRange[1]);
+          cof.fromFrame = base::convert_to<frame_t>(splitRange[0]);
+          cof.toFrame   = base::convert_to<frame_t>(splitRange[1]);
         }
         // --ignore-empty
         else if (opt == &m_options.ignoreEmpty()) {
@@ -317,11 +317,11 @@ bool CliProcessor::openFile(CliOpenFile& cof)
       FrameTag* frameTag = nullptr;
       bool isTemporalTag = false;
 
-      if (cof.hasFrameTagName()) {
-        frameTag = doc->sprite()->frameTags().getByName(cof.frameTagName);
+      if (cof.hasFrameTag()) {
+        frameTag = doc->sprite()->frameTags().getByName(cof.frameTag);
       }
       else if (cof.hasFrameRange()) {
-        frameTag = new FrameTag(cof.frameFrom, cof.frameTo);
+        frameTag = new FrameTag(cof.fromFrame, cof.toFrame);
         isTemporalTag = true;
       }
 
