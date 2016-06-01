@@ -480,15 +480,15 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   // Configure output format?
   if (fop->m_format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
-    base::SharedPtr<FormatOptions> format_options =
+    base::SharedPtr<FormatOptions> opts =
       fop->m_format->getFormatOptions(fop);
 
     // Does the user cancelled the operation?
-    if (!format_options)
+    if (!opts)
       return nullptr;
 
-    fop->m_seq.format_options = format_options;
-    fop->m_document->setFormatOptions(format_options);
+    fop->m_formatOptions = opts;
+    fop->m_document->setFormatOptions(opts);
   }
 
   return fop.release();
@@ -615,7 +615,7 @@ void FileOp::operate(IFileOpProgress* progress)
 
         // Sets special options from the specific format (e.g. BMP
         // file can contain the number of bits per pixel).
-        m_document->setFormatOptions(m_seq.format_options);
+        m_document->setFormatOptions(m_formatOptions);
       }
     }
     // Direct load from one file.
@@ -762,15 +762,15 @@ void FileOp::postLoad()
   m_document->markAsSaved();
 }
 
-base::SharedPtr<FormatOptions> FileOp::sequenceGetFormatOptions() const
+base::SharedPtr<FormatOptions> FileOp::formatOptions() const
 {
-  return m_seq.format_options;
+  return m_formatOptions;
 }
 
-void FileOp::sequenceSetFormatOptions(const base::SharedPtr<FormatOptions>& format_options)
+void FileOp::setFormatOptions(const base::SharedPtr<FormatOptions>& opts)
 {
-  ASSERT(!m_seq.format_options);
-  m_seq.format_options = format_options;
+  ASSERT(!m_formatOptions);
+  m_formatOptions = opts;
 }
 
 void FileOp::sequenceSetNColors(int ncolors)
@@ -960,7 +960,7 @@ FileOp::FileOp(FileOpType type, Context* context)
 void FileOp::prepareForSequence()
 {
   m_seq.palette = new Palette(frame_t(0), 256);
-  m_seq.format_options.reset();
+  m_formatOptions.reset();
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -693,7 +693,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   }
 
   // Setup the file-data.
-  if (!fop->sequenceGetFormatOptions()) {
+  if (!fop->formatOptions()) {
     base::SharedPtr<BmpOptions> bmp_options(new BmpOptions());
 
     bmp_options->format = format;
@@ -703,7 +703,7 @@ bool BmpFormat::onLoad(FileOp *fop)
     bmp_options->green_mask = gmask;
     bmp_options->blue_mask = bmask;
 
-    fop->sequenceSetFormatOptions(bmp_options);
+    fop->setFormatOptions(bmp_options);
   }
 
   return true;

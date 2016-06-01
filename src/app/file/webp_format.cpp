@@ -1,6 +1,6 @@
 // Aseprite
 // Copyright (C) 2015 Gabriel Rauter
-// Copyright (C) 2015 David Capello
+// Copyright (C) 2015-2016 David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -154,7 +154,7 @@ bool WebPFormat::onLoad(FileOp* fop)
       break;
   }
 
-  if (!fop->sequenceGetFormatOptions()) {
+  if (!fop->formatOptions()) {
     base::SharedPtr<WebPOptions> webPOptions(new WebPOptions());
     webPOptions->setLossless(std::min(config.input.format - 1, 1));
     fop->sequenceSetFormatOptions(webPOptions);
@@ -251,8 +251,7 @@ bool WebPFormat::onSave(FileOp* fop)
     return false;
   }
 
-  base::SharedPtr<WebPOptions> webp_options =
-    fop->sequenceGetFormatOptions();
+  base::SharedPtr<WebPOptions> webp_options = fop->formatOptions();
 
   WebPConfig config;
 

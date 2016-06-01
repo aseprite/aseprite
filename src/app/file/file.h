@@ -121,10 +121,12 @@ namespace app {
     // Does extra post-load processing which may require user intervention.
     void postLoad();
 
+    // Special options specific to the file format.
+    base::SharedPtr<FormatOptions> formatOptions() const;
+    void setFormatOptions(const base::SharedPtr<FormatOptions>& opts);
+
     // Helpers for file decoder/encoder (FileFormat) with
     // FILE_SUPPORT_SEQUENCES flag.
-    base::SharedPtr<FormatOptions> sequenceGetFormatOptions() const;
-    void sequenceSetFormatOptions(const base::SharedPtr<FormatOptions>& formatOptions);
     void sequenceSetNColors(int ncolors);
     int sequenceGetNColors() const;
     void sequenceSetColor(int index, int r, int g, int b);
@@ -173,6 +175,8 @@ namespace app {
                                 // that support animation like
                                 // GIF/FLI/ASE).
 
+    base::SharedPtr<FormatOptions> m_formatOptions;
+
     // Data for sequences.
     struct {
       std::vector<std::string> filename_list; // All file names to load/save.
@@ -186,7 +190,6 @@ namespace app {
       bool has_alpha;
       LayerImage* layer;
       Cel* last_cel;
-      base::SharedPtr<FormatOptions> format_options;
     } m_seq;
 
     void prepareForSequence();

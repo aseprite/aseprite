@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -870,7 +870,7 @@ public:
     else
       m_clearColor = rgba(0, 0, 0, 0);
 
-    const base::SharedPtr<GifOptions> gifOptions = fop->sequenceGetFormatOptions();
+    const base::SharedPtr<GifOptions> gifOptions = fop->formatOptions();
     m_interlaced = gifOptions->interlaced();
     m_loop = (gifOptions->loop() ? 0: -1);
 
