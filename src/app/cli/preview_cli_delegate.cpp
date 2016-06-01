@@ -70,9 +70,6 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.allLayers)
     std::cout << "  - Make all layers visible\n";
 
-  if (cof.splitLayers)
-    std::cout << "  - Split layers for future save/export operation\n";
-
   if (!cof.importLayer.empty())
     std::cout << "  - Make layer '" << cof.importLayer << "' visible only (hide all other layers)\n";
 }
