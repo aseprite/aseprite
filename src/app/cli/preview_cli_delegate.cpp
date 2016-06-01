@@ -85,7 +85,7 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
             << cof.document->sprite()->height() << "\n";
 
   if (!cof.crop.isEmpty()) {
-    std::cout << "  - Crop: '"
+    std::cout << "  - Crop: "
               << cof.crop.x << ","
               << cof.crop.y << " "
               << cof.crop.w << "x"
