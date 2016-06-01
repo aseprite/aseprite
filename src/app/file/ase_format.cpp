@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -86,7 +86,8 @@ struct ASE_Chunk {
 };
 
 static bool ase_file_read_header(FILE* f, ASE_Header* header);
-static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* sprite);
+static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* sprite,
+                                    const frame_t firstFrame, const frame_t totalFrames);
 static void ase_file_write_header(FILE* f, ASE_Header* header);
 static void ase_file_write_header_filesize(FILE* f, ASE_Header* header);
 
@@ -95,7 +96,10 @@ static void ase_file_prepare_frame_header(FILE* f, ASE_FrameHeader* frame_header
 static void ase_file_write_frame_header(FILE* f, ASE_FrameHeader* frame_header);
 
 static void ase_file_write_layers(FILE* f, ASE_FrameHeader* frame_header, const Layer* layer);
-static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header, const Sprite* sprite, const Layer* layer, frame_t frame);
+static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header,
+                                const Sprite* sprite, const Layer* layer,
+                                const frame_t frame,
+                                const frame_t firstFrame);
 
 static void ase_file_read_padding(FILE* f, int bytes);
 static void ase_file_write_padding(FILE* f, int bytes);
@@ -113,13 +117,17 @@ static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header,
 static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* sprite, Layer** previous_layer, int* current_level);
 static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, const Layer* layer);
 static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame, PixelFormat pixelFormat, FileOp* fop, ASE_Header* header, size_t chunk_end);
-static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, const Cel* cel, const LayerImage* layer, const Sprite* sprite);
+static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header,
+                                     const Cel* cel, const LayerImage* layer,
+                                     const Sprite* sprite,
+                                     const frame_t firstFrame);
 static Mask* ase_file_read_mask_chunk(FILE* f);
 #if 0
 static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Mask* mask);
 #endif
 static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags);
-static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags);
+static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags,
+                                            const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_read_user_data_chunk(FILE* f, UserData* userData);
 static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData);
 
@@ -337,7 +345,9 @@ bool AseFormat::onSave(FileOp* fop)
 
   // Write the header
   ASE_Header header;
-  ase_file_prepare_header(f, &header, sprite);
+  ase_file_prepare_header(f, &header, sprite,
+                          fop->roi().fromFrame(),
+                          fop->roi().frames());
   ase_file_write_header(f, &header);
 
   bool require_new_palette_chunk = false;
@@ -349,7 +359,8 @@ bool AseFormat::onSave(FileOp* fop)
   }
 
   // Write frames
-  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+  for (frame_t frame=fop->roi().fromFrame();
+       frame <= fop->roi().toFrame(); ++frame) {
     // Prepare the frame header
     ASE_FrameHeader frame_header;
     ase_file_prepare_frame_header(f, &frame_header);
@@ -360,7 +371,9 @@ bool AseFormat::onSave(FileOp* fop)
     // is the first frame or did the palette change?
     Palette* pal = sprite->palette(frame);
     int palFrom = 0, palTo = pal->size()-1;
-    if ((frame == 0 ||
+    if (// First frame or..
+         (frame == fop->roi().fromFrame() ||
+         // This palette is different from the previous frame palette
          sprite->palette(frame-1)->countDiff(pal, &palFrom, &palTo) > 0)) {
       // Write new palette chunk
       if (require_new_palette_chunk) {
@@ -373,7 +386,7 @@ bool AseFormat::onSave(FileOp* fop)
     }
 
     // Write extra chunks in the first frame
-    if (frame == 0) {
+    if (frame == fop->roi().fromFrame()) {
       LayerIterator it = sprite->folder()->getLayerBegin();
       LayerIterator end = sprite->folder()->getLayerEnd();
 
@@ -383,18 +396,22 @@ bool AseFormat::onSave(FileOp* fop)
 
       // Writer frame tags
       if (sprite->frameTags().size() > 0)
-        ase_file_write_frame_tags_chunk(f, &frame_header, &sprite->frameTags());
+        ase_file_write_frame_tags_chunk(f, &frame_header, &sprite->frameTags(),
+                                        fop->roi().fromFrame(),
+                                        fop->roi().toFrame());
     }
 
     // Write cel chunks
-    ase_file_write_cels(f, &frame_header, sprite, sprite->folder(), frame);
+    ase_file_write_cels(f, &frame_header,
+                        sprite, sprite->folder(),
+                        frame, fop->roi().fromFrame());
 
     // Write the frame header
     ase_file_write_frame_header(f, &frame_header);
 
     // Progress
-    if (sprite->totalFrames() > 1)
-      fop->setProgress(float(frame+1) / float(sprite->totalFrames()));
+    if (fop->roi().frames() > 1)
+      fop->setProgress(float(frame+1) / float(fop->roi().frames()));
 
     if (fop->isStop())
       break;
@@ -443,27 +460,28 @@ static bool ase_file_read_header(FILE* f, ASE_Header* header)
   return true;
 }
 
-static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* sprite)
+static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* sprite,
+                                    const frame_t firstFrame, const frame_t totalFrames)
 {
   header->pos = ftell(f);
 
   header->size = 0;
   header->magic = ASE_FILE_MAGIC;
-  header->frames = sprite->totalFrames();
+  header->frames = totalFrames;
   header->width = sprite->width();
   header->height = sprite->height();
   header->depth = (sprite->pixelFormat() == IMAGE_RGB ? 32:
                    sprite->pixelFormat() == IMAGE_GRAYSCALE ? 16:
                    sprite->pixelFormat() == IMAGE_INDEXED ? 8: 0);
   header->flags = ASE_FILE_FLAG_LAYER_WITH_OPACITY;
-  header->speed = sprite->frameDuration(frame_t(0));
+  header->speed = sprite->frameDuration(firstFrame);
   header->next = 0;
   header->frit = 0;
   header->transparent_index = sprite->transparentColor();
   header->ignore[0] = 0;
   header->ignore[1] = 0;
   header->ignore[2] = 0;
-  header->ncolors = sprite->palette(frame_t(0))->size();
+  header->ncolors = sprite->palette(firstFrame)->size();
 }
 
 static void ase_file_write_header(FILE* f, ASE_Header* header)
@@ -553,7 +571,10 @@ static void ase_file_write_layers(FILE* f, ASE_FrameHeader* frame_header, const 
   }
 }
 
-static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header, const Sprite* sprite, const Layer* layer, frame_t frame)
+static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header,
+                                const Sprite* sprite, const Layer* layer,
+                                const frame_t frame,
+                                const frame_t firstFrame)
 {
   if (layer->isImage()) {
     const Cel* cel = layer->cel(frame);
@@ -561,7 +582,9 @@ static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header, const Sp
 /*       fop->setError("New cel in frame %d, in layer %d\n", */
 /*                   frame, sprite_layer2index(sprite, layer)); */
 
-      ase_file_write_cel_chunk(f, frame_header, cel, static_cast<const LayerImage*>(layer), sprite);
+      ase_file_write_cel_chunk(f, frame_header, cel,
+                               static_cast<const LayerImage*>(layer),
+                               sprite, firstFrame);
 
       if (!cel->link() &&
           !cel->data()->userData().isEmpty()) {
@@ -576,7 +599,7 @@ static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header, const Sp
          end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
     for (; it != end; ++it)
-      ase_file_write_cels(f, frame_header, sprite, *it, frame);
+      ase_file_write_cels(f, frame_header, sprite, *it, frame, firstFrame);
   }
 }
 
@@ -1251,12 +1274,28 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
 }
 
 static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header,
-                                     const Cel* cel, const LayerImage* layer, const Sprite* sprite)
+                                     const Cel* cel, const LayerImage* layer,
+                                     const Sprite* sprite,
+                                     const frame_t firstFrame)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_CEL);
 
   int layer_index = sprite->layerToIndex(layer);
   const Cel* link = cel->link();
+
+  // In case the original link is outside the ROI, we've to find the
+  // first linked cel that is inside the ROI.
+  if (link && link->frame() < firstFrame) {
+    link = nullptr;
+    for (frame_t i=firstFrame; i<=cel->frame(); ++i) {
+      link = layer->cel(i);
+      if (link && link->image()->id() == cel->image()->id())
+        break;
+    }
+    if (link == cel)
+      link = nullptr;
+  }
+
   int cel_type = (link ? ASE_FILE_LINK_CEL: ASE_FILE_COMPRESSED_CEL);
 
   fputw(layer_index, f);
@@ -1302,7 +1341,7 @@ static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header,
 
     case ASE_FILE_LINK_CEL:
       // Linked cel to another frame
-      fputw(link->frame(), f);
+      fputw(link->frame()-firstFrame, f);
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
@@ -1431,18 +1470,34 @@ static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags)
   }
 }
 
-static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags)
+static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags,
+                                            const frame_t fromFrame, const frame_t toFrame)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_FRAME_TAGS);
 
-  fputw(frameTags->size(), f);
+  int tags = 0;
+  for (const FrameTag* tag : *frameTags) {
+    // Skip tags that are outside the given ROI
+    if (tag->fromFrame() > toFrame ||
+        tag->toFrame() < fromFrame)
+      continue;
+    ++tags;
+  }
 
+  fputw(tags, f);
   fputl(0, f);  // 8 reserved bytes
   fputl(0, f);
 
   for (const FrameTag* tag : *frameTags) {
-    fputw(tag->fromFrame(), f);
-    fputw(tag->toFrame(), f);
+    if (tag->fromFrame() > toFrame ||
+        tag->toFrame() < fromFrame)
+      continue;
+
+    frame_t from = MID(0, tag->fromFrame()-fromFrame, toFrame-fromFrame);
+    frame_t to = MID(from, tag->toFrame()-fromFrame, toFrame-fromFrame);
+
+    fputw(from, f);
+    fputw(to, f);
     fputc((int)tag->aniDir(), f);
 
     fputl(0, f);  // 8 reserved bytes

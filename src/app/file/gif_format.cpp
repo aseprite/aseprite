@@ -897,7 +897,7 @@ public:
     m_currentImage = m_images[1].get();
     m_nextImage = m_images[2].get();
 
-    int nframes = m_sprite->totalFrames();
+    int nframes = totalFrames();
     for (int frameNum=0; frameNum<nframes; ++frameNum) {
       if (frameNum == 0)
         renderFrame(0, m_nextImage);
@@ -932,6 +932,14 @@ public:
   }
 
 private:
+
+  doc::frame_t totalFrames() const {
+    return m_fop->roi().frames();
+  }
+
+  doc::frame_t fromFrame() const {
+    return m_fop->roi().fromFrame();
+  }
 
   void writeHeader() {
     if (EGifPutScreenDesc(m_gifFile,
@@ -983,7 +991,7 @@ private:
   // frame and maybe the transparency index).
   void writeExtension(int frameNum, int transparentIndex, DisposalMethod disposalMethod) {
     unsigned char extension_bytes[5];
-    int frameDelay = m_sprite->frameDuration(frameNum) / 10;
+    int frameDelay = m_sprite->frameDuration(fromFrame()+frameNum) / 10;
 
     extension_bytes[0] = (((int(disposalMethod) & 7) << 2) |
                           (transparentIndex >= 0 ? 1: 0));
@@ -1029,7 +1037,7 @@ private:
         prev = calculateFrameBounds(m_currentImage, m_previousImage);
 
       if (!m_hasBackground &&
-          frameNum+1 < m_sprite->totalFrames())
+          frameNum+1 < totalFrames())
         next = calculateFrameBounds(m_currentImage, m_nextImage);
 
       frameBounds = prev.createUnion(next);
@@ -1056,8 +1064,8 @@ private:
   void writeImage(int frameNum, const gfx::Rect& frameBounds, DisposalMethod disposal) {
     UniquePtr<Palette> framePaletteRef;
     UniquePtr<RgbMap> rgbmapRef;
-    Palette* framePalette = m_sprite->palette(frameNum);
-    RgbMap* rgbmap = m_sprite->rgbMap(frameNum);
+    Palette* framePalette = m_sprite->palette(fromFrame()+frameNum);
+    RgbMap* rgbmap = m_sprite->rgbMap(fromFrame()+frameNum);
 
     // Create optimized palette for RGB/Grayscale images
     if (m_quantizeColormaps) {
@@ -1235,7 +1243,7 @@ private:
     render::Render render;
     render.setBgType(render::BgType::NONE);
     clear_image(dst, m_clearColor);
-    render.renderSprite(dst, m_sprite, frameNum);
+    render.renderSprite(dst, m_sprite, fromFrame()+frameNum);
   }
 
 private:
