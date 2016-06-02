@@ -362,14 +362,22 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   Command* cropCommand = CommandsModule::instance()->getCommandByName(CommandId::CropSprite);
   Command* undoCommand = CommandsModule::instance()->getCommandByName(CommandId::Undo);
   app::Document* doc = cof.document;
+  bool clearUndo = false;
 
-  Params cropParams;
   if (!cof.crop.isEmpty()) {
+    Params cropParams;
     cropParams.set("x", base::convert_to<std::string>(cof.crop.x).c_str());
     cropParams.set("y", base::convert_to<std::string>(cof.crop.y).c_str());
     cropParams.set("width", base::convert_to<std::string>(cof.crop.w).c_str());
     cropParams.set("height", base::convert_to<std::string>(cof.crop.h).c_str());
+    ctx->executeCommand(cropCommand, cropParams);
   }
+
+  // Store in "visibility" the original "visible" state of every layer.
+  std::vector<bool> visibility(doc->sprite()->countLayers());
+  int i = 0;
+  for (doc::Layer* layer : doc->sprite()->layers())
+    visibility[i++] = layer->isVisible();
 
   // --save-as with --split-layers
   if (cof.splitLayers) {
@@ -382,12 +390,6 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       else
         format = "{path}/{title} ({layer}).{extension}";
     }
-
-    // Store in "visibility" the original "visible" state of every layer.
-    std::vector<bool> visibility(doc->sprite()->countLayers());
-    int i = 0;
-    for (doc::Layer* layer : doc->sprite()->layers())
-      visibility[i++] = layer->isVisible();
 
     // For each layer, hide other ones and save the sprite.
     i = 0;
@@ -408,14 +410,11 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       fn = filename_formatter(format, fnInfo);
       fmt = filename_formatter(format, fnInfo, false);
 
-      if (!cropParams.empty())
-        ctx->executeCommand(cropCommand, cropParams);
-
-      // TODO --trim command with --save-as doesn't make too
-      // much sense as we lost the trim rectangle
-      // information (e.g. we don't have sheet .json) Also,
-      // we should trim each frame individually (a process
-      // that can be done only in fop_operate()).
+      // TODO --trim --save-as --split-layers doesn't make too much
+      // sense as we lost the trim rectangle information (e.g. we
+      // don't have sheet .json) Also, we should trim each frame
+      // individually (a process that can be done only in
+      // FileOp::operate()).
       if (cof.trim)
         ctx->executeCommand(trimCommand);
 
@@ -424,19 +423,11 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       itemCof.filenameFormat = fmt;
       m_delegate->saveFile(itemCof);
 
-      if (cof.trim) {     // Undo trim command
+      if (cof.trim) {
         ctx->executeCommand(undoCommand);
-
-        // Just in case allow non-linear history is enabled
-        // we clear redo information
-        doc->undoHistory()->clearRedo();
+        clearUndo = true;
       }
     }
-
-    // Restore layer visibility
-    i = 0;
-    for (Layer* layer : doc->sprite()->layers())
-      layer->setVisible(visibility[i++]);
   }
   else {
     // Show only one layer
@@ -445,22 +436,33 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
         layer->setVisible(layer->name() == cof.importLayer);
     }
 
-    if (!cropParams.empty())
-      ctx->executeCommand(cropCommand, cropParams);
-
     if (cof.trim)
       ctx->executeCommand(trimCommand);
 
     // Call the delegate
     m_delegate->saveFile(cof);
 
-    if (cof.trim) {       // Undo trim command
+    if (cof.trim) {
       ctx->executeCommand(undoCommand);
-
-      // Just in case allow non-linear history is enabled
-      // we clear redo information
-      doc->undoHistory()->clearRedo();
+      clearUndo = true;
     }
+  }
+
+  // Restore layer visibility
+  i = 0;
+  for (Layer* layer : doc->sprite()->layers())
+    layer->setVisible(visibility[i++]);
+
+  // Undo crop
+  if (!cof.crop.isEmpty()) {
+    ctx->executeCommand(undoCommand);
+    clearUndo = true;
+  }
+
+  if (clearUndo) {
+    // Just in case allow non-linear history is enabled
+    // we clear redo information
+    doc->undoHistory()->clearRedo();
   }
 }
 
