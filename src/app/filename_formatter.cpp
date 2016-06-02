@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -51,7 +51,7 @@ static bool replace_frame(const char* frameKey, // E.g. = "{frame"
 std::string filename_formatter(
   const std::string& format,
   FilenameInfo& info,
-  bool replaceFrame)
+  const bool replaceFrame)
 {
   const std::string& filename = info.filename();
   std::string path = base::get_file_path(filename);
@@ -113,6 +113,29 @@ std::string add_frame_format(
   }
 
   return output;
+}
+
+std::string get_default_filename_format(
+  const bool withPath,
+  const bool hasFrames,
+  const bool hasLayer,
+  const bool hasFrameTag)
+{
+  std::string format;
+
+  if (withPath) format += "{path}/";
+
+  if (hasFrames || hasLayer | hasFrameTag) {
+    format += "{title}";
+    if (hasLayer   ) format += " ({layer})";
+    if (hasFrameTag) format += " #{tag}";
+    if (hasFrames  ) format += " {frame}";
+    format += ".{extension}";
+  }
+  else
+    format += "{name}";
+
+  return format;
 }
 
 } // namespace app

@@ -431,22 +431,16 @@ void DocumentExporter::captureSamples(Samples& samples) const
     Sprite* sprite = doc->sprite();
     Layer* layer = item.layer;
     FrameTag* frameTag = item.frameTag;
-    int frames = item.frames();
-    bool hasFrames = (frames > 1);
-    bool hasLayer = (layer != nullptr);
-    bool hasFrameTag = (frameTag && !item.temporalTag);
+    const int frames = item.frames();
 
     std::string format = m_filenameFormat;
     if (format.empty()) {
-      if (hasFrames || hasLayer | hasFrameTag) {
-        format = "{title}";
-        if (hasLayer   ) format += " ({layer})";
-        if (hasFrameTag) format += " #{tag}";
-        if (hasFrames  ) format += " {frame}";
-        format += ".{extension}";
-      }
-      else
-        format = "{name}";
+      format = get_default_filename_format(
+        false,                          // Without path
+        (frames > 1),                   // Has frames
+        (layer != nullptr),             // Has layer
+        (frameTag && !item.temporalTag) // Has frame tag
+        );
     }
 
     frame_t frameFirst = item.fromFrame();

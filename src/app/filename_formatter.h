@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -69,7 +69,7 @@ namespace app {
   std::string filename_formatter(
     const std::string& format,
     FilenameInfo& info,
-    bool replaceFrame = true);
+    const bool replaceFrame = true);
 
   std::string set_frame_format(
     const std::string& format,
@@ -78,6 +78,12 @@ namespace app {
   std::string add_frame_format(
     const std::string& format,
     const std::string& newFrameFormat);
+
+  std::string get_default_filename_format(
+    const bool withPath,
+    const bool hasFrames,
+    const bool hasLayer,
+    const bool hasFrameTag);
 
 } // namespace app
 

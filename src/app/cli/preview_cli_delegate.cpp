@@ -79,10 +79,7 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
   ASSERT(cof.document);
   ASSERT(cof.document->sprite());
 
-  std::cout << "- Save file: '" << cof.filename << "'\n";
-  std::cout << "  - Size: "
-            << cof.document->sprite()->width() << "x"
-            << cof.document->sprite()->height() << "\n";
+  std::cout << "- Save file '" << cof.document->filename() << "'\n";
 
   if (!cof.crop.isEmpty()) {
     std::cout << "  - Crop: "
@@ -96,32 +93,48 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     std::cout << "  - Trim\n";
   }
 
+  std::cout << "  - Size: "
+            << cof.document->sprite()->width() << "x"
+            << cof.document->sprite()->height() << "\n";
+
+  if (!cof.importLayer.empty())
+    std::cout << "  - Layer: '" << cof.importLayer << "'\n";
+
   if (cof.hasFrameTag()) {
     std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
   }
   else if (cof.hasFrameRange()) {
-    std::cout << "  - Frame range: from "
+    std::cout << "  - Frame range from "
               << cof.fromFrame << " to "
               << cof.toFrame << "\n";
   }
 
-  if (!cof.filenameFormat.empty()) {
+  if (!cof.filenameFormat.empty())
     std::cout << "  - Filename format: '" << cof.filenameFormat << "'\n";
-  }
 
-  if (!cof.filenameFormat.empty()) {
-    base::UniquePtr<FileOp> fop(
-      FileOp::createSaveDocumentOperation(
-        UIContext::instance(),
-        cof.roi(),
-        cof.filename.c_str(),
-        cof.filenameFormat.c_str()));
+#if _DEBUG
+  std::cout << "  - Filename: '" << cof.filename << "'\n";
+#endif
 
+  base::UniquePtr<FileOp> fop(
+    FileOp::createSaveDocumentOperation(
+      UIContext::instance(),
+      cof.roi(),
+      cof.filename.c_str(),
+      cof.filenameFormat.c_str()));
+
+  if (fop) {
     std::vector<std::string> files;
     fop->getFilenameList(files);
-    for (const auto& file : files)
-      std::cout << "  - Output file: '" << file << "'\n";
+    for (const auto& file : files) {
+      if (base::is_file(file))
+        std::cout << "  - Overwrite file: '" << file << "'\n";
+      else
+        std::cout << "  - Output file: '" << file << "'\n";
+    }
   }
+  else
+    std::cout << "  - No output\n";
 }
 
 void PreviewCliDelegate::exportFiles(DocumentExporter& exporter)

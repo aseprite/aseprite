@@ -27,6 +27,7 @@ namespace app {
     std::string importLayer;
     doc::frame_t fromFrame, toFrame;
     bool splitLayers;
+    bool splitTags;
     bool allLayers;
     bool listLayers;
     bool listTags;

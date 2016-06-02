@@ -20,6 +20,7 @@
 #include "app/document.h"
 #include "app/document_exporter.h"
 #include "app/document_undo.h"
+#include "app/file/file.h"
 #include "app/filename_formatter.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
@@ -116,8 +117,12 @@ void CliProcessor::process()
           sheetType = SpriteSheetType::Packed;
         }
         // --split-layers
-        if (opt == &m_options.splitLayers()) {
+        else if (opt == &m_options.splitLayers()) {
           cof.splitLayers = true;
+        }
+        // --split-tags
+        else if (opt == &m_options.splitTags()) {
+          cof.splitTags = true;
         }
         // --layer <layer-name>
         else if (opt == &m_options.layer()) {
@@ -379,36 +384,77 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   for (doc::Layer* layer : doc->sprite()->layers())
     visibility[i++] = layer->isVisible();
 
-  // --save-as with --split-layers
-  if (cof.splitLayers) {
-    std::string fn, fmt;
+  std::string filenameFormat = cof.filenameFormat;
+  if (filenameFormat.empty()) { // Default format
+    filenameFormat = get_default_filename_format(
+      true,                     // With path
+      cof.roi().frames() > 1,   // Has frames
+      cof.splitLayers,          // Has layer
+      cof.splitTags);           // Has frame tag
+  }
 
-    std::string format = cof.filenameFormat;
-    if (format.empty()) {
-      if (doc->sprite()->totalFrames() > frame_t(1))
-        format = "{path}/{title} ({layer}) {frame}.{extension}";
-      else
-        format = "{path}/{title} ({layer}).{extension}";
+  std::vector<doc::Layer*> layers;
+  // --save-as with --split-layers or --split-tags
+  if (cof.splitLayers) {
+    for (doc::Layer* layer : doc->sprite()->layers())
+      layers.push_back(layer);
+  }
+  else {
+    // Show only one layer
+    if (!cof.importLayer.empty()) {
+      for (Layer* layer : doc->sprite()->layers()) {
+        if (layer->name() == cof.importLayer) {
+          layer->setVisible(true);
+          layers.push_back(layer);
+        }
+        else
+          layer->setVisible(false);
+      }
     }
+    // All visible layers
+    else
+      layers.push_back(nullptr);
+  }
+
+  std::vector<doc::FrameTag*> frameTags;
+  if (cof.hasFrameTag()) {
+    frameTags.push_back(
+      doc->sprite()->frameTags().getByName(cof.frameTag));
+  }
+  else {
+    doc::FrameTags& origFrameTags = cof.document->sprite()->frameTags();
+    if (cof.splitTags && !origFrameTags.empty()) {
+      for (doc::FrameTag* frameTag : origFrameTags) {
+        // In case the tag is outside the given --frame-range
+        if (cof.hasFrameRange()) {
+          if (frameTag->toFrame() < cof.fromFrame ||
+              frameTag->fromFrame() > cof.toFrame)
+            continue;
+        }
+        frameTags.push_back(frameTag);
+      }
+    }
+    else
+      frameTags.push_back(nullptr);
+  }
+
+  for (doc::FrameTag* frameTag : frameTags) {
+    std::string fn, fmt;
 
     // For each layer, hide other ones and save the sprite.
     i = 0;
-    for (doc::Layer* show : doc->sprite()->layers()) {
-      // If the user doesn't want all layers and this one is hidden.
-      if (!visibility[i++])
-        continue;     // Just ignore this layer.
+    for (doc::Layer* layer : layers) {
+      if (cof.splitLayers) {
+        ASSERT(layer);
 
-      // Make this layer ("show") the only one visible.
-      for (doc::Layer* hide : doc->sprite()->layers())
-        hide->setVisible(hide == show);
+        // If the user doesn't want all layers and this one is hidden.
+        if (!visibility[i++])
+          continue;     // Just ignore this layer.
 
-      FilenameInfo fnInfo;
-      fnInfo
-        .filename(cof.filename)
-        .layerName(show->name());
-
-      fn = filename_formatter(format, fnInfo);
-      fmt = filename_formatter(format, fnInfo, false);
+        // Make this layer ("show") the only one visible.
+        for (doc::Layer* hide : doc->sprite()->layers())
+          hide->setVisible(hide == layer);
+      }
 
       // TODO --trim --save-as --split-layers doesn't make too much
       // sense as we lost the trim rectangle information (e.g. we
@@ -419,32 +465,30 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
         ctx->executeCommand(trimCommand);
 
       CliOpenFile itemCof = cof;
+      FilenameInfo fnInfo;
+      fnInfo.filename(cof.filename);
+      if (layer) {
+        fnInfo.layerName(layer->name());
+        itemCof.importLayer = layer->name();
+      }
+      if (frameTag) {
+        fnInfo
+          .innerTagName(frameTag->name())
+          .outerTagName(frameTag->name());
+        itemCof.frameTag = frameTag->name();
+      }
+      fn = filename_formatter(filenameFormat, fnInfo);
+      fmt = filename_formatter(filenameFormat, fnInfo, false);
       itemCof.filename = fn;
       itemCof.filenameFormat = fmt;
+
+      // Call delegate
       m_delegate->saveFile(itemCof);
 
       if (cof.trim) {
         ctx->executeCommand(undoCommand);
         clearUndo = true;
       }
-    }
-  }
-  else {
-    // Show only one layer
-    if (!cof.importLayer.empty()) {
-      for (Layer* layer : doc->sprite()->layers())
-        layer->setVisible(layer->name() == cof.importLayer);
-    }
-
-    if (cof.trim)
-      ctx->executeCommand(trimCommand);
-
-    // Call the delegate
-    m_delegate->saveFile(cof);
-
-    if (cof.trim) {
-      ctx->executeCommand(undoCommand);
-      clearUndo = true;
     }
   }
 

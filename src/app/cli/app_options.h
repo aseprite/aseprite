@@ -59,6 +59,7 @@ public:
   const Option& sheetType() const { return m_sheetType; }
   const Option& sheetPack() const { return m_sheetPack; }
   const Option& splitLayers() const { return m_splitLayers; }
+  const Option& splitTags() const { return m_splitTags; }
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
   const Option& frameTag() const { return m_frameTag; }
@@ -102,6 +103,7 @@ private:
   Option& m_sheetType;
   Option& m_sheetPack;
   Option& m_splitLayers;
+  Option& m_splitTags;
   Option& m_layer;
   Option& m_allLayers;
   Option& m_frameTag;
