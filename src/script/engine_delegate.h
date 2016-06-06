@@ -16,6 +16,11 @@ namespace script {
     virtual void onConsolePrint(const char* text) = 0;
   };
 
+  class StdoutEngineDelegate : public EngineDelegate {
+  public:
+    void onConsolePrint(const char* text) override;
+  };
+
 }
 
 #endif

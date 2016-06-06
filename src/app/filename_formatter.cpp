@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,6 +11,8 @@
 
 #include "app/filename_formatter.h"
 
+#include "app/file/file.h"
+#include "app/file/split_filename.h"
 #include "base/convert_to.h"
 #include "base/path.h"
 #include "base/replace_string.h"
@@ -48,10 +50,34 @@ static bool replace_frame(const char* frameKey, // E.g. = "{frame"
     return false;
 }
 
+bool get_frame_info_from_filename_format(
+  const std::string& format, int* frameBase, int* width)
+{
+  const char* frameKey = "{frame";
+  size_t i = format.find(frameKey);
+  if (i != std::string::npos) {
+    int keyLen = std::strlen(frameKey);
+
+    size_t j = format.find("}", i+keyLen);
+    if (j != std::string::npos) {
+      std::string frameStr = format.substr(i, j - i + 1);
+
+      if (frameBase)
+        *frameBase = std::strtol(frameStr.c_str()+keyLen, NULL, 10);
+
+      if (width)
+        *width = (int(j) - int(i+keyLen));
+    }
+    return true;
+  }
+  else
+    return false;
+}
+
 std::string filename_formatter(
   const std::string& format,
   FilenameInfo& info,
-  bool replaceFrame)
+  const bool replaceFrame)
 {
   const std::string& filename = info.filename();
   std::string path = base::get_file_path(filename);
@@ -77,42 +103,95 @@ std::string filename_formatter(
   return output;
 }
 
-std::string set_frame_format(
-  const std::string& format,
-  const std::string& newFrameFormat)
+std::string get_default_filename_format(
+  std::string& filename,
+  const bool withPath,
+  const bool hasFrames,
+  const bool hasLayer,
+  const bool hasFrameTag)
 {
-  std::string output = format;
+  std::string format;
 
-  size_t i = output.find("{frame");
-  if (i != std::string::npos) {
-    size_t j = output.find("}", i+6);
-    if (j != std::string::npos) {
-      output.replace(i, j - i + 1, newFrameFormat);
+  if (withPath)
+    format += "{path}/";
+
+  format += "{title}";
+
+  if (hasLayer)
+    format += " ({layer})";
+
+  if (hasFrameTag)
+    format += " #{tag}";
+
+  if (hasFrames && is_static_image_format(filename) &&
+      filename.find("{frame") == std::string::npos &&
+      filename.find("{tagframe") == std::string::npos) {
+    const bool autoFrameFromLastDigit =
+      (!hasLayer &&
+       !hasFrameTag);
+
+    // Check if we already have a frame number at the end of the
+    // filename (e.g. output01.png)
+    int frameBase = -1, frameWidth = 0;
+    std::string left, right;
+    if (autoFrameFromLastDigit)
+      frameBase = split_filename(filename.c_str(), left, right, frameWidth);
+    if (frameBase >= 0) {
+      std::vector<char> buf(32);
+      std::sprintf(&buf[0], "{frame%0*d}", frameWidth, frameBase);
+
+      if (hasLayer || hasFrameTag)
+        format += " ";
+      format += &buf[0];
+
+      // Remove the frame number from the filename part.
+      filename = left;
+      filename += right;
+    }
+    // Check if there is already a {frame} tag in the filename
+    else if (get_frame_info_from_filename_format(filename, &frameBase, &frameWidth)) {
+      // Do nothing
+    }
+    else {
+      if (hasLayer || hasFrameTag)
+        format += " {frame}";
+      else
+        format += "{frame1}";
     }
   }
 
-  return output;
+  format += ".{extension}";
+  return format;
 }
 
-std::string add_frame_format(
-  const std::string& format,
-  const std::string& newFrameFormat)
+std::string get_default_filename_format_for_sheet(
+  const std::string& filename,
+  const bool hasFrames,
+  const bool hasLayer,
+  const bool hasFrameTag)
 {
-  std::string output = format;
+  std::string format = "{title}";
 
-  size_t i = output.find("{frame");
-  size_t j = output.find("{tagframe");
-  if (i == std::string::npos &&
-      j == std::string::npos) {
-    output =
-      base::join_path(
-        base::get_file_path(format),
-        base::get_file_title(format))
-      + newFrameFormat + "." +
-      base::get_file_extension(format);
+  if (hasLayer)
+    format += " ({layer})";
+
+  if (hasFrameTag)
+    format += " #{tag}";
+
+  if (hasFrames) {
+    int frameBase, frameWidth;
+
+    // Check if there is already a {frame} tag in the filename
+    if (get_frame_info_from_filename_format(filename, &frameBase, &frameWidth)) {
+      // Do nothing
+    }
+    else {
+      format += " {frame}";
+    }
   }
 
-  return output;
+  format += ".{extension}";
+  return format;
 }
 
 } // namespace app

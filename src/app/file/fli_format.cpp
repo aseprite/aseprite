@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -156,11 +156,13 @@ bool FliFormat::onLoad(FileOp* fop)
 
 #ifdef ENABLE_SAVE
 
-static int get_time_precision(const Sprite *sprite)
+static int get_time_precision(const Sprite *sprite,
+                              const doc::frame_t fromFrame,
+                              const doc::frame_t toFrame)
 {
   // Check if all frames have the same duration
   bool constantFrameRate = true;
-  for (frame_t c(1); c < sprite->totalFrames(); ++c) {
+  for (frame_t c=fromFrame+1; c <= toFrame; ++c) {
     if (sprite->frameDuration(c-1) != sprite->frameDuration(c)) {
       constantFrameRate = false;
       break;
@@ -170,7 +172,7 @@ static int get_time_precision(const Sprite *sprite)
     return sprite->frameDuration(0);
 
   int precision = 1000;
-  for (frame_t c(0); c < sprite->totalFrames() && precision > 1; ++c) {
+  for (frame_t c=fromFrame; c <= toFrame && precision > 1; ++c) {
     int len = sprite->frameDuration(c);
     while (len / precision == 0)
       precision /= 10;
@@ -192,7 +194,10 @@ bool FliFormat::onSave(FileOp* fop)
   header.frames = 0;
   header.width = sprite->width();
   header.height = sprite->height();
-  header.speed = get_time_precision(sprite);
+  header.speed = get_time_precision(
+    sprite,
+    fop->roi().fromFrame(),
+    fop->roi().toFrame());
   encoder.writeHeader(header);
 
   // Create the bitmaps
@@ -203,10 +208,9 @@ bool FliFormat::onSave(FileOp* fop)
   flic::Frame fliFrame;
   fliFrame.pixels = bmp->getPixelAddress(0, 0);
   fliFrame.rowstride = IndexedTraits::getRowStrideBytes(bmp->width());
-  for (frame_t frame_it=0;
-       frame_it <= sprite->totalFrames();
-       ++frame_it) {
-    frame_t frame = (frame_it % sprite->totalFrames());
+  frame_t nframes = fop->roi().frames();
+  for (frame_t frame_it=0; frame_it <= nframes; ++frame_it) {
+    frame_t frame = fop->roi().fromFrame() + (frame_it % nframes);
     const Palette* pal = sprite->palette(frame);
     int size = MIN(256, pal->size());
 
@@ -222,7 +226,7 @@ bool FliFormat::onSave(FileOp* fop)
 
     // How many times this frame should be written to get the same
     // time that it has in the sprite
-    if (frame_it < sprite->totalFrames()) {
+    if (frame_it < nframes) {
       int times = sprite->frameDuration(frame) / header.speed;
       times = MAX(1, times);
       for (int c=0; c<times; c++)
@@ -233,7 +237,7 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     // Update progress
-    fop->setProgress((float)(frame_it+1) / (float)(sprite->totalFrames()+1));
+    fop->setProgress((float)(frame_it+1) / (float)(nframes+1));
   }
 
   return true;

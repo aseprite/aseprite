@@ -92,9 +92,13 @@ add_library(app-lib
   app.cpp
   app_brushes.cpp
   app_menus.cpp
-  app_options.cpp
   app_render.cpp
   check_update.cpp
+  cli/app_options.cpp
+  cli/cli_open_file.cpp
+  cli/cli_processor.cpp
+  cli/default_cli_delegate.cpp
+  cli/preview_cli_delegate.cpp
   cmd.cpp
   cmd/add_cel.cpp
   cmd/add_frame.cpp

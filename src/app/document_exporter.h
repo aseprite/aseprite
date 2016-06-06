@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -35,26 +35,30 @@ namespace app {
       DefaultDataFormat = JsonHashDataFormat
     };
 
-    enum TextureFormat {
-      JsonTextureFormat,
-      DefaultTextureFormat = JsonTextureFormat
-    };
-
-    enum ScaleMode {
-      DefaultScaleMode
-    };
-
     DocumentExporter();
+    ~DocumentExporter();
+
+    DataFormat dataFormat() const { return m_dataFormat; }
+    const std::string& dataFilename() { return m_dataFilename; }
+    const std::string& textureFilename() { return m_textureFilename; }
+    int textureWidth() const { return m_textureWidth; }
+    int textureHeight() const { return m_textureHeight; }
+    SpriteSheetType spriteSheetType() { return m_sheetType; }
+    bool ignoreEmptyCels() { return m_ignoreEmptyCels; }
+    int borderPadding() const { return m_borderPadding; }
+    int shapePadding() const { return m_shapePadding; }
+    int innerPadding() const { return m_innerPadding; }
+    bool trimCels() const { return m_trimCels; }
+    const std::string& filenameFormat() const { return m_filenameFormat; }
+    bool listFrameTags() const { return m_listFrameTags; }
+    bool listLayers() const { return m_listLayers; }
 
     void setDataFormat(DataFormat format) { m_dataFormat = format; }
     void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
-    void setTextureFormat(TextureFormat format) { m_textureFormat = format; }
     void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
     void setTextureWidth(int width) { m_textureWidth = width; }
     void setTextureHeight(int height) { m_textureHeight = height; }
     void setSpriteSheetType(SpriteSheetType type) { m_sheetType = type; }
-    void setScale(double scale) { m_scale = scale; }
-    void setScaleMode(ScaleMode mode) { m_scaleMode = mode; }
     void setIgnoreEmptyCels(bool ignore) { m_ignoreEmptyCels = ignore; }
     void setBorderPadding(int padding) { m_borderPadding = padding; }
     void setShapePadding(int padding) { m_shapePadding = padding; }
@@ -72,6 +76,7 @@ namespace app {
     }
 
     Document* exportSheet();
+    gfx::Size calculateSheetSize();
 
   private:
     class Sample;
@@ -80,11 +85,13 @@ namespace app {
     class SimpleLayoutSamples;
     class BestFitLayoutSamples;
 
-    void captureSamples(Samples& samples);
-    Document* createEmptyTexture(const Samples& samples);
-    void renderTexture(const Samples& samples, doc::Image* textureImage);
-    void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
-    void renderSample(const Sample& sample, doc::Image* dst, int x, int y);
+    void captureSamples(Samples& samples) const;
+    void layoutSamples(Samples& samples);
+    gfx::Size calculateSheetSize(const Samples& samples) const;
+    Document* createEmptyTexture(const Samples& samples) const;
+    void renderTexture(const Samples& samples, doc::Image* textureImage) const;
+    void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage) const;
+    void renderSample(const Sample& sample, doc::Image* dst, int x, int y) const;
 
     class Item {
     public:
@@ -109,13 +116,10 @@ namespace app {
 
     DataFormat m_dataFormat;
     std::string m_dataFilename;
-    TextureFormat m_textureFormat;
     std::string m_textureFilename;
     int m_textureWidth;
     int m_textureHeight;
     SpriteSheetType m_sheetType;
-    double m_scale;
-    ScaleMode m_scaleMode;
     bool m_ignoreEmptyCels;
     int m_borderPadding;
     int m_shapePadding;

@@ -94,43 +94,6 @@ private:
   FileOp* m_fop;
 };
 
-static void save_document_in_background(const Context* context,
-                                        const Document* document, bool mark_as_saved,
-                                        const std::string& fn_format)
-{
-  base::UniquePtr<FileOp> fop(
-    FileOp::createSaveDocumentOperation(
-      context, document,
-      document->filename().c_str(), fn_format.c_str()));
-  if (!fop)
-    return;
-
-  SaveFileJob job(fop);
-  job.showProgressWindow();
-
-  if (fop->hasError()) {
-    Console console;
-    console.printf(fop->error().c_str());
-
-    // We don't know if the file was saved correctly or not. So mark
-    // it as it should be saved again.
-    const_cast<Document*>(document)->impossibleToBackToSavedState();
-  }
-  // If the job was cancelled, mark the document as modified.
-  else if (fop->isStop()) {
-    const_cast<Document*>(document)->impossibleToBackToSavedState();
-  }
-  else if (context->isUIAvailable()) {
-    App::instance()->recentFiles()->addRecentFile(document->filename().c_str());
-    if (mark_as_saved)
-      const_cast<Document*>(document)->markAsSaved();
-
-    StatusBar::instance()
-      ->setStatusText(2000, "File %s, saved.",
-        document->name().c_str());
-  }
-}
-
 //////////////////////////////////////////////////////////////////////
 
 SaveFileBaseCommand::SaveFileBaseCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
@@ -142,6 +105,14 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_filenameFormat = params.get("filename-format");
+  m_frameTag = params.get("frame-tag");
+
+  m_fromFrame = m_toFrame = -1;
+  if (params.has_param("from-frame") ||
+      params.has_param("to-frame")) {
+    m_fromFrame = params.get_as<doc::frame_t>("from-frame");
+    m_toFrame = params.get_as<doc::frame_t>("to-frame");
+  }
 }
 
 // Returns true if there is a current sprite to save.
@@ -222,9 +193,7 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
   }
 
   // Save the document
-  save_document_in_background(
-    context, const_cast<Document*>(document),
-    markAsSaved, m_filenameFormat);
+  saveDocumentInBackground(context, const_cast<Document*>(document), markAsSaved);
 
   // Undo resize
   if (undoResize) {
@@ -244,6 +213,45 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
   }
 
   return true;
+}
+
+void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
+                                                   const app::Document* document,
+                                                   bool markAsSaved) const
+{
+  base::UniquePtr<FileOp> fop(
+    FileOp::createSaveDocumentOperation(
+      context,
+      FileOpROI(document, m_frameTag, m_fromFrame, m_toFrame),
+      document->filename().c_str(),
+      m_filenameFormat.c_str()));
+  if (!fop)
+    return;
+
+  SaveFileJob job(fop);
+  job.showProgressWindow();
+
+  if (fop->hasError()) {
+    Console console;
+    console.printf(fop->error().c_str());
+
+    // We don't know if the file was saved correctly or not. So mark
+    // it as it should be saved again.
+    const_cast<Document*>(document)->impossibleToBackToSavedState();
+  }
+  // If the job was cancelled, mark the document as modified.
+  else if (fop->isStop()) {
+    const_cast<Document*>(document)->impossibleToBackToSavedState();
+  }
+  else if (context->isUIAvailable()) {
+    App::instance()->recentFiles()->addRecentFile(document->filename().c_str());
+    if (markAsSaved)
+      const_cast<Document*>(document)->markAsSaved();
+
+    StatusBar::instance()
+      ->setStatusText(2000, "File %s, saved.",
+        document->name().c_str());
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -274,9 +282,7 @@ void SaveFileCommand::onExecute(Context* context)
     ContextWriter writer(context);
     Document* documentWriter = writer.document();
 
-    save_document_in_background(
-      context, documentWriter, true,
-      m_filenameFormat.c_str());
+    saveDocumentInBackground(context, documentWriter, true);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name

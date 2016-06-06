@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -15,10 +15,11 @@
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <vector>
 
+// Flags for FileOp::createLoadDocumentOperation()
 #define FILE_LOAD_SEQUENCE_NONE         0x00000001
 #define FILE_LOAD_SEQUENCE_ASK          0x00000002
 #define FILE_LOAD_SEQUENCE_YES          0x00000004
@@ -26,6 +27,7 @@
 
 namespace doc {
   class Document;
+  class FrameTag;
 }
 
 namespace doc {
@@ -51,18 +53,49 @@ namespace app {
     FileOpSave
   } FileOpType;
 
-  class IFileOpProgress
-  {
+  class IFileOpProgress {
   public:
     virtual ~IFileOpProgress() { }
     virtual void ackFileOpProgress(double progress) = 0;
   };
 
+  class FileOpROI {             // Region of interest
+  public:
+    FileOpROI();
+    FileOpROI(const app::Document* doc,
+              const std::string& frameTagName,
+              const doc::frame_t fromFrame,
+              const doc::frame_t toFrame);
+
+    const app::Document* document() const { return m_document; }
+    doc::FrameTag* frameTag() const { return m_frameTag; }
+    doc::frame_t fromFrame() const { return m_fromFrame; }
+    doc::frame_t toFrame() const { return m_toFrame; }
+
+    doc::frame_t frames() const {
+      ASSERT(m_fromFrame >= 0);
+      ASSERT(m_toFrame >= 0);
+      return (m_toFrame - m_fromFrame + 1);
+    }
+
+  private:
+    const app::Document* m_document;
+    doc::FrameTag* m_frameTag;
+    doc::frame_t m_fromFrame;
+    doc::frame_t m_toFrame;
+  };
+
   // Structure to load & save files.
   class FileOp {
   public:
-    static FileOp* createLoadDocumentOperation(Context* context, const char* filename, int flags);
-    static FileOp* createSaveDocumentOperation(const Context* context, const Document* document, const char* filename, const char* fn_format);
+    static FileOp* createLoadDocumentOperation(Context* context,
+                                               const char* filename,
+                                               int flags);
+
+    static FileOp* createSaveDocumentOperation(const Context* context,
+                                               const FileOpROI& roi,
+                                               const char* filename,
+                                               const char* filenameFormat);
 
     ~FileOp();
 
@@ -78,6 +111,8 @@ namespace app {
       return doc;
     }
 
+    const FileOpROI& roi() const { return m_roi; }
+
     void createDocument(Sprite* spr);
     void operate(IFileOpProgress* progress = nullptr);
 
@@ -89,10 +124,12 @@ namespace app {
     // Does extra post-load processing which may require user intervention.
     void postLoad();
 
+    // Special options specific to the file format.
+    base::SharedPtr<FormatOptions> formatOptions() const;
+    void setFormatOptions(const base::SharedPtr<FormatOptions>& opts);
+
     // Helpers for file decoder/encoder (FileFormat) with
     // FILE_SUPPORT_SEQUENCES flag.
-    base::SharedPtr<FormatOptions> sequenceGetFormatOptions() const;
-    void sequenceSetFormatOptions(const base::SharedPtr<FormatOptions>& formatOptions);
     void sequenceSetNColors(int ncolors);
     int sequenceGetNColors() const;
     void sequenceSetColor(int index, int r, int g, int b);
@@ -115,6 +152,8 @@ namespace app {
     double progress() const;
     void setProgress(double progress);
 
+    void getFilenameList(std::vector<std::string>& output) const;
+
   private:
     FileOp();                   // Undefined
     FileOp(FileOpType type, Context* context);
@@ -126,6 +165,7 @@ namespace app {
     //      releaseDocument() member function)
     Document* m_document;       // Loaded document, or document to be saved.
     std::string m_filename;     // File-name to load/save.
+    FileOpROI m_roi;
 
     // Shared fields between threads.
     mutable base::mutex m_mutex; // Mutex to access to the next two fields.
@@ -137,6 +177,8 @@ namespace app {
     bool m_oneframe;            // Load just one frame (in formats
                                 // that support animation like
                                 // GIF/FLI/ASE).
+
+    base::SharedPtr<FormatOptions> m_formatOptions;
 
     // Data for sequences.
     struct {
@@ -151,21 +193,23 @@ namespace app {
       bool has_alpha;
       LayerImage* layer;
       Cel* last_cel;
-      base::SharedPtr<FormatOptions> format_options;
     } m_seq;
 
     void prepareForSequence();
   };
 
   // Available extensions for each load/save operation.
-
   std::string get_readable_extensions();
   std::string get_writable_extensions();
 
   // High-level routines to load/save documents.
-
   app::Document* load_document(Context* context, const char* filename);
   int save_document(Context* context, doc::Document* document);
+
+  // Returns true if the given filename contains a file extension that
+  // can be used to save only static images (i.e. animations are saved
+  // as sequence of files).
+  bool is_static_image_format(const std::string& filename);
 
 } // namespace app
 

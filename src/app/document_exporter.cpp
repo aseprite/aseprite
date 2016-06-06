@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -341,12 +341,9 @@ public:
 
 DocumentExporter::DocumentExporter()
  : m_dataFormat(DefaultDataFormat)
- , m_textureFormat(DefaultTextureFormat)
  , m_textureWidth(0)
  , m_textureHeight(0)
  , m_sheetType(SpriteSheetType::None)
- , m_scale(1.0)
- , m_scaleMode(DefaultScaleMode)
  , m_ignoreEmptyCels(false)
  , m_borderPadding(0)
  , m_shapePadding(0)
@@ -355,6 +352,14 @@ DocumentExporter::DocumentExporter()
  , m_listFrameTags(false)
  , m_listLayers(false)
 {
+}
+
+DocumentExporter::~DocumentExporter()
+{
+  for (auto& item : m_documents) {
+    if (item.temporalTag)
+      delete item.frameTag;
+  }
 }
 
 Document* DocumentExporter::exportSheet()
@@ -384,22 +389,7 @@ Document* DocumentExporter::exportSheet()
   }
 
   // 2) Layout those samples in a texture field.
-  switch (m_sheetType) {
-    case SpriteSheetType::Packed: {
-      BestFitLayoutSamples layout;
-      layout.layoutSamples(
-        samples, m_borderPadding, m_shapePadding,
-        m_textureWidth, m_textureHeight);
-      break;
-    }
-    default: {
-      SimpleLayoutSamples layout(m_sheetType);
-      layout.layoutSamples(
-        samples, m_borderPadding, m_shapePadding,
-        m_textureWidth, m_textureHeight);
-      break;
-    }
-  }
+  layoutSamples(samples);
 
   // 3) Create and render the texture.
   base::UniquePtr<Document> textureDocument(
@@ -426,7 +416,15 @@ Document* DocumentExporter::exportSheet()
   return textureDocument.release();
 }
 
-void DocumentExporter::captureSamples(Samples& samples)
+gfx::Size DocumentExporter::calculateSheetSize()
+{
+  Samples samples;
+  captureSamples(samples);
+  layoutSamples(samples);
+  return calculateSheetSize(samples);
+}
+
+void DocumentExporter::captureSamples(Samples& samples) const
 {
   for (auto& item : m_documents) {
     Document* doc = item.doc;
@@ -434,21 +432,14 @@ void DocumentExporter::captureSamples(Samples& samples)
     Layer* layer = item.layer;
     FrameTag* frameTag = item.frameTag;
     int frames = item.frames();
-    bool hasFrames = (frames > 1);
-    bool hasLayer = (layer != nullptr);
-    bool hasFrameTag = (frameTag && !item.temporalTag);
 
     std::string format = m_filenameFormat;
     if (format.empty()) {
-      if (hasFrames || hasLayer | hasFrameTag) {
-        format = "{title}";
-        if (hasLayer   ) format += " ({layer})";
-        if (hasFrameTag) format += " #{tag}";
-        if (hasFrames  ) format += " {frame}";
-        format += ".{extension}";
-      }
-      else
-        format = "{name}";
+      format = get_default_filename_format_for_sheet(
+        doc->filename(),
+        (frames > 1),                   // Has frames
+        (layer != nullptr),             // Has layer
+        (frameTag && !item.temporalTag)); // Has frame tag
     }
 
     frame_t frameFirst = item.fromFrame();
@@ -543,35 +534,32 @@ void DocumentExporter::captureSamples(Samples& samples)
   }
 }
 
-Document* DocumentExporter::createEmptyTexture(const Samples& samples)
+void DocumentExporter::layoutSamples(Samples& samples)
 {
-  Palette* palette = NULL;
-  PixelFormat pixelFormat = IMAGE_INDEXED;
-  gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
-  int maxColors = 256;
-
-  for (Samples::const_iterator
-         it = samples.begin(),
-         end = samples.end(); it != end; ++it) {
-    // We try to render an indexed image. But if we find a sprite with
-    // two or more palettes, or two of the sprites have different
-    // palettes, we've to use RGB format.
-    if (pixelFormat == IMAGE_INDEXED) {
-      if (it->sprite()->pixelFormat() != IMAGE_INDEXED) {
-        pixelFormat = IMAGE_RGB;
-      }
-      else if (it->sprite()->getPalettes().size() > 1) {
-        pixelFormat = IMAGE_RGB;
-      }
-      else if (palette != NULL
-        && palette->countDiff(it->sprite()->palette(frame_t(0)), NULL, NULL) > 0) {
-        pixelFormat = IMAGE_RGB;
-      }
-      else
-        palette = it->sprite()->palette(frame_t(0));
+  switch (m_sheetType) {
+    case SpriteSheetType::Packed: {
+      BestFitLayoutSamples layout;
+      layout.layoutSamples(
+        samples, m_borderPadding, m_shapePadding,
+        m_textureWidth, m_textureHeight);
+      break;
     }
+    default: {
+      SimpleLayoutSamples layout(m_sheetType);
+      layout.layoutSamples(
+        samples, m_borderPadding, m_shapePadding,
+        m_textureWidth, m_textureHeight);
+      break;
+    }
+  }
+}
 
-    gfx::Rect sampleBounds = it->inTextureBounds();
+gfx::Size DocumentExporter::calculateSheetSize(const Samples& samples) const
+{
+  gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
+
+  for (const auto& sample : samples) {
+    gfx::Rect sampleBounds = sample.inTextureBounds();
 
     // If the user specified a fixed sprite sheet size, we add the
     // border padding in the sample size to do an union between
@@ -589,11 +577,41 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
   if (m_textureWidth == 0) fullTextureBounds.w += m_borderPadding;
   if (m_textureHeight == 0) fullTextureBounds.h += m_borderPadding;
 
+  return gfx::Size(fullTextureBounds.x+fullTextureBounds.w,
+                   fullTextureBounds.y+fullTextureBounds.h);
+}
+
+Document* DocumentExporter::createEmptyTexture(const Samples& samples) const
+{
+  PixelFormat pixelFormat = IMAGE_INDEXED;
+  Palette* palette = nullptr;
+  int maxColors = 256;
+
+  for (const auto& sample : samples) {
+    // We try to render an indexed image. But if we find a sprite with
+    // two or more palettes, or two of the sprites have different
+    // palettes, we've to use RGB format.
+    if (pixelFormat == IMAGE_INDEXED) {
+      if (sample.sprite()->pixelFormat() != IMAGE_INDEXED) {
+        pixelFormat = IMAGE_RGB;
+      }
+      else if (sample.sprite()->getPalettes().size() > 1) {
+        pixelFormat = IMAGE_RGB;
+      }
+      else if (palette != NULL
+        && palette->countDiff(sample.sprite()->palette(frame_t(0)), NULL, NULL) > 0) {
+        pixelFormat = IMAGE_RGB;
+      }
+      else
+        palette = sample.sprite()->palette(frame_t(0));
+    }
+  }
+
+  gfx::Size textureSize = calculateSheetSize(samples);
+
   base::UniquePtr<Sprite> sprite(
     Sprite::createBasicSprite(
-      pixelFormat,
-      fullTextureBounds.x+fullTextureBounds.w,
-      fullTextureBounds.y+fullTextureBounds.h, maxColors));
+      pixelFormat, textureSize.w, textureSize.h, maxColors));
 
   if (palette != NULL)
     sprite->setPalette(palette, false);
@@ -604,7 +622,7 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
   return document.release();
 }
 
-void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage)
+void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage) const
 {
   textureImage->clear(0);
 
@@ -627,7 +645,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
   }
 }
 
-void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage)
+void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage) const
 {
   std::string frames_begin;
   std::string frames_end;
@@ -703,7 +721,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "  \"size\": { "
      << "\"w\": " << textureImage->width() << ", "
      << "\"h\": " << textureImage->height() << " },\n"
-     << "  \"scale\": \"" << m_scale << "\"";
+     << "  \"scale\": \"1\"";
 
   // meta.frameTags
   if (m_listFrameTags) {
@@ -795,7 +813,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "}\n";
 }
 
-void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y)
+void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
 {
   render::Render render;
   gfx::Clip clip(x, y, sample.trimmedBounds());

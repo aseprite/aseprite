@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,8 +29,6 @@ namespace app {
 
     virtual ~FileFormatsManager();
 
-    void registerAllFormats();
-
     // Iterators to access to the list of formats.
     FileFormatsList::iterator begin();
     FileFormatsList::iterator end();
@@ -38,7 +36,7 @@ namespace app {
     FileFormat* getFileFormatByExtension(const char* extension) const;
 
   private:
-    // Register one format.
+    FileFormatsManager();
     void registerFormat(FileFormat* fileFormat);
 
     FileFormatsList m_formats;
