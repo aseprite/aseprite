@@ -11,6 +11,8 @@
 
 #include "app/filename_formatter.h"
 
+#include "app/file/file.h"
+#include "app/file/split_filename.h"
 #include "base/convert_to.h"
 #include "base/path.h"
 #include "base/replace_string.h"
@@ -48,6 +50,30 @@ static bool replace_frame(const char* frameKey, // E.g. = "{frame"
     return false;
 }
 
+bool get_frame_info_from_filename_format(
+  const std::string& format, int* frameBase, int* width)
+{
+  const char* frameKey = "{frame";
+  size_t i = format.find(frameKey);
+  if (i != std::string::npos) {
+    int keyLen = std::strlen(frameKey);
+
+    size_t j = format.find("}", i+keyLen);
+    if (j != std::string::npos) {
+      std::string frameStr = format.substr(i, j - i + 1);
+
+      if (frameBase)
+        *frameBase = std::strtol(frameStr.c_str()+keyLen, NULL, 10);
+
+      if (width)
+        *width = (int(j) - int(i+keyLen));
+    }
+    return true;
+  }
+  else
+    return false;
+}
+
 std::string filename_formatter(
   const std::string& format,
   FilenameInfo& info,
@@ -77,45 +103,8 @@ std::string filename_formatter(
   return output;
 }
 
-std::string set_frame_format(
-  const std::string& format,
-  const std::string& newFrameFormat)
-{
-  std::string output = format;
-
-  size_t i = output.find("{frame");
-  if (i != std::string::npos) {
-    size_t j = output.find("}", i+6);
-    if (j != std::string::npos) {
-      output.replace(i, j - i + 1, newFrameFormat);
-    }
-  }
-
-  return output;
-}
-
-std::string add_frame_format(
-  const std::string& format,
-  const std::string& newFrameFormat)
-{
-  std::string output = format;
-
-  size_t i = output.find("{frame");
-  size_t j = output.find("{tagframe");
-  if (i == std::string::npos &&
-      j == std::string::npos) {
-    output =
-      base::join_path(
-        base::get_file_path(format),
-        base::get_file_title(format))
-      + newFrameFormat + "." +
-      base::get_file_extension(format);
-  }
-
-  return output;
-}
-
 std::string get_default_filename_format(
+  std::string& filename,
   const bool withPath,
   const bool hasFrames,
   const bool hasLayer,
@@ -123,18 +112,81 @@ std::string get_default_filename_format(
 {
   std::string format;
 
-  if (withPath) format += "{path}/";
+  if (withPath)
+    format += "{path}/";
 
-  if (hasFrames || hasLayer | hasFrameTag) {
-    format += "{title}";
-    if (hasLayer   ) format += " ({layer})";
-    if (hasFrameTag) format += " #{tag}";
-    if (hasFrames  ) format += " {frame}";
-    format += ".{extension}";
+  format += "{title}";
+
+  if (hasLayer)
+    format += " ({layer})";
+
+  if (hasFrameTag)
+    format += " #{tag}";
+
+  if (hasFrames && is_static_image_format(filename)) {
+    const bool autoFrameFromLastDigit = (!hasLayer && !hasFrameTag);
+    int frameBase = -1, frameWidth = 0;
+
+    // Check if we already have a frame number at the end of the
+    // filename (e.g. output01.png)
+    std::string left, right;
+    if (autoFrameFromLastDigit)
+      frameBase = split_filename(filename.c_str(), left, right, frameWidth);
+    if (frameBase >= 0) {
+      std::vector<char> buf(32);
+      std::sprintf(&buf[0], "{frame%0*d}", frameWidth, frameBase);
+
+      if (hasLayer || hasFrameTag)
+        format += " ";
+      format += &buf[0];
+
+      // Remove the frame number from the filename part.
+      filename = left;
+      filename += right;
+    }
+    // Check if there is already a {frame} tag in the filename
+    else if (get_frame_info_from_filename_format(filename, &frameBase, &frameWidth)) {
+      // Do nothing
+    }
+    else {
+      if (hasLayer || hasFrameTag)
+        format += " {frame}";
+      else
+        format += "{frame1}";
+    }
   }
-  else
-    format += "{name}";
 
+  format += ".{extension}";
+  return format;
+}
+
+std::string get_default_filename_format_for_sheet(
+  const std::string& filename,
+  const bool hasFrames,
+  const bool hasLayer,
+  const bool hasFrameTag)
+{
+  std::string format = "{title}";
+
+  if (hasLayer)
+    format += " ({layer})";
+
+  if (hasFrameTag)
+    format += " #{tag}";
+
+  if (hasFrames) {
+    int frameBase, frameWidth;
+
+    // Check if there is already a {frame} tag in the filename
+    if (get_frame_info_from_filename_format(filename, &frameBase, &frameWidth)) {
+      // Do nothing
+    }
+    else {
+      format += " {frame}";
+    }
+  }
+
+  format += ".{extension}";
   return format;
 }
 

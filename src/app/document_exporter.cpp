@@ -431,16 +431,15 @@ void DocumentExporter::captureSamples(Samples& samples) const
     Sprite* sprite = doc->sprite();
     Layer* layer = item.layer;
     FrameTag* frameTag = item.frameTag;
-    const int frames = item.frames();
+    int frames = item.frames();
 
     std::string format = m_filenameFormat;
     if (format.empty()) {
-      format = get_default_filename_format(
-        false,                          // Without path
+      format = get_default_filename_format_for_sheet(
+        doc->filename(),
         (frames > 1),                   // Has frames
         (layer != nullptr),             // Has layer
-        (frameTag && !item.temporalTag) // Has frame tag
-        );
+        (frameTag && !item.temporalTag)); // Has frame tag
     }
 
     frame_t frameFirst = item.fromFrame();

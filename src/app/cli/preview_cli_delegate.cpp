@@ -79,7 +79,8 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
   ASSERT(cof.document);
   ASSERT(cof.document->sprite());
 
-  std::cout << "- Save file '" << cof.document->filename() << "'\n";
+  std::cout << "- Save file '" << cof.filename << "'\n"
+            << "  - Sprite: '" << cof.document->filename() << "'\n";
 
   if (!cof.crop.isEmpty()) {
     std::cout << "  - Crop: "
@@ -111,10 +112,6 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
 
   if (!cof.filenameFormat.empty())
     std::cout << "  - Filename format: '" << cof.filenameFormat << "'\n";
-
-#if _DEBUG
-  std::cout << "  - Filename: '" << cof.filename << "'\n";
-#endif
 
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(

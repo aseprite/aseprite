@@ -384,11 +384,14 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   for (doc::Layer* layer : doc->sprite()->layers())
     visibility[i++] = layer->isVisible();
 
+  std::string fn = cof.filename;
   std::string filenameFormat = cof.filenameFormat;
   if (filenameFormat.empty()) { // Default format
+    bool hasFrames = (cof.roi().frames() > 1);
     filenameFormat = get_default_filename_format(
+      fn,
       true,                     // With path
-      cof.roi().frames() > 1,   // Has frames
+      hasFrames,                // Has frames
       cof.splitLayers,          // Has layer
       cof.splitTags);           // Has frame tag
   }
@@ -439,8 +442,6 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   }
 
   for (doc::FrameTag* frameTag : frameTags) {
-    std::string fn, fmt;
-
     // For each layer, hide other ones and save the sprite.
     i = 0;
     for (doc::Layer* layer : layers) {
@@ -466,7 +467,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
 
       CliOpenFile itemCof = cof;
       FilenameInfo fnInfo;
-      fnInfo.filename(cof.filename);
+      fnInfo.filename(fn);
       if (layer) {
         fnInfo.layerName(layer->name());
         itemCof.importLayer = layer->name();
@@ -477,10 +478,8 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
           .outerTagName(frameTag->name());
         itemCof.frameTag = frameTag->name();
       }
-      fn = filename_formatter(filenameFormat, fnInfo);
-      fmt = filename_formatter(filenameFormat, fnInfo, false);
-      itemCof.filename = fn;
-      itemCof.filenameFormat = fmt;
+      itemCof.filename = filename_formatter(filenameFormat, fnInfo);
+      itemCof.filenameFormat = filename_formatter(filenameFormat, fnInfo, false);
 
       // Call delegate
       m_delegate->saveFile(itemCof);

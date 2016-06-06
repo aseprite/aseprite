@@ -120,6 +120,19 @@ int save_document(Context* context, doc::Document* document)
   return (!fop->hasError() ? 0: -1);
 }
 
+bool is_static_image_format(const std::string& filename)
+{
+  std::string extension =
+    base::string_to_lower(
+      base::get_file_extension(filename));
+
+  // Get the format through the extension of the filename
+  FileFormat* format = FileFormatsManager::instance()
+    ->getFileFormatByExtension(extension.c_str());
+
+  return (format && format->support(FILE_SUPPORT_SEQUENCES));
+}
+
 FileOpROI::FileOpROI(const app::Document* doc, doc::FrameTag* frameTag)
   : m_document(doc)
   , m_frameTag(frameTag)
@@ -179,8 +192,8 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
       int c, width, start_from;
       char buf[512];
 
-      /* first of all, we must generate the list of files to load in the
-         sequence... */
+      // First of all, we must generate the list of files to load in the
+      // sequence...
 
       // Check is this could be a sequence
       start_from = split_filename(filename, left, right, width);
@@ -399,80 +412,43 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
     std::string fn = filename;
     std::string fn_format = filenameFormatArg;
-    bool default_format = false;
-
     if (fn_format.empty()) {
-      if (fop->m_roi.frames() == 1)
-        fn_format = "{fullname}";
-      else {
-        fn_format = "{path}/{title}{frame}.{extension}";
-        default_format = true;
-      }
+      fn_format = get_default_filename_format(
+        fn,
+        true,                       // With path
+        (fop->m_roi.frames() > 1),  // Has frames
+        false,                      // Doesn't have layers
+        false);                     // Doesn't have tags
     }
 
-    // Save one frame
-    if (fop->m_roi.frames() == 1) {
+    Sprite* spr = fop->m_document->sprite();
+
+    for (frame_t frame = fop->m_roi.fromFrame(); frame <= fop->m_roi.toFrame(); ++frame) {
+      FrameTag* innerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().innerTag(frame));
+      FrameTag* outerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().outerTag(frame));
       FilenameInfo fnInfo;
-      fnInfo.filename(fn);
+      fnInfo
+        .filename(fn)
+        .innerTagName(innerTag ? innerTag->name(): "")
+        .outerTagName(outerTag ? outerTag->name(): "")
+        .frame(frame-fop->m_roi.fromFrame())
+        .tagFrame(innerTag ? frame-innerTag->fromFrame():
+                             frame);
 
-      fn = filename_formatter(fn_format, fnInfo);
-      fop->m_seq.filename_list.push_back(fn);
+      fop->m_seq.filename_list.push_back(
+        filename_formatter(fn_format, fnInfo));
     }
-    // Save multiple frames
-    else {
-      int width = 0;
-      int start_from = 0;
 
-      if (default_format) {
-        std::string left, right;
-        start_from = split_filename(fn.c_str(), left, right, width);
-        if (start_from < 0) {
-          start_from = 1;
-          width = 1;
-        }
-        else {
-          fn = left;
-          fn += right;
-        }
-      }
-
-      Sprite* spr = fop->m_document->sprite();
-      std::vector<char> buf(32);
-      std::sprintf(&buf[0], "{frame%0*d}", width, 0);
-      if (default_format)
-        fn_format = set_frame_format(fn_format, &buf[0]);
-      else if (fop->m_roi.frames() > 1)
-        fn_format = add_frame_format(fn_format, &buf[0]);
-
-      for (frame_t frame = fop->m_roi.fromFrame(); frame <= fop->m_roi.toFrame(); ++frame) {
-        FrameTag* innerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().innerTag(frame));
-        FrameTag* outerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().outerTag(frame));
-        FilenameInfo fnInfo;
-        fnInfo
-          .filename(fn)
-          .innerTagName(innerTag ? innerTag->name(): "")
-          .outerTagName(outerTag ? outerTag->name(): "")
-          .frame(start_from+frame-fop->m_roi.fromFrame())
-          .tagFrame(innerTag ? frame-innerTag->fromFrame():
-                               start_from+frame);
-
-        std::string frame_fn =
-          filename_formatter(fn_format, fnInfo);
-
-        fop->m_seq.filename_list.push_back(frame_fn);
-      }
-
-      if (context && context->isUIAvailable() &&
-          fop->m_seq.filename_list.size() > 1 &&
-          ui::Alert::show("Notice"
-                          "<<Do you want to export the animation in %d files?"
-                          "<<%s, %s..."
-                          "||&Agree||&Cancel",
-                          int(fop->m_seq.filename_list.size()),
-                          base::get_file_name(fop->m_seq.filename_list[0]).c_str(),
-                          base::get_file_name(fop->m_seq.filename_list[1]).c_str()) != 1) {
-        return nullptr;
-      }
+    if (context && context->isUIAvailable() &&
+        fop->m_seq.filename_list.size() > 1 &&
+        ui::Alert::show("Notice"
+                        "<<Do you want to export the animation in %d files?"
+                        "<<%s, %s..."
+                        "||&Agree||&Cancel",
+                        int(fop->m_seq.filename_list.size()),
+                        base::get_file_name(fop->m_seq.filename_list[0]).c_str(),
+                        base::get_file_name(fop->m_seq.filename_list[1]).c_str()) != 1) {
+      return nullptr;
     }
   }
   else

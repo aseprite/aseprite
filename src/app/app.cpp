@@ -166,9 +166,6 @@ void App::initialize(const AppOptions& options)
   if (isGui() && preferences().general.dataRecovery())
     m_modules->createDataRecovery();
 
-  // Register well-known image file types.
-  FileFormatsManager::instance()->registerAllFormats();
-
   if (isPortable())
     LOG("Running in portable mode\n");
 

@@ -203,6 +203,11 @@ namespace app {
   app::Document* load_document(Context* context, const char* filename);
   int save_document(Context* context, doc::Document* document);
 
+  // Returns true if the given filename contains a file extension that
+  // can be used to save only static images (i.e. animations are saved
+  // as sequence of files).
+  bool is_static_image_format(const std::string& filename);
+
 } // namespace app
 
 #endif

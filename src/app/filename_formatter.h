@@ -63,6 +63,11 @@ namespace app {
     int m_tagFrame;
   };
 
+  // Returns the information inside {frame} tag.
+  // E.g. For {frame001} returns width=3 and startFrom=1
+  bool get_frame_info_from_filename_format(
+    const std::string& format, int* startFrom, int* width);
+
   // If "replaceFrame" is false, this function doesn't replace all the
   // information that depends on the current frame ({frame},
   // {tagframe}, {tag}, etc.)
@@ -71,16 +76,15 @@ namespace app {
     FilenameInfo& info,
     const bool replaceFrame = true);
 
-  std::string set_frame_format(
-    const std::string& format,
-    const std::string& newFrameFormat);
-
-  std::string add_frame_format(
-    const std::string& format,
-    const std::string& newFrameFormat);
-
   std::string get_default_filename_format(
+    std::string& filename,
     const bool withPath,
+    const bool hasFrames,
+    const bool hasLayer,
+    const bool hasFrameTag);
+
+  std::string get_default_filename_format_for_sheet(
+    const std::string& filename,
     const bool hasFrames,
     const bool hasLayer,
     const bool hasFrameTag);
