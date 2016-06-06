@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,6 +22,8 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/pixel_ratio.h"
+#include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -102,6 +104,26 @@ void NewFileCommand::onExecute(Context* context)
   // Select background color
   window.bgColor()->setSelectedItem(bg);
 
+  // Advance options
+  bool advanced = pref.newFile.advanced();
+  window.advancedCheck()->setSelected(advanced);
+  window.advancedCheck()->Click.connect(
+    base::Bind<void>(
+      [&]{
+        gfx::Rect bounds = window.bounds();
+        window.advanced()->setVisible(window.advancedCheck()->isSelected());
+        window.setBounds(gfx::Rect(window.bounds().origin(),
+                                   window.sizeHint()));
+        window.layout();
+
+        window.manager()->invalidateRect(bounds);
+      }));
+  window.advanced()->setVisible(advanced);
+  if (advanced)
+    window.pixelRatio()->setValue(pref.newFile.pixelRatio());
+  else
+    window.pixelRatio()->setValue("1:1");
+
   // Open the window
   window.openWindowInForeground();
 
@@ -136,12 +158,19 @@ void NewFileCommand::onExecute(Context* context)
       pref.newFile.height(h);
       pref.newFile.colorMode(format);
       pref.newFile.backgroundColor(bg);
+      pref.newFile.advanced(window.advancedCheck()->isSelected());
+      pref.newFile.pixelRatio(window.pixelRatio()->getValue());
 
       // Create the new sprite
       ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
       ASSERT(w > 0 && h > 0);
 
       base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h, ncolors));
+
+      if (window.advancedCheck()->isSelected()) {
+        sprite->setPixelRatio(
+          base::convert_to<PixelRatio>(window.pixelRatio()->getValue()));
+      }
 
       if (sprite->pixelFormat() != IMAGE_GRAYSCALE)
         get_default_palette()->copyColorsTo(sprite->palette(frame_t(0)));

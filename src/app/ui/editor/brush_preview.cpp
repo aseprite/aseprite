@@ -408,19 +408,22 @@ void BrushPreview::traceSelectionCrossPixels(
     0, 0, 1, 1, 0, 0,
   };
   gfx::Point out, outpt = m_editor->editorToScreen(pt);
-  int u, v;
-  int size = m_editor->zoom().apply(thickness/2);
-  int size2 = m_editor->zoom().apply(thickness);
-  if (size2 == 0) size2 = 1;
+  const render::Projection& proj = m_editor->projection();
+  gfx::Size size(proj.applyX(thickness/2),
+                 proj.applyY(thickness/2));
+  gfx::Size size2(proj.applyX(thickness),
+                  proj.applyY(thickness));
+  if (size2.w == 0) size2.w = 1;
+  if (size2.h == 0) size2.h = 1;
 
-  for (v=0; v<6; v++) {
-    for (u=0; u<6; u++) {
+  for (int v=0; v<6; v++) {
+    for (int u=0; u<6; u++) {
       if (!cross[v*6+u])
         continue;
 
       out = outpt;
-      out.x += ((u<3) ? u-size-3: u-size-3+size2);
-      out.y += ((v<3) ? v-size-3: v-size-3+size2);
+      out.x += ((u<3) ? u-size.w-3: u-size.w-3+size2.w);
+      out.y += ((v<3) ? v-size.h-3: v-size.h-3+size2.h);
 
       (this->*pixelDelegate)(g, out, color);
     }

@@ -131,7 +131,8 @@ namespace app {
     void setLayer(const Layer* layer);
     void setFrame(frame_t frame);
 
-    const render::Zoom& zoom() const { return m_zoom; }
+    const render::Projection& projection() const { return m_proj; }
+    const render::Zoom& zoom() const { return m_proj.zoom(); }
     const gfx::Point& padding() const { return m_padding; }
 
     void setZoom(const render::Zoom& zoom);
@@ -237,7 +238,10 @@ namespace app {
     void onFgColorChange();
     void onContextBarBrushChange();
     void onShowExtrasChange();
+
+    // DocumentObserver impl
     void onExposeSpritePixels(doc::DocumentEvent& ev) override;
+    void onSpritePixelRatioChanged(doc::DocumentEvent& ev) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
@@ -260,7 +264,7 @@ namespace app {
     // routine.
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
-    gfx::Point calcExtraPadding(const render::Zoom& zoom);
+    gfx::Point calcExtraPadding(const render::Projection& proj);
 
     void invalidateIfActive();
 
@@ -278,7 +282,7 @@ namespace app {
     Sprite* m_sprite;             // Active sprite in the editor
     Layer* m_layer;               // Active layer in the editor
     frame_t m_frame;              // Active frame in the editor
-    render::Zoom m_zoom;          // Zoom in the editor
+    render::Projection m_proj;    // Zoom/pixel ratio in the editor
     DocumentPreferences& m_docPref;
 
     // Brush preview

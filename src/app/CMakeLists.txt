@@ -146,6 +146,7 @@ add_library(app-lib
   cmd/set_mask_position.cpp
   cmd/set_palette.cpp
   cmd/set_pixel_format.cpp
+  cmd/set_pixel_ratio.cpp
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
@@ -433,6 +434,7 @@ add_library(app-lib
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/pic_file.cpp
+  util/pixel_ratio.cpp
   util/range_utils.cpp
   webserver.cpp
   widget_loader.cpp

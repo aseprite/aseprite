@@ -19,6 +19,7 @@
 #include "doc/layer_index.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
+#include "doc/pixel_ratio.h"
 #include "doc/sprite_position.h"
 #include "gfx/rect.h"
 
@@ -66,11 +67,13 @@ namespace doc {
     void setDocument(Document* doc) { m_document = doc; }
 
     PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
-    void setPixelFormat(PixelFormat format);
-
+    const PixelRatio& pixelRatio() const { return m_pixelRatio; }
     gfx::Rect bounds() const { return m_spec.bounds(); }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
+
+    void setPixelFormat(PixelFormat format);
+    void setPixelRatio(const PixelRatio& pixelRatio);
     void setSize(int width, int height);
 
     // Returns true if the rendered images will contain alpha values less
@@ -160,6 +163,7 @@ namespace doc {
   private:
     Document* m_document;
     ImageSpec m_spec;
+    PixelRatio m_pixelRatio;
     frame_t m_frames;                      // how many frames has this sprite
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes

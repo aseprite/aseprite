@@ -200,7 +200,6 @@ public:
     }
     return m_rgbMap;
   }
-  const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }
   doc::color_t getFgColor() override { return m_fgColor; }
   doc::color_t getBgColor() override { return m_bgColor; }
@@ -313,8 +312,7 @@ public:
           m_floodfillSrcImage,
           m_sprite,
           m_frame,
-          gfx::Clip(m_sprite->bounds()),
-          render::Zoom(1, 1));
+          gfx::Clip(m_sprite->bounds()));
       }
       else {
         Cel* cel = m_layer->cel(m_frame);

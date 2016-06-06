@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,13 +9,15 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_pixel_ratio.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/color_button.h"
 #include "app/transaction.h"
+#include "app/ui/color_button.h"
+#include "app/util/pixel_ratio.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
 #include "doc/image.h"
@@ -112,6 +114,10 @@ void SpritePropertiesCommand::onExecute(Context* context)
     else {
       window.transparentColorPlaceholder()->addChild(new Label("(only for indexed images)"));
     }
+
+    // Pixel ratio
+    window.pixelRatio()->setValue(
+      base::convert_to<std::string>(sprite->pixelRatio()));
   }
 
   window.remapWindow();
@@ -122,21 +128,28 @@ void SpritePropertiesCommand::onExecute(Context* context)
   window.openWindowInForeground();
 
   if (window.closer() == window.ok()) {
-    if (color_button) {
-      ContextWriter writer(context);
-      Sprite* sprite(writer.sprite());
+    ContextWriter writer(context);
+    Sprite* sprite(writer.sprite());
 
-      // If the transparent color index has changed, we update the
-      // property in the sprite.
-      int index = color_button->getColor().getIndex();
-      if (color_t(index) != sprite->transparentColor()) {
-        Transaction transaction(writer.context(), "Set Transparent Color");
-        DocumentApi api = writer.document()->getApi(transaction);
+    color_t index = (color_button ? color_button->getColor().getIndex():
+                                    sprite->transparentColor());
+    PixelRatio pixelRatio =
+      base::convert_to<PixelRatio>(window.pixelRatio()->getValue());
+
+    if (index != sprite->transparentColor() ||
+        pixelRatio != sprite->pixelRatio()) {
+      Transaction transaction(writer.context(), "Change Sprite Properties");
+      DocumentApi api = writer.document()->getApi(transaction);
+
+      if (index != sprite->transparentColor())
         api.setSpriteTransparentColor(sprite, index);
-        transaction.commit();
 
-        update_screen_for_document(writer.document());
-      }
+      if (pixelRatio != sprite->pixelRatio())
+        transaction.execute(new cmd::SetPixelRatio(sprite, pixelRatio));
+
+      transaction.commit();
+
+      update_screen_for_document(writer.document());
     }
   }
 

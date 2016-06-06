@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -258,9 +258,9 @@ void FilterManagerImpl::flush()
           m_x+m_offset_x,
           m_y+m_offset_y+m_row-1)),
       gfx::Size(
-        editor->zoom().apply(m_w),
-        (editor->zoom().scale() >= 1 ? editor->zoom().apply(1):
-                                       editor->zoom().remove(1))));
+        editor->projection().applyX(m_w),
+        (editor->projection().scaleY() >= 1 ? editor->projection().applyY(1):
+                                              editor->projection().removeY(1))));
 
     gfx::Region reg1(rect);
     gfx::Region reg2;

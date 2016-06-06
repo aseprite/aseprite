@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
 <window text="Sprite Properties" id="sprite_properties">
   <vbox>
@@ -16,8 +16,18 @@
       <label text="Frames:" />
       <label text="" id="frames" />
 
+      <separator text="Advanced" horizontal="true" cell_hspan="2" />
+
       <label text="Transparent Color:" />
       <hbox id="transparent_color_placeholder" tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
+
+      <label text="Pixel Ratio:" />
+      <combobox id="pixel_ratio" cell_align="horizontal">
+	<listitem text="Square Pixels (1:1)" value="1:1" />
+	<listitem text="Double-wide Pixels (2:1)" value="2:1" />
+	<listitem text="Double-high Pixels (1:2)" value="1:2" />
+      </combobox>
+
     </grid>
     <separator horizontal="true" />
     <hbox>
