@@ -344,8 +344,17 @@ bool CliProcessor::openFile(CliOpenFile& cof)
       if (cof.hasFrameTag()) {
         frameTag = doc->sprite()->frameTags().getByName(cof.frameTag);
       }
-      else if (cof.hasFrameRange()) {
-        frameTag = new FrameTag(cof.fromFrame, cof.toFrame);
+      if (cof.hasFrameRange()) {
+        // --frame-range with --frame-tag
+        if (frameTag) {
+          frameTag = new FrameTag(
+            frameTag->fromFrame()+MID(0, cof.fromFrame, frameTag->frames()-1),
+            frameTag->fromFrame()+MID(0, cof.toFrame, frameTag->frames()-1));
+        }
+        // --frame-range without --frame-tag
+        else {
+          frameTag = new FrameTag(cof.fromFrame, cof.toFrame);
+        }
         isTemporalTag = true;
       }
 

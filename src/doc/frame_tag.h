@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,6 +28,7 @@ namespace doc {
     FrameTags* owner() const { return m_owner; }
     frame_t fromFrame() const { return m_from; }
     frame_t toFrame() const { return m_to; }
+    frame_t frames() const { return m_to - m_from + 1; }
     const std::string& name() const { return m_name; }
     color_t color() const { return m_color; }
     AniDir aniDir() const { return m_aniDir; }

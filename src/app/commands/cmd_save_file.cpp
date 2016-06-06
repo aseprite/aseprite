@@ -219,22 +219,10 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
                                                    const app::Document* document,
                                                    bool markAsSaved) const
 {
-  FileOpROI roi;
-
-  if (!m_frameTag.empty()) {
-    FrameTag* frameTag = document->sprite()->frameTags().getByName(m_frameTag);
-    roi = FileOpROI(document, frameTag);
-  }
-  else if (m_fromFrame >= 0 && m_toFrame >= 0) {
-    roi = FileOpROI(document, m_fromFrame, m_toFrame);
-  }
-  else {
-    roi = FileOpROI(document);
-  }
-
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
-      context, roi,
+      context,
+      FileOpROI(document, m_frameTag, m_fromFrame, m_toFrame),
       document->filename().c_str(),
       m_filenameFormat.c_str()));
   if (!fop)

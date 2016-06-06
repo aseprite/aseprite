@@ -13,6 +13,7 @@
 
 #include "app/document.h"
 #include "app/file/file.h"
+#include "doc/frame_tag.h"
 #include "doc/frame_tags.h"
 #include "doc/sprite.h"
 
@@ -36,18 +37,7 @@ CliOpenFile::CliOpenFile()
 FileOpROI CliOpenFile::roi() const
 {
   ASSERT(document);
-
-  if (hasFrameTag()) {
-    return FileOpROI(
-      document,
-      document->sprite()->frameTags().getByName(frameTag));
-  }
-  else if (hasFrameRange()) {
-    return FileOpROI(document, fromFrame, toFrame);
-  }
-  else {
-    return FileOpROI(document);
-  }
+  return FileOpROI(document, frameTag, fromFrame, toFrame);
 }
 
 } // namespace app

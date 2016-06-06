@@ -15,7 +15,7 @@
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -61,8 +61,11 @@ namespace app {
 
   class FileOpROI {             // Region of interest
   public:
-    explicit FileOpROI(const app::Document* doc = nullptr, doc::FrameTag* frameTag = nullptr);
-    FileOpROI(const app::Document* doc, doc::frame_t fromFrame, doc::frame_t toFrame);
+    FileOpROI();
+    FileOpROI(const app::Document* doc,
+              const std::string& frameTagName,
+              const doc::frame_t fromFrame,
+              const doc::frame_t toFrame);
 
     const app::Document* document() const { return m_document; }
     doc::FrameTag* frameTag() const { return m_frameTag; }

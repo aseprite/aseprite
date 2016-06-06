@@ -103,7 +103,7 @@ int save_document(Context* context, doc::Document* document)
   UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(static_cast<app::Document*>(document)),
+      FileOpROI(static_cast<app::Document*>(document), "", -1, -1),
       document->filename().c_str(), ""));
   if (!fop)
     return -1;
@@ -133,20 +133,51 @@ bool is_static_image_format(const std::string& filename)
   return (format && format->support(FILE_SUPPORT_SEQUENCES));
 }
 
-FileOpROI::FileOpROI(const app::Document* doc, doc::FrameTag* frameTag)
-  : m_document(doc)
-  , m_frameTag(frameTag)
-  , m_fromFrame(frameTag ? frameTag->fromFrame(): (doc ? 0: -1))
-  , m_toFrame(frameTag ? frameTag->toFrame(): (doc ? doc->sprite()->lastFrame(): -1))
+FileOpROI::FileOpROI()
+  : m_document(nullptr)
+  , m_frameTag(nullptr)
+  , m_fromFrame(-1)
+  , m_toFrame(-1)
 {
 }
 
-FileOpROI::FileOpROI(const app::Document* doc, doc::frame_t fromFrame, doc::frame_t toFrame)
+FileOpROI::FileOpROI(const app::Document* doc,
+                     const std::string& frameTagName,
+                     const doc::frame_t fromFrame,
+                     const doc::frame_t toFrame)
   : m_document(doc)
   , m_frameTag(nullptr)
   , m_fromFrame(fromFrame)
   , m_toFrame(toFrame)
 {
+  if (doc) {
+    if (fromFrame >= 0)
+      m_fromFrame = MID(0, fromFrame, doc->sprite()->lastFrame());
+    else
+      m_fromFrame = 0;
+
+    if (toFrame >= 0)
+      m_toFrame = MID(m_fromFrame, toFrame, doc->sprite()->lastFrame());
+    else
+      m_toFrame = doc->sprite()->lastFrame();
+
+    if (!frameTagName.empty()) {
+      doc::FrameTag* tag = doc->sprite()->frameTags().getByName(frameTagName);
+      if (tag) {
+        m_frameTag = tag;
+
+        if (fromFrame >= 0)
+          m_fromFrame = tag->fromFrame() + MID(0, fromFrame, tag->frames()-1);
+        else
+          m_fromFrame = tag->fromFrame();
+
+        if (toFrame >= 0)
+          m_toFrame = tag->fromFrame() + MID(fromFrame, toFrame, tag->frames()-1);
+        else
+          m_toFrame = tag->toFrame();
+      }
+    }
+  }
 }
 
 // static
@@ -423,7 +454,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
     Sprite* spr = fop->m_document->sprite();
 
-    for (frame_t frame = fop->m_roi.fromFrame(); frame <= fop->m_roi.toFrame(); ++frame) {
+    for (frame_t frame = fop->m_roi.fromFrame();
+         frame <= fop->m_roi.toFrame(); ++frame) {
       FrameTag* innerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().innerTag(frame));
       FrameTag* outerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().outerTag(frame));
       FilenameInfo fnInfo;
@@ -431,8 +463,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
         .filename(fn)
         .innerTagName(innerTag ? innerTag->name(): "")
         .outerTagName(outerTag ? outerTag->name(): "")
-        .frame(frame-fop->m_roi.fromFrame())
-        .tagFrame(innerTag ? frame-innerTag->fromFrame():
+        .frame(frame - fop->m_roi.fromFrame())
+        .tagFrame(innerTag ? frame - innerTag->fromFrame():
                              frame);
 
       fop->m_seq.filename_list.push_back(
@@ -623,7 +655,8 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // For each frame in the sprite.
       render::Render render;
-      for (frame_t frame = m_roi.fromFrame(); frame <= m_roi.toFrame(); ++frame) {
+      for (frame_t frame = m_roi.fromFrame();
+           frame <= m_roi.toFrame(); ++frame) {
         // Draw the "frame" in "m_seq.image"
         render.renderSprite(m_seq.image.get(), sprite, frame);
 

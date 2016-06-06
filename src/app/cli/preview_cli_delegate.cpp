@@ -104,10 +104,12 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
   if (cof.hasFrameTag()) {
     std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
   }
-  else if (cof.hasFrameRange()) {
+
+  if (cof.hasFrameRange()) {
+    auto roi = cof.roi();
     std::cout << "  - Frame range from "
-              << cof.fromFrame << " to "
-              << cof.toFrame << "\n";
+              << roi.fromFrame() << " to "
+              << roi.toFrame() << "\n";
   }
 
   if (!cof.filenameFormat.empty())
