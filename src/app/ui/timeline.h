@@ -184,7 +184,7 @@ namespace app {
     };
 
     void setLayer(Layer* layer);
-    void setFrame(frame_t frame);
+    void setFrame(frame_t frame, bool byUser);
     bool allLayersVisible();
     bool allLayersInvisible();
     bool allLayersLocked();

@@ -130,6 +130,7 @@ public:
 };
 
 typedef SizeT<int> Size;
+typedef SizeT<double> SizeF;
 
 } // namespace gfx
 

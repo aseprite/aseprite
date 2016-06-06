@@ -235,7 +235,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   m_currentData.transformBox(oldCorners);
 
   ContextWriter writer(m_reader, 1000);
-  gfx::Rect bounds = m_initialData.bounds();
+  gfx::RectF bounds = m_initialData.bounds();
   bool updateBounds = false;
   double dx, dy;
 
@@ -254,16 +254,18 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
           dy = 0.0;
       }
 
-      bounds.offset(int(dx), int(dy));
+      bounds.offset(dx, dy);
       updateBounds = true;
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Rect gridBounds = App::instance()
           ->preferences().document(m_document).grid.bounds();
-        gfx::Point gridOffset(bounds.origin());
-        gridOffset = snap_to_grid(gridBounds, gridOffset,
-                                  PreferSnapTo::ClosestGridVertex);
+        gfx::PointF gridOffset(
+          snap_to_grid(
+            gridBounds,
+            gfx::Point(bounds.origin()),
+            PreferSnapTo::ClosestGridVertex));
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
@@ -285,8 +287,8 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
         { 0.0, 0.5 },               { 1.0, 0.5 },
         { 0.0, 1.0 }, { 0.5, 1.0 }, { 1.0, 1.0 }
       };
-      gfx::PointT<double> pivot;
-      gfx::PointT<double> handle(
+      gfx::PointF pivot;
+      gfx::PointF handle(
         handles[m_handle-ScaleNWHandle][0],
         handles[m_handle-ScaleNWHandle][1]);
 
@@ -301,12 +303,12 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
         pivot.y = bounds.y + bounds.h*pivot.y;
       }
 
-      gfx::Point a = bounds.origin();
-      gfx::Point b = bounds.point2();
+      gfx::PointF a = bounds.origin();
+      gfx::PointF b = bounds.point2();
 
       if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
-        auto u = point2Vector(gfx::PointT<double>(m_catchPos) - pivot);
-        auto v = point2Vector(gfx::PointT<double>(pos) - pivot);
+        auto u = point2Vector(gfx::PointF(m_catchPos) - pivot);
+        auto v = point2Vector(gfx::PointF(pos) - pivot);
         auto w = v.projectOn(u);
         double scale = u.magnitude();
         if (scale != 0.0)
@@ -362,8 +364,8 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
     case RotateSHandle:
     case RotateSEHandle:
       {
-        gfx::Point abs_initial_pivot = m_initialData.pivot();
-        gfx::Point abs_pivot = m_currentData.pivot();
+        gfx::PointF abs_initial_pivot = m_initialData.pivot();
+        gfx::PointF abs_pivot = m_currentData.pivot();
 
         double newAngle =
           m_initialData.angle()
@@ -405,8 +407,8 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
     case PivotHandle:
       {
         // Calculate the new position of the pivot
-        gfx::Point newPivot(m_initialData.pivot().x + (pos.x - m_catchPos.x),
-                            m_initialData.pivot().y + (pos.y - m_catchPos.y));
+        gfx::PointF newPivot(m_initialData.pivot().x + (pos.x - m_catchPos.x),
+                             m_initialData.pivot().y + (pos.y - m_catchPos.y));
 
         m_currentData = m_initialData;
         m_currentData.displacePivotTo(newPivot);
@@ -527,7 +529,7 @@ void PixelsMovement::dropImageTemporarily()
 
       // Get the a factor for the X/Y position of the initial pivot
       // position inside the initial non-rotated bounds.
-      gfx::PointT<double> pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().origin());
+      gfx::PointF pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().origin());
       pivotPosFactor.x /= m_initialData.bounds().w;
       pivotPosFactor.y /= m_initialData.bounds().h;
 
@@ -544,7 +546,7 @@ void PixelsMovement::dropImageTemporarily()
       newPivot += pivotPosFactor.x * point2Vector(corners.rightTop() - corners.leftTop());
       newPivot += pivotPosFactor.y * point2Vector(corners.leftBottom() - corners.leftTop());
 
-      m_currentData.displacePivotTo(gfx::Point((int)newPivot.x, (int)newPivot.y));
+      m_currentData.displacePivotTo(gfx::PointF(newPivot.x, newPivot.y));
     }
 
     redrawCurrentMask();
@@ -707,7 +709,7 @@ void PixelsMovement::drawParallelogram(
   // fast rotation algorithm, as it's pixel-perfect match with the
   // original selection when just a translation is applied.
   if (m_currentData.angle() == 0.0 &&
-      m_currentData.bounds().size() == src->size()) {
+      gfx::Rect(m_currentData.bounds()).size() == src->size()) {
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 

@@ -177,7 +177,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   gfx::Size partSize = theme->parts.pivotHandle()->size();
-  gfx::Point screenPivotPos = editor->editorToScreen(transform.pivot());
+  gfx::Point screenPivotPos = editor->editorToScreen(gfx::Point(transform.pivot()));
 
   screenPivotPos.x += editor->projection().applyX(1) / 2;
   screenPivotPos.y += editor->projection().applyY(1) / 2;

@@ -52,6 +52,7 @@ namespace app {
 
     Document* document() const { return m_document; }
     Editor* editor() { return m_editor; }
+    ui::View* viewWidget() const { return m_view; }
     void getSite(doc::Site* site) const;
 
     bool isPreview() { return m_type == Preview; }

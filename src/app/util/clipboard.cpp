@@ -157,20 +157,17 @@ static void set_clipboard_image(Image* image,
   clipboard_range.invalidate();
 }
 
-static bool copy_from_document(const Site& site)
+static bool copy_from_document(const Site& site, bool merged = false)
 {
   const app::Document* document = static_cast<const app::Document*>(site.document());
+  ASSERT(document);
 
-  ASSERT(document != NULL);
-  ASSERT(document->isMaskVisible());
-
-  Image* image = new_image_from_mask(site);
+  const Mask* mask = document->mask();
+  Image* image = new_image_from_mask(site, mask, merged);
   if (!image)
     return false;
 
-  const Mask* mask = document->mask();
   const Palette* pal = document->sprite()->palette(site.frame());
-
   set_clipboard_image(
     image,
     (mask ? new Mask(*mask): nullptr),
@@ -248,6 +245,13 @@ void copy(const ContextReader& reader)
     console.printf("Can't copying an image portion from the current layer\n");
     return;
   }
+}
+
+void copy_merged(const ContextReader& reader)
+{
+  ASSERT(reader.document() != NULL);
+
+  copy_from_document(*reader.site(), true);
 }
 
 void copy_range(const ContextReader& reader, const DocumentRange& range)

@@ -97,6 +97,7 @@
     </section>
     <section id="editor" text="Editor">
       <option id="zoom_with_wheel" type="bool" default="true" migrate="Options.ZoomWithMouseWheel" />
+      <option id="zoom_with_slide" type="bool" default="false" />
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />

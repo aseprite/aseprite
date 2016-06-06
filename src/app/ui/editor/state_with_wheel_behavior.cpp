@@ -36,7 +36,8 @@ enum WHEEL_ACTION { WHEEL_NONE,
 
 bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
-  double dz = msg->wheelDelta().x + msg->wheelDelta().y;
+  gfx::Point delta = msg->wheelDelta();
+  double dz = delta.x + delta.y;
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 
@@ -50,21 +51,40 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
   // Normal behavior: mouse wheel zooms If the message is from a
   // precise wheel i.e. a trackpad/touch-like device, we scroll by
   // default.
-  else if (Preferences::instance().editor.zoomWithWheel() &&
-           !msg->preciseWheel()) {
+  else if (Preferences::instance().editor.zoomWithWheel() && !msg->preciseWheel()) {
     if (msg->ctrlPressed())
       wheelAction = WHEEL_FRAME;
-    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
+    else if (delta.x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_ZOOM;
+  }
+  // Zoom sliding two fingers
+  else if (Preferences::instance().editor.zoomWithSlide() && msg->preciseWheel()) {
+    if (msg->ctrlPressed())
+      wheelAction = WHEEL_FRAME;
+    else if (std::abs(delta.x) > std::abs(delta.y)) {
+      delta.y = 0;
+      dz = delta.x;
+      wheelAction = WHEEL_HSCROLL;
+    }
+    else if (msg->shiftPressed()) {
+      delta.x = 0;
+      dz = delta.y;
+      wheelAction = WHEEL_VSCROLL;
+    }
+    else {
+      delta.x = 0;
+      dz = delta.y;
+      wheelAction = WHEEL_ZOOM;
+    }
   }
   // For laptops, it's convenient to that Ctrl+wheel zoom (because
   // it's the "pinch" gesture).
   else {
     if (msg->ctrlPressed())
       wheelAction = WHEEL_ZOOM;
-    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
+    else if (delta.x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_VSCROLL;
@@ -131,12 +151,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WHEEL_VSCROLL: {
       View* view = View::getView(editor);
       gfx::Point scroll = view->viewScroll();
-      gfx::Point delta(0, 0);
 
-      if (msg->preciseWheel()) {
-        delta = msg->wheelDelta();
-      }
-      else {
+      if (!msg->preciseWheel()) {
         gfx::Rect vp = view->viewportBounds();
 
         if (wheelAction == WHEEL_HSCROLL) {

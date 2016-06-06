@@ -59,6 +59,7 @@
         <vbox id="section_editor">
           <separator text="Editor" horizontal="true" />
           <check text="Zoom with scroll wheel" id="wheel_zoom" />
+          <check text="Zoom sliding two fingers up or down" id="slide_zoom" />
           <check text="Zoom from center with scroll wheel" id="zoom_from_center_with_wheel" />
           <check text="Zoom from center with keys" id="zoom_from_center_with_keys" />
           <check text="Show scroll-bars in sprite editor" id="show_scrollbars" tooltip="Show scroll-bars in all sprite editors." />

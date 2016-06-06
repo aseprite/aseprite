@@ -21,6 +21,7 @@ namespace doc {
 }
 
 namespace app {
+  class Document;
   class ContextReader;
   class ContextWriter;
   class DocumentRange;
@@ -51,6 +52,7 @@ namespace app {
     void clear_content();
     void cut(ContextWriter& context);
     void copy(const ContextReader& context);
+    void copy_merged(const ContextReader& context);
     void copy_range(const ContextReader& context, const DocumentRange& range);
     void copy_image(const Image* image, const Mask* mask, const Palette* palette);
     void copy_palette(const Palette* palette, const PalettePicks& picks);

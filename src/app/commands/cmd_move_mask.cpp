@@ -20,7 +20,9 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
+#include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -89,9 +91,53 @@ bool MoveMaskCommand::onEnabled(Context* context)
 
 void MoveMaskCommand::onExecute(Context* context)
 {
-  DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
-  ui::View* view = ui::View::getView(current_editor);
-  gfx::Rect vp = view->viewportBounds();
+  gfx::Point delta = getDelta(context);
+
+  switch (m_target) {
+
+    case Boundaries: {
+      ContextWriter writer(context);
+      Document* document(writer.document());
+      {
+        Transaction transaction(writer.context(), "Move Selection", DoesntModifyDocument);
+        gfx::Point pt = document->mask()->bounds().origin();
+        document->getApi(transaction).setMaskPosition(pt.x+delta.x, pt.y+delta.y);
+        transaction.commit();
+      }
+
+      document->generateMaskBoundaries();
+      update_screen_for_document(document);
+      break;
+    }
+
+    case Content:
+      if (m_wrap) {
+        ContextWriter writer(context);
+        if (writer.cel()) {
+          // Rotate content
+          Transaction transaction(writer.context(), "Shift Pixels");
+          transaction.execute(new cmd::ShiftMaskedCel(writer.cel(), delta.x, delta.y));
+          transaction.commit();
+        }
+        update_screen_for_document(writer.document());
+      }
+      else {
+        current_editor->startSelectionTransformation(delta, 0.0);
+      }
+      break;
+
+  }
+}
+
+gfx::Point MoveMaskCommand::getDelta(Context* context) const
+{
+  DocumentView* view = static_cast<UIContext*>(context)->activeView();
+  if (!view)
+    return gfx::Point(0, 0);
+
+  DocumentPreferences& docPref = Preferences::instance().document(view->document());
+  Editor* editor = view->editor();
+  gfx::Rect vp = view->viewWidget()->viewportBounds();
   gfx::Rect gridBounds = docPref.grid.bounds();
   int dx = 0;
   int dy = 0;
@@ -108,13 +154,13 @@ void MoveMaskCommand::onExecute(Context* context)
       pixels = gridBounds.h;
       break;
     case ZoomedPixel:
-      pixels = current_editor->zoom().apply(1);
+      pixels = editor->zoom().apply(1);
       break;
     case ZoomedTileWidth:
-      pixels = current_editor->zoom().apply(gridBounds.w);
+      pixels = editor->zoom().apply(gridBounds.w);
       break;
     case ZoomedTileHeight:
-      pixels = current_editor->zoom().apply(gridBounds.h);
+      pixels = editor->zoom().apply(gridBounds.h);
       break;
     case ViewportWidth:
       pixels = vp.h;
@@ -131,40 +177,7 @@ void MoveMaskCommand::onExecute(Context* context)
     case Down:  dy = +m_quantity * pixels; break;
   }
 
-  switch (m_target) {
-
-    case Boundaries: {
-      ContextWriter writer(context);
-      Document* document(writer.document());
-      {
-        Transaction transaction(writer.context(), "Move Selection", DoesntModifyDocument);
-        gfx::Point pt = document->mask()->bounds().origin();
-        document->getApi(transaction).setMaskPosition(pt.x+dx, pt.y+dy);
-        transaction.commit();
-      }
-
-      document->generateMaskBoundaries();
-      update_screen_for_document(document);
-      break;
-    }
-
-    case Content:
-      if (m_wrap) {
-        ContextWriter writer(context);
-        if (writer.cel()) {
-          // Rotate content
-          Transaction transaction(writer.context(), "Shift Pixels");
-          transaction.execute(new cmd::ShiftMaskedCel(writer.cel(), dx, dy));
-          transaction.commit();
-        }
-        update_screen_for_document(writer.document());
-      }
-      else {
-        current_editor->startSelectionTransformation(gfx::Point(dx, dy), 0.0);
-      }
-      break;
-
-  }
+  return gfx::Point(dx, dy);
 }
 
 std::string MoveMaskCommand::onGetFriendlyName() const

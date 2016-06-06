@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,6 +21,7 @@
 #include "base/string.h"
 #include "base/time.h"
 #include "ui/link_label.h"
+#include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/view.h"
@@ -217,6 +218,19 @@ void NewsListBox::reload()
 
   m_loader = new HttpLoader(WEBSITE_NEWS_RSS);
   m_timer.start();
+}
+
+bool NewsListBox::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+
+    case kCloseMessage:
+      if (m_loader)
+        m_loader->abort();
+      break;
+  }
+
+  return ListBox::onProcessMessage(msg);
 }
 
 void NewsListBox::onTick()

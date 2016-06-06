@@ -50,8 +50,20 @@ HCTX PenAPI::open(HWND hwnd)
   LOGCONTEXTW logctx;
   memset(&logctx, 0, sizeof(LOGCONTEXTW));
   UINT infoRes = WTInfo(WTI_DEFSYSCTX, 0, &logctx);
+
+  // TODO Sometimes we receive infoRes=88 from WTInfo and logctx.lcOptions=0
+  //      while sizeof(LOGCONTEXTW) is 212
   ASSERT(infoRes == sizeof(LOGCONTEXTW));
   ASSERT(logctx.lcOptions & CXO_SYSTEM);
+
+  if (infoRes != sizeof(LOGCONTEXTW)) {
+    LOG("Not supported WTInfo:\n"
+        "  Expected context size: %d\n"
+        "  Actual context size: %d (options %d)\n",
+        sizeof(LOGCONTEXTW),
+        infoRes, logctx.lcOptions);
+    return nullptr;
+  }
 
   logctx.lcOptions =
     CXO_SYSTEM |

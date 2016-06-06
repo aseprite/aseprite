@@ -425,14 +425,22 @@ void DocumentView::onNewInputPriority(InputChainElement* element)
 
 bool DocumentView::onCanCut(Context* ctx)
 {
-  return onCanCopy(ctx);
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                      ContextFlags::ActiveLayerIsVisible |
+                      ContextFlags::ActiveLayerIsEditable |
+                      ContextFlags::HasVisibleMask |
+                      ContextFlags::HasActiveImage))
+    return true;
+  else if (m_editor->isMovingPixels())
+    return true;
+  else
+    return false;
 }
 
 bool DocumentView::onCanCopy(Context* ctx)
 {
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::ActiveLayerIsVisible |
-                      ContextFlags::ActiveLayerIsEditable |
                       ContextFlags::HasVisibleMask |
                       ContextFlags::HasActiveImage))
     return true;

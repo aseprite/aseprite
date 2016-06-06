@@ -45,6 +45,12 @@ public:
     w(rect.w), h(rect.h) {
   }
 
+  template<typename T2>
+  RectT(const RectT<T2>& rect) :
+    x(static_cast<T>(rect.x)), y(static_cast<T>(rect.y)),
+    w(static_cast<T>(rect.w)), h(static_cast<T>(rect.h)) {
+  }
+
   RectT(const PointT<T>& point, const SizeT<T>& size) :
     x(point.x), y(point.y),
     w(size.w), h(size.h) {
@@ -336,6 +342,7 @@ public:
 };
 
 typedef RectT<int> Rect;
+typedef RectT<double> RectF;
 
 } // namespace gfx
 

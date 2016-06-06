@@ -16,6 +16,7 @@
 #include "she/event.h"
 #include "she/event_queue.h"
 #include "she/osx/app.h"
+#include "she/osx/generate_drop_files.h"
 #include "she/system.h"
 
 @implementation OSXAppDelegate
@@ -39,16 +40,7 @@
 
 - (BOOL)application:(NSApplication*)app openFiles:(NSArray*)filenames
 {
-  std::vector<std::string> files;
-  for (int i=0; i<[filenames count]; ++i) {
-    NSString* fn = [filenames objectAtIndex: i];
-    files.push_back(base::normalize_path([fn UTF8String]));
-  }
-
-  she::Event ev;
-  ev.setType(she::Event::DropFiles);
-  ev.setFiles(files);
-  she::queue_event(ev);
+  generate_drop_files_from_nsarray(filenames);
 
   [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
   return YES;
