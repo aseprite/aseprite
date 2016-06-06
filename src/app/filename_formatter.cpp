@@ -123,12 +123,16 @@ std::string get_default_filename_format(
   if (hasFrameTag)
     format += " #{tag}";
 
-  if (hasFrames && is_static_image_format(filename)) {
-    const bool autoFrameFromLastDigit = (!hasLayer && !hasFrameTag);
-    int frameBase = -1, frameWidth = 0;
+  if (hasFrames && is_static_image_format(filename) &&
+      filename.find("{frame") == std::string::npos &&
+      filename.find("{tagframe") == std::string::npos) {
+    const bool autoFrameFromLastDigit =
+      (!hasLayer &&
+       !hasFrameTag);
 
     // Check if we already have a frame number at the end of the
     // filename (e.g. output01.png)
+    int frameBase = -1, frameWidth = 0;
     std::string left, right;
     if (autoFrameFromLastDigit)
       frameBase = split_filename(filename.c_str(), left, right, frameWidth);

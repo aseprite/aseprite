@@ -198,8 +198,27 @@ void CliProcessor::process()
         // --save-as <filename>
         else if (opt == &m_options.saveAs()) {
           if (lastDoc) {
+            std::string fn = value.value();
+
+            // Automatic --split-layer or --split-tags in case the
+            // output filename already contains {layer} or {tag}
+            // template elements.
+            bool hasLayerTemplate = (fn.find("{layer}") != std::string::npos);
+            bool hasTagTemplate = (fn.find("{tag}") != std::string::npos);
+            if (hasLayerTemplate || hasTagTemplate) {
+              cof.splitLayers = (cof.splitLayers || hasLayerTemplate);
+              cof.splitTags = (cof.splitTags || hasTagTemplate);
+              cof.filenameFormat =
+                get_default_filename_format(
+                  fn,
+                  true,                                   // With path
+                  (lastDoc->sprite()->totalFrames() > 1), // Has frames
+                  false,                                  // Has layer
+                  false);                                 // Has frame tag
+            }
+
             cof.document = lastDoc;
-            cof.filename = value.value();
+            cof.filename = fn;
             saveFile(cof);
           }
           else
