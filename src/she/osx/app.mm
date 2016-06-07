@@ -27,7 +27,13 @@ public:
 
     [m_app setActivationPolicy:NSApplicationActivationPolicyRegular];
     [m_app setDelegate:m_appDelegate];
-    [m_app activateIgnoringOtherApps:YES];
+
+    // Don't activate the application ignoring other apps. This is
+    // called by OS X when the application is launched by the user
+    // from the application bundle. In this way, we can execute
+    // aseprite from the command line/bash scripts and the app will
+    // not be activated.
+    //[m_app activateIgnoringOtherApps:YES];
 
     return true;
   }
