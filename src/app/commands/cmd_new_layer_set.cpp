@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -67,7 +67,7 @@ void NewLayerSetCommand::onExecute(Context* context)
   std::string name = window->findChild("name")->text();
   Layer* layer;
   {
-    Transaction transaction(writer.context(), "New Layer");
+    Transaction transaction(writer.context(), "New Group");
     layer = document->getApi(transaction).newLayerFolder(sprite);
     transaction.commit();
   }
