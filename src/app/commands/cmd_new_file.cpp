@@ -178,7 +178,7 @@ void NewFileCommand::onExecute(Context* context)
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
       if (color.getType() != app::Color::MaskType) {
-        Layer* layer = sprite->folder()->getFirstLayer();
+        Layer* layer = sprite->root()->firstLayer();
 
         if (layer && layer->isImage()) {
           LayerImage* layerImage = static_cast<LayerImage*>(layer);

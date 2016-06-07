@@ -24,7 +24,7 @@ namespace cmd {
 
   class AddLayer : public Cmd {
   public:
-    AddLayer(Layer* folder, Layer* newLayer, Layer* afterThis);
+    AddLayer(Layer* group, Layer* newLayer, Layer* afterThis);
 
   protected:
     void onExecute() override;
@@ -35,10 +35,10 @@ namespace cmd {
     }
 
   private:
-    void addLayer(Layer* folder, Layer* newLayer, Layer* afterThis);
-    void removeLayer(Layer* folder, Layer* layer);
+    void addLayer(Layer* group, Layer* newLayer, Layer* afterThis);
+    void removeLayer(Layer* group, Layer* layer);
 
-    WithLayer m_folder;
+    WithLayer m_group;
     WithLayer m_newLayer;
     WithLayer m_afterThis;
     size_t m_size;

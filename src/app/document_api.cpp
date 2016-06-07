@@ -238,7 +238,7 @@ void DocumentApi::moveFrame(Sprite* sprite, frame_t frame, frame_t beforeFrame)
     adjustFrameTags(sprite, beforeFrame, +1, true);
 
     // Change cel positions.
-    moveFrameLayer(sprite->folder(), frame, beforeFrame);
+    moveFrameLayer(sprite->root(), frame, beforeFrame);
   }
 }
 
@@ -289,9 +289,9 @@ void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFram
       break;
     }
 
-    case ObjectType::LayerFolder: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
+    case ObjectType::LayerGroup: {
+      LayerIterator it = static_cast<LayerGroup*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerGroup*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
         moveFrameLayer(*it, frame, beforeFrame);
@@ -401,23 +401,23 @@ LayerImage* DocumentApi::newLayer(Sprite* sprite, const std::string& name)
   LayerImage* layer = new LayerImage(sprite);
   layer->setName(name);
 
-  addLayer(sprite->folder(), layer,
-           sprite->folder()->getLastLayer());
+  addLayer(sprite->root(), layer,
+           sprite->root()->lastLayer());
 
   return layer;
 }
 
-LayerFolder* DocumentApi::newLayerFolder(Sprite* sprite)
+LayerGroup* DocumentApi::newLayerGroup(Sprite* sprite)
 {
-  LayerFolder* layer = new LayerFolder(sprite);
+  LayerGroup* layer = new LayerGroup(sprite);
 
-  addLayer(sprite->folder(), layer,
-           sprite->folder()->getLastLayer());
+  addLayer(sprite->root(), layer,
+           sprite->root()->lastLayer());
 
   return layer;
 }
 
-void DocumentApi::addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis)
+void DocumentApi::addLayer(LayerGroup* folder, Layer* newLayer, Layer* afterThis)
 {
   m_transaction.execute(new cmd::AddLayer(folder, newLayer, afterThis));
 }

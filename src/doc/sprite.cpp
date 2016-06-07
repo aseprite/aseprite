@@ -47,7 +47,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   ASSERT(width > 0 && height > 0);
 
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
-  m_folder = new LayerFolder(this);
+  m_root = new LayerGroup(this);
 
   // Generate palette
   switch (format) {
@@ -84,7 +84,7 @@ Sprite::Sprite(const ImageSpec& spec, int ncolors)
 Sprite::~Sprite()
 {
   // Destroy layers
-  delete m_folder;
+  delete m_root;
 
   // Destroy palettes
   {
@@ -125,7 +125,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
     }
 
     // Add the layer in the sprite.
-    sprite->folder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
+    sprite->root()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
   }
 
   return sprite.release();
@@ -200,15 +200,10 @@ int Sprite::getMemSize() const
 //////////////////////////////////////////////////////////////////////
 // Layers
 
-LayerFolder* Sprite::folder() const
-{
-  return m_folder;
-}
-
 LayerImage* Sprite::backgroundLayer() const
 {
-  if (folder()->getLayersCount() > 0) {
-    Layer* bglayer = *folder()->getLayerBegin();
+  if (root()->layersCount() > 0) {
+    Layer* bglayer = *root()->getLayerBegin();
 
     if (bglayer->isBackground()) {
       ASSERT(bglayer->isImage());
@@ -220,7 +215,7 @@ LayerImage* Sprite::backgroundLayer() const
 
 LayerIndex Sprite::countLayers() const
 {
-  return LayerIndex(folder()->getLayersCount());
+  return LayerIndex(root()->layersCount());
 }
 
 LayerIndex Sprite::firstLayer() const
@@ -230,7 +225,7 @@ LayerIndex Sprite::firstLayer() const
 
 LayerIndex Sprite::lastLayer() const
 {
-  return LayerIndex(folder()->getLayersCount()-1);
+  return LayerIndex(root()->layersCount()-1);
 }
 
 Layer* Sprite::layer(int layerIndex) const
@@ -244,20 +239,20 @@ Layer* Sprite::indexToLayer(LayerIndex index) const
     return NULL;
 
   int index_count = -1;
-  return index2layer(folder(), index, &index_count);
+  return index2layer(root(), index, &index_count);
 }
 
 LayerIndex Sprite::layerToIndex(const Layer* layer) const
 {
   int index_count = -1;
-  return layer2index(folder(), layer, &index_count);
+  return layer2index(root(), layer, &index_count);
 }
 
 void Sprite::getLayersList(std::vector<Layer*>& layers) const
 {
-  // TODO support subfolders
-  LayerConstIterator it = m_folder->getLayerBegin();
-  LayerConstIterator end = m_folder->getLayerEnd();
+  // TODO support subgroups
+  LayerConstIterator it = m_root->getLayerBegin();
+  LayerConstIterator end = m_root->getLayerEnd();
 
   for (; it != end; ++it) {
     layers.push_back(*it);
@@ -383,12 +378,12 @@ void Sprite::addFrame(frame_t newFrame)
   for (frame_t i=m_frames-1; i>=newFrame; --i)
     setFrameDuration(i, frameDuration(i-1));
 
-  folder()->displaceFrames(newFrame, +1);
+  root()->displaceFrames(newFrame, +1);
 }
 
 void Sprite::removeFrame(frame_t frame)
 {
-  folder()->displaceFrames(frame, -1);
+  root()->displaceFrames(frame, -1);
 
   frame_t newTotal = m_frames-1;
   for (frame_t i=frame; i<newTotal; ++i)
@@ -575,11 +570,11 @@ static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* inde
   else {
     (*index_count)++;
 
-    if (layer->isFolder()) {
+    if (layer->isGroup()) {
       Layer *found;
 
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
+      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if ((found = index2layer(*it, index, index_count)))
@@ -598,11 +593,11 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
   else {
     (*index_count)++;
 
-    if (layer->isFolder()) {
+    if (layer->isGroup()) {
       int found;
 
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
+      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if ((found = layer2index(*it, find_layer, index_count)) >= 0)

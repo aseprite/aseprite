@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -72,7 +72,7 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
 
   palette->copyColorsTo(dstSprite->palette(frame_t(0)));
 
-  LayerImage* dstLayer = static_cast<LayerImage*>(dstSprite->folder()->getFirstLayer());
+  LayerImage* dstLayer = static_cast<LayerImage*>(dstSprite->root()->firstLayer());
   if (site.layer()->isBackground())
     dstLayer->configureAsBackground(); // Configure layer name as background
   dstLayer->setFlags(site.layer()->flags()); // Copy all flags

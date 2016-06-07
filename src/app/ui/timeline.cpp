@@ -1060,7 +1060,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
 
   // If the layer that was removed is the selected one
   if (layer == getLayer()) {
-    LayerFolder* parent = layer->parent();
+    LayerGroup* parent = layer->parent();
     Layer* layer_select = NULL;
 
     // Select previous layer, or next layer, or the parent (if it is
@@ -1069,7 +1069,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
       layer_select = layer->getPrevious();
     else if (layer->getNext())
       layer_select = layer->getNext();
-    else if (parent != sprite->folder())
+    else if (parent != sprite->root())
       layer_select = parent;
 
     setLayer(layer_select);

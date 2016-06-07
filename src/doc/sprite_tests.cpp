@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,8 +27,8 @@ TEST(Sprite, CelsRange)
 
   LayerImage* lay1 = new LayerImage(spr);
   LayerImage* lay2 = new LayerImage(spr);
-  spr->folder()->addLayer(lay1);
-  spr->folder()->addLayer(lay2);
+  spr->root()->addLayer(lay1);
+  spr->root()->addLayer(lay2);
 
   ImageRef imgA(Image::create(IMAGE_RGB, 32, 32));
   Cel* celA = new Cel(frame_t(0), imgA);

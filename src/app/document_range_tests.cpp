@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -82,13 +82,13 @@ public:
 
     doc.reset(static_cast<app::Document*>(ctx.documents().add(4, 4)));
     sprite = doc->sprite();
-    layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
+    layer1 = dynamic_cast<LayerImage*>(sprite->root()->firstLayer());
     layer2 = new LayerImage(sprite);
     layer3 = new LayerImage(sprite);
     layer4 = new LayerImage(sprite);
-    sprite->folder()->addLayer(layer2);
-    sprite->folder()->addLayer(layer3);
-    sprite->folder()->addLayer(layer4);
+    sprite->root()->addLayer(layer2);
+    sprite->root()->addLayer(layer3);
+    sprite->root()->addLayer(layer4);
     EXPECT_LAYER_ORDER(layer1, layer2, layer3, layer4);
 
     layer1->setName("layer1");

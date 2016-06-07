@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,7 +28,7 @@ Layer::Layer(ObjectType type, Sprite* sprite)
       int(LayerFlags::Visible) |
       int(LayerFlags::Editable)))
 {
-  ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerFolder);
+  ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup);
 
   setName("Layer");
 }
@@ -242,7 +242,7 @@ void LayerImage::configureAsBackground()
   switchFlags(LayerFlags::BackgroundLayerFlags, true);
   setName("Background");
 
-  sprite()->folder()->stackLayer(this, NULL);
+  sprite()->root()->stackLayer(this, NULL);
 }
 
 void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
@@ -264,20 +264,20 @@ void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
 }
 
 //////////////////////////////////////////////////////////////////////
-// LayerFolder class
+// LayerGroup class
 
-LayerFolder::LayerFolder(Sprite* sprite)
-  : Layer(ObjectType::LayerFolder, sprite)
+LayerGroup::LayerGroup(Sprite* sprite)
+  : Layer(ObjectType::LayerGroup, sprite)
 {
   setName("Layer Set");
 }
 
-LayerFolder::~LayerFolder()
+LayerGroup::~LayerGroup()
 {
   destroyAllLayers();
 }
 
-void LayerFolder::destroyAllLayers()
+void LayerGroup::destroyAllLayers()
 {
   LayerIterator it = getLayerBegin();
   LayerIterator end = getLayerEnd();
@@ -289,9 +289,9 @@ void LayerFolder::destroyAllLayers()
   m_layers.clear();
 }
 
-int LayerFolder::getMemSize() const
+int LayerGroup::getMemSize() const
 {
-  int size = sizeof(LayerFolder);
+  int size = sizeof(LayerGroup);
   LayerConstIterator it = getLayerBegin();
   LayerConstIterator end = getLayerEnd();
 
@@ -303,7 +303,7 @@ int LayerFolder::getMemSize() const
   return size;
 }
 
-void LayerFolder::getCels(CelList& cels) const
+void LayerGroup::getCels(CelList& cels) const
 {
   LayerConstIterator it = getLayerBegin();
   LayerConstIterator end = getLayerEnd();
@@ -312,13 +312,13 @@ void LayerFolder::getCels(CelList& cels) const
     (*it)->getCels(cels);
 }
 
-void LayerFolder::addLayer(Layer* layer)
+void LayerGroup::addLayer(Layer* layer)
 {
   m_layers.push_back(layer);
   layer->setParent(this);
 }
 
-void LayerFolder::removeLayer(Layer* layer)
+void LayerGroup::removeLayer(Layer* layer)
 {
   LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
@@ -327,7 +327,7 @@ void LayerFolder::removeLayer(Layer* layer)
   layer->setParent(NULL);
 }
 
-void LayerFolder::stackLayer(Layer* layer, Layer* after)
+void LayerGroup::stackLayer(Layer* layer, Layer* after)
 {
   ASSERT(layer != after);
   if (layer == after)
@@ -347,7 +347,7 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
     m_layers.insert(m_layers.begin(), layer);
 }
 
-void LayerFolder::displaceFrames(frame_t fromThis, frame_t delta)
+void LayerGroup::displaceFrames(frame_t fromThis, frame_t delta)
 {
   for (Layer* layer : m_layers)
     layer->displaceFrames(fromThis, delta);

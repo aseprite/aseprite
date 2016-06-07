@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -26,7 +26,7 @@ TEST(DocumentApi, MoveCel) {
   TestContextT<app::Context> ctx;
   DocumentPtr doc(static_cast<app::Document*>(ctx.documents().add(32, 16)));
   Sprite* sprite = doc->sprite();
-  LayerImage* layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
+  LayerImage* layer1 = dynamic_cast<LayerImage*>(sprite->root()->firstLayer());
   LayerImage* layer2 = new LayerImage(sprite);
 
   Cel* cel1 = layer1->cel(frame_t(0));

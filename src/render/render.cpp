@@ -528,7 +528,7 @@ void Render::renderSprite(
   // Draw the background layer.
   m_globalOpacity = 255;
   renderLayer(
-    m_sprite->folder(), dstImage,
+    m_sprite->root(), dstImage,
     area, frame, scaled_func,
     true,
     false,
@@ -541,7 +541,7 @@ void Render::renderSprite(
   // Draw the transparent layers.
   m_globalOpacity = 255;
   renderLayer(
-    m_sprite->folder(), dstImage,
+    m_sprite->root(), dstImage,
     area, frame, scaled_func,
     false,
     true,
@@ -578,7 +578,7 @@ void Render::renderOnionskin(
   if (m_onionskin.type() != OnionskinType::NONE) {
     FrameTag* loop = m_onionskin.loopTag();
     Layer* onionLayer = (m_onionskin.layer() ? m_onionskin.layer():
-                                               m_sprite->folder());
+                                               m_sprite->root());
     frame_t frameIn;
 
     for (frame_t frameOut = frame - m_onionskin.prevFrames();
@@ -802,9 +802,9 @@ void Render::renderLayer(
       break;
     }
 
-    case ObjectType::LayerFolder: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
+    case ObjectType::LayerGroup: {
+      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         renderLayer(

@@ -396,7 +396,7 @@ Document* DocumentExporter::exportSheet()
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
-  Image* textureImage = texture->folder()->getFirstLayer()
+  Image* textureImage = texture->root()->firstLayer()
     ->cel(frame_t(0))->image();
 
   renderTexture(samples, textureImage);

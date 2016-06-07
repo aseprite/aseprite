@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,7 +21,7 @@ namespace doc {
   class Cel;
   class Image;
   class Layer;
-  class LayerFolder;
+  class LayerGroup;
   class LayerImage;
   class Mask;
   class Palette;
@@ -81,8 +81,8 @@ namespace app {
 
     // Layers API
     LayerImage* newLayer(Sprite* sprite, const std::string& name);
-    LayerFolder* newLayerFolder(Sprite* sprite);
-    void addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis);
+    LayerGroup* newLayerGroup(Sprite* sprite);
+    void addLayer(LayerGroup* folder, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);
     void restackLayerBefore(Layer* layer, Layer* beforeThis);

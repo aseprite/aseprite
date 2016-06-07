@@ -520,10 +520,10 @@ void paste()
               afterThis = nullptr;
             }
             else
-              afterThis = dstSpr->folder()->getLastLayer();
+              afterThis = dstSpr->root()->lastLayer();
 
             LayerImage* newLayer = new LayerImage(dstSpr);
-            api.addLayer(dstSpr->folder(), newLayer, afterThis);
+            api.addLayer(dstSpr->root(), newLayer, afterThis);
 
             srcDoc->copyLayerContent(
               srcLayers[i], dstDoc, newLayer);

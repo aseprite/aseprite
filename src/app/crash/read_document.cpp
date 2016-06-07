@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -244,7 +244,7 @@ private:
         ObjectId layId = read32(s);
         Layer* lay = loadObject<Layer*>("lay", layId, &Reader::readLayer);
         if (lay)
-          spr->folder()->addLayer(lay);
+          spr->root()->addLayer(lay);
       }
     }
     else {
@@ -396,7 +396,7 @@ app::Document* read_document_with_raw_images(const std::string& dir,
 
   // Load each image as a new frame
   auto lay = new LayerImage(spr);
-  spr->folder()->addLayer(lay);
+  spr->root()->addLayer(lay);
 
   frame_t frame = 0;
   for (const auto& fn : base::list_files(dir)) {
@@ -421,7 +421,7 @@ app::Document* read_document_with_raw_images(const std::string& dir,
         break;
       case RawImagesAs::kLayers:
         lay = new LayerImage(spr);
-        spr->folder()->addLayer(lay);
+        spr->root()->addLayer(lay);
         break;
     }
   }

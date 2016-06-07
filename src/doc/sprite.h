@@ -31,7 +31,7 @@ namespace doc {
   class Document;
   class Image;
   class Layer;
-  class LayerFolder;
+  class LayerGroup;
   class LayerImage;
   class LayersRange;
   class Mask;
@@ -90,7 +90,7 @@ namespace doc {
     ////////////////////////////////////////
     // Layers
 
-    LayerFolder* folder() const;
+    LayerGroup* root() const { return m_root; }
     LayerImage* backgroundLayer() const;
 
     LayerIndex countLayers() const;
@@ -167,7 +167,7 @@ namespace doc {
     frame_t m_frames;                      // how many frames has this sprite
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes
-    LayerFolder* m_folder;                 // main folder of layers
+    LayerGroup* m_root;                    // main group of layers
 
     // Current rgb map
     mutable RgbMap* m_rgbMap;

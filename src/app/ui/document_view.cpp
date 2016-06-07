@@ -357,7 +357,7 @@ void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
 
   // If the layer that was removed is the selected one
   if (layer == m_editor->layer()) {
-    LayerFolder* parent = layer->parent();
+    LayerGroup* parent = layer->parent();
     Layer* layer_select = NULL;
 
     // Select previous layer, or next layer, or the parent (if it is
@@ -366,7 +366,7 @@ void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
       layer_select = layer->getPrevious();
     else if (layer->getNext())
       layer_select = layer->getNext();
-    else if (parent != sprite->folder())
+    else if (parent != sprite->root())
       layer_select = parent;
 
     m_editor->setLayer(layer_select);

@@ -27,30 +27,30 @@ namespace app {
 
 using namespace ui;
 
-class NewLayerSetCommand : public Command {
+class NewLayerGroupCommand : public Command {
 public:
-  NewLayerSetCommand();
-  Command* clone() const override { return new NewLayerSetCommand(*this); }
+  NewLayerGroupCommand();
+  Command* clone() const override { return new NewLayerGroupCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
-NewLayerSetCommand::NewLayerSetCommand()
-  : Command("NewLayerSet",
-            "New Layer Set",
+NewLayerGroupCommand::NewLayerGroupCommand()
+  : Command("NewLayerGroup",
+            "New Layer Group",
             CmdRecordableFlag)
 {
 }
 
-bool NewLayerSetCommand::onEnabled(Context* context)
+bool NewLayerGroupCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite);
 }
 
-void NewLayerSetCommand::onExecute(Context* context)
+void NewLayerGroupCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
@@ -68,7 +68,7 @@ void NewLayerSetCommand::onExecute(Context* context)
   Layer* layer;
   {
     Transaction transaction(writer.context(), "New Group");
-    layer = document->getApi(transaction).newLayerFolder(sprite);
+    layer = document->getApi(transaction).newLayerGroup(sprite);
     transaction.commit();
   }
   layer->setName(name);
@@ -79,9 +79,9 @@ void NewLayerSetCommand::onExecute(Context* context)
   StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
 }
 
-Command* CommandFactory::createNewLayerSetCommand()
+Command* CommandFactory::createNewLayerGroupCommand()
 {
-  return new NewLayerSetCommand;
+  return new NewLayerGroupCommand;
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,7 +24,7 @@ namespace doc {
   class Sprite;
   class Layer;
   class LayerImage;
-  class LayerFolder;
+  class LayerGroup;
 
   //////////////////////////////////////////////////////////////////////
   // Layer class
@@ -52,15 +52,15 @@ namespace doc {
     void setName(const std::string& name) { m_name = name; }
 
     Sprite* sprite() const { return m_sprite; }
-    LayerFolder* parent() const { return m_parent; }
-    void setParent(LayerFolder* folder) { m_parent = folder; }
+    LayerGroup* parent() const { return m_parent; }
+    void setParent(LayerGroup* group) { m_parent = group; }
 
     // Gets the previous sibling of this layer.
     Layer* getPrevious() const;
     Layer* getNext() const;
 
     bool isImage() const { return type() == ObjectType::LayerImage; }
-    bool isFolder() const { return type() == ObjectType::LayerFolder; }
+    bool isGroup() const { return type() == ObjectType::LayerGroup; }
 
     bool isBackground() const { return hasFlags(LayerFlags::Background); }
     bool isVisible() const    { return hasFlags(LayerFlags::Visible); }
@@ -100,7 +100,7 @@ namespace doc {
   private:
     std::string m_name;           // layer name
     Sprite* m_sprite;             // owner of the layer
-    LayerFolder* m_parent;        // parent layer
+    LayerGroup* m_parent;        // parent layer
     LayerFlags m_flags;           // stack order cannot be changed
 
     // Disable assigment
@@ -153,12 +153,12 @@ namespace doc {
   };
 
   //////////////////////////////////////////////////////////////////////
-  // LayerFolder class
+  // LayerGroup class
 
-  class LayerFolder : public Layer {
+  class LayerGroup : public Layer {
   public:
-    explicit LayerFolder(Sprite* sprite);
-    virtual ~LayerFolder();
+    explicit LayerGroup(Sprite* sprite);
+    virtual ~LayerGroup();
 
     virtual int getMemSize() const override;
 
@@ -167,14 +167,14 @@ namespace doc {
     LayerIterator getLayerEnd() { return m_layers.end(); }
     LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
     LayerConstIterator getLayerEnd() const { return m_layers.end(); }
-    int getLayersCount() const { return (int)m_layers.size(); }
+    int layersCount() const { return (int)m_layers.size(); }
 
     void addLayer(Layer* layer);
     void removeLayer(Layer* layer);
     void stackLayer(Layer* layer, Layer* after);
 
-    Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
-    Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
+    Layer* firstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
+    Layer* lastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
 
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;

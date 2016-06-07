@@ -207,7 +207,7 @@ bool AseFormat::onLoad(FileOp* fop)
   sprite->setPixelRatio(PixelRatio(header.pixel_width, header.pixel_height));
 
   // Prepare variables for layer chunks
-  Layer* last_layer = sprite->folder();
+  Layer* last_layer = sprite->root();
   WithUserData* last_object_with_user_data = nullptr;
   int current_level = -1;
 
@@ -392,8 +392,8 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Write extra chunks in the first frame
     if (frame == fop->roi().fromFrame()) {
-      LayerIterator it = sprite->folder()->getLayerBegin();
-      LayerIterator end = sprite->folder()->getLayerEnd();
+      LayerIterator it = sprite->root()->getLayerBegin();
+      LayerIterator end = sprite->root()->getLayerEnd();
 
       // Write layer chunks
       for (; it != end; ++it)
@@ -408,7 +408,7 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Write cel chunks
     ase_file_write_cels(f, &frame_header,
-                        sprite, sprite->folder(),
+                        sprite, sprite->root(),
                         frame, fop->roi().fromFrame());
 
     // Write the frame header
@@ -580,9 +580,9 @@ static void ase_file_write_layers(FILE* f, ASE_FrameHeader* frame_header, const 
   if (!layer->userData().isEmpty())
     ase_file_write_user_data_chunk(f, frame_header, &layer->userData());
 
-  if (layer->isFolder()) {
-    auto it = static_cast<const LayerFolder*>(layer)->getLayerBegin(),
-         end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
+  if (layer->isGroup()) {
+    auto it = static_cast<const LayerGroup*>(layer)->getLayerBegin(),
+         end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
     for (; it != end; ++it)
       ase_file_write_layers(f, frame_header, *it);
@@ -612,9 +612,9 @@ static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header,
     }
   }
 
-  if (layer->isFolder()) {
-    auto it = static_cast<const LayerFolder*>(layer)->getLayerBegin(),
-         end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
+  if (layer->isGroup()) {
+    auto it = static_cast<const LayerGroup*>(layer)->getLayerBegin(),
+         end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
     for (; it != end; ++it)
       ase_file_write_cels(f, frame_header, sprite, *it, frame, firstFrame);
@@ -832,7 +832,7 @@ static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* spr
   }
   // Layer set
   else if (layer_type == 1) {
-    layer = new LayerFolder(sprite);
+    layer = new LayerGroup(sprite);
   }
 
   if (layer) {
@@ -846,7 +846,7 @@ static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* spr
     if (child_level == *current_level)
       (*previous_layer)->parent()->addLayer(layer);
     else if (child_level > *current_level)
-      static_cast<LayerFolder*>(*previous_layer)->addLayer(layer);
+      static_cast<LayerGroup*>(*previous_layer)->addLayer(layer);
     else if (child_level < *current_level)
       (*previous_layer)->parent()->parent()->addLayer(layer);
 
@@ -865,10 +865,10 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, c
   fputw(static_cast<int>(layer->flags()), f);
 
   // Layer type
-  fputw(layer->isImage() ? 0: (layer->isFolder() ? 1: -1), f);
+  fputw(layer->isImage() ? 0: (layer->isGroup() ? 1: -1), f);
 
   // Layer child level
-  LayerFolder* parent = layer->parent();
+  LayerGroup* parent = layer->parent();
   int child_level = -1;
   while (parent != NULL) {
     child_level++;

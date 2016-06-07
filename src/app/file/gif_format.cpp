@@ -679,7 +679,7 @@ private:
     clear_image(m_previousImage.get(), m_bgIndex);
 
     m_layer = new LayerImage(m_sprite.get());
-    m_sprite->folder()->addLayer(m_layer);
+    m_sprite->root()->addLayer(m_layer);
   }
 
   void resetRemap(int ncolors) {

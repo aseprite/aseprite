@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -87,12 +87,12 @@ void write_layer(std::ostream& os, const Layer* layer)
       break;
     }
 
-    case ObjectType::LayerFolder: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
+    case ObjectType::LayerGroup: {
+      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
       // Number of sub-layers
-      write16(os, static_cast<const LayerFolder*>(layer)->getLayersCount());
+      write16(os, static_cast<const LayerGroup*>(layer)->layersCount());
 
       for (; it != end; ++it)
         write_layer(os, *it);
@@ -150,16 +150,16 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
       break;
     }
 
-    case ObjectType::LayerFolder: {
+    case ObjectType::LayerGroup: {
       // Create the layer set
-      layer.reset(new LayerFolder(subObjects->sprite()));
+      layer.reset(new LayerGroup(subObjects->sprite()));
 
       // Number of sub-layers
       int layers = read16(is);
       for (int c=0; c<layers; c++) {
         Layer* child = read_layer(is, subObjects);
         if (child)
-          static_cast<LayerFolder*>(layer.get())->addLayer(child);
+          static_cast<LayerGroup*>(layer.get())->addLayer(child);
         else
           break;
       }

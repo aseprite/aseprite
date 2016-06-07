@@ -127,7 +127,7 @@ void NewLayerCommand::onExecute(Context* context)
 static std::string get_unique_layer_name(Sprite* sprite)
 {
   char buf[1024];
-  std::sprintf(buf, "Layer %d", get_max_layer_num(sprite->folder())+1);
+  std::sprintf(buf, "Layer %d", get_max_layer_num(sprite->root())+1);
   return buf;
 }
 
@@ -138,9 +138,9 @@ static int get_max_layer_num(Layer* layer)
   if (std::strncmp(layer->name().c_str(), "Layer ", 6) == 0)
     max = std::strtol(layer->name().c_str()+6, NULL, 10);
 
-  if (layer->isFolder()) {
-    LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
-    LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
+  if (layer->isGroup()) {
+    LayerIterator it = static_cast<LayerGroup*>(layer)->getLayerBegin();
+    LayerIterator end = static_cast<LayerGroup*>(layer)->getLayerEnd();
 
     for (; it != end; ++it) {
       int tmp = get_max_layer_num(*it);

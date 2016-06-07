@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -391,7 +391,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     }
 
     // Copy the list of layers (because we will modify it in the iteration).
-    LayerList layers = sprite->folder()->getLayersList();
+    LayerList layers = sprite->root()->getLayersList();
 
     // Remove all other layers
     for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
