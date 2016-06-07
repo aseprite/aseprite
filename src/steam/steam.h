@@ -15,6 +15,8 @@ public:
   SteamAPI();
   ~SteamAPI();
 
+  bool initialized() const;
+
 private:
   class Impl;
   Impl* m_impl;

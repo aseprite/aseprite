@@ -665,6 +665,8 @@ void App::run()
     // Initialize Steam API
 #ifdef ENABLE_STEAM
     steam::SteamAPI steam;
+    if (steam.initialized())
+      she::instance()->activateApp();
 #endif
 
 #ifdef ENABLE_UPDATER

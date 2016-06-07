@@ -38,6 +38,14 @@ public:
     return true;
   }
 
+  // We might need to call this function when the app is launched from
+  // Steam. It appears that there is a bug on OS X Steam client where
+  // the app is launched, activated, and then the Steam client is
+  // activated again.
+  void activateApp() {
+    [m_app activateIgnoringOtherApps:YES];
+  }
+
   void finishLaunching() {
     [m_app finishLaunching];
   }
@@ -71,6 +79,11 @@ OSXApp::~OSXApp()
 bool OSXApp::init()
 {
   return m_impl->init();
+}
+
+void OSXApp::activateApp()
+{
+  m_impl->activateApp();
 }
 
 void OSXApp::finishLaunching()

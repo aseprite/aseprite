@@ -57,6 +57,12 @@ public:
     delete this;
   }
 
+  void activateApp() override {
+#if __APPLE__
+    OSXApp::instance()->activateApp();
+#endif
+  }
+
   void finishLaunching() override {
 #if __APPLE__
     // Start processing NSApplicationDelegate events. (E.g. after

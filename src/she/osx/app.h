@@ -22,6 +22,7 @@ namespace she {
     ~OSXApp();
 
     bool init();
+    void activateApp();
     void finishLaunching();
 
   private:

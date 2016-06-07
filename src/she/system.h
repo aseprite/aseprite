@@ -32,6 +32,7 @@ namespace she {
   public:
     virtual ~System() { }
     virtual void dispose() = 0;
+    virtual void activateApp() = 0;
     virtual void finishLaunching() = 0;
     virtual Capabilities capabilities() const = 0;
     virtual Logger* logger() = 0;
