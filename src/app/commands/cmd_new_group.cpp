@@ -27,30 +27,30 @@ namespace app {
 
 using namespace ui;
 
-class NewLayerGroupCommand : public Command {
+class NewGroupCommand : public Command {
 public:
-  NewLayerGroupCommand();
-  Command* clone() const override { return new NewLayerGroupCommand(*this); }
+  NewGroupCommand();
+  Command* clone() const override { return new NewGroupCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
-NewLayerGroupCommand::NewLayerGroupCommand()
-  : Command("NewLayerGroup",
+NewGroupCommand::NewGroupCommand()
+  : Command("NewGroup",
             "New Layer Group",
             CmdRecordableFlag)
 {
 }
 
-bool NewLayerGroupCommand::onEnabled(Context* context)
+bool NewGroupCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite);
 }
 
-void NewLayerGroupCommand::onExecute(Context* context)
+void NewGroupCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
@@ -76,12 +76,12 @@ void NewLayerGroupCommand::onExecute(Context* context)
   update_screen_for_document(document);
 
   StatusBar::instance()->invalidate();
-  StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
+  StatusBar::instance()->showTip(1000, "Group `%s' created", name.c_str());
 }
 
-Command* CommandFactory::createNewLayerGroupCommand()
+Command* CommandFactory::createNewGroupCommand()
 {
-  return new NewLayerGroupCommand;
+  return new NewGroupCommand;
 }
 
 } // namespace app
