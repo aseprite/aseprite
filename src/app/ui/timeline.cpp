@@ -662,8 +662,13 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_CONTINUOUS_ICON:
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Layer* layer = m_layers[m_clk.layer];
-              ASSERT(layer != NULL);
-              layer->setContinuous(!layer->isContinuous());
+              ASSERT(layer);
+              if (layer) {
+                if (layer->isImage())
+                  layer->setContinuous(!layer->isContinuous());
+                else if (layer->isGroup())
+                  layer->setCollapsed(!layer->isCollapsed());
+              }
             }
             break;
 
@@ -1355,13 +1360,22 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
     (hotlayer && m_hot.part == PART_LAYER_PADLOCK_ICON),
     (clklayer && m_clk.part == PART_LAYER_PADLOCK_ICON));
 
-  // Draw the continuous flag.
+  // Draw the continuous flag/group icon.
   bounds = getPartBounds(Hit(PART_LAYER_CONTINUOUS_ICON, layerIdx));
-  drawPart(g, bounds, NULL,
-    layer->isContinuous() ? styles.timelineContinuous(): styles.timelineDiscontinuous(),
-    is_active,
-    (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
-    (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
+  if (layer->isImage()) {
+    drawPart(g, bounds, NULL,
+             layer->isContinuous() ? styles.timelineContinuous(): styles.timelineDiscontinuous(),
+             is_active,
+             (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
+             (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
+  }
+  else if (layer->isGroup()) {
+    drawPart(g, bounds, NULL,
+             layer->isCollapsed() ? styles.timelineClosedGroup(): styles.timelineOpenGroup(),
+             is_active,
+             (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
+             (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
+  }
 
   // Get the layer's name bounds.
   bounds = getPartBounds(Hit(PART_LAYER_TEXT, layerIdx));
@@ -2179,11 +2193,14 @@ void Timeline::updateStatusBar(ui::Message* msg)
         break;
 
       case PART_LAYER_CONTINUOUS_ICON:
-        if (layer != NULL) {
-          sb->setStatusText(0, "Layer '%s' is %s (%s)",
-            layer->name().c_str(),
-            layer->isContinuous() ? "continuous": "discontinuous",
-            layer->isContinuous() ? "prefer linked cels/frames": "prefer individual cels/frames");
+        if (layer) {
+          if (layer->isImage())
+            sb->setStatusText(0, "Layer '%s' is %s (%s)",
+                              layer->name().c_str(),
+                              layer->isContinuous() ? "continuous": "discontinuous",
+                              layer->isContinuous() ? "prefer linked cels/frames": "prefer individual cels/frames");
+          else if (layer->isGroup())
+            sb->setStatusText(0, "Group '%s'", layer->name().c_str());
           return;
         }
         break;

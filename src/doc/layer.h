@@ -35,6 +35,7 @@ namespace doc {
     LockMove   = 4,             // Cannot be moved
     Background = 8,             // Stack order cannot be changed
     Continuous = 16,            // Prefer to link cels when the user copy them
+    Collapsed  = 32,            // Prefer to show this group layer collapsed
 
     BackgroundLayerFlags = LockMove | Background,
   };
@@ -62,17 +63,21 @@ namespace doc {
     bool isImage() const { return type() == ObjectType::LayerImage; }
     bool isGroup() const { return type() == ObjectType::LayerGroup; }
 
-    bool isBackground() const { return hasFlags(LayerFlags::Background); }
-    bool isVisible() const    { return hasFlags(LayerFlags::Visible); }
-    bool isEditable() const   { return hasFlags(LayerFlags::Editable); }
-    bool isMovable() const    { return !hasFlags(LayerFlags::LockMove); }
-    bool isContinuous() const { return hasFlags(LayerFlags::Continuous); }
+    bool isBackground() const  { return hasFlags(LayerFlags::Background); }
+    bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
+    bool isVisible() const     { return hasFlags(LayerFlags::Visible); }
+    bool isEditable() const    { return hasFlags(LayerFlags::Editable); }
+    bool isMovable() const     { return !hasFlags(LayerFlags::LockMove); }
+    bool isContinuous() const  { return hasFlags(LayerFlags::Continuous); }
+    bool isCollapsed() const   { return hasFlags(LayerFlags::Collapsed); }
+    bool isExpanded() const    { return !hasFlags(LayerFlags::Collapsed); }
 
     void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
     void setVisible   (bool state) { switchFlags(LayerFlags::Visible, state); }
     void setEditable  (bool state) { switchFlags(LayerFlags::Editable, state); }
     void setMovable   (bool state) { switchFlags(LayerFlags::LockMove, !state); }
     void setContinuous(bool state) { switchFlags(LayerFlags::Continuous, state); }
+    void setCollapsed (bool state) { switchFlags(LayerFlags::Collapsed, state); }
 
     LayerFlags flags() const {
       return m_flags;

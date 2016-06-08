@@ -329,6 +329,10 @@
     <part id="timeline_continuous_active"       x="288" y="36" w="12" h="12" />
     <part id="timeline_discontinuous_normal"    x="276" y="48" w="12" h="12" />
     <part id="timeline_discontinuous_active"    x="288" y="48" w="12" h="12" />
+    <part id="timeline_closed_group_normal"     x="276" y="60" w="12" h="12" />
+    <part id="timeline_closed_group_active"     x="288" y="60" w="12" h="12" />
+    <part id="timeline_open_group_normal"       x="276" y="72" w="12" h="12" />
+    <part id="timeline_open_group_active"       x="288" y="72" w="12" h="12" />
     <part id="timeline_empty_frame_normal"      x="240" y="60" w="12" h="12" />
     <part id="timeline_empty_frame_active"      x="252" y="60" w="12" h="12" />
     <part id="timeline_keyframe_normal"         x="240" y="72" w="12" h="12" />
@@ -558,6 +562,20 @@
     </style>
     <style id="timeline_discontinuous:active">
       <icon part="timeline_discontinuous_active" />
+    </style>
+
+    <!-- timeline_group -->
+    <style id="timeline_closed_group" base="timeline_box">
+      <icon part="timeline_closed_group_normal" align="center" valign="middle" />
+    </style>
+    <style id="timeline_closed_group:active">
+      <icon part="timeline_closed_group_active" />
+    </style>
+    <style id="timeline_open_group" base="timeline_box">
+      <icon part="timeline_open_group_normal" align="center" valign="middle" />
+    </style>
+    <style id="timeline_open_group:active">
+      <icon part="timeline_open_group_active" />
     </style>
 
     <!-- timeline_layer -->
