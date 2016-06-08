@@ -91,7 +91,8 @@ bool is_key_pressed(KeyScancode scancode)
 
 - (id)initWithFrame:(NSRect)frameRect
 {
-  m_nsCursor = [NSCursor arrowCursor];
+  // We start without the system mouse cursor
+  m_nsCursor = nil;
   m_visibleMouse = true;
   m_pointerType = she::PointerType::Unknown;
 

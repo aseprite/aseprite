@@ -35,16 +35,20 @@ typedef void (*SteamAPI_Shutdown_Func)();
 
 class SteamAPI::Impl {
 public:
-  Impl() {
+  Impl() : m_initialized(false) {
     m_steamLib = base::load_dll(
       base::join_path(base::get_file_path(base::get_app_path()),
                       STEAM_API_DLL_FILENAME));
-    if (!m_steamLib)
+    if (!m_steamLib) {
+      LOG("Steam library not found...\n");
       return;
+    }
 
     auto SteamAPI_Init = base::get_dll_proc<SteamAPI_Init_Func>(m_steamLib, "SteamAPI_Init");
-    if (!SteamAPI_Init)
+    if (!SteamAPI_Init) {
+      LOG("SteamAPI_Init not found...\n");
       return;
+    }
 
     if (!SteamAPI_Init()) {
       LOG("Steam is not initialized...\n");
@@ -52,6 +56,7 @@ public:
     }
 
     LOG("Steam initialized...\n");
+    m_initialized = true;
   }
 
   ~Impl() {
@@ -67,8 +72,13 @@ public:
     base::unload_dll(m_steamLib);
   }
 
+  bool initialized() const {
+    return m_initialized;
+  }
+
 private:
   base::dll m_steamLib;
+  bool m_initialized;
 };
 
 SteamAPI::SteamAPI()
@@ -79,6 +89,11 @@ SteamAPI::SteamAPI()
 SteamAPI::~SteamAPI()
 {
   delete m_impl;
+}
+
+bool SteamAPI::initialized() const
+{
+  return m_impl->initialized();
 }
 
 } // namespace steam

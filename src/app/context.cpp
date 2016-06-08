@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -36,6 +36,14 @@ void Context::sendDocumentToTop(doc::Document* document)
 app::Document* Context::activeDocument() const
 {
   return static_cast<app::Document*>(doc::Context::activeDocument());
+}
+
+bool Context::hasModifiedDocuments() const
+{
+  for (auto doc : documents())
+    if (static_cast<app::Document*>(doc)->isModified())
+      return true;
+  return false;
 }
 
 void Context::executeCommand(const char* commandName)

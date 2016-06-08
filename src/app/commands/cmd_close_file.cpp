@@ -50,7 +50,7 @@ protected:
     Workspace* workspace = App::instance()->workspace();
     WorkspaceView* view = workspace->activeView();
     if (view)
-      workspace->closeView(view);
+      workspace->closeView(view, false);
   }
 };
 
@@ -60,11 +60,16 @@ public:
     : Command("CloseAllFiles",
               "Close All Files",
               CmdRecordableFlag) {
+    m_quitting = false;
   }
 
   Command* clone() const override { return new CloseAllFilesCommand(*this); }
 
 protected:
+
+  void onLoadParams(const Params& params) override {
+    m_quitting = params.get_as<bool>("quitting");
+  }
 
   void onExecute(Context* context) override {
     Workspace* workspace = App::instance()->workspace();
@@ -78,11 +83,13 @@ protected:
     }
 
     for (auto docView : docViews) {
-      if (!workspace->closeView(docView))
+      if (!workspace->closeView(docView, m_quitting))
         break;
     }
   }
 
+private:
+  bool m_quitting;
 };
 
 Command* CommandFactory::createCloseFileCommand()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -109,7 +109,7 @@ void DevConsoleView::onWorkspaceViewSelected()
   m_entry->requestFocus();
 }
 
-bool DevConsoleView::onCloseView(Workspace* workspace)
+bool DevConsoleView::onCloseView(Workspace* workspace, bool quitting)
 {
   workspace->removeView(this);
   return true;
