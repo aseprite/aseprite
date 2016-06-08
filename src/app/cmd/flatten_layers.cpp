@@ -92,7 +92,7 @@ void FlattenLayers::onExecute()
   }
 
   // Delete old layers.
-  LayerList layers = sprite->root()->getLayersList();
+  LayerList layers = sprite->root()->layers();
   for (Layer* layer : layers)
     if (layer != flatLayer)
       executeAndAdd(new cmd::RemoveLayer(layer));
