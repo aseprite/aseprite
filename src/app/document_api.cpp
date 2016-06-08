@@ -407,9 +407,10 @@ LayerImage* DocumentApi::newLayer(Sprite* sprite, const std::string& name)
   return layer;
 }
 
-LayerGroup* DocumentApi::newLayerGroup(Sprite* sprite)
+LayerGroup* DocumentApi::newGroup(Sprite* sprite, const std::string& name)
 {
   LayerGroup* layer = new LayerGroup(sprite);
+  layer->setName(name);
 
   addLayer(sprite->root(), layer,
            sprite->root()->lastLayer());

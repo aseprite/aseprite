@@ -24,6 +24,8 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
+#include "new_layer.xml.h"
+
 #include <cstdio>
 #include <cstring>
 
@@ -42,13 +44,15 @@ protected:
   void onExecute(Context* context) override;
 
 private:
+  std::string getUniqueLayerName(const Sprite* sprite) const;
+  int getMaxLayerNum(const Layer* layer) const;
+  const char* layerPrefix() const;
+
   bool m_ask;
   bool m_top;
+  bool m_group;
   std::string m_name;
 };
-
-static std::string get_unique_layer_name(Sprite* sprite);
-static int get_max_layer_num(Layer* layer);
 
 NewLayerCommand::NewLayerCommand()
   : Command("NewLayer",
@@ -57,6 +61,7 @@ NewLayerCommand::NewLayerCommand()
 {
   m_ask = false;
   m_top = false;
+  m_group = false;
   m_name = "";
 }
 
@@ -64,6 +69,7 @@ void NewLayerCommand::onLoadParams(const Params& params)
 {
   m_ask = (params.get("ask") == "true");
   m_top = (params.get("top") == "true");
+  m_group = (params.get("group") == "true");
   m_name = params.get("name");
 }
 
@@ -84,30 +90,33 @@ void NewLayerCommand::onExecute(Context* context)
   if (!m_name.empty())
     name = m_name;
   else
-    name = get_unique_layer_name(sprite);
+    name = getUniqueLayerName(sprite);
 
   // If params specify to ask the user about the name...
   if (m_ask) {
     // We open the window to ask the name
-    base::UniquePtr<Window> window(app::load_widget<Window>("new_layer.xml", "new_layer"));
-    Widget* name_widget = app::find_widget<Widget>(window, "name");
-    name_widget->setText(name.c_str());
-    name_widget->setMinSize(gfx::Size(128, 0));
-
-    window->openWindowInForeground();
-
-    if (window->closer() != window->findChild("ok"))
+    app::gen::NewLayer window;
+    window.name()->setText(name.c_str());
+    window.name()->setMinSize(gfx::Size(128, 0));
+    window.openWindowInForeground();
+    if (window.closer() != window.ok())
       return;
 
-    name = window->findChild("name")->text();
+    name = window.name()->text();
   }
 
   Layer* activeLayer = writer.layer();
   Layer* layer;
   {
-    Transaction transaction(writer.context(), "New Layer");
+    Transaction transaction(
+      writer.context(),
+      std::string("New ") + layerPrefix());
     DocumentApi api = document->getApi(transaction);
-    layer = api.newLayer(sprite, name);
+
+    if (m_group)
+      layer = api.newGroup(sprite, name);
+    else
+      layer = api.newLayer(sprite, name);
 
     // If "top" parameter is false, create the layer above the active
     // one.
@@ -119,36 +128,48 @@ void NewLayerCommand::onExecute(Context* context)
   update_screen_for_document(document);
 
   StatusBar::instance()->invalidate();
-  StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
+  StatusBar::instance()->showTip(
+    1000, "%s '%s' created",
+    layerPrefix(),
+    name.c_str());
 
   App::instance()->mainWindow()->popTimeline();
 }
 
-static std::string get_unique_layer_name(Sprite* sprite)
+std::string NewLayerCommand::getUniqueLayerName(const Sprite* sprite) const
 {
   char buf[1024];
-  std::sprintf(buf, "Layer %d", get_max_layer_num(sprite->root())+1);
+  std::sprintf(buf, "%s %d",
+               layerPrefix(),
+               getMaxLayerNum(sprite->root())+1);
   return buf;
 }
 
-static int get_max_layer_num(Layer* layer)
+int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
 {
-  int max = 0;
+  std::string prefix = layerPrefix();
+  prefix += " ";
 
-  if (std::strncmp(layer->name().c_str(), "Layer ", 6) == 0)
-    max = std::strtol(layer->name().c_str()+6, NULL, 10);
+  int max = 0;
+  if (std::strncmp(layer->name().c_str(), prefix.c_str(), prefix.size()) == 0)
+    max = std::strtol(layer->name().c_str()+prefix.size(), NULL, 10);
 
   if (layer->isGroup()) {
-    LayerIterator it = static_cast<LayerGroup*>(layer)->getLayerBegin();
-    LayerIterator end = static_cast<LayerGroup*>(layer)->getLayerEnd();
+    auto it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
+    auto end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
 
     for (; it != end; ++it) {
-      int tmp = get_max_layer_num(*it);
+      int tmp = getMaxLayerNum(*it);
       max = MAX(tmp, max);
     }
   }
 
   return max;
+}
+
+const char* NewLayerCommand::layerPrefix() const
+{
+  return (m_group ? "Group": "Layer");
 }
 
 Command* CommandFactory::createNewLayerCommand()

@@ -1,32 +1,20 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="New Layer" id="new_layer">
-  <box vertical="true">
-    <box horizontal="true">
-      <box vertical="true" homogeneous="true">
-        <label text="Name:" />
+  <window text="New Layer" id="new_layer">
+    <box vertical="true">
+      <box horizontal="true">
+	<box vertical="true" homogeneous="true">
+          <label text="Name:" />
+	</box>
+	<box vertical="true" homogeneous="true">
+          <entry maxsize="256" text="New Layer" id="name" magnet="true" />
+	</box>
       </box>
-      <box vertical="true" homogeneous="true">
-        <entry maxsize="256" text="New Layer" id="name" magnet="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" closewindow="true" id="ok" magnet="true" />
+	<button text="&amp;Cancel" closewindow="true" />
       </box>
     </box>
-    <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" />
-      <button text="&amp;Cancel" closewindow="true" />
-    </box>
-  </box>
-</window>
-<window text="New Group" id="new_layer_set">
-  <box vertical="true">
-    <box horizontal="true">
-      <label text="Name:" />
-      <entry maxsize="256" text="New Group" id="name" expansive="true" />
-    </box>
-    <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-      <button text="&amp;Cancel" closewindow="true" />
-    </box>
-  </box>
-</window>
+  </window>
 </gui>

@@ -81,7 +81,7 @@ namespace app {
 
     // Layers API
     LayerImage* newLayer(Sprite* sprite, const std::string& name);
-    LayerGroup* newLayerGroup(Sprite* sprite);
+    LayerGroup* newGroup(Sprite* sprite, const std::string& name);
     void addLayer(LayerGroup* folder, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);

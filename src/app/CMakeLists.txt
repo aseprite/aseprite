@@ -228,7 +228,6 @@ add_library(app-lib
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_frame_tag.cpp
-  commands/cmd_new_group.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_new_sprite_from_selection.cpp
   commands/cmd_onionskin.cpp
