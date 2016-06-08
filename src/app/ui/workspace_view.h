@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -37,7 +37,7 @@ namespace app {
 
     // Returns true if the view was closed successfully or false if
     // the user cancels the operation.
-    virtual bool onCloseView(Workspace* workspace) = 0;
+    virtual bool onCloseView(Workspace* workspace, bool quitting) = 0;
 
     virtual void onTabPopup(Workspace* workspace) = 0;
 

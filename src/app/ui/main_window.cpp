@@ -298,7 +298,7 @@ void MainWindow::onCloseTab(Tabs* tabs, TabView* tabView)
   WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
   ASSERT(view);
   if (view)
-    m_workspace->closeView(view);
+    m_workspace->closeView(view, false);
 }
 
 void MainWindow::onCloneTab(Tabs* tabs, TabView* tabView, int pos)

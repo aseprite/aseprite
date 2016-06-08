@@ -67,7 +67,7 @@ namespace app {
     WorkspaceView* cloneWorkspaceView() override;
     void onWorkspaceViewSelected() override;
     void onClonedFrom(WorkspaceView* from) override;
-    bool onCloseView(Workspace* workspace) override;
+    bool onCloseView(Workspace* workspace, bool quitting) override;
     void onTabPopup(Workspace* workspace) override;
     InputChainElement* onGetInputChainElement() override { return this; }
 
