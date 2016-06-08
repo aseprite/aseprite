@@ -105,7 +105,20 @@ void NewLayerCommand::onExecute(Context* context)
     name = window.name()->text();
   }
 
+  LayerGroup* parent = sprite->root();
   Layer* activeLayer = writer.layer();
+  if (activeLayer) {
+    if (activeLayer->isGroup() &&
+        activeLayer->isExpanded() &&
+        !m_group) {
+      parent = static_cast<LayerGroup*>(activeLayer);
+      activeLayer = nullptr;
+    }
+    else {
+      parent = activeLayer->parent();
+    }
+  }
+
   Layer* layer;
   {
     Transaction transaction(
@@ -114,9 +127,9 @@ void NewLayerCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     if (m_group)
-      layer = api.newGroup(sprite, name);
+      layer = api.newGroup(parent, name);
     else
-      layer = api.newLayer(sprite, name);
+      layer = api.newLayer(parent, name);
 
     // If "top" parameter is false, create the layer above the active
     // one.

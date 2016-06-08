@@ -396,31 +396,27 @@ void DocumentApi::swapCel(
   if (cel2) setCelFramePosition(cel2, frame1);
 }
 
-LayerImage* DocumentApi::newLayer(Sprite* sprite, const std::string& name)
+LayerImage* DocumentApi::newLayer(LayerGroup* parent, const std::string& name)
 {
-  LayerImage* layer = new LayerImage(sprite);
+  LayerImage* layer = new LayerImage(parent->sprite());
   layer->setName(name);
 
-  addLayer(sprite->root(), layer,
-           sprite->root()->lastLayer());
-
+  addLayer(parent, layer, parent->lastLayer());
   return layer;
 }
 
-LayerGroup* DocumentApi::newGroup(Sprite* sprite, const std::string& name)
+LayerGroup* DocumentApi::newGroup(LayerGroup* parent, const std::string& name)
 {
-  LayerGroup* layer = new LayerGroup(sprite);
+  LayerGroup* layer = new LayerGroup(parent->sprite());
   layer->setName(name);
 
-  addLayer(sprite->root(), layer,
-           sprite->root()->lastLayer());
-
+  addLayer(parent, layer, parent->lastLayer());
   return layer;
 }
 
-void DocumentApi::addLayer(LayerGroup* folder, Layer* newLayer, Layer* afterThis)
+void DocumentApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
 {
-  m_transaction.execute(new cmd::AddLayer(folder, newLayer, afterThis));
+  m_transaction.execute(new cmd::AddLayer(parent, newLayer, afterThis));
 }
 
 void DocumentApi::removeLayer(Layer* layer)

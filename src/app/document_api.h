@@ -80,9 +80,9 @@ namespace app {
       LayerImage* layer, frame_t frame1, frame_t frame2);
 
     // Layers API
-    LayerImage* newLayer(Sprite* sprite, const std::string& name);
-    LayerGroup* newGroup(Sprite* sprite, const std::string& name);
-    void addLayer(LayerGroup* folder, Layer* newLayer, Layer* afterThis);
+    LayerImage* newLayer(LayerGroup* parent, const std::string& name);
+    LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
+    void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);
     void restackLayerBefore(Layer* layer, Layer* beforeThis);

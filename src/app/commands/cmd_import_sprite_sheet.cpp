@@ -378,7 +378,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     // Add the layer in the sprite.
-    LayerImage* resultLayer = api.newLayer(sprite, "Sprite Sheet");
+    LayerImage* resultLayer = api.newLayer(sprite->root(), "Sprite Sheet");
 
     // Add all frames+cels to the new layer
     for (size_t i=0; i<animation.size(); ++i) {
