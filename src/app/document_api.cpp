@@ -290,11 +290,8 @@ void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFram
     }
 
     case ObjectType::LayerGroup: {
-      LayerIterator it = static_cast<LayerGroup*>(layer)->getLayerBegin();
-      LayerIterator end = static_cast<LayerGroup*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it)
-        moveFrameLayer(*it, frame, beforeFrame);
+      for (Layer* child : static_cast<LayerGroup*>(layer)->layers())
+        moveFrameLayer(child, frame, beforeFrame);
       break;
     }
 

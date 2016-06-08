@@ -54,12 +54,8 @@ void ImagesCollector::collectFromLayer(Layer* layer, frame_t frame)
     }
 
     case ObjectType::LayerGroup: {
-      LayerIterator it = static_cast<LayerGroup*>(layer)->getLayerBegin();
-      LayerIterator end = static_cast<LayerGroup*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it)
-        collectFromLayer(*it, frame);
-
+      for (Layer* child : static_cast<LayerGroup*>(layer)->layers())
+        collectFromLayer(child, frame);
       break;
     }
 

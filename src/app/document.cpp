@@ -328,11 +328,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
     const LayerGroup* sourceLayer = static_cast<const LayerGroup*>(sourceLayer0);
     LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
 
-    LayerConstIterator it = sourceLayer->getLayerBegin();
-    LayerConstIterator end = sourceLayer->getLayerEnd();
-
-    for (; it != end; ++it) {
-      Layer* sourceChild = *it;
+    for (Layer* sourceChild : sourceLayer->layers()) {
       base::UniquePtr<Layer> destChild(NULL);
 
       if (sourceChild->isImage()) {

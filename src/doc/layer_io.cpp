@@ -88,14 +88,11 @@ void write_layer(std::ostream& os, const Layer* layer)
     }
 
     case ObjectType::LayerGroup: {
-      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
       // Number of sub-layers
       write16(os, static_cast<const LayerGroup*>(layer)->layersCount());
 
-      for (; it != end; ++it)
-        write_layer(os, *it);
+      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
+        write_layer(os, child);
       break;
     }
 

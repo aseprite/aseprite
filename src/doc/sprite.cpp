@@ -203,7 +203,7 @@ int Sprite::getMemSize() const
 LayerImage* Sprite::backgroundLayer() const
 {
   if (root()->layersCount() > 0) {
-    Layer* bglayer = *root()->getLayerBegin();
+    Layer* bglayer = root()->layers().front();
 
     if (bglayer->isBackground()) {
       ASSERT(bglayer->isImage());
@@ -251,11 +251,8 @@ LayerIndex Sprite::layerToIndex(const Layer* layer) const
 void Sprite::getLayersList(std::vector<Layer*>& layers) const
 {
   // TODO support subgroups
-  LayerConstIterator it = m_root->getLayerBegin();
-  LayerConstIterator end = m_root->getLayerEnd();
-
-  for (; it != end; ++it) {
-    layers.push_back(*it);
+  for (Layer* child : m_root->layers()) {
+    layers.push_back(child);
   }
 }
 
@@ -573,11 +570,8 @@ static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* inde
     if (layer->isGroup()) {
       Layer *found;
 
-      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
-        if ((found = index2layer(*it, index, index_count)))
+      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+        if ((found = index2layer(child, index, index_count)))
           return found;
       }
     }
@@ -596,11 +590,8 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
     if (layer->isGroup()) {
       int found;
 
-      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
-        if ((found = layer2index(*it, find_layer, index_count)) >= 0)
+      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+        if ((found = layer2index(child, find_layer, index_count)) >= 0)
           return LayerIndex(found);
       }
     }

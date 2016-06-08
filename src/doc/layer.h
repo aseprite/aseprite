@@ -167,11 +167,7 @@ namespace doc {
 
     virtual int getMemSize() const override;
 
-    const LayerList& layers() { return m_layers; }
-    LayerIterator getLayerBegin() { return m_layers.begin(); }
-    LayerIterator getLayerEnd() { return m_layers.end(); }
-    LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
-    LayerConstIterator getLayerEnd() const { return m_layers.end(); }
+    const LayerList& layers() const { return m_layers; }
     int layersCount() const { return (int)m_layers.size(); }
 
     void addLayer(Layer* layer);

@@ -394,9 +394,9 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     LayerList layers = sprite->root()->layers();
 
     // Remove all other layers
-    for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
-      if (*it != resultLayer)
-        api.removeLayer(*it);
+    for (Layer* child : layers) {
+      if (child != resultLayer)
+        api.removeLayer(child);
     }
 
     // Change the number of frames

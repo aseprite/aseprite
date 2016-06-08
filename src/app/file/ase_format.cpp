@@ -392,12 +392,9 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Write extra chunks in the first frame
     if (frame == fop->roi().fromFrame()) {
-      LayerIterator it = sprite->root()->getLayerBegin();
-      LayerIterator end = sprite->root()->getLayerEnd();
-
       // Write layer chunks
-      for (; it != end; ++it)
-        ase_file_write_layers(f, &frame_header, *it);
+      for (Layer* child : sprite->root()->layers())
+        ase_file_write_layers(f, &frame_header, child);
 
       // Writer frame tags
       if (sprite->frameTags().size() > 0)
@@ -581,11 +578,8 @@ static void ase_file_write_layers(FILE* f, ASE_FrameHeader* frame_header, const 
     ase_file_write_user_data_chunk(f, frame_header, &layer->userData());
 
   if (layer->isGroup()) {
-    auto it = static_cast<const LayerGroup*>(layer)->getLayerBegin(),
-         end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-    for (; it != end; ++it)
-      ase_file_write_layers(f, frame_header, *it);
+    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
+      ase_file_write_layers(f, frame_header, child);
   }
 }
 
@@ -613,11 +607,8 @@ static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header,
   }
 
   if (layer->isGroup()) {
-    auto it = static_cast<const LayerGroup*>(layer)->getLayerBegin(),
-         end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-    for (; it != end; ++it)
-      ase_file_write_cels(f, frame_header, sprite, *it, frame, firstFrame);
+    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
+      ase_file_write_cels(f, frame_header, sprite, child, frame, firstFrame);
   }
 }
 

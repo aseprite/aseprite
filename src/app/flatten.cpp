@@ -67,11 +67,8 @@ static bool has_cels(const Layer* layer, frame_t frame)
       return (layer->cel(frame) ? true: false);
 
     case ObjectType::LayerGroup: {
-      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
-        if (has_cels(*it, frame))
+      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+        if (has_cels(child, frame))
           return true;
       }
       break;

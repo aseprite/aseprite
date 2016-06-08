@@ -44,39 +44,39 @@ int Layer::getMemSize() const
 
 Layer* Layer::getPrevious() const
 {
-  if (m_parent != NULL) {
-    LayerConstIterator it =
-      std::find(m_parent->getLayerBegin(),
-                m_parent->getLayerEnd(), this);
+  if (m_parent) {
+    auto it =
+      std::find(m_parent->layers().begin(),
+                m_parent->layers().end(), this);
 
-    if (it != m_parent->getLayerEnd() &&
-        it != m_parent->getLayerBegin()) {
+    if (it != m_parent->layers().end() &&
+        it != m_parent->layers().begin()) {
       it--;
       return *it;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 Layer* Layer::getNext() const
 {
-  if (m_parent != NULL) {
-    LayerConstIterator it =
-      std::find(m_parent->getLayerBegin(),
-                m_parent->getLayerEnd(), this);
+  if (m_parent) {
+    auto it =
+      std::find(m_parent->layers().begin(),
+                m_parent->layers().end(), this);
 
-    if (it != m_parent->getLayerEnd()) {
+    if (it != m_parent->layers().end()) {
       it++;
-      if (it != m_parent->getLayerEnd())
+      if (it != m_parent->layers().end())
         return *it;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 Cel* Layer::cel(frame_t frame) const
 {
-  return NULL;
+  return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -279,24 +279,16 @@ LayerGroup::~LayerGroup()
 
 void LayerGroup::destroyAllLayers()
 {
-  LayerIterator it = getLayerBegin();
-  LayerIterator end = getLayerEnd();
-
-  for (; it != end; ++it) {
-    Layer* layer = *it;
+  for (Layer* layer : m_layers)
     delete layer;
-  }
   m_layers.clear();
 }
 
 int LayerGroup::getMemSize() const
 {
   int size = sizeof(LayerGroup);
-  LayerConstIterator it = getLayerBegin();
-  LayerConstIterator end = getLayerEnd();
 
-  for (; it != end; ++it) {
-    const Layer* layer = *it;
+  for (const Layer* layer : m_layers) {
     size += layer->getMemSize();
   }
 
@@ -305,11 +297,8 @@ int LayerGroup::getMemSize() const
 
 void LayerGroup::getCels(CelList& cels) const
 {
-  LayerConstIterator it = getLayerBegin();
-  LayerConstIterator end = getLayerEnd();
-
-  for (; it != end; ++it)
-    (*it)->getCels(cels);
+  for (const Layer* layer : m_layers)
+    layer->getCels(cels);
 }
 
 void LayerGroup::addLayer(Layer* layer)
@@ -320,7 +309,7 @@ void LayerGroup::addLayer(Layer* layer)
 
 void LayerGroup::removeLayer(Layer* layer)
 {
-  LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
+  auto it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
@@ -333,12 +322,12 @@ void LayerGroup::stackLayer(Layer* layer, Layer* after)
   if (layer == after)
     return;
 
-  LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
+  auto it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
   if (after) {
-    LayerIterator after_it = std::find(m_layers.begin(), m_layers.end(), after);
+    auto after_it = std::find(m_layers.begin(), m_layers.end(), after);
     ASSERT(after_it != m_layers.end());
     after_it++;
     m_layers.insert(after_it, layer);

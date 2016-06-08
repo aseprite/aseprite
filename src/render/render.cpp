@@ -803,12 +803,9 @@ void Render::renderLayer(
     }
 
     case ObjectType::LayerGroup: {
-      LayerConstIterator it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
+      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
         renderLayer(
-          *it, image,
+          child, image,
           area, frame,
           scaled_func,
           render_background,

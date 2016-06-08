@@ -168,11 +168,8 @@ int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
     max = std::strtol(layer->name().c_str()+prefix.size(), NULL, 10);
 
   if (layer->isGroup()) {
-    auto it = static_cast<const LayerGroup*>(layer)->getLayerBegin();
-    auto end = static_cast<const LayerGroup*>(layer)->getLayerEnd();
-
-    for (; it != end; ++it) {
-      int tmp = getMaxLayerNum(*it);
+    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+      int tmp = getMaxLayerNum(child);
       max = MAX(tmp, max);
     }
   }
