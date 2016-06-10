@@ -9,7 +9,6 @@
 #pragma once
 
 #include "doc/frame.h"
-#include "doc/layer_index.h"
 
 namespace doc {
 
@@ -47,8 +46,6 @@ namespace doc {
     void layer(Layer* layer) { m_layer = layer; }
     void frame(frame_t frame) { m_frame = frame; }
 
-    LayerIndex layerIndex() const;
-    void layerIndex(LayerIndex layerIndex);
     Palette* palette();
     Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
     Palette* palette() const;

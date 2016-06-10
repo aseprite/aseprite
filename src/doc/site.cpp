@@ -17,18 +17,6 @@
 
 namespace doc {
 
-LayerIndex Site::layerIndex() const
-{
-  return (m_sprite && m_layer ?
-          m_sprite->layerToIndex(m_layer): LayerIndex());
-}
-
-void Site::layerIndex(LayerIndex layerIndex)
-{
-  ASSERT(m_sprite != NULL);
-  m_layer = m_sprite->indexToLayer(layerIndex);
-}
-
 Palette* Site::palette()
 {
   return (m_sprite ? m_sprite->palette(m_frame): NULL);
