@@ -19,6 +19,7 @@
 #include "doc/documents_observer.h"
 #include "doc/frame.h"
 #include "doc/layer_index.h"
+#include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/sprite.h"
 #include "ui/scroll_bar.h"
@@ -90,6 +91,7 @@ namespace app {
 
     Range range() const { return m_range; }
     SelectedLayers selectedLayers() const;
+    SelectedFrames selectedFrames() const;
 
     void prepareToMoveRange();
     void moveRange(Range& range);

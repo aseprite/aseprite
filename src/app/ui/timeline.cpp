@@ -293,6 +293,19 @@ SelectedLayers Timeline::selectedLayers() const
   return layers;
 }
 
+SelectedFrames Timeline::selectedFrames() const
+{
+  SelectedFrames frames;
+
+  if (m_range.enabled() &&
+      m_range.frameBegin() >= frame_t(0)) {
+    frames.insert(m_range.frameBegin(),
+                  m_range.frameEnd());
+  }
+
+  return frames;
+}
+
 void Timeline::prepareToMoveRange()
 {
   ASSERT(m_range.enabled());
