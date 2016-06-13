@@ -58,8 +58,49 @@ namespace doc {
       mutable frame_t m_frame;
     };
 
+    class const_reverse_iterator : public std::iterator<std::forward_iterator_tag, frame_t> {
+    public:
+      const_reverse_iterator(const Ranges::const_reverse_iterator& it)
+        : m_it(it), m_frame(-1) {
+      }
+
+      const_reverse_iterator& operator++() {
+        if (m_frame < 0)
+          m_frame = m_it->toFrame;
+
+        if (m_frame > m_it->fromFrame)
+          --m_frame;
+        else {
+          m_frame = -1;
+          ++m_it;
+        }
+
+        return *this;
+      }
+
+      frame_t operator*() const {
+        if (m_frame < 0)
+          m_frame = m_it->toFrame;
+        return m_frame;
+      }
+
+      bool operator==(const const_reverse_iterator& o) const {
+        return (m_it == o.m_it && m_frame == o.m_frame);
+      }
+
+      bool operator!=(const const_reverse_iterator& it) const {
+        return !operator==(it);
+      }
+
+    private:
+      mutable Ranges::const_reverse_iterator m_it;
+      mutable frame_t m_frame;
+    };
+
     const_iterator begin() const { return const_iterator(m_ranges.begin()); }
     const_iterator end() const { return const_iterator(m_ranges.end()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(m_ranges.rbegin()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(m_ranges.rend()); }
 
     std::size_t size() const;
     bool empty() const { return m_ranges.empty(); }

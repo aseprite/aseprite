@@ -92,6 +92,22 @@ TEST(SelectedFrames, Contains)
   EXPECT_FALSE(f.contains(10));
 }
 
+TEST(SelectedFrames, ReverseIterators)
+{
+  SelectedFrames f;
+  f.insert(1);
+  f.insert(5, 7);
+
+  std::vector<frame_t> res;
+  std::copy(f.rbegin(), f.rend(), std::back_inserter(res));
+
+  ASSERT_EQ(4, res.size());
+  EXPECT_EQ(7, res[0]);
+  EXPECT_EQ(6, res[1]);
+  EXPECT_EQ(5, res[2]);
+  EXPECT_EQ(1, res[3]);
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
