@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/frame.h"
+#include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 
 namespace doc {
@@ -62,9 +63,14 @@ namespace doc {
 
     const SelectedLayers& selectedLayers() const { return m_selectedLayers; }
     SelectedLayers& selectedLayers() { return m_selectedLayers; }
-
     void selectedLayers(const SelectedLayers& selectedLayers) {
       m_selectedLayers = selectedLayers;
+    }
+
+    const SelectedFrames& selectedFrames() const { return m_selectedFrames; }
+    SelectedFrames& selectedFrames() { return m_selectedFrames; }
+    void selectedFrames(const SelectedFrames& selectedFrames) {
+      m_selectedFrames = selectedFrames;
     }
 
     Palette* palette();
@@ -78,6 +84,7 @@ namespace doc {
     Layer* m_layer;
     frame_t m_frame;
     SelectedLayers m_selectedLayers;
+    SelectedFrames m_selectedFrames;
   };
 
 } // namespace app

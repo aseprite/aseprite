@@ -55,6 +55,7 @@ add_library(doc-lib
   primitives.cpp
   remap.cpp
   rgbmap.cpp
+  selected_frames.cpp
   selected_layers.cpp
   site.cpp
   sort_palette.cpp
