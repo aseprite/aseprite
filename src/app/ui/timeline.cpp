@@ -118,6 +118,20 @@ struct Timeline::DrawCelData {
   CelIterator lastLink;         // Last link to the active cel
 };
 
+namespace {
+
+  template<typename Pred>
+  void for_each_expanded_layer(LayerGroup* group, Pred&& pred) {
+    for (Layer* child : group->layers()) {
+      if (child->isGroup() && !child->isCollapsed())
+        for_each_expanded_layer<Pred>(static_cast<LayerGroup*>(child),
+                                      std::forward<Pred>(pred));
+      pred(child);
+    }
+  }
+
+}
+
 Timeline::Timeline()
   : Widget(kGenericWidget)
   , m_hbar(HORIZONTAL, this)
@@ -666,8 +680,13 @@ bool Timeline::onProcessMessage(Message* msg)
               if (layer) {
                 if (layer->isImage())
                   layer->setContinuous(!layer->isContinuous());
-                else if (layer->isGroup())
+                else if (layer->isGroup()) {
                   layer->setCollapsed(!layer->isCollapsed());
+
+                  regenerateLayers();
+                  showCurrentCel();
+                  invalidate();
+                }
               }
             }
             break;
@@ -940,11 +959,20 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       if (!clip)
         continue;
 
+      Layer* layerPtr = m_layers[layer];
+      if (!layerPtr->isImage()) {
+        // Draw empty cels
+        for (frame=first_frame; frame<=last_frame; ++frame) {
+          drawCel(g, layer, frame, nullptr, nullptr);
+        }
+        continue;
+      }
+
       // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-      LayerImage* layerPtr = static_cast<LayerImage*>(m_layers[layer]);
-      data.begin = layerPtr->getCelBegin();
-      data.end = layerPtr->getCelEnd();
-      data.it = layerPtr->findFirstCelIteratorAfter(first_frame-1);
+      LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
+      data.begin = layerImagePtr->getCelBegin();
+      data.end = layerImagePtr->getCelEnd();
+      data.it = layerImagePtr->findFirstCelIteratorAfter(first_frame-1);
       data.prevIt = data.end;
       data.nextIt = (data.it != data.end ? data.it+1: data.end);
 
@@ -953,7 +981,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       data.lastLink = data.end;
 
       if (layerPtr == m_layer) {
-        data.activeIt = layerPtr->findCelIterator(m_frame);
+        data.activeIt = layerImagePtr->findCelIterator(m_frame);
         if (data.activeIt != data.end) {
           data.firstLink = data.activeIt;
           data.lastLink = data.activeIt;
@@ -1434,13 +1462,13 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
-  LayerImage* layer = static_cast<LayerImage*>(m_layers[layerIndex]);
-  Image* image = (cel ? cel->image(): NULL);
+  Layer* layer = m_layers[layerIndex];
+  Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
     m_hot.frame == frame);
   bool is_active = (isLayerActive(layerIndex) || isFrameActive(frame));
-  bool is_empty = (image == NULL);
+  bool is_empty = (image == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   IntersectClip clip(g, bounds);
   if (!clip)
@@ -1468,7 +1496,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   skin::Style* style;
   bool fromLeft = false;
   bool fromRight = false;
-  if (is_empty) {
+  if (is_empty || !data) {
     style = styles.timelineEmptyFrame();
   }
   else {
@@ -1496,7 +1524,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 
   // Draw decorators to link the activeCel with its links.
-  if (data->activeIt != data->end)
+  if (data && data->activeIt != data->end)
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 }
 
@@ -1895,19 +1923,29 @@ void Timeline::invalidateHit(const Hit& hit)
 
 void Timeline::regenerateLayers()
 {
-  ASSERT(m_document != NULL);
-  ASSERT(m_sprite != NULL);
+  ASSERT(m_document);
+  ASSERT(m_sprite);
 
-  size_t nlayers = m_sprite->countLayers();
+  size_t nlayers = 0;
+  for_each_expanded_layer(
+    m_sprite->root(),
+    [&nlayers](Layer* layer){
+      ++nlayers;
+    });
+
   if (m_layers.size() != nlayers) {
     if (nlayers > 0)
-      m_layers.resize(nlayers, NULL);
+      m_layers.resize(nlayers, nullptr);
     else
       m_layers.clear();
   }
 
-  for (size_t c=0; c<nlayers; c++)
-    m_layers[c] = m_sprite->indexToLayer(LayerIndex(c));
+  size_t i = 0;
+  for_each_expanded_layer(
+    m_sprite->root(),
+    [&i, this](Layer* layer){
+      m_layers[i++] = layer;
+    });
 
   updateScrollBars();
 }
@@ -2369,10 +2407,8 @@ bool Timeline::allLayersDiscontinuous()
 LayerIndex Timeline::getLayerIndex(const Layer* layer) const
 {
   for (int i=0; i<(int)m_layers.size(); i++)
-    if (m_layers[i] == layer) {
-      ASSERT(m_sprite->layerToIndex(layer) == LayerIndex(i));
+    if (m_layers[i] == layer)
       return LayerIndex(i);
-    }
 
   return LayerIndex::NoLayer;
 }
