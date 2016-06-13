@@ -791,6 +791,14 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
 
         case kKeySpace: {
+          // If we receive a key down event when the Space bar is
+          // pressed (because the Timeline has the keyboard focus) but
+          // we don't have the mouse inside, we don't consume this
+          // event so the Space bar can be used by the Editor to
+          // activate the hand/pan/scroll tool.
+          if (!hasMouse())
+            break;
+
           m_scroll = true;
           used = true;
           break;
