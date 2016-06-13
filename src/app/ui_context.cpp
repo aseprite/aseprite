@@ -221,6 +221,26 @@ void UIContext::onGetActiveSite(Site* site) const
   DocumentView* view = activeView();
   if (view) {
     view->getSite(site);
+
+    if (site->sprite()) {
+      // Selected layers
+      Timeline* timeline = App::instance()->timeline();
+      if (timeline &&
+          timeline->range().enabled()) {
+        site->focus(Site::OnTimeline);
+        site->selectedLayers(timeline->selectedLayers());
+      }
+      else {
+        ColorBar* colorBar = ColorBar::instance();
+        if (colorBar &&
+            colorBar->getPaletteView()->getSelectedEntriesCount() > 0) {
+          site->focus(Site::OnColorBar);
+        }
+        else {
+          site->focus(Site::OnEditor);
+        }
+      }
+    }
   }
   // Default/dummy site (maybe for batch/command line mode)
   else if (!isUIAvailable()) {

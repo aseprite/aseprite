@@ -19,6 +19,7 @@
 #include "doc/documents_observer.h"
 #include "doc/frame.h"
 #include "doc/layer_index.h"
+#include "doc/selected_layers.h"
 #include "doc/sprite.h"
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
@@ -88,6 +89,7 @@ namespace app {
     bool isMovingCel() const;
 
     Range range() const { return m_range; }
+    SelectedLayers selectedLayers() const;
 
     void prepareToMoveRange();
     void moveRange(Range& range);

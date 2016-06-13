@@ -282,6 +282,17 @@ void Timeline::setFrame(frame_t frame, bool byUser)
   }
 }
 
+SelectedLayers Timeline::selectedLayers() const
+{
+  SelectedLayers layers;
+
+  for (LayerIndex layer = m_range.layerBegin(); layer <= m_range.layerEnd(); ++layer) {
+    layers.insert(m_layers[layer].layer);
+  }
+
+  return layers;
+}
+
 void Timeline::prepareToMoveRange()
 {
   ASSERT(m_range.enabled());
