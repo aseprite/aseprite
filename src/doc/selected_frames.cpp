@@ -10,6 +10,8 @@
 
 #include "doc/selected_frames.h"
 
+#include <algorithm>
+
 namespace doc {
 
 std::size_t SelectedFrames::size() const
