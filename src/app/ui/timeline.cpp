@@ -121,12 +121,12 @@ struct Timeline::DrawCelData {
 namespace {
 
   template<typename Pred>
-  void for_each_expanded_layer(LayerGroup* group, Pred&& pred) {
+  void for_each_expanded_layer(LayerGroup* group, Pred&& pred, int level = 0) {
     for (Layer* child : group->layers()) {
       if (child->isGroup() && !child->isCollapsed())
         for_each_expanded_layer<Pred>(static_cast<LayerGroup*>(child),
-                                      std::forward<Pred>(pred));
-      pred(child);
+                                      std::forward<Pred>(pred), level+1);
+      pred(child, level);
     }
   }
 
@@ -296,7 +296,7 @@ void Timeline::moveRange(Range& range)
 
   if (range.layerBegin() >= LayerIndex(0) &&
       range.layerBegin() + m_moveRangeData.activeRelativeLayer < int(m_layers.size())) {
-    setLayer(m_layers[range.layerBegin() + m_moveRangeData.activeRelativeLayer]);
+    setLayer(m_layers[range.layerBegin() + m_moveRangeData.activeRelativeLayer].layer);
   }
 
   if (range.frameBegin() >= frame_t(0))
@@ -396,7 +396,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
             // Did the user select another layer?
             if (old_layer != m_clk.layer) {
-              setLayer(m_layers[m_clk.layer]);
+              setLayer(m_layers[m_clk.layer].layer);
               invalidate();
             }
           }
@@ -427,7 +427,7 @@ bool Timeline::onProcessMessage(Message* msg)
           // Select the new clicked-part.
           if (old_layer != m_clk.layer
             || old_frame != m_clk.frame) {
-            setLayer(m_layers[m_clk.layer]);
+            setLayer(m_layers[m_clk.layer].layer);
             setFrame(m_clk.frame, true);
             invalidate();
           }
@@ -527,9 +527,9 @@ bool Timeline::onProcessMessage(Message* msg)
         switch (m_state) {
 
           case STATE_SELECTING_LAYERS: {
-            if (m_layer != m_layers[hit.layer]) {
+            if (m_layer != m_layers[hit.layer].layer) {
               m_range.endRange(hit.layer, m_frame);
-              setLayer(m_layers[m_clk.layer = hit.layer]);
+              setLayer(m_layers[m_clk.layer = hit.layer].layer);
             }
             break;
           }
@@ -541,10 +541,10 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_SELECTING_CELS:
-            if ((m_layer != m_layers[hit.layer])
+            if ((m_layer != m_layers[hit.layer].layer)
               || (m_frame != hit.frame)) {
               m_range.endRange(hit.layer, hit.frame);
-              setLayer(m_layers[m_clk.layer = hit.layer]);
+              setLayer(m_layers[m_clk.layer = hit.layer].layer);
               setFrame(m_clk.frame = hit.frame, true);
             }
             break;
@@ -579,7 +579,7 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_HEADER_EYE: {
             bool newVisibleState = !allLayersVisible();
             for (size_t i=0; i<m_layers.size(); i++)
-              m_layers[i]->setVisible(newVisibleState);
+              m_layers[i].layer->setVisible(newVisibleState);
 
             // Redraw all views.
             m_document->notifyGeneralUpdate();
@@ -589,14 +589,14 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_HEADER_PADLOCK: {
             bool newEditableState = !allLayersUnlocked();
             for (size_t i=0; i<m_layers.size(); i++)
-              m_layers[i]->setEditable(newEditableState);
+              m_layers[i].layer->setEditable(newEditableState);
             break;
           }
 
           case PART_HEADER_CONTINUOUS: {
             bool newContinuousState = !allLayersContinuous();
             for (size_t i=0; i<m_layers.size(); i++)
-              m_layers[i]->setContinuous(newContinuousState);
+              m_layers[i].layer->setContinuous(newContinuousState);
             break;
           }
 
@@ -655,7 +655,7 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_EYE_ICON:
             // Hide/show layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_layers[m_clk.layer];
+              Layer* layer = m_layers[m_clk.layer].layer;
               ASSERT(layer != NULL);
               layer->setVisible(!layer->isVisible());
 
@@ -667,7 +667,7 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_layers[m_clk.layer];
+              Layer* layer = m_layers[m_clk.layer].layer;
               ASSERT(layer != NULL);
               layer->setEditable(!layer->isEditable());
             }
@@ -675,7 +675,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_LAYER_CONTINUOUS_ICON:
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_layers[m_clk.layer];
+              Layer* layer = m_layers[m_clk.layer].layer;
               ASSERT(layer);
               if (layer) {
                 if (layer->isImage())
@@ -959,7 +959,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       if (!clip)
         continue;
 
-      Layer* layerPtr = m_layers[layer];
+      Layer* layerPtr = m_layers[layer].layer;
       if (!layerPtr->isImage()) {
         // Draw empty cels
         for (frame=first_frame; frame<=last_frame; ++frame) {
@@ -1363,7 +1363,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
 void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
-  Layer* layer = m_layers[layerIdx];
+  Layer* layer = m_layers[layerIdx].layer;
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
   bool clklayer = (m_clk.layer == layerIdx);
@@ -1410,12 +1410,19 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 
   // Draw layer name.
   doc::color_t layerColor = layer->userData().color();
-  if (doc::rgba_geta(layerColor) > 0) {
-    drawPart(g, bounds, nullptr, styles.timelineLayer(),
-             is_active,
-             (hotlayer && m_hot.part == PART_LAYER_TEXT),
-             (clklayer && m_clk.part == PART_LAYER_TEXT));
+  gfx::Rect textBounds = bounds;
+  if (m_layers[layerIdx].level > 0) {
+    int w = m_layers[layerIdx].level*FRMSIZE;
+    textBounds.x += w;
+    textBounds.w -= w;
+  }
 
+  drawPart(g, bounds, nullptr, styles.timelineLayer(),
+           is_active,
+           (hotlayer && m_hot.part == PART_LAYER_TEXT),
+           (clklayer && m_clk.part == PART_LAYER_TEXT));
+
+  if (doc::rgba_geta(layerColor) > 0) {
     // Fill with an user-defined custom color.
     auto b2 = bounds;
     b2.shrink(1*guiscale()).inflate(1*guiscale());
@@ -1425,13 +1432,13 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
                           doc::rgba_geta(layerColor)),
                 b2);
 
-    drawPart(g, bounds, layer->name().c_str(), styles.timelineLayerTextOnly(),
+    drawPart(g, textBounds, layer->name().c_str(), styles.timelineLayerTextOnly(),
              is_active,
              (hotlayer && m_hot.part == PART_LAYER_TEXT),
              (clklayer && m_clk.part == PART_LAYER_TEXT));
   }
   else {
-    drawPart(g, bounds, layer->name().c_str(), styles.timelineLayer(),
+    drawPart(g, textBounds, layer->name().c_str(), styles.timelineLayer(),
              is_active,
              (hotlayer && m_hot.part == PART_LAYER_TEXT),
              (clklayer && m_clk.part == PART_LAYER_TEXT));
@@ -1462,7 +1469,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
-  Layer* layer = m_layers[layerIndex];
+  Layer* layer = m_layers[layerIndex].layer;
   Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
@@ -1929,13 +1936,13 @@ void Timeline::regenerateLayers()
   size_t nlayers = 0;
   for_each_expanded_layer(
     m_sprite->root(),
-    [&nlayers](Layer* layer){
+    [&nlayers](Layer* layer, int level){
       ++nlayers;
     });
 
   if (m_layers.size() != nlayers) {
     if (nlayers > 0)
-      m_layers.resize(nlayers, nullptr);
+      m_layers.resize(nlayers);
     else
       m_layers.clear();
   }
@@ -1943,8 +1950,8 @@ void Timeline::regenerateLayers()
   size_t i = 0;
   for_each_expanded_layer(
     m_sprite->root(),
-    [&i, this](Layer* layer){
-      m_layers[i++] = layer;
+    [&i, this](Layer* layer, int level){
+      m_layers[i++] = LayerInfo(layer, level);
     });
 
   updateScrollBars();
@@ -2175,7 +2182,8 @@ void Timeline::updateStatusBar(ui::Message* msg)
         else if (m_dropTarget.vhit == DropTarget::Top)
           layerIdx = m_dropRange.layerEnd();
 
-        Layer* layer = ((layerIdx >= 0 && layerIdx < (int)m_layers.size()) ? m_layers[layerIdx]: NULL);
+        Layer* layer = ((layerIdx >= 0 && layerIdx < (int)m_layers.size()) ? m_layers[layerIdx].layer:
+                                                                             nullptr);
         if (layer) {
           if (m_dropTarget.vhit == DropTarget::Bottom) {
             sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->name().c_str());
@@ -2192,7 +2200,8 @@ void Timeline::updateStatusBar(ui::Message* msg)
     }
   }
   else {
-    Layer* layer = (validLayer(m_hot.layer) ? m_layers[m_hot.layer]: NULL);
+    Layer* layer = (validLayer(m_hot.layer) ? m_layers[m_hot.layer].layer:
+                                              nullptr);
 
     switch (m_hot.part) {
 
@@ -2353,7 +2362,7 @@ gfx::Point Timeline::getMaxScrollablePos() const
 bool Timeline::allLayersVisible()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i]->isVisible())
+    if (!m_layers[i].layer->isVisible())
       return false;
 
   return true;
@@ -2362,7 +2371,7 @@ bool Timeline::allLayersVisible()
 bool Timeline::allLayersInvisible()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i]->isVisible())
+    if (m_layers[i].layer->isVisible())
       return false;
 
   return true;
@@ -2371,7 +2380,7 @@ bool Timeline::allLayersInvisible()
 bool Timeline::allLayersLocked()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i]->isEditable())
+    if (m_layers[i].layer->isEditable())
       return false;
 
   return true;
@@ -2380,7 +2389,7 @@ bool Timeline::allLayersLocked()
 bool Timeline::allLayersUnlocked()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i]->isEditable())
+    if (!m_layers[i].layer->isEditable())
       return false;
 
   return true;
@@ -2389,7 +2398,7 @@ bool Timeline::allLayersUnlocked()
 bool Timeline::allLayersContinuous()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i]->isContinuous())
+    if (!m_layers[i].layer->isContinuous())
       return false;
 
   return true;
@@ -2398,7 +2407,7 @@ bool Timeline::allLayersContinuous()
 bool Timeline::allLayersDiscontinuous()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i]->isContinuous())
+    if (m_layers[i].layer->isContinuous())
       return false;
 
   return true;
@@ -2407,7 +2416,7 @@ bool Timeline::allLayersDiscontinuous()
 LayerIndex Timeline::getLayerIndex(const Layer* layer) const
 {
   for (int i=0; i<(int)m_layers.size(); i++)
-    if (m_layers[i] == layer)
+    if (m_layers[i].layer == layer)
       return LayerIndex(i);
 
   return LayerIndex::NoLayer;

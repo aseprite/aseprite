@@ -255,6 +255,19 @@ namespace app {
     DocumentPreferences& docPref() const;
     skin::SkinTheme* skinTheme() const;
 
+    struct LayerInfo {
+      Layer* layer;
+      int level;
+
+      LayerInfo()
+        : layer(nullptr), level(0) {
+      }
+
+      LayerInfo(Layer* layer, int level)
+        : layer(layer), level(level) {
+      }
+    };
+
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
@@ -267,7 +280,7 @@ namespace app {
     Range m_range;
     Range m_dropRange;
     State m_state;
-    std::vector<Layer*> m_layers;
+    std::vector<LayerInfo> m_layers;
     int m_separator_x;
     int m_separator_w;
     int m_origFrames;
