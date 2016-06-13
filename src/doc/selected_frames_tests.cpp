@@ -20,9 +20,12 @@ using namespace doc;
 TEST(SelectedFrames, BasicOneRange)
 {
   SelectedFrames f;
+  ASSERT_TRUE(f.empty());
   f.insert(1);
   f.insert(2);
   f.insert(3);
+  ASSERT_FALSE(f.empty());
+  ASSERT_EQ(3, f.size());
 
   std::vector<frame_t> res;
   std::copy(f.begin(), f.end(), std::back_inserter(res));
@@ -39,6 +42,7 @@ TEST(SelectedFrames, BasicThreeRanges)
   f.insert(1);
   f.insert(3);
   f.insert(5);
+  ASSERT_EQ(3, f.size());
 
   std::vector<frame_t> res;
   std::copy(f.begin(), f.end(), std::back_inserter(res));
@@ -55,6 +59,7 @@ TEST(SelectedFrames, InsertSelectedFrameInsideSelectedRange)
   f.insert(3);
   f.insert(5, 8);
   f.insert(7);
+  ASSERT_EQ(5, f.size());
 
   std::vector<frame_t> res;
   std::copy(f.begin(), f.end(), std::back_inserter(res));

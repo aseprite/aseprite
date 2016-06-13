@@ -12,6 +12,14 @@
 
 namespace doc {
 
+std::size_t SelectedFrames::size() const
+{
+  std::size_t size = 0;
+  for (auto& range : m_ranges)
+    size += (range.toFrame - range.fromFrame + 1);
+  return size;
+}
+
 void SelectedFrames::insert(frame_t frame)
 {
   if (m_ranges.empty()) {

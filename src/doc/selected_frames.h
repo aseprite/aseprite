@@ -61,6 +61,9 @@ namespace doc {
     const_iterator begin() const { return const_iterator(m_ranges.begin()); }
     const_iterator end() const { return const_iterator(m_ranges.end()); }
 
+    std::size_t size() const;
+    bool empty() const { return m_ranges.empty(); }
+
     void insert(frame_t frame);
     void insert(frame_t fromFrame, frame_t toFrame);
 
