@@ -20,12 +20,13 @@ using namespace doc;
 TEST(SelectedFrames, BasicOneRange)
 {
   SelectedFrames f;
-  ASSERT_TRUE(f.empty());
+  EXPECT_TRUE(f.empty());
   f.insert(1);
   f.insert(2);
   f.insert(3);
-  ASSERT_FALSE(f.empty());
-  ASSERT_EQ(3, f.size());
+  EXPECT_FALSE(f.empty());
+  EXPECT_EQ(3, f.size());
+  EXPECT_EQ(1, f.ranges());
 
   std::vector<frame_t> res;
   std::copy(f.begin(), f.end(), std::back_inserter(res));
@@ -42,7 +43,8 @@ TEST(SelectedFrames, BasicThreeRanges)
   f.insert(1);
   f.insert(3);
   f.insert(5);
-  ASSERT_EQ(3, f.size());
+  EXPECT_EQ(3, f.size());
+  EXPECT_EQ(3, f.ranges());
 
   std::vector<frame_t> res;
   std::copy(f.begin(), f.end(), std::back_inserter(res));
@@ -59,7 +61,10 @@ TEST(SelectedFrames, InsertSelectedFrameInsideSelectedRange)
   f.insert(3);
   f.insert(5, 8);
   f.insert(7);
-  ASSERT_EQ(5, f.size());
+  EXPECT_EQ(5, f.size());
+  EXPECT_EQ(2, f.ranges());
+  EXPECT_EQ(3, f.firstFrame());
+  EXPECT_EQ(8, f.lastFrame());
 
   std::vector<frame_t> res;
   std::copy(f.begin(), f.end(), std::back_inserter(res));
@@ -78,6 +83,8 @@ TEST(SelectedFrames, Contains)
   f.insert(1);
   f.insert(4, 5);
   f.insert(7, 9);
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(3, f.ranges());
 
   EXPECT_FALSE(f.contains(0));
   EXPECT_TRUE(f.contains(1));
@@ -97,6 +104,8 @@ TEST(SelectedFrames, ReverseIterators)
   SelectedFrames f;
   f.insert(1);
   f.insert(5, 7);
+  EXPECT_EQ(4, f.size());
+  EXPECT_EQ(2, f.ranges());
 
   std::vector<frame_t> res;
   std::copy(f.rbegin(), f.rend(), std::back_inserter(res));

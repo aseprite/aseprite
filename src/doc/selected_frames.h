@@ -103,12 +103,16 @@ namespace doc {
     const_reverse_iterator rend() const { return const_reverse_iterator(m_ranges.rend()); }
 
     std::size_t size() const;
+    std::size_t ranges() const { return m_ranges.size(); }
     bool empty() const { return m_ranges.empty(); }
 
     void insert(frame_t frame);
     void insert(frame_t fromFrame, frame_t toFrame);
 
     bool contains(frame_t frame) const;
+
+    frame_t firstFrame() const { return (!m_ranges.empty() ? m_ranges.front().fromFrame: -1); }
+    frame_t lastFrame() const { return (!m_ranges.empty() ? m_ranges.back().toFrame: -1); }
 
   private:
     Ranges m_ranges;
