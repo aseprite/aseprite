@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,6 +15,7 @@
 
 namespace doc {
   class Cel;
+  class Layer;
   class Sprite;
 
   class CelsRange {
@@ -47,6 +48,8 @@ namespace doc {
       iterator& operator++();
 
     private:
+      void nextLayer(Layer*& layer);
+
       Cel* m_cel;
       frame_t m_first, m_last;
       Flags m_flags;
