@@ -38,7 +38,7 @@ set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 project(aseprite C CXX)
 
 # This required for KDE/Qt destop integration, which sets BUILD_SHARED_LIBS to
-# TRUE by defualt
+# TRUE by default
 set(BUILD_SHARED_LIBS off)
 
 
