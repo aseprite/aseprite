@@ -16,7 +16,6 @@
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/timeline.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -53,22 +52,17 @@ void ClearCelCommand::onExecute(Context* context)
   {
     Transaction transaction(writer.context(), "Clear Cel");
 
-    // TODO the range of selected frames should be in doc::Site.
-    auto range = App::instance()->timeline()->range();
-    if (range.enabled()) {
-      Sprite* sprite = writer.sprite();
-
-      for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
-        Layer* layer = sprite->indexToLayer(layerIdx);
+    const Site* site = writer.site();
+    if (site->inTimeline() &&
+        !site->selectedLayers().empty() &&
+        !site->selectedFrames().empty()) {
+      for (Layer* layer : site->selectedLayers()) {
         if (!layer->isImage())
           continue;
 
         LayerImage* layerImage = static_cast<LayerImage*>(layer);
 
-        for (frame_t frame = range.frameEnd(),
-               begin = range.frameBegin()-1;
-             frame != begin;
-             --frame) {
+        for (frame_t frame : site->selectedFrames().reversed()) {
           if (layerImage->cel(frame)) {
             if (layerImage->isEditable())
               document->getApi(transaction).clearCel(layerImage, frame);
