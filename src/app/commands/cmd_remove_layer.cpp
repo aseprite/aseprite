@@ -60,7 +60,7 @@ void RemoveLayerCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     const Site* site = writer.site();
-    if (site->focus() == Site::OnTimeline &&
+    if (site->inTimeline() &&
         !site->selectedLayers().empty()) {
       SelectedLayers selLayers = site->selectedLayers();
       remove_children_if_parent_is_selected(selLayers);

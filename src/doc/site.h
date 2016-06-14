@@ -28,12 +28,14 @@ namespace doc {
   public:
     // Were is the user focus. E.g. If this focus is in the timeline,
     // it means that commands should applied in the context of the
-    // timeline (layers + frames).
+    // timeline (layers, or frames, or cels).
     enum Focus {
       None,
-      OnEditor,
-      OnTimeline,
-      OnColorBar
+      InEditor,
+      InLayers,
+      InFrames,
+      InCels,
+      InColorBar
     };
 
     Site()
@@ -44,6 +46,13 @@ namespace doc {
       , m_frame(0) { }
 
     const Focus focus() const { return m_focus; }
+    bool inEditor() const { return m_focus == InEditor; }
+    bool inLayers() const { return m_focus == InLayers; }
+    bool inFrames() const { return m_focus == InFrames; }
+    bool inCels() const { return m_focus == InCels; }
+    bool inColorBar() const { return m_focus == InColorBar; }
+    bool inTimeline() const { return (inLayers() || inFrames() || inCels()); }
+
     const Document* document() const { return m_document; }
     const Sprite* sprite() const { return m_sprite; }
     const Layer* layer() const { return m_layer; }

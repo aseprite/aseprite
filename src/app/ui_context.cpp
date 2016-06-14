@@ -227,7 +227,11 @@ void UIContext::onGetActiveSite(Site* site) const
       Timeline* timeline = App::instance()->timeline();
       if (timeline &&
           timeline->range().enabled()) {
-        site->focus(Site::OnTimeline);
+        switch (timeline->range().type()) {
+          case DocumentRange::kCels:   site->focus(Site::InCels); break;
+          case DocumentRange::kFrames: site->focus(Site::InFrames); break;
+          case DocumentRange::kLayers: site->focus(Site::InLayers); break;
+        }
         site->selectedLayers(timeline->selectedLayers());
         site->selectedFrames(timeline->selectedFrames());
       }
@@ -235,10 +239,10 @@ void UIContext::onGetActiveSite(Site* site) const
         ColorBar* colorBar = ColorBar::instance();
         if (colorBar &&
             colorBar->getPaletteView()->getSelectedEntriesCount() > 0) {
-          site->focus(Site::OnColorBar);
+          site->focus(Site::InColorBar);
         }
         else {
-          site->focus(Site::OnEditor);
+          site->focus(Site::InEditor);
         }
       }
     }
