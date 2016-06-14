@@ -120,4 +120,4 @@ namespace doc {
 
 } // namespace doc
 
-#endif  // DOC_LAYER_LIST_H_INCLUDED
+#endif  // DOC_SELECTED_FRAMES_H_INCLUDED
