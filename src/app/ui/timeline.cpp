@@ -710,6 +710,9 @@ bool Timeline::onProcessMessage(Message* msg)
                   regenerateLayers();
                   showCurrentCel();
                   invalidate();
+
+                  updateByMousePos(
+                    msg, ui::get_mouse_position() - bounds().origin());
                 }
               }
             }
