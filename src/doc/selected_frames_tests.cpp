@@ -115,6 +115,12 @@ TEST(SelectedFrames, ReverseIterators)
   EXPECT_EQ(6, res[1]);
   EXPECT_EQ(5, res[2]);
   EXPECT_EQ(1, res[3]);
+
+  std::vector<frame_t> res2;
+  for (frame_t frame : f.reversed())
+    res2.push_back(frame);
+
+  EXPECT_EQ(res, res2);
 }
 
 int main(int argc, char** argv)

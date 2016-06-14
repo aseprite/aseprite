@@ -97,6 +97,21 @@ namespace doc {
       mutable frame_t m_frame;
     };
 
+    class Reversed {
+    public:
+      typedef const_reverse_iterator const_iterator;
+
+      const_iterator begin() const { return m_selectedFrames.rbegin(); }
+      const_iterator end() const { return m_selectedFrames.rend(); }
+
+      Reversed(const SelectedFrames& selectedFrames)
+        : m_selectedFrames(selectedFrames) {
+      }
+
+    private:
+      const SelectedFrames& m_selectedFrames;
+    };
+
     const_iterator begin() const { return const_iterator(m_ranges.begin()); }
     const_iterator end() const { return const_iterator(m_ranges.end()); }
     const_reverse_iterator rbegin() const { return const_reverse_iterator(m_ranges.rbegin()); }
@@ -113,6 +128,8 @@ namespace doc {
 
     frame_t firstFrame() const { return (!m_ranges.empty() ? m_ranges.front().fromFrame: -1); }
     frame_t lastFrame() const { return (!m_ranges.empty() ? m_ranges.back().toFrame: -1); }
+
+    Reversed reversed() const { return Reversed(*this); }
 
   private:
     Ranges m_ranges;
