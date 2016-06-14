@@ -37,6 +37,11 @@ set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 # Aseprite project
 project(aseprite C CXX)
 
+# This required for KDE/Qt destop integration, which sets BUILD_SHARED_LIBS to
+# TRUE by defualt
+set(BUILD_SHARED_LIBS off)
+
+
 ######################################################################
 # Options (these can be specified in cmake command line or modifying
 # CMakeCache.txt)
@@ -182,7 +187,6 @@ else()
     ${CMAKE_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
 endif()
 include_directories(${ZLIB_INCLUDE_DIRS})
-message(${ZLIB_INCLUDE_DIRS})
 
 # libpng
 if(USE_SHARED_LIBPNG)
