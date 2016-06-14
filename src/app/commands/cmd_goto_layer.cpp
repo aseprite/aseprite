@@ -42,35 +42,30 @@ protected:
   void onExecute(Context* context) override {
     Site site = current_editor->getSite();
 
-    // TODO add support for layer groups
-
     Layer* layer = site.layer();
     if (!layer)
-      return;
-
-    const auto& layers = layer->parent()->layers();
-    auto it = std::find(layers.begin(), layers.end(), layer);
-    if (it == layers.end())
       return;
 
     if (m_offset > 0) {
       int i = m_offset;
       while (i-- > 0) {
-        ++it;
-        if (it == layers.end())
-          it = layers.begin();
+        layer = layer->getNextInWholeHierarchy();
+        if (!layer)
+          layer = site.sprite()->indexToLayer(
+            site.sprite()->firstLayer());
       }
     }
     else if (m_offset < 0) {
       int i = m_offset;
       while (i++ < 0) {
-        if (it == layers.begin())
-          it = layers.end();
-        --it;
+        layer = layer->getPreviousInWholeHierarchy();
+        if (!layer)
+          layer = site.sprite()->indexToLayer(
+            site.sprite()->lastLayer());
       }
     }
 
-    site.layer(*it);
+    site.layer(layer);
 
     // Flash the current layer
     current_editor->setLayer(site.layer());

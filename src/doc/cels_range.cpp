@@ -46,7 +46,7 @@ CelsRange::iterator::iterator(const Sprite* sprite, frame_t first, frame_t last,
     }
 
     if (!m_cel)
-      nextLayer(layer);
+      layer = layer->getNextInWholeHierarchy();
   }
 
   if (m_cel && flags == CelsRange::UNIQUE)
@@ -83,24 +83,11 @@ CelsRange::iterator& CelsRange::iterator::operator++()
     }
 
     if (!m_cel) {
-      nextLayer(layer);
+      layer = layer->getNextInWholeHierarchy();
       first = m_first;
     }
   }
   return *this;
-}
-
-void CelsRange::iterator::nextLayer(Layer*& layer)
-{
-  // Go to children
-  if (layer->isGroup()) {
-    layer = static_cast<LayerGroup*>(layer)->firstLayer();
-  }
-  // Go to next layer in the parent
-  else if (!layer->getNext())
-    layer = layer->parent()->getNext();
-  else
-    layer = layer->getNext();
 }
 
 } // namespace doc

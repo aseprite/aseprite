@@ -48,8 +48,6 @@ namespace doc {
       iterator& operator++();
 
     private:
-      void nextLayer(Layer*& layer);
-
       Cel* m_cel;
       frame_t m_first, m_last;
       Flags m_flags;

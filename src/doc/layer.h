@@ -60,6 +60,9 @@ namespace doc {
     Layer* getPrevious() const;
     Layer* getNext() const;
 
+    Layer* getPreviousInWholeHierarchy() const;
+    Layer* getNextInWholeHierarchy() const;
+
     bool isImage() const { return type() == ObjectType::LayerImage; }
     bool isGroup() const { return type() == ObjectType::LayerGroup; }
 
@@ -174,8 +177,8 @@ namespace doc {
     void removeLayer(Layer* layer);
     void stackLayer(Layer* layer, Layer* after);
 
-    Layer* firstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
-    Layer* lastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
+    Layer* firstLayer() const { return (m_layers.empty() ? nullptr: m_layers.front()); }
+    Layer* lastLayer() const { return (m_layers.empty() ? nullptr: m_layers.back()); }
 
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;

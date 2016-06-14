@@ -74,6 +74,41 @@ Layer* Layer::getNext() const
   return nullptr;
 }
 
+Layer* Layer::getPreviousInWholeHierarchy() const
+{
+  // Go to children
+  if (isGroup())
+    return static_cast<const LayerGroup*>(this)->lastLayer();
+
+  // Go to previous layer
+  if (Layer* prev = getPrevious())
+    return prev;
+
+  // Go to previous layer in the parent
+  return parent()->getPrevious();
+}
+
+Layer* Layer::getNextInWholeHierarchy() const
+{
+  // Go to next layer
+  if (Layer* next = getNext()) {
+    // Go to children
+    while (next->isGroup()) {
+      Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
+      if (!firstChild)
+        break;
+      next = firstChild;
+    }
+    return next;
+  }
+
+  // Go to parent
+  if (m_sprite && parent() != m_sprite->root())
+    return m_parent;
+
+  return nullptr;
+}
+
 Cel* Layer::cel(frame_t frame) const
 {
   return nullptr;
