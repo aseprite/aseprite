@@ -13,10 +13,12 @@
 namespace doc {
 
   class Layer;
+  class LayerGroup;
 
   typedef std::set<Layer*> SelectedLayers;
 
   void remove_children_if_parent_is_selected(SelectedLayers& layers);
+  void select_all_layers(LayerGroup* group, SelectedLayers& layers);
 
 } // namespace doc
 

@@ -34,4 +34,13 @@ void remove_children_if_parent_is_selected(SelectedLayers& layers)
   }
 }
 
+void select_all_layers(LayerGroup* group, SelectedLayers& layers)
+{
+  for (Layer* layer : group->layers()) {
+    if (layer->isGroup())
+      select_all_layers(static_cast<LayerGroup*>(layer), layers);
+    layers.insert(layer);
+  }
+}
+
 } // namespace doc
