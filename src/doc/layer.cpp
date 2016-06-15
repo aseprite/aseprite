@@ -77,7 +77,7 @@ Layer* Layer::getNext() const
 Layer* Layer::getPreviousInWholeHierarchy() const
 {
   // Go to children
-  if (isGroup())
+  if (isGroup() && isExpanded())
     return static_cast<const LayerGroup*>(this)->lastLayer();
 
   // Go to previous layer
@@ -93,7 +93,7 @@ Layer* Layer::getNextInWholeHierarchy() const
   // Go to next layer
   if (Layer* next = getNext()) {
     // Go to children
-    while (next->isGroup()) {
+    while (next->isGroup() && next->isExpanded()) {
       Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
       if (!firstChild)
         break;
