@@ -497,13 +497,13 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
         1000, "There is no active layer");
       return nullptr;
     }
-    else if (!layer->isVisible()) {
+    else if (!layer->isVisibleHierarchy()) {
       StatusBar::instance()->showTip(
         1000, "Layer '%s' is hidden", layer->name().c_str());
       return nullptr;
     }
     // If the active layer is read-only.
-    else if (!layer->isEditable()) {
+    else if (!layer->isEditableHierarchy()) {
       StatusBar::instance()->showTip(
         1000, "Layer '%s' is locked", layer->name().c_str());
       return nullptr;
@@ -615,8 +615,8 @@ tools::ToolLoop* create_tool_loop_preview(
 
   Layer* layer = editor->layer();
   if (!layer ||
-      !layer->isVisible() ||
-      !layer->isEditable()) {
+      !layer->isVisibleHierarchy() ||
+      !layer->isEditableHierarchy()) {
     return nullptr;
   }
 

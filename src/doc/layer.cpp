@@ -109,6 +109,28 @@ Layer* Layer::getNextInWholeHierarchy() const
   return nullptr;
 }
 
+bool Layer::isVisibleHierarchy() const
+{
+  const Layer* layer = this;
+  while (layer) {
+    if (!layer->isVisible())
+      return false;
+    layer = layer->parent();
+  }
+  return true;
+}
+
+bool Layer::isEditableHierarchy() const
+{
+  const Layer* layer = this;
+  while (layer) {
+    if (!layer->isEditable())
+      return false;
+    layer = layer->parent();
+  }
+  return true;
+}
+
 Cel* Layer::cel(frame_t frame) const
 {
   return nullptr;

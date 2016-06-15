@@ -209,11 +209,11 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         StatusBar::instance()->showTip(1000,
           "The background layer cannot be moved");
       }
-      else if (!layer->isVisible()) {
+      else if (!layer->isVisibleHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is hidden", layer->name().c_str());
       }
-      else if (!layer->isMovable() || !layer->isEditable()) {
+      else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
       }
@@ -253,7 +253,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         int x, y, opacity;
         Image* image = site.image(&x, &y, &opacity);
         if (layer && image) {
-          if (!layer->isEditable()) {
+          if (!layer->isEditableHierarchy()) {
             StatusBar::instance()->showTip(1000,
               "Layer '%s' is locked", layer->name().c_str());
             return true;
@@ -268,7 +268,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     // Move selected pixels
     if (layer && editor->isInsideSelection() && msg->left()) {
-      if (!layer->isEditable()) {
+      if (!layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
         return true;

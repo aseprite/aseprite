@@ -60,20 +60,21 @@ void ClearCelCommand::onExecute(Context* context)
         if (!layer->isImage())
           continue;
 
+        if (!layer->isEditableHierarchy()) {
+          nonEditableLayers = true;
+          continue;
+        }
+
         LayerImage* layerImage = static_cast<LayerImage*>(layer);
 
         for (frame_t frame : site->selectedFrames().reversed()) {
-          if (layerImage->cel(frame)) {
-            if (layerImage->isEditable())
-              document->getApi(transaction).clearCel(layerImage, frame);
-            else
-              nonEditableLayers = true;
-          }
+          if (layerImage->cel(frame))
+            document->getApi(transaction).clearCel(layerImage, frame);
         }
       }
     }
     else if (writer.cel()) {
-      if (writer.layer()->isEditable())
+      if (writer.layer()->isEditableHierarchy())
         document->getApi(transaction).clearCel(writer.cel());
       else
         nonEditableLayers = true;

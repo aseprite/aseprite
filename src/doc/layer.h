@@ -76,6 +76,9 @@ namespace doc {
     bool isCollapsed() const   { return hasFlags(LayerFlags::Collapsed); }
     bool isExpanded() const    { return !hasFlags(LayerFlags::Collapsed); }
 
+    bool isVisibleHierarchy() const;
+    bool isEditableHierarchy() const;
+
     void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
     void setVisible   (bool state) { switchFlags(LayerFlags::Visible, state); }
     void setEditable  (bool state) { switchFlags(LayerFlags::Editable, state); }

@@ -59,23 +59,24 @@ void UnlinkCelCommand::onExecute(Context* context)
         if (!layer->isImage())
           continue;
 
+        if (!layer->isEditableHierarchy()) {
+          nonEditableLayers = true;
+          continue;
+        }
+
         LayerImage* layerImage = static_cast<LayerImage*>(layer);
 
         for (frame_t frame : site->selectedFrames().reversed()) {
           Cel* cel = layerImage->cel(frame);
-          if (cel && cel->links()) {
-            if (layerImage->isEditable())
-              transaction.execute(new cmd::UnlinkCel(cel));
-            else
-              nonEditableLayers = true;
-          }
+          if (cel && cel->links())
+            transaction.execute(new cmd::UnlinkCel(cel));
         }
       }
     }
     else {
       Cel* cel = writer.cel();
       if (cel && cel->links()) {
-        if (cel->layer()->isEditable())
+        if (cel->layer()->isEditableHierarchy())
           transaction.execute(new cmd::UnlinkCel(writer.cel()));
         else
           nonEditableLayers = true;

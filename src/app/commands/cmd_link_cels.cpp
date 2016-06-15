@@ -61,13 +61,12 @@ void LinkCelsCommand::onExecute(Context* context)
       return;
 
     Transaction transaction(writer.context(), friendlyName());
-    Sprite* sprite = writer.sprite();
 
     for (Layer* layer : site.selectedLayers()) {
       if (!layer->isImage())
         continue;
 
-      if (!layer->isEditable()) {
+      if (!layer->isEditableHierarchy()) {
         nonEditableLayers = true;
         continue;
       }
