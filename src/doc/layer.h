@@ -30,6 +30,7 @@ namespace doc {
   // Layer class
 
   enum class LayerFlags {
+    None       = 0,
     Visible    = 1,             // Can be read
     Editable   = 2,             // Can be written
     LockMove   = 4,             // Cannot be moved

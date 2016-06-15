@@ -121,12 +121,27 @@ struct Timeline::DrawCelData {
 namespace {
 
   template<typename Pred>
-  void for_each_expanded_layer(LayerGroup* group, Pred&& pred, int level = 0) {
+  void for_each_expanded_layer(LayerGroup* group,
+                               Pred&& pred,
+                               int level = 0,
+                               LayerFlags flags =
+                                 LayerFlags(int(LayerFlags::Visible) |
+                                            int(LayerFlags::Editable))) {
+    if (!group->isVisible())
+      flags = static_cast<LayerFlags>(int(flags) & ~int(LayerFlags::Visible));
+
+    if (!group->isEditable())
+      flags = static_cast<LayerFlags>(int(flags) & ~int(LayerFlags::Editable));
+
     for (Layer* child : group->layers()) {
       if (child->isGroup() && !child->isCollapsed())
-        for_each_expanded_layer<Pred>(static_cast<LayerGroup*>(child),
-                                      std::forward<Pred>(pred), level+1);
-      pred(child, level);
+        for_each_expanded_layer<Pred>(
+          static_cast<LayerGroup*>(child),
+          std::forward<Pred>(pred),
+          level+1,
+          flags);
+
+      pred(child, level, flags);
     }
   }
 
@@ -592,6 +607,8 @@ bool Timeline::onProcessMessage(Message* msg)
           return true;
         }
 
+        bool regenLayers = false;
+
         switch (m_hot.part) {
 
           case PART_NOTHING:
@@ -602,8 +619,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_HEADER_EYE: {
             bool newVisibleState = !allLayersVisible();
-            for (size_t i=0; i<m_layers.size(); i++)
+            for (size_t i=0; i<m_layers.size(); i++) {
               m_layers[i].layer->setVisible(newVisibleState);
+              if (m_layers[i].layer->isGroup())
+                regenLayers = true;
+            }
 
             // Redraw all views.
             m_document->notifyGeneralUpdate();
@@ -612,8 +632,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_HEADER_PADLOCK: {
             bool newEditableState = !allLayersUnlocked();
-            for (size_t i=0; i<m_layers.size(); i++)
+            for (size_t i=0; i<m_layers.size(); i++) {
               m_layers[i].layer->setEditable(newEditableState);
+              if (m_layers[i].layer->isGroup())
+                regenLayers = true;
+            }
             break;
           }
 
@@ -680,8 +703,11 @@ bool Timeline::onProcessMessage(Message* msg)
             // Hide/show layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Layer* layer = m_layers[m_clk.layer].layer;
-              ASSERT(layer != NULL);
+              ASSERT(layer);
               layer->setVisible(!layer->isVisible());
+
+              if (layer->isGroup())
+                regenLayers = true;
 
               // Redraw all views.
               m_document->notifyGeneralUpdate();
@@ -692,8 +718,10 @@ bool Timeline::onProcessMessage(Message* msg)
             // Lock/unlock layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Layer* layer = m_layers[m_clk.layer].layer;
-              ASSERT(layer != NULL);
+              ASSERT(layer);
               layer->setEditable(!layer->isEditable());
+              if (layer->isGroup())
+                regenLayers = true;
             }
             break;
 
@@ -761,6 +789,11 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
+        }
+
+        if (regenLayers) {
+          regenerateLayers();
+          invalidate();
         }
 
         if (mouseMsg->left() &&
@@ -1282,8 +1315,11 @@ void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t*
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
-  const char* text, Style* style,
-  bool is_active, bool is_hover, bool is_clicked)
+                        const char* text, Style* style,
+                        bool is_active,
+                        bool is_hover,
+                        bool is_clicked,
+                        bool is_disabled)
 {
   IntersectClip clip(g, bounds);
   if (!clip)
@@ -1293,6 +1329,7 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
   if (is_active) state += Style::active();
   if (is_hover) state += Style::hover();
   if (is_clicked) state += Style::clicked();
+  if (is_disabled) state += Style::disabled();
 
   style->paint(g, bounds, text, state);
 }
@@ -1391,6 +1428,8 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
   Layer* layer = m_layers[layerIdx].layer;
+  bool parentVisible = ((int(m_layers[layerIdx].inheritedFlags) & int(LayerFlags::Visible)) != 0);
+  bool parentEditable = ((int(m_layers[layerIdx].inheritedFlags) & int(LayerFlags::Editable)) != 0);
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
   bool clklayer = (m_clk.layer == layerIdx);
@@ -1401,32 +1440,40 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 
   // Draw the eye (visible flag).
   bounds = getPartBounds(Hit(PART_LAYER_EYE_ICON, layerIdx));
-  drawPart(g, bounds, NULL,
-    layer->isVisible() ? styles.timelineOpenEye(): styles.timelineClosedEye(),
+  drawPart(
+    g, bounds, nullptr,
+    (layer->isVisible() ? styles.timelineOpenEye():
+                          styles.timelineClosedEye()),
     is_active,
     (hotlayer && m_hot.part == PART_LAYER_EYE_ICON),
-    (clklayer && m_clk.part == PART_LAYER_EYE_ICON));
+    (clklayer && m_clk.part == PART_LAYER_EYE_ICON),
+    !parentVisible);
 
   // Draw the padlock (editable flag).
   bounds = getPartBounds(Hit(PART_LAYER_PADLOCK_ICON, layerIdx));
-  drawPart(g, bounds, NULL,
-    layer->isEditable() ? styles.timelineOpenPadlock(): styles.timelineClosedPadlock(),
+  drawPart(
+    g, bounds, nullptr,
+    (layer->isEditable() ? styles.timelineOpenPadlock():
+                           styles.timelineClosedPadlock()),
     is_active,
     (hotlayer && m_hot.part == PART_LAYER_PADLOCK_ICON),
-    (clklayer && m_clk.part == PART_LAYER_PADLOCK_ICON));
+    (clklayer && m_clk.part == PART_LAYER_PADLOCK_ICON),
+    !parentEditable);
 
   // Draw the continuous flag/group icon.
   bounds = getPartBounds(Hit(PART_LAYER_CONTINUOUS_ICON, layerIdx));
   if (layer->isImage()) {
     drawPart(g, bounds, NULL,
-             layer->isContinuous() ? styles.timelineContinuous(): styles.timelineDiscontinuous(),
+             layer->isContinuous() ? styles.timelineContinuous():
+                                     styles.timelineDiscontinuous(),
              is_active,
              (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
              (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
   }
   else if (layer->isGroup()) {
     drawPart(g, bounds, NULL,
-             layer->isCollapsed() ? styles.timelineClosedGroup(): styles.timelineOpenGroup(),
+             layer->isCollapsed() ? styles.timelineClosedGroup():
+                                    styles.timelineOpenGroup(),
              is_active,
              (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
              (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
@@ -1963,7 +2010,7 @@ void Timeline::regenerateLayers()
   size_t nlayers = 0;
   for_each_expanded_layer(
     m_sprite->root(),
-    [&nlayers](Layer* layer, int level){
+    [&nlayers](Layer* layer, int level, LayerFlags flags) {
       ++nlayers;
     });
 
@@ -1977,8 +2024,8 @@ void Timeline::regenerateLayers()
   size_t i = 0;
   for_each_expanded_layer(
     m_sprite->root(),
-    [&i, this](Layer* layer, int level){
-      m_layers[i++] = LayerInfo(layer, level);
+    [&i, this](Layer* layer, int level, LayerFlags flags) {
+      m_layers[i++] = LayerInfo(layer, level, flags);
     });
 
   updateScrollBars();

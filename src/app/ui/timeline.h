@@ -200,8 +200,9 @@ namespace app {
     void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
     void getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
-      const char* text, skin::Style* style,
-      bool is_active = false, bool is_hover = false, bool is_clicked = false);
+                  const char* text, skin::Style* style,
+                  bool is_active = false, bool is_hover = false,
+                  bool is_clicked = false, bool is_disabled = false);
     void drawTop(ui::Graphics* g);
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
@@ -262,13 +263,18 @@ namespace app {
     struct LayerInfo {
       Layer* layer;
       int level;
+      LayerFlags inheritedFlags;
 
       LayerInfo()
-        : layer(nullptr), level(0) {
+        : layer(nullptr),
+          level(0),
+          inheritedFlags(LayerFlags::None) {
       }
 
-      LayerInfo(Layer* layer, int level)
-        : layer(layer), level(level) {
+      LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags)
+        : layer(layer),
+          level(level),
+          inheritedFlags(inheritedFlags) {
       }
     };
 

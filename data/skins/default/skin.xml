@@ -529,11 +529,17 @@
     <style id="timeline_open_eye:active">
       <icon part="timeline_open_eye_active" />
     </style>
+    <style id="timeline_open_eye:disabled">
+      <icon color="disabled" />
+    </style>
     <style id="timeline_closed_eye" base="timeline_box">
       <icon part="timeline_closed_eye_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_closed_eye:active">
       <icon part="timeline_closed_eye_active" />
+    </style>
+    <style id="timeline_closed_eye:disabled">
+      <icon color="disabled" />
     </style>
 
     <!-- timeline_padlock -->
@@ -543,11 +549,17 @@
     <style id="timeline_open_padlock:active">
       <icon part="timeline_open_padlock_active" />
     </style>
+    <style id="timeline_open_padlock:disabled">
+      <icon color="disabled" />
+    </style>
     <style id="timeline_closed_padlock" base="timeline_box">
       <icon part="timeline_closed_padlock_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_closed_padlock:active">
       <icon part="timeline_closed_padlock_active" />
+    </style>
+    <style id="timeline_closed_padlock:disabled">
+      <icon color="disabled" />
     </style>
 
     <!-- timeline_continuous -->
