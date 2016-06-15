@@ -276,6 +276,14 @@ namespace app {
           level(level),
           inheritedFlags(inheritedFlags) {
       }
+
+      bool parentVisible() const {
+        return ((int(inheritedFlags) & int(LayerFlags::Visible)) != 0);
+      }
+
+      bool parentEditable() const {
+        return ((int(inheritedFlags) & int(LayerFlags::Editable)) != 0);
+      }
     };
 
     ui::ScrollBar m_hbar;

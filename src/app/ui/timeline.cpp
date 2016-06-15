@@ -1428,8 +1428,6 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
   Layer* layer = m_layers[layerIdx].layer;
-  bool parentVisible = ((int(m_layers[layerIdx].inheritedFlags) & int(LayerFlags::Visible)) != 0);
-  bool parentEditable = ((int(m_layers[layerIdx].inheritedFlags) & int(LayerFlags::Editable)) != 0);
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
   bool clklayer = (m_clk.layer == layerIdx);
@@ -1447,7 +1445,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
     is_active,
     (hotlayer && m_hot.part == PART_LAYER_EYE_ICON),
     (clklayer && m_clk.part == PART_LAYER_EYE_ICON),
-    !parentVisible);
+    !m_layers[layerIdx].parentVisible());
 
   // Draw the padlock (editable flag).
   bounds = getPartBounds(Hit(PART_LAYER_PADLOCK_ICON, layerIdx));
@@ -1458,7 +1456,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
     is_active,
     (hotlayer && m_hot.part == PART_LAYER_PADLOCK_ICON),
     (clklayer && m_clk.part == PART_LAYER_PADLOCK_ICON),
-    !parentEditable);
+    !m_layers[layerIdx].parentEditable());
 
   // Draw the continuous flag/group icon.
   bounds = getPartBounds(Hit(PART_LAYER_CONTINUOUS_ICON, layerIdx));
