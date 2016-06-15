@@ -722,6 +722,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (!info.parentVisible()) {
                 regenLayers = true;
 
+                layer->setVisible(true);
                 layer = layer->parent();
                 while (layer) {
                   if (!layer->isVisible())
@@ -751,6 +752,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (!info.parentEditable()) {
                 regenLayers = true;
 
+                layer->setEditable(true);
                 layer = layer->parent();
                 while (layer) {
                   if (!layer->isEditable())
