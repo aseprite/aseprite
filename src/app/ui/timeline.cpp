@@ -732,7 +732,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
               else {
                 layer->setVisible(!layer->isVisible());
-                if (layer->isGroup())
+                if (layer->isGroup() && layer->isExpanded())
                   regenLayers = true;
               }
 
@@ -762,7 +762,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
               else {
                 layer->setEditable(!layer->isEditable());
-                if (layer->isGroup())
+                if (layer->isGroup() && layer->isExpanded())
                   regenLayers = true;
               }
             }
