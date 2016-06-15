@@ -618,11 +618,17 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
 
           case PART_HEADER_EYE: {
+            ASSERT(m_sprite);
+            if (!m_sprite)
+              break;
+
             bool newVisibleState = !allLayersVisible();
-            for (size_t i=0; i<m_layers.size(); i++) {
-              m_layers[i].layer->setVisible(newVisibleState);
-              if (m_layers[i].layer->isGroup())
-                regenLayers = true;
+            for (Layer* topLayer : m_sprite->root()->layers()) {
+              if (topLayer->isVisible() != newVisibleState) {
+                topLayer->setVisible(newVisibleState);
+                if (topLayer->isGroup())
+                  regenLayers = true;
+              }
             }
 
             // Redraw all views.
@@ -631,11 +637,17 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case PART_HEADER_PADLOCK: {
+            ASSERT(m_sprite);
+            if (!m_sprite)
+              break;
+
             bool newEditableState = !allLayersUnlocked();
-            for (size_t i=0; i<m_layers.size(); i++) {
-              m_layers[i].layer->setEditable(newEditableState);
-              if (m_layers[i].layer->isGroup())
-                regenLayers = true;
+            for (Layer* topLayer : m_sprite->root()->layers()) {
+              if (topLayer->isEditable() != newEditableState) {
+                topLayer->setEditable(newEditableState);
+                if (topLayer->isGroup())
+                  regenLayers = true;
+              }
             }
             break;
           }
@@ -2462,8 +2474,8 @@ gfx::Point Timeline::getMaxScrollablePos() const
 
 bool Timeline::allLayersVisible()
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i].layer->isVisible())
+  for (Layer* topLayer : m_sprite->root()->layers())
+    if (!topLayer->isVisible())
       return false;
 
   return true;
@@ -2471,8 +2483,8 @@ bool Timeline::allLayersVisible()
 
 bool Timeline::allLayersInvisible()
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i].layer->isVisible())
+  for (Layer* topLayer : m_sprite->root()->layers())
+    if (topLayer->isVisible())
       return false;
 
   return true;
@@ -2480,8 +2492,8 @@ bool Timeline::allLayersInvisible()
 
 bool Timeline::allLayersLocked()
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i].layer->isEditable())
+  for (Layer* topLayer : m_sprite->root()->layers())
+    if (topLayer->isEditable())
       return false;
 
   return true;
@@ -2489,8 +2501,8 @@ bool Timeline::allLayersLocked()
 
 bool Timeline::allLayersUnlocked()
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i].layer->isEditable())
+  for (Layer* topLayer : m_sprite->root()->layers())
+    if (!topLayer->isEditable())
       return false;
 
   return true;
