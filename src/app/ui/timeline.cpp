@@ -702,12 +702,26 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_EYE_ICON:
             // Hide/show layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_layers[m_clk.layer].layer;
+              LayerInfo& info = m_layers[m_clk.layer];
+              Layer* layer = info.layer;
               ASSERT(layer);
-              layer->setVisible(!layer->isVisible());
 
-              if (layer->isGroup())
+              // Show parents
+              if (!info.parentVisible()) {
                 regenLayers = true;
+
+                layer = layer->parent();
+                while (layer) {
+                  if (!layer->isVisible())
+                    layer->setVisible(true);
+                  layer = layer->parent();
+                }
+              }
+              else {
+                layer->setVisible(!layer->isVisible());
+                if (layer->isGroup())
+                  regenLayers = true;
+              }
 
               // Redraw all views.
               m_document->notifyGeneralUpdate();
@@ -717,11 +731,26 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_layers[m_clk.layer].layer;
+              LayerInfo& info = m_layers[m_clk.layer];
+              Layer* layer = info.layer;
               ASSERT(layer);
-              layer->setEditable(!layer->isEditable());
-              if (layer->isGroup())
+
+              // Unlock parents
+              if (!info.parentEditable()) {
                 regenLayers = true;
+
+                layer = layer->parent();
+                while (layer) {
+                  if (!layer->isEditable())
+                    layer->setEditable(true);
+                  layer = layer->parent();
+                }
+              }
+              else {
+                layer->setEditable(!layer->isEditable());
+                if (layer->isGroup())
+                  regenLayers = true;
+              }
             }
             break;
 
