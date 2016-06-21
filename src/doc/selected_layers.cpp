@@ -11,6 +11,7 @@
 #include "doc/selected_layers.h"
 
 #include "doc/layer.h"
+#include "doc/sprite.h"
 
 namespace doc {
 
@@ -41,6 +42,24 @@ void select_all_layers(LayerGroup* group, SelectedLayers& layers)
       select_all_layers(static_cast<LayerGroup*>(layer), layers);
     layers.insert(layer);
   }
+}
+
+LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers)
+{
+  LayerList output;
+
+  if (layers.empty())
+    return output;
+
+  for (Layer* layer = (*layers.begin())->sprite()->firstBrowsableLayer();
+       layer != nullptr;
+       layer = layer->getNextInWholeHierarchy()) {
+    if (layers.find(layer) != layers.end()) {
+      output.push_back(layer);
+    }
+  }
+
+  return output;
 }
 
 } // namespace doc

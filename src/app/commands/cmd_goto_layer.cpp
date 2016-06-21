@@ -50,11 +50,8 @@ protected:
       int i = m_offset;
       while (i-- > 0) {
         layer = layer->getNextInWholeHierarchy();
-        if (!layer) {
-          layer = site.sprite()->root()->firstLayer();
-          while (layer->isBrowsable())
-            layer = static_cast<LayerGroup*>(layer)->firstLayer();
-        }
+        if (!layer)
+          layer = site.sprite()->firstBrowsableLayer();
       }
     }
     else if (m_offset < 0) {

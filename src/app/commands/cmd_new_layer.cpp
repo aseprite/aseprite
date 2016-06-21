@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/move_layer.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
@@ -107,6 +108,7 @@ void NewLayerCommand::onExecute(Context* context)
 
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = writer.layer();
+  SelectedLayers selLayers = writer.site()->selectedLayers();
   if (activeLayer) {
     if (activeLayer->isGroup() &&
         activeLayer->isExpanded() &&
@@ -131,10 +133,34 @@ void NewLayerCommand::onExecute(Context* context)
     else
       layer = api.newLayer(parent, name);
 
+    ASSERT(layer->parent());
+
     // If "top" parameter is false, create the layer above the active
     // one.
-    if (activeLayer && !m_top)
+    if (activeLayer && !m_top) {
       api.restackLayerAfter(layer, activeLayer);
+
+      // Put all selected layers inside the group
+      if (m_group && writer.site()->inTimeline()) {
+        LayerGroup* commonParent = nullptr;
+        std::size_t sameParents = 0;
+        for (Layer* l : selLayers) {
+          if (!commonParent ||
+              commonParent == l->parent()) {
+            commonParent = l->parent();
+            ++sameParents;
+          }
+        }
+
+        if (sameParents == selLayers.size()) {
+          for (Layer* newChild : convert_selected_layers_into_layer_list(selLayers)) {
+            transaction.execute(
+              new cmd::MoveLayer(newChild, layer,
+                                 static_cast<LayerGroup*>(layer)->lastLayer()));
+          }
+        }
+      }
+    }
 
     transaction.commit();
   }

@@ -66,8 +66,7 @@ void AddLayer::onRedo()
 
 void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 {
-  static_cast<LayerGroup*>(group)->addLayer(newLayer);
-  static_cast<LayerGroup*>(group)->stackLayer(newLayer, afterThis);
+  static_cast<LayerGroup*>(group)->insertLayer(newLayer, afterThis);
   group->incrementVersion();
 
   Document* doc = group->sprite()->document();

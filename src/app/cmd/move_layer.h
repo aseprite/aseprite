@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -18,7 +18,9 @@ namespace cmd {
 
   class MoveLayer : public Cmd {
   public:
-    MoveLayer(Layer* layer, Layer* afterThis);
+    MoveLayer(Layer* layer,
+              Layer* newParent,
+              Layer* afterThis);
 
   protected:
     void onExecute() override;
@@ -30,8 +32,8 @@ namespace cmd {
 
   private:
     WithLayer m_layer;
-    WithLayer m_oldAfterThis;
-    WithLayer m_newAfterThis;
+    WithLayer m_oldParent, m_oldAfterThis;
+    WithLayer m_newParent, m_newAfterThis;
   };
 
 } // namespace cmd

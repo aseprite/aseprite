@@ -95,6 +95,7 @@ namespace doc {
 
     LayerIndex countLayers() const;
     LayerIndex firstLayer() const;
+    Layer* firstBrowsableLayer() const;
     LayerIndex lastLayer() const;
 
     Layer* layer(int layerIndex) const;

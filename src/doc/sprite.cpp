@@ -223,6 +223,14 @@ LayerIndex Sprite::firstLayer() const
   return LayerIndex(0);
 }
 
+Layer* Sprite::firstBrowsableLayer() const
+{
+  Layer* layer = root()->firstLayer();
+  while (layer->isBrowsable())
+    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+  return layer;
+}
+
 LayerIndex Sprite::lastLayer() const
 {
   return LayerIndex(root()->layersCount()-1);

@@ -378,16 +378,8 @@ void LayerGroup::removeLayer(Layer* layer)
   layer->setParent(nullptr);
 }
 
-void LayerGroup::stackLayer(Layer* layer, Layer* after)
+void LayerGroup::insertLayer(Layer* layer, Layer* after)
 {
-  ASSERT(layer != after);
-  if (layer == after)
-    return;
-
-  auto it = std::find(m_layers.begin(), m_layers.end(), layer);
-  ASSERT(it != m_layers.end());
-  m_layers.erase(it);
-
   if (after) {
     auto after_it = std::find(m_layers.begin(), m_layers.end(), after);
     ASSERT(after_it != m_layers.end());
@@ -396,6 +388,18 @@ void LayerGroup::stackLayer(Layer* layer, Layer* after)
   }
   else
     m_layers.insert(m_layers.begin(), layer);
+
+  layer->setParent(this);
+}
+
+void LayerGroup::stackLayer(Layer* layer, Layer* after)
+{
+  ASSERT(layer != after);
+  if (layer == after)
+    return;
+
+  removeLayer(layer);
+  insertLayer(layer, after);
 }
 
 void LayerGroup::displaceFrames(frame_t fromThis, frame_t delta)

@@ -425,7 +425,7 @@ void DocumentApi::removeLayer(Layer* layer)
 
 void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
 {
-  m_transaction.execute(new cmd::MoveLayer(layer, afterThis));
+  m_transaction.execute(new cmd::MoveLayer(layer, layer->parent(), afterThis));
 }
 
 void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)

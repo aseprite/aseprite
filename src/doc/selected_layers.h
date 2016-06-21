@@ -9,6 +9,7 @@
 #pragma once
 
 #include <set>
+#include "layer_list.h"
 
 namespace doc {
 
@@ -19,6 +20,7 @@ namespace doc {
 
   void remove_children_if_parent_is_selected(SelectedLayers& layers);
   void select_all_layers(LayerGroup* group, SelectedLayers& layers);
+  LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers);
 
 } // namespace doc
 
