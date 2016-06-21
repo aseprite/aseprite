@@ -186,6 +186,10 @@ namespace doc {
     Layer* firstLayer() const { return (m_layers.empty() ? nullptr: m_layers.front()); }
     Layer* lastLayer() const { return (m_layers.empty() ? nullptr: m_layers.back()); }
 
+    void allLayers(LayerList& list) const;
+    void allVisibleLayers(LayerList& list) const;
+    void allBrowsableLayers(LayerList& list) const;
+
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;
 

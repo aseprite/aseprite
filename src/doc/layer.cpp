@@ -357,6 +357,39 @@ int LayerGroup::getMemSize() const
   return size;
 }
 
+void LayerGroup::allLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allLayers(list);
+
+    list.push_back(child);
+  }
+}
+
+void LayerGroup::allVisibleLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (!child->isVisible())
+      continue;
+
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allVisibleLayers(list);
+
+    list.push_back(child);
+  }
+}
+
+void LayerGroup::allBrowsableLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (child->isBrowsable())
+      static_cast<LayerGroup*>(child)->allBrowsableLayers(list);
+
+    list.push_back(child);
+  }
+}
+
 void LayerGroup::getCels(CelList& cels) const
 {
   for (const Layer* layer : m_layers)

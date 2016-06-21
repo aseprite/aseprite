@@ -29,7 +29,6 @@
 #include "doc/frame_tag.h"
 #include "doc/frame_tags.h"
 #include "doc/layer.h"
-#include "doc/layers_range.h"
 
 namespace app {
 
@@ -332,7 +331,7 @@ bool CliProcessor::openFile(CliOpenFile& cof)
   if (doc) {
     // Show all layers
     if (cof.allLayers) {
-      for (doc::Layer* layer : doc->sprite()->layers())
+      for (doc::Layer* layer : doc->sprite()->allLayers())
         layer->setVisible(true);
     }
 
@@ -360,7 +359,7 @@ bool CliProcessor::openFile(CliOpenFile& cof)
 
       if (!cof.importLayer.empty()) {
         Layer* foundLayer = nullptr;
-        for (Layer* layer : doc->sprite()->layers()) {
+        for (Layer* layer : doc->sprite()->allLayers()) {
           if (layer->name() == cof.importLayer) {
             foundLayer = layer;
             break;
@@ -370,10 +369,8 @@ bool CliProcessor::openFile(CliOpenFile& cof)
           m_exporter->addDocument(doc, foundLayer, frameTag, isTemporalTag);
       }
       else if (cof.splitLayers) {
-        for (auto layer : doc->sprite()->layers()) {
-          if (layer->isVisible())
-            m_exporter->addDocument(doc, layer, frameTag, isTemporalTag);
-        }
+        for (auto layer : doc->sprite()->allVisibleLayers())
+          m_exporter->addDocument(doc, layer, frameTag, isTemporalTag);
       }
       else {
         m_exporter->addDocument(doc, nullptr, frameTag, isTemporalTag);
@@ -407,9 +404,10 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   }
 
   // Store in "visibility" the original "visible" state of every layer.
-  std::vector<bool> visibility(doc->sprite()->countLayers());
+  LayerList allLayers = doc->sprite()->allLayers();
+  std::vector<bool> visibility(allLayers.size());
   int i = 0;
-  for (doc::Layer* layer : doc->sprite()->layers())
+  for (doc::Layer* layer : allLayers)
     visibility[i++] = layer->isVisible();
 
   std::string fn = cof.filename;
@@ -427,13 +425,13 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   std::vector<doc::Layer*> layers;
   // --save-as with --split-layers or --split-tags
   if (cof.splitLayers) {
-    for (doc::Layer* layer : doc->sprite()->layers())
+    for (doc::Layer* layer : doc->sprite()->allVisibleLayers())
       layers.push_back(layer);
   }
   else {
     // Show only one layer
     if (!cof.importLayer.empty()) {
-      for (Layer* layer : doc->sprite()->layers()) {
+      for (Layer* layer : allLayers) {
         if (layer->name() == cof.importLayer) {
           layer->setVisible(true);
           layers.push_back(layer);
@@ -481,7 +479,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
           continue;     // Just ignore this layer.
 
         // Make this layer ("show") the only one visible.
-        for (doc::Layer* hide : doc->sprite()->layers())
+        for (doc::Layer* hide : allLayers)
           hide->setVisible(hide == layer);
       }
 
@@ -521,7 +519,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
 
   // Restore layer visibility
   i = 0;
-  for (Layer* layer : doc->sprite()->layers())
+  for (Layer* layer : allLayers)
     layer->setVisible(visibility[i++]);
 
   // Undo crop

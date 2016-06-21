@@ -18,6 +18,68 @@
 
 using namespace doc;
 
+TEST(Sprite, Layers)
+{
+  Sprite* spr = new Sprite(IMAGE_RGB, 32, 32, 256);
+
+  LayerImage* lay1 = new LayerImage(spr);
+  LayerImage* lay2 = new LayerImage(spr);
+  LayerImage* lay3 = new LayerImage(spr);
+  LayerImage* lay4 = new LayerImage(spr);
+  LayerImage* lay5 = new LayerImage(spr);
+  LayerImage* lay6 = new LayerImage(spr);
+  LayerImage* lay7 = new LayerImage(spr);
+  LayerGroup* grp1 = new LayerGroup(spr);
+  LayerGroup* grp2 = new LayerGroup(spr);
+  LayerGroup* grp3 = new LayerGroup(spr);
+
+  grp1->setVisible(false);
+  lay5->setVisible(false);
+  grp2->setCollapsed(true);
+
+  ;; grp2->addLayer(lay5);
+  ;;;; grp3->addLayer(lay7);
+  ;;;; grp3->addLayer(lay6);
+  ;; grp2->addLayer(grp3);
+  spr->root()->addLayer(grp2);
+  spr->root()->addLayer(lay2);
+  ;; grp1->addLayer(lay4);
+  ;; grp1->addLayer(lay3);
+  spr->root()->addLayer(grp1);
+  spr->root()->addLayer(lay1);
+
+  auto all = spr->allLayers();
+  ASSERT_EQ(10, all.size());
+  EXPECT_EQ(lay5, all[0]);
+  EXPECT_EQ(lay7, all[1]);
+  EXPECT_EQ(lay6, all[2]);
+  EXPECT_EQ(grp3, all[3]);
+  EXPECT_EQ(grp2, all[4]);
+  EXPECT_EQ(lay2, all[5]);
+  EXPECT_EQ(lay4, all[6]);
+  EXPECT_EQ(lay3, all[7]);
+  EXPECT_EQ(grp1, all[8]);
+  EXPECT_EQ(lay1, all[9]);
+
+  auto vis = spr->allVisibleLayers();
+  ASSERT_EQ(6, vis.size());
+  EXPECT_EQ(lay7, vis[0]);
+  EXPECT_EQ(lay6, vis[1]);
+  EXPECT_EQ(grp3, vis[2]);
+  EXPECT_EQ(grp2, vis[3]);
+  EXPECT_EQ(lay2, vis[4]);
+  EXPECT_EQ(lay1, vis[5]);
+
+  auto bro = spr->allBrowsableLayers();
+  ASSERT_EQ(6, bro.size());
+  EXPECT_EQ(grp2, bro[0]);
+  EXPECT_EQ(lay2, bro[1]);
+  EXPECT_EQ(lay4, bro[2]);
+  EXPECT_EQ(lay3, bro[3]);
+  EXPECT_EQ(grp1, bro[4]);
+  EXPECT_EQ(lay1, bro[5]);
+}
+
 //            frames
 //            0 1 2
 // root

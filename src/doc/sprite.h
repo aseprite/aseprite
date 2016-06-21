@@ -33,7 +33,6 @@ namespace doc {
   class Layer;
   class LayerGroup;
   class LayerImage;
-  class LayersRange;
   class Mask;
   class Palette;
   class Remap;
@@ -155,7 +154,10 @@ namespace doc {
     ////////////////////////////////////////
     // Iterators
 
-    LayersRange layers() const;
+    LayerList allLayers() const;
+    LayerList allVisibleLayers() const;
+    LayerList allBrowsableLayers() const;
+
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;
     CelsRange uniqueCels() const;
