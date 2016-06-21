@@ -66,6 +66,7 @@ namespace doc {
 
     bool isImage() const { return type() == ObjectType::LayerImage; }
     bool isGroup() const { return type() == ObjectType::LayerGroup; }
+    virtual bool isBrowsable() const { return false; }
 
     bool isBackground() const  { return hasFlags(LayerFlags::Background); }
     bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
@@ -186,6 +187,10 @@ namespace doc {
 
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;
+
+    bool isBrowsable() const override {
+      return isGroup() && isExpanded() && !m_layers.empty();
+    }
 
   private:
     void destroyAllLayers();

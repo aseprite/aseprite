@@ -50,9 +50,11 @@ protected:
       int i = m_offset;
       while (i-- > 0) {
         layer = layer->getNextInWholeHierarchy();
-        if (!layer)
-          layer = site.sprite()->indexToLayer(
-            site.sprite()->firstLayer());
+        if (!layer) {
+          layer = site.sprite()->root()->firstLayer();
+          while (layer->isBrowsable())
+            layer = static_cast<LayerGroup*>(layer)->firstLayer();
+        }
       }
     }
     else if (m_offset < 0) {
@@ -60,8 +62,7 @@ protected:
       while (i++ < 0) {
         layer = layer->getPreviousInWholeHierarchy();
         if (!layer)
-          layer = site.sprite()->indexToLayer(
-            site.sprite()->lastLayer());
+          layer = site.sprite()->root()->lastLayer();
       }
     }
 

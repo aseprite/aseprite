@@ -77,7 +77,7 @@ Layer* Layer::getNext() const
 Layer* Layer::getPreviousInWholeHierarchy() const
 {
   // Go to children
-  if (isGroup() && isExpanded())
+  if (isBrowsable())
     return static_cast<const LayerGroup*>(this)->lastLayer();
 
   // Go to previous layer
@@ -85,7 +85,12 @@ Layer* Layer::getPreviousInWholeHierarchy() const
     return prev;
 
   // Go to previous layer in the parent
-  return parent()->getPrevious();
+  LayerGroup* parent = this->parent();
+  while (parent != sprite()->root() &&
+         !parent->getPrevious()) {
+    parent = parent->parent();
+  }
+  return parent->getPrevious();
 }
 
 Layer* Layer::getNextInWholeHierarchy() const
@@ -93,7 +98,7 @@ Layer* Layer::getNextInWholeHierarchy() const
   // Go to next layer
   if (Layer* next = getNext()) {
     // Go to children
-    while (next->isGroup() && next->isExpanded()) {
+    while (next->isBrowsable()) {
       Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
       if (!firstChild)
         break;
@@ -370,7 +375,7 @@ void LayerGroup::removeLayer(Layer* layer)
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
-  layer->setParent(NULL);
+  layer->setParent(nullptr);
 }
 
 void LayerGroup::stackLayer(Layer* layer, Layer* after)
