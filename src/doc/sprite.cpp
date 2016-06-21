@@ -492,12 +492,11 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 
 void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const
 {
-  std::vector<Layer*> layers;
-  getLayersList(layers);
+  LayerList layers = allVisibleLayers();
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
     Layer* layer = layers[i];
-    if (!layer->isImage() || !layer->isVisible())
+    if (!layer->isImage())
       continue;
 
     Cel* cel = layer->cel(frame);
