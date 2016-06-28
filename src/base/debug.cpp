@@ -48,6 +48,7 @@ int base_assert(const char* condition, const char* file, int lineNum)
   text += ": Assertion failed: ";
   text += condition;
   std::cerr << text << std::endl;
+  std::abort();
   return 1;
 
 #endif
