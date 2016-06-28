@@ -10,18 +10,13 @@
 #pragma once
 
 #include "app/ui/editor/editor_observer.h"
-#include "base/observers.h"
+#include "base/observable.h"
 
 namespace app {
   class Editor;
 
-  class EditorObservers {
+  class EditorObservers : public base::Observable<EditorObserver> {
   public:
-    EditorObservers();
-
-    void addObserver(EditorObserver* observer);
-    void removeObserver(EditorObserver* observer);
-
     void notifyDestroyEditor(Editor* editor);
     void notifyStateChanged(Editor* editor);
     void notifyScrollChanged(Editor* editor);
@@ -30,9 +25,6 @@ namespace app {
     void notifyAfterFrameChanged(Editor* editor);
     void notifyBeforeLayerChanged(Editor* editor);
     void notifyAfterLayerChanged(Editor* editor);
-
-  private:
-    base::Observers<EditorObserver> m_observers;
   };
 
 } // namespace app

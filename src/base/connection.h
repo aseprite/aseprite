@@ -8,52 +8,12 @@
 #define BASE_CONNETION_H_INCLUDED
 #pragma once
 
+#include "obs/connection.h"
+
 namespace base {
 
-class Signal;
-class Slot;
-
-class Connection {
-public:
-  Connection() : m_signal(nullptr), m_slot(nullptr) {
-  }
-
-  Connection(Signal* signal, Slot* slot) :
-    m_signal(signal), m_slot(slot) {
-  }
-
-  void disconnect();
-
-  operator bool() {
-    return (m_slot != nullptr);
-  }
-
-private:
-  Signal* m_signal;
-  Slot* m_slot;
-};
-
-class ScopedConnection {
-public:
-  ScopedConnection() {
-  }
-
-  ScopedConnection(const Connection& conn) : m_conn(conn) {
-  }
-
-  ScopedConnection& operator=(const Connection& conn) {
-    m_conn.disconnect();
-    m_conn = conn;
-    return *this;
-  }
-
-  ~ScopedConnection() {
-    m_conn.disconnect();
-  }
-
-private:
-  Connection m_conn;
-};
+using Connection = obs::connection;
+using ScopedConnection = obs::scoped_connection;
 
 } // namespace base
 

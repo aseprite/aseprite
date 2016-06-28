@@ -30,3 +30,6 @@
 [submodule "src/clip"]
 	path = src/clip
 	url = https://github.com/aseprite/clip.git
+[submodule "src/observable"]
+	path = src/observable
+	url = https://github.com/dacap/observable.git
