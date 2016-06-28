@@ -42,12 +42,11 @@ int base_assert(const char* condition, const char* file, int lineNum)
 
 #else
 
-  std::string text = "Assertion failed: ";
-  text += condition;
-  text += ", file ";
-  text += file;
-  text += ", line ";
+  std::string text = file;
+  text += ":";
   text += base::convert_to<std::string>(lineNum);
+  text += ": Assertion failed: ";
+  text += condition;
   std::cerr << text << std::endl;
   return 1;
 
