@@ -299,6 +299,7 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       calculateHot();
+      updateDragCopyCursor(msg);
 
       if (hasCapture() && m_selected) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
@@ -442,19 +443,9 @@ bool Tabs::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage:
-    case kKeyUpMessage: {
-      TabPtr tab = (m_isDragging ? m_dragTab: m_hot);
-
-      bool oldDragCopy = m_dragCopy;
-      m_dragCopy = ((msg->ctrlPressed() || msg->altPressed()) &&
-                    (tab && m_delegate && m_delegate->canCloneTab(this, tab->view)));
-
-      if (oldDragCopy != m_dragCopy) {
-        updateDragTabIndexes(get_mouse_position().x, true);
-        updateMouseCursor();
-      }
+    case kKeyUpMessage:
+      updateDragCopyCursor(msg);
       break;
-    }
 
     case kSetCursorMessage:
       updateMouseCursor();
@@ -790,7 +781,6 @@ void Tabs::startDrag()
   updateTabs();
 
   m_isDragging = true;
-  m_dragCopy = false;
   m_dragTab.reset(new Tab(m_selected->view));
   m_dragTab->oldX = m_dragTab->x = m_dragTabX = m_selected->x;
   m_dragTab->oldWidth = m_dragTab->width = m_selected->width;
@@ -826,7 +816,6 @@ void Tabs::stopDrag(DropTabResult result)
         localCopy = true;
       }
 
-      m_dragCopy = false;
       m_dragCopyIndex = -1;
 
       startReorderTabsAnimation();
@@ -854,7 +843,6 @@ void Tabs::stopDrag(DropTabResult result)
     case DropTabResult::REMOVE:
       m_floatingTab.reset();
       m_removedTab.reset();
-      m_dragCopy = false;
       m_dragCopyIndex = -1;
       destroyFloatingTab();
 
@@ -1008,6 +996,20 @@ void Tabs::updateDragTabIndexes(int mouseX, bool startAni)
 
   if (startAni)
     startReorderTabsAnimation();
+}
+
+void Tabs::updateDragCopyCursor(ui::Message* msg)
+{
+  TabPtr tab = (m_isDragging ? m_dragTab: m_hot);
+
+  bool oldDragCopy = m_dragCopy;
+  m_dragCopy = ((msg->ctrlPressed() || msg->altPressed()) &&
+                (tab && m_delegate && m_delegate->canCloneTab(this, tab->view)));
+
+  if (oldDragCopy != m_dragCopy) {
+    updateDragTabIndexes(get_mouse_position().x, true);
+    updateMouseCursor();
+  }
 }
 
 } // namespace app
