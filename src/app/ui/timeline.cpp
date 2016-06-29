@@ -135,6 +135,8 @@ Timeline::Timeline()
   , m_scroll(false)
   , m_fromTimeline(false)
 {
+  enableFlags(CTRL_RIGHT_CLICK);
+
   m_ctxConn = m_context->AfterCommandExecution.connect(
     &Timeline::onAfterCommandExecution, this);
   m_context->documents().addObserver(this);
@@ -340,6 +342,11 @@ bool Timeline::onProcessMessage(Message* msg)
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
         return true;
       }
+
+      // Update hot part (as the user might have left clicked with
+      // Ctrl on OS X, which it's converted to a right-click and it's
+      // interpreted as other action by the Timeline::hitTest())
+      setHot(hitTest(msg, mouseMsg->position() - bounds().origin()));
 
       // Clicked-part = hot-part.
       m_clk = m_hot;
@@ -549,10 +556,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
         if (m_state == STATE_SCROLLING) {
           m_state = STATE_STANDBY;
-
           releaseMouse();
           return true;
         }
+
+        setHot(hitTest(msg, mouseMsg->position() - bounds().origin()));
 
         switch (m_hot.part) {
 
@@ -620,9 +628,13 @@ bool Timeline::onProcessMessage(Message* msg)
             // Show the frame pop-up menu.
             if (mouseMsg->right()) {
               if (m_clk.frame == m_hot.frame) {
-                Menu* popup_menu = AppMenus::instance()->getFramePopupMenu();
-                if (popup_menu)
-                  popup_menu->showPopup(mouseMsg->position());
+                Menu* popupMenu = AppMenus::instance()->getFramePopupMenu();
+                if (popupMenu) {
+                  popupMenu->showPopup(mouseMsg->position());
+
+                  m_state = STATE_STANDBY;
+                  invalidate();
+                }
               }
             }
             break;
@@ -631,9 +643,13 @@ bool Timeline::onProcessMessage(Message* msg)
             // Show the layer pop-up menu.
             if (mouseMsg->right()) {
               if (m_clk.layer == m_hot.layer) {
-                Menu* popup_menu = AppMenus::instance()->getLayerPopupMenu();
-                if (popup_menu != NULL)
-                  popup_menu->showPopup(mouseMsg->position());
+                Menu* popupMenu = AppMenus::instance()->getLayerPopupMenu();
+                if (popupMenu) {
+                  popupMenu->showPopup(mouseMsg->position());
+
+                  m_state = STATE_STANDBY;
+                  invalidate();
+                }
               }
             }
             break;
@@ -670,14 +686,22 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_CEL: {
             // Show the cel pop-up menu.
             if (mouseMsg->right()) {
-              Menu* popup_menu =
+              Menu* popupMenu =
                 (m_state == STATE_MOVING_RANGE &&
-                 m_range.type() == Range::kCels) ?
+                 m_range.type() == Range::kCels &&
+                 (m_hot.layer != m_clk.layer ||
+                  m_hot.frame != m_clk.frame)) ?
                   AppMenus::instance()->getCelMovementPopupMenu():
                   AppMenus::instance()->getCelPopupMenu();
+              if (popupMenu) {
+                popupMenu->showPopup(mouseMsg->position());
 
-              if (popup_menu)
-                popup_menu->showPopup(mouseMsg->position());
+                // Do not drop in this function, the drop is done from
+                // the menu in case we've used the
+                // CelMovementPopupMenu
+                m_state = STATE_STANDBY;
+                invalidate();
+              }
             }
             break;
           }
@@ -695,10 +719,13 @@ bool Timeline::onProcessMessage(Message* msg)
               m_hot = m_clk;
 
               if (mouseMsg->right()) {
-                Menu* popup_menu = AppMenus::instance()->getFrameTagPopupMenu();
-                if (popup_menu) {
+                Menu* popupMenu = AppMenus::instance()->getFrameTagPopupMenu();
+                if (popupMenu) {
                   AppMenuItem::setContextParams(params);
-                  popup_menu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position());
+
+                  m_state = STATE_STANDBY;
+                  invalidate();
                 }
               }
               else if (mouseMsg->left()) {
@@ -712,8 +739,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         }
 
-        if (mouseMsg->left() &&
-            m_state == STATE_MOVING_RANGE &&
+        if (m_state == STATE_MOVING_RANGE &&
             m_dropRange.type() != Range::kNone) {
           dropRange(isCopyKeyPressed(mouseMsg) ?
             Timeline::kCopy:
@@ -2032,8 +2058,15 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     if (!hasCapture()) {
       gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
       if (outline.contains(mousePos)) {
-        // With Ctrl and Alt key we can drag the range from any place (not necessary from the outline.
-        if (isCopyKeyPressed(msg) ||
+        auto mouseMsg = dynamic_cast<MouseMessage*>(msg);
+
+        if (// With Ctrl and Alt key we can drag the range from any place (not necessary from the outline.
+            isCopyKeyPressed(msg) ||
+            // Drag with right-click
+            (m_state == STATE_STANDBY &&
+             mouseMsg &&
+             mouseMsg->right()) ||
+            // Drag with left-click only if we are inside the range edges
             !gfx::Rect(outline).shrink(2*OUTLINE_WIDTH).contains(mousePos)) {
           hit.part = PART_RANGE_OUTLINE;
         }
