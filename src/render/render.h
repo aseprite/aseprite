@@ -89,6 +89,15 @@ namespace render {
     Layer* m_layer;
   };
 
+  typedef void (*CompositeImageFunc)(
+    Image* dst,
+    const Image* src,
+    const Palette* pal,
+    const gfx::Clip& area,
+    const int opacity,
+    const BlendMode blendMode,
+    const Zoom& zoom);
+
   class Render {
   public:
     Render();
@@ -139,7 +148,7 @@ namespace render {
       const Layer* layer,
       frame_t frame,
       const gfx::Clip& area,
-      BlendMode blend_mode = BlendMode::UNSPECIFIED);
+      BlendMode blendMode = BlendMode::UNSPECIFIED);
 
     // Main function used to render the sprite. Draws the given sprite
     // frame in a new image and return it. Note: zoomedRect must have
@@ -158,29 +167,24 @@ namespace render {
 
     void renderImage(Image* dst_image, const Image* src_image,
       const Palette* pal, int x, int y, Zoom zoom,
-      int opacity, BlendMode blend_mode);
+      int opacity, BlendMode blendMode);
 
   private:
-    typedef void (*RenderScaledImage)(
-      Image* dst, const Image* src, const Palette* pal,
-      const gfx::Clip& area,
-      int opacity, BlendMode blend_mode, Zoom zoom);
-
     void renderOnionskin(
       Image* image,
       const gfx::Clip& area,
       frame_t frame, Zoom zoom,
-      RenderScaledImage scaled_func);
+      CompositeImageFunc compositeImage);
 
     void renderLayer(
       const Layer* layer,
       Image* image,
       const gfx::Clip& area,
       frame_t frame, Zoom zoom,
-      RenderScaledImage renderScaledImage,
+      CompositeImageFunc compositeImage,
       bool render_background,
       bool render_transparent,
-      BlendMode blend_mode);
+      BlendMode blendMode);
 
     void renderCel(
       Image* dst_image,
@@ -188,8 +192,8 @@ namespace render {
       const Palette* pal,
       const Cel* cel,
       const gfx::Clip& area,
-      RenderScaledImage scaled_func,
-      int opacity, BlendMode blend_mode, Zoom zoom);
+      CompositeImageFunc compositeImage,
+      int opacity, BlendMode blendMode, Zoom zoom);
 
     void renderImage(
       Image* dst_image,
@@ -198,12 +202,8 @@ namespace render {
       const int x,
       const int y,
       const gfx::Clip& area,
-      RenderScaledImage scaled_func,
-      int opacity, BlendMode blend_mode, Zoom zoom);
-
-    static RenderScaledImage getRenderScaledImageFunc(
-      PixelFormat dstFormat,
-      PixelFormat srcFormat);
+      CompositeImageFunc compositeImage,
+      int opacity, BlendMode blendMode, Zoom zoom);
 
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
@@ -226,10 +226,13 @@ namespace render {
     OnionskinOptions m_onionskin;
   };
 
-  void composite_image(Image* dst, const Image* src,
+  void composite_image(Image* dst,
+                       const Image* src,
                        const Palette* pal,
-                       int x, int y,
-                       int opacity, BlendMode blend_mode);
+                       const int x,
+                       const int y,
+                       const int opacity,
+                       const BlendMode blendMode);
 
 } // namespace render
 
