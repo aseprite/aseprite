@@ -227,8 +227,7 @@ namespace {
           return;
       }
 
-      std::vector<Layer*> layers;
-      sprite->getLayersList(layers);
+      LayerList layers = sprite->allLayers();
       for (int i=0; i<int(layers.size()); ++i) {
         Layer* layer = layers[i];
         bool selected = range.inRange(LayerIndex(i));
@@ -297,8 +296,7 @@ public:
     if (m_docPref.spriteSheet.layer() == kSelectedLayers)
       layers()->setSelectedItemIndex(i);
     {
-      std::vector<Layer*> layersList;
-      m_sprite->getLayersList(layersList);
+      LayerList layersList = m_sprite->allLayers();
       for (Layer* layer : layersList) {
         i = layers()->addItem(new LayerItem(layer));
         if (m_docPref.spriteSheet.layer() == layer->name())
@@ -837,8 +835,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   }
   else {
     // TODO add a getLayerByName
-    std::vector<Layer*> layers;
-    sprite->getLayersList(layers);
+    LayerList layers = sprite->allLayers();
     for (Layer* l : layers) {
       if (l->name() == layerName) {
         layer = l;

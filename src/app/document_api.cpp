@@ -82,8 +82,7 @@ void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
   setSpriteSize(sprite, bounds.w, bounds.h);
 
   app::Document* doc = static_cast<app::Document*>(sprite->document());
-  std::vector<Layer*> layers;
-  sprite->getLayersList(layers);
+  LayerList layers = sprite->allLayers();
   for (Layer* layer : layers) {
     if (!layer->isImage())
       continue;

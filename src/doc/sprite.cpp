@@ -255,14 +255,6 @@ LayerIndex Sprite::layerToIndex(const Layer* layer) const
   return layer2index(root(), layer, &index_count);
 }
 
-void Sprite::getLayersList(std::vector<Layer*>& layers) const
-{
-  // TODO support subgroups
-  for (Layer* child : m_root->layers()) {
-    layers.push_back(child);
-  }
-}
-
 //////////////////////////////////////////////////////////////////////
 // Palettes
 

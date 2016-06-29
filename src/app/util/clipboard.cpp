@@ -347,10 +347,8 @@ void paste()
       DocumentRange srcRange = clipboard_range.range();
       Document* srcDoc = clipboard_range.document();
       Sprite* srcSpr = srcDoc->sprite();
-      std::vector<Layer*> srcLayers;
-      std::vector<Layer*> dstLayers;
-      srcSpr->getLayersList(srcLayers);
-      dstSpr->getLayersList(dstLayers);
+      LayerList srcLayers = srcSpr->allBrowsableLayers();
+      LayerList dstLayers = dstSpr->allBrowsableLayers();
 
       switch (srcRange.type()) {
 

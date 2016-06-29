@@ -758,10 +758,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
       Document* doc = item.doc;
       Sprite* sprite = doc->sprite();
 
-      std::vector<Layer*> layers;
-      sprite->getLayersList(layers);
-
-      for (Layer* layer : layers) {
+      for (Layer* layer : sprite->allVisibleLayers()) {
         if (firstLayer)
           firstLayer = false;
         else

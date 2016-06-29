@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -76,8 +76,7 @@ public:
     for (Cel* cel : spr->cels())
       saveObject("cel", cel, &Writer::writeCel);
 
-    std::vector<Layer*> layers;
-    spr->getLayersList(layers);
+    LayerList layers = spr->allLayers();
     for (Layer* lay : layers)
       saveObject("lay", lay, &Writer::writeLayerStructure);
 
@@ -104,8 +103,7 @@ private:
       write32(s, spr->frameDuration(fr));
 
     // IDs of all main layers
-    std::vector<Layer*> layers;
-    spr->getLayersList(layers);
+    LayerList layers = spr->allLayers();
     write32(s, layers.size());
     for (Layer* lay : layers)
       write32(s, lay->id());

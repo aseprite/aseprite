@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -99,9 +99,7 @@ static DocumentRange drop_range_op(
 
       case DocumentRange::kCels:
         {
-          std::vector<Layer*> layers;
-          sprite->getLayersList(layers);
-
+          LayerList layers = sprite->allBrowsableLayers();
           int srcLayerBegin, srcLayerStep, srcLayerEnd;
           int dstLayerBegin, dstLayerStep;
           frame_t srcFrameBegin, srcFrameStep, srcFrameEnd;
@@ -144,6 +142,9 @@ static DocumentRange drop_range_op(
               if (dstLayerIdx < 0 || dstLayerIdx >= int(layers.size()) ||
                   srcLayerIdx < 0 || srcLayerIdx >= int(layers.size()))
                 break;
+
+              ASSERT(layers[srcLayerIdx]->isImage());
+              ASSERT(layers[dstLayerIdx]->isImage());
 
               LayerImage* srcLayer = static_cast<LayerImage*>(layers[srcLayerIdx]);
               LayerImage* dstLayer = static_cast<LayerImage*>(layers[dstLayerIdx]);
@@ -268,8 +269,7 @@ static DocumentRange drop_range_op(
 
       case DocumentRange::kLayers:
         {
-          std::vector<Layer*> layers;
-          sprite->getLayersList(layers);
+          LayerList layers = sprite->allBrowsableLayers();
 
           if (layers.empty())
             break;
@@ -382,10 +382,12 @@ void reverse_frames(Document* doc, const DocumentRange& range)
     }
   }
   else {
-    std::vector<Layer*> layers;
-    sprite->getLayersList(layers);
+    LayerList layers = sprite->allBrowsableLayers();
 
     for (int layerIdx = layerBegin; layerIdx != layerEnd; ++layerIdx) {
+      if (!layers[layerIdx]->isImage())
+        continue;
+
       for (frame_t frame = frameBegin,
              frameRev = frameEnd;
            frame != (frameBegin+frameEnd)/2+1;
