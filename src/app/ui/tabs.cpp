@@ -62,6 +62,8 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_dropNewTab(nullptr)
   , m_dropNewIndex(-1)
 {
+  enableFlags(CTRL_RIGHT_CLICK);
+
   setDoubleBuffered(true);
   initTheme();
 
@@ -1003,7 +1005,11 @@ void Tabs::updateDragCopyCursor(ui::Message* msg)
   TabPtr tab = (m_isDragging ? m_dragTab: m_hot);
 
   bool oldDragCopy = m_dragCopy;
-  m_dragCopy = ((msg->ctrlPressed() || msg->altPressed()) &&
+  m_dragCopy = ((
+#if !defined __APPLE__
+                 msg->ctrlPressed() ||
+#endif
+                 msg->altPressed()) &&
                 (tab && m_delegate && m_delegate->canCloneTab(this, tab->view)));
 
   if (oldDragCopy != m_dragCopy) {
