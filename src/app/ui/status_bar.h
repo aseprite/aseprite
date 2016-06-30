@@ -11,7 +11,6 @@
 
 #include "app/color.h"
 #include "app/tools/active_tool_observer.h"
-#include "base/observers.h"
 #include "base/time.h"
 #include "doc/context_observer.h"
 #include "doc/document_observer.h"

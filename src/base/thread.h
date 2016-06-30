@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -92,6 +92,7 @@ namespace base {                // Based on C++0x threads lib
   {
     void yield();
     void sleep_for(double seconds);
+    thread::native_handle_type native_handle();
   }
 
   // This class joins the thread in its destructor.

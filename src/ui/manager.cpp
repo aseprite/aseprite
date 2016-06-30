@@ -1458,11 +1458,24 @@ Message* Manager::newMouseMessage(
   const gfx::Point& wheelDelta,
   bool preciseWheel)
 {
+#ifdef __APPLE__
+  // Convert Ctrl+left click -> right-click
+  if (widget &&
+      widget->isVisible() &&
+      widget->isEnabled() &&
+      widget->hasFlags(CTRL_RIGHT_CLICK) &&
+      (modifiers & kKeyCtrlModifier) &&
+      (buttons == kButtonLeft)) {
+    modifiers = KeyModifiers(int(modifiers) & ~int(kKeyCtrlModifier));
+    buttons = kButtonRight;
+  }
+#endif
+
   Message* msg = new MouseMessage(
     type, pointerType, buttons, modifiers, mousePos,
     wheelDelta, preciseWheel);
 
-  if (widget != NULL)
+  if (widget)
     msg->addRecipient(widget);
 
   return msg;

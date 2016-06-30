@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -47,6 +47,7 @@ namespace ui {
     INITIALIZED      = 0x00000400, // The widget was already initialized by a theme.
     DIRTY            = 0x00000800, // The widget (or one child) is dirty (update_region != empty).
     HAS_TEXT         = 0x00001000, // The widget has text (at least setText() was called one time).
+    CTRL_RIGHT_CLICK = 0x00002000, // The widget should transform Ctrl+click to right-click on OS X.
     PROPERTIES_MASK  = 0x0000ffff,
 
     HORIZONTAL       = 0x00010000,

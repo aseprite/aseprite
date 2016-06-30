@@ -28,7 +28,7 @@
 
 namespace ui {
 
-Entry::Entry(std::size_t maxsize, const char *format, ...)
+Entry::Entry(std::size_t maxsize, const char* format, ...)
   : Widget(kEntryWidget)
   , m_timer(500, this)
   , m_maxsize(maxsize)
@@ -42,9 +42,10 @@ Entry::Entry(std::size_t maxsize, const char *format, ...)
   , m_recent_focused(false)
   , m_lock_selection(false)
 {
-  char buf[4096];
+  enableFlags(CTRL_RIGHT_CLICK);
 
   // formatted string
+  char buf[4096];
   if (format) {
     va_list ap;
     va_start(ap, format);

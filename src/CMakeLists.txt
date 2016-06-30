@@ -80,12 +80,18 @@ endif()
 ######################################################################
 # Aseprite Libraries (in preferred order to be built)
 
+# Disable observable tests
+set(OBSERVABLE_TESTS OFF CACHE BOOL "Compile observable tests")
+add_subdirectory(observable)
+include_directories(observable)
+
+# Our base library
 add_subdirectory(base)
 
 # Directory where base/config.h file is located
 include_directories(${BASE_INCLUDE_DIR})
 
-# Disable clip
+# Disable clip examples
 set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
 add_subdirectory(clip)
 

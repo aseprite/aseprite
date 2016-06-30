@@ -89,6 +89,15 @@ namespace render {
     Layer* m_layer;
   };
 
+  typedef void (*CompositeImageFunc)(
+    Image* dst,
+    const Image* src,
+    const Palette* pal,
+    const gfx::Clip& area,
+    const int opacity,
+    const BlendMode blendMode,
+    const Projection& proj);
+
   class Render {
   public:
     Render();
@@ -153,33 +162,30 @@ namespace render {
       const gfx::Clip& area);
 
     void renderImage(
-      Image* dst_image, const Image* src_image,
-      const Palette* pal, int x, int y,
-      int opacity, BlendMode blendMode);
+      Image* dst_image,
+      const Image* src_image,
+      const Palette* pal,
+      const int x,
+      const int y,
+      const int opacity,
+      const BlendMode blendMode);
 
   private:
-    typedef void (*RenderScaledImage)(
-      Image* dst, const Image* src, const Palette* pal,
-      const gfx::Clip& area,
-      int opacity,
-      BlendMode blendMode,
-      const Projection& proj);
-
     void renderOnionskin(
       Image* image,
       const gfx::Clip& area,
-      frame_t frame,
-      RenderScaledImage scaled_func);
+      const frame_t frame,
+      const CompositeImageFunc compositeImage);
 
     void renderLayer(
       const Layer* layer,
       Image* image,
       const gfx::Clip& area,
-      frame_t frame,
-      RenderScaledImage renderScaledImage,
-      bool render_background,
-      bool render_transparent,
-      BlendMode blendMode);
+      const frame_t frame,
+      const CompositeImageFunc compositeImage,
+      const bool render_background,
+      const bool render_transparent,
+      const BlendMode blendMode);
 
     void renderCel(
       Image* dst_image,
@@ -187,8 +193,9 @@ namespace render {
       const Palette* pal,
       const Cel* cel,
       const gfx::Clip& area,
-      RenderScaledImage scaled_func,
-      int opacity, BlendMode blendMode);
+      const CompositeImageFunc compositeImage,
+      const int opacity,
+      const BlendMode blendMode);
 
     void renderImage(
       Image* dst_image,
@@ -197,12 +204,9 @@ namespace render {
       const int x,
       const int y,
       const gfx::Clip& area,
-      RenderScaledImage scaled_func,
-      int opacity, BlendMode blendMode);
-
-    static RenderScaledImage getRenderScaledImageFunc(
-      PixelFormat dstFormat,
-      PixelFormat srcFormat);
+      const CompositeImageFunc compositeImage,
+      const int opacity,
+      const BlendMode blendMode);
 
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
@@ -225,10 +229,13 @@ namespace render {
     OnionskinOptions m_onionskin;
   };
 
-  void composite_image(Image* dst, const Image* src,
+  void composite_image(Image* dst,
+                       const Image* src,
                        const Palette* pal,
-                       int x, int y,
-                       int opacity, BlendMode blendMode);
+                       const int x,
+                       const int y,
+                       const int opacity,
+                       const BlendMode blendMode);
 
 } // namespace render
 

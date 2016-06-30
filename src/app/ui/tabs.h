@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -201,6 +201,7 @@ namespace app {
     void destroyFloatingOverlay();
     void updateMouseCursor();
     void updateDragTabIndexes(int mouseX, bool force_animation);
+    void updateDragCopyCursor(ui::Message* msg);
 
     // Specific variables about the style
     int m_border;           // Pixels used from the left side to draw the first tab

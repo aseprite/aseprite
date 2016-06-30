@@ -1,0 +1,22 @@
+GIMP Palette
+#
+# SmileBASIC: http://smilebasic.com/en/reference/#constant
+#
+  0 248 248	AQUA
+  0   0   0	BLACK
+  0   0 255	BLUE
+  0   0 248	CYAN
+248   0 248	FUCHSIA
+128 128 128	GRAY
+  0 128   0	GREEN
+  0 248   0	LIME
+248   0 248	MAGENTA
+128   0   0	MAROON
+  0   0 128	NAVY
+128 128   0	OLIVE
+128   0 128	PURPLE
+248   0   0	RED
+192 192 192	SILVER
+  0 128 128	TEAL
+248 248 248	WHITE
+248 248   0	YELLOW
