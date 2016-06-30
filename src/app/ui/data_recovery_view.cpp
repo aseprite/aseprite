@@ -218,7 +218,7 @@ void DataRecoveryView::onWorkspaceViewSelected()
 {
 }
 
-bool DataRecoveryView::onCloseView(Workspace* workspace)
+bool DataRecoveryView::onCloseView(Workspace* workspace, bool quitting)
 {
   workspace->removeView(this);
   return true;

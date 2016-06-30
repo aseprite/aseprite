@@ -220,7 +220,7 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
     ->setViewScroll(View::getView(srcEditor)->viewScroll());
 }
 
-bool DocumentView::onCloseView(Workspace* workspace)
+bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
 {
   if (m_editor->isMovingPixels())
     m_editor->dropMovingPixels();
@@ -247,8 +247,12 @@ bool DocumentView::onCloseView(Workspace* workspace)
       // see if the sprite has changes
       while (m_document->isModified()) {
         // ask what want to do the user with the changes in the sprite
-        int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-          m_document->name().c_str());
+        int ret = Alert::show("Warning"
+                              "<<Saving changes to the sprite"
+                              "<<\"%s\" before %s?"
+                              "||&Save||Do&n't Save||&Cancel",
+                              m_document->name().c_str(),
+                              quitting ? "quitting": "closing");
 
         if (ret == 1) {
           // "save": save the changes

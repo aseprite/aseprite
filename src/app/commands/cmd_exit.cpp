@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/ui/main_window.h"
@@ -34,22 +35,17 @@ ExitCommand::ExitCommand()
 {
 }
 
-void ExitCommand::onExecute(Context* context)
+void ExitCommand::onExecute(Context* ctx)
 {
-  const doc::Documents& docs = context->documents();
-  bool modifiedFiles = false;
+  if (ctx->hasModifiedDocuments()) {
+    Command* closeAll = CommandsModule::instance()->getCommandByName(CommandId::CloseAllFiles);
+    Params params;
+    params.set("quitting", "1");
+    ctx->executeCommand(closeAll, params);
 
-  for (doc::Documents::const_iterator it=docs.begin(), end=docs.end(); it!=end; ++it) {
-    const Document* document = static_cast<Document*>(*it);
-    if (document->isModified()) {
-      modifiedFiles = true;
-      break;
-    }
-  }
-
-  if (modifiedFiles) {
-    if (ui::Alert::show("Warning<<There are sprites with changes.<<Do you want to quit anyway?||&Yes||&No") != 1)
-      return; // In this case the user doesn't want to close with modified files
+    // The user didn't save all documents (canceled the exit)
+    if (ctx->hasModifiedDocuments())
+      return;
   }
 
   // Close the window

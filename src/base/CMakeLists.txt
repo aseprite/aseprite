@@ -31,7 +31,6 @@ set(BASE_SOURCES
   base64.cpp
   cfile.cpp
   chrono.cpp
-  connection.cpp
   convert_to.cpp
   debug.cpp
   dll.cpp
@@ -65,8 +64,9 @@ if(WIN32)
     win32_exception.cpp)
 endif()
 
+# TODO remove dependency with observable library
 add_library(base-lib ${BASE_SOURCES})
-target_link_libraries(base-lib modp_b64)
+target_link_libraries(base-lib obs modp_b64)
 
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)

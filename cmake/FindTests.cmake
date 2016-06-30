@@ -1,3 +1,4 @@
+# Copyright (C) 2001-2016  David Capello
 # Find tests and add rules to compile them and run them
 
 function(find_tests dir dependencies)
@@ -22,14 +23,14 @@ function(find_tests dir dependencies)
     if(MSVC)
       # Fix problem compiling gen from a Visual Studio solution
       set_target_properties(${testname}
-      PROPERTIES LINK_FLAGS -ENTRY:"mainCRTStartup")
+        PROPERTIES LINK_FLAGS -ENTRY:"mainCRTStartup")
     endif()
 
     target_link_libraries(${testname} gtest ${ARGV} ${PLATFORM_LIBS})
 
     if(extra_definitions)
       set_target_properties(${testname}
-      PROPERTIES COMPILE_FLAGS ${extra_definitions})
+        PROPERTIES COMPILE_FLAGS ${extra_definitions})
     endif()
   endforeach()
 endfunction()

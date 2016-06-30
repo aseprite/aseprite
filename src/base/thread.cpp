@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -149,6 +149,19 @@ void base::this_thread::sleep_for(double seconds)
 #else
 
   usleep(seconds * 1000000.0);
+
+#endif
+}
+
+base::thread::native_handle_type base::this_thread::native_handle()
+{
+#ifdef _WIN32
+
+  return GetCurrentThread();
+
+#else
+
+  return (void*)pthread_self();
 
 #endif
 }

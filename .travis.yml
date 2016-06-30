@@ -10,10 +10,10 @@ env:
     - SHARED=ON
 
 before_install:
-  - if [ "$CXX" = "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
   - if [ "$SHARED" == "ON" ]; then sudo apt-get install -y libcurl4-openssl-dev libgif-dev libfreetype6-dev libjpeg-dev libz-dev libpng-dev libtinyxml-dev libpixman-1-dev liballegro4.2-dev ; fi
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -y -qq g++-4.8; fi
+  - sudo apt-get install -y -qq g++-4.8
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
 
 before_script:

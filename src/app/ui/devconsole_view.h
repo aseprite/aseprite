@@ -36,7 +36,7 @@ namespace app {
     bool canCloneWorkspaceView() override { return true; }
     WorkspaceView* cloneWorkspaceView() override;
     void onWorkspaceViewSelected() override;
-    bool onCloseView(Workspace* workspace) override;
+    bool onCloseView(Workspace* workspace, bool quitting) override;
     void onTabPopup(Workspace* workspace) override;
 
     // EngineDelegate impl

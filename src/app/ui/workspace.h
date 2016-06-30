@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -39,7 +39,7 @@ namespace app {
 
     // Closes the given view. Returns false if the user cancels the
     // operation.
-    bool closeView(WorkspaceView* view);
+    bool closeView(WorkspaceView* view, bool quitting);
 
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);

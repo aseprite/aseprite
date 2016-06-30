@@ -144,6 +144,10 @@ public:
     delete this;
   }
 
+  void activateApp() override {
+    // Do nothing
+  }
+
   void finishLaunching() override {
     // Do nothing
   }

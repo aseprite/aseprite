@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,43 +8,31 @@
 #define BASE_OBSERVABLE_H_INCLUDED
 #pragma once
 
-#include "base/observers.h"
+#include "obs/observable.h"
 
 namespace base {
 
 template<typename Observer>
-class Observable {
+class Observable : private obs::observable<Observer> {
+  typedef obs::observable<Observer> Base;
 public:
 
   void addObserver(Observer* observer) {
-    m_observers.addObserver(observer);
+    Base::add_observer(observer);
   }
 
   void removeObserver(Observer* observer) {
-    m_observers.removeObserver(observer);
+    Base::remove_observer(observer);
   }
 
   void notifyObservers(void (Observer::*method)()) {
-    m_observers.notifyObservers(method);
+    Base::notify_observers(method);
   }
 
-  template<typename A1>
-  void notifyObservers(void (Observer::*method)(A1), A1 a1) {
-    m_observers.template notifyObservers<A1>(method, a1);
+  template<typename ...Args>
+  void notifyObservers(void (Observer::*method)(Args...), Args ...args) {
+    Base::template notify_observers<Args...>(method, std::forward<Args>(args)...);
   }
-
-  template<typename A1, typename A2>
-  void notifyObservers(void (Observer::*method)(A1, A2), A1 a1, A2 a2) {
-    m_observers.template notifyObservers<A1, A2>(method, a1, a2);
-  }
-
-  template<typename A1, typename A2, typename A3>
-  void notifyObservers(void (Observer::*method)(A1, A2, A3), A1 a1, A2 a2, A3 a3) {
-    m_observers.template notifyObservers<A1, A2, A3>(method, a1, a2, a3);
-  }
-
-private:
-  Observers<Observer> m_observers;
 };
 
 } // namespace base

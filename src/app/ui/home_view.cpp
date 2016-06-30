@@ -89,7 +89,7 @@ TabIcon HomeView::getTabIcon()
   return TabIcon::HOME;
 }
 
-bool HomeView::onCloseView(Workspace* workspace)
+bool HomeView::onCloseView(Workspace* workspace, bool quitting)
 {
   workspace->removeView(this);
   return true;

@@ -189,6 +189,7 @@ void update_cursor_overlay()
 void set_use_native_cursors(bool state)
 {
   use_native_mouse_cursor = state;
+  update_mouse_cursor();
 }
 
 CursorType get_mouse_cursor()

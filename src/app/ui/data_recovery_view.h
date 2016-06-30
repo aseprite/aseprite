@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -34,7 +34,7 @@ namespace app {
     // WorkspaceView implementation
     ui::Widget* getContentWidget() override { return this; }
     void onWorkspaceViewSelected() override;
-    bool onCloseView(Workspace* workspace) override;
+    bool onCloseView(Workspace* workspace, bool quitting) override;
     void onTabPopup(Workspace* workspace) override;
 
     // Triggered when the list is empty (because the user deleted all

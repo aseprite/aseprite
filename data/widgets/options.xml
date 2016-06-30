@@ -183,6 +183,7 @@
       <boxfiller />
       <hbox homogeneous="true">
         <button text="&amp;OK" closewindow="true" id="button_ok" magnet="true" width="60" />
+        <button text="&amp;Apply" id="button_apply" />
         <button text="&amp;Cancel" closewindow="true" />
       </hbox>
     </hbox>

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -63,6 +63,7 @@ namespace app {
     void sendDocumentToTop(doc::Document* document);
 
     app::Document* activeDocument() const;
+    bool hasModifiedDocuments() const;
 
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
