@@ -256,9 +256,10 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
     }
   }
 
-  // Start "moving pixels" loop
-  if (editor->isInsideSelection() && (msg->left() ||
-                                      msg->right())) {
+  // Start "moving pixels" loop. Here we check only for left-click as
+  // right-click can be used to deselect/subtract selection, so we
+  // should drop the selection in this later case.
+  if (editor->isInsideSelection() && msg->left()) {
     // In case that the user is pressing the copy-selection keyboard shortcut.
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     if ((customization) &&
