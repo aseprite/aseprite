@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,7 @@
 #include "base/exception.h"
 #include "base/unique_ptr.h"
 #include "doc/image_impl.h"
+#include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 #include "doc/site.h"
 #include "filters/filter_indexed_data.h"
@@ -85,42 +86,42 @@ namespace app {
     doc::Sprite* sprite() { return m_site.sprite(); }
     doc::Layer* layer() { return m_site.layer(); }
     doc::frame_t frame() { return m_site.frame(); }
-    doc::Image* destinationImage() const { return m_dst; }
+    doc::Image* destinationImage() const { return m_dst.get(); }
 
     // Updates the current editor to show the progress of the preview.
     void flush();
 
     // FilterManager implementation
-    const void* getSourceAddress();
-    void* getDestinationAddress();
-    int getWidth() { return m_w; }
-    Target getTarget() { return m_target; }
-    FilterIndexedData* getIndexedData() { return this; }
-    bool skipPixel();
-    const doc::Image* getSourceImage() { return m_src; }
-    int x() { return m_x; }
-    int y() { return m_y+m_row; }
+    const void* getSourceAddress() override;
+    void* getDestinationAddress() override;
+    int getWidth() override { return m_bounds.w; }
+    Target getTarget() override { return m_target; }
+    FilterIndexedData* getIndexedData() override { return this; }
+    bool skipPixel() override;
+    const doc::Image* getSourceImage() override { return m_src; }
+    int x() override { return m_bounds.x; }
+    int y() override { return m_bounds.y+m_row; }
 
     // FilterIndexedData implementation
-    doc::Palette* getPalette();
-    doc::RgbMap* getRgbMap();
+    doc::Palette* getPalette() override;
+    doc::RgbMap* getRgbMap() override;
 
   private:
-    void init(const doc::Layer* layer, doc::Image* image, int offset_x, int offset_y);
+    void init(const doc::Layer* layer, doc::Image* image, int x, int y);
     void apply(Transaction& transaction);
     void applyToImage(Transaction& transaction, doc::Layer* layer, doc::Image* image, int x, int y);
-    bool updateMask(doc::Mask* mask, const doc::Image* image);
+    bool updateBounds(doc::Mask* mask, const doc::Image* image);
 
     Context* m_context;
     doc::Site m_site;
     Filter* m_filter;
     doc::Image* m_src;
-    base::UniquePtr<doc::Image> m_dst;
+    doc::ImageRef m_dst;
     int m_row;
-    int m_x, m_y, m_w, m_h;
-    int m_offset_x, m_offset_y;
+    gfx::Rect m_bounds;
+    int m_celX, m_celY;
     doc::Mask* m_mask;
-    base::UniquePtr<doc::Mask> m_preview_mask;
+    base::UniquePtr<doc::Mask> m_previewMask;
     doc::ImageBits<doc::BitmapTraits> m_maskBits;
     doc::ImageBits<doc::BitmapTraits>::iterator m_maskIterator;
     Target m_targetOrig;          // Original targets
