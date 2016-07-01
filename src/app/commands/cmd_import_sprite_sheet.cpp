@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -90,6 +90,10 @@ public:
 
   SpriteSheetType sheetTypeValue() const {
     return (app::SpriteSheetType)(sheetType()->getSelectedItemIndex()+1);
+  }
+
+  bool partialTilesValue() const {
+    return partialTiles()->isSelected();
   }
 
   bool ok() const {
@@ -214,6 +218,7 @@ private:
         sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
 
       onChangeRectangle(m_docPref->importSpriteSheet.bounds());
+      partialTiles()->setSelected(m_docPref->importSpriteSheet.partialTiles());
       onEntriesChange();
     }
   }
@@ -305,6 +310,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
   Document* document = window.document();
   DocumentPreferences* docPref = window.docPref();
   gfx::Rect frameBounds = window.frameBounds();
+  bool partialTiles = window.partialTilesValue();
   auto sheetType = window.sheetTypeValue();
 
   ASSERT(document);
@@ -321,21 +327,27 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
 
     // Each sprite in the sheet
     std::vector<gfx::Rect> tileRects;
+    int widthStop = sprite->width();
+    int heightStop = sprite->height();
+    if (partialTiles) {
+      widthStop += frameBounds.w-1;
+      heightStop += frameBounds.h-1;
+    }
 
     switch (sheetType) {
       case app::SpriteSheetType::Horizontal:
-        for (int x=frameBounds.x; x+frameBounds.w<=sprite->width(); x += frameBounds.w) {
+        for (int x=frameBounds.x; x+frameBounds.w<=widthStop; x += frameBounds.w) {
           tileRects.push_back(gfx::Rect(x, frameBounds.y, frameBounds.w, frameBounds.h));
         }
         break;
       case app::SpriteSheetType::Vertical:
-        for (int y=frameBounds.y; y+frameBounds.h<=sprite->height(); y += frameBounds.h) {
+        for (int y=frameBounds.y; y+frameBounds.h<=heightStop; y += frameBounds.h) {
           tileRects.push_back(gfx::Rect(frameBounds.x, y, frameBounds.w, frameBounds.h));
         }
         break;
       case app::SpriteSheetType::Rows:
-        for (int y=frameBounds.y; y+frameBounds.h<=sprite->height(); y += frameBounds.h) {
-          for (int x=frameBounds.x; x+frameBounds.w<=sprite->width(); x += frameBounds.w) {
+        for (int y=frameBounds.y; y+frameBounds.h<=heightStop; y += frameBounds.h) {
+          for (int x=frameBounds.x; x+frameBounds.w<=widthStop; x += frameBounds.w) {
             tileRects.push_back(gfx::Rect(x, y, frameBounds.w, frameBounds.h));
           }
         }
@@ -411,6 +423,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     if (docPref) {
       docPref->importSpriteSheet.type(sheetType);
       docPref->importSpriteSheet.bounds(frameBounds);
+      docPref->importSpriteSheet.partialTiles(partialTiles);
     }
   }
   catch (...) {
