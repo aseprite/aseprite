@@ -78,6 +78,11 @@ Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, co
   return trim;
 }
 
+Image* crop_image(const Image* image, const gfx::Rect& bounds, color_t bg, const ImageBufferPtr& buffer)
+{
+  return crop_image(image, bounds.x, bounds.y, bounds.w, bounds.h, bg, buffer);
+}
+
 void rotate_image(const Image* src, Image* dst, int angle)
 {
   ASSERT(src);
