@@ -17,10 +17,12 @@
 #include "doc/site.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
+#include "gfx/rect.h"
 
 #include <cstring>
 
 namespace doc {
+  class Cel;
   class Image;
   class Layer;
   class Mask;
@@ -68,7 +70,6 @@ namespace app {
     };
 
     FilterManagerImpl(Context* context, Filter* filter);
-    ~FilterManagerImpl();
 
     void setProgressDelegate(IProgressDelegate* progressDelegate);
 
@@ -87,6 +88,7 @@ namespace app {
     doc::Layer* layer() { return m_site.layer(); }
     doc::frame_t frame() { return m_site.frame(); }
     doc::Image* destinationImage() const { return m_dst.get(); }
+    gfx::Point position() const { return gfx::Point(0, 0); }
 
     // Updates the current editor to show the progress of the preview.
     void flush();
@@ -98,7 +100,7 @@ namespace app {
     Target getTarget() override { return m_target; }
     FilterIndexedData* getIndexedData() override { return this; }
     bool skipPixel() override;
-    const doc::Image* getSourceImage() override { return m_src; }
+    const doc::Image* getSourceImage() override { return m_src.get(); }
     int x() override { return m_bounds.x; }
     int y() override { return m_bounds.y+m_row; }
 
@@ -107,19 +109,19 @@ namespace app {
     doc::RgbMap* getRgbMap() override;
 
   private:
-    void init(const doc::Layer* layer, doc::Image* image, int x, int y);
+    void init(doc::Cel* cel);
     void apply(Transaction& transaction);
-    void applyToImage(Transaction& transaction, doc::Layer* layer, doc::Image* image, int x, int y);
-    bool updateBounds(doc::Mask* mask, const doc::Image* image);
+    void applyToCel(Transaction& transaction, doc::Cel* cel);
+    bool updateBounds(doc::Mask* mask);
 
     Context* m_context;
     doc::Site m_site;
     Filter* m_filter;
-    doc::Image* m_src;
+    doc::Cel* m_cel;
+    doc::ImageRef m_src;
     doc::ImageRef m_dst;
     int m_row;
     gfx::Rect m_bounds;
-    int m_celX, m_celY;
     doc::Mask* m_mask;
     base::UniquePtr<doc::Mask> m_previewMask;
     doc::ImageBits<doc::BitmapTraits> m_maskBits;

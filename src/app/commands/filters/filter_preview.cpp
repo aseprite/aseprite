@@ -70,6 +70,7 @@ bool FilterPreview::onProcessMessage(Message* msg)
         m_filterMgr->layer(),
         m_filterMgr->frame(),
         m_filterMgr->destinationImage(),
+        m_filterMgr->position(),
         static_cast<doc::LayerImage*>(m_filterMgr->layer())->blendMode());
       break;
 

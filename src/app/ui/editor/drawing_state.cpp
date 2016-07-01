@@ -63,6 +63,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
     m_toolLoop->getLayer(),
     m_toolLoop->getFrame(),
     m_toolLoop->getDstImage(),
+    m_toolLoop->getCelOrigin(),
     (m_toolLoop->getLayer() &&
      m_toolLoop->getLayer()->isImage() ?
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():

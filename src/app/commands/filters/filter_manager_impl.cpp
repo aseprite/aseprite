@@ -20,6 +20,7 @@
 #include "app/modules/editors.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
+#include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/images_collector.h"
@@ -45,15 +46,14 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   : m_context(context)
   , m_site(context->activeSite())
   , m_filter(filter)
+  , m_cel(nullptr)
   , m_src(nullptr)
   , m_dst(nullptr)
+  , m_mask(nullptr)
   , m_previewMask(nullptr)
   , m_progressDelegate(NULL)
 {
   m_row = 0;
-  m_celX = 0;
-  m_celY = 0;
-  m_mask = NULL;
   m_targetOrig = TARGET_ALL_CHANNELS;
   m_target = TARGET_ALL_CHANNELS;
 
@@ -62,11 +62,7 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   if (!image)
     throw NoImageException();
 
-  init(m_site.layer(), image, x, y);
-}
-
-FilterManagerImpl::~FilterManagerImpl()
-{
+  init(m_site.cel());
 }
 
 app::Document* FilterManagerImpl::document()
@@ -100,9 +96,8 @@ void FilterManagerImpl::begin()
   Document* document = static_cast<app::Document*>(m_site.document());
 
   m_row = 0;
-  m_mask = (document->isMaskVisible() ? document->mask(): NULL);
-
-  updateBounds(m_mask, m_src);
+  m_mask = (document->isMaskVisible() ? document->mask(): nullptr);
+  updateBounds(m_mask);
 }
 
 void FilterManagerImpl::beginForPreview()
@@ -113,11 +108,7 @@ void FilterManagerImpl::beginForPreview()
     m_previewMask.reset(new Mask(*document->mask()));
   else {
     m_previewMask.reset(new Mask());
-    m_previewMask->replace(
-      gfx::Rect(
-        m_celX, m_celY,
-        m_src->width(),
-        m_src->height()));
+    m_previewMask->replace(m_site.sprite()->bounds());
   }
 
   m_row = 0;
@@ -139,7 +130,7 @@ void FilterManagerImpl::beginForPreview()
     m_previewMask->intersect(vp);
   }
 
-  if (!updateBounds(m_mask, m_src)) {
+  if (!updateBounds(m_mask)) {
     m_previewMask.reset(nullptr);
     m_row = -1;
     return;
@@ -156,12 +147,11 @@ bool FilterManagerImpl::applyStep()
   if (m_row < 0 || m_row >= m_bounds.h)
     return false;
 
-  if ((m_mask) && (m_mask->bitmap())) {
-    int x = m_bounds.x - m_mask->bounds().x + m_celX;
-    int y = m_bounds.y - m_mask->bounds().y + m_celY + m_row;
-
-    if ((m_bounds.w - x < 1) ||
-        (m_bounds.h - y < 1))
+  if (m_mask && m_mask->bitmap()) {
+    int x = m_bounds.x - m_mask->bounds().x;
+    int y = m_bounds.y - m_mask->bounds().y + m_row;
+    if ((x >= m_bounds.w) ||
+        (y >= m_bounds.h))
       return false;
 
     m_maskBits = m_mask->bitmap()
@@ -197,13 +187,16 @@ void FilterManagerImpl::apply(Transaction& transaction)
   }
 
   if (!cancelled) {
-    // Copy "dst" to "src"
-    transaction.execute(
-      new cmd::CopyRect(
-        m_src, m_dst.get(),
-        gfx::Clip(m_bounds.x, m_bounds.y,
-                  m_bounds.x, m_bounds.y,
-                  m_bounds.w, m_bounds.h)));
+    gfx::Rect output;
+    if (algorithm::shrink_bounds2(m_src.get(), m_dst.get(),
+                                  m_bounds, output)) {
+      // Patch "m_cel"
+      transaction.execute(
+        new cmd::PatchCel(
+          m_cel, m_dst.get(),
+          gfx::Region(output),
+          position()));
+    }
   }
 }
 
@@ -239,9 +232,7 @@ void FilterManagerImpl::applyToTarget()
     // Avoid applying the filter two times to the same image
     if (visited.find(image->id()) == visited.end()) {
       visited.insert(image->id());
-      applyToImage(
-        transaction, it->layer(),
-        image, it->cel()->x(), it->cel()->y());
+      applyToCel(transaction, it->cel());
     }
 
     // Is there a delegate to know if the process was cancelled by the user?
@@ -262,8 +253,8 @@ void FilterManagerImpl::flush()
     gfx::Rect rect(
       editor->editorToScreen(
         gfx::Point(
-          m_bounds.x+m_celX,
-          m_bounds.y+m_celY+m_row-1)),
+          m_bounds.x,
+          m_bounds.y+m_row-1)),
       gfx::Size(
         editor->zoom().apply(m_bounds.w),
         (editor->zoom().scale() >= 1 ? editor->zoom().apply(1):
@@ -280,12 +271,12 @@ void FilterManagerImpl::flush()
 
 const void* FilterManagerImpl::getSourceAddress()
 {
-  return m_src->getPixelAddress(m_bounds.x, m_row+m_bounds.y);
+  return m_src->getPixelAddress(m_bounds.x, m_bounds.y+m_row);
 }
 
 void* FilterManagerImpl::getDestinationAddress()
 {
-  return m_dst->getPixelAddress(m_bounds.x, m_row+m_bounds.y);
+  return m_dst->getPixelAddress(m_bounds.x, m_bounds.y+m_row);
 }
 
 bool FilterManagerImpl::skipPixel()
@@ -312,55 +303,48 @@ RgbMap* FilterManagerImpl::getRgbMap()
   return m_site.sprite()->rgbMap(m_site.frame());
 }
 
-void FilterManagerImpl::init(const Layer* layer, Image* image, int x, int y)
+void FilterManagerImpl::init(Cel* cel)
 {
-  m_celX = x;
-  m_celY = y;
-
-  if (!updateBounds(static_cast<app::Document*>(m_site.document())->mask(), image))
+  ASSERT(cel);
+  if (!updateBounds(static_cast<app::Document*>(m_site.document())->mask()))
     throw InvalidAreaException();
 
-  m_src = image;
-  m_dst.reset(Image::createCopy(m_src));
+  m_cel = cel;
+  m_src.reset(
+    crop_image(
+      cel->image(),
+      gfx::Rect(m_site.sprite()->bounds()).offset(-cel->position()), 0));
+  m_dst.reset(Image::createCopy(m_src.get()));
 
   m_row = -1;
-  m_mask = NULL;
+  m_mask = nullptr;
   m_previewMask.reset(nullptr);
 
   m_target = m_targetOrig;
 
-  /* the alpha channel of the background layer can't be modified */
-  if (layer->isBackground())
+  // The alpha channel of the background layer can't be modified
+  if (cel->layer()->isBackground())
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 
-void FilterManagerImpl::applyToImage(Transaction& transaction, Layer* layer, Image* image, int x, int y)
+void FilterManagerImpl::applyToCel(Transaction& transaction, Cel* cel)
 {
-  init(layer, image, x, y);
+  init(cel);
   apply(transaction);
 }
 
-bool FilterManagerImpl::updateBounds(Mask* mask, const Image* image)
+bool FilterManagerImpl::updateBounds(doc::Mask* mask)
 {
   gfx::Rect bounds;
-
-  if (mask && mask->bitmap()) {
+  if (mask && mask->bitmap() && !mask->bounds().isEmpty()) {
     bounds = mask->bounds();
-    bounds.offset(-m_celX, -m_celY);
-    bounds &= image->bounds();
+    bounds &= m_site.sprite()->bounds();
   }
   else {
-    bounds = image->bounds();
+    bounds = m_site.sprite()->bounds();
   }
-
-  if (bounds.isEmpty()) {
-    m_bounds = gfx::Rect(0, 0, 0, 0);
-    return false;
-  }
-  else {
-    m_bounds = bounds;
-    return true;
-  }
+  m_bounds = bounds;
+  return !m_bounds.isEmpty();
 }
 
 } // namespace app
