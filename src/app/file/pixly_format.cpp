@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "png.h"
 
@@ -198,8 +199,6 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
     UniquePtr<Sprite> sprite(new Sprite(IMAGE_RGB, frameWidth, frameHeight, 0));
 
-    LOG("Pixly Info %d %d %d\n", frameWidth, frameHeight, layerCount);
-
     TiXmlElement* xmlFrames = xmlAnim->FirstChild("Frames")->ToElement();
     int imageCount = strtol(xmlFrames->Attribute("length"), NULL, 10);
     int frameCount = imageCount / layerCount;
@@ -226,8 +225,6 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
       int x0 = strtol(xmlRegion->Attribute("x"), NULL, 10);
       int y0 = imageHeight-1 - strtol(xmlRegion->Attribute("y"), NULL, 10);
-
-      // LOG("Pixly Region %d %d...\n", x0, y0);
 
       base::UniquePtr<Cel> cel;
       ImageRef image(Image::create(pixelFormat, frameWidth, frameHeight));
@@ -275,20 +272,35 @@ bool PixlyFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PixlyFormat::onSave(FileOp* fop)
 {
-  fop->setError("Save of Pixly .anim file format not implemented yet.\n");
-  return false;
+  const Sprite* sprite = fop->document()->sprite();
 
-  const Image* image = fop->sequenceImage();
+  if(sprite->pixelFormat() != IMAGE_RGB || !fop->document()->sprite()->needAlpha()) {
+    fop->setError("Pixly .anim file format requires RGB(A) Color Mode\n");
+    return false;
+  }
+
+  auto it = sprite->folder()->getLayerBegin(),
+       end = sprite->folder()->getLayerEnd();
+  for (; it != end; ++it) { // layers
+    Layer *layer = *it;
+    if (!layer->isImage()) {
+      fop->setError("Pixly .anim file format does not support layer folders\n");
+      return false;
+    }
+  }
+
   png_uint_32 width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
   png_colorp palette = NULL;
-  png_bytep row_pointer;
+  png_bytepp rows_pointer;
   int color_type = 0;
-  int pass, number_passes;
 
   /* open the file */
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle xml_handle(open_file_with_exception(fop->filename(), "wb"));
+  FILE* xml_fp = xml_handle.get();
+
+  FileHandle handle(open_file_with_exception(base::replace_extension(fop->filename(),"png"), "wb"));
   FILE* fp = handle.get();
 
   /* Create and initialize the png_struct with the desired error handler
@@ -330,68 +342,22 @@ bool PixlyFormat::onSave(FileOp* fop)
    * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
    * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
    */
-  width = image->width();
-  height = image->height();
 
-  switch (image->pixelFormat()) {
-    case IMAGE_RGB:
-      color_type = fop->document()->sprite()->needAlpha() ?
-        PNG_COLOR_TYPE_RGB_ALPHA:
-        PNG_COLOR_TYPE_RGB;
-      break;
-    case IMAGE_GRAYSCALE:
-      color_type = fop->document()->sprite()->needAlpha() ?
-        PNG_COLOR_TYPE_GRAY_ALPHA:
-        PNG_COLOR_TYPE_GRAY;
-      break;
-    case IMAGE_INDEXED:
-      color_type = PNG_COLOR_TYPE_PALETTE;
-      break;
-  }
+  int frameCount = sprite->totalFrames();
+  int layerCount = sprite->folder()->getLayersCount();
+  int imageCount = frameCount * layerCount;
+
+  int frameWidth = sprite->width();
+  int frameHeight = sprite->height();
+
+  int squareSide = (int)ceil(sqrt(imageCount));
+
+  width  = squareSide * frameWidth;
+  height = squareSide * frameHeight;
+  color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-  if (image->pixelFormat() == IMAGE_INDEXED) {
-    int c, r, g, b;
-    int pal_size = fop->sequenceGetNColors();
-    pal_size = MID(1, pal_size, PNG_MAX_PALETTE_LENGTH);
-
-#if PNG_MAX_PALETTE_LENGTH != 256
-#error PNG_MAX_PALETTE_LENGTH should be 256
-#endif
-
-    // Save the color palette.
-    palette = (png_colorp)png_malloc(png_ptr, pal_size * sizeof(png_color));
-    for (c = 0; c < pal_size; c++) {
-      fop->sequenceGetColor(c, &r, &g, &b);
-      palette[c].red   = r;
-      palette[c].green = g;
-      palette[c].blue  = b;
-    }
-
-    png_set_PLTE(png_ptr, info_ptr, palette, pal_size);
-
-    // If the sprite does not have a (visible) background layer, we
-    // put alpha=0 to the transparent color.
-    int mask_entry = -1;
-    if (fop->document()->sprite()->backgroundLayer() == NULL ||
-        !fop->document()->sprite()->backgroundLayer()->isVisible()) {
-      mask_entry = fop->document()->sprite()->transparentColor();
-    }
-
-    int num_trans = pal_size;
-    png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
-
-    for (c=0; c<num_trans; ++c) {
-      int alpha = 255;
-      fop->sequenceGetAlpha(c, &alpha);
-      trans[c] = (c == mask_entry ? 0: alpha);
-    }
-
-    png_set_tRNS(png_ptr, info_ptr, trans, num_trans, NULL);
-    png_free(png_ptr, trans);
-  }
 
   /* Write the file header information. */
   png_write_info(png_ptr, info_ptr);
@@ -399,100 +365,101 @@ bool PixlyFormat::onSave(FileOp* fop)
   /* pack pixels into bytes */
   png_set_packing(png_ptr);
 
-  /* non-interlaced */
-  number_passes = 1;
+  rows_pointer = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytep) * height);
+  for (y = 0; y < height; y++) {
+    rows_pointer[y] = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+    fop->setProgress(0.1 * (double)(y+1) / (double)height);
+  }	
 
-  row_pointer = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+  fprintf(xml_fp, 
+    "<PixlyAnimation version=\"1.5\">\n"
+    "\t<Info "
+    "sheetWidth=\"%d\" sheetHeight=\"%d\" "
+    "totalCollumns=\"%d\" totalRows=\"%d\" "
+    "frameWidth=\"%d\" frameHeight=\"%d\" "
+    "layerCount=\"%d\"/>\n"
+    "\t<Frames length=\"%d\">\n",
+    width, height,
+    squareSide, squareSide,
+    frameWidth, frameHeight,
+    layerCount, imageCount
+  );
 
-  /* The number of passes is either 1 for non-interlaced images,
-   * or 7 for interlaced images.
-   */
-  for (pass = 0; pass < number_passes; pass++) {
-    /* If you are only writing one row at a time, this works */
-    for (y = 0; y < height; y++) {
-      /* RGB_ALPHA */
-      if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
-        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
 
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = rgba_getr(c);
-          *(dst_address++) = rgba_getg(c);
-          *(dst_address++) = rgba_getb(c);
-          *(dst_address++) = rgba_geta(c);
-        }
-      }
-      /* RGB */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
-        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
+  int index = 0;
+  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+    auto it = sprite->folder()->getLayerBegin(),
+         end = sprite->folder()->getLayerEnd();
+    for (; it != end; ++it, ++index) { // layers
+      Layer *layer = *it;
 
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = rgba_getr(c);
-          *(dst_address++) = rgba_getg(c);
-          *(dst_address++) = rgba_getb(c);
-        }
-      }
-      /* GRAY_ALPHA */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
+      int col = index % squareSide;
+      int row = index / squareSide;
 
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = graya_getv(c);
-          *(dst_address++) = graya_geta(c);
-        }
-      }
-      /* GRAY */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
-        uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
+      int x0 = col * frameWidth;
+      int y0 = row * frameHeight; // inverted
 
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = graya_getv(c);
-        }
-      }
-      /* PALETTE */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
-        uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x;
+      int duration = sprite->frameDuration(frame);
 
-        for (x=0; x<width; x++)
-          *(dst_address++) = *(src_address++);
-      }
+      fprintf(xml_fp, 
+        "\t\t<Frame duration=\"%d\" visible=\"true\">\n"
+        "\t\t\t<Region x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>\n"
+        "\t\t\t<Index linear=\"%d\" collumn=\"%d\" row=\"%d\"/>\n"
+        "\t\t</Frame>\n",
+        duration,
+        x0, y0, frameWidth, frameHeight,
+        index, col, row
+      );
 
-      /* write the line */
-      png_write_rows(png_ptr, &row_pointer, 1);
+      const Cel* cel = layer->cel(frame);
+      if (cel) {
+        const Image* image = cel->image();
+        if (image) {
 
-      fop->setProgress(
-        (double)((double)pass + (double)(y+1) / (double)(height))
-        / (double)number_passes);
-    }
+          for (y = 0; y < frameHeight; y++) {
+            /* RGB_ALPHA */
+            uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
+            uint8_t* dst_address = rows_pointer[(height - 1) - y0 - (frameHeight - 1) + y] + (x0 * 4);
+            unsigned int x, c;
+
+            for (x=0; x<frameWidth; x++) {
+              c = *(src_address++);
+              *(dst_address++) = rgba_getr(c);
+              *(dst_address++) = rgba_getg(c);
+              *(dst_address++) = rgba_getb(c);
+              *(dst_address++) = rgba_geta(c);
+            } // x
+          } // y
+
+        } // image
+      } // cel
+
+      fop->setProgress(0.1 + 0.8 * (double)(index+1) / (double)imageCount);
+
+    } // layer
+  } // frame
+
+  fprintf(xml_fp, 
+      "\t</Frames>\n"
+      "</PixlyAnimation>\n"
+   );
+
+
+  /* If you are only writing one row at a time, this works */
+  for (y = 0; y < height; y++) {
+    /* write the line */
+    png_write_rows(png_ptr, rows_pointer+y, 1);
+
+    fop->setProgress(0.9 + 0.1 * (double)(y+1) / (double)height);
   }
 
-  png_free(png_ptr, row_pointer);
+  for (y = 0; y < height; y++) {
+    png_free(png_ptr, rows_pointer[y]);
+  }
+  png_free(png_ptr, rows_pointer);
 
   /* It is REQUIRED to call this to finish writing the rest of the file */
   png_write_end(png_ptr, info_ptr);
-
-  /* If you png_malloced a palette, free it here (don't free info_ptr->palette,
-     as recommended in versions 1.0.5m and earlier of this example; if
-     libpng mallocs info_ptr->palette, libpng will free it).  If you
-     allocated it with malloc() instead of png_malloc(), use free() instead
-     of png_free(). */
-  if (image->pixelFormat() == IMAGE_INDEXED) {
-    png_free(png_ptr, palette);
-    palette = NULL;
-  }
 
   /* clean up after the write, and free any memory allocated */
   png_destroy_write_struct(&png_ptr, &info_ptr);
