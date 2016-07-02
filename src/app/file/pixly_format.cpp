@@ -175,8 +175,8 @@ bool PixlyFormat::onLoad(FileOp* fop)
       png_read_rows(png_ptr, rows_pointer+y, nullptr, 1);
 
       fop->setProgress(
-        (double)((double)pass + (double)(y+1) / (double)(height))
-        / (double)number_passes);
+        0.5 * ((double)((double)pass + (double)(y+1) / (double)(height))
+        / (double)number_passes));
 
       if (fop->isStop())
         break;
@@ -184,12 +184,9 @@ bool PixlyFormat::onLoad(FileOp* fop)
   }
 
   {
-    fop->setProgress(0.1);
-
     XmlDocumentRef doc = open_xml(fop->filename());
     TiXmlHandle xml(doc.get());
-
-    fop->setProgress(0.2);
+    fop->setProgress(0.75);
 
     TiXmlElement* xmlAnim = xml.FirstChild("PixlyAnimation").ToElement();
 
@@ -230,7 +227,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       int x0 = strtol(xmlRegion->Attribute("x"), NULL, 10);
       int y0 = imageHeight-1 - strtol(xmlRegion->Attribute("y"), NULL, 10);
 
-      LOG("Pixly Region %d %d...\n", x0, y0);
+      // LOG("Pixly Region %d %d...\n", x0, y0);
 
       base::UniquePtr<Cel> cel;
       ImageRef image(Image::create(pixelFormat, frameWidth, frameHeight));
@@ -257,7 +254,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       cel.release();
 
       xmlFrame = xmlFrame->NextSiblingElement();
-      fop->setProgress(0.2 + 0.8 * ((float)index / (float)imageCount));
+      fop->setProgress(0.75 + 0.25 * ((float)index / (float)imageCount));
     }
 
     sprite->setDurationForAllFrames(duration);
