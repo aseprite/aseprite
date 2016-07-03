@@ -208,7 +208,9 @@ bool PixlyFormat::onLoad(FileOp* fop)
       sprite->folder()->addLayer(new LayerImage(sprite));
     }
 
-    int duration = 200;
+    int *visible = (int*)malloc(layerCount * sizeof(int));
+    memset(visible, 0, layerCount * sizeof(int));
+
     TiXmlElement* xmlFrame = xmlFrames->FirstChild("Frame")->ToElement();
     while (xmlFrame) {
       TiXmlElement* xmlRegion = xmlFrame->FirstChild("Region")->ToElement();
@@ -217,10 +219,16 @@ bool PixlyFormat::onLoad(FileOp* fop)
       int index = strtol(xmlIndex->Attribute("linear"), NULL, 10);
       frame_t frame(index / layerCount);
       LayerIndex layer_index(index % layerCount);
+      Layer *layer = sprite->indexToLayer(layer_index);
 
       const char * duration_str = xmlFrame->Attribute("duration");
       if(duration_str) {
-        duration = strtol(duration_str, NULL, 10);
+        sprite->setFrameDuration(frame, strtol(duration_str, NULL, 10));
+      }
+
+      const char * visible_str = xmlFrame->Attribute("visible");
+      if(visible_str) {
+        visible[(int)layer_index] += std::string(visible_str) == "true";
       }
 
       int x0 = strtol(xmlRegion->Attribute("x"), NULL, 10);
@@ -246,7 +254,6 @@ bool PixlyFormat::onLoad(FileOp* fop)
       }
 
       cel.reset(new Cel(frame, image));
-      Layer *layer = sprite->indexToLayer(layer_index);
       static_cast<LayerImage*>(layer)->addCel(cel);
       cel.release();
 
@@ -254,7 +261,14 @@ bool PixlyFormat::onLoad(FileOp* fop)
       fop->setProgress(0.75 + 0.25 * ((float)index / (float)imageCount));
     }
 
-    sprite->setDurationForAllFrames(duration);
+    for(int i=0; i<layerCount; i++) {
+      LayerIndex layer_index(i);
+      Layer *layer = sprite->indexToLayer(layer_index);
+      layer->setVisible(visible[i] > frameCount/2);
+    }
+    free(visible);
+
+    //sprite->setDurationForAllFrames((int)(duration / duration_count));
     fop->createDocument(sprite);
     sprite.release();
   }
@@ -289,7 +303,7 @@ bool PixlyFormat::onSave(FileOp* fop)
     }
   }
 
-  png_uint_32 width, height, y;
+  int width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
   png_colorp palette = NULL;
@@ -402,11 +416,11 @@ bool PixlyFormat::onSave(FileOp* fop)
       int duration = sprite->frameDuration(frame);
 
       fprintf(xml_fp, 
-        "\t\t<Frame duration=\"%d\" visible=\"true\">\n"
+        "\t\t<Frame duration=\"%d\" visible=\"%s\">\n"
         "\t\t\t<Region x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>\n"
         "\t\t\t<Index linear=\"%d\" collumn=\"%d\" row=\"%d\"/>\n"
         "\t\t</Frame>\n",
-        duration,
+        duration, layer->isVisible() ? "true" : "false",
         x0, y0, frameWidth, frameHeight,
         index, col, row
       );
@@ -420,7 +434,8 @@ bool PixlyFormat::onSave(FileOp* fop)
             /* RGB_ALPHA */
             uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
             uint8_t* dst_address = rows_pointer[(height - 1) - y0 - (frameHeight - 1) + y] + (x0 * 4);
-            unsigned int x, c;
+            int x;
+            unsigned int c;
 
             for (x=0; x<frameWidth; x++) {
               c = *(src_address++);
