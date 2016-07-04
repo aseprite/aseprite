@@ -17,6 +17,7 @@
 #include "she/event_queue.h"
 #include "she/osx/app.h"
 #include "she/osx/generate_drop_files.h"
+#include "she/osx/view.h"
 #include "she/system.h"
 
 @implementation OSXAppDelegate
@@ -36,6 +37,20 @@
   she::Event ev;
   ev.setType(she::Event::CloseDisplay);
   she::queue_event(ev);
+}
+
+- (void)applicationWillResignActive:(NSNotification*)notification
+{
+  NSEvent* event = [NSApp currentEvent];
+  if (event != nil)
+    [OSXView updateKeyFlags:event];
+}
+
+- (void)applicationDidBecomeActive:(NSNotification*)notification
+{
+  NSEvent* event = [NSApp currentEvent];
+  if (event != nil)
+    [OSXView updateKeyFlags:event];
 }
 
 - (BOOL)application:(NSApplication*)app openFiles:(NSArray*)filenames
