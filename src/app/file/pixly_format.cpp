@@ -468,15 +468,19 @@ bool PixlyFormat::onSave(FileOp* fop)
       if (cel) {
         const Image* image = cel->image();
         if (image) {
+          int celX = cel->x();
+          int celY = cel->y();
+          int celWidth = image->width();
+          int celHeight = image->height();
 
-          for (y = 0; y < frameHeight; y++) {
+          for (y = 0; y < celHeight; y++) {
             /* RGB_ALPHA */
             uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-            uint8_t* dst_address = rows_pointer[(height - 1) - y0 - (frameHeight - 1) + y] + (x0 * 4);
+            uint8_t* dst_address = rows_pointer[(height - 1) - y0 - (frameHeight - 1) + celY + y] + ((x0 + celX) * 4);
             int x;
             unsigned int c;
 
-            for (x=0; x<frameWidth; x++) {
+            for (x=0; x<celWidth; x++) {
               c = *(src_address++);
               *(dst_address++) = rgba_getr(c);
               *(dst_address++) = rgba_getg(c);
