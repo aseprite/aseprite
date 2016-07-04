@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2016  Carlo "zED" Caputo
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -17,12 +17,14 @@
 #include "app/ini_file.h"
 #include "app/xml_document.h"
 #include "base/file_handle.h"
+#include "base/convert_to.h"
 #include "base/path.h"
 #include "doc/doc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <cctype>
 
 #include "png.h"
 
@@ -62,6 +64,36 @@ static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
   ((FileOp*)png_get_error_ptr(png_ptr))->setError("libpng: %s\n", error);
 }
+
+template<typename Any> static Any* check(Any* a, Any* alt = NULL) {
+  if(a == NULL) {
+    if(alt == NULL) {
+      throw Exception("bad structure");
+    } else {
+      return alt;
+    }
+  } else {
+    return a;
+  }
+}
+
+template<typename Number> static Number check_number(const char* c_str) {
+  if(c_str == NULL) {
+    throw Exception("value not found");
+  } else {
+    std::string str = c_str;
+    if(str.empty()) {
+      throw Exception("value empty");
+    }
+    std::string::const_iterator it = str.begin();
+    while (it != str.end() && (std::isdigit(*it) || *it == '.')) ++it;
+    if(it != str.end()) {
+      throw Exception("value not a number");
+    }
+    return base::convert_to<Number>(str);
+  }
+}
+
 
 bool PixlyFormat::onLoad(FileOp* fop)
 {
@@ -158,7 +190,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       break;
 
     default:
-      fop->setError("Color type not supported\n)");
+      fop->setError("Pixly loader requires a RGBA PNG\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
       return false;
   }
@@ -184,55 +216,66 @@ bool PixlyFormat::onLoad(FileOp* fop)
     }
   }
 
-  {
+  bool success = true;
+  try {
     XmlDocumentRef doc = open_xml(fop->filename());
     TiXmlHandle xml(doc.get());
     fop->setProgress(0.75);
 
-    TiXmlElement* xmlAnim = xml.FirstChild("PixlyAnimation").ToElement();
+    TiXmlElement* xmlAnim = check(xml.FirstChild("PixlyAnimation").ToElement());
+    double version = check_number<double>(xmlAnim->Attribute("version"));
+    if(version < 1.5) {
+      throw Exception("version 1.5 or above required");
+    }
 
-    TiXmlElement* xmlInfo = xmlAnim->FirstChild("Info")->ToElement();
+    TiXmlElement* xmlInfo = check(xmlAnim->FirstChild("Info"))->ToElement();
 
-    int layerCount  = strtol(xmlInfo->Attribute("layerCount"), NULL, 10);
-    int frameWidth  = strtol(xmlInfo->Attribute("frameWidth"), NULL, 10);
-    int frameHeight = strtol(xmlInfo->Attribute("frameHeight"), NULL, 10);
+    int layerCount  = check_number<int>(xmlInfo->Attribute("layerCount"));
+    int frameWidth  = check_number<int>(xmlInfo->Attribute("frameWidth"));
+    int frameHeight = check_number<int>(xmlInfo->Attribute("frameHeight"));
 
     UniquePtr<Sprite> sprite(new Sprite(IMAGE_RGB, frameWidth, frameHeight, 0));
 
-    TiXmlElement* xmlFrames = xmlAnim->FirstChild("Frames")->ToElement();
-    int imageCount = strtol(xmlFrames->Attribute("length"), NULL, 10);
+    TiXmlElement* xmlFrames = check(xmlAnim->FirstChild("Frames"))->ToElement();
+    int imageCount = check_number<int>(xmlFrames->Attribute("length"));
+
+    if(layerCount <= 0 || imageCount <= 0) {
+      throw Exception("No cels found");
+    }
+
     int frameCount = imageCount / layerCount;
     sprite->setTotalFrames(frame_t(frameCount));
+    sprite->setDurationForAllFrames(200);
 
     for(int i=0; i<layerCount; i++) {
       sprite->folder()->addLayer(new LayerImage(sprite));
     }
 
-    int *visible = (int*)malloc(layerCount * sizeof(int));
-    memset(visible, 0, layerCount * sizeof(int));
+    std::vector<int> visible(layerCount, 0);
 
-    TiXmlElement* xmlFrame = xmlFrames->FirstChild("Frame")->ToElement();
+    TiXmlElement* xmlFrame = check(xmlFrames->FirstChild("Frame"))->ToElement();
     while (xmlFrame) {
-      TiXmlElement* xmlRegion = xmlFrame->FirstChild("Region")->ToElement();
-      TiXmlElement* xmlIndex = xmlFrame->FirstChild("Index")->ToElement();
+      TiXmlElement* xmlRegion = check(xmlFrame->FirstChild("Region"))->ToElement();
+      TiXmlElement* xmlIndex = check(xmlFrame->FirstChild("Index"))->ToElement();
 
-      int index = strtol(xmlIndex->Attribute("linear"), NULL, 10);
+      int index = check_number<int>(xmlIndex->Attribute("linear"));
       frame_t frame(index / layerCount);
       LayerIndex layer_index(index % layerCount);
       Layer *layer = sprite->indexToLayer(layer_index);
 
-      const char * duration_str = xmlFrame->Attribute("duration");
-      if(duration_str) {
-        sprite->setFrameDuration(frame, strtol(duration_str, NULL, 10));
+      const char * duration = xmlFrame->Attribute("duration");
+      if(duration) {
+        sprite->setFrameDuration(frame, base::convert_to<int>(std::string(duration)));
       }
 
-      const char * visible_str = xmlFrame->Attribute("visible");
-      if(visible_str) {
-        visible[(int)layer_index] += std::string(visible_str) == "true";
-      }
+      visible[(int)layer_index] += (int)(std::string(check(xmlFrame->Attribute("visible"),"false")) == "true");
 
-      int x0 = strtol(xmlRegion->Attribute("x"), NULL, 10);
-      int y0 = imageHeight-1 - strtol(xmlRegion->Attribute("y"), NULL, 10);
+      int x0 = check_number<int>(xmlRegion->Attribute("x"));
+      int y0 = check_number<int>(xmlRegion->Attribute("y")); // inverted
+
+      if(y0 < 0 || y0 + frameHeight > imageHeight || x0 < 0 || x0 + frameWidth > imageWidth) {
+        throw Exception("looking for cels outside the bounds of the PNG");
+      }
 
       base::UniquePtr<Cel> cel;
       ImageRef image(Image::create(pixelFormat, frameWidth, frameHeight));
@@ -240,7 +283,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       // Convert rows_pointer into the doc::Image
       for (int y = 0; y < frameHeight; y++) {
         // RGB_ALPHA
-        uint8_t* src_address = rows_pointer[y0 - (frameHeight - 1) + y] + (x0 * 4);
+        uint8_t* src_address = rows_pointer[imageHeight-1 - y0 - (frameHeight-1) + y] + (x0 * 4);
         uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
         unsigned int r, g, b, a;
 
@@ -266,11 +309,13 @@ bool PixlyFormat::onLoad(FileOp* fop)
       Layer *layer = sprite->indexToLayer(layer_index);
       layer->setVisible(visible[i] > frameCount/2);
     }
-    free(visible);
 
-    //sprite->setDurationForAllFrames((int)(duration / duration_count));
     fop->createDocument(sprite);
     sprite.release();
+  }
+  catch(Exception &e) {
+    fop->setError((std::string("Pixly file format: ")+std::string(e.what())+"\n").c_str());
+    success = false;
   }
 
   for (y = 0; y < height; y++) {
@@ -280,7 +325,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
   // Clean up after the read, and free any memory allocated
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-  return true;
+  return success;
 }
 
 #ifdef ENABLE_SAVE
@@ -381,10 +426,13 @@ bool PixlyFormat::onSave(FileOp* fop)
 
   rows_pointer = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytep) * height);
   for (y = 0; y < height; y++) {
-    rows_pointer[y] = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+    size_t size = png_get_rowbytes(png_ptr, info_ptr);
+    rows_pointer[y] = (png_bytep)png_malloc(png_ptr, size);
+    memset(rows_pointer[y], 0, size);
     fop->setProgress(0.1 * (double)(y+1) / (double)height);
   }	
 
+  // XXX beware the required typo on Pixly xml: "totalCollumns" (sic)
   fprintf(xml_fp, 
     "<PixlyAnimation version=\"1.5\">\n"
     "\t<Info "
@@ -415,6 +463,7 @@ bool PixlyFormat::onSave(FileOp* fop)
 
       int duration = sprite->frameDuration(frame);
 
+      // XXX beware the required typo on Pixly xml: "collumn" (sic)
       fprintf(xml_fp, 
         "\t\t<Frame duration=\"%d\" visible=\"%s\">\n"
         "\t\t\t<Region x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>\n"
@@ -458,7 +507,6 @@ bool PixlyFormat::onSave(FileOp* fop)
       "\t</Frames>\n"
       "</PixlyAnimation>\n"
    );
-
 
   /* If you are only writing one row at a time, this works */
   for (y = 0; y < height; y++) {
