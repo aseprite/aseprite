@@ -28,6 +28,9 @@ namespace base {
   // Returns the extension of the file name (without the dot).
   std::string get_file_extension(const std::string& filename);
 
+  // Returns the whole path with another extension.
+  std::string replace_extension(const std::string& filename, const std::string& extension);
+
   // Returns the file name without path and without extension.
   std::string get_file_title(const std::string& filename);
 
