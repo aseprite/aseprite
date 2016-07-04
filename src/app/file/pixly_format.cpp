@@ -4,26 +4,23 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
+//
+// Based on the code of David Capello
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/format_options.h"
-#include "app/ini_file.h"
 #include "app/xml_document.h"
 #include "base/file_handle.h"
 #include "base/convert_to.h"
 #include "base/path.h"
 #include "doc/doc.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include <cctype>
 
 #include "png.h"
@@ -33,7 +30,7 @@ namespace app {
 using namespace base;
 
 class PixlyFormat : public FileFormat {
-  const char* onGetName() const override { return "pixly"; }
+  const char* onGetName() const override { return "anim"; }
   const char* onGetExtensions() const override { return "anim"; }
   int onGetFlags() const override {
     return
@@ -41,11 +38,9 @@ class PixlyFormat : public FileFormat {
       FILE_SUPPORT_SAVE |
       FILE_SUPPORT_RGB |
       FILE_SUPPORT_RGBA |
-      FILE_SUPPORT_GRAY |
-      FILE_SUPPORT_GRAYA |
-      FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_LAYERS |
       FILE_SUPPORT_FRAMES |
+      FILE_SUPPORT_BIG_PALETTES |
       FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
@@ -301,7 +296,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       cel.release();
 
       xmlFrame = xmlFrame->NextSiblingElement();
-      fop->setProgress(0.75 + 0.25 * ((float)index / (float)imageCount));
+      fop->setProgress(0.75 + 0.25 * ((float)(index+1) / (float)imageCount));
     }
 
     for(int i=0; i<layerCount; i++) {
@@ -332,11 +327,6 @@ bool PixlyFormat::onLoad(FileOp* fop)
 bool PixlyFormat::onSave(FileOp* fop)
 {
   const Sprite* sprite = fop->document()->sprite();
-
-  if(sprite->pixelFormat() != IMAGE_RGB || !fop->document()->sprite()->needAlpha()) {
-    fop->setError("Pixly .anim file format requires RGB(A) Color Mode\n");
-    return false;
-  }
 
   auto it = sprite->folder()->getLayerBegin(),
        end = sprite->folder()->getLayerEnd();
