@@ -420,10 +420,10 @@ bool PixlyFormat::onSave(FileOp* fop)
     rows_pointer[y] = (png_bytep)png_malloc(png_ptr, size);
     memset(rows_pointer[y], 0, size);
     fop->setProgress(0.1 * (double)(y+1) / (double)height);
-  }	
+  }
 
-  // XXX beware the required typo on Pixly xml: "totalCollumns" (sic)
-  fprintf(xml_fp, 
+  // TODO XXX beware the required typo on Pixly xml: "totalCollumns" (sic)
+  fprintf(xml_fp,
     "<PixlyAnimation version=\"1.5\">\n"
     "\t<Info "
     "sheetWidth=\"%d\" sheetHeight=\"%d\" "
@@ -453,8 +453,8 @@ bool PixlyFormat::onSave(FileOp* fop)
 
       int duration = sprite->frameDuration(frame);
 
-      // XXX beware the required typo on Pixly xml: "collumn" (sic)
-      fprintf(xml_fp, 
+      // TODO XXX beware the required typo on Pixly xml: "collumn" (sic)
+      fprintf(xml_fp,
         "\t\t<Frame duration=\"%d\" visible=\"%s\">\n"
         "\t\t\t<Region x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>\n"
         "\t\t\t<Index linear=\"%d\" collumn=\"%d\" row=\"%d\"/>\n"
@@ -497,7 +497,7 @@ bool PixlyFormat::onSave(FileOp* fop)
     } // layer
   } // frame
 
-  fprintf(xml_fp, 
+  fprintf(xml_fp,
       "\t</Frames>\n"
       "</PixlyAnimation>\n"
    );
