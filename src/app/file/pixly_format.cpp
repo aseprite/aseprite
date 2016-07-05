@@ -341,7 +341,6 @@ bool PixlyFormat::onSave(FileOp* fop)
   int width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
-  png_colorp palette = NULL;
   png_bytepp rows_pointer;
   int color_type = 0;
 
