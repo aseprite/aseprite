@@ -39,9 +39,7 @@ class PixlyFormat : public FileFormat {
       FILE_SUPPORT_RGB |
       FILE_SUPPORT_RGBA |
       FILE_SUPPORT_LAYERS |
-      FILE_SUPPORT_FRAMES |
-      FILE_SUPPORT_BIG_PALETTES |
-      FILE_SUPPORT_PALETTE_WITH_ALPHA;
+      FILE_SUPPORT_FRAMES;
   }
 
   bool onLoad(FileOp* fop) override;
