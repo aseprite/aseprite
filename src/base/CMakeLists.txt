@@ -59,6 +59,11 @@ set(BASE_SOURCES
   trim_string.cpp
   version.cpp)
 
+if(APPLE)
+  set(BASE_SOURCES ${BASE_SOURCES}
+    fs_osx.mm)
+endif()
+
 if(WIN32)
   set(BASE_SOURCES ${BASE_SOURCES}
     win32_exception.cpp)

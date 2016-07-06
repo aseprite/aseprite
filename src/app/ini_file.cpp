@@ -12,9 +12,15 @@
 #include "app/ini_file.h"
 
 #include "app/resource_finder.h"
+#include "base/path.h"
 #include "base/split_string.h"
 #include "base/string.h"
 #include "cfg/cfg.h"
+
+#ifdef __APPLE__
+#include "she/logger.h"
+#include "she/system.h"
+#endif
 
 #ifndef _WIN32
   #include "base/fs.h"
@@ -34,9 +40,48 @@ ConfigModule::ConfigModule()
 {
   ResourceFinder rf;
   rf.includeUserDir("aseprite.ini");
+
+  // getFirstOrCreateDefault() will create the Aseprite directory
+  // inside the OS configuration folder (~/.config/aseprite/, etc.).
   std::string fn = rf.getFirstOrCreateDefault();
 
-#ifndef _WIN32 // Migrate the configuration file to the new location in Unix-like systems
+#ifdef __APPLE__
+
+  // On OS X we migrate from ~/.config/aseprite/* -> "~/Library/Application Support/Aseprite/*"
+  if (!base::is_file(fn)) {
+    try {
+      std::string new_dir = base::get_file_path(fn);
+
+      // Now we try to move all old configuration files into the new
+      // directory.
+      ResourceFinder old_rf;
+      old_rf.includeHomeDir(".config/aseprite/aseprite.ini");
+      std::string old_config_fn = old_rf.defaultFilename();
+      if (base::is_file(old_config_fn)) {
+        std::string old_dir = base::get_file_path(old_config_fn);
+        for (std::string old_fn : base::list_files(old_dir)) {
+          std::string from = base::join_path(old_dir, old_fn);
+          std::string to = base::join_path(new_dir, old_fn);
+          base::move_file(from, to);
+        }
+        base::remove_directory(old_dir);
+      }
+    }
+    // Something failed
+    catch (const std::exception& ex) {
+      std::string err = "Error in configuration migration: ";
+      err += ex.what();
+
+      auto system = she::instance();
+      if (system && system->logger())
+        system->logger()->logError(err.c_str());
+    }
+  }
+
+#elif !defined(_WIN32)
+
+  // On Linux we migrate the old configuration file name
+  // (.asepriterc -> ~/.config/aseprite/aseprite.ini)
   {
     ResourceFinder old_rf;
     old_rf.includeHomeDir(".asepriterc");
@@ -44,6 +89,7 @@ ConfigModule::ConfigModule()
     if (base::is_file(old_fn))
       base::move_file(old_fn, fn);
   }
+
 #endif
 
   set_config_file(fn.c_str());
