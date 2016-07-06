@@ -188,7 +188,11 @@ bool is_key_pressed(KeyScancode scancode)
 - (void)flagsChanged:(NSEvent*)event
 {
   [super flagsChanged:event];
+  [OSXView updateKeyFlags:event];
+}
 
++ (void)updateKeyFlags:(NSEvent*)event
+{
   static int lastFlags = 0;
   static int flags[] = {
     NSShiftKeyMask,

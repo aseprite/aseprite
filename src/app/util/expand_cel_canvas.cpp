@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/cmd/add_cel.h"
 #include "app/cmd/clear_cel.h"
+#include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
 #include "app/context.h"
 #include "app/document.h"
@@ -198,12 +199,22 @@ void ExpandCelCanvas::commit()
       regionToPatch = &reduced;
     }
 
-    m_transaction.execute(
-      new cmd::PatchCel(
-        m_cel,
-        m_dstImage.get(),
-        *regionToPatch,
-        m_bounds.origin()));
+    if (m_layer->isBackground()) {
+      m_transaction.execute(
+        new cmd::CopyRegion(
+          m_cel->image(),
+          m_dstImage.get(),
+          *regionToPatch,
+          m_bounds.origin()));
+    }
+    else {
+      m_transaction.execute(
+        new cmd::PatchCel(
+          m_cel,
+          m_dstImage.get(),
+          *regionToPatch,
+          m_bounds.origin()));
+    }
   }
   else {
     ASSERT(false);

@@ -13,7 +13,7 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
-#include "gfx/fwd.h"
+#include "gfx/point.h"
 #include "gfx/size.h"
 #include "render/extra_type.h"
 #include "render/onionskin_position.h"
@@ -114,8 +114,11 @@ namespace render {
 
     // Sets the preview image. This preview image is an alternative
     // image to be used for the given layer/frame.
-    void setPreviewImage(const Layer* layer, frame_t frame,
-                         Image* image, BlendMode blendMode);
+    void setPreviewImage(const Layer* layer,
+                         const frame_t frame,
+                         const Image* image,
+                         const gfx::Point& pos,
+                         const BlendMode blendMode);
     void removePreviewImage();
 
     // Sets an extra cel/image to be drawn after the current
@@ -191,7 +194,7 @@ namespace render {
       Image* dst_image,
       const Image* cel_image,
       const Palette* pal,
-      const Cel* cel,
+      const gfx::Point& celPos,
       const gfx::Clip& area,
       const CompositeImageFunc compositeImage,
       const int opacity,
@@ -224,7 +227,8 @@ namespace render {
     int m_globalOpacity;
     const Layer* m_selectedLayer;
     frame_t m_selectedFrame;
-    Image* m_previewImage;
+    const Image* m_previewImage;
+    gfx::Point m_previewPos;
     BlendMode m_previewBlendMode;
     OnionskinOptions m_onionskin;
   };

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -74,24 +74,18 @@ void ChangeColorCommand::onExecute(Context* context)
     case None:
       // do nothing
       break;
-    case IncrementIndex:
-      if (color.getType() == app::Color::IndexType) {
-        int index = color.getIndex();
-        if (index < get_current_palette()->size()-1)
-          color = app::Color::fromIndex(index+1);
-      }
-      else
-        color = app::Color::fromIndex(0);
+    case IncrementIndex: {
+      int index = color.getIndex();
+      if (index < get_current_palette()->size()-1)
+        color = app::Color::fromIndex(index+1);
       break;
-    case DecrementIndex:
-      if (color.getType() == app::Color::IndexType) {
-        int index = color.getIndex();
-        if (index > 0)
-          color = app::Color::fromIndex(index-1);
-      }
-      else
-        color = app::Color::fromIndex(0);
+    }
+    case DecrementIndex: {
+      int index = color.getIndex();
+      if (index > 0)
+        color = app::Color::fromIndex(index-1);
       break;
+    }
   }
 
   if (m_background)

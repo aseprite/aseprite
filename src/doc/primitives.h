@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,6 +26,7 @@ namespace doc {
   void copy_image(Image* dst, const Image* src);
   void copy_image(Image* dst, const Image* src, int x, int y);
   Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
+  Image* crop_image(const Image* image, const gfx::Rect& bounds, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   void rotate_image(const Image* src, Image* dst, int angle);
 
   void draw_hline(Image* image, int x1, int y, int x2, color_t c);

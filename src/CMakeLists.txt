@@ -159,6 +159,12 @@ add_executable(aseprite WIN32
 target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
 add_dependencies(aseprite copy_data)
 
+if(MSVC AND USE_SKIA_BACKEND)
+  # Add support to expand filename wildcards in argc/argv
+  set_target_properties(aseprite
+    PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wWinMainCRTStartup\"")
+endif()
+
 install(TARGETS aseprite
   RUNTIME DESTINATION bin)
 

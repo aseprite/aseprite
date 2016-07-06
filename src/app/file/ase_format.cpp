@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
@@ -16,10 +17,12 @@
 #include "base/cfile.h"
 #include "base/exception.h"
 #include "base/file_handle.h"
+#include "base/path.h"
 #include "doc/doc.h"
+#include "ui/alert.h"
 #include "zlib.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #define ASE_FILE_MAGIC                      0xA5E0
 #define ASE_FILE_FRAME_MAGIC                0xF1FA
@@ -132,6 +135,8 @@ static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_head
                                             const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_read_user_data_chunk(FILE* f, UserData* userData);
 static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData);
+static bool ase_has_groups(LayerFolder* layer);
+static void ase_ungroup_all(LayerFolder* layer);
 
 class ChunkWriter {
 public:
@@ -169,6 +174,7 @@ class AseFormat : public FileFormat {
   }
 
   bool onLoad(FileOp* fop) override;
+  bool onPostLoad(FileOp* fop) override;
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
@@ -338,6 +344,34 @@ bool AseFormat::onLoad(FileOp* fop)
   else {
     return true;
   }
+}
+
+bool AseFormat::onPostLoad(FileOp* fop)
+{
+  LayerFolder* folder = fop->document()->sprite()->folder();
+
+  // Forward Compatibility: In 1.1 we convert a file with layer groups
+  // (saved with 1.2) as top level layers
+  std::string ver = VERSION;
+  bool flat = (ver[0] == '1' &&
+               ver[1] == '.' &&
+               ver[2] == '1');
+  if (flat && ase_has_groups(folder)) {
+    if (fop->context() &&
+        fop->context()->isUIAvailable() &&
+        ui::Alert::show("Warning"
+                        "<<The selected file \"%s\" has layer groups."
+                        "<<Do you want to open it with \"%s %s\" anyway?"
+                        "<<"
+                        "<<Note: Layers inside groups will be converted to top level layers."
+                        "||&Yes||&No",
+                        base::get_file_name(fop->filename()).c_str(),
+                        PACKAGE, ver.c_str()) != 1) {
+      return false;
+    }
+    ase_ungroup_all(folder);
+  }
+  return true;
 }
 
 #ifdef ENABLE_SAVE
@@ -1567,6 +1601,48 @@ static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_heade
     fputc(doc::rgba_getg(userData->color()), f);
     fputc(doc::rgba_getb(userData->color()), f);
     fputc(doc::rgba_geta(userData->color()), f);
+  }
+}
+
+static bool ase_has_groups(LayerFolder* folder)
+{
+  for (Layer* child : folder->getLayersList()) {
+    if (child->isFolder())
+      return true;
+  }
+  return false;
+}
+
+static void ase_ungroup_all(LayerFolder* folder)
+{
+  LayerFolder* root = folder->sprite()->folder();
+  LayerList list = folder->getLayersList();
+
+  for (Layer* child : list) {
+    if (child->isFolder()) {
+      ase_ungroup_all(static_cast<LayerFolder*>(child));
+      folder->removeLayer(child);
+    }
+    else if (folder != root) {
+      // Create a new name adding all group layer names
+      {
+        std::string name;
+        for (Layer* layer=child; layer!=root; layer=layer->parent()) {
+          if (!name.empty())
+            name.insert(0, "-");
+          name.insert(0, layer->name());
+        }
+        child->setName(name);
+      }
+
+      folder->removeLayer(child);
+      root->addLayer(child);
+    }
+  }
+
+  if (folder != root) {
+    ASSERT(folder->getLayersCount() == 0);
+    delete folder;
   }
 }
 

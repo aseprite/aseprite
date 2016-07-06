@@ -484,12 +484,16 @@ void Render::setBgCheckedSize(const gfx::Size& size)
   m_bgCheckedSize = size;
 }
 
-void Render::setPreviewImage(const Layer* layer, frame_t frame,
-                             Image* image, BlendMode blendMode)
+void Render::setPreviewImage(const Layer* layer,
+                             const frame_t frame,
+                             const Image* image,
+                             const gfx::Point& pos,
+                             const BlendMode blendMode)
 {
   m_selectedLayer = layer;
   m_selectedFrame = frame;
   m_previewImage = image;
+  m_previewPos = pos;
   m_previewBlendMode = blendMode;
 }
 
@@ -657,7 +661,8 @@ void Render::renderSprite(
       dstImage,
       m_previewImage,
       m_sprite->palette(frame),
-      0, 0,
+      m_previewPos.x,
+      m_previewPos.y,
       area,
       compositeImage,
       255,
@@ -842,24 +847,27 @@ void Render::renderLayer(
       const Cel* cel = layer->cel(frame);
       if (cel) {
         Palette* pal = m_sprite->palette(frame);
-        Image* src_image;
+        const Image* celImage;
+        gfx::Point celPos;
 
         // Is the 'm_previewImage' set to be used with this layer?
         if ((m_previewImage) &&
             (m_selectedLayer == layer) &&
             (m_selectedFrame == frame)) {
-          src_image = m_previewImage;
+          celImage = m_previewImage;
+          celPos = m_previewPos;
 
-          ASSERT(src_image->pixelFormat() == cel->image()->pixelFormat());
+          ASSERT(celImage->pixelFormat() == cel->image()->pixelFormat());
         }
         // If not, we use the original cel-image from the images' stock
         else {
-          src_image = cel->image();
+          celImage = cel->image();
+          celPos = cel->position();
         }
 
-        if (src_image) {
+        if (celImage) {
           const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
-          BlendMode layerBlendMode =
+          const BlendMode layerBlendMode =
             (blendMode == BlendMode::UNSPECIFIED ?
              imgLayer->blendMode():
              blendMode);
@@ -875,7 +883,7 @@ void Render::renderLayer(
           opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
           opacity = MUL_UN8(opacity, m_globalOpacity, t);
 
-          ASSERT(src_image->maskColor() == m_sprite->transparentColor());
+          ASSERT(celImage->maskColor() == m_sprite->transparentColor());
 
           // Draw parts outside the "m_extraCel" area
           if (drawExtra && m_extraType == ExtraType::PATCH) {
@@ -885,17 +893,17 @@ void Render::renderLayer(
 
             for (auto rc : originalAreas) {
               renderCel(
-                image, src_image, pal,
-                cel, gfx::Clip(area.dst.x+rc.x-area.src.x,
-                               area.dst.y+rc.y-area.src.y, rc), compositeImage,
+                image, celImage, pal, celPos,
+                gfx::Clip(area.dst.x+rc.x-area.src.x,
+                          area.dst.y+rc.y-area.src.y, rc), compositeImage,
                 opacity, layerBlendMode);
             }
           }
           // Draw the whole cel
           else {
             renderCel(
-              image, src_image, pal,
-              cel, area, compositeImage,
+              image, celImage, pal,
+              celPos, area, compositeImage,
               opacity, layerBlendMode);
           }
         }
@@ -927,7 +935,7 @@ void Render::renderLayer(
       renderCel(
         image, m_extraImage,
         m_sprite->palette(frame),
-        m_extraCel,
+        m_extraCel->position(),
         gfx::Clip(area.dst.x+extraArea.x-area.src.x,
                   area.dst.y+extraArea.y-area.src.y,
                   extraArea),
@@ -942,7 +950,7 @@ void Render::renderCel(
   Image* dst_image,
   const Image* cel_image,
   const Palette* pal,
-  const Cel* cel,
+  const gfx::Point& celPos,
   const gfx::Clip& area,
   const CompositeImageFunc compositeImage,
   const int opacity,
@@ -951,8 +959,8 @@ void Render::renderCel(
   renderImage(dst_image,
               cel_image,
               pal,
-              cel->x(),
-              cel->y(),
+              celPos.x,
+              celPos.y,
               area,
               compositeImage,
               opacity,

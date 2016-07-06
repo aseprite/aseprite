@@ -98,26 +98,18 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 
     case WHEEL_FG:
       {
-        int newIndex = 0;
-        if (ColorBar::instance()->getFgColor().getType() == app::Color::IndexType) {
-          int lastIndex = get_current_palette()->size()-1;
-
-          newIndex = ColorBar::instance()->getFgColor().getIndex() + int(dz);
-          newIndex = MID(0, newIndex, lastIndex);
-        }
+        int lastIndex = get_current_palette()->size()-1;
+        int newIndex = ColorBar::instance()->getFgColor().getIndex() + int(dz);
+        newIndex = MID(0, newIndex, lastIndex);
         ColorBar::instance()->setFgColor(app::Color::fromIndex(newIndex));
       }
       break;
 
     case WHEEL_BG:
       {
-        int newIndex = 0;
-        if (ColorBar::instance()->getBgColor().getType() == app::Color::IndexType) {
-          int lastIndex = get_current_palette()->size()-1;
-
-          newIndex = ColorBar::instance()->getBgColor().getIndex() + int(dz);
-          newIndex = MID(0, newIndex, lastIndex);
-        }
+        int lastIndex = get_current_palette()->size()-1;
+        int newIndex = ColorBar::instance()->getBgColor().getIndex() + int(dz);
+        newIndex = MID(0, newIndex, lastIndex);
         ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
       }
       break;

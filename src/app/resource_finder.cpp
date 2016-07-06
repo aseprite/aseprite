@@ -160,6 +160,14 @@ void ResourceFinder::includeUserDir(const char* filename)
     includeHomeDir(filename);
   }
 
+#elif __APPLE__
+
+  // $HOME/Library/Application Support/Aseprite/filename
+  addPath(
+    base::join_path(
+      base::join_path(base::get_lib_app_support_path(), PACKAGE),
+      filename).c_str());
+
 #else
 
   // $HOME/.config/aseprite/filename

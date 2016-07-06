@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -62,11 +62,12 @@ namespace doc {
     bool isImage() const { return type() == ObjectType::LayerImage; }
     bool isFolder() const { return type() == ObjectType::LayerFolder; }
 
-    bool isBackground() const { return hasFlags(LayerFlags::Background); }
-    bool isVisible() const    { return hasFlags(LayerFlags::Visible); }
-    bool isEditable() const   { return hasFlags(LayerFlags::Editable); }
-    bool isMovable() const    { return !hasFlags(LayerFlags::LockMove); }
-    bool isContinuous() const { return hasFlags(LayerFlags::Continuous); }
+    bool isBackground() const  { return hasFlags(LayerFlags::Background); }
+    bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
+    bool isVisible() const     { return hasFlags(LayerFlags::Visible); }
+    bool isEditable() const    { return hasFlags(LayerFlags::Editable); }
+    bool isMovable() const     { return !hasFlags(LayerFlags::LockMove); }
+    bool isContinuous() const  { return hasFlags(LayerFlags::Continuous); }
 
     void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
     void setVisible   (bool state) { switchFlags(LayerFlags::Visible, state); }

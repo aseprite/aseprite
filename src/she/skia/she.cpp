@@ -51,20 +51,22 @@ void clear_keyboard_buffer()
 extern int app_main(int argc, char* argv[]);
 
 #if _WIN32
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nCmdShow) {
-  int argc = 0;
-  LPWSTR* argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
+extern int __argc;
+extern wchar_t** __wargv;
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                    PWSTR lpCmdLine, int nCmdShow) {
+  int argc = __argc;
   char** argv;
-  if (argvW && argc > 0) {
+  if (__wargv && argc > 0) {
     argv = new char*[argc];
     for (int i=0; i<argc; ++i)
-      argv[i] = base_strdup(base::to_utf8(std::wstring(argvW[i])).c_str());
-    LocalFree(argvW);
+      argv[i] = base_strdup(base::to_utf8(std::wstring(__wargv[i])).c_str());
   }
   else {
     argv = new char*[1];
     argv[0] = base_strdup("");
+    argc = 1;
   }
 #else
 int main(int argc, char* argv[]) {

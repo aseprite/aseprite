@@ -28,6 +28,7 @@
 - (void)keyDown:(NSEvent*)event;
 - (void)keyUp:(NSEvent*)event;
 - (void)flagsChanged:(NSEvent*)event;
++ (void)updateKeyFlags:(NSEvent*)event;
 - (void)mouseEntered:(NSEvent*)event;
 - (void)mouseMoved:(NSEvent*)event;
 - (void)mouseExited:(NSEvent*)event;
