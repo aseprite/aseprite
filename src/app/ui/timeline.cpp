@@ -50,6 +50,11 @@
 #include "she/font.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
+#include "base/unique_ptr.h"
+#include "doc/algorithm/rotate.h"
+#include "she/surface.h"
+#include "she/system.h"
+#include "doc/conversion_she.h"
 
 #include <cstdio>
 #include <vector>
@@ -1514,6 +1519,36 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
       style = styles.timelineKeyframe();
   }
   drawPart(g, bounds, NULL, style, is_active, is_hover);
+
+
+
+  if(image) { // TODO only draw the first visible of a linked sequence
+
+    base::UniquePtr<Image> thumb_img(Image::create(
+      image->pixelFormat(), bounds.w, bounds.h));
+    clear_image(thumb_img, 0);
+    algorithm::scale_image(thumb_img, image,
+                           0, 0, thumb_img->width(), thumb_img->height(),
+                           0, 0, image->width(),     image->height());
+
+    she::Surface* thumb_surf = she::instance()->createRgbaSurface(
+      thumb_img->width(),
+      thumb_img->height());
+
+    convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
+      0, 0, 0, 0, thumb_img->width(), thumb_img->height());
+
+    g->fillRect(gfx::rgba(0, 0, 0, 128), bounds); // TODO make only one draw call for the whole timeline
+
+    //g->blit(thumb_surf, 0, 0, bounds.x, bounds.y, bounds.w, bounds.h);
+    g->drawRgbaSurface(thumb_surf, bounds.x, bounds.y);
+    //g->drawColoredRgbaSurface(thumb_surf, gfx::rgba(0, 0, 0, 128), bounds.x, bounds.y);
+
+    thumb_surf->dispose(); // TODO cache it (where?)
+
+  }
+
+
 
   // Draw decorators to link the activeCel with its links.
   if (data->activeIt != data->end)
