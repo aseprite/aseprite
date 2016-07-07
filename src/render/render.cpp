@@ -382,14 +382,80 @@ void composite_image_scale_down(
 }
 
 template<class DstTraits, class SrcTraits>
+void composite_image_scale_down_non_square_pixel_ratio(
+  Image* dst, const Image* src, const Palette* pal,
+  const gfx::Clip& _area,
+  const int opacity,
+  const BlendMode blendMode,
+  const Projection& proj)
+{
+  ASSERT(dst);
+  ASSERT(src);
+  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
+  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+
+  gfx::Clip area = _area;
+  if (!area.clip(dst->width(), dst->height(),
+                 proj.applyX(src->width()),
+                 proj.applyY(src->height())))
+    return;
+
+  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
+  float step_w = proj.removeX(1.0f);
+  float step_h = proj.removeY(1.0f);
+  if (step_w < 1.0f || step_h < 1.0f)
+    return;
+
+  gfx::Rect srcBounds = proj.remove(area.srcBounds());
+  if (srcBounds.isEmpty())
+    return;
+
+  gfx::Rect dstBounds = area.dstBounds();
+
+  // Lock all necessary bits
+  LockImageBits<DstTraits> dstBits(dst, dstBounds);
+  auto dst_it = dstBits.begin();
+  auto dst_end = dstBits.end();
+
+  // For each line to draw of the source image...
+  float v = float(srcBounds.y);
+  for (int y=0; y<dstBounds.h; ++y) {
+    float u = float(srcBounds.x);
+
+    for (int x=0; x<dstBounds.w; ++x) {
+      ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
+
+      *dst_it = blender(*dst_it,
+                        get_pixel_fast<SrcTraits>(src, int(u), int(v)),
+                        opacity);
+
+      // Skip columns
+      u += step_w;
+      ++dst_it;
+    }
+
+    // Skip rows
+    v += step_h;
+  }
+}
+
+template<class DstTraits, class SrcTraits>
 CompositeImageFunc get_image_composition_impl(const Projection& proj)
 {
-  if (proj.scaleX() == 1.0 && proj.scaleY() == 1.0)
+  if (proj.applyX(1) == 1 && proj.applyY(1) == 1) {
     return composite_image_without_scale<DstTraits, SrcTraits>;
-  else if (proj.scaleX() >= 1.0 && proj.scaleY() >= 1.0)
+  }
+  else if (proj.scaleX() >= 1.0 && proj.scaleY() >= 1.0) {
     return composite_image_scale_up<DstTraits, SrcTraits>;
-  else
+  }
+  // Slower composite function for special cases with odd zoom and non-square pixel ratio
+  else if (((proj.removeX(1) > 1) && (proj.removeX(1) & 1)) ||
+           ((proj.removeY(1) > 1) && (proj.removeY(1) & 1))) {
+    return composite_image_scale_down_non_square_pixel_ratio<DstTraits, SrcTraits>;
+  }
+  else {
     return composite_image_scale_down<DstTraits, SrcTraits>;
+  }
 }
 
 CompositeImageFunc get_image_composition(const PixelFormat dstFormat,
