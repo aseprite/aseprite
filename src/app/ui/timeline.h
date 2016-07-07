@@ -291,6 +291,8 @@ namespace app {
 
     AniControls m_aniControls;
 
+    bool m_celPreview;
+
     // Temporal data used to move the range.
     struct MoveRange {
       int activeRelativeLayer;

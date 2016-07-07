@@ -110,6 +110,7 @@ enum {
   PART_CEL,
   PART_RANGE_OUTLINE,
   PART_FRAME_TAG,
+  PART_HEADER_CEL_PREVIEW,
 };
 
 struct Timeline::DrawCelData {
@@ -158,6 +159,8 @@ Timeline::Timeline()
   m_vbar.setBgColor(gfx::rgba(0, 0, 0, 128));
   m_hbar.setTransparent(true);
   m_vbar.setTransparent(true);
+
+  m_celPreview = false;
 }
 
 Timeline::~Timeline()
@@ -626,6 +629,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_HEADER_ONIONSKIN: {
             docPref().onionskin.active(!docPref().onionskin.active());
+            break;
+          }
+
+          case PART_HEADER_CEL_PREVIEW: {
+              m_celPreview = !m_celPreview;
             break;
           }
 
@@ -1341,6 +1349,13 @@ void Timeline::drawHeader(ui::Graphics* g)
     m_hot.part == PART_HEADER_ONIONSKIN,
     m_clk.part == PART_HEADER_ONIONSKIN);
 
+  drawPart(g, getPartBounds(Hit(PART_HEADER_CEL_PREVIEW)),
+    NULL,
+    m_celPreview ? styles.timelineOpenEye() : styles.timelineClosedEye(),
+    m_clk.part == PART_HEADER_CEL_PREVIEW,
+    m_hot.part == PART_HEADER_CEL_PREVIEW,
+    m_clk.part == PART_HEADER_CEL_PREVIEW);
+
   // Empty header space.
   drawPart(g, getPartBounds(Hit(PART_HEADER_LAYER)),
     NULL, styles.timelineBox(), false, false, false);
@@ -1522,7 +1537,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 
 
 
-  if(image) { // TODO only draw the first visible of a linked sequence
+  if(m_celPreview && image) { // TODO only draw the first visible of a linked sequence
 
     base::UniquePtr<Image> thumb_img(Image::create(
       image->pixelFormat(), bounds.w, bounds.h));
@@ -1824,8 +1839,11 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_HEADER_ONIONSKIN:
       return gfx::Rect(bounds.x + FRMSIZE*4, bounds.y + y, FRMSIZE, HDRSIZE);
 
+    case PART_HEADER_CEL_PREVIEW:
+      return gfx::Rect(bounds.x + FRMSIZE*5, bounds.y + y, FRMSIZE, HDRSIZE);
+
     case PART_HEADER_LAYER:
-      return gfx::Rect(bounds.x + FRMSIZE*5, bounds.y + y,
+      return gfx::Rect(bounds.x + FRMSIZE*6, bounds.y + y,
         m_separator_x - FRMSIZE*5, HDRSIZE);
 
     case PART_HEADER_FRAME:
@@ -2062,6 +2080,8 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
           hit.part = PART_HEADER_GEAR;
         else if (getPartBounds(Hit(PART_HEADER_ONIONSKIN)).contains(mousePos))
           hit.part = PART_HEADER_ONIONSKIN;
+        else if (getPartBounds(Hit(PART_HEADER_CEL_PREVIEW)).contains(mousePos))
+          hit.part = PART_HEADER_CEL_PREVIEW;
         else if (getPartBounds(Hit(PART_HEADER_LAYER)).contains(mousePos))
           hit.part = PART_HEADER_LAYER;
       }
@@ -2223,6 +2243,12 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case PART_HEADER_ONIONSKIN: {
         sb->setStatusText(0, "Onionskin is %s",
           docPref().onionskin.active() ? "enabled": "disabled");
+        return;
+      }
+
+      case PART_HEADER_CEL_PREVIEW: {
+        sb->setStatusText(0, "Cel preview is %s",
+          m_celPreview ? "enabled": "disabled");
         return;
       }
 
