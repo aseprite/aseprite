@@ -203,6 +203,7 @@ namespace app {
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
     void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
     void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel, DrawCelData* data);
+    void drawCelOverlay(ui::Graphics* g, LayerIndex layerIdx, frame_t frame);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
                                Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                DrawCelData* data);

@@ -553,6 +553,11 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateStatusBar(msg);
+
+      if(m_celPreview) {
+        invalidate();
+      }
+
       return true;
     }
 
@@ -1046,6 +1051,11 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     drawPaddings(g);
+
+    if(m_celPreview && m_hot.part == PART_CEL) {
+      drawCelOverlay(g, m_hot.layer, m_hot.frame);
+    }
+
     drawFrameTags(g);
     drawRangeOutline(g);
     drawClipboardRange(g);
@@ -1535,13 +1545,16 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   }
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 
+  // Draw decorators to link the activeCel with its links.
+  if (data->activeIt != data->end)
+    drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
 
   if(m_celPreview && image) { // TODO only draw the first visible of a linked sequence
 
     base::UniquePtr<Image> thumb_img(Image::create(
       image->pixelFormat(), bounds.w, bounds.h));
-    clear_image(thumb_img, 0);
+    //clear_image(thumb_img, 0);
     algorithm::scale_image(thumb_img, image,
                            0, 0, thumb_img->width(), thumb_img->height(),
                            0, 0, image->width(),     image->height());
@@ -1560,14 +1573,51 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     //g->drawColoredRgbaSurface(thumb_surf, gfx::rgba(0, 0, 0, 128), bounds.x, bounds.y);
 
     thumb_surf->dispose(); // TODO cache it (where?)
-
   }
+}
 
+void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t frame)
+{
+  Layer *layer = m_sprite->indexToLayer(layerIndex);
+  Cel *cel = layer->cel(frame);
+  if(!cel) return;
+  Image* image = cel->image();
+  if(!image) return;
+  gfx::Rect bounds_cel = getPartBounds(Hit(PART_CEL, layerIndex, frame));
+  gfx::Rect bounds = gfx::Rect(bounds_cel.x + FRMSIZE*1.5, bounds_cel.y + FRMSIZE*0.5, FRMSIZE*4, FRMSIZE*4 * m_sprite->height() / m_sprite->width());
+  gfx::Rect bounds_outer = gfx::Rect(bounds.x-1, bounds.y-1, bounds.w+2, bounds.h+2);
 
+  IntersectClip clip(g, bounds_outer);
+  if (!clip)
+    return;
 
-  // Draw decorators to link the activeCel with its links.
-  if (data->activeIt != data->end)
-    drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
+  base::UniquePtr<Image> overlay_img(Image::create(
+    image->pixelFormat(), bounds.w, bounds.h));
+  clear_image(overlay_img, 0);
+
+  int x = cel->x() * overlay_img->width()  / m_sprite->width();
+  int y = cel->y() * overlay_img->height() / m_sprite->height();
+
+  int w = image->width()  * overlay_img->width()  / m_sprite->width();
+  int h = image->height() * overlay_img->height() / m_sprite->height();
+
+  algorithm::scale_image(overlay_img, image,
+                         x, y, w, h,
+                         0, 0, image->width(), image->height());
+
+  she::Surface* overlay_surf = she::instance()->createRgbaSurface(
+    overlay_img->width(),
+    overlay_img->height());
+
+  convert_image_to_surface(overlay_img, m_sprite->palette(m_frame), overlay_surf,
+    0, 0, 0, 0, overlay_img->width(), overlay_img->height());
+
+  g->fillRect(gfx::rgba(0, 0, 0, 128), bounds);
+  g->drawRgbaSurface(overlay_surf, bounds.x, bounds.y);
+  g->drawRect(gfx::rgba(255, 255, 255, 192), bounds_outer);
+
+  overlay_surf->dispose();
+
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
