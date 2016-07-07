@@ -23,8 +23,12 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+#include "base/shared_ptr.h"
+#include "doc/object_id.h"
 
 #include <vector>
+#include <map>
+#include <utility>
 
 namespace doc {
   class Cel;
@@ -35,6 +39,10 @@ namespace doc {
 
 namespace ui {
   class Graphics;
+}
+
+namespace she {
+  class Surface;
 }
 
 namespace app {
@@ -293,6 +301,11 @@ namespace app {
     AniControls m_aniControls;
 
     bool m_celPreview;
+    gfx::Rect m_celPreviewOverlayRect;
+    typedef std::pair<LayerIndex,frame_t> Coord;
+    typedef std::map< Coord, base::SharedPtr<she::Surface> > ThumbCache;
+    typedef std::map< doc::ObjectId, ThumbCache > DocThumbCache;
+    DocThumbCache m_celPreviewThumbCache;
 
     // Temporal data used to move the range.
     struct MoveRange {

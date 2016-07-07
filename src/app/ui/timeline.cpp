@@ -59,6 +59,9 @@
 #include <cstdio>
 #include <vector>
 
+#define CEL_THUMB_CACHE
+
+
 // Size of the thumbnail in the screen (width x height), the really
 // size of the thumbnail bitmap is specified in the
 // 'generate_thumbnail' routine.
@@ -140,6 +143,9 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
+  , m_celPreview(false)
+  , m_celPreviewOverlayRect(0,0,0,0)
+  , m_celPreviewThumbCache()
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -159,8 +165,6 @@ Timeline::Timeline()
   m_vbar.setBgColor(gfx::rgba(0, 0, 0, 128));
   m_hbar.setTransparent(true);
   m_vbar.setTransparent(true);
-
-  m_celPreview = false;
 }
 
 Timeline::~Timeline()
@@ -555,7 +559,8 @@ bool Timeline::onProcessMessage(Message* msg)
       updateStatusBar(msg);
 
       if(m_celPreview) {
-        invalidate();
+        invalidateRect(m_celPreviewOverlayRect.offset(origin()));
+        m_celPreviewOverlayRect = gfx::Rect(0,0,0,0);
       }
 
       return true;
@@ -1550,42 +1555,72 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
 
-  if(m_celPreview && image) { // TODO only draw the first visible of a linked sequence
+  if(m_celPreview && image) {
 
-    base::UniquePtr<Image> thumb_img(Image::create(
-      image->pixelFormat(), bounds.w, bounds.h));
-    //clear_image(thumb_img, 0);
-    algorithm::scale_image(thumb_img, image,
-                           0, 0, thumb_img->width(), thumb_img->height(),
-                           0, 0, image->width(),     image->height());
+    she::Surface *thumb_surf;
 
-    she::Surface* thumb_surf = she::instance()->createRgbaSurface(
-      thumb_img->width(),
-      thumb_img->height());
+#ifdef CEL_THUMB_CACHE
+    // FIXME limit memory usage
+    // TODO clean cache of closed document
+    doc::ObjectId doc_id = m_document->id();
+    Coord coord = std::make_pair(layerIndex, frame);
+    ThumbCache &tc = m_celPreviewThumbCache[doc_id];
+    ThumbCache::iterator it;
+    if(is_active) {
+      tc.erase(coord);
+      it = tc.end();
+    } else {
+      it = tc.find(coord);
+    }
+    if(it != tc.end()) {
+      thumb_surf = (*it).second.get();
+    } else {
+#endif
 
-    convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
-      0, 0, 0, 0, thumb_img->width(), thumb_img->height());
+      base::UniquePtr<Image> thumb_img(Image::create(
+        image->pixelFormat(), bounds.w, bounds.h));
 
-    g->fillRect(gfx::rgba(0, 0, 0, 128), bounds); // TODO make only one draw call for the whole timeline
+      algorithm::scale_image(thumb_img, image,
+                             0, 0, thumb_img->width(), thumb_img->height(),
+                             0, 0, image->width(),     image->height());
 
-    //g->blit(thumb_surf, 0, 0, bounds.x, bounds.y, bounds.w, bounds.h);
+      thumb_surf = she::instance()->createRgbaSurface(
+        thumb_img->width(),
+        thumb_img->height());
+
+      convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
+        0, 0, 0, 0, thumb_img->width(), thumb_img->height());
+
+#ifdef CEL_THUMB_CACHE
+      m_celPreviewThumbCache[doc_id][coord] = base::SharedPtr<she::Surface>(thumb_surf);
+    }
+#endif
+
+    g->fillRect(gfx::rgba(0, 0, 0, 128), getCelsBounds());
     g->drawRgbaSurface(thumb_surf, bounds.x, bounds.y);
-    //g->drawColoredRgbaSurface(thumb_surf, gfx::rgba(0, 0, 0, 128), bounds.x, bounds.y);
 
-    thumb_surf->dispose(); // TODO cache it (where?)
+#ifndef CEL_THUMB_CACHE
+    thumb_surf->dispose();
+#endif
   }
 }
 
 void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t frame)
 {
-  Layer *layer = m_sprite->indexToLayer(layerIndex);
+  Layer *layer = m_layers[layerIndex];
   Cel *cel = layer->cel(frame);
   if(!cel) return;
   Image* image = cel->image();
   if(!image) return;
   gfx::Rect bounds_cel = getPartBounds(Hit(PART_CEL, layerIndex, frame));
-  gfx::Rect bounds = gfx::Rect(bounds_cel.x + FRMSIZE*1.5, bounds_cel.y + FRMSIZE*0.5, FRMSIZE*4, FRMSIZE*4 * m_sprite->height() / m_sprite->width());
+  gfx::Rect bounds = gfx::Rect(
+    bounds_cel.x + (int)(FRMSIZE*1.5),
+    bounds_cel.y + (int)(FRMSIZE*0.5),
+    FRMSIZE*4,
+    FRMSIZE*4 * m_sprite->height() / m_sprite->width()
+  );
   gfx::Rect bounds_outer = gfx::Rect(bounds.x-1, bounds.y-1, bounds.w+2, bounds.h+2);
+  m_celPreviewOverlayRect = bounds_outer;
 
   IntersectClip clip(g, bounds_outer);
   if (!clip)
