@@ -230,6 +230,12 @@ void App::run()
       she::instance()->activateApp();
 #endif
 
+#if _DEBUG
+    // On OS X, when we compile Aseprite on Debug mode, we're using it
+    // outside an app bundle, so we must active the app explicitly.
+    she::instance()->activateApp();
+#endif
+
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
     app::CheckUpdateThreadLauncher checkUpdate(

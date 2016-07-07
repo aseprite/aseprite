@@ -307,17 +307,19 @@ void BrushPreview::generateBoundaries()
       m_brushGen == brush->gen())
     return;
 
-  bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
+  bool isOnePixel =
+    (m_editor->getCurrentEditorTool()->getPointShape(0)->isPixel() ||
+     m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill());
   Image* brushImage = brush->image();
-  int w = (isFloodfill ? 1: brushImage->width());
-  int h = (isFloodfill ? 1: brushImage->height());
+  int w = (isOnePixel ? 1: brushImage->width());
+  int h = (isOnePixel ? 1: brushImage->height());
 
   m_brushGen = brush->gen();
   m_brushWidth = w;
   m_brushHeight = h;
 
   ImageRef mask;
-  if (isFloodfill) {
+  if (isOnePixel) {
     mask.reset(Image::create(IMAGE_BITMAP, w, w));
     mask->putPixel(0, 0, (color_t)1);
   }

@@ -21,6 +21,8 @@ public:
 
 class PixelPointShape : public PointShape {
 public:
+  bool isPixel() override { return true; }
+
   void transformPoint(ToolLoop* loop, int x, int y) override {
     doInkHline(x, y, x, loop);
   }

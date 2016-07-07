@@ -225,7 +225,8 @@ void cut(ContextWriter& writer)
       transaction.execute(new cmd::ClearMask(writer.cel()));
 
       ASSERT(writer.cel());
-      if (writer.cel())
+      if (writer.cel() &&
+          writer.cel()->layer()->isTransparent())
         transaction.execute(new cmd::TrimCel(writer.cel()));
 
       transaction.execute(new cmd::DeselectMask(writer.document()));

@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <window id="import_sprite_sheet" text="Import Sprite Sheet">
   <grid columns="4">
@@ -17,6 +17,8 @@
     <entry id="y" text="0" maxsize="4" />
     <label text="Height" />
     <entry id="height" text="16" maxsize="4" />
+
+    <check id="partial_tiles" text="Include partial tiles at bottom/right edges" cell_hspan="4" />
 
     <hbox cell_hspan="4">
       <boxfiller />

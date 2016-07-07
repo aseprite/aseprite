@@ -85,6 +85,30 @@ std::string get_file_extension(const std::string& filename)
   return result;
 }
 
+std::string replace_extension(const std::string& filename, const std::string& extension)
+{
+  std::string::const_reverse_iterator rit;
+  std::string result;
+
+  // search for the first dot from the end of the string
+  for (rit=filename.rbegin(); rit!=filename.rend(); ++rit) {
+    if (is_path_separator(*rit))
+      return result;
+    else if (*rit == '.')
+      break;
+  }
+
+  if (rit != filename.rend()) {
+    std::copy(filename.begin(), std::string::const_iterator(rit.base()),
+              std::back_inserter(result));
+    std::copy(extension.begin(), extension.end(),
+              std::back_inserter(result));
+  }
+
+  return result;
+}
+
+
 std::string get_file_title(const std::string& filename)
 {
   std::string::const_reverse_iterator rit;

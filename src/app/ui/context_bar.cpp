@@ -465,6 +465,17 @@ class ContextBar::InkShadesField : public HBox {
       parent()->parent()->layout();
     }
 
+    void updateShadeFromColorBarPicks() {
+      auto colorBar = ColorBar::instance();
+      if (!colorBar)
+        return;
+
+      doc::PalettePicks picks;
+      colorBar->getPaletteView()->getSelectedEntries(picks);
+      if (picks.picks() >= 2)
+        onChangeColorBarSelection();
+    }
+
   private:
 
     void onChangeColorBarSelection() {
@@ -708,6 +719,10 @@ public:
 
   void setShade(const Shade& shade) {
     m_shade.setShade(shade);
+  }
+
+  void updateShadeFromColorBarPicks() {
+    m_shade.updateShadeFromColorBarPicks();
   }
 
 private:
@@ -1553,6 +1568,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_spraySpeed->setValue(toolPref->spray.speed());
   }
 
+  bool updateShade = (!m_inkShades->isVisible() && hasInkShades);
+
   m_eyedropperField->updateFromPreferences(preferences.eyedropper);
   m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
 
@@ -1630,6 +1647,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
     Preferences::instance().symmetryMode.enabled() &&
     (isPaint || isEffect || hasSelectOptions));
   m_symmetry->updateWithCurrentDocument();
+
+  // Update ink shades with the current selected palette entries
+  if (updateShade)
+    m_inkShades->updateShadeFromColorBarPicks();
 
   layout();
 }

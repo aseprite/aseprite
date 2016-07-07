@@ -182,7 +182,8 @@ void PixelsMovement::cutMask()
       m_transaction.execute(new cmd::ClearMask(writer.cel()));
 
       ASSERT(writer.cel());
-      if (writer.cel())
+      if (writer.cel() &&
+          writer.cel()->layer()->isTransparent())
         m_transaction.execute(new cmd::TrimCel(writer.cel()));
     }
   }

@@ -523,7 +523,8 @@ bool DocumentView::onClear(Context* ctx)
     transaction.execute(new cmd::ClearMask(writer.cel()));
 
     // If the cel wasn't deleted by cmd::ClearMask, we trim it.
-    if (writer.cel())
+    if (writer.cel() &&
+        writer.cel()->layer()->isTransparent())
       transaction.execute(new cmd::TrimCel(writer.cel()));
 
     if (visibleMask &&

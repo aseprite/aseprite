@@ -70,14 +70,20 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
                 }
               }
 
-              doc::put_pixel(
-                image, ximg, yimg,
-                doc::rgba_blender_normal(
-                  doc::get_pixel(image, ximg, yimg),
+              int output_alpha = MUL_UN8(doc::rgba_geta(color), alpha, t);
+              if (output_alpha) {
+                doc::color_t output_color =
                   doc::rgba(doc::rgba_getr(color),
                             doc::rgba_getg(color),
                             doc::rgba_getb(color),
-                            MUL_UN8(doc::rgba_geta(color), alpha, t))));
+                            output_alpha);
+
+                doc::put_pixel(
+                  image, ximg, yimg,
+                  doc::rgba_blender_normal(
+                    doc::get_pixel(image, ximg, yimg),
+                    output_color));
+              }
             }
           }
         });

@@ -309,6 +309,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   bool fatal = false;
 
   // Check image type support
+  // TODO add support to automatically convert the image to a supported format
   switch (fop->m_document->sprite()->pixelFormat()) {
 
     case IMAGE_RGB:
