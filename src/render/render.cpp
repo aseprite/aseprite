@@ -155,7 +155,7 @@ void composite_image_without_scale(
 
   gfx::Rect srcBounds = area.srcBounds();
   gfx::Rect dstBounds = area.dstBounds();
-  int bottom = area.dst.y+area.size.h-1;
+  int bottom = dstBounds.y2()-1;
 
   ASSERT(!srcBounds.isEmpty());
 
@@ -220,7 +220,7 @@ void composite_image_scale_up(
     return;
 
   gfx::Rect dstBounds = area.dstBounds();
-  int bottom = area.dst.y+area.size.h-1;
+  int bottom = dstBounds.y2()-1;
   int line_h;
 
   // the scanline variable is used to blend src/dst pixels one time for each pixel
@@ -341,9 +341,9 @@ void composite_image_scale_down(
     return;
 
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
-  int unbox_w = proj.removeX(1);
-  int unbox_h = proj.removeY(1);
-  if (unbox_w < 1 || unbox_h < 1)
+  int step_w = proj.removeX(1);
+  int step_h = proj.removeY(1);
+  if (step_w < 1 || step_h < 1)
     return;
 
   gfx::Rect srcBounds = proj.remove(area.srcBounds());
@@ -351,49 +351,42 @@ void composite_image_scale_down(
     return;
 
   gfx::Rect dstBounds = area.dstBounds();
-  int bottom = area.dst.y+area.size.h-1;
 
   // Lock all necessary bits
   const LockImageBits<SrcTraits> srcBits(src, srcBounds);
   LockImageBits<DstTraits> dstBits(dst, dstBounds);
-  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin();
-  typename LockImageBits<SrcTraits>::const_iterator src_end = srcBits.end();
-  typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
+  auto src_it = srcBits.begin();
+  auto src_end = srcBits.end();
+  auto dst_it = dstBits.begin();
+  auto dst_end = dstBits.end();
+
+  // Adjust to src_it for each line
+  int adjust_per_line = (dstBounds.w*step_w)*(step_h-1);
 
   // For each line to draw of the source image...
-  dstBounds.h = 1;
-  for (int y=0; y<srcBounds.h; y+=unbox_h) {
-    dst_it = dstBits.begin_area(dstBounds);
-    dst_end = dstBits.end_area(dstBounds);
-
-    for (int x=0; x<srcBounds.w; x+=unbox_w) {
+  for (int y=0; y<dstBounds.h; ++y) {
+    for (int x=0; x<dstBounds.w; ++x) {
       ASSERT(src_it >= srcBits.begin() && src_it < src_end);
       ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
 
       *dst_it = blender(*dst_it, *src_it, opacity);
 
-      // Skip source pixels
-      for (int delta=0; delta < unbox_w && src_it != src_end; ++delta)
-        ++src_it;
-
+      // Skip columns
+      src_it += step_w;
       ++dst_it;
     }
 
-    if (++dstBounds.y > bottom)
-      break;
-
-    // Skip lines
-    for (int delta=0; delta < srcBounds.w * (unbox_h-1) && src_it != src_end; ++delta)
-      ++src_it;
+    // Skip rows
+    src_it += adjust_per_line;
   }
 }
 
 template<class DstTraits, class SrcTraits>
 CompositeImageFunc get_image_composition_impl(const Projection& proj)
 {
-  if (proj.zoom().scale() == 1.0)
+  if (proj.scaleX() == 1.0 && proj.scaleY() == 1.0)
     return composite_image_without_scale<DstTraits, SrcTraits>;
-  else if (proj.zoom().scale() > 1.0)
+  else if (proj.scaleX() >= 1.0 && proj.scaleY() >= 1.0)
     return composite_image_scale_up<DstTraits, SrcTraits>;
   else
     return composite_image_scale_down<DstTraits, SrcTraits>;

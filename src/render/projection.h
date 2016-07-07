@@ -42,10 +42,10 @@ namespace render {
     T applyY(T y) const { return m_zoom.apply(y * m_pixelRatio.h); }
 
     template<typename T>
-    T removeX(T x) const { return m_zoom.remove(x / m_pixelRatio.w); }
+    T removeX(T x) const { return m_zoom.remove(x) / m_pixelRatio.w; }
 
     template<typename T>
-    T removeY(T y) const { return m_zoom.remove(y / m_pixelRatio.h); }
+    T removeY(T y) const { return m_zoom.remove(y) / m_pixelRatio.h; }
 
     gfx::Rect apply(const gfx::Rect& r) const {
       int u = applyX(r.x);
