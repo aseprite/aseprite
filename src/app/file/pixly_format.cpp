@@ -23,8 +23,6 @@
 #include <cmath>
 #include <cctype>
 
-#include "png.h"
-
 namespace app {
 
 using namespace base;
@@ -51,11 +49,6 @@ class PixlyFormat : public FileFormat {
 FileFormat* CreatePixlyFormat()
 {
   return new PixlyFormat;
-}
-
-static void report_png_error(png_structp png_ptr, png_const_charp error)
-{
-  ((FileOp*)png_get_error_ptr(png_ptr))->setError("libpng: %s\n", error);
 }
 
 template<typename Any> static Any* check(Any* a, Any* alt = NULL) {
@@ -126,10 +119,10 @@ bool PixlyFormat::onLoad(FileOp* fop)
     }
 
     // load image sheet
-    Document* png = load_document(nullptr, base::replace_extension(fop->filename(),"png").c_str());
+    Document* sheet_doc = load_document(nullptr, base::replace_extension(fop->filename(),"png").c_str());
     fop->setProgress(0.5);
 
-    Image* sheet = check(check(check(check(check(png)->sprite())->layer(0))->cel(0))->image()); // do I need to check it all?
+    Image* sheet = check(check(check(check(check(sheet_doc)->sprite())->layer(0))->cel(0))->image()); // do I need to check it all?
 
     if(sheet->pixelFormat() != IMAGE_RGB) {
       throw("Pixly loader requires a RGBA PNG");
@@ -223,61 +216,7 @@ bool PixlyFormat::onSave(FileOp* fop)
     }
   }
 
-  int width, height, y;
-  png_structp png_ptr;
-  png_infop info_ptr;
-  png_bytepp rows_pointer;
-  int color_type = 0;
-
-  // TODO use save_document(nullptr, tmpDoc)
-
-  /* open the file */
-  FileHandle xml_handle(open_file_with_exception(fop->filename(), "wb"));
-  FILE* xml_fp = xml_handle.get();
-
-  FileHandle handle(open_file_with_exception(base::replace_extension(fop->filename(),"png"), "wb"));
-  FILE* fp = handle.get();
-
-  /* Create and initialize the png_struct with the desired error handler
-   * functions.  If you want to use the default stderr and longjump method,
-   * you can supply NULL for the last three parameters.  We also check that
-   * the library version is compatible with the one used at compile time,
-   * in case we are using dynamically linked libraries.  REQUIRED.
-   */
-  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
-                                    report_png_error, report_png_error);
-  if (png_ptr == NULL) {
-    return false;
-  }
-
-  /* Allocate/initialize the image information data.  REQUIRED */
-  info_ptr = png_create_info_struct(png_ptr);
-  if (info_ptr == NULL) {
-    png_destroy_write_struct(&png_ptr, NULL);
-    return false;
-  }
-
-  /* Set error handling.  REQUIRED if you aren't supplying your own
-   * error handling functions in the png_create_write_struct() call.
-   */
-  if (setjmp(png_jmpbuf(png_ptr))) {
-    /* If we get here, we had a problem reading the file */
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    return false;
-  }
-
-  /* set up the output control if you are using standard C streams */
-  png_init_io(png_ptr, fp);
-
-  /* Set the image information here.  Width and height are up to 2^31,
-   * bit_depth is one of 1, 2, 4, 8, or 16, but valid values also depend on
-   * the color_type selected. color_type is one of PNG_COLOR_TYPE_GRAY,
-   * PNG_COLOR_TYPE_GRAY_ALPHA, PNG_COLOR_TYPE_PALETTE, PNG_COLOR_TYPE_RGB,
-   * or PNG_COLOR_TYPE_RGB_ALPHA.  interlace is either PNG_INTERLACE_NONE or
-   * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
-   * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
-   */
-
+  // account sheet size
   int frameCount = sprite->totalFrames();
   int layerCount = sprite->folder()->getLayersCount();
   int imageCount = frameCount * layerCount;
@@ -287,29 +226,24 @@ bool PixlyFormat::onSave(FileOp* fop)
 
   int squareSide = (int)ceil(sqrt(imageCount));
 
-  width  = squareSide * frameWidth;
-  height = squareSide * frameHeight;
-  color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+  int sheetWidth  = squareSide * frameWidth;
+  int sheetHeight = squareSide * frameHeight;
 
-  png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
-               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+  // create PNG document
+  Sprite* sheet_sprite = new Sprite(IMAGE_RGB, sheetWidth, sheetHeight, 256);
+  LayerImage* sheet_layer = new LayerImage(sheet_sprite);
+  sheet_sprite->folder()->addLayer(sheet_layer);
+  UniquePtr<Document> sheet_doc(new Document(sheet_sprite));
+  ImageRef sheet_image(Image::create(IMAGE_RGB, sheetWidth, sheetHeight));
+  Image* sheet = sheet_image.get();
+  sheet_layer->addCel(new Cel(0, sheet_image));
 
-  /* Write the file header information. */
-  png_write_info(png_ptr, info_ptr);
-
-  /* pack pixels into bytes */
-  png_set_packing(png_ptr);
-
-  rows_pointer = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytep) * height);
-  for (y = 0; y < height; y++) {
-    size_t size = png_get_rowbytes(png_ptr, info_ptr);
-    rows_pointer[y] = (png_bytep)png_malloc(png_ptr, size);
-    memset(rows_pointer[y], 0, size);
-    fop->setProgress(0.1 * (double)(y+1) / (double)height);
-  }
+  // save XML header
+  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FILE* fp = handle.get();
 
   // TODO XXX beware the required typo on Pixly xml: "totalCollumns" (sic)
-  fprintf(xml_fp,
+  fprintf(fp,
     "<PixlyAnimation version=\"1.5\">\n"
     "\t<Info "
     "sheetWidth=\"%d\" sheetHeight=\"%d\" "
@@ -317,13 +251,13 @@ bool PixlyFormat::onSave(FileOp* fop)
     "frameWidth=\"%d\" frameHeight=\"%d\" "
     "layerCount=\"%d\"/>\n"
     "\t<Frames length=\"%d\">\n",
-    width, height,
+    sheetWidth, sheetWidth,
     squareSide, squareSide,
     frameWidth, frameHeight,
     layerCount, imageCount
   );
 
-
+  // write cels on XML and PNG
   int index = 0;
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     auto it = sprite->folder()->getLayerBegin(),
@@ -340,7 +274,7 @@ bool PixlyFormat::onSave(FileOp* fop)
       int duration = sprite->frameDuration(frame);
 
       // TODO XXX beware the required typo on Pixly xml: "collumn" (sic)
-      fprintf(xml_fp,
+      fprintf(fp,
         "\t\t<Frame duration=\"%d\" visible=\"%s\">\n"
         "\t\t\t<Region x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>\n"
         "\t\t\t<Index linear=\"%d\" collumn=\"%d\" row=\"%d\"/>\n"
@@ -359,21 +293,15 @@ bool PixlyFormat::onSave(FileOp* fop)
           int celWidth = image->width();
           int celHeight = image->height();
 
-          for (y = 0; y < celHeight; y++) {
-            /* RGB_ALPHA */
-            uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-            uint8_t* dst_address = rows_pointer[(height - 1) - y0 - (frameHeight - 1) + celY + y] + ((x0 + celX) * 4);
-            int x;
-            unsigned int c;
+          for (int y = 0; y < celHeight; y++) {
+            // RGB_ALPHA
+            int y0_down = (sheetHeight - 1) - y0 - (frameHeight - 1) + celY + y;
+            uint32_t* src_begin = (uint32_t*)image->getPixelAddress(0, y);
+            uint32_t* src_end   = (uint32_t*)image->getPixelAddress(celWidth, y);
+            uint32_t* dst_begin = (uint32_t*)sheet->getPixelAddress(x0 + celX, y0_down);
 
-            for (x=0; x<celWidth; x++) {
-              c = *(src_address++);
-              *(dst_address++) = rgba_getr(c);
-              *(dst_address++) = rgba_getg(c);
-              *(dst_address++) = rgba_getb(c);
-              *(dst_address++) = rgba_geta(c);
-            } // x
-          } // y
+            std::copy(src_begin, src_end, dst_begin);
+          }
 
         } // image
       } // cel
@@ -383,31 +311,15 @@ bool PixlyFormat::onSave(FileOp* fop)
     } // layer
   } // frame
 
-  fprintf(xml_fp,
+  // close files
+  fprintf(fp,
       "\t</Frames>\n"
       "</PixlyAnimation>\n"
    );
 
-  /* If you are only writing one row at a time, this works */
-  for (y = 0; y < height; y++) {
-    /* write the line */
-    png_write_rows(png_ptr, rows_pointer+y, 1);
+  sheet_doc->setFilename(base::replace_extension(fop->filename(),"png"));
+  save_document(nullptr, sheet_doc);
 
-    fop->setProgress(0.9 + 0.1 * (double)(y+1) / (double)height);
-  }
-
-  for (y = 0; y < height; y++) {
-    png_free(png_ptr, rows_pointer[y]);
-  }
-  png_free(png_ptr, rows_pointer);
-
-  /* It is REQUIRED to call this to finish writing the rest of the file */
-  png_write_end(png_ptr, info_ptr);
-
-  /* clean up after the write, and free any memory allocated */
-  png_destroy_write_struct(&png_ptr, &info_ptr);
-
-  /* all right */
   return true;
 }
 #endif
