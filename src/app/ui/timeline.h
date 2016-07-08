@@ -302,10 +302,9 @@ namespace app {
 
     bool m_celPreview;
     gfx::Rect m_celPreviewOverlayRect;
-    typedef std::pair<LayerIndex,frame_t> Coord;
-    typedef std::map< Coord, base::SharedPtr<she::Surface> > ThumbCache;
-    typedef std::map< doc::ObjectId, ThumbCache > DocThumbCache;
-    DocThumbCache m_celPreviewThumbCache;
+    // TODO sortable/cleanable by MRU
+    typedef std::map< doc::ObjectId, base::SharedPtr<she::Surface> > ThumbCache;
+    ThumbCache m_celPreviewThumbCache;
 
     // Temporal data used to move the range.
     struct MoveRange {

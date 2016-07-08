@@ -1562,17 +1562,15 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 #ifdef CEL_THUMB_CACHE
     // FIXME limit memory usage
     // TODO clean cache of closed document
-    doc::ObjectId doc_id = m_document->id();
-    Coord coord = std::make_pair(layerIndex, frame);
-    ThumbCache &tc = m_celPreviewThumbCache[doc_id];
+    doc::ObjectId image_id = image->id();
     ThumbCache::iterator it;
     if(is_active) {
-      tc.erase(coord);
-      it = tc.end();
+      m_celPreviewThumbCache.erase(image_id);
+      it = m_celPreviewThumbCache.end();
     } else {
-      it = tc.find(coord);
+      it = m_celPreviewThumbCache.find(image_id);
     }
-    if(it != tc.end()) {
+    if(it != m_celPreviewThumbCache.end()) {
       thumb_surf = (*it).second.get();
     } else {
 #endif
@@ -1592,7 +1590,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
         0, 0, 0, 0, thumb_img->width(), thumb_img->height());
 
 #ifdef CEL_THUMB_CACHE
-      m_celPreviewThumbCache[doc_id][coord] = base::SharedPtr<she::Surface>(thumb_surf);
+      m_celPreviewThumbCache[image_id] = base::SharedPtr<she::Surface>(thumb_surf);
     }
 #endif
 
