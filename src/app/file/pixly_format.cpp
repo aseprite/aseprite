@@ -160,7 +160,6 @@ bool PixlyFormat::onLoad(FileOp* fop)
       }
 
       // read cel images
-      base::UniquePtr<Cel> cel;
       ImageRef image(Image::create(IMAGE_RGB, frameWidth, frameHeight));
 
       for (int y = 0; y < frameHeight; y++) {
@@ -181,12 +180,41 @@ bool PixlyFormat::onLoad(FileOp* fop)
                                   bounds.w, bounds.h,
                                   image->maskColor()));
 
-        // TODO link identical neighbors
 
-        cel.reset(new Cel(frame, trim_image));
+        Cel* cel = NULL;
+        if((int)frame > 0) {
+          // link identical neighbors
+          Cel *prev_cel = static_cast<LayerImage*>(layer)->cel(frame-1);
+          if(prev_cel && prev_cel->x() == bounds.x && prev_cel->y() == bounds.y) {
+            Image *prev_image = prev_cel->image();
+            if(prev_image && prev_image->width() == bounds.w && prev_image->height() == bounds.h) {
+              for (int y = 0; y < bounds.h; y++) {
+                uint32_t* src     = (uint32_t*)prev_image->getPixelAddress(0         , y);
+                uint32_t* src_end = (uint32_t*)prev_image->getPixelAddress(0+bounds.w, y);
+                uint32_t* dst     = (uint32_t*)trim_image->getPixelAddress(0         , y);
+
+                while(src != src_end) {
+                  if(*(src++) != *(dst++)) {
+                    goto dont_link;
+                  }
+                } // x
+              } // y
+
+              cel = Cel::createLink(prev_cel);
+              cel->setFrame(frame);
+              goto add_cel;
+
+            } // prev_image
+          } // prev_cel
+        } // frame > 0
+
+        dont_link:
+        cel = new Cel(frame, trim_image);
         cel->setPosition(bounds.x, bounds.y);
+
+        add_cel:
         static_cast<LayerImage*>(layer)->addCel(cel);
-        cel.release();
+
       }
 
       xmlFrame = xmlFrame->NextSiblingElement();
@@ -315,7 +343,7 @@ bool PixlyFormat::onSave(FileOp* fop)
         } // image
       } // cel
 
-      fop->setProgress(0.1 + 0.8 * (double)(index+1) / (double)imageCount);
+      fop->setProgress(0.25 + 0.5 * (double)(index+1) / (double)imageCount);
 
     } // layer
   } // frame
