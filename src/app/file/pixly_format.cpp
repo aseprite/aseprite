@@ -270,6 +270,11 @@ bool PixlyFormat::onLoad(FileOp* fop)
         throw Exception("looking for cels outside the bounds of the PNG");
       }
 
+      // TODO use Document* tmpDoc = load_document(nullptr, pngfilename) and save_document(nullptr, tmpDoc)
+      // TODO link identical neighbors
+      // TODO if all transparent make empty
+      // TODO trim cel image
+
       base::UniquePtr<Cel> cel;
       ImageRef image(Image::create(pixelFormat, frameWidth, frameHeight));
 
