@@ -19,6 +19,7 @@
 #include "base/convert_to.h"
 #include "base/path.h"
 #include "doc/doc.h"
+#include "doc/algorithm/shrink_bounds.h"
 
 #include <cmath>
 #include <cctype>
@@ -158,14 +159,10 @@ bool PixlyFormat::onLoad(FileOp* fop)
         throw Exception("looking for cels outside the bounds of the PNG");
       }
 
-      // TODO link identical neighbors
-      // TODO if all transparent make empty
-      // TODO trim cel image
-
+      // read cel images
       base::UniquePtr<Cel> cel;
       ImageRef image(Image::create(IMAGE_RGB, frameWidth, frameHeight));
 
-      // Convert rows_pointer into the doc::Image
       for (int y = 0; y < frameHeight; y++) {
         // RGB_ALPHA
         int y0_down = sheetHeight-1 - y0_up - (frameHeight-1) + y;
@@ -176,9 +173,21 @@ bool PixlyFormat::onLoad(FileOp* fop)
         std::copy(src_begin, src_end, dst_begin);
       }
 
-      cel.reset(new Cel(frame, image));
-      static_cast<LayerImage*>(layer)->addCel(cel);
-      cel.release();
+      // make cel trimmed or empty
+      gfx::Rect bounds;
+      if (algorithm::shrink_bounds(image.get(), bounds, image->maskColor())) {
+        ImageRef trim_image(crop_image(image.get(),
+                                  bounds.x, bounds.y,
+                                  bounds.w, bounds.h,
+                                  image->maskColor()));
+
+        // TODO link identical neighbors
+
+        cel.reset(new Cel(frame, trim_image));
+        cel->setPosition(bounds.x, bounds.y);
+        static_cast<LayerImage*>(layer)->addCel(cel);
+        cel.release();
+      }
 
       xmlFrame = xmlFrame->NextSiblingElement();
       fop->setProgress(0.5 + 0.5 * ((float)(index+1) / (float)imageCount));
