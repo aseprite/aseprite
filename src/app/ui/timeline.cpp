@@ -144,7 +144,7 @@ Timeline::Timeline()
   , m_scroll(false)
   , m_fromTimeline(false)
   , m_celPreview(false)
-  , m_celPreviewOverlayRect(0,0,0,0)
+  , m_celPreviewOverlayRect(0, 0, 0, 0)
   , m_celPreviewThumbCache()
 {
   enableFlags(CTRL_RIGHT_CLICK);
@@ -560,7 +560,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
       if(m_celPreview) {
         invalidateRect(m_celPreviewOverlayRect.offset(origin()));
-        m_celPreviewOverlayRect = gfx::Rect(0,0,0,0);
+        m_celPreviewOverlayRect = gfx::Rect(0, 0, 0, 0);
       }
 
       return true;
@@ -1575,12 +1575,26 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     } else {
 #endif
 
+      // TODO make the thumbs transparent
+      // TODO select color of background
+
+      int x = 0, y = 0, w = bounds.w, h = bounds.h;
+      if(image->width() > image->height()) {
+        h = image->height() * bounds.w / image->width();
+        y = bounds.h / 2 - h / 2;
+      
+      } else if(image->width() < image->height()) {
+        w = image->width() * bounds.h / image->height();
+        x = bounds.w / 2 - w / 2;
+      }
+
       base::UniquePtr<Image> thumb_img(Image::create(
         image->pixelFormat(), bounds.w, bounds.h));
 
+      clear_image(thumb_img, 0);
       algorithm::scale_image(thumb_img, image,
-                             0, 0, thumb_img->width(), thumb_img->height(),
-                             0, 0, image->width(),     image->height());
+                             x, y, w, h,
+                             0, 0, image->width(), image->height());
 
       thumb_surf = she::instance()->createRgbaSurface(
         thumb_img->width(),
@@ -1610,12 +1624,28 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
   if(!cel) return;
   Image* image = cel->image();
   if(!image) return;
+
+  // TODO move it to avoid rendering it outside the visible area
+
+  int max_size = FRMSIZE*5;
+  int width, height;
+  double scale;
+  if(m_sprite->width() > m_sprite->height()) {
+    width  = max_size;
+    height = max_size * m_sprite->height() / m_sprite->width();
+    scale  = width / (double)m_sprite->width();
+  } else {
+    width  = max_size * m_sprite->width() / m_sprite->height();
+    height = max_size;
+    scale  = height / (double)m_sprite->height();
+  }
+
   gfx::Rect bounds_cel = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect bounds = gfx::Rect(
     bounds_cel.x + (int)(FRMSIZE*1.5),
     bounds_cel.y + (int)(FRMSIZE*0.5),
-    FRMSIZE*4,
-    FRMSIZE*4 * m_sprite->height() / m_sprite->width()
+    width,
+    height
   );
   gfx::Rect bounds_outer = gfx::Rect(bounds.x-1, bounds.y-1, bounds.w+2, bounds.h+2);
   m_celPreviewOverlayRect = bounds_outer;
@@ -1624,18 +1654,15 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
   if (!clip)
     return;
 
-  base::UniquePtr<Image> overlay_img(Image::create(
-    image->pixelFormat(), bounds.w, bounds.h));
+  base::UniquePtr<Image> overlay_img(
+    Image::create(image->pixelFormat(), bounds.w, bounds.h));
+
   clear_image(overlay_img, 0);
-
-  int x = cel->x() * overlay_img->width()  / m_sprite->width();
-  int y = cel->y() * overlay_img->height() / m_sprite->height();
-
-  int w = image->width()  * overlay_img->width()  / m_sprite->width();
-  int h = image->height() * overlay_img->height() / m_sprite->height();
-
   algorithm::scale_image(overlay_img, image,
-                         x, y, w, h,
+                         (int)(cel->x() * scale),
+                         (int)(cel->y() * scale),
+                         (int)(image->width() * scale),
+                         (int)(image->height() * scale),
                          0, 0, image->width(), image->height());
 
   she::Surface* overlay_surf = she::instance()->createRgbaSurface(
