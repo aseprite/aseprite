@@ -59,7 +59,6 @@
 #include <cstdio>
 #include <vector>
 
-#define CEL_THUMB_CACHE
 
 
 // Size of the thumbnail in the screen (width x height), the really
@@ -145,7 +144,6 @@ Timeline::Timeline()
   , m_fromTimeline(false)
   , m_celPreview(false)
   , m_celPreviewOverlayRect(0, 0, 0, 0)
-  , m_celPreviewThumbCache()
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -1559,22 +1557,6 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 
     she::Surface *thumb_surf;
 
-#ifdef CEL_THUMB_CACHE
-    // FIXME limit memory usage
-    // TODO clean cache of closed document
-    doc::ObjectId image_id = image->id();
-    ThumbCache::iterator it;
-    if(is_active) {
-      m_celPreviewThumbCache.erase(image_id);
-      it = m_celPreviewThumbCache.end();
-    } else {
-      it = m_celPreviewThumbCache.find(image_id);
-    }
-    if(it != m_celPreviewThumbCache.end()) {
-      thumb_surf = (*it).second.get();
-    } else {
-#endif
-
       // TODO make the thumbs transparent
       // TODO select color of background
 
@@ -1603,17 +1585,8 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
       convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
         0, 0, 0, 0, thumb_img->width(), thumb_img->height());
 
-#ifdef CEL_THUMB_CACHE
-      m_celPreviewThumbCache[image_id] = base::SharedPtr<she::Surface>(thumb_surf);
-    }
-#endif
-
     g->fillRect(gfx::rgba(0, 0, 0, 128), getCelsBounds());
     g->drawRgbaSurface(thumb_surf, bounds.x, bounds.y);
-
-#ifndef CEL_THUMB_CACHE
-    thumb_surf->dispose();
-#endif
   }
 }
 

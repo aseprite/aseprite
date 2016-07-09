@@ -302,9 +302,6 @@ namespace app {
 
     bool m_celPreview;
     gfx::Rect m_celPreviewOverlayRect;
-    // TODO sortable/cleanable by MRU
-    typedef std::map< doc::ObjectId, base::SharedPtr<she::Surface> > ThumbCache;
-    ThumbCache m_celPreviewThumbCache;
 
     // Temporal data used to move the range.
     struct MoveRange {
