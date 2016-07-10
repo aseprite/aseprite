@@ -145,6 +145,7 @@ Timeline::Timeline()
   , m_fromTimeline(false)
   , m_celPreview(false)
   , m_celPreviewOverlayRect(0, 0, 0, 0)
+  , m_celPreviewOverlayDirection(FRMSIZE*1.5, FRMSIZE*0.5)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -1659,18 +1660,31 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
     scale  = height / (double)m_sprite->height();
   }
 
-  gfx::Point center = clientBounds().center();
+  gfx::Rect client_bounds = clientBounds();
+  gfx::Point center = client_bounds.center();
+
   gfx::Rect bounds_cel = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect bounds = gfx::Rect(
-    bounds_cel.x + (bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5)),
-    bounds_cel.y + (bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)),
+    bounds_cel.x + m_celPreviewOverlayDirection.x,
+    bounds_cel.y + m_celPreviewOverlayDirection.y,
     width,
     height
   );
-  gfx::Rect bounds_outer = gfx::Rect(bounds.x-1, bounds.y-1, bounds.w+2, bounds.h+2);
-  m_celPreviewOverlayRect = bounds_outer;
 
-  IntersectClip clip(g, bounds_outer);
+  if(!client_bounds.contains(bounds)) {
+    m_celPreviewOverlayDirection = gfx::Point(
+      bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5),
+      bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)
+    );
+    bounds.setOrigin(gfx::Point(
+      bounds_cel.x + m_celPreviewOverlayDirection.x,
+      bounds_cel.y + m_celPreviewOverlayDirection.y
+    ));
+  }
+
+  m_celPreviewOverlayRect = bounds.enlarge(1);
+
+  IntersectClip clip(g, m_celPreviewOverlayRect);
   if (!clip)
     return;
 
@@ -1694,7 +1708,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
 
   g->fillRect(gfx::rgba(0, 0, 0, 120), bounds);
   g->drawRgbaSurface(overlay_surf, bounds.x, bounds.y);
-  g->drawRect(gfx::rgba(255, 255, 255, 192), bounds_outer);
+  g->drawRect(gfx::rgba(255, 255, 255, 192), m_celPreviewOverlayRect);
 
   overlay_surf->dispose();
 
