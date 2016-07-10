@@ -44,8 +44,8 @@ namespace app {
     void onCelThumbOpacityChange();
     void onCelQualityChange();
     void onCelBackgroundChange(const app::Color& color);
-    void ConfigureTimelinePopup::onCelShowThumbChange();
-    void ConfigureTimelinePopup::onCelShowOverlayChange();
+    void onCelShowThumbChange();
+    void onCelShowOverlayChange();
 
   private:
     void updateWidgetsFromCurrentSettings();
