@@ -300,7 +300,6 @@ namespace app {
 
     AniControls m_aniControls;
 
-    bool m_celPreview;
     gfx::Rect m_celPreviewOverlayRect;
     gfx::Point m_celPreviewOverlayDirection;
 

@@ -41,6 +41,12 @@ namespace app {
     void onCurrentLayerChange();
     void onPositionChange();
 
+    void onCelThumbOpacityChange();
+    void onCelQualityChange();
+    void onCelBackgroundChange(const app::Color& color);
+    void ConfigureTimelinePopup::onCelShowThumbChange();
+    void ConfigureTimelinePopup::onCelShowOverlayChange();
+
   private:
     void updateWidgetsFromCurrentSettings();
     app::Document* doc();

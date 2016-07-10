@@ -113,7 +113,6 @@ enum {
   PART_CEL,
   PART_RANGE_OUTLINE,
   PART_FRAME_TAG,
-  PART_HEADER_CEL_PREVIEW,
 };
 
 struct Timeline::DrawCelData {
@@ -143,7 +142,6 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
-  , m_celPreview(false)
   , m_celPreviewOverlayRect(0, 0, 0, 0)
   , m_celPreviewOverlayDirection(FRMSIZE*1.5, FRMSIZE*0.5)
 {
@@ -558,7 +556,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
       updateStatusBar(msg);
 
-      if (m_celPreview) {
+      if (docPref().celPreview.showOverlay()) {
         invalidateRect(m_celPreviewOverlayRect.offset(origin()));
         m_celPreviewOverlayRect = gfx::Rect(0, 0, 0, 0);
       }
@@ -639,11 +637,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_HEADER_ONIONSKIN: {
             docPref().onionskin.active(!docPref().onionskin.active());
-            break;
-          }
-
-          case PART_HEADER_CEL_PREVIEW: {
-              m_celPreview = !m_celPreview;
             break;
           }
 
@@ -1060,7 +1053,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     drawRangeOutline(g);
     drawClipboardRange(g);
 
-    if (m_celPreview && m_hot.part == PART_CEL) {
+    if (docPref().celPreview.showOverlay() && m_hot.part == PART_CEL) {
       drawCelOverlay(g, m_hot.layer, m_hot.frame);
     }
 
@@ -1363,13 +1356,6 @@ void Timeline::drawHeader(ui::Graphics* g)
     m_hot.part == PART_HEADER_ONIONSKIN,
     m_clk.part == PART_HEADER_ONIONSKIN);
 
-  drawPart(g, getPartBounds(Hit(PART_HEADER_CEL_PREVIEW)),
-    NULL,
-    m_celPreview ? styles.timelineOpenEye() : styles.timelineClosedEye(),
-    m_clk.part == PART_HEADER_CEL_PREVIEW,
-    m_hot.part == PART_HEADER_CEL_PREVIEW,
-    m_clk.part == PART_HEADER_CEL_PREVIEW);
-
   // Empty header space.
   drawPart(g, getPartBounds(Hit(PART_HEADER_LAYER)),
     NULL, styles.timelineBox(), false, false, false);
@@ -1554,7 +1540,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
 
-  if (m_celPreview && image) {
+  if (docPref().celPreview.showThumb() && image) {
 
     she::Surface *thumb_surf;
 
@@ -1576,15 +1562,9 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     base::UniquePtr<Image> thumb_img(Image::create(
       image->pixelFormat(), thumb_bounds.w, thumb_bounds.h));
 
-#if 0
-    int cel_opacity = 255;
-    int bg_opacity = 0;
-    doc::algorithm::ResizeMethod resize_method = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
-#else
-    int cel_opacity = 160;
-    int bg_opacity = 120;
-    doc::algorithm::ResizeMethod resize_method = doc::algorithm::RESIZE_METHOD_ROTSPRITE;
-#endif
+    int cel_opacity = docPref().celPreview.thumbOpacity();
+    gfx::Color background = color_utils::color_for_ui(docPref().celPreview.background());
+    doc::algorithm::ResizeMethod resize_method = docPref().celPreview.quality();
 
     if (cel_opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
       clear_image(thumb_img, gfx::rgba(0, 0, 0, 0));
@@ -1604,7 +1584,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
         m_sprite->rgbMap(frame),
         m_sprite->transparentColor());
 
-      clear_image(thumb_img, gfx::rgba(0, 0, 0, bg_opacity));
+      clear_image(thumb_img, background);
 
       render::composite_image(
         thumb_img, scale_img, 
@@ -1621,8 +1601,8 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
       0, 0, 0, 0, thumb_img->width(), thumb_img->height());
 
-    if (bg_opacity > 0 && cel_opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
-      g->fillRect(gfx::rgba(0, 0, 0, bg_opacity), bounds);
+    if (gfx::geta(background) > 0 && cel_opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
+      g->fillRect(background, thumb_bounds);
     }
 
     g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
@@ -1706,9 +1686,11 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
   convert_image_to_surface(overlay_img, m_sprite->palette(m_frame), overlay_surf,
     0, 0, 0, 0, overlay_img->width(), overlay_img->height());
 
-  g->fillRect(gfx::rgba(0, 0, 0, 120), bounds);
+  gfx::Color background = color_utils::color_for_ui(docPref().celPreview.background());
+  gfx::Color border = color_utils::blackandwhite_neg(background);
+  g->fillRect(background, bounds);
   g->drawRgbaSurface(overlay_surf, bounds.x, bounds.y);
-  g->drawRect(gfx::rgba(255, 255, 255, 192), m_celPreviewOverlayRect);
+  g->drawRect(border, m_celPreviewOverlayRect);
 
   overlay_surf->dispose();
 
@@ -1983,11 +1965,8 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_HEADER_ONIONSKIN:
       return gfx::Rect(bounds.x + FRMSIZE*4, bounds.y + y, FRMSIZE, HDRSIZE);
 
-    case PART_HEADER_CEL_PREVIEW:
-      return gfx::Rect(bounds.x + FRMSIZE*5, bounds.y + y, FRMSIZE, HDRSIZE);
-
     case PART_HEADER_LAYER:
-      return gfx::Rect(bounds.x + FRMSIZE*6, bounds.y + y,
+      return gfx::Rect(bounds.x + FRMSIZE*5, bounds.y + y,
         m_separator_x - FRMSIZE*5, HDRSIZE);
 
     case PART_HEADER_FRAME:
@@ -2224,8 +2203,6 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
           hit.part = PART_HEADER_GEAR;
         else if (getPartBounds(Hit(PART_HEADER_ONIONSKIN)).contains(mousePos))
           hit.part = PART_HEADER_ONIONSKIN;
-        else if (getPartBounds(Hit(PART_HEADER_CEL_PREVIEW)).contains(mousePos))
-          hit.part = PART_HEADER_CEL_PREVIEW;
         else if (getPartBounds(Hit(PART_HEADER_LAYER)).contains(mousePos))
           hit.part = PART_HEADER_LAYER;
       }
@@ -2387,12 +2364,6 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case PART_HEADER_ONIONSKIN: {
         sb->setStatusText(0, "Onionskin is %s",
           docPref().onionskin.active() ? "enabled": "disabled");
-        return;
-      }
-
-      case PART_HEADER_CEL_PREVIEW: {
-        sb->setStatusText(0, "Cel preview is %s",
-          m_celPreview ? "enabled": "disabled");
         return;
       }
 

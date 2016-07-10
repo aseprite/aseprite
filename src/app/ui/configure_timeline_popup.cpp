@@ -41,6 +41,8 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   : PopupWindow("Timeline Settings", ClickBehavior::CloseOnClickInOtherWindow)
   , m_lockUpdates(false)
 {
+  setHotRegion(gfx::Region(manager()->bounds())); // for the color selector
+
   setAutoRemap(false);
   setBorder(gfx::Border(4*guiscale()));
 
@@ -56,6 +58,15 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->currentLayer()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
   m_box->behind()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
+
+  m_box->celThumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelThumbOpacityChange, this));
+  m_box->celQualityNearest()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelQualityChange, this));
+  m_box->celQualityBilinear()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelQualityChange, this));
+  m_box->celQualityRotsprite()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelQualityChange, this));
+  m_box->celBackground()->Change.connect(&ConfigureTimelinePopup::onCelBackgroundChange, this);
+  m_box->celShowThumb()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowThumbChange, this));
+  m_box->celShowOverlay()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowOverlayChange, this));
+
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -103,6 +114,24 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       m_box->infront()->setSelected(true);
       break;
   }
+
+  switch (docPref.celPreview.quality()) {
+    case doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR:
+      m_box->celQualityNearest()->setSelected(true);
+      break;
+    case doc::algorithm::RESIZE_METHOD_BILINEAR:
+      m_box->celQualityBilinear()->setSelected(true);
+      break;
+    case doc::algorithm::RESIZE_METHOD_ROTSPRITE:
+      m_box->celQualityRotsprite()->setSelected(true);
+      break;
+  }
+
+  m_box->celThumbOpacity()->setValue(docPref.celPreview.thumbOpacity());
+  m_box->celBackground()->setColor(docPref.celPreview.background());
+  m_box->celShowThumb()->setSelected(docPref.celPreview.showThumb());
+  m_box->celShowOverlay()->setSelected(docPref.celPreview.showOverlay());
+
 }
 
 bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
@@ -174,5 +203,40 @@ void ConfigureTimelinePopup::onPositionChange()
                                render::OnionskinPosition::BEHIND:
                                render::OnionskinPosition::INFRONT);
 }
+
+void ConfigureTimelinePopup::onCelThumbOpacityChange()
+{
+  docPref().celPreview.thumbOpacity(m_box->celThumbOpacity()->getValue());
+  doc()->notifyGeneralUpdate();
+}
+
+void ConfigureTimelinePopup::onCelQualityChange()
+{
+  docPref().celPreview.quality(
+    m_box->celQualityRotsprite()->isSelected() ? doc::algorithm::RESIZE_METHOD_ROTSPRITE :
+    m_box->celQualityBilinear()->isSelected() ? doc::algorithm::RESIZE_METHOD_BILINEAR :
+    doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR
+  );
+  doc()->notifyGeneralUpdate();
+}
+
+void ConfigureTimelinePopup::onCelBackgroundChange(const app::Color& color)
+{
+  docPref().celPreview.background(color);
+  doc()->notifyGeneralUpdate();
+}
+
+void ConfigureTimelinePopup::onCelShowThumbChange()
+{
+  docPref().celPreview.showThumb(m_box->celShowThumb()->isSelected());
+  doc()->notifyGeneralUpdate();
+}
+
+void ConfigureTimelinePopup::onCelShowOverlayChange()
+{
+  docPref().celPreview.showOverlay(m_box->celShowOverlay()->isSelected());
+  doc()->notifyGeneralUpdate();
+}
+
 
 } // namespace app
