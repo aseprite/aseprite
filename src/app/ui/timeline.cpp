@@ -1055,14 +1055,13 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     drawPaddings(g);
+    drawFrameTags(g);
+    drawRangeOutline(g);
+    drawClipboardRange(g);
 
     if (m_celPreview && m_hot.part == PART_CEL) {
       drawCelOverlay(g, m_hot.layer, m_hot.frame);
     }
-
-    drawFrameTags(g);
-    drawRangeOutline(g);
-    drawClipboardRange(g);
 
 #if 0 // Use this code to debug the calculated m_dropRange by updateDropRange()
     {
@@ -1641,7 +1640,10 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
     return;
   }
 
-  // TODO move it to avoid rendering it outside the visible area
+  // TODO option to show the overlay and/or thumbs
+  // TODO option to specify max size
+  // TODO same background color as the thumbs
+  // TODO more stable avoiance of the borders
 
   int max_size = FRMSIZE*5;
   int width, height;
@@ -1657,10 +1659,11 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
     scale  = height / (double)m_sprite->height();
   }
 
+  gfx::Point center = clientBounds().center();
   gfx::Rect bounds_cel = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect bounds = gfx::Rect(
-    bounds_cel.x + (int)(FRMSIZE*1.5),
-    bounds_cel.y + (int)(FRMSIZE*0.5),
+    bounds_cel.x + (bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5)),
+    bounds_cel.y + (bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)),
     width,
     height
   );
@@ -1689,7 +1692,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
   convert_image_to_surface(overlay_img, m_sprite->palette(m_frame), overlay_surf,
     0, 0, 0, 0, overlay_img->width(), overlay_img->height());
 
-  g->fillRect(gfx::rgba(0, 0, 0, 128), bounds);
+  g->fillRect(gfx::rgba(0, 0, 0, 120), bounds);
   g->drawRgbaSurface(overlay_surf, bounds.x, bounds.y);
   g->drawRect(gfx::rgba(255, 255, 255, 192), bounds_outer);
 
