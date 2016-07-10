@@ -52,6 +52,7 @@
 #include "ui/ui.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/rotate.h"
+#include "doc/algorithm/resize_image.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "doc/conversion_she.h"
@@ -1557,35 +1558,66 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 
     she::Surface *thumb_surf;
 
-      // TODO make the thumbs transparent
-      // TODO select color of background
+    // TODO make the thumbs transparent
+    // TODO select color of background
 
-      int x = 0, y = 0, w = bounds.w, h = bounds.h;
-      if(image->width() > image->height()) {
-        h = image->height() * bounds.w / image->width();
-        y = bounds.h / 2 - h / 2;
-      
-      } else if(image->width() < image->height()) {
-        w = image->width() * bounds.h / image->height();
-        x = bounds.w / 2 - w / 2;
-      }
+    base::UniquePtr<Image> thumb_img(Image::create(
+      image->pixelFormat(), bounds.w, bounds.h));
 
-      base::UniquePtr<Image> thumb_img(Image::create(
-        image->pixelFormat(), bounds.w, bounds.h));
+#if 0 // working fine
+    double zw = thumb_img->width()  / (double)image->width();
+    double zh = thumb_img->height() / (double)image->height();
+    double z0 = zw < zh ? zw : zh;
+    double zoom = z0 > 1 ? 1 : z0;
 
-      clear_image(thumb_img, 0);
-      algorithm::scale_image(thumb_img, image,
-                             x, y, w, h,
-                             0, 0, image->width(), image->height());
+    int w = (int)(image->width()  * zoom);
+    int h = (int)(image->height() * zoom);
+    int x = (int)(thumb_img->width()  * 0.5 - image->width()  * zoom * 0.5);
+    int y = (int)(thumb_img->height() * 0.5 - image->height() * zoom * 0.5);
 
-      thumb_surf = she::instance()->createRgbaSurface(
-        thumb_img->width(),
-        thumb_img->height());
+    clear_image(thumb_img, gfx::rgba(0, 0, 0, 0));
+    algorithm::scale_image(thumb_img, image,
+                           x, y, w, h,
+                           0, 0, image->width(), image->height());
 
-      convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
-        0, 0, 0, 0, thumb_img->width(), thumb_img->height());
+    g->fillRect(gfx::rgba(0, 0, 0, 80), bounds);
+#elif 1 // bilinear scale
 
-    g->fillRect(gfx::rgba(0, 0, 0, 128), getCelsBounds());
+    // FIXME aspect ratio
+    doc::algorithm::resize_image(
+      image, thumb_img,
+      doc::algorithm::RESIZE_METHOD_ROTSPRITE, // BILINEAR, ROTSPRITE
+      m_sprite->palette(frame),
+      m_sprite->rgbMap(frame),
+      m_sprite->transparentColor());
+
+    g->fillRect(gfx::rgba(0, 0, 0, 80), bounds);
+#else // nice transparency
+    clear_image(thumb_img, gfx::rgba(0, 0, 0, 80));
+
+    render::Zoom zw = render::Zoom(thumb_img->width(),  image->width());
+    render::Zoom zh = render::Zoom(thumb_img->height(), image->height());
+    render::Zoom z0 = zw.scale() < zh.scale() ? zw : zh;
+    render::Zoom zoom = z0.scale() > 1 ? render::Zoom(1, 1) : z0;
+
+    // FIXME larger images overflow/wrap-around and crash
+    render::Render().renderImage(
+      thumb_img, image, 
+      m_sprite->palette(frame),
+      0, 
+      0,
+      zoom,
+      180, BlendMode::NORMAL);
+
+#endif
+
+    thumb_surf = she::instance()->createRgbaSurface(
+      thumb_img->width(),
+      thumb_img->height());
+
+    convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
+      0, 0, 0, 0, thumb_img->width(), thumb_img->height());
+
     g->drawRgbaSurface(thumb_surf, bounds.x, bounds.y);
   }
 }
