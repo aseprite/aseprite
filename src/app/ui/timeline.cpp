@@ -557,7 +557,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
       updateStatusBar(msg);
 
-      if(m_celPreview) {
+      if (m_celPreview) {
         invalidateRect(m_celPreviewOverlayRect.offset(origin()));
         m_celPreviewOverlayRect = gfx::Rect(0, 0, 0, 0);
       }
@@ -1056,7 +1056,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
     drawPaddings(g);
 
-    if(m_celPreview && m_hot.part == PART_CEL) {
+    if (m_celPreview && m_hot.part == PART_CEL) {
       drawCelOverlay(g, m_hot.layer, m_hot.frame);
     }
 
@@ -1554,7 +1554,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
 
-  if(m_celPreview && image) {
+  if (m_celPreview && image) {
 
     she::Surface *thumb_surf;
 
@@ -1573,27 +1573,46 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     int x = (int)(thumb_bounds.w * 0.5 - image->width()  * zoom * 0.5);
     int y = (int)(thumb_bounds.h * 0.5 - image->height() * zoom * 0.5);
 
-    base::UniquePtr<Image> scale_img(Image::create(
-      image->pixelFormat(), w, h));
-
-    doc::algorithm::resize_image(
-      image, scale_img,
-      doc::algorithm::RESIZE_METHOD_ROTSPRITE,
-      m_sprite->palette(frame),
-      m_sprite->rgbMap(frame),
-      m_sprite->transparentColor());
-
     base::UniquePtr<Image> thumb_img(Image::create(
       image->pixelFormat(), thumb_bounds.w, thumb_bounds.h));
 
-    clear_image(thumb_img, gfx::rgba(0, 0, 0, 120));
+#if 0
+    int cel_opacity = 255;
+    int bg_opacity = 0;
+    doc::algorithm::ResizeMethod resize_method = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
+#else
+    int cel_opacity = 160;
+    int bg_opacity = 120;
+    doc::algorithm::ResizeMethod resize_method = doc::algorithm::RESIZE_METHOD_ROTSPRITE;
+#endif
 
-    render::composite_image(
-      thumb_img, scale_img, 
-      m_sprite->palette(frame),
-      x, 
-      y,
-      160, BlendMode::NORMAL);
+    if (cel_opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
+      clear_image(thumb_img, gfx::rgba(0, 0, 0, 0));
+      algorithm::scale_image(
+        thumb_img, image,
+         x, y, w, h,
+         0, 0, image->width(), image->height());
+    }
+    else {
+      base::UniquePtr<Image> scale_img(Image::create(
+        image->pixelFormat(), w, h));
+
+      doc::algorithm::resize_image(
+        image, scale_img,
+        resize_method,
+        m_sprite->palette(frame),
+        m_sprite->rgbMap(frame),
+        m_sprite->transparentColor());
+
+      clear_image(thumb_img, gfx::rgba(0, 0, 0, bg_opacity));
+
+      render::composite_image(
+        thumb_img, scale_img, 
+        m_sprite->palette(frame),
+        x, 
+        y,
+        cel_opacity, BlendMode::NORMAL);
+    }
 
     thumb_surf = she::instance()->createRgbaSurface(
       thumb_img->width(),
@@ -1601,6 +1620,10 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 
     convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf,
       0, 0, 0, 0, thumb_img->width(), thumb_img->height());
+
+    if (bg_opacity > 0 && cel_opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
+      g->fillRect(gfx::rgba(0, 0, 0, bg_opacity), bounds);
+    }
 
     g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
   }
@@ -1610,20 +1633,25 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
 {
   Layer *layer = m_layers[layerIndex];
   Cel *cel = layer->cel(frame);
-  if(!cel) return;
+  if (!cel) {
+    return;
+  }
   Image* image = cel->image();
-  if(!image) return;
+  if (!image) {
+    return;
+  }
 
   // TODO move it to avoid rendering it outside the visible area
 
   int max_size = FRMSIZE*5;
   int width, height;
   double scale;
-  if(m_sprite->width() > m_sprite->height()) {
+  if (m_sprite->width() > m_sprite->height()) {
     width  = max_size;
     height = max_size * m_sprite->height() / m_sprite->width();
     scale  = width / (double)m_sprite->width();
-  } else {
+  }
+  else {
     width  = max_size * m_sprite->width() / m_sprite->height();
     height = max_size;
     scale  = height / (double)m_sprite->height();
