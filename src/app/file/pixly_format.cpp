@@ -20,6 +20,7 @@
 #include "base/path.h"
 #include "doc/doc.h"
 #include "doc/algorithm/shrink_bounds.h"
+#include "doc/primitives.h"
 
 #include <cmath>
 #include <cctype>
@@ -53,28 +54,31 @@ FileFormat* CreatePixlyFormat()
 }
 
 template<typename Any> static Any* check(Any* a, Any* alt = NULL) {
-  if(a == NULL) {
-    if(alt == NULL) {
+  if (a == NULL) {
+    if (alt == NULL) {
       throw Exception("bad structure");
-    } else {
+    }
+    else {
       return alt;
     }
-  } else {
+  }
+  else {
     return a;
   }
 }
 
 template<typename Number> static Number check_number(const char* c_str) {
-  if(c_str == NULL) {
+  if (c_str == NULL) {
     throw Exception("value not found");
-  } else {
+  }
+  else {
     std::string str = c_str;
-    if(str.empty()) {
+    if (str.empty()) {
       throw Exception("value empty");
     }
     std::string::const_iterator it = str.begin();
     while (it != str.end() && (std::isdigit(*it) || *it == '.')) ++it;
-    if(it != str.end()) {
+    if (it != str.end()) {
       throw Exception("value not a number");
     }
     return base::convert_to<Number>(str);
@@ -92,7 +96,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
     TiXmlElement* xmlAnim = check(xml.FirstChild("PixlyAnimation").ToElement());
     double version = check_number<double>(xmlAnim->Attribute("version"));
-    if(version < 1.5) {
+    if (version < 1.5) {
       throw Exception("version 1.5 or above required");
     }
 
@@ -107,7 +111,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
     TiXmlElement* xmlFrames = check(xmlAnim->FirstChild("Frames"))->ToElement();
     int imageCount = check_number<int>(xmlFrames->Attribute("length"));
 
-    if(layerCount <= 0 || imageCount <= 0) {
+    if (layerCount <= 0 || imageCount <= 0) {
       throw Exception("No cels found");
     }
 
@@ -115,7 +119,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
     sprite->setTotalFrames(frame_t(frameCount));
     sprite->setDurationForAllFrames(200);
 
-    for(int i=0; i<layerCount; i++) {
+    for (int i=0; i<layerCount; i++) {
       sprite->folder()->addLayer(new LayerImage(sprite));
     }
 
@@ -123,10 +127,14 @@ bool PixlyFormat::onLoad(FileOp* fop)
     Document* sheet_doc = load_document(nullptr, base::replace_extension(fop->filename(),"png").c_str());
     fop->setProgress(0.5);
 
-    Image* sheet = check(check(check(check(check(sheet_doc)->sprite())->layer(0))->cel(0))->image()); // do I need to check it all?
+    if (sheet_doc == NULL) {
+      throw Exception("Pixly loader requires a valid PNG file");
+    }
 
-    if(sheet->pixelFormat() != IMAGE_RGB) {
-      throw("Pixly loader requires a RGBA PNG");
+    Image* sheet = sheet_doc->sprite()->layer(0)->cel(0)->image();
+
+    if (sheet->pixelFormat() != IMAGE_RGB) {
+      throw Exception("Pixly loader requires a RGBA PNG");
     }
 
     int sheetWidth = sheet->width();
@@ -146,7 +154,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       Layer *layer = sprite->indexToLayer(layer_index);
 
       const char * duration = xmlFrame->Attribute("duration");
-      if(duration) {
+      if (duration) {
         sprite->setFrameDuration(frame, base::convert_to<int>(std::string(duration)));
       }
 
@@ -155,7 +163,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       int x0 = check_number<int>(xmlRegion->Attribute("x"));
       int y0_up = check_number<int>(xmlRegion->Attribute("y")); // inverted
 
-      if(y0_up < 0 || y0_up + frameHeight > sheetHeight || x0 < 0 || x0 + frameWidth > sheetWidth) {
+      if (y0_up < 0 || y0_up + frameHeight > sheetHeight || x0 < 0 || x0 + frameWidth > sheetWidth) {
         throw Exception("looking for cels outside the bounds of the PNG");
       }
 
@@ -182,37 +190,23 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
 
         Cel* cel = NULL;
-        if((int)frame > 0) {
+        if ((int)frame > 0) {
           // link identical neighbors
           Cel *prev_cel = static_cast<LayerImage*>(layer)->cel(frame-1);
-          if(prev_cel && prev_cel->x() == bounds.x && prev_cel->y() == bounds.y) {
+          if (prev_cel && prev_cel->x() == bounds.x && prev_cel->y() == bounds.y) {
             Image *prev_image = prev_cel->image();
-            if(prev_image && prev_image->width() == bounds.w && prev_image->height() == bounds.h) {
-              for (int y = 0; y < bounds.h; y++) {
-                uint32_t* src     = (uint32_t*)prev_image->getPixelAddress(0         , y);
-                uint32_t* src_end = (uint32_t*)prev_image->getPixelAddress(0+bounds.w, y);
-                uint32_t* dst     = (uint32_t*)trim_image->getPixelAddress(0         , y);
-
-                while(src != src_end) {
-                  if(*(src++) != *(dst++)) {
-                    goto dont_link;
-                  }
-                } // x
-              } // y
-
+            if (prev_image && doc::count_diff_between_images(prev_image, trim_image.get()) == 0) {
               cel = Cel::createLink(prev_cel);
               cel->setFrame(frame);
-              goto add_cel;
-
-            } // prev_image
+            } // count_diff_between_images
           } // prev_cel
         } // frame > 0
 
-        dont_link:
-        cel = new Cel(frame, trim_image);
-        cel->setPosition(bounds.x, bounds.y);
+        if (cel == NULL) {
+          cel = new Cel(frame, trim_image);
+          cel->setPosition(bounds.x, bounds.y);
+        }
 
-        add_cel:
         static_cast<LayerImage*>(layer)->addCel(cel);
 
       }
@@ -221,7 +215,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
       fop->setProgress(0.5 + 0.5 * ((float)(index+1) / (float)imageCount));
     }
 
-    for(int i=0; i<layerCount; i++) {
+    for (int i=0; i<layerCount; i++) {
       LayerIndex layer_index(i);
       Layer *layer = sprite->indexToLayer(layer_index);
       layer->setVisible(visible[i] > frameCount/2);
