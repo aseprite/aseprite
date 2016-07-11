@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -11,6 +11,7 @@
 
 #include "app/extra_cel.h"
 #include "app/file/format_options.h"
+#include "app/transformation.h"
 #include "base/disable_copying.h"
 #include "base/mutex.h"
 #include "base/observable.h"
@@ -22,7 +23,6 @@
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
-#include "gfx/transformation.h"
 
 #include <string>
 
@@ -149,8 +149,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Transformation
 
-    gfx::Transformation getTransformation() const;
-    void setTransformation(const gfx::Transformation& transform);
+    Transformation getTransformation() const;
+    void setTransformation(const Transformation& transform);
     void resetTransformation();
 
     //////////////////////////////////////////////////////////////////////
@@ -209,7 +209,7 @@ namespace app {
     bool m_maskVisible;
 
     // Current transformation.
-    gfx::Transformation m_transformation;
+    Transformation m_transformation;
 
     DISABLE_COPYING(Document);
   };

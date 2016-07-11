@@ -493,9 +493,9 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   return true;
 }
 
-gfx::Transformation StandbyState::getTransformation(Editor* editor)
+Transformation StandbyState::getTransformation(Editor* editor)
 {
-  gfx::Transformation t = editor->document()->getTransformation();
+  Transformation t = editor->document()->getTransformation();
   set_pivot_from_preferences(t);
   return t;
 }
@@ -615,7 +615,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
     return false;
 
   if (ink && ink->isSelection() && editor->document()->isMaskVisible()) {
-    const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
+    const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);
     HandleType handle = tr->getHandleAtPoint(
       editor, mouseScreenPos, transformation);

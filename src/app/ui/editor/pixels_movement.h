@@ -94,7 +94,7 @@ namespace app {
     // simulate RotateCommand when we're inside MovingPixelsState.
     void rotate(double angle);
 
-    const gfx::Transformation& getTransformation() const { return m_currentData; }
+    const Transformation& getTransformation() const { return m_currentData; }
 
   private:
     void onPivotChange();
@@ -104,7 +104,7 @@ namespace app {
     void drawImage(doc::Image* dst, const gfx::Point& pos, bool renderOriginalLayer);
     void drawMask(doc::Mask* dst, bool shrink);
     void drawParallelogram(doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
-      const gfx::Transformation::Corners& corners,
+      const Transformation::Corners& corners,
       const gfx::Point& leftTop);
     void updateDocumentMask();
 
@@ -120,8 +120,8 @@ namespace app {
     HandleType m_handle;
     Image* m_originalImage;
     gfx::Point m_catchPos;
-    gfx::Transformation m_initialData;
-    gfx::Transformation m_currentData;
+    Transformation m_initialData;
+    Transformation m_currentData;
     Mask* m_initialMask;
     Mask* m_currentMask;
     bool m_opaque;

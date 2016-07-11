@@ -346,6 +346,7 @@ add_library(app-lib
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   transaction.cpp
+  transformation.cpp
   ui/ani_controls.cpp
   ui/app_menuitem.cpp
   ui/brush_popup.cpp
