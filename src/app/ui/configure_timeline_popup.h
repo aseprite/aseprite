@@ -45,7 +45,8 @@ namespace app {
     void onCelQualityChange();
     void onCelBackgroundChange(const app::Color& color);
     void onCelShowThumbChange();
-    void onCelShowOverlayChange();
+    void onCelShowZoomChange();
+    void onCelZoomSizeChange();
 
   private:
     void updateWidgetsFromCurrentSettings();

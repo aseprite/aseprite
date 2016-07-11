@@ -3,24 +3,20 @@
 <gui>
 <vbox id="timeline_conf">
   <separator cell_hspan="2" text="Cel Preview:" left="true" horizontal="true" />
-  <grid columns="2">
-    <hbox cell_hspan="2">
-      <check id="cel_show_thumb" text="Show thumbnails" cell_hspan="2" />
-      <check id="cel_show_overlay" text="Show on mouse hover" cell_hspan="2" />
-    </hbox>
-
-    <hbox cell_hspan="2">
-      <label text="Thumb quality:" />
-      <radio group="3" text="Nearest" id="cel_quality_nearest" />
-      <radio group="3" text="Bilinear" id="cel_quality_bilinear" />
-      <radio group="3" text="Rotsprite" id="cel_quality_rotsprite" />
-    </hbox>
-
-    <label text="Thumb Opacity:" />
+  <grid columns="3">
+    <check id="cel_show_thumb" text="Thumb" />
+    <label text="Opacity:" />
     <slider min="0" max="255" id="cel_thumb_opacity" cell_align="horizontal" width="128" />
 
+    <check id="cel_show_zoom" text="Hover"/>
+    <label text="Zoom:" />
+    <slider min="2" max="10" id="cel_zoom_size" cell_align="horizontal" width="128" />
+
+    <label text="Quality:" />
+    <combobox id="cel_quality" expansive="true" cell_hspan="2" />
+
     <label text="Background:" />
-    <colorpicker id="cel_background" expansive="true" />
+    <colorpicker id="cel_background" expansive="true" cell_hspan="2" />
 
   </grid>
   <separator cell_hspan="2" text="Onion Skin:" left="true" horizontal="true" />

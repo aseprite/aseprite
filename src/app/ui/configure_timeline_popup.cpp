@@ -60,13 +60,19 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
 
   m_box->celThumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelThumbOpacityChange, this));
-  m_box->celQualityNearest()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelQualityChange, this));
-  m_box->celQualityBilinear()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelQualityChange, this));
-  m_box->celQualityRotsprite()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelQualityChange, this));
   m_box->celBackground()->Change.connect(&ConfigureTimelinePopup::onCelBackgroundChange, this);
   m_box->celShowThumb()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowThumbChange, this));
-  m_box->celShowOverlay()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowOverlayChange, this));
+  m_box->celShowZoom()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowZoomChange, this));
+  m_box->celZoomSize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelZoomSizeChange, this));
 
+  static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
+                doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
+                doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
+                "ResizeMethod enum has changed");
+  m_box->celQuality()->addItem("Nearest-neighbor");
+  m_box->celQuality()->addItem("Bilinear");
+  m_box->celQuality()->addItem("RotSprite");
+  m_box->celQuality()->Change.connect(&ConfigureTimelinePopup::onCelQualityChange, this);
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -115,22 +121,12 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
-  switch (docPref.celPreview.quality()) {
-    case doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR:
-      m_box->celQualityNearest()->setSelected(true);
-      break;
-    case doc::algorithm::RESIZE_METHOD_BILINEAR:
-      m_box->celQualityBilinear()->setSelected(true);
-      break;
-    case doc::algorithm::RESIZE_METHOD_ROTSPRITE:
-      m_box->celQualityRotsprite()->setSelected(true);
-      break;
-  }
-
+  m_box->celQuality()->setSelectedItemIndex((int)(docPref.celPreview.quality()));
   m_box->celThumbOpacity()->setValue(docPref.celPreview.thumbOpacity());
   m_box->celBackground()->setColor(docPref.celPreview.background());
   m_box->celShowThumb()->setSelected(docPref.celPreview.showThumb());
-  m_box->celShowOverlay()->setSelected(docPref.celPreview.showOverlay());
+  m_box->celShowZoom()->setSelected(docPref.celPreview.showZoom());
+  m_box->celZoomSize()->setValue(docPref.celPreview.zoomSize());
 
 }
 
@@ -213,9 +209,7 @@ void ConfigureTimelinePopup::onCelThumbOpacityChange()
 void ConfigureTimelinePopup::onCelQualityChange()
 {
   docPref().celPreview.quality(
-    m_box->celQualityRotsprite()->isSelected() ? doc::algorithm::RESIZE_METHOD_ROTSPRITE :
-    m_box->celQualityBilinear()->isSelected() ? doc::algorithm::RESIZE_METHOD_BILINEAR :
-    doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR
+    (doc::algorithm::ResizeMethod)(m_box->celQuality()->getSelectedItemIndex())
   );
   doc()->notifyGeneralUpdate();
 }
@@ -232,9 +226,15 @@ void ConfigureTimelinePopup::onCelShowThumbChange()
   doc()->notifyGeneralUpdate();
 }
 
-void ConfigureTimelinePopup::onCelShowOverlayChange()
+void ConfigureTimelinePopup::onCelShowZoomChange()
 {
-  docPref().celPreview.showOverlay(m_box->celShowOverlay()->isSelected());
+  docPref().celPreview.showZoom(m_box->celShowZoom()->isSelected());
+  doc()->notifyGeneralUpdate();
+}
+
+void ConfigureTimelinePopup::onCelZoomSizeChange()
+{
+  docPref().celPreview.zoomSize(m_box->celZoomSize()->getValue());
   doc()->notifyGeneralUpdate();
 }
 

@@ -255,7 +255,8 @@
     </section>
     <section id="cel_preview">
       <option id="show_thumb" type="bool" default="false" />
-      <option id="show_overlay" type="bool" default="false" />
+      <option id="show_zoom" type="bool" default="false" />
+      <option id="zoom_size" type="int" default="5" />
       <option id="quality" type="doc::algorithm::ResizeMethod" default="doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR" />
       <option id="thumb_opacity" type="int" default="255" />
       <option id="background" type="app::Color" default="app::Color::fromRgb(180, 180, 180, 220)" />

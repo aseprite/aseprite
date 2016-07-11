@@ -60,8 +60,6 @@
 #include <cstdio>
 #include <vector>
 
-
-
 // Size of the thumbnail in the screen (width x height), the really
 // size of the thumbnail bitmap is specified in the
 // 'generate_thumbnail' routine.
@@ -556,7 +554,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
       updateStatusBar(msg);
 
-      if (docPref().celPreview.showOverlay()) {
+      if (docPref().celPreview.showZoom()) {
         invalidateRect(m_celPreviewOverlayRect.offset(origin()));
         m_celPreviewOverlayRect = gfx::Rect(0, 0, 0, 0);
       }
@@ -1053,7 +1051,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     drawRangeOutline(g);
     drawClipboardRange(g);
 
-    if (docPref().celPreview.showOverlay() && m_hot.part == PART_CEL) {
+    if (docPref().celPreview.showZoom() && m_hot.part == PART_CEL) {
       drawCelOverlay(g, m_hot.layer, m_hot.frame);
     }
 
@@ -1541,23 +1539,20 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 
 
   if (docPref().celPreview.showThumb() && image) {
-
     she::Surface *thumb_surf;
-
-    // TODO select alphas and color of background
-    // TODO scale alternatives (bilinear, ...)
 
     gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
 
     double zw = thumb_bounds.w / (double)image->width();
     double zh = thumb_bounds.h / (double)image->height();
-    double z0 = zw < zh ? zw : zh;
-    double zoom = z0 > 1 ? 1 : z0;
+    double zoom = MIN(1, MIN(zw, zh));
 
-    int w = (int)(image->width()  * zoom);
-    int h = (int)(image->height() * zoom);
-    int x = (int)(thumb_bounds.w * 0.5 - image->width()  * zoom * 0.5);
-    int y = (int)(thumb_bounds.h * 0.5 - image->height() * zoom * 0.5);
+    gfx::Rect cel_image_on_thumb(
+      (int)(thumb_bounds.w * 0.5 - image->width()  * zoom * 0.5),
+      (int)(thumb_bounds.h * 0.5 - image->height() * zoom * 0.5),
+      (int)(image->width()  * zoom),
+      (int)(image->height() * zoom)
+    );
 
     base::UniquePtr<Image> thumb_img(Image::create(
       image->pixelFormat(), thumb_bounds.w, thumb_bounds.h));
@@ -1570,27 +1565,35 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
       clear_image(thumb_img, gfx::rgba(0, 0, 0, 0));
       algorithm::scale_image(
         thumb_img, image,
-         x, y, w, h,
-         0, 0, image->width(), image->height());
+        cel_image_on_thumb.x, cel_image_on_thumb.y, 
+        cel_image_on_thumb.w, cel_image_on_thumb.h,
+        0, 0, image->width(), image->height());
     }
     else {
-      base::UniquePtr<Image> scale_img(Image::create(
-        image->pixelFormat(), w, h));
+      base::UniquePtr<Image> scale_img;
+      Image* source = image;
 
-      doc::algorithm::resize_image(
-        image, scale_img,
-        resize_method,
-        m_sprite->palette(frame),
-        m_sprite->rgbMap(frame),
-        m_sprite->transparentColor());
+      if (zoom != 1) {
+        scale_img.reset(Image::create(
+          image->pixelFormat(), cel_image_on_thumb.w, cel_image_on_thumb.h));
+        source = scale_img.get();
+
+        doc::algorithm::resize_image(
+          image, scale_img,
+          resize_method,
+          m_sprite->palette(frame),
+          m_sprite->rgbMap(frame),
+          m_sprite->transparentColor());
+
+      }
 
       clear_image(thumb_img, background);
 
       render::composite_image(
-        thumb_img, scale_img, 
+        thumb_img, source, 
         m_sprite->palette(frame),
-        x, 
-        y,
+        cel_image_on_thumb.x,
+        cel_image_on_thumb.y,
         cel_opacity, BlendMode::NORMAL);
     }
 
@@ -1621,12 +1624,9 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
     return;
   }
 
-  // TODO option to show the overlay and/or thumbs
   // TODO option to specify max size
-  // TODO same background color as the thumbs
-  // TODO more stable avoiance of the borders
 
-  int max_size = FRMSIZE*5;
+  int max_size = FRMSIZE*docPref().celPreview.zoomSize();
   int width, height;
   double scale;
   if (m_sprite->width() > m_sprite->height()) {
@@ -1651,7 +1651,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
     height
   );
 
-  if(!client_bounds.contains(bounds)) {
+  if (!client_bounds.contains(bounds)) {
     m_celPreviewOverlayDirection = gfx::Point(
       bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5),
       bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)
@@ -1693,7 +1693,6 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
   g->drawRect(border, m_celPreviewOverlayRect);
 
   overlay_surf->dispose();
-
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
