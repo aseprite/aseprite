@@ -65,6 +65,10 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->celShowZoom()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowZoomChange, this));
   m_box->celZoomSize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelZoomSizeChange, this));
 
+  m_celPreviewPrefConn =
+    docPref().celPreview.AfterChange.connect(
+      base::Bind<void>(&ConfigureTimelinePopup::updateWidgetsFromCurrentSettings, this));
+
   static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
                 doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
                 doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
@@ -203,7 +207,6 @@ void ConfigureTimelinePopup::onPositionChange()
 void ConfigureTimelinePopup::onCelThumbOpacityChange()
 {
   docPref().celPreview.thumbOpacity(m_box->celThumbOpacity()->getValue());
-  doc()->notifyGeneralUpdate();
 }
 
 void ConfigureTimelinePopup::onCelQualityChange()
@@ -211,31 +214,26 @@ void ConfigureTimelinePopup::onCelQualityChange()
   docPref().celPreview.quality(
     (doc::algorithm::ResizeMethod)(m_box->celQuality()->getSelectedItemIndex())
   );
-  doc()->notifyGeneralUpdate();
 }
 
 void ConfigureTimelinePopup::onCelBackgroundChange(const app::Color& color)
 {
   docPref().celPreview.background(color);
-  doc()->notifyGeneralUpdate();
 }
 
 void ConfigureTimelinePopup::onCelShowThumbChange()
 {
   docPref().celPreview.showThumb(m_box->celShowThumb()->isSelected());
-  doc()->notifyGeneralUpdate();
 }
 
 void ConfigureTimelinePopup::onCelShowZoomChange()
 {
   docPref().celPreview.showZoom(m_box->celShowZoom()->isSelected());
-  doc()->notifyGeneralUpdate();
 }
 
 void ConfigureTimelinePopup::onCelZoomSizeChange()
 {
   docPref().celPreview.zoomSize(m_box->celZoomSize()->getValue());
-  doc()->notifyGeneralUpdate();
 }
 
 

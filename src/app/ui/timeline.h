@@ -25,6 +25,7 @@
 #include "ui/widget.h"
 #include "base/shared_ptr.h"
 #include "doc/object_id.h"
+#include "base/connection.h"
 
 #include <vector>
 #include <map>
@@ -302,6 +303,8 @@ namespace app {
 
     gfx::Rect m_celPreviewOverlayRect;
     gfx::Point m_celPreviewOverlayDirection;
+    base::ScopedConnection m_celPreviewPrefConn;
+    void onCelPreviewShowPrefChange();
 
     // Temporal data used to move the range.
     struct MoveRange {

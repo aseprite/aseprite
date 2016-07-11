@@ -56,6 +56,7 @@
 #include "she/surface.h"
 #include "she/system.h"
 #include "doc/conversion_she.h"
+#include "base/bind.h"
 
 #include <cstdio>
 #include <vector>
@@ -141,7 +142,7 @@ Timeline::Timeline()
   , m_scroll(false)
   , m_fromTimeline(false)
   , m_celPreviewOverlayRect(0, 0, 0, 0)
-  , m_celPreviewOverlayDirection(FRMSIZE*1.5, FRMSIZE*0.5)
+  , m_celPreviewOverlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -170,6 +171,11 @@ Timeline::~Timeline()
   detachDocument();
   m_context->documents().removeObserver(this);
   delete m_confPopup;
+}
+
+void Timeline::onCelPreviewShowPrefChange()
+{
+  invalidate();
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -214,6 +220,10 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
+  m_celPreviewPrefConn =
+    docPref().celPreview.AfterChange.connect(
+      base::Bind<void>(&Timeline::onCelPreviewShowPrefChange, this));
+
   setFocusStop(true);
   regenerateLayers();
   setViewScroll(viewScroll());
@@ -231,6 +241,8 @@ void Timeline::detachDocument()
     m_editor->removeObserver(this);
     m_editor = NULL;
   }
+
+
 
   invalidate();
 }

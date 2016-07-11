@@ -12,6 +12,7 @@
 #include "app/pref/preferences.h"
 #include "doc/anidir.h"
 #include "ui/popup_window.h"
+#include "base/connection.h"
 
 namespace ui {
   class Button;
@@ -55,6 +56,8 @@ namespace app {
 
     app::gen::TimelineConf* m_box;
     bool m_lockUpdates;
+
+    base::ScopedConnection m_celPreviewPrefConn;
   };
 
 } // namespace app
