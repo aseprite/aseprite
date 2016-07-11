@@ -58,7 +58,7 @@ namespace app {
     // ContextBarObserver
     virtual void onDropPixels(ContextBarObserver::DropAction action) override;
 
-    virtual gfx::Transformation getTransformation(Editor* editor) override;
+    virtual Transformation getTransformation(Editor* editor) override;
 
   private:
     void onTransparentColorChange();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,13 +9,10 @@
 #define APP_UI_EDITOR_PIVOT_HELPERS_H_INCLUDED
 #pragma once
 
-namespace gfx {
-  class Transformation;
-}
-
 namespace app {
+  class Transformation;
 
-  void set_pivot_from_preferences(gfx::Transformation& t);
+  void set_pivot_from_preferences(Transformation& t);
 
 } // namespace app
 

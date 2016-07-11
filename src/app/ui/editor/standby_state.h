@@ -9,11 +9,11 @@
 #define APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
 #pragma once
 
+#include "app/transformation.h"
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/state_with_wheel_behavior.h"
 #include "base/connection.h"
-#include "gfx/transformation.h"
 
 namespace app {
   namespace tools {
@@ -41,7 +41,7 @@ namespace app {
     // the brush-preview.
     virtual bool requireBrushPreview() override { return true; }
 
-    virtual gfx::Transformation getTransformation(Editor* editor);
+    virtual Transformation getTransformation(Editor* editor);
 
     void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
 

@@ -18,6 +18,7 @@ because they don't depend on any other component.
   * [css](css/): Pseudo-style sheet library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](flic/): Library to load/save FLI/FLC files.
+  * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [scripting](scripting/): JavaScript engine.
   * [steam](steam/): Steam API wrapper to avoid static linking to the .lib file.
   * [undo](undo/): Generic library to manage a history of undoable commands.
@@ -27,7 +28,6 @@ because they don't depend on any other component.
 
   * [cfg](cfg/) (base): Library to load/save .ini files.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
-  * [gfx](gfx/) (fixmath): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [net](net/) (base): Networking library to send HTTP requests.
   * [webserver](webserver/) (base): HTTP web server
 
