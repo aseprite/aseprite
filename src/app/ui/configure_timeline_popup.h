@@ -42,12 +42,12 @@ namespace app {
     void onCurrentLayerChange();
     void onPositionChange();
 
-    void onCelThumbOpacityChange();
-    void onCelQualityChange();
-    void onCelBackgroundChange(const app::Color& color);
-    void onCelShowThumbChange();
-    void onCelShowZoomChange();
-    void onCelZoomSizeChange();
+    void onThumbOpacityChange();
+    void onThumbQualityChange();
+    void onThumbBackgroundChange(const app::Color& color);
+    void onThumbActiveChange();
+    void onThumbOverlayActiveChange();
+    void onThumbOverlaySizeChange();
 
   private:
     void updateWidgetsFromCurrentSettings();
@@ -57,7 +57,7 @@ namespace app {
     app::gen::TimelineConf* m_box;
     bool m_lockUpdates;
 
-    base::ScopedConnection m_celPreviewPrefConn;
+    base::ScopedConnection m_thumbnailsPrefConn;
   };
 
 } // namespace app

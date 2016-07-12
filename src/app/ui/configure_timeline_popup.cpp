@@ -59,24 +59,24 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->behind()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
 
-  m_box->celThumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelThumbOpacityChange, this));
-  m_box->celBackground()->Change.connect(&ConfigureTimelinePopup::onCelBackgroundChange, this);
-  m_box->celShowThumb()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowThumbChange, this));
-  m_box->celShowZoom()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelShowZoomChange, this));
-  m_box->celZoomSize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onCelZoomSizeChange, this));
-
-  m_celPreviewPrefConn =
-    docPref().celPreview.AfterChange.connect(
-      base::Bind<void>(&ConfigureTimelinePopup::updateWidgetsFromCurrentSettings, this));
+  m_box->thumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOpacityChange, this));
+  m_box->thumbBackground()->Change.connect(&ConfigureTimelinePopup::onThumbBackgroundChange, this);
+  m_box->thumbActive()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbActiveChange, this));
+  m_box->thumbOverlayActive()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayActiveChange, this));
+  m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
 
   static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
                 doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
                 doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
                 "ResizeMethod enum has changed");
-  m_box->celQuality()->addItem("Nearest-neighbor");
-  m_box->celQuality()->addItem("Bilinear");
-  m_box->celQuality()->addItem("RotSprite");
-  m_box->celQuality()->Change.connect(&ConfigureTimelinePopup::onCelQualityChange, this);
+  m_box->thumbQuality()->addItem("Nearest-neighbor");
+  m_box->thumbQuality()->addItem("Bilinear");
+  m_box->thumbQuality()->addItem("RotSprite");
+  m_box->thumbQuality()->Change.connect(&ConfigureTimelinePopup::onThumbQualityChange, this);
+
+  m_thumbnailsPrefConn =
+    docPref().thumbnails.AfterChange.connect(
+      base::Bind<void>(&ConfigureTimelinePopup::updateWidgetsFromCurrentSettings, this));
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -125,12 +125,12 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
-  m_box->celQuality()->setSelectedItemIndex((int)(docPref.celPreview.quality()));
-  m_box->celThumbOpacity()->setValue(docPref.celPreview.thumbOpacity());
-  m_box->celBackground()->setColor(docPref.celPreview.background());
-  m_box->celShowThumb()->setSelected(docPref.celPreview.showThumb());
-  m_box->celShowZoom()->setSelected(docPref.celPreview.showZoom());
-  m_box->celZoomSize()->setValue(docPref.celPreview.zoomSize());
+  m_box->thumbQuality()->setSelectedItemIndex((int)(docPref.thumbnails.quality()));
+  m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
+  m_box->thumbBackground()->setColor(docPref.thumbnails.background());
+  m_box->thumbActive()->setSelected(docPref.thumbnails.active());
+  m_box->thumbOverlayActive()->setSelected(docPref.thumbnails.overlayActive());
+  m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
 
 }
 
@@ -204,36 +204,36 @@ void ConfigureTimelinePopup::onPositionChange()
                                render::OnionskinPosition::INFRONT);
 }
 
-void ConfigureTimelinePopup::onCelThumbOpacityChange()
+void ConfigureTimelinePopup::onThumbOpacityChange()
 {
-  docPref().celPreview.thumbOpacity(m_box->celThumbOpacity()->getValue());
+  docPref().thumbnails.opacity(m_box->opacity()->getValue());
 }
 
-void ConfigureTimelinePopup::onCelQualityChange()
+void ConfigureTimelinePopup::onThumbQualityChange()
 {
-  docPref().celPreview.quality(
-    (doc::algorithm::ResizeMethod)(m_box->celQuality()->getSelectedItemIndex())
+  docPref().thumbnails.quality(
+    (doc::algorithm::ResizeMethod)(m_box->thumbQuality()->getSelectedItemIndex())
   );
 }
 
-void ConfigureTimelinePopup::onCelBackgroundChange(const app::Color& color)
+void ConfigureTimelinePopup::onThumbBackgroundChange(const app::Color& color)
 {
-  docPref().celPreview.background(color);
+  docPref().thumbnails.background(color);
 }
 
-void ConfigureTimelinePopup::onCelShowThumbChange()
+void ConfigureTimelinePopup::onThumbActiveChange()
 {
-  docPref().celPreview.showThumb(m_box->celShowThumb()->isSelected());
+  docPref().thumbnails.active(m_box->thumbActive()->isSelected());
 }
 
-void ConfigureTimelinePopup::onCelShowZoomChange()
+void ConfigureTimelinePopup::onThumbOverlayActiveChange()
 {
-  docPref().celPreview.showZoom(m_box->celShowZoom()->isSelected());
+  docPref().thumbnails.overlayActive(m_box->thumbOverlayActive()->isSelected());
 }
 
-void ConfigureTimelinePopup::onCelZoomSizeChange()
+void ConfigureTimelinePopup::onThumbOverlaySizeChange()
 {
-  docPref().celPreview.zoomSize(m_box->celZoomSize()->getValue());
+  docPref().thumbnails.overlaySize(m_box->thumbOverlaySize()->getValue());
 }
 
 

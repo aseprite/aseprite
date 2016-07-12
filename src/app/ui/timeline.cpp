@@ -141,8 +141,8 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
-  , m_celPreviewOverlayRect(0, 0, 0, 0)
-  , m_celPreviewOverlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
+  , m_thumbnailsOverlayRect(0, 0, 0, 0)
+  , m_thumbnailsOverlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -173,7 +173,7 @@ Timeline::~Timeline()
   delete m_confPopup;
 }
 
-void Timeline::onCelPreviewShowPrefChange()
+void Timeline::onThumbnailsShowPrefChange()
 {
   invalidate();
 }
@@ -220,9 +220,9 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
-  m_celPreviewPrefConn =
-    docPref().celPreview.AfterChange.connect(
-      base::Bind<void>(&Timeline::onCelPreviewShowPrefChange, this));
+  m_thumbnailsPrefConn =
+    docPref().thumbnails.AfterChange.connect(
+      base::Bind<void>(&Timeline::onThumbnailsShowPrefChange, this));
 
   setFocusStop(true);
   regenerateLayers();
@@ -233,7 +233,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 void Timeline::detachDocument()
 {
   if (m_document) {
-    m_celPreviewPrefConn.disconnect();
+    m_thumbnailsPrefConn.disconnect();
     m_document->removeObserver(this);
     m_document = NULL;
   }
@@ -565,9 +565,9 @@ bool Timeline::onProcessMessage(Message* msg)
 
       updateStatusBar(msg);
 
-      if (docPref().celPreview.showZoom()) {
-        invalidateRect(m_celPreviewOverlayRect.offset(origin()));
-        m_celPreviewOverlayRect = gfx::Rect(0, 0, 0, 0);
+      if (docPref().thumbnails.overlayActive()) {
+        invalidateRect(m_thumbnailsOverlayRect.offset(origin()));
+        m_thumbnailsOverlayRect = gfx::Rect(0, 0, 0, 0);
       }
 
       return true;
@@ -1062,7 +1062,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     drawRangeOutline(g);
     drawClipboardRange(g);
 
-    if (docPref().celPreview.showZoom() && m_hot.part == PART_CEL) {
+    if (docPref().thumbnails.overlayActive() && m_hot.part == PART_CEL) {
       drawCelOverlay(g, m_hot.layer, m_hot.frame);
     }
 
@@ -1549,7 +1549,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
 
-  if (docPref().celPreview.showThumb() && image) {
+  if (docPref().thumbnails.active() && image) {
     she::Surface *thumb_surf;
 
     gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
@@ -1568,9 +1568,9 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     base::UniquePtr<Image> thumb_img(Image::create(
       image->pixelFormat(), thumb_bounds.w, thumb_bounds.h));
 
-    int cel_opacity = docPref().celPreview.thumbOpacity();
-    gfx::Color background = color_utils::color_for_ui(docPref().celPreview.background());
-    doc::algorithm::ResizeMethod resize_method = docPref().celPreview.quality();
+    int cel_opacity = docPref().thumbnails.opacity();
+    gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
+    doc::algorithm::ResizeMethod resize_method = docPref().thumbnails.quality();
 
     if (cel_opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
       clear_image(thumb_img, gfx::rgba(0, 0, 0, 0));
@@ -1637,7 +1637,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
 
   // TODO option to specify max size
 
-  int max_size = FRMSIZE*docPref().celPreview.zoomSize();
+  int max_size = FRMSIZE*docPref().thumbnails.overlaySize();
   int width, height;
   double scale;
   if (m_sprite->width() > m_sprite->height()) {
@@ -1656,26 +1656,26 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
 
   gfx::Rect bounds_cel = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect bounds = gfx::Rect(
-    bounds_cel.x + m_celPreviewOverlayDirection.x,
-    bounds_cel.y + m_celPreviewOverlayDirection.y,
+    bounds_cel.x + m_thumbnailsOverlayDirection.x,
+    bounds_cel.y + m_thumbnailsOverlayDirection.y,
     width,
     height
   );
 
   if (!client_bounds.contains(bounds)) {
-    m_celPreviewOverlayDirection = gfx::Point(
+    m_thumbnailsOverlayDirection = gfx::Point(
       bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5),
       bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)
     );
     bounds.setOrigin(gfx::Point(
-      bounds_cel.x + m_celPreviewOverlayDirection.x,
-      bounds_cel.y + m_celPreviewOverlayDirection.y
+      bounds_cel.x + m_thumbnailsOverlayDirection.x,
+      bounds_cel.y + m_thumbnailsOverlayDirection.y
     ));
   }
 
-  m_celPreviewOverlayRect = bounds.enlarge(1);
+  m_thumbnailsOverlayRect = bounds.enlarge(1);
 
-  IntersectClip clip(g, m_celPreviewOverlayRect);
+  IntersectClip clip(g, m_thumbnailsOverlayRect);
   if (!clip)
     return;
 
@@ -1697,11 +1697,11 @@ void Timeline::drawCelOverlay(ui::Graphics* g, LayerIndex layerIndex, frame_t fr
   convert_image_to_surface(overlay_img, m_sprite->palette(m_frame), overlay_surf,
     0, 0, 0, 0, overlay_img->width(), overlay_img->height());
 
-  gfx::Color background = color_utils::color_for_ui(docPref().celPreview.background());
+  gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
   gfx::Color border = color_utils::blackandwhite_neg(background);
   g->fillRect(background, bounds);
   g->drawRgbaSurface(overlay_surf, bounds.x, bounds.y);
-  g->drawRect(border, m_celPreviewOverlayRect);
+  g->drawRect(border, m_thumbnailsOverlayRect);
 
   overlay_surf->dispose();
 }

@@ -253,12 +253,12 @@
       <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" migrate="Option.CheckedBgColor1" />
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
     </section>
-    <section id="cel_preview">
-      <option id="show_thumb" type="bool" default="false" />
-      <option id="show_zoom" type="bool" default="false" />
-      <option id="zoom_size" type="int" default="5" />
+    <section id="thumbnails">
+      <option id="active" type="bool" default="false" />
+      <option id="overlay_active" type="bool" default="false" />
+      <option id="overlay_size" type="int" default="5" />
       <option id="quality" type="doc::algorithm::ResizeMethod" default="doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR" />
-      <option id="thumb_opacity" type="int" default="255" />
+      <option id="opacity" type="int" default="255" />
       <option id="background" type="app::Color" default="app::Color::fromRgb(180, 180, 180, 220)" />
     </section>
     <section id="onionskin">

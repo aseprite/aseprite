@@ -19,32 +19,32 @@ namespace app {
 
 using namespace gfx;
 
-class ShowCelPreviewThumbCommand : public Command {
+class ToggleTimelineThumbnailsCommand : public Command {
 public:
-  ShowCelPreviewThumbCommand()
-    : Command("ShowCelPreviewThumb",
-              "Show Cel Preview Thumbnail",
+  ToggleTimelineThumbnailsCommand()
+    : Command("ToggleTimelineThumbnails",
+              "Toggle Timeline Thumbnails",
               CmdUIOnlyFlag)
   {
   }
 
-  Command* clone() const override { return new ShowCelPreviewThumbCommand(*this); }
+  Command* clone() const override { return new ToggleTimelineThumbnailsCommand(*this); }
 
 protected:
   bool onChecked(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
-    return docPref.celPreview.showThumb();
+    return docPref.thumbnails.active();
   }
 
   void onExecute(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
-    docPref.celPreview.showThumb(!docPref.celPreview.showThumb());
+    docPref.thumbnails.active(!docPref.thumbnails.active());
   }
 };
 
-Command* CommandFactory::createShowCelPreviewThumbCommand()
+Command* CommandFactory::createToggleTimelineThumbnailsCommand()
 {
-  return new ShowCelPreviewThumbCommand;
+  return new ToggleTimelineThumbnailsCommand;
 }
 
 } // namespace app

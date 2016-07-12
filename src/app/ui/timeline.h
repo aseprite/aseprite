@@ -301,10 +301,10 @@ namespace app {
 
     AniControls m_aniControls;
 
-    gfx::Rect m_celPreviewOverlayRect;
-    gfx::Point m_celPreviewOverlayDirection;
-    base::Connection m_celPreviewPrefConn;
-    void onCelPreviewShowPrefChange();
+    gfx::Rect m_thumbnailsOverlayRect;
+    gfx::Point m_thumbnailsOverlayDirection;
+    base::Connection m_thumbnailsPrefConn;
+    void onThumbnailsShowPrefChange();
 
     // Temporal data used to move the range.
     struct MoveRange {
