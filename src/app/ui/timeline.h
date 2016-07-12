@@ -303,7 +303,7 @@ namespace app {
 
     gfx::Rect m_celPreviewOverlayRect;
     gfx::Point m_celPreviewOverlayDirection;
-    base::ScopedConnection m_celPreviewPrefConn;
+    base::Connection m_celPreviewPrefConn;
     void onCelPreviewShowPrefChange();
 
     // Temporal data used to move the range.

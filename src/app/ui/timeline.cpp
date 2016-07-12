@@ -233,6 +233,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 void Timeline::detachDocument()
 {
   if (m_document) {
+    m_celPreviewPrefConn.disconnect();
     m_document->removeObserver(this);
     m_document = NULL;
   }
@@ -241,8 +242,6 @@ void Timeline::detachDocument()
     m_editor->removeObserver(this);
     m_editor = NULL;
   }
-
-
 
   invalidate();
 }
