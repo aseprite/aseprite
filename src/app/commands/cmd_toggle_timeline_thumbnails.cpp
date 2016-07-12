@@ -33,12 +33,12 @@ public:
 protected:
   bool onChecked(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
-    return docPref.thumbnails.active();
+    return docPref.thumbnails.enabled();
   }
 
   void onExecute(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
-    docPref.thumbnails.active(!docPref.thumbnails.active());
+    docPref.thumbnails.enabled(!docPref.thumbnails.enabled());
   }
 };
 

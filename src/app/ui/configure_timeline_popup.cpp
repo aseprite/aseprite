@@ -61,8 +61,8 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
 
   m_box->thumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOpacityChange, this));
   m_box->thumbBackground()->Change.connect(&ConfigureTimelinePopup::onThumbBackgroundChange, this);
-  m_box->thumbActive()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbActiveChange, this));
-  m_box->thumbOverlayActive()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayActiveChange, this));
+  m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
+  m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
   m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
 
   static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
@@ -128,8 +128,8 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   m_box->thumbQuality()->setSelectedItemIndex((int)(docPref.thumbnails.quality()));
   m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
   m_box->thumbBackground()->setColor(docPref.thumbnails.background());
-  m_box->thumbActive()->setSelected(docPref.thumbnails.active());
-  m_box->thumbOverlayActive()->setSelected(docPref.thumbnails.overlayActive());
+  m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
+  m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
   m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
 
 }
@@ -221,14 +221,14 @@ void ConfigureTimelinePopup::onThumbBackgroundChange(const app::Color& color)
   docPref().thumbnails.background(color);
 }
 
-void ConfigureTimelinePopup::onThumbActiveChange()
+void ConfigureTimelinePopup::onThumbEnabledChange()
 {
-  docPref().thumbnails.active(m_box->thumbActive()->isSelected());
+  docPref().thumbnails.enabled(m_box->thumbEnabled()->isSelected());
 }
 
-void ConfigureTimelinePopup::onThumbOverlayActiveChange()
+void ConfigureTimelinePopup::onThumbOverlayEnabledChange()
 {
-  docPref().thumbnails.overlayActive(m_box->thumbOverlayActive()->isSelected());
+  docPref().thumbnails.overlayEnabled(m_box->thumbOverlayEnabled()->isSelected());
 }
 
 void ConfigureTimelinePopup::onThumbOverlaySizeChange()

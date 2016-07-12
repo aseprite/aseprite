@@ -326,7 +326,7 @@ namespace app {
     Hit m_thumbnailsOverlayHit;
     gfx::Point m_thumbnailsOverlayDirection;
     base::Connection m_thumbnailsPrefConn;
-    void onThumbnailsShowPrefChange();
+    void onThumbnailsPrefChange();
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
 //    void drawCelThumbnail(ui::Graphics* g, LayerIndex layerIdx, frame_t frame);

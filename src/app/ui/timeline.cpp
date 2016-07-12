@@ -225,7 +225,7 @@ Timeline::~Timeline()
   delete m_confPopup;
 }
 
-void Timeline::onThumbnailsShowPrefChange()
+void Timeline::onThumbnailsPrefChange()
 {
   m_thumbnailsCache[m_document->id()].clear();
   invalidate();
@@ -288,7 +288,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   m_thumbnailsPrefConn =
     docPref().thumbnails.AfterChange.connect(
-      base::Bind<void>(&Timeline::onThumbnailsShowPrefChange, this));
+      base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
 
   setFocusStop(true);
   regenerateLayers();
@@ -1609,7 +1609,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   if (data->activeIt != data->end)
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
-  if (docPref().thumbnails.active() && image) {
+  if (docPref().thumbnails.enabled() && image) {
     SurfaceCacheItem thumb_surf;
 
     int opacity = docPref().thumbnails.opacity();
@@ -1700,7 +1700,7 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
 {
   gfx::Rect inner, outer;
 
-  if (docPref().thumbnails.overlayActive() && hit.part == PART_CEL) {
+  if (docPref().thumbnails.overlayEnabled() && hit.part == PART_CEL) {
     m_thumbnailsOverlayHit = hit;
 
     int max_size = FRMSIZE * docPref().thumbnails.overlaySize();
