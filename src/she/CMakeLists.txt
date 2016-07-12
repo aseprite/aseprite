@@ -73,59 +73,52 @@ if(USE_SKIA_BACKEND)
     set(SKIA_BUILD_OUT_DIR "${SKIA_DIR}/out/Release")
   endif()
 
+  find_library(SKIA_CODEC_LIBRARY skia_codec PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_CORE_LIBRARY skia_core PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_DNG_SDK_LIBRARY dng_sdk PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_EFFECTS_LIBRARY skia_effects PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_ETC1_LIBRARY etc1 NAMES libetc1 PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_FLAGS_LIBRARY flags PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_GIF_LIBRARY giflib PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_IMAGES_LIBRARY skia_images PATH "${SKIA_BUILD_OUT_DIR}")
-  find_library(SKIA_OPTS_LIBRARY skia_opts PATH "${SKIA_BUILD_OUT_DIR}")
-  find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_JPG_LIBRARY jpeg-turbo NAMES libjpeg-turbo PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_OPTS_AVX2_LIBRARY skia_opts_avx2 PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_LIBRARY skia_opts PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSE41_LIBRARY skia_opts_sse41 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSE42_LIBRARY skia_opts_sse42 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSSE3_LIBRARY skia_opts_ssse3 PATH "${SKIA_BUILD_OUT_DIR}")
-  find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_PIEX_LIBRARY piex PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_PNG_LIBRARY png_static NAMES libpng_static PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_PORTS_LIBRARY skia_ports PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_RAW_CODEC_LIBRARY raw_codec PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_SFNT_LIBRARY skia_sfnt PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_SKKTX_LIBRARY SkKTX libSkKTX PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_UTILS_LIBRARY skia_utils PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_WEBP_DEC_LIBRARY webp_dec NAMES libwebp_dec PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_WEBP_DSP_LIBRARY webp_dsp NAMES libwebp_dsp PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_WEBP_UTILS_LIBRARY webp_utils NAMES libwebp_utils PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_ZLIB_LIBRARY zlib PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+
   find_library(SKIA_GPU_LIBRARY skia_skgpu PATH "${SKIA_BUILD_OUT_DIR}")
   if(SKIA_GPU_LIBRARY)
     add_definitions(-DSK_SUPPORT_GPU=1)
-  else()
-    add_definitions(-DSK_SUPPORT_GPU=0)
-    set(SKIA_GPU_LIBRARY "")
-  endif()
-
-  find_library(SKIA_ETC1_LIBRARY etc1 PATH "${SKIA_BUILD_OUT_DIR}")
-  if(NOT SKIA_ETC1_LIBRARY)
-    set(SKIA_ETC1_LIBRARY "")
-  endif()
-
-  find_library(SKIA_FLAGS_LIBRARY flags PATH "${SKIA_BUILD_OUT_DIR}")
-  if(NOT SKIA_FLAGS_LIBRARY)
-    set(SKIA_FLAGS_LIBRARY "")
-  endif()
-
-  find_library(SKIA_SKKTX_LIBRARY SkKTX PATH "${SKIA_BUILD_OUT_DIR}")
-  if(NOT SKIA_SKKTX_LIBRARY)
-    set(SKIA_SKKTX_LIBRARY "")
-  endif()
-
-  if(WIN32)
-    if(SKIA_GPU_LIBRARY)
+    if(WIN32)
       find_library(SKIA_OPENGL_LIBRARY opengl32)
       find_library(SKIA_LIBEGL_LIBRARY libEGL.dll PATH "${SKIA_BUILD_OUT_DIR}")
       if(SKIA_LIBEGL_LIBRARY)
         add_definitions(-DSK_ANGLE=1)
       endif()
+    else()
+      find_library(SKIA_OPENGL_LIBRARY opengl NAMES GL)
     endif()
   else()
-    if(SKIA_GPU_LIBRARY)
-      find_library(SKIA_OPENGL_LIBRARY opengl)
-    endif()
-  endif()
-
-  if(NOT SKIA_OPENGL_LIBRARY)
+    add_definitions(-DSK_SUPPORT_GPU=0)
+    set(SKIA_GPU_LIBRARY "")
     set(SKIA_OPENGL_LIBRARY "")
   endif()
+
   if(NOT SKIA_LIBEGL_LIBRARY)
     set(SKIA_LIBEGL_LIBRARY "")
   endif()
@@ -133,7 +126,8 @@ if(USE_SKIA_BACKEND)
   find_path(SKIA_CONFIG_INCLUDE_DIR SkUserConfig.h HINTS "${SKIA_DIR}/include/config")
   find_path(SKIA_CORE_INCLUDE_DIR SkCanvas.h HINTS "${SKIA_DIR}/include/core")
   find_path(SKIA_UTILS_INCLUDE_DIR SkRandom.h HINTS "${SKIA_DIR}/include/utils")
-  find_path(SKIA_EFFECTS_INCLUDE_DIR SkBitmapSource.h HINTS "${SKIA_DIR}/include/effects")
+  find_path(SKIA_CODEC_INCLUDE_DIR SkCodec.h HINTS "${SKIA_DIR}/include/codec")
+  find_path(SKIA_EFFECTS_INCLUDE_DIR SkImageSource.h HINTS "${SKIA_DIR}/include/effects")
   if(SKIA_GPU_LIBRARY)
     find_path(SKIA_GPU_INCLUDE_DIR SkGr.h HINTS "${SKIA_DIR}/include/gpu")
     find_path(SKIA_ANGLE_INCLUDE_DIR angle_gl.h HINTS "${SKIA_DIR}/third_party/externals/angle2/include")
@@ -143,7 +137,8 @@ if(USE_SKIA_BACKEND)
     ${SKIA_CONFIG_INCLUDE_DIR}
     ${SKIA_CORE_INCLUDE_DIR}
     ${SKIA_PORTS_INCLUDE_DIR}
-    ${SKIA_UTILS_INCLUDE_DIR})
+    ${SKIA_UTILS_INCLUDE_DIR}
+    ${SKIA_CODEC_INCLUDE_DIR})
   if(SKIA_GPU_LIBRARY)
     include_directories(${SKIA_GPU_INCLUDE_DIR})
     if(WIN32)
@@ -151,14 +146,7 @@ if(USE_SKIA_BACKEND)
     endif()
   endif()
 
-  # Patch for Skia (branch m50) as we don't link with skia_codec library
-  add_library(skia_missing_files ${SKIA_DIR}/src/ports/SkImageGenerator_none.cpp)
-  set(SKIA_MISSING_FILES skia_missing_files)
-
   set(SKIA_LIBRARIES
-    ${SKIA_ETC1_LIBRARY}
-    ${SKIA_FLAGS_LIBRARY}
-    ${SKIA_SKKTX_LIBRARY}
     ${SKIA_CORE_LIBRARY}
     ${SKIA_IMAGES_LIBRARY}
     ${SKIA_OPTS_LIBRARY}
@@ -169,15 +157,28 @@ if(USE_SKIA_BACKEND)
     ${SKIA_OPTS_AVX2_LIBRARY}
     ${SKIA_PORTS_LIBRARY}
     ${SKIA_EFFECTS_LIBRARY}
+    ${SKIA_CODEC_LIBRARY}
+    ${SKIA_RAW_CODEC_LIBRARY}
+    ${SKIA_PIEX_LIBRARY}
+    ${SKIA_DNG_SDK_LIBRARY}
+    ${SKIA_GIF_LIBRARY}
+    ${SKIA_JPG_LIBRARY}
+    ${SKIA_WEBP_DEC_LIBRARY}
+    ${SKIA_WEBP_DSP_LIBRARY}
+    ${SKIA_WEBP_UTILS_LIBRARY}
+    ${SKIA_PNG_LIBRARY}
+    ${SKIA_ZLIB_LIBRARY}
+    ${SKIA_GPU_LIBRARY}
     # We've to include two times skia_core as a dependency as it looks
     # like Skia libraries depends one each other (core+ports+effects)
     ${SKIA_CORE_LIBRARY}
-    ${SKIA_MISSING_FILES}
     ${SKIA_UTILS_LIBRARY}
     ${SKIA_SFNT_LIBRARY}
     ${SKIA_OPENGL_LIBRARY}
     ${SKIA_LIBEGL_LIBRARY}
-    ${SKIA_GPU_LIBRARY}
+    ${SKIA_SKKTX_LIBRARY}
+    ${SKIA_ETC1_LIBRARY}
+    ${SKIA_FLAGS_LIBRARY}
     CACHE INTERNAL "Skia libraries")
 
   list(APPEND SHE_SOURCES

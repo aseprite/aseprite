@@ -11,7 +11,7 @@
 #include "base/base.h"
 #include "base/file_handle.h"
 
-#include "SkImageDecoder.h"
+#include "SkCodec.h"
 #include "SkPixelRef.h"
 #include "SkStream.h"
 
@@ -41,13 +41,6 @@ public:
   SkiaSystem()
     : m_defaultDisplay(nullptr)
     , m_gpuAcceleration(false) {
-#if !defined(__APPLE__) && !defined(_WIN32)
-    // Create one decoder on Linux to load .png files with
-    // libpng. Without this, SkImageDecoder::Factory() returns null
-    // for .png files.
-    SkAutoTDelete<SkImageDecoder> decoder(
-      CreatePNGImageDecoder());
-#endif
   }
 
   ~SkiaSystem() {
@@ -133,22 +126,27 @@ public:
 
   Surface* loadSurface(const char* filename) override {
     base::FileHandle fp(base::open_file_with_exception(filename, "rb"));
-    SkAutoTDelete<SkStreamAsset> stream(new SkFILEStream(fp.get(), SkFILEStream::kCallerRetains_Ownership));
 
-    SkAutoTDelete<SkImageDecoder> decoder(SkImageDecoder::Factory(stream));
-    if (decoder) {
-      stream->rewind();
-      SkBitmap bm;
-      SkImageDecoder::Result res = decoder->decode(stream, &bm,
-        kN32_SkColorType, SkImageDecoder::kDecodePixels_Mode);
+    SkAutoTDelete<SkCodec> codec(
+      SkCodec::NewFromStream(
+        new SkFILEStream(fp.get(), SkFILEStream::kCallerRetains_Ownership)));
+    if (!codec)
+      return nullptr;
 
-      if (res == SkImageDecoder::kSuccess) {
-        SkiaSurface* sur = new SkiaSurface();
-        sur->swapBitmap(bm);
-        return sur;
-      }
-    }
-    return nullptr;
+    SkImageInfo info = codec->getInfo()
+      .makeColorType(kN32_SkColorType)
+      .makeAlphaType(kPremul_SkAlphaType);
+    SkBitmap bm;
+    if (!bm.tryAllocPixels(info))
+      return nullptr;
+
+    const SkCodec::Result r = codec->getPixels(info, bm.getPixels(), bm.rowBytes());
+    if (r != SkCodec::kSuccess)
+      return nullptr;
+
+    SkiaSurface* sur = new SkiaSurface();
+    sur->swapBitmap(bm);
+    return sur;
   }
 
   Surface* loadRgbaSurface(const char* filename) override {

@@ -216,7 +216,7 @@ private:
     if (m_nsGL)
       m_nsGL = nil;
 
-    setSurface(nullptr);
+    m_skSurface.reset(nullptr);
     m_skSurfaceDirect.reset(nullptr);
     m_grRenderTarget.reset(nullptr);
     m_grCtx.reset(nullptr);
@@ -237,21 +237,22 @@ private:
     desc.fRenderTargetHandle = 0; // direct frame buffer
     m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
 
-    setSurface(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
-    m_skSurfaceDirect.reset(
-      SkSurface::NewRenderTargetDirect(m_grRenderTarget));
+    m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
+    m_skSurfaceDirect =
+      SkSurface::MakeRenderTargetDirect(m_grRenderTarget.get());
 
     if (scale == 1) {
-      setSurface(m_skSurfaceDirect);
+      m_skSurface = m_skSurfaceDirect;
     }
     else {
-      setSurface(
-        SkSurface::NewRenderTarget(
-          m_grCtx,
-          SkSurface::kYes_Budgeted,
+      m_skSurface =
+        SkSurface::MakeRenderTarget(
+          m_grCtx.get(),
+          SkBudgeted::kYes,
           SkImageInfo::MakeN32Premul(MAX(1, size.w / scale),
                                      MAX(1, size.h / scale)),
-          m_glCtx->getSampleCount()));
+          m_glCtx->getSampleCount(),
+          nullptr);
     }
 
     if (!m_skSurface)
@@ -261,12 +262,6 @@ private:
 
     if (m_nsGL)
       [m_nsGL update];
-  }
-
-  void setSurface(SkSurface* surface) {
-    if (m_skSurface && m_skSurface != m_skSurfaceDirect)
-      delete m_skSurface;
-    m_skSurface = surface;
   }
 
 #endif
@@ -310,10 +305,10 @@ private:
   base::UniquePtr<GLContext> m_glCtx;
   SkAutoTUnref<const GrGLInterface> m_glInterfaces;
   NSOpenGLContext* m_nsGL;
-  SkAutoTUnref<GrContext> m_grCtx;
-  SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
-  SkAutoTDelete<SkSurface> m_skSurfaceDirect;
-  SkSurface* m_skSurface;
+  sk_sp<GrContext> m_grCtx;
+  sk_sp<GrRenderTarget> m_grRenderTarget;
+  sk_sp<SkSurface> m_skSurfaceDirect;
+  sk_sp<SkSurface> m_skSurface;
   gfx::Size m_lastSize;
 #endif
 };
