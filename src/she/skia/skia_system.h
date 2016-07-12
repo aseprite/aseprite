@@ -70,7 +70,8 @@ public:
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
       int(Capabilities::DisplayScale)
-#if SK_SUPPORT_GPU
+    // TODO enable this when the GPU support is ready
+#if 0 // SK_SUPPORT_GPU
       | int(Capabilities::GpuAccelerationSwitch)
 #endif
       );
