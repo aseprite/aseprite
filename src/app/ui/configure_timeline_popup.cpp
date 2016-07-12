@@ -206,7 +206,7 @@ void ConfigureTimelinePopup::onPositionChange()
 
 void ConfigureTimelinePopup::onThumbOpacityChange()
 {
-  docPref().thumbnails.opacity(m_box->opacity()->getValue());
+  docPref().thumbnails.opacity(m_box->thumbOpacity()->getValue());
 }
 
 void ConfigureTimelinePopup::onThumbQualityChange()
