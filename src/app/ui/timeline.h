@@ -212,7 +212,6 @@ namespace app {
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
     void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
     void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel, DrawCelData* data);
-    void drawCelOverlay(ui::Graphics* g, LayerIndex layerIdx, frame_t frame);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
                                Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                DrawCelData* data);
@@ -301,10 +300,14 @@ namespace app {
 
     AniControls m_aniControls;
 
-    gfx::Rect m_thumbnailsOverlayRect;
+    gfx::Rect m_thumbnailsOverlayInner;
+    gfx::Rect m_thumbnailsOverlayOuter;
     gfx::Point m_thumbnailsOverlayDirection;
     base::Connection m_thumbnailsPrefConn;
     void onThumbnailsShowPrefChange();
+    void updateCelOverlayBounds();
+    void drawCelOverlay(ui::Graphics* g);
+//    void drawCelThumbnail(ui::Graphics* g, LayerIndex layerIdx, frame_t frame);
 
     // Temporal data used to move the range.
     struct MoveRange {
