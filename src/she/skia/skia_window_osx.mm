@@ -270,22 +270,34 @@ private:
     if (!m_display->isInitialized())
       return;
 
+    if (rect.isEmpty())
+      return;
+
+    NSRect viewBounds = m_window.contentView.bounds;
+    int scale = this->scale();
+
     SkiaSurface* surface = static_cast<SkiaSurface*>(m_display->getSurface());
-    const SkBitmap& bitmap = surface->bitmap();
+    const SkBitmap& origBitmap = surface->bitmap();
 
-    ASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
+    // Create a subset to draw on the view
+    SkBitmap bitmap;
+    if (!origBitmap.extractSubset(
+          &bitmap, SkIRect::MakeXYWH(rect.x/scale,
+                                     (viewBounds.size.height-(rect.y+rect.h))/scale,
+                                     rect.w/scale,
+                                     rect.h/scale)))
+      return;
+
     bitmap.lockPixels();
-
     {
-      NSRect viewBounds = [[m_window contentView] bounds];
       NSGraphicsContext* gc = [NSGraphicsContext currentContext];
       CGContextRef cg = (CGContextRef)[gc graphicsPort];
       CGImageRef img = SkCreateCGImageRef(bitmap);
       if (img) {
-        CGRect r = CGRectMake(viewBounds.origin.x,
-                              viewBounds.origin.y,
-                              viewBounds.size.width,
-                              viewBounds.size.height);
+        CGRect r = CGRectMake(viewBounds.origin.x+rect.x,
+                              viewBounds.origin.y+rect.y,
+                              rect.w, rect.h);
+
         CGContextSaveGState(cg);
         CGContextSetInterpolationQuality(cg, kCGInterpolationNone);
         CGContextDrawImage(cg, r, img);
@@ -293,7 +305,6 @@ private:
         CGImageRelease(img);
       }
     }
-
     bitmap.unlockPixels();
   }
 
