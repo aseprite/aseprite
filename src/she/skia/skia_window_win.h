@@ -45,7 +45,6 @@ private:
   bool attachGL();
   void detachGL();
   void createRenderTarget(const gfx::Size& size);
-  void setSurface(SkSurface* surface);
 #endif // SK_SUPPORT_GPU
 
   EventQueue* m_queue;
@@ -54,10 +53,10 @@ private:
 #if SK_SUPPORT_GPU
   base::UniquePtr<GLContext> m_glCtx;
   SkAutoTUnref<const GrGLInterface> m_glInterfaces;
-  SkAutoTUnref<GrContext> m_grCtx;
-  SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
-  SkAutoTDelete<SkSurface> m_skSurfaceDirect;
-  SkSurface* m_skSurface;
+  sk_sp<GrContext> m_grCtx;
+  sk_sp<GrRenderTarget> m_grRenderTarget;
+  sk_sp<SkSurface> m_skSurfaceDirect;
+  sk_sp<SkSurface> m_skSurface;
   int m_sampleCount;
   int m_stencilBits;
   gfx::Size m_lastSize;

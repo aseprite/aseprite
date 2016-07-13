@@ -21,6 +21,7 @@
   #include "she/gl/gl_context_wgl.h"
   #if SK_ANGLE
     #include "she/gl/gl_context_egl.h"
+    #include "gl/GrGLAssembleInterface.h"
   #endif
 
 #endif
@@ -106,7 +107,7 @@ void SkiaWindow::paintImpl(HDC hdc)
         texDesc.fConfig = kSkia8888_GrPixelConfig;
         texDesc.fSampleCnt = m_sampleCount;
         texDesc.fTextureHandle = texID;
-        SkAutoTUnref<SkImage> image(SkImage::NewFromTexture(m_grCtx, texDesc));
+        sk_sp<SkImage> image(SkImage::MakeFromTexture(m_grCtx.get(), texDesc));
 
         SkRect dstRect(SkRect::MakeWH(SkIntToScalar(m_lastSize.w),
                                       SkIntToScalar(m_lastSize.h)));
@@ -160,22 +161,55 @@ void SkiaWindow::paintHDC(HDC hdc)
 
 #if SK_ANGLE
 
+struct ANGLEAssembleContext {
+  ANGLEAssembleContext() {
+    fEGL = GetModuleHandle(L"libEGL.dll");
+    fGL = GetModuleHandle(L"libGLESv2.dll");
+  }
+
+  bool isValid() const { return SkToBool(fEGL) && SkToBool(fGL); }
+
+  HMODULE fEGL;
+  HMODULE fGL;
+};
+
+static GrGLFuncPtr angle_get_gl_proc(void* ctx, const char name[]) {
+  const ANGLEAssembleContext& context = *reinterpret_cast<const ANGLEAssembleContext*>(ctx);
+  GrGLFuncPtr proc = (GrGLFuncPtr) GetProcAddress(context.fGL, name);
+  if (proc) {
+    return proc;
+  }
+  proc = (GrGLFuncPtr) GetProcAddress(context.fEGL, name);
+  if (proc) {
+    return proc;
+  }
+  return eglGetProcAddress(name);
+}
+
+static const GrGLInterface* get_angle_gl_interface() {
+  ANGLEAssembleContext context;
+  if (!context.isValid()) {
+    return nullptr;
+  }
+  return GrGLAssembleGLESInterface(&context, angle_get_gl_proc);
+}
+
 bool SkiaWindow::attachANGLE()
 {
   if (!m_glCtx) {
     try {
-      SkAutoTDelete<GLContext> ctx(new GLContextEGL(handle()));
+      base::UniquePtr<GLContext> ctx(new GLContextEGL(handle()));
       if (!ctx->createGLContext())
         throw std::runtime_error("Cannot create EGL context");
 
-      m_glInterfaces.reset(GrGLCreateANGLEInterface());
+      m_glInterfaces.reset(get_angle_gl_interface());
       if (!m_glInterfaces || !m_glInterfaces->validate())
         throw std::runtime_error("Cannot create EGL interfaces\n");
 
       m_stencilBits = ctx->getStencilBits();
       m_sampleCount = ctx->getSampleCount();
 
-      m_glCtx.reset(ctx.detach());
+      m_glCtx.reset(ctx.release());
       m_grCtx.reset(
         GrContext::Create(kOpenGL_GrBackend,
                           (GrBackendContext)m_glInterfaces.get()));
@@ -200,7 +234,7 @@ bool SkiaWindow::attachGL()
 {
   if (!m_glCtx) {
     try {
-      SkAutoTDelete<GLContext> ctx(new GLContextWGL(handle()));
+      base::UniquePtr<GLContext> ctx(new GLContextWGL(handle()));
       if (!ctx->createGLContext())
         throw std::runtime_error("Cannot create WGL context\n");
 
@@ -211,9 +245,10 @@ bool SkiaWindow::attachGL()
       m_stencilBits = ctx->getStencilBits();
       m_sampleCount = ctx->getSampleCount();
 
-      m_glCtx.reset(ctx.detach());
-      m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
-                                      (GrBackendContext)m_glInterfaces.get()));
+      m_glCtx.reset(ctx.release());
+      m_grCtx.reset(
+        GrContext::Create(kOpenGL_GrBackend,
+                          (GrBackendContext)m_glInterfaces.get()));
 
       LOG("Using WGL backend\n");
     }
@@ -234,7 +269,7 @@ void SkiaWindow::detachGL()
   if (m_glCtx && m_display)
     m_display->resetSkiaSurface();
 
-  setSurface(nullptr);
+  m_skSurface.reset(nullptr);
   m_skSurfaceDirect.reset(nullptr);
   m_grRenderTarget.reset(nullptr);
   m_grCtx.reset(nullptr);
@@ -256,34 +291,28 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
   desc.fRenderTargetHandle = 0; // direct frame buffer
   m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
 
-  setSurface(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
-  m_skSurfaceDirect.reset(
-    SkSurface::NewRenderTargetDirect(m_grRenderTarget));
+  m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
+  m_skSurfaceDirect =
+    SkSurface::MakeRenderTargetDirect(m_grRenderTarget.get());
 
   if (scale == 1) {
-    setSurface(m_skSurfaceDirect);
+    m_skSurface = m_skSurfaceDirect;
   }
   else {
-    setSurface(
-      SkSurface::NewRenderTarget(
-        m_grCtx,
-        SkSurface::kYes_Budgeted,
+    m_skSurface =
+      SkSurface::MakeRenderTarget(
+        m_grCtx.get(),
+        SkBudgeted::kYes,
         SkImageInfo::MakeN32Premul(MAX(1, size.w / scale),
                                    MAX(1, size.h / scale)),
-        m_sampleCount));
+        m_sampleCount,
+        nullptr);
   }
 
   if (!m_skSurface)
     throw std::runtime_error("Error creating surface for main display");
 
   m_display->setSkiaSurface(new SkiaSurface(m_skSurface));
-}
-
-void SkiaWindow::setSurface(SkSurface* surface)
-{
-  if (m_skSurface && m_skSurface != m_skSurfaceDirect)
-    delete m_skSurface;
-  m_skSurface = surface;
 }
 
 #endif // SK_SUPPORT_GPU
