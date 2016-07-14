@@ -65,13 +65,9 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
   m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
 
-  static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
-                doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
-                doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
-                "ResizeMethod enum has changed");
   m_box->thumbQuality()->addItem("Nearest-neighbor");
   m_box->thumbQuality()->addItem("Bilinear");
-  m_box->thumbQuality()->addItem("RotSprite");
+//  m_box->thumbQuality()->addItem("RotSprite");
   m_box->thumbQuality()->Change.connect(&ConfigureTimelinePopup::onThumbQualityChange, this);
 
   m_thumbnailsPrefConn =
@@ -125,7 +121,18 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
-  m_box->thumbQuality()->setSelectedItemIndex((int)(docPref.thumbnails.quality()));
+  switch (docPref.thumbnails.quality()) {
+  case doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR:
+    m_box->thumbQuality()->setSelectedItemIndex(0);
+    break;
+  case doc::algorithm::RESIZE_METHOD_BILINEAR:
+    m_box->thumbQuality()->setSelectedItemIndex(1);
+    break;
+  default:
+    docPref.thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+    m_box->thumbQuality()->setSelectedItemIndex(0);
+  }
+
   m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
   m_box->thumbBackground()->setColor(docPref.thumbnails.background());
   m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
@@ -211,9 +218,17 @@ void ConfigureTimelinePopup::onThumbOpacityChange()
 
 void ConfigureTimelinePopup::onThumbQualityChange()
 {
-  docPref().thumbnails.quality(
-    (doc::algorithm::ResizeMethod)(m_box->thumbQuality()->getSelectedItemIndex())
-  );
+  switch (m_box->thumbQuality()->getSelectedItemIndex()) {
+  case 0:
+    docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+    break;
+  case 1:
+    docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_BILINEAR);
+    break;
+  default:
+    docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+    m_box->thumbQuality()->setSelectedItemIndex(0);
+  }
 }
 
 void ConfigureTimelinePopup::onThumbBackgroundChange(const app::Color& color)
