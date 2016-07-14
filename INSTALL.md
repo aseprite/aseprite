@@ -226,8 +226,8 @@ Skia.
 
 You can always check the
 [official Skia instructions](https://skia.org/user/quick) and select
-the OS you are building for. Aseprite uses the `chrome/m50` Skia
-branch, without GPU support.
+the OS you are building for. Aseprite uses the `aseprite-m53` Skia
+branch from `https://github.com/aseprite/skia`.
 
 ## Skia on Windows
 
@@ -247,10 +247,9 @@ Then open a command line follow these steps (for VS2015):
 Just ignore it.)
 
     cd C:\deps
-    git clone https://skia.googlesource.com/skia
+    git clone https://github.com/aseprite/skia.git
     cd skia
-    git checkout chrome/m50
-    set GYP_DEFINES=skia_gpu=0
+    git checkout aseprite-m53
     python bin/sync-and-gyp
 
 (The `bin/sync-and-gyp` will take some minutes because it downloads a
@@ -271,11 +270,10 @@ several minutes to finish:
     mkdir $HOME/deps
     cd $HOME/deps
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    git clone https://skia.googlesource.com/skia
+    git clone https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    git checkout chrome/m50
-    export GYP_DEFINES='skia_gpu=0'
+    git checkout aseprite-m53
     python bin/sync-and-gyp
     ninja -C out/Release dm
 
