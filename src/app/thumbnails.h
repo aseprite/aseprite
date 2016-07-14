@@ -39,10 +39,10 @@ namespace app {
     public:
       Request();
       Request(const app::Document* doc, const doc::frame_t frm, const doc::Image* img, const Dimension dim);
-      const Dimension dimension;
       const app::Document* document;
-      const doc::Image* image;
       const doc::frame_t frame;
+      const doc::Image* image;
+      const Dimension dimension;
       const Sequence timestamp;
       bool updated;
     private:
@@ -53,9 +53,9 @@ namespace app {
     public:
       Tag();
       Tag(const Request& req);
-      Dimension dimension;
       doc::ObjectId document;
       doc::ObjectId image;
+      Dimension dimension;
       Sequence timestamp;
     };
 
