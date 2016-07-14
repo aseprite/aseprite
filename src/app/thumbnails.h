@@ -65,25 +65,10 @@ namespace app {
     };
     typedef std::set< Tag*, TagRefComp > RecentlyUsed;
 
-    class Tier {
-      virtual she::Surface* fetch(Request& req) = 0;
-      virtual void traverse(RecentlyUsed& recentlyUsed) = 0;
-    };
-
-    class Data : Tier {
-      // static inline Sequence count() = 0;
-      // static she::Surface* generate(Request& req) = 0;
-    };
-
-    class Directory : Tier {
-      virtual void erase(const Tag* tag) = 0;
-    };
-
-
-    class Surface : Data {
+    class SurfaceData {
     public:
-      Surface();
-      ~Surface(); // dispose
+      SurfaceData();
+      ~SurfaceData(); // dispose
       static inline Sequence count();
       static she::Surface* generate(Request& req);
       she::Surface* fetch(Request& req);
@@ -96,12 +81,11 @@ namespace app {
       static Sequence m_count;
     };
 
-    //    typedef base::SharedPtr<Surface> SurfaceRef;
-    typedef std::map< Dimension, Surface > SurfaceMap;
+    typedef std::map< Dimension, SurfaceData > SurfaceMap;
 
-    class Image : Directory {
+    class ImageDir {
     public:
-      Image();
+      ImageDir();
       she::Surface* fetch(Request& req);
       void traverse(RecentlyUsed& recentlyUsed);
       void erase(const Tag* tag);
@@ -111,13 +95,12 @@ namespace app {
       SurfaceMap m_surfaces;
     };
 
-    //    typedef base::SharedPtr<Image> ImageRef;
-    typedef std::map< doc::ObjectId, Image > ImageMap;
+    typedef std::map< doc::ObjectId, ImageDir > ImageMap;
 
-    class Document : Directory {
+    class DocumentDir {
     public:
-      Document(); // constructor must be default
-      ~Document(); // disconnect
+      DocumentDir(); // constructor must be default
+      ~DocumentDir(); // disconnect
       she::Surface* fetch(Request& req); // init here
       void traverse(RecentlyUsed& recentlyUsed);
       base::Connection m_thumbnailsPrefConn;
@@ -128,12 +111,11 @@ namespace app {
       ImageMap m_images;
     };
 
-    //    typedef base::SharedPtr<Document> DocumentRef;
-    typedef std::map< doc::ObjectId, Document > DocumentMap;
+    typedef std::map< doc::ObjectId, DocumentDir > DocumentMap;
 
-    class Cache : Directory {
+    class CacheDir {
     public:
-      Cache();
+      CacheDir();
       void onRemoveDocument(doc::Document* doc);
       she::Surface* fetch(Request& req);
       she::Surface* fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);

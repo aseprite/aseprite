@@ -23,9 +23,9 @@ namespace app {
   namespace thumb {
 
     Sequence Request::m_sequence = 0;
-    Sequence Surface::m_count = 0;
+    Sequence SurfaceData::m_count = 0;
 
-    ///////// constructor
+    ///////// constructors
 
     Request::Request() :
       document(nullptr),
@@ -59,17 +59,17 @@ namespace app {
       timestamp(req.timestamp)
     {}
 
-    Surface::Surface() : m_surface(nullptr) { }
+    SurfaceData::SurfaceData() : m_surface(nullptr) { }
 
-    Image::Image() : m_version(-1) {}
+    ImageDir::ImageDir() : m_version(-1) {}
 
-    Document::Document() {}
+    DocumentDir::DocumentDir() {}
 
-    Cache::Cache() {}
+    CacheDir::CacheDir() {}
 
     ///////// destroying
 
-    Surface::~Surface()
+    SurfaceData::~SurfaceData()
     {
       if (m_surface) {
         m_surface->dispose();
@@ -77,26 +77,26 @@ namespace app {
       }
     }
 
-    Document::~Document()
+    DocumentDir::~DocumentDir()
     {
       if (m_thumbnailsPrefConn) {
         m_thumbnailsPrefConn.disconnect();
       }
     }
 
-    void Document::onThumbnailsPrefChange()
+    void DocumentDir::onThumbnailsPrefChange()
     {
       m_images.clear();
     }
 
-    void Cache::onRemoveDocument(doc::Document* doc)
+    void CacheDir::onRemoveDocument(doc::Document* doc)
     {
       m_documents.erase(doc->id());
     }
 
     ///////// generating
 
-    she::Surface* Surface::generate(Request& req)
+    she::Surface* SurfaceData::generate(Request& req)
     {
       DocumentPreferences& docPref = Preferences::instance().document(req.document);
 
@@ -170,34 +170,34 @@ namespace app {
 
     ///////// fetching
 
-    she::Surface* Cache::fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds)
+    she::Surface* CacheDir::fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds)
     {
       const Dimension dim = std::make_pair(bounds.w, bounds.h);
       Request req(doc, cel->frame(), cel->image(), dim);
       return fetch(req);
     }
 
-    she::Surface* Cache::fetch(Request& req)
+    she::Surface* CacheDir::fetch(Request& req)
     {
       // TODO throttle the ammount of requests;
       //      generate a empty surface;
       //      update the pixels later, on a thread;
       //      and notify the requester of the update
 
-      return active() ? m_documents[req.document->id()].fetch(req) : Surface::generate(req);
+      return active() ? m_documents[req.document->id()].fetch(req) : SurfaceData::generate(req);
     }
 
-    she::Surface* Document::fetch(Request& req)
+    she::Surface* DocumentDir::fetch(Request& req)
     {
       if (!m_thumbnailsPrefConn) {
         DocumentPreferences& docPref = Preferences::instance().document(req.document);
         m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
-          base::Bind<void>(&Document::onThumbnailsPrefChange, this));
+          base::Bind<void>(&DocumentDir::onThumbnailsPrefChange, this));
       }
       return m_images[req.image->id()].fetch(req);
     }
 
-    she::Surface* Image::fetch(Request& req)
+    she::Surface* ImageDir::fetch(Request& req)
     {
       if (m_version != req.image->version()) {
         m_surfaces.clear();
@@ -206,10 +206,10 @@ namespace app {
       return m_surfaces[req.dimension].fetch(req);
     }
 
-    she::Surface* Surface::fetch(Request& req)
+    she::Surface* SurfaceData::fetch(Request& req)
     {
       if (m_surface == nullptr) {
-        m_surface = Surface::generate(req);
+        m_surface = SurfaceData::generate(req);
         m_count++;
       }
       m_tag = req;
@@ -218,9 +218,9 @@ namespace app {
 
     ///////// trimming
 
-    inline Sequence Surface::count() { return m_count;  }
+    inline Sequence SurfaceData::count() { return m_count;  }
 
-    bool Cache::active()
+    bool CacheDir::active()
     {
       Preferences& globalPref = Preferences::instance();
       int high = globalPref.thumbnails.cacheLimit();
@@ -230,13 +230,13 @@ namespace app {
       }
 
       if (high == 0) { // disable cache
-        if (Surface::count() > 0) {
+        if (SurfaceData::count() > 0) {
           m_documents.clear();
         }
         return false;
       }
 
-      if (Surface::count() < high) { // not time to clean it yet
+      if (SurfaceData::count() < high) { // not time to clean it yet
         return true;
       }
 
@@ -258,34 +258,34 @@ namespace app {
 
     ///////// traversing
 
-    void Cache::traverse(RecentlyUsed& recentlyUsed)
+    void CacheDir::traverse(RecentlyUsed& recentlyUsed)
     {
       for (DocumentMap::iterator documents_it = m_documents.begin();
         documents_it != m_documents.end(); documents_it++) {
-        Document &document = (*documents_it).second;
+        DocumentDir &document = (*documents_it).second;
         document.traverse(recentlyUsed);
       }
     }
 
-    void Document::traverse(RecentlyUsed& recentlyUsed)
+    void DocumentDir::traverse(RecentlyUsed& recentlyUsed)
     {
       for (ImageMap::iterator images_it = m_images.begin();
         images_it != m_images.end(); images_it++) {
-        Image &image = (*images_it).second;
+        ImageDir &image = (*images_it).second;
         image.traverse(recentlyUsed);
       }
     }
 
-    void Image::traverse(RecentlyUsed& recentlyUsed)
+    void ImageDir::traverse(RecentlyUsed& recentlyUsed)
     {
       for (SurfaceMap::iterator surfaces_it = m_surfaces.begin();
         surfaces_it != m_surfaces.end(); surfaces_it++) {
-        Surface &surface = (*surfaces_it).second;
+        SurfaceData &surface = (*surfaces_it).second;
         surface.traverse(recentlyUsed);
       }
     }
 
-    void Surface::traverse(RecentlyUsed& recentlyUsed)
+    void SurfaceData::traverse(RecentlyUsed& recentlyUsed)
     {
       recentlyUsed.insert(&m_tag);
     }
@@ -297,17 +297,17 @@ namespace app {
 
     ///////// erasing
 
-    void Cache::erase(const Tag* tag)
+    void CacheDir::erase(const Tag* tag)
     {
       m_documents[tag->document].erase(tag);
     }
 
-    void Document::erase(const Tag* tag)
+    void DocumentDir::erase(const Tag* tag)
     {
       m_images[tag->image].erase(tag);
     }
 
-    void Image::erase(const Tag* tag)
+    void ImageDir::erase(const Tag* tag)
     {
       m_surfaces.erase(tag->dimension);
     }

@@ -53,7 +53,7 @@ namespace app {
     Document* m_lastSelectedDoc;
     DocumentView* m_lastSelectedView;
     static UIContext* m_instance;
-    thumb::Cache m_thumbnails;
+    thumb::CacheDir m_thumbnails;
   };
 
 } // namespace app
