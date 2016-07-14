@@ -46,7 +46,7 @@ namespace app {
     class SurfaceData {
     public:
       static she::Surface* generate(Request& req);
-      static she::Surface* SurfaceData::fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
+      static she::Surface* fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
     };
 
   } // thumbnails
