@@ -57,7 +57,7 @@ namespace app {
     app::gen::TimelineConf* m_box;
     bool m_lockUpdates;
 
-    base::ScopedConnection m_thumbnailsPrefConn;
+    base::Connection m_thumbnailsPrefConn;
   };
 
 } // namespace app

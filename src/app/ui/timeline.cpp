@@ -219,6 +219,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
+  m_thumbnailsPrefConn.disconnect();
   m_thumbnailsPrefConn = docPref().thumbnails.AfterChange.connect(
     base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
 
