@@ -51,12 +51,11 @@
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
 #include "base/unique_ptr.h"
-#include "doc/algorithm/rotate.h"
-#include "doc/algorithm/resize_image.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "doc/conversion_she.h"
 #include "base/bind.h"
+#include "doc/algorithm/rotate.h"
 
 #include <cstdio>
 #include <vector>
@@ -125,58 +124,6 @@ struct Timeline::DrawCelData {
   CelIterator lastLink;         // Last link to the active cel
 };
 
-
-long long CachedSurface::m_sequence = 0;
-long long CachedSurface::m_count = 0;
-
-typedef std::multimap< long long, std::pair<SurfaceCache*, SurfaceCache::iterator> > DocSurfaceCacheRecentlyUsed;
-
-void CachedSurface::trim(DocSurfaceCache &dsc, int high, int low)
-{
-  ASSERT(high > low);
-
-  if (m_count < high) {
-    return;
-  }
-
-  DocSurfaceCacheRecentlyUsed recentlyUsed;
-  for (DocSurfaceCache::iterator dsc_it = dsc.begin(); dsc_it != dsc.end(); dsc_it++) {
-    SurfaceCache &sc = (*dsc_it).second;
-    for (SurfaceCache::iterator sc_it = sc.begin(); sc_it != sc.end(); sc_it++) {
-      SurfaceCacheItem &sci = (*sc_it).second;
-      recentlyUsed.insert(std::make_pair(sci->m_timestamp, std::make_pair(&sc, sc_it)));
-    }
-  }
-
-  while (m_count > low) {
-    DocSurfaceCacheRecentlyUsed::iterator it = recentlyUsed.begin();
-    SurfaceCache* sc = (*it).second.first;
-    SurfaceCache::iterator sc_it = (*it).second.second;
-    sc->erase(sc_it);
-    recentlyUsed.erase(it);
-  }
-
-  TRACE("cache reached high at %d and reduced to low %d)\n", high, low);
-}
-
-CachedSurface::CachedSurface() : m_surface(nullptr), m_timestamp(-1) { }
-CachedSurface::CachedSurface(she::Surface* surface) : m_surface(surface), m_timestamp(m_sequence++) {
-  m_count++;
-}
-
-CachedSurface::~CachedSurface() {
-  m_surface->dispose();
-  m_surface = nullptr;
-  m_count--;
-}
-
-she::Surface* CachedSurface::surface() {
-  m_timestamp = m_sequence++;
-  return m_surface;
-}
-
-
-
 Timeline::Timeline()
   : Widget(kGenericWidget)
   , m_hbar(HORIZONTAL, this)
@@ -227,7 +174,6 @@ Timeline::~Timeline()
 
 void Timeline::onThumbnailsPrefChange()
 {
-  m_thumbnailsCache[m_document->id()].clear();
   invalidate();
 }
 
@@ -273,22 +219,8 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
-  doc::ObjectId doc_id = m_document->id();
-  Cel *cel = m_layer->cel(m_frame);
-  if (cel) {
-    Image* image = cel->image();
-    if (image) {
-      doc::ObjectId image_id = image->id();
-      SurfaceCache::iterator it = m_thumbnailsCache[doc_id].find(image_id);
-      if (it != m_thumbnailsCache[doc_id].end()) {
-        m_thumbnailsCache[doc_id].erase(image_id);
-      }
-    }
-  }
-
-  m_thumbnailsPrefConn =
-    docPref().thumbnails.AfterChange.connect(
-      base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+  m_thumbnailsPrefConn = docPref().thumbnails.AfterChange.connect(
+    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
 
   setFocusStop(true);
   regenerateLayers();
@@ -299,7 +231,6 @@ void Timeline::updateUsingEditor(Editor* editor)
 void Timeline::detachDocument()
 {
   if (m_document) {
-    m_thumbnailsPrefConn.disconnect();
     m_document->removeObserver(this);
     m_document = NULL;
   }
@@ -1154,9 +1085,8 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 
 void Timeline::onRemoveDocument(doc::Document* document)
 {
-  m_thumbnailsCache[document->id()].clear();
-
   if (document == m_document) {
+    m_thumbnailsPrefConn.disconnect();
     detachDocument();
   }
 }
@@ -1610,89 +1540,11 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 
   if (docPref().thumbnails.enabled() && image) {
-    SurfaceCacheItem thumb_surf;
-
-    int opacity = docPref().thumbnails.opacity();
-    gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
-    doc::algorithm::ResizeMethod resize_method = docPref().thumbnails.quality();
-
     gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
 
-    CachedSurface::trim(m_thumbnailsCache, 5000, 4000); // FIXME hardcoded
+    she::Surface* thumb_surf = UIContext::instance()->thumbnail(m_document, cel, thumb_bounds);
 
-    doc::ObjectId doc_id = m_document->id();
-    doc::ObjectId image_id = image->id();
-
-    SurfaceCache::iterator it = m_thumbnailsCache[doc_id].find(image_id);
-    if (it != m_thumbnailsCache[doc_id].end()) {
-      thumb_surf = (*it).second;
-    }
-    else {
-      double zw = thumb_bounds.w / (double)image->width();
-      double zh = thumb_bounds.h / (double)image->height();
-      double zoom = MIN(1, MIN(zw, zh));
-
-      gfx::Rect cel_image_on_thumb(
-        (int)(thumb_bounds.w * 0.5 - image->width()  * zoom * 0.5),
-        (int)(thumb_bounds.h * 0.5 - image->height() * zoom * 0.5),
-        (int)(image->width()  * zoom),
-        (int)(image->height() * zoom)
-      );
-
-      base::UniquePtr<Image> thumb_img(Image::create(
-        image->pixelFormat(), thumb_bounds.w, thumb_bounds.h));
-
-      if (opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
-        clear_image(thumb_img, gfx::rgba(0, 0, 0, 0));
-        algorithm::scale_image(
-          thumb_img, image,
-          cel_image_on_thumb.x, cel_image_on_thumb.y, 
-          cel_image_on_thumb.w, cel_image_on_thumb.h,
-          0, 0, image->width(), image->height());
-      }
-      else {
-        base::UniquePtr<Image> scale_img;
-        Image* source = image;
-
-        if (zoom != 1) {
-          scale_img.reset(Image::create(
-            image->pixelFormat(), cel_image_on_thumb.w, cel_image_on_thumb.h));
-          source = scale_img.get();
-
-          doc::algorithm::resize_image(
-            image, scale_img,
-            resize_method,
-            m_sprite->palette(frame),
-            m_sprite->rgbMap(frame),
-            m_sprite->transparentColor());
-        }
-
-        clear_image(thumb_img.get(), background);
-
-        render::composite_image(
-          thumb_img, source, 
-          m_sprite->palette(frame),
-          cel_image_on_thumb.x,
-          cel_image_on_thumb.y,
-          opacity, BlendMode::NORMAL);
-      }
-
-      thumb_surf.reset(new CachedSurface(
-        she::instance()->createRgbaSurface(
-          thumb_img->width(),
-          thumb_img->height())));
-
-      convert_image_to_surface(thumb_img, m_sprite->palette(m_frame), thumb_surf->surface(),
-        0, 0, 0, 0, thumb_img->width(), thumb_img->height());
-
-      m_thumbnailsCache[doc_id][image_id] = thumb_surf;
-    }
-
-    if (gfx::geta(background) > 0 && opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
-      g->fillRect(background, thumb_bounds);
-    }
-
-    g->drawRgbaSurface(thumb_surf->surface(), thumb_bounds.x, thumb_bounds.y);
+    g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
   }
 }
 

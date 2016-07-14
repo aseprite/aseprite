@@ -23,14 +23,9 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
-#include "base/shared_ptr.h"
-#include "doc/object_id.h"
-#include "base/connection.h"
-#include "she/surface.h"
+#include "app/thumbnails.h"
 
 #include <vector>
-#include <map>
-#include <utility>
 
 namespace doc {
   class Cel;
@@ -61,25 +56,6 @@ namespace app {
   class Context;
   class Document;
   class Editor;
-
-  class CachedSurface;
-  typedef base::SharedPtr<CachedSurface> SurfaceCacheItem;
-  typedef std::map< doc::ObjectId, SurfaceCacheItem > SurfaceCache;
-  typedef std::map< doc::ObjectId, SurfaceCache > DocSurfaceCache;
-
-  class CachedSurface {
-    public:
-    CachedSurface();
-    CachedSurface(she::Surface* surface);
-    ~CachedSurface();
-    she::Surface* surface();
-    static void trim(DocSurfaceCache &dsc, int high, int low);
-    private:
-    static long long m_sequence;
-    static long long m_count;
-    long long m_timestamp;
-    she::Surface* m_surface;
-  };
 
   class Timeline : public ui::Widget
                  , public ui::ScrollableViewDelegate
@@ -325,12 +301,10 @@ namespace app {
     gfx::Rect m_thumbnailsOverlayOuter;
     Hit m_thumbnailsOverlayHit;
     gfx::Point m_thumbnailsOverlayDirection;
-    base::Connection m_thumbnailsPrefConn;
-    void onThumbnailsPrefChange();
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
-//    void drawCelThumbnail(ui::Graphics* g, LayerIndex layerIdx, frame_t frame);
-    DocSurfaceCache m_thumbnailsCache;
+    base::Connection m_thumbnailsPrefConn;
+    void onThumbnailsPrefChange();
 
     // Temporal data used to move the range.
     struct MoveRange {

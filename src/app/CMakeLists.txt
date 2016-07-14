@@ -427,6 +427,7 @@ add_library(app-lib
   ui/workspace_tabs.cpp
   ui/zoom_entry.cpp
   ui_context.cpp
+  thumbnails.cpp
   util/autocrop.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp

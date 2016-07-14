@@ -197,6 +197,9 @@
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
     </section>
+    <section id="thumbnails">
+      <option id="cache_limit" type="int" default="5000" />
+    </section>
   </global>
 
   <tool>
