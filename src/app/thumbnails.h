@@ -31,8 +31,6 @@ namespace app {
 
   namespace thumb {
 
-    typedef long long Sequence;
-
     typedef std::pair< int, int > Dimension;
 
     class Request {
@@ -43,90 +41,12 @@ namespace app {
       const doc::frame_t frame;
       const doc::Image* image;
       const Dimension dimension;
-      const Sequence timestamp;
-      bool updated;
-    private:
-      static Sequence m_sequence;
     };
-
-    class Tag {
-    public:
-      Tag();
-      Tag(const Request& req);
-      doc::ObjectId document;
-      doc::ObjectId image;
-      Dimension dimension;
-      Sequence timestamp;
-    };
-
-    struct TagRefComp
-    {
-      bool operator()(const Tag* lhs, const Tag* rhs) const;
-    };
-    typedef std::set< Tag*, TagRefComp > RecentlyUsed;
 
     class SurfaceData {
     public:
-      SurfaceData();
-      ~SurfaceData(); // dispose
-      static inline Sequence count();
       static she::Surface* generate(Request& req);
-      she::Surface* fetch(Request& req);
-      void traverse(RecentlyUsed& recentlyUsed);
-      void erase(const Tag* tag);
-
-    private:
-      Tag m_tag;
-      she::Surface* m_surface;
-      static Sequence m_count;
-    };
-
-    typedef std::map< Dimension, SurfaceData > SurfaceMap;
-
-    class ImageDir {
-    public:
-      ImageDir();
-      she::Surface* fetch(Request& req);
-      void traverse(RecentlyUsed& recentlyUsed);
-      void erase(const Tag* tag);
-
-    private:
-      doc::ObjectVersion m_version;
-      SurfaceMap m_surfaces;
-    };
-
-    typedef std::map< doc::ObjectId, ImageDir > ImageMap;
-
-    class DocumentDir {
-    public:
-      DocumentDir(); // constructor must be default
-      ~DocumentDir(); // disconnect
-      she::Surface* fetch(Request& req); // init here
-      void traverse(RecentlyUsed& recentlyUsed);
-      base::Connection m_thumbnailsPrefConn;
-      void onThumbnailsPrefChange();
-      void erase(const Tag* tag);
-
-    private:
-      ImageMap m_images;
-    };
-
-    typedef std::map< doc::ObjectId, DocumentDir > DocumentMap;
-
-    class CacheDir {
-    public:
-      CacheDir();
-      void onRemoveDocument(doc::Document* doc);
-      she::Surface* fetch(Request& req);
-      she::Surface* fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
-      void traverse(RecentlyUsed& recentlyUsed);
-      void erase(const Tag* tag);
-
-
-    private:
-      bool active(); // check if should cache and trim if necessary
-
-      thumb::DocumentMap m_documents;
+      static she::Surface* SurfaceData::fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
     };
 
   } // thumbnails

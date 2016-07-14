@@ -214,7 +214,6 @@ void UIContext::onRemoveDocument(doc::Document* doc)
       delete docView;
     }
 
-    m_thumbnails.onRemoveDocument(doc);
   }
 }
 
@@ -234,11 +233,5 @@ void UIContext::onGetActiveSite(Site* site) const
     }
   }
 }
-
-she::Surface* UIContext::thumbnail(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds)
-{
-  return m_thumbnails.fetch(doc, cel, bounds);
-}
-
 
 } // namespace app
