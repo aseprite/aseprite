@@ -28,34 +28,34 @@ namespace app {
     ///////// constructor
 
     Request::Request() :
-      timestamp(-1),
       document(nullptr),
-      image(nullptr),
       frame(0),
+      image(nullptr),
       dimension(0, 0),
+      timestamp(-1),
       updated(false)
     {}
 
     Tag::Tag() :
-      timestamp(-1),
       document(0),
       image(0),
-      dimension(0, 0)
+      dimension(0, 0),
+      timestamp(-1)
     {}
 
     Request::Request(const app::Document* doc, const doc::frame_t frm, const doc::Image* img, const Dimension dim) :
-      dimension(dim),
       document(doc),
       frame(frm),
       image(img),
+      dimension(dim),
       timestamp(m_sequence++),
       updated(false)
     {}
 
     Tag::Tag(const Request& req) :
-      dimension(req.dimension),
-      image(req.image->id()),
       document(req.document->id()),
+      image(req.image->id()),
+      dimension(req.dimension),
       timestamp(req.timestamp)
     {}
 
@@ -173,7 +173,8 @@ namespace app {
     she::Surface* Cache::fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds)
     {
       const Dimension dim = std::make_pair(bounds.w, bounds.h);
-      return fetch(Request(doc, cel->frame(), cel->image(), dim));
+      Request req(doc, cel->frame(), cel->image(), dim);
+      return fetch(req);
     }
 
     she::Surface* Cache::fetch(Request& req)
