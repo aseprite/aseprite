@@ -18,6 +18,9 @@
 #include "she/system.h"
 #include "doc/conversion_she.h"
 #include "base/bind.h"
+#include "render/quantization.h"
+
+#include <algorithm>
 
 namespace app {
   namespace thumb {
@@ -102,7 +105,6 @@ namespace app {
 
       int opacity = docPref.thumbnails.opacity();
       gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
-      doc::algorithm::ResizeMethod resize_method = docPref.thumbnails.quality();
 
       gfx::Size image_size = req.image->size();
       gfx::Size thumb_size = gfx::Size(req.dimension.first, req.dimension.second);
@@ -114,54 +116,114 @@ namespace app {
       gfx::Rect cel_image_on_thumb(
         (int)(thumb_size.w * 0.5 - image_size.w  * zoom * 0.5),
         (int)(thumb_size.h * 0.5 - image_size.h * zoom * 0.5),
-        (int)(image_size.w  * zoom),
+        (int)(image_size.w * zoom),
         (int)(image_size.h * zoom)
       );
 
       const doc::Sprite* sprite = req.document->sprite();
+
       base::UniquePtr<doc::Image> thumb_img(doc::Image::create(
-        req.image->pixelFormat(), thumb_size.w, thumb_size.h));
+        IMAGE_RGB, thumb_size.w, thumb_size.h));
 
-      clear_image(thumb_img.get(), background);
+      base::UniquePtr<doc::Image> converted_rgb;
+      const doc::Image* source = req.image;
 
-      if (opacity == 255 && resize_method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR) {
-        algorithm::scale_image(
-          thumb_img, req.image,
-          cel_image_on_thumb.x, cel_image_on_thumb.y,
-          cel_image_on_thumb.w, cel_image_on_thumb.h,
-          0, 0, image_size.w, image_size.h);
-      }
-      else {
-        base::UniquePtr<doc::Image> scale_img;
-        const doc::Image* source = req.image;
-
-        if (zoom != 1) {
-          scale_img.reset(doc::Image::create(
-            req.image->pixelFormat(), cel_image_on_thumb.w, cel_image_on_thumb.h));
-
-
-          doc::algorithm::resize_image(
-            req.image, scale_img,
-            resize_method,
-            sprite->palette(req.frame),
+      if (source->pixelFormat() != IMAGE_RGB) {
+        converted_rgb.reset(
+          render::convert_pixel_format(
+            req.image, NULL, IMAGE_RGB,
+            doc::DitheringMethod::NONE,
             sprite->rgbMap(req.frame),
-            sprite->transparentColor());
+            sprite->palette(req.frame),
+            false, req.image->maskColor())
+        );
+        source = converted_rgb.get();
+      }
 
-          source = scale_img.get();
+      double alpha = opacity / 255.0;
+
+      clear_image(thumb_img.get(), rgba(
+        rgba_getr(background),
+        rgba_getg(background),
+        rgba_getb(background),
+        rgba_geta(background) * alpha
+     ));
+
+      uint8_t bg_a = rgba_geta(background);
+      double bg_a0 = bg_a / 255.0;
+      double bg_r0 = rgba_getr(background) * bg_a0;
+      double bg_g0 = rgba_getg(background) * bg_a0;
+      double bg_b0 = rgba_getb(background) * bg_a0;
+
+      if (zoom == 1) {
+        for (int y = 0; y < cel_image_on_thumb.h; y++) {
+
+          uint32_t* dst = (uint32_t*)thumb_img->getPixelAddress(cel_image_on_thumb.x, cel_image_on_thumb.y + y);
+          uint32_t* src = (uint32_t*)source->getPixelAddress(0, y);
+          uint32_t* src_end  = src + cel_image_on_thumb.w;
+
+          while (src < src_end) {
+            uint8_t src_a = rgba_geta(*src);
+            double src_a0 = src_a / 255.0, src_a1 = 1 - src_a0;
+            uint32_t dst_a = (bg_a * src_a1 + src_a) * alpha;
+            *(dst++) = rgba(
+              bg_r0 * src_a1 + rgba_getr(*src) * src_a0,
+              bg_g0 * src_a1 + rgba_getg(*src) * src_a0,
+              bg_b0 * src_a1 + rgba_getb(*src) * src_a0,
+              MIN(dst_a, 0xff)
+            );
+            ++src;
+          }
         }
+      }
+      else { // downscale with box sampling
+        for (int dst_y = 0; dst_y < cel_image_on_thumb.h; dst_y++) {
+          int dst_x = 0;
+          uint32_t* dst = (uint32_t*)thumb_img->getPixelAddress(
+            cel_image_on_thumb.x + dst_x, 
+            cel_image_on_thumb.y + dst_y
+          );
+          uint32_t* dst_end = dst + cel_image_on_thumb.w;
 
-        render::composite_image(
-          thumb_img, source,
-          sprite->palette(req.frame),
-          cel_image_on_thumb.x,
-          cel_image_on_thumb.y,
-          opacity, BlendMode::NORMAL);
+          while (dst < dst_end) {
+            double src_r = 0, src_g = 0, src_b = 0, src_a = 0;
+            int src_y0 =  dst_y      * image_size.h / cel_image_on_thumb.h;
+            int src_y1 = (dst_y + 1) * image_size.h / cel_image_on_thumb.h;
+            int src_x0 =  dst_x      * image_size.w / cel_image_on_thumb.w;
+            int src_w  =               image_size.w / cel_image_on_thumb.w;
+            int sn = (src_y1 - src_y0) * src_w;
+            for (int src_y = src_y0; src_y < src_y1; src_y++) {
+              uint32_t* src = (uint32_t*)source->getPixelAddress(src_x0, src_y);
+              uint32_t* src_end = src + src_w;
+              while (src < src_end) {
+                src_r += rgba_getr(*src);
+                src_g += rgba_getg(*src);
+                src_b += rgba_getb(*src);
+                src_a += rgba_geta(*src);
+                ++src;
+              }
+            }
+            src_r /= sn;
+            src_g /= sn;
+            src_b /= sn;
+            src_a /= sn;
+            double src_a0 = src_a / 255.0, src_a1 = 1 - src_a0;
+            uint32_t dst_a = (bg_a * src_a1 + src_a) * alpha;
+            *(dst++) = rgba(
+              bg_r0 * src_a1 + src_r * src_a0,
+              bg_g0 * src_a1 + src_g * src_a0,
+              bg_b0 * src_a1 + src_b * src_a0,
+              MIN(dst_a, 0xff)
+            );
+            ++dst_x;
+          }
+        }
       }
 
       she::Surface* thumb_surf = she::instance()->createRgbaSurface(
         thumb_img->width(), thumb_img->height());
 
-      convert_image_to_surface(thumb_img, sprite->palette(req.frame), thumb_surf,
+      convert_image_to_surface(thumb_img, NULL, thumb_surf,
         0, 0, 0, 0, thumb_img->width(), thumb_img->height());
 
       req.updated = true;
