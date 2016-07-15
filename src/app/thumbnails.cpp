@@ -155,7 +155,7 @@ namespace app {
       double bg_g0 = rgba_getg(background) * bg_a0;
       double bg_b0 = rgba_getb(background) * bg_a0;
 
-      if (zoom == 1) {
+      if (zoom == 1) { // alpha overlay
         for (int y = 0; y < cel_image_on_thumb.h; y++) {
 
           uint32_t* dst = (uint32_t*)thumb_img->getPixelAddress(cel_image_on_thumb.x, cel_image_on_thumb.y + y);
@@ -176,7 +176,7 @@ namespace app {
           }
         }
       }
-      else { // downscale with box sampling
+      else { // downscale with box sampling and alpha overlay
         for (int dst_y = 0; dst_y < cel_image_on_thumb.h; dst_y++) {
           int dst_x = 0;
           uint32_t* dst = (uint32_t*)thumb_img->getPixelAddress(
