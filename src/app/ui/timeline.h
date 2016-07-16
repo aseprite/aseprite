@@ -296,15 +296,17 @@ namespace app {
 
     AniControls m_aniControls;
 
-    bool m_thumbnailsOverlayVisible;
-    gfx::Rect m_thumbnailsOverlayInner;
-    gfx::Rect m_thumbnailsOverlayOuter;
-    Hit m_thumbnailsOverlayHit;
-    gfx::Point m_thumbnailsOverlayDirection;
+    bool m_overlayVisible;
+    gfx::Rect m_overlayInner;
+    gfx::Rect m_overlayOuter;
+    Hit m_overlayHit;
+    gfx::Point m_overlayDirection;
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
     base::Connection m_thumbnailsPrefConn;
     void onThumbnailsPrefChange();
+    base::Connection m_overlayPrefConn;
+    void onOverlayPrefChange();
 
     // Temporal data used to move the range.
     struct MoveRange {

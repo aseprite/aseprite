@@ -42,7 +42,8 @@ namespace app {
     // new one if it's necessary.
     Editor* getEditorFor(Document* document);
 
-    she::Surface* thumbnail(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
+    she::Surface* thumbnail(const app::Document* doc, const doc::Cel* cel, 
+      gfx::Size surface_size, gfx::Rect image_on_surface = gfx::Rect());
 
   protected:
     void onAddDocument(doc::Document* doc) override;

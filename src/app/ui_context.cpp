@@ -235,9 +235,14 @@ void UIContext::onGetActiveSite(Site* site) const
   }
 }
 
-she::Surface* UIContext::thumbnail(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds)
+she::Surface* UIContext::thumbnail(
+  const app::Document* doc, const doc::Cel* cel, 
+  gfx::Size surface_size, gfx::Rect image_on_surface)
 {
-  return m_thumbnails.fetch(doc, cel, bounds);
+  thumb::Request req(doc, 
+    cel->frame(), cel->image(), 
+    surface_size, image_on_surface);
+  return m_thumbnails.fetch(req);
 }
 
 

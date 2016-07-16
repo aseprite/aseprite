@@ -15,6 +15,8 @@
 #include "doc/object_id.h"
 #include "doc/object.h"
 #include "doc/frame.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 #include <map>
 #include <set>
@@ -38,11 +40,14 @@ namespace app {
     class Request {
     public:
       Request();
-      Request(const app::Document* doc, const doc::frame_t frm, const doc::Image* img, const Dimension dim);
+      Request(const app::Document* doc, const doc::frame_t frm,
+        const doc::Image* img, const gfx::Size surf_size,
+        const gfx::Rect img_on_surf = gfx::Rect());
       const app::Document* document;
       const doc::frame_t frame;
       const doc::Image* image;
-      const Dimension dimension;
+      const gfx::Size surface_size;
+      gfx::Rect image_on_surface;
       const Sequence timestamp;
       bool updated;
     private:
@@ -121,7 +126,6 @@ namespace app {
       she::Surface* fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
       void traverse(RecentlyUsed& recentlyUsed);
       void erase(const Tag* tag);
-
 
     private:
       bool active(); // check if should cache and trim if necessary

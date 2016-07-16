@@ -34,7 +34,8 @@ namespace app {
       document(nullptr),
       frame(0),
       image(nullptr),
-      dimension(0, 0),
+      surface_size(gfx::Size(0, 0)),
+      image_on_surface(gfx::Rect(0, 0, 0, 0)),
       timestamp(-1),
       updated(false)
     {}
@@ -46,11 +47,14 @@ namespace app {
       timestamp(-1)
     {}
 
-    Request::Request(const app::Document* doc, const doc::frame_t frm, const doc::Image* img, const Dimension dim) :
+    Request::Request(const app::Document* doc, const doc::frame_t frm, 
+      const doc::Image* img, const gfx::Size surf_size,
+      const gfx::Rect img_on_surf) :
       document(doc),
       frame(frm),
       image(img),
-      dimension(dim),
+      surface_size(surf_size),
+      image_on_surface(img_on_surf),
       timestamp(m_sequence++),
       updated(false)
     {}
@@ -58,7 +62,7 @@ namespace app {
     Tag::Tag(const Request& req) :
       document(req.document->id()),
       image(req.image->id()),
-      dimension(req.dimension),
+      dimension(std::make_pair(req.surface_size.w, req.surface_size.h)),
       timestamp(req.timestamp)
     {}
 
@@ -101,29 +105,30 @@ namespace app {
 
     she::Surface* SurfaceData::generate(Request& req)
     {
-      DocumentPreferences& docPref = Preferences::instance().document(req.document);
-
-      int opacity = docPref.thumbnails.opacity();
-      gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
-
+      req.updated = true;
       gfx::Size image_size = req.image->size();
-      gfx::Size thumb_size = gfx::Size(req.dimension.first, req.dimension.second);
 
-      double zw = thumb_size.w / (double)image_size.w;
-      double zh = thumb_size.h / (double)image_size.h;
-      double zoom = MIN(1, MIN(zw, zh));
+      if (req.image_on_surface.isEmpty()) {
+        double zw = req.surface_size.w / (double)image_size.w;
+        double zh = req.surface_size.h / (double)image_size.h;
+        double zoom = MIN(1, MIN(zw, zh));
 
-      gfx::Rect cel_image_on_thumb(
-        (int)(thumb_size.w * 0.5 - image_size.w  * zoom * 0.5),
-        (int)(thumb_size.h * 0.5 - image_size.h * zoom * 0.5),
-        (int)(image_size.w * zoom),
-        (int)(image_size.h * zoom)
-      );
+        req.image_on_surface = gfx::Rect(
+          (int)(req.surface_size.w * 0.5 - image_size.w  * zoom * 0.5),
+          (int)(req.surface_size.h * 0.5 - image_size.h * zoom * 0.5),
+          (int)(image_size.w * zoom),
+          (int)(image_size.h * zoom)
+        );
+      }
 
-      const doc::Sprite* sprite = req.document->sprite();
+      DocumentPreferences& docPref = Preferences::instance().document(req.document);
+      gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
+      int opacity = docPref.thumbnails.opacity();
 
       base::UniquePtr<doc::Image> thumb_img(doc::Image::create(
-        IMAGE_RGB, thumb_size.w, thumb_size.h));
+        IMAGE_RGB, req.surface_size.w, req.surface_size.h));
+
+      const doc::Sprite* sprite = req.document->sprite();
 
       base::UniquePtr<doc::Image> converted_rgb;
       const doc::Image* source = req.image;
@@ -141,80 +146,94 @@ namespace app {
       }
 
       double alpha = opacity / 255.0;
-
-      clear_image(thumb_img.get(), rgba(
-        rgba_getr(background),
-        rgba_getg(background),
-        rgba_getb(background),
-        rgba_geta(background) * alpha
-     ));
-
       uint8_t bg_a = rgba_geta(background);
+      uint8_t bg_r = rgba_getr(background);
+      uint8_t bg_g = rgba_getg(background);
+      uint8_t bg_b = rgba_getb(background);
+
+      doc::color_t bg = rgba(bg_r, bg_g, bg_b, (int)(bg_a * alpha));
+      clear_image(thumb_img.get(), bg);
+
       double bg_a0 = bg_a / 255.0;
-      double bg_r0 = rgba_getr(background) * bg_a0;
-      double bg_g0 = rgba_getg(background) * bg_a0;
-      double bg_b0 = rgba_getb(background) * bg_a0;
+      double bg_r0 = bg_r * bg_a0;
+      double bg_g0 = bg_g * bg_a0;
+      double bg_b0 = bg_b * bg_a0;
 
-      if (zoom == 1) { // alpha overlay
-        for (int y = 0; y < cel_image_on_thumb.h; y++) {
-
-          uint32_t* dst = (uint32_t*)thumb_img->getPixelAddress(cel_image_on_thumb.x, cel_image_on_thumb.y + y);
-          uint32_t* src = (uint32_t*)source->getPixelAddress(0, y);
-          uint32_t* src_end  = src + cel_image_on_thumb.w;
-
-          while (src < src_end) {
-            uint8_t src_a = rgba_geta(*src);
-            double src_a0 = src_a / 255.0, src_a1 = 1 - src_a0;
-            uint32_t dst_a = (bg_a * src_a1 + src_a) * alpha;
-            *(dst++) = rgba(
-              bg_r0 * src_a1 + rgba_getr(*src) * src_a0,
-              bg_g0 * src_a1 + rgba_getg(*src) * src_a0,
-              bg_b0 * src_a1 + rgba_getb(*src) * src_a0,
-              MIN(dst_a, 0xff)
+      if (req.image_on_surface.w == image_size.w     && req.image_on_surface.h == image_size.h
+       || req.image_on_surface.w >= image_size.w * 2 && req.image_on_surface.h >= image_size.h * 2)
+      { // no scale or 2x+ upscale with nearest-neighbor and alpha overlay
+        for (int dst_y = 0; dst_y < req.image_on_surface.h; dst_y++) {
+          for (int dst_x = 0; dst_x < req.image_on_surface.w; dst_x++) {
+            int src_y = (int)(dst_y * image_size.h / (double)req.image_on_surface.h);
+            int src_x = (int)(dst_x * image_size.w / (double)req.image_on_surface.w);
+            doc::color_t src = source->getPixel(src_x, src_y);
+            uint8_t src_r = rgba_getr(src);
+            uint8_t src_g = rgba_getg(src);
+            uint8_t src_b = rgba_getb(src);
+            uint8_t src_a = rgba_geta(src);
+            double src_a0 = src_a / 255.0;
+            double src_a1 = 1 - src_a0;
+            int dst_a = (int)((bg_a * src_a1 + src_a) * alpha);
+            doc::color_t dst = rgba(
+              (uint8_t)(bg_r0 * src_a1 + src_r * src_a0),
+              (uint8_t)(bg_g0 * src_a1 + src_g * src_a0),
+              (uint8_t)(bg_b0 * src_a1 + src_b * src_a0),
+              (uint8_t)MIN(dst_a, 0xff)
             );
-            ++src;
+            thumb_img->putPixel(
+              req.image_on_surface.x + dst_x,
+              req.image_on_surface.y + dst_y,
+              dst
+            );
           }
         }
       }
-      else { // downscale with box sampling and alpha overlay
-        for (int dst_y = 0; dst_y < cel_image_on_thumb.h; dst_y++) {
+      else { // small upscale or downscale with box sampling and alpha overlay
+        for (int dst_y = 0; dst_y < req.image_on_surface.h; dst_y++) {
           int dst_x = 0;
           uint32_t* dst = (uint32_t*)thumb_img->getPixelAddress(
-            cel_image_on_thumb.x + dst_x, 
-            cel_image_on_thumb.y + dst_y
+            req.image_on_surface.x + dst_x,
+            req.image_on_surface.y + dst_y
           );
-          uint32_t* dst_end = dst + cel_image_on_thumb.w;
+          uint32_t* dst_end = dst + req.image_on_surface.w;
 
           while (dst < dst_end) {
-            double src_r = 0, src_g = 0, src_b = 0, src_a = 0;
-            int src_y0 =  dst_y      * image_size.h / cel_image_on_thumb.h;
-            int src_y1 = (dst_y + 1) * image_size.h / cel_image_on_thumb.h;
-            int src_x0 =  dst_x      * image_size.w / cel_image_on_thumb.w;
-            int src_w  =               image_size.w / cel_image_on_thumb.w;
-            int sn = (src_y1 - src_y0) * src_w;
+            int src_y0 = (int)(dst_y           * image_size.h / (double)req.image_on_surface.h);
+            int src_y1 = (int)ceil((dst_y + 1) * image_size.h / (double)req.image_on_surface.h);
+            int src_x0 = (int)(dst_x           * image_size.w / (double)req.image_on_surface.w);
+            int src_x1 = (int)ceil((dst_x + 1) * image_size.w / (double)req.image_on_surface.w);
+            int src_w = src_x1 - src_x0;
+            int src_count = (src_y1 - src_y0) * src_w;
+            long long src_r = 0, src_g = 0, src_b = 0, src_a = 0;
             for (int src_y = src_y0; src_y < src_y1; src_y++) {
               uint32_t* src = (uint32_t*)source->getPixelAddress(src_x0, src_y);
               uint32_t* src_end = src + src_w;
               while (src < src_end) {
-                src_r += rgba_getr(*src);
-                src_g += rgba_getg(*src);
-                src_b += rgba_getb(*src);
-                src_a += rgba_geta(*src);
+                int a = rgba_geta(*src);
+                src_r += rgba_getr(*src) * a;
+                src_g += rgba_getg(*src) * a;
+                src_b += rgba_getb(*src) * a;
+                src_a += a;
                 ++src;
               }
             }
-            src_r /= sn;
-            src_g /= sn;
-            src_b /= sn;
-            src_a /= sn;
-            double src_a0 = src_a / 255.0, src_a1 = 1 - src_a0;
-            uint32_t dst_a = (bg_a * src_a1 + src_a) * alpha;
-            *(dst++) = rgba(
-              bg_r0 * src_a1 + src_r * src_a0,
-              bg_g0 * src_a1 + src_g * src_a0,
-              bg_b0 * src_a1 + src_b * src_a0,
-              MIN(dst_a, 0xff)
-            );
+            if (src_a) {
+              double src_r2 = src_r / (double)src_a;
+              double src_g2 = src_g / (double)src_a;
+              double src_b2 = src_b / (double)src_a;
+              double src_a2 = src_a / (double)src_count;
+
+              double src_a0 = src_a2 / 255.0;
+              double src_a1 = 1 - src_a0;
+              int dst_a = (int)((bg_a * src_a1 + src_a2) * alpha);
+              *dst = rgba(
+                (uint8_t)(bg_r0 * src_a1 + src_r2 * src_a0),
+                (uint8_t)(bg_g0 * src_a1 + src_g2 * src_a0),
+                (uint8_t)(bg_b0 * src_a1 + src_b2 * src_a0),
+                (uint8_t)MIN(dst_a, 0xff)
+              );
+            }
+            ++dst;
             ++dst_x;
           }
         }
@@ -226,18 +245,10 @@ namespace app {
       convert_image_to_surface(thumb_img, NULL, thumb_surf,
         0, 0, 0, 0, thumb_img->width(), thumb_img->height());
 
-      req.updated = true;
       return thumb_surf;
     }
 
     ///////// fetching
-
-    she::Surface* CacheDir::fetch(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds)
-    {
-      const Dimension dim = std::make_pair(bounds.w, bounds.h);
-      Request req(doc, cel->frame(), cel->image(), dim);
-      return fetch(req);
-    }
 
     she::Surface* CacheDir::fetch(Request& req)
     {
@@ -265,7 +276,8 @@ namespace app {
         m_surfaces.clear();
         m_version = req.image->version();
       }
-      return m_surfaces[req.dimension].fetch(req);
+      Dimension dim = std::make_pair(req.surface_size.w, req.surface_size.h);
+      return m_surfaces[dim].fetch(req);
     }
 
     she::Surface* SurfaceData::fetch(Request& req)
@@ -278,7 +290,7 @@ namespace app {
       return m_surface;
     }
 
-    ///////// trimming
+    ///////// garbage collection
 
     inline Sequence SurfaceData::count() { return m_count;  }
 
