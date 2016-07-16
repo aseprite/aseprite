@@ -1553,10 +1553,10 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
 {
   gfx::Rect inner, outer;
 
-  if (docPref().thumbnails.overlayEnabled() && hit.part == PART_CEL) {
+  if (docPref().overlay.enabled() && hit.part == PART_CEL) {
     m_thumbnailsOverlayHit = hit;
 
-    int max_size = FRMSIZE * docPref().thumbnails.overlaySize();
+    int max_size = FRMSIZE * docPref().overlay.size();
     int width, height;
     if (m_sprite->width() > m_sprite->height()) {
       width  = max_size;

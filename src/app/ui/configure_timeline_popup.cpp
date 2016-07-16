@@ -115,8 +115,8 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
   m_box->thumbBackground()->setColor(docPref.thumbnails.background());
   m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
-  m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
-  m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
+  m_box->thumbOverlayEnabled()->setSelected(docPref.overlay.enabled());
+  m_box->thumbOverlaySize()->setValue(docPref.overlay.size());
 
   m_thumbnailsPrefConn.disconnect();
   m_thumbnailsPrefConn =
@@ -216,12 +216,12 @@ void ConfigureTimelinePopup::onThumbEnabledChange()
 
 void ConfigureTimelinePopup::onThumbOverlayEnabledChange()
 {
-  docPref().thumbnails.overlayEnabled(m_box->thumbOverlayEnabled()->isSelected());
+  docPref().overlay.enabled(m_box->thumbOverlayEnabled()->isSelected());
 }
 
 void ConfigureTimelinePopup::onThumbOverlaySizeChange()
 {
-  docPref().thumbnails.overlaySize(m_box->thumbOverlaySize()->getValue());
+  docPref().overlay.size(m_box->thumbOverlaySize()->getValue());
 }
 
 
