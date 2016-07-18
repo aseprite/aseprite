@@ -146,18 +146,13 @@ namespace app {
       }
 
       double alpha = opacity / 255.0;
-      uint8_t bg_a = rgba_geta(background);
       uint8_t bg_r = rgba_getr(background);
       uint8_t bg_g = rgba_getg(background);
       uint8_t bg_b = rgba_getb(background);
+      uint8_t bg_a = rgba_geta(background);
 
       doc::color_t bg = rgba(bg_r, bg_g, bg_b, (int)(bg_a * alpha));
       clear_image(thumb_img.get(), bg);
-
-      double bg_a0 = bg_a / 255.0;
-      double bg_r0 = bg_r * bg_a0;
-      double bg_g0 = bg_g * bg_a0;
-      double bg_b0 = bg_b * bg_a0;
 
       if (req.image_on_surface.w == image_size.w     && req.image_on_surface.h == image_size.h
        || req.image_on_surface.w >= image_size.w * 2 && req.image_on_surface.h >= image_size.h * 2)
@@ -175,9 +170,9 @@ namespace app {
             double src_a1 = 1 - src_a0;
             int dst_a = (int)((bg_a * src_a1 + src_a) * alpha);
             doc::color_t dst = rgba(
-              (uint8_t)(bg_r0 * src_a1 + src_r * src_a0),
-              (uint8_t)(bg_g0 * src_a1 + src_g * src_a0),
-              (uint8_t)(bg_b0 * src_a1 + src_b * src_a0),
+              (uint8_t)(bg_r * src_a1 + src_r * src_a0),
+              (uint8_t)(bg_g * src_a1 + src_g * src_a0),
+              (uint8_t)(bg_b * src_a1 + src_b * src_a0),
               (uint8_t)MIN(dst_a, 0xff)
             );
             thumb_img->putPixel(
@@ -218,18 +213,18 @@ namespace app {
               }
             }
             if (src_a) {
-              double src_r2 = src_r / (double)src_a;
-              double src_g2 = src_g / (double)src_a;
-              double src_b2 = src_b / (double)src_a;
-              double src_a2 = src_a / (double)src_count;
+              double src_dr = src_r / (double)src_a;
+              double src_dg = src_g / (double)src_a;
+              double src_db = src_b / (double)src_a;
+              double src_da = src_a / (double)src_count;
 
-              double src_a0 = src_a2 / 255.0;
+              double src_a0 = src_da / 255.0;
               double src_a1 = 1 - src_a0;
-              int dst_a = (int)((bg_a * src_a1 + src_a2) * alpha);
+              int dst_a = (int)((bg_a * src_a1 + src_da) * alpha);
               *dst = rgba(
-                (uint8_t)(bg_r0 * src_a1 + src_r2 * src_a0),
-                (uint8_t)(bg_g0 * src_a1 + src_g2 * src_a0),
-                (uint8_t)(bg_b0 * src_a1 + src_b2 * src_a0),
+                (uint8_t)(bg_r * src_a1 + src_dr * src_a0),
+                (uint8_t)(bg_g * src_a1 + src_dg * src_a0),
+                (uint8_t)(bg_b * src_a1 + src_db * src_a0),
                 (uint8_t)MIN(dst_a, 0xff)
               );
             }

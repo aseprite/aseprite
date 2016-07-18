@@ -229,6 +229,8 @@ namespace app {
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTestCel(const gfx::Point& mousePos);
     void setHot(const Hit& hit);
+    gfx::Rect celViewportBounds(LayerIndex layerIdx, frame_t frame) const;
+    bool isCelCulled(LayerIndex layer, frame_t frame) const;
     void showCel(LayerIndex layer, frame_t frame);
     void showCurrentCel();
     void cleanClk();
@@ -296,12 +298,12 @@ namespace app {
 
     AniControls m_aniControls;
 
-    bool m_overlayVisible;
+    Cel* m_overlayCel;
     gfx::Rect m_overlayInner;
     gfx::Rect m_overlayOuter;
     Hit m_overlayHit;
     gfx::Point m_overlayDirection;
-    void updateCelOverlayBounds(const Hit& hit);
+    void updateCelOverlayBounds(const Hit& hit, bool force = false);
     void drawCelOverlay(ui::Graphics* g);
     base::Connection m_thumbnailsPrefConn;
     void onThumbnailsPrefChange();

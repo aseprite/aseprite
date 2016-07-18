@@ -31,6 +31,7 @@ namespace app {
   class ConfigureTimelinePopup : public ui::PopupWindow {
   public:
     ConfigureTimelinePopup();
+    void updateThumbEnabled();
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

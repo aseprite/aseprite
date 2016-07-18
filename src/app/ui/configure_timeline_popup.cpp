@@ -114,14 +114,14 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 
   m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
   m_box->thumbBackground()->setColor(docPref.thumbnails.background());
-  m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
   m_box->thumbOverlayEnabled()->setSelected(docPref.overlay.enabled());
   m_box->thumbOverlaySize()->setValue(docPref.overlay.size());
+  updateThumbEnabled();
+}
 
-  m_thumbnailsPrefConn.disconnect();
-  m_thumbnailsPrefConn =
-    docPref.thumbnails.AfterChange.connect(
-      base::Bind<void>(&ConfigureTimelinePopup::updateWidgetsFromCurrentSettings, this));
+void ConfigureTimelinePopup::updateThumbEnabled()
+{
+  m_box->thumbEnabled()->setSelected(docPref().thumbnails.enabled());
 }
 
 bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
@@ -131,12 +131,6 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
     case kOpenMessage: {
       updateWidgetsFromCurrentSettings();
       break;
-
-    }
-    case kCloseMessage: {
-      m_thumbnailsPrefConn.disconnect();
-      break;
-
     }
   }
   return PopupWindow::onProcessMessage(msg);

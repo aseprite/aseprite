@@ -140,7 +140,7 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
-  , m_overlayVisible(false)
+  , m_overlayCel(NULL)
   , m_overlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
@@ -174,23 +174,34 @@ Timeline::~Timeline()
 
 void Timeline::onThumbnailsPrefChange()
 {
+  if (m_confPopup->isVisible()) {
+    m_confPopup->updateThumbEnabled();
+  }
   invalidate();
 }
 
 void Timeline::onOverlayPrefChange()
 {
-  if (!m_document)
-    return;
+  LayerIndex layer = getLayerIndex(m_layer);
+  frame_t frame = m_frame;
 
-  if (m_overlayVisible) {
-    invalidateRect(gfx::Rect(m_overlayOuter).offset(origin()));
+  Cel* cel = m_layer->cel(frame);
+  if (!cel || !cel->image() && isCelCulled(layer, frame)) {
+    CelsRange cels = m_sprite->cels();
+    for (CelsRange::iterator it = cels.begin(); it != cels.end(); ++it) {
+      cel = *it;
+      LayerIndex l = getLayerIndex(cel->layer());
+      frame_t f = cel->frame();
+      if (cel->image() && !isCelCulled(l, f)) {
+        frame = f;
+        layer = l;
+        break;
+      }
+    }
   }
 
-  Hit hit(PART_CEL, getLayerIndex(m_layer), m_frame);
-
-  showCel(m_overlayHit.layer, m_overlayHit.frame);
-  updateCelOverlayBounds(hit);
-  invalidateRect(gfx::Rect(m_overlayOuter).offset(origin()));
+  showCel(layer, frame);
+  updateCelOverlayBounds(Hit(PART_CEL, layer, frame), true);
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -219,6 +230,15 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   site.document()->addObserver(this);
 
+  app::Document* app_document = static_cast<app::Document*>(site.document());
+  DocumentPreferences& docPref = Preferences::instance().document(app_document);
+
+  m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
+    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+
+  m_overlayPrefConn = docPref.overlay.AfterChange.connect(
+    base::Bind<void>(&Timeline::onOverlayPrefChange, this));
+
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
   if (m_document == site.document() &&
@@ -227,19 +247,13 @@ void Timeline::updateUsingEditor(Editor* editor)
       m_frame == site.frame())
     return;
 
-  m_document = static_cast<app::Document*>(site.document());
+  m_document = app_document;
   m_sprite = site.sprite();
   m_layer = site.layer();
   m_frame = site.frame();
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
-
-  m_thumbnailsPrefConn = docPref().thumbnails.AfterChange.connect(
-    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
-
-  m_overlayPrefConn = docPref().overlay.AfterChange.connect(
-    base::Bind<void>(&Timeline::onOverlayPrefChange, this));
 
   setFocusStop(true);
   regenerateLayers();
@@ -249,16 +263,9 @@ void Timeline::updateUsingEditor(Editor* editor)
 
 void Timeline::detachDocument()
 {
-    if (m_document) {
-
-    if (m_thumbnailsPrefConn) {
-      m_thumbnailsPrefConn.disconnect();
-    }
-
-    if (m_overlayPrefConn) {
-      m_overlayPrefConn.disconnect();
-    }
-
+  if (m_document) {
+    m_thumbnailsPrefConn.disconnect();
+    m_overlayPrefConn.disconnect();
     m_document->removeObserver(this);
     m_document = NULL;
   }
@@ -1114,8 +1121,6 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 void Timeline::onRemoveDocument(doc::Document* document)
 {
   if (document == m_document) {
-    m_thumbnailsPrefConn.disconnect();
-    m_overlayPrefConn.disconnect();
     detachDocument();
   }
 }
@@ -1578,12 +1583,22 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 }
 
 
-void Timeline::updateCelOverlayBounds(const Hit& hit)
+void Timeline::updateCelOverlayBounds(const Hit& hit, bool force)
 {
   gfx::Rect inner, outer;
 
-  if (docPref().overlay.enabled() && hit.part == PART_CEL) {
+  Layer* layer;
+  Cel* cel;
+  Image* image;
+
+  if ((docPref().overlay.enabled() || force) &&
+    hit.part == PART_CEL &&
+    (layer = m_layers[hit.layer]) &&
+    (cel = layer->cel(hit.frame)) &&
+    (image = cel->image()))
+  {
     m_overlayHit = hit;
+    m_overlayCel = cel;
 
     int max_size = FRMSIZE * docPref().overlay.size();
     int width, height;
@@ -1622,6 +1637,7 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
   }
   else {
     outer = gfx::Rect(0, 0, 0, 0);
+    m_overlayCel = NULL;
   }
 
   if (outer != m_overlayOuter) {
@@ -1631,7 +1647,6 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
     if (!outer.isEmpty()) {
       invalidateRect(gfx::Rect(outer).offset(origin()));
     }
-    m_overlayVisible = !outer.isEmpty();
     m_overlayOuter = outer;
     m_overlayInner = inner;
   }
@@ -1639,24 +1654,16 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
 
 void Timeline::drawCelOverlay(ui::Graphics* g)
 {
-  if (!m_overlayVisible) {
-    return;
-  }
-
-  Layer *layer = m_layers[m_overlayHit.layer];
-  Cel *cel = layer->cel(m_overlayHit.frame);
-  if (!cel) {
-    return;
-  }
-
-  Image* image = cel->image();
-  if (!image) {
+  if (!m_overlayCel) {
     return;
   }
 
   IntersectClip clip(g, m_overlayOuter);
   if (!clip)
     return;
+
+  Cel* cel = m_overlayCel;
+  Image* image = cel->image();
 
   double scale = (
     m_sprite->width() > m_sprite->height() ?
@@ -2429,21 +2436,31 @@ void Timeline::updateStatusBar(ui::Message* msg)
   sb->clearText();
 }
 
-void Timeline::showCel(LayerIndex layer, frame_t frame)
+gfx::Rect Timeline::celViewportBounds(LayerIndex layer, frame_t frame) const
 {
   gfx::Point scroll = viewScroll();
 
+  return gfx::Rect(
+    m_viewportArea.x + FRMSIZE*frame - scroll.x,
+    m_viewportArea.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
+    FRMSIZE, LAYSIZE);
+}
+
+bool Timeline::isCelCulled(LayerIndex layer, frame_t frame) const
+{
+  return !m_viewportArea.contains(celViewportBounds(layer, frame));
+}
+
+void Timeline::showCel(LayerIndex layer, frame_t frame)
+{
+  gfx::Point scroll = viewScroll();
   gfx::Rect viewport = m_viewportArea;
+  gfx::Rect celBounds = celViewportBounds(layer, frame);
 
   // Add the horizontal bar space to the viewport area if the viewport
   // is not big enough to show one cel.
   if (m_hbar.isVisible() && viewport.h < LAYSIZE)
     viewport.h += m_vbar.getBarWidth();
-
-  gfx::Rect celBounds(
-    viewport.x + FRMSIZE*frame - scroll.x,
-    viewport.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
-    FRMSIZE, LAYSIZE);
 
   // Here we use <= instead of < to avoid jumping between this
   // condition and the "else if" one when we are playing the
@@ -2639,7 +2656,7 @@ void Timeline::setViewScroll(const gfx::Point& pt)
   newScroll.x = MID(0, newScroll.x, maxPos.x);
   newScroll.y = MID(0, newScroll.y, maxPos.y);
 
-  m_overlayVisible = false;
+  m_overlayCel = NULL;
 
   if (newScroll == oldScroll)
     return;
