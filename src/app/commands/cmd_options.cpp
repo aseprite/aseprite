@@ -37,6 +37,32 @@ static const char* kSectionThemeId = "section_theme";
 using namespace ui;
 
 class OptionsWindow : public app::gen::Options {
+
+  class ThemeItem : public ListItem {
+  public:
+    ThemeItem(const std::string& path,
+              const std::string& name)
+      : ListItem(name.empty() ? "-- " + path + " --": name),
+        m_path(path),
+        m_name(name) {
+    }
+
+    const std::string& themePath() const { return m_path; }
+    const std::string& themeName() const { return m_name; }
+
+    void openFolder() const {
+      app::launcher::open_folder(
+        m_name.empty() ? m_path: base::join_path(m_path, m_name));
+    }
+
+    bool canSelect() const {
+      return !m_name.empty();
+    }
+
+  private:
+    std::string m_path;
+    std::string m_name;
+  };
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_pref(Preferences::instance())
@@ -187,6 +213,7 @@ public:
     undoAllowNonlinearHistory()->setSelected(m_pref.undo.allowNonlinearHistory());
 
     // Theme buttons
+    themeList()->Change.connect(base::Bind<void>(&OptionsWindow::onThemeChange, this));
     selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
     openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
@@ -381,29 +408,45 @@ private:
     if (themeList()->getItemsCount() > 0)
       return;
 
-    std::string path = themeFolder();
-    for (auto& fn : base::list_files(path)) {
-      if (!base::is_directory(base::join_path(path, fn)))
+    auto userFolder = userThemeFolder();
+    auto folders = themeFolders();
+    std::sort(folders.begin(), folders.end());
+
+    for (const auto& path : folders) {
+      auto files = base::list_files(path);
+
+      // Only one empty theme folder: the user folder
+      if (files.empty() && path != userFolder)
         continue;
 
-      ListItem* item = new ListItem(fn);
-      item->setValue(fn);
-      themeList()->addChild(item);
+      themeList()->addChild(new ThemeItem(path, std::string()));
+      std::sort(files.begin(), files.end());
+      for (auto& fn : files) {
+        if (!base::is_directory(base::join_path(path, fn)))
+          continue;
 
-      // Selected theme
-      if (fn == m_pref.theme.selected())
-        themeList()->selectChild(item);
+        ThemeItem* item = new ThemeItem(path, fn);
+        themeList()->addChild(item);
+
+        // Selected theme
+        if (fn == m_pref.theme.selected())
+          themeList()->selectChild(item);
+      }
     }
 
-    themeList()->sortItems();
     themeList()->layout();
   }
 
+  void onThemeChange() {
+    ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
+    selectTheme()->setEnabled(item && item->canSelect());
+  }
+
   void onSelectTheme() {
-    ListItem* item = dynamic_cast<ListItem*>(themeList()->getSelectedChild());
+    ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
     if (item &&
-        item->getValue() != m_pref.theme.selected()) {
-      m_pref.theme.selected(item->getValue());
+        item->themeName() != m_pref.theme.selected()) {
+      m_pref.theme.selected(item->themeName());
 
       ui::Alert::show(PACKAGE
                       "<<You must restart the program to see the selected theme"
@@ -412,7 +455,9 @@ private:
   }
 
   void onOpenThemeFolder() {
-    launcher::open_folder(themeFolder());
+    ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
+    if (item)
+      item->openFolder();
   }
 
   void onCursorColorType() {
@@ -429,10 +474,30 @@ private:
     layout();
   }
 
-  static std::string themeFolder() {
+  static std::string userThemeFolder() {
     ResourceFinder rf;
     rf.includeDataDir("skins");
-    return rf.defaultFilename();
+
+    // Create user folder to store skins
+    try {
+      if (!base::is_directory(rf.defaultFilename()))
+        base::make_all_directories(rf.defaultFilename());
+    }
+    catch (...) {
+      // Ignore errors
+    }
+
+    return base::normalize_path(rf.defaultFilename());
+  }
+
+  static std::vector<std::string> themeFolders() {
+    ResourceFinder rf;
+    rf.includeDataDir("skins");
+
+    std::vector<std::string> paths;
+    while (rf.next())
+      paths.push_back(base::normalize_path(rf.filename()));
+    return paths;
   }
 
   Preferences& m_pref;

@@ -89,9 +89,18 @@ void ResourceFinder::includeDataDir(const char* filename)
 
 #ifdef _WIN32
 
-  // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
-  includeBinDir(buf);
+  includeHomeDir(buf); // %AppData%/Aseprite/data/filename
+  includeBinDir(buf);  // $BINDIR/data/filename
+
+#elif __APPLE__
+
+  sprintf(buf, "data/%s", filename);
+  includeUserDir(buf); // $HOME/Library/Application Support/Aseprite/data/filename
+  includeBinDir(buf);  // $BINDIR/data/filename (outside the bundle)
+
+  sprintf(buf, "../Resources/data/%s", filename);
+  includeBinDir(buf);  // $BINDIR/../Resources/data/filename (inside a bundle)
 
 #else
 
@@ -103,15 +112,9 @@ void ResourceFinder::includeDataDir(const char* filename)
   sprintf(buf, "data/%s", filename);
   includeBinDir(buf);
 
-  #ifdef __APPLE__
-    // $BINDIR/../Resources/data/filename (inside a bundle)
-    sprintf(buf, "../Resources/data/%s", filename);
-    includeBinDir(buf);
-  #else
-    // $BINDIR/../share/aseprite/data/filename (installed in /usr/ or /usr/local/)
-    sprintf(buf, "../share/aseprite/data/%s", filename);
-    includeBinDir(buf);
-  #endif
+  // $BINDIR/../share/aseprite/data/filename (installed in /usr/ or /usr/local/)
+  sprintf(buf, "../share/aseprite/data/%s", filename);
+  includeBinDir(buf);
 
 #endif
 }
