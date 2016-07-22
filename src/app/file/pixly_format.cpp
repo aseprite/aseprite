@@ -173,8 +173,8 @@ bool PixlyFormat::onLoad(FileOp* fop)
       for (int y = 0; y < frameHeight; y++) {
         // RGB_ALPHA
         int y0_down = sheetHeight-1 - y0_up - (frameHeight-1) + y;
-        uint32_t* src_begin = (uint32_t*)sheet->getPixelAddress(x0           , y0_down);
-        uint32_t* src_end   = (uint32_t*)sheet->getPixelAddress(x0+frameWidth, y0_down);
+        uint32_t* src_begin = (uint32_t*)sheet->getPixelAddress(x0, y0_down);
+        uint32_t* src_end   = src_begin + frameWidth;
         uint32_t* dst_begin = (uint32_t*)image->getPixelAddress(0, y);
 
         std::copy(src_begin, src_end, dst_begin);
@@ -328,7 +328,7 @@ bool PixlyFormat::onSave(FileOp* fop)
             // RGB_ALPHA
             int y0_down = (sheetHeight - 1) - y0 - (frameHeight - 1) + celY + y;
             uint32_t* src_begin = (uint32_t*)image->getPixelAddress(0, y);
-            uint32_t* src_end   = (uint32_t*)image->getPixelAddress(celWidth, y);
+            uint32_t* src_end   = src_begin + celWidth;
             uint32_t* dst_begin = (uint32_t*)sheet->getPixelAddress(x0 + celX, y0_down);
 
             std::copy(src_begin, src_end, dst_begin);
