@@ -49,8 +49,8 @@ class SpriteSizeJob : public Job {
   int m_new_height;
   ResizeMethod m_resize_method;
 
-  inline int scale_x(int x) const { return x * m_new_width / m_sprite->width(); }
-  inline int scale_y(int y) const { return y * m_new_height / m_sprite->height(); }
+  int scale_x(int x) const { return x * m_new_width / m_sprite->width(); }
+  int scale_y(int y) const { return y * m_new_height / m_sprite->height(); }
 
 public:
 
