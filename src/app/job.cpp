@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,7 @@
 #include "app/job.h"
 
 #include "app/app.h"
+#include "app/console.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -70,6 +71,18 @@ void Job::startJob()
       if (!m_done_flag)
         m_canceled_flag = true;
     }
+
+    // In case of error, take the "cancel" path (i.e. it's like the
+    // user canceled the operation).
+    if (m_error) {
+      m_canceled_flag = true;
+      try {
+        std::rethrow_exception(m_error);
+      }
+      catch (const std::exception& ex) {
+        Console::showException(ex);
+      }
+    }
   }
 }
 
@@ -122,7 +135,7 @@ void Job::thread_proc(Job* self)
     self->onJob();
   }
   catch (...) {
-    // TODO handle this exception
+    self->m_error = std::current_exception();
   }
   self->done();
 }
