@@ -27,7 +27,7 @@
 namespace app {
   namespace thumb {
 
-    she::Surface* get_surface(const doc::Cel* cel, const gfx::Rect& bounds)
+    she::Surface* get_cel_thumbnail(const doc::Cel* cel, const gfx::Rect& bounds)
     {
       app::Document* document = static_cast<app::Document*>(cel->sprite()->document());
       doc::frame_t frame = cel->frame();

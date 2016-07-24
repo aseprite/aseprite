@@ -1543,7 +1543,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   if (docPref().thumbnails.enabled() && image) {
     gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
 
-    she::Surface* thumb_surf = thumb::get_surface(cel, thumb_bounds);
+    she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds);
 
     g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
 
