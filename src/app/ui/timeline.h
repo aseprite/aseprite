@@ -260,6 +260,10 @@ namespace app {
     DocumentPreferences& docPref() const;
     skin::SkinTheme* skinTheme() const;
 
+    void updateCelOverlayBounds(const Hit& hit);
+    void drawCelOverlay(ui::Graphics* g);
+    void onThumbnailsPrefChange();
+
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
@@ -301,10 +305,7 @@ namespace app {
     gfx::Rect m_thumbnailsOverlayOuter;
     Hit m_thumbnailsOverlayHit;
     gfx::Point m_thumbnailsOverlayDirection;
-    void updateCelOverlayBounds(const Hit& hit);
-    void drawCelOverlay(ui::Graphics* g);
     base::Connection m_thumbnailsPrefConn;
-    void onThumbnailsPrefChange();
 
     // Temporal data used to move the range.
     struct MoveRange {

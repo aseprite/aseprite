@@ -213,7 +213,6 @@ void UIContext::onRemoveDocument(doc::Document* doc)
       workspace->removeView(docView);
       delete docView;
     }
-
   }
 }
 
