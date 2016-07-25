@@ -50,6 +50,12 @@
 #include "she/font.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
+#include "base/unique_ptr.h"
+#include "she/surface.h"
+#include "she/system.h"
+#include "doc/conversion_she.h"
+#include "base/bind.h"
+#include "doc/algorithm/rotate.h"
 
 #include <cstdio>
 #include <vector>
@@ -134,6 +140,8 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
+  , m_thumbnailsOverlayVisible(false)
+  , m_thumbnailsOverlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -162,6 +170,11 @@ Timeline::~Timeline()
   detachDocument();
   m_context->documents().removeObserver(this);
   delete m_confPopup;
+}
+
+void Timeline::onThumbnailsPrefChange()
+{
+  invalidate();
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -205,6 +218,10 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
+
+  m_thumbnailsPrefConn.disconnect();
+  m_thumbnailsPrefConn = docPref().thumbnails.AfterChange.connect(
+    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
 
   setFocusStop(true);
   regenerateLayers();
@@ -545,6 +562,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateStatusBar(msg);
+      updateCelOverlayBounds(hit);
       return true;
     }
 
@@ -1036,6 +1054,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     drawFrameTags(g);
     drawRangeOutline(g);
     drawClipboardRange(g);
+    drawCelOverlay(g);
 
 #if 0 // Use this code to debug the calculated m_dropRange by updateDropRange()
     {
@@ -1067,8 +1086,10 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 
 void Timeline::onRemoveDocument(doc::Document* document)
 {
-  if (document == m_document)
+  if (document == m_document) {
+    m_thumbnailsPrefConn.disconnect();
     detachDocument();
+  }
 }
 
 void Timeline::onGeneralUpdate(DocumentEvent& ev)
@@ -1518,6 +1539,131 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   // Draw decorators to link the activeCel with its links.
   if (data->activeIt != data->end)
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
+
+  if (docPref().thumbnails.enabled() && image) {
+    gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
+
+    she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds);
+
+    g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
+
+    thumb_surf->dispose();
+  }
+}
+
+void Timeline::updateCelOverlayBounds(const Hit& hit)
+{
+  gfx::Rect inner, outer;
+
+  if (docPref().thumbnails.overlayEnabled() && hit.part == PART_CEL) {
+    m_thumbnailsOverlayHit = hit;
+
+    int max_size = FRMSIZE * docPref().thumbnails.overlaySize();
+    int width, height;
+    if (m_sprite->width() > m_sprite->height()) {
+      width  = max_size;
+      height = max_size * m_sprite->height() / m_sprite->width();
+    }
+    else {
+      width  = max_size * m_sprite->width() / m_sprite->height();
+      height = max_size;
+    }
+
+    gfx::Rect client_bounds = clientBounds();
+    gfx::Point center = client_bounds.center();
+
+    gfx::Rect bounds_cel = getPartBounds(m_thumbnailsOverlayHit);
+    inner = gfx::Rect(
+      bounds_cel.x + m_thumbnailsOverlayDirection.x,
+      bounds_cel.y + m_thumbnailsOverlayDirection.y,
+      width,
+      height
+    );
+
+    if (!client_bounds.contains(inner)) {
+      m_thumbnailsOverlayDirection = gfx::Point(
+        bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5),
+        bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)
+      );
+      inner.setOrigin(gfx::Point(
+        bounds_cel.x + m_thumbnailsOverlayDirection.x,
+        bounds_cel.y + m_thumbnailsOverlayDirection.y
+      ));
+    }
+
+    outer = gfx::Rect(inner).enlarge(1);
+  }
+  else {
+    outer = gfx::Rect(0, 0, 0, 0);
+  }
+
+  if (outer != m_thumbnailsOverlayOuter) {
+    if (!m_thumbnailsOverlayOuter.isEmpty()) {
+      invalidateRect(gfx::Rect(m_thumbnailsOverlayOuter).offset(origin()));
+    }
+    if (!outer.isEmpty()) {
+      invalidateRect(gfx::Rect(outer).offset(origin()));
+    }
+    m_thumbnailsOverlayVisible = !outer.isEmpty();
+    m_thumbnailsOverlayOuter = outer;
+    m_thumbnailsOverlayInner = inner;
+  }
+}
+
+void Timeline::drawCelOverlay(ui::Graphics* g)
+{
+  if (!m_thumbnailsOverlayVisible) {
+    return;
+  }
+
+  Layer *layer = m_layers[m_thumbnailsOverlayHit.layer];
+  Cel *cel = layer->cel(m_thumbnailsOverlayHit.frame);
+  if (!cel) {
+    return;
+  }
+  Image* image = cel->image();
+  if (!image) {
+    return;
+  }
+
+  IntersectClip clip(g, m_thumbnailsOverlayOuter);
+  if (!clip)
+    return;
+
+  base::UniquePtr<Image> overlay_img(
+    Image::create(image->pixelFormat(),
+    m_thumbnailsOverlayInner.w,
+    m_thumbnailsOverlayInner.h));
+
+  double scale = (
+    m_sprite->width() > m_sprite->height() ?
+    m_thumbnailsOverlayInner.w / (double)m_sprite->width() :
+    m_thumbnailsOverlayInner.h / (double)m_sprite->height()
+  );
+
+  clear_image(overlay_img, 0);
+  algorithm::scale_image(overlay_img, image,
+                         (int)(cel->x() * scale),
+                         (int)(cel->y() * scale),
+                         (int)(image->width() * scale),
+                         (int)(image->height() * scale),
+                         0, 0, image->width(), image->height());
+
+  she::Surface* overlay_surf = she::instance()->createRgbaSurface(
+    overlay_img->width(),
+    overlay_img->height());
+
+  convert_image_to_surface(overlay_img, m_sprite->palette(m_frame), overlay_surf,
+    0, 0, 0, 0, overlay_img->width(), overlay_img->height());
+
+  gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
+  gfx::Color border = color_utils::blackandwhite_neg(background);
+  g->fillRect(background, m_thumbnailsOverlayInner);
+  g->drawRgbaSurface(overlay_surf,
+    m_thumbnailsOverlayInner.x, m_thumbnailsOverlayInner.y);
+  g->drawRect(border, m_thumbnailsOverlayOuter);
+
+  overlay_surf->dispose();
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,

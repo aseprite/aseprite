@@ -23,6 +23,7 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+#include "app/thumbnails.h"
 
 #include <vector>
 
@@ -35,6 +36,10 @@ namespace doc {
 
 namespace ui {
   class Graphics;
+}
+
+namespace she {
+  class Surface;
 }
 
 namespace app {
@@ -255,6 +260,10 @@ namespace app {
     DocumentPreferences& docPref() const;
     skin::SkinTheme* skinTheme() const;
 
+    void updateCelOverlayBounds(const Hit& hit);
+    void drawCelOverlay(ui::Graphics* g);
+    void onThumbnailsPrefChange();
+
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
@@ -290,6 +299,13 @@ namespace app {
     bool m_fromTimeline;
 
     AniControls m_aniControls;
+
+    bool m_thumbnailsOverlayVisible;
+    gfx::Rect m_thumbnailsOverlayInner;
+    gfx::Rect m_thumbnailsOverlayOuter;
+    Hit m_thumbnailsOverlayHit;
+    gfx::Point m_thumbnailsOverlayDirection;
+    base::Connection m_thumbnailsPrefConn;
 
     // Temporal data used to move the range.
     struct MoveRange {

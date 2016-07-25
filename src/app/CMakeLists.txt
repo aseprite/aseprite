@@ -228,6 +228,7 @@ add_library(app-lib
   commands/cmd_new_layer_set.cpp
   commands/cmd_new_sprite_from_selection.cpp
   commands/cmd_onionskin.cpp
+  commands/cmd_toggle_timeline_thumbnails.cpp
   commands/cmd_open_file.cpp
   commands/cmd_open_in_folder.cpp
   commands/cmd_open_with_app.cpp
@@ -426,6 +427,7 @@ add_library(app-lib
   ui/workspace_tabs.cpp
   ui/zoom_entry.cpp
   ui_context.cpp
+  thumbnails.cpp
   util/autocrop.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp
