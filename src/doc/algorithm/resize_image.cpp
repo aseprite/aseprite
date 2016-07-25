@@ -13,11 +13,31 @@
 #include "doc/algorithm/rotsprite.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
+#include "doc/primitives_fast.h"
 #include "doc/rgbmap.h"
 #include "gfx/point.h"
 
 namespace doc {
 namespace algorithm {
+
+template<typename ImageTraits>
+void resize_image_nearest(const Image* src, Image* dst)
+{
+  double x_ratio = double(src->width()) / double(dst->width());
+  double y_ratio = double(src->height()) / double(dst->height());
+  double px, py;
+
+  LockImageBits<ImageTraits> dstBits(dst);
+  auto dstIt = dstBits.begin();
+
+  for (int y=0; y<dst->height(); ++y) {
+    py = floor(y * y_ratio);
+    for (int x=0; x<dst->width(); ++x, ++dstIt) {
+      px = floor(x * x_ratio);
+      *dstIt = get_pixel_fast<ImageTraits>(src, px, py);
+    }
+  }
+}
 
 void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palette* pal, const RgbMap* rgbmap, color_t maskColor)
 {
@@ -25,20 +45,13 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
 
     // TODO optimize this
     case RESIZE_METHOD_NEAREST_NEIGHBOR: {
-      int o_width = src->width(), o_height = src->height();
-      int n_width = dst->width(), n_height = dst->height();
-      double x_ratio = o_width / (double)n_width;
-      double y_ratio = o_height / (double)n_height;
-      double px, py;
-      int i;
+      ASSERT(src->pixelFormat() == dst->pixelFormat());
 
-      for (int y = 0; y < n_height; y++) {
-        for (int x = 0; x < n_width; x++) {
-          px = floor(x * x_ratio);
-          py = floor(y * y_ratio);
-          i = (int)(py * o_width + px);
-          dst->putPixel(x, y, src->getPixel(i % o_width, i / o_width));
-        }
+      switch (src->pixelFormat()) {
+        case IMAGE_RGB: resize_image_nearest<RgbTraits>(src, dst); break;
+        case IMAGE_GRAYSCALE: resize_image_nearest<GrayscaleTraits>(src, dst); break;
+        case IMAGE_INDEXED: resize_image_nearest<IndexedTraits>(src, dst); break;
+        case IMAGE_BITMAP: resize_image_nearest<BitmapTraits>(src, dst); break;
       }
       break;
     }
