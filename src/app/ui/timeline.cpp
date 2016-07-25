@@ -27,6 +27,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/thumbnails.h"
 #include "app/transaction.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/configure_timeline_popup.h"
@@ -39,23 +40,25 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
 #include "base/scoped_value.h"
+#include "base/unique_ptr.h"
 #include "doc/doc.h"
 #include "doc/document_event.h"
 #include "doc/frame_tag.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "she/font.h"
+#include "she/surface.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
-#include "base/unique_ptr.h"
-#include "she/surface.h"
-#include "she/system.h"
-#include "doc/conversion_she.h"
-#include "base/bind.h"
+
+// TODO why we need this? It should be done in app/thumbnails.cpp
 #include "doc/algorithm/rotate.h"
+#include "doc/conversion_she.h"
+#include "she/system.h"
 
 #include <cstdio>
 #include <vector>
@@ -1632,8 +1635,8 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
 
   base::UniquePtr<Image> overlay_img(
     Image::create(image->pixelFormat(),
-    m_thumbnailsOverlayInner.w,
-    m_thumbnailsOverlayInner.h));
+                  m_thumbnailsOverlayInner.w,
+                  m_thumbnailsOverlayInner.h));
 
   double scale = (
     m_sprite->width() > m_sprite->height() ?

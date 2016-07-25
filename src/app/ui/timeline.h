@@ -23,7 +23,6 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
-#include "app/thumbnails.h"
 
 #include <vector>
 
@@ -36,10 +35,6 @@ namespace doc {
 
 namespace ui {
   class Graphics;
-}
-
-namespace she {
-  class Surface;
 }
 
 namespace app {
@@ -300,6 +295,7 @@ namespace app {
 
     AniControls m_aniControls;
 
+    // Data used for thumbnails.
     bool m_thumbnailsOverlayVisible;
     gfx::Rect m_thumbnailsOverlayInner;
     gfx::Rect m_thumbnailsOverlayOuter;

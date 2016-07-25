@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -41,6 +41,9 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   : PopupWindow("Timeline Settings", ClickBehavior::CloseOnClickInOtherWindow)
   , m_lockUpdates(false)
 {
+  // TODO we should add a new hot region to automatically close the
+  //      popup if the mouse is moved outside or find other kind of
+  //      dialog/window
   setHotRegion(gfx::Region(manager()->bounds())); // for the color selector
 
   setAutoRemap(false);
@@ -118,15 +121,16 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   }
 
   switch (docPref.thumbnails.quality()) {
-  case doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR:
-    m_box->thumbQuality()->setSelectedItemIndex(0);
-    break;
-  case doc::algorithm::RESIZE_METHOD_BILINEAR:
-    m_box->thumbQuality()->setSelectedItemIndex(1);
-    break;
-  default:
-    docPref.thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
-    m_box->thumbQuality()->setSelectedItemIndex(0);
+    case doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR:
+      m_box->thumbQuality()->setSelectedItemIndex(0);
+      break;
+    case doc::algorithm::RESIZE_METHOD_BILINEAR:
+      m_box->thumbQuality()->setSelectedItemIndex(1);
+      break;
+    default:
+      docPref.thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+      m_box->thumbQuality()->setSelectedItemIndex(0);
+      break;
   }
 
   m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
@@ -213,15 +217,16 @@ void ConfigureTimelinePopup::onThumbOpacityChange()
 void ConfigureTimelinePopup::onThumbQualityChange()
 {
   switch (m_box->thumbQuality()->getSelectedItemIndex()) {
-  case 0:
-    docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
-    break;
-  case 1:
-    docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_BILINEAR);
-    break;
-  default:
-    docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
-    m_box->thumbQuality()->setSelectedItemIndex(0);
+    case 0:
+      docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+      break;
+    case 1:
+      docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_BILINEAR);
+      break;
+    default:
+      docPref().thumbnails.quality(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+      m_box->thumbQuality()->setSelectedItemIndex(0);
+      break;
   }
 }
 
