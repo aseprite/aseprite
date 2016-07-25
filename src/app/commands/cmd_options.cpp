@@ -116,6 +116,9 @@ public:
     if (m_pref.general.dataRecovery())
       enableDataRecovery()->setSelected(true);
 
+    if (m_pref.general.showFullPath())
+      showFullPath()->setSelected(true);
+
     dataRecoveryPeriod()->setSelectedItemIndex(
       dataRecoveryPeriod()->findItemIndexByValue(
         base::convert_to<std::string>(m_pref.general.dataRecoveryPeriod())));
@@ -231,6 +234,7 @@ public:
   void saveConfig() {
     m_pref.general.autoshowTimeline(autotimeline()->isSelected());
     m_pref.general.rewindOnStop(rewindOnStop()->isSelected());
+    m_pref.general.showFullPath(showFullPath()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
     m_pref.general.expandMenubarOnMouseover(expandOnMouseover);

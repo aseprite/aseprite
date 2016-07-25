@@ -89,6 +89,7 @@
       <option id="expand_menubar_on_mouseover" type="bool" default="false" migrate="Options.ExpandMenuBarOnMouseover" />
       <option id="data_recovery" type="bool" default="true" />
       <option id="data_recovery_period" type="int" default="2" />
+      <option id="show_full_path" type="bool" default="true" />
     </section>
     <section id="undo" text="Undo">
       <option id="size_limit" type="int" default="64" />
