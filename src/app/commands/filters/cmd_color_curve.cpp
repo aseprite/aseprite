@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,7 +9,6 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/filters/color_curve_editor.h"
@@ -20,23 +19,18 @@
 #include "app/modules/gui.h"
 #include "app/ui/color_button.h"
 #include "base/bind.h"
-#include "filters/color_curve.h"
-#include "filters/color_curve_filter.h"
+#include "base/unique_ptr.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "filters/color_curve.h"
+#include "filters/color_curve_filter.h"
 #include "ui/ui.h"
 
 namespace app {
 
 using namespace filters;
 
-static ColorCurve* the_curve = NULL;
-
-// Slot for App::Exit signal
-static void on_exit_delete_curve()
-{
-  delete the_curve;
-}
+static base::UniquePtr<ColorCurve> the_curve;
 
 class ColorCurveWindow : public FilterWindow {
 public:
@@ -104,15 +98,13 @@ void ColorCurveCommand::onExecute(Context* context)
   if (!the_curve) {
     // TODO load the curve?
 
-    the_curve = new ColorCurve(ColorCurve::Linear);
+    the_curve.reset(new ColorCurve(ColorCurve::Linear));
     the_curve->addPoint(gfx::Point(0, 0));
     the_curve->addPoint(gfx::Point(255, 255));
-
-    App::instance()->Exit.connect(&on_exit_delete_curve);
   }
 
   ColorCurveFilter filter;
-  filter.setCurve(the_curve);
+  filter.setCurve(the_curve.get());
 
   FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
