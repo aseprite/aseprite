@@ -290,7 +290,7 @@
     </section>
     <section id="import_sprite_sheet">
       <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::Rows" />
-      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
+      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 0, 0)" />
       <option id="partial_tiles" type="bool" default="false" />
     </section>
     <section id="preview" text="Preview">

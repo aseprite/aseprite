@@ -217,7 +217,11 @@ private:
       else
         sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
 
-      onChangeRectangle(m_docPref->importSpriteSheet.bounds());
+      gfx::Rect defBounds = m_docPref->importSpriteSheet.bounds();
+      if (defBounds.isEmpty())
+        defBounds = m_docPref->grid.bounds();
+      onChangeRectangle(defBounds);
+
       partialTiles()->setSelected(m_docPref->importSpriteSheet.partialTiles());
       onEntriesChange();
     }
