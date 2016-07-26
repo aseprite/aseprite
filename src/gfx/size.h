@@ -127,6 +127,10 @@ public:
     return w != sz.w || h != sz.h;
   }
 
+  bool operator<(const SizeT& sz) const {
+    return h < sz.h || (!(h < sz.h) && w < sz.w);
+  }
+
 };
 
 typedef SizeT<int> Size;

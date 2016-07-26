@@ -23,6 +23,7 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+#include "app/thumbnails.h"
 
 #include <vector>
 
@@ -35,6 +36,10 @@ namespace doc {
 
 namespace ui {
   class Graphics;
+}
+
+namespace she {
+  class Surface;
 }
 
 namespace app {
@@ -224,6 +229,8 @@ namespace app {
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTestCel(const gfx::Point& mousePos);
     void setHot(const Hit& hit);
+    gfx::Rect celViewportBounds(LayerIndex layerIdx, frame_t frame) const;
+    bool isCelCulled(LayerIndex layer, frame_t frame) const;
     void showCel(LayerIndex layer, frame_t frame);
     void showCurrentCel();
     void cleanClk();
@@ -255,9 +262,10 @@ namespace app {
     DocumentPreferences& docPref() const;
     skin::SkinTheme* skinTheme() const;
 
-    void updateCelOverlayBounds(const Hit& hit);
+    void updateCelOverlayBounds(const Hit& hit, bool force = false);
     void drawCelOverlay(ui::Graphics* g);
     void onThumbnailsPrefChange();
+    void onOverlayPrefChange();
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
@@ -296,12 +304,13 @@ namespace app {
     AniControls m_aniControls;
 
     // Data used for thumbnails.
-    bool m_thumbnailsOverlayVisible;
-    gfx::Rect m_thumbnailsOverlayInner;
-    gfx::Rect m_thumbnailsOverlayOuter;
-    Hit m_thumbnailsOverlayHit;
-    gfx::Point m_thumbnailsOverlayDirection;
+    Cel* m_overlayCel;
+    gfx::Rect m_overlayInner;
+    gfx::Rect m_overlayOuter;
+    Hit m_overlayHit;
+    gfx::Point m_overlayDirection;
     base::Connection m_thumbnailsPrefConn;
+    base::Connection m_overlayPrefConn;
 
     // Temporal data used to move the range.
     struct MoveRange {

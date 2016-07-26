@@ -11,6 +11,7 @@
 
 #include "app/context.h"
 #include "doc/documents_observer.h"
+#include "app/thumbnails.h"
 
 namespace app {
   class DocumentView;

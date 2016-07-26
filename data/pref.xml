@@ -258,11 +258,12 @@
     </section>
     <section id="thumbnails">
       <option id="enabled" type="bool" default="false" />
-      <option id="overlay_enabled" type="bool" default="false" />
-      <option id="overlay_size" type="int" default="5" />
-      <option id="quality" type="doc::algorithm::ResizeMethod" default="doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR" />
       <option id="opacity" type="int" default="255" />
       <option id="background" type="app::Color" default="app::Color::fromRgb(180, 180, 180, 220)" />
+    </section>
+    <section id="overlay">
+      <option id="enabled" type="bool" default="false" />
+      <option id="size" type="int" default="5" />
     </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />
