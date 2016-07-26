@@ -206,6 +206,12 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   site.document()->addObserver(this);
 
+  app::Document* app_document = static_cast<app::Document*>(site.document());
+  DocumentPreferences& docPref = Preferences::instance().document(app_document);
+
+  m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
+    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
   if (m_document == site.document() &&
@@ -222,10 +228,6 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
-  m_thumbnailsPrefConn.disconnect();
-  m_thumbnailsPrefConn = docPref().thumbnails.AfterChange.connect(
-    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
-
   setFocusStop(true);
   regenerateLayers();
   setViewScroll(viewScroll());
@@ -235,6 +237,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 void Timeline::detachDocument()
 {
   if (m_document) {
+    m_thumbnailsPrefConn.disconnect();
     m_document->removeObserver(this);
     m_document = NULL;
   }
@@ -1090,7 +1093,6 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 void Timeline::onRemoveDocument(doc::Document* document)
 {
   if (document == m_document) {
-    m_thumbnailsPrefConn.disconnect();
     detachDocument();
   }
 }
