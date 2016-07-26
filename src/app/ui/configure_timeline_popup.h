@@ -12,6 +12,7 @@
 #include "app/pref/preferences.h"
 #include "doc/anidir.h"
 #include "ui/popup_window.h"
+#include "base/connection.h"
 
 namespace ui {
   class Button;
@@ -30,6 +31,7 @@ namespace app {
   class ConfigureTimelinePopup : public ui::PopupWindow {
   public:
     ConfigureTimelinePopup();
+    void updateThumbEnabled();
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -42,7 +44,6 @@ namespace app {
     void onPositionChange();
 
     void onThumbOpacityChange();
-    void onThumbQualityChange();
     void onThumbBackgroundChange(const app::Color& color);
     void onThumbEnabledChange();
     void onThumbOverlayEnabledChange();
@@ -55,6 +56,8 @@ namespace app {
 
     app::gen::TimelineConf* m_box;
     bool m_lockUpdates;
+
+    base::Connection m_thumbnailsPrefConn;
   };
 
 } // namespace app

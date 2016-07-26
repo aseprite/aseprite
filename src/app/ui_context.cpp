@@ -13,6 +13,7 @@
 #include "app/document.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
+#include "app/thumbnails.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
@@ -213,6 +214,8 @@ void UIContext::onRemoveDocument(doc::Document* doc)
       workspace->removeView(docView);
       delete docView;
     }
+
+    thumb::clear_thumbnail_cache(doc);
   }
 }
 

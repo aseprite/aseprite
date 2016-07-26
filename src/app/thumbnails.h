@@ -10,6 +10,7 @@
 #pragma once
 
 #include "gfx/rect.h"
+#include "gfx/size.h"
 
 namespace doc {
   class Cel;
@@ -22,9 +23,11 @@ namespace she {
 namespace app {
   namespace thumb {
 
-    she::Surface* get_cel_thumbnail(const doc::Cel* cel, const gfx::Rect& bounds);
+    she::Surface* get_cel_thumbnail(const doc::Cel* cel, const gfx::Size& surface_size,
+      const gfx::Rect& image_on_surface = gfx::Rect());
+    void clear_thumbnail_cache(doc::Document* doc);
 
-  } // thumb
+  } // thumbnails
 } // app
 
 #endif
