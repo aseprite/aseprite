@@ -23,7 +23,8 @@
 namespace app {
   namespace thumb {
 
-    she::Surface* get_cel_thumbnail(const doc::Cel* cel, const gfx::Rect& bounds)
+    she::Surface* get_cel_thumbnail(const doc::Cel* cel, gfx::Size thumb_size,
+      gfx::Rect cel_image_on_thumb)
     {
       app::Document* document = static_cast<app::Document*>(cel->sprite()->document());
       doc::frame_t frame = cel->frame();
@@ -36,18 +37,19 @@ namespace app {
       doc::algorithm::ResizeMethod resize_method = docPref.thumbnails.quality();
 
       gfx::Size image_size = image->size();
-      gfx::Size thumb_size = bounds.size();
 
-      double zw = thumb_size.w / (double)image_size.w;
-      double zh = thumb_size.h / (double)image_size.h;
-      double zoom = MIN(1, MIN(zw, zh));
+      if (cel_image_on_thumb.isEmpty()) {
+        double zw = thumb_size.w / (double)image_size.w;
+        double zh = thumb_size.h / (double)image_size.h;
+        double zoom = MIN(1, MIN(zw, zh));
 
-      gfx::Rect cel_image_on_thumb(
-        (int)(thumb_size.w * 0.5 - image_size.w  * zoom * 0.5),
-        (int)(thumb_size.h * 0.5 - image_size.h * zoom * 0.5),
-        (int)(image_size.w  * zoom),
-        (int)(image_size.h * zoom)
-      );
+        cel_image_on_thumb = gfx::Rect(
+          (int)(thumb_size.w * 0.5 - image_size.w  * zoom * 0.5),
+          (int)(thumb_size.h * 0.5 - image_size.h * zoom * 0.5),
+          (int)(image_size.w  * zoom),
+          (int)(image_size.h * zoom)
+        );
+      }
 
       const doc::Sprite* sprite = document->sprite();
       base::UniquePtr<doc::Image> thumb_img(doc::Image::create(
@@ -58,7 +60,7 @@ namespace app {
       base::UniquePtr<doc::Image> scale_img;
       const doc::Image* source = image;
 
-      if (zoom != 1) {
+      if (cel_image_on_thumb.w != image_size.w || cel_image_on_thumb.h != image_size.h) {
         scale_img.reset(doc::Image::create(
           image->pixelFormat(), cel_image_on_thumb.w, cel_image_on_thumb.h));
 

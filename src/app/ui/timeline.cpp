@@ -1548,7 +1548,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   if (docPref().thumbnails.enabled() && image) {
     gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
 
-    she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds);
+    she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds.size());
 
     g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
 
@@ -1635,35 +1635,28 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
   if (!clip)
     return;
 
-  base::UniquePtr<Image> overlay_img(
-    Image::create(image->pixelFormat(),
-                  m_thumbnailsOverlayInner.w,
-                  m_thumbnailsOverlayInner.h));
-
   double scale = (
     m_sprite->width() > m_sprite->height() ?
     m_thumbnailsOverlayInner.w / (double)m_sprite->width() :
     m_thumbnailsOverlayInner.h / (double)m_sprite->height()
   );
 
-  clear_image(overlay_img, 0);
-  algorithm::scale_image(overlay_img, image,
-                         (int)(cel->x() * scale),
-                         (int)(cel->y() * scale),
-                         (int)(image->width() * scale),
-                         (int)(image->height() * scale),
-                         0, 0, image->width(), image->height());
+  gfx::Size overlay_size(
+    m_thumbnailsOverlayInner.w,
+    m_thumbnailsOverlayInner.h
+  );
 
-  she::Surface* overlay_surf = she::instance()->createRgbaSurface(
-    overlay_img->width(),
-    overlay_img->height());
+  gfx::Rect cel_image_on_overlay(
+    (int)(cel->x() * scale),
+    (int)(cel->y() * scale),
+    (int)(image->width() * scale),
+    (int)(image->height() * scale)
+  );
 
-  convert_image_to_surface(overlay_img, m_sprite->palette(m_frame), overlay_surf,
-    0, 0, 0, 0, overlay_img->width(), overlay_img->height());
+  she::Surface* overlay_surf = thumb::get_cel_thumbnail(cel, overlay_size, cel_image_on_overlay);
 
   gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
   gfx::Color border = color_utils::blackandwhite_neg(background);
-  g->fillRect(background, m_thumbnailsOverlayInner);
   g->drawRgbaSurface(overlay_surf,
     m_thumbnailsOverlayInner.x, m_thumbnailsOverlayInner.y);
   g->drawRect(border, m_thumbnailsOverlayOuter);
