@@ -12,18 +12,18 @@
 #include "app/ui/editor/pivot_helpers.h"
 
 #include "app/pref/preferences.h"
-#include "gfx/transformation.h"
+#include "app/transformation.h"
 
 namespace app {
 
-void set_pivot_from_preferences(gfx::Transformation& t)
+void set_pivot_from_preferences(Transformation& t)
 {
-  gfx::Transformation::Corners corners;
+  Transformation::Corners corners;
   t.transformBox(corners);
-  gfx::PointT<double> nw(corners[gfx::Transformation::Corners::LEFT_TOP]);
-  gfx::PointT<double> ne(corners[gfx::Transformation::Corners::RIGHT_TOP]);
-  gfx::PointT<double> sw(corners[gfx::Transformation::Corners::LEFT_BOTTOM]);
-  gfx::PointT<double> se(corners[gfx::Transformation::Corners::RIGHT_BOTTOM]);
+  gfx::PointT<double> nw(corners[Transformation::Corners::LEFT_TOP]);
+  gfx::PointT<double> ne(corners[Transformation::Corners::RIGHT_TOP]);
+  gfx::PointT<double> sw(corners[Transformation::Corners::LEFT_BOTTOM]);
+  gfx::PointT<double> se(corners[Transformation::Corners::RIGHT_BOTTOM]);
   gfx::PointT<double> pivotPos((nw + se) / 2);
 
   app::gen::PivotPosition pivot = Preferences::instance().selection.pivotPosition();

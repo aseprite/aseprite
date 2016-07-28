@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
@@ -70,11 +71,13 @@ protected:
 
     style->paint(g, bounds, m_name.c_str(), state);
 
-    gfx::Size textSize = style->sizeHint(m_name.c_str(), state);
-    gfx::Rect detailsBounds(
-      bounds.x+textSize.w, bounds.y,
-      bounds.w-textSize.w, bounds.h);
-    styleDetail->paint(g, detailsBounds, m_path.c_str(), state);
+    if (Preferences::instance().general.showFullPath()) {
+      gfx::Size textSize = style->sizeHint(m_name.c_str(), state);
+      gfx::Rect detailsBounds(
+        bounds.x+textSize.w, bounds.y,
+        bounds.w-textSize.w, bounds.h);
+      styleDetail->paint(g, detailsBounds, m_path.c_str(), state);
+    }
   }
 
   void onClick() override {
@@ -94,6 +97,10 @@ RecentListBox::RecentListBox()
   m_recentFilesConn =
     App::instance()->recentFiles()->Changed.connect(
       base::Bind(&RecentListBox::rebuildList, this));
+
+  m_showFullPathConn =
+    Preferences::instance().general.showFullPath.AfterChange.connect(
+      base::Bind<void>(&RecentListBox::invalidate, this));
 }
 
 void RecentListBox::rebuildList()
@@ -152,7 +159,7 @@ void RecentFoldersListBox::onRebuildList()
   auto it = recent->paths_begin();
   auto end = recent->paths_end();
   for (; it != end; ++it)
-    addChild(new RecentFileItem(it->c_str()));
+    addChild(new RecentFileItem(*it));
 }
 
 void RecentFoldersListBox::onClick(const std::string& path)

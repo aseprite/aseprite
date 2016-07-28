@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,8 @@
 #include "base/unique_ptr.h"
 #include "ui/alert.h"
 #include "ui/timer.h"
+
+#include <exception>
 
 namespace base {
   class thread;
@@ -67,6 +69,7 @@ namespace app {
     double m_last_progress;
     bool m_done_flag;
     bool m_canceled_flag;
+    std::exception_ptr m_error;
 
     // these methods are privated and not defined
     Job();

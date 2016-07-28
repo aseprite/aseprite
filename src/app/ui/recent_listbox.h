@@ -29,6 +29,7 @@ namespace app {
     void rebuildList();
 
     base::ScopedConnection m_recentFilesConn;
+    base::ScopedConnection m_showFullPathConn;
   };
 
   class RecentFilesListBox : public RecentListBox {

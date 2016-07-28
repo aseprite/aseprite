@@ -52,13 +52,13 @@ static struct HandlesInfo {
   { 2, 2, 224 << 16, { ScaleSEHandle, RotateSEHandle } },
 };
 
-HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const gfx::Transformation& transform)
+HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const Transformation& transform)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   she::Surface* gfx = theme->parts.transformationHandle()->bitmap(0);
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
-  gfx::Transformation::Corners corners;
+  Transformation::Corners corners;
   transform.transformBox(corners);
 
   std::vector<gfx::Point> screenPoints(corners.size());
@@ -87,12 +87,12 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   return NoHandle;
 }
 
-void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& transform)
+void TransformHandles::drawHandles(Editor* editor, const Transformation& transform)
 {
   ScreenGraphics g;
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
-  gfx::Transformation::Corners corners;
+  Transformation::Corners corners;
   transform.transformBox(corners);
 
   std::vector<gfx::Point> screenPoints(corners.size());
@@ -136,12 +136,12 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   }
 }
 
-void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformation& transform)
+void TransformHandles::invalidateHandles(Editor* editor, const Transformation& transform)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
-  gfx::Transformation::Corners corners;
+  Transformation::Corners corners;
   transform.transformBox(corners);
 
   std::vector<gfx::Point> screenPoints(corners.size());
@@ -172,8 +172,8 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
 }
 
 gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
-                                                 const gfx::Transformation& transform,
-                                                 const gfx::Transformation::Corners& corners)
+                                                 const Transformation& transform,
+                                                 const Transformation::Corners& corners)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   gfx::Size partSize = theme->parts.pivotHandle()->size();

@@ -38,7 +38,7 @@ public:
                 , m_lock(0) {
   }
 
-  SkiaSurface(SkSurface* surface)
+  SkiaSurface(const sk_sp<SkSurface>& surface)
     : m_surface(surface)
     , m_canvas(nullptr)
     , m_clip(0, 0, width(), height())
@@ -149,11 +149,11 @@ public:
             bitmap.unlockPixels();
           }
 
-          SkAutoTUnref<SkShader> shader(
-            SkShader::CreateBitmapShader(
+          sk_sp<SkShader> shader(
+            SkShader::MakeBitmapShader(
               bitmap,
               SkShader::kRepeat_TileMode,
-              SkShader::kRepeat_TileMode, nullptr));
+              SkShader::kRepeat_TileMode));
           m_paint.setShader(shader);
         }
         break;
@@ -426,8 +426,8 @@ public:
       m_canvas->drawRect(dstRect, paint);
     }
 
-    SkAutoTUnref<SkColorFilter> colorFilter(
-      SkColorFilter::CreateModeFilter(to_skia(fg), SkXfermode::kSrcIn_Mode));
+    sk_sp<SkColorFilter> colorFilter(
+      SkColorFilter::MakeModeFilter(to_skia(fg), SkXfermode::kSrcIn_Mode));
     paint.setColorFilter(colorFilter);
 
     m_canvas->drawBitmapRect(
@@ -457,7 +457,7 @@ private:
   }
 
   SkBitmap m_bitmap;
-  SkSurface* m_surface;
+  sk_sp<SkSurface> m_surface;
   SkCanvas* m_canvas;
   SkPaint m_paint;
   gfx::Rect m_clip;

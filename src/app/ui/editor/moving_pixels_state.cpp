@@ -432,7 +432,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
-  const gfx::Transformation& transform(getTransformation(editor));
+  const Transformation& transform(getTransformation(editor));
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
   StatusBar::instance()->setStatusText
@@ -621,7 +621,7 @@ void MovingPixelsState::dropPixels()
   m_editor->backToPreviousState();
 }
 
-gfx::Transformation MovingPixelsState::getTransformation(Editor* editor)
+Transformation MovingPixelsState::getTransformation(Editor* editor)
 {
   return m_pixelsMovement->getTransformation();
 }

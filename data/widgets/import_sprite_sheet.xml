@@ -8,14 +8,16 @@
     <label text="Type:" />
     <combobox id="sheet_type" cell_hspan="3" />
 
-    <label text="X" />
+    <label text="X:" />
     <entry id="x" text="0" maxsize="4" />
-    <label text="Width" />
+
+    <label text="Y:" />
+    <entry id="y" text="0" maxsize="4" />
+
+    <label text="Width:" />
     <entry id="width" text="16" maxsize="4" />
 
-    <label text="Y" />
-    <entry id="y" text="0" maxsize="4" />
-    <label text="Height" />
+    <label text="Height:" />
     <entry id="height" text="16" maxsize="4" />
 
     <check id="partial_tiles" text="Include partial tiles at bottom/right edges" cell_hspan="4" />

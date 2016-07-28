@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -152,7 +152,10 @@ void Console::printf(const char* format, ...)
 void Console::showException(const std::exception& e)
 {
   Console console;
-  console.printf("A problem has occurred.\n\nDetails:\n%s\n", e.what());
+  if (typeid(e) == typeid(std::bad_alloc))
+    console.printf("There is not enough memory to complete the action.");
+  else
+    console.printf("A problem has occurred.\n\nDetails:\n%s\n", e.what());
 }
 
 } // namespace app

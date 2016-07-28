@@ -50,6 +50,7 @@
               <listitem text="30 Minutes" value="30" />
             </combobox>
           </hbox>
+          <check text="Show full file name path" id="show_full_path" tooltip="Uncheck this option if you would prefer to hide&#10;full path on UI (e.g. useful for live streaming)" />
           <separator horizontal="true" />
           <link id="locate_file" text="Locate Configuration File" />
           <link id="locate_crash_folder" text="Locate Crash Folder" />

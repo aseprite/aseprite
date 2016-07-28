@@ -251,12 +251,12 @@ void Document::setMaskVisible(bool visible)
 //////////////////////////////////////////////////////////////////////
 // Transformation
 
-gfx::Transformation Document::getTransformation() const
+Transformation Document::getTransformation() const
 {
   return m_transformation;
 }
 
-void Document::setTransformation(const gfx::Transformation& transform)
+void Document::setTransformation(const Transformation& transform)
 {
   m_transformation = transform;
 }
@@ -264,9 +264,9 @@ void Document::setTransformation(const gfx::Transformation& transform)
 void Document::resetTransformation()
 {
   if (m_mask)
-    m_transformation = gfx::Transformation(gfx::RectF(m_mask->bounds()));
+    m_transformation = Transformation(gfx::RectF(m_mask->bounds()));
   else
-    m_transformation = gfx::Transformation();
+    m_transformation = Transformation();
 }
 
 //////////////////////////////////////////////////////////////////////
