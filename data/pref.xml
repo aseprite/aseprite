@@ -198,6 +198,9 @@
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
     </section>
+    <section id="thumbnails">
+      <option id="cache_limit" type="int" default="5000" />
+    </section>
   </global>
 
   <tool>
@@ -253,6 +256,15 @@
       <option id="zoom" type="bool" default="true" migrate="Option.CheckedBgZoom" />
       <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" migrate="Option.CheckedBgColor1" />
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
+    </section>
+    <section id="thumbnails">
+      <option id="enabled" type="bool" default="false" />
+      <option id="opacity" type="int" default="255" />
+      <option id="background" type="app::Color" default="app::Color::fromRgb(180, 180, 180, 220)" />
+    </section>
+    <section id="overlay">
+      <option id="enabled" type="bool" default="false" />
+      <option id="size" type="int" default="5" />
     </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />

@@ -213,6 +213,8 @@ void UIContext::onRemoveDocument(doc::Document* doc)
       workspace->removeView(docView);
       delete docView;
     }
+
+    m_thumbnails.onRemoveDocument(doc);
   }
 }
 
@@ -232,5 +234,16 @@ void UIContext::onGetActiveSite(Site* site) const
     }
   }
 }
+
+she::Surface* UIContext::thumbnail(
+  const app::Document* doc, const doc::Cel* cel, 
+  gfx::Size surface_size, gfx::Rect image_on_surface)
+{
+  thumb::Request req(doc, 
+    cel->frame(), cel->image(), 
+    surface_size, image_on_surface);
+  return m_thumbnails.fetch(req);
+}
+
 
 } // namespace app

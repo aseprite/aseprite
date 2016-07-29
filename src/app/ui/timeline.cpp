@@ -50,6 +50,12 @@
 #include "she/font.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
+#include "base/unique_ptr.h"
+#include "she/surface.h"
+#include "she/system.h"
+#include "doc/conversion_she.h"
+#include "base/bind.h"
+#include "doc/algorithm/rotate.h"
 
 #include <cstdio>
 #include <vector>
@@ -134,6 +140,8 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
+  , m_overlayCel(NULL)
+  , m_overlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -164,6 +172,38 @@ Timeline::~Timeline()
   delete m_confPopup;
 }
 
+void Timeline::onThumbnailsPrefChange()
+{
+  if (m_confPopup->isVisible()) {
+    m_confPopup->updateThumbEnabled();
+  }
+  invalidate();
+}
+
+void Timeline::onOverlayPrefChange()
+{
+  LayerIndex layer = getLayerIndex(m_layer);
+  frame_t frame = m_frame;
+
+  Cel* cel = m_layer->cel(frame);
+  if (!cel || !cel->image() && isCelCulled(layer, frame)) {
+    CelsRange cels = m_sprite->cels();
+    for (CelsRange::iterator it = cels.begin(); it != cels.end(); ++it) {
+      cel = *it;
+      LayerIndex l = getLayerIndex(cel->layer());
+      frame_t f = cel->frame();
+      if (cel->image() && !isCelCulled(l, f)) {
+        frame = f;
+        layer = l;
+        break;
+      }
+    }
+  }
+
+  showCel(layer, frame);
+  updateCelOverlayBounds(Hit(PART_CEL, layer, frame), true);
+}
+
 void Timeline::updateUsingEditor(Editor* editor)
 {
   m_aniControls.updateUsingEditor(editor);
@@ -190,6 +230,15 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   site.document()->addObserver(this);
 
+  app::Document* app_document = static_cast<app::Document*>(site.document());
+  DocumentPreferences& docPref = Preferences::instance().document(app_document);
+
+  m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
+    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+
+  m_overlayPrefConn = docPref.overlay.AfterChange.connect(
+    base::Bind<void>(&Timeline::onOverlayPrefChange, this));
+
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
   if (m_document == site.document() &&
@@ -198,7 +247,7 @@ void Timeline::updateUsingEditor(Editor* editor)
       m_frame == site.frame())
     return;
 
-  m_document = static_cast<app::Document*>(site.document());
+  m_document = app_document;
   m_sprite = site.sprite();
   m_layer = site.layer();
   m_frame = site.frame();
@@ -215,6 +264,8 @@ void Timeline::updateUsingEditor(Editor* editor)
 void Timeline::detachDocument()
 {
   if (m_document) {
+    m_thumbnailsPrefConn.disconnect();
+    m_overlayPrefConn.disconnect();
     m_document->removeObserver(this);
     m_document = NULL;
   }
@@ -545,6 +596,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateStatusBar(msg);
+      updateCelOverlayBounds(hit);
       return true;
     }
 
@@ -1036,6 +1088,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     drawFrameTags(g);
     drawRangeOutline(g);
     drawClipboardRange(g);
+    drawCelOverlay(g);
 
 #if 0 // Use this code to debug the calculated m_dropRange by updateDropRange()
     {
@@ -1067,8 +1120,9 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 
 void Timeline::onRemoveDocument(doc::Document* document)
 {
-  if (document == m_document)
+  if (document == m_document) {
     detachDocument();
+  }
 }
 
 void Timeline::onGeneralUpdate(DocumentEvent& ev)
@@ -1518,6 +1572,126 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   // Draw decorators to link the activeCel with its links.
   if (data->activeIt != data->end)
     drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
+
+  if (docPref().thumbnails.enabled() && image) {
+    gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
+
+    she::Surface* thumb_surf = UIContext::instance()->thumbnail(m_document, cel, thumb_bounds.size());
+
+    g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
+  }
+}
+
+
+void Timeline::updateCelOverlayBounds(const Hit& hit, bool force)
+{
+  gfx::Rect inner, outer;
+
+  Layer* layer;
+  Cel* cel;
+  Image* image;
+
+  if ((docPref().overlay.enabled() || force) &&
+    hit.part == PART_CEL &&
+    (layer = m_layers[hit.layer]) &&
+    (cel = layer->cel(hit.frame)) &&
+    (image = cel->image()))
+  {
+    m_overlayHit = hit;
+    m_overlayCel = cel;
+
+    int max_size = FRMSIZE * docPref().overlay.size();
+    int width, height;
+    if (m_sprite->width() > m_sprite->height()) {
+      width  = max_size;
+      height = max_size * m_sprite->height() / m_sprite->width();
+    }
+    else {
+      width  = max_size * m_sprite->width() / m_sprite->height();
+      height = max_size;
+    }
+
+    gfx::Rect client_bounds = clientBounds();
+    gfx::Point center = client_bounds.center();
+
+    gfx::Rect bounds_cel = getPartBounds(m_overlayHit);
+    inner = gfx::Rect(
+      bounds_cel.x + m_overlayDirection.x,
+      bounds_cel.y + m_overlayDirection.y,
+      width,
+      height
+    );
+
+    if (m_overlayInner.w != width || m_overlayInner.h != height || !client_bounds.contains(inner)) {
+      m_overlayDirection = gfx::Point(
+        bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5),
+        bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)
+      );
+      inner.setOrigin(gfx::Point(
+        bounds_cel.x + m_overlayDirection.x,
+        bounds_cel.y + m_overlayDirection.y
+      ));
+    }
+
+    outer = gfx::Rect(inner).enlarge(1);
+  }
+  else {
+    outer = gfx::Rect(0, 0, 0, 0);
+    m_overlayCel = NULL;
+  }
+
+  if (outer != m_overlayOuter) {
+    if (!m_overlayOuter.isEmpty()) {
+      invalidateRect(gfx::Rect(m_overlayOuter).offset(origin()));
+    }
+    if (!outer.isEmpty()) {
+      invalidateRect(gfx::Rect(outer).offset(origin()));
+    }
+    m_overlayOuter = outer;
+    m_overlayInner = inner;
+  }
+}
+
+void Timeline::drawCelOverlay(ui::Graphics* g)
+{
+  if (!m_overlayCel) {
+    return;
+  }
+
+  IntersectClip clip(g, m_overlayOuter);
+  if (!clip)
+    return;
+
+  Cel* cel = m_overlayCel;
+  Image* image = cel->image();
+
+  double scale = (
+    m_sprite->width() > m_sprite->height() ?
+    m_overlayInner.w / (double)m_sprite->width() :
+    m_overlayInner.h / (double)m_sprite->height()
+  );
+
+  gfx::Size overlay_size(
+    m_overlayInner.w,
+    m_overlayInner.h
+  );
+
+  gfx::Rect cel_image_on_overlay(
+    (int)(cel->x() * scale),
+    (int)(cel->y() * scale),
+    (int)(image->width() * scale),
+    (int)(image->height() * scale)
+  );
+
+  she::Surface* overlay_surf = UIContext::instance()->thumbnail(
+    m_document, cel, overlay_size, cel_image_on_overlay);
+
+  gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
+  gfx::Color border = color_utils::blackandwhite_neg(background);
+
+  g->drawRgbaSurface(overlay_surf,
+    m_overlayInner.x, m_overlayInner.y);
+  g->drawRect(border, m_overlayOuter);
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
@@ -2262,21 +2436,31 @@ void Timeline::updateStatusBar(ui::Message* msg)
   sb->clearText();
 }
 
-void Timeline::showCel(LayerIndex layer, frame_t frame)
+gfx::Rect Timeline::celViewportBounds(LayerIndex layer, frame_t frame) const
 {
   gfx::Point scroll = viewScroll();
 
+  return gfx::Rect(
+    m_viewportArea.x + FRMSIZE*frame - scroll.x,
+    m_viewportArea.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
+    FRMSIZE, LAYSIZE);
+}
+
+bool Timeline::isCelCulled(LayerIndex layer, frame_t frame) const
+{
+  return !m_viewportArea.contains(celViewportBounds(layer, frame));
+}
+
+void Timeline::showCel(LayerIndex layer, frame_t frame)
+{
+  gfx::Point scroll = viewScroll();
   gfx::Rect viewport = m_viewportArea;
+  gfx::Rect celBounds = celViewportBounds(layer, frame);
 
   // Add the horizontal bar space to the viewport area if the viewport
   // is not big enough to show one cel.
   if (m_hbar.isVisible() && viewport.h < LAYSIZE)
     viewport.h += m_vbar.getBarWidth();
-
-  gfx::Rect celBounds(
-    viewport.x + FRMSIZE*frame - scroll.x,
-    viewport.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
-    FRMSIZE, LAYSIZE);
 
   // Here we use <= instead of < to avoid jumping between this
   // condition and the "else if" one when we are playing the
@@ -2471,6 +2655,8 @@ void Timeline::setViewScroll(const gfx::Point& pt)
   gfx::Point newScroll = pt;
   newScroll.x = MID(0, newScroll.x, maxPos.x);
   newScroll.y = MID(0, newScroll.y, maxPos.y);
+
+  m_overlayCel = NULL;
 
   if (newScroll == oldScroll)
     return;

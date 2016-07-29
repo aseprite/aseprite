@@ -41,6 +41,8 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   : PopupWindow("Timeline Settings", ClickBehavior::CloseOnClickInOtherWindow)
   , m_lockUpdates(false)
 {
+  setHotRegion(gfx::Region(manager()->bounds())); // for the color selector
+
   setAutoRemap(false);
   setBorder(gfx::Border(4*guiscale()));
 
@@ -56,6 +58,12 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->currentLayer()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
   m_box->behind()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
+
+  m_box->thumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOpacityChange, this));
+  m_box->thumbBackground()->Change.connect(&ConfigureTimelinePopup::onThumbBackgroundChange, this);
+  m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
+  m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
+  m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -103,6 +111,17 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       m_box->infront()->setSelected(true);
       break;
   }
+
+  m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
+  m_box->thumbBackground()->setColor(docPref.thumbnails.background());
+  m_box->thumbOverlayEnabled()->setSelected(docPref.overlay.enabled());
+  m_box->thumbOverlaySize()->setValue(docPref.overlay.size());
+  updateThumbEnabled();
+}
+
+void ConfigureTimelinePopup::updateThumbEnabled()
+{
+  m_box->thumbEnabled()->setSelected(docPref().thumbnails.enabled());
 }
 
 bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
@@ -112,7 +131,6 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
     case kOpenMessage: {
       updateWidgetsFromCurrentSettings();
       break;
-
     }
   }
   return PopupWindow::onProcessMessage(msg);
@@ -174,5 +192,31 @@ void ConfigureTimelinePopup::onPositionChange()
                                render::OnionskinPosition::BEHIND:
                                render::OnionskinPosition::INFRONT);
 }
+
+void ConfigureTimelinePopup::onThumbOpacityChange()
+{
+  docPref().thumbnails.opacity(m_box->thumbOpacity()->getValue());
+}
+
+void ConfigureTimelinePopup::onThumbBackgroundChange(const app::Color& color)
+{
+  docPref().thumbnails.background(color);
+}
+
+void ConfigureTimelinePopup::onThumbEnabledChange()
+{
+  docPref().thumbnails.enabled(m_box->thumbEnabled()->isSelected());
+}
+
+void ConfigureTimelinePopup::onThumbOverlayEnabledChange()
+{
+  docPref().overlay.enabled(m_box->thumbOverlayEnabled()->isSelected());
+}
+
+void ConfigureTimelinePopup::onThumbOverlaySizeChange()
+{
+  docPref().overlay.size(m_box->thumbOverlaySize()->getValue());
+}
+
 
 } // namespace app
