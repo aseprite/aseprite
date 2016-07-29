@@ -26,6 +26,7 @@
 #include "gfx/rect.h"
 #include "render/onionskin_position.h"
 #include "render/zoom.h"
+#include "doc/algorithm/resize_image.h"
 
 #include "pref.xml.h"
 

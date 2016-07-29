@@ -106,6 +106,7 @@
       <key command="SnapToGrid" shortcut="Shift+S" />
       <key command="SetLoopSection" shortcut="F2" />
       <key command="ShowOnionSkin" shortcut="F3" />
+      <key command="ToggleTimelineThumbnails" shortcut="F6" />
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
       </key>

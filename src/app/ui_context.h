@@ -11,6 +11,7 @@
 
 #include "app/context.h"
 #include "doc/documents_observer.h"
+#include "app/thumbnails.h"
 
 namespace app {
   class DocumentView;
@@ -41,6 +42,8 @@ namespace app {
     // new one if it's necessary.
     Editor* getEditorFor(Document* document);
 
+    she::Surface* thumbnail(const app::Document* doc, const doc::Cel* cel, const gfx::Rect& bounds);
+
   protected:
     void onAddDocument(doc::Document* doc) override;
     void onRemoveDocument(doc::Document* doc) override;
@@ -50,6 +53,7 @@ namespace app {
     Document* m_lastSelectedDoc;
     DocumentView* m_lastSelectedView;
     static UIContext* m_instance;
+    thumb::CacheDir m_thumbnails;
   };
 
 } // namespace app

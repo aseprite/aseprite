@@ -12,6 +12,7 @@
 #include "app/pref/preferences.h"
 #include "doc/anidir.h"
 #include "ui/popup_window.h"
+#include "base/connection.h"
 
 namespace ui {
   class Button;
@@ -40,6 +41,13 @@ namespace app {
     void onLoopTagChange();
     void onCurrentLayerChange();
     void onPositionChange();
+
+    void onThumbOpacityChange();
+    void onThumbQualityChange();
+    void onThumbBackgroundChange(const app::Color& color);
+    void onThumbEnabledChange();
+    void onThumbOverlayEnabledChange();
+    void onThumbOverlaySizeChange();
 
   private:
     void updateWidgetsFromCurrentSettings();
