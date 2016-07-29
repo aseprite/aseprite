@@ -69,7 +69,7 @@ PixelsMovement::PixelsMovement(
   , m_opaque(false)
   , m_maskColor(m_sprite->transparentColor())
 {
-  gfx::Transformation transform(mask->bounds());
+  Transformation transform(mask->bounds());
   set_pivot_from_preferences(transform);
 
   m_initialData = transform;
@@ -232,7 +232,7 @@ void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
 
 void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 {
-  gfx::Transformation::Corners oldCorners;
+  Transformation::Corners oldCorners;
   m_currentData.transformBox(oldCorners);
 
   ContextWriter writer(m_reader, 1000);
@@ -427,13 +427,13 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   m_document->setTransformation(m_currentData);
 
   // Get the new transformed corners
-  gfx::Transformation::Corners newCorners;
+  Transformation::Corners newCorners;
   m_currentData.transformBox(newCorners);
 
   // Create a union of all corners, and that will be the bounds to
   // redraw of the sprite.
   gfx::Rect fullBounds;
-  for (int i=0; i<gfx::Transformation::Corners::NUM_OF_CORNERS; ++i) {
+  for (int i=0; i<Transformation::Corners::NUM_OF_CORNERS; ++i) {
     fullBounds = fullBounds.createUnion(gfx::Rect((int)oldCorners[i].x, (int)oldCorners[i].y, 1, 1));
     fullBounds = fullBounds.createUnion(gfx::Rect((int)newCorners[i].x, (int)newCorners[i].y, 1, 1));
   }
@@ -535,7 +535,7 @@ void PixelsMovement::dropImageTemporarily()
       pivotPosFactor.y /= m_initialData.bounds().h;
 
       // Get the current transformed bounds.
-      gfx::Transformation::Corners corners;
+      Transformation::Corners corners;
       m_currentData.transformBox(corners);
 
       // The new pivot will be located from the rotated left-top
@@ -650,7 +650,7 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool rende
 {
   ASSERT(dst);
 
-  gfx::Transformation::Corners corners;
+  Transformation::Corners corners;
   m_currentData.transformBox(corners);
   gfx::Rect bounds = corners.bounds();
 
@@ -683,7 +683,7 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool rende
 
 void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
 {
-  gfx::Transformation::Corners corners;
+  Transformation::Corners corners;
   m_currentData.transformBox(corners);
   gfx::Rect bounds = corners.bounds();
 
@@ -701,7 +701,7 @@ void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
 
 void PixelsMovement::drawParallelogram(
   doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
-  const gfx::Transformation::Corners& corners,
+  const Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
   tools::RotationAlgorithm rotAlgo = Preferences::instance().selection.rotationAlgorithm();

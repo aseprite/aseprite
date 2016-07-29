@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -75,6 +75,10 @@ TEST(ResizeImage, NearestNeighborInterp)
   algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL, -1);
 
   ASSERT_EQ(0, count_diff_between_images(dst, dst_expected));
+
+  Image* dst2 = Image::create(IMAGE_RGB, 3, 3);
+  algorithm::resize_image(dst, dst2, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL, -1);
+  ASSERT_EQ(0, count_diff_between_images(src, dst2));
 }
 
 #if 0                           // TODO complete this test

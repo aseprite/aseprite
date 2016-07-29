@@ -35,6 +35,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
+#include "base/path.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -328,8 +329,14 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
   // Note: tabView can be NULL
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
     Document* document = docView->document();
-    m_statusBar->setStatusText(250, "%s",
-      document->filename().c_str());
+
+    std::string name;
+    if (Preferences::instance().general.showFullPath())
+      name = document->filename();
+    else
+      name = base::get_file_name(document->filename());
+
+    m_statusBar->setStatusText(250, "%s", name.c_str());
   }
   else {
     m_statusBar->clearText();

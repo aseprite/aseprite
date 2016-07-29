@@ -216,7 +216,7 @@ private:
     if (m_nsGL)
       m_nsGL = nil;
 
-    setSurface(nullptr);
+    m_skSurface.reset(nullptr);
     m_skSurfaceDirect.reset(nullptr);
     m_grRenderTarget.reset(nullptr);
     m_grCtx.reset(nullptr);
@@ -237,21 +237,22 @@ private:
     desc.fRenderTargetHandle = 0; // direct frame buffer
     m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
 
-    setSurface(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
-    m_skSurfaceDirect.reset(
-      SkSurface::NewRenderTargetDirect(m_grRenderTarget));
+    m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
+    m_skSurfaceDirect =
+      SkSurface::MakeRenderTargetDirect(m_grRenderTarget.get());
 
     if (scale == 1) {
-      setSurface(m_skSurfaceDirect);
+      m_skSurface = m_skSurfaceDirect;
     }
     else {
-      setSurface(
-        SkSurface::NewRenderTarget(
-          m_grCtx,
-          SkSurface::kYes_Budgeted,
+      m_skSurface =
+        SkSurface::MakeRenderTarget(
+          m_grCtx.get(),
+          SkBudgeted::kYes,
           SkImageInfo::MakeN32Premul(MAX(1, size.w / scale),
                                      MAX(1, size.h / scale)),
-          m_glCtx->getSampleCount()));
+          m_glCtx->getSampleCount(),
+          nullptr);
     }
 
     if (!m_skSurface)
@@ -263,34 +264,40 @@ private:
       [m_nsGL update];
   }
 
-  void setSurface(SkSurface* surface) {
-    if (m_skSurface && m_skSurface != m_skSurfaceDirect)
-      delete m_skSurface;
-    m_skSurface = surface;
-  }
-
 #endif
 
   void paintGC(const gfx::Rect& rect) {
     if (!m_display->isInitialized())
       return;
 
+    if (rect.isEmpty())
+      return;
+
+    NSRect viewBounds = m_window.contentView.bounds;
+    int scale = this->scale();
+
     SkiaSurface* surface = static_cast<SkiaSurface*>(m_display->getSurface());
-    const SkBitmap& bitmap = surface->bitmap();
+    const SkBitmap& origBitmap = surface->bitmap();
 
-    ASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
+    // Create a subset to draw on the view
+    SkBitmap bitmap;
+    if (!origBitmap.extractSubset(
+          &bitmap, SkIRect::MakeXYWH(rect.x/scale,
+                                     (viewBounds.size.height-(rect.y+rect.h))/scale,
+                                     rect.w/scale,
+                                     rect.h/scale)))
+      return;
+
     bitmap.lockPixels();
-
     {
-      NSRect viewBounds = [[m_window contentView] bounds];
       NSGraphicsContext* gc = [NSGraphicsContext currentContext];
       CGContextRef cg = (CGContextRef)[gc graphicsPort];
       CGImageRef img = SkCreateCGImageRef(bitmap);
       if (img) {
-        CGRect r = CGRectMake(viewBounds.origin.x,
-                              viewBounds.origin.y,
-                              viewBounds.size.width,
-                              viewBounds.size.height);
+        CGRect r = CGRectMake(viewBounds.origin.x+rect.x,
+                              viewBounds.origin.y+rect.y,
+                              rect.w, rect.h);
+
         CGContextSaveGState(cg);
         CGContextSetInterpolationQuality(cg, kCGInterpolationNone);
         CGContextDrawImage(cg, r, img);
@@ -298,7 +305,6 @@ private:
         CGImageRelease(img);
       }
     }
-
     bitmap.unlockPixels();
   }
 
@@ -310,10 +316,10 @@ private:
   base::UniquePtr<GLContext> m_glCtx;
   SkAutoTUnref<const GrGLInterface> m_glInterfaces;
   NSOpenGLContext* m_nsGL;
-  SkAutoTUnref<GrContext> m_grCtx;
-  SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
-  SkAutoTDelete<SkSurface> m_skSurfaceDirect;
-  SkSurface* m_skSurface;
+  sk_sp<GrContext> m_grCtx;
+  sk_sp<GrRenderTarget> m_grRenderTarget;
+  sk_sp<SkSurface> m_skSurfaceDirect;
+  sk_sp<SkSurface> m_skSurface;
   gfx::Size m_lastSize;
 #endif
 };

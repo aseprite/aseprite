@@ -353,6 +353,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
   frame_t frameBegin, frameEnd;
   int layerBegin, layerEnd;
   bool moveFrames = false;
+  bool swapCels = false;
 
   switch (range.type()) {
     case DocumentRange::kCels:
@@ -360,6 +361,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
       frameEnd = range.frameEnd();
       layerBegin = range.layerBegin();
       layerEnd = range.layerEnd() + 1;
+      swapCels = true;
       break;
     case DocumentRange::kFrames:
       frameBegin = range.frameBegin();
@@ -371,6 +373,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
       frameEnd = sprite->totalFrames()-1;
       layerBegin = range.layerBegin();
       layerEnd = range.layerEnd() + 1;
+      swapCels = true;
       break;
   }
 
@@ -381,7 +384,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
       api.moveFrame(sprite, frameBegin, frameRev);
     }
   }
-  else {
+  else if (swapCels) {
     LayerList layers = sprite->allBrowsableLayers();
 
     for (int layerIdx = layerBegin; layerIdx != layerEnd; ++layerIdx) {
@@ -392,6 +395,9 @@ void reverse_frames(Document* doc, const DocumentRange& range)
              frameRev = frameEnd;
            frame != (frameBegin+frameEnd)/2+1;
            ++frame, --frameRev) {
+        if (frame == frameRev)
+          continue;
+
         LayerImage* layer = static_cast<LayerImage*>(layers[layerIdx]);
         api.swapCel(layer, frame, frameRev);
       }

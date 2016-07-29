@@ -8,14 +8,17 @@
 #include "config.h"
 #endif
 
-#include "gfx/transformation.h"
+#include "app/transformation.h"
+
+#include "fixmath/fixmath.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "fixmath/fixmath.h"
 
 #include <cmath>
 
-namespace gfx {
+namespace app {
+
+using namespace gfx;
 
 Transformation::Transformation()
 {
@@ -99,4 +102,4 @@ RectF Transformation::transformedBounds() const
   return bounds;
 }
 
-}
+} // namespace app
