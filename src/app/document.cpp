@@ -185,7 +185,7 @@ void Document::impossibleToBackToSavedState()
 bool Document::needsBackup() const
 {
   // If the undo history isn't empty, the user has modified the
-  // document, so we needs to backup those changes.
+  // document, so we need to backup those changes.
   return m_undo->canUndo() || m_undo->canRedo();
 }
 
