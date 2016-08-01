@@ -459,7 +459,7 @@ target_link_libraries(app-lib
   script-lib
   she
   ui-lib
-  undo-lib
+  undo
   ${TINYXML_LIBRARY}
   ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}

@@ -33,3 +33,6 @@
 [submodule "src/observable"]
 	path = src/observable
 	url = https://github.com/dacap/observable.git
+[submodule "src/undo"]
+	path = src/undo
+	url = https://github.com/aseprite/undo.git
