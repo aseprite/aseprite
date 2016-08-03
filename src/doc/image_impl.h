@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define DOC_IMAGE_IMPL_H_INCLUDED
 #pragma once
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 
@@ -100,25 +101,25 @@ namespace doc {
     }
 
     void clear(color_t color) override {
-      LockImageBits<Traits> bits(this);
-      typename LockImageBits<Traits>::iterator it(bits.begin());
-      typename LockImageBits<Traits>::iterator end(bits.end());
+      int w = width();
+      int h = height();
 
-      for (; it != end; ++it)
-        *it = color;
+      // Fill the first line
+      address_t first = address(0, 0);
+      std::fill(first, first+w, color);
+
+      // Copy the first line into all other lines
+      for (int y=1; y<h; ++y)
+        std::copy(first, first+w, address(0, y));
     }
 
     void copy(const Image* _src, gfx::Clip area) override {
       const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
       address_t src_address;
       address_t dst_address;
-      int bytes;
 
       if (!area.clip(width(), height(), src->width(), src->height()))
         return;
-
-      // Copy process
-      bytes = Traits::getRowStrideBytes(area.size.w);
 
       for (int end_y=area.dst.y+area.size.h;
            area.dst.y<end_y;
@@ -126,7 +127,9 @@ namespace doc {
         src_address = src->address(area.src.x, area.src.y);
         dst_address = address(area.dst.x, area.dst.y);
 
-        std::memcpy(dst_address, src_address, bytes);
+        std::copy(src_address,
+                  src_address + area.size.w,
+                  dst_address);
       }
     }
 
@@ -140,8 +143,14 @@ namespace doc {
     }
 
     void fillRect(int x1, int y1, int x2, int y2, color_t color) override {
+      // Fill the first line
+      ImageImpl<Traits>::drawHLine(x1, y1, x2, color);
+
+      // Copy all other lines
+      address_t first = address(x1, y1);
+      int w = x2 - x1 + 1;
       for (int y=y1; y<=y2; ++y)
-        ImageImpl<Traits>::drawHLine(x1, y, x2, color);
+        std::copy(first, first+w, address(x1, y));
     }
 
     void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) override {
@@ -210,13 +219,16 @@ namespace doc {
 
   template<>
   inline void ImageImpl<IndexedTraits>::clear(color_t color) {
-    std::memset(m_bits, color, width()*height());
+    std::fill(m_bits,
+              m_bits + width()*height(),
+              color);
   }
 
   template<>
   inline void ImageImpl<BitmapTraits>::clear(color_t color) {
-    std::memset(m_bits, (color ? 0xff: 0x00),
-      BitmapTraits::getRowStrideBytes(width()) * height());
+    std::fill(m_bits,
+              m_bits + BitmapTraits::getRowStrideBytes(width()) * height(),
+              (color ? 0xff: 0x00));
   }
 
   template<>
@@ -238,6 +250,12 @@ namespace doc {
       (*(m_rows[y] + d.quot)) |= (1 << d.rem);
     else
       (*(m_rows[y] + d.quot)) &= ~(1 << d.rem);
+  }
+
+  template<>
+  inline void ImageImpl<BitmapTraits>::fillRect(int x1, int y1, int x2, int y2, color_t color) {
+    for (int y=y1; y<=y2; ++y)
+      ImageImpl<BitmapTraits>::drawHLine(x1, y, x2, color);
   }
 
   template<>
