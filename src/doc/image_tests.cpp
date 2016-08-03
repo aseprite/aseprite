@@ -178,6 +178,43 @@ TYPED_TEST(ImageAllTypes, DrawHLine)
   }
 }
 
+TYPED_TEST(ImageAllTypes, FillRect)
+{
+  typedef TypeParam ImageTraits;
+
+  for (int i=0; i<100; ++i) {
+    int w = 1+i;
+    int h = 1+i;
+
+    UniquePtr<Image> image(Image::create(ImageTraits::pixel_format, w, h));
+    color_t color = (rand() % ImageTraits::max_value);
+    if (!color)
+      color = 1;
+
+    for (int j=0; j<1000; ++j) {
+      int x1 = rand() % w;
+      int y1 = rand() % h;
+      int x2 = x1 + (rand() % (w-x1));
+      int y2 = y1 + (rand() % (h-y1));
+
+      image->clear(0);
+      fill_rect(image, x1, y1, x2, y2, color);
+
+      // Check
+      for (int v=0; v<h; ++v) {
+        for (int u=0; u<w; ++u) {
+          color_t pixel = get_pixel_fast<ImageTraits>(image, u, v);
+          if (u >= x1 && v >= y1 &&
+              u <= x2 && v <= y2)
+            EXPECT_EQ(color, pixel);
+          else
+            EXPECT_EQ(0, pixel);
+        }
+      }
+    }
+  }
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
