@@ -55,11 +55,6 @@
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
 
-// TODO why we need this? It should be done in app/thumbnails.cpp
-#include "doc/algorithm/rotate.h"
-#include "doc/conversion_she.h"
-#include "she/system.h"
-
 #include <cstdio>
 #include <vector>
 
