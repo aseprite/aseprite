@@ -253,7 +253,14 @@ namespace app {
     int topHeight() const;
 
     DocumentPreferences& docPref() const;
+
+    // Theme/dimensions
     skin::SkinTheme* skinTheme() const;
+    gfx::Size celBoxSize() const;
+    int headerBoxHeight() const;
+    int layerBoxHeight() const;
+    int frameBoxWidth() const;
+    int outlineWidth() const;
 
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);

@@ -58,28 +58,6 @@
 #include <cstdio>
 #include <vector>
 
-// Size of the thumbnail in the screen (width x height), the really
-// size of the thumbnail bitmap is specified in the
-// 'generate_thumbnail' routine.
-#define THUMBSIZE       (12*guiscale())
-
-// Height of the headers.
-#define HDRSIZE         THUMBSIZE
-
-// Width of the frames.
-#define FRMSIZE         THUMBSIZE
-
-// Height of the layers.
-#define LAYSIZE         THUMBSIZE
-
-// Space between icons and other information in the layer.
-#define ICONSEP         (2*guiscale())
-
-#define OUTLINE_WIDTH   (skinTheme()->dimensions.timelineOutlineWidth())
-
-// Space between the icon-bitmap and the edge of the surrounding button.
-#define ICONBORDER      0
-
 namespace app {
 
 using namespace app::skin;
@@ -139,7 +117,8 @@ Timeline::Timeline()
   , m_scroll(false)
   , m_fromTimeline(false)
   , m_thumbnailsOverlayVisible(false)
-  , m_thumbnailsOverlayDirection((int)(FRMSIZE*1.5), (int)(FRMSIZE*0.5))
+  , m_thumbnailsOverlayDirection(int(frameBoxWidth()*1.5),
+                                 int(frameBoxWidth()*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -892,9 +871,9 @@ bool Timeline::onProcessMessage(Message* msg)
         dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
 
         if (msg->ctrlPressed())
-          dx = dz * FRMSIZE;
+          dx = dz * frameBoxWidth();
         else
-          dy = dz * LAYSIZE;
+          dy = dz * layerBoxHeight();
 
         if (msg->shiftPressed()) {
           dx *= 3;
@@ -1254,11 +1233,11 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
 
 void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer)
 {
-  int hpx = (clientBounds().h - HDRSIZE - topHeight());
-  LayerIndex i = lastLayer() - LayerIndex((viewScroll().y+hpx) / LAYSIZE);
+  int hpx = (clientBounds().h - headerBoxHeight() - topHeight());
+  LayerIndex i = lastLayer() - LayerIndex((viewScroll().y+hpx) / layerBoxHeight());
   i = MID(firstLayer(), i, lastLayer());
 
-  LayerIndex j = i + LayerIndex(hpx / LAYSIZE + 1);
+  LayerIndex j = i + LayerIndex(hpx / layerBoxHeight() + 1);
   if (!m_layers.empty())
     j = MID(firstLayer(), j, lastLayer());
   else
@@ -1272,8 +1251,10 @@ void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t*
 {
   int availW = (clientBounds().w - m_separator_x);
 
-  *first_frame = frame_t(viewScroll().x / FRMSIZE);
-  *last_frame = *first_frame + frame_t(availW / FRMSIZE) + ((availW % FRMSIZE) > 0 ? 1: 0);
+  *first_frame = frame_t(viewScroll().x / frameBoxWidth());
+  *last_frame = *first_frame
+    + frame_t(availW / frameBoxWidth())
+    + ((availW % frameBoxWidth()) > 0 ? 1: 0);
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -1558,7 +1539,7 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
   if (docPref().thumbnails.overlayEnabled() && hit.part == PART_CEL) {
     m_thumbnailsOverlayHit = hit;
 
-    int max_size = FRMSIZE * docPref().thumbnails.overlaySize();
+    int max_size = frameBoxWidth() * docPref().thumbnails.overlaySize();
     int width, height;
     if (m_sprite->width() > m_sprite->height()) {
       width  = max_size;
@@ -1582,8 +1563,8 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
 
     if (!client_bounds.contains(inner)) {
       m_thumbnailsOverlayDirection = gfx::Point(
-        bounds_cel.x < center.x ? (int)(FRMSIZE*1.5) : -width -(int)(FRMSIZE*0.5),
-        bounds_cel.y < center.y ? (int)(FRMSIZE*0.5) : -height+(int)(FRMSIZE*0.5)
+        bounds_cel.x < center.x ? (int)(frameBoxWidth()*1.5) : -width -(int)(frameBoxWidth()*0.5),
+        bounds_cel.y < center.y ? (int)(frameBoxWidth()*0.5) : -height+(int)(frameBoxWidth()*0.5)
       );
       inner.setOrigin(gfx::Point(
         bounds_cel.x + m_thumbnailsOverlayDirection.x,
@@ -1755,7 +1736,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
     case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
     case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
   }
-  IntersectClip clip(g, clipBounds.enlarge(OUTLINE_WIDTH));
+  IntersectClip clip(g, clipBounds.enlarge(outlineWidth()));
   if (!clip)
     return;
 
@@ -1772,7 +1753,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   switch (drop.type()) {
 
     case Range::kCels: {
-      dropBounds = dropBounds.enlarge(OUTLINE_WIDTH);
+      dropBounds = dropBounds.enlarge(outlineWidth());
       styles.timelineRangeOutline()->paint(g, dropBounds, NULL, Style::active());
       break;
     }
@@ -1851,7 +1832,7 @@ gfx::Rect Timeline::getLayerHeadersBounds() const
 {
   gfx::Rect rc = clientBounds();
   rc.w = m_separator_x;
-  int h = topHeight() + HDRSIZE;
+  int h = topHeight() + headerBoxHeight();
   rc.y += h;
   rc.h -= h;
   return rc;
@@ -1863,7 +1844,7 @@ gfx::Rect Timeline::getFrameHeadersBounds() const
   rc.x += m_separator_x;
   rc.y += topHeight();
   rc.w -= m_separator_x;
-  rc.h = HDRSIZE;
+  rc.h = headerBoxHeight();
   return rc;
 }
 
@@ -1891,8 +1872,8 @@ gfx::Rect Timeline::getCelsBounds() const
   gfx::Rect rc = clientBounds();
   rc.x += m_separator_x;
   rc.w -= m_separator_x;
-  rc.y += HDRSIZE + topHeight();
-  rc.h -= HDRSIZE + topHeight();
+  rc.y += headerBoxHeight() + topHeight();
+  rc.h -= headerBoxHeight() + topHeight();
   return rc;
 }
 
@@ -1914,29 +1895,34 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         m_separator_x + m_separator_w, bounds.h - y);
 
     case PART_HEADER_EYE:
-      return gfx::Rect(bounds.x + FRMSIZE*0, bounds.y + y, FRMSIZE, HDRSIZE);
+      return gfx::Rect(bounds.x + frameBoxWidth()*0, bounds.y + y,
+                       frameBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_PADLOCK:
-      return gfx::Rect(bounds.x + FRMSIZE*1, bounds.y + y, FRMSIZE, HDRSIZE);
+      return gfx::Rect(bounds.x + frameBoxWidth()*1, bounds.y + y,
+                       frameBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_CONTINUOUS:
-      return gfx::Rect(bounds.x + FRMSIZE*2, bounds.y + y, FRMSIZE, HDRSIZE);
+      return gfx::Rect(bounds.x + frameBoxWidth()*2, bounds.y + y,
+                       frameBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_GEAR:
-      return gfx::Rect(bounds.x + FRMSIZE*3, bounds.y + y, FRMSIZE, HDRSIZE);
+      return gfx::Rect(bounds.x + frameBoxWidth()*3, bounds.y + y,
+                       frameBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_ONIONSKIN:
-      return gfx::Rect(bounds.x + FRMSIZE*4, bounds.y + y, FRMSIZE, HDRSIZE);
+      return gfx::Rect(bounds.x + frameBoxWidth()*4, bounds.y + y,
+                       frameBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_LAYER:
-      return gfx::Rect(bounds.x + FRMSIZE*5, bounds.y + y,
-        m_separator_x - FRMSIZE*5, HDRSIZE);
+      return gfx::Rect(bounds.x + frameBoxWidth()*5, bounds.y + y,
+                       m_separator_x - frameBoxWidth()*5, headerBoxHeight());
 
     case PART_HEADER_FRAME:
       return gfx::Rect(
         bounds.x + m_separator_x + m_separator_w - 1
-        + FRMSIZE*MAX(firstFrame(), hit.frame) - viewScroll().x,
-        bounds.y + y, FRMSIZE, HDRSIZE);
+        + frameBoxWidth()*MAX(firstFrame(), hit.frame) - viewScroll().x,
+        bounds.y + y, frameBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_FRAME_TAGS:
       return gfx::Rect(
@@ -1947,56 +1933,56 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
-          m_separator_x, LAYSIZE);
+          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          m_separator_x, layerBoxHeight());
       }
       break;
 
     case PART_LAYER_EYE_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
-          FRMSIZE, LAYSIZE);
+          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          frameBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_PADLOCK_ICON:
       if (validLayer(hit.layer)) {
-        return gfx::Rect(bounds.x + FRMSIZE,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
-          FRMSIZE, LAYSIZE);
+        return gfx::Rect(bounds.x + frameBoxWidth(),
+          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          frameBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_CONTINUOUS_ICON:
       if (validLayer(hit.layer)) {
-        return gfx::Rect(bounds.x + 2*FRMSIZE,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
-          FRMSIZE, LAYSIZE);
+        return gfx::Rect(bounds.x + 2*frameBoxWidth(),
+          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          frameBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_TEXT:
       if (validLayer(hit.layer)) {
-        int x = FRMSIZE*3;
+        int x = frameBoxWidth()*3;
         return gfx::Rect(bounds.x + x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
-          m_separator_x - x, LAYSIZE);
+          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          m_separator_x - x, layerBoxHeight());
       }
       break;
 
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
         return gfx::Rect(
-          bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*hit.frame - viewScroll().x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - viewScroll().y,
-          FRMSIZE, LAYSIZE);
+          bounds.x + m_separator_x + m_separator_w - 1 + frameBoxWidth()*hit.frame - viewScroll().x,
+          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          frameBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_RANGE_OUTLINE: {
       gfx::Rect rc = getRangeBounds(m_range);
-      int s = OUTLINE_WIDTH;
+      int s = outlineWidth();
       rc.enlarge(s);
       if (rc.x < bounds.x) rc.offset(s, 0).inflate(-s, 0);
       if (rc.y < bounds.y) rc.offset(0, s).inflate(0, -s);
@@ -2109,13 +2095,13 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     hit.layer = lastLayer() - LayerIndex(
       (mousePos.y
         - top
-        - HDRSIZE
-        + scroll.y) / LAYSIZE);
+        - headerBoxHeight()
+        + scroll.y) / layerBoxHeight());
 
     hit.frame = frame_t((mousePos.x
         - m_separator_x
         - m_separator_w
-        + scroll.x) / FRMSIZE);
+        + scroll.x) / frameBoxWidth());
 
     if (hasCapture()) {
       hit.layer = MID(firstLayer(), hit.layer, lastLayer());
@@ -2154,7 +2140,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       }
     }
     // Is the mouse on the headers?
-    else if (mousePos.y >= top && mousePos.y < top+HDRSIZE) {
+    else if (mousePos.y >= top && mousePos.y < top+headerBoxHeight()) {
       if (mousePos.x < m_separator_x) {
         if (getPartBounds(Hit(PART_HEADER_EYE)).contains(mousePos))
           hit.part = PART_HEADER_EYE;
@@ -2206,7 +2192,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
              mouseMsg &&
              mouseMsg->right()) ||
             // Drag with left-click only if we are inside the range edges
-            !gfx::Rect(outline).shrink(2*OUTLINE_WIDTH).contains(mousePos)) {
+            !gfx::Rect(outline).shrink(2*outlineWidth()).contains(mousePos)) {
           hit.part = PART_RANGE_OUTLINE;
         }
       }
@@ -2232,13 +2218,13 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
   hit.layer = lastLayer() - LayerIndex(
     (mousePos.y
      - top
-     - HDRSIZE
-     + scroll.y) / LAYSIZE);
+     - headerBoxHeight()
+     + scroll.y) / layerBoxHeight());
 
   hit.frame = frame_t((mousePos.x
                        - m_separator_x
                        - m_separator_w
-                       + scroll.x) / FRMSIZE);
+                       + scroll.x) / frameBoxWidth());
 
   hit.layer = MID(firstLayer(), hit.layer, lastLayer());
   hit.frame = MAX(firstFrame(), hit.frame);
@@ -2409,13 +2395,13 @@ void Timeline::showCel(LayerIndex layer, frame_t frame)
 
   // Add the horizontal bar space to the viewport area if the viewport
   // is not big enough to show one cel.
-  if (m_hbar.isVisible() && viewport.h < LAYSIZE)
+  if (m_hbar.isVisible() && viewport.h < layerBoxHeight())
     viewport.h += m_vbar.getBarWidth();
 
   gfx::Rect celBounds(
-    viewport.x + FRMSIZE*frame - scroll.x,
-    viewport.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
-    FRMSIZE, LAYSIZE);
+    viewport.x + frameBoxWidth()*frame - scroll.x,
+    viewport.y + layerBoxHeight()*(lastLayer() - layer) - scroll.y,
+    frameBoxWidth(), layerBoxHeight());
 
   // Here we use <= instead of < to avoid jumping between this
   // condition and the "else if" one when we are playing the
@@ -2454,8 +2440,8 @@ gfx::Size Timeline::getScrollableSize() const
 {
   if (m_sprite) {
     return gfx::Size(
-      m_sprite->totalFrames() * FRMSIZE + bounds().w/2,
-      m_layers.size() * LAYSIZE + bounds().h/2);
+      m_sprite->totalFrames() * frameBoxWidth() + bounds().w/2,
+      m_layers.size() * layerBoxHeight() + bounds().h/2);
   }
   else
     return gfx::Size(0, 0);
@@ -2727,6 +2713,32 @@ DocumentPreferences& Timeline::docPref() const
 skin::SkinTheme* Timeline::skinTheme() const
 {
   return static_cast<SkinTheme*>(theme());
+}
+
+gfx::Size Timeline::celBoxSize() const
+{
+  int s = int(12*guiscale());
+  return gfx::Size(s, s);
+}
+
+int Timeline::headerBoxHeight() const
+{
+  return int(12*guiscale());
+}
+
+int Timeline::layerBoxHeight() const
+{
+  return int(12*guiscale());
+}
+
+int Timeline::frameBoxWidth() const
+{
+  return int(12*guiscale());
+}
+
+int Timeline::outlineWidth() const
+{
+  return skinTheme()->dimensions.timelineOutlineWidth();
 }
 
 int Timeline::topHeight() const
