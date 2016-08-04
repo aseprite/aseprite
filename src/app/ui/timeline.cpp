@@ -150,8 +150,14 @@ Timeline::~Timeline()
   delete m_confPopup;
 }
 
+void Timeline::setZoom(double zoom)
+{
+  m_zoom = MID(1.0, zoom, 10.0);
+}
+
 void Timeline::onThumbnailsPrefChange()
 {
+  setZoom(docPref().thumbnails.zoom());
   invalidate();
 }
 
@@ -186,6 +192,8 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
     base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+
+  setZoom(docPref.thumbnails.zoom());
 
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
@@ -893,8 +901,7 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kTouchMagnifyMessage:
-      m_zoom = m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification();
-      m_zoom = MID(1.0, m_zoom, 10.0);
+      setZoom(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
       invalidate();
       break;
   }

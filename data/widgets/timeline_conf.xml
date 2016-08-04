@@ -4,6 +4,9 @@
 <vbox id="timeline_conf">
   <separator cell_hspan="2" text="Thumbnails:" left="true" horizontal="true" />
   <grid columns="3">
+    <label text="Zoom:" />
+    <slider min="10" max="100" id="zoom" cell_align="horizontal" width="128" cell_hspan="2" />
+
     <check id="thumb_enabled" text="Enabled" />
     <label text="Opacity:" />
     <slider min="0" max="255" id="thumb_opacity" cell_align="horizontal" width="128" />

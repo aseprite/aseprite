@@ -265,6 +265,7 @@ namespace app {
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
     void onThumbnailsPrefChange();
+    void setZoom(double zoom);
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
