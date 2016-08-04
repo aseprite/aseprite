@@ -2724,23 +2724,23 @@ skin::SkinTheme* Timeline::skinTheme() const
 
 gfx::Size Timeline::celBoxSize() const
 {
-  int s = int(12*guiscale());
+  int s = int(m_zoom*12*guiscale());
   return gfx::Size(s, s);
 }
 
 int Timeline::headerBoxHeight() const
 {
-  return int(12*guiscale());
+  return int(m_zoom*12*guiscale());
 }
 
 int Timeline::layerBoxHeight() const
 {
-  return int(12*guiscale());
+  return int(m_zoom*12*guiscale());
 }
 
 int Timeline::frameBoxWidth() const
 {
-  return int(12*guiscale());
+  return int(m_zoom*12*guiscale());
 }
 
 int Timeline::outlineWidth() const
