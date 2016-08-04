@@ -104,6 +104,7 @@ Timeline::Timeline()
   : Widget(kGenericWidget)
   , m_hbar(HORIZONTAL, this)
   , m_vbar(VERTICAL, this)
+  , m_zoom(1.0)
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -889,6 +890,12 @@ bool Timeline::onProcessMessage(Message* msg)
         setCursor(msg, m_hot);
         return true;
       }
+      break;
+
+    case kTouchMagnifyMessage:
+      m_zoom = m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification();
+      m_zoom = MID(1.0, m_zoom, 10.0);
+      invalidate();
       break;
   }
 

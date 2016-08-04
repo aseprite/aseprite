@@ -269,6 +269,7 @@ namespace app {
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
+    double m_zoom;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
