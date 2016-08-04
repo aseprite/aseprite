@@ -34,7 +34,6 @@ namespace app {
 
       int opacity = docPref.thumbnails.opacity();
       gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
-      doc::algorithm::ResizeMethod resize_method = docPref.thumbnails.quality();
 
       gfx::Size image_size = image->size();
 
@@ -66,7 +65,7 @@ namespace app {
 
         doc::algorithm::resize_image(
           image, scale_img,
-          resize_method,
+          doc::algorithm::ResizeMethod::RESIZE_METHOD_NEAREST_NEIGHBOR,
           sprite->palette(frame),
           sprite->rgbMap(frame),
           sprite->transparentColor());
