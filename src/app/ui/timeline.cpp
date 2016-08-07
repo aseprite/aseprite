@@ -1638,11 +1638,9 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
 
   she::Surface* overlay_surf = thumb::get_cel_thumbnail(cel, overlay_size, cel_image_on_overlay);
 
-  gfx::Color background = color_utils::color_for_ui(docPref().thumbnails.background());
-  gfx::Color border = color_utils::blackandwhite_neg(background);
   g->drawRgbaSurface(overlay_surf,
     m_thumbnailsOverlayInner.x, m_thumbnailsOverlayInner.y);
-  g->drawRect(border, m_thumbnailsOverlayOuter);
+  g->drawRect(gfx::rgba(0,0,0,255), m_thumbnailsOverlayOuter);
 
   overlay_surf->dispose();
 }
