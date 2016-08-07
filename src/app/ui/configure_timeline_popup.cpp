@@ -63,7 +63,6 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
 
   m_box->thumbOpacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOpacityChange, this));
-  m_box->thumbBackground()->Change.connect(&ConfigureTimelinePopup::onThumbBackgroundChange, this);
   m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
   m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
   m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
@@ -116,7 +115,6 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   }
 
   m_box->thumbOpacity()->setValue(docPref.thumbnails.opacity());
-  m_box->thumbBackground()->setColor(docPref.thumbnails.background());
   m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
   m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
   m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
@@ -194,11 +192,6 @@ void ConfigureTimelinePopup::onPositionChange()
 void ConfigureTimelinePopup::onThumbOpacityChange()
 {
   docPref().thumbnails.opacity(m_box->thumbOpacity()->getValue());
-}
-
-void ConfigureTimelinePopup::onThumbBackgroundChange(const app::Color& color)
-{
-  docPref().thumbnails.background(color);
 }
 
 void ConfigureTimelinePopup::onThumbEnabledChange()

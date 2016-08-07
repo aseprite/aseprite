@@ -42,7 +42,6 @@ namespace app {
     void onPositionChange();
 
     void onThumbOpacityChange();
-    void onThumbBackgroundChange(const app::Color& color);
     void onThumbEnabledChange();
     void onThumbOverlayEnabledChange();
     void onThumbOverlaySizeChange();

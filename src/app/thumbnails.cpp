@@ -33,7 +33,8 @@ namespace app {
       DocumentPreferences& docPref = Preferences::instance().document(document);
 
       int opacity = docPref.thumbnails.opacity();
-      gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
+      doc::color_t bg1 = color_utils::color_for_image(docPref.bg.color1(), image->pixelFormat());
+      doc::color_t bg2 = color_utils::color_for_image(docPref.bg.color2(), image->pixelFormat());
 
       gfx::Size image_size = image->size();
 
@@ -51,10 +52,32 @@ namespace app {
       }
 
       const doc::Sprite* sprite = document->sprite();
+      // TODO doc::Image::createCopy() from pre-rendered checkered background
       base::UniquePtr<doc::Image> thumb_img(doc::Image::create(
         image->pixelFormat(), thumb_size.w, thumb_size.h));
 
-      clear_image(thumb_img.get(), background);
+      double alpha = opacity / 255.0;
+      uint8_t bg_r[] = { rgba_getr(bg1), rgba_getr(bg2) };
+      uint8_t bg_g[] = { rgba_getg(bg1), rgba_getg(bg2) };
+      uint8_t bg_b[] = { rgba_getb(bg1), rgba_getb(bg2) };
+      uint8_t bg_a[] = { rgba_geta(bg1), rgba_geta(bg2) };
+
+      doc::color_t bg[] = {
+        rgba(bg_r[0], bg_g[0], bg_b[0], (int)(bg_a[0] * alpha)),
+        rgba(bg_r[1], bg_g[1], bg_b[1], (int)(bg_a[1] * alpha))
+      };
+
+      int block_size = MID(4, thumb_size.w/8, 16);
+      for (int dst_y = 0; dst_y < thumb_size.h; dst_y++) {
+        for (int dst_x = 0; dst_x < thumb_size.w; dst_x++) {
+          thumb_img->putPixel(dst_x, dst_y,
+            bg[
+              ((dst_x / block_size) % 2) ^
+              ((dst_y / block_size) % 2)
+            ]
+          );
+        }
+      }
 
       base::UniquePtr<doc::Image> scale_img;
       const doc::Image* source = image;
