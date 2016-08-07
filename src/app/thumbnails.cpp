@@ -46,8 +46,8 @@ namespace app {
         cel_image_on_thumb = gfx::Rect(
           (int)(thumb_size.w * 0.5 - image_size.w * zoom * 0.5),
           (int)(thumb_size.h * 0.5 - image_size.h * zoom * 0.5),
-          (int)(image_size.w * zoom),
-          (int)(image_size.h * zoom)
+          MAX(1, (int)(image_size.w * zoom)),
+          MAX(1, (int)(image_size.h * zoom))
         );
       }
 
