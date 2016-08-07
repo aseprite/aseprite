@@ -32,7 +32,6 @@ namespace app {
 
       DocumentPreferences& docPref = Preferences::instance().document(document);
 
-      int opacity = docPref.thumbnails.opacity();
       gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
       doc::algorithm::ResizeMethod resize_method = docPref.thumbnails.quality();
 
