@@ -41,12 +41,12 @@ namespace app {
       if (cel_image_on_thumb.isEmpty()) {
         double zw = thumb_size.w / (double)image_size.w;
         double zh = thumb_size.h / (double)image_size.h;
-        double zoom = MIN(1, MIN(zw, zh));
+        double zoom = MIN(1.0, MIN(zw, zh));
 
         cel_image_on_thumb = gfx::Rect(
-          (int)(thumb_size.w * 0.5 - image_size.w  * zoom * 0.5),
+          (int)(thumb_size.w * 0.5 - image_size.w * zoom * 0.5),
           (int)(thumb_size.h * 0.5 - image_size.h * zoom * 0.5),
-          (int)(image_size.w  * zoom),
+          (int)(image_size.w * zoom),
           (int)(image_size.h * zoom)
         );
       }
