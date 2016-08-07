@@ -133,7 +133,7 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
-  m_box->zoom()->setValue(docPref.thumbnails.zoom() * 10.0);
+  m_box->zoom()->setValue(docPref.thumbnails.zoom());
   m_box->thumbBackground()->setColor(docPref.thumbnails.background());
   m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
   m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
@@ -211,7 +211,7 @@ void ConfigureTimelinePopup::onPositionChange()
 
 void ConfigureTimelinePopup::onZoomChange()
 {
-  docPref().thumbnails.zoom(m_box->zoom()->getValue()/10.0);
+  docPref().thumbnails.zoom(m_box->zoom()->getValue());
 }
 
 void ConfigureTimelinePopup::onThumbQualityChange()

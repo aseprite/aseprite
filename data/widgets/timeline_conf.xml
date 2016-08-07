@@ -6,7 +6,7 @@
   <grid columns="3">
     <check id="thumb_enabled" text="Force" />
     <label text="Zoom:" />
-    <slider min="10" max="100" id="zoom" cell_align="horizontal" width="128" />
+    <slider min="1" max="10" id="zoom" cell_align="horizontal" width="128" />
 
     <check id="thumb_overlay_enabled" text="Overlay"/>
     <label text="Size:" />
