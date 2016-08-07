@@ -32,7 +32,6 @@ namespace app {
 
       DocumentPreferences& docPref = Preferences::instance().document(document);
 
-      int opacity = docPref.thumbnails.opacity();
       gfx::Color background = color_utils::color_for_ui(docPref.thumbnails.background());
       doc::algorithm::ResizeMethod resize_method = docPref.thumbnails.quality();
 
@@ -79,7 +78,7 @@ namespace app {
         sprite->palette(frame),
         cel_image_on_thumb.x,
         cel_image_on_thumb.y,
-        opacity, BlendMode::NORMAL);
+        255, BlendMode::NORMAL);
 
       she::Surface* thumb_surf = she::instance()->createRgbaSurface(
         thumb_img->width(), thumb_img->height());
