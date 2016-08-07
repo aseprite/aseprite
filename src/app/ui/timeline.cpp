@@ -1909,28 +1909,28 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         m_separator_x + m_separator_w, bounds.h - y);
 
     case PART_HEADER_EYE:
-      return gfx::Rect(bounds.x + frameBoxWidth()*0, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*0, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_PADLOCK:
-      return gfx::Rect(bounds.x + frameBoxWidth()*1, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*1, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_CONTINUOUS:
-      return gfx::Rect(bounds.x + frameBoxWidth()*2, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*2, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_GEAR:
-      return gfx::Rect(bounds.x + frameBoxWidth()*3, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*3, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_ONIONSKIN:
-      return gfx::Rect(bounds.x + frameBoxWidth()*4, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*4, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_LAYER:
-      return gfx::Rect(bounds.x + frameBoxWidth()*5, bounds.y + y,
-                       m_separator_x - frameBoxWidth()*5, headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*5, bounds.y + y,
+                       m_separator_x - headerBoxWidth()*5, headerBoxHeight());
 
     case PART_HEADER_FRAME:
       return gfx::Rect(
@@ -1956,29 +1956,29 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          headerBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_PADLOCK_ICON:
       if (validLayer(hit.layer)) {
-        return gfx::Rect(bounds.x + frameBoxWidth(),
+        return gfx::Rect(bounds.x + headerBoxWidth(),
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          headerBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_CONTINUOUS_ICON:
       if (validLayer(hit.layer)) {
-        return gfx::Rect(bounds.x + 2*frameBoxWidth(),
+        return gfx::Rect(bounds.x + 2* headerBoxWidth(),
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          headerBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_TEXT:
       if (validLayer(hit.layer)) {
-        int x = frameBoxWidth()*3;
+        int x = headerBoxWidth()*3;
         return gfx::Rect(bounds.x + x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
           m_separator_x - x, layerBoxHeight());
@@ -2735,9 +2735,14 @@ gfx::Size Timeline::celBoxSize() const
   return gfx::Size(s, s);
 }
 
+int Timeline::headerBoxWidth() const
+{
+  return int(12 * guiscale());
+}
+
 int Timeline::headerBoxHeight() const
 {
-  return int(m_zoom*12*guiscale());
+  return int(12 * guiscale());
 }
 
 int Timeline::layerBoxHeight() const
