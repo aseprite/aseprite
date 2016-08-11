@@ -65,6 +65,9 @@ void SelectedFrames::insert(frame_t frame)
 
 void SelectedFrames::insert(frame_t fromFrame, frame_t toFrame)
 {
+  if (fromFrame > toFrame)
+    std::swap(fromFrame, toFrame);
+
   // TODO improve this
   for (frame_t frame = fromFrame; frame <= toFrame; ++frame) {
     insert(frame);
