@@ -23,6 +23,7 @@ namespace doc {
   void select_all_layers(LayerGroup* group, SelectedLayers& layers);
   LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers);
   void displace_selected_layers(SelectedLayers& layers, layer_t layerDelta);
+  bool have_layers_same_parent(const SelectedLayers& layers);
 
 } // namespace doc
 

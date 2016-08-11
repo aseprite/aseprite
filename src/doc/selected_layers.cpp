@@ -85,4 +85,18 @@ void displace_selected_layers(SelectedLayers& layers, layer_t layerDelta)
   }
 }
 
+bool have_layers_same_parent(const SelectedLayers& layers)
+{
+  Layer* parent = nullptr;
+  for (auto layer : layers) {
+    if (parent) {
+      if (layer->parent() != parent)
+        return false;
+    }
+    else
+      parent = layer->parent();
+  }
+  return true;
+}
+
 } // namespace doc
