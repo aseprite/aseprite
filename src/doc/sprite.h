@@ -100,6 +100,7 @@ namespace doc {
     Layer* layer(int layerIndex) const;
     Layer* indexToLayer(LayerIndex index) const;
     LayerIndex layerToIndex(const Layer* layer) const;
+    layer_t allLayersCount() const;
 
     ////////////////////////////////////////
     // Palettes

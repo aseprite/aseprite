@@ -255,6 +255,11 @@ LayerIndex Sprite::layerToIndex(const Layer* layer) const
   return layer2index(root(), layer, &index_count);
 }
 
+layer_t Sprite::allLayersCount() const
+{
+  return root()->allLayersCount();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Palettes
 

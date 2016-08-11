@@ -367,6 +367,17 @@ void LayerGroup::allLayers(LayerList& list) const
   }
 }
 
+layer_t LayerGroup::allLayersCount() const
+{
+  layer_t count = 0;
+  for (Layer* child : m_layers) {
+    if (child->isGroup())
+      count += static_cast<LayerGroup*>(child)->allLayersCount();
+    ++count;
+  }
+  return count;
+}
+
 void LayerGroup::allVisibleLayers(LayerList& list) const
 {
   for (Layer* child : m_layers) {
