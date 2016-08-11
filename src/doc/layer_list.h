@@ -18,6 +18,7 @@ namespace doc {
   typedef int layer_t;
 
   layer_t find_layer_index(const LayerList& layers, const Layer* layer);
+  bool are_layers_adjacent(const LayerList& layers);
 
 } // namespace doc
 

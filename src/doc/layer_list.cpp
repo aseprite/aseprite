@@ -24,4 +24,31 @@ layer_t find_layer_index(const LayerList& layers, const Layer* layer)
     return 0;
 }
 
+bool are_layers_adjacent(const LayerList& layers)
+{
+  layer_t count = 0;
+  Layer* prev = nullptr;
+  for (auto layer : layers) {
+    if (prev && prev != layer->getPrevious())
+      break;
+    prev = layer;
+    ++count;
+  }
+  if (count == layers.size())
+    return true;
+
+  count = 0;
+  prev = nullptr;
+  for (auto layer : layers) {
+    if (prev && prev != layer->getNext())
+      break;
+    prev = layer;
+    ++count;
+  }
+  if (count == layers.size())
+    return true;
+
+  return false;
+}
+
 } // namespace doc
