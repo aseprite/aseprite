@@ -15,6 +15,7 @@ namespace doc {
   class Layer;
 
   typedef std::vector<Layer*> LayerList;
+  typedef int layer_t;
 
 } // namespace doc
 
