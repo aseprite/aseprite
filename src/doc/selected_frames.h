@@ -121,6 +121,7 @@ namespace doc {
     std::size_t ranges() const { return m_ranges.size(); }
     bool empty() const { return m_ranges.empty(); }
 
+    void clear();
     void insert(frame_t frame);
     void insert(frame_t fromFrame, frame_t toFrame);
 

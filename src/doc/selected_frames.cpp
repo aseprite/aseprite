@@ -22,6 +22,11 @@ std::size_t SelectedFrames::size() const
   return size;
 }
 
+void SelectedFrames::clear()
+{
+  m_ranges.clear();
+}
+
 void SelectedFrames::insert(frame_t frame)
 {
   if (m_ranges.empty()) {
