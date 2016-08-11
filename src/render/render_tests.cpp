@@ -68,7 +68,7 @@ TEST(Render, Basic)
   Context ctx;
   Document* doc = ctx.documents().add(2, 2, ColorMode::RGB);
 
-  Image* src = doc->sprite()->layer(0)->cel(0)->image();
+  Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 2);
 
   base::UniquePtr<Image> dst(Image::create(IMAGE_RGB, 2, 2));
@@ -88,8 +88,8 @@ TYPED_TEST(RenderAllModes, CheckDefaultBackgroundMode)
   Document* doc = ctx.documents().add(2, 2,
     ColorMode(ImageTraits::pixel_format));
 
-  EXPECT_TRUE(!doc->sprite()->layer(0)->isBackground());
-  Image* src = doc->sprite()->layer(0)->cel(0)->image();
+  EXPECT_TRUE(!doc->sprite()->root()->firstLayer()->isBackground());
+  Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);
   put_pixel(src, 1, 1, 1);
 
@@ -109,8 +109,8 @@ TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
   Document* doc = ctx.documents().add(2, 2, ColorMode::INDEXED);
   doc->sprite()->setTransparentColor(2); // Transparent color is index 2
 
-  EXPECT_TRUE(!doc->sprite()->layer(0)->isBackground());
-  Image* src = doc->sprite()->layer(0)->cel(0)->image();
+  EXPECT_TRUE(!doc->sprite()->root()->firstLayer()->isBackground());
+  Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 2);
   put_pixel(src, 1, 1, 1);
 
@@ -188,7 +188,7 @@ TEST(Render, ZoomAndDstBounds)
   // 0 4 4
   // 0 4 4
   Document* doc = ctx.documents().add(3, 3, ColorMode::RGB);
-  Image* src = doc->sprite()->layer(0)->cel(0)->image();
+  Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);
   fill_rect(src, 1, 1, 2, 2, 4);
 

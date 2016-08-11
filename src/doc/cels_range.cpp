@@ -35,7 +35,7 @@ CelsRange::iterator::iterator(const Sprite* sprite, frame_t first, frame_t last,
   , m_flags(flags)
 {
   // Get first cel
-  Layer* layer = sprite->layer(sprite->firstLayer());
+  Layer* layer = sprite->root()->firstLayer();
   while (layer && !m_cel) {
     if (layer->isImage()) {
       for (frame_t f=first; f<=last; ++f) {

@@ -15,8 +15,8 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/xml_document.h"
-#include "base/file_handle.h"
 #include "base/convert_to.h"
+#include "base/file_handle.h"
 #include "base/path.h"
 #include "doc/doc.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -85,7 +85,6 @@ template<typename Number> static Number check_number(const char* c_str) {
   }
 }
 
-
 bool PixlyFormat::onLoad(FileOp* fop)
 {
   try {
@@ -131,11 +130,9 @@ bool PixlyFormat::onLoad(FileOp* fop)
       throw Exception("Pixly loader requires a valid PNG file");
     }
 
-    Image* sheet = sheet_doc->sprite()->layer(0)->cel(0)->image();
-
-    if (sheet->pixelFormat() != IMAGE_RGB) {
+    Image* sheet = sheet_doc->sprite()->root()->firstLayer()->cel(0)->image();
+    if (sheet->pixelFormat() != IMAGE_RGB)
       throw Exception("Pixly loader requires a RGBA PNG");
-    }
 
     int sheetWidth = sheet->width();
     int sheetHeight = sheet->height();
