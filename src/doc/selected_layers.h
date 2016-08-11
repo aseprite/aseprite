@@ -16,11 +16,13 @@ namespace doc {
   class Layer;
   class LayerGroup;
 
+  // TODO convert this into a new class
   typedef std::set<Layer*> SelectedLayers;
 
   void remove_children_if_parent_is_selected(SelectedLayers& layers);
   void select_all_layers(LayerGroup* group, SelectedLayers& layers);
   LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers);
+  void displace_selected_layers(SelectedLayers& layers, layer_t layerDelta);
 
 } // namespace doc
 

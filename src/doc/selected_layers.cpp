@@ -62,4 +62,27 @@ LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers)
   return output;
 }
 
+void displace_selected_layers(SelectedLayers& layers, layer_t layerDelta)
+{
+  const SelectedLayers original = layers;
+  layers.clear();
+
+  for (auto it : original) {
+    Layer* layer = it;
+
+    if (layerDelta > 0) {
+      for (layer_t i=0; layer && i<layerDelta; ++i)
+        layer = layer->getNextInWholeHierarchy();
+    }
+    else if (layerDelta < 0) {
+      for (layer_t i=0; layer && i>layerDelta; --i) {
+        layer = layer->getPreviousInWholeHierarchy();
+      }
+    }
+
+    if (layer)
+      layers.insert(layer);
+  }
+}
+
 } // namespace doc
