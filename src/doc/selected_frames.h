@@ -132,6 +132,14 @@ namespace doc {
 
     Reversed reversed() const { return Reversed(*this); }
 
+    bool operator==(const SelectedFrames& o) const {
+      return m_ranges == o.m_ranges;
+    }
+
+    bool operator!=(const SelectedFrames& o) const {
+      return !operator==(o);
+    }
+
   private:
     Ranges m_ranges;
   };
