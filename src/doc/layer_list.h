@@ -17,6 +17,8 @@ namespace doc {
   typedef std::vector<Layer*> LayerList;
   typedef int layer_t;
 
+  layer_t find_layer_index(const LayerList& layers, const Layer* layer);
+
 } // namespace doc
 
 #endif  // DOC_LAYER_LIST_H_INCLUDED

@@ -44,6 +44,7 @@ add_library(doc-lib
   layer.cpp
   layer_index.cpp
   layer_io.cpp
+  layer_list.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp
