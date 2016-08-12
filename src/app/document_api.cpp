@@ -424,15 +424,25 @@ void DocumentApi::removeLayer(Layer* layer)
 
 void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
 {
+  if (layer == afterThis)
+    return;
+
   m_transaction.execute(new cmd::MoveLayer(layer, layer->parent(), afterThis));
 }
 
 void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
 {
-  LayerIndex beforeThisIdx = layer->sprite()->layerToIndex(beforeThis);
-  LayerIndex afterThisIdx = beforeThisIdx.previous();
+  if (layer == beforeThis)
+    return;
 
-  restackLayerAfter(layer, layer->sprite()->indexToLayer(afterThisIdx));
+  Layer* afterThis;
+
+  if (beforeThis)
+    afterThis = beforeThis->getPrevious();
+  else
+    afterThis = layer->sprite()->root()->lastLayer();
+
+  restackLayerAfter(layer, afterThis);
 }
 
 void DocumentApi::backgroundFromLayer(Layer* layer)
@@ -466,10 +476,9 @@ void DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
 
 void DocumentApi::duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer)
 {
-  LayerIndex beforeThisIdx = sourceLayer->sprite()->layerToIndex(beforeLayer);
-  LayerIndex afterThisIdx = beforeThisIdx.previous();
+  Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousInWholeHierarchy(): nullptr);
 
-  duplicateLayerAfter(sourceLayer, sourceLayer->sprite()->indexToLayer(afterThisIdx));
+  duplicateLayerAfter(sourceLayer, afterThis);
 }
 
 Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image)
