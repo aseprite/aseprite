@@ -102,8 +102,10 @@ public:
     sprite->setFrameDuration(frame_t(2), 3);
     sprite->setFrameDuration(frame_t(3), 4);
 
+    LayerList layers = sprite->allLayers();
+
     for (int i=0; i<4; i++) {
-      LayerImage* layer = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(i)));
+      LayerImage* layer = static_cast<LayerImage*>(layers[i]);
 
       for (int j=0; j<4; j++) {
         Cel* cel = layer->cel(frame_t(j));
@@ -127,19 +129,23 @@ public:
   }
 
 protected:
-  bool expect_layer(Layer* expected_layer, int layer) {
-    return expect_layer_frame(sprite->layerToIndex(expected_layer), -1, layer, -1);
+  bool expect_layer(Layer* expected_layer, layer_t layer) {
+    LayerList layers = sprite->allLayers();
+    return expect_layer_frame(
+      find_layer_index(layers, expected_layer), -1, layer, -1);
   }
 
-  bool expect_frame(int expected_frame, frame_t frame) {
-    for (int i=0; i<(int)sprite->countLayers(); ++i) {
+  bool expect_frame(layer_t expected_frame, frame_t frame) {
+    LayerList layers = sprite->allLayers();
+    for (int i=0; i<(int)layers.size(); ++i) {
       if (!expect_layer_frame(i, expected_frame, i, frame))
         return false;
     }
     return true;
   }
 
-  bool expect_layer_frame(int expected_layer, int expected_frame, int layer, frame_t frame) {
+  bool expect_layer_frame(layer_t expected_layer, frame_t expected_frame,
+                          layer_t layer, frame_t frame) {
     if (frame >= 0) {
       if (!expect_cel(expected_layer, expected_frame, layer, frame))
         return false;
@@ -149,9 +155,10 @@ protected:
     }
 
     if (layer >= 0) {
-      Layer* a = sprite->indexToLayer(LayerIndex(expected_layer));
-      Layer* b = sprite->indexToLayer(LayerIndex(layer));
-      EXPECT_EQ(a, b);
+      LayerList layers = sprite->allLayers();
+      Layer* a = layers[expected_layer];
+      Layer* b = layers[layer];
+      EXPECT_EQ(a->name(), b->name());
       if (a != b)
         return false;
     }
@@ -159,10 +166,12 @@ protected:
     return true;
   }
 
-  bool expect_cel(int expected_layer, int expected_frame, int layer, frame_t frame) {
+  bool expect_cel(layer_t expected_layer, frame_t expected_frame,
+                  layer_t layer, frame_t frame) {
     color_t expected_color = white;
 
-    Cel* cel = sprite->indexToLayer(LayerIndex(layer))->cel(frame);
+    LayerList layers = sprite->allLayers();
+    Cel* cel = layers[layer]->cel(frame);
     if (!cel)
       return false;
 
@@ -175,8 +184,9 @@ protected:
     return (expected_color == color);
   }
 
-  bool expect_empty_cel(int layer, frame_t frame) {
-    Cel* cel = sprite->indexToLayer(LayerIndex(layer))->cel(frame);
+  bool expect_empty_cel(layer_t layer, frame_t frame) {
+    LayerList layers = sprite->allLayers();
+    Cel* cel = layers[layer]->cel(frame);
 
     EXPECT_EQ(NULL, cel);
     return (cel == NULL);

@@ -81,7 +81,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      if (sprite->countLayers() == 1) {
+      if (sprite->allLayersCount() == 1) {
         ui::Alert::show("Error<<You cannot delete the last layer.||&OK");
         return;
       }
