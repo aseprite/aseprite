@@ -212,11 +212,6 @@ LayerImage* Sprite::backgroundLayer() const
   return NULL;
 }
 
-LayerIndex Sprite::countLayers() const
-{
-  return LayerIndex(root()->layersCount());
-}
-
 LayerIndex Sprite::firstLayer() const
 {
   return LayerIndex(0);

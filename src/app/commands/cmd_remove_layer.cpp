@@ -71,7 +71,7 @@ void RemoveLayerCommand::onExecute(Context* context)
           ++deletedTopLevelLayers;
       }
 
-      if (deletedTopLevelLayers == sprite->countLayers()) {
+      if (deletedTopLevelLayers == sprite->root()->layersCount()) {
         ui::Alert::show("Error<<You cannot delete all layers.||&OK");
         return;
       }

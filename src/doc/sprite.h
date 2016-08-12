@@ -92,7 +92,6 @@ namespace doc {
     LayerGroup* root() const { return m_root; }
     LayerImage* backgroundLayer() const;
 
-    LayerIndex countLayers() const;
     LayerIndex firstLayer() const;
     Layer* firstBrowsableLayer() const;
     LayerIndex lastLayer() const;
