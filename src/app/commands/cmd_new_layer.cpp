@@ -143,7 +143,7 @@ void NewLayerCommand::onExecute(Context* context)
       // Put all selected layers inside the group
       if (m_group && writer.site()->inTimeline()) {
         LayerGroup* commonParent = nullptr;
-        std::size_t sameParents = 0;
+        layer_t sameParents = 0;
         for (Layer* l : selLayers) {
           if (!commonParent ||
               commonParent == l->parent()) {
@@ -153,7 +153,7 @@ void NewLayerCommand::onExecute(Context* context)
         }
 
         if (sameParents == selLayers.size()) {
-          for (Layer* newChild : convert_selected_layers_into_layer_list(selLayers)) {
+          for (Layer* newChild : selLayers.toLayerList()) {
             transaction.execute(
               new cmd::MoveLayer(newChild, layer,
                                  static_cast<LayerGroup*>(layer)->lastLayer()));

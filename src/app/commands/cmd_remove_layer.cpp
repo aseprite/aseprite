@@ -63,9 +63,9 @@ void RemoveLayerCommand::onExecute(Context* context)
     if (site->inTimeline() &&
         !site->selectedLayers().empty()) {
       SelectedLayers selLayers = site->selectedLayers();
-      remove_children_if_parent_is_selected(selLayers);
+      selLayers.removeChildrenIfParentIsSelected();
 
-      int deletedTopLevelLayers = 0;
+      layer_t deletedTopLevelLayers = 0;
       for (Layer* layer : selLayers) {
         if (layer->parent() == sprite->root())
           ++deletedTopLevelLayers;

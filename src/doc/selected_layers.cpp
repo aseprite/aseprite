@@ -15,14 +15,50 @@
 
 namespace doc {
 
-void remove_children_if_parent_is_selected(SelectedLayers& layers)
+bool SelectedLayers::contains(Layer* layer) const
+{
+  return m_set.find(layer) != m_set.end();
+}
+
+bool SelectedLayers::hasSameParent() const
+{
+  Layer* parent = nullptr;
+  for (auto layer : *this) {
+    if (parent) {
+      if (layer->parent() != parent)
+        return false;
+    }
+    else
+      parent = layer->parent();
+  }
+  return true;
+}
+
+LayerList SelectedLayers::toLayerList() const
+{
+  LayerList output;
+
+  if (empty())
+    return output;
+
+  for (Layer* layer = (*begin())->sprite()->firstBrowsableLayer();
+       layer != nullptr;
+       layer = layer->getNextInWholeHierarchy()) {
+    if (contains(layer))
+      output.push_back(layer);
+  }
+
+  return output;
+}
+
+void SelectedLayers::removeChildrenIfParentIsSelected()
 {
   SelectedLayers removeThese;
 
-  for (Layer* child : layers) {
+  for (Layer* child : *this) {
     Layer* parent = child->parent();
     while (parent) {
-      if (layers.find(parent) != layers.end()) {
+      if (contains(parent)) {
         removeThese.insert(child);
         break;
       }
@@ -30,42 +66,23 @@ void remove_children_if_parent_is_selected(SelectedLayers& layers)
     }
   }
 
-  for (Layer* child : removeThese) {
-    layers.erase(child);
-  }
+  for (Layer* child : removeThese)
+    erase(child);
 }
 
-void select_all_layers(LayerGroup* group, SelectedLayers& layers)
+void SelectedLayers::selectAllLayers(LayerGroup* group)
 {
   for (Layer* layer : group->layers()) {
     if (layer->isGroup())
-      select_all_layers(static_cast<LayerGroup*>(layer), layers);
-    layers.insert(layer);
+      selectAllLayers(static_cast<LayerGroup*>(layer));
+    insert(layer);
   }
 }
 
-LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers)
+void SelectedLayers::displace(layer_t layerDelta)
 {
-  LayerList output;
-
-  if (layers.empty())
-    return output;
-
-  for (Layer* layer = (*layers.begin())->sprite()->firstBrowsableLayer();
-       layer != nullptr;
-       layer = layer->getNextInWholeHierarchy()) {
-    if (layers.find(layer) != layers.end()) {
-      output.push_back(layer);
-    }
-  }
-
-  return output;
-}
-
-void displace_selected_layers(SelectedLayers& layers, layer_t layerDelta)
-{
-  const SelectedLayers original = layers;
-  layers.clear();
+  const SelectedLayers original = *this;
+  clear();
 
   for (auto it : original) {
     Layer* layer = it;
@@ -81,22 +98,8 @@ void displace_selected_layers(SelectedLayers& layers, layer_t layerDelta)
     }
 
     if (layer)
-      layers.insert(layer);
+      insert(layer);
   }
-}
-
-bool have_layers_same_parent(const SelectedLayers& layers)
-{
-  Layer* parent = nullptr;
-  for (auto layer : layers) {
-    if (parent) {
-      if (layer->parent() != parent)
-        return false;
-    }
-    else
-      parent = layer->parent();
-  }
-  return true;
 }
 
 } // namespace doc

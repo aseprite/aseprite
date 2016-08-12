@@ -118,7 +118,7 @@ void NewFrameCommand::onExecute(Context* context)
 
           SelectedLayers selLayers;
           if (site->inFrames())
-            select_all_layers(writer.sprite()->root(), selLayers);
+            selLayers.selectAllLayers(writer.sprite()->root());
           else
             selLayers = site->selectedLayers();
 
