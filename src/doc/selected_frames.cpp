@@ -86,4 +86,15 @@ bool SelectedFrames::contains(frame_t frame) const
     });
 }
 
+void SelectedFrames::displace(frame_t frameDelta)
+{
+  for (auto& range : m_ranges) {
+    range.fromFrame += frameDelta;
+    range.toFrame += frameDelta;
+
+    ASSERT(range.fromFrame >= 0);
+    ASSERT(range.toFrame >= 0);
+  }
+}
+
 } // namespace doc
