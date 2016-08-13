@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -82,6 +82,8 @@ AniControls::AniControls()
   addChild(tooltips);
   for (int i=0; i<ACTIONS; ++i)
     tooltips->addTooltipFor(getItem(i), getTooltipFor(i), BOTTOM);
+
+  getItem(ACTION_PLAY)->enableFlags(CTRL_RIGHT_CLICK);
 }
 
 void AniControls::updateUsingEditor(Editor* editor)

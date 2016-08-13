@@ -94,6 +94,7 @@ public:
                          SkinPartPtr(nullptr),
                          SkinPartPtr(nullptr))
     , m_isPlaying(false) {
+    enableFlags(CTRL_RIGHT_CLICK);
     setupIcons();
     setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
