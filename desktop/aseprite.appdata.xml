@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <id type="desktop">aseprite.desktop</id>  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0</project_license>
+  <name>Aseprite</name>
+  <summary>Animated sprite editor and pixel art tool</summary>
+  <description>
+    <p>Aseprite lets you create 2D animations for videogames. From sprites, to pixel-art, retro style graphics, and whatever you like about the 8-bit (and 16-bit) era.</p>
+    <p>Commercial support is available as well.</p>
+  </description>
+  <url type="homepage">http://www.aseprite.org/</url>
+  <url type="bugtracker">https://github.com/aseprite/aseprite/issues/</url>
+  <url type="donation">http://www.aseprite.org/donate/</url>
+  <url type="help">http://www.aseprite.org/docs/</url>
+  <screenshots>
+    <screenshot>http://cdn.akamai.steamstatic.com/steam/apps/431730/ss_46a7e00325c8e3b8cea2cfecc414a4b777827d8e.1920x1080.jpg</screenshot>
+    <screenshot>http://cdn.akamai.steamstatic.com/steam/apps/431730/ss_20c98a0b69c60833512a5a04497968e045946f5b.1920x1080.jpg</screenshot>
+    <screenshot>http://cdn.akamai.steamstatic.com/steam/apps/431730/ss_206049432a1d70f0a20070a2ffdb7debc705c949.1920x1080.jpg</screenshot>
+    <screenshot>http://cdn.akamai.steamstatic.com/steam/apps/431730/ss_aefb5ce19a41ad4a02675fe113f3bc84d876872c.1920x1080.jpg</screenshot>
+    <screenshot>http://cdn.akamai.steamstatic.com/steam/apps/431730/ss_3247ba4b306462cffea875de8351e252476e87c3.1920x1080.jpg</screenshot>
+  </screenshots>
+  <updatecontact>support@aseprite.org</updatecontact>
+</application>
