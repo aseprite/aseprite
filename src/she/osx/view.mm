@@ -39,6 +39,19 @@ inline gfx::Point get_local_mouse_pos(NSView* view, NSEvent* event)
 
 inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 {
+  // Some Wacom drivers on OS X report right-clicks with
+  // buttonNumber=0, so we've to check the type event anyway.
+  switch (event.type) {
+    case NSLeftMouseDown:
+    case NSLeftMouseUp:
+    case NSLeftMouseDragged:
+      return Event::LeftButton;
+    case NSRightMouseDown:
+    case NSRightMouseUp:
+    case NSRightMouseDragged:
+      return Event::RightButton;
+  }
+
   switch ([event buttonNumber]) {
     case 0: return Event::LeftButton; break;
     case 1: return Event::RightButton; break;
