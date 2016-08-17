@@ -1137,6 +1137,10 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
     setFrame(sprite()->lastFrame(), false);
   }
 
+  // Disable the selected range when we remove frames
+  if (m_range.enabled())
+    m_range.disableRange();
+
   showCurrentCel();
   clearClipboardRange();
   invalidate();
