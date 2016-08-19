@@ -193,7 +193,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
     LayerList layers = m_sprite->allBrowsableLayers();
     layer_t layerIndex = m_docPref.site.layer();
-    if (layerIndex >= 0 && layerIndex <= int(layers.size()))
+    if (layerIndex >= 0 && layerIndex < int(layers.size()))
       setLayer(layers[layerIndex]);
   }
 
