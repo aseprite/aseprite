@@ -85,6 +85,35 @@ public:
       m_menuitem->setKey(NULL);
   }
 
+  std::string searchableText() const {
+    if (m_menuitem) {
+      Widget* w = m_menuitem;
+
+      // If the menu has a submenu, this item cannot be triggered with a key
+      // TODO make this possible: we should be able to open a menu with a key
+      if (w->type() == kMenuItemWidget &&
+          static_cast<MenuItem*>(w)->getSubmenu())
+        return std::string();
+
+      std::string result;
+      while (w && w->type() == kMenuItemWidget) {
+        if (!result.empty())
+          result.insert(0, " > ");
+        result.insert(0, w->text());
+
+        w = w->parent();
+        if (w && w->type() == kMenuWidget)
+          w = static_cast<Menu*>(w)->getOwnerMenuItem();
+        else
+          w = nullptr;
+      }
+      return result;
+    }
+    else {
+      return text();
+    }
+  }
+
 private:
 
   void onChangeAccel(int index) {
@@ -447,19 +476,19 @@ private:
     std::vector<std::string> parts;
     base::split_string(base::string_to_lower(search), parts, " ");
 
-    ListBox* listBoxes[] = { commands(), tools(), actions() };
-    int sectionIdx = 1;         // index 0 is menus, index 1 is commands
+    ListBox* listBoxes[] = { menus(), commands(), tools(), actions() };
+    int sectionIdx = 0;         // index 0 is menus
     for (auto listBox : listBoxes) {
       Separator* group = nullptr;
 
       for (auto item : listBox->children()) {
         if (KeyItem* keyItem = dynamic_cast<KeyItem*>(item)) {
-          std::string itemText =
-            base::string_to_lower(keyItem->text());
+          std::string itemText = keyItem->searchableText();
+          std::string lowerItemText = base::string_to_lower(itemText);
           int matches = 0;
 
           for (const auto& part : parts) {
-            if (itemText.find(part) != std::string::npos)
+            if (lowerItemText.find(part) != std::string::npos)
               ++matches;
           }
 
@@ -473,7 +502,7 @@ private:
             }
 
             KeyItem* copyItem =
-              new KeyItem(keyItem->text(),
+              new KeyItem(itemText,
                           keyItem->key(), nullptr, 0);
             searchList()->addChild(copyItem);
           }
