@@ -39,10 +39,10 @@ typedef base::UniquePtr<app::Document> DocumentPtr;
   EXPECT_TRUE(expect_layer(d, 3));
 
 #define EXPECT_FRAME_ORDER(a, b, c, d) \
-  EXPECT_TRUE(expect_frame(a, 0));     \
-  EXPECT_TRUE(expect_frame(b, 1));     \
-  EXPECT_TRUE(expect_frame(c, 2));     \
-  EXPECT_TRUE(expect_frame(d, 3));
+  EXPECT_TRUE(expect_frame(a, 0) &&    \
+              expect_frame(b, 1) &&    \
+              expect_frame(c, 2) &&    \
+              expect_frame(d, 3));
 
 #define EXPECT_FRAME_COPY1(a, b, c, d, e) \
   EXPECT_TRUE(expect_frame(a, 0));        \
@@ -77,8 +77,7 @@ typedef base::UniquePtr<app::Document> DocumentPtr;
 class DocRangeOps : public ::testing::Test {
 public:
   DocRangeOps() {
-    black = rgba(0, 0, 0, 0);
-    white = rgba(255, 255, 255, 255);
+    expected_color = rgba(255, 255, 255, 255);
 
     doc.reset(static_cast<app::Document*>(ctx.documents().add(4, 4)));
     sprite = doc->sprite();
@@ -118,8 +117,8 @@ public:
           layer->addCel(cel);
         }
 
-        clear_image(image.get(), black);
-        put_pixel(image.get(), i, j, white);
+        clear_image(image.get(), i + j*100);
+        put_pixel(image.get(), i, j, expected_color);
       }
     }
   }
@@ -168,8 +167,6 @@ protected:
 
   bool expect_cel(layer_t expected_layer, frame_t expected_frame,
                   layer_t layer, frame_t frame) {
-    color_t expected_color = white;
-
     LayerList layers = sprite->allLayers();
     Cel* cel = layers[layer]->cel(frame);
     if (!cel)
@@ -179,7 +176,9 @@ protected:
       cel->image(),
       expected_layer, expected_frame);
 
-    EXPECT_EQ(expected_color, color);
+    EXPECT_EQ(expected_color, color)
+      << " - expecting layer " << expected_layer << " in " << layer << " and it is " << int(color%100) << "\n"
+      << " - expecting frame " << expected_frame << " in " << frame << " and it is " << int(color/100);
 
     return (expected_color == color);
   }
@@ -199,8 +198,7 @@ protected:
   LayerImage* layer2;
   LayerImage* layer3;
   LayerImage* layer4;
-  color_t black;
-  color_t white;
+  color_t expected_color;
 };
 
 inline DocumentRange range(Layer* fromLayer, frame_t fromFrNum, Layer* toLayer, frame_t toFrNum, DocumentRange::Type type) {
