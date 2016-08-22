@@ -1040,7 +1040,7 @@
             />
     </group>
 
-    <group id="helpers_tools" text="Helpers Tools">
+    <group id="eraser_tools" text="Eraser Tools">
       <tool id="eraser"
             text="Eraser Tool"
             ink_left="eraser"
@@ -1056,6 +1056,9 @@
         Right-button: Replace foreground with background color.
         </tooltip>
       </tool>
+    </group>
+
+    <group id="color_tools" text="Color Tools">
       <tool id="eyedropper"
             text="Eyedropper Tool"
             ink_left="pick_fg"
