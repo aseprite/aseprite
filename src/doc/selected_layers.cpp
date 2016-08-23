@@ -15,6 +15,22 @@
 
 namespace doc {
 
+void SelectedLayers::clear()
+{
+  m_set.clear();
+}
+
+void SelectedLayers::insert(Layer* layer)
+{
+  ASSERT(layer);
+  m_set.insert(layer);
+}
+
+void SelectedLayers::erase(Layer* layer)
+{
+  m_set.erase(layer);
+}
+
 bool SelectedLayers::contains(Layer* layer) const
 {
   return m_set.find(layer) != m_set.end();
@@ -40,6 +56,9 @@ LayerList SelectedLayers::toLayerList() const
 
   if (empty())
     return output;
+
+  ASSERT(*begin());
+  ASSERT((*begin())->sprite());
 
   for (Layer* layer = (*begin())->sprite()->firstBrowsableLayer();
        layer != nullptr;

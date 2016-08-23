@@ -30,9 +30,9 @@ namespace doc {
     bool empty() const { return m_set.empty(); }
     layer_t size() const { return m_set.size(); }
 
-    void clear() { m_set.clear(); }
-    void insert(Layer* layer) { m_set.insert(layer); }
-    void erase(Layer* layer) { m_set.erase(layer); }
+    void clear();
+    void insert(Layer* layer);
+    void erase(Layer* layer);
 
     bool contains(Layer* layer) const;
     bool hasSameParent() const;

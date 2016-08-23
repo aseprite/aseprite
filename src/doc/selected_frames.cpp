@@ -29,6 +29,8 @@ void SelectedFrames::clear()
 
 void SelectedFrames::insert(frame_t frame)
 {
+  ASSERT(frame >= 0);
+
   if (m_ranges.empty()) {
     m_ranges.push_back(FrameRange(frame));
     return;
@@ -88,6 +90,10 @@ bool SelectedFrames::contains(frame_t frame) const
 
 void SelectedFrames::displace(frame_t frameDelta)
 {
+  // Avoid setting negative numbers in frame ranges
+  if (firstFrame()+frameDelta < 0)
+    frameDelta = -firstFrame();
+
   for (auto& range : m_ranges) {
     range.fromFrame += frameDelta;
     range.toFrame += frameDelta;
