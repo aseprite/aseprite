@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,9 @@
 #include "app/cmd.h"
 
 #include <typeinfo>
+
+// Uncomment this in case you want to check what Cmd is being executed on each step
+//#define TRACE_CMD
 
 namespace app {
 
@@ -28,7 +31,9 @@ Cmd::~Cmd()
 
 void Cmd::execute(Context* ctx)
 {
+#if TRACE_CMD
   TRACE("Cmd: Executing cmd '%s'\n", typeid(*this).name());
+#endif
   ASSERT(m_state == State::NotExecuted);
 
   m_ctx = ctx;
@@ -43,7 +48,9 @@ void Cmd::execute(Context* ctx)
 
 void Cmd::undo()
 {
+#if TRACE_CMD
   TRACE("Cmd: Undo cmd '%s'\n", typeid(*this).name());
+#endif
   ASSERT(m_state == State::Executed || m_state == State::Redone);
 
   onUndo();
@@ -56,7 +63,9 @@ void Cmd::undo()
 
 void Cmd::redo()
 {
+#if TRACE_CMD
   TRACE("Cmd: Redo cmd '%s'\n", typeid(*this).name());
+#endif
   ASSERT(m_state == State::Undone);
 
   onRedo();
