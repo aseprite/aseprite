@@ -81,7 +81,13 @@ void SelectedLayers::selectAllLayers(LayerGroup* group)
 
 void SelectedLayers::displace(layer_t layerDelta)
 {
+  // Do nothing case
+  if (layerDelta == 0)
+    return;
+
   const SelectedLayers original = *this;
+
+retry:;
   clear();
 
   for (auto it : original) {
@@ -97,8 +103,20 @@ void SelectedLayers::displace(layer_t layerDelta)
       }
     }
 
-    if (layer)
+    if (layer) {
       insert(layer);
+    }
+    // If some layer is outside the range it means that the delta is
+    // too big (out of bounds), we reduce the delta and try again the
+    // whole process.
+    else {
+      layerDelta -= SGN(layerDelta);
+      if (layerDelta == 0) {
+        m_set = original.m_set;
+        break;
+      }
+      goto retry;
+    }
   }
 }
 
