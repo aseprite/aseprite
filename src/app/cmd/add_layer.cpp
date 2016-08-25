@@ -68,6 +68,7 @@ void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 {
   static_cast<LayerGroup*>(group)->insertLayer(newLayer, afterThis);
   group->incrementVersion();
+  group->sprite()->incrementVersion();
 
   Document* doc = group->sprite()->document();
   DocumentEvent ev(doc);
@@ -86,6 +87,7 @@ void AddLayer::removeLayer(Layer* group, Layer* layer)
 
   static_cast<LayerGroup*>(group)->removeLayer(layer);
   group->incrementVersion();
+  layer->sprite()->incrementVersion();
 
   doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
 

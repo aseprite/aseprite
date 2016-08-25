@@ -48,6 +48,7 @@ void MoveLayer::onExecute()
   if (oldParent != newParent)
     oldParent->incrementVersion();
   newParent->incrementVersion();
+  layer->sprite()->incrementVersion();
 }
 
 void MoveLayer::onUndo()
@@ -66,6 +67,7 @@ void MoveLayer::onUndo()
   if (oldParent != newParent)
     oldParent->incrementVersion();
   newParent->incrementVersion();
+  layer->sprite()->incrementVersion();
 }
 
 void MoveLayer::onFireNotifications()

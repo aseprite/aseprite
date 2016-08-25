@@ -76,6 +76,7 @@ public:
     for (Cel* cel : spr->cels())
       saveObject("cel", cel, &Writer::writeCel);
 
+    // Save all layers (top level, groups, children, etc.)
     LayerList layers = spr->allLayers();
     for (Layer* lay : layers)
       saveObject("lay", lay, &Writer::writeLayerStructure);
@@ -103,10 +104,8 @@ private:
       write32(s, spr->frameDuration(fr));
 
     // IDs of all main layers
-    LayerList layers = spr->allLayers();
-    write32(s, layers.size());
-    for (Layer* lay : layers)
-      write32(s, lay->id());
+    write32(s, spr->allLayersCount());
+    writeAllLayersID(s, 0, spr->root());
 
     // IDs of all palettes
     write32(s, spr->getPalettes().size());
@@ -119,21 +118,40 @@ private:
       write32(s, frtag->id());
   }
 
+  void writeAllLayersID(std::ofstream& s, ObjectId parentId, const LayerGroup* group) {
+    for (const Layer* lay : group->layers()) {
+      write32(s, lay->id());
+      write32(s, parentId);
+
+      if (lay->isGroup())
+        writeAllLayersID(s, lay->id(), static_cast<const LayerGroup*>(lay));
+    }
+  }
+
   void writeLayerStructure(std::ofstream& s, Layer* lay) {
     write32(s, static_cast<int>(lay->flags())); // Flags
     write16(s, static_cast<int>(lay->type()));  // Type
     write_string(s, lay->name());
 
-    if (lay->type() == ObjectType::LayerImage) {
-      CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
-      CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
+    switch (lay->type()) {
 
-      // Cels
-      write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
-      for (it=begin; it != end; ++it) {
-        const Cel* cel = *it;
-        write32(s, cel->id());
+      case ObjectType::LayerImage: {
+        CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
+        CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
+
+        // Cels
+        write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
+        for (it=begin; it != end; ++it) {
+          const Cel* cel = *it;
+          write32(s, cel->id());
+        }
+        break;
       }
+
+      case ObjectType::LayerGroup:
+        // Do nothing (the layer parent/children structure is saved in
+        // writeSprite/writeAllLayersID() functions)
+        break;
     }
   }
 
