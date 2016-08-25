@@ -342,6 +342,11 @@ void Timeline::moveRange(Range& range)
 {
   regenerateLayers();
 
+  // We have to change the range before we generate an
+  // onActiveSiteChange() event so observers (like cel properties
+  // dialog) know the new selected range.
+  m_range = range;
+
   layer_t i = 0;
   for (auto layer : range.selectedLayers().toLayerList()) {
     if (i == m_moveRangeData.activeRelativeLayer) {
@@ -359,8 +364,6 @@ void Timeline::moveRange(Range& range)
     }
     ++j;
   }
-
-  m_range = range;
 }
 
 void Timeline::activateClipboardRange()
@@ -616,17 +619,23 @@ bool Timeline::onProcessMessage(Message* msg)
             Layer* hitLayer = m_layers[hit.layer].layer;
             if (m_layer != hitLayer) {
               m_clk.layer = hit.layer;
-              setLayer(hitLayer);
+
+              // We have to change the range before we generate an
+              // onActiveSiteChange() event so observers (like cel
+              // properties dialog) know the new selected range.
               m_range = m_startRange;
               m_range.endRange(hitLayer, m_frame);
+
+              setLayer(hitLayer);
             }
             break;
           }
 
           case STATE_SELECTING_FRAMES: {
-            setFrame(m_clk.frame = hit.frame, true);
             m_range = m_startRange;
             m_range.endRange(m_layer, hit.frame);
+
+            setFrame(m_clk.frame = hit.frame, true);
             break;
           }
 
@@ -634,10 +643,12 @@ bool Timeline::onProcessMessage(Message* msg)
             Layer* hitLayer = m_layers[hit.layer].layer;
             if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
               m_clk.layer = hit.layer;
-              setLayer(hitLayer);
-              setFrame(m_clk.frame = hit.frame, true);
+
               m_range = m_startRange;
               m_range.endRange(hitLayer, hit.frame);
+
+              setLayer(hitLayer);
+              setFrame(m_clk.frame = hit.frame, true);
             }
             break;
         }
@@ -1358,10 +1369,10 @@ void Timeline::onAfterLayerChanged(Editor* editor)
   if (m_fromTimeline)
     return;
 
-  setLayer(editor->layer());
-
   if (!hasCapture())
     m_range.clearRange();
+
+  setLayer(editor->layer());
 
   showCurrentCel();
   invalidate();
