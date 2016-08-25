@@ -59,8 +59,8 @@ void NewFrameTagCommand::onExecute(Context* context)
   if (range.enabled() &&
       (range.type() == DocumentRange::kFrames ||
        range.type() == DocumentRange::kCels)) {
-    from = range.frameBegin();
-    to = range.frameEnd();
+    from = range.selectedFrames().firstFrame();
+    to = range.selectedFrames().lastFrame();
   }
 
   base::UniquePtr<FrameTag> frameTag(new FrameTag(from, to));

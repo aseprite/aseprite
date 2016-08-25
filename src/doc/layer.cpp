@@ -424,14 +424,13 @@ void LayerGroup::removeLayer(Layer* layer)
 
 void LayerGroup::insertLayer(Layer* layer, Layer* after)
 {
+  auto after_it = m_layers.begin();
   if (after) {
-    auto after_it = std::find(m_layers.begin(), m_layers.end(), after);
-    ASSERT(after_it != m_layers.end());
-    after_it++;
-    m_layers.insert(after_it, layer);
+    after_it = std::find(m_layers.begin(), m_layers.end(), after);
+    if (after_it != m_layers.end())
+      ++after_it;
   }
-  else
-    m_layers.insert(m_layers.begin(), layer);
+  m_layers.insert(after_it, layer);
 
   layer->setParent(this);
 }

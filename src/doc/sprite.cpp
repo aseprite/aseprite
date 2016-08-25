@@ -29,9 +29,6 @@
 
 namespace doc {
 
-static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count);
-static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
-
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
 
@@ -212,42 +209,12 @@ LayerImage* Sprite::backgroundLayer() const
   return NULL;
 }
 
-LayerIndex Sprite::firstLayer() const
-{
-  return LayerIndex(0);
-}
-
 Layer* Sprite::firstBrowsableLayer() const
 {
   Layer* layer = root()->firstLayer();
   while (layer->isBrowsable())
     layer = static_cast<LayerGroup*>(layer)->firstLayer();
   return layer;
-}
-
-LayerIndex Sprite::lastLayer() const
-{
-  return LayerIndex(root()->layersCount()-1);
-}
-
-Layer* Sprite::layer(int layerIndex) const
-{
-  return indexToLayer(LayerIndex(layerIndex));
-}
-
-Layer* Sprite::indexToLayer(LayerIndex index) const
-{
-  if (index < LayerIndex(0))
-    return NULL;
-
-  int index_count = -1;
-  return index2layer(root(), index, &index_count);
-}
-
-LayerIndex Sprite::layerToIndex(const Layer* layer) const
-{
-  int index_count = -1;
-  return layer2index(root(), layer, &index_count);
 }
 
 layer_t Sprite::allLayersCount() const
@@ -554,64 +521,28 @@ LayerList Sprite::allBrowsableLayers() const
 
 CelsRange Sprite::cels() const
 {
-  return CelsRange(this, frame_t(0), lastFrame());
+  SelectedFrames selFrames;
+  selFrames.insert(0, lastFrame());
+  return CelsRange(this, selFrames);
 }
 
 CelsRange Sprite::cels(frame_t frame) const
 {
-  return CelsRange(this, frame, frame);
+  SelectedFrames selFrames;
+  selFrames.insert(frame);
+  return CelsRange(this, selFrames);
 }
 
 CelsRange Sprite::uniqueCels() const
 {
-  return CelsRange(this, frame_t(0), lastFrame(), CelsRange::UNIQUE);
+  SelectedFrames selFrames;
+  selFrames.insert(0, lastFrame());
+  return CelsRange(this, selFrames, CelsRange::UNIQUE);
 }
 
-CelsRange Sprite::uniqueCels(frame_t from, frame_t to) const
+CelsRange Sprite::uniqueCels(const SelectedFrames& selFrames) const
 {
-  return CelsRange(this, from, to, CelsRange::UNIQUE);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count)
-{
-  if (index == *index_count)
-    return (Layer*)layer;
-  else {
-    (*index_count)++;
-
-    if (layer->isGroup()) {
-      Layer *found;
-
-      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
-        if ((found = index2layer(child, index, index_count)))
-          return found;
-      }
-    }
-
-    return NULL;
-  }
-}
-
-static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count)
-{
-  if (layer == find_layer)
-    return LayerIndex(*index_count);
-  else {
-    (*index_count)++;
-
-    if (layer->isGroup()) {
-      int found;
-
-      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
-        if ((found = layer2index(child, find_layer, index_count)) >= 0)
-          return LayerIndex(found);
-      }
-    }
-
-    return LayerIndex(-1);
-  }
+  return CelsRange(this, selFrames, CelsRange::UNIQUE);
 }
 
 } // namespace doc

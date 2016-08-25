@@ -108,9 +108,8 @@ private:
     else if (m_range.enabled()) {
       Sprite* sprite = m_document->sprite();
       int count = 0;
-      for (Cel* cel : sprite->uniqueCels(m_range.frameBegin(),
-                                         m_range.frameEnd())) {
-        if (m_range.inRange(sprite->layerToIndex(cel->layer()))) {
+      for (Cel* cel : sprite->uniqueCels(m_range.selectedFrames())) {
+        if (m_range.contains(cel->layer())) {
           if (backgroundCount && cel->layer()->isBackground())
             ++(*backgroundCount);
           ++count;
@@ -186,9 +185,8 @@ private:
         }
         else if (m_range.enabled()) {
           Sprite* sprite = m_document->sprite();
-          for (Cel* cel : sprite->uniqueCels(m_range.frameBegin(),
-                                             m_range.frameEnd())) {
-            if (m_range.inRange(sprite->layerToIndex(cel->layer()))) {
+          for (Cel* cel : sprite->uniqueCels(m_range.selectedFrames())) {
+            if (m_range.contains(cel->layer())) {
               if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
                 transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
               }

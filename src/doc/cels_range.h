@@ -10,12 +10,15 @@
 
 #include "doc/frame.h"
 #include "doc/object_id.h"
+#include "doc/selected_frames.h"
 
 #include <set>
 
 namespace doc {
+
   class Cel;
   class Layer;
+  class SelectedFrames;
   class Sprite;
 
   class CelsRange {
@@ -26,12 +29,15 @@ namespace doc {
     };
 
     CelsRange(const Sprite* sprite,
-      frame_t first, frame_t last, Flags flags = ALL);
+              const SelectedFrames& selFrames,
+              const Flags flags = ALL);
 
     class iterator {
     public:
-      iterator();
-      iterator(const Sprite* sprite, frame_t first, frame_t last, Flags flags);
+      iterator(const SelectedFrames& selFrames);
+      iterator(const Sprite* sprite,
+               const SelectedFrames& selFrames,
+               const Flags flags);
 
       bool operator==(const iterator& other) const {
         return m_cel == other.m_cel;
@@ -49,7 +55,8 @@ namespace doc {
 
     private:
       Cel* m_cel;
-      frame_t m_first, m_last;
+      const SelectedFrames& m_selFrames;
+      SelectedFrames::const_iterator m_frameIterator;
       Flags m_flags;
       std::set<ObjectId> m_visited;
     };
@@ -58,6 +65,7 @@ namespace doc {
     iterator end() { return m_end; }
 
   private:
+    SelectedFrames m_selFrames;
     iterator m_begin, m_end;
   };
 

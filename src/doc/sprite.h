@@ -16,7 +16,6 @@
 #include "doc/frame_tags.h"
 #include "doc/image_ref.h"
 #include "doc/image_spec.h"
-#include "doc/layer_index.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
@@ -37,6 +36,7 @@ namespace doc {
   class Palette;
   class Remap;
   class RgbMap;
+  class SelectedFrames;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -91,14 +91,7 @@ namespace doc {
 
     LayerGroup* root() const { return m_root; }
     LayerImage* backgroundLayer() const;
-
-    LayerIndex firstLayer() const;
     Layer* firstBrowsableLayer() const;
-    LayerIndex lastLayer() const;
-
-    Layer* layer(int layerIndex) const;
-    Layer* indexToLayer(LayerIndex index) const;
-    LayerIndex layerToIndex(const Layer* layer) const;
     layer_t allLayersCount() const;
 
     ////////////////////////////////////////
@@ -159,7 +152,7 @@ namespace doc {
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;
     CelsRange uniqueCels() const;
-    CelsRange uniqueCels(frame_t from, frame_t to) const;
+    CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 
   private:
     Document* m_document;
