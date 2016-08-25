@@ -498,8 +498,10 @@ Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
 Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer)
 {
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousInWholeHierarchy(): nullptr);
-
-  return duplicateLayerAfter(sourceLayer, afterThis);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, afterThis);
+  if (newLayer)
+    restackLayerBefore(newLayer, beforeLayer);
+  return newLayer;
 }
 
 Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image)
