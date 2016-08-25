@@ -189,7 +189,7 @@ private:
         if (newName != m_layer->name())
           transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
 
-        if (m_userData != m_layer->userData()) {
+        if (m_userData != m_layer->userData())
           transaction.execute(new cmd::SetUserData(writer.layer(), m_userData));
 
         if (m_layer->isImage()) {
@@ -200,10 +200,9 @@ private:
             transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
         }
 
-          // Redraw timeline because the layer's user data/color
-          // might have changed.
-          App::instance()->timeline()->invalidate();
-        }
+        // Redraw timeline because the layer's name/user data/color
+        // might have changed.
+        App::instance()->timeline()->invalidate();
 
         transaction.commit();
       }
