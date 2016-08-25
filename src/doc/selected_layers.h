@@ -16,11 +16,43 @@ namespace doc {
   class Layer;
   class LayerGroup;
 
-  typedef std::set<Layer*> SelectedLayers;
+  class SelectedLayers {
+  public:
+    typedef std::set<Layer*> Set;
+    typedef Set::iterator iterator;
+    typedef Set::const_iterator const_iterator;
 
-  void remove_children_if_parent_is_selected(SelectedLayers& layers);
-  void select_all_layers(LayerGroup* group, SelectedLayers& layers);
-  LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers);
+    iterator begin() { return m_set.begin(); }
+    iterator end() { return m_set.end(); }
+    const_iterator begin() const { return m_set.begin(); }
+    const_iterator end() const { return m_set.end(); }
+
+    bool empty() const { return m_set.empty(); }
+    layer_t size() const { return m_set.size(); }
+
+    void clear();
+    void insert(Layer* layer);
+    void erase(Layer* layer);
+
+    bool contains(Layer* layer) const;
+    bool hasSameParent() const;
+    LayerList toLayerList() const;
+
+    void removeChildrenIfParentIsSelected();
+    void selectAllLayers(LayerGroup* group);
+    void displace(layer_t layerDelta);
+
+    bool operator==(const SelectedLayers& o) const {
+      return m_set == o.m_set;
+    }
+
+    bool operator!=(const SelectedLayers& o) const {
+      return !operator==(o);
+    }
+
+  private:
+    Set m_set;
+  };
 
 } // namespace doc
 

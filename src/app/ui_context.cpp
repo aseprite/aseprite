@@ -252,7 +252,7 @@ void UIContext::onGetActiveSite(Site* site) const
     if (Document* doc = m_lastSelectedDoc) {
       site->document(doc);
       site->sprite(doc->sprite());
-      site->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
+      site->layer(doc->sprite()->root()->firstLayer());
       site->frame(0);
     }
   }

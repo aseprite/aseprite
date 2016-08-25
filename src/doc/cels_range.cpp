@@ -17,29 +17,37 @@
 namespace doc {
 
 CelsRange::CelsRange(const Sprite* sprite,
-  frame_t first, frame_t last, Flags flags)
-  : m_begin(sprite, first, last, flags)
-  , m_end()
+                     const SelectedFrames& selFrames,
+                     const Flags flags)
+  : m_selFrames(selFrames)
+  , m_begin(sprite, m_selFrames, flags)
+  , m_end(m_selFrames)
 {
 }
 
-CelsRange::iterator::iterator()
+CelsRange::iterator::iterator(const SelectedFrames& selFrames)
   : m_cel(nullptr)
+  , m_selFrames(selFrames)
+  , m_frameIterator(selFrames.begin())
 {
 }
 
-CelsRange::iterator::iterator(const Sprite* sprite, frame_t first, frame_t last, CelsRange::Flags flags)
+CelsRange::iterator::iterator(const Sprite* sprite,
+                              const SelectedFrames& selFrames,
+                              const CelsRange::Flags flags)
   : m_cel(nullptr)
-  , m_first(first)
-  , m_last(last)
+  , m_selFrames(selFrames)
+  , m_frameIterator(selFrames.begin())
   , m_flags(flags)
 {
   // Get first cel
-  Layer* layer = sprite->layer(sprite->firstLayer());
+  Layer* layer = sprite->root()->firstLayer();
   while (layer && !m_cel) {
     if (layer->isImage()) {
-      for (frame_t f=first; f<=last; ++f) {
-        m_cel = layer->cel(f);
+      m_frameIterator = m_selFrames.begin();
+      auto endFrame = m_selFrames.end();
+      for (; m_frameIterator!=endFrame; ++m_frameIterator) {
+        m_cel = layer->cel(*m_frameIterator);
         if (m_cel)
           break;
       }
@@ -58,15 +66,16 @@ CelsRange::iterator& CelsRange::iterator::operator++()
   if (!m_cel)
     return *this;
 
-  // Get next cel
-  Layer* layer = m_cel->layer();
-  frame_t first = m_cel->frame()+1;
-  m_cel = nullptr;
+  auto endFrame = m_selFrames.end();
+  if (m_frameIterator != endFrame)
+    ++m_frameIterator;
 
+  Layer* layer = m_cel->layer();
+  m_cel = nullptr;
   while (layer && !m_cel) {
     if (layer->isImage()) {
-      for (frame_t f=first; f<=m_last; ++f) {
-        m_cel = layer->cel(f);
+      for (; m_frameIterator!=endFrame; ++m_frameIterator) {
+        m_cel = layer->cel(*m_frameIterator);
         if (m_cel) {
           if (m_flags == CelsRange::UNIQUE) {
             if (m_visited.find(m_cel->data()->id()) == m_visited.end()) {
@@ -84,7 +93,7 @@ CelsRange::iterator& CelsRange::iterator::operator++()
 
     if (!m_cel) {
       layer = layer->getNextInWholeHierarchy();
-      first = m_first;
+      m_frameIterator = m_selFrames.begin();
     }
   }
   return *this;

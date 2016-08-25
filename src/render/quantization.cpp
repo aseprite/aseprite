@@ -71,7 +71,7 @@ Palette* create_palette_from_sprite(
     palette,
     // Transparent color is needed if we have transparent layers
     (sprite->backgroundLayer() &&
-     sprite->countLayers() == 1 ? -1: sprite->transparentColor()),
+     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()),
     delegate);
 
   return palette;

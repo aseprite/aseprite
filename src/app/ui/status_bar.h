@@ -15,7 +15,6 @@
 #include "doc/context_observer.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
-#include "doc/layer_index.h"
 #include "ui/base.h"
 #include "ui/box.h"
 

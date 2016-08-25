@@ -15,14 +15,69 @@
 
 namespace doc {
 
-void remove_children_if_parent_is_selected(SelectedLayers& layers)
+void SelectedLayers::clear()
+{
+  m_set.clear();
+}
+
+void SelectedLayers::insert(Layer* layer)
+{
+  ASSERT(layer);
+  m_set.insert(layer);
+}
+
+void SelectedLayers::erase(Layer* layer)
+{
+  m_set.erase(layer);
+}
+
+bool SelectedLayers::contains(Layer* layer) const
+{
+  return m_set.find(layer) != m_set.end();
+}
+
+bool SelectedLayers::hasSameParent() const
+{
+  Layer* parent = nullptr;
+  for (auto layer : *this) {
+    if (parent) {
+      if (layer->parent() != parent)
+        return false;
+    }
+    else
+      parent = layer->parent();
+  }
+  return true;
+}
+
+LayerList SelectedLayers::toLayerList() const
+{
+  LayerList output;
+
+  if (empty())
+    return output;
+
+  ASSERT(*begin());
+  ASSERT((*begin())->sprite());
+
+  for (Layer* layer = (*begin())->sprite()->firstBrowsableLayer();
+       layer != nullptr;
+       layer = layer->getNextInWholeHierarchy()) {
+    if (contains(layer))
+      output.push_back(layer);
+  }
+
+  return output;
+}
+
+void SelectedLayers::removeChildrenIfParentIsSelected()
 {
   SelectedLayers removeThese;
 
-  for (Layer* child : layers) {
+  for (Layer* child : *this) {
     Layer* parent = child->parent();
     while (parent) {
-      if (layers.find(parent) != layers.end()) {
+      if (contains(parent)) {
         removeThese.insert(child);
         break;
       }
@@ -30,36 +85,58 @@ void remove_children_if_parent_is_selected(SelectedLayers& layers)
     }
   }
 
-  for (Layer* child : removeThese) {
-    layers.erase(child);
-  }
+  for (Layer* child : removeThese)
+    erase(child);
 }
 
-void select_all_layers(LayerGroup* group, SelectedLayers& layers)
+void SelectedLayers::selectAllLayers(LayerGroup* group)
 {
   for (Layer* layer : group->layers()) {
     if (layer->isGroup())
-      select_all_layers(static_cast<LayerGroup*>(layer), layers);
-    layers.insert(layer);
+      selectAllLayers(static_cast<LayerGroup*>(layer));
+    insert(layer);
   }
 }
 
-LayerList convert_selected_layers_into_layer_list(const SelectedLayers& layers)
+void SelectedLayers::displace(layer_t layerDelta)
 {
-  LayerList output;
+  // Do nothing case
+  if (layerDelta == 0)
+    return;
 
-  if (layers.empty())
-    return output;
+  const SelectedLayers original = *this;
 
-  for (Layer* layer = (*layers.begin())->sprite()->firstBrowsableLayer();
-       layer != nullptr;
-       layer = layer->getNextInWholeHierarchy()) {
-    if (layers.find(layer) != layers.end()) {
-      output.push_back(layer);
+retry:;
+  clear();
+
+  for (auto it : original) {
+    Layer* layer = it;
+
+    if (layerDelta > 0) {
+      for (layer_t i=0; layer && i<layerDelta; ++i)
+        layer = layer->getNextInWholeHierarchy();
+    }
+    else if (layerDelta < 0) {
+      for (layer_t i=0; layer && i>layerDelta; --i) {
+        layer = layer->getPreviousInWholeHierarchy();
+      }
+    }
+
+    if (layer) {
+      insert(layer);
+    }
+    // If some layer is outside the range it means that the delta is
+    // too big (out of bounds), we reduce the delta and try again the
+    // whole process.
+    else {
+      layerDelta -= SGN(layerDelta);
+      if (layerDelta == 0) {
+        m_set = original.m_set;
+        break;
+      }
+      goto retry;
     }
   }
-
-  return output;
 }
 
 } // namespace doc

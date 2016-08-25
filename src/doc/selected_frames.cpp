@@ -22,8 +22,15 @@ std::size_t SelectedFrames::size() const
   return size;
 }
 
+void SelectedFrames::clear()
+{
+  m_ranges.clear();
+}
+
 void SelectedFrames::insert(frame_t frame)
 {
+  ASSERT(frame >= 0);
+
   if (m_ranges.empty()) {
     m_ranges.push_back(FrameRange(frame));
     return;
@@ -60,6 +67,9 @@ void SelectedFrames::insert(frame_t frame)
 
 void SelectedFrames::insert(frame_t fromFrame, frame_t toFrame)
 {
+  if (fromFrame > toFrame)
+    std::swap(fromFrame, toFrame);
+
   // TODO improve this
   for (frame_t frame = fromFrame; frame <= toFrame; ++frame) {
     insert(frame);
@@ -76,6 +86,21 @@ bool SelectedFrames::contains(frame_t frame) const
        const FrameRange& b) -> bool {
       return (a.toFrame < b.fromFrame);
     });
+}
+
+void SelectedFrames::displace(frame_t frameDelta)
+{
+  // Avoid setting negative numbers in frame ranges
+  if (firstFrame()+frameDelta < 0)
+    frameDelta = -firstFrame();
+
+  for (auto& range : m_ranges) {
+    range.fromFrame += frameDelta;
+    range.toFrame += frameDelta;
+
+    ASSERT(range.fromFrame >= 0);
+    ASSERT(range.toFrame >= 0);
+  }
 }
 
 } // namespace doc

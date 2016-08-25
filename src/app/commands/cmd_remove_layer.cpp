@@ -63,15 +63,15 @@ void RemoveLayerCommand::onExecute(Context* context)
     if (site->inTimeline() &&
         !site->selectedLayers().empty()) {
       SelectedLayers selLayers = site->selectedLayers();
-      remove_children_if_parent_is_selected(selLayers);
+      selLayers.removeChildrenIfParentIsSelected();
 
-      int deletedTopLevelLayers = 0;
+      layer_t deletedTopLevelLayers = 0;
       for (Layer* layer : selLayers) {
         if (layer->parent() == sprite->root())
           ++deletedTopLevelLayers;
       }
 
-      if (deletedTopLevelLayers == sprite->countLayers()) {
+      if (deletedTopLevelLayers == sprite->root()->layersCount()) {
         ui::Alert::show("Error<<You cannot delete all layers.||&OK");
         return;
       }
@@ -81,7 +81,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      if (sprite->countLayers() == 1) {
+      if (sprite->allLayersCount() == 1) {
         ui::Alert::show("Error<<You cannot delete the last layer.||&OK");
         return;
       }

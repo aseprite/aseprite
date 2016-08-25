@@ -187,6 +187,7 @@ namespace doc {
     Layer* lastLayer() const { return (m_layers.empty() ? nullptr: m_layers.back()); }
 
     void allLayers(LayerList& list) const;
+    layer_t allLayersCount() const;
     void allVisibleLayers(LayerList& list) const;
     void allBrowsableLayers(LayerList& list) const;
 

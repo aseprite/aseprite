@@ -15,8 +15,8 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/xml_document.h"
-#include "base/file_handle.h"
 #include "base/convert_to.h"
+#include "base/file_handle.h"
 #include "base/path.h"
 #include "doc/doc.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -85,7 +85,6 @@ template<typename Number> static Number check_number(const char* c_str) {
   }
 }
 
-
 bool PixlyFormat::onLoad(FileOp* fop)
 {
   try {
@@ -131,16 +130,15 @@ bool PixlyFormat::onLoad(FileOp* fop)
       throw Exception("Pixly loader requires a valid PNG file");
     }
 
-    Image* sheet = sheet_doc->sprite()->layer(0)->cel(0)->image();
-
-    if (sheet->pixelFormat() != IMAGE_RGB) {
+    Image* sheet = sheet_doc->sprite()->root()->firstLayer()->cel(0)->image();
+    if (sheet->pixelFormat() != IMAGE_RGB)
       throw Exception("Pixly loader requires a RGBA PNG");
-    }
 
     int sheetWidth = sheet->width();
     int sheetHeight = sheet->height();
 
     // slice cels from sheet
+    LayerList layers = sprite->allLayers();
     std::vector<int> visible(layerCount, 0);
 
     TiXmlElement* xmlFrame = check(xmlFrames->FirstChild("Frame"))->ToElement();
@@ -150,8 +148,8 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
       int index = check_number<int>(xmlIndex->Attribute("linear"));
       frame_t frame(index / layerCount);
-      LayerIndex layer_index(index % layerCount);
-      Layer *layer = sprite->indexToLayer(layer_index);
+      layer_t layer_index(index % layerCount);
+      Layer* layer = layers[layer_index];
 
       const char * duration = xmlFrame->Attribute("duration");
       if (duration) {
@@ -215,16 +213,14 @@ bool PixlyFormat::onLoad(FileOp* fop)
       fop->setProgress(0.5 + 0.5 * ((float)(index+1) / (float)imageCount));
     }
 
-    for (int i=0; i<layerCount; i++) {
-      LayerIndex layer_index(i);
-      Layer *layer = sprite->indexToLayer(layer_index);
-      layer->setVisible(visible[i] > frameCount/2);
+    for (layer_t i=0; i<layerCount; i++) {
+      layers[i]->setVisible(visible[i] > frameCount/2);
     }
 
     fop->createDocument(sprite);
     sprite.release();
   }
-  catch(Exception &e) {
+  catch(Exception& e) {
     fop->setError((std::string("Pixly file format: ")+std::string(e.what())+"\n").c_str());
     return false;
   }

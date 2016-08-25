@@ -25,6 +25,14 @@ namespace doc {
     FrameRange(frame_t fromFrame, frame_t toFrame)
       : fromFrame(fromFrame), toFrame(toFrame) {
     }
+
+    bool operator==(const FrameRange& o) const {
+      return (fromFrame == o.fromFrame && toFrame == o.toFrame);
+    }
+
+    bool operator!=(const FrameRange& o) const {
+      return !operator==(o);
+    }
   };
 
 } // namespace doc

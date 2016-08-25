@@ -42,8 +42,8 @@ add_library(doc-lib
   image_io.cpp
   images_collector.cpp
   layer.cpp
-  layer_index.cpp
   layer_io.cpp
+  layer_list.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp

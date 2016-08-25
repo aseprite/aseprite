@@ -89,8 +89,8 @@ namespace app {
     void backgroundFromLayer(Layer* layer);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite);
-    void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
-    void duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
+    Layer* duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
+    Layer* duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
 
     // Images API
     void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);

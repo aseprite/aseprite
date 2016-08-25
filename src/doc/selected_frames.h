@@ -121,6 +121,7 @@ namespace doc {
     std::size_t ranges() const { return m_ranges.size(); }
     bool empty() const { return m_ranges.empty(); }
 
+    void clear();
     void insert(frame_t frame);
     void insert(frame_t fromFrame, frame_t toFrame);
 
@@ -129,7 +130,16 @@ namespace doc {
     frame_t firstFrame() const { return (!m_ranges.empty() ? m_ranges.front().fromFrame: -1); }
     frame_t lastFrame() const { return (!m_ranges.empty() ? m_ranges.back().toFrame: -1); }
 
+    void displace(frame_t frameDelta);
     Reversed reversed() const { return Reversed(*this); }
+
+    bool operator==(const SelectedFrames& o) const {
+      return m_ranges == o.m_ranges;
+    }
+
+    bool operator!=(const SelectedFrames& o) const {
+      return !operator==(o);
+    }
 
   private:
     Ranges m_ranges;
