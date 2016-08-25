@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -38,7 +38,10 @@ DataRecovery::DataRecovery(doc::Context* ctx)
 
       SessionPtr session(new Session(itempath));
       if (!session->isRunning()) {
-        if (!session->isEmpty()) {
+        if (session->version() != VERSION) {
+          TRACE("cannot be loaded (incompatible version)\n");
+        }
+        else if (!session->isEmpty()) {
           TRACE("to be loaded\n");
           m_sessions.push_back(session);
         }

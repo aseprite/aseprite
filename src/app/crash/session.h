@@ -41,6 +41,7 @@ namespace crash {
     ~Session();
 
     std::string name() const;
+    std::string version();
     const Backups& backups();
 
     bool isRunning();
@@ -65,6 +66,7 @@ namespace crash {
 
     base::pid m_pid;
     std::string m_path;
+    std::string m_version;
     Backups m_backups;
 
     DISABLE_COPYING(Session);
