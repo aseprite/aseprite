@@ -65,8 +65,6 @@ namespace crash {
 
     base::pid m_pid;
     std::string m_path;
-    std::fstream m_log;
-    std::fstream m_pidFile;
     Backups m_backups;
 
     DISABLE_COPYING(Session);
