@@ -489,7 +489,8 @@ Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
 
   newLayerPtr->setName(newLayerPtr->name() + " Copy");
 
-  addLayer(sourceLayer->parent(), newLayerPtr, afterLayer);
+  addLayer(afterLayer ? afterLayer->parent():
+                        sourceLayer->parent(), newLayerPtr, afterLayer);
 
   // Release the pointer as it is owned by the sprite now.
   return newLayerPtr.release();
