@@ -138,7 +138,9 @@ void NewLayerCommand::onExecute(Context* context)
     // If "top" parameter is false, create the layer above the active
     // one.
     if (activeLayer && !m_top) {
-      api.restackLayerAfter(layer, activeLayer);
+      api.restackLayerAfter(layer,
+                            activeLayer->parent(),
+                            activeLayer);
 
       // Put all selected layers inside the group
       if (m_group && writer.site()->inTimeline()) {

@@ -169,8 +169,26 @@ static DocumentRange move_or_copy_frames(
 
 static DocumentRange drop_range_op(
   Document* doc, Op op, const DocumentRange& from,
-  DocumentRangePlace place, const DocumentRange& to)
+  DocumentRangePlace place, DocumentRange to)
 {
+  // Convert "first child" operation into a insert after last child.
+  LayerGroup* parent = nullptr;
+  if (to.type() == DocumentRange::kLayers &&
+      !to.selectedLayers().empty()) {
+    if (place == kDocumentRangeFirstChild &&
+        (*to.selectedLayers().begin())->isGroup()) {
+      place = kDocumentRangeAfter;
+      parent = static_cast<LayerGroup*>((*to.selectedLayers().begin()));
+
+      to.clearRange();
+      to.startRange(parent->lastLayer(), -1, DocumentRange::kLayers);
+      to.endRange(parent->lastLayer(), -1);
+    }
+    else {
+      parent = (*to.selectedLayers().begin())->parent();
+    }
+  }
+
   if (place != kDocumentRangeBefore &&
       place != kDocumentRangeAfter) {
     ASSERT(false);
@@ -203,17 +221,22 @@ static DocumentRange drop_range_op(
 
     case DocumentRange::kLayers:
       if (op == Move) {
-          SelectedLayers srcSelLayers = from.selectedLayers();
-          SelectedLayers dstSelLayers = to.selectedLayers();
-          LayerList srcLayers = srcSelLayers.toLayerList();
-          LayerList dstLayers = dstSelLayers.toLayerList();
-          if (srcLayers.empty() || dstLayers.empty())
-            return from;
+        SelectedLayers srcSelLayers = from.selectedLayers();
+        SelectedLayers dstSelLayers = to.selectedLayers();
+        LayerList srcLayers = srcSelLayers.toLayerList();
+        LayerList dstLayers = dstSelLayers.toLayerList();
+        ASSERT(!srcLayers.empty());
+        if (srcLayers.empty())
+          return from;
+
+        // dstLayers can be nullptr when we insert the first child in
+        // a group.
 
         // Check no-ops when we move layers at the same level (all
         // layers with the same parent), all adjacents, and which are
         // moved to the same place.
-        if (srcSelLayers.hasSameParent() &&
+        if (!dstSelLayers.empty() &&
+            srcSelLayers.hasSameParent() &&
             dstSelLayers.hasSameParent() &&
             are_layers_adjacent(srcLayers) &&
             are_layers_adjacent(dstLayers)) {
@@ -321,28 +344,27 @@ static DocumentRange drop_range_op(
         LayerList srcLayers = from.selectedLayers().toLayerList();
         LayerList dstLayers = to.selectedLayers().toLayerList();
         ASSERT(!srcLayers.empty());
-        ASSERT(!dstLayers.empty());
 
         switch (op) {
 
           case Move:
             if (place == kDocumentRangeBefore) {
-              Layer* beforeThis = dstLayers.front();
+              Layer* beforeThis = (!dstLayers.empty() ? dstLayers.front(): nullptr);
               Layer* afterThis  = nullptr;
 
               for (Layer* srcLayer : srcLayers) {
                 if (afterThis)
-                  api.restackLayerAfter(srcLayer, afterThis);
+                  api.restackLayerAfter(srcLayer, parent, afterThis);
                 else
-                  api.restackLayerBefore(srcLayer, beforeThis);
+                  api.restackLayerBefore(srcLayer, parent, beforeThis);
 
                 afterThis = srcLayer;
               }
             }
             else if (place == kDocumentRangeAfter) {
-              Layer* afterThis = dstLayers.back();
+              Layer* afterThis = (!dstLayers.empty() ? dstLayers.back(): nullptr);
               for (Layer* srcLayer : srcLayers) {
-                api.restackLayerAfter(srcLayer, afterThis);
+                api.restackLayerAfter(srcLayer, parent, afterThis);
                 afterThis = srcLayer;
               }
             }
@@ -353,9 +375,10 @@ static DocumentRange drop_range_op(
 
           case Copy: {
             if (place == kDocumentRangeBefore) {
+              Layer* beforeThis = (!dstLayers.empty() ? dstLayers.front(): nullptr);
               for (Layer* srcLayer :  srcLayers) {
-                Layer* copiedLayer =
-                  api.duplicateLayerBefore(srcLayer, dstLayers.front());
+                Layer* copiedLayer = api.duplicateLayerBefore(
+                  srcLayer, parent, beforeThis);
 
                 resultRange.startRange(copiedLayer, -1, DocumentRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
@@ -364,9 +387,10 @@ static DocumentRange drop_range_op(
             else if (place == kDocumentRangeAfter) {
               std::reverse(srcLayers.begin(), srcLayers.end());
 
+              Layer* afterThis = (!dstLayers.empty() ? dstLayers.back(): nullptr);
               for (Layer* srcLayer :  srcLayers) {
-                Layer* copiedLayer =
-                  api.duplicateLayerAfter(srcLayer, dstLayers.back());
+                Layer* copiedLayer = api.duplicateLayerAfter(
+                  srcLayer, parent, afterThis);
 
                 resultRange.startRange(copiedLayer, -1, DocumentRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
@@ -387,12 +411,12 @@ static DocumentRange drop_range_op(
 
 DocumentRange move_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place)
 {
-  return drop_range_op(doc, Move, from, place, to);
+  return drop_range_op(doc, Move, from, place, DocumentRange(to));
 }
 
 DocumentRange copy_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place)
 {
-  return drop_range_op(doc, Copy, from, place, to);
+  return drop_range_op(doc, Copy, from, place, DocumentRange(to));
 }
 
 void reverse_frames(Document* doc, const DocumentRange& range)

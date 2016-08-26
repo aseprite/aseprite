@@ -84,13 +84,13 @@ namespace app {
     LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
     void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
-    void restackLayerAfter(Layer* layer, Layer* afterThis);
-    void restackLayerBefore(Layer* layer, Layer* beforeThis);
+    void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
+    void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
     void backgroundFromLayer(Layer* layer);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite);
-    Layer* duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
-    Layer* duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
+    Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
+    Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
 
     // Images API
     void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);

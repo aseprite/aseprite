@@ -2213,6 +2213,10 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         - m_separator_w
         + scroll.x) / FRMSIZE);
 
+    // Flag which indicates that we are in the are below the Background layer/last layer area
+    if (hit.layer < 0)
+      hit.veryBottom = true;
+
     if (hasCapture()) {
       hit.layer = MID(firstLayer(), hit.layer, lastLayer());
       if (isMovingCel())
@@ -2395,21 +2399,30 @@ void Timeline::updateStatusBar(ui::Message* msg)
                                   &firstLayer, &lastLayer))
           break;
 
+        if (m_dropTarget.vhit == DropTarget::VeryBottom) {
+          sb->setStatusText(0, "%s at the very bottom", verb);
+          return;
+        }
+
         layer_t layerIdx = -1;
-        if (m_dropTarget.vhit == DropTarget::Bottom)
+        if (m_dropTarget.vhit == DropTarget::Bottom ||
+            m_dropTarget.vhit == DropTarget::FirstChild)
           layerIdx = firstLayer;
         else if (m_dropTarget.vhit == DropTarget::Top)
           layerIdx = lastLayer;
 
         Layer* layer = (validLayer(layerIdx) ? m_layers[layerIdx].layer: nullptr);
         if (layer) {
-          if (m_dropTarget.vhit == DropTarget::Bottom) {
-            sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->name().c_str());
-            return;
-          }
-          else if (m_dropTarget.vhit == DropTarget::Top) {
-            sb->setStatusText(0, "%s at top of layer %s", verb, layer->name().c_str());
-            return;
+          switch (m_dropTarget.vhit) {
+            case DropTarget::Bottom:
+              sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->name().c_str());
+              return;
+            case DropTarget::Top:
+              sb->setStatusText(0, "%s at top of layer %s", verb, layer->name().c_str());
+              return;
+            case DropTarget::FirstChild:
+              sb->setStatusText(0, "%s as first child of layer %s", verb, layer->name().c_str());
+              return;
           }
         }
         break;
@@ -2661,15 +2674,33 @@ void Timeline::dropRange(DropOp op)
   bool copy = (op == Timeline::kCopy);
   Range newFromRange;
   DocumentRangePlace place = kDocumentRangeAfter;
+  Range dropRange = m_dropRange;
 
   switch (m_range.type()) {
+
     case Range::kFrames:
       if (m_dropTarget.hhit == DropTarget::Before)
         place = kDocumentRangeBefore;
       break;
+
     case Range::kLayers:
-      if (m_dropTarget.vhit == DropTarget::Bottom)
-        place = kDocumentRangeBefore;
+      switch (m_dropTarget.vhit) {
+        case DropTarget::Bottom:
+          place = kDocumentRangeBefore;
+          break;
+        case DropTarget::FirstChild:
+          place = kDocumentRangeFirstChild;
+          break;
+        case DropTarget::VeryBottom:
+          place = kDocumentRangeBefore;
+          {
+            Layer* layer = m_sprite->root()->firstLayer();
+            dropRange.clearRange();
+            dropRange.startRange(layer, -1, Range::kLayers);
+            dropRange.endRange(layer, -1);
+          }
+          break;
+      }
       break;
   }
 
@@ -2677,9 +2708,9 @@ void Timeline::dropRange(DropOp op)
 
   try {
     if (copy)
-      newFromRange = copy_range(m_document, m_range, m_dropRange, place);
+      newFromRange = copy_range(m_document, m_range, dropRange, place);
     else
-      newFromRange = move_range(m_document, m_range, m_dropRange, place);
+      newFromRange = move_range(m_document, m_range, dropRange, place);
 
     // If we drop a cel in the same frame (but in another layer),
     // document views are not updated, so we are forcing the updating of
@@ -2754,10 +2785,21 @@ void Timeline::updateDropRange(const gfx::Point& pt)
   else
     m_dropTarget.hhit = DropTarget::After;
 
-  if (pt.y < bounds.y + bounds.h/2)
+  if (m_hot.veryBottom)
+    m_dropTarget.vhit = DropTarget::VeryBottom;
+  else if (pt.y < bounds.y + bounds.h/2)
     m_dropTarget.vhit = DropTarget::Top;
-  else
+  // Special drop target for expanded groups
+  else if (m_range.type() == Range::kLayers &&
+           m_hot.layer >= 0 &&
+           m_hot.layer < m_layers.size() &&
+           m_layers[m_hot.layer].layer->isGroup() &&
+           static_cast<LayerGroup*>(m_layers[m_hot.layer].layer)->isExpanded()) {
+    m_dropTarget.vhit = DropTarget::FirstChild;
+  }
+  else {
     m_dropTarget.vhit = DropTarget::Bottom;
+  }
 
   if (oldHHit != m_dropTarget.hhit ||
       oldVHit != m_dropTarget.vhit) {

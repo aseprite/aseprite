@@ -153,9 +153,10 @@ namespace app {
       layer_t layer;
       frame_t frame;
       ObjectId frameTag;
+      bool veryBottom;
 
       Hit(int part = 0, layer_t layer = -1, frame_t frame = 0, ObjectId frameTag = NullId)
-        : part(part), layer(layer), frame(frame), frameTag(frameTag) {
+        : part(part), layer(layer), frame(frame), frameTag(frameTag), veryBottom(false) {
       }
 
       bool operator!=(const Hit& other) const {
@@ -170,8 +171,20 @@ namespace app {
     };
 
     struct DropTarget {
-      enum HHit { HNone, Before, After };
-      enum VHit { VNone, Bottom, Top };
+
+      enum HHit {
+        HNone,
+        Before,
+        After
+      };
+
+      enum VHit {
+        VNone,
+        Bottom,
+        Top,
+        FirstChild,
+        VeryBottom
+      };
 
       DropTarget() {
         hhit = HNone;

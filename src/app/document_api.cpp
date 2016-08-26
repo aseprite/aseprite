@@ -422,20 +422,20 @@ void DocumentApi::removeLayer(Layer* layer)
   m_transaction.execute(new cmd::RemoveLayer(layer));
 }
 
-void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
+void DocumentApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis)
 {
+  ASSERT(parent);
+
   if (layer == afterThis)
     return;
 
-  m_transaction.execute(
-    new cmd::MoveLayer(
-      layer,
-      (afterThis ? afterThis->parent(): layer->parent()),
-      afterThis));
+  m_transaction.execute(new cmd::MoveLayer(layer, parent, afterThis));
 }
 
-void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
+void DocumentApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis)
 {
+  ASSERT(parent);
+
   if (layer == beforeThis)
     return;
 
@@ -443,20 +443,9 @@ void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
   if (beforeThis)
     afterThis = beforeThis->getPrevious();
   else
-    afterThis = layer->sprite()->root()->lastLayer();
+    afterThis = parent->lastLayer();
 
-  // The following code is similar to DocumentApi::restackLayerAfter()
-  // but we use the parent from "beforeThis" (as afterThis might be
-  // nullptr now).
-
-  if (layer == afterThis)
-    return;
-
-  m_transaction.execute(
-    new cmd::MoveLayer(
-      layer,
-      (beforeThis ? beforeThis->parent(): layer->parent()),
-      afterThis));
+  restackLayerAfter(layer, parent, afterThis);
 }
 
 void DocumentApi::backgroundFromLayer(Layer* layer)
@@ -474,8 +463,9 @@ void DocumentApi::flattenLayers(Sprite* sprite)
   m_transaction.execute(new cmd::FlattenLayers(sprite));
 }
 
-Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
+Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
+  ASSERT(parent);
   base::UniquePtr<Layer> newLayerPtr;
 
   if (sourceLayer->isImage())
@@ -489,19 +479,19 @@ Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
 
   newLayerPtr->setName(newLayerPtr->name() + " Copy");
 
-  addLayer(afterLayer ? afterLayer->parent():
-                        sourceLayer->parent(), newLayerPtr, afterLayer);
+  addLayer(parent, newLayerPtr, afterLayer);
 
   // Release the pointer as it is owned by the sprite now.
   return newLayerPtr.release();
 }
 
-Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer)
+Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
 {
+  ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousInWholeHierarchy(): nullptr);
-  Layer* newLayer = duplicateLayerAfter(sourceLayer, afterThis);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
   if (newLayer)
-    restackLayerBefore(newLayer, beforeLayer);
+    restackLayerBefore(newLayer, parent, beforeLayer);
   return newLayer;
 }
 
