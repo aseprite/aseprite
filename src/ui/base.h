@@ -47,7 +47,9 @@ namespace ui {
     INITIALIZED      = 0x00000400, // The widget was already initialized by a theme.
     DIRTY            = 0x00000800, // The widget (or one child) is dirty (update_region != empty).
     HAS_TEXT         = 0x00001000, // The widget has text (at least setText() was called one time).
-    CTRL_RIGHT_CLICK = 0x00002000, // The widget should transform Ctrl+click to right-click on OS X.
+    DOUBLE_BUFFERED  = 0x00002000, // The widget is painted in a back-buffer and then flipped to the main display
+    TRANSPARENT      = 0x00004000, // The widget has transparent parts that needs the background painted before
+    CTRL_RIGHT_CLICK = 0x00008000, // The widget should transform Ctrl+click to right-click on OS X.
     PROPERTIES_MASK  = 0x0000ffff,
 
     HORIZONTAL       = 0x00010000,

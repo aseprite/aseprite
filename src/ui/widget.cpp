@@ -69,8 +69,6 @@ Widget::Widget(WidgetType type)
   , m_bounds(0, 0, 0, 0)
   , m_parent(nullptr)
   , m_sizeHint(nullptr)
-  , m_doubleBuffered(false)
-  , m_transparent(false)
   , m_minSize(0, 0)
   , m_maxSize(INT_MAX, INT_MAX)
   , m_childSpacing(0)
@@ -1010,22 +1008,22 @@ bool Widget::paintEvent(Graphics* graphics)
 
 bool Widget::isDoubleBuffered() const
 {
-  return m_doubleBuffered;
+  return hasFlags(DOUBLE_BUFFERED);
 }
 
 void Widget::setDoubleBuffered(bool doubleBuffered)
 {
-  m_doubleBuffered = doubleBuffered;
+  enableFlags(DOUBLE_BUFFERED);
 }
 
 bool Widget::isTransparent() const
 {
-  return m_transparent;
+  return hasFlags(TRANSPARENT);
 }
 
 void Widget::setTransparent(bool transparent)
 {
-  m_transparent = transparent;
+  enableFlags(TRANSPARENT);
 }
 
 void Widget::invalidate()
@@ -1084,7 +1082,7 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
-  if (m_doubleBuffered && defaultSurface->isDirectToScreen()) {
+  if (isDoubleBuffered() && defaultSurface->isDirectToScreen()) {
     surface = she::instance()->createSurface(clip.w, clip.h);
     graphics.reset(new Graphics(surface, -clip.x, -clip.y),
       DeleteGraphicsAndSurface(clip, surface));

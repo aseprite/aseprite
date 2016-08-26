@@ -392,8 +392,6 @@ namespace ui {
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
     gfx::Size* m_sizeHint;
-    bool m_doubleBuffered;
-    bool m_transparent;
 
     // Widget size limits
     gfx::Size m_minSize, m_maxSize;
