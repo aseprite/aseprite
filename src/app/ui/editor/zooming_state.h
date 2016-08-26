@@ -1,9 +1,8 @@
 // Aseprite
 // Copyright (C) 2001-2015  David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifndef APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
 #define APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED

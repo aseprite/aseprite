@@ -4,9 +4,6 @@
 [![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aseprite/aseprite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-> THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY<br/>
-> See the [license section](#license) for more information.
-
 ## Introduction
 
 **Aseprite** is an open source program to create animated sprites.
@@ -99,14 +96,19 @@ And it uses the following third-party libraries:
 
 This program is distributed under three different licenses:
 
-1. Source code is distributed under
-   [GNU General Public License](LICENSE.txt) version 2,
-   which means that compiled versions can be generated under GPL terms.
-   (Useful for Linux distributions.)
-2. Official releases are distributed under a
-   [commercial EULA](EULA.txt) or a special [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license).
-3. And Steam releases are distributed under the terms of the
+1. Source code and official releases/binaries are distributed under
+   our [End-User License Agreement for Aseprite (EULA)](EULA.txt). Please check
+   that there are [modules/libraries in the source code](src/README.md) that
+   are distributed under the MIT license
+   (e.g. [base](https://github.com/aseprite/aseprite/tree/master/src/base),
+   [she](https://github.com/aseprite/aseprite/tree/master/src/she),
+   [clip](https://github.com/aseprite/clip), etc.).
+2. You can request a special
+   [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license)
+   in case you are a teacher in an educational institution and want to
+   use Aseprite in your classroom (in-situ).
+3. Steam releases are distributed under the terms of the
    [Steam Subscriber Agreement](http://store.steampowered.com/subscriber_agreement/).
 
-As a side note, to distribute Aseprite under these licenses we don't
-use third party GPL libraries.
+You can get more information about Aseprite license in the
+[FAQ](http://www.aseprite.org/faq/#licensing-&-commercial).
