@@ -251,11 +251,23 @@ public:
   class LayerItem : public ListItem {
   public:
     LayerItem(Layer* layer)
-      : ListItem("Layer: " + layer->name())
+      : ListItem(buildName(layer))
       , m_layer(layer) {
     }
     Layer* layer() const { return m_layer; }
   private:
+    static std::string buildName(const Layer* layer) {
+      bool isGroup = layer->isGroup();
+      std::string name;
+      while (layer != layer->sprite()->root()) {
+        if (!name.empty())
+          name.insert(0, " > ");
+        name.insert(0, layer->name());
+        layer = layer->parent();
+      }
+      name.insert(0, isGroup ? "Group: ": "Layer: ");
+      return name;
+    }
     Layer* m_layer;
   };
 
@@ -298,7 +310,8 @@ public:
       layers()->setSelectedItemIndex(i);
     {
       LayerList layersList = m_sprite->allLayers();
-      for (Layer* layer : layersList) {
+      for (auto it=layersList.rbegin(), end=layersList.rend(); it!=end; ++it) {
+        Layer* layer = *it;
         i = layers()->addItem(new LayerItem(layer));
         if (m_docPref.spriteSheet.layer() == layer->name())
           layers()->setSelectedItemIndex(i);
