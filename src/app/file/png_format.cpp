@@ -100,11 +100,12 @@ bool PngFormat::onLoad(FileOp* fop)
    */
   if (setjmp(png_jmpbuf(png_ptr))) {
     fop->setError("Error reading PNG file\n");
-    /* Free all of the memory associated with the png_ptr and info_ptr */
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    /* If we get here, we had a problem reading the file */
     return false;
   }
+
+  // Do not check sRGB profile
+  png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, 1);
 
   /* Set up the input control if you are using standard C streams */
   png_init_io(png_ptr, fp);
