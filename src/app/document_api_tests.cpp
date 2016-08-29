@@ -55,7 +55,7 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
   {
     Transaction transaction(&ctx, "");
     // Do nothing
-    doc->getApi(transaction).restackLayerBefore(layer1, layer1);
+    doc->getApi(transaction).restackLayerBefore(layer1, layer1->parent(), layer1);
     EXPECT_EQ(layer1, root->firstLayer());
     EXPECT_EQ(layer2, root->firstLayer()->getNext());
     EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
@@ -65,7 +65,7 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
   EXPECT_EQ(layer1, root->firstLayer());
   {
     Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerBefore(layer1, layer3);
+    doc->getApi(transaction).restackLayerBefore(layer1, layer3->parent(), layer3);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer1, root->firstLayer()->getNext());
     EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
@@ -75,7 +75,7 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
   EXPECT_EQ(layer1, root->firstLayer());
   {
     Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerBefore(layer1, nullptr);
+    doc->getApi(transaction).restackLayerBefore(layer1, layer1->parent(), nullptr);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer3, root->firstLayer()->getNext());
     EXPECT_EQ(layer1, root->firstLayer()->getNext()->getNext());
@@ -89,7 +89,7 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
   {
     Transaction transaction(&ctx, "");
     // Do nothing
-    doc->getApi(transaction).restackLayerAfter(layer1, layer1);
+    doc->getApi(transaction).restackLayerAfter(layer1, layer1->parent(), layer1);
     EXPECT_EQ(layer1, root->firstLayer());
     EXPECT_EQ(layer2, root->firstLayer()->getNext());
     EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
@@ -99,7 +99,7 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
   EXPECT_EQ(layer1, root->firstLayer());
   {
     Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerAfter(layer1, layer3);
+    doc->getApi(transaction).restackLayerAfter(layer1, layer3->parent(), layer3);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer3, root->firstLayer()->getNext());
     EXPECT_EQ(layer1, root->firstLayer()->getNext()->getNext());
@@ -109,7 +109,7 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
   EXPECT_EQ(layer1, root->firstLayer());
   {
     Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerAfter(layer3, nullptr);
+    doc->getApi(transaction).restackLayerAfter(layer3, layer3->parent(), nullptr);
     EXPECT_EQ(layer3, root->firstLayer());
     EXPECT_EQ(layer1, root->firstLayer()->getNext());
     EXPECT_EQ(layer2, root->firstLayer()->getNext()->getNext());
