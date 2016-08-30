@@ -72,7 +72,7 @@ public:
     , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_cursorColor(new ColorButton(m_pref.editor.cursorColor(), IMAGE_RGB))
+    , m_cursorColor(new ColorButton(m_pref.cursor.cursorColor(), IMAGE_RGB))
     , m_curSection(curSection)
   {
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
@@ -92,7 +92,7 @@ public:
 
     // Brush preview
     brushPreview()->setSelectedItemIndex(
-      (int)m_pref.editor.brushPreview());
+      (int)m_pref.cursor.brushPreview());
 
     // Grid color
     m_gridColor->setId("grid_color");
@@ -134,8 +134,13 @@ public:
     if (m_pref.selection.keepSelectionAfterClear())
       keepSelectionAfterClear()->setSelected(true);
 
-    if (m_pref.experimental.useNativeCursor())
+#if defined(_WIN32) || defined(__APPLE__)
+    if (m_pref.cursor.useNativeCursor())
       nativeCursor()->setSelected(true);
+#else
+    // TODO impl this on Linux
+    nativeCursor()->setEnabled(false);
+#endif
 
     if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
@@ -258,8 +263,9 @@ public:
     m_pref.editor.zoomWithSlide(slideZoom()->isSelected());
 #endif
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
-    m_pref.editor.cursorColor(m_cursorColor->getColor());
-    m_pref.editor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.cursor.cursorColor(m_cursorColor->getColor());
+    m_pref.cursor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
 
@@ -283,11 +289,9 @@ public:
     m_pref.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
     // Experimental features
-    m_pref.experimental.useNativeCursor(nativeCursor()->isSelected());
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
-    ui::set_use_native_cursors(
-      m_pref.experimental.useNativeCursor());
+    ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
 
     bool reset_screen = false;
     int newScreenScale = base::convert_to<int>(screenScale()->getValue());

@@ -104,9 +104,12 @@
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
-      <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="Tools.CursorColor" />
-      <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" />
       <option id="play_once" type="bool" default="false" />
+    </section>
+    <section id="cursor">
+      <option id="use_native_cursor" type="bool" default="false" migrate="experimental.use_native_cursor" />
+      <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="editor.cursor_color" />
+      <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" migrate="editor.brush_preview" />
     </section>
     <section id="preview" text="Preview">
       <option id="play_once" type="bool" default="false" />
@@ -118,7 +121,6 @@
     </section>
     <section id="experimental" text="Experimental">
       <option id="ui_scale" type="int" default="1" />
-      <option id="use_native_cursor" type="bool" default="false" migrate="Options.NativeCursor" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
     </section>

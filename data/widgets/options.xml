@@ -83,6 +83,9 @@
 
         <!-- Cursors -->
         <vbox id="section_cursors">
+          <separator text="UI Cursor" horizontal="true" />
+          <check id="native_cursor" text="Use native mouse cursors" />
+
           <separator text="Painting Cursors" horizontal="true" />
           <label text="Precise Cursor Color:" />
 	  <hbox>
@@ -172,7 +175,6 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="User Interface" horizontal="true" />
-          <check id="native_cursor" text="Use native mouse cursor" />
           <check id="native_file_dialog" text="Use native file dialog" />
           <check id="flash_layer" text="Flash layer when it is selected" />
         </vbox>

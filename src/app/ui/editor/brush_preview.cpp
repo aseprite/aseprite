@@ -96,7 +96,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Get cursor color
   const auto& pref = Preferences::instance();
-  app::Color app_cursor_color = pref.editor.cursorColor();
+  app::Color app_cursor_color = pref.cursor.cursorColor();
   gfx::Color ui_cursor_color = color_utils::color_for_ui(app_cursor_color);
   m_blackAndWhiteNegative = (app_cursor_color.getType() == app::Color::MaskType);
 
@@ -139,7 +139,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   bool usePreview = false;
 
-  auto brushPreview = pref.editor.brushPreview();
+  auto brushPreview = pref.cursor.brushPreview();
   if (!m_editor->docPref().show.brushPreview())
     brushPreview = app::gen::BrushPreview::NONE;
 
