@@ -70,7 +70,7 @@ public:
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
       int(Capabilities::DisplayScale)
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
       | int(Capabilities::CustomNativeMouseCursor)
 #endif
     // TODO enable this when the GPU support is ready

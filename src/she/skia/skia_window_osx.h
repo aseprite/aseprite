@@ -17,6 +17,7 @@ namespace she {
 
 class EventQueue;
 class SkiaDisplay;
+class Surface;
 
 class SkiaWindow {
 public:
@@ -39,6 +40,9 @@ public:
   void releaseMouse();
   void setMousePosition(const gfx::Point& position);
   bool setNativeMouseCursor(NativeCursor cursor);
+  bool setNativeMouseCursor(const Surface* surface,
+                            const gfx::Point& focus,
+                            const int scale);
   void updateWindow(const gfx::Rect& bounds);
   std::string getLayout() { return ""; }
   void setLayout(const std::string& layout) { }

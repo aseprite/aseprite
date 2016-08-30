@@ -151,10 +151,10 @@ bool SkiaDisplay::setNativeMouseCursor(const she::Surface* surface,
                                        const gfx::Point& focus,
                                        const int scale)
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
   return m_window.setNativeMouseCursor(surface, focus, scale);
 #else
-  // TODO
+  // TODO impl this for Linux
   return false;
 #endif
 }
