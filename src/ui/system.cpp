@@ -32,6 +32,7 @@ static Cursor* mouse_cursor = NULL;
 static she::Display* mouse_display = NULL;
 static Overlay* mouse_cursor_overlay = NULL;
 static bool use_native_mouse_cursor = false;
+static bool support_native_custom_cursor = false;
 
 // Mouse information (button and position).
 
@@ -43,6 +44,27 @@ static int mouse_scares = 0;
 static void update_mouse_overlay(Cursor* cursor)
 {
   mouse_cursor = cursor;
+
+  // Check if we can use a custom native mouse in this platform
+  if (!use_native_mouse_cursor &&
+      support_native_custom_cursor &&
+      mouse_display) {
+    if (cursor) {
+      if (mouse_display->setNativeMouseCursor(
+            // The surface is already scaled by guiscale()
+            cursor->getSurface(),
+            cursor->getFocus(),
+            // We scale the cursor by the she::Display scale
+            mouse_display->scale())) {
+        return;
+      }
+    }
+    else {
+      if (mouse_display->setNativeMouseCursor(she::kNoCursor)) {
+        return;
+      }
+    }
+  }
 
   if (mouse_cursor && mouse_scares == 0) {
     if (!mouse_cursor_overlay) {
@@ -132,6 +154,10 @@ static void update_mouse_cursor()
 UISystem::UISystem()
 {
   mouse_cursor_type = kOutsideDisplay;
+  support_native_custom_cursor =
+    ((int(she::instance()->capabilities()) &
+      int(she::Capabilities::CustomNativeMouseCursor)) ?
+     true: false);
 
   details::initWidgets();
 }

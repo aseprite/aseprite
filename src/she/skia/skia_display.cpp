@@ -147,6 +147,18 @@ bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)
   return m_window.setNativeMouseCursor(cursor);
 }
 
+bool SkiaDisplay::setNativeMouseCursor(const she::Surface* surface,
+                                       const gfx::Point& focus,
+                                       const int scale)
+{
+#ifdef _WIN32
+  return m_window.setNativeMouseCursor(surface, focus, scale);
+#else
+  // TODO
+  return false;
+#endif
+}
+
 void SkiaDisplay::setMousePosition(const gfx::Point& position)
 {
   m_window.setMousePosition(position);

@@ -580,6 +580,14 @@ bool Alleg4Display::setNativeMouseCursor(NativeCursor cursor)
   return (show_os_cursor(newCursor) == 0);
 }
 
+bool Alleg4Display::setNativeMouseCursor(const she::Surface* cursor,
+                                         const gfx::Point& focus,
+                                         const int scale)
+{
+  // TODO
+  return false;
+}
+
 void Alleg4Display::setMousePosition(const gfx::Point& position)
 {
   position_mouse(

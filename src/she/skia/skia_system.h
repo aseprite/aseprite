@@ -70,6 +70,9 @@ public:
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
       int(Capabilities::DisplayScale)
+#ifdef _WIN32
+      | int(Capabilities::CustomNativeMouseCursor)
+#endif
     // TODO enable this when the GPU support is ready
 #if 0 // SK_SUPPORT_GPU
       | int(Capabilities::GpuAccelerationSwitch)

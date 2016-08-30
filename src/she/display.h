@@ -58,6 +58,9 @@ namespace she {
 
     virtual NativeCursor nativeMouseCursor() = 0;
     virtual bool setNativeMouseCursor(NativeCursor cursor) = 0;
+    virtual bool setNativeMouseCursor(const she::Surface* cursor,
+                                      const gfx::Point& focus,
+                                      const int scale) = 0;
     virtual void setMousePosition(const gfx::Point& position) = 0;
     virtual void captureMouse() = 0;
     virtual void releaseMouse() = 0;
