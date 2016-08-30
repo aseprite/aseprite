@@ -105,7 +105,9 @@ bool PngFormat::onLoad(FileOp* fop)
   }
 
   // Do not check sRGB profile
+#ifdef PNG_SKIP_sRGB_CHECK_PROFILE
   png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, 1);
+#endif
 
   /* Set up the input control if you are using standard C streams */
   png_init_io(png_ptr, fp);
