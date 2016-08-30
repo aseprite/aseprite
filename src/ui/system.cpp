@@ -38,6 +38,7 @@ static bool support_native_custom_cursor = false;
 
 static volatile MouseButtons m_buttons;
 static gfx::Point m_mouse_pos;
+static int mouse_cursor_scale = 1;
 
 static int mouse_scares = 0;
 
@@ -81,7 +82,7 @@ static bool update_custom_native_cursor(Cursor* cursor)
         cursor->getSurface(),
         cursor->getFocus(),
         // We scale the cursor by the she::Display scale
-        mouse_display->scale());
+        mouse_display->scale() * mouse_cursor_scale);
     }
     else if (mouse_cursor_type == kOutsideDisplay) {
       result = mouse_display->setNativeMouseCursor(she::kArrowCursor);
@@ -237,6 +238,12 @@ void set_mouse_cursor(CursorType type)
     return;
 
   mouse_cursor_type = type;
+  update_mouse_cursor();
+}
+
+void set_mouse_cursor_scale(const int newScale)
+{
+  mouse_cursor_scale = newScale;
   update_mouse_cursor();
 }
 

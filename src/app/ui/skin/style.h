@@ -127,6 +127,7 @@ namespace app {
       static const css::State& hover() { return m_hoverState; }
       static const css::State& active() { return m_activeState; }
       static const css::State& clicked() { return m_clickedState; }
+      static const css::State& disabled() { return m_disabledState; }
 
       Style(css::Sheet& sheet, const std::string& id);
       ~Style();
@@ -155,6 +156,7 @@ namespace app {
       static css::State m_hoverState;
       static css::State m_activeState;
       static css::State m_clickedState;
+      static css::State m_disabledState;
     };
 
   } // namespace skin

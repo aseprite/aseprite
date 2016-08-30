@@ -137,10 +137,16 @@ public:
 #if defined(_WIN32) || defined(__APPLE__)
     if (m_pref.cursor.useNativeCursor())
       nativeCursor()->setSelected(true);
+    nativeCursor()->Click.connect(base::Bind<void>(&OptionsWindow::onNativeCursorChange, this));
+
+    cursorScale()->setSelectedItemIndex(
+      cursorScale()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.cursor.cursorScale())));
 #else
     // TODO impl this on Linux
     nativeCursor()->setEnabled(false);
 #endif
+    onNativeCursorChange();
 
     if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
@@ -266,6 +272,7 @@ public:
     m_pref.cursor.cursorColor(m_cursorColor->getColor());
     m_pref.cursor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
     m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());
+    m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
 
@@ -291,7 +298,9 @@ public:
     // Experimental features
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
+
     ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
+    ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());
 
     bool reset_screen = false;
     int newScreenScale = base::convert_to<int>(screenScale()->getValue());
@@ -330,6 +339,16 @@ public:
   }
 
 private:
+  void onNativeCursorChange() {
+#if defined(_WIN32) || defined(__APPLE__)
+    bool state = !nativeCursor()->isSelected();
+#else
+    bool state = false;
+#endif
+    cursorScaleLabel()->setEnabled(state);
+    cursorScale()->setEnabled(state);
+  }
+
   void onChangeSection() {
     ListItem* item = static_cast<ListItem*>(sectionListbox()->getSelectedChild());
     if (!item)

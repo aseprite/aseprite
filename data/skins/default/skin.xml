@@ -420,6 +420,9 @@
     <style id="label">
       <text color="text" />
     </style>
+    <style id="label:disabled">
+      <text color="disabled" />
+    </style>
 
     <!-- link -->
     <style id="link">

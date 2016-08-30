@@ -205,9 +205,8 @@ void App::initialize(const AppOptions& options)
 
     // Setup the GUI cursor and redraw screen
 
-    ui::set_use_native_cursors(
-      preferences().cursor.useNativeCursor());
-
+    ui::set_use_native_cursors(preferences().cursor.useNativeCursor());
+    ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());
     ui::set_mouse_cursor(kArrowCursor);
 
     ui::Manager::getDefault()->invalidate();

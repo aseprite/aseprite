@@ -37,6 +37,7 @@ namespace ui {
   void set_use_native_cursors(bool state);
   CursorType get_mouse_cursor();
   void set_mouse_cursor(CursorType type);
+  void set_mouse_cursor_scale(const int newScale);
 
   void hide_mouse_cursor();
   void show_mouse_cursor();

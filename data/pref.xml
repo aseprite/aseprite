@@ -108,6 +108,7 @@
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" migrate="experimental.use_native_cursor" />
+      <option id="cursor_scale" type="int" default="1" />
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="editor.cursor_color" />
       <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" migrate="editor.brush_preview" />
     </section>

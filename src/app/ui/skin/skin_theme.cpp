@@ -1010,8 +1010,11 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 
   rc.shrink(widget->border());
 
+  Style::State state;
+  if (!widget->isEnabled()) state += Style::disabled();
+
   widget->getTextIconInfo(NULL, &text);
-  style->paint(g, text, widget->text().c_str(), Style::State());
+  style->paint(g, text, widget->text().c_str(), state);
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
@@ -1029,6 +1032,7 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Style::State state;
   if (widget->hasMouseOver()) state += Style::hover();
   if (widget->isSelected()) state += Style::clicked();
+  if (!widget->isEnabled()) state += Style::disabled();
 
   g->fillRect(bg, bounds);
   style->paint(g, bounds, widget->text().c_str(), state);

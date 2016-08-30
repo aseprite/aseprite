@@ -22,6 +22,7 @@ namespace skin {
 css::State Style::m_hoverState("hover");
 css::State Style::m_activeState("active");
 css::State Style::m_clickedState("clicked");
+css::State Style::m_disabledState("disabled");
 
 Rule::~Rule()
 {

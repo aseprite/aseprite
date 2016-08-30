@@ -83,8 +83,17 @@
 
         <!-- Cursors -->
         <vbox id="section_cursors">
-          <separator text="UI Cursor" horizontal="true" />
+          <separator text="UI Mouse Cursor" horizontal="true" />
           <check id="native_cursor" text="Use native mouse cursors" />
+          <hbox>
+            <label id="cursor_scale_label" text="Mouse Cursor Scale:" />
+            <combobox id="cursor_scale">
+              <listitem text="100%" value="1" />
+              <listitem text="200%" value="2" />
+              <listitem text="300%" value="3" />
+              <listitem text="400%" value="4" />
+            </combobox>
+          </hbox>
 
           <separator text="Painting Cursors" horizontal="true" />
           <label text="Precise Cursor Color:" />
