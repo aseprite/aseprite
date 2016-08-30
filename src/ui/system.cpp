@@ -163,8 +163,9 @@ UISystem::UISystem()
 {
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
-    ((int(she::instance()->capabilities()) &
-      int(she::Capabilities::CustomNativeMouseCursor)) ?
+    ((she::instance() &&
+      (int(she::instance()->capabilities()) &
+       int(she::Capabilities::CustomNativeMouseCursor))) ?
      true: false);
 
   details::initWidgets();
