@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,29 +21,53 @@ namespace cmd {
 
 using namespace doc;
 
-MoveLayer::MoveLayer(Layer* layer, Layer* afterThis)
+MoveLayer::MoveLayer(Layer* layer,
+                     Layer* newParent,
+                     Layer* afterThis)
   : m_layer(layer)
+  , m_oldParent(layer->parent())
   , m_oldAfterThis(layer->getPrevious())
-  , m_newAfterThis(afterThis)
+  , m_newParent(newParent)
+  , m_newAfterThis(afterThis == layer ? afterThis->getPrevious(): afterThis)
 {
 }
 
 void MoveLayer::onExecute()
 {
-  m_layer.layer()->parent()->stackLayer(
-    m_layer.layer(),
-    m_newAfterThis.layer());
+  Layer* layer = m_layer.layer();
+  Layer* afterThis = m_newAfterThis.layer();
+  LayerGroup* oldParent = static_cast<LayerGroup*>(m_oldParent.layer());
+  LayerGroup* newParent = static_cast<LayerGroup*>(m_newParent.layer());
+  ASSERT(layer);
+  ASSERT(oldParent);
+  ASSERT(newParent);
 
-  m_layer.layer()->parent()->incrementVersion();
+  oldParent->removeLayer(layer);
+  newParent->insertLayer(layer, afterThis);
+
+  if (oldParent != newParent)
+    oldParent->incrementVersion();
+  newParent->incrementVersion();
+  layer->sprite()->incrementVersion();
 }
 
 void MoveLayer::onUndo()
 {
-  m_layer.layer()->parent()->stackLayer(
-    m_layer.layer(),
-    m_oldAfterThis.layer());
+  Layer* layer = m_layer.layer();
+  Layer* afterThis = m_oldAfterThis.layer();
+  LayerGroup* oldParent = static_cast<LayerGroup*>(m_oldParent.layer());
+  LayerGroup* newParent = static_cast<LayerGroup*>(m_newParent.layer());
+  ASSERT(layer);
+  ASSERT(oldParent);
+  ASSERT(newParent);
 
-  m_layer.layer()->parent()->incrementVersion();
+  newParent->removeLayer(layer);
+  oldParent->insertLayer(layer, afterThis);
+
+  if (oldParent != newParent)
+    oldParent->incrementVersion();
+  newParent->incrementVersion();
+  layer->sprite()->incrementVersion();
 }
 
 void MoveLayer::onFireNotifications()

@@ -679,7 +679,7 @@ private:
     clear_image(m_previousImage.get(), m_bgIndex);
 
     m_layer = new LayerImage(m_sprite.get());
-    m_sprite->folder()->addLayer(m_layer);
+    m_sprite->root()->addLayer(m_layer);
   }
 
   void resetRemap(int ncolors) {
@@ -838,9 +838,7 @@ public:
         m_sprite->getPalettes().size() == 1) {
       // If some layer has opacity < 255 or a different blend mode, we
       // need to create color palettes.
-      std::vector<Layer*> layers;
-      m_sprite->getLayersList(layers);
-      for (const Layer* layer : layers) {
+      for (const Layer* layer : m_sprite->allVisibleLayers()) {
         if (layer->isVisible() && layer->isImage()) {
           const LayerImage* imageLayer = static_cast<const LayerImage*>(layer);
           if (imageLayer->opacity() < 255 ||

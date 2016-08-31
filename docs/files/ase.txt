@@ -156,6 +156,7 @@ Layer Chunk (0x2004)
                   4 = Lock movement
                   8 = Background
                   16 = Prefer linked cels
+                  32 = The layer group should be displayed collapsed
   WORD          Layer type (0=normal (image) layer, 1=layer set)
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)

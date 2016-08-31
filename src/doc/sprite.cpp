@@ -19,7 +19,6 @@
 #include "doc/frame_tag.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
-#include "doc/layers_range.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
@@ -29,9 +28,6 @@
 #include <vector>
 
 namespace doc {
-
-static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count);
-static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
 
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
@@ -47,7 +43,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   ASSERT(width > 0 && height > 0);
 
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
-  m_folder = new LayerFolder(this);
+  m_root = new LayerGroup(this);
 
   // Generate palette
   switch (format) {
@@ -84,7 +80,7 @@ Sprite::Sprite(const ImageSpec& spec, int ncolors)
 Sprite::~Sprite()
 {
   // Destroy layers
-  delete m_folder;
+  delete m_root;
 
   // Destroy palettes
   {
@@ -125,7 +121,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
     }
 
     // Add the layer in the sprite.
-    sprite->folder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
+    sprite->root()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
   }
 
   return sprite.release();
@@ -200,15 +196,10 @@ int Sprite::getMemSize() const
 //////////////////////////////////////////////////////////////////////
 // Layers
 
-LayerFolder* Sprite::folder() const
-{
-  return m_folder;
-}
-
 LayerImage* Sprite::backgroundLayer() const
 {
-  if (folder()->getLayersCount() > 0) {
-    Layer* bglayer = *folder()->getLayerBegin();
+  if (root()->layersCount() > 0) {
+    Layer* bglayer = root()->layers().front();
 
     if (bglayer->isBackground()) {
       ASSERT(bglayer->isImage());
@@ -218,50 +209,17 @@ LayerImage* Sprite::backgroundLayer() const
   return NULL;
 }
 
-LayerIndex Sprite::countLayers() const
+Layer* Sprite::firstBrowsableLayer() const
 {
-  return LayerIndex(folder()->getLayersCount());
+  Layer* layer = root()->firstLayer();
+  while (layer->isBrowsable())
+    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+  return layer;
 }
 
-LayerIndex Sprite::firstLayer() const
+layer_t Sprite::allLayersCount() const
 {
-  return LayerIndex(0);
-}
-
-LayerIndex Sprite::lastLayer() const
-{
-  return LayerIndex(folder()->getLayersCount()-1);
-}
-
-Layer* Sprite::layer(int layerIndex) const
-{
-  return indexToLayer(LayerIndex(layerIndex));
-}
-
-Layer* Sprite::indexToLayer(LayerIndex index) const
-{
-  if (index < LayerIndex(0))
-    return NULL;
-
-  int index_count = -1;
-  return index2layer(folder(), index, &index_count);
-}
-
-LayerIndex Sprite::layerToIndex(const Layer* layer) const
-{
-  int index_count = -1;
-  return layer2index(folder(), layer, &index_count);
-}
-
-void Sprite::getLayersList(std::vector<Layer*>& layers) const
-{
-  // TODO support subfolders
-  LayerConstIterator it = m_folder->getLayerBegin();
-  LayerConstIterator end = m_folder->getLayerEnd();
-
-  for (; it != end; ++it) {
-    layers.push_back(*it);
-  }
+  return root()->allLayersCount();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -383,12 +341,12 @@ void Sprite::addFrame(frame_t newFrame)
   for (frame_t i=m_frames-1; i>=newFrame; --i)
     setFrameDuration(i, frameDuration(i-1));
 
-  folder()->displaceFrames(newFrame, +1);
+  root()->displaceFrames(newFrame, +1);
 }
 
 void Sprite::removeFrame(frame_t frame)
 {
-  folder()->displaceFrames(frame, -1);
+  root()->displaceFrames(frame, -1);
 
   frame_t newTotal = m_frames-1;
   for (frame_t i=frame; i<newTotal; ++i)
@@ -493,12 +451,11 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 
 void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const
 {
-  std::vector<Layer*> layers;
-  getLayersList(layers);
+  LayerList layers = allVisibleLayers();
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
     Layer* layer = layers[i];
-    if (!layer->isImage() || !layer->isVisible())
+    if (!layer->isImage())
       continue;
 
     Cel* cel = layer->cel(frame);
@@ -541,77 +498,51 @@ void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList
 //////////////////////////////////////////////////////////////////////
 // Iterators
 
-LayersRange Sprite::layers() const
+LayerList Sprite::allLayers() const
 {
-  return LayersRange(this, LayerIndex(0), LayerIndex(countLayers()-1));
+  LayerList list;
+  m_root->allLayers(list);
+  return list;
+}
+
+LayerList Sprite::allVisibleLayers() const
+{
+  LayerList list;
+  m_root->allVisibleLayers(list);
+  return list;
+}
+
+LayerList Sprite::allBrowsableLayers() const
+{
+  LayerList list;
+  m_root->allBrowsableLayers(list);
+  return list;
 }
 
 CelsRange Sprite::cels() const
 {
-  return CelsRange(this, frame_t(0), lastFrame());
+  SelectedFrames selFrames;
+  selFrames.insert(0, lastFrame());
+  return CelsRange(this, selFrames);
 }
 
 CelsRange Sprite::cels(frame_t frame) const
 {
-  return CelsRange(this, frame, frame);
+  SelectedFrames selFrames;
+  selFrames.insert(frame);
+  return CelsRange(this, selFrames);
 }
 
 CelsRange Sprite::uniqueCels() const
 {
-  return CelsRange(this, frame_t(0), lastFrame(), CelsRange::UNIQUE);
+  SelectedFrames selFrames;
+  selFrames.insert(0, lastFrame());
+  return CelsRange(this, selFrames, CelsRange::UNIQUE);
 }
 
-CelsRange Sprite::uniqueCels(frame_t from, frame_t to) const
+CelsRange Sprite::uniqueCels(const SelectedFrames& selFrames) const
 {
-  return CelsRange(this, from, to, CelsRange::UNIQUE);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count)
-{
-  if (index == *index_count)
-    return (Layer*)layer;
-  else {
-    (*index_count)++;
-
-    if (layer->isFolder()) {
-      Layer *found;
-
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
-        if ((found = index2layer(*it, index, index_count)))
-          return found;
-      }
-    }
-
-    return NULL;
-  }
-}
-
-static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count)
-{
-  if (layer == find_layer)
-    return LayerIndex(*index_count);
-  else {
-    (*index_count)++;
-
-    if (layer->isFolder()) {
-      int found;
-
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
-        if ((found = layer2index(*it, find_layer, index_count)) >= 0)
-          return LayerIndex(found);
-      }
-    }
-
-    return LayerIndex(-1);
-  }
+  return CelsRange(this, selFrames, CelsRange::UNIQUE);
 }
 
 } // namespace doc

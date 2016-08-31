@@ -82,8 +82,7 @@ void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
   setSpriteSize(sprite, bounds.w, bounds.h);
 
   app::Document* doc = static_cast<app::Document*>(sprite->document());
-  std::vector<Layer*> layers;
-  sprite->getLayersList(layers);
+  LayerList layers = sprite->allLayers();
   for (Layer* layer : layers) {
     if (!layer->isImage())
       continue;
@@ -238,7 +237,7 @@ void DocumentApi::moveFrame(Sprite* sprite, frame_t frame, frame_t beforeFrame)
     adjustFrameTags(sprite, beforeFrame, +1, true);
 
     // Change cel positions.
-    moveFrameLayer(sprite->folder(), frame, beforeFrame);
+    moveFrameLayer(sprite->root(), frame, beforeFrame);
   }
 }
 
@@ -289,12 +288,9 @@ void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFram
       break;
     }
 
-    case ObjectType::LayerFolder: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it)
-        moveFrameLayer(*it, frame, beforeFrame);
+    case ObjectType::LayerGroup: {
+      for (Layer* child : static_cast<LayerGroup*>(layer)->layers())
+        moveFrameLayer(child, frame, beforeFrame);
       break;
     }
 
@@ -396,30 +392,27 @@ void DocumentApi::swapCel(
   if (cel2) setCelFramePosition(cel2, frame1);
 }
 
-LayerImage* DocumentApi::newLayer(Sprite* sprite, const std::string& name)
+LayerImage* DocumentApi::newLayer(LayerGroup* parent, const std::string& name)
 {
-  LayerImage* layer = new LayerImage(sprite);
+  LayerImage* layer = new LayerImage(parent->sprite());
   layer->setName(name);
 
-  addLayer(sprite->folder(), layer,
-           sprite->folder()->getLastLayer());
-
+  addLayer(parent, layer, parent->lastLayer());
   return layer;
 }
 
-LayerFolder* DocumentApi::newLayerFolder(Sprite* sprite)
+LayerGroup* DocumentApi::newGroup(LayerGroup* parent, const std::string& name)
 {
-  LayerFolder* layer = new LayerFolder(sprite);
+  LayerGroup* layer = new LayerGroup(parent->sprite());
+  layer->setName(name);
 
-  addLayer(sprite->folder(), layer,
-           sprite->folder()->getLastLayer());
-
+  addLayer(parent, layer, parent->lastLayer());
   return layer;
 }
 
-void DocumentApi::addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis)
+void DocumentApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
 {
-  m_transaction.execute(new cmd::AddLayer(folder, newLayer, afterThis));
+  m_transaction.execute(new cmd::AddLayer(parent, newLayer, afterThis));
 }
 
 void DocumentApi::removeLayer(Layer* layer)
@@ -429,17 +422,30 @@ void DocumentApi::removeLayer(Layer* layer)
   m_transaction.execute(new cmd::RemoveLayer(layer));
 }
 
-void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
+void DocumentApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis)
 {
-  m_transaction.execute(new cmd::MoveLayer(layer, afterThis));
+  ASSERT(parent);
+
+  if (layer == afterThis)
+    return;
+
+  m_transaction.execute(new cmd::MoveLayer(layer, parent, afterThis));
 }
 
-void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
+void DocumentApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis)
 {
-  LayerIndex beforeThisIdx = layer->sprite()->layerToIndex(beforeThis);
-  LayerIndex afterThisIdx = beforeThisIdx.previous();
+  ASSERT(parent);
 
-  restackLayerAfter(layer, layer->sprite()->indexToLayer(afterThisIdx));
+  if (layer == beforeThis)
+    return;
+
+  Layer* afterThis;
+  if (beforeThis)
+    afterThis = beforeThis->getPrevious();
+  else
+    afterThis = parent->lastLayer();
+
+  restackLayerAfter(layer, parent, afterThis);
 }
 
 void DocumentApi::backgroundFromLayer(Layer* layer)
@@ -457,26 +463,36 @@ void DocumentApi::flattenLayers(Sprite* sprite)
   m_transaction.execute(new cmd::FlattenLayers(sprite));
 }
 
-void DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
+Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
-  base::UniquePtr<LayerImage> newLayerPtr(new LayerImage(sourceLayer->sprite()));
+  ASSERT(parent);
+  base::UniquePtr<Layer> newLayerPtr;
+
+  if (sourceLayer->isImage())
+    newLayerPtr.reset(new LayerImage(sourceLayer->sprite()));
+  else if (sourceLayer->isGroup())
+    newLayerPtr.reset(new LayerGroup(sourceLayer->sprite()));
+  else
+    throw std::runtime_error("Invalid layer type");
 
   m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr);
 
   newLayerPtr->setName(newLayerPtr->name() + " Copy");
 
-  addLayer(sourceLayer->parent(), newLayerPtr, afterLayer);
+  addLayer(parent, newLayerPtr, afterLayer);
 
   // Release the pointer as it is owned by the sprite now.
-  newLayerPtr.release();
+  return newLayerPtr.release();
 }
 
-void DocumentApi::duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer)
+Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
 {
-  LayerIndex beforeThisIdx = sourceLayer->sprite()->layerToIndex(beforeLayer);
-  LayerIndex afterThisIdx = beforeThisIdx.previous();
-
-  duplicateLayerAfter(sourceLayer, sourceLayer->sprite()->indexToLayer(afterThisIdx));
+  ASSERT(parent);
+  Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousInWholeHierarchy(): nullptr);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
+  if (newLayer)
+    restackLayerBefore(newLayer, parent, beforeLayer);
+  return newLayer;
 }
 
 Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image)

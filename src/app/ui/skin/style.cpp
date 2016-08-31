@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -23,6 +23,7 @@ namespace skin {
 css::State Style::m_hoverState("hover");
 css::State Style::m_activeState("active");
 css::State Style::m_clickedState("clicked");
+css::State Style::m_disabledState("disabled");
 
 Rule::~Rule()
 {
@@ -110,7 +111,10 @@ void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   x += m_x;
   y += m_y;
 
-  g->drawRgbaSurface(bmp, x, y);
+  if (m_color == gfx::ColorNone)
+    g->drawRgbaSurface(bmp, x, y);
+  else
+    g->drawColoredRgbaSurface(bmp, m_color, x, y);
 }
 
 Rules::Rules(const css::Query& query) :
@@ -125,6 +129,7 @@ Rules::Rules(const css::Query& query) :
   css::Value iconPart = query[StyleSheet::iconPartRule()];
   css::Value iconX = query[StyleSheet::iconXRule()];
   css::Value iconY = query[StyleSheet::iconYRule()];
+  css::Value iconColor = query[StyleSheet::iconColorRule()];
   css::Value textAlign = query[StyleSheet::textAlignRule()];
   css::Value textColor = query[StyleSheet::textColorRule()];
   css::Value paddingLeft = query[StyleSheet::paddingLeftRule()];
@@ -145,12 +150,14 @@ Rules::Rules(const css::Query& query) :
   if (iconAlign != none
     || iconPart != none
     || iconX != none
-    || iconY != none) {
+    || iconY != none
+    || iconColor != none) {
     m_icon = new IconRule();
     m_icon->setAlign((int)iconAlign.number());
     m_icon->setPart(StyleSheet::convertPart(iconPart));
     m_icon->setX((int)iconX.number()*ui::guiscale());
     m_icon->setY((int)iconY.number()*ui::guiscale());
+    m_icon->setColor(StyleSheet::convertColor(iconColor));
   }
 
   if (textAlign != none

@@ -16,7 +16,6 @@
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/timeline.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -43,9 +42,9 @@ LinkCelsCommand::LinkCelsCommand()
 bool LinkCelsCommand::onEnabled(Context* context)
 {
   if (context->checkFlags(ContextFlags::ActiveDocumentIsWritable)) {
-    // TODO the range of selected frames should be in doc::Site.
-    auto range = App::instance()->timeline()->range();
-    return (range.enabled() && range.frames() > 1);
+    auto site = context->activeSite();
+    return (site.inTimeline() &&
+            site.selectedFrames().size() > 1);
   }
   else
     return false;
@@ -57,36 +56,33 @@ void LinkCelsCommand::onExecute(Context* context)
   Document* document(writer.document());
   bool nonEditableLayers = false;
   {
-    // TODO the range of selected frames should be in doc::Site.
-    auto range = App::instance()->timeline()->range();
-    if (!range.enabled())
+    auto site = context->activeSite();
+    if (!site.inTimeline())
       return;
 
     Transaction transaction(writer.context(), friendlyName());
-    Sprite* sprite = writer.sprite();
-    frame_t begin = range.frameBegin();
-    frame_t end = range.frameEnd();
 
-    for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
-      Layer* layer = sprite->indexToLayer(layerIdx);
+    for (Layer* layer : site.selectedLayers()) {
       if (!layer->isImage())
         continue;
 
-      if (!layer->isEditable()) {
+      if (!layer->isEditableHierarchy()) {
         nonEditableLayers = true;
         continue;
       }
 
       LayerImage* layerImage = static_cast<LayerImage*>(layer);
-      for (frame_t frame=begin; frame < end+1; ++frame) {
+
+      for (auto it=site.selectedFrames().begin(), end=site.selectedFrames().end();
+           it != end; ++it) {
+        frame_t frame = *it;
         Cel* cel = layerImage->cel(frame);
         if (cel) {
-          for (frame = cel->frame()+1;
-               frame < end+1; ++frame) {
+          for (++it; it != end; ++it) {
             transaction.execute(
               new cmd::CopyCel(
                 layerImage, cel->frame(),
-                layerImage, frame,
+                layerImage, *it,
                 true));         // true = force links
           }
           break;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -84,12 +84,14 @@ namespace app {
 
     class IconRule : public Rule {
     public:
-      explicit IconRule() : m_align(0) { }
+      explicit IconRule() : m_align(0),
+                            m_color(gfx::ColorNone) { }
 
       void setAlign(int align) { m_align = align; }
       void setPart(const SkinPartPtr& part) { m_part = part; }
       void setX(int x) { m_x = x; }
       void setY(int y) { m_y = y; }
+      void setColor(gfx::Color color) { m_color = color; }
 
       SkinPartPtr getPart() { return m_part; }
 
@@ -100,6 +102,7 @@ namespace app {
       int m_align;
       SkinPartPtr m_part;
       int m_x, m_y;
+      gfx::Color m_color;
     };
 
     class Rules {
@@ -128,6 +131,7 @@ namespace app {
       static const css::State& hover() { return m_hoverState; }
       static const css::State& active() { return m_activeState; }
       static const css::State& clicked() { return m_clickedState; }
+      static const css::State& disabled() { return m_disabledState; }
 
       Style(css::Sheet& sheet, const std::string& id);
       ~Style();
@@ -156,6 +160,7 @@ namespace app {
       static css::State m_hoverState;
       static css::State m_activeState;
       static css::State m_clickedState;
+      static css::State m_disabledState;
     };
 
   } // namespace skin

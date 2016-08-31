@@ -24,17 +24,19 @@ namespace doc {
   class Sprite;
   class Layer;
   class LayerImage;
-  class LayerFolder;
+  class LayerGroup;
 
   //////////////////////////////////////////////////////////////////////
   // Layer class
 
   enum class LayerFlags {
+    None       = 0,
     Visible    = 1,             // Can be read
     Editable   = 2,             // Can be written
     LockMove   = 4,             // Cannot be moved
     Background = 8,             // Stack order cannot be changed
     Continuous = 16,            // Prefer to link cels when the user copy them
+    Collapsed  = 32,            // Prefer to show this group layer collapsed
 
     BackgroundLayerFlags = LockMove | Background,
   };
@@ -52,15 +54,19 @@ namespace doc {
     void setName(const std::string& name) { m_name = name; }
 
     Sprite* sprite() const { return m_sprite; }
-    LayerFolder* parent() const { return m_parent; }
-    void setParent(LayerFolder* folder) { m_parent = folder; }
+    LayerGroup* parent() const { return m_parent; }
+    void setParent(LayerGroup* group) { m_parent = group; }
 
     // Gets the previous sibling of this layer.
     Layer* getPrevious() const;
     Layer* getNext() const;
 
+    Layer* getPreviousInWholeHierarchy() const;
+    Layer* getNextInWholeHierarchy() const;
+
     bool isImage() const { return type() == ObjectType::LayerImage; }
-    bool isFolder() const { return type() == ObjectType::LayerFolder; }
+    bool isGroup() const { return type() == ObjectType::LayerGroup; }
+    virtual bool isBrowsable() const { return false; }
 
     bool isBackground() const  { return hasFlags(LayerFlags::Background); }
     bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
@@ -68,12 +74,18 @@ namespace doc {
     bool isEditable() const    { return hasFlags(LayerFlags::Editable); }
     bool isMovable() const     { return !hasFlags(LayerFlags::LockMove); }
     bool isContinuous() const  { return hasFlags(LayerFlags::Continuous); }
+    bool isCollapsed() const   { return hasFlags(LayerFlags::Collapsed); }
+    bool isExpanded() const    { return !hasFlags(LayerFlags::Collapsed); }
+
+    bool isVisibleHierarchy() const;
+    bool isEditableHierarchy() const;
 
     void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
     void setVisible   (bool state) { switchFlags(LayerFlags::Visible, state); }
     void setEditable  (bool state) { switchFlags(LayerFlags::Editable, state); }
     void setMovable   (bool state) { switchFlags(LayerFlags::LockMove, !state); }
     void setContinuous(bool state) { switchFlags(LayerFlags::Continuous, state); }
+    void setCollapsed (bool state) { switchFlags(LayerFlags::Collapsed, state); }
 
     LayerFlags flags() const {
       return m_flags;
@@ -101,7 +113,7 @@ namespace doc {
   private:
     std::string m_name;           // layer name
     Sprite* m_sprite;             // owner of the layer
-    LayerFolder* m_parent;        // parent layer
+    LayerGroup* m_parent;        // parent layer
     LayerFlags m_flags;           // stack order cannot be changed
 
     // Disable assigment
@@ -154,31 +166,37 @@ namespace doc {
   };
 
   //////////////////////////////////////////////////////////////////////
-  // LayerFolder class
+  // LayerGroup class
 
-  class LayerFolder : public Layer {
+  class LayerGroup : public Layer {
   public:
-    explicit LayerFolder(Sprite* sprite);
-    virtual ~LayerFolder();
+    explicit LayerGroup(Sprite* sprite);
+    virtual ~LayerGroup();
 
     virtual int getMemSize() const override;
 
-    const LayerList& getLayersList() { return m_layers; }
-    LayerIterator getLayerBegin() { return m_layers.begin(); }
-    LayerIterator getLayerEnd() { return m_layers.end(); }
-    LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
-    LayerConstIterator getLayerEnd() const { return m_layers.end(); }
-    int getLayersCount() const { return (int)m_layers.size(); }
+    const LayerList& layers() const { return m_layers; }
+    int layersCount() const { return (int)m_layers.size(); }
 
     void addLayer(Layer* layer);
     void removeLayer(Layer* layer);
+    void insertLayer(Layer* layer, Layer* after);
     void stackLayer(Layer* layer, Layer* after);
 
-    Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
-    Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
+    Layer* firstLayer() const { return (m_layers.empty() ? nullptr: m_layers.front()); }
+    Layer* lastLayer() const { return (m_layers.empty() ? nullptr: m_layers.back()); }
+
+    void allLayers(LayerList& list) const;
+    layer_t allLayersCount() const;
+    void allVisibleLayers(LayerList& list) const;
+    void allBrowsableLayers(LayerList& list) const;
 
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;
+
+    bool isBrowsable() const override {
+      return isGroup() && isExpanded() && !m_layers.empty();
+    }
 
   private:
     void destroyAllLayers();

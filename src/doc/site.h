@@ -9,7 +9,8 @@
 #pragma once
 
 #include "doc/frame.h"
-#include "doc/layer_index.h"
+#include "doc/selected_frames.h"
+#include "doc/selected_layers.h"
 
 namespace doc {
 
@@ -25,11 +26,32 @@ namespace doc {
   // etc.).
   class Site {
   public:
+    // Were is the user focus. E.g. If this focus is in the timeline,
+    // it means that commands should applied in the context of the
+    // timeline (layers, or frames, or cels).
+    enum Focus {
+      None,
+      InEditor,
+      InLayers,
+      InFrames,
+      InCels,
+      InColorBar
+    };
+
     Site()
-      : m_document(nullptr)
+      : m_focus(None)
+      , m_document(nullptr)
       , m_sprite(nullptr)
       , m_layer(nullptr)
       , m_frame(0) { }
+
+    const Focus focus() const { return m_focus; }
+    bool inEditor() const { return m_focus == InEditor; }
+    bool inLayers() const { return m_focus == InLayers; }
+    bool inFrames() const { return m_focus == InFrames; }
+    bool inCels() const { return m_focus == InCels; }
+    bool inColorBar() const { return m_focus == InColorBar; }
+    bool inTimeline() const { return (inLayers() || inFrames() || inCels()); }
 
     const Document* document() const { return m_document; }
     const Sprite* sprite() const { return m_sprite; }
@@ -42,22 +64,36 @@ namespace doc {
     Layer* layer() { return m_layer; }
     Cel* cel();
 
+    void focus(Focus focus) { m_focus = focus; }
     void document(Document* document) { m_document = document; }
     void sprite(Sprite* sprite) { m_sprite = sprite; }
     void layer(Layer* layer) { m_layer = layer; }
     void frame(frame_t frame) { m_frame = frame; }
 
-    LayerIndex layerIndex() const;
-    void layerIndex(LayerIndex layerIndex);
+    const SelectedLayers& selectedLayers() const { return m_selectedLayers; }
+    SelectedLayers& selectedLayers() { return m_selectedLayers; }
+    void selectedLayers(const SelectedLayers& selectedLayers) {
+      m_selectedLayers = selectedLayers;
+    }
+
+    const SelectedFrames& selectedFrames() const { return m_selectedFrames; }
+    SelectedFrames& selectedFrames() { return m_selectedFrames; }
+    void selectedFrames(const SelectedFrames& selectedFrames) {
+      m_selectedFrames = selectedFrames;
+    }
+
     Palette* palette();
     Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
     Palette* palette() const;
 
   private:
+    Focus m_focus;
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     frame_t m_frame;
+    SelectedLayers m_selectedLayers;
+    SelectedFrames m_selectedFrames;
   };
 
 } // namespace app

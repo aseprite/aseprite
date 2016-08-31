@@ -85,8 +85,8 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
     case Action::Auto: {
       auto range = App::instance()->timeline()->range();
       if (range.enabled() && (range.frames() > 1)) {
-        begin = range.frameBegin();
-        end = range.frameEnd();
+        begin = range.selectedFrames().firstFrame();
+        end = range.selectedFrames().lastFrame();
         on = true;
       }
       else {

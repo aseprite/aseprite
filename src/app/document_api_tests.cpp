@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -22,13 +22,103 @@ using namespace doc;
 
 typedef base::UniquePtr<app::Document> DocumentPtr;
 
-TEST(DocumentApi, MoveCel) {
-  TestContextT<app::Context> ctx;
-  DocumentPtr doc(static_cast<app::Document*>(ctx.documents().add(32, 16)));
-  Sprite* sprite = doc->sprite();
-  LayerImage* layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
-  LayerImage* layer2 = new LayerImage(sprite);
+class BasicDocApiTest : public ::testing::Test {
+public:
+  BasicDocApiTest() :
+    doc((static_cast<app::Document*>(ctx.documents().add(32, 16)))),
+    sprite(doc->sprite()),
+    root(sprite->root()),
+    layer1(dynamic_cast<LayerImage*>(sprite->root()->firstLayer())),
+    layer2(new LayerImage(sprite)),
+    layer3(new LayerImage(sprite))
+  {
+    root->addLayer(layer2);
+    root->addLayer(layer3);
+  }
 
+  ~BasicDocApiTest() {
+    doc->close();
+  }
+
+  TestContextT<app::Context> ctx;
+  DocumentPtr doc;
+  Sprite* sprite;
+  LayerGroup* root;
+  LayerImage* layer1;
+  LayerImage* layer2;
+  LayerImage* layer3;
+};
+
+TEST_F(BasicDocApiTest, RestackLayerBefore)
+{
+  EXPECT_EQ(layer1, root->firstLayer());
+  {
+    Transaction transaction(&ctx, "");
+    // Do nothing
+    doc->getApi(transaction).restackLayerBefore(layer1, layer1->parent(), layer1);
+    EXPECT_EQ(layer1, root->firstLayer());
+    EXPECT_EQ(layer2, root->firstLayer()->getNext());
+    EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
+    // Rollback
+  }
+
+  EXPECT_EQ(layer1, root->firstLayer());
+  {
+    Transaction transaction(&ctx, "");
+    doc->getApi(transaction).restackLayerBefore(layer1, layer3->parent(), layer3);
+    EXPECT_EQ(layer2, root->firstLayer());
+    EXPECT_EQ(layer1, root->firstLayer()->getNext());
+    EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
+    // Rollback
+  }
+
+  EXPECT_EQ(layer1, root->firstLayer());
+  {
+    Transaction transaction(&ctx, "");
+    doc->getApi(transaction).restackLayerBefore(layer1, layer1->parent(), nullptr);
+    EXPECT_EQ(layer2, root->firstLayer());
+    EXPECT_EQ(layer3, root->firstLayer()->getNext());
+    EXPECT_EQ(layer1, root->firstLayer()->getNext()->getNext());
+    // Rollback
+  }
+}
+
+TEST_F(BasicDocApiTest, RestackLayerAfter)
+{
+  EXPECT_EQ(layer1, root->firstLayer());
+  {
+    Transaction transaction(&ctx, "");
+    // Do nothing
+    doc->getApi(transaction).restackLayerAfter(layer1, layer1->parent(), layer1);
+    EXPECT_EQ(layer1, root->firstLayer());
+    EXPECT_EQ(layer2, root->firstLayer()->getNext());
+    EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
+    // Rollback
+  }
+
+  EXPECT_EQ(layer1, root->firstLayer());
+  {
+    Transaction transaction(&ctx, "");
+    doc->getApi(transaction).restackLayerAfter(layer1, layer3->parent(), layer3);
+    EXPECT_EQ(layer2, root->firstLayer());
+    EXPECT_EQ(layer3, root->firstLayer()->getNext());
+    EXPECT_EQ(layer1, root->firstLayer()->getNext()->getNext());
+    // Rollback
+  }
+
+  EXPECT_EQ(layer1, root->firstLayer());
+  {
+    Transaction transaction(&ctx, "");
+    doc->getApi(transaction).restackLayerAfter(layer3, layer3->parent(), nullptr);
+    EXPECT_EQ(layer3, root->firstLayer());
+    EXPECT_EQ(layer1, root->firstLayer()->getNext());
+    EXPECT_EQ(layer2, root->firstLayer()->getNext()->getNext());
+    // Rollback
+  }
+}
+
+TEST_F(BasicDocApiTest, MoveCel)
+{
   Cel* cel1 = layer1->cel(frame_t(0));
   cel1->setPosition(2, -2);
   cel1->setOpacity(128);
@@ -61,6 +151,4 @@ TEST(DocumentApi, MoveCel) {
   EXPECT_EQ(2, cel2->x());
   EXPECT_EQ(-2, cel2->y());
   EXPECT_EQ(128, cel2->opacity());
-
-  doc->close();
 }

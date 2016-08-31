@@ -37,7 +37,7 @@ TEST(File, SeveralSizes)
         doc->setFilename(&fn[0]);
 
         // Random pixels
-        Layer* layer = doc->sprite()->folder()->getFirstLayer();
+        Layer* layer = doc->sprite()->root()->firstLayer();
         ASSERT_TRUE(layer != NULL);
         Image* image = layer->cel(frame_t(0))->image();
         std::srand(w*h);
@@ -60,7 +60,7 @@ TEST(File, SeveralSizes)
         ASSERT_EQ(h, doc->sprite()->height());
 
         // Same random pixels (see the seed)
-        Layer* layer = doc->sprite()->folder()->getFirstLayer();
+        Layer* layer = doc->sprite()->root()->firstLayer();
         ASSERT_TRUE(layer != nullptr);
         Image* image = layer->cel(frame_t(0))->image();
         std::srand(w*h);

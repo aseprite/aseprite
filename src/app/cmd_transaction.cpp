@@ -65,7 +65,7 @@ std::string CmdTransaction::onLabel() const
 doc::SpritePosition CmdTransaction::calcSpritePosition()
 {
   doc::Site site = context()->activeSite();
-  return doc::SpritePosition(site.layerIndex(), site.frame());
+  return doc::SpritePosition(site.layer(), site.frame());
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -119,7 +119,7 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
 
-      Layer* layer = sprite->folder()->getFirstLayer();
+      Layer* layer = sprite->root()->firstLayer();
       Image* image = layer->cel(frame_t(0))->image();
 
       int x, y, c;

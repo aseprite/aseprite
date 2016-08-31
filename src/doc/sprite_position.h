@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,34 +9,45 @@
 #pragma once
 
 #include "doc/frame.h"
-#include "doc/layer_index.h"
+#include "doc/layer.h"
+#include "doc/object.h"
+#include "doc/object_id.h"
 
 namespace doc {
-
-  class Sprite;
 
   class SpritePosition {
   public:
     SpritePosition()
-      : m_layerIndex(0)
+      : m_layerId(NullId)
       , m_frame(0) {
     }
-    SpritePosition(LayerIndex layerIndex, frame_t frame)
-      : m_layerIndex(layerIndex)
+
+    SpritePosition(const Layer* layer, frame_t frame)
+      : m_layerId(layer ? layer->id(): NullId)
       , m_frame(frame) {
     }
 
-    const LayerIndex& layerIndex() const { return m_layerIndex; }
-    const frame_t& frame() const { return m_frame; }
+    Layer* layer() const { return get<Layer>(m_layerId); }
+    ObjectId layerId() const { return m_layerId; }
+    frame_t frame() const { return m_frame; }
 
-    void layerIndex(LayerIndex layerIndex) { m_layerIndex = layerIndex; }
-    void frame(frame_t frame) { m_frame = frame; }
+    void layer(Layer* layer) {
+      m_layerId = (layer ? layer->id(): NullId);
+    }
 
-    bool operator==(const SpritePosition& o) const { return m_layerIndex == o.m_layerIndex && m_frame == o.m_frame; }
-    bool operator!=(const SpritePosition& o) const { return m_layerIndex != o.m_layerIndex || m_frame != o.m_frame; }
+    void layerId(ObjectId layerId) {
+      m_layerId = layerId;
+    }
+
+    void frame(frame_t frame) {
+      m_frame = frame;
+    }
+
+    bool operator==(const SpritePosition& o) const { return m_layerId == o.m_layerId && m_frame == o.m_frame; }
+    bool operator!=(const SpritePosition& o) const { return m_layerId != o.m_layerId || m_frame != o.m_frame; }
 
   private:
-    LayerIndex m_layerIndex;
+    ObjectId m_layerId;
     frame_t m_frame;
   };
 

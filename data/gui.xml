@@ -664,6 +664,9 @@
         <item command="LayerVisibility" text="&amp;Visible" />
         <separator />
         <item command="NewLayer" text="&amp;New Layer" />
+        <item command="NewLayer" text="New &amp;Group">
+          <param name="group" value="true" />
+	</item>
         <item command="RemoveLayer" text="&amp;Remove Layer" />
         <item command="BackgroundFromLayer" text="&amp;Background from Layer" />
         <item command="LayerFromBackground" text="&amp;Layer from Background" />

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -240,11 +240,26 @@ private:
     // Read layers
     int nlayers = read32(s);
     if (nlayers >= 1 && nlayers < 0xfffff) {
+      std::map<ObjectId, LayerGroup*> layersMap;
+      layersMap[0] = spr->root(); // parentId = 0 is the root level
+
       for (int i = 0; i < nlayers; ++i) {
         ObjectId layId = read32(s);
+        ObjectId parentId = read32(s);
+
+        if (!layersMap[parentId]) {
+          Console().printf("Inexistent parent #%d for layer #%d", parentId, layId);
+          // Put this layer at the root level
+          parentId = 0;
+        }
+
         Layer* lay = loadObject<Layer*>("lay", layId, &Reader::readLayer);
-        if (lay)
-          spr->folder()->addLayer(lay);
+        if (lay) {
+          if (lay->isGroup())
+            layersMap[layId] = static_cast<LayerGroup*>(lay);
+
+          layersMap[parentId]->addLayer(lay);
+        }
       }
     }
     else {
@@ -279,7 +294,8 @@ private:
   Layer* readLayer(std::ifstream& s) {
     LayerFlags flags = (LayerFlags)read32(s);
     ObjectType type = (ObjectType)read16(s);
-    ASSERT(type == ObjectType::LayerImage);
+    ASSERT(type == ObjectType::LayerImage ||
+           type == ObjectType::LayerGroup);
 
     std::string name = read_string(s);
 
@@ -301,6 +317,12 @@ private:
           lay->addCel(cel);
         }
       }
+      return lay.release();
+    }
+    else if (type == ObjectType::LayerGroup) {
+      base::UniquePtr<LayerGroup> lay(new LayerGroup(m_sprite));
+      lay->setName(name);
+      lay->setFlags(flags);
       return lay.release();
     }
     else {
@@ -396,7 +418,7 @@ app::Document* read_document_with_raw_images(const std::string& dir,
 
   // Load each image as a new frame
   auto lay = new LayerImage(spr);
-  spr->folder()->addLayer(lay);
+  spr->root()->addLayer(lay);
 
   frame_t frame = 0;
   for (const auto& fn : base::list_files(dir)) {
@@ -421,7 +443,7 @@ app::Document* read_document_with_raw_images(const std::string& dir,
         break;
       case RawImagesAs::kLayers:
         lay = new LayerImage(spr);
-        spr->folder()->addLayer(lay);
+        spr->root()->addLayer(lay);
         break;
     }
   }

@@ -164,7 +164,7 @@ namespace {
       // TODO the range of selected frames should be in doc::Site.
       auto range = App::instance()->timeline()->range();
       if (range.enabled()) {
-        return range.frameBegin();
+        return range.firstFrame();
       }
       else if (current_editor) {
         return current_editor->frame();
@@ -176,7 +176,7 @@ namespace {
     static frame_t To() {
       auto range = App::instance()->timeline()->range();
       if (range.enabled()) {
-        return range.frameEnd();
+        return range.lastFrame();
       }
       else if (current_editor) {
         return current_editor->frame();
@@ -218,20 +218,20 @@ namespace {
       if (!range.enabled()) {
         if (current_editor) {
           ASSERT(current_editor->sprite() == sprite);
-          range.startRange(sprite->layerToIndex(current_editor->layer()),
+          range.clearRange();
+          range.startRange(current_editor->layer(),
                            current_editor->frame(), DocumentRange::kCels);
-          range.endRange(sprite->layerToIndex(current_editor->layer()),
+          range.endRange(current_editor->layer(),
                          current_editor->frame());
         }
         else
           return;
       }
 
-      std::vector<Layer*> layers;
-      sprite->getLayersList(layers);
+      LayerList layers = sprite->allLayers();
       for (int i=0; i<int(layers.size()); ++i) {
         Layer* layer = layers[i];
-        bool selected = range.inRange(LayerIndex(i));
+        bool selected = range.contains(layer);
 
         if (selected != layer->isVisible()) {
           m_restore.push_back(std::make_pair(layer, layer->isVisible()));
@@ -251,11 +251,23 @@ public:
   class LayerItem : public ListItem {
   public:
     LayerItem(Layer* layer)
-      : ListItem("Layer: " + layer->name())
+      : ListItem(buildName(layer))
       , m_layer(layer) {
     }
     Layer* layer() const { return m_layer; }
   private:
+    static std::string buildName(const Layer* layer) {
+      bool isGroup = layer->isGroup();
+      std::string name;
+      while (layer != layer->sprite()->root()) {
+        if (!name.empty())
+          name.insert(0, " > ");
+        name.insert(0, layer->name());
+        layer = layer->parent();
+      }
+      name.insert(0, isGroup ? "Group: ": "Layer: ");
+      return name;
+    }
     Layer* m_layer;
   };
 
@@ -297,9 +309,9 @@ public:
     if (m_docPref.spriteSheet.layer() == kSelectedLayers)
       layers()->setSelectedItemIndex(i);
     {
-      std::vector<Layer*> layersList;
-      m_sprite->getLayersList(layersList);
-      for (Layer* layer : layersList) {
+      LayerList layersList = m_sprite->allLayers();
+      for (auto it=layersList.rbegin(), end=layersList.rend(); it!=end; ++it) {
+        Layer* layer = *it;
         i = layers()->addItem(new LayerItem(layer));
         if (m_docPref.spriteSheet.layer() == layer->name())
           layers()->setSelectedItemIndex(i);
@@ -837,8 +849,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   }
   else {
     // TODO add a getLayerByName
-    std::vector<Layer*> layers;
-    sprite->getLayersList(layers);
+    LayerList layers = sprite->allLayers();
     for (Layer* l : layers) {
       if (l->name() == layerName) {
         layer = l;

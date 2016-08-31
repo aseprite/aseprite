@@ -354,7 +354,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   }
 
   // Layers support
-  if (fop->m_document->sprite()->folder()->getLayersCount() > 1) {
+  if (fop->m_document->sprite()->root()->layersCount() > 1) {
     if (!(fop->m_format->support(FILE_SUPPORT_LAYERS))) {
       warnings += "<<- Layers";
     }
@@ -843,7 +843,7 @@ Image* FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
       LayerImage* layer = new LayerImage(sprite);
 
       // Add the layer
-      sprite->folder()->addLayer(layer);
+      sprite->root()->addLayer(layer);
 
       // Done
       createDocument(sprite);

@@ -348,33 +348,28 @@ void paste()
       DocumentRange srcRange = clipboard_range.range();
       Document* srcDoc = clipboard_range.document();
       Sprite* srcSpr = srcDoc->sprite();
-      std::vector<Layer*> srcLayers;
-      std::vector<Layer*> dstLayers;
-      srcSpr->getLayersList(srcLayers);
-      dstSpr->getLayersList(dstLayers);
 
       switch (srcRange.type()) {
 
         case DocumentRange::kCels: {
+          Layer* dstLayer = editor->layer();
+          frame_t dstFrameFirst = editor->frame();
+
+          DocumentRange dstRange;
+          dstRange.startRange(dstLayer, dstFrameFirst, DocumentRange::kCels);
+          for (layer_t i=1; i<srcRange.layers(); ++i) {
+            dstLayer = dstLayer->getPreviousInWholeHierarchy();
+            if (dstLayer == nullptr)
+              break;
+          }
+          dstRange.endRange(dstLayer, dstFrameFirst+srcRange.frames()-1);
+
           // We can use a document range op (copy_range) to copy/paste
           // cels in the same document.
           if (srcDoc == dstDoc) {
-            Timeline* timeline = App::instance()->timeline();
-            DocumentRange dstRange = timeline->range();
-            LayerIndex dstLayer = srcSpr->layerToIndex(editor->layer());
-            frame_t dstFrame = editor->frame();
-
-            if (dstRange.enabled()) {
-              dstLayer = dstRange.layerEnd();
-              dstFrame = dstRange.frameBegin();
-            }
-
-            LayerIndex dstLayer2(int(dstLayer)-srcRange.layers()+1);
-            dstRange.startRange(dstLayer, dstFrame, DocumentRange::kCels);
-            dstRange.endRange(dstLayer2, dstFrame+srcRange.frames()-1);
-
             // This is the app::copy_range (not clipboard::copy_range()).
-            app::copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+            if (srcRange.layers() == dstRange.layers())
+              app::copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
             editor->invalidate();
             return;
           }
@@ -383,32 +378,36 @@ void paste()
           DocumentApi api = dstDoc->getApi(transaction);
 
           // Add extra frames if needed
-          frame_t dstFrameBegin = editor->frame();
-          while (dstFrameBegin+srcRange.frames() > dstSpr->totalFrames())
+          while (dstFrameFirst+srcRange.frames() > dstSpr->totalFrames())
             api.addFrame(dstSpr, dstSpr->totalFrames());
 
-          for (LayerIndex
-                 i = srcRange.layerEnd(),
-                 j = dstSpr->layerToIndex(editor->layer());
-               i >= srcRange.layerBegin() &&
-                 i >= LayerIndex(0) &&
-                 j >= LayerIndex(0); --i, --j) {
+          auto srcIt = srcRange.selectedLayers().begin();
+          auto dstIt = dstRange.selectedLayers().begin();
+          auto srcEnd = srcRange.selectedLayers().end();
+          auto dstEnd = dstRange.selectedLayers().end();
+
+          for (; srcIt != srcEnd && dstIt != dstEnd; ++srcIt, ++dstIt) {
+            auto srcLayer = *srcIt;
+            auto dstLayer = *dstIt;
+
+            if (!srcLayer->isImage() ||
+                !dstLayer->isImage())
+              continue;
+
             // Maps a linked Cel in the original sprite with its
             // corresponding copy in the new sprite. In this way
             // we can.
             std::map<Cel*, Cel*> relatedCels;
 
-            for (frame_t frame = srcRange.frameBegin(),
-                   dstFrame = dstFrameBegin;
-                 frame <= srcRange.frameEnd();
-                 ++frame, ++dstFrame) {
-              Cel* srcCel = srcLayers[i]->cel(frame);
+            frame_t dstFrame = dstFrameFirst;
+            for (frame_t srcFrame : srcRange.selectedFrames()) {
+              Cel* srcCel = srcLayer->cel(srcFrame);
               Cel* srcLink = nullptr;
 
               if (srcCel && srcCel->image()) {
                 bool createCopy = true;
 
-                if (dstLayers[j]->isContinuous() &&
+                if (dstLayer->isContinuous() &&
                     srcCel->links()) {
                   srcLink = srcCel->link();
                   if (!srcLink)
@@ -421,28 +420,29 @@ void paste()
 
                       // Create a link from dstRelated
                       api.copyCel(
-                        static_cast<LayerImage*>(dstLayers[j]), dstRelated->frame(),
-                        static_cast<LayerImage*>(dstLayers[j]), dstFrame);
+                        static_cast<LayerImage*>(dstLayer), dstRelated->frame(),
+                        static_cast<LayerImage*>(dstLayer), dstFrame);
                     }
                   }
                 }
 
                 if (createCopy) {
                   api.copyCel(
-                    static_cast<LayerImage*>(srcLayers[i]), frame,
-                    static_cast<LayerImage*>(dstLayers[j]), dstFrame);
+                    static_cast<LayerImage*>(srcLayer), srcFrame,
+                    static_cast<LayerImage*>(dstLayer), dstFrame);
 
                   if (srcLink)
-                    relatedCels[srcLink] = dstLayers[j]->cel(dstFrame);
+                    relatedCels[srcLink] = dstLayer->cel(dstFrame);
                 }
               }
               else {
-                Cel* dstCel = dstLayers[j]->cel(dstFrame);
+                Cel* dstCel = dstLayer->cel(dstFrame);
                 if (dstCel)
                   api.clearCel(dstCel);
               }
-            }
 
+              ++dstFrame;
+            }
           }
 
           transaction.commit();
@@ -451,42 +451,49 @@ void paste()
         }
 
         case DocumentRange::kFrames: {
-          Transaction transaction(UIContext::instance(), "Paste Frames");
-          DocumentApi api = dstDoc->getApi(transaction);
           frame_t dstFrame = editor->frame();
 
+          // We use a DocumentRange operation to copy frames inside
+          // the same sprite.
           if (srcSpr == dstSpr) {
-            if (srcRange.inRange(dstFrame))
-              dstFrame = srcRange.frameEnd()+1;
+            DocumentRange dstRange;
+            dstRange.startRange(nullptr, dstFrame, DocumentRange::kFrames);
+            dstRange.endRange(nullptr, dstFrame);
+            app::copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+            break;
           }
 
-          frame_t srcFrame = srcRange.frameBegin();
-          for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
+          Transaction transaction(UIContext::instance(), "Paste Frames");
+          DocumentApi api = dstDoc->getApi(transaction);
+
+          auto srcLayers = srcSpr->allBrowsableLayers();
+          auto dstLayers = dstSpr->allBrowsableLayers();
+
+          for (frame_t srcFrame : srcRange.selectedFrames()) {
             api.addEmptyFrame(dstSpr, dstFrame);
-
-            // If we are copying frames from/to the same sprite, we
-            // have to adjust the source frame.
-            if (srcSpr == dstSpr) {
-              if (dstFrame < srcFrame)
-                ++srcFrame;
-            }
-
             api.setFrameDuration(dstSpr, dstFrame, srcSpr->frameDuration(srcFrame));
 
-            for (LayerIndex
-                   i = LayerIndex(srcLayers.size()-1),
-                   j = LayerIndex(dstLayers.size()-1);
-                   i >= LayerIndex(0) &&
-                   j >= LayerIndex(0); --i, --j) {
-              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->cel(srcFrame);
+            auto srcIt = srcLayers.begin();
+            auto dstIt = dstLayers.begin();
+            auto srcEnd = srcLayers.end();
+            auto dstEnd = dstLayers.end();
+
+            for (; srcIt != srcEnd && dstIt != dstEnd; ++srcIt, ++dstIt) {
+              auto srcLayer = *srcIt;
+              auto dstLayer = *dstIt;
+
+              if (!srcLayer->isImage() ||
+                  !dstLayer->isImage())
+                continue;
+
+              Cel* cel = static_cast<LayerImage*>(srcLayer)->cel(srcFrame);
               if (cel && cel->image()) {
                 api.copyCel(
-                  static_cast<LayerImage*>(srcLayers[i]), srcFrame,
-                  static_cast<LayerImage*>(dstLayers[j]), dstFrame);
+                  static_cast<LayerImage*>(srcLayer), srcFrame,
+                  static_cast<LayerImage*>(dstLayer), dstFrame);
               }
             }
 
-            ++srcFrame;
             ++dstFrame;
           }
 
@@ -502,39 +509,49 @@ void paste()
           Transaction transaction(UIContext::instance(), "Paste Layers");
           DocumentApi api = dstDoc->getApi(transaction);
 
+          // Remove children if their parent is selected so we only
+          // copy the parent.
+          SelectedLayers srcLayersSet = srcRange.selectedLayers();
+          srcLayersSet.removeChildrenIfParentIsSelected();
+          LayerList srcLayers = srcLayersSet.toLayerList();
+
           // Expand frames of dstDoc if it's needed.
-          frame_t maxFrame(0);
-          for (LayerIndex i = srcRange.layerBegin();
-               i <= srcRange.layerEnd() &&
-               i < LayerIndex(srcLayers.size()); ++i) {
-            Cel* lastCel = static_cast<LayerImage*>(srcLayers[i])->getLastCel();
+          frame_t maxFrame = 0;
+          for (Layer* srcLayer : srcLayers) {
+            if (!srcLayer->isImage())
+              continue;
+
+            Cel* lastCel = static_cast<LayerImage*>(srcLayer)->getLastCel();
             if (lastCel && maxFrame < lastCel->frame())
               maxFrame = lastCel->frame();
           }
           while (dstSpr->totalFrames() < maxFrame+1)
             api.addEmptyFrame(dstSpr, dstSpr->totalFrames());
 
-          for (LayerIndex i = srcRange.layerBegin(); i <= srcRange.layerEnd(); ++i) {
+          for (Layer* srcLayer : srcLayers) {
             Layer* afterThis;
-            if (srcLayers[i]->isBackground() &&
-                !dstDoc->sprite()->backgroundLayer()) {
+            if (srcLayer->isBackground() && !dstDoc->sprite()->backgroundLayer())
               afterThis = nullptr;
-            }
             else
-              afterThis = dstSpr->folder()->getLastLayer();
+              afterThis = dstSpr->root()->lastLayer();
 
-            LayerImage* newLayer = new LayerImage(dstSpr);
-            api.addLayer(dstSpr->folder(), newLayer, afterThis);
+            Layer* newLayer = nullptr;
+            if (srcLayer->isImage())
+              newLayer = new LayerImage(dstSpr);
+            else if (srcLayer->isGroup())
+              newLayer = new LayerGroup(dstSpr);
+            else
+              continue;
 
-            srcDoc->copyLayerContent(
-              srcLayers[i], dstDoc, newLayer);
+            api.addLayer(dstSpr->root(), newLayer, afterThis);
+
+            srcDoc->copyLayerContent(srcLayer, dstDoc, newLayer);
           }
 
           transaction.commit();
           editor->invalidate();
           break;
         }
-
       }
       break;
     }

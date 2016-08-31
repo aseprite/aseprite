@@ -16,7 +16,6 @@
 #include "doc/frame_tags.h"
 #include "doc/image_ref.h"
 #include "doc/image_spec.h"
-#include "doc/layer_index.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
@@ -31,13 +30,13 @@ namespace doc {
   class Document;
   class Image;
   class Layer;
-  class LayerFolder;
+  class LayerGroup;
   class LayerImage;
-  class LayersRange;
   class Mask;
   class Palette;
   class Remap;
   class RgbMap;
+  class SelectedFrames;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -90,18 +89,10 @@ namespace doc {
     ////////////////////////////////////////
     // Layers
 
-    LayerFolder* folder() const;
+    LayerGroup* root() const { return m_root; }
     LayerImage* backgroundLayer() const;
-
-    LayerIndex countLayers() const;
-    LayerIndex firstLayer() const;
-    LayerIndex lastLayer() const;
-
-    Layer* layer(int layerIndex) const;
-    Layer* indexToLayer(LayerIndex index) const;
-    LayerIndex layerToIndex(const Layer* layer) const;
-
-    void getLayersList(std::vector<Layer*>& layers) const;
+    Layer* firstBrowsableLayer() const;
+    layer_t allLayersCount() const;
 
     ////////////////////////////////////////
     // Palettes
@@ -154,11 +145,14 @@ namespace doc {
     ////////////////////////////////////////
     // Iterators
 
-    LayersRange layers() const;
+    LayerList allLayers() const;
+    LayerList allVisibleLayers() const;
+    LayerList allBrowsableLayers() const;
+
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;
     CelsRange uniqueCels() const;
-    CelsRange uniqueCels(frame_t from, frame_t to) const;
+    CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 
   private:
     Document* m_document;
@@ -167,7 +161,7 @@ namespace doc {
     frame_t m_frames;                      // how many frames has this sprite
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes
-    LayerFolder* m_folder;                 // main folder of layers
+    LayerGroup* m_root;                    // main group of layers
 
     // Current rgb map
     mutable RgbMap* m_rgbMap;

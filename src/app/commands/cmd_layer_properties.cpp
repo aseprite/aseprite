@@ -96,14 +96,14 @@ public:
     UIContext::instance()->removeObserver(this);
   }
 
-  void setLayer(LayerImage* layer) {
+  void setLayer(Layer* layer) {
     if (m_layer) {
       document()->removeObserver(this);
       m_layer = nullptr;
     }
 
     m_timer.stop();
-    m_layer = const_cast<LayerImage*>(layer);
+    m_layer = layer;
 
     if (m_layer)
       document()->addObserver(this);
@@ -178,9 +178,10 @@ private:
     BlendMode newBlendMode = blendModeValue();
 
     if (newName != m_layer->name() ||
-        newOpacity != m_layer->opacity() ||
-        newBlendMode != m_layer->blendMode() ||
-        m_userData != m_layer->userData()) {
+        m_userData != m_layer->userData() ||
+        (m_layer->isImage() &&
+         (newOpacity != static_cast<LayerImage*>(m_layer)->opacity() ||
+          newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Layer Properties");
@@ -188,19 +189,20 @@ private:
         if (newName != m_layer->name())
           transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
 
-        if (newOpacity != m_layer->opacity())
-          transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), newOpacity));
-
-        if (newBlendMode != m_layer->blendMode())
-          transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
-
-        if (m_userData != m_layer->userData()) {
+        if (m_userData != m_layer->userData())
           transaction.execute(new cmd::SetUserData(writer.layer(), m_userData));
 
-          // Redraw timeline because the layer's user data/color
-          // might have changed.
-          App::instance()->timeline()->invalidate();
+        if (m_layer->isImage()) {
+          if (newOpacity != static_cast<LayerImage*>(m_layer)->opacity())
+            transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), newOpacity));
+
+          if (newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode())
+            transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
         }
+
+        // Redraw timeline because the layer's name/user data/color
+        // might have changed.
+        App::instance()->timeline()->invalidate();
 
         transaction.commit();
       }
@@ -215,7 +217,7 @@ private:
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     if (isVisible())
-      setLayer(dynamic_cast<LayerImage*>(const_cast<Layer*>(site.layer())));
+      setLayer(const_cast<Layer*>(site.layer()));
     else if (m_layer)
       setLayer(nullptr);
   }
@@ -256,10 +258,18 @@ private:
     if (m_layer) {
       name()->setText(m_layer->name().c_str());
       name()->setEnabled(true);
-      mode()->setSelectedItemIndex((int)m_layer->blendMode());
-      mode()->setEnabled(!m_layer->isBackground());
-      opacity()->setValue(m_layer->opacity());
-      opacity()->setEnabled(!m_layer->isBackground());
+
+      if (m_layer->isImage()) {
+        mode()->setSelectedItemIndex((int)static_cast<LayerImage*>(m_layer)->blendMode());
+        mode()->setEnabled(!m_layer->isBackground());
+        opacity()->setValue(static_cast<LayerImage*>(m_layer)->opacity());
+        opacity()->setEnabled(!m_layer->isBackground());
+      }
+      else {
+        mode()->setEnabled(false);
+        opacity()->setEnabled(false);
+      }
+
       m_userData = m_layer->userData();
     }
     else {
@@ -272,7 +282,7 @@ private:
   }
 
   Timer m_timer;
-  LayerImage* m_layer;
+  Layer* m_layer;
   bool m_selfUpdate;
   UserData m_userData;
 };

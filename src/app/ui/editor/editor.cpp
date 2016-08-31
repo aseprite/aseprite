@@ -152,7 +152,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_decorator(NULL)
   , m_document(document)
   , m_sprite(m_document->sprite())
-  , m_layer(m_sprite->folder()->getFirstLayer())
+  , m_layer(m_sprite->root()->firstLayer())
   , m_frame(frame_t(0))
   , m_docPref(Preferences::instance().document(document))
   , m_brushPreview(this)
@@ -186,12 +186,16 @@ Editor::Editor(Document* document, EditorFlags flags)
       base::Bind<void>(&Editor::onContextBarBrushChange, this));
 
   // Restore last site in preferences
-  frame_t preferredFrame = m_docPref.site.frame();
-  Layer* preferredLayer = m_sprite->indexToLayer(m_docPref.site.layer());
-  if (preferredFrame >= 0 && preferredFrame <= m_sprite->lastFrame())
-    setFrame(preferredFrame);
-  if (preferredLayer)
-    setLayer(preferredLayer);
+  {
+    frame_t preferredFrame = m_docPref.site.frame();
+    if (preferredFrame >= 0 && preferredFrame <= m_sprite->lastFrame())
+      setFrame(preferredFrame);
+
+    LayerList layers = m_sprite->allBrowsableLayers();
+    layer_t layerIndex = m_docPref.site.layer();
+    if (layerIndex >= 0 && layerIndex < int(layers.size()))
+      setLayer(layers[layerIndex]);
+  }
 
   m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
@@ -211,8 +215,11 @@ Editor::Editor(Document* document, EditorFlags flags)
 Editor::~Editor()
 {
   if (m_document && m_sprite) {
+    LayerList layers = m_sprite->allBrowsableLayers();
+    layer_t layerIndex = doc::find_layer_index(layers, layer());
+
     m_docPref.site.frame(frame());
-    m_docPref.site.layer(m_sprite->layerToIndex(layer()));
+    m_docPref.site.layer(layerIndex);
   }
 
   m_observers.notifyDestroyEditor(this);
@@ -1442,8 +1449,8 @@ bool Editor::canDraw()
 {
   return (m_layer != NULL &&
           m_layer->isImage() &&
-          m_layer->isVisible() &&
-          m_layer->isEditable());
+          m_layer->isVisibleHierarchy() &&
+          m_layer->isEditableHierarchy());
 }
 
 bool Editor::isInsideSelection()

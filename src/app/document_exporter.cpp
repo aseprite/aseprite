@@ -396,7 +396,7 @@ Document* DocumentExporter::exportSheet()
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
-  Image* textureImage = texture->folder()->getFirstLayer()
+  Image* textureImage = texture->root()->firstLayer()
     ->cel(frame_t(0))->image();
 
   renderTexture(samples, textureImage);
@@ -758,10 +758,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
       Document* doc = item.doc;
       Sprite* sprite = doc->sprite();
 
-      std::vector<Layer*> layers;
-      sprite->getLayersList(layers);
-
-      for (Layer* layer : layers) {
+      for (Layer* layer : sprite->allVisibleLayers()) {
         if (firstLayer)
           firstLayer = false;
         else

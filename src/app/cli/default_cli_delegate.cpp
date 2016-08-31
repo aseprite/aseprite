@@ -22,7 +22,6 @@
 #include "base/convert_to.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
-#include "doc/layers_range.h"
 #include "doc/sprite.h"
 #include "script/engine_delegate.h"
 
@@ -53,10 +52,8 @@ void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
     return;
 
   if (cof.listLayers) {
-    for (doc::Layer* layer : cof.document->sprite()->layers()) {
-      if (layer->isVisible())
-        std::cout << layer->name() << "\n";
-    }
+    for (doc::Layer* layer : cof.document->sprite()->allVisibleLayers())
+      std::cout << layer->name() << "\n";
   }
 
   if (cof.listTags) {

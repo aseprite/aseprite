@@ -205,7 +205,7 @@ void FilterManagerImpl::applyToTarget()
   bool cancelled = false;
 
   ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
-                          m_site.sprite()->folder():
+                          m_site.sprite()->root():
                           m_site.layer()),
                          m_site.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,

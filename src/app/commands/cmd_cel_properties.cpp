@@ -108,9 +108,8 @@ private:
     else if (m_range.enabled()) {
       Sprite* sprite = m_document->sprite();
       int count = 0;
-      for (Cel* cel : sprite->uniqueCels(m_range.frameBegin(),
-                                         m_range.frameEnd())) {
-        if (m_range.inRange(sprite->layerToIndex(cel->layer()))) {
+      for (Cel* cel : sprite->uniqueCels(m_range.selectedFrames())) {
+        if (m_range.contains(cel->layer())) {
           if (backgroundCount && cel->layer()->isBackground())
             ++(*backgroundCount);
           ++count;
@@ -170,37 +169,28 @@ private:
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Cel Properties");
 
-        if (count == 1 && m_cel) {
-          if (!m_cel->layer()->isBackground() &&
-              newOpacity != m_cel->opacity()) {
-            transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
-          }
-
-          if (m_userData != m_cel->data()->userData()) {
-            transaction.execute(new cmd::SetUserData(writer.cel()->data(), m_userData));
-
-            // Redraw timeline because the cel's user data/color
-            // might have changed.
-            App::instance()->timeline()->invalidate();
-          }
+        DocumentRange range;
+        if (m_range.enabled())
+          range = m_range;
+        else {
+          range.startRange(m_cel->layer(), m_cel->frame(), DocumentRange::kCels);
+          range.endRange(m_cel->layer(), m_cel->frame());
         }
-        else if (m_range.enabled()) {
-          Sprite* sprite = m_document->sprite();
-          for (Cel* cel : sprite->uniqueCels(m_range.frameBegin(),
-                                             m_range.frameEnd())) {
-            if (m_range.inRange(sprite->layerToIndex(cel->layer()))) {
-              if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
-                transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
-              }
 
-              if (m_newUserData &&
-                  m_userData != cel->data()->userData()) {
-                transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
+        Sprite* sprite = m_document->sprite();
+        for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
+          if (range.contains(cel->layer())) {
+            if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
+              transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
+            }
 
-                // Redraw timeline because the cel's user data/color
-                // might have changed.
-                App::instance()->timeline()->invalidate();
-              }
+            if (m_newUserData &&
+                m_userData != cel->data()->userData()) {
+              transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
+
+              // Redraw timeline because the cel's user data/color
+              // might have changed.
+              App::instance()->timeline()->invalidate();
             }
           }
         }

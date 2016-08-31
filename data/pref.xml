@@ -228,7 +228,7 @@
   <document>
     <section id="site">
       <option id="frame" type="doc::frame_t" default="doc::frame_t(0)" />
-      <option id="layer" type="doc::LayerIndex" />
+      <option id="layer" type="doc::layer_t" default="doc::layer_t(0)" />
     </section>
     <section id="tiled">
       <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" migrate="Tools.Tiled" />

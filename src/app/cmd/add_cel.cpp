@@ -39,6 +39,8 @@ void AddCel::onExecute()
 {
   Layer* layer = this->layer();
   Cel* cel = this->cel();
+  ASSERT(layer);
+  ASSERT(cel);
 
   addCel(layer, cel);
 }
@@ -47,6 +49,8 @@ void AddCel::onUndo()
 {
   Layer* layer = this->layer();
   Cel* cel = this->cel();
+  ASSERT(layer);
+  ASSERT(cel);
 
   // Save the CelData only if the cel isn't linked
   bool has_data = (cel->links() == 0);
@@ -64,6 +68,7 @@ void AddCel::onUndo()
 void AddCel::onRedo()
 {
   Layer* layer = this->layer();
+  ASSERT(layer);
 
   SubObjectsFromSprite io(layer->sprite());
   bool has_data = (read8(m_stream) != 0);
@@ -75,6 +80,7 @@ void AddCel::onRedo()
     io.addCelDataRef(celdata);
   }
   Cel* cel = read_cel(m_stream, &io);
+  ASSERT(cel);
 
   addCel(layer, cel);
 

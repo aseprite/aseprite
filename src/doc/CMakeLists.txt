@@ -42,9 +42,8 @@ add_library(doc-lib
   image_io.cpp
   images_collector.cpp
   layer.cpp
-  layer_index.cpp
   layer_io.cpp
-  layers_range.cpp
+  layer_list.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp
@@ -55,6 +54,8 @@ add_library(doc-lib
   primitives.cpp
   remap.cpp
   rgbmap.cpp
+  selected_frames.cpp
+  selected_layers.cpp
   site.cpp
   sort_palette.cpp
   sprite.cpp

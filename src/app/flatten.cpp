@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -66,12 +66,9 @@ static bool has_cels(const Layer* layer, frame_t frame)
     case ObjectType::LayerImage:
       return (layer->cel(frame) ? true: false);
 
-    case ObjectType::LayerFolder: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it) {
-        if (has_cels(*it, frame))
+    case ObjectType::LayerGroup: {
+      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+        if (has_cels(child, frame))
           return true;
       }
       break;

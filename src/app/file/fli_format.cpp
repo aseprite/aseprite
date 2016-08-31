@@ -74,7 +74,7 @@ bool FliFormat::onLoad(FileOp* fop)
   // Create the sprite
   Sprite* sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
   LayerImage* layer = new LayerImage(sprite);
-  sprite->folder()->addLayer(layer);
+  sprite->root()->addLayer(layer);
   layer->configureAsBackground();
 
   // Set frames and speed

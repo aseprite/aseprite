@@ -85,7 +85,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   app::Document* document = m_editor->document();
   Sprite* sprite = m_editor->sprite();
-  Layer* layer = m_editor->layer();
+  Layer* layer = (m_editor->layer() &&
+                  m_editor->layer()->isImage() ? m_editor->layer():
+                                                 nullptr);
   ASSERT(sprite);
 
   // Get drawable region

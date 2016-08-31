@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,7 +21,7 @@ namespace doc {
   class Cel;
   class Image;
   class Layer;
-  class LayerFolder;
+  class LayerGroup;
   class LayerImage;
   class Mask;
   class Palette;
@@ -80,17 +80,17 @@ namespace app {
       LayerImage* layer, frame_t frame1, frame_t frame2);
 
     // Layers API
-    LayerImage* newLayer(Sprite* sprite, const std::string& name);
-    LayerFolder* newLayerFolder(Sprite* sprite);
-    void addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis);
+    LayerImage* newLayer(LayerGroup* parent, const std::string& name);
+    LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
+    void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
-    void restackLayerAfter(Layer* layer, Layer* afterThis);
-    void restackLayerBefore(Layer* layer, Layer* beforeThis);
+    void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
+    void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
     void backgroundFromLayer(Layer* layer);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite);
-    void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
-    void duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
+    Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
+    Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
 
     // Images API
     void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);

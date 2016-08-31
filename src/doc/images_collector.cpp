@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -53,13 +53,9 @@ void ImagesCollector::collectFromLayer(Layer* layer, frame_t frame)
       break;
     }
 
-    case ObjectType::LayerFolder: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it)
-        collectFromLayer(*it, frame);
-
+    case ObjectType::LayerGroup: {
+      for (Layer* child : static_cast<LayerGroup*>(layer)->layers())
+        collectFromLayer(child, frame);
       break;
     }
 

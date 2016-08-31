@@ -324,23 +324,19 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       newCel.release();
     }
   }
-  else if (sourceLayer0->isFolder() && destLayer0->isFolder()) {
-    const LayerFolder* sourceLayer = static_cast<const LayerFolder*>(sourceLayer0);
-    LayerFolder* destLayer = static_cast<LayerFolder*>(destLayer0);
+  else if (sourceLayer0->isGroup() && destLayer0->isGroup()) {
+    const LayerGroup* sourceLayer = static_cast<const LayerGroup*>(sourceLayer0);
+    LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
 
-    LayerConstIterator it = sourceLayer->getLayerBegin();
-    LayerConstIterator end = sourceLayer->getLayerEnd();
-
-    for (; it != end; ++it) {
-      Layer* sourceChild = *it;
+    for (Layer* sourceChild : sourceLayer->layers()) {
       base::UniquePtr<Layer> destChild(NULL);
 
       if (sourceChild->isImage()) {
         destChild.reset(new LayerImage(destLayer->sprite()));
         copyLayerContent(sourceChild, destDoc, destChild);
       }
-      else if (sourceChild->isFolder()) {
-        destChild.reset(new LayerFolder(destLayer->sprite()));
+      else if (sourceChild->isGroup()) {
+        destChild.reset(new LayerGroup(destLayer->sprite()));
         copyLayerContent(sourceChild, destDoc, destChild);
       }
       else {
@@ -352,7 +348,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       // Add the new layer in the sprite.
 
       Layer* newLayer = destChild.release();
-      Layer* afterThis = destLayer->getLastLayer();
+      Layer* afterThis = destLayer->lastLayer();
 
       destLayer->addLayer(newLayer);
       destChild.release();
@@ -400,8 +396,8 @@ Document* Document::duplicate(DuplicateType type) const
   switch (type) {
 
     case DuplicateExactCopy:
-      // Copy the layer folder
-      copyLayerContent(sourceSprite->folder(), documentCopy, spriteCopy->folder());
+      // Copy the layer group
+      copyLayerContent(sourceSprite->root(), documentCopy, spriteCopy->root());
 
       ASSERT((spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
              (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));
@@ -410,16 +406,16 @@ Document* Document::duplicate(DuplicateType type) const
     case DuplicateWithFlattenLayers:
       {
         // Flatten layers
-        ASSERT(sourceSprite->folder() != NULL);
+        ASSERT(sourceSprite->root() != NULL);
 
         LayerImage* flatLayer = create_flatten_layer_copy
             (spriteCopy,
-             sourceSprite->folder(),
+             sourceSprite->root(),
              gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
              frame_t(0), sourceSprite->lastFrame());
 
         // Add and select the new flat layer
-        spriteCopy->folder()->addLayer(flatLayer);
+        spriteCopy->root()->addLayer(flatLayer);
 
         // Configure the layer as background only if the original
         // sprite has a background layer.
