@@ -100,6 +100,14 @@ public:
     return ([m_window setNativeMouseCursor:cursor] ? true: false);
   }
 
+  bool setNativeMouseCursor(const she::Surface* surface,
+                            const gfx::Point& focus,
+                            const int scale) {
+    return ([m_window setNativeMouseCursor:surface
+                                     focus:focus
+                                     scale:scale] ? true: false);
+  }
+
   void updateWindow(const gfx::Rect& bounds) {
     int scale = this->scale();
     NSView* view = m_window.contentView;
@@ -420,6 +428,16 @@ bool SkiaWindow::setNativeMouseCursor(NativeCursor cursor)
 {
   if (m_impl)
     return m_impl->setNativeMouseCursor(cursor);
+  else
+    return false;
+}
+
+bool SkiaWindow::setNativeMouseCursor(const Surface* surface,
+                                      const gfx::Point& focus,
+                                      const int scale)
+{
+  if (m_impl)
+    return m_impl->setNativeMouseCursor(surface, focus, scale);
   else
     return false;
 }

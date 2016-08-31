@@ -17,6 +17,8 @@
 #include "she/native_cursor.h"
 
 namespace she {
+  class Surface;
+
   KeyScancode cocoavk_to_scancode(UInt16 vk);
 }
 
@@ -48,6 +50,9 @@ public:
 - (gfx::Size)restoredSize;
 - (void)setMousePosition:(const gfx::Point&)position;
 - (BOOL)setNativeMouseCursor:(she::NativeCursor)cursor;
+- (BOOL)setNativeMouseCursor:(const she::Surface*)surface
+                       focus:(const gfx::Point&)focus
+                       scale:(const int)scale;
 @end
 
 #endif

@@ -1,9 +1,8 @@
 // Aseprite
 // Copyright (C) 2001-2016  David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1328,6 +1327,10 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
   else if (getFrame() >= sprite()->totalFrames()) {
     setFrame(sprite()->lastFrame(), false);
   }
+
+  // Disable the selected range when we remove frames
+  if (m_range.enabled())
+    m_range.clearRange();
 
   showCurrentCel();
   clearClipboardRange();

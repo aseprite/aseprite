@@ -15,6 +15,7 @@ namespace she {
   enum NativeCursor {
     kNoCursor,
     kArrowCursor,
+    kCrosshairCursor,
     kIBeamCursor,
     kWaitCursor,
     kLinkCursor,

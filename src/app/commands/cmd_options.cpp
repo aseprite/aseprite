@@ -1,9 +1,8 @@
 // Aseprite
 // Copyright (C) 2001-2016  David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -73,12 +72,13 @@ public:
     , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_cursorColor(new ColorButton(m_pref.editor.cursorColor(), IMAGE_RGB))
+    , m_cursorColor(new ColorButton(m_pref.cursor.cursorColor(), IMAGE_RGB))
     , m_curSection(curSection)
   {
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
 
     // Cursor
+    paintingCursorType()->setSelectedItemIndex(int(m_pref.cursor.paintingCursorType()));
     cursorColorPlaceholder()->addChild(m_cursorColor);
 
     if (m_cursorColor->getColor().getType() == app::Color::MaskType) {
@@ -93,7 +93,7 @@ public:
 
     // Brush preview
     brushPreview()->setSelectedItemIndex(
-      (int)m_pref.editor.brushPreview());
+      (int)m_pref.cursor.brushPreview());
 
     // Grid color
     m_gridColor->setId("grid_color");
@@ -135,8 +135,19 @@ public:
     if (m_pref.selection.keepSelectionAfterClear())
       keepSelectionAfterClear()->setSelected(true);
 
-    if (m_pref.experimental.useNativeCursor())
+#if defined(_WIN32) || defined(__APPLE__)
+    if (m_pref.cursor.useNativeCursor())
       nativeCursor()->setSelected(true);
+    nativeCursor()->Click.connect(base::Bind<void>(&OptionsWindow::onNativeCursorChange, this));
+
+    cursorScale()->setSelectedItemIndex(
+      cursorScale()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.cursor.cursorScale())));
+#else
+    // TODO impl this on Linux
+    nativeCursor()->setEnabled(false);
+#endif
+    onNativeCursorChange();
 
     if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
@@ -259,8 +270,11 @@ public:
     m_pref.editor.zoomWithSlide(slideZoom()->isSelected());
 #endif
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
-    m_pref.editor.cursorColor(m_cursorColor->getColor());
-    m_pref.editor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.cursor.paintingCursorType(static_cast<app::gen::PaintingCursorType>(paintingCursorType()->getSelectedItemIndex()));
+    m_pref.cursor.cursorColor(m_cursorColor->getColor());
+    m_pref.cursor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());
+    m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
 
@@ -284,11 +298,11 @@ public:
     m_pref.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
     // Experimental features
-    m_pref.experimental.useNativeCursor(nativeCursor()->isSelected());
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
-    ui::set_use_native_cursors(
-      m_pref.experimental.useNativeCursor());
+
+    ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
+    ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());
 
     bool reset_screen = false;
     int newScreenScale = base::convert_to<int>(screenScale()->getValue());
@@ -327,6 +341,16 @@ public:
   }
 
 private:
+  void onNativeCursorChange() {
+#if defined(_WIN32) || defined(__APPLE__)
+    bool state = !nativeCursor()->isSelected();
+#else
+    bool state = false;
+#endif
+    cursorScaleLabel()->setEnabled(state);
+    cursorScale()->setEnabled(state);
+  }
+
   void onChangeSection() {
     ListItem* item = static_cast<ListItem*>(sectionListbox()->getSelectedChild());
     if (!item)

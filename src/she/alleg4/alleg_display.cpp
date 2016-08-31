@@ -558,6 +558,7 @@ bool Alleg4Display::setNativeMouseCursor(NativeCursor cursor)
       newCursor = MOUSE_CURSOR_QUESTION;
       break;
 #ifdef ALLEGRO4_WITH_EXTRA_CURSORS
+    case kCrosshairCursor: newCursor = MOUSE_CURSOR_CROSS; break;
     case kForbiddenCursor: newCursor = MOUSE_CURSOR_FORBIDDEN; break;
     case kMoveCursor: newCursor = MOUSE_CURSOR_MOVE; break;
     case kLinkCursor: newCursor = MOUSE_CURSOR_LINK; break;
@@ -578,6 +579,14 @@ bool Alleg4Display::setNativeMouseCursor(NativeCursor cursor)
 
   m_nativeCursor = cursor;
   return (show_os_cursor(newCursor) == 0);
+}
+
+bool Alleg4Display::setNativeMouseCursor(const she::Surface* cursor,
+                                         const gfx::Point& focus,
+                                         const int scale)
+{
+  // TODO
+  return false;
 }
 
 void Alleg4Display::setMousePosition(const gfx::Point& position)

@@ -83,22 +83,43 @@
 
         <!-- Cursors -->
         <vbox id="section_cursors">
+          <separator text="UI Mouse Cursor" horizontal="true" />
+          <check id="native_cursor" text="Use native mouse cursors" />
+          <hbox>
+            <label id="cursor_scale_label" text="Mouse Cursor Scale:" />
+            <combobox id="cursor_scale">
+              <listitem text="100%" value="1" />
+              <listitem text="200%" value="2" />
+              <listitem text="300%" value="3" />
+              <listitem text="400%" value="4" />
+            </combobox>
+          </hbox>
+
           <separator text="Painting Cursors" horizontal="true" />
-          <label text="Precise Cursor Color:" />
-	  <hbox>
+
+          <grid columns="2">
+            <label text="Crosshair Type:" />
+            <combobox id="painting_cursor_type">
+	      <listitem text="Simple Crosshair" value="0" />
+	      <listitem text="Crosshair on Sprite" value="1" />
+            </combobox>
+
+	    <label text="Brush Preview:" />
+            <combobox id="brush_preview">
+              <listitem text="None" value="0" />
+              <listitem text="Brush Edges" value="1" />
+              <listitem text="Full Real-time Brush Preview" value="2" />
+            </combobox>
+
+	    <label text="Crosshair &amp; Brush Edges Color:" />
 	    <combobox group="1" id="cursor_color_type">
 	      <listitem text="Negative Black and White" value="0" />
 	      <listitem text="Specific Color" value="1" />
 	    </combobox>
-	    <box id="cursor_color_placeholder" /><!-- custom widget -->
-	  </hbox>
 
-	  <label text="Brush Preview:" />
-          <combobox id="brush_preview">
-            <listitem text="None" value="0" />
-            <listitem text="Brush Edges" value="1" />
-            <listitem text="Full Real-time Brush Preview" value="2" />
-          </combobox>
+	    <boxfiller />
+	    <box id="cursor_color_placeholder" /><!-- custom widget -->
+	  </grid>
         </vbox>
 
         <!-- Grid & background -->
@@ -172,7 +193,6 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="User Interface" horizontal="true" />
-          <check id="native_cursor" text="Use native mouse cursor" />
           <check id="native_file_dialog" text="Use native file dialog" />
           <check id="flash_layer" text="Flash layer when it is selected" />
         </vbox>

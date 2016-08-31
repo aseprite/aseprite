@@ -1,9 +1,8 @@
 // Aseprite
 // Copyright (C) 2001-2016  David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -185,7 +184,7 @@ void Document::impossibleToBackToSavedState()
 bool Document::needsBackup() const
 {
   // If the undo history isn't empty, the user has modified the
-  // document, so we needs to backup those changes.
+  // document, so we need to backup those changes.
   return m_undo->canUndo() || m_undo->canRedo();
 }
 

@@ -15,7 +15,7 @@ You may also make copies of the SOFTWARE PRODUCT as may be necessary for backup 
 (a) Maintenance of Copyright Notices.
 You must not remove or alter any copyright notices on any and all copies of the SOFTWARE PRODUCT.
 (b) Distribution.
-You may not distribute registered copies of the SOFTWARE PRODUCT to third parties. Evaluation versions available for download from David Capello's websites may be freely distributed.
+You may not distribute copies of the SOFTWARE PRODUCT to third parties. Evaluation versions available for download from David Capello's websites may be freely distributed.
 (c) Prohibition on Reverse Engineering, Decompilation, and Disassembly.
 You may not reverse engineer, decompile, or disassemble the SOFTWARE PRODUCT, except and only to the extent that such activity is expressly permitted by applicable law notwithstanding this limitation.
 (d) Rental.
@@ -24,6 +24,8 @@ You may not rent, lease, or lend the SOFTWARE PRODUCT.
 David Capello may provide you with support services related to the SOFTWARE PRODUCT ("Support Services"). Any supplemental software code provided to you as part of the Support Services shall be considered part of the SOFTWARE PRODUCT and subject to the terms and conditions of this EULA.
 (f) Compliance with Applicable Laws.
 You must comply with all applicable laws regarding use of the SOFTWARE PRODUCT.
+(g) Source code.
+You may only compile and modify the source code of the SOFTWARE PRODUCT for your own personal purpose or to propose a contribution to the SOFTWARE PRODUCT.
 
 3. TERMINATION
 Without prejudice to any other rights, David Capello may terminate this EULA if you fail to comply with the terms and conditions of this EULA. In such event, you must destroy all copies of the SOFTWARE PRODUCT in your possession.

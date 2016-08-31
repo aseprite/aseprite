@@ -32,11 +32,13 @@ static Cursor* mouse_cursor = NULL;
 static she::Display* mouse_display = NULL;
 static Overlay* mouse_cursor_overlay = NULL;
 static bool use_native_mouse_cursor = false;
+static bool support_native_custom_cursor = false;
 
 // Mouse information (button and position).
 
 static volatile MouseButtons m_buttons;
 static gfx::Point m_mouse_pos;
+static int mouse_cursor_scale = 1;
 
 static int mouse_scares = 0;
 
@@ -66,10 +68,35 @@ static void update_mouse_overlay(Cursor* cursor)
   }
 }
 
+static bool update_custom_native_cursor(Cursor* cursor)
+{
+  bool result = false;
+
+  // Check if we can use a custom native mouse in this platform
+  if (!use_native_mouse_cursor &&
+      support_native_custom_cursor &&
+      mouse_display) {
+    if (cursor) {
+      result = mouse_display->setNativeMouseCursor(
+        // The surface is already scaled by guiscale()
+        cursor->getSurface(),
+        cursor->getFocus(),
+        // We scale the cursor by the she::Display scale
+        mouse_display->scale() * mouse_cursor_scale);
+    }
+    else if (mouse_cursor_type == kOutsideDisplay) {
+      result = mouse_display->setNativeMouseCursor(she::kArrowCursor);
+    }
+    else {
+      result = mouse_display->setNativeMouseCursor(she::kNoCursor);
+    }
+  }
+
+  return result;
+}
+
 static void update_mouse_cursor()
 {
-  // Use native cursor when it's possible/available/configured to do so.
-
   she::NativeCursor nativeCursor = she::kNoCursor;
   Cursor* cursor = nullptr;
 
@@ -83,6 +110,9 @@ static void update_mouse_cursor()
       case ui::kArrowCursor:
       case ui::kArrowPlusCursor:
         nativeCursor = she::kArrowCursor;
+        break;
+      case ui::kCrosshairCursor:
+        nativeCursor = she::kCrosshairCursor;
         break;
       case ui::kForbiddenCursor:
         nativeCursor = she::kForbiddenCursor;
@@ -118,20 +148,28 @@ static void update_mouse_cursor()
       nativeCursor = she::kNoCursor;
   }
 
-  // Use a software cursor with the overlay.
+  // Use a custom cursor
   if (nativeCursor == she::kNoCursor &&
       mouse_cursor_type != ui::kOutsideDisplay &&
       CurrentTheme::get()) {
     cursor = CurrentTheme::get()->getCursor(mouse_cursor_type);
   }
 
-  // Set internal overlay
-  update_mouse_overlay(cursor);
+  // Try to use a custom native cursor if it's possible
+  if (!update_custom_native_cursor(cursor)) {
+    // Or an overlay as last resource
+    update_mouse_overlay(cursor);
+  }
 }
 
 UISystem::UISystem()
 {
   mouse_cursor_type = kOutsideDisplay;
+  support_native_custom_cursor =
+    ((she::instance() &&
+      (int(she::instance()->capabilities()) &
+       int(she::Capabilities::CustomNativeMouseCursor))) ?
+     true: false);
 
   details::initWidgets();
 }
@@ -145,8 +183,9 @@ UISystem::~UISystem()
 
   details::exitWidgets();
 
-  _internal_set_mouse_display(NULL);
-  update_mouse_overlay(NULL);
+  _internal_set_mouse_display(nullptr);
+  if (!update_custom_native_cursor(nullptr))
+    update_mouse_overlay(nullptr);
 }
 
 void _internal_set_mouse_display(she::Display* display)
@@ -206,6 +245,12 @@ void set_mouse_cursor(CursorType type)
   update_mouse_cursor();
 }
 
+void set_mouse_cursor_scale(const int newScale)
+{
+  mouse_cursor_scale = newScale;
+  update_mouse_cursor();
+}
+
 void hide_mouse_cursor()
 {
   ASSERT(mouse_scares >= 0);
@@ -223,7 +268,8 @@ void show_mouse_cursor()
 
 void _internal_no_mouse_position()
 {
-  update_mouse_overlay(NULL);
+  if (!update_custom_native_cursor(nullptr))
+    update_mouse_overlay(nullptr);
 }
 
 void _internal_set_mouse_position(const gfx::Point& newPos)

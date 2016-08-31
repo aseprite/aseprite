@@ -85,15 +85,19 @@ set(OBSERVABLE_TESTS OFF CACHE BOOL "Compile observable tests")
 add_subdirectory(observable)
 include_directories(observable)
 
+# Disable clip examples
+set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
+add_subdirectory(clip)
+
+# Disable undo tests
+set(UNDO_TESTS OFF CACHE BOOL "Compile undo tests")
+add_subdirectory(undo)
+
 # Our base library
 add_subdirectory(base)
 
 # Directory where base/config.h file is located
 include_directories(${BASE_INCLUDE_DIR})
-
-# Disable clip examples
-set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
-add_subdirectory(clip)
 
 add_subdirectory(cfg)
 add_subdirectory(css)
@@ -108,7 +112,6 @@ add_subdirectory(render)
 add_subdirectory(script)
 add_subdirectory(she)
 add_subdirectory(ui)
-add_subdirectory(undo)
 
 if(ENABLE_UPDATER)
   add_subdirectory(updater)
@@ -178,7 +181,6 @@ if(ENABLE_TESTS)
   include(FindTests)
 
   find_tests(base base-lib)
-  find_tests(undo undo-lib)
   find_tests(gfx gfx-lib)
   find_tests(doc doc-lib)
   find_tests(render render-lib)

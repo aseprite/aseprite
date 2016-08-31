@@ -109,6 +109,7 @@
   <cursors>
     <cursor id="normal"         x="80" y="0" w="16" h="16"      focusx="0" focusy="0" />
     <cursor id="normal_add"     x="80" y="16" w="16" h="16"     focusx="0" focusy="0" />
+    <cursor id="crosshair"      x="96" y="32" w="16" h="16"     focusx="7" focusy="7" />
     <cursor id="forbidden"      x="80" y="32" w="16" h="16"     focusx="0" focusy="0" />
     <cursor id="hand"           x="80" y="48" w="16" h="16"     focusx="5" focusy="3" />
     <cursor id="scroll"         x="80" y="64" w="16" h="16"     focusx="8" focusy="8" />
@@ -423,6 +424,9 @@
     <!-- label -->
     <style id="label">
       <text color="text" />
+    </style>
+    <style id="label:disabled">
+      <text color="disabled" />
     </style>
 
     <!-- link -->

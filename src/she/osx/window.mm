@@ -14,6 +14,7 @@
 #include "she/osx/event_queue.h"
 #include "she/osx/view.h"
 #include "she/osx/window_delegate.h"
+#include "she/surface.h"
 
 using namespace she;
 
@@ -107,7 +108,7 @@ using namespace she;
 
 - (BOOL)setNativeMouseCursor:(NativeCursor)cursor
 {
-  NSCursor* nsCursor = nil;
+  NSCursor* nsCursor = nullptr;
 
   switch (cursor) {
     case kArrowCursor:
@@ -118,6 +119,9 @@ using namespace she;
     case kSizeSECursor:
     case kSizeSWCursor:
       nsCursor = [NSCursor arrowCursor];
+      break;
+    case kCrosshairCursor:
+      nsCursor = [NSCursor crosshairCursor];
       break;
     case kIBeamCursor:
       nsCursor = [NSCursor IBeamCursor];
@@ -149,13 +153,70 @@ using namespace she;
     case kSizeWCursor:
       nsCursor = [NSCursor resizeLeftCursor];
       break;
-    default:
-      nsCursor = nil;
-      break;
   }
 
   [self.contentView setCursor:nsCursor];
-  return (nsCursor != nil ? YES: NO);
+  return (nsCursor ? YES: NO);
+}
+
+- (BOOL)setNativeMouseCursor:(const she::Surface*)surface
+                       focus:(const gfx::Point&)focus
+                       scale:(const int)scale
+{
+  ASSERT(surface);
+  SurfaceFormatData format;
+  surface->getFormat(&format);
+  if (format.bitsPerPixel != 32)
+    return NO;
+
+  const int w = scale*surface->width();
+  const int h = scale*surface->height();
+
+  std::vector<uint32_t> buf(4*w*h);
+  uint32_t* bits = &buf[0];
+
+  for (int y=0; y<h; ++y) {
+    const uint32_t* ptr = (const uint32_t*)surface->getData(0, y/scale);
+    for (int x=0, u=0; x<w; ++x, ++bits) {
+      *bits = *ptr;
+      if (++u == scale) {
+        u = 0;
+        ++ptr;
+      }
+    }
+  }
+
+  CGDataProviderRef dataRef =
+    CGDataProviderCreateWithData(nullptr, &buf[0],
+                                 w*h*4, nullptr);
+  if (!dataRef)
+    return NO;
+
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  CGImageRef img =
+    CGImageCreate(
+      w, h, 8, 32, 4*w,
+      colorSpace, kCGImageAlphaLast, dataRef,
+      nullptr, false, kCGRenderingIntentDefault);
+  CGColorSpaceRelease(colorSpace);
+
+  CGDataProviderRelease(dataRef);
+
+  NSCursor* nsCursor = nullptr;
+  if (img) {
+    NSImage* image =
+      [[NSImage new] initWithCGImage:img
+                                size:NSMakeSize(w, h)];
+    CGImageRelease(img);
+
+    nsCursor =
+      [[NSCursor new] initWithImage:image
+                            hotSpot:NSMakePoint(scale*focus.x + scale/2,
+                                                scale*focus.y + scale/2)];
+  }
+  if (nsCursor)
+    [self.contentView setCursor:nsCursor];
+  return (nsCursor ? YES: NO);
 }
 
 - (void)noResponderFor:(SEL)eventSelector

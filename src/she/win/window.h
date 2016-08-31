@@ -10,8 +10,10 @@
 
 #include <windows.h>
 #include <windowsx.h>
+
 #include <commctrl.h>
 #include <shellapi.h>
+
 #include <sstream>
 
 #include "base/base.h"
@@ -48,6 +50,7 @@ namespace she {
       registerClass();
       m_hwnd = createHwnd(this, width, height);
       m_hcursor = nullptr;
+      m_customHcursor = false;
       m_scale = scale;
 
       // This flag is used to avoid calling T::resizeImpl() when we
@@ -138,6 +141,9 @@ namespace she {
         case kArrowCursor:
           hcursor = LoadCursor(NULL, IDC_ARROW);
           break;
+        case kCrosshairCursor:
+          hcursor = LoadCursor(NULL, IDC_CROSS);
+          break;
         case kIBeamCursor:
           hcursor = LoadCursor(NULL, IDC_IBEAM);
           break;
@@ -176,9 +182,86 @@ namespace she {
           break;
       }
 
-      SetCursor(hcursor);
-      m_hcursor = hcursor;
-      return (m_hcursor ? true: false);
+      return setCursor(hcursor, false);
+    }
+
+    bool setNativeMouseCursor(const she::Surface* surface,
+                              const gfx::Point& focus,
+                              const int scale) {
+      ASSERT(surface);
+
+      SurfaceFormatData format;
+      surface->getFormat(&format);
+
+      // Only for 32bpp surfaces
+      if (format.bitsPerPixel != 32)
+        return false;
+
+      // Based on the following article "How To Create an Alpha
+      // Blended Cursor or Icon in Windows XP":
+      // https://support.microsoft.com/en-us/kb/318876
+
+      int w = scale*surface->width();
+      int h = scale*surface->height();
+
+      BITMAPV5HEADER bi;
+      ZeroMemory(&bi, sizeof(BITMAPV5HEADER));
+      bi.bV5Size = sizeof(BITMAPV5HEADER);
+      bi.bV5Width = w;
+      bi.bV5Height = h;
+      bi.bV5Planes = 1;
+      bi.bV5BitCount = 32;
+      bi.bV5Compression = BI_BITFIELDS;
+      bi.bV5RedMask = 0x00ff0000;
+      bi.bV5GreenMask = 0x0000ff00;
+      bi.bV5BlueMask = 0x000000ff;
+      bi.bV5AlphaMask = 0xff000000;
+
+      uint32_t* bits;
+      HDC hdc = GetDC(nullptr);
+      HBITMAP hbmp = CreateDIBSection(
+        hdc, (BITMAPINFO*)&bi, DIB_RGB_COLORS,
+        (void**)&bits, NULL, (DWORD)0);
+      ReleaseDC(nullptr, hdc);
+      if (!hbmp)
+        return false;
+
+      for (int y=0; y<h; ++y) {
+        const uint32_t* ptr = (const uint32_t*)surface->getData(0, (h-1-y)/scale);
+        for (int x=0, u=0; x<w; ++x, ++bits) {
+          uint32_t c = *ptr;
+          *bits =
+            (((c & format.alphaMask) >> format.alphaShift) << 24) |
+            (((c & format.redMask  ) >> format.redShift  ) << 16) |
+            (((c & format.greenMask) >> format.greenShift) << 8) |
+            (((c & format.blueMask ) >> format.blueShift ));
+          if (++u == scale) {
+            u = 0;
+            ++ptr;
+          }
+        }
+      }
+
+      // Create an empty mask bitmap.
+      HBITMAP hmonobmp = CreateBitmap(w, h, 1, 1, nullptr);
+      if (!hmonobmp) {
+        DeleteObject(hbmp);
+        return false;
+      }
+
+      ICONINFO ii;
+      ii.fIcon = FALSE;
+      ii.xHotspot = scale*focus.x + scale/2;
+      ii.yHotspot = scale*focus.y + scale/2;
+      ii.hbmMask = hmonobmp;
+      ii.hbmColor = hbmp;
+
+      HCURSOR hcursor = CreateIconIndirect(&ii);
+
+      DeleteObject(hbmp);
+      DeleteObject(hmonobmp);
+
+      return setCursor(hcursor, true);
     }
 
     void updateWindow(const gfx::Rect& bounds) {
@@ -243,6 +326,16 @@ namespace she {
     }
 
   private:
+
+    bool setCursor(HCURSOR hcursor, bool custom) {
+      SetCursor(hcursor);
+      if (m_hcursor && m_customHcursor)
+        DestroyIcon(m_hcursor);
+      m_hcursor = hcursor;
+      m_customHcursor = custom;
+      return (hcursor ? true: false);
+    }
+
     LRESULT wndProc(UINT msg, WPARAM wparam, LPARAM lparam) {
       switch (msg) {
 
@@ -765,6 +858,7 @@ namespace she {
     bool m_isCreated;
     bool m_hasMouse;
     bool m_captureMouse;
+    bool m_customHcursor;
 
     // Wintab API data
     HCTX m_hpenctx;

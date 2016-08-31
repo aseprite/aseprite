@@ -1,9 +1,8 @@
 // Aseprite
 // Copyright (C) 2001-2016  David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -179,9 +178,8 @@ void App::initialize(const AppOptions& options)
 
     // Setup the GUI cursor and redraw screen
 
-    ui::set_use_native_cursors(
-      preferences().experimental.useNativeCursor());
-
+    ui::set_use_native_cursors(preferences().cursor.useNativeCursor());
+    ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());
     ui::set_mouse_cursor(kArrowCursor);
 
     ui::Manager::getDefault()->invalidate();

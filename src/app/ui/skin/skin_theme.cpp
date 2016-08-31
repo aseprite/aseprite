@@ -1,9 +1,8 @@
 // Aseprite
 // Copyright (C) 2001-2016  David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -104,6 +103,7 @@ static const char* cursor_names[kCursorTypes] = {
   "null",                       // kNoCursor
   "normal",                     // kArrowCursor
   "normal_add",                 // kArrowPlusCursor
+  "crosshair",                  // kCrosshairCursor
   "forbidden",                  // kForbiddenCursor
   "hand",                       // kHandCursor
   "scroll",                     // kScrollCursor
@@ -1011,8 +1011,11 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 
   rc.shrink(widget->border());
 
+  Style::State state;
+  if (!widget->isEnabled()) state += Style::disabled();
+
   widget->getTextIconInfo(NULL, &text);
-  style->paint(g, text, widget->text().c_str(), Style::State());
+  style->paint(g, text, widget->text().c_str(), state);
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
@@ -1030,6 +1033,7 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Style::State state;
   if (widget->hasMouseOver()) state += Style::hover();
   if (widget->isSelected()) state += Style::clicked();
+  if (!widget->isEnabled()) state += Style::disabled();
 
   g->fillRect(bg, bounds);
   style->paint(g, bounds, widget->text().c_str(), state);

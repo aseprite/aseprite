@@ -35,6 +35,9 @@ namespace she {
     void setTitleBar(const std::string& title) override;
     NativeCursor nativeMouseCursor() override;
     bool setNativeMouseCursor(NativeCursor cursor) override;
+    bool setNativeMouseCursor(const she::Surface* surface,
+                              const gfx::Point& focus,
+                              const int scale) override;
     void setMousePosition(const gfx::Point& position) override;
     void captureMouse() override;
     void releaseMouse() override;

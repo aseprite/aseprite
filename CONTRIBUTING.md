@@ -9,7 +9,9 @@ deep breath and try again. Smile ^_^
 Before you submit an issue:
 
 * Search in the current [list of issues](https://github.com/aseprite/aseprite/issues).
-* If the issue already exists, you can click the `Subscribe` button to get notifications.
+* If the issue already exists, add a +1, and you can click the `Subscribe` button to get notifications via email.
+
+# Compilation problem
 
 Before you submit an issue about a **compilation problem**, check
 the following items:
