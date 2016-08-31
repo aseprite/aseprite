@@ -120,6 +120,9 @@ using namespace she;
     case kSizeSWCursor:
       nsCursor = [NSCursor arrowCursor];
       break;
+    case kCrosshairCursor:
+      nsCursor = [NSCursor crosshairCursor];
+      break;
     case kIBeamCursor:
       nsCursor = [NSCursor IBeamCursor];
       break;

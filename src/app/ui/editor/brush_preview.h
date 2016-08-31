@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -37,9 +37,10 @@ namespace app {
   public:
     // Brush type
     enum {
-      CROSS            = 1,
-      SELECTION_CROSS  = 2,
-      BRUSH_BOUNDARIES = 4,
+      CROSSHAIR           = 1,
+      SELECTION_CROSSHAIR = 2,
+      BRUSH_BOUNDARIES    = 4,
+      NATIVE_CROSSHAIR    = 8,
     };
 
     BrushPreview(Editor* editor);
@@ -85,6 +86,7 @@ namespace app {
 
     // The brush preview is on the screen.
     bool m_onScreen;
+    bool m_withModifiedPixels;
     bool m_withRealPreview;
     gfx::Point m_screenPosition; // Position in the screen (view)
     gfx::Point m_editorPosition; // Position in the editor (model)

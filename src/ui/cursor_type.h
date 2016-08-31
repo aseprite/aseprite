@@ -17,6 +17,7 @@ namespace ui {
     kNoCursor = 0,
     kArrowCursor,
     kArrowPlusCursor,
+    kCrosshairCursor,
     kForbiddenCursor,
     kHandCursor,
     kScrollCursor,

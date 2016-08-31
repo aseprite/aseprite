@@ -111,6 +111,9 @@ static void update_mouse_cursor()
       case ui::kArrowPlusCursor:
         nativeCursor = she::kArrowCursor;
         break;
+      case ui::kCrosshairCursor:
+        nativeCursor = she::kCrosshairCursor;
+        break;
       case ui::kForbiddenCursor:
         nativeCursor = she::kForbiddenCursor;
         break;

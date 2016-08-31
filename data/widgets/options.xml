@@ -96,21 +96,30 @@
           </hbox>
 
           <separator text="Painting Cursors" horizontal="true" />
-          <label text="Precise Cursor Color:" />
-	  <hbox>
+
+          <grid columns="2">
+            <label text="Crosshair Type:" />
+            <combobox id="painting_cursor_type">
+	      <listitem text="Simple Crosshair" value="0" />
+	      <listitem text="Crosshair on Sprite" value="1" />
+            </combobox>
+
+	    <label text="Brush Preview:" />
+            <combobox id="brush_preview">
+              <listitem text="None" value="0" />
+              <listitem text="Brush Edges" value="1" />
+              <listitem text="Full Real-time Brush Preview" value="2" />
+            </combobox>
+
+	    <label text="Crosshair &amp; Brush Edges Color:" />
 	    <combobox group="1" id="cursor_color_type">
 	      <listitem text="Negative Black and White" value="0" />
 	      <listitem text="Specific Color" value="1" />
 	    </combobox>
-	    <box id="cursor_color_placeholder" /><!-- custom widget -->
-	  </hbox>
 
-	  <label text="Brush Preview:" />
-          <combobox id="brush_preview">
-            <listitem text="None" value="0" />
-            <listitem text="Brush Edges" value="1" />
-            <listitem text="Full Real-time Brush Preview" value="2" />
-          </combobox>
+	    <boxfiller />
+	    <box id="cursor_color_placeholder" /><!-- custom widget -->
+	  </grid>
         </vbox>
 
         <!-- Grid & background -->

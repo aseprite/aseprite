@@ -103,6 +103,7 @@ static const char* cursor_names[kCursorTypes] = {
   "null",                       // kNoCursor
   "normal",                     // kArrowCursor
   "normal_add",                 // kArrowPlusCursor
+  "crosshair",                  // kCrosshairCursor
   "forbidden",                  // kForbiddenCursor
   "hand",                       // kHandCursor
   "scroll",                     // kScrollCursor

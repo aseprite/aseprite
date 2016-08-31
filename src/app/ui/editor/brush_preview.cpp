@@ -32,6 +32,9 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/site.h"
+#include "she/display.h"
+#include "ui/manager.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -39,8 +42,9 @@ using namespace doc;
 
 BrushPreview::BrushPreview(Editor* editor)
   : m_editor(editor)
-  , m_type(CROSS)
+  , m_type(CROSSHAIR)
   , m_onScreen(false)
+  , m_withModifiedPixels(false)
   , m_withRealPreview(false)
   , m_screenPosition(0, 0)
   , m_editorPosition(0, 0)
@@ -77,6 +81,9 @@ color_t BrushPreview::getBrushColor(Sprite* sprite, Layer* layer)
 // Draws the brush cursor in the specified absolute mouse position
 // given in 'pos' param.  Warning: You should clean the cursor before
 // to use this routine with other editor.
+//
+// TODO the logic in this function is really complex, we should think
+//      a way to simplify all possibilities
 void BrushPreview::show(const gfx::Point& screenPos)
 {
   if (m_onScreen)
@@ -96,9 +103,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Get cursor color
   const auto& pref = Preferences::instance();
-  app::Color app_cursor_color = pref.cursor.cursorColor();
-  gfx::Color ui_cursor_color = color_utils::color_for_ui(app_cursor_color);
-  m_blackAndWhiteNegative = (app_cursor_color.getType() == app::Color::MaskType);
+  app::Color appCursorColor = pref.cursor.cursorColor();
+  m_blackAndWhiteNegative = (appCursorColor.getType() == app::Color::MaskType);
 
   // Cursor in the screen (view)
   m_screenPosition = screenPos;
@@ -118,7 +124,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
   color_t mask_index = sprite->transparentColor();
 
   if (ink->isSelection() || ink->isSlice()) {
-    m_type = SELECTION_CROSS;
+    m_type = SELECTION_CROSSHAIR;
   }
   else if (
     (brush->type() == kImageBrushType ||
@@ -134,33 +140,43 @@ void BrushPreview::show(const gfx::Point& screenPos)
     m_type = BRUSH_BOUNDARIES;
   }
   else {
-    m_type = CROSS;
+    m_type = CROSSHAIR;
   }
 
-  bool usePreview = false;
-
+  bool showPreview = false;
   auto brushPreview = pref.cursor.brushPreview();
   if (!m_editor->docPref().show.brushPreview())
     brushPreview = app::gen::BrushPreview::NONE;
 
   switch (brushPreview) {
     case app::gen::BrushPreview::NONE:
-      m_type = CROSS;
+      m_type = CROSSHAIR;
       break;
     case app::gen::BrushPreview::EDGES:
       m_type = BRUSH_BOUNDARIES;
       break;
     case app::gen::BrushPreview::FULL:
-      usePreview = m_editor->getState()->requireBrushPreview();
+      showPreview = m_editor->getState()->requireBrushPreview();
       break;
   }
 
+  if (m_type & SELECTION_CROSSHAIR)
+    showPreview = false;
+
+  // Use a simple cross
+  if (pref.cursor.paintingCursorType() == gen::PaintingCursorType::SIMPLE_CROSSHAIR) {
+    m_type &= ~(CROSSHAIR | SELECTION_CROSSHAIR);
+    m_type |= NATIVE_CROSSHAIR;
+  }
+
   // For cursor type 'bounds' we have to generate cursor boundaries
-  if (m_type & BRUSH_BOUNDARIES)
+  if (m_type & BRUSH_BOUNDARIES) {
+    showPreview = false;
     generateBoundaries();
+  }
 
   // Draw pixel/brush preview
-  if ((m_type & CROSS) && usePreview) {
+  if (showPreview) {
     gfx::Rect origBrushBounds = (isFloodfill ? gfx::Rect(0, 0, 1, 1): brush->bounds());
     gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);
@@ -222,12 +238,16 @@ void BrushPreview::show(const gfx::Point& screenPos)
   }
 
   // Save area and draw the cursor
-  {
+  if (!(m_type & NATIVE_CROSSHAIR) ||
+      (m_type & BRUSH_BOUNDARIES)) {
     ui::ScreenGraphics g;
     ui::SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
+    gfx::Color uiCursorColor = color_utils::color_for_ui(appCursorColor);
 
-    forEachBrushPixel(&g, m_screenPosition, spritePos, ui_cursor_color, &BrushPreview::savePixelDelegate);
-    forEachBrushPixel(&g, m_screenPosition, spritePos, ui_cursor_color, &BrushPreview::drawPixelDelegate);
+    forEachBrushPixel(&g, m_screenPosition, spritePos, uiCursorColor, &BrushPreview::savePixelDelegate);
+    forEachBrushPixel(&g, m_screenPosition, spritePos, uiCursorColor, &BrushPreview::drawPixelDelegate);
+
+    m_withModifiedPixels = true;
   }
 
   // Cursor in the editor (model)
@@ -236,6 +256,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Save the clipping-region to know where to clean the pixels
   m_oldClippingRegion = m_clippingRegion;
+
+  if (m_type & NATIVE_CROSSHAIR)
+    ui::set_mouse_cursor(ui::kCrosshairCursor);
 }
 
 // Cleans the brush cursor from the specified editor.
@@ -259,7 +282,7 @@ void BrushPreview::hide()
   m_clippingRegion.createSubtraction(m_clippingRegion,
                                      m_editor->getUpdateRegion());
 
-  {
+  if (m_withModifiedPixels) {
     // Restore pixels
     ui::ScreenGraphics g;
     ui::SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
@@ -347,10 +370,10 @@ void BrushPreview::forEachBrushPixel(
 {
   m_savedPixelsIterator = 0;
 
-  if (m_type & CROSS)
+  if (m_type & CROSSHAIR)
     traceCrossPixels(g, screenPos, color, pixelDelegate);
 
-  if (m_type & SELECTION_CROSS)
+  if (m_type & SELECTION_CROSSHAIR)
     traceSelectionCrossPixels(g, spritePos, color, 1, pixelDelegate);
 
   if (m_type & BRUSH_BOUNDARIES)
@@ -358,8 +381,10 @@ void BrushPreview::forEachBrushPixel(
 
   // Depending on the editor zoom, maybe we need subpixel movement (a
   // little dot inside the active pixel)
-  if (m_editor->zoom().scale() >= 4.0)
+  if (!(m_type & NATIVE_CROSSHAIR) &&
+      m_editor->zoom().scale() >= 4.0) {
     (this->*pixelDelegate)(g, screenPos, color);
+  }
 
   m_savedPixelsLimit = m_savedPixelsIterator;
 }
@@ -480,7 +505,7 @@ void BrushPreview::drawPixelDelegate(ui::Graphics* gfx, const gfx::Point& pt, gf
   if (m_savedPixelsIterator < (int)m_savedPixels.size() &&
       m_clippingRegion.contains(pt)) {
     if (m_blackAndWhiteNegative) {
-      int c = m_savedPixels[m_savedPixelsIterator++];
+      int c = m_savedPixels[m_savedPixelsIterator];
       int r = gfx::getr(c);
       int g = gfx::getg(c);
       int b = gfx::getb(c);
@@ -490,6 +515,7 @@ void BrushPreview::drawPixelDelegate(ui::Graphics* gfx, const gfx::Point& pt, gf
     else {
       gfx->putPixel(color, pt.x, pt.y);
     }
+    ++m_savedPixelsIterator;
   }
 }
 

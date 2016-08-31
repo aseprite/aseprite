@@ -78,6 +78,7 @@ public:
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
 
     // Cursor
+    paintingCursorType()->setSelectedItemIndex(int(m_pref.cursor.paintingCursorType()));
     cursorColorPlaceholder()->addChild(m_cursorColor);
 
     if (m_cursorColor->getColor().getType() == app::Color::MaskType) {
@@ -269,6 +270,7 @@ public:
     m_pref.editor.zoomWithSlide(slideZoom()->isSelected());
 #endif
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
+    m_pref.cursor.paintingCursorType(static_cast<app::gen::PaintingCursorType>(paintingCursorType()->getSelectedItemIndex()));
     m_pref.cursor.cursorColor(m_cursorColor->getColor());
     m_pref.cursor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
     m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());

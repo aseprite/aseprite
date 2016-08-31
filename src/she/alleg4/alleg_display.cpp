@@ -558,6 +558,7 @@ bool Alleg4Display::setNativeMouseCursor(NativeCursor cursor)
       newCursor = MOUSE_CURSOR_QUESTION;
       break;
 #ifdef ALLEGRO4_WITH_EXTRA_CURSORS
+    case kCrosshairCursor: newCursor = MOUSE_CURSOR_CROSS; break;
     case kForbiddenCursor: newCursor = MOUSE_CURSOR_FORBIDDEN; break;
     case kMoveCursor: newCursor = MOUSE_CURSOR_MOVE; break;
     case kLinkCursor: newCursor = MOUSE_CURSOR_LINK; break;

@@ -141,6 +141,9 @@ namespace she {
         case kArrowCursor:
           hcursor = LoadCursor(NULL, IDC_ARROW);
           break;
+        case kCrosshairCursor:
+          hcursor = LoadCursor(NULL, IDC_CROSS);
+          break;
         case kIBeamCursor:
           hcursor = LoadCursor(NULL, IDC_IBEAM);
           break;
