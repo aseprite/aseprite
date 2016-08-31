@@ -248,8 +248,8 @@ namespace she {
 
       ICONINFO ii;
       ii.fIcon = FALSE;
-      ii.xHotspot = focus.x * scale;
-      ii.yHotspot = focus.y * scale;
+      ii.xHotspot = scale*focus.x + scale/2;
+      ii.yHotspot = scale*focus.y + scale/2;
       ii.hbmMask = hmonobmp;
       ii.hbmColor = hbmp;
 

@@ -208,8 +208,8 @@ using namespace she;
 
     nsCursor =
       [[NSCursor new] initWithImage:image
-                            hotSpot:NSMakePoint(scale*focus.x,
-                                                scale*focus.y)];
+                            hotSpot:NSMakePoint(scale*focus.x + scale/2,
+                                                scale*focus.y + scale/2)];
   }
   if (nsCursor)
     [self.contentView setCursor:nsCursor];
