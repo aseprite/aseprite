@@ -14,13 +14,16 @@
 #include "app/cli/cli_open_file.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/console.h"
 #include "app/document.h"
 #include "app/document_exporter.h"
+#include "app/file/palette_file.h"
 #include "app/script/app_scripting.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
+#include "doc/palette.h"
 #include "doc/sprite.h"
 #include "script/engine_delegate.h"
 
@@ -78,6 +81,24 @@ void DefaultCliDelegate::saveFile(const CliOpenFile& cof)
   }
 
   ctx->executeCommand(saveAsCommand, params);
+}
+
+void DefaultCliDelegate::loadPalette(const CliOpenFile& cof,
+                                     const std::string& filename)
+{
+  base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));
+  if (palette) {
+    Context* ctx = UIContext::instance();
+    Command* loadPalCommand = CommandsModule::instance()->getCommandByName(CommandId::LoadPalette);
+    Params params;
+    params.set("filename", filename.c_str());
+
+    ctx->executeCommand(loadPalCommand, params);
+  }
+  else {
+    Console().printf("Error loading palette in --palette '%s'\n",
+                     filename.c_str());
+  }
 }
 
 void DefaultCliDelegate::exportFiles(DocumentExporter& exporter)

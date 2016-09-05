@@ -26,12 +26,12 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_showHelp(false)
   , m_showVersion(false)
   , m_verboseLevel(kNoVerbose)
-  , m_palette(m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default"))
   , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
   , m_batch(m_po.add("batch").mnemonic('b').description("Do not start the UI"))
   , m_preview(m_po.add("preview").mnemonic('p').description("Do not execute actions, just print what will be\ndone"))
-  , m_saveAs(m_po.add("save-as").requiresValue("<filename>").description("Save the last given document with other format"))
-  , m_scale(m_po.add("scale").requiresValue("<factor>").description("Resize all previous opened documents"))
+  , m_saveAs(m_po.add("save-as").requiresValue("<filename>").description("Save the last given sprite with other format"))
+  , m_palette(m_po.add("palette").requiresValue("<filename>").description("Change the palette of the last given sprite"))
+  , m_scale(m_po.add("scale").requiresValue("<factor>").description("Resize all previously opened sprites"))
   , m_shrinkTo(m_po.add("shrink-to").requiresValue("width,height").description("Shrink each sprite if it is\nlarger than width or height"))
   , m_data(m_po.add("data").requiresValue("<filename.json>").description("File to store the sprite sheet metadata"))
   , m_format(m_po.add("format").requiresValue("<format>").description("Format to export the data file\n(json-hash, json-array)"))
@@ -68,8 +68,6 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_verboseLevel = kHighlyVerbose;
     else if (m_po.enabled(m_verbose))
       m_verboseLevel = kVerbose;
-
-    m_paletteFileName = m_po.value_of(m_palette);
 
     m_startShell = m_po.enabled(m_shell);
     m_previewCLI = m_po.enabled(m_preview);

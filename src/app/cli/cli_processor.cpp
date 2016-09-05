@@ -222,6 +222,18 @@ void CliProcessor::process()
           else
             console.printf("A document is needed before --save-as argument\n");
         }
+        // --palette <filename>
+        else if (opt == &m_options.palette()) {
+          if (lastDoc) {
+            ASSERT(cof.document == lastDoc);
+
+            std::string filename = value.value();
+            m_delegate->loadPalette(cof, filename);
+          }
+          else {
+            console.printf("You need to load a document to change its palette with --palette\n");
+          }
+        }
         // --scale <factor>
         else if (opt == &m_options.scale()) {
           Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);

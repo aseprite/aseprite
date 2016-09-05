@@ -18,6 +18,7 @@ namespace app {
     void showVersion() override;
     void afterOpenFile(const CliOpenFile& cof) override;
     void saveFile(const CliOpenFile& cof) override;
+    void loadPalette(const CliOpenFile& cof, const std::string& filename) override;
     void exportFiles(DocumentExporter& exporter) override;
     void execScript(const std::string& filename) override;
   };

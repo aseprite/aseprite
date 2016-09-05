@@ -170,7 +170,7 @@ void App::initialize(const AppOptions& options)
 
   // Load or create the default palette, or migrate the default
   // palette from an old format palette to the new one, etc.
-  load_default_palette(options.paletteFileName());
+  load_default_palette();
 
   // Initialize GUI interface
   if (isGui()) {

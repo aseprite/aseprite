@@ -135,6 +135,17 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     std::cout << "  - No output\n";
 }
 
+void PreviewCliDelegate::loadPalette(const CliOpenFile& cof,
+                                     const std::string& filename)
+{
+  ASSERT(cof.document);
+  ASSERT(cof.document->sprite());
+
+  std::cout << "- Load palette:\n"
+            << "  - Sprite: '" << cof.filename << "'\n"
+            << "  - Palette: '" << filename << "'\n";
+}
+
 void PreviewCliDelegate::exportFiles(DocumentExporter& exporter)
 {
   std::string type = "None";

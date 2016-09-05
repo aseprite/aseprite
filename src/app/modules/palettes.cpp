@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -42,82 +42,74 @@ void exit_module_palette()
   delete ase_current_palette;
 }
 
-void load_default_palette(const std::string& userDefined)
+void load_default_palette()
 {
   base::UniquePtr<Palette> pal;
+  std::string defaultPalName = get_preset_palette_filename(
+    get_default_palette_preset_name(), ".ase");
 
-  // Load specific palette file defined by the user in the command line.
-  std::string palFile = userDefined;
-  if (!palFile.empty())
+  // If there is no palette in command line, we use the default one.
+  std::string palFile = defaultPalName;
+  if (base::is_file(palFile)) {
     pal.reset(load_palette(palFile.c_str()));
-  // Load default palette file
+  }
   else {
-    std::string defaultPalName = get_preset_palette_filename(
-      get_default_palette_preset_name(), ".ase");
+    // Migrate old default.gpl to default.ase format
+    palFile = get_preset_palette_filename(
+      get_default_palette_preset_name(), ".gpl");
 
-    // If there is no palette in command line, we use the default one.
-    palFile = defaultPalName;
     if (base::is_file(palFile)) {
       pal.reset(load_palette(palFile.c_str()));
-    }
-    else {
-      // Migrate old default.gpl to default.ase format
-      palFile = get_preset_palette_filename(
-        get_default_palette_preset_name(), ".gpl");
 
-      if (base::is_file(palFile)) {
-        pal.reset(load_palette(palFile.c_str()));
+      // Remove duplicate black entries at the end (as old palettes
+      // contains 256 colors)
+      if (pal && pal->size() == 256) {
+        doc::color_t black = rgba(0, 0, 0, 255);
 
-        // Remove duplicate black entries at the end (as old palettes
-        // contains 256 colors)
-        if (pal && pal->size() == 256) {
-          doc::color_t black = rgba(0, 0, 0, 255);
+        // Get the last non-black entry
+        int i = 0;
+        for (i=pal->size()-1; i>0; --i) {
+          if (pal->getEntry(i) != black)
+            break;
+        }
 
-          // Get the last non-black entry
-          int i = 0;
-          for (i=pal->size()-1; i>0; --i) {
-            if (pal->getEntry(i) != black)
+        if (i < pal->size()-1) {
+          // Check if there is a black entry in the first entries.
+          bool hasBlack = false;
+          for (int j=0; j<i; ++j) {
+            if (pal->getEntry(j) == black) {
+              hasBlack = true;
               break;
-          }
-
-          if (i < pal->size()-1) {
-            // Check if there is a black entry in the first entries.
-            bool hasBlack = false;
-            for (int j=0; j<i; ++j) {
-              if (pal->getEntry(j) == black) {
-                hasBlack = true;
-                break;
-              }
             }
-            if (!hasBlack)
-              ++i;                // Leave one black entry
-
-            // Resize the palette
-            if (i < pal->size()-1)
-              pal->resize(i+1);
           }
-        }
+          if (!hasBlack)
+            ++i;                // Leave one black entry
 
-        // We could remove the old .gpl file (palFile), but as the
-        // user could be using multiple versions of Aseprite, it's a
-        // good idea to keep both formats (.gpl for Aseprite <=
-        // v1.1-beta5, and .ase for future versions).
-      }
-      // If the default palette file doesn't exist, we copy db32.gpl
-      // as the default one (default.ase).
-      else {
-        ResourceFinder rf;
-        rf.includeDataDir("palettes/db32.gpl");
-        if (rf.findFirst()) {
-          pal.reset(load_palette(rf.filename().c_str()));
+          // Resize the palette
+          if (i < pal->size()-1)
+            pal->resize(i+1);
         }
       }
 
-      // Save default.ase file
-      if (pal) {
-        palFile = defaultPalName;
-        save_palette(palFile.c_str(), pal.get(), 0);
+      // We could remove the old .gpl file (palFile), but as the
+      // user could be using multiple versions of Aseprite, it's a
+      // good idea to keep both formats (.gpl for Aseprite <=
+      // v1.1-beta5, and .ase for future versions).
+    }
+    // If the default palette file doesn't exist, we copy db32.gpl
+    // as the default one (default.ase).
+    else {
+      ResourceFinder rf;
+      rf.includeDataDir("palettes/db32.gpl");
+      if (rf.findFirst()) {
+        pal.reset(load_palette(rf.filename().c_str()));
       }
+    }
+
+    // Save default.ase file
+    if (pal) {
+      palFile = defaultPalName;
+      save_palette(palFile.c_str(), pal.get(), 0);
     }
   }
 

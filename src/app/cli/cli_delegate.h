@@ -27,6 +27,7 @@ namespace app {
     virtual void beforeOpenFile(const CliOpenFile& cof) { }
     virtual void afterOpenFile(const CliOpenFile& cof) { }
     virtual void saveFile(const CliOpenFile& cof) { }
+    virtual void loadPalette(const CliOpenFile& cof, const std::string& filename) { }
     virtual void exportFiles(DocumentExporter& exporter) { }
     virtual void execScript(const std::string& filename) { }
   };

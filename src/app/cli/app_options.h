@@ -40,14 +40,13 @@ public:
   bool showVersion() const { return m_showVersion; }
   VerboseLevel verboseLevel() const { return m_verboseLevel; }
 
-  const std::string& paletteFileName() const { return m_paletteFileName; }
-
   const ValueList& values() const {
     return m_po.values();
   }
 
   // Export options
   const Option& saveAs() const { return m_saveAs; }
+  const Option& palette() const { return m_palette; }
   const Option& scale() const { return m_scale; }
   const Option& shrinkTo() const { return m_shrinkTo; }
   const Option& data() const { return m_data; }
@@ -85,13 +84,12 @@ private:
   bool m_showHelp;
   bool m_showVersion;
   VerboseLevel m_verboseLevel;
-  std::string m_paletteFileName;
 
-  Option& m_palette;
   Option& m_shell;
   Option& m_batch;
   Option& m_preview;
   Option& m_saveAs;
+  Option& m_palette;
   Option& m_scale;
   Option& m_shrinkTo;
   Option& m_data;

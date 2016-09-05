@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,7 +48,8 @@ void SetPaletteCommand::onExecute(Context* context)
   set_current_palette(m_palette, false);
 
   // Redraw the entire screen
-  ui::Manager::getDefault()->invalidate();
+  if (context->isUIAvailable())
+    ui::Manager::getDefault()->invalidate();
 }
 
 Command* CommandFactory::createSetPaletteCommand()
