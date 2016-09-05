@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -205,8 +205,7 @@ void ResourcesListBox::onTick()
   insertChild(getItemsCount()-1, listItem);
   layout();
 
-  View* view = View::getView(this);
-  if (view)
+  if (View* view = View::getView(this))
     view->updateView();
 
   resource.release();
@@ -215,15 +214,18 @@ void ResourcesListBox::onTick()
 
 void ResourcesListBox::stop()
 {
+  m_resourcesTimer.stop();
+
   if (m_loadingItem) {
     removeChild(m_loadingItem);
+    layout();
+
     delete m_loadingItem;
-    m_loadingItem = NULL;
+    m_loadingItem = nullptr;
 
-    invalidate();
+    if (View* view = View::getView(this))
+      view->updateView();
   }
-
-  m_resourcesTimer.stop();
 }
 
 } // namespace app
