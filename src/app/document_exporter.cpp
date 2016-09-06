@@ -170,6 +170,7 @@ public:
   void setInTextureBounds(const gfx::Rect& bounds) { m_bounds->setInTextureBounds(bounds); }
 
   bool isDuplicated() const { return m_isDuplicated; }
+  bool isEmpty() const { return m_bounds->trimmedBounds().isEmpty(); }
   SampleBoundsPtr sharedBounds() const { return m_bounds; }
 
   void setSharedBounds(const SampleBoundsPtr& bounds) {
@@ -234,6 +235,11 @@ public:
     for (auto& sample : samples) {
       if (sample.isDuplicated())
         continue;
+
+      if (sample.isEmpty()) {
+        sample.setInTextureBounds(gfx::Rect(0, 0, 0, 0));
+        continue;
+      }
 
       const Sprite* sprite = sample.sprite();
       const Layer* layer = sample.layer();
@@ -312,7 +318,8 @@ public:
     // TODO Add support for shape paddings
 
     for (auto& sample : samples) {
-      if (sample.isDuplicated())
+      if (sample.isDuplicated() ||
+          sample.isEmpty())
         continue;
 
       pr.add(sample.requiredSize());
@@ -423,7 +430,7 @@ gfx::Size DocumentExporter::calculateSheetSize()
   return calculateSheetSize(samples);
 }
 
-void DocumentExporter::captureSamples(Samples& samples) const
+void DocumentExporter::captureSamples(Samples& samples)
 {
   for (auto& item : m_documents) {
     Document* doc = item.doc;
@@ -521,7 +528,22 @@ void DocumentExporter::captureSamples(Samples& samples) const
         if (!algorithm::shrink_bounds(sampleRender, frameBounds, refColor)) {
           // If shrink_bounds() returns false, it's because the whole
           // image is transparent (equal to the mask color).
-          continue;
+
+          // Should we ignore this empty frame? (i.e. don't include
+          // the frame in the sprite sheet)
+          if (m_ignoreEmptyCels) {
+            for (FrameTag* tag : sprite->frameTags()) {
+              auto& delta = m_tagDelta[tag->id()];
+
+              if (frame < tag->fromFrame()) --delta.first;
+              if (frame <= tag->toFrame()) --delta.second;
+            }
+            continue;
+          }
+
+          // Create an empty entry for this completely trimmed frame
+          // anyway to get its duration in the list of frames.
+          sample.setTrimmedBounds(frameBounds = gfx::Rect(0, 0, 0, 0));
         }
 
         if (m_trimCels)
@@ -558,6 +580,10 @@ gfx::Size DocumentExporter::calculateSheetSize(const Samples& samples) const
   gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
 
   for (const auto& sample : samples) {
+    if (sample.isDuplicated() ||
+        sample.isEmpty())
+      continue;
+
     gfx::Rect sampleBounds = sample.inTextureBounds();
 
     // If the user specified a fixed sprite sheet size, we add the
@@ -587,6 +613,10 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples) const
   int maxColors = 256;
 
   for (const auto& sample : samples) {
+    if (sample.isDuplicated() ||
+        sample.isEmpty())
+      continue;
+
     // We try to render an indexed image. But if we find a sprite with
     // two or more palettes, or two of the sprites have different
     // palettes, we've to use RGB format.
@@ -626,7 +656,8 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
   textureImage->clear(0);
 
   for (const auto& sample : samples) {
-    if (sample.isDuplicated())
+    if (sample.isDuplicated() ||
+        sample.isEmpty())
       continue;
 
     // Make the sprite compatible with the texture so the render()
@@ -644,7 +675,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
   }
 }
 
-void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage) const
+void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage)
 {
   std::string frames_begin;
   std::string frames_end;
@@ -738,9 +769,13 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
         else
           os << ",";
 
+        std::pair<int, int> delta(0, 0);
+        if (!m_tagDelta.empty())
+          delta = m_tagDelta[tag->id()];
+
         os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
-           << " \"from\": " << tag->fromFrame() << ","
-           << " \"to\": " << tag->toFrame() << ","
+           << " \"from\": " << (tag->fromFrame()+delta.first) << ","
+           << " \"to\": " << (tag->toFrame()+delta.second) << ","
            << " \"direction\": \"" << escape_for_json(convert_to_string(tag->aniDir())) << "\" }";
       }
     }

@@ -11,10 +11,13 @@
 #include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
 #include "doc/image_buffer.h"
+#include "doc/object_id.h"
 #include "gfx/fwd.h"
 
 #include <iosfwd>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace doc {
@@ -84,12 +87,12 @@ namespace app {
     class SimpleLayoutSamples;
     class BestFitLayoutSamples;
 
-    void captureSamples(Samples& samples) const;
+    void captureSamples(Samples& samples);
     void layoutSamples(Samples& samples);
     gfx::Size calculateSheetSize(const Samples& samples) const;
     Document* createEmptyTexture(const Samples& samples) const;
     void renderTexture(const Samples& samples, doc::Image* textureImage) const;
-    void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage) const;
+    void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
     void renderSample(const Sample& sample, doc::Image* dst, int x, int y) const;
 
     class Item {
@@ -129,6 +132,11 @@ namespace app {
     doc::ImageBufferPtr m_sampleRenderBuf;
     bool m_listFrameTags;
     bool m_listLayers;
+
+    // Displacement for each tag from/to frames in case we export
+    // them. It's used in case we trim frames outside tags and they
+    // will not be exported at all in the final result.
+    std::map<doc::ObjectId, std::pair<int, int> > m_tagDelta;
 
     DISABLE_COPYING(DocumentExporter);
   };

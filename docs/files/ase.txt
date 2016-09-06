@@ -17,10 +17,9 @@ ASE files use Intel (little-endian) byte order.
 
 BYTE            An 8-bit unsigned integer value
 WORD            A 16-bit unsigned integer value
+SIGNED WORD     A 16-bit signed integer value
 DWORD           A 32-bit unsigned integer value
-LONG            A 32-bit signed integer value
 BYTE[n]         "n" bytes.
-RECT            Four LONGs (in the order: x-pos, y-pos, width, heigth)
 STRING          length=WORD (how many characters to read next)
                 string=BYTE[length]
                 The \0 character isn't included.
@@ -191,8 +190,8 @@ Cel Chunk (0x2005)
   layer/frame.
 
   WORD          Layer index (see NOTE.2)
-  WORD          X position
-  WORD          Y position
+  SIGNED WORD   X position
+  SIGNED WORD   Y position
   BYTE          Opacity level
   WORD          Cel type
   BYTE[7]       For future (set to zero)
@@ -220,8 +219,8 @@ Cel Chunk (0x2005)
 Mask Chunk (0x2016) DEPRECATED
 ----------------------------------------
 
-  WORD          X position
-  WORD          Y position
+  SIGNED WORD   X position
+  SIGNED WORD   Y position
   WORD          Width
   WORD          Height
   BYTE[8]       For future (set to zero)
