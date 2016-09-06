@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,10 +11,13 @@
 #include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
 #include "doc/image_buffer.h"
+#include "doc/object_id.h"
 #include "gfx/fwd.h"
 
 #include <iosfwd>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace doc {
@@ -125,6 +128,11 @@ namespace app {
     doc::ImageBufferPtr m_sampleRenderBuf;
     bool m_listFrameTags;
     bool m_listLayers;
+
+    // Displacement for each tag from/to frames in case we export
+    // them. It's used in case we trim frames outside tags and they
+    // will not be exported at all in the final result.
+    std::map<doc::ObjectId, std::pair<int, int> > m_tagDelta;
 
     DISABLE_COPYING(DocumentExporter);
   };
