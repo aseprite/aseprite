@@ -278,6 +278,7 @@
       <option id="resize_scale" type="double" default="1" />
     </section>
     <section id="sprite_sheet">
+      <option id="defined" type="bool" default="false" />
       <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::None" />
       <option id="columns" type="int" default="0" />
       <option id="rows" type="int" default="0" />
