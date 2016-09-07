@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,6 +18,7 @@
 #include "doc/cel.h"
 #include "doc/file/col_file.h"
 #include "doc/file/gpl_file.h"
+#include "doc/file/hex_file.h"
 #include "doc/file/pal_file.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -33,14 +34,14 @@ using namespace doc;
 std::string get_readable_palette_extensions()
 {
   std::string buf = get_readable_extensions();
-  buf += ",col,gpl,pal";
+  buf += ",col,gpl,hex,pal";
   return buf;
 }
 
 std::string get_writable_palette_extensions()
 {
   std::string buf = get_writable_extensions();
-  buf += ",col,gpl,pal";
+  buf += ",col,gpl,hex,pal";
   return buf;
 }
 
@@ -54,6 +55,9 @@ Palette* load_palette(const char *filename)
   }
   else if (ext == "gpl") {
     pal = doc::file::load_gpl_file(filename);
+  }
+  else if (ext == "hex") {
+    pal = doc::file::load_hex_file(filename);
   }
   else if (ext == "pal") {
     pal = doc::file::load_pal_file(filename);
@@ -100,6 +104,9 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
   }
   else if (ext == "gpl") {
     success = doc::file::save_gpl_file(pal, filename);
+  }
+  else if (ext == "hex") {
+    success = doc::file::save_hex_file(pal, filename);
   }
   else if (ext == "pal") {
     success = doc::file::save_pal_file(pal, filename);
