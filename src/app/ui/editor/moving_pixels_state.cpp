@@ -198,11 +198,28 @@ void MovingPixelsState::onActiveToolChange(Editor* editor, tools::Tool* tool)
 
   // If the user changed the tool when he/she is moving pixels,
   // we have to drop the pixels only if the new tool is not selection...
-  if (m_pixelsMovement &&
-      (!tool->getInk(0)->isSelection() ||
-       !tool->getInk(1)->isSelection())) {
-    // We have to drop pixels
-    dropPixels();
+  if (m_pixelsMovement) {
+    // We don't want to drop pixels in case the user change the tool
+    // for scrolling/zooming/picking colors.
+    if ((!tool->getInk(0)->isSelection() ||
+         !tool->getInk(1)->isSelection()) &&
+        (!tool->getInk(0)->isScrollMovement() ||
+         !tool->getInk(1)->isScrollMovement()) &&
+        (!tool->getInk(0)->isZoom() ||
+         !tool->getInk(1)->isZoom()) &&
+        (!tool->getInk(0)->isEyedropper() ||
+         !tool->getInk(1)->isEyedropper())) {
+      // We have to drop pixels
+      dropPixels();
+    }
+    // If we've temporarily gone to a non-selection tool and now we're
+    // back, we've just to update the context bar to show the "moving
+    // pixels" controls (e.g. OK/Cancel movement buttons).
+    else if (tool->getInk(0)->isSelection() ||
+             tool->getInk(1)->isSelection()) {
+      ContextBar* contextBar = App::instance()->contextBar();
+      contextBar->updateForMovingPixels();
+    }
   }
 }
 
@@ -477,8 +494,13 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       return;
     }
   }
+  // Don't drop pixels if the user zooms/scrolls/picks a color
+  // using commands.
   else if ((command->id() == CommandId::Zoom) ||
-           (command->id() == CommandId::Scroll)) {
+           (command->id() == CommandId::Scroll) ||
+           (command->id() == CommandId::Eyedropper) ||
+           // DiscardBrush is used by Eyedropper command
+           (command->id() == CommandId::DiscardBrush)) {
     // Do not drop pixels
     return;
   }
