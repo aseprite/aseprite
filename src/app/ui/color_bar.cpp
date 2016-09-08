@@ -202,6 +202,8 @@ ColorBar::ColorBar(int align)
   addChild(fgBox);
   addChild(bgBox);
 
+  m_fgColor.setId("fg_color");
+  m_bgColor.setId("bg_color");
   m_fgColor.setExpansive(true);
   m_bgColor.setExpansive(true);
 

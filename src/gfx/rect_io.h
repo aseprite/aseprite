@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2014 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,13 +13,28 @@
 
 namespace gfx {
 
-  inline std::ostream& operator<<(std::ostream& os, const Rect& rect)
-  {
+  inline std::ostream& operator<<(std::ostream& os, const Rect& rect) {
     return os << "("
               << rect.x << ", "
               << rect.y << ", "
               << rect.w << ", "
               << rect.h << ")";
+  }
+
+  inline std::istream& operator>>(std::istream& in, Rect& rect) {
+    while (in && in.get() != '(')
+      ;
+
+    if (!in)
+      return in;
+
+    char chr;
+    in >> rect.x >> chr
+       >> rect.y >> chr
+       >> rect.w >> chr
+       >> rect.h >> chr;
+
+    return in;
   }
 
 }

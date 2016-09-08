@@ -45,6 +45,14 @@ bool PopupWindowPin::showPin(bool state)
   m_pin.setVisible(state);
 }
 
+void PopupWindowPin::setPinned(bool pinned)
+{
+  m_pin.setSelected(pinned);
+
+  Event ev(this);
+  onPinClick(ev);
+}
+
 void PopupWindowPin::onPinClick(Event& ev)
 {
   if (m_pin.isSelected()) {
@@ -62,14 +70,11 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kOpenMessage:
-      m_pin.setSelected(false);
-      makeFixed();
+    case kOpenMessage: {
+      if (!isPinned())
+        makeFixed();
       break;
-
-    case kCloseMessage:
-      m_pin.setSelected(false);
-      break;
+    }
 
   }
 

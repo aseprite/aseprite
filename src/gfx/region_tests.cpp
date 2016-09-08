@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,23 +10,12 @@
 
 #include <gtest/gtest.h>
 
-#include "gfx/region.h"
 #include "gfx/point.h"
+#include "gfx/rect_io.h"
+#include "gfx/region.h"
 
 using namespace std;
 using namespace gfx;
-
-namespace gfx {
-
-  ostream& operator<<(ostream& os, const Rect& rect) {
-    return os << "("
-              << rect.x << ", "
-              << rect.y << ", "
-              << rect.w << ", "
-              << rect.h << ")";
-  }
-  
-}
 
 ostream& operator<<(ostream& os, const Region& rgn)
 {

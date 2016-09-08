@@ -25,6 +25,7 @@
 #include "doc/layer.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
+#include "gfx/rect_io.h"
 #include "ui/size_hint_event.h"
 #include "ui/ui.h"
 
@@ -104,6 +105,11 @@ app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
 bool ColorButton::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
+
+    case kOpenMessage:
+      if (!m_windowDefaultBounds.isEmpty())
+        openSelectorDialog();
+      break;
 
     case kCloseMessage:
       if (m_window && m_window->isVisible())
@@ -236,34 +242,64 @@ void ColorButton::onClick(Event& ev)
   }
 }
 
+void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
+{
+  if (m_canPinSelector) {
+    bool pinned = false;
+    ev.stream() >> pinned;
+    if (ev.stream() && pinned)
+      ev.stream() >> m_windowDefaultBounds;
+  }
+}
+
+void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
+{
+  if (m_canPinSelector && m_window && m_window->isPinned())
+    ev.stream() << 1 << ' ' << m_window->bounds();
+  else
+    ev.stream() << 0;
+}
+
 void ColorButton::openSelectorDialog()
 {
-  int x, y;
+  bool pinned = (!m_windowDefaultBounds.isEmpty());
 
   if (m_window == NULL) {
     m_window = new ColorPopup(m_canPinSelector);
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 
+  if (pinned)
+    m_window->setPinned(true);
+
   m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->openWindow();
 
-  x = MID(0, bounds().x, ui::display_w()-m_window->bounds().w);
-  if (bounds().y2() <= ui::display_h()-m_window->bounds().h)
-    y = MAX(0, bounds().y2());
-  else
-    y = MAX(0, bounds().y-m_window->bounds().h);
-
-  m_window->positionWindow(x, y);
+  gfx::Rect winBounds = m_windowDefaultBounds;
+  if (!pinned) {
+    winBounds = m_window->bounds();
+    winBounds.x = MID(0, bounds().x, ui::display_w()-winBounds.w);
+    if (bounds().y2() <= ui::display_h()-winBounds.h)
+      winBounds.y = MAX(0, bounds().y2());
+    else
+      winBounds.y = MAX(0, bounds().y-winBounds.h);
+  }
+  winBounds.x = MID(0, winBounds.x, ui::display_w()-winBounds.w);
+  winBounds.y = MID(0, winBounds.y, ui::display_h()-winBounds.h);
+  m_window->setBounds(winBounds);
 
   m_window->manager()->dispatchMessages();
   m_window->layout();
 
   // Setup the hot-region
-  gfx::Rect rc = bounds().createUnion(m_window->bounds());
-  rc.enlarge(8);
-  gfx::Region rgn(rc);
-  static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
+  if (!pinned) {
+    gfx::Rect rc = bounds().createUnion(m_window->bounds());
+    rc.enlarge(8);
+    gfx::Region rgn(rc);
+    static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
+  }
+
+  m_windowDefaultBounds = gfx::Rect();
 }
 
 void ColorButton::closeSelectorDialog()
