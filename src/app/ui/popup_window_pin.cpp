@@ -81,19 +81,14 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
   return PopupWindow::onProcessMessage(msg);
 }
 
-void PopupWindowPin::onHitTest(HitTestEvent& ev)
+void PopupWindowPin::onWindowMovement()
 {
-  PopupWindow::onHitTest(ev);
+  PopupWindow::onWindowMovement();
 
-  if ((m_pin.isSelected()) &&
-      (ev.hit() == HitTestClient)) {
-    if (ev.point().x <= bounds().x+2)
-      ev.setHit(HitTestBorderW);
-    else if (ev.point().x >= bounds().x2()-3)
-      ev.setHit(HitTestBorderE);
-    else
-      ev.setHit(HitTestCaption);
-  }
+  // If the window isn't pinned and we move it, we can automatically
+  // pin it.
+  if (!m_pin.isSelected())
+    setPinned(true);
 }
 
 } // namespace app

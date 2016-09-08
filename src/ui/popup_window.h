@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -46,6 +46,9 @@ namespace ui {
     void onInitTheme(InitThemeEvent& ev) override;
     void onHitTest(HitTestEvent& ev) override;
 
+    virtual void onMakeFloating();
+    virtual void onMakeFixed();
+
   private:
     void startFilteringMessages();
     void stopFilteringMessages();
@@ -54,6 +57,7 @@ namespace ui {
     EnterBehavior m_enterBehavior;
     gfx::Region m_hotRegion;
     bool m_filtering;
+    bool m_fixed;
   };
 
 } // namespace ui

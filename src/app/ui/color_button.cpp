@@ -279,7 +279,8 @@ void ColorButton::openSelectorDialog()
 
   gfx::Rect winBounds = m_windowDefaultBounds;
   if (!pinned) {
-    winBounds = m_window->bounds();
+    winBounds = gfx::Rect(m_window->bounds().origin(),
+                          m_window->sizeHint());
     winBounds.x = MID(0, bounds().x, ui::display_w()-winBounds.w);
     if (bounds().y2() <= ui::display_h()-winBounds.h)
       winBounds.y = MAX(0, bounds().y2());

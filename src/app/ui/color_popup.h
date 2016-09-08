@@ -41,6 +41,8 @@ namespace app {
     base::Signal1<void, const app::Color&> ColorChange;
 
   protected:
+    void onMakeFloating() override;
+    void onMakeFixed() override;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
     void onColorTypeClick();
@@ -66,6 +68,7 @@ namespace app {
     GraySlider m_graySlider;
     ui::Label m_maskLabel;
     base::ScopedConnection m_onPaletteChangeConn;
+    bool m_canPin;
 
     // This variable is used to avoid updating the m_hexColorEntry text
     // when the color change is generated from a

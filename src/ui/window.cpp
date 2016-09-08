@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -178,6 +178,11 @@ void Window::onHitTest(HitTestEvent& ev)
 }
 
 void Window::onWindowResize()
+{
+  // Do nothing
+}
+
+void Window::onWindowMovement()
 {
   // Do nothing
 }
@@ -579,6 +584,8 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
   }
 
   manager->invalidateDisplayRegion(invalidManagerRegion);
+
+  onWindowMovement();
 }
 
 } // namespace ui

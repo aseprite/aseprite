@@ -55,6 +55,7 @@ ColorPopup::ColorPopup(bool canPin)
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
   , m_colorType(5)
   , m_maskLabel("Transparent Color Selected")
+  , m_canPin(canPin)
   , m_disableHexUpdate(false)
 {
   m_colorType.addItem("Index");
@@ -94,7 +95,7 @@ ColorPopup::ColorPopup(bool canPin)
   m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
 
-  if (!canPin)
+  if (!m_canPin)
     showPin(false);
 
   selectColorType(app::Color::RgbType);
@@ -133,6 +134,26 @@ void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
 app::Color ColorPopup::getColor() const
 {
   return m_color;
+}
+
+void ColorPopup::onMakeFloating()
+{
+  PopupWindowPin::onMakeFloating();
+
+  if (m_canPin) {
+    setSizeable(true);
+    setMoveable(true);
+  }
+}
+
+void ColorPopup::onMakeFixed()
+{
+  PopupWindowPin::onMakeFixed();
+
+  if (m_canPin) {
+    setSizeable(false);
+    setMoveable(true);
+  }
 }
 
 void ColorPopup::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
