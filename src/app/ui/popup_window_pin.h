@@ -17,7 +17,7 @@ namespace app {
   public:
     PopupWindowPin(const std::string& text, ClickBehavior clickBehavior);
 
-    bool showPin(bool state);
+    void showPin(bool state);
     bool isPinned() const { return m_pin.isSelected(); }
     void setPinned(bool pinned);
 

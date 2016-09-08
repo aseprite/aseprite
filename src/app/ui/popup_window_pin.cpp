@@ -40,7 +40,7 @@ PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehav
                        CENTER | MIDDLE));
 }
 
-bool PopupWindowPin::showPin(bool state)
+void PopupWindowPin::showPin(bool state)
 {
   m_pin.setVisible(state);
 }
