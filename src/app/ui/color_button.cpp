@@ -107,8 +107,10 @@ bool ColorButton::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      if (!m_windowDefaultBounds.isEmpty())
+      if (!m_windowDefaultBounds.isEmpty() &&
+          this->isVisible()) {
         openSelectorDialog();
+      }
       break;
 
     case kCloseMessage:
@@ -317,6 +319,24 @@ void ColorButton::onActiveSiteChange(const Site& site)
 {
   if (m_dependOnLayer)
     invalidate();
+
+  if (m_canPinSelector) {
+    // Hide window
+    if (!site.document()) {
+      if (m_window)
+        m_window->setVisible(false);
+    }
+    // Show window if it's pinned
+    else {
+      // Check if it's pinned from the preferences (m_windowDefaultBounds)
+      if (!m_window && !m_windowDefaultBounds.isEmpty())
+        openSelectorDialog();
+      // Or check if the window was hidden but it's pinned, so we've
+      // to show it again.
+      else if (m_window && m_window->isPinned())
+        m_window->setVisible(true);
+    }
+  }
 }
 
 } // namespace app
