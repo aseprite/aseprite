@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -370,9 +370,11 @@ void RadioButton::deselectRadioGroup()
   }
 }
 
-void RadioButton::onSelect()
+void RadioButton::onSelect(bool selected)
 {
-  ButtonBase::onSelect();
+  ButtonBase::onSelect(selected);
+  if (!selected)
+    return;
 
   if (!m_handleSelect)
     return;

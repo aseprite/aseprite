@@ -368,10 +368,8 @@ namespace ui {
     virtual void onBroadcastMouseMessage(WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);
     virtual void onSetDecorativeWidgetBounds();
-    virtual void onEnable();
-    virtual void onDisable();
-    virtual void onSelect();
-    virtual void onDeselect();
+    virtual void onEnable(bool enabled);
+    virtual void onSelect(bool selected);
     virtual void onSetText();
     virtual void onSetBgColor();
 
