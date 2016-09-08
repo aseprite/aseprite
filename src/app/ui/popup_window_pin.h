@@ -17,6 +17,8 @@ namespace app {
   public:
     PopupWindowPin(const std::string& text, ClickBehavior clickBehavior);
 
+    bool showPin(bool state);
+
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;
     virtual void onHitTest(ui::HitTestEvent& ev) override;

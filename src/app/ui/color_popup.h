@@ -31,7 +31,7 @@ namespace app {
       DoNotChangeType
     };
 
-    ColorPopup();
+    ColorPopup(bool canPin);
     ~ColorPopup();
 
     void setColor(const app::Color& color, SetColorOptions options);

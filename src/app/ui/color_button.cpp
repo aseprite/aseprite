@@ -41,12 +41,15 @@ static WidgetType colorbutton_type()
   return type;
 }
 
-ColorButton::ColorButton(const app::Color& color, PixelFormat pixelFormat)
+ColorButton::ColorButton(const app::Color& color,
+                         PixelFormat pixelFormat,
+                         bool canPinSelector)
   : ButtonBase("", colorbutton_type(), kButtonWidget, kButtonWidget)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(NULL)
   , m_dependOnLayer(false)
+  , m_canPinSelector(canPinSelector)
 {
   this->setFocusStop(true);
 
@@ -238,7 +241,7 @@ void ColorButton::openSelectorDialog()
   int x, y;
 
   if (m_window == NULL) {
-    m_window = new ColorPopup();
+    m_window = new ColorPopup(m_canPinSelector);
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 

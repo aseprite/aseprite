@@ -22,7 +22,9 @@ namespace app {
                     , public doc::ContextObserver
                     , public IColorSource {
   public:
-    ColorButton(const app::Color& color, PixelFormat pixelFormat);
+    ColorButton(const app::Color& color,
+                PixelFormat pixelFormat,
+                bool canPinSelector);
     ~ColorButton();
 
     PixelFormat pixelFormat() const;
@@ -54,6 +56,7 @@ namespace app {
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     bool m_dependOnLayer;
+    bool m_canPinSelector;
   };
 
 } // namespace app

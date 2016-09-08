@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -104,7 +104,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     if (sprite->pixelFormat() == IMAGE_INDEXED) {
       color_button = new ColorButton(app::Color::fromIndex(sprite->transparentColor()),
-                                     IMAGE_INDEXED);
+                                     IMAGE_INDEXED,
+                                     false);
 
       window.transparentColorPlaceholder()->addChild(color_button);
     }

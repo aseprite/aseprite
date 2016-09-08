@@ -47,7 +47,7 @@ enum {
   MASK_MODE
 };
 
-ColorPopup::ColorPopup()
+ColorPopup::ColorPopup(bool canPin)
   : PopupWindowPin("Color Selector", ClickBehavior::CloseOnClickInOtherWindow)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
@@ -93,6 +93,9 @@ ColorPopup::ColorPopup()
   m_hsvSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
+
+  if (!canPin)
+    showPin(false);
 
   selectColorType(app::Color::RgbType);
   setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
