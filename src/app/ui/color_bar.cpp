@@ -183,12 +183,7 @@ ColorBar::ColorBar(int align)
   setColorSelector(
     Preferences::instance().colorBar.selector());
 
-  Box* buttonsBox = new HBox();
-  buttonsBox->addChild(&m_buttons);
-  m_buttons.setMaxSize(gfx::Size(m_buttons.maxSize().w,
-                                 16*ui::guiscale()));
-
-  addChild(buttonsBox);
+  addChild(&m_buttons);
   addChild(&m_splitter);
 
   HBox* fgBox = new HBox;
@@ -238,6 +233,8 @@ ColorBar::ColorBar(int align)
   m_buttons.addItem(theme->parts.palSort());
   m_buttons.addItem(theme->parts.palPresets());
   m_buttons.addItem(theme->parts.palOptions());
+  m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
+                                 16*ui::guiscale()));
 
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();
