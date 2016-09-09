@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -191,20 +191,17 @@ void Grid::onResize(ResizeEvent& ev)
 
 void Grid::onSizeHint(SizeHintEvent& ev)
 {
-  int w, h;
-
-  w = h = 0;
-
   calculateSize();
 
   // Calculate the total
-  sumStripSize(m_colstrip, w);
-  sumStripSize(m_rowstrip, h);
+  gfx::Size sz(0, 0);
+  sumStripSize(m_colstrip, sz.w);
+  sumStripSize(m_rowstrip, sz.h);
 
-  w += border().width();
-  h += border().height();
+  sz.w += border().width();
+  sz.h += border().height();
 
-  ev.setSizeHint(Size(w, h));
+  ev.setSizeHint(sz);
 }
 
 void Grid::onPaint(PaintEvent& ev)
@@ -374,7 +371,6 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
                   else
                     size = cell->h; // Transposed
                 }
-
                 (this->*incCol)(i, size);
               }
             }
@@ -423,38 +419,40 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
   }
   total_req += border_size;
 
-  if (wantmore_count > 0) {
-    int extra_total = rect_size - total_req;
-    if (extra_total > 0) {
-      // If a expandable column-strip was empty (size=0) then we have
-      // to reduce the extra_total size because a new child-spacing is
-      // added by this column
-      for (i=0; i<(int)colstrip.size(); ++i) {
-        if ((colstrip[i].size == 0) &&
-            (colstrip[i].expand_count == max_expand_count || same_width)) {
-          extra_total -= this->childSpacing();
-        }
+  int extra_total = (rect_size - total_req);
+
+  // Expand or reduce "expandable" strip
+  if ((wantmore_count > 0) &&
+      ((extra_total > 0 && (max_expand_count > 0 || same_width)) ||
+       (extra_total < 0))) {
+    // If a expandable column-strip was empty (size=0) then we have
+    // to reduce the extra_total size because a new child-spacing is
+    // added by this column
+    for (i=0; i<(int)colstrip.size(); ++i) {
+      if ((colstrip[i].size == 0) &&
+          (colstrip[i].expand_count == max_expand_count || same_width)) {
+        extra_total -= SGN(extra_total)*this->childSpacing();
       }
-
-      int extra_foreach = extra_total / wantmore_count;
-
-      for (i=0; i<(int)colstrip.size(); ++i) {
-        if (colstrip[i].expand_count == max_expand_count || same_width) {
-          ASSERT(wantmore_count > 0);
-
-          colstrip[i].size += extra_foreach;
-          extra_total -= extra_foreach;
-
-          if (--wantmore_count == 0) {
-            colstrip[i].size += extra_total;
-            extra_total = 0;
-          }
-        }
-      }
-
-      ASSERT(wantmore_count == 0);
-      ASSERT(extra_total == 0);
     }
+
+    int extra_foreach = extra_total / wantmore_count;
+
+    for (i=0; i<(int)colstrip.size(); ++i) {
+      if (colstrip[i].expand_count == max_expand_count || same_width) {
+        ASSERT(wantmore_count > 0);
+
+        colstrip[i].size += extra_foreach;
+        extra_total -= extra_foreach;
+
+        if (--wantmore_count == 0) {
+          colstrip[i].size += extra_total;
+          extra_total = 0;
+        }
+      }
+    }
+
+    ASSERT(wantmore_count == 0);
+    ASSERT(extra_total == 0);
   }
 }
 
