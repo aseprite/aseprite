@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -95,6 +95,7 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
     void onActiveViewChange();
 
   private:
@@ -115,6 +116,7 @@ namespace app {
     HomeView* m_homeView;
     DevConsoleView* m_devConsoleView;
     Notifications* m_notifications;
+    INotificationDelegate* m_scalePanic;
   };
 
 }

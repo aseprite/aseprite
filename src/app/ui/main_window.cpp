@@ -15,6 +15,7 @@
 #include "app/commands/commands.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
+#include "app/notification_delegate.h"
 #include "app/pref/preferences.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
@@ -35,6 +36,7 @@
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/path.h"
+#include "she/display.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -44,10 +46,51 @@ namespace app {
 
 using namespace ui;
 
+class ScreenScalePanic : public INotificationDelegate {
+public:
+  std::string notificationText() override {
+    return "Reset Scale!";
+  }
+
+  void notificationClick() override {
+    auto& pref = Preferences::instance();
+
+    const int newScreenScale = 2;
+    const int newUIScale = 1;
+    bool needsRestart = false;
+
+    if (pref.general.screenScale() != newScreenScale)
+      pref.general.screenScale(newScreenScale);
+
+    if (pref.general.uiScale() != newUIScale) {
+      pref.general.uiScale(newUIScale);
+      needsRestart = true;
+    }
+
+    pref.save();
+
+    // If the UI scale is greater than 100%, we would like to avoid
+    // setting the Screen Scale to 200% right now to avoid a worse
+    // effect to the user. E.g. If the UI Scale is 400% and Screen
+    // Scale is 100%, and the user choose to reset the scale, we
+    // cannot change the Screen Scale to 200% (we're going to
+    // increase the problem), so we change the Screen Scale to 100%
+    // just to show the "restart" message.
+    Manager* manager = Manager::getDefault();
+    she::Display* display = manager->getDisplay();
+    display->setScale(ui::guiscale() > newUIScale ? 1: newScreenScale);
+    manager->setDisplay(display);
+
+    if (needsRestart)
+      Alert::show("Aseprite<<Restart the program.||&OK");
+  }
+};
+
 MainWindow::MainWindow()
   : m_mode(NormalMode)
   , m_homeView(nullptr)
   , m_devConsoleView(nullptr)
+  , m_scalePanic(nullptr)
 {
   // Load all menus by first time.
   AppMenus::instance()->reload();
@@ -104,6 +147,8 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+  delete m_scalePanic;
+
   if (m_devConsoleView) {
     if (m_devConsoleView->parent())
       m_workspace->removeView(m_devConsoleView);
@@ -249,6 +294,20 @@ bool MainWindow::onProcessMessage(ui::Message* msg)
 void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 {
   Window::onSaveLayout(ev);
+}
+
+void MainWindow::onResize(ui::ResizeEvent& ev)
+{
+  app::gen::MainWindow::onResize(ev);
+
+  she::Display* display = manager()->getDisplay();
+  if ((display) &&
+      (display->scale()*ui::guiscale() > 2) &&
+      (!m_scalePanic) &&
+      (ui::display_w()/ui::guiscale() < 320 ||
+       ui::display_h()/ui::guiscale() < 260)) {
+    showNotification(m_scalePanic = new ScreenScalePanic);
+  }
 }
 
 // When the active view is changed from methods like
