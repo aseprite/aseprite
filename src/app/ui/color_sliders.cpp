@@ -68,6 +68,7 @@ namespace {
             color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / w));
             break;
           case ColorSliders::Gray:
+          case ColorSliders::Alpha:
             color = color_utils::color_for_ui(app::Color::fromGray(255 * x / w));
             break;
         }
