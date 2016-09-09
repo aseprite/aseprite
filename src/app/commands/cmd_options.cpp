@@ -173,7 +173,7 @@ public:
 
     uiScale()->setSelectedItemIndex(
       uiScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.experimental.uiScale())));
+        base::convert_to<std::string>(m_pref.general.uiScale())));
 
     if ((int(she::instance()->capabilities()) &
          int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
@@ -312,8 +312,8 @@ public:
     }
 
     int newUIScale = base::convert_to<int>(uiScale()->getValue());
-    if (newUIScale != m_pref.experimental.uiScale()) {
-      m_pref.experimental.uiScale(newUIScale);
+    if (newUIScale != m_pref.general.uiScale()) {
+      m_pref.general.uiScale(newUIScale);
       warnings += "<<- UI Elements Scale";
     }
 
