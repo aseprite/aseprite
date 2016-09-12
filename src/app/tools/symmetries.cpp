@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/tools/symmetries.h"
 
+#include "app/tools/point_shape.h"
 #include "app/tools/stroke.h"
 #include "app/tools/tool_loop.h"
 #include "doc/brush.h"
@@ -20,7 +21,11 @@ namespace tools {
 void HorizontalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& strokes,
                                          ToolLoop* loop)
 {
-  int adjust = (loop->getBrush()->bounds().w % 2);
+  int adjust;
+  if (loop->getPointShape()->isFloodFill())
+    adjust = 1;
+  else
+    adjust = (loop->getBrush()->bounds().w % 2);
 
   strokes.push_back(mainStroke);
 
@@ -33,7 +38,11 @@ void HorizontalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stro
 void VerticalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& strokes,
                                        ToolLoop* loop)
 {
-  int adjust = (loop->getBrush()->bounds().h % 2);
+  int adjust;
+  if (loop->getPointShape()->isFloodFill())
+    adjust = 1;
+  else
+    adjust = (loop->getBrush()->bounds().h % 2);
 
   strokes.push_back(mainStroke);
 
