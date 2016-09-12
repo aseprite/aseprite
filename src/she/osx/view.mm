@@ -406,9 +406,19 @@ bool is_key_pressed(KeyScancode scancode)
     ev.setPreciseWheel(true);
   }
   else {
+    // Ignore the acceleration factor, just use the wheel sign.
+    gfx::Point pt(0, 0);
+    if (event.scrollingDeltaX >= 0.1)
+      pt.x = -1;
+    else if (event.scrollingDeltaX <= -0.1)
+      pt.x = 1;
+    if (event.scrollingDeltaY >= 0.1)
+      pt.y = -1;
+    else if (event.scrollingDeltaY <= -0.1)
+      pt.y = 1;
+
     ev.setPointerType(she::PointerType::Mouse);
-    ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX,
-                                -event.scrollingDeltaY));
+    ev.setWheelDelta(pt);
   }
 
   queue_event(ev);
