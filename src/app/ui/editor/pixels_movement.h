@@ -56,6 +56,7 @@ namespace app {
 
     HandleType handle() const { return m_handle; }
 
+    void trim();
     void cutMask();
     void copyMask();
     void catchImage(const gfx::Point& pos, HandleType handle);

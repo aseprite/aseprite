@@ -523,6 +523,8 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 
     // Clear floating pixels on Cut/Clear.
     if (command->id() != CommandId::Copy) {
+      m_pixelsMovement->trim();
+
       // Discard the dragged image.
       m_pixelsMovement->discardImage();
       m_discarded = true;
