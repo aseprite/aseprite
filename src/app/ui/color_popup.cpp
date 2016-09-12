@@ -70,6 +70,9 @@ ColorPopup::ColorPopup(bool canPin)
   m_colorPaletteContainer.attachToView(&m_colorPalette);
 
   m_colorPaletteContainer.setExpansive(true);
+  m_rgbSliders.setExpansive(true);
+  m_hsvSliders.setExpansive(true);
+  m_graySlider.setExpansive(true);
 
   m_topBox.addChild(&m_colorType);
   m_topBox.addChild(new Separator("", VERTICAL));

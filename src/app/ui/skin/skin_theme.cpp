@@ -1315,21 +1315,22 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     g->fillRect(BGCOLOR, rc);
 
     // Draw thumb
-    g->drawRgbaSurface(thumb, x-thumb->width()/2, rc.y);
+    int thumb_y = rc.y;
+    if (rc.h > thumb->height()*3)
+      rc.shrink(Border(0, thumb->height(), 0, 0));
 
     // Draw borders
-    rc.shrink(Border(
-        3 * guiscale(),
-        thumb->height(),
-        3 * guiscale(),
-        1 * guiscale()));
-
-    drawRect(g, rc, nw.get(), gfx::ColorNone);
+    if (rc.h > 4*guiscale()) {
+      rc.shrink(Border(3, 0, 3, 1) * guiscale());
+      drawRect(g, rc, nw.get(), gfx::ColorNone);
+    }
 
     // Draw background (using the customized ISliderBgPainter implementation)
     rc.shrink(Border(1, 1, 1, 2) * guiscale());
     if (!rc.isEmpty())
       bgPainter->paint(widget, g, rc);
+
+    g->drawRgbaSurface(thumb, x-thumb->width()/2, thumb_y);
   }
   else {
     // Draw borders

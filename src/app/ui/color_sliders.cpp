@@ -164,9 +164,9 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   box->setMaxSize(sz);
   entry->setMaxSize(sz);
 
-  m_grid.addChildInCell(label,  1, 1, LEFT | MIDDLE);
-  m_grid.addChildInCell(box, 1, 1, HORIZONTAL | VERTICAL);
-  m_grid.addChildInCell(entry,  1, 1, LEFT | MIDDLE);
+  m_grid.addChildInCell(label, 1, 1, LEFT | MIDDLE);
+  m_grid.addChildInCell(box,   1, 1, HORIZONTAL | VERTICAL);
+  m_grid.addChildInCell(entry, 1, 1, LEFT | MIDDLE);
 }
 
 void ColorSliders::setAbsSliderValue(int sliderIndex, int value)
