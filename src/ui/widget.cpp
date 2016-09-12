@@ -211,7 +211,7 @@ void Widget::setEnabled(bool state)
       disableFlags(DISABLED);
       invalidate();
 
-      onEnable();
+      onEnable(true);
     }
   }
   else {
@@ -221,7 +221,7 @@ void Widget::setEnabled(bool state)
       enableFlags(DISABLED);
       invalidate();
 
-      onDisable();
+      onEnable(false);
     }
   }
 }
@@ -233,7 +233,7 @@ void Widget::setSelected(bool state)
       enableFlags(SELECTED);
       invalidate();
 
-      onSelect();
+      onSelect(true);
     }
   }
   else {
@@ -241,7 +241,7 @@ void Widget::setSelected(bool state)
       disableFlags(SELECTED);
       invalidate();
 
-      onDeselect();
+      onSelect(false);
     }
   }
 }
@@ -1436,22 +1436,12 @@ void Widget::onSetDecorativeWidgetBounds()
   }
 }
 
-void Widget::onEnable()
+void Widget::onEnable(bool enabled)
 {
   // Do nothing
 }
 
-void Widget::onDisable()
-{
-  // Do nothing
-}
-
-void Widget::onSelect()
-{
-  // Do nothing
-}
-
-void Widget::onDeselect()
+void Widget::onSelect(bool selected)
 {
   // Do nothing
 }

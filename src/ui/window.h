@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -46,6 +46,7 @@ namespace ui {
     bool isDesktop() const { return m_isDesktop; }
     bool isOnTop() const { return m_isOnTop; }
     bool isWantFocus() const { return m_isWantFocus; }
+    bool isSizeable() const { return m_isSizeable; }
     bool isMoveable() const { return m_isMoveable; }
 
     HitTest hitTest(const gfx::Point& point);
@@ -67,6 +68,7 @@ namespace ui {
     virtual void onClose(CloseEvent& ev);
     virtual void onHitTest(HitTestEvent& ev);
     virtual void onWindowResize();
+    virtual void onWindowMovement();
 
   private:
     void windowSetPosition(const gfx::Rect& rect);

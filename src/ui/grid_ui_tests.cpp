@@ -1,11 +1,12 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Aseprite UI Library
+// Copyright (C) 2001-2016  David Capello
 //
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #define TEST_GUI
 #include "tests/test.h"
+#include "gfx/rect_io.h"
 #include "gfx/size.h"
 
 using namespace gfx;
@@ -144,7 +145,7 @@ TEST(Grid, SameWidth2x1Grid)
 //  |                            |   |
 //  +----------------------------+---+
 //
-TEST(Grid, Intrincate3x3Grid)
+TEST(Grid, Intrincate2x2Grid)
 {
   Grid* grid = new Grid(3, false);
   Widget* w1 = new Widget;
@@ -225,4 +226,83 @@ TEST(Grid, FourColumns)
   EXPECT_EQ(gfx::Rect(20, 0, 10, 10), c.bounds());
   EXPECT_EQ(gfx::Rect(30, 0, 10, 10), d.bounds());
   EXPECT_EQ(gfx::Rect(0, 10, 40, 10), e.bounds());
+}
+
+TEST(Grid, OneFixedReduceThree)
+{
+  Grid grid(1, false);
+  grid.noBorderNoChildSpacing();
+
+  Widget a;
+  Widget b;
+  Widget c;
+  Widget d;
+  a.setMinSize(gfx::Size(10, 10));
+  b.setMinSize(gfx::Size(10, 10));
+  c.setMinSize(gfx::Size(10, 10));
+  d.setMinSize(gfx::Size(10, 10));
+
+  grid.addChildInCell(&a, 1, 1, HORIZONTAL);
+  grid.addChildInCell(&b, 1, 1, HORIZONTAL | VERTICAL);
+  grid.addChildInCell(&c, 1, 1, HORIZONTAL | VERTICAL);
+  grid.addChildInCell(&d, 1, 1, HORIZONTAL | VERTICAL);
+
+  // Test request size
+  grid.setChildSpacing(0);
+  EXPECT_EQ(gfx::Size(10, 40), grid.sizeHint());
+
+  // Test bigger layout
+  grid.setBounds(gfx::Rect(0, 0, 10, 100));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), a.bounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 10, 30), b.bounds());
+  EXPECT_EQ(gfx::Rect(0, 40, 10, 30), c.bounds());
+  EXPECT_EQ(gfx::Rect(0, 70, 10, 30), d.bounds());
+
+  // Test perfect layout
+  grid.setBounds(gfx::Rect(0, 0, 10, 40));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), a.bounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 10, 10), b.bounds());
+  EXPECT_EQ(gfx::Rect(0, 20, 10, 10), c.bounds());
+  EXPECT_EQ(gfx::Rect(0, 30, 10, 10), d.bounds());
+
+  // Test reduced layout
+  grid.setBounds(gfx::Rect(0, 0, 10, 16));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), a.bounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 10, 2), b.bounds());
+  EXPECT_EQ(gfx::Rect(0, 12, 10, 2), c.bounds());
+  EXPECT_EQ(gfx::Rect(0, 14, 10, 2), d.bounds());
+}
+
+TEST(Grid, ReduceThree)
+{
+  Grid grid(1, false);
+  grid.noBorderNoChildSpacing();
+
+  Widget a;
+  Widget b;
+  Widget c;
+  a.setMinSize(gfx::Size(10, 10));
+  b.setMinSize(gfx::Size(10, 10));
+  c.setMinSize(gfx::Size(10, 10));
+
+  grid.addChildInCell(&a, 1, 1, HORIZONTAL);
+  grid.addChildInCell(&b, 1, 1, HORIZONTAL);
+  grid.addChildInCell(&c, 1, 1, HORIZONTAL);
+
+  // Test request size
+  grid.setChildSpacing(0);
+  EXPECT_EQ(gfx::Size(10, 30), grid.sizeHint());
+
+  // Test bigger layout (as these widgets aren't expandible, they
+  // should have height=10)
+  grid.setBounds(gfx::Rect(0, 0, 10, 90));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), a.bounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 10, 10), b.bounds());
+  EXPECT_EQ(gfx::Rect(0, 20, 10, 10), c.bounds());
+
+  // Test reduced layout
+  grid.setBounds(gfx::Rect(0, 0, 10, 12));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 4), a.bounds());
+  EXPECT_EQ(gfx::Rect(0, 4, 10, 4), b.bounds());
+  EXPECT_EQ(gfx::Rect(0, 8, 10, 4), c.bounds());
 }

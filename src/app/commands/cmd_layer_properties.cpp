@@ -168,6 +168,10 @@ private:
   }
 
   void onCommitChange() {
+    // Nothing to do here, as there is no layer selected.
+    if (!m_layer)
+      return;
+
     base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
 
     m_timer.stop();

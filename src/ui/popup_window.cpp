@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,6 +26,7 @@ PopupWindow::PopupWindow(const std::string& text,
   , m_clickBehavior(clickBehavior)
   , m_enterBehavior(enterBehavior)
   , m_filtering(false)
+  , m_fixed(false)
 {
   setSizeable(false);
   setMoveable(false);
@@ -64,12 +65,18 @@ void PopupWindow::makeFloating()
 {
   stopFilteringMessages();
   setMoveable(true);
+  m_fixed = false;
+
+  onMakeFloating();
 }
 
 void PopupWindow::makeFixed()
 {
   startFilteringMessages();
   setMoveable(false);
+  m_fixed = true;
+
+  onMakeFixed();
 }
 
 bool PopupWindow::onProcessMessage(Message* msg)
@@ -91,7 +98,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseLeaveMessage:
-      if (m_hotRegion.isEmpty() && !isMoveable())
+      if (m_hotRegion.isEmpty() && m_fixed)
         closeWindow(nullptr);
       break;
 
@@ -139,7 +146,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseMoveMessage:
-      if (!isMoveable() &&
+      if (m_fixed &&
           !m_hotRegion.isEmpty() &&
           manager()->getCapture() == NULL) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
@@ -202,19 +209,34 @@ void PopupWindow::onInitTheme(InitThemeEvent& ev)
 
 void PopupWindow::onHitTest(HitTestEvent& ev)
 {
+  Window::onHitTest(ev);
+
   Widget* picked = manager()->pick(ev.point());
   if (picked) {
     WidgetType type = picked->type();
-    if ((type == kWindowWidget && picked == this) ||
-        type == kBoxWidget ||
-        type == kLabelWidget ||
-        type == kGridWidget ||
-        type == kSeparatorWidget) {
-      ev.setHit(HitTestCaption);
-      return;
+    if (type == kWindowWidget && picked == this) {
+      if (isSizeable() && (ev.hit() == HitTestBorderNW ||
+                           ev.hit() == HitTestBorderN ||
+                           ev.hit() == HitTestBorderNE ||
+                           ev.hit() == HitTestBorderE ||
+                           ev.hit() == HitTestBorderSE ||
+                           ev.hit() == HitTestBorderS ||
+                           ev.hit() == HitTestBorderSW ||
+                           ev.hit() == HitTestBorderW)) {
+        // Use the hit value from Window::onHitTest()
+        return;
+      }
+      else {
+        ev.setHit(isMoveable() ? HitTestCaption: HitTestClient);
+      }
+    }
+    else if (type == kBoxWidget ||
+             type == kLabelWidget ||
+             type == kGridWidget ||
+             type == kSeparatorWidget) {
+      ev.setHit(isMoveable() ? HitTestCaption: HitTestClient);
     }
   }
-  Window::onHitTest(ev);
 }
 
 void PopupWindow::startFilteringMessages()
@@ -239,6 +261,16 @@ void PopupWindow::stopFilteringMessages()
     manager->removeMessageFilter(kMouseDownMessage, this);
     manager->removeMessageFilter(kKeyDownMessage, this);
   }
+}
+
+void PopupWindow::onMakeFloating()
+{
+  // Do nothing
+}
+
+void PopupWindow::onMakeFixed()
+{
+  // Do nothing
 }
 
 } // namespace ui

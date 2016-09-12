@@ -86,6 +86,7 @@
   <global>
     <section id="general">
       <option id="screen_scale" type="int" default="0" />
+      <option id="ui_scale" type="int" default="1" migrate="experimental.ui_scale" />
       <option id="gpu_acceleration" type="bool" default="false" />
       <option id="visible_timeline" type="bool" default="false" />
       <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />
@@ -126,7 +127,6 @@
       <option id="mini_font" type="std::string" migrate="Options.UserMiniFont" />
     </section>
     <section id="experimental" text="Experimental">
-      <option id="ui_scale" type="int" default="1" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
     </section>
@@ -280,6 +280,7 @@
       <option id="resize_scale" type="double" default="1" />
     </section>
     <section id="sprite_sheet">
+      <option id="defined" type="bool" default="false" />
       <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::None" />
       <option id="columns" type="int" default="0" />
       <option id="rows" type="int" default="0" />

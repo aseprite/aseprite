@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -79,13 +79,13 @@ void Box::onSizeHint(SizeHintEvent& ev)
 
 void Box::onResize(ResizeEvent& ev)
 {
-#define LAYOUT_CHILDREN(x, w) {                                         \
+#define LAYOUT_CHILDREN(x, y, w, h) {                                   \
     availExtraSize = availSize.w - prefSize.w;                          \
     availSize.w -= childSpacing() * (visibleChildren-1);                \
     if (align() & HOMOGENEOUS)                                          \
       homogeneousSize = availSize.w / visibleChildren;                  \
                                                                         \
-    Rect childPos(childrenBounds());                                    \
+    Rect defChildPos(childrenBounds());                                 \
     int i = 0, j = 0;                                                   \
     for (auto child : children()) {                                     \
       if (child->hasFlags(HIDDEN))                                      \
@@ -111,9 +111,12 @@ void Box::onResize(ResizeEvent& ev)
         }                                                               \
       }                                                                 \
                                                                         \
-      childPos.w = MAX(1, size);                                        \
+      Rect childPos = defChildPos;                                      \
+      childPos.w = size = MID(child->minSize().w, size, child->maxSize().w); \
+      childPos.h = MID(child->minSize().h, childPos.h, child->maxSize().h); \
       child->setBounds(childPos);                                       \
-      childPos.x += size + childSpacing();                              \
+                                                                        \
+      defChildPos.x += size + childSpacing();                           \
       availSize.w -= size;                                              \
       ++i;                                                              \
     }                                                                   \
@@ -141,10 +144,10 @@ void Box::onResize(ResizeEvent& ev)
     prefSize.h -= border().height();
 
     if (align() & HORIZONTAL) {
-      LAYOUT_CHILDREN(x, w);
+      LAYOUT_CHILDREN(x, y, w, h);
     }
     else {
-      LAYOUT_CHILDREN(y, h);
+      LAYOUT_CHILDREN(y, x, h, w);
     }
   }
 }

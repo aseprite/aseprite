@@ -106,7 +106,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     if (sprite->pixelFormat() == IMAGE_INDEXED) {
       color_button = new ColorButton(app::Color::fromIndex(sprite->transparentColor()),
-                                     IMAGE_INDEXED);
+                                     IMAGE_INDEXED,
+                                     false);
 
       window.transparentColorPlaceholder()->addChild(color_button);
     }

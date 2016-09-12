@@ -25,6 +25,7 @@
 #include "doc/layer.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
+#include "gfx/rect_io.h"
 #include "ui/size_hint_event.h"
 #include "ui/ui.h"
 
@@ -41,12 +42,15 @@ static WidgetType colorbutton_type()
   return type;
 }
 
-ColorButton::ColorButton(const app::Color& color, PixelFormat pixelFormat)
+ColorButton::ColorButton(const app::Color& color,
+                         PixelFormat pixelFormat,
+                         bool canPinSelector)
   : ButtonBase("", colorbutton_type(), kButtonWidget, kButtonWidget)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(NULL)
   , m_dependOnLayer(false)
+  , m_canPinSelector(canPinSelector)
 {
   this->setFocusStop(true);
 
@@ -101,6 +105,13 @@ app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
 bool ColorButton::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
+
+    case kOpenMessage:
+      if (!m_windowDefaultBounds.isEmpty() &&
+          this->isVisible()) {
+        openSelectorDialog();
+      }
+      break;
 
     case kCloseMessage:
       if (m_window && m_window->isVisible())
@@ -233,34 +244,65 @@ void ColorButton::onClick(Event& ev)
   }
 }
 
+void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
+{
+  if (m_canPinSelector) {
+    bool pinned = false;
+    ev.stream() >> pinned;
+    if (ev.stream() && pinned)
+      ev.stream() >> m_windowDefaultBounds;
+  }
+}
+
+void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
+{
+  if (m_canPinSelector && m_window && m_window->isPinned())
+    ev.stream() << 1 << ' ' << m_window->bounds();
+  else
+    ev.stream() << 0;
+}
+
 void ColorButton::openSelectorDialog()
 {
-  int x, y;
+  bool pinned = (!m_windowDefaultBounds.isEmpty());
 
   if (m_window == NULL) {
-    m_window = new ColorPopup();
+    m_window = new ColorPopup(m_canPinSelector);
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
+
+  if (pinned)
+    m_window->setPinned(true);
 
   m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->openWindow();
 
-  x = MID(0, bounds().x, ui::display_w()-m_window->bounds().w);
-  if (bounds().y2() <= ui::display_h()-m_window->bounds().h)
-    y = MAX(0, bounds().y2());
-  else
-    y = MAX(0, bounds().y-m_window->bounds().h);
-
-  m_window->positionWindow(x, y);
+  gfx::Rect winBounds = m_windowDefaultBounds;
+  if (!pinned) {
+    winBounds = gfx::Rect(m_window->bounds().origin(),
+                          m_window->sizeHint());
+    winBounds.x = MID(0, bounds().x, ui::display_w()-winBounds.w);
+    if (bounds().y2() <= ui::display_h()-winBounds.h)
+      winBounds.y = MAX(0, bounds().y2());
+    else
+      winBounds.y = MAX(0, bounds().y-winBounds.h);
+  }
+  winBounds.x = MID(0, winBounds.x, ui::display_w()-winBounds.w);
+  winBounds.y = MID(0, winBounds.y, ui::display_h()-winBounds.h);
+  m_window->setBounds(winBounds);
 
   m_window->manager()->dispatchMessages();
   m_window->layout();
 
   // Setup the hot-region
-  gfx::Rect rc = bounds().createUnion(m_window->bounds());
-  rc.enlarge(8);
-  gfx::Region rgn(rc);
-  static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
+  if (!pinned) {
+    gfx::Rect rc = bounds().createUnion(m_window->bounds());
+    rc.enlarge(8);
+    gfx::Region rgn(rc);
+    static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
+  }
+
+  m_windowDefaultBounds = gfx::Rect();
 }
 
 void ColorButton::closeSelectorDialog()
@@ -278,6 +320,24 @@ void ColorButton::onActiveSiteChange(const Site& site)
 {
   if (m_dependOnLayer)
     invalidate();
+
+  if (m_canPinSelector) {
+    // Hide window
+    if (!site.document()) {
+      if (m_window)
+        m_window->setVisible(false);
+    }
+    // Show window if it's pinned
+    else {
+      // Check if it's pinned from the preferences (m_windowDefaultBounds)
+      if (!m_window && !m_windowDefaultBounds.isEmpty())
+        openSelectorDialog();
+      // Or check if the window was hidden but it's pinned, so we've
+      // to show it again.
+      else if (m_window && m_window->isPinned())
+        m_window->setVisible(true);
+    }
+  }
 }
 
 } // namespace app

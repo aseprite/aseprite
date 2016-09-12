@@ -47,7 +47,7 @@ enum {
   MASK_MODE
 };
 
-ColorPopup::ColorPopup()
+ColorPopup::ColorPopup(bool canPin)
   : PopupWindowPin("Color Selector", ClickBehavior::CloseOnClickInOtherWindow)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
@@ -55,6 +55,7 @@ ColorPopup::ColorPopup()
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
   , m_colorType(5)
   , m_maskLabel("Transparent Color Selected")
+  , m_canPin(canPin)
   , m_disableHexUpdate(false)
 {
   m_colorType.addItem("Index");
@@ -69,6 +70,9 @@ ColorPopup::ColorPopup()
   m_colorPaletteContainer.attachToView(&m_colorPalette);
 
   m_colorPaletteContainer.setExpansive(true);
+  m_rgbSliders.setExpansive(true);
+  m_hsvSliders.setExpansive(true);
+  m_graySlider.setExpansive(true);
 
   m_topBox.addChild(&m_colorType);
   m_topBox.addChild(new Separator("", VERTICAL));
@@ -93,6 +97,9 @@ ColorPopup::ColorPopup()
   m_hsvSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
+
+  if (!m_canPin)
+    showPin(false);
 
   selectColorType(app::Color::RgbType);
   setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
@@ -130,6 +137,26 @@ void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
 app::Color ColorPopup::getColor() const
 {
   return m_color;
+}
+
+void ColorPopup::onMakeFloating()
+{
+  PopupWindowPin::onMakeFloating();
+
+  if (m_canPin) {
+    setSizeable(true);
+    setMoveable(true);
+  }
+}
+
+void ColorPopup::onMakeFixed()
+{
+  PopupWindowPin::onMakeFixed();
+
+  if (m_canPin) {
+    setSizeable(false);
+    setMoveable(true);
+  }
 }
 
 void ColorPopup::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)

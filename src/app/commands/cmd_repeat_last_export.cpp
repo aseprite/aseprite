@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,8 +51,7 @@ void RepeatLastExportCommand::onExecute(Context* context)
     DocumentPreferences& docPref =
       Preferences::instance().document(document);
 
-    params.set("ui",
-      (docPref.spriteSheet.type() == app::SpriteSheetType::None ? "1": "0"));
+    params.set("ui", (docPref.spriteSheet.defined() ? "0": "1"));
   }
 
   context->executeCommand(cmd, params);

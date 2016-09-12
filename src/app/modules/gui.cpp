@@ -179,7 +179,7 @@ int init_module_gui()
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme();
-  gui_theme->setScale(Preferences::instance().experimental.uiScale());
+  gui_theme->setScale(Preferences::instance().general.uiScale());
   CurrentTheme::set(gui_theme);
 
   if (maximized)

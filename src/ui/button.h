@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -98,7 +98,7 @@ namespace ui {
     void deselectRadioGroup();
 
   protected:
-    void onSelect() override;
+    void onSelect(bool selected) override;
 
   private:
     int m_radioGroup;

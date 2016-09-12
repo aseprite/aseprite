@@ -769,6 +769,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     if (!window.ok())
       return;
 
+    docPref.spriteSheet.defined(true);
     docPref.spriteSheet.type(window.spriteSheetTypeValue());
     docPref.spriteSheet.columns(window.columnsValue());
     docPref.spriteSheet.rows(window.rowsValue());
@@ -790,6 +791,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));
     defPref.spriteSheet = docPref.spriteSheet;
+    defPref.spriteSheet.defined(false);
     if (!defPref.spriteSheet.textureFilename().empty())
       defPref.spriteSheet.textureFilename.setValueAndDefault(kSpecifiedFilename);
     if (!defPref.spriteSheet.dataFilename().empty())

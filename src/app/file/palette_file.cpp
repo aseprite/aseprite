@@ -18,6 +18,7 @@
 #include "doc/cel.h"
 #include "doc/file/col_file.h"
 #include "doc/file/gpl_file.h"
+#include "doc/file/hex_file.h"
 #include "doc/file/pal_file.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -33,14 +34,14 @@ using namespace doc;
 std::string get_readable_palette_extensions()
 {
   std::string buf = get_readable_extensions();
-  buf += ",col,gpl,pal";
+  buf += ",col,gpl,hex,pal";
   return buf;
 }
 
 std::string get_writable_palette_extensions()
 {
   std::string buf = get_writable_extensions();
-  buf += ",col,gpl,pal";
+  buf += ",col,gpl,hex,pal";
   return buf;
 }
 
@@ -54,6 +55,9 @@ Palette* load_palette(const char *filename)
   }
   else if (ext == "gpl") {
     pal = doc::file::load_gpl_file(filename);
+  }
+  else if (ext == "hex") {
+    pal = doc::file::load_hex_file(filename);
   }
   else if (ext == "pal") {
     pal = doc::file::load_pal_file(filename);
@@ -101,13 +105,16 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
   else if (ext == "gpl") {
     success = doc::file::save_gpl_file(pal, filename);
   }
+  else if (ext == "hex") {
+    success = doc::file::save_hex_file(pal, filename);
+  }
   else if (ext == "pal") {
     success = doc::file::save_pal_file(pal, filename);
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
     if (ff && ff->support(FILE_SUPPORT_SAVE)) {
-      int w = (columns > 0 ? columns: pal->size());
+      int w = (columns > 0 ? MID(0, columns, pal->size()): pal->size());
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
       app::Context tmpContext;
@@ -118,18 +125,25 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
 
-      Layer* layer = sprite->root()->firstLayer();
+      LayerImage* layer = static_cast<LayerImage*>(sprite->root()->firstLayer());
+      layer->configureAsBackground();
+
       Image* image = layer->cel(frame_t(0))->image();
+      image->clear(0);
 
       int x, y, c;
       for (y=c=0; y<h; ++y) {
-        for (x=0; x<w; ++x, ++c) {
+        for (x=0; x<w; ++x) {
           if (doc->colorMode() == doc::ColorMode::INDEXED)
             image->putPixel(x, y, c);
           else
             image->putPixel(x, y, pal->entry(c));
+
+          if (++c == pal->size())
+            goto done;
         }
       }
+    done:;
 
       doc->setFilename(filename);
       success = (save_document(&tmpContext, doc) == 0);

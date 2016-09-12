@@ -139,8 +139,8 @@ ColorBar::ColorBar(int align)
   , m_tintShadeTone(nullptr)
   , m_spectrum(nullptr)
   , m_wheel(nullptr)
-  , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
-  , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
+  , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB, true)
+  , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB, true)
   , m_fgWarningIcon(new WarningIcon)
   , m_bgWarningIcon(new WarningIcon)
   , m_lock(false)
@@ -183,12 +183,7 @@ ColorBar::ColorBar(int align)
   setColorSelector(
     Preferences::instance().colorBar.selector());
 
-  Box* buttonsBox = new HBox();
-  buttonsBox->addChild(&m_buttons);
-  m_buttons.setMaxSize(gfx::Size(m_buttons.maxSize().w,
-                                 16*ui::guiscale()));
-
-  addChild(buttonsBox);
+  addChild(&m_buttons);
   addChild(&m_splitter);
 
   HBox* fgBox = new HBox;
@@ -202,6 +197,8 @@ ColorBar::ColorBar(int align)
   addChild(fgBox);
   addChild(bgBox);
 
+  m_fgColor.setId("fg_color");
+  m_bgColor.setId("bg_color");
   m_fgColor.setExpansive(true);
   m_bgColor.setExpansive(true);
 
@@ -236,6 +233,8 @@ ColorBar::ColorBar(int align)
   m_buttons.addItem(theme->parts.palSort());
   m_buttons.addItem(theme->parts.palPresets());
   m_buttons.addItem(theme->parts.palOptions());
+  m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
+                                 16*ui::guiscale()));
 
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();

@@ -192,8 +192,8 @@
     <part id="sunken_focused"                   x="0" y="48" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
     <part id="sunken2_normal"                   x="0" y="64" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="sunken2_focused"                  x="0" y="80" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
-    <part id="sunken_mini_normal"               x="16" y="64" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
-    <part id="sunken_mini_focused"              x="16" y="80" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
+    <part id="sunken_mini_normal"               x="16" y="64" w1="4" w2="4" w3="4" h1="3" h2="6" h3="3" />
+    <part id="sunken_mini_focused"              x="16" y="80" w1="4" w2="4" w3="4" h1="3" h2="6" h3="3" />
     <part id="window"                           x="0" y="0" w1="3" w2="7" w3="3" h1="15" h2="4" h3="5" />
     <part id="menu"                             x="0" y="96" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="window_close_button_normal"       x="16" y="0" w="9" h="11" />
@@ -212,10 +212,10 @@
     <part id="slider_empty"                     x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_full_focused"              x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_empty_focused"             x="16" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
-    <part id="mini_slider_full"                 x="32" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
-    <part id="mini_slider_empty"                x="48" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
-    <part id="mini_slider_full_focused"         x="32" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
-    <part id="mini_slider_empty_focused"        x="48" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="mini_slider_full"                 x="32" y="144" w1="2" w2="12" w3="2" h1="2" h2="11" h3="3" />
+    <part id="mini_slider_empty"                x="48" y="144" w1="2" w2="12" w3="2" h1="2" h2="11" h3="3" />
+    <part id="mini_slider_full_focused"         x="32" y="160" w1="2" w2="12" w3="2" h1="2" h2="11" h3="3" />
+    <part id="mini_slider_empty_focused"        x="48" y="160" w1="2" w2="12" w3="2" h1="2" h2="11" h3="3" />
     <part id="mini_slider_thumb"                x="32" y="176" w="5" h="4" />
     <part id="mini_slider_thumb_focused"        x="48" y="176" w="5" h="4" />
     <part id="separator_horz"                   x="32" y="80" w="9" h="5" />

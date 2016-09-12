@@ -68,11 +68,11 @@ public:
     , m_globPref(m_pref.document(nullptr))
     , m_docPref(m_pref.document(context->activeDocument()))
     , m_curPref(&m_docPref)
-    , m_checked_bg_color1(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_cursorColor(new ColorButton(m_pref.cursor.cursorColor(), IMAGE_RGB))
+    , m_checked_bg_color1(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
+    , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
+    , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
+    , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
+    , m_cursorColor(new ColorButton(m_pref.cursor.cursorColor(), IMAGE_RGB, false))
     , m_curSection(curSection)
   {
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
@@ -173,7 +173,7 @@ public:
 
     uiScale()->setSelectedItemIndex(
       uiScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.experimental.uiScale())));
+        base::convert_to<std::string>(m_pref.general.uiScale())));
 
     if ((int(she::instance()->capabilities()) &
          int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
@@ -312,8 +312,8 @@ public:
     }
 
     int newUIScale = base::convert_to<int>(uiScale()->getValue());
-    if (newUIScale != m_pref.experimental.uiScale()) {
-      m_pref.experimental.uiScale(newUIScale);
+    if (newUIScale != m_pref.general.uiScale()) {
+      m_pref.general.uiScale(newUIScale);
       warnings += "<<- UI Elements Scale";
     }
 

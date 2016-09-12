@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,6 +40,19 @@ PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehav
                        CENTER | MIDDLE));
 }
 
+void PopupWindowPin::showPin(bool state)
+{
+  m_pin.setVisible(state);
+}
+
+void PopupWindowPin::setPinned(bool pinned)
+{
+  m_pin.setSelected(pinned);
+
+  Event ev(this);
+  onPinClick(ev);
+}
+
 void PopupWindowPin::onPinClick(Event& ev)
 {
   if (m_pin.isSelected()) {
@@ -57,33 +70,25 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kOpenMessage:
-      m_pin.setSelected(false);
-      makeFixed();
+    case kOpenMessage: {
+      if (!isPinned())
+        makeFixed();
       break;
-
-    case kCloseMessage:
-      m_pin.setSelected(false);
-      break;
+    }
 
   }
 
   return PopupWindow::onProcessMessage(msg);
 }
 
-void PopupWindowPin::onHitTest(HitTestEvent& ev)
+void PopupWindowPin::onWindowMovement()
 {
-  PopupWindow::onHitTest(ev);
+  PopupWindow::onWindowMovement();
 
-  if ((m_pin.isSelected()) &&
-      (ev.hit() == HitTestClient)) {
-    if (ev.point().x <= bounds().x+2)
-      ev.setHit(HitTestBorderW);
-    else if (ev.point().x >= bounds().x2()-3)
-      ev.setHit(HitTestBorderE);
-    else
-      ev.setHit(HitTestCaption);
-  }
+  // If the window isn't pinned and we move it, we can automatically
+  // pin it.
+  if (!m_pin.isSelected())
+    setPinned(true);
 }
 
 } // namespace app

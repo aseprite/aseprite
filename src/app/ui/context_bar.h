@@ -54,7 +54,7 @@ namespace app {
     void updateAutoSelectLayer(bool state);
 
     void setActiveBrush(const doc::BrushRef& brush);
-    void setActiveBrushBySlot(int slot);
+    void setActiveBrushBySlot(tools::Tool* tool, int slot);
     doc::BrushRef activeBrush(tools::Tool* tool = nullptr) const;
     void discardActiveBrush();
 

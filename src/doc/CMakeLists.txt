@@ -32,6 +32,7 @@ add_library(doc-lib
   documents.cpp
   file/col_file.cpp
   file/gpl_file.cpp
+  file/hex_file.cpp
   file/pal_file.cpp
   frame_tag.cpp
   frame_tag_io.cpp

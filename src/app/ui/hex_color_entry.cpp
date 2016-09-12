@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,19 +12,13 @@
 #include <string>
 
 #include "app/ui/hex_color_entry.h"
+#include "base/hex.h"
 #include "gfx/border.h"
 #include "ui/theme.h"
 
 namespace app {
 
 using namespace ui;
-
-static inline bool is_hex_digit(char digit)
-{
-  return ((digit >= '0' && digit <= '9') ||
-          (digit >= 'a' && digit <= 'f') ||
-          (digit >= 'A' && digit <= 'F'));
-}
 
 HexColorEntry::HexColorEntry()
   : Box(HORIZONTAL)
@@ -56,7 +50,7 @@ void HexColorEntry::onEntryChange()
   int r, g, b;
 
   // Remove non hex digits
-  while (text.size() > 0 && !is_hex_digit(text[0]))
+  while (text.size() > 0 && !base::is_hex_digit(text[0]))
     text.erase(0, 1);
 
   // Fill with zeros at the end of the text

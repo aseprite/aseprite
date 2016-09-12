@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,9 +17,13 @@ namespace app {
   public:
     PopupWindowPin(const std::string& text, ClickBehavior clickBehavior);
 
+    void showPin(bool state);
+    bool isPinned() const { return m_pin.isSelected(); }
+    void setPinned(bool pinned);
+
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;
-    virtual void onHitTest(ui::HitTestEvent& ev) override;
+    virtual void onWindowMovement() override;
 
     // The pin. Your derived class must add this pin in some place of
     // the frame as a children, and you must to remove the pin from the

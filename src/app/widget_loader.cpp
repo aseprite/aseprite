@@ -420,7 +420,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   else if (elem_name == "colorpicker") {
     if (!widget)
-      widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
+      widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format(), false);
   }
   else if (elem_name == "dropdownbutton")  {
     if (!widget) {

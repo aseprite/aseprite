@@ -22,7 +22,9 @@ namespace app {
                     , public doc::ContextObserver
                     , public IColorSource {
   public:
-    ColorButton(const app::Color& color, PixelFormat pixelFormat);
+    ColorButton(const app::Color& color,
+                PixelFormat pixelFormat,
+                bool canPinSelector);
     ~ColorButton();
 
     PixelFormat pixelFormat() const;
@@ -43,6 +45,8 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onClick(ui::Event& ev) override;
+    void onLoadLayout(ui::LoadLayoutEvent& ev) override;
+    void onSaveLayout(ui::SaveLayoutEvent& ev) override;
 
   private:
     void openSelectorDialog();
@@ -53,7 +57,9 @@ namespace app {
     app::Color m_color;
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
+    gfx::Rect m_windowDefaultBounds;
     bool m_dependOnLayer;
+    bool m_canPinSelector;
   };
 
 } // namespace app
