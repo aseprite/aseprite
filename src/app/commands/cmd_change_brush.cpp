@@ -15,6 +15,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/pref/preferences.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/tool.h"
 #include "app/ui/context_bar.h"
 #include "base/convert_to.h"
@@ -71,7 +72,9 @@ void ChangeBrushCommand::onLoadParams(const Params& params)
 
 void ChangeBrushCommand::onExecute(Context* context)
 {
-  tools::Tool* tool = App::instance()->activeTool();
+  // Change the brush of the selected tool in the toolbar (not the
+  // active tool which might be different, e.g. the quick tool)
+  tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
   ToolPreferences::Brush& brush =
     Preferences::instance().tool(tool).brush;
 
@@ -97,7 +100,7 @@ void ChangeBrushCommand::onExecute(Context* context)
       break;
     case CustomBrush:
       App::instance()->contextBar()
-        ->setActiveBrushBySlot(m_slot);
+        ->setActiveBrushBySlot(tool, m_slot);
       break;
   }
 }

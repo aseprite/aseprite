@@ -91,11 +91,11 @@ public:
 private:
   void onClick() override {
     ContextBar* contextBar = App::instance()->contextBar();
+    tools::Tool* tool = App::instance()->activeTool();
 
     if (m_slot >= 0)
-      contextBar->setActiveBrushBySlot(m_slot);
+      contextBar->setActiveBrushBySlot(tool, m_slot);
     else if (m_brush.hasBrush()) {
-      tools::Tool* tool = App::instance()->activeTool();
       auto& brushPref = Preferences::instance().tool(tool).brush;
       BrushRef brush;
 

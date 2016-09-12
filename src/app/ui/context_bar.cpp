@@ -1700,14 +1700,17 @@ void ContextBar::updateAutoSelectLayer(bool state)
   m_autoSelectLayer->setSelected(state);
 }
 
-void ContextBar::setActiveBrushBySlot(int slot)
+void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
 {
+  ASSERT(tool);
+  if (!tool)
+    return;
+
   AppBrushes& brushes = App::instance()->brushes();
   BrushSlot brush = brushes.getBrushSlot(slot);
   if (!brush.isEmpty()) {
     brushes.lockBrushSlot(slot);
 
-    Tool* tool = App::instance()->activeTool();
     Preferences& pref = Preferences::instance();
     ToolPreferences& toolPref = pref.tool(tool);
     ToolPreferences::Brush& brushPref = toolPref.brush;
@@ -1752,7 +1755,7 @@ void ContextBar::setActiveBrushBySlot(int slot)
          tools::FreehandAlgorithm::REGULAR));
   }
   else {
-    updateForTool(App::instance()->activeTool());
+    updateForTool(tool);
     m_brushType->showPopupAndHighlightSlot(slot);
   }
 }
