@@ -18,7 +18,7 @@
       <key command="ImportSpriteSheet" shortcut="Ctrl+I" mac="Cmd+I" />
       <key command="ExportSpriteSheet" shortcut="Ctrl+E" mac="Cmd+E" />
       <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
-      <key command="AdvancedMode" shortcut="F11" />
+      <key command="AdvancedMode" shortcut="F" />
       <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" win="Ctrl+Q" linux="Ctrl+Q" mac="Cmd+Q" />
       <key command="Exit" win="Alt+F4" />
