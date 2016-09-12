@@ -139,4 +139,47 @@ retry:;
   }
 }
 
+// This will select:
+// 1. all visible children in case the parent is selected and none of
+//    its children is selected.
+// 2. all parent if one children is selected
+void SelectedLayers::propagateSelection()
+{
+  SelectedLayers newSel;
+
+  for (Layer* layer : *this) {
+    if (!layer->isGroup())
+      continue;
+
+    LayerList children;
+    static_cast<LayerGroup*>(layer)->allLayers(children);
+
+    bool allDeselected = true;
+    for (Layer* child : children) {
+      if (contains(child)) {
+        allDeselected = false;
+        break;
+      }
+    }
+    if (allDeselected) {
+      for (Layer* child : children) {
+        if (child->isVisible())
+          newSel.insert(child);
+      }
+    }
+  }
+
+  for (Layer* layer : *this) {
+    Layer* parent = layer->parent();
+    while (parent != layer->sprite()->root() &&
+           !contains(parent)) {
+      newSel.insert(parent);
+      parent = parent->parent();
+    }
+  }
+
+  for (Layer* layer : newSel)
+    insert(layer);
+}
+
 } // namespace doc

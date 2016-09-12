@@ -42,6 +42,8 @@ namespace doc {
     void selectAllLayers(LayerGroup* group);
     void displace(layer_t layerDelta);
 
+    void propagateSelection();
+
     bool operator==(const SelectedLayers& o) const {
       return m_set == o.m_set;
     }

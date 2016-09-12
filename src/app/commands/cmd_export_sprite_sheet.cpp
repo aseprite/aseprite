@@ -204,9 +204,9 @@ namespace {
     FrameTag* m_frameTag;
   };
 
-  class SelectedLayers {
+  class RestoreSelectedLayers {
   public:
-    ~SelectedLayers() {
+    ~RestoreSelectedLayers() {
       for (auto item : m_restore)
         item.first->setVisible(item.second);
     }
@@ -227,19 +227,24 @@ namespace {
           return;
       }
 
-      LayerList layers = sprite->allLayers();
-      for (int i=0; i<int(layers.size()); ++i) {
-        Layer* layer = layers[i];
-        bool selected = range.contains(layer);
+      SelectedLayers selLayers = range.selectedLayers();
+      selLayers.propagateSelection();
+      setLayerVisiblity(sprite->root(), selLayers);
+    }
 
+  private:
+    void setLayerVisiblity(LayerGroup* group, const SelectedLayers& selLayers) {
+      for (Layer* layer : group->layers()) {
+        bool selected = (selLayers.contains(layer));
         if (selected != layer->isVisible()) {
           m_restore.push_back(std::make_pair(layer, layer->isVisible()));
           layer->setVisible(selected);
         }
+        if (selected && layer->isGroup())
+          setLayerVisiblity(static_cast<LayerGroup*>(layer), selLayers);
       }
     }
 
-  private:
     std::vector<std::pair<Layer*, bool> > m_restore;
   };
 
@@ -844,7 +849,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   // If the user choose to render selected layers only, we can
   // temporaly make them visible and hide the other ones.
   Layer* layer = nullptr;
-  SelectedLayers layersVisibility;
+  RestoreSelectedLayers layersVisibility;
   if (layerName == kSelectedLayers) {
     layersVisibility.showSelectedLayers(sprite);
   }
