@@ -300,7 +300,8 @@ private:
     {
       NSGraphicsContext* gc = [NSGraphicsContext currentContext];
       CGContextRef cg = (CGContextRef)[gc graphicsPort];
-      CGImageRef img = SkCreateCGImageRef(bitmap);
+      CGColorSpaceRef colorSpace = CGDisplayCopyColorSpace(CGMainDisplayID());
+      CGImageRef img = SkCreateCGImageRefWithColorspace(bitmap, colorSpace);
       if (img) {
         CGRect r = CGRectMake(viewBounds.origin.x+rect.x,
                               viewBounds.origin.y+rect.y,
@@ -312,6 +313,7 @@ private:
         CGContextRestoreGState(cg);
         CGImageRelease(img);
       }
+      CGColorSpaceRelease(colorSpace);
     }
     bitmap.unlockPixels();
   }
