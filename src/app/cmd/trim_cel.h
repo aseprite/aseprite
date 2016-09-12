@@ -8,7 +8,7 @@
 #define APP_CMD_TRIM_CEL_H_INCLUDED
 #pragma once
 
-#include "app/cmd.h"
+#include "app/cmd_sequence.h"
 
 namespace doc {
   class Cel;
@@ -17,21 +17,9 @@ namespace doc {
 namespace app {
 namespace cmd {
 
-  class TrimCel : public Cmd {
+  class TrimCel : public CmdSequence {
   public:
     TrimCel(doc::Cel* cel);
-    ~TrimCel();
-
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_subCmd->memSize();
-    }
-
-  private:
-    Cmd* m_subCmd;
   };
 
 } // namespace cmd
