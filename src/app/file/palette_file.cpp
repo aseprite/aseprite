@@ -114,7 +114,7 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
     if (ff && ff->support(FILE_SUPPORT_SAVE)) {
-      int w = (columns > 0 ? columns: pal->size());
+      int w = (columns > 0 ? MID(0, columns, pal->size()): pal->size());
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
       app::Context tmpContext;
@@ -125,18 +125,25 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
 
-      Layer* layer = sprite->folder()->getFirstLayer();
+      LayerImage* layer = static_cast<LayerImage*>(sprite->folder()->getFirstLayer());
+      layer->configureAsBackground();
+
       Image* image = layer->cel(frame_t(0))->image();
+      image->clear(0);
 
       int x, y, c;
       for (y=c=0; y<h; ++y) {
-        for (x=0; x<w; ++x, ++c) {
+        for (x=0; x<w; ++x) {
           if (doc->colorMode() == doc::ColorMode::INDEXED)
             image->putPixel(x, y, c);
           else
             image->putPixel(x, y, pal->entry(c));
+
+          if (++c == pal->size())
+            goto done;
         }
       }
+    done:;
 
       doc->setFilename(filename);
       success = (save_document(&tmpContext, doc) == 0);
