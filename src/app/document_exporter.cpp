@@ -31,6 +31,7 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
+#include "doc/selected_frames.h"
 #include "doc/sprite.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
@@ -106,9 +107,37 @@ private:
 
 typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
 
+DocumentExporter::Item::Item(Document* doc,
+                             doc::Layer* layer,
+                             doc::FrameTag* frameTag,
+                             doc::SelectedFrames* selFrames)
+  : doc(doc)
+  , layer(layer)
+  , frameTag(frameTag)
+  , selFrames(selFrames ? new doc::SelectedFrames(*selFrames):
+                          nullptr)
+{
+}
+
+DocumentExporter::Item::Item(Item&& other)
+  : doc(other.doc)
+  , layer(other.layer)
+  , frameTag(other.frameTag)
+  , selFrames(other.selFrames)
+{
+  other.selFrames = nullptr;
+}
+
+DocumentExporter::Item::~Item()
+{
+  delete selFrames;
+}
+
 int DocumentExporter::Item::frames() const
 {
-  if (frameTag) {
+  if (selFrames)
+    return selFrames->size();
+  else if (frameTag) {
     int result = frameTag->toFrame() - frameTag->fromFrame() + 1;
     return MID(1, result, doc->sprite()->totalFrames());
   }
@@ -116,20 +145,30 @@ int DocumentExporter::Item::frames() const
     return doc->sprite()->totalFrames();
 }
 
-int DocumentExporter::Item::fromFrame() const
+doc::frame_t DocumentExporter::Item::firstFrame() const
 {
-  if (frameTag)
-    return MID(0, frameTag->fromFrame(), doc->sprite()->lastFrame());
+  if (selFrames)
+    return selFrames->firstFrame();
+  else if (frameTag)
+    return frameTag->fromFrame();
   else
     return 0;
 }
 
-int DocumentExporter::Item::toFrame() const
+doc::SelectedFrames DocumentExporter::Item::getSelectedFrames() const
 {
-  if (frameTag)
-    return MID(0, frameTag->toFrame(), doc->sprite()->lastFrame());
-  else
-    return doc->sprite()->lastFrame();
+  if (selFrames)
+    return *selFrames;
+
+  doc::SelectedFrames frames;
+  if (frameTag) {
+    frames.insert(MID(0, frameTag->fromFrame(), doc->sprite()->lastFrame()),
+                  MID(0, frameTag->toFrame(), doc->sprite()->lastFrame()));
+  }
+  else {
+    frames.insert(0, doc->sprite()->lastFrame());
+  }
+  return frames;
 }
 
 class DocumentExporter::Sample {
@@ -360,14 +399,6 @@ DocumentExporter::DocumentExporter()
 {
 }
 
-DocumentExporter::~DocumentExporter()
-{
-  for (auto& item : m_documents) {
-    if (item.temporalTag)
-      delete item.frameTag;
-  }
-}
-
 Document* DocumentExporter::exportSheet()
 {
   // We output the metadata to std::cout if the user didn't specify a file.
@@ -445,12 +476,11 @@ void DocumentExporter::captureSamples(Samples& samples)
         doc->filename(),
         (frames > 1),                   // Has frames
         (layer != nullptr),             // Has layer
-        (frameTag && !item.temporalTag)); // Has frame tag
+        (frameTag != nullptr));         // Has frame tag
     }
 
-    frame_t frameFirst = item.fromFrame();
-    frame_t frameLast = item.toFrame();
-    for (frame_t frame=frameFirst; frame<=frameLast; ++frame) {
+    frame_t frameFirst = item.firstFrame();
+    for (frame_t frame : item.getSelectedFrames()) {
       FrameTag* innerTag = (frameTag ? frameTag: sprite->frameTags().innerTag(frame));
       FrameTag* outerTag = sprite->frameTags().outerTag(frame);
       FilenameInfo fnInfo;

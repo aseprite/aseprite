@@ -10,6 +10,7 @@
 
 #include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
+#include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "doc/object_id.h"
 #include "gfx/fwd.h"
@@ -24,6 +25,7 @@ namespace doc {
   class FrameTag;
   class Image;
   class Layer;
+  class SelectedFrames;
 }
 
 namespace app {
@@ -38,7 +40,6 @@ namespace app {
     };
 
     DocumentExporter();
-    ~DocumentExporter();
 
     DataFormat dataFormat() const { return m_dataFormat; }
     const std::string& dataFilename() { return m_dataFilename; }
@@ -71,10 +72,10 @@ namespace app {
     void setListLayers(bool value) { m_listLayers = value; }
 
     void addDocument(Document* document,
-                     doc::Layer* layer = nullptr,
-                     doc::FrameTag* tag = nullptr,
-                     bool temporalTag = false) {
-      m_documents.push_back(Item(document, layer, tag, temporalTag));
+                     doc::Layer* layer,
+                     doc::FrameTag* tag,
+                     doc::SelectedFrames* selFrames) {
+      m_documents.push_back(Item(document, layer, tag, selFrames));
     }
 
     Document* exportSheet();
@@ -100,19 +101,22 @@ namespace app {
       Document* doc;
       doc::Layer* layer;
       doc::FrameTag* frameTag;
-      bool temporalTag;
+      doc::SelectedFrames* selFrames;
 
       Item(Document* doc,
            doc::Layer* layer,
            doc::FrameTag* frameTag,
-           bool temporalTag)
-        : doc(doc), layer(layer), frameTag(frameTag)
-        , temporalTag(temporalTag) {
-      }
+           doc::SelectedFrames* selFrames);
+      Item(Item&& other);
+      ~Item();
+
+      Item() = delete;
+      Item(const Item&) = delete;
+      Item& operator=(const Item&) = delete;
 
       int frames() const;
-      int fromFrame() const;
-      int toFrame() const;
+      doc::frame_t firstFrame() const;
+      doc::SelectedFrames getSelectedFrames() const;
     };
     typedef std::vector<Item> Items;
 

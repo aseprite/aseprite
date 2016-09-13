@@ -157,52 +157,36 @@ namespace {
     return true;
   }
 
-  class SelectedFrameTag {
-  public:
-    static frame_t From() {
-      // TODO the range of selected frames should be in doc::Site.
+  FrameTag* calculate_selected_frames(const Sprite* sprite,
+                                      const std::string& frameTagName,
+                                      SelectedFrames& selFrames) {
+    FrameTag* frameTag = nullptr;
+
+    if (frameTagName == kSelectedFrames) {
       auto range = App::instance()->timeline()->range();
       if (range.enabled()) {
-        return range.firstFrame();
+        selFrames = range.selectedFrames();
       }
       else if (current_editor) {
-        return current_editor->frame();
+        selFrames.insert(current_editor->frame(),
+                         current_editor->frame());
       }
       else
-        return 0;
+        selFrames.insert(0, sprite->lastFrame());
     }
-
-    static frame_t To() {
-      auto range = App::instance()->timeline()->range();
-      if (range.enabled()) {
-        return range.lastFrame();
-      }
-      else if (current_editor) {
-        return current_editor->frame();
-      }
+    else if (frameTagName != kAllFrames) {
+      frameTag = sprite->frameTags().getByName(frameTagName);
+      if (frameTag)
+        selFrames.insert(frameTag->fromFrame(),
+                         frameTag->toFrame());
       else
-        return 0;
+        selFrames.insert(0, sprite->lastFrame());
     }
+    else
+      selFrames.insert(0, sprite->lastFrame());
 
-    SelectedFrameTag() : m_frameTag(nullptr) {
-    }
-
-    ~SelectedFrameTag() {
-      if (m_frameTag) {
-        m_frameTag->owner()->remove(m_frameTag);
-        delete m_frameTag;
-      }
-    }
-
-    FrameTag* create(Sprite* sprite) {
-      m_frameTag = new FrameTag(From(), To());
-      sprite->frameTags().add(m_frameTag);
-      return m_frameTag;
-    }
-
-  private:
-    FrameTag* m_frameTag;
-  };
+    return frameTag;
+  }
 
   class RestoreSelectedLayers {
   public:
@@ -671,16 +655,12 @@ private:
   }
 
   void updateSizeFields() {
-    int nframes = m_sprite->totalFrames();
-    std::string tagName = frameTagValue();
-    if (tagName == kSelectedFrames) {
-      nframes = SelectedFrameTag::To() - SelectedFrameTag::From() + 1;
-    }
-    else {
-      FrameTag* frameTag = m_sprite->frameTags().getByName(tagName);
-      if (frameTag)
-        nframes = frameTag->toFrame() - frameTag->fromFrame() + 1;
-    }
+    SelectedFrames selFrames;
+    calculate_selected_frames(m_sprite,
+                              frameTagValue(),
+                              selFrames);
+
+    frame_t nframes = selFrames.size();
 
     Fit fit;
     if (bestFit()->isSelected()) {
@@ -832,19 +812,12 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       return;                   // Do not overwrite
   }
 
-  // If the user want to export selected frames, we can create a
-  // temporal frame tag for that.
-  FrameTag* frameTag;
-  bool isTemporalTag = false;
-  SelectedFrameTag selectedFrameTag;
-  if (frameTagName == kSelectedFrames) {
-    frameTag = selectedFrameTag.create(sprite);
-    isTemporalTag = true;
-  }
-  else if (frameTagName != kAllFrames)
-    frameTag = sprite->frameTags().getByName(frameTagName);
-  else
-    frameTag = nullptr;
+  SelectedFrames selFrames;
+  FrameTag* frameTag =
+    calculate_selected_frames(sprite, frameTagName, selFrames);
+
+  frame_t nframes = selFrames.size();
+  ASSERT(nframes > 0);
 
   // If the user choose to render selected layers only, we can
   // temporaly make them visible and hide the other ones.
@@ -863,9 +836,6 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       }
     }
   }
-
-  int nframes = (frameTag ? frameTag->toFrame() - frameTag->fromFrame() + 1:
-                            sprite->totalFrames());
 
   if (bestFit) {
     Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding, innerPadding);
@@ -918,7 +888,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     exporter.setListLayers(true);
   if (listFrameTags)
     exporter.setListFrameTags(true);
-  exporter.addDocument(document, layer, frameTag, isTemporalTag);
+  exporter.addDocument(document, layer, frameTag,
+                       (!selFrames.empty() ? &selFrames: nullptr));
 
   base::UniquePtr<Document> newDocument(exporter.exportSheet());
   if (!newDocument)
