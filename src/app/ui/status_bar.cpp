@@ -540,16 +540,16 @@ StatusBar::StatusBar()
   tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
   tooltipManager->addTooltipFor(m_newFrame, "New Frame", BOTTOM);
 
-  UIContext::instance()->addObserver(this);
-  UIContext::instance()->documents().addObserver(this);
-  App::instance()->activeToolManager()->addObserver(this);
+  UIContext::instance()->add_observer(this);
+  UIContext::instance()->documents().add_observer(this);
+  App::instance()->activeToolManager()->add_observer(this);
 }
 
 StatusBar::~StatusBar()
 {
-  App::instance()->activeToolManager()->removeObserver(this);
-  UIContext::instance()->documents().removeObserver(this);
-  UIContext::instance()->removeObserver(this);
+  App::instance()->activeToolManager()->remove_observer(this);
+  UIContext::instance()->documents().remove_observer(this);
+  UIContext::instance()->remove_observer(this);
 
   delete m_tipwindow;           // widget
   delete m_snapToGridWindow;
@@ -692,14 +692,14 @@ void StatusBar::onResize(ResizeEvent& ev)
 void StatusBar::onActiveSiteChange(const doc::Site& site)
 {
   if (m_doc && site.document() != m_doc) {
-    m_doc->removeObserver(this);
+    m_doc->remove_observer(this);
     m_doc = nullptr;
   }
 
   if (site.document() && site.sprite()) {
     if (!m_doc) {
       m_doc = const_cast<doc::Document*>(site.document());
-      m_doc->addObserver(this);
+      m_doc->add_observer(this);
     }
     else {
       ASSERT(m_doc == site.document());
@@ -725,7 +725,7 @@ void StatusBar::onRemoveDocument(doc::Document* doc)
 {
   if (m_doc &&
       m_doc == doc) {
-    m_doc->removeObserver(this);
+    m_doc->remove_observer(this);
     m_doc = nullptr;
   }
 }

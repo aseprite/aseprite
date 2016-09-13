@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,7 +8,7 @@
 #define UI_ENTRY_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -43,7 +43,7 @@ namespace ui {
     gfx::Rect getEntryTextBounds() const;
 
     // Signals
-    base::Signal0<void> Change;
+    obs::signal<void()> Change;
 
   protected:
     // Events

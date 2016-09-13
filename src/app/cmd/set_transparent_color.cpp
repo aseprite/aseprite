@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -43,7 +43,7 @@ void SetTransparentColor::onFireNotifications()
   Sprite* sprite = this->sprite();
   DocumentEvent ev(sprite->document());
   ev.sprite(sprite);
-  sprite->document()->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteTransparentColorChanged, ev);
+  sprite->document()->notify_observers<DocumentEvent&>(&DocumentObserver::onSpriteTransparentColorChanged, ev);
 }
 
 } // namespace cmd

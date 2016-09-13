@@ -30,7 +30,7 @@ public:
   ~ActiveToolChangeTrigger() {
     Tool* newTool = m_manager->activeTool();
     if (m_oldTool != newTool) {
-      m_manager->notifyObservers(
+      m_manager->notify_observers(
         &ActiveToolObserver::onActiveToolChange, newTool);
     }
   }
@@ -202,7 +202,7 @@ void ActiveToolManager::setSelectedTool(Tool* tool)
   ActiveToolChangeTrigger trigger(this);
 
   m_selectedTool = tool;
-  notifyObservers(&ActiveToolObserver::onSelectedToolChange, tool);
+  notify_observers(&ActiveToolObserver::onSelectedToolChange, tool);
 }
 
 // static

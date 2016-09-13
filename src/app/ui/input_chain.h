@@ -8,8 +8,6 @@
 #define APP_INPUT_CHAIN_H_INCLUDED
 #pragma once
 
-#include "base/observable.h"
-
 #include <vector>
 
 namespace app {

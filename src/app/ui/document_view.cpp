@@ -57,12 +57,12 @@ public:
             DocumentViewPreviewDelegate* previewDelegate)
     : Editor(document)
     , m_previewDelegate(previewDelegate) {
-    addObserver(this);
+    add_observer(this);
     setCustomizationDelegate(this);
   }
 
   ~AppEditor() {
-    removeObserver(this);
+    remove_observer(this);
     setCustomizationDelegate(NULL);
   }
 
@@ -172,12 +172,12 @@ DocumentView::DocumentView(Document* document, Type type,
   m_view->setExpansive(true);
 
   m_editor->setDocumentView(this);
-  m_document->addObserver(this);
+  m_document->add_observer(this);
 }
 
 DocumentView::~DocumentView()
 {
-  m_document->removeObserver(this);
+  m_document->remove_observer(this);
   delete m_editor;
 }
 

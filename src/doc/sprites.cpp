@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -51,7 +51,7 @@ Sprite* Sprites::add(Sprite* spr)
   m_sprites.insert(begin(), spr);
   spr->setDocument(m_doc);
 
-  notifyObservers(&SpritesObserver::onAddSprite, spr);
+  notify_observers(&SpritesObserver::onAddSprite, spr);
   return spr;
 }
 

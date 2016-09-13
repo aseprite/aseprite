@@ -97,18 +97,18 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // PlayAnimation command.
   m_editor->manager()->addMessageFilter(kKeyDownMessage, m_editor);
   m_editor->manager()->addMessageFilter(kKeyUpMessage, m_editor);
-  m_editor->addObserver(this);
+  m_editor->add_observer(this);
   m_observingEditor = true;
 
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForMovingPixels();
-  contextBar->addObserver(this);
+  contextBar->add_observer(this);
 }
 
 MovingPixelsState::~MovingPixelsState()
 {
   ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->removeObserver(this);
+  contextBar->remove_observer(this);
   contextBar->updateForActiveTool();
 
   m_pixelsMovement.reset(NULL);
@@ -665,7 +665,7 @@ void MovingPixelsState::removeAsEditorObserver()
 {
   if (m_observingEditor) {
     m_observingEditor = false;
-    m_editor->removeObserver(this);
+    m_editor->remove_observer(this);
   }
 }
 

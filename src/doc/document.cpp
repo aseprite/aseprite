@@ -70,7 +70,7 @@ void Document::setFilename(const std::string& filename)
   else
     m_filename = filename;
 
-  notifyObservers(&DocumentObserver::onFileNameChanged, this);
+  notify_observers(&DocumentObserver::onFileNameChanged, this);
 }
 
 void Document::close()

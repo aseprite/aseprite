@@ -9,9 +9,9 @@
 #pragma once
 
 #include "app/app_brushes.h"
-#include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
+#include "obs/signal.h"
 
 #include <string>
 #include <vector>
@@ -88,8 +88,8 @@ namespace app {
     InputChain& inputChain();
 
     // App Signals
-    base::Signal0<void> Exit;
-    base::Signal0<void> PaletteChange;
+    obs::signal<void()> Exit;
+    obs::signal<void()> PaletteChange;
 
   private:
     typedef std::vector<std::string> FileList;

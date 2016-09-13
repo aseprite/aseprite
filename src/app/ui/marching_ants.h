@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,7 @@
 #define APP_UI_MARCHING_ANTS_H_INCLUDED
 #pragma once
 
-#include "base/connection.h"
+#include "obs/connection.h"
 #include "ui/timer.h"
 
 #include <cmath>
@@ -55,7 +55,7 @@ namespace app {
 
     ui::Timer m_timer;
     int m_offset;
-    base::ScopedConnection m_scopedConn;
+    obs::scoped_connection m_scopedConn;
   };
 
 } // namespace app

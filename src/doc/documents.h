@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,10 +9,10 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/observable.h"
 #include "doc/color_mode.h"
 #include "doc/documents_observer.h"
 #include "doc/object_id.h"
+#include "obs/observable.h"
 
 #include <vector>
 
@@ -20,7 +20,7 @@ namespace doc {
   class Context;
   class Document;
 
-  class Documents : public base::Observable<DocumentsObserver> {
+  class Documents : public obs::observable<DocumentsObserver> {
   public:
     typedef std::vector<Document*>::iterator iterator;
     typedef std::vector<Document*>::const_iterator const_iterator;

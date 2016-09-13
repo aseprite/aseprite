@@ -9,12 +9,12 @@
 #pragma once
 
 #include "app/ui/editor/editor_observer.h"
-#include "base/observable.h"
+#include "obs/observable.h"
 
 namespace app {
   class Editor;
 
-  class EditorObservers : public base::Observable<EditorObserver> {
+  class EditorObservers : public obs::observable<EditorObserver> {
   public:
     void notifyDestroyEditor(Editor* editor);
     void notifyStateChanged(Editor* editor);

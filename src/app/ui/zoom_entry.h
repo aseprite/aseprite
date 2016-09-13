@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,7 +21,7 @@ namespace app {
 
     void setZoom(const render::Zoom& zoom);
 
-    base::Signal1<void, const render::Zoom&> ZoomChange;
+    obs::signal<void(const render::Zoom&)> ZoomChange;
 
   private:
     // SliderDelegate impl

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -52,7 +52,7 @@ void MoveLayer::onFireNotifications()
   DocumentEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
 }
 
 } // namespace cmd

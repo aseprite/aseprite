@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,7 +8,7 @@
 #define UI_COMBOBOX_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/widget.h"
 
 #include <string>
@@ -85,9 +85,9 @@ namespace ui {
     gfx::Rect getListBoxPos() const;
 
     // Signals
-    base::Signal0<void> Change;
-    base::Signal0<void> OpenListBox;
-    base::Signal0<void> CloseListBox;
+    obs::signal<void()> Change;
+    obs::signal<void()> OpenListBox;
+    obs::signal<void()> CloseListBox;
 
   protected:
     bool onProcessMessage(Message* msg) override;

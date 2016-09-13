@@ -8,9 +8,9 @@
 #define APP_APP_MENUS_H_INCLUDED
 #pragma once
 
-#include "base/connection.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
+#include "obs/connection.h"
 #include "ui/base.h"
 #include "ui/menu.h"
 
@@ -69,7 +69,7 @@ namespace app {
     base::UniquePtr<Menu> m_frameTagPopupMenu;
     base::UniquePtr<Menu> m_palettePopupMenu;
     base::UniquePtr<Menu> m_inkPopupMenu;
-    base::ScopedConnection m_recentFilesConn;
+    obs::scoped_connection m_recentFilesConn;
   };
 
 } // namespace app

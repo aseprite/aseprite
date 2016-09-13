@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -44,7 +44,7 @@ void SetFrameDuration::onFireNotifications()
   DocumentEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_frame);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
 }
 
 } // namespace cmd

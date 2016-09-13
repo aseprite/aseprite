@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,7 +9,7 @@
 #pragma once
 
 #include "base/recent_items.h"
-#include "base/signal.h"
+#include "obs/signal.h"
 
 #include <string>
 
@@ -35,7 +35,7 @@ namespace app {
     void addRecentFile(const char* filename);
     void removeRecentFile(const char* filename);
 
-    base::Signal0<void> Changed;
+    obs::signal<void()> Changed;
 
   private:
     std::string normalizePath(std::string fn);

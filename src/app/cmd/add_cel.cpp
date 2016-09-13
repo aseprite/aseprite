@@ -92,7 +92,7 @@ void AddCel::addCel(Layer* layer, Cel* cel)
   ev.sprite(layer->sprite());
   ev.layer(layer);
   ev.cel(cel);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddCel, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddCel, ev);
 }
 
 void AddCel::removeCel(Layer* layer, Cel* cel)
@@ -102,7 +102,7 @@ void AddCel::removeCel(Layer* layer, Cel* cel)
   ev.sprite(layer->sprite());
   ev.layer(layer);
   ev.cel(cel);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
 
   static_cast<LayerImage*>(layer)->removeCel(cel);
   layer->incrementVersion();

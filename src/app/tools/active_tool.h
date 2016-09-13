@@ -8,7 +8,7 @@
 #define APP_TOOLS_ACTIVE_TOOL_H_INCLUDED
 #pragma once
 
-#include "base/observable.h"
+#include "obs/observable.h"
 
 namespace app {
 namespace tools {
@@ -21,7 +21,7 @@ class ToolBox;
 
 // Manages the coordination between different UI elements that show
 // information about the active tool.
-class ActiveToolManager : public base::Observable<ActiveToolObserver> {
+class ActiveToolManager : public obs::observable<ActiveToolObserver> {
 public:
   ActiveToolManager(ToolBox* toolbox);
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,7 +22,7 @@ namespace app {
 
     doc::Palette* selectedPalette();
 
-    base::Signal1<void, doc::Palette*> PalChange;
+    obs::signal<void(doc::Palette*)> PalChange;
 
   protected:
     virtual void onResourceChange(Resource* resource) override;

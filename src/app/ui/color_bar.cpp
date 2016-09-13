@@ -247,7 +247,7 @@ ColorBar::ColorBar(int align)
 
   onColorButtonChange(getFgColor());
 
-  UIContext::instance()->addObserver(this);
+  UIContext::instance()->add_observer(this);
   m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
   m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
   m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
@@ -258,7 +258,7 @@ ColorBar::ColorBar(int align)
 
 ColorBar::~ColorBar()
 {
-  UIContext::instance()->removeObserver(this);
+  UIContext::instance()->remove_observer(this);
 }
 
 void ColorBar::setPixelFormat(PixelFormat pixelFormat)
@@ -369,12 +369,12 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
 {
   if (m_lastDocument != site.document()) {
     if (m_lastDocument)
-      m_lastDocument->removeObserver(this);
+      m_lastDocument->remove_observer(this);
 
     m_lastDocument = const_cast<doc::Document*>(site.document());
 
     if (m_lastDocument)
-      m_lastDocument->addObserver(this);
+      m_lastDocument->add_observer(this);
 
     hideRemap();
   }

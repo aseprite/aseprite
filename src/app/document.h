@@ -13,7 +13,6 @@
 #include "app/transformation.h"
 #include "base/disable_copying.h"
 #include "base/mutex.h"
-#include "base/observable.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "doc/blend_mode.h"

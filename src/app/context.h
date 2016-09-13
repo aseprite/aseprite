@@ -12,8 +12,8 @@
 #include "app/context_flags.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
-#include "base/signal.h"
 #include "doc/context.h"
+#include "obs/signal.h"
 
 #include <vector>
 
@@ -67,8 +67,8 @@ namespace app {
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
 
-    base::Signal1<void, CommandExecutionEvent&> BeforeCommandExecution;
-    base::Signal1<void, CommandExecutionEvent&> AfterCommandExecution;
+    obs::signal<void (CommandExecutionEvent&)> BeforeCommandExecution;
+    obs::signal<void (CommandExecutionEvent&)> AfterCommandExecution;
 
   protected:
     virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;

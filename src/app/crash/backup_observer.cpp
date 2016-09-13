@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,15 +29,15 @@ BackupObserver::BackupObserver(Session* session, doc::Context* ctx)
   , m_done(false)
   , m_thread(base::Bind<void>(&BackupObserver::backgroundThread, this))
 {
-  m_ctx->addObserver(this);
-  m_ctx->documents().addObserver(this);
+  m_ctx->add_observer(this);
+  m_ctx->documents().add_observer(this);
 }
 
 BackupObserver::~BackupObserver()
 {
   m_thread.join();
-  m_ctx->documents().removeObserver(this);
-  m_ctx->removeObserver(this);
+  m_ctx->documents().remove_observer(this);
+  m_ctx->remove_observer(this);
 }
 
 void BackupObserver::stop()

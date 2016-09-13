@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -44,7 +44,7 @@ void SetCelOpacity::onFireNotifications()
   DocumentEvent ev(cel->document());
   ev.sprite(cel->sprite());
   ev.cel(cel);
-  cel->document()->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelOpacityChange, ev);
+  cel->document()->notify_observers<DocumentEvent&>(&DocumentObserver::onCelOpacityChange, ev);
 }
 
 } // namespace cmd

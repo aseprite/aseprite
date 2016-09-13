@@ -73,7 +73,7 @@ void AddLayer::addLayer(Layer* folder, Layer* newLayer, Layer* afterThis)
   DocumentEvent ev(doc);
   ev.sprite(folder->sprite());
   ev.layer(newLayer);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddLayer, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddLayer, ev);
 }
 
 void AddLayer::removeLayer(Layer* folder, Layer* layer)
@@ -82,12 +82,12 @@ void AddLayer::removeLayer(Layer* folder, Layer* layer)
   DocumentEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onBeforeRemoveLayer, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onBeforeRemoveLayer, ev);
 
   static_cast<LayerFolder*>(folder)->removeLayer(layer);
   folder->incrementVersion();
 
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
 
   delete layer;
 }

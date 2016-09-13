@@ -88,16 +88,16 @@ public:
     centerWindow();
     load_window_pos(this, "LayerProperties");
 
-    UIContext::instance()->addObserver(this);
+    UIContext::instance()->add_observer(this);
   }
 
   ~LayerPropertiesWindow() {
-    UIContext::instance()->removeObserver(this);
+    UIContext::instance()->remove_observer(this);
   }
 
   void setLayer(LayerImage* layer) {
     if (m_layer) {
-      document()->removeObserver(this);
+      document()->remove_observer(this);
       m_layer = nullptr;
     }
 
@@ -105,7 +105,7 @@ public:
     m_layer = const_cast<LayerImage*>(layer);
 
     if (m_layer)
-      document()->addObserver(this);
+      document()->add_observer(this);
 
     updateFromLayer();
   }

@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/file_system.h"
-#include "base/signal.h"
 #include "base/time.h"
+#include "obs/signal.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -40,9 +40,9 @@ namespace app {
 
     gfx::Rect thumbnailBounds();
 
-    base::Signal0<void> FileSelected;
-    base::Signal0<void> FileAccepted;
-    base::Signal0<void> CurrentFolderChanged;
+    obs::signal<void()> FileSelected;
+    obs::signal<void()> FileAccepted;
+    obs::signal<void()> CurrentFolderChanged;
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;

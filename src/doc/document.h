@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,18 +10,18 @@
 
 #include <string>
 
-#include "base/observable.h"
 #include "base/unique_ptr.h"
 #include "doc/document_observer.h"
 #include "doc/object.h"
 #include "doc/sprites.h"
+#include "obs/observable.h"
 
 namespace doc {
 
   class Context;
 
   class Document : public Object
-                 , public base::Observable<DocumentObserver> {
+                 , public obs::observable<DocumentObserver> {
   public:
     Document();
     ~Document();

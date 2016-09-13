@@ -106,7 +106,7 @@ public:
     setupIcons();
   }
 
-  base::Signal0<void> Popup;
+  obs::signal<void()> Popup;
 
 private:
 
@@ -352,7 +352,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->setFrame(editor->frame());
     miniEditor->setState(EditorStatePtr(new NavigateState));
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
-    miniEditor->addObserver(this);
+    miniEditor->add_observer(this);
     layout();
 
     if (!autoScroll)
@@ -454,7 +454,7 @@ void PreviewEditorWindow::hideWindow()
 void PreviewEditorWindow::destroyDocView()
 {
   if (m_docView) {
-    m_docView->editor()->removeObserver(this);
+    m_docView->editor()->remove_observer(this);
 
     delete m_docView;
     m_docView = nullptr;

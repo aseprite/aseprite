@@ -173,7 +173,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   this->setFocusStop(true);
 
-  App::instance()->activeToolManager()->addObserver(this);
+  App::instance()->activeToolManager()->add_observer(this);
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
@@ -201,7 +201,7 @@ Editor::Editor(Document* document, EditorFlags flags)
     m_docPref.show.AfterChange.connect(
       base::Bind<void>(&Editor::onShowExtrasChange, this));
 
-  m_document->addObserver(this);
+  m_document->add_observer(this);
 
   m_state->onEnterState(this);
 }
@@ -214,8 +214,8 @@ Editor::~Editor()
   }
 
   m_observers.notifyDestroyEditor(this);
-  m_document->removeObserver(this);
-  App::instance()->activeToolManager()->removeObserver(this);
+  m_document->remove_observer(this);
+  App::instance()->activeToolManager()->remove_observer(this);
 
   setCustomizationDelegate(NULL);
 
@@ -973,14 +973,14 @@ Rect Editor::editorToScreen(const Rect& rc)
     editorToScreen(rc.point2()));
 }
 
-void Editor::addObserver(EditorObserver* observer)
+void Editor::add_observer(EditorObserver* observer)
 {
-  m_observers.addObserver(observer);
+  m_observers.add_observer(observer);
 }
 
-void Editor::removeObserver(EditorObserver* observer)
+void Editor::remove_observer(EditorObserver* observer)
 {
-  m_observers.removeObserver(observer);
+  m_observers.remove_observer(observer);
 }
 
 void Editor::setCustomizationDelegate(EditorCustomizationDelegate* delegate)

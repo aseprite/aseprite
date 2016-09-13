@@ -8,7 +8,7 @@
 #define APP_UI_RECENT_LISTBOX_H_INCLUDED
 #pragma once
 
-#include "base/connection.h"
+#include "obs/connection.h"
 #include "ui/listbox.h"
 
 namespace app {
@@ -27,8 +27,8 @@ namespace app {
   private:
     void rebuildList();
 
-    base::ScopedConnection m_recentFilesConn;
-    base::ScopedConnection m_showFullPathConn;
+    obs::scoped_connection m_recentFilesConn;
+    obs::scoped_connection m_showFullPathConn;
   };
 
   class RecentFilesListBox : public RecentListBox {

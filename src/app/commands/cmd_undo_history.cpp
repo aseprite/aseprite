@@ -67,8 +67,8 @@ private:
       case ui::kOpenMessage:
         load_window_pos(this, "UndoHistory");
 
-        m_ctx->addObserver(this);
-        m_ctx->documents().addObserver(this);
+        m_ctx->add_observer(this);
+        m_ctx->documents().add_observer(this);
         if (m_ctx->activeDocument()) {
           m_frame = m_ctx->activeSite().frame();
 
@@ -82,8 +82,8 @@ private:
 
         if (m_document)
           detachDocument();
-        m_ctx->documents().removeObserver(this);
-        m_ctx->removeObserver(this);
+        m_ctx->documents().remove_observer(this);
+        m_ctx->remove_observer(this);
         break;
     }
     return app::gen::UndoHistory::onProcessMessage(msg);
@@ -161,7 +161,7 @@ private:
       return;
 
     DocumentUndo* history = m_document->undoHistory();
-    history->addObserver(this);
+    history->add_observer(this);
 
     refillList(history);
   }
@@ -171,7 +171,7 @@ private:
       return;
 
     clearList();
-    m_document->undoHistory()->removeObserver(this);
+    m_document->undoHistory()->remove_observer(this);
     m_document = nullptr;
   }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,8 +8,8 @@
 #define APP_COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
 #include "gfx/point.h"
+#include "obs/signal.h"
 #include "ui/widget.h"
 
 namespace filters {
@@ -25,7 +25,7 @@ namespace app {
 
     ColorCurve* getCurve() const { return m_curve; }
 
-    base::Signal0<void> CurveEditorChange;
+    obs::signal<void()> CurveEditorChange;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

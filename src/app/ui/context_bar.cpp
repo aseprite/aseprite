@@ -39,7 +39,6 @@
 #include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/connection.h"
 #include "base/scoped_value.h"
 #include "base/unique_ptr.h"
 #include "doc/brush.h"
@@ -47,6 +46,7 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "obs/connection.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/button.h"
@@ -391,7 +391,7 @@ class ContextBar::InkShadesField : public HBox {
   public:
     enum ClickType { DragAndDrop, Select };
 
-    base::Signal0<void> Click;
+    obs::signal<void()> Click;
 
     ShadeWidget(const Shade& colors, ClickType click)
       : Widget(kGenericWidget)
@@ -680,7 +680,7 @@ class ContextBar::InkShadesField : public HBox {
     int m_dragIndex;
     bool m_dropBefore;
     int m_boxSize;
-    base::ScopedConnection m_conn;
+    obs::scoped_connection m_conn;
   };
 
 public:
@@ -1184,7 +1184,7 @@ public:
     tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", BOTTOM);
   }
 
-  base::Signal1<void, ContextBarObserver::DropAction> DropPixels;
+  obs::signal<void(ContextBarObserver::DropAction)> DropPixels;
 
 protected:
   void onItemChange(Item* item) override {
@@ -1389,7 +1389,7 @@ ContextBar::ContextBar()
   m_freehandAlgo->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
 
-  App::instance()->activeToolManager()->addObserver(this);
+  App::instance()->activeToolManager()->add_observer(this);
 
   auto& pref = Preferences::instance();
   pref.symmetryMode.enabled.AfterChange.connect(
@@ -1406,7 +1406,7 @@ ContextBar::ContextBar()
 
 ContextBar::~ContextBar()
 {
-  App::instance()->activeToolManager()->removeObserver(this);
+  App::instance()->activeToolManager()->remove_observer(this);
 }
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)
@@ -1480,7 +1480,7 @@ void ContextBar::onFgOrBgColorChange(doc::Brush::ImageColor imageColor)
 
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 {
-  notifyObservers(&ContextBarObserver::onDropPixels, action);
+  notify_observers(&ContextBarObserver::onDropPixels, action);
 }
 
 void ContextBar::updateForActiveTool()

@@ -50,11 +50,11 @@ namespace {
     }
 
     void observeUIContext() {
-      UIContext::instance()->documents().addObserver(this);
+      UIContext::instance()->documents().add_observer(this);
     }
 
     void unobserveUIContext() {
-      UIContext::instance()->documents().removeObserver(this);
+      UIContext::instance()->documents().remove_observer(this);
     }
 
     bool valid() {

@@ -35,7 +35,7 @@ UIContext::UIContext()
   : m_lastSelectedDoc(nullptr)
   , m_lastSelectedView(nullptr)
 {
-  documents().addObserver(&Preferences::instance());
+  documents().add_observer(&Preferences::instance());
 
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -46,7 +46,7 @@ UIContext::~UIContext()
   ASSERT(m_instance == this);
   m_instance = NULL;
 
-  documents().removeObserver(&Preferences::instance());
+  documents().remove_observer(&Preferences::instance());
 
   // The context must be empty at this point. (It's to check if the UI
   // is working correctly, i.e. closing all files when the user can

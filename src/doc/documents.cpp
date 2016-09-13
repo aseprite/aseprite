@@ -34,7 +34,7 @@ Document* Documents::add(int width, int height, ColorMode mode, int ncolors)
   // Ask to observers to create the document (maybe a doc::Document or
   // a derived class).
   CreateDocumentArgs args;
-  notifyObservers(&DocumentsObserver::onCreateDocument, &args);
+  notify_observers(&DocumentsObserver::onCreateDocument, &args);
   if (!args.document())
     args.setDocument(new Document());
 
@@ -59,7 +59,7 @@ Document* Documents::add(Document* doc)
 
   m_docs.insert(begin(), doc);
 
-  notifyObservers(&DocumentsObserver::onAddDocument, doc);
+  notify_observers(&DocumentsObserver::onAddDocument, doc);
   return doc;
 }
 
@@ -71,7 +71,7 @@ void Documents::remove(Document* doc)
 
   m_docs.erase(it);
 
-  notifyObservers(&DocumentsObserver::onRemoveDocument, doc);
+  notify_observers(&DocumentsObserver::onRemoveDocument, doc);
 
   doc->setContext(NULL);
 }

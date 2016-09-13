@@ -59,16 +59,16 @@ public:
     centerWindow();
     load_window_pos(this, "CelProperties");
 
-    UIContext::instance()->addObserver(this);
+    UIContext::instance()->add_observer(this);
   }
 
   ~CelPropertiesWindow() {
-    UIContext::instance()->removeObserver(this);
+    UIContext::instance()->remove_observer(this);
   }
 
   void setCel(Document* doc, Cel* cel) {
     if (m_document) {
-      m_document->removeObserver(this);
+      m_document->remove_observer(this);
       m_document = nullptr;
       m_cel = nullptr;
     }
@@ -79,7 +79,7 @@ public:
     m_range = App::instance()->timeline()->range();
 
     if (m_document)
-      m_document->addObserver(this);
+      m_document->add_observer(this);
 
     updateFromCel();
   }

@@ -11,8 +11,9 @@
 #include "app/color.h"
 #include "app/ui/color_source.h"
 #include "app/ui/marching_ants.h"
-#include "base/connection.h"
 #include "doc/palette_picks.h"
+#include "obs/connection.h"
+#include "obs/signal.h"
 #include "ui/event.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
@@ -81,7 +82,7 @@ namespace app {
     void pasteFromClipboard();
     void discardClipboardSelection();
 
-    base::Signal0<void> FocusEnter;
+    obs::signal<void()> FocusEnter;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -151,7 +152,7 @@ namespace app {
     int m_rangeAnchor;
     doc::PalettePicks m_selectedEntries;
     bool m_isUpdatingColumns;
-    base::ScopedConnection m_conn;
+    obs::scoped_connection m_conn;
     Hit m_hot;
     bool m_copy;
   };

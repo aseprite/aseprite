@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,8 +10,8 @@
 
 #include "app/ui/button_set.h"
 #include "app/ui/skin/skin_part.h"
-#include "base/signal.h"
 #include "filters/target.h"
+#include "obs/signal.h"
 #include "ui/tooltips.h"
 
 namespace ui {
@@ -30,7 +30,7 @@ namespace app {
     Target getTarget() const { return m_target; }
     void setTarget(Target target);
 
-    base::Signal0<void> TargetChange;
+    obs::signal<void()> TargetChange;
 
   protected:
     void onItemChange(Item* item) override;
