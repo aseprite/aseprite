@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,6 +22,7 @@ public:
   Command* clone() const override { return new ScrollCenterCommand(*this); }
 
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
@@ -30,6 +31,11 @@ ScrollCenterCommand::ScrollCenterCommand()
             "Scroll to center of canvas",
             CmdUIOnlyFlag)
 {
+}
+
+bool ScrollCenterCommand::onEnabled(Context* context)
+{
+  return (current_editor != nullptr);
 }
 
 void ScrollCenterCommand::onExecute(Context* context)
