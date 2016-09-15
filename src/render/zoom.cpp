@@ -53,7 +53,7 @@ Zoom::Zoom(int num, int den)
   m_internalScale = scale();
 }
 
-void Zoom::in()
+bool Zoom::in()
 {
   int i = linearScale();
   if (i < scales_size-1) {
@@ -61,10 +61,13 @@ void Zoom::in()
     m_num = scales[i][0];
     m_den = scales[i][1];
     m_internalScale = scale();
+    return true;
   }
+  else
+    return false;
 }
 
-void Zoom::out()
+bool Zoom::out()
 {
   int i = linearScale();
   if (i > 0) {
@@ -72,7 +75,10 @@ void Zoom::out()
     m_num = scales[i][0];
     m_den = scales[i][1];
     m_internalScale = scale();
+    return true;
   }
+  else
+    return false;
 }
 
 int Zoom::linearScale() const

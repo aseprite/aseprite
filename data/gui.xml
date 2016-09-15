@@ -224,6 +224,7 @@
 
       <!-- Scroll to center -->
       <key command="ScrollCenter" shortcut="Shift+C" />
+      <key command="FitScreen" shortcut="Ctrl+0" mac="Cmd+0" />
 
       <!-- Scroll with arrows -->
       <key command="Scroll" shortcut="Space+Left">

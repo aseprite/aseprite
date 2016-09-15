@@ -387,6 +387,60 @@ void Editor::setDefaultScroll()
       m_padding.y - vp.h/2 + m_zoom.apply(m_sprite->height())/2));
 }
 
+void Editor::setScrollAndZoomToFitScreen()
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Zoom zoom = m_zoom;
+
+  if (float(vp.w) / float(m_sprite->width()) <
+      float(vp.h) / float(m_sprite->height())) {
+    if (vp.w < zoom.apply(m_sprite->width())) {
+      while (vp.w < zoom.apply(m_sprite->width()))
+        if (!zoom.out())
+          break;
+    }
+    else if (vp.w > zoom.apply(m_sprite->width())) {
+      bool out = true;
+      while (vp.w > zoom.apply(m_sprite->width())) {
+        if (!zoom.in()) {
+          out = false;
+          break;
+        }
+      }
+      if (out)
+        zoom.out();
+    }
+  }
+  else {
+    if (vp.h < zoom.apply(m_sprite->height())) {
+      while (vp.h < zoom.apply(m_sprite->height())) {
+        if (!zoom.out())
+          break;
+      }
+    }
+    else if (vp.h > zoom.apply(m_sprite->height())) {
+      bool out = true;
+      while (vp.h > zoom.apply(m_sprite->height())) {
+        if (!zoom.in()) {
+          out = false;
+          break;
+        }
+      }
+      if (out)
+        zoom.out();
+    }
+  }
+
+  setZoom(zoom);
+
+  updateEditor();
+  setEditorScroll(
+    gfx::Point(
+      m_padding.x - vp.w/2 + zoom.apply(m_sprite->width())/2,
+      m_padding.y - vp.h/2 + zoom.apply(m_sprite->height())/2));
+}
+
 // Sets the scroll position of the editor
 void Editor::setEditorScroll(const gfx::Point& scroll)
 {

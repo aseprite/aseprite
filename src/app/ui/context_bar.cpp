@@ -72,6 +72,52 @@ using namespace tools;
 
 static bool g_updatingFromCode = false;
 
+class ContextBar::ZoomButtons : public ButtonSet {
+public:
+  ZoomButtons()
+    : ButtonSet(3) {
+    addItem("100%");
+    addItem("Center");
+    addItem("Fit Screen");
+  }
+
+private:
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+
+    Command* cmd = nullptr;
+    Params params;
+
+    switch (selectedItem()) {
+
+      case 0: {
+        cmd = CommandsModule::instance()->getCommandByName(CommandId::Zoom);
+        params.set("action", "set");
+        params.set("percentage", "100");
+        params.set("focus", "center");
+        UIContext::instance()->executeCommand(cmd, params);
+        break;
+      }
+
+      case 1: {
+        cmd = CommandsModule::instance()->getCommandByName(CommandId::ScrollCenter);
+        break;
+      }
+
+      case 2: {
+        cmd = CommandsModule::instance()->getCommandByName(CommandId::FitScreen);
+        break;
+      }
+    }
+
+    if (cmd)
+      UIContext::instance()->executeCommand(cmd, params);
+
+    deselectItems();
+    manager()->freeFocus();
+  }
+};
+
 class ContextBar::BrushTypeField : public ButtonSet {
 public:
   BrushTypeField(ContextBar* owner)
@@ -1321,6 +1367,8 @@ ContextBar::ContextBar()
   m_selectionOptionsBox->addChild(m_pivot = new PivotField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
+  addChild(m_zoomButtons = new ZoomButtons);
+
   addChild(m_brushType = new BrushTypeField(this));
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
@@ -1582,6 +1630,13 @@ void ContextBar::updateForTool(tools::Tool* tool)
      activeBrush()->type() == kLineBrushType);
 
   // True if the current tool is eyedropper.
+  bool needZoomButtons = tool &&
+    (tool->getInk(0)->isZoom() ||
+     tool->getInk(1)->isZoom() ||
+     tool->getInk(0)->isScrollMovement() ||
+     tool->getInk(1)->isScrollMovement());
+
+  // True if the current tool is eyedropper.
   bool isEyedropper = tool &&
     (tool->getInk(0)->isEyedropper() ||
      tool->getInk(1)->isEyedropper());
@@ -1620,6 +1675,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
      (isEffect));
 
   // Show/Hide fields
+  m_zoomButtons->setVisible(needZoomButtons);
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);

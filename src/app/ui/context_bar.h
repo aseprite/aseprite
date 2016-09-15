@@ -87,6 +87,7 @@ namespace app {
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
 
+    class ZoomButtons;
     class BrushTypeField;
     class BrushAngleField;
     class BrushSizeField;
@@ -109,6 +110,7 @@ namespace app {
     class AutoSelectLayerField;
     class SymmetryField;
 
+    ZoomButtons* m_zoomButtons;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
     BrushSizeField* m_brushSize;
