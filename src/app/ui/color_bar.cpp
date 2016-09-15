@@ -510,7 +510,7 @@ void ColorBar::onPaletteButtonClick()
 
         m_palettePopup->showPopup(
           gfx::Rect(bounds.x, bounds.y+bounds.h,
-                    ui::display_w()/2, ui::display_h()/2));
+                    ui::display_w()/2, ui::display_h()*3/4));
       }
       else {
         m_palettePopup->closeWindow(NULL);
