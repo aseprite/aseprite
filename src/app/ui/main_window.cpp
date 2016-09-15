@@ -35,6 +35,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
+#include "base/bind.h"
 #include "base/path.h"
 #include "she/display.h"
 #include "ui/message.h"
@@ -138,6 +139,10 @@ MainWindow::MainWindow()
   // Default splitter positions
   colorBarSplitter()->setPosition(m_colorBar->sizeHint().w);
   timelineSplitter()->setPosition(75);
+
+  // Reconfigure workspace when the timeline position is changed.
+  Preferences::instance().general.timelinePosition
+    .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
 
   // Prepare the window
   remapWindow();
@@ -293,6 +298,12 @@ bool MainWindow::onProcessMessage(ui::Message* msg)
 
 void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 {
+  // Invert the timeline splitter position before we save the setting.
+  if (Preferences::instance().general.timelinePosition() ==
+      gen::TimelinePosition::LEFT) {
+    timelineSplitter()->setPosition(100 - timelineSplitter()->getPosition());
+  }
+
   Window::onSaveLayout(ev);
 }
 
@@ -430,6 +441,7 @@ DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Poi
 
 void MainWindow::configureWorkspaceLayout()
 {
+  const auto& pref = Preferences::instance();
   bool normal = (m_mode == NormalMode);
   bool isDoc = (getDocView() != nullptr);
 
@@ -442,11 +454,51 @@ void MainWindow::configureWorkspaceLayout()
     isDoc &&
     (m_mode == NormalMode ||
      m_mode == ContextBarAndTimelineMode));
-  timelinePlaceholder()->setVisible(
-    isDoc &&
-    (m_mode == NormalMode ||
-     m_mode == ContextBarAndTimelineMode) &&
-    Preferences::instance().general.visibleTimeline());
+
+  // Configure timeline
+  {
+    auto timelinePosition = pref.general.timelinePosition();
+    bool invertWidgets = false;
+    int align = VERTICAL;
+    switch (timelinePosition) {
+      case gen::TimelinePosition::LEFT:
+        align = HORIZONTAL;
+        invertWidgets = true;
+        break;
+      case gen::TimelinePosition::RIGHT:
+        align = HORIZONTAL;
+        break;
+      case gen::TimelinePosition::BOTTOM:
+        break;
+    }
+
+    timelineSplitter()->setAlign(align);
+    timelinePlaceholder()->setVisible(
+      isDoc &&
+      (m_mode == NormalMode ||
+       m_mode == ContextBarAndTimelineMode) &&
+      pref.general.visibleTimeline());
+
+    bool invertSplitterPos = false;
+    if (invertWidgets) {
+      if (timelineSplitter()->firstChild() == workspacePlaceholder() &&
+          timelineSplitter()->lastChild() == timelinePlaceholder()) {
+        timelineSplitter()->removeChild(workspacePlaceholder());
+        timelineSplitter()->addChild(workspacePlaceholder());
+        invertSplitterPos = true;
+      }
+    }
+    else {
+      if (timelineSplitter()->firstChild() == timelinePlaceholder() &&
+          timelineSplitter()->lastChild() == workspacePlaceholder()) {
+        timelineSplitter()->removeChild(timelinePlaceholder());
+        timelineSplitter()->addChild(timelinePlaceholder());
+        invertSplitterPos = true;
+      }
+    }
+    if (invertSplitterPos)
+      timelineSplitter()->setPosition(100 - timelineSplitter()->getPosition());
+  }
 
   if (m_contextBar->isVisible()) {
     m_contextBar->updateForActiveTool();

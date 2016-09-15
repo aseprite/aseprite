@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -46,6 +46,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box = new app::gen::TimelineConf();
   addChild(m_box);
 
+  m_box->position()->ItemChange.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangePosition, this));
   m_box->merge()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
   m_box->tint()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
   m_box->opacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
@@ -71,6 +72,15 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 {
   DocumentPreferences& docPref = this->docPref();
   base::ScopedValue<bool> lockUpdates(m_lockUpdates, true, false);
+
+  auto position = Preferences::instance().general.timelinePosition();
+  int selItem = 2;
+  switch (position) {
+    case gen::TimelinePosition::LEFT: selItem = 0; break;
+    case gen::TimelinePosition::RIGHT: selItem = 1; break;
+    case gen::TimelinePosition::BOTTOM: selItem = 2; break;
+  }
+  m_box->position()->setSelectedItem(selItem, false);
 
   switch (docPref.onionskin.type()) {
     case app::gen::OnionskinType::MERGE:
@@ -115,6 +125,20 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
     }
   }
   return PopupWindow::onProcessMessage(msg);
+}
+
+void ConfigureTimelinePopup::onChangePosition()
+{
+  gen::TimelinePosition newTimelinePos =
+    gen::TimelinePosition::BOTTOM;
+
+  int selITem = m_box->position()->selectedItem();
+  switch (selITem) {
+    case 0: newTimelinePos = gen::TimelinePosition::LEFT; break;
+    case 1: newTimelinePos = gen::TimelinePosition::RIGHT; break;
+    case 2: newTimelinePos = gen::TimelinePosition::BOTTOM; break;
+  }
+  Preferences::instance().general.timelinePosition(newTimelinePos);
 }
 
 void ConfigureTimelinePopup::onChangeType()

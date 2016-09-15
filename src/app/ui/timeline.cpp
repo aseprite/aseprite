@@ -606,11 +606,10 @@ bool Timeline::onProcessMessage(Message* msg)
             }
 
             if (!m_confPopup->isVisible()) {
-              m_confPopup->moveWindow(gfx::Rect(
-                  gearBounds.x,
-                  gearBounds.y-m_confPopup->bounds().h,
-                  m_confPopup->bounds().w,
-                  m_confPopup->bounds().h));
+              gfx::Rect bounds = m_confPopup->bounds();
+              ui::fit_bounds(BOTTOM, gearBounds, bounds);
+
+              m_confPopup->moveWindow(bounds);
               m_confPopup->openWindow();
             }
             else

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,6 +32,7 @@ namespace app {
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
+    void onChangePosition();
     void onChangeType();
     void onOpacity();
     void onOpacityStep();

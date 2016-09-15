@@ -16,6 +16,7 @@ add_library(ui-lib
   custom_label.cpp
   entry.cpp
   event.cpp
+  fit_bounds.cpp
   graphics.cpp
   grid.cpp
   image_view.cpp
