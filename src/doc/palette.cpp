@@ -33,6 +33,7 @@ Palette::Palette(frame_t frame, int ncolors)
 
 Palette::Palette(const Palette& palette)
   : Object(palette)
+  , m_comment(palette.m_comment)
 {
   m_frame = palette.m_frame;
   m_colors = palette.m_colors;
@@ -41,6 +42,7 @@ Palette::Palette(const Palette& palette)
 
 Palette::Palette(const Palette& palette, const Remap& remap)
   : Object(palette)
+  , m_comment(palette.m_comment)
 {
   m_frame = palette.m_frame;
 

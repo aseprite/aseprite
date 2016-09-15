@@ -15,7 +15,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "ui/graphics.h"
-#include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
@@ -26,73 +25,61 @@ namespace app {
 using namespace ui;
 using namespace skin;
 
-class ResourceListItem : public ListItem {
-public:
-  ResourceListItem(Resource* resource)
-    : ListItem(resource->name()), m_resource(resource) {
+//////////////////////////////////////////////////////////////////////
+// ResourceListItem
+
+ResourceListItem::ResourceListItem(Resource* resource)
+  : ListItem(resource->name()), m_resource(resource)
+{
+}
+
+bool ResourceListItem::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kMouseLeaveMessage:
+    case kMouseEnterMessage:
+      invalidate();
+      break;
+  }
+  return ListItem::onProcessMessage(msg);
+}
+
+void ResourceListItem::onPaint(PaintEvent& ev)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  Graphics* g = ev.graphics();
+  gfx::Rect bounds = clientBounds();
+  gfx::Color bgcolor, fgcolor;
+
+  if (isSelected()) {
+    bgcolor = theme->colors.listitemSelectedFace();
+    fgcolor = theme->colors.listitemSelectedText();
+  }
+  else {
+    bgcolor = theme->colors.listitemNormalFace();
+    fgcolor = theme->colors.listitemNormalText();
   }
 
-  Resource* resource() const {
-    return m_resource;
-  }
+  g->fillRect(bgcolor, bounds);
 
-protected:
-  bool onProcessMessage(ui::Message* msg) override {
-    switch (msg->type()) {
-      case kMouseLeaveMessage:
-      case kMouseEnterMessage:
-        invalidate();
-        break;
-    }
-    return ListItem::onProcessMessage(msg);
-  }
+  static_cast<ResourcesListBox*>(parent())->
+    paintResource(g, bounds, m_resource);
 
-  void onPaint(PaintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-    Graphics* g = ev.graphics();
-    gfx::Rect bounds = clientBounds();
-    gfx::Color bgcolor, fgcolor;
+  g->drawString(text(), fgcolor, gfx::ColorNone,
+                gfx::Point(
+                  bounds.x + guiscale()*2,
+                  bounds.y + bounds.h/2 - g->measureUIString(text()).h/2));
+}
 
-    if (isSelected()) {
-      bgcolor = theme->colors.listitemSelectedFace();
-      fgcolor = theme->colors.listitemSelectedText();
-    }
-    else {
-      bgcolor = theme->colors.listitemNormalFace();
-      fgcolor = theme->colors.listitemNormalText();
-    }
-
-    g->fillRect(bgcolor, bounds);
-
+void ResourceListItem::onSizeHint(SizeHintEvent& ev)
+{
+  ev.setSizeHint(
     static_cast<ResourcesListBox*>(parent())->
-      paintResource(g, bounds, m_resource);
+    resourceSizeHint(m_resource));
+}
 
-    // for (int i=0; i<m_palette->size(); ++i) {
-    //   doc::color_t c = m_resource->getEntry(i);
-
-    //   g->fillRect(gfx::rgba(
-    //       doc::rgba_getr(c),
-    //       doc::rgba_getg(c),
-    //       doc::rgba_getb(c)), box);
-
-    //   box.x += box.w;
-    // }
-
-    g->drawString(text(), fgcolor, gfx::ColorNone,
-      gfx::Point(
-        bounds.x + guiscale()*2,
-        bounds.y + bounds.h/2 - g->measureUIString(text()).h/2));
-  }
-
-  void onSizeHint(SizeHintEvent& ev) override {
-    ev.setSizeHint(
-      static_cast<ResourcesListBox*>(parent())->
-        resourceSizeHint(m_resource));
-  }
-
-private:
-  base::UniquePtr<Resource> m_resource;
-};
+//////////////////////////////////////////////////////////////////////
+// ResourcesListBox::LoadingItem
 
 class ResourcesListBox::LoadingItem : public ListItem {
 public:
@@ -117,6 +104,9 @@ public:
 private:
   int m_state;
 };
+
+//////////////////////////////////////////////////////////////////////
+// ResourcesListBox
 
 ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
   : m_resourcesLoader(resourcesLoader)
@@ -166,14 +156,9 @@ void ResourcesListBox::onChange()
     onResourceChange(resource);
 }
 
-void ResourcesListBox::onResourceChange(Resource* resource)
+ResourceListItem* ResourcesListBox::onCreateResourceItem(Resource* resource)
 {
-  // Do nothing
-}
-
-void ResourcesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Resource* resource)
-{
-  // Do nothing
+  return new ResourceListItem(resource);
 }
 
 void ResourcesListBox::onTick()
@@ -201,7 +186,7 @@ void ResourcesListBox::onTick()
     return;
   }
 
-  base::UniquePtr<ResourceListItem> listItem(new ResourceListItem(resource));
+  base::UniquePtr<ResourceListItem> listItem(onCreateResourceItem(resource));
   insertChild(getItemsCount()-1, listItem);
   layout();
 
