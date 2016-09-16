@@ -778,8 +778,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   // If the user choose to render selected layers only, we can
   // temporaly make them visible and hide the other ones.
-  Layer* layer = nullptr;
   RestoreVisibleLayers layersVisibility;
+  SelectedLayers selLayers;
   if (layerName == kSelectedLayers) {
     // TODO the range of selected frames should be in doc::Site.
     auto range = App::instance()->timeline()->range();
@@ -790,10 +790,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   }
   else {
     // TODO add a getLayerByName
-    LayerList layers = sprite->allLayers();
-    for (Layer* l : layers) {
-      if (l->name() == layerName) {
-        layer = l;
+    for (Layer* layer : sprite->allLayers()) {
+      if (layer->name() == layerName) {
+        selLayers.insert(layer);
         break;
       }
     }
@@ -850,7 +849,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     exporter.setListLayers(true);
   if (listFrameTags)
     exporter.setListFrameTags(true);
-  exporter.addDocument(document, layer, frameTag,
+  exporter.addDocument(document, frameTag,
+                       (!selLayers.empty() ? &selLayers: nullptr),
                        (!selFrames.empty() ? &selFrames: nullptr));
 
   base::UniquePtr<Document> newDocument(exporter.exportSheet());

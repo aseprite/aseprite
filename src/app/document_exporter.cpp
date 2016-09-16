@@ -15,6 +15,7 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
+#include "app/restore_visible_layers.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/fstream_path.h"
@@ -32,6 +33,7 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/selected_frames.h"
+#include "doc/selected_layers.h"
 #include "doc/sprite.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
@@ -108,28 +110,29 @@ private:
 typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
 
 DocumentExporter::Item::Item(Document* doc,
-                             doc::Layer* layer,
                              doc::FrameTag* frameTag,
+                             doc::SelectedLayers* selLayers,
                              doc::SelectedFrames* selFrames)
   : doc(doc)
-  , layer(layer)
   , frameTag(frameTag)
-  , selFrames(selFrames ? new doc::SelectedFrames(*selFrames):
-                          nullptr)
+  , selLayers(selLayers ? new doc::SelectedLayers(*selLayers): nullptr)
+  , selFrames(selFrames ? new doc::SelectedFrames(*selFrames): nullptr)
 {
 }
 
 DocumentExporter::Item::Item(Item&& other)
   : doc(other.doc)
-  , layer(other.layer)
   , frameTag(other.frameTag)
+  , selLayers(other.selLayers)
   , selFrames(other.selFrames)
 {
+  other.selLayers = nullptr;
   other.selFrames = nullptr;
 }
 
 DocumentExporter::Item::~Item()
 {
+  delete selLayers;
   delete selFrames;
 }
 
@@ -173,11 +176,11 @@ doc::SelectedFrames DocumentExporter::Item::getSelectedFrames() const
 
 class DocumentExporter::Sample {
 public:
-  Sample(Document* document, Sprite* sprite, Layer* layer,
-    frame_t frame, const std::string& filename, int innerPadding) :
+  Sample(Document* document, Sprite* sprite, SelectedLayers* selLayers,
+         frame_t frame, const std::string& filename, int innerPadding) :
     m_document(document),
     m_sprite(sprite),
-    m_layer(layer),
+    m_selLayers(selLayers),
     m_frame(frame),
     m_filename(filename),
     m_innerPadding(innerPadding),
@@ -187,7 +190,11 @@ public:
 
   Document* document() const { return m_document; }
   Sprite* sprite() const { return m_sprite; }
-  Layer* layer() const { return m_layer; }
+  Layer* layer() const {
+    return (m_selLayers && m_selLayers->size() == 1 ? *m_selLayers->begin():
+                                                      nullptr);
+  }
+  SelectedLayers* selectedLayers() const { return m_selLayers; }
   frame_t frame() const { return m_frame; }
   std::string filename() const { return m_filename; }
   const gfx::Size& originalSize() const { return m_bounds->originalSize(); }
@@ -220,7 +227,7 @@ public:
 private:
   Document* m_document;
   Sprite* m_sprite;
-  Layer* m_layer;
+  SelectedLayers* m_selLayers;
   frame_t m_frame;
   std::string m_filename;
   int m_borderPadding;
@@ -466,7 +473,8 @@ void DocumentExporter::captureSamples(Samples& samples)
   for (auto& item : m_documents) {
     Document* doc = item.doc;
     Sprite* sprite = doc->sprite();
-    Layer* layer = item.layer;
+    Layer* layer = (item.selLayers && item.selLayers->size() == 1 ?
+                    *item.selLayers->begin(): nullptr);
     FrameTag* frameTag = item.frameTag;
     int frames = item.frames();
 
@@ -494,16 +502,16 @@ void DocumentExporter::captureSamples(Samples& samples)
 
       std::string filename = filename_formatter(format, fnInfo);
 
-      Sample sample(doc, sprite, layer, frame, filename, m_innerPadding);
+      Sample sample(doc, sprite, item.selLayers, frame, filename, m_innerPadding);
       Cel* cel = nullptr;
       Cel* link = nullptr;
       bool done = false;
 
-      if (layer && layer->isImage())
+      if (layer && layer->isImage()) {
         cel = layer->cel(frame);
-
-      if (cel)
-        link = cel->link();
+        if (cel)
+          link = cel->link();
+      }
 
       // Re-use linked samples
       if (link) {
@@ -822,13 +830,23 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
     for (auto& item : m_documents) {
       Document* doc = item.doc;
       Sprite* sprite = doc->sprite();
+      LayerList layers;
 
-      for (Layer* layer : sprite->allVisibleLayers()) {
+      if (item.selLayers)
+        layers = item.selLayers->toLayerList();
+      else
+        layers = sprite->allVisibleLayers();
+
+      for (Layer* layer : layers) {
         if (firstLayer)
           firstLayer = false;
         else
           os << ",";
         os << "\n   { \"name\": \"" << escape_for_json(layer->name()) << "\"";
+
+        if (layer->parent() != layer->sprite()->root())
+          os << ", \"group\": \"" << escape_for_json(layer->parent()->name()) << "\"";
+
         if (LayerImage* layerImg = dynamic_cast<LayerImage*>(layer)) {
           os << ", \"opacity\": " << layerImg->opacity()
              << ", \"blendMode\": \"" << blend_mode_to_string(layerImg->blendMode()) << "\"";
@@ -877,15 +895,15 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
 
 void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
 {
-  render::Render render;
   gfx::Clip clip(x, y, sample.trimmedBounds());
 
-  if (sample.layer()) {
-    render.renderLayer(dst, sample.layer(), sample.frame(), clip);
-  }
-  else {
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-  }
+  RestoreVisibleLayers layersVisibility;
+  if (sample.selectedLayers())
+    layersVisibility.showSelectedLayers(sample.sprite(),
+                                        *sample.selectedLayers());
+
+  render::Render render;
+  render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
 }
 
 } // namespace app

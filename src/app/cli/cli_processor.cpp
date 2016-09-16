@@ -34,6 +34,53 @@
 
 namespace app {
 
+namespace {
+
+std::string get_layer_path(Layer* layer)
+{
+  std::string path;
+  for (; layer != layer->sprite()->root(); layer=layer->parent()) {
+    if (!path.empty())
+      path.insert(0, "/");
+    path.insert(0, layer->name());
+  }
+  return path;
+}
+
+bool match_path(const std::string& filter, const std::string& layer_path)
+{
+  if (filter == layer_path)
+    return true;
+
+  std::vector<std::string> a, b;
+  base::split_string(filter, a, "/");
+  base::split_string(layer_path, b, "/");
+
+  for (int i=0; i<a.size() && i<b.size(); ++i) {
+    if (a[i] != b[i] && a[i] != "*")
+      return false;
+  }
+
+  return (a.size() <= b.size());
+}
+
+void filter_layers(const LayerList& layers,
+                   const std::vector<std::string>& filters,
+                   SelectedLayers& filteredLayers)
+{
+  for (const auto& filter : filters) {
+    bool filterWithGroup = (filter.find('/') != std::string::npos);
+
+    for (Layer* layer : layers) {
+      if (layer->name() == filter ||
+          (filterWithGroup && match_path(filter, get_layer_path(layer))))
+        filteredLayers.insert(layer);
+    }
+  }
+}
+
+} // anonymous namespace
+
 CliProcessor::CliProcessor(CliDelegate* delegate,
                              const AppOptions& options)
   : m_delegate(delegate)
@@ -127,7 +174,7 @@ void CliProcessor::process()
         }
         // --layer <layer-name>
         else if (opt == &m_options.layer()) {
-          cof.importLayer = value.value();
+          cof.importLayers.push_back(value.value());
         }
         // --all-layers
         else if (opt == &m_options.allLayers()) {
@@ -371,25 +418,35 @@ bool CliProcessor::openFile(CliOpenFile& cof)
         }
       }
 
-      if (!cof.importLayer.empty()) {
-        Layer* foundLayer = nullptr;
-        for (Layer* layer : doc->sprite()->allLayers()) {
-          if (layer->name() == cof.importLayer) {
-            foundLayer = layer;
-            break;
+      if (!cof.importLayers.empty()) {
+        SelectedLayers filteredLayers;
+        filter_layers(doc->sprite()->allLayers(), cof.importLayers, filteredLayers);
+
+        if (cof.splitLayers) {
+          for (Layer* layer : filteredLayers) {
+            SelectedLayers oneLayer;
+            oneLayer.insert(layer);
+
+            m_exporter->addDocument(doc, frameTag, &oneLayer,
+                                    (!selFrames.empty() ? &selFrames: nullptr));
           }
         }
-        if (foundLayer)
-          m_exporter->addDocument(doc, foundLayer, frameTag,
+        else {
+          m_exporter->addDocument(doc, frameTag, &filteredLayers,
                                   (!selFrames.empty() ? &selFrames: nullptr));
+        }
       }
       else if (cof.splitLayers) {
-        for (auto layer : doc->sprite()->allVisibleLayers())
-          m_exporter->addDocument(doc, layer, frameTag,
+        for (auto layer : doc->sprite()->allVisibleLayers()) {
+          SelectedLayers oneLayer;
+          oneLayer.insert(layer);
+
+          m_exporter->addDocument(doc, frameTag, &oneLayer,
                                   (!selFrames.empty() ? &selFrames: nullptr));
+        }
       }
       else {
-        m_exporter->addDocument(doc, nullptr, frameTag,
+        m_exporter->addDocument(doc, frameTag, nullptr,
                                 (!selFrames.empty() ? &selFrames: nullptr));
       }
     }
@@ -441,13 +498,9 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       layers.push_back(layer);
   }
   else {
-    // Show only one layer
-    if (!cof.importLayer.empty()) {
-      for (Layer* layer : allLayers) {
-        if (layer->name() == cof.importLayer)
-          filteredLayers.insert(layer);
-      }
-    }
+    // Filter layers
+    if (!cof.importLayers.empty())
+      filter_layers(allLayers, cof.importLayers, filteredLayers);
 
     // All visible layers
     layers.push_back(nullptr);
@@ -522,7 +575,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
         else if (layer->parent() != layer->sprite()->root())
           fnInfo.groupName(layer->parent()->name());
 
-        itemCof.importLayer = layer->name();
+        itemCof.importLayers.push_back(layer->name());
       }
       if (frameTag) {
         fnInfo

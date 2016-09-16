@@ -12,6 +12,7 @@
 #include "gfx/rect.h"
 
 #include <string>
+#include <vector>
 
 namespace app {
 
@@ -23,7 +24,7 @@ namespace app {
     std::string filename;
     std::string filenameFormat;
     std::string frameTag;
-    std::string importLayer;
+    std::vector<std::string> importLayers;
     doc::frame_t fromFrame, toFrame;
     bool splitLayers;
     bool splitTags;

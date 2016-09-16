@@ -69,8 +69,12 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.allLayers)
     std::cout << "  - Make all layers visible\n";
 
-  if (!cof.importLayer.empty())
-    std::cout << "  - Make layer '" << cof.importLayer << "' visible only (hide all other layers)\n";
+  if (!cof.importLayers.empty()) {
+    std::cout << "  - Filter layers:";
+    for (const auto& filter : cof.importLayers)
+      std::cout << ' ' << filter;
+    std::cout << "\n";
+  }
 }
 
 void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
@@ -97,8 +101,12 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
             << cof.document->sprite()->width() << "x"
             << cof.document->sprite()->height() << "\n";
 
-  if (!cof.importLayer.empty())
-    std::cout << "  - Layer: '" << cof.importLayer << "'\n";
+  if (!cof.importLayers.empty()) {
+    std::cout << "  - Filter layers:";
+    for (const auto& filter : cof.importLayers)
+      std::cout << ' ' << filter;
+    std::cout << "\n";
+  }
 
   if (cof.hasFrameTag()) {
     std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";

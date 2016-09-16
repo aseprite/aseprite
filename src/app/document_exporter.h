@@ -24,7 +24,7 @@
 namespace doc {
   class FrameTag;
   class Image;
-  class Layer;
+  class SelectedLayers;
   class SelectedFrames;
 }
 
@@ -72,10 +72,10 @@ namespace app {
     void setListLayers(bool value) { m_listLayers = value; }
 
     void addDocument(Document* document,
-                     doc::Layer* layer,
                      doc::FrameTag* tag,
+                     doc::SelectedLayers* selLayers,
                      doc::SelectedFrames* selFrames) {
-      m_documents.push_back(Item(document, layer, tag, selFrames));
+      m_documents.push_back(Item(document, tag, selLayers, selFrames));
     }
 
     Document* exportSheet();
@@ -99,13 +99,13 @@ namespace app {
     class Item {
     public:
       Document* doc;
-      doc::Layer* layer;
       doc::FrameTag* frameTag;
+      doc::SelectedLayers* selLayers;
       doc::SelectedFrames* selFrames;
 
       Item(Document* doc,
-           doc::Layer* layer,
            doc::FrameTag* frameTag,
+           doc::SelectedLayers* selLayers,
            doc::SelectedFrames* selFrames);
       Item(Item&& other);
       ~Item();
