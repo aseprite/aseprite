@@ -10,7 +10,7 @@
 
 #include "app/color.h"
 #include "app/ui/color_source.h"
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
@@ -24,7 +24,7 @@ namespace app {
     void selectColor(const app::Color& color);
 
     // Signals
-    base::Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
+    obs::signal<void(const app::Color&, ui::MouseButtons)> ColorChange;
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;

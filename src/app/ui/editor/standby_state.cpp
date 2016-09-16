@@ -340,7 +340,6 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
     }
   }
 
-  editor->showBrushPreview(msg->position());
   editor->updateStatusBar();
   return true;
 }

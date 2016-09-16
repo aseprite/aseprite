@@ -306,3 +306,24 @@ TEST(Grid, ReduceThree)
   EXPECT_EQ(gfx::Rect(0, 4, 10, 4), b.bounds());
   EXPECT_EQ(gfx::Rect(0, 8, 10, 4), c.bounds());
 }
+
+TEST(Grid, Alignment)
+{
+  Grid grid(1, false);
+  grid.noBorderNoChildSpacing();
+
+  Widget a;
+  a.setMinSize(gfx::Size(10, 10));
+
+  grid.addChildInCell(&a, 1, 1, CENTER | BOTTOM | HORIZONTAL | VERTICAL);
+
+  Size reqSize = grid.sizeHint();
+  EXPECT_EQ(10, reqSize.w);
+  EXPECT_EQ(10, reqSize.h);
+
+  grid.setBounds(gfx::Rect(10, 10, 40, 10));
+  EXPECT_EQ(gfx::Rect(25, 10, 10, 10), a.bounds());
+
+  grid.setBounds(gfx::Rect(10, 10, 60, 20));
+  EXPECT_EQ(gfx::Rect(35, 20, 10, 10), a.bounds());
+}

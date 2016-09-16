@@ -24,8 +24,8 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/signal.h"
 #include "gfx/size.h"
+#include "obs/signal.h"
 #include "she/surface.h"
 #include "ui/ui.h"
 
@@ -47,7 +47,7 @@ public:
 
   ToolGroup* toolGroup() { return m_group; }
 
-  base::Signal1<void, Tool*> ToolSelected;
+  obs::signal<void(Tool*)> ToolSelected;
 
 protected:
   bool onProcessMessage(Message* msg) override;
@@ -101,12 +101,12 @@ ToolBar::ToolBar()
       m_selectedInGroup[tool->getGroup()] = tool;
   }
 
-  App::instance()->activeToolManager()->addObserver(this);
+  App::instance()->activeToolManager()->add_observer(this);
 }
 
 ToolBar::~ToolBar()
 {
-  App::instance()->activeToolManager()->removeObserver(this);
+  App::instance()->activeToolManager()->remove_observer(this);
 
   delete m_popupWindow;
   delete m_tipWindow;

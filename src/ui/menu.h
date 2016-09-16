@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,8 +8,8 @@
 #define UI_MENU_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
 #include "base/unique_ptr.h"
+#include "obs/signal.h"
 #include "ui/register_message.h"
 #include "ui/separator.h"
 #include "ui/widget.h"
@@ -121,7 +121,7 @@ namespace ui {
     }
 
     // Fired when the menu item is clicked.
-    base::Signal0<void> Click;
+    obs::signal<void()> Click;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;

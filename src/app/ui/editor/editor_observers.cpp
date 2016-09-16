@@ -17,42 +17,42 @@ namespace app {
 
 void EditorObservers::notifyDestroyEditor(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onDestroyEditor, editor);
+  notify_observers(&EditorObserver::onDestroyEditor, editor);
 }
 
 void EditorObservers::notifyStateChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onStateChanged, editor);
+  notify_observers(&EditorObserver::onStateChanged, editor);
 }
 
 void EditorObservers::notifyScrollChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onScrollChanged, editor);
+  notify_observers(&EditorObserver::onScrollChanged, editor);
 }
 
 void EditorObservers::notifyZoomChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onZoomChanged, editor);
+  notify_observers(&EditorObserver::onZoomChanged, editor);
 }
 
 void EditorObservers::notifyBeforeFrameChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onBeforeFrameChanged, editor);
+  notify_observers(&EditorObserver::onBeforeFrameChanged, editor);
 }
 
 void EditorObservers::notifyAfterFrameChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onAfterFrameChanged, editor);
+  notify_observers(&EditorObserver::onAfterFrameChanged, editor);
 }
 
 void EditorObservers::notifyBeforeLayerChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onBeforeLayerChanged, editor);
+  notify_observers(&EditorObserver::onBeforeLayerChanged, editor);
 }
 
 void EditorObservers::notifyAfterLayerChanged(Editor* editor)
 {
-  notifyObservers(&EditorObserver::onAfterLayerChanged, editor);
+  notify_observers(&EditorObserver::onAfterLayerChanged, editor);
 }
 
 } // namespace app

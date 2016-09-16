@@ -9,9 +9,9 @@
 #pragma once
 
 #include "app/ui/editor/state_with_wheel_behavior.h"
-#include "base/connection.h"
 #include "base/time.h"
 #include "doc/frame.h"
+#include "obs/connection.h"
 #include "ui/timer.h"
 
 namespace app {
@@ -51,7 +51,7 @@ namespace app {
     bool m_pingPongForward;
     doc::frame_t m_refFrame;
 
-    base::ScopedConnection m_ctxConn;
+    obs::scoped_connection m_ctxConn;
   };
 
 } // namespace app

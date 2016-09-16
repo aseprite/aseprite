@@ -173,6 +173,16 @@ void PixelsMovement::rotate(double angle)
   update_screen_for_document(m_document);
 }
 
+void PixelsMovement::trim()
+{
+  ContextWriter writer(m_reader, 1000);
+
+  ASSERT(writer.cel());
+  if (writer.cel() &&
+      writer.cel()->layer()->isTransparent())
+    m_transaction.execute(new cmd::TrimCel(writer.cel()));
+}
+
 void PixelsMovement::cutMask()
 {
   {
@@ -180,10 +190,8 @@ void PixelsMovement::cutMask()
     if (writer.cel()) {
       m_transaction.execute(new cmd::ClearMask(writer.cel()));
 
-      ASSERT(writer.cel());
-      if (writer.cel() &&
-          writer.cel()->layer()->isTransparent())
-        m_transaction.execute(new cmd::TrimCel(writer.cel()));
+      // Do not trim here so we don't lost the information about all
+      // linked cels related to "writer.cel()"
     }
   }
 

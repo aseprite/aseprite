@@ -10,9 +10,9 @@
 
 #include "app/color.h"
 #include "app/ui/color_source.h"
-#include "base/signal.h"
 #include "doc/context_observer.h"
 #include "doc/pixel_format.h"
+#include "obs/signal.h"
 #include "ui/button.h"
 
 namespace app {
@@ -37,7 +37,7 @@ namespace app {
     app::Color getColorByPosition(const gfx::Point& pos) override;
 
     // Signals
-    base::Signal1<void, const app::Color&> Change;
+    obs::signal<void(const app::Color&)> Change;
 
   protected:
     // Events

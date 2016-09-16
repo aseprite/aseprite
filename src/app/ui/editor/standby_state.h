@@ -12,7 +12,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/state_with_wheel_behavior.h"
-#include "base/connection.h"
+#include "obs/connection.h"
 
 namespace app {
   namespace tools {
@@ -76,8 +76,8 @@ namespace app {
     void onPivotChange(Editor* editor);
 
     Decorator* m_decorator;
-    base::ScopedConnection m_pivotVisConn;
-    base::ScopedConnection m_pivotPosConn;
+    obs::scoped_connection m_pivotVisConn;
+    obs::scoped_connection m_pivotPosConn;
     bool m_transformSelectionHandlesAreVisible;
   };
 

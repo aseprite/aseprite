@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -129,8 +129,6 @@ int Alert::show(const char* format, ...)
 
 void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<Widget*>& buttons)
 {
-  Box* box1, *box2, *box3, *box4, *box5;
-  Grid* grid;
   bool title = true;
   bool label = false;
   bool separator = false;
@@ -200,18 +198,18 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
     }
   }
 
-  box1 = new Box(VERTICAL);
-  box2 = new Box(VERTICAL);
-  grid = new Grid(1, false);
-  box3 = new Box(HORIZONTAL | HOMOGENEOUS);
+  auto box1 = new Box(VERTICAL);
+  auto box2 = new Box(VERTICAL);
+  auto grid = new Grid(1, false);
+  auto box3 = new Box(HORIZONTAL | HOMOGENEOUS);
 
   // To identify by the user
   box2->setId("labels");
   box3->setId("buttons");
 
   // Pseudo separators (only to fill blank space)
-  box4 = new Box(0);
-  box5 = new Box(0);
+  auto box4 = new Box(0);
+  auto box5 = new Box(0);
   m_progressPlaceholder = new Box(0);
 
   box4->setExpansive(true);
@@ -230,7 +228,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   box1->addChild(box5); // Filler
   box1->addChild(grid); // Buttons
 
-  grid->addChildInCell(box3, 1, 1, CENTER | BOTTOM);
+  grid->addChildInCell(box3, 1, 1, CENTER | BOTTOM | HORIZONTAL);
 
   for (std::vector<Widget*>::iterator it = labels.begin(); it != labels.end(); ++it)
     box2->addChild(*it);

@@ -16,36 +16,36 @@
 
 namespace app {
 
-class ScrollCenterCommand : public Command {
+class FitScreenCommand : public Command {
 public:
-  ScrollCenterCommand();
-  Command* clone() const override { return new ScrollCenterCommand(*this); }
+  FitScreenCommand();
+  Command* clone() const override { return new FitScreenCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
-ScrollCenterCommand::ScrollCenterCommand()
-  : Command("ScrollCenter",
-            "Scroll to center of canvas",
+FitScreenCommand::FitScreenCommand()
+  : Command("FitScreen",
+            "Fit on Screen",
             CmdUIOnlyFlag)
 {
 }
 
-bool ScrollCenterCommand::onEnabled(Context* context)
+bool FitScreenCommand::onEnabled(Context* context)
 {
   return (current_editor != nullptr);
 }
 
-void ScrollCenterCommand::onExecute(Context* context)
+void FitScreenCommand::onExecute(Context* context)
 {
-  current_editor->setDefaultScroll();
+  current_editor->setScrollAndZoomToFitScreen();
 }
 
-Command* CommandFactory::createScrollCenterCommand()
+Command* CommandFactory::createFitScreenCommand()
 {
-  return new ScrollCenterCommand;
+  return new FitScreenCommand;
 }
 
 } //namespace app

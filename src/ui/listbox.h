@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,7 +8,7 @@
 #define UI_LISTBOX_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -31,8 +31,8 @@ namespace ui {
     void centerScroll();
     void sortItems();
 
-    base::Signal0<void> Change;
-    base::Signal0<void> DoubleClickItem;
+    obs::signal<void()> Change;
+    obs::signal<void()> DoubleClickItem;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;

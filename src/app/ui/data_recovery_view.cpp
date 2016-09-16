@@ -59,7 +59,7 @@ public:
     setup_mini_look(&m_deleteButton);
   }
 
-  base::Signal0<void> Regenerate;
+  obs::signal<void()> Regenerate;
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {

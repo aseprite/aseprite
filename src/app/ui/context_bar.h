@@ -14,9 +14,10 @@
 #include "app/tools/ink_type.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/context_bar_observer.h"
-#include "base/connection.h"
-#include "base/observable.h"
 #include "doc/brush.h"
+#include "obs/connection.h"
+#include "obs/observable.h"
+#include "obs/signal.h"
 #include "ui/box.h"
 
 #include <vector>
@@ -40,7 +41,7 @@ namespace app {
   class BrushSlot;
 
   class ContextBar : public ui::Box
-                   , public base::Observable<ContextBarObserver>
+                   , public obs::observable<ContextBarObserver>
                    , public tools::ActiveToolObserver {
   public:
     ContextBar();
@@ -69,7 +70,7 @@ namespace app {
     void setInkType(tools::InkType type);
 
     // Signals
-    base::Signal0<void> BrushChange;
+    obs::signal<void()> BrushChange;
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;
@@ -86,6 +87,7 @@ namespace app {
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
 
+    class ZoomButtons;
     class BrushTypeField;
     class BrushAngleField;
     class BrushSizeField;
@@ -108,6 +110,7 @@ namespace app {
     class AutoSelectLayerField;
     class SymmetryField;
 
+    ZoomButtons* m_zoomButtons;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
     BrushSizeField* m_brushSize;
@@ -137,10 +140,10 @@ namespace app {
     doc::BrushRef m_activeBrush;
     ui::Label* m_selectBoxHelp;
     SymmetryField* m_symmetry;
-    base::ScopedConnection m_sizeConn;
-    base::ScopedConnection m_angleConn;
-    base::ScopedConnection m_opacityConn;
-    base::ScopedConnection m_freehandAlgoConn;
+    obs::scoped_connection m_sizeConn;
+    obs::scoped_connection m_angleConn;
+    obs::scoped_connection m_opacityConn;
+    obs::scoped_connection m_freehandAlgoConn;
   };
 
 } // namespace app

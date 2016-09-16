@@ -76,7 +76,7 @@ void MoveLayer::onFireNotifications()
   DocumentEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
 }
 
 } // namespace cmd

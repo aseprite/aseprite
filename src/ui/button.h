@@ -8,7 +8,7 @@
 #define UI_BUTTON_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/widget.h"
 
 #include <vector>
@@ -52,7 +52,7 @@ namespace ui {
     IButtonIcon* iconInterface() const { return m_iconInterface; }
 
     // Signals
-    base::Signal1<void, Event&> Click;
+    obs::signal<void(Event&)> Click;
 
   protected:
     // Events

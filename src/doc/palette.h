@@ -32,9 +32,15 @@ namespace doc {
     int size() const { return (int)m_colors.size(); }
     void resize(int ncolors);
 
-    std::string filename() const { return m_filename; }
+    const std::string& filename() const { return m_filename; }
+    const std::string& comment() const { return m_comment; }
+
     void setFilename(const std::string& filename) {
       m_filename = filename;
+    }
+
+    void setComment(const std::string& comment) {
+      m_comment = comment;
     }
 
     int getModifications() const { return m_modifications; }
@@ -91,6 +97,7 @@ namespace doc {
     std::vector<color_t> m_colors;
     int m_modifications;
     std::string m_filename; // If the palette is associated with a file.
+    std::string m_comment; // Some extra comment from the .gpl file (author, website, etc.).
   };
 
 } // namespace doc

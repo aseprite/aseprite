@@ -8,8 +8,8 @@
 #define UI_WINDOW_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
 #include "gfx/point.h"
+#include "obs/signal.h"
 #include "ui/close_event.h"
 #include "ui/event.h"
 #include "ui/hit_test_event.h"
@@ -54,7 +54,7 @@ namespace ui {
     void removeDecorativeWidgets();
 
     // Signals
-    base::Signal1<void, CloseEvent&> Close;
+    obs::signal<void (CloseEvent&)> Close;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;

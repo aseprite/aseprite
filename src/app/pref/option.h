@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,7 @@
 #define APP_PREF_OPTION_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
+#include "obs/signal.h"
 #include <string>
 
 namespace app {
@@ -18,8 +18,8 @@ namespace app {
     Section(const std::string& name) : m_name(name) { }
     const char* name() const { return m_name.c_str(); }
 
-    base::Signal0<void> BeforeChange;
-    base::Signal0<void> AfterChange;
+    obs::signal<void()> BeforeChange;
+    obs::signal<void()> AfterChange;
 
   private:
     std::string m_name;
@@ -87,8 +87,8 @@ namespace app {
         m_section->AfterChange();
     }
 
-    base::Signal1<void, const T&> BeforeChange;
-    base::Signal1<void, const T&> AfterChange;
+    obs::signal<void(const T&)> BeforeChange;
+    obs::signal<void(const T&)> AfterChange;
 
   private:
     Section* m_section;

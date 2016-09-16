@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -36,14 +36,24 @@ Palette* load_gpl_file(const char *filename)
   if (line != "GIMP Palette") return NULL;
 
   base::UniquePtr<Palette> pal(new Palette(frame_t(0), 0));
+  std::string comment;
 
   while (std::getline(f, line)) {
     // Trim line.
     base::trim_string(line, line);
 
-    // Remove comments
-    if (line.empty() || line[0] == '#')
+    // Remove empty lines
+    if (line.empty())
       continue;
+
+    // Concatenate comments
+    if (line[0] == '#') {
+      line = line.substr(1);
+      base::trim_string(line, line);
+      comment += line;
+      comment.push_back('\n');
+      continue;
+    }
 
     // Remove properties (TODO add these properties in the palette)
     if (!std::isdigit(line[0]))
@@ -58,6 +68,12 @@ Palette* load_gpl_file(const char *filename)
         continue;
 
     pal->addEntry(rgba(r, g, b, 255));
+  }
+
+  base::trim_string(comment, comment);
+  if (!comment.empty()) {
+    LOG("%s comment: %s\n", filename, comment.c_str());
+    pal->setComment(comment);
   }
 
   return pal.release();

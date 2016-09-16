@@ -13,14 +13,14 @@
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
-#include "base/connection.h"
-#include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "doc/context_observer.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
+#include "obs/connection.h"
+#include "obs/signal.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/splitter.h"
@@ -92,7 +92,7 @@ namespace app {
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 
-    base::Signal0<void> ChangeSelection;
+    obs::signal<void()> ChangeSelection;
 
   protected:
     void onAppPaletteChange();
@@ -161,11 +161,11 @@ namespace app {
     base::UniquePtr<doc::Palette> m_oldPalette;
     doc::Document* m_lastDocument;
     bool m_ascending;
-    base::ScopedConnection m_beforeCmdConn;
-    base::ScopedConnection m_afterCmdConn;
-    base::ScopedConnection m_fgConn;
-    base::ScopedConnection m_bgConn;
-    base::ScopedConnection m_appPalChangeConn;
+    obs::scoped_connection m_beforeCmdConn;
+    obs::scoped_connection m_afterCmdConn;
+    obs::scoped_connection m_fgConn;
+    obs::scoped_connection m_bgConn;
+    obs::scoped_connection m_appPalChangeConn;
     ui::MouseButtons m_lastButtons;
   };
 

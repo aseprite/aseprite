@@ -167,7 +167,7 @@ Timeline::Timeline()
 
   m_ctxConn = m_context->AfterCommandExecution.connect(
     &Timeline::onAfterCommandExecution, this);
-  m_context->documents().addObserver(this);
+  m_context->documents().add_observer(this);
 
   setDoubleBuffered(true);
   addChild(&m_aniControls);
@@ -188,7 +188,7 @@ Timeline::~Timeline()
   m_clipboard_timer.stop();
 
   detachDocument();
-  m_context->documents().removeObserver(this);
+  m_context->documents().remove_observer(this);
   delete m_confPopup;
 }
 
@@ -208,7 +208,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_editor = editor;
 
   if (m_editor)
-    m_editor->addObserver(this);
+    m_editor->add_observer(this);
   else
     return;                // No editor specified.
 
@@ -216,7 +216,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   DocumentView* view = m_editor->getDocumentView();
   view->getSite(&site);
 
-  site.document()->addObserver(this);
+  site.document()->add_observer(this);
 
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
@@ -243,12 +243,12 @@ void Timeline::updateUsingEditor(Editor* editor)
 void Timeline::detachDocument()
 {
   if (m_document) {
-    m_document->removeObserver(this);
+    m_document->remove_observer(this);
     m_document = NULL;
   }
 
   if (m_editor) {
-    m_editor->removeObserver(this);
+    m_editor->remove_observer(this);
     m_editor = NULL;
   }
 
@@ -735,11 +735,10 @@ bool Timeline::onProcessMessage(Message* msg)
             }
 
             if (!m_confPopup->isVisible()) {
-              m_confPopup->moveWindow(gfx::Rect(
-                  gearBounds.x,
-                  gearBounds.y-m_confPopup->bounds().h,
-                  m_confPopup->bounds().w,
-                  m_confPopup->bounds().h));
+              gfx::Rect bounds = m_confPopup->bounds();
+              ui::fit_bounds(BOTTOM, gearBounds, bounds);
+
+              m_confPopup->moveWindow(bounds);
               m_confPopup->openWindow();
             }
             else
@@ -1385,7 +1384,7 @@ void Timeline::onDestroyEditor(Editor* editor)
 {
   ASSERT(m_editor == editor);
   if (m_editor == editor) {
-    m_editor->removeObserver(this);
+    m_editor->remove_observer(this);
     m_editor = nullptr;
   }
 }

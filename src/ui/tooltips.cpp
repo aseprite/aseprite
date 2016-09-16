@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -140,6 +140,8 @@ void TipWindow::setCloseOnKeyDown(bool state)
 
 bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
 {
+  // TODO merge this code with the new ui::fit_bounds() algorithm
+
   m_target = target;
   m_arrowAlign = arrowAlign;
 

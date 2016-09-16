@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/ui/skin/skin_part.h"
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/grid.h"
 
 #include <string>
@@ -51,8 +51,8 @@ namespace app {
     void setTriggerOnMouseUp(bool state);
     void setMultipleSelection(bool state);
 
-    base::Signal1<void, Item*> ItemChange;
-    base::Signal1<void, Item*> RightClick;
+    obs::signal<void(Item*)> ItemChange;
+    obs::signal<void(Item*)> RightClick;
 
   protected:
     virtual void onItemChange(Item* item);

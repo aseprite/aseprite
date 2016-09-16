@@ -13,13 +13,13 @@
 #include "app/ui/ani_controls.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
-#include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/frame.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/sprite.h"
+#include "obs/connection.h"
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -323,7 +323,7 @@ namespace app {
     gfx::Point m_oldPos;
     // Configure timeline
     ConfigureTimelinePopup* m_confPopup;
-    base::ScopedConnection m_ctxConn;
+    obs::scoped_connection m_ctxConn;
 
     // Marching ants stuff to show the range in the clipboard.
     // TODO merge this with the marching ants of the sprite editor (ui::Editor)

@@ -14,8 +14,8 @@
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/popup_window_pin.h"
-#include "base/connection.h"
-#include "base/signal.h"
+#include "obs/connection.h"
+#include "obs/signal.h"
 #include "ui/grid.h"
 #include "ui/label.h"
 #include "ui/view.h"
@@ -38,7 +38,7 @@ namespace app {
     app::Color getColor() const;
 
     // Signals
-    base::Signal1<void, const app::Color&> ColorChange;
+    obs::signal<void(const app::Color&)> ColorChange;
 
   protected:
     void onMakeFloating() override;
@@ -67,7 +67,7 @@ namespace app {
     HsvSliders m_hsvSliders;
     GraySlider m_graySlider;
     ui::Label m_maskLabel;
-    base::ScopedConnection m_onPaletteChangeConn;
+    obs::scoped_connection m_onPaletteChangeConn;
     bool m_canPin;
 
     // This variable is used to avoid updating the m_hexColorEntry text

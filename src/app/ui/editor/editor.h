@@ -19,12 +19,12 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
-#include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
+#include "obs/connection.h"
 #include "render/zoom.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
@@ -136,6 +136,7 @@ namespace app {
 
     void setZoom(const render::Zoom& zoom);
     void setDefaultScroll();
+    void setScrollAndZoomToFitScreen();
     void setEditorScroll(const gfx::Point& scroll);
     void setEditorZoom(const render::Zoom& zoom);
 
@@ -153,8 +154,8 @@ namespace app {
     gfx::Rect screenToEditor(const gfx::Rect& rc);
     gfx::Rect editorToScreen(const gfx::Rect& rc);
 
-    void addObserver(EditorObserver* observer);
-    void removeObserver(EditorObserver* observer);
+    void add_observer(EditorObserver* observer);
+    void remove_observer(EditorObserver* observer);
 
     void setCustomizationDelegate(EditorCustomizationDelegate* delegate);
 
@@ -301,17 +302,17 @@ namespace app {
     ui::Timer m_antsTimer;
     int m_antsOffset;
 
-    base::ScopedConnection m_fgColorChangeConn;
-    base::ScopedConnection m_contextBarBrushChangeConn;
-    base::ScopedConnection m_showExtrasConn;
+    obs::scoped_connection m_fgColorChangeConn;
+    obs::scoped_connection m_contextBarBrushChangeConn;
+    obs::scoped_connection m_showExtrasConn;
 
     // Slots listeing document preferences.
-    base::ScopedConnection m_tiledConn;
-    base::ScopedConnection m_gridConn;
-    base::ScopedConnection m_pixelGridConn;
-    base::ScopedConnection m_bgConn;
-    base::ScopedConnection m_onionskinConn;
-    base::ScopedConnection m_symmetryModeConn;
+    obs::scoped_connection m_tiledConn;
+    obs::scoped_connection m_gridConn;
+    obs::scoped_connection m_pixelGridConn;
+    obs::scoped_connection m_bgConn;
+    obs::scoped_connection m_onionskinConn;
+    obs::scoped_connection m_symmetryModeConn;
 
     EditorObservers m_observers;
 

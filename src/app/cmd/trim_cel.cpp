@@ -14,6 +14,8 @@
 #include "app/cmd/remove_cel.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace cmd {
@@ -26,31 +28,20 @@ TrimCel::TrimCel(Cel* cel)
   if (algorithm::shrink_bounds(cel->image(), newBounds,
                                cel->image()->maskColor())) {
     newBounds.offset(cel->position());
-    m_subCmd = new cmd::CropCel(cel, newBounds);
+    add(new cmd::CropCel(cel, newBounds));
   }
   else {
-    m_subCmd = new cmd::RemoveCel(cel);
+    // Delete the given "cel" and all its links.
+    Sprite* sprite = cel->sprite();
+    Layer* layer = cel->layer();
+    CelData* celData = cel->dataRef().get();
+
+    for (frame_t fr=sprite->totalFrames()-1; fr>=0; --fr) {
+      Cel* c = layer->cel(fr);
+      if (c && c->dataRef().get() == celData)
+        add(new cmd::RemoveCel(c));
+    }
   }
-}
-
-TrimCel::~TrimCel()
-{
-  delete m_subCmd;
-}
-
-void TrimCel::onExecute()
-{
-  m_subCmd->execute(context());
-}
-
-void TrimCel::onUndo()
-{
-  m_subCmd->undo();
-}
-
-void TrimCel::onRedo()
-{
-  m_subCmd->redo();
 }
 
 } // namespace cmd

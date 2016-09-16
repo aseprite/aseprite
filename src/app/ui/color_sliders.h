@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/color.h"
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/event.h"
 #include "ui/grid.h"
 #include "ui/widget.h"
@@ -42,7 +42,7 @@ namespace app {
     void resetRelativeSliders();
 
     // Signals
-    base::Signal1<void, ColorSlidersChangeEvent&> ColorChange;
+    obs::signal<void(ColorSlidersChangeEvent&)> ColorChange;
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;

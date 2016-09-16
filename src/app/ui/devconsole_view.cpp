@@ -32,7 +32,7 @@ public:
     setFocusMagnet(true);
   }
 
-  base::Signal1<void, const std::string&> ExecuteCommand;
+  obs::signal<void(const std::string&)> ExecuteCommand;
 
 protected:
   bool onProcessMessage(Message* msg) override {
@@ -84,7 +84,7 @@ DevConsoleView::DevConsoleView()
 
 DevConsoleView::~DevConsoleView()
 {
-  // m_document->removeObserver(this);
+  // m_document->remove_observer(this);
   // delete m_editor;
 }
 

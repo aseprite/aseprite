@@ -12,7 +12,7 @@
 
 #include "app/ui/keyboard_shortcuts.h"
 #include "base/bind.h"
-#include "base/signal.h"
+#include "obs/signal.h"
 
 #include <cctype>
 
@@ -33,7 +33,7 @@ public:
     updateText();
   }
 
-  base::Signal1<void, const ui::Accelerator*> AccelChange;
+  obs::signal<void(const ui::Accelerator*)> AccelChange;
 
 protected:
   bool onProcessMessage(Message* msg) override {

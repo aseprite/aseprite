@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -51,8 +51,8 @@ namespace render {
         remove(r.y+r.h) - remove(r.y));
     }
 
-    void in();
-    void out();
+    bool in();
+    bool out();
 
     // Returns an linear zoom scale. This position can be incremented
     // or decremented to get a new zoom value.

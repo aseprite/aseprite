@@ -125,7 +125,6 @@ bool PlayState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool PlayState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  editor->showBrushPreview(msg->position());
   editor->updateStatusBar();
   return true;
 }

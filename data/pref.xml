@@ -81,6 +81,11 @@
       <value id="SIMPLE_CROSSHAIR" value="0" />
       <value id="CROSSHAIR_ON_SPRITE" value="1" />
     </enum>
+    <enum id="TimelinePosition">
+      <value id="BOTTOM" value="0" />
+      <value id="LEFT" value="1" />
+      <value id="RIGHT" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -95,6 +100,7 @@
       <option id="data_recovery" type="bool" default="true" />
       <option id="data_recovery_period" type="int" default="2" />
       <option id="show_full_path" type="bool" default="true" />
+      <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
     </section>
     <section id="undo" text="Undo">
       <option id="size_limit" type="int" default="64" />

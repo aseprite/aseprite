@@ -14,7 +14,7 @@
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/status_bar.h"
-#include "base/connection.h"
+#include "obs/connection.h"
 
 namespace doc {
   class Image;
@@ -82,9 +82,9 @@ namespace app {
     // used to remove the dragged image).
     bool m_discarded;
 
-    base::ScopedConnection m_ctxConn;
-    base::ScopedConnection m_opaqueConn;
-    base::ScopedConnection m_transparentConn;
+    obs::scoped_connection m_ctxConn;
+    obs::scoped_connection m_opaqueConn;
+    obs::scoped_connection m_transparentConn;
   };
 
 } // namespace app

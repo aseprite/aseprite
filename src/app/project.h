@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,11 +10,11 @@
 
 #include "app/project_observer.h"
 #include "base/disable_copying.h"
-#include "base/observable.h"
+#include "obs/observable.h"
 
 namespace app {
 
-  class Project : public base::Observable<ProjectObserver> {
+  class Project : public obs::observable<ProjectObserver> {
   public:
     Project();
     ~Project();

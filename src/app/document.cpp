@@ -103,7 +103,7 @@ color_t Document::bgColor(Layer* layer) const
 void Document::notifyGeneralUpdate()
 {
   doc::DocumentEvent ev(this);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onGeneralUpdate, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onGeneralUpdate, ev);
 }
 
 void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
@@ -112,7 +112,7 @@ void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& reg
   ev.sprite(sprite);
   ev.region(region);
   ev.frame(frame);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpritePixelsModified, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpritePixelsModified, ev);
 }
 
 void Document::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
@@ -120,7 +120,7 @@ void Document::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& regio
   doc::DocumentEvent ev(this);
   ev.sprite(sprite);
   ev.region(region);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onExposeSpritePixels, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onExposeSpritePixels, ev);
 }
 
 void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
@@ -129,7 +129,7 @@ void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
   ev.sprite(srcLayer->sprite());
   ev.layer(srcLayer);
   ev.targetLayer(targetLayer);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onLayerMergedDown, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onLayerMergedDown, ev);
 }
 
 void Document::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
@@ -140,7 +140,7 @@ void Document::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLaye
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelMoved, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelMoved, ev);
 }
 
 void Document::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
@@ -151,13 +151,13 @@ void Document::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLay
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelCopied, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelCopied, ev);
 }
 
 void Document::notifySelectionChanged()
 {
   doc::DocumentEvent ev(this);
-  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSelectionChanged, ev);
+  notify_observers<doc::DocumentEvent&>(&doc::DocumentObserver::onSelectionChanged, ev);
 }
 
 bool Document::isModified() const

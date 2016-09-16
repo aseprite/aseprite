@@ -117,7 +117,7 @@ private:
   // PaletteEntryEditor instance.
   bool m_selfPalChange;
 
-  base::ScopedConnection m_palChangeConn;
+  obs::scoped_connection m_palChangeConn;
 
   // Palette used for relative changes.
   Palette m_fromPalette;

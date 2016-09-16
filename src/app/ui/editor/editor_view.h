@@ -8,7 +8,7 @@
 #define APP_UI_EDITOR_VIEW_H_INCLUDED
 #pragma once
 
-#include "base/connection.h"
+#include "obs/connection.h"
 #include "ui/view.h"
 
 namespace app {
@@ -35,7 +35,7 @@ namespace app {
     void setupScrollbars();
 
     Type m_type;
-    base::ScopedConnection m_scrollSettingsConn;
+    obs::scoped_connection m_scrollSettingsConn;
     static Method g_scrollUpdateMethod;
   };
 

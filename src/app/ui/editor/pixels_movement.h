@@ -12,11 +12,11 @@
 #include "app/extra_cel.h"
 #include "app/transaction.h"
 #include "app/ui/editor/handle_type.h"
-#include "base/connection.h"
 #include "base/shared_ptr.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/site.h"
 #include "gfx/size.h"
+#include "obs/connection.h"
 
 namespace doc {
   class Image;
@@ -56,6 +56,7 @@ namespace app {
 
     HandleType handle() const { return m_handle; }
 
+    void trim();
     void cutMask();
     void copyMask();
     void catchImage(const gfx::Point& pos, HandleType handle);
@@ -125,9 +126,9 @@ namespace app {
     Mask* m_currentMask;
     bool m_opaque;
     color_t m_maskColor;
-    base::ScopedConnection m_pivotVisConn;
-    base::ScopedConnection m_pivotPosConn;
-    base::ScopedConnection m_rotAlgoConn;
+    obs::scoped_connection m_pivotVisConn;
+    obs::scoped_connection m_pivotPosConn;
+    obs::scoped_connection m_rotAlgoConn;
     ExtraCelRef m_extraCel;
   };
 

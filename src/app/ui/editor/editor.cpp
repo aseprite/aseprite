@@ -174,7 +174,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   this->setFocusStop(true);
 
-  App::instance()->activeToolManager()->addObserver(this);
+  App::instance()->activeToolManager()->add_observer(this);
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
@@ -206,7 +206,7 @@ Editor::Editor(Document* document, EditorFlags flags)
     m_docPref.show.AfterChange.connect(
       base::Bind<void>(&Editor::onShowExtrasChange, this));
 
-  m_document->addObserver(this);
+  m_document->add_observer(this);
 
   m_state->onEnterState(this);
 }
@@ -222,8 +222,8 @@ Editor::~Editor()
   }
 
   m_observers.notifyDestroyEditor(this);
-  m_document->removeObserver(this);
-  App::instance()->activeToolManager()->removeObserver(this);
+  m_document->remove_observer(this);
+  App::instance()->activeToolManager()->remove_observer(this);
 
   setCustomizationDelegate(NULL);
 
@@ -389,6 +389,67 @@ void Editor::setDefaultScroll()
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
 
+  setEditorScroll(
+    gfx::Point(
+      m_padding.x - vp.w/2 + m_proj.applyX(m_sprite->width())/2,
+      m_padding.y - vp.h/2 + m_proj.applyY(m_sprite->height())/2));
+}
+
+void Editor::setScrollAndZoomToFitScreen()
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Zoom zoom = m_proj.zoom();
+
+  if (float(vp.w) / float(m_sprite->width()) <
+      float(vp.h) / float(m_sprite->height())) {
+    if (vp.w < m_proj.applyX(m_sprite->width())) {
+      while (vp.w < m_proj.applyX(m_sprite->width())) {
+        if (!zoom.out())
+          break;
+        m_proj.setZoom(zoom);
+      }
+    }
+    else if (vp.w > m_proj.applyX(m_sprite->width())) {
+      bool out = true;
+      while (vp.w > m_proj.applyX(m_sprite->width())) {
+        if (!zoom.in()) {
+          out = false;
+          break;
+        }
+        m_proj.setZoom(zoom);
+      }
+      if (out) {
+        zoom.out();
+        m_proj.setZoom(zoom);
+      }
+    }
+  }
+  else {
+    if (vp.h < m_proj.applyY(m_sprite->height())) {
+      while (vp.h < m_proj.applyY(m_sprite->height())) {
+        if (!zoom.out())
+          break;
+        m_proj.setZoom(zoom);
+      }
+    }
+    else if (vp.h > m_proj.applyY(m_sprite->height())) {
+      bool out = true;
+      while (vp.h > m_proj.applyY(m_sprite->height())) {
+        if (!zoom.in()) {
+          out = false;
+          break;
+        }
+        m_proj.setZoom(zoom);
+      }
+      if (out) {
+        zoom.out();
+        m_proj.setZoom(zoom);
+      }
+    }
+  }
+
+  updateEditor();
   setEditorScroll(
     gfx::Point(
       m_padding.x - vp.w/2 + m_proj.applyX(m_sprite->width())/2,
@@ -992,14 +1053,14 @@ Rect Editor::editorToScreen(const Rect& rc)
     editorToScreen(rc.point2()));
 }
 
-void Editor::addObserver(EditorObserver* observer)
+void Editor::add_observer(EditorObserver* observer)
 {
-  m_observers.addObserver(observer);
+  m_observers.add_observer(observer);
 }
 
-void Editor::removeObserver(EditorObserver* observer)
+void Editor::remove_observer(EditorObserver* observer)
 {
-  m_observers.removeObserver(observer);
+  m_observers.remove_observer(observer);
 }
 
 void Editor::setCustomizationDelegate(EditorCustomizationDelegate* delegate)
@@ -1700,7 +1761,10 @@ void Editor::showMouseCursor(CursorType cursorType)
 
 void Editor::showBrushPreview(const gfx::Point& screenPos)
 {
-  ui::set_mouse_cursor(kNoCursor);
+  if (Preferences::instance().cursor.paintingCursorType() !=
+      app::gen::PaintingCursorType::SIMPLE_CROSSHAIR)
+    ui::set_mouse_cursor(kNoCursor);
+
   m_brushPreview.show(screenPos);
 }
 

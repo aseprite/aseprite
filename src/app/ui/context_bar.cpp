@@ -39,7 +39,6 @@
 #include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/connection.h"
 #include "base/scoped_value.h"
 #include "base/unique_ptr.h"
 #include "doc/brush.h"
@@ -47,6 +46,7 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "obs/connection.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/button.h"
@@ -71,6 +71,52 @@ using namespace ui;
 using namespace tools;
 
 static bool g_updatingFromCode = false;
+
+class ContextBar::ZoomButtons : public ButtonSet {
+public:
+  ZoomButtons()
+    : ButtonSet(3) {
+    addItem("100%");
+    addItem("Center");
+    addItem("Fit Screen");
+  }
+
+private:
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+
+    Command* cmd = nullptr;
+    Params params;
+
+    switch (selectedItem()) {
+
+      case 0: {
+        cmd = CommandsModule::instance()->getCommandByName(CommandId::Zoom);
+        params.set("action", "set");
+        params.set("percentage", "100");
+        params.set("focus", "center");
+        UIContext::instance()->executeCommand(cmd, params);
+        break;
+      }
+
+      case 1: {
+        cmd = CommandsModule::instance()->getCommandByName(CommandId::ScrollCenter);
+        break;
+      }
+
+      case 2: {
+        cmd = CommandsModule::instance()->getCommandByName(CommandId::FitScreen);
+        break;
+      }
+    }
+
+    if (cmd)
+      UIContext::instance()->executeCommand(cmd, params);
+
+    deselectItems();
+    manager()->freeFocus();
+  }
+};
 
 class ContextBar::BrushTypeField : public ButtonSet {
 public:
@@ -391,7 +437,7 @@ class ContextBar::InkShadesField : public HBox {
   public:
     enum ClickType { DragAndDrop, Select };
 
-    base::Signal0<void> Click;
+    obs::signal<void()> Click;
 
     ShadeWidget(const Shade& colors, ClickType click)
       : Widget(kGenericWidget)
@@ -680,7 +726,7 @@ class ContextBar::InkShadesField : public HBox {
     int m_dragIndex;
     bool m_dropBefore;
     int m_boxSize;
-    base::ScopedConnection m_conn;
+    obs::scoped_connection m_conn;
   };
 
 public:
@@ -1184,7 +1230,7 @@ public:
     tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", BOTTOM);
   }
 
-  base::Signal1<void, ContextBarObserver::DropAction> DropPixels;
+  obs::signal<void(ContextBarObserver::DropAction)> DropPixels;
 
 protected:
   void onItemChange(Item* item) override {
@@ -1321,6 +1367,8 @@ ContextBar::ContextBar()
   m_selectionOptionsBox->addChild(m_pivot = new PivotField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
+  addChild(m_zoomButtons = new ZoomButtons);
+
   addChild(m_brushType = new BrushTypeField(this));
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
@@ -1389,7 +1437,7 @@ ContextBar::ContextBar()
   m_freehandAlgo->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
 
-  App::instance()->activeToolManager()->addObserver(this);
+  App::instance()->activeToolManager()->add_observer(this);
 
   auto& pref = Preferences::instance();
   pref.symmetryMode.enabled.AfterChange.connect(
@@ -1406,7 +1454,7 @@ ContextBar::ContextBar()
 
 ContextBar::~ContextBar()
 {
-  App::instance()->activeToolManager()->removeObserver(this);
+  App::instance()->activeToolManager()->remove_observer(this);
 }
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)
@@ -1480,7 +1528,7 @@ void ContextBar::onFgOrBgColorChange(doc::Brush::ImageColor imageColor)
 
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 {
-  notifyObservers(&ContextBarObserver::onDropPixels, action);
+  notify_observers(&ContextBarObserver::onDropPixels, action);
 }
 
 void ContextBar::updateForActiveTool()
@@ -1582,6 +1630,13 @@ void ContextBar::updateForTool(tools::Tool* tool)
      activeBrush()->type() == kLineBrushType);
 
   // True if the current tool is eyedropper.
+  bool needZoomButtons = tool &&
+    (tool->getInk(0)->isZoom() ||
+     tool->getInk(1)->isZoom() ||
+     tool->getInk(0)->isScrollMovement() ||
+     tool->getInk(1)->isScrollMovement());
+
+  // True if the current tool is eyedropper.
   bool isEyedropper = tool &&
     (tool->getInk(0)->isEyedropper() ||
      tool->getInk(1)->isEyedropper());
@@ -1620,6 +1675,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
      (isEffect));
 
   // Show/Hide fields
+  m_zoomButtons->setVisible(needZoomButtons);
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);

@@ -46,7 +46,7 @@ void SetPixelRatio::onFireNotifications()
   Sprite* sprite = this->sprite();
   DocumentEvent ev(sprite->document());
   ev.sprite(sprite);
-  sprite->document()->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpritePixelRatioChanged, ev);
+  sprite->document()->notify_observers<DocumentEvent&>(&DocumentObserver::onSpritePixelRatioChanged, ev);
 }
 
 } // namespace cmd

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,7 +23,8 @@ namespace app {
 
 class ZoomCommand : public Command {
 public:
-  enum Action { In, Out, Set };
+  enum class Action { In, Out, Set };
+  enum class Focus { Default, Mouse, Center };
 
   ZoomCommand();
   Command* clone() const override { return new ZoomCommand(*this); }
@@ -37,29 +38,37 @@ protected:
 private:
   Action m_action;
   render::Zoom m_zoom;
+  Focus m_focus;
 };
 
 ZoomCommand::ZoomCommand()
   : Command("Zoom",
             "Zoom",
             CmdUIOnlyFlag)
+  , m_action(Action::In)
   , m_zoom(1, 1)
+  , m_focus(Focus::Default)
 {
 }
 
 void ZoomCommand::onLoadParams(const Params& params)
 {
   std::string action = params.get("action");
-  if (action == "in") m_action = In;
-  else if (action == "out") m_action = Out;
-  else if (action == "set") m_action = Set;
+  if (action == "in") m_action = Action::In;
+  else if (action == "out") m_action = Action::Out;
+  else if (action == "set") m_action = Action::Set;
 
   std::string percentage = params.get("percentage");
   if (!percentage.empty()) {
     m_zoom = render::Zoom::fromScale(
       std::strtod(percentage.c_str(), NULL) / 100.0);
-    m_action = Set;
+    m_action = Action::Set;
   }
+
+  m_focus = Focus::Default;
+  std::string focus = params.get("focus");
+  if (focus == "center") m_focus = Focus::Center;
+  else if (focus == "mouse") m_focus = Focus::Mouse;
 }
 
 bool ZoomCommand::onEnabled(Context* context)
@@ -81,23 +90,31 @@ void ZoomCommand::onExecute(Context* context)
   render::Zoom zoom = editor->zoom();
 
   switch (m_action) {
-    case In:
+    case Action::In:
       zoom.in();
       break;
-    case Out:
+    case Action::Out:
       zoom.out();
       break;
-    case Set:
+    case Action::Set:
       zoom = m_zoom;
       break;
   }
 
-  bool center = Preferences::instance().editor.zoomFromCenterWithKeys();
+  Focus focus = m_focus;
+  if (focus == Focus::Default) {
+    if (Preferences::instance().editor.zoomFromCenterWithKeys()) {
+      focus = Focus::Center;
+    }
+    else {
+      focus = Focus::Mouse;
+    }
+  }
 
   editor->setZoomAndCenterInMouse(
     zoom, mousePos,
-    (center ? Editor::ZoomBehavior::CENTER:
-              Editor::ZoomBehavior::MOUSE));
+    (focus == Focus::Center ? Editor::ZoomBehavior::CENTER:
+                              Editor::ZoomBehavior::MOUSE));
 }
 
 std::string ZoomCommand::onGetFriendlyName() const
@@ -105,13 +122,13 @@ std::string ZoomCommand::onGetFriendlyName() const
   std::string text = "Zoom";
 
   switch (m_action) {
-    case In:
+    case Action::In:
       text += " in";
       break;
-    case Out:
+    case Action::Out:
       text += " out";
       break;
-    case Set:
+    case Action::Set:
       text += " " + base::convert_to<std::string>(int(100.0*m_zoom.scale())) + "%";
       break;
   }

@@ -198,6 +198,7 @@ add_library(app-lib
   commands/cmd_exit.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp
+  commands/cmd_fit_screen.cpp
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
   commands/cmd_frame_properties.cpp

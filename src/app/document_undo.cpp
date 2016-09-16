@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -47,7 +47,7 @@ void DocumentUndo::add(CmdTransaction* cmd)
   }
 
   m_undoHistory.add(cmd);
-  notifyObservers(&DocumentUndoObserver::onAddUndoState, this);
+  notify_observers(&DocumentUndoObserver::onAddUndoState, this);
 }
 
 bool DocumentUndo::canUndo() const
@@ -63,19 +63,19 @@ bool DocumentUndo::canRedo() const
 void DocumentUndo::undo()
 {
   m_undoHistory.undo();
-  notifyObservers(&DocumentUndoObserver::onAfterUndo, this);
+  notify_observers(&DocumentUndoObserver::onAfterUndo, this);
 }
 
 void DocumentUndo::redo()
 {
   m_undoHistory.redo();
-  notifyObservers(&DocumentUndoObserver::onAfterRedo, this);
+  notify_observers(&DocumentUndoObserver::onAfterRedo, this);
 }
 
 void DocumentUndo::clearRedo()
 {
   m_undoHistory.clearRedo();
-  notifyObservers(&DocumentUndoObserver::onClearRedo, this);
+  notify_observers(&DocumentUndoObserver::onClearRedo, this);
 }
 
 bool DocumentUndo::isSavedState() const

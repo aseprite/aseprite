@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/brush_slot.h"
-#include "base/signal.h"
 #include "doc/brushes.h"
+#include "obs/signal.h"
 
 #include <vector>
 
@@ -40,7 +40,7 @@ namespace app {
     void unlockBrushSlot(slot_id slot);
     bool isBrushSlotLocked(slot_id slot) const;
 
-    base::Signal0<void> ItemsChange;
+    obs::signal<void()> ItemsChange;
 
   private:
     void load(const std::string& filename);

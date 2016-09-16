@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,7 @@
 #define APP_UI_ANIMATED_WIDGET_H_INCLUDED
 #pragma once
 
-#include "base/connection.h"
+#include "obs/connection.h"
 #include "ui/timer.h"
 
 #include <cmath>
@@ -87,7 +87,7 @@ namespace app {
     int m_animation;
     int m_animationTime;
     int m_animationLifespan;
-    base::ScopedConnection m_scopedConn;
+    obs::scoped_connection m_scopedConn;
   };
 
 } // namespace app

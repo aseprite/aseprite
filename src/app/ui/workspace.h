@@ -11,7 +11,7 @@
 #include "app/ui/input_chain_element.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_panel.h"
-#include "base/signal.h"
+#include "obs/signal.h"
 #include "ui/widget.h"
 
 namespace app {
@@ -71,7 +71,7 @@ namespace app {
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 
-    base::Signal0<void> ActiveViewChanged;
+    obs::signal<void()> ActiveViewChanged;
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;

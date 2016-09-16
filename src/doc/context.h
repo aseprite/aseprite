@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,17 +9,17 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/observable.h"
 #include "doc/context_observer.h"
 #include "doc/documents.h"
 #include "doc/documents_observer.h"
+#include "obs/observable.h"
 
 namespace doc {
   class Command;
   class Document;
   class Settings;
 
-  class Context : public base::Observable<ContextObserver>
+  class Context : public obs::observable<ContextObserver>
                 , public DocumentsObserver {
   public:
     Context();

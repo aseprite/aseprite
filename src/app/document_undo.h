@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,9 +9,9 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/observable.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite_position.h"
+#include "obs/observable.h"
 #include "undo/undo_history.h"
 
 #include <string>
@@ -27,7 +27,7 @@ namespace app {
   class CmdTransaction;
   class DocumentUndoObserver;
 
-  class DocumentUndo : public base::Observable<DocumentUndoObserver> {
+  class DocumentUndo : public obs::observable<DocumentUndoObserver> {
   public:
     DocumentUndo();
 

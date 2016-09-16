@@ -9,8 +9,8 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/signal.h"
 #include "base/time.h"
+#include "obs/signal.h"
 
 namespace ui {
 
@@ -33,7 +33,7 @@ namespace ui {
 
     void tick();
 
-    base::Signal0<void> Tick;
+    obs::signal<void()> Tick;
 
     static void pollTimers();
     static void checkNoTimers();

@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/tools/active_tool_observer.h"
-#include "base/connection.h"
 #include "gfx/point.h"
+#include "obs/connection.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -90,7 +90,7 @@ namespace app {
     ui::Timer m_tipTimer;
     bool m_tipOpened;
 
-    base::Connection m_closeConn;
+    obs::connection m_closeConn;
   };
 
 } // namespace app

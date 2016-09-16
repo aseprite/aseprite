@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,6 @@
 
 #include "app/ui/animated_widget.h"
 #include "app/ui/workspace_views.h"
-#include "base/signal.h"
 #include "ui/widget.h"
 
 #include <map>

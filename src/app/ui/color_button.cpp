@@ -56,12 +56,12 @@ ColorButton::ColorButton(const app::Color& color,
 
   setup_mini_font(this);
 
-  UIContext::instance()->addObserver(this);
+  UIContext::instance()->add_observer(this);
 }
 
 ColorButton::~ColorButton()
 {
-  UIContext::instance()->removeObserver(this);
+  UIContext::instance()->remove_observer(this);
 
   delete m_window;       // widget, window
 }

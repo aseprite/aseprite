@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -56,7 +56,7 @@ void AddFrame::onExecute()
   DocumentEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_newFrame);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
 }
 
 void AddFrame::onUndo()
@@ -74,7 +74,7 @@ void AddFrame::onUndo()
   DocumentEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_newFrame);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
 }
 
 } // namespace cmd

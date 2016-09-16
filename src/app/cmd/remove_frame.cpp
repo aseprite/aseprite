@@ -50,7 +50,7 @@ void RemoveFrame::onExecute()
   DocumentEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_frame);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
 }
 
 void RemoveFrame::onUndo()
@@ -67,7 +67,7 @@ void RemoveFrame::onUndo()
   DocumentEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_frame);
-  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
 }
 
 } // namespace cmd

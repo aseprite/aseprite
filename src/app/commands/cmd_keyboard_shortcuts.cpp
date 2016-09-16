@@ -267,13 +267,13 @@ private:
             if (m_hotAccel != i) {
               m_hotAccel = i;
 
-              m_changeConn = base::Connection();
+              m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
               m_changeConn = m_changeButton->Click.connect(base::Bind<void>(&KeyItem::onChangeAccel, this, i));
               setup_mini_look(m_changeButton.get());
               addChild(m_changeButton.get());
 
-              m_deleteConn = base::Connection();
+              m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
               m_deleteConn = m_deleteButton->Click.connect(base::Bind<void>(&KeyItem::onDeleteAccel, this, i));
               setup_mini_look(m_deleteButton.get());
@@ -299,7 +299,7 @@ private:
 
           if (i == 0 && !m_addButton &&
               (!m_menuitem || m_menuitem->getCommand())) {
-            m_addConn = base::Connection();
+            m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
             m_addConn = m_addButton->Click.connect(base::Bind<void>(&KeyItem::onAddAccel, this));
             setup_mini_look(m_addButton.get());
@@ -322,9 +322,9 @@ private:
   }
 
   void destroyButtons() {
-    m_changeConn = base::Connection();
-    m_deleteConn = base::Connection();
-    m_addConn = base::Connection();
+    m_changeConn = obs::connection();
+    m_deleteConn = obs::connection();
+    m_addConn = obs::connection();
 
     if (!m_lockButtons) {
       m_changeButton.reset();
@@ -349,9 +349,9 @@ private:
   base::SharedPtr<ui::Button> m_changeButton;
   base::SharedPtr<ui::Button> m_deleteButton;
   base::SharedPtr<ui::Button> m_addButton;
-  base::ScopedConnection m_changeConn;
-  base::ScopedConnection m_deleteConn;
-  base::ScopedConnection m_addConn;
+  obs::scoped_connection m_changeConn;
+  obs::scoped_connection m_deleteConn;
+  obs::scoped_connection m_addConn;
   int m_hotAccel;
   bool m_lockButtons;
 };

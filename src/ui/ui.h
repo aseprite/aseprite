@@ -20,6 +20,7 @@
 #include "ui/custom_label.h"
 #include "ui/entry.h"
 #include "ui/event.h"
+#include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/grid.h"
 #include "ui/hit_test_event.h"

@@ -19,12 +19,12 @@ Context::Context()
   : m_docs(this)
   , m_activeDoc(NULL)
 {
-  m_docs.addObserver(this);
+  m_docs.add_observer(this);
 }
 
 Context::~Context()
 {
-  m_docs.removeObserver(this);
+  m_docs.remove_observer(this);
 }
 
 Site Context::activeSite() const
@@ -44,7 +44,7 @@ Document* Context::activeDocument() const
 void Context::notifyActiveSiteChanged()
 {
   Site site = activeSite();
-  notifyObservers<const Site&>(&ContextObserver::onActiveSiteChange, site);
+  notify_observers<const Site&>(&ContextObserver::onActiveSiteChange, site);
 }
 
 void Context::onGetActiveSite(Site* site) const
