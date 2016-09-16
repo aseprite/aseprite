@@ -73,6 +73,21 @@ bool get_frame_info_from_filename_format(
     return false;
 }
 
+bool is_tag_in_filename_format(const std::string& format)
+{
+  return (format.find("{tag}") != std::string::npos);
+}
+
+bool is_layer_in_filename_format(const std::string& format)
+{
+  return (format.find("{layer}") != std::string::npos);
+}
+
+bool is_group_in_filename_format(const std::string& format)
+{
+  return (format.find("{group}") != std::string::npos);
+}
+
 std::string filename_formatter(
   const std::string& format,
   FilenameInfo& info,
@@ -90,6 +105,7 @@ std::string filename_formatter(
   base::replace_string(output, "{title}", base::get_file_title(filename));
   base::replace_string(output, "{extension}", base::get_file_extension(filename));
   base::replace_string(output, "{layer}", info.layerName());
+  base::replace_string(output, "{group}", info.groupName());
 
   if (replaceFrame) {
     base::replace_string(output, "{tag}", info.innerTagName());

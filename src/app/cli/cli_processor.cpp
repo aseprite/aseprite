@@ -202,8 +202,9 @@ void CliProcessor::process()
             // Automatic --split-layer or --split-tags in case the
             // output filename already contains {layer} or {tag}
             // template elements.
-            bool hasLayerTemplate = (fn.find("{layer}") != std::string::npos);
-            bool hasTagTemplate = (fn.find("{tag}") != std::string::npos);
+            bool hasLayerTemplate = (is_layer_in_filename_format(fn) ||
+                                     is_group_in_filename_format(fn));
+            bool hasTagTemplate = is_tag_in_filename_format(fn);
             if (hasLayerTemplate || hasTagTemplate) {
               cof.splitLayers = (cof.splitLayers || hasLayerTemplate);
               cof.splitTags = (cof.splitTags || hasTagTemplate);
@@ -481,6 +482,9 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       frameTags.push_back(nullptr);
   }
 
+  bool layerInFormat = is_layer_in_filename_format(fn);
+  bool groupInFormat = is_group_in_filename_format(fn);
+
   for (doc::FrameTag* frameTag : frameTags) {
     // For each layer, hide other ones and save the sprite.
     i = 0;
@@ -497,6 +501,13 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
           hide->setVisible(hide == layer);
       }
 
+      if (layer) {
+        if ((layerInFormat && layer->isGroup()) ||
+            (!layerInFormat && groupInFormat && !layer->isGroup())) {
+          continue;
+        }
+      }
+
       // TODO --trim --save-as --split-layers doesn't make too much
       // sense as we lost the trim rectangle information (e.g. we
       // don't have sheet .json) Also, we should trim each frame
@@ -510,6 +521,12 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       fnInfo.filename(fn);
       if (layer) {
         fnInfo.layerName(layer->name());
+
+        if (layer->isGroup())
+          fnInfo.groupName(layer->name());
+        else if (layer->parent() != layer->sprite()->root())
+          fnInfo.groupName(layer->parent()->name());
+
         itemCof.importLayer = layer->name();
       }
       if (frameTag) {

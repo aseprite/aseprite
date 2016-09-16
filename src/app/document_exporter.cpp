@@ -487,6 +487,7 @@ void DocumentExporter::captureSamples(Samples& samples)
       fnInfo
         .filename(doc->filename())
         .layerName(layer ? layer->name(): "")
+        .groupName(layer && layer->parent() != sprite->root() ? layer->parent()->name(): "")
         .innerTagName(innerTag ? innerTag->name(): "")
         .outerTagName(outerTag ? outerTag->name(): "")
         .frame((frames > 1) ? frame-frameFirst: frame_t(-1));

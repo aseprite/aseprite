@@ -150,6 +150,22 @@ TEST(FilenameFormatter, WithTagFrame)
       FilenameInfo().filename("./file.png").frame(2).tagFrame(1)));
 }
 
+TEST(FilenameFormatter, WithGroup)
+{
+  EXPECT_EQ(
+    "C:/temp/file (-Eyes).png",
+    filename_formatter(
+      "{path}/{title} ({group}-{layer}).{extension}",
+      FilenameInfo().filename("C:/temp/file.png")
+        .layerName("Eyes")));
+  EXPECT_EQ(
+    "C:/temp/file (Face-Eyes).png",
+    filename_formatter(
+      "{path}/{title} ({group}-{layer}).{extension}",
+      FilenameInfo().filename("C:/temp/file.png")
+        .groupName("Face").layerName("Eyes")));
+}
+
 TEST(FilenameFormatter, GetFrameInfo)
 {
   int frameBase, width;

@@ -18,6 +18,7 @@ namespace app {
 
     const std::string& filename() const { return m_filename; }
     const std::string& layerName() const { return m_layerName; }
+    const std::string& groupName() const { return m_groupName; }
     const std::string& innerTagName() const { return m_innerTagName; }
     const std::string& outerTagName() const { return m_outerTagName; }
     int frame() const { return m_frame; }
@@ -30,6 +31,11 @@ namespace app {
 
     FilenameInfo& layerName(const std::string& value) {
       m_layerName = value;
+      return *this;
+    }
+
+    FilenameInfo& groupName(const std::string& value) {
+      m_groupName = value;
       return *this;
     }
 
@@ -56,6 +62,7 @@ namespace app {
   private:
     std::string m_filename;
     std::string m_layerName;
+    std::string m_groupName;
     std::string m_innerTagName;
     std::string m_outerTagName;
     int m_frame;
@@ -66,6 +73,11 @@ namespace app {
   // E.g. For {frame001} returns width=3 and startFrom=1
   bool get_frame_info_from_filename_format(
     const std::string& format, int* startFrom, int* width);
+
+  // Returns true if the given filename format contains {tag}, {layer} or {group}
+  bool is_tag_in_filename_format(const std::string& format);
+  bool is_layer_in_filename_format(const std::string& format);
+  bool is_group_in_filename_format(const std::string& format);
 
   // If "replaceFrame" is false, this function doesn't replace all the
   // information that depends on the current frame ({frame},
