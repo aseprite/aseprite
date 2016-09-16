@@ -327,6 +327,7 @@ add_library(app-lib
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
+  restore_visible_layers.cpp
   script/app_object.cpp
   script/app_scripting.cpp
   script/console_object.cpp

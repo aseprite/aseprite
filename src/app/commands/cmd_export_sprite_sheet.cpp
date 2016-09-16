@@ -8,7 +8,6 @@
 #include "config.h"
 #endif
 
-#include "base/string.h"
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
@@ -19,6 +18,7 @@
 #include "app/file_selector.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
+#include "app/restore_visible_layers.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
@@ -26,6 +26,7 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "base/string.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 
@@ -187,50 +188,6 @@ namespace {
 
     return frameTag;
   }
-
-  class RestoreSelectedLayers {
-  public:
-    ~RestoreSelectedLayers() {
-      for (auto item : m_restore)
-        item.first->setVisible(item.second);
-    }
-
-    void showSelectedLayers(Sprite* sprite) {
-      // TODO the range of selected frames should be in doc::Site.
-      auto range = App::instance()->timeline()->range();
-      if (!range.enabled()) {
-        if (current_editor) {
-          ASSERT(current_editor->sprite() == sprite);
-          range.clearRange();
-          range.startRange(current_editor->layer(),
-                           current_editor->frame(), DocumentRange::kCels);
-          range.endRange(current_editor->layer(),
-                         current_editor->frame());
-        }
-        else
-          return;
-      }
-
-      SelectedLayers selLayers = range.selectedLayers();
-      selLayers.propagateSelection();
-      setLayerVisiblity(sprite->root(), selLayers);
-    }
-
-  private:
-    void setLayerVisiblity(LayerGroup* group, const SelectedLayers& selLayers) {
-      for (Layer* layer : group->layers()) {
-        bool selected = (selLayers.contains(layer));
-        if (selected != layer->isVisible()) {
-          m_restore.push_back(std::make_pair(layer, layer->isVisible()));
-          layer->setVisible(selected);
-        }
-        if (selected && layer->isGroup())
-          setLayerVisiblity(static_cast<LayerGroup*>(layer), selLayers);
-      }
-    }
-
-    std::vector<std::pair<Layer*, bool> > m_restore;
-  };
 
 }
 
@@ -822,9 +779,14 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   // If the user choose to render selected layers only, we can
   // temporaly make them visible and hide the other ones.
   Layer* layer = nullptr;
-  RestoreSelectedLayers layersVisibility;
+  RestoreVisibleLayers layersVisibility;
   if (layerName == kSelectedLayers) {
-    layersVisibility.showSelectedLayers(sprite);
+    // TODO the range of selected frames should be in doc::Site.
+    auto range = App::instance()->timeline()->range();
+    if (range.enabled())
+      layersVisibility.showSelectedLayers(sprite, range.selectedLayers());
+    else if (current_editor)
+      layersVisibility.showLayer(current_editor->layer());
   }
   else {
     // TODO add a getLayerByName

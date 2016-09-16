@@ -21,6 +21,7 @@
 #include "app/document_undo.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
+#include "app/restore_visible_layers.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/path.h"
@@ -29,6 +30,7 @@
 #include "doc/frame_tags.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
+#include "doc/selected_layers.h"
 
 namespace app {
 
@@ -418,13 +420,6 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
     ctx->executeCommand(cropCommand, cropParams);
   }
 
-  // Store in "visibility" the original "visible" state of every layer.
-  LayerList allLayers = doc->sprite()->allLayers();
-  std::vector<bool> visibility(allLayers.size());
-  int i = 0;
-  for (doc::Layer* layer : allLayers)
-    visibility[i++] = layer->isVisible();
-
   std::string fn = cof.filename;
   std::string filenameFormat = cof.filenameFormat;
   if (filenameFormat.empty()) { // Default format
@@ -437,7 +432,9 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       cof.splitTags);           // Has frame tag
   }
 
-  std::vector<doc::Layer*> layers;
+  SelectedLayers filteredLayers;
+  LayerList allLayers = doc->sprite()->allLayers();
+  LayerList layers;
   // --save-as with --split-layers or --split-tags
   if (cof.splitLayers) {
     for (doc::Layer* layer : doc->sprite()->allVisibleLayers())
@@ -447,17 +444,13 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
     // Show only one layer
     if (!cof.importLayer.empty()) {
       for (Layer* layer : allLayers) {
-        if (layer->name() == cof.importLayer) {
-          layer->setVisible(true);
-          layers.push_back(layer);
-        }
-        else
-          layer->setVisible(false);
+        if (layer->name() == cof.importLayer)
+          filteredLayers.insert(layer);
       }
     }
+
     // All visible layers
-    else
-      layers.push_back(nullptr);
+    layers.push_back(nullptr);
   }
 
   std::vector<doc::FrameTag*> frameTags;
@@ -487,19 +480,21 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
 
   for (doc::FrameTag* frameTag : frameTags) {
     // For each layer, hide other ones and save the sprite.
-    i = 0;
     for (doc::Layer* layer : layers) {
+      RestoreVisibleLayers layersVisibility;
+
       if (cof.splitLayers) {
         ASSERT(layer);
 
         // If the user doesn't want all layers and this one is hidden.
-        if (!visibility[i++])
+        if (!layer->isVisible())
           continue;     // Just ignore this layer.
 
         // Make this layer ("show") the only one visible.
-        for (doc::Layer* hide : allLayers)
-          hide->setVisible(hide == layer);
+        layersVisibility.showLayer(layer);
       }
+      else if (!filteredLayers.empty())
+        layersVisibility.showSelectedLayers(doc->sprite(), filteredLayers);
 
       if (layer) {
         if ((layerInFormat && layer->isGroup()) ||
@@ -547,11 +542,6 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
       }
     }
   }
-
-  // Restore layer visibility
-  i = 0;
-  for (Layer* layer : allLayers)
-    layer->setVisible(visibility[i++]);
 
   // Undo crop
   if (!cof.crop.isEmpty()) {
