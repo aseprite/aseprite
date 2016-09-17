@@ -22,6 +22,8 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
+#include "app/restore_visible_layers.h"
+#include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
@@ -29,6 +31,7 @@
 #include "base/path.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
+#include "doc/frame_tag.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -36,8 +39,14 @@ namespace app {
 
 class SaveAsCopyDelegate : public FileSelectorDelegate {
 public:
-  SaveAsCopyDelegate(double scale)
-    : m_resizeScale(scale) { }
+  SaveAsCopyDelegate(const Sprite* sprite,
+                     const double scale,
+                     const std::string& layer,
+                     const std::string& frame)
+    : m_sprite(sprite),
+      m_resizeScale(scale),
+      m_layer(layer),
+      m_frame(frame) { }
 
   bool hasResizeCombobox() override {
     return true;
@@ -51,8 +60,30 @@ public:
     m_resizeScale = scale;
   }
 
+  void fillLayersComboBox(ui::ComboBox* layers) override {
+    fill_layers_combobox(m_sprite, layers, m_layer);
+  }
+
+  void fillFramesComboBox(ui::ComboBox* frames) override {
+    fill_frames_combobox(m_sprite, frames, m_frame);
+  }
+
+  std::string getLayers() override { return m_layer; }
+  std::string getFrames() override { return m_frame; }
+
+  void setLayers(const std::string& layer) override {
+    m_layer = layer;
+  }
+
+  void setFrames(const std::string& frame) override {
+    m_frame = frame;
+  }
+
 private:
+  const Sprite* m_sprite;
   double m_resizeScale;
+  std::string m_layer;
+  std::string m_frame;
 };
 
 class SaveFileJob : public Job, public IFileOpProgress {
@@ -106,11 +137,16 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
   m_filenameFormat = params.get("filename-format");
   m_frameTag = params.get("frame-tag");
 
-  m_fromFrame = m_toFrame = -1;
   if (params.has_param("from-frame") ||
       params.has_param("to-frame")) {
-    m_fromFrame = params.get_as<doc::frame_t>("from-frame");
-    m_toFrame = params.get_as<doc::frame_t>("to-frame");
+    doc::frame_t fromFrame = params.get_as<doc::frame_t>("from-frame");
+    doc::frame_t toFrame = params.get_as<doc::frame_t>("to-frame");
+    m_selFrames.insert(fromFrame, toFrame);
+    m_adjustFramesByFrameTag = true;
+  }
+  else {
+    m_selFrames.clear();
+    m_adjustFramesByFrameTag = false;
   }
 }
 
@@ -191,8 +227,29 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     }
   }
 
-  // Save the document
-  saveDocumentInBackground(context, const_cast<Document*>(document), markAsSaved);
+  {
+    RestoreVisibleLayers layersVisibility;
+    if (delegate) {
+      Site site = context->activeSite();
+
+      // Selected layers to export
+      calculate_visible_layers(site,
+                               delegate->getLayers(),
+                               layersVisibility);
+
+      // Selected frames to export
+      SelectedFrames selFrames;
+      FrameTag* frameTag = calculate_selected_frames(
+        site, delegate->getFrames(), selFrames);
+      if (frameTag)
+        m_frameTag = frameTag->name();
+      m_selFrames = selFrames;
+      m_adjustFramesByFrameTag = false;
+    }
+
+    // Save the document
+    saveDocumentInBackground(context, const_cast<Document*>(document), markAsSaved);
+  }
 
   // Undo resize
   if (undoResize) {
@@ -221,7 +278,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(document, m_frameTag, m_fromFrame, m_toFrame),
+      FileOpROI(document, m_frameTag,
+                m_selFrames, m_adjustFramesByFrameTag),
       document->filename().c_str(),
       m_filenameFormat.c_str()));
   if (!fop)
@@ -331,7 +389,10 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   // show "Save As" dialog
   DocumentPreferences& docPref = Preferences::instance().document(document);
-  SaveAsCopyDelegate delegate(docPref.saveCopy.resizeScale());
+  SaveAsCopyDelegate delegate(document->sprite(),
+                              docPref.saveCopy.resizeScale(),
+                              docPref.saveCopy.layer(),
+                              docPref.saveCopy.frameTag());
 
   // Is a default output filename in the preferences?
   if (!docPref.saveCopy.filename().empty()) {
@@ -343,6 +404,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   if (saveAsDialog(context, "Save Copy As", &delegate)) {
     docPref.saveCopy.filename(document->filename());
     docPref.saveCopy.resizeScale(delegate.getResizeScale());
+    docPref.saveCopy.layer(delegate.getLayers());
+    docPref.saveCopy.frameTag(delegate.getFrames());
   }
 
   // Restore the file name.

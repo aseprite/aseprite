@@ -28,6 +28,7 @@ void RestoreVisibleLayers::showLayer(Layer* layer)
 {
   SelectedLayers selLayers;
   selLayers.insert(layer);
+  selLayers.propagateSelection();
   showSelectedLayers(layer->sprite(), selLayers);
 }
 

@@ -405,8 +405,8 @@ bool AseFormat::onSave(FileOp* fop)
   }
 
   // Write frames
-  for (frame_t frame=fop->roi().fromFrame();
-       frame <= fop->roi().toFrame(); ++frame) {
+  int outputFrame = 0;
+  for (frame_t frame : fop->roi().selectedFrames()) {
     // Prepare the frame header
     ASE_FrameHeader frame_header;
     ase_file_prepare_frame_header(f, &frame_header);
@@ -454,7 +454,8 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Progress
     if (fop->roi().frames() > 1)
-      fop->setProgress(float(frame+1) / float(fop->roi().frames()));
+      fop->setProgress(float(outputFrame+1) / float(fop->roi().frames()));
+    ++outputFrame;
 
     if (fop->isStop())
       break;

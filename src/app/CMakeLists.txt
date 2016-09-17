@@ -400,6 +400,7 @@ add_library(app-lib
   ui/icon_button.cpp
   ui/input_chain.cpp
   ui/keyboard_shortcuts.cpp
+  ui/layer_frame_comboboxes.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/news_listbox.cpp

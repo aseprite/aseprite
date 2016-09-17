@@ -20,23 +20,11 @@
       <label text="File type:" />
       <hbox cell_align="horizontal">
         <combobox id="file_type" minwidth="70" />
-        <hbox id="resize_options">
-          <label text="Resize:" />
-          <combobox id="resize">
-            <listitem text="25%" value="0.25" />
-            <listitem text="50%" value="0.5" />
-            <listitem text="100%" value="1" />
-            <listitem text="200%" value="2" />
-            <listitem text="300%" value="3" />
-            <listitem text="400%" value="4" />
-            <listitem text="500%" value="5" />
-            <listitem text="600%" value="6" />
-            <listitem text="700%" value="7" />
-            <listitem text="800%" value="8" />
-            <listitem text="900%" value="9" />
-            <listitem text="1000%" value="10" />
-          </combobox>
-        </hbox>
+	<vbox>
+	  <boxfiller />
+          <link id="extra_options" text="" />
+          <boxfiller />
+        </vbox>
         <boxfiller />
         <box horizontal="true" homogeneous="true">
           <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />

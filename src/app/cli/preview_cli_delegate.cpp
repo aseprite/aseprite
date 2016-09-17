@@ -113,10 +113,19 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
   }
 
   if (cof.hasFrameRange()) {
-    auto roi = cof.roi();
-    std::cout << "  - Frame range from "
-              << roi.fromFrame() << " to "
-              << roi.toFrame() << "\n";
+    const auto& selFrames = cof.roi().selectedFrames();
+    if (!selFrames.empty()) {
+      if (selFrames.ranges() == 1)
+        std::cout << "  - Frame range from "
+                  << selFrames.firstFrame() << " to "
+                  << selFrames.lastFrame() << "\n";
+      else {
+        std::cout << "  - Specific frames:";
+        for (auto frame : selFrames)
+          std::cout << ' ' << frame;
+        std::cout << "\n";
+      }
+    }
   }
 
   if (!cof.filenameFormat.empty())

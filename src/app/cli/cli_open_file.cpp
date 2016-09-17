@@ -36,7 +36,10 @@ CliOpenFile::CliOpenFile()
 FileOpROI CliOpenFile::roi() const
 {
   ASSERT(document);
-  return FileOpROI(document, frameTag, fromFrame, toFrame);
+  SelectedFrames selFrames;
+  if (hasFrameRange())
+    selFrames.insert(fromFrame, toFrame);
+  return FileOpROI(document, frameTag, selFrames, true);
 }
 
 } // namespace app

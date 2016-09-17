@@ -124,6 +124,7 @@ namespace doc {
     void clear();
     void insert(frame_t frame);
     void insert(frame_t fromFrame, frame_t toFrame);
+    void filter(frame_t fromFrame, frame_t toFrame);
 
     bool contains(frame_t frame) const;
 

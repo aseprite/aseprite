@@ -76,6 +76,19 @@ void SelectedFrames::insert(frame_t fromFrame, frame_t toFrame)
   }
 }
 
+void SelectedFrames::filter(frame_t fromFrame, frame_t toFrame)
+{
+  if (fromFrame > toFrame)
+    std::swap(fromFrame, toFrame);
+
+  // TODO improve this, avoid copying
+  SelectedFrames original = *this;
+  for (frame_t frame : original) {
+    if (frame >= fromFrame && frame <= toFrame)
+      insert(frame);
+  }
+}
+
 bool SelectedFrames::contains(frame_t frame) const
 {
   return std::binary_search(

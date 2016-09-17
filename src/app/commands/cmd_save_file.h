@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "doc/frame.h"
+#include "doc/selected_frames.h"
 
 #include <string>
 
@@ -39,7 +39,8 @@ namespace app {
     std::string m_filenameFormat;
     std::string m_selectedFilename;
     std::string m_frameTag;
-    doc::frame_t m_fromFrame, m_toFrame;
+    doc::SelectedFrames m_selFrames;
+    bool m_adjustFramesByFrameTag;
   };
 
 } // namespace app

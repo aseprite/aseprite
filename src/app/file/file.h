@@ -13,6 +13,7 @@
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
+#include "doc/selected_frames.h"
 
 #include <cstdio>
 #include <string>
@@ -63,25 +64,23 @@ namespace app {
     FileOpROI();
     FileOpROI(const app::Document* doc,
               const std::string& frameTagName,
-              const doc::frame_t fromFrame,
-              const doc::frame_t toFrame);
+              const doc::SelectedFrames selFrames,
+              const bool adjustByFrameTag);
 
     const app::Document* document() const { return m_document; }
     doc::FrameTag* frameTag() const { return m_frameTag; }
-    doc::frame_t fromFrame() const { return m_fromFrame; }
-    doc::frame_t toFrame() const { return m_toFrame; }
+    doc::frame_t fromFrame() const { return m_selFrames.firstFrame(); }
+    doc::frame_t toFrame() const { return m_selFrames.lastFrame(); }
+    const doc::SelectedFrames& selectedFrames() const { return m_selFrames; }
 
     doc::frame_t frames() const {
-      ASSERT(m_fromFrame >= 0);
-      ASSERT(m_toFrame >= 0);
-      return (m_toFrame - m_fromFrame + 1);
+      return m_selFrames.size();
     }
 
   private:
     const app::Document* m_document;
     doc::FrameTag* m_frameTag;
-    doc::frame_t m_fromFrame;
-    doc::frame_t m_toFrame;
+    doc::SelectedFrames m_selFrames;
   };
 
   // Structure to load & save files.

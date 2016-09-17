@@ -814,6 +814,8 @@ bool GifFormat::onLoad(FileOp* fop)
 
 class GifEncoder {
 public:
+  typedef int gifframe_t;
+
   GifEncoder(FileOp* fop, GifFileType* gifFile)
     : m_fop(fop)
     , m_gifFile(gifFile)
@@ -894,27 +896,37 @@ public:
     m_currentImage = m_images[1].get();
     m_nextImage = m_images[2].get();
 
-    int nframes = totalFrames();
-    for (int frameNum=0; frameNum<nframes; ++frameNum) {
-      if (frameNum == 0)
-        renderFrame(0, m_nextImage);
-      else if (frameNum > 0)
+    auto frame_beg = m_fop->roi().selectedFrames().begin();
+    auto frame_end = m_fop->roi().selectedFrames().end();
+    auto frame_it = frame_beg;
+
+    // In this code "gifFrame" will be the GIF frame, and "frame" will
+    // be the doc::Sprite frame.
+    gifframe_t nframes = totalFrames();
+    for (gifframe_t gifFrame=0; gifFrame<nframes; ++gifFrame) {
+      ASSERT(frame_it != frame_end);
+      frame_t frame = *frame_it;
+      ++frame_it;
+
+      if (gifFrame == 0)
+        renderFrame(frame, m_nextImage);
+      else
         std::swap(m_previousImage, m_currentImage);
 
+      // Render next frame
       std::swap(m_currentImage, m_nextImage);
-      if (frameNum+1 < nframes)
-        renderFrame(frameNum+1, m_nextImage);
+      if (gifFrame+1 < nframes)
+        renderFrame(*frame_it, m_nextImage);
 
       gfx::Rect frameBounds;
       DisposalMethod disposal;
-      calculateBestDisposalMethod(
-        frameNum, frameBounds, disposal);
+      calculateBestDisposalMethod(gifFrame, frameBounds, disposal);
 
       // TODO We could join both frames in a longer one (with more duration)
       if (frameBounds.isEmpty())
         frameBounds = gfx::Rect(0, 0, 1, 1);
 
-      writeImage(frameNum, frameBounds, disposal);
+      writeImage(gifFrame, frame, frameBounds, disposal);
 
       // Dispose/clear frame content
       process_disposal_method(m_previousImage,
@@ -923,7 +935,7 @@ public:
                               frameBounds,
                               m_clearColor);
 
-      m_fop->setProgress(double(frameNum+1) / double(nframes));
+      m_fop->setProgress(double(gifFrame+1) / double(nframes));
     }
     return true;
   }
@@ -932,10 +944,6 @@ private:
 
   doc::frame_t totalFrames() const {
     return m_fop->roi().frames();
-  }
-
-  doc::frame_t fromFrame() const {
-    return m_fop->roi().fromFrame();
   }
 
   void writeHeader() {
@@ -986,9 +994,9 @@ private:
 
   // Writes graphics extension record (to save the duration of the
   // frame and maybe the transparency index).
-  void writeExtension(int frameNum, int transparentIndex, DisposalMethod disposalMethod) {
+  void writeExtension(gifframe_t gifFrame, frame_t frame, int transparentIndex, DisposalMethod disposalMethod) {
     unsigned char extension_bytes[5];
-    int frameDelay = m_sprite->frameDuration(fromFrame()+frameNum) / 10;
+    int frameDelay = m_sprite->frameDuration(frame) / 10;
 
     extension_bytes[0] = (((int(disposalMethod) & 7) << 2) |
                           (transparentIndex >= 0 ? 1: 0));
@@ -997,7 +1005,7 @@ private:
     extension_bytes[3] = (transparentIndex >= 0 ? transparentIndex: 0);
 
     if (EGifPutExtension(m_gifFile, GRAPHICS_EXT_FUNC_CODE, 4, extension_bytes) == GIF_ERROR)
-      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frameNum);
+      throw Exception("Error writing GIF graphics extension record for frame %d.\n", gifFrame);
   }
 
   static gfx::Rect calculateFrameBounds(Image* a, Image* b) {
@@ -1014,8 +1022,7 @@ private:
     return frameBounds;
   }
 
-  void calculateBestDisposalMethod(int frameNum,
-                                   gfx::Rect& frameBounds,
+  void calculateBestDisposalMethod(gifframe_t gifFrame, gfx::Rect& frameBounds,
                                    DisposalMethod& disposal) {
     if (m_hasBackground) {
       disposal = DisposalMethod::DO_NOT_DISPOSE;
@@ -1024,17 +1031,17 @@ private:
       disposal = DisposalMethod::RESTORE_BGCOLOR;
     }
 
-    if (frameNum == 0) {
+    if (gifFrame == 0) {
       frameBounds = m_spriteBounds;
     }
     else {
       gfx::Rect prev, next;
 
-      if (frameNum-1 >= 0)
+      if (gifFrame-1 >= 0)
         prev = calculateFrameBounds(m_currentImage, m_previousImage);
 
       if (!m_hasBackground &&
-          frameNum+1 < totalFrames())
+          gifFrame+1 < totalFrames())
         next = calculateFrameBounds(m_currentImage, m_nextImage);
 
       frameBounds = prev.createUnion(next);
@@ -1058,11 +1065,11 @@ private:
     }
   }
 
-  void writeImage(int frameNum, const gfx::Rect& frameBounds, DisposalMethod disposal) {
+  void writeImage(gifframe_t gifFrame, frame_t frame, const gfx::Rect& frameBounds, DisposalMethod disposal) {
     UniquePtr<Palette> framePaletteRef;
     UniquePtr<RgbMap> rgbmapRef;
-    Palette* framePalette = m_sprite->palette(fromFrame()+frameNum);
-    RgbMap* rgbmap = m_sprite->rgbMap(fromFrame()+frameNum);
+    Palette* framePalette = m_sprite->palette(frame);
+    RgbMap* rgbmap = m_sprite->rgbMap(frame);
 
     // Create optimized palette for RGB/Grayscale images
     if (m_quantizeColormaps) {
@@ -1154,7 +1161,7 @@ private:
     int localTransparent = m_transparentIndex;
     ColorMapObject* colormap = m_globalColormap;
     if (!colormap) {
-      Palette reducedPalette(frameNum, usedNColors);
+      Palette reducedPalette(0, usedNColors);
 
       for (int i=0, j=0; i<framePalette->size(); ++i) {
         if (usedColors[i]) {
@@ -1173,7 +1180,7 @@ private:
       remap.map(m_transparentIndex, localTransparent);
 
     // Write extension record.
-    writeExtension(frameNum, localTransparent, disposal);
+    writeExtension(gifFrame, frame, localTransparent, disposal);
 
     // Write the image record.
     if (EGifPutImageDesc(m_gifFile,
@@ -1181,7 +1188,7 @@ private:
                          frameBounds.w, frameBounds.h,
                          m_interlaced ? 1: 0,
                          (colormap != m_globalColormap ? colormap: nullptr)) == GIF_ERROR) {
-      throw Exception("Error writing GIF frame %d.\n", (int)frameNum);
+      throw Exception("Error writing GIF frame %d.\n", gifFrame);
     }
 
     std::vector<uint8_t> scanline(frameBounds.w);
@@ -1198,7 +1205,7 @@ private:
             scanline[i] = remap[*addr];
 
           if (EGifPutLine(m_gifFile, &scanline[0], frameBounds.w) == GIF_ERROR)
-            throw Exception("Error writing GIF image scanlines for frame %d.\n", (int)frameNum);
+            throw Exception("Error writing GIF image scanlines for frame %d.\n", gifFrame);
         }
     }
     else {
@@ -1211,7 +1218,7 @@ private:
           scanline[i] = remap[*addr];
 
         if (EGifPutLine(m_gifFile, &scanline[0], frameBounds.w) == GIF_ERROR)
-          throw Exception("Error writing GIF image scanlines for frame %d.\n", (int)frameNum);
+          throw Exception("Error writing GIF image scanlines for frame %d.\n", gifFrame);
       }
     }
 
@@ -1236,11 +1243,11 @@ private:
     return palette;
   }
 
-  void renderFrame(int frameNum, Image* dst) {
+  void renderFrame(frame_t frame, Image* dst) {
     render::Render render;
     render.setBgType(render::BgType::NONE);
     clear_image(dst, m_clearColor);
-    render.renderSprite(dst, m_sprite, fromFrame()+frameNum);
+    render.renderSprite(dst, m_sprite, frame);
   }
 
 private:
