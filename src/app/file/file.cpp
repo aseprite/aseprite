@@ -141,7 +141,7 @@ FileOpROI::FileOpROI()
 
 FileOpROI::FileOpROI(const app::Document* doc,
                      const std::string& frameTagName,
-                     const doc::SelectedFrames selFrames,
+                     const doc::SelectedFrames& selFrames,
                      const bool adjustByFrameTag)
   : m_document(doc)
   , m_frameTag(nullptr)
@@ -150,12 +150,13 @@ FileOpROI::FileOpROI(const app::Document* doc,
   if (doc) {
     m_frameTag = doc->sprite()->frameTags().getByName(frameTagName);
     if (m_frameTag) {
-      if (adjustByFrameTag)
+      if (m_selFrames.empty())
+        m_selFrames.insert(m_frameTag->fromFrame(), m_frameTag->toFrame());
+      else if (adjustByFrameTag)
         m_selFrames.displace(m_frameTag->fromFrame());
 
       m_selFrames.filter(MAX(0, m_frameTag->fromFrame()),
-                         MIN(m_frameTag->toFrame(),
-                             doc->sprite()->lastFrame()));
+                         MIN(m_frameTag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
     else if (m_selFrames.empty())
@@ -848,7 +849,7 @@ Image* FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
   }
 
   if (m_seq.last_cel) {
-    setError("Error: called two times \"fop_sequence_image()\".\n");
+    setError("Error: called two times FileOp::sequenceImage()\n");
     return nullptr;
   }
 

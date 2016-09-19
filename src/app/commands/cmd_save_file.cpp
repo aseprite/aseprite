@@ -389,10 +389,16 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   // show "Save As" dialog
   DocumentPreferences& docPref = Preferences::instance().document(document);
-  SaveAsCopyDelegate delegate(document->sprite(),
-                              docPref.saveCopy.resizeScale(),
-                              docPref.saveCopy.layer(),
-                              docPref.saveCopy.frameTag());
+
+  base::UniquePtr<SaveAsCopyDelegate> delegate;
+  if (context->isUIAvailable()) {
+    delegate.reset(
+      new SaveAsCopyDelegate(
+        document->sprite(),
+        docPref.saveCopy.resizeScale(),
+        docPref.saveCopy.layer(),
+        docPref.saveCopy.frameTag()));
+  }
 
   // Is a default output filename in the preferences?
   if (!docPref.saveCopy.filename().empty()) {
@@ -401,11 +407,13 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       docPref.saveCopy.filename());
   }
 
-  if (saveAsDialog(context, "Save Copy As", &delegate)) {
+  if (saveAsDialog(context, "Save Copy As", delegate)) {
     docPref.saveCopy.filename(document->filename());
-    docPref.saveCopy.resizeScale(delegate.getResizeScale());
-    docPref.saveCopy.layer(delegate.getLayers());
-    docPref.saveCopy.frameTag(delegate.getFrames());
+    if (delegate) {
+      docPref.saveCopy.resizeScale(delegate->getResizeScale());
+      docPref.saveCopy.layer(delegate->getLayers());
+      docPref.saveCopy.frameTag(delegate->getFrames());
+    }
   }
 
   // Restore the file name.

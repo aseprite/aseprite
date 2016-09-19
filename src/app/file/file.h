@@ -64,7 +64,7 @@ namespace app {
     FileOpROI();
     FileOpROI(const app::Document* doc,
               const std::string& frameTagName,
-              const doc::SelectedFrames selFrames,
+              const doc::SelectedFrames& selFrames,
               const bool adjustByFrameTag);
 
     const app::Document* document() const { return m_document; }
