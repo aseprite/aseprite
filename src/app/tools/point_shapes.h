@@ -40,7 +40,9 @@ public:
 
   void preparePointShape(ToolLoop* loop) override {
     m_brush = loop->getBrush();
-    m_compressedImage.reset(new CompressedImage(m_brush->image(), false));
+    m_compressedImage.reset(new CompressedImage(m_brush->image(),
+                                                m_brush->maskBitmap(),
+                                                false));
     m_firstPoint = true;
   }
 

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,10 +11,13 @@
 #include "doc/compressed_image.h"
 
 #include "doc/primitives.h"
+#include "doc/primitives_fast.h"
 
 namespace doc {
 
-CompressedImage::CompressedImage(const Image* image, bool diffColors)
+CompressedImage::CompressedImage(const Image* image,
+                                 const Image* maskBitmap,
+                                 bool diffColors)
   : m_image(image)
 {
   color_t c1, c2, mask = image->maskColor();
@@ -23,24 +26,36 @@ CompressedImage::CompressedImage(const Image* image, bool diffColors)
     Scanline scanline(y);
 
     for (int x=0; x<image->width(); ) {
-      c1 = get_pixel(image, x, y);
-      if (c1 != mask) {
-        scanline.color = c1;
-        scanline.x = x;
-
-        for (++x; x<image->width(); ++x) {
-          c2 = get_pixel(image, x, y);
-
-          if ((diffColors && c1 != c2) ||
-              (!diffColors && c2 == mask))
-            break;
-        }
-
-        scanline.w = x - scanline.x;
-        m_scanlines.push_back(scanline);
-      }
-      else
+      if (maskBitmap && !get_pixel_fast<BitmapTraits>(maskBitmap, x, y)) {
         ++x;
+        continue;
+      }
+
+      c1 = get_pixel(image, x, y);
+
+      if (!maskBitmap && c1 == mask) {
+        ++x;
+        continue;
+      }
+
+      scanline.color = c1;
+      scanline.x = x;
+
+      for (++x; x<image->width(); ++x) {
+        c2 = get_pixel(image, x, y);
+
+        if (diffColors && c1 != c2)
+          break;
+
+        if (maskBitmap && !get_pixel_fast<BitmapTraits>(maskBitmap, x, y))
+          break;
+
+        if (!diffColors && !maskBitmap && c2 == mask)
+          break;
+      }
+
+      scanline.w = x - scanline.x;
+      m_scanlines.push_back(scanline);
     }
   }
 }

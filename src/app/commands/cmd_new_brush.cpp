@@ -146,7 +146,7 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
 
   // New brush
   doc::BrushRef brush(new doc::Brush());
-  brush->setImage(image.get());
+  brush->setImage(image.get(), mask->bitmap());
   brush->setPatternOrigin(mask->bounds().origin());
 
   ContextBar* ctxBar = App::instance()->contextBar();

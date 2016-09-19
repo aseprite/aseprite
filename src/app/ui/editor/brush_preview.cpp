@@ -340,27 +340,23 @@ void BrushPreview::generateBoundaries()
   m_brushWidth = w;
   m_brushHeight = h;
 
-  ImageRef mask;
+  Image* mask = nullptr;
+  bool deleteMask = true;
   if (isOnePixel) {
-    mask.reset(Image::create(IMAGE_BITMAP, w, w));
+    mask = Image::create(IMAGE_BITMAP, 1, 1);
     mask->putPixel(0, 0, (color_t)1);
   }
   else if (brushImage->pixelFormat() != IMAGE_BITMAP) {
-    mask.reset(Image::create(IMAGE_BITMAP, w, h));
-
-    LockImageBits<BitmapTraits> bits(mask.get());
-    auto pos = bits.begin();
-    for (int v=0; v<h; ++v) {
-      for (int u=0; u<w; ++u) {
-        *pos = get_pixel(brushImage, u, v);
-        ++pos;
-      }
-    }
+    ASSERT(brush->maskBitmap());
+    deleteMask = false;
+    mask = brush->maskBitmap();
   }
 
   m_brushBoundaries.reset(
-    new MaskBoundaries(
-      (mask ? mask.get(): brushImage)));
+    new MaskBoundaries(mask ? mask: brushImage));
+
+  if (deleteMask)
+    delete mask;
 }
 
 void BrushPreview::forEachBrushPixel(
