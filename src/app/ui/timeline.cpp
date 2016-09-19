@@ -2317,8 +2317,8 @@ gfx::Size Timeline::getScrollableSize() const
 {
   if (m_sprite) {
     return gfx::Size(
-      m_sprite->totalFrames() * FRMSIZE + bounds().w/2,
-      m_layers.size() * LAYSIZE + bounds().h/2);
+      m_sprite->totalFrames() * FRMSIZE + getCelsBounds().w/2,
+      m_layers.size() * LAYSIZE + LAYSIZE);
   }
   else
     return gfx::Size(0, 0);
@@ -2328,8 +2328,8 @@ gfx::Point Timeline::getMaxScrollablePos() const
 {
   if (m_sprite) {
     gfx::Size size = getScrollableSize();
-    int max_scroll_x = size.w - bounds().w/2;
-    int max_scroll_y = size.h - bounds().h/2;
+    int max_scroll_x = size.w - getCelsBounds().w + 1*guiscale();
+    int max_scroll_y = size.h - getCelsBounds().h + 1*guiscale();
     max_scroll_x = MAX(0, max_scroll_x);
     max_scroll_y = MAX(0, max_scroll_y);
     return gfx::Point(max_scroll_x, max_scroll_y);
