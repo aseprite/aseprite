@@ -232,7 +232,7 @@
       <option id="speed" type="int" default="32" />
     </section>
     <section id="floodfill">
-      <option id="stop_at_grid" type="StopAtGrid" default="StopAtGrid::IF_VISIBLE" />
+      <option id="stop_at_grid" type="StopAtGrid" default="StopAtGrid::NEVER" />
       <option id="refer_to" type="FillReferTo" default="FillReferTo::ACTIVE_LAYER" />
     </section>
   </tool>
