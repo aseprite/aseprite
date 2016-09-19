@@ -922,6 +922,7 @@ public:
     m_palette = get_current_palette();
     m_brush = loop->getBrush();
     m_brushImage = m_brush->image();
+    m_brushMask = m_brush->maskBitmap();
     m_opacity = loop->getOpacity();
     m_width = m_brush->bounds().w;
     m_height = m_brush->bounds().h;
@@ -946,6 +947,7 @@ private:
   const Palette* m_palette;
   const Brush* m_brush;
   const Image* m_brushImage;
+  const Image* m_brushMask;
   int m_opacity;
   int m_u, m_v, m_width, m_height;
 };
@@ -953,6 +955,8 @@ private:
 template<>
 void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
   alignPixelPoint(x, y);
+  if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
+    return;
 
   color_t c;
   switch (m_brushImage->pixelFormat()) {
@@ -987,6 +991,8 @@ void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
 template<>
 void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
   alignPixelPoint(x, y);
+  if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
+    return;
 
   color_t c;
   switch (m_brushImage->pixelFormat()) {
@@ -1023,6 +1029,8 @@ void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
 template<>
 void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   alignPixelPoint(x, y);
+  if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
+    return;
 
   color_t c;
   switch (m_brushImage->pixelFormat()) {

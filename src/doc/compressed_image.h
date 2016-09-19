@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -30,7 +30,8 @@ namespace doc {
     // each different color. If it's false, it generates a scanline
     // for each row of consecutive pixels different than the mask
     // color.
-    CompressedImage(const Image* image, bool diffColors);
+    CompressedImage(const Image* image,
+                    const Image* maskBitmap, bool diffColors);
 
     const_iterator begin() const { return m_scanlines.begin(); }
     const_iterator end() const { return m_scanlines.end(); }

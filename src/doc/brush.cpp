@@ -51,6 +51,7 @@ Brush::Brush(const Brush& brush)
   m_size = brush.m_size;
   m_angle = brush.m_angle;
   m_image = brush.m_image;
+  m_maskBitmap = brush.m_maskBitmap;
   m_pattern = brush.m_pattern;
   m_patternOrigin = brush.m_patternOrigin;
   m_gen = 0;
@@ -84,10 +85,24 @@ void Brush::setAngle(int angle)
   regenerate();
 }
 
-void Brush::setImage(const Image* image)
+void Brush::setImage(const Image* image,
+                     const Image* maskBitmap)
 {
   m_type = kImageBrushType;
   m_image.reset(Image::createCopy(image));
+  if (maskBitmap)
+    m_maskBitmap.reset(Image::createCopy(maskBitmap));
+  else {
+    int w = image->width();
+    int h = image->height();
+    m_maskBitmap.reset(Image::create(IMAGE_BITMAP, w, h));
+    LockImageBits<BitmapTraits> bits(m_maskBitmap.get());
+    auto pos = bits.begin();
+    for (int v=0; v<h; ++v)
+      for (int u=0; u<w; ++u, ++pos)
+        *pos = (get_pixel(image, u, v) != image->maskColor());
+  }
+
   m_backupImage.reset();
   m_mainColor.reset();
   m_bgColor.reset();
@@ -102,15 +117,21 @@ template<class ImageTraits,
          color_t alpha_mask>
 static void replace_image_colors(
   Image* image,
+  Image* maskBitmap,
   const bool useMain, color_t mainColor,
   const bool useBg, color_t bgColor)
 {
   LockImageBits<ImageTraits> bits(image, Image::ReadWriteLock);
+  const LockImageBits<BitmapTraits> maskBits(maskBitmap);
   bool hasAlpha = false; // True if "image" has a pixel with alpha < 255
   color_t srcMainColor, srcBgColor;
   srcMainColor = srcBgColor = 0;
 
+  auto mask_it = maskBits.begin();
   for (const auto& pixel : bits) {
+    if (!*mask_it)
+      continue;
+
     if ((pixel & alpha_mask) != alpha_mask) {  // If alpha != 255
       hasAlpha = true;
     }
@@ -120,6 +141,8 @@ static void replace_image_colors(
     else if (pixel != srcBgColor && srcMainColor == srcBgColor) {
       srcMainColor = pixel;
     }
+
+    ++mask_it;
   }
 
   mainColor &= color_mask;
@@ -147,16 +170,22 @@ static void replace_image_colors(
 
 static void replace_image_colors_indexed(
   Image* image,
+  Image* maskBitmap,
   const bool useMain, const color_t mainColor,
   const bool useBg, const color_t bgColor)
 {
   LockImageBits<IndexedTraits> bits(image, Image::ReadWriteLock);
+  const LockImageBits<BitmapTraits> maskBits(maskBitmap);
   bool hasAlpha = false; // True if "image" has a pixel with the mask color
   color_t maskColor = image->maskColor();
   color_t srcMainColor, srcBgColor;
   srcMainColor = srcBgColor = maskColor;
 
+  auto mask_it = maskBits.begin();
   for (const auto& pixel : bits) {
+    if (!*mask_it)
+      continue;
+
     if (pixel == maskColor) {
       hasAlpha = true;
     }
@@ -166,6 +195,8 @@ static void replace_image_colors_indexed(
     else if (pixel != srcBgColor && srcMainColor == srcBgColor) {
       srcMainColor = pixel;
     }
+
+    ++mask_it;
   }
 
   if (hasAlpha) {
@@ -201,6 +232,8 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
   else
     m_image.reset(Image::createCopy(m_backupImage.get()));
 
+  ASSERT(m_maskBitmap);
+
   switch (imageColor) {
     case ImageColor::MainColor:
       m_mainColor.reset(new color_t(color));
@@ -214,21 +247,21 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
 
     case IMAGE_RGB:
       replace_image_colors<RgbTraits, rgba_rgb_mask, rgba_a_mask>(
-        m_image.get(),
+        m_image.get(), m_maskBitmap.get(),
         (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
 
     case IMAGE_GRAYSCALE:
       replace_image_colors<GrayscaleTraits, graya_v_mask, graya_a_mask>(
-        m_image.get(),
+        m_image.get(), m_maskBitmap.get(),
         (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
 
     case IMAGE_INDEXED:
       replace_image_colors_indexed(
-        m_image.get(),
+        m_image.get(), m_maskBitmap.get(),
         (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
@@ -240,6 +273,7 @@ void Brush::clean()
 {
   m_gen = ++generation;
   m_image.reset();
+  m_maskBitmap.reset();
   m_backupImage.reset();
 }
 
@@ -260,6 +294,7 @@ void Brush::regenerate()
     size = (int)std::sqrt((double)2*m_size*m_size)+2;
 
   m_image.reset(Image::create(IMAGE_BITMAP, size, size));
+  m_maskBitmap.reset();
 
   if (size == 1) {
     clear_image(m_image.get(), BitmapTraits::max_value);

@@ -95,6 +95,17 @@ ImageRef load_xml_image(const TiXmlElement* imageElem)
       ++it;
     }
   }
+  else if (formatStr == "bitmap") {
+    image.reset(Image::create(IMAGE_BITMAP, w, h));
+    LockImageBits<BitmapTraits> pixels(image.get());
+    for (auto& pixel : pixels) {
+      if (it == end)
+        break;
+
+      pixel = *it;
+      ++it;
+    }
+  }
   return image;
 }
 
@@ -110,7 +121,7 @@ void save_xml_image(TiXmlElement* imageElem, const Image* image)
     case IMAGE_RGB: format = "rgba"; break;
     case IMAGE_GRAYSCALE: format = "grayscale"; break;
     case IMAGE_INDEXED: format = "indexed"; break;
-    case IMAGE_BITMAP: format = "indexed"; break; // TODO add "bitmap" format
+    case IMAGE_BITMAP: format = "bitmap"; break; // TODO add "bitmap" format
   }
   ASSERT(!format.empty());
   if (!format.empty())
@@ -315,13 +326,16 @@ void AppBrushes::load(const std::string& filename)
     }
 
     // Brush image
-    if (TiXmlElement* imageElem = brushElem->FirstChildElement("image")) {
-      ImageRef image = load_xml_image(imageElem);
-      if (image) {
-        if (!brush)
-          brush.reset(new Brush());
-        brush->setImage(image.get());
-      }
+    ImageRef image, mask;
+    if (TiXmlElement* imageElem = brushElem->FirstChildElement("image"))
+      image = load_xml_image(imageElem);
+    if (TiXmlElement* maskElem = brushElem->FirstChildElement("mask"))
+      mask = load_xml_image(maskElem);
+
+    if (image) {
+      if (!brush)
+        brush.reset(new Brush());
+      brush->setImage(image.get(), mask.get());
     }
 
     // Colors
@@ -421,6 +435,12 @@ void AppBrushes::save(const std::string& filename) const
           TiXmlElement elem("image");
           save_xml_image(&elem, slot.brush()->image());
           brushElem.InsertEndChild(elem);
+
+          if (slot.brush()->maskBitmap()) {
+            TiXmlElement maskElem("mask");
+            save_xml_image(&maskElem, slot.brush()->maskBitmap());
+            brushElem.InsertEndChild(maskElem);
+          }
         }
       }
 
