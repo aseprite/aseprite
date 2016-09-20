@@ -170,6 +170,7 @@
       <option id="brush_angle" type="bool" default="true" />
       <option id="fg_color" type="bool" default="false" />
       <option id="bg_color" type="bool" default="false" />
+      <option id="image_color" type="bool" default="true" />
       <option id="ink_type" type="bool" default="true" />
       <option id="ink_opacity" type="bool" default="true" />
       <option id="shade" type="bool" default="true" />

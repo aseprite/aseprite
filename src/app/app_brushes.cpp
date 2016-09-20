@@ -382,6 +382,11 @@ void AppBrushes::load(const std::string& filename)
       flags |= int(BrushSlot::Flags::PixelPerfect);
     }
 
+    // Image color (enabled by default for backward compatibility)
+    if (!brushElem->Attribute("imagecolor") ||
+        bool_attr_is_true(brushElem, "imagecolor"))
+      flags |= int(BrushSlot::Flags::ImageColor);
+
     if (flags != 0)
       flags |= int(BrushSlot::Flags::Locked);
 
@@ -441,6 +446,11 @@ void AppBrushes::save(const std::string& filename) const
             save_xml_image(&maskElem, slot.brush()->maskBitmap());
             brushElem.InsertEndChild(maskElem);
           }
+
+          // Image color
+          brushElem.SetAttribute(
+            "imagecolor",
+            (flags & int(BrushSlot::Flags::ImageColor)) ? "true": "false");
         }
       }
 

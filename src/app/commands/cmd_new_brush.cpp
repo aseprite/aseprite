@@ -150,8 +150,17 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
   brush->setPatternOrigin(mask->bounds().origin());
 
   ContextBar* ctxBar = App::instance()->contextBar();
+  int flags = int(BrushSlot::Flags::BrushType);
+  {
+    // TODO merge this code with ContextBar::createBrushSlotFromPreferences()?
+    auto& pref = Preferences::instance();
+    auto& saveBrush = pref.saveBrush;
+    if (saveBrush.imageColor())
+      flags |= int(BrushSlot::Flags::ImageColor);
+  }
+
   int slot = App::instance()->brushes().addBrushSlot(
-    BrushSlot(BrushSlot::Flags::BrushType, brush));
+    BrushSlot(BrushSlot::Flags(flags), brush));
   ctxBar->setActiveBrush(brush);
 
   // Get the shortcut for this brush and show it to the user

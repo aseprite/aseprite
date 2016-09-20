@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2015 by David Capello -->
+<!-- Copyright (C) 2015-2016 by David Capello -->
 <gui>
   <vbox id="brush_slot_params">
     <grid columns="2">
@@ -15,6 +15,7 @@
       <buttonset id="color_params" columns="2" multiple="true">
         <item id="fg_color" text="Foreground" />
         <item id="bg_color" text="Background" />
+        <item id="image_color" text="Image Color" hspan="2" />
       </buttonset>
 
       <label text="Ink:" />
