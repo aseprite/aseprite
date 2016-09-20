@@ -186,6 +186,7 @@ private:
     params.brushAngle()->setSelected(brush.hasFlag(BrushSlot::Flags::BrushAngle));
     params.fgColor()->setSelected(brush.hasFlag(BrushSlot::Flags::FgColor));
     params.bgColor()->setSelected(brush.hasFlag(BrushSlot::Flags::BgColor));
+    params.imageColor()->setSelected(brush.hasFlag(BrushSlot::Flags::ImageColor));
     params.inkType()->setSelected(brush.hasFlag(BrushSlot::Flags::InkType));
     params.inkOpacity()->setSelected(brush.hasFlag(BrushSlot::Flags::InkOpacity));
     params.shade()->setSelected(brush.hasFlag(BrushSlot::Flags::Shade));
@@ -204,6 +205,7 @@ private:
       if (params.brushAngle()->isSelected()) flags |= int(BrushSlot::Flags::BrushAngle);
       if (params.fgColor()->isSelected()) flags |= int(BrushSlot::Flags::FgColor);
       if (params.bgColor()->isSelected()) flags |= int(BrushSlot::Flags::BgColor);
+      if (params.imageColor()->isSelected()) flags |= int(BrushSlot::Flags::ImageColor);
       if (params.inkType()->isSelected()) flags |= int(BrushSlot::Flags::InkType);
       if (params.inkOpacity()->isSelected()) flags |= int(BrushSlot::Flags::InkOpacity);
       if (params.shade()->isSelected()) flags |= int(BrushSlot::Flags::Shade);
@@ -291,6 +293,7 @@ private:
     params.brushAngle()->setSelected(saveBrush.brushAngle());
     params.fgColor()->setSelected(saveBrush.fgColor());
     params.bgColor()->setSelected(saveBrush.bgColor());
+    params.imageColor()->setSelected(saveBrush.imageColor());
     params.inkType()->setSelected(saveBrush.inkType());
     params.inkOpacity()->setSelected(saveBrush.inkOpacity());
     params.shade()->setSelected(saveBrush.shade());
@@ -310,6 +313,8 @@ private:
       saveBrush.fgColor(params.fgColor()->isSelected());
     if (saveBrush.bgColor() != params.bgColor()->isSelected())
       saveBrush.bgColor(params.bgColor()->isSelected());
+    if (saveBrush.imageColor() != params.imageColor()->isSelected())
+      saveBrush.imageColor(params.imageColor()->isSelected());
     if (saveBrush.inkType() != params.inkType()->isSelected())
       saveBrush.inkType(params.inkType()->isSelected());
     if (saveBrush.inkOpacity() != params.inkOpacity()->isSelected())

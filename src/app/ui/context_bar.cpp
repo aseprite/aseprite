@@ -1795,6 +1795,25 @@ void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
     if (brush.hasFlag(BrushSlot::Flags::BgColor))
       pref.colorBar.bgColor(brush.bgColor());
 
+    // If the image/stamp brush doesn't have the "ImageColor" flag, it
+    // means that we have to change the image color to the current
+    // "foreground color".
+    if (brush.brush() &&
+        brush.brush()->type() == doc::kImageBrushType &&
+        !brush.hasFlag(BrushSlot::Flags::ImageColor)) {
+      auto pixelFormat = brush.brush()->image()->pixelFormat();
+
+      brush.brush()->setImageColor(
+        Brush::ImageColor::MainColor,
+        color_utils::color_for_image(pref.colorBar.fgColor(),
+                                     pixelFormat));
+
+      brush.brush()->setImageColor(
+        Brush::ImageColor::BackgroundColor,
+        color_utils::color_for_image(pref.colorBar.bgColor(),
+                                     pixelFormat));
+    }
+
     if (brush.hasFlag(BrushSlot::Flags::InkType))
       setInkType(brush.inkType());
 
@@ -1884,6 +1903,7 @@ BrushSlot ContextBar::createBrushSlotFromPreferences()
   if (saveBrush.brushAngle()) flags |= int(BrushSlot::Flags::BrushAngle);
   if (saveBrush.fgColor()) flags |= int(BrushSlot::Flags::FgColor);
   if (saveBrush.bgColor()) flags |= int(BrushSlot::Flags::BgColor);
+  if (saveBrush.imageColor()) flags |= int(BrushSlot::Flags::ImageColor);
   if (saveBrush.inkType()) flags |= int(BrushSlot::Flags::InkType);
   if (saveBrush.inkOpacity()) flags |= int(BrushSlot::Flags::InkOpacity);
   if (saveBrush.shade()) flags |= int(BrushSlot::Flags::Shade);

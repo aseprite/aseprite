@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,7 +28,8 @@ public:
     InkType      = 0x0040,
     InkOpacity   = 0x0080,
     Shade        = 0x0100,
-    PixelPerfect = 0x0200
+    PixelPerfect = 0x0200,
+    ImageColor   = 0x0400,
   };
 
   BrushSlot(Flags flags = Flags(0),
