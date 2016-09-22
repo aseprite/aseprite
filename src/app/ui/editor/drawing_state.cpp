@@ -52,10 +52,6 @@ DrawingState::~DrawingState()
 
 void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
 {
-  // It's needed to clear and redraw the brush boundaries after the
-  // first mouse pressed/point shape if drawn.
-  HideBrushPreview hide(editor->brushPreview());
-
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
   editor->renderEngine().setPreviewImage(
