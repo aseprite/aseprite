@@ -60,6 +60,7 @@ public:
   const Option& splitTags() const { return m_splitTags; }
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
+  const Option& ignoreLayer() const { return m_ignoreLayer; }
   const Option& frameTag() const { return m_frameTag; }
   const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
@@ -103,6 +104,7 @@ private:
   Option& m_splitTags;
   Option& m_layer;
   Option& m_allLayers;
+  Option& m_ignoreLayer;
   Option& m_frameTag;
   Option& m_frameRange;
   Option& m_ignoreEmpty;

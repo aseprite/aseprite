@@ -24,7 +24,8 @@ namespace app {
     std::string filename;
     std::string filenameFormat;
     std::string frameTag;
-    std::vector<std::string> importLayers;
+    std::vector<std::string> includeLayers;
+    std::vector<std::string> excludeLayers;
     doc::frame_t fromFrame, toFrame;
     bool splitLayers;
     bool splitTags;
@@ -43,6 +44,11 @@ namespace app {
 
     bool hasFrameRange() const {
       return (fromFrame >= 0 && toFrame >= 0);
+    }
+
+    bool hasLayersFilter() const {
+      return (!includeLayers.empty() ||
+              !excludeLayers.empty());
     }
 
     FileOpROI roi() const;

@@ -26,6 +26,9 @@ namespace app {
                      const std::string& filename) override;
     void exportFiles(DocumentExporter& exporter) override;
     void execScript(const std::string& filename) override;
+
+  private:
+    void showLayersFilter(const CliOpenFile& cof);
   };
 
 } // namespace app

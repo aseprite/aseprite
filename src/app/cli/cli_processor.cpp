@@ -36,7 +36,7 @@ namespace app {
 
 namespace {
 
-std::string get_layer_path(Layer* layer)
+std::string get_layer_path(const Layer* layer)
 {
   std::string path;
   for (; layer != layer->sprite()->root(); layer=layer->parent()) {
@@ -47,7 +47,9 @@ std::string get_layer_path(Layer* layer)
   return path;
 }
 
-bool match_path(const std::string& filter, const std::string& layer_path)
+bool match_path(const std::string& filter,
+                const std::string& layer_path,
+                const bool exclude)
 {
   if (filter == layer_path)
     return true;
@@ -61,21 +63,45 @@ bool match_path(const std::string& filter, const std::string& layer_path)
       return false;
   }
 
+  // Exclude group itself when all children are excluded. This special
+  // case is only for exclusion because if we leave the group
+  // selected, the propagation of the selection will include all
+  // visible children too (see SelectedLayers::propagateSelection()).
+  if (exclude &&
+      a.size() > 1 &&
+      a.size() == b.size()+1 &&
+      a[a.size()-1] == "*")
+    return true;
+
   return (a.size() <= b.size());
 }
 
+bool filter_layer(const Layer* layer,
+                  const std::string& layer_path,
+                  const std::vector<std::string>& filters,
+                  const bool result)
+{
+  if (filters.empty())
+    return true;
+
+  for (const auto& filter : filters) {
+    if (layer->name() == filter ||
+        match_path(filter, layer_path, !result))
+      return result;
+  }
+  return !result;
+}
+
 void filter_layers(const LayerList& layers,
-                   const std::vector<std::string>& filters,
+                   const CliOpenFile& cof,
                    SelectedLayers& filteredLayers)
 {
-  for (const auto& filter : filters) {
-    bool filterWithGroup = (filter.find('/') != std::string::npos);
+  for (Layer* layer : layers) {
+    auto layer_path = get_layer_path(layer);
 
-    for (Layer* layer : layers) {
-      if (layer->name() == filter ||
-          (filterWithGroup && match_path(filter, get_layer_path(layer))))
-        filteredLayers.insert(layer);
-    }
+    if (filter_layer(layer, layer_path, cof.includeLayers, true) &&
+        filter_layer(layer, layer_path, cof.excludeLayers, false))
+      filteredLayers.insert(layer);
   }
 }
 
@@ -174,7 +200,11 @@ void CliProcessor::process()
         }
         // --layer <layer-name>
         else if (opt == &m_options.layer()) {
-          cof.importLayers.push_back(value.value());
+          cof.includeLayers.push_back(value.value());
+        }
+        // --ignore-layer <layer-name>
+        else if (opt == &m_options.ignoreLayer()) {
+          cof.excludeLayers.push_back(value.value());
         }
         // --all-layers
         else if (opt == &m_options.allLayers()) {
@@ -418,9 +448,9 @@ bool CliProcessor::openFile(CliOpenFile& cof)
         }
       }
 
-      if (!cof.importLayers.empty()) {
+      if (cof.hasLayersFilter()) {
         SelectedLayers filteredLayers;
-        filter_layers(doc->sprite()->allLayers(), cof.importLayers, filteredLayers);
+        filter_layers(doc->sprite()->allLayers(), cof, filteredLayers);
 
         if (cof.splitLayers) {
           for (Layer* layer : filteredLayers) {
@@ -499,8 +529,8 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   }
   else {
     // Filter layers
-    if (!cof.importLayers.empty())
-      filter_layers(allLayers, cof.importLayers, filteredLayers);
+    if (cof.hasLayersFilter())
+      filter_layers(allLayers, cof, filteredLayers);
 
     // All visible layers
     layers.push_back(nullptr);
@@ -575,7 +605,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
         else if (layer->parent() != layer->sprite()->root())
           fnInfo.groupName(layer->parent()->name());
 
-        itemCof.importLayers.push_back(layer->name());
+        itemCof.includeLayers.push_back(layer->name());
       }
       if (frameTag) {
         fnInfo

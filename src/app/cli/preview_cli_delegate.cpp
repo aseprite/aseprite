@@ -69,12 +69,7 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.allLayers)
     std::cout << "  - Make all layers visible\n";
 
-  if (!cof.importLayers.empty()) {
-    std::cout << "  - Filter layers:";
-    for (const auto& filter : cof.importLayers)
-      std::cout << ' ' << filter;
-    std::cout << "\n";
-  }
+  showLayersFilter(cof);
 }
 
 void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
@@ -101,12 +96,7 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
             << cof.document->sprite()->width() << "x"
             << cof.document->sprite()->height() << "\n";
 
-  if (!cof.importLayers.empty()) {
-    std::cout << "  - Filter layers:";
-    for (const auto& filter : cof.importLayers)
-      std::cout << ' ' << filter;
-    std::cout << "\n";
-  }
+  showLayersFilter(cof);
 
   if (cof.hasFrameTag()) {
     std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
@@ -203,6 +193,23 @@ void PreviewCliDelegate::exportFiles(DocumentExporter& exporter)
 void PreviewCliDelegate::execScript(const std::string& filename)
 {
   std::cout << "- Run script: '" << filename << "'\n";
+}
+
+void PreviewCliDelegate::showLayersFilter(const CliOpenFile& cof)
+{
+  if (!cof.includeLayers.empty()) {
+    std::cout << "  - Include layers:";
+    for (const auto& filter : cof.includeLayers)
+      std::cout << ' ' << filter;
+    std::cout << "\n";
+  }
+
+  if (!cof.excludeLayers.empty()) {
+    std::cout << "  - Exclude layers:";
+    for (const auto& filter : cof.excludeLayers)
+      std::cout << ' ' << filter;
+    std::cout << "\n";
+  }
 }
 
 } // namespace app
