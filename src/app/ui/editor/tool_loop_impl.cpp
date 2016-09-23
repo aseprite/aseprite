@@ -241,10 +241,15 @@ public:
   }
 
   void updateDirtyArea() override {
-    // TODO find a way to avoid calling hide/show brush preview here
+    // This is necessary here so the "on sprite crosshair" is hidden,
+    // we update screen pixels with the new sprite, and then we show
+    // the crosshair saving the updated pixels. It fixes problems with
+    // filled shape tools when we release the button, or paint-bucket
+    // when we press the button.
     HideBrushPreview hide(m_editor->brushPreview());
-    m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea,
-                                           m_frame);
+
+    m_document->notifySpritePixelsModified(
+      m_sprite, m_dirtyArea, m_frame);
   }
 
   void updateStatusBar(const char* text) override {

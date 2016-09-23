@@ -305,6 +305,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     if (layerEdges)
       layerEdgesOption(false);
 
+    // We need to clear and redraw the brush boundaries after the
+    // first mouse pressed/point shape if drawn. This is to avoid
+    // graphical glitches (invalid areas in the ToolLoop's src/dst
+    // images).
+    HideBrushPreview hide(editor->brushPreview());
+
     tools::ToolLoop* toolLoop = create_tool_loop(editor, context);
     if (toolLoop) {
       EditorStatePtr newState(new DrawingState(toolLoop));

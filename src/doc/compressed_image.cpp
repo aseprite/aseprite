@@ -42,12 +42,12 @@ CompressedImage::CompressedImage(const Image* image,
       scanline.x = x;
 
       for (++x; x<image->width(); ++x) {
+        if (maskBitmap && !get_pixel_fast<BitmapTraits>(maskBitmap, x, y))
+          break;
+
         c2 = get_pixel(image, x, y);
 
         if (diffColors && c1 != c2)
-          break;
-
-        if (maskBitmap && !get_pixel_fast<BitmapTraits>(maskBitmap, x, y))
           break;
 
         if (!diffColors && !maskBitmap && c2 == mask)
@@ -55,7 +55,8 @@ CompressedImage::CompressedImage(const Image* image,
       }
 
       scanline.w = x - scanline.x;
-      m_scanlines.push_back(scanline);
+      if (scanline.w > 0)
+        m_scanlines.push_back(scanline);
     }
   }
 }

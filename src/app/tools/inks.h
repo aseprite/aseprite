@@ -53,10 +53,10 @@ public:
         break;
     }
 
-    int depth = MID(0, loop->sprite()->pixelFormat(), 2);
+    auto pixelFormat = loop->sprite()->pixelFormat();
 
     if (loop->getBrush()->type() == doc::kImageBrushType)
-      m_proc = ink_processing[INK_BRUSH][depth];
+      m_proc = get_ink_proc<BrushInkProcessing>(pixelFormat);
     else {
       switch (m_type) {
         case Simple: {
@@ -81,19 +81,19 @@ public:
 
           // Use a faster ink, direct copy
           if (opaque)
-            m_proc = ink_processing[INK_COPY][depth];
+            m_proc = get_ink_proc<CopyInkProcessing>(pixelFormat);
           else
-            m_proc = ink_processing[INK_TRANSPARENT][depth];
+            m_proc = get_ink_proc<TransparentInkProcessing>(pixelFormat);
           break;
         }
         case Copy:
-          m_proc = ink_processing[INK_COPY][depth];
+          m_proc = get_ink_proc<CopyInkProcessing>(pixelFormat);
           break;
         case LockAlpha:
-          m_proc = ink_processing[INK_LOCKALPHA][depth];
+          m_proc = get_ink_proc<LockAlphaInkProcessing>(pixelFormat);
           break;
         default:
-          m_proc = ink_processing[INK_TRANSPARENT][depth];
+          m_proc = get_ink_proc<TransparentInkProcessing>(pixelFormat);
           break;
       }
     }
@@ -120,7 +120,7 @@ public:
   bool isShading() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
-    m_proc = ink_processing[INK_SHADING][MID(0, loop->sprite()->pixelFormat(), 2)];
+    m_proc = get_ink_proc<ShadingInkProcessing>(loop->sprite()->pixelFormat());
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
@@ -207,16 +207,16 @@ public:
         color_t secondary = app_get_color_to_clear_layer(loop->getLayer());
 
         if (loop->getOpacity() == 255) {
-          m_proc = ink_processing[INK_COPY][MID(0, loop->sprite()->pixelFormat(), 2)];
+          m_proc = get_ink_proc<CopyInkProcessing>(loop->sprite()->pixelFormat());
         }
         else {
           // For opaque layers
           if (loop->getLayer()->isBackground()) {
-            m_proc = ink_processing[INK_TRANSPARENT][MID(0, loop->sprite()->pixelFormat(), 2)];
+            m_proc = get_ink_proc<TransparentInkProcessing>(loop->sprite()->pixelFormat());
           }
           // For transparent layers
           else {
-            m_proc = ink_processing[INK_MERGE][MID(0, loop->sprite()->pixelFormat(), 2)];
+            m_proc = get_ink_proc<MergeInkProcessing>(loop->sprite()->pixelFormat());
 
             if (loop->sprite()->pixelFormat() == IMAGE_INDEXED) {
               primary = loop->sprite()->transparentColor();
@@ -231,14 +231,14 @@ public:
       }
 
       case ReplaceFgWithBg:
-        m_proc = ink_processing[INK_REPLACE][MID(0, loop->sprite()->pixelFormat(), 2)];
+        m_proc = get_ink_proc<ReplaceInkProcessing>(loop->sprite()->pixelFormat());
 
         loop->setPrimaryColor(loop->getFgColor());
         loop->setSecondaryColor(loop->getBgColor());
         break;
 
       case ReplaceBgWithFg:
-        m_proc = ink_processing[INK_REPLACE][MID(0, loop->sprite()->pixelFormat(), 2)];
+        m_proc = get_ink_proc<ReplaceInkProcessing>(loop->sprite()->pixelFormat());
 
         loop->setPrimaryColor(loop->getBgColor());
         loop->setSecondaryColor(loop->getFgColor());
@@ -263,7 +263,7 @@ public:
   bool needsSpecialSourceArea() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
-    m_proc = ink_processing[INK_BLUR][MID(0, loop->sprite()->pixelFormat(), 2)];
+    m_proc = get_ink_proc<BlurInkProcessing>(loop->sprite()->pixelFormat());
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
@@ -291,7 +291,7 @@ public:
   bool needsSpecialSourceArea() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
-    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->sprite()->pixelFormat(), 2)];
+    m_proc = get_ink_proc<JumbleInkProcessing>(loop->sprite()->pixelFormat());
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
@@ -313,11 +313,18 @@ class SelectionInk : public Ink {
   bool m_modify_selection;
   Mask m_mask;
   Rect m_maxBounds;
+  AlgoHLine m_proc;
 
 public:
-  SelectionInk() { m_modify_selection = false; }
+  SelectionInk() {
+    m_modify_selection = false;
+  }
 
   Ink* clone() override { return new SelectionInk(*this); }
+
+  void prepareInk(ToolLoop* loop) override {
+    m_proc = get_ink_proc<XorInkProcessing>(loop->sprite()->pixelFormat());
+  }
 
   bool isSelection() const override { return true; }
   bool needsCelCoordinates() const override {
@@ -340,8 +347,7 @@ public:
     }
     // TODO show the selection-preview with a XOR color or something like that
     else {
-      ink_processing[INK_XOR][MID(0, loop->sprite()->pixelFormat(), 2)]
-        (x1, y, x2, loop);
+      (*m_proc)(x1, y, x2, loop);
     }
   }
 

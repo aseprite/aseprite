@@ -75,6 +75,7 @@ public:
   }
 
   Key* key() { return m_key; }
+  AppMenuItem* menuitem() const { return m_menuitem; }
 
   void restoreKeys() {
     if (m_key && m_keyOrig)
@@ -502,7 +503,8 @@ private:
 
             KeyItem* copyItem =
               new KeyItem(itemText,
-                          keyItem->key(), nullptr, 0);
+                          keyItem->key(),
+                          keyItem->menuitem(), 0);
             searchList()->addChild(copyItem);
           }
         }
