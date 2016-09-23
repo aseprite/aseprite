@@ -1066,46 +1066,26 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
 
 //////////////////////////////////////////////////////////////////////
 
-enum {
-  INK_COPY,
-  INK_LOCKALPHA,
-  INK_TRANSPARENT,
-  INK_MERGE,
-  INK_BLUR,
-  INK_REPLACE,
-  INK_JUMBLE,
-  INK_SHADING,
-  INK_XOR,
-  INK_BRUSH,
-  MAX_INKS
-};
-
-template<typename InkProcessing>
-void ink_processing_algo(int x1, int y, int x2, void* data)
+template<template<typename> class InkProcessing,
+         typename ImageTraits>
+void ink_proc(int x1, int y, int x2, void* data)
 {
   ToolLoop* loop = reinterpret_cast<ToolLoop*>(data);
-  InkProcessing ink(loop);
+  InkProcessing<ImageTraits> ink(loop);
   ink(x1, y, x2, loop);
 }
 
-AlgoHLine ink_processing[][3] =
+template<template<typename> class InkProcessing>
+AlgoHLine get_ink_proc(PixelFormat pixelFormat)
 {
-#define DEFINE_INK(name)                         \
-  { ink_processing_algo<name<RgbTraits> >,       \
-    ink_processing_algo<name<GrayscaleTraits> >, \
-    ink_processing_algo<name<IndexedTraits> > }
-
-  DEFINE_INK(CopyInkProcessing),
-  DEFINE_INK(LockAlphaInkProcessing),
-  DEFINE_INK(TransparentInkProcessing),
-  DEFINE_INK(MergeInkProcessing),
-  DEFINE_INK(BlurInkProcessing),
-  DEFINE_INK(ReplaceInkProcessing),
-  DEFINE_INK(JumbleInkProcessing),
-  DEFINE_INK(ShadingInkProcessing),
-  DEFINE_INK(XorInkProcessing),
-  DEFINE_INK(BrushInkProcessing)
-};
+  switch (pixelFormat) {
+    case IMAGE_RGB:       return ink_proc<InkProcessing, RgbTraits>;
+    case IMAGE_GRAYSCALE: return ink_proc<InkProcessing, GrayscaleTraits>;
+    case IMAGE_INDEXED:   return ink_proc<InkProcessing, IndexedTraits>;
+  }
+  ASSERT(false);
+  return nullptr;
+}
 
 } // anonymous namespace
 } // namespace tools
