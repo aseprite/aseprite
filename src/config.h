@@ -23,7 +23,7 @@
 
 // General information
 #define PACKAGE "Aseprite"
-#define VERSION "1.1.8-dev"
+#define VERSION "1.1.9-dev"
 
 #ifdef CUSTOM_WEBSITE_URL
 #define WEBSITE                 CUSTOM_WEBSITE_URL // To test web server
