@@ -62,6 +62,9 @@
       <key command="LayerProperties" shortcut="Shift+P" />
       <key command="LayerVisibility" shortcut="Shift+X" />
       <key command="NewLayer" shortcut="Shift+N" />
+      <key command="NewLayer" shortcut="Alt+Shift+N">
+        <param name="group" value="true" />
+      </key>
       <key command="GotoPreviousLayer" shortcut="Down" context="Normal" />
       <key command="GotoNextLayer" shortcut="Up" context="Normal" />
       <!-- Frame -->
