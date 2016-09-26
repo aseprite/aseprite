@@ -146,7 +146,7 @@ Timeline::Timeline()
   , m_scroll(false)
   , m_fromTimeline(false)
   , m_thumbnailsOverlayVisible(false)
-  , m_thumbnailsOverlayDirection(int(frameBoxWidth()*1.5),
+  , m_thumbnailsOverlayDirection(int(frameBoxWidth()*1.0),
                                  int(frameBoxWidth()*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
@@ -178,8 +178,15 @@ Timeline::~Timeline()
   delete m_confPopup;
 }
 
+void Timeline::setZoom(double zoom)
+{
+  m_zoom = MID(1.0, zoom, 10.0);
+}
+
 void Timeline::onThumbnailsPrefChange()
 {
+  setZoom(docPref().thumbnails.zoom());
+  m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
   invalidate();
 }
 
@@ -214,6 +221,8 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
     base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+
+  setZoom(docPref.thumbnails.zoom());
 
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
@@ -1074,8 +1083,7 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kTouchMagnifyMessage:
-      m_zoom = m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification();
-      m_zoom = MID(1.0, m_zoom, 10.0);
+      setZoom(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
       invalidate();
       break;
   }
@@ -1694,6 +1702,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
                           isFrameActive(frame));
   const bool is_empty = (image == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, frame));
+  gfx::Rect full_bounds = bounds;
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
@@ -1703,62 +1712,82 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
   else
     drawPart(g, bounds, NULL, styles.timelineBox(), is_active, is_hover);
 
-  // Fill with an user-defined custom color.
-  if (cel && cel->data()) {
-    doc::color_t celColor = cel->data()->userData().color();
-    if (doc::rgba_geta(celColor) > 0) {
-      auto b2 = bounds;
-      b2.shrink(1*guiscale()).inflate(1*guiscale());
-      g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
-                            doc::rgba_getg(celColor),
-                            doc::rgba_getb(celColor),
-                            doc::rgba_geta(celColor)),
-                  b2);
+  if ((docPref().thumbnails.enabled() || m_zoom > 1) && image) {
+    gfx::Rect thumb_bounds = gfx::Rect(bounds).shrink(guiscale()).inflate(guiscale(), guiscale());
+    if(m_zoom > 1)
+      thumb_bounds.inflate(0, -headerBoxHeight()).offset(0, headerBoxHeight());
+
+    if(!thumb_bounds.isEmpty()) {
+      she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds.size());
+
+      g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
+
+      thumb_surf->dispose();
     }
   }
 
-  skin::Style* style;
-  bool fromLeft = false;
-  bool fromRight = false;
-  if (is_empty || !data) {
-    style = styles.timelineEmptyFrame();
-  }
-  else {
-    // Calculate which cel is next to this one (in previous and next
-    // frame).
-    Cel* left = (data->prevIt != data->end ? *data->prevIt: nullptr);
-    Cel* right = (data->nextIt != data->end ? *data->nextIt: nullptr);
-    if (left && left->frame() != frame-1) left = nullptr;
-    if (right && right->frame() != frame+1) right = nullptr;
+  if (!docPref().thumbnails.enabled() || m_zoom > 1 || !image) {
+    bounds.h = headerBoxHeight();
 
-    ObjectId leftImg = (left ? left->image()->id(): 0);
-    ObjectId rightImg = (right ? right->image()->id(): 0);
-    fromLeft = (leftImg == cel->image()->id());
-    fromRight = (rightImg == cel->image()->id());
+    // Fill with an user-defined custom color.
+    if (cel && cel->data()) {
+      doc::color_t celColor = cel->data()->userData().color();
+      if (doc::rgba_geta(celColor) > 0) {
+        auto b2 = bounds;
+        b2.shrink(1 * guiscale()).inflate(1 * guiscale());
+        g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
+          doc::rgba_getg(celColor),
+          doc::rgba_getb(celColor),
+          doc::rgba_geta(celColor)),
+          b2);
+      }
+    }
 
-    if (fromLeft && fromRight)
-      style = styles.timelineFromBoth();
-    else if (fromLeft)
-      style = styles.timelineFromLeft();
-    else if (fromRight)
-      style = styles.timelineFromRight();
-    else
-      style = styles.timelineKeyframe();
-  }
-  drawPart(g, bounds, NULL, style, is_active, is_hover);
+    bounds.w = headerBoxWidth();
 
-  // Draw decorators to link the activeCel with its links.
-  if (data && data->activeIt != data->end)
-    drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
+    skin::Style* style;
+    bool fromLeft = false;
+    bool fromRight = false;
+    if (is_empty || !data) {
+      style = styles.timelineEmptyFrame();
+    }
+    else {
+      // Calculate which cel is next to this one (in previous and next
+      // frame).
+      Cel* left = (data->prevIt != data->end ? *data->prevIt: nullptr);
+      Cel* right = (data->nextIt != data->end ? *data->nextIt: nullptr);
+      if (left && left->frame() != frame-1) left = nullptr;
+      if (right && right->frame() != frame+1) right = nullptr;
 
-  if (docPref().thumbnails.enabled() && image) {
-    gfx::Rect thumb_bounds = gfx::Rect(bounds).offset(1,1).inflate(-1,-1);
+      ObjectId leftImg = (left ? left->image()->id(): 0);
+      ObjectId rightImg = (right ? right->image()->id(): 0);
+      fromLeft = (leftImg == cel->image()->id());
+      fromRight = (rightImg == cel->image()->id());
 
-    she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds.size());
+      if (fromLeft && fromRight)
+        style = styles.timelineFromBoth();
+      else if (fromLeft)
+        style = styles.timelineFromLeft();
+      else if (fromRight)
+        style = styles.timelineFromRight();
+      else
+        style = styles.timelineKeyframe();
+    }
+    drawPart(g, bounds, NULL, style, is_active, is_hover);
 
-    g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
+    if (m_zoom > 1) {
+      if (style == styles.timelineFromBoth() ||
+          style == styles.timelineFromRight()) {
+        style = styles.timelineFromBoth();
+        while ((bounds.x += bounds.w) < full_bounds.x + full_bounds.w) {
+          drawPart(g, bounds, NULL, style, is_active, is_hover);
+        }
+      }
+    }
 
-    thumb_surf->dispose();
+    // Draw decorators to link the activeCel with its links.
+    if (data && data->activeIt != data->end)
+      drawCelLinkDecorators(g, full_bounds, cel, frame, is_active, is_hover, data);
   }
 }
 
@@ -1769,7 +1798,7 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
   if (docPref().thumbnails.overlayEnabled() && hit.part == PART_CEL) {
     m_thumbnailsOverlayHit = hit;
 
-    int max_size = frameBoxWidth() * docPref().thumbnails.overlaySize();
+    int max_size = headerBoxWidth() * docPref().thumbnails.overlaySize();
     int width, height;
     if (m_sprite->width() > m_sprite->height()) {
       width  = max_size;
@@ -1793,7 +1822,7 @@ void Timeline::updateCelOverlayBounds(const Hit& hit)
 
     if (!client_bounds.contains(inner)) {
       m_thumbnailsOverlayDirection = gfx::Point(
-        bounds_cel.x < center.x ? (int)(frameBoxWidth()*1.5) : -width -(int)(frameBoxWidth()*0.5),
+        bounds_cel.x < center.x ? (int)(frameBoxWidth()*1.0) : -width,
         bounds_cel.y < center.y ? (int)(frameBoxWidth()*0.5) : -height+(int)(frameBoxWidth()*0.5)
       );
       inner.setOrigin(gfx::Point(
@@ -1868,12 +1897,15 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
   overlay_surf->dispose();
 }
 
-void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
+void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& full_bounds,
                                      Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                      DrawCelData* data)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
   ObjectId imageId = (*data->activeIt)->image()->id();
+
+  gfx::Rect bounds = gfx::Rect(full_bounds).setSize(gfx::Size(headerBoxWidth(), headerBoxHeight()));
+  skin::Style* style = NULL;
 
   // Links at the left or right side
   bool left = (data->firstLink != data->end ? frame > (*data->firstLink)->frame(): false);
@@ -1883,17 +1915,28 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame()-1);
       if (!prevCel || prevCel->image()->id() != imageId)
-        drawPart(g, bounds, NULL, styles.timelineLeftLink(), is_active, is_hover);
+        style = styles.timelineLeftLink();
     }
     if (right) {
       Cel* nextCel = m_layer->cel(cel->frame()+1);
       if (!nextCel || nextCel->image()->id() != imageId)
-        drawPart(g, bounds, NULL, styles.timelineRightLink(), is_active, is_hover);
+        style = styles.timelineRightLink();
     }
   }
   else {
     if (left && right)
-      drawPart(g, bounds, NULL, styles.timelineBothLinks(), is_active, is_hover);
+      style = styles.timelineBothLinks();
+  }
+
+  if (style) {
+    drawPart(g, bounds, NULL, style, is_active, is_hover);
+
+    if (m_zoom > 1 && (style == styles.timelineBothLinks() || style == styles.timelineRightLink())) {
+      style = styles.timelineBothLinks();
+      while ((bounds.x += bounds.w) < full_bounds.x + full_bounds.w) {
+        drawPart(g, bounds, NULL, style, is_active, is_hover);
+      }
+    }
   }
 }
 
@@ -2123,28 +2166,28 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         m_separator_x + m_separator_w, bounds.h - y);
 
     case PART_HEADER_EYE:
-      return gfx::Rect(bounds.x + frameBoxWidth()*0, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*0, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_PADLOCK:
-      return gfx::Rect(bounds.x + frameBoxWidth()*1, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*1, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_CONTINUOUS:
-      return gfx::Rect(bounds.x + frameBoxWidth()*2, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*2, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_GEAR:
-      return gfx::Rect(bounds.x + frameBoxWidth()*3, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*3, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_ONIONSKIN:
-      return gfx::Rect(bounds.x + frameBoxWidth()*4, bounds.y + y,
-                       frameBoxWidth(), headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*4, bounds.y + y,
+                       headerBoxWidth(), headerBoxHeight());
 
     case PART_HEADER_LAYER:
-      return gfx::Rect(bounds.x + frameBoxWidth()*5, bounds.y + y,
-                       m_separator_x - frameBoxWidth()*5, headerBoxHeight());
+      return gfx::Rect(bounds.x + headerBoxWidth()*5, bounds.y + y,
+                       m_separator_x - headerBoxWidth()*5, headerBoxHeight());
 
     case PART_HEADER_FRAME:
       return gfx::Rect(
@@ -2170,29 +2213,29 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          headerBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_PADLOCK_ICON:
       if (validLayer(hit.layer)) {
-        return gfx::Rect(bounds.x + frameBoxWidth(),
+        return gfx::Rect(bounds.x + headerBoxWidth(),
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          headerBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_CONTINUOUS_ICON:
       if (validLayer(hit.layer)) {
-        return gfx::Rect(bounds.x + 2*frameBoxWidth(),
+        return gfx::Rect(bounds.x + 2* headerBoxWidth(),
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          headerBoxWidth(), layerBoxHeight());
       }
       break;
 
     case PART_LAYER_TEXT:
       if (validLayer(hit.layer)) {
-        int x = frameBoxWidth()*3;
+        int x = headerBoxWidth()*3;
         return gfx::Rect(bounds.x + x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
           m_separator_x - x, layerBoxHeight());
@@ -2972,18 +3015,22 @@ skin::SkinTheme* Timeline::skinTheme() const
 
 gfx::Size Timeline::celBoxSize() const
 {
-  int s = int(m_zoom*12*guiscale());
-  return gfx::Size(s, s);
+  return gfx::Size(frameBoxWidth(), layerBoxHeight());
+}
+
+int Timeline::headerBoxWidth() const
+{
+  return int(12 * guiscale());
 }
 
 int Timeline::headerBoxHeight() const
 {
-  return int(m_zoom*12*guiscale());
+  return int(12 * guiscale());
 }
 
 int Timeline::layerBoxHeight() const
 {
-  return int(m_zoom*12*guiscale());
+  return int(m_zoom*12*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
 }
 
 int Timeline::frameBoxWidth() const

@@ -31,7 +31,6 @@ namespace app {
 
       DocumentPreferences& docPref = Preferences::instance().document(document);
 
-      int opacity = docPref.thumbnails.opacity();
       doc::color_t bg1 = color_utils::color_for_image(docPref.bg.color1(), image->pixelFormat());
       doc::color_t bg2 = color_utils::color_for_image(docPref.bg.color2(), image->pixelFormat());
 
@@ -55,7 +54,7 @@ namespace app {
       base::UniquePtr<doc::Image> thumb_img(doc::Image::create(
         image->pixelFormat(), thumb_size.w, thumb_size.h));
 
-      double alpha = opacity / 255.0;
+      double alpha = 255.0;
       uint8_t bg_r[] = { rgba_getr(bg1), rgba_getr(bg2) };
       uint8_t bg_g[] = { rgba_getg(bg1), rgba_getg(bg2) };
       uint8_t bg_b[] = { rgba_getb(bg1), rgba_getb(bg2) };
@@ -100,7 +99,7 @@ namespace app {
         sprite->palette(frame),
         cel_image_on_thumb.x,
         cel_image_on_thumb.y,
-        opacity, BlendMode::NORMAL);
+        255, BlendMode::NORMAL);
 
       she::Surface* thumb_surf = she::instance()->createRgbaSurface(
         thumb_img->width(), thumb_img->height());

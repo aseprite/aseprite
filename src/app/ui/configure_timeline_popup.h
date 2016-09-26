@@ -41,7 +41,7 @@ namespace app {
     void onCurrentLayerChange();
     void onPositionChange();
 
-    void onThumbOpacityChange();
+    void onZoomChange();
     void onThumbEnabledChange();
     void onThumbOverlayEnabledChange();
     void onThumbOverlaySizeChange();

@@ -301,6 +301,7 @@ namespace app {
     // Theme/dimensions
     skin::SkinTheme* skinTheme() const;
     gfx::Size celBoxSize() const;
+    int headerBoxWidth() const;
     int headerBoxHeight() const;
     int layerBoxHeight() const;
     int frameBoxWidth() const;
@@ -309,6 +310,7 @@ namespace app {
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
     void onThumbnailsPrefChange();
+    void setZoom(double zoom);
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;

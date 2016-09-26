@@ -275,10 +275,10 @@
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
     </section>
     <section id="thumbnails">
+      <option id="zoom" type="double" default="1" />
       <option id="enabled" type="bool" default="false" />
       <option id="overlay_enabled" type="bool" default="false" />
       <option id="overlay_size" type="int" default="5" />
-      <option id="opacity" type="int" default="255" />
     </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />
