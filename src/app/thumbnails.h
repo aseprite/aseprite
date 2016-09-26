@@ -22,8 +22,9 @@ namespace she {
 namespace app {
   namespace thumb {
 
-    she::Surface* get_cel_thumbnail(const doc::Cel* cel, gfx::Size thumb_size,
-      gfx::Rect cel_image_on_thumb = gfx::Rect());
+    she::Surface* get_cel_thumbnail(const doc::Cel* cel,
+                                    const gfx::Size& thumb_size,
+                                    gfx::Rect cel_image_on_thumb = gfx::Rect());
 
   } // thumb
 } // app
