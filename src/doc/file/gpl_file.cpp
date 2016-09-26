@@ -9,6 +9,7 @@
 #endif
 
 #include "base/fstream_path.h"
+#include "base/log.h"
 #include "base/split_string.h"
 #include "base/trim_string.h"
 #include "base/unique_ptr.h"

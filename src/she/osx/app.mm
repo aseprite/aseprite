@@ -12,6 +12,7 @@
 
 #include "she/osx/app.h"
 
+#include "base/debug.h"
 #include "base/thread.h"
 #include "she/osx/app_delegate.h"
 

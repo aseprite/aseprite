@@ -17,6 +17,8 @@
 #include "doc/rgbmap.h"
 #include "gfx/point.h"
 
+#include <cmath>
+
 namespace doc {
 namespace algorithm {
 
@@ -31,9 +33,9 @@ void resize_image_nearest(const Image* src, Image* dst)
   auto dstIt = dstBits.begin();
 
   for (int y=0; y<dst->height(); ++y) {
-    py = floor(y * y_ratio);
+    py = std::floor(y * y_ratio);
     for (int x=0; x<dst->width(); ++x, ++dstIt) {
-      px = floor(x * x_ratio);
+      px = std::floor(x * x_ratio);
       *dstIt = get_pixel_fast<ImageTraits>(src, px, py);
     }
   }
@@ -69,8 +71,8 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
       dv = (src->height()-1) * 1.0 / (dst->height()-1);
       for (y=0; y<dst->height(); ++y) {
         for (x=0; x<dst->width(); ++x) {
-          u_floor = (int)floor(u);
-          v_floor = (int)floor(v);
+          u_floor = (int)std::floor(u);
+          v_floor = (int)std::floor(v);
 
           if (u_floor > src->width()-1) {
             u_floor = src->width()-1;
