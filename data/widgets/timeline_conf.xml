@@ -20,13 +20,6 @@
     <check id="thumb_overlay_enabled" text="Overlay"/>
     <label text="Size:" />
     <slider min="2" max="10" id="thumb_overlay_size" cell_align="horizontal" width="128" />
-
-    <label text="Quality:" />
-    <combobox id="thumb_quality" expansive="true" cell_hspan="2" />
-
-    <label text="Background:" />
-    <colorpicker id="thumb_background" expansive="true" cell_hspan="2" />
-
   </grid>
 
   <separator cell_hspan="2" text="Onion Skin:" left="true" horizontal="true" />
