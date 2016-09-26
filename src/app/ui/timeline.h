@@ -297,11 +297,23 @@ namespace app {
     int topHeight() const;
 
     DocumentPreferences& docPref() const;
+
+    // Theme/dimensions
     skin::SkinTheme* skinTheme() const;
+    gfx::Size celBoxSize() const;
+    int headerBoxHeight() const;
+    int layerBoxHeight() const;
+    int frameBoxWidth() const;
+    int outlineWidth() const;
+
+    void updateCelOverlayBounds(const Hit& hit);
+    void drawCelOverlay(ui::Graphics* g);
+    void onThumbnailsPrefChange();
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
+    double m_zoom;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
@@ -335,6 +347,14 @@ namespace app {
     bool m_fromTimeline;
 
     AniControls m_aniControls;
+
+    // Data used for thumbnails.
+    bool m_thumbnailsOverlayVisible;
+    gfx::Rect m_thumbnailsOverlayInner;
+    gfx::Rect m_thumbnailsOverlayOuter;
+    Hit m_thumbnailsOverlayHit;
+    gfx::Point m_thumbnailsOverlayDirection;
+    obs::connection m_thumbnailsPrefConn;
 
     // Temporal data used to move the range.
     struct MoveRange {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  Carlo "zED" Caputo
+// Copyright (C) 2016  Carlo Caputo
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.

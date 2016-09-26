@@ -41,6 +41,13 @@ namespace app {
     void onCurrentLayerChange();
     void onPositionChange();
 
+    void onThumbOpacityChange();
+    void onThumbQualityChange();
+    void onThumbBackgroundChange(const app::Color& color);
+    void onThumbEnabledChange();
+    void onThumbOverlayEnabledChange();
+    void onThumbOverlaySizeChange();
+
   private:
     void updateWidgetsFromCurrentSettings();
     app::Document* doc();

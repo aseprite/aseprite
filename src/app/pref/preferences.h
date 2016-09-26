@@ -16,6 +16,7 @@
 #include "app/tools/ink_type.h"
 #include "app/tools/rotation_algorithm.h"
 #include "app/ui/color_bar.h"
+#include "doc/algorithm/resize_image.h"
 #include "doc/anidir.h"
 #include "doc/brush_pattern.h"
 #include "doc/documents_observer.h"
