@@ -156,7 +156,9 @@ Layer Chunk (0x2004)
                   8 = Background
                   16 = Prefer linked cels
                   32 = The layer group should be displayed collapsed
-  WORD          Layer type (0=normal (image) layer, 1=layer set)
+  WORD          Layer type
+                  0 = Normal (image) layer
+                  1 = Group
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)
   WORD          Default layer height in pixels (ignored)
@@ -207,7 +209,7 @@ Cel Chunk (0x2005)
 
     WORD        Frame position to link with
 
-  + For cel type = 2 (compressed image):
+  + For cel type = 2 (Compressed Image):
 
     WORD        Width in pixels
     WORD        Height in pixels
