@@ -38,15 +38,12 @@
 #define ASE_FILE_CHUNK_PALETTE              0x2019
 #define ASE_FILE_CHUNK_USER_DATA            0x2020
 
+#define ASE_FILE_LAYER_IMAGE                0
+#define ASE_FILE_LAYER_GROUP                1
+
 #define ASE_FILE_RAW_CEL                    0
 #define ASE_FILE_LINK_CEL                   1
 #define ASE_FILE_COMPRESSED_CEL             2
-
-#define ASE_LAYER_FLAG_VISIBLE              1
-#define ASE_LAYER_FLAG_EDITABLE             2
-#define ASE_LAYER_FLAG_LOCK_MOVEMENT        4
-#define ASE_LAYER_FLAG_BACKGROUND           8
-#define ASE_LAYER_FLAG_PREFER_LINKED_CELS   16
 
 #define ASE_PALETTE_FLAG_HAS_NAME           1
 
@@ -851,24 +848,23 @@ static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* spr
   ase_file_read_padding(f, 3);
   std::string name = ase_file_read_string(f);
 
-  // Image layer
-  Layer* layer;
-  if (layer_type == 0) {
-    layer = new LayerImage(sprite);
+  Layer* layer = nullptr;
+  switch (layer_type) {
 
-    // Only transparent layers can have blend mode and opacity
-    if (!(flags & ASE_LAYER_FLAG_BACKGROUND)) {
-      static_cast<LayerImage*>(layer)->setBlendMode((BlendMode)blendmode);
-      if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
-        static_cast<LayerImage*>(layer)->setOpacity(opacity);
-    }
-  }
-  // Layer set
-  else if (layer_type == 1) {
-    layer = new LayerGroup(sprite);
-  }
-  else {
-    layer = nullptr;
+    case ASE_FILE_LAYER_IMAGE:
+      layer = new LayerImage(sprite);
+
+      // Only transparent layers can have blend mode and opacity
+      if (!(flags & int(LayerFlags::Background))) {
+        static_cast<LayerImage*>(layer)->setBlendMode((BlendMode)blendmode);
+        if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
+          static_cast<LayerImage*>(layer)->setOpacity(opacity);
+      }
+      break;
+
+    case ASE_FILE_LAYER_GROUP:
+      layer = new LayerGroup(sprite);
+      break;
   }
 
   if (layer) {
@@ -901,7 +897,8 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, c
   fputw(static_cast<int>(layer->flags()), f);
 
   // Layer type
-  fputw(layer->isImage() ? 0: (layer->isGroup() ? 1: -1), f);
+  fputw((layer->isImage() ? ASE_FILE_LAYER_IMAGE:
+         (layer->isGroup() ? ASE_FILE_LAYER_GROUP: -1)), f);
 
   // Layer child level
   fputw(child_level, f);
@@ -1472,7 +1469,7 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
   ase_file_write_padding(f, 8);
 
   // Name
-  ase_file_write_string(f, mask->name().c_str());
+  ase_file_write_string(f, mask->name());
 
   // Bitmap
   for (v=0; v<bounds.h; v++)
@@ -1559,7 +1556,7 @@ static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_head
     fputc(doc::rgba_getb(tag->color()), f);
     fputc(0, f);
 
-    ase_file_write_string(f, tag->name().c_str());
+    ase_file_write_string(f, tag->name());
   }
 }
 
@@ -1593,7 +1590,7 @@ static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_heade
   fputl(flags, f);
 
   if (flags & ASE_USER_DATA_FLAG_HAS_TEXT)
-    ase_file_write_string(f, userData->text().c_str());
+    ase_file_write_string(f, userData->text());
 
   if (flags & ASE_USER_DATA_FLAG_HAS_COLOR) {
     fputc(doc::rgba_getr(userData->color()), f);
