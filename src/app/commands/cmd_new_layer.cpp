@@ -35,6 +35,9 @@ using namespace ui;
 
 class NewLayerCommand : public Command {
 public:
+  enum class Type { Layer, Group, ReferenceLayer };
+  enum class Place { AfterActiveLayer, Top };
+
   NewLayerCommand();
   Command* clone() const override { return new NewLayerCommand(*this); }
 
@@ -48,10 +51,10 @@ private:
   int getMaxLayerNum(const Layer* layer) const;
   const char* layerPrefix() const;
 
-  bool m_ask;
-  bool m_top;
-  bool m_group;
   std::string m_name;
+  Type m_type;
+  Place m_place;
+  bool m_ask;
 };
 
 NewLayerCommand::NewLayerCommand()
@@ -59,18 +62,25 @@ NewLayerCommand::NewLayerCommand()
             "New Layer",
             CmdRecordableFlag)
 {
-  m_ask = false;
-  m_top = false;
-  m_group = false;
   m_name = "";
+  m_type = Type::Layer;
+  m_place = Place::AfterActiveLayer;
+  m_ask = false;
 }
 
 void NewLayerCommand::onLoadParams(const Params& params)
 {
-  m_ask = (params.get("ask") == "true");
-  m_top = (params.get("top") == "true");
-  m_group = (params.get("group") == "true");
   m_name = params.get("name");
+  m_type = Type::Layer;
+  if (params.get("group") == "true")
+    m_type = Type::Group;
+  else if (params.get("reference") == "true")
+    m_type = Type::ReferenceLayer;
+
+  m_ask = (params.get("ask") == "true");
+  m_place = Place::AfterActiveLayer;
+  if (params.get("top") == "true")
+    m_place = Place::Top;
 }
 
 bool NewLayerCommand::onEnabled(Context* context)
@@ -111,7 +121,7 @@ void NewLayerCommand::onExecute(Context* context)
   if (activeLayer) {
     if (activeLayer->isGroup() &&
         activeLayer->isExpanded() &&
-        !m_group) {
+        m_type != Type::Group) {
       parent = static_cast<LayerGroup*>(activeLayer);
       activeLayer = nullptr;
     }
@@ -126,42 +136,66 @@ void NewLayerCommand::onExecute(Context* context)
       writer.context(),
       std::string("New ") + layerPrefix());
     DocumentApi api = document->getApi(transaction);
+    bool afterBackground = false;
 
-    if (m_group)
-      layer = api.newGroup(parent, name);
-    else
-      layer = api.newLayer(parent, name);
+    switch (m_type) {
+      case Type::Layer:
+        layer = api.newLayer(parent, name);
+        break;
+      case Type::Group:
+        layer = api.newGroup(parent, name);
+        break;
+      case Type::ReferenceLayer:
+        layer = api.newLayer(parent, name);
+        afterBackground = true;
+        break;
+    }
+
+    ASSERT(layer);
+    if (!layer)
+      return;
 
     ASSERT(layer->parent());
 
-    // If "top" parameter is false, create the layer above the active
-    // one.
-    if (activeLayer && !m_top) {
+    // Put new layer as an overlay of the background or in the first
+    // layer in case the sprite is transparent.
+    if (afterBackground) {
+      Layer* first = sprite->root()->firstLayer();
+      if (first) {
+        if (first->isBackground())
+          api.restackLayerAfter(layer, sprite->root(), first);
+        else
+          api.restackLayerBefore(layer, sprite->root(), first);
+      }
+    }
+    // Move the layer above the active one.
+    else if (activeLayer && m_place == Place::AfterActiveLayer) {
       api.restackLayerAfter(layer,
                             activeLayer->parent(),
                             activeLayer);
+    }
 
-      // Put all selected layers inside the group
-      if (m_group && writer.site()->inTimeline()) {
-        LayerGroup* commonParent = nullptr;
-        layer_t sameParents = 0;
-        for (Layer* l : selLayers) {
-          if (!commonParent ||
-              commonParent == l->parent()) {
-            commonParent = l->parent();
-            ++sameParents;
-          }
+    // Put all selected layers inside the group
+    if (m_type == Type::Group && writer.site()->inTimeline()) {
+      LayerGroup* commonParent = nullptr;
+      layer_t sameParents = 0;
+      for (Layer* l : selLayers) {
+        if (!commonParent ||
+            commonParent == l->parent()) {
+          commonParent = l->parent();
+          ++sameParents;
         }
+      }
 
-        if (sameParents == selLayers.size()) {
-          for (Layer* newChild : selLayers.toLayerList()) {
-            transaction.execute(
-              new cmd::MoveLayer(newChild, layer,
-                                 static_cast<LayerGroup*>(layer)->lastLayer()));
-          }
+      if (sameParents == selLayers.size()) {
+        for (Layer* newChild : selLayers.toLayerList()) {
+          transaction.execute(
+            new cmd::MoveLayer(newChild, layer,
+                               static_cast<LayerGroup*>(layer)->lastLayer()));
         }
       }
     }
+
 
     transaction.commit();
   }
@@ -206,7 +240,12 @@ int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
 
 const char* NewLayerCommand::layerPrefix() const
 {
-  return (m_group ? "Group": "Layer");
+  switch (m_type) {
+    case Type::Layer: return "Layer";
+    case Type::Group: return "Group";
+    case Type::ReferenceLayer: return "Reference Layer";
+  }
+  return "Unknown";
 }
 
 Command* CommandFactory::createNewLayerCommand()

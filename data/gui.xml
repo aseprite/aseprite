@@ -679,6 +679,10 @@
         <item command="DuplicateLayer" text="&amp;Duplicate" />
         <item command="MergeDownLayer" text="&amp;Merge Down" />
         <item command="FlattenLayers" text="&amp;Flatten" />
+        <separator />
+        <item command="NewLayer" text="Add &amp;Reference Layer" >
+          <param name="reference" value="true" />
+        </item>
       </menu>
       <menu text="F&amp;rame">
         <item command="FrameProperties" text="Frame &amp;Properties...">
