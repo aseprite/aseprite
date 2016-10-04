@@ -147,6 +147,8 @@ void NewLayerCommand::onExecute(Context* context)
         break;
       case Type::ReferenceLayer:
         layer = api.newLayer(parent, name);
+        if (layer)
+          layer->setReference(true);
         afterBackground = true;
         break;
     }

@@ -1678,6 +1678,16 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
         bounds.y+bounds.h-2*s,
         font()->textLength(layer->name().c_str()), s));
   }
+  else if (layer->isReference()) {
+    int s = ui::guiscale();
+    g->fillRect(
+      is_active ?
+      skinTheme()->colors.timelineClickedText():
+      skinTheme()->colors.timelineNormalText(),
+      gfx::Rect(bounds.x+4*s,
+        bounds.y+bounds.h/2,
+        font()->textLength(layer->name().c_str()), s));
+  }
 
   // If this layer wasn't clicked but there are another layer clicked,
   // we have to draw some indicators to show that the user can move
