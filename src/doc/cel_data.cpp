@@ -20,7 +20,9 @@ namespace doc {
 CelData::CelData(const ImageRef& image)
   : WithUserData(ObjectType::CelData)
   , m_image(image)
-  , m_position(0, 0)
+  , m_bounds(0, 0,
+             image ? image->width(): 0,
+             image ? image->height(): 0)
   , m_opacity(255)
 {
 }
@@ -28,7 +30,7 @@ CelData::CelData(const ImageRef& image)
 CelData::CelData(const CelData& celData)
   : WithUserData(ObjectType::CelData)
   , m_image(celData.m_image)
-  , m_position(celData.m_position)
+  , m_bounds(celData.m_bounds)
   , m_opacity(celData.m_opacity)
 {
 }
@@ -38,6 +40,8 @@ void CelData::setImage(const ImageRef& image)
   ASSERT(image.get());
 
   m_image = image;
+  m_bounds.w = image->width();
+  m_bounds.h = image->height();
 }
 
 } // namespace doc

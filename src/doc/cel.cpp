@@ -72,6 +72,11 @@ void Cel::setPosition(const gfx::Point& pos)
   m_data->setPosition(pos);
 }
 
+void Cel::setBounds(const gfx::Rect& bounds)
+{
+  m_data->setBounds(bounds);
+}
+
 void Cel::setOpacity(int opacity)
 {
   m_data->setOpacity(opacity);
@@ -124,18 +129,6 @@ std::size_t Cel::links() const
   }
 
   return links;
-}
-
-gfx::Rect Cel::bounds() const
-{
-  Image* image = this->image();
-  ASSERT(image);
-  if (image)
-    return gfx::Rect(
-      position().x, position().y,
-      image->width(), image->height());
-  else
-    return gfx::Rect();
 }
 
 void Cel::setParentLayer(LayerImage* layer)

@@ -33,7 +33,8 @@ namespace doc {
     frame_t frame() const { return m_frame; }
     int x() const { return m_data->position().x; }
     int y() const { return m_data->position().y; }
-    const gfx::Point& position() const { return m_data->position(); }
+    gfx::Point position() const { return m_data->position(); }
+    const gfx::Rect& bounds() const { return m_data->bounds(); }
     int opacity() const { return m_data->opacity(); }
 
     LayerImage* layer() const { return m_layer; }
@@ -45,7 +46,6 @@ namespace doc {
     Sprite* sprite() const;
     Cel* link() const;
     std::size_t links() const;
-    gfx::Rect bounds() const;
 
     // You should change the frame only if the cel isn't member of a
     // layer. If the cel is already in a layer, you should use
@@ -54,6 +54,7 @@ namespace doc {
     void setDataRef(const CelDataRef& celData);
     void setPosition(int x, int y);
     void setPosition(const gfx::Point& pos);
+    void setBounds(const gfx::Rect& bounds);
     void setOpacity(int opacity);
 
     virtual int getMemSize() const override {

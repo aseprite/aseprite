@@ -12,6 +12,7 @@
 #include "doc/image_ref.h"
 #include "doc/object.h"
 #include "doc/with_user_data.h"
+#include "gfx/rect.h"
 
 namespace doc {
 
@@ -20,17 +21,15 @@ namespace doc {
     CelData(const ImageRef& image);
     CelData(const CelData& celData);
 
-    const gfx::Point& position() const { return m_position; }
+    gfx::Point position() const { return m_bounds.origin(); }
+    const gfx::Rect& bounds() const { return m_bounds; }
     int opacity() const { return m_opacity; }
     Image* image() const { return const_cast<Image*>(m_image.get()); };
     ImageRef imageRef() const { return m_image; }
 
     void setImage(const ImageRef& image);
-    void setPosition(int x, int y) {
-      m_position.x = x;
-      m_position.y = y;
-    }
-    void setPosition(const gfx::Point& pos) { m_position = pos; }
+    void setPosition(const gfx::Point& pos) { m_bounds.setOrigin(pos); }
+    void setBounds(const gfx::Rect& bounds) { m_bounds = bounds; }
     void setOpacity(int opacity) { m_opacity = opacity; }
 
     virtual int getMemSize() const override {
@@ -40,8 +39,8 @@ namespace doc {
 
   private:
     ImageRef m_image;
-    gfx::Point m_position;      // X/Y screen position
-    int m_opacity;              // Opacity level
+    gfx::Rect m_bounds;
+    int m_opacity;
   };
 
   typedef base::SharedPtr<CelData> CelDataRef;
