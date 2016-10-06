@@ -131,6 +131,8 @@ public:
   }
 };
 
+#if 0
+
 template<class DstTraits, class SrcTraits>
 void composite_image_without_scale(
   Image* dst,
@@ -439,9 +441,59 @@ void composite_image_scale_down_non_square_pixel_ratio(
   }
 }
 
+#else
+
+template<class DstTraits, class SrcTraits>
+void composite_image_general(
+  Image* dst, const Image* src, const Palette* pal,
+  const gfx::Clip& _area,
+  const int opacity,
+  const BlendMode blendMode,
+  const Projection& proj)
+{
+  ASSERT(dst);
+  ASSERT(src);
+  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
+  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+
+  gfx::Clip area = _area;
+  if (!area.clip(dst->width(), dst->height(),
+                 proj.applyX(src->width()),
+                 proj.applyY(src->height())))
+    return;
+
+  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
+
+  gfx::Rect dstBounds = area.dstBounds();
+  gfx::Rect srcBounds = area.srcBounds();
+
+  for (int y=0; y<dstBounds.h; ++y) {
+    for (int x=0; x<dstBounds.w; ++x) {
+      int dstX = dstBounds.x+x;
+      int dstY = dstBounds.y+y;
+      int srcX = proj.removeX(srcBounds.x+x);
+      int srcY = proj.removeY(srcBounds.y+y);
+
+      if (srcX >= 0 && srcX < src->width() &&
+          srcY >= 0 && srcY < src->height() &&
+          dstX >= 0 && dstX < dst->width() &&
+          dstY >= 0 && dstY < dst->height()) {
+        put_pixel_fast<DstTraits>(
+          dst, dstX, dstY,
+          blender(get_pixel_fast<DstTraits>(dst, dstX, dstY),
+                  get_pixel_fast<SrcTraits>(src, srcX, srcY),
+                  opacity));
+      }
+    }
+  }
+}
+
+#endif
+
 template<class DstTraits, class SrcTraits>
 CompositeImageFunc get_image_composition_impl(const Projection& proj)
 {
+#if 0
   if (proj.applyX(1) == 1 && proj.applyY(1) == 1) {
     return composite_image_without_scale<DstTraits, SrcTraits>;
   }
@@ -456,6 +508,9 @@ CompositeImageFunc get_image_composition_impl(const Projection& proj)
   else {
     return composite_image_scale_down<DstTraits, SrcTraits>;
   }
+#else
+  return composite_image_general<DstTraits, SrcTraits>;
+#endif
 }
 
 CompositeImageFunc get_image_composition(const PixelFormat dstFormat,
@@ -806,8 +861,6 @@ void Render::renderBackground(
   }
 
   // Tile size
-  if (tile_w < m_proj.applyX(1)) tile_w = m_proj.applyX(1);
-  if (tile_h < m_proj.applyY(1)) tile_h = m_proj.applyY(1);
   if (tile_w < 1) tile_w = 1;
   if (tile_h < 1) tile_h = 1;
 
