@@ -88,6 +88,8 @@ enum {
   PART_FRAME_TAG,
 };
 
+static const int base_size = 12;
+
 struct Timeline::DrawCelData {
   CelIterator begin;
   CelIterator end;
@@ -1062,13 +1064,13 @@ bool Timeline::onProcessMessage(Message* msg)
         dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
 
         if (msg->ctrlPressed())
-          dx = dz * frameBoxWidth();
+          dx = dz * base_size;
         else
-          dy = dz * layerBoxHeight();
+          dy = dz * base_size;
 
         if (msg->shiftPressed()) {
-          dx *= 3;
-          dy *= 3;
+          dx *= frameBoxWidth() / base_size;
+          dy *= layerBoxHeight() / base_size;
         }
 
         setViewScroll(viewScroll() + gfx::Point(dx, dy));
@@ -3020,22 +3022,22 @@ gfx::Size Timeline::celBoxSize() const
 
 int Timeline::headerBoxWidth() const
 {
-  return int(12 * guiscale());
+  return int(base_size * guiscale());
 }
 
 int Timeline::headerBoxHeight() const
 {
-  return int(12 * guiscale());
+  return int(base_size * guiscale());
 }
 
 int Timeline::layerBoxHeight() const
 {
-  return int(m_zoom*12*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
+  return int(m_zoom*base_size*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
 }
 
 int Timeline::frameBoxWidth() const
 {
-  return int(m_zoom*12*guiscale());
+  return int(m_zoom*base_size*guiscale());
 }
 
 int Timeline::outlineWidth() const
