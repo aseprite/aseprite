@@ -1063,17 +1063,24 @@ bool Timeline::onProcessMessage(Message* msg)
 
         dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
 
-        if (msg->ctrlPressed())
-          dx = dz * base_size;
-        else
-          dy = dz * base_size;
-
-        if (msg->shiftPressed()) {
-          dx *= frameBoxWidth() / base_size;
-          dy *= layerBoxHeight() / base_size;
+        if (msg->altPressed()) {
+          double next_zoom = m_zoom + (dz < 0 ? -1 : 1);
+          setZoom(next_zoom);
+          invalidate();
         }
+        else {
+          if (msg->ctrlPressed())
+            dx = dz * base_size;
+          else
+            dy = dz * base_size;
 
-        setViewScroll(viewScroll() + gfx::Point(dx, dy));
+          if (msg->shiftPressed()) {
+            dx *= frameBoxWidth() / base_size;
+            dy *= layerBoxHeight() / base_size;
+          }
+
+          setViewScroll(viewScroll() + gfx::Point(dx, dy));
+        }
       }
       break;
 
