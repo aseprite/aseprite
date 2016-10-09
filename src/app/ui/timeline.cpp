@@ -185,6 +185,12 @@ void Timeline::setZoom(double zoom)
   m_zoom = MID(1.0, zoom, 10.0);
 }
 
+void Timeline::setZoomAndSavePref(double zoom)
+{
+  setZoom(zoom);
+  docPref().thumbnails.zoom(zoom);
+}
+
 void Timeline::onThumbnailsPrefChange()
 {
   setZoom(docPref().thumbnails.zoom());
@@ -1065,7 +1071,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         if (msg->altPressed()) {
           double next_zoom = m_zoom + (dz < 0 ? -1 : 1);
-          setZoom(next_zoom);
+          setZoomAndSavePref(next_zoom);
           invalidate();
         }
         else {
@@ -1092,7 +1098,7 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kTouchMagnifyMessage:
-      setZoom(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
+      setZoomAndSavePref(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
       invalidate();
       break;
   }
