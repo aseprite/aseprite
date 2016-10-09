@@ -147,9 +147,6 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
-  , m_thumbnailsOverlayVisible(false)
-  , m_thumbnailsOverlayDirection(int(frameBoxWidth()*1.0),
-                                 int(frameBoxWidth()*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -183,19 +180,26 @@ Timeline::~Timeline()
 void Timeline::setZoom(double zoom)
 {
   m_zoom = MID(1.0, zoom, 10.0);
+  m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
+  m_thumbnailsOverlayVisible = false;
 }
 
-void Timeline::setZoomAndSavePref(double zoom)
+void Timeline::setZoomAndUpdate(double zoom)
 {
-  setZoom(zoom);
-  docPref().thumbnails.zoom(zoom);
+  if (zoom != m_zoom) {
+    setZoom(zoom);
+    updateScrollBars();
+    setViewScroll(viewScroll());
+    invalidate();
+  }
+  if (zoom != docPref().thumbnails.zoom()) {
+    docPref().thumbnails.zoom(zoom);
+  }
 }
 
 void Timeline::onThumbnailsPrefChange()
 {
-  setZoom(docPref().thumbnails.zoom());
-  m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
-  invalidate();
+  setZoomAndUpdate(docPref().thumbnails.zoom());
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -1071,8 +1075,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         if (msg->altPressed()) {
           double next_zoom = m_zoom + (dz < 0 ? -1 : 1);
-          setZoomAndSavePref(next_zoom);
-          invalidate();
+          setZoomAndUpdate(next_zoom);
         }
         else {
           if (msg->ctrlPressed())
@@ -1098,8 +1101,7 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kTouchMagnifyMessage:
-      setZoomAndSavePref(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
-      invalidate();
+      setZoomAndUpdate(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
       break;
   }
 
