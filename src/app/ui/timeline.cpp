@@ -1065,23 +1065,27 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y;
-        int dx = 0;
-        int dy = 0;
-
-        dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
+        int base_size = skinTheme()->dimensions.timelineBaseSize();
+        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y  * base_size;
 
         if (msg->altPressed()) {
-          double next_zoom = m_zoom + (dz < 0 ? 1 : -1);
-          setZoomAndUpdate(next_zoom);
+          if (dz != 0) {
+            double next_zoom = m_zoom + (dz < 0 ? 1 : -1);
+            setZoomAndUpdate(next_zoom);
+          }
         }
         else {
-          int base_size = skinTheme()->dimensions.timelineBaseSize();
+          int dx;
+          int dy;
 
-          if (msg->ctrlPressed())
-            dx = dz * base_size;
-          else
-            dy = dz * base_size;
+          if (msg->ctrlPressed()) {
+            dx = dz;
+            dy = 0;
+          }
+          else {
+            dx = static_cast<MouseMessage*>(msg)->wheelDelta().x  * base_size;
+            dy = dz;
+          }
 
           if (msg->shiftPressed()) {
             dx *= frameBoxWidth() / base_size;
