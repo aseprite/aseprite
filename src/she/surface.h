@@ -14,10 +14,6 @@
 
 #include <string>
 
-namespace gfx {
-  class Clip;
-}
-
 namespace she {
 
   class Font;

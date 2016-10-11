@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -75,6 +75,11 @@ void Cel::setPosition(const gfx::Point& pos)
 void Cel::setBounds(const gfx::Rect& bounds)
 {
   m_data->setBounds(bounds);
+}
+
+void Cel::setBoundsF(const gfx::RectF& bounds)
+{
+  m_data->setBoundsF(bounds);
 }
 
 void Cel::setOpacity(int opacity)

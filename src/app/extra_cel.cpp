@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -44,7 +44,7 @@ void ExtraCel::create(doc::Sprite* sprite,
     m_cel.reset(new doc::Cel(doc::frame_t(0), doc::ImageRef(nullptr)));
   }
 
-  m_cel->setPosition(bounds.origin());
+  m_cel->setBounds(bounds);
   m_cel->setOpacity(opacity);
   m_cel->setFrame(frame);
 }

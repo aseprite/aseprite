@@ -13,15 +13,12 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
+#include "gfx/clip.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "render/extra_type.h"
 #include "render/onionskin_position.h"
 #include "render/projection.h"
-
-namespace gfx {
-  class Clip;
-}
 
 namespace doc {
   class Cel;
@@ -93,10 +90,11 @@ namespace render {
     Image* dst,
     const Image* src,
     const Palette* pal,
-    const gfx::Clip& area,
+    const gfx::ClipF& area,
     const int opacity,
     const BlendMode blendMode,
-    const Projection& proj);
+    const double sx,
+    const double sy);
 
   class Render {
   public:
@@ -194,7 +192,7 @@ namespace render {
       Image* dst_image,
       const Image* cel_image,
       const Palette* pal,
-      const gfx::Point& celPos,
+      const gfx::RectF& celBounds,
       const gfx::Clip& area,
       const CompositeImageFunc compositeImage,
       const int opacity,
@@ -204,8 +202,7 @@ namespace render {
       Image* dst_image,
       const Image* cel_image,
       const Palette* pal,
-      const int x,
-      const int y,
+      const gfx::RectF& celBounds,
       const gfx::Clip& area,
       const CompositeImageFunc compositeImage,
       const int opacity,

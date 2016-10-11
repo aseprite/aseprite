@@ -446,33 +446,33 @@ void composite_image_scale_down_non_square_pixel_ratio(
 template<class DstTraits, class SrcTraits>
 void composite_image_general(
   Image* dst, const Image* src, const Palette* pal,
-  const gfx::Clip& _area,
+  const gfx::ClipF& _area,
   const int opacity,
   const BlendMode blendMode,
-  const Projection& proj)
+  const double sx,
+  const double sy)
 {
   ASSERT(dst);
   ASSERT(src);
   ASSERT(DstTraits::pixel_format == dst->pixelFormat());
   ASSERT(SrcTraits::pixel_format == src->pixelFormat());
 
-  gfx::Clip area = _area;
+  gfx::ClipF area = _area;
   if (!area.clip(dst->width(), dst->height(),
-                 proj.applyX(src->width()),
-                 proj.applyY(src->height())))
+                 sx*src->width(), sy*src->height()))
     return;
 
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
 
-  gfx::Rect dstBounds = area.dstBounds();
-  gfx::Rect srcBounds = area.srcBounds();
+  gfx::RectF dstBounds = area.dstBounds();
+  gfx::RectF srcBounds = area.srcBounds();
 
-  for (int y=0; y<dstBounds.h; ++y) {
-    for (int x=0; x<dstBounds.w; ++x) {
-      int dstX = dstBounds.x+x;
-      int dstY = dstBounds.y+y;
-      int srcX = proj.removeX(srcBounds.x+x);
-      int srcY = proj.removeY(srcBounds.y+y);
+  int dstY = dstBounds.y;
+  for (int y=0; y<dstBounds.h; ++y, ++dstY) {
+    int dstX = dstBounds.x;
+    for (int x=0; x<dstBounds.w; ++x, ++dstX) {
+      int srcX = (srcBounds.x+x)/sx;
+      int srcY = (srcBounds.y+y)/sy;
 
       if (srcX >= 0 && srcX < src->width() &&
           srcY >= 0 && srcY < src->height() &&
@@ -775,8 +775,9 @@ void Render::renderSprite(
       dstImage,
       m_previewImage,
       m_sprite->palette(frame),
-      m_previewPos.x,
-      m_previewPos.y,
+      gfx::Rect(m_previewPos.x, m_previewPos.y,
+                m_previewImage->width(),
+                m_previewImage->height()),
       area,
       compositeImage,
       255,
@@ -899,19 +900,21 @@ void Render::renderImage(
   const int opacity,
   const BlendMode blendMode)
 {
-  CompositeImageFunc compositeImage = get_image_composition(
-    dst_image->pixelFormat(),
-    src_image->pixelFormat(), m_proj);
+  CompositeImageFunc compositeImage =
+    get_image_composition(
+      dst_image->pixelFormat(),
+      src_image->pixelFormat(), m_proj);
   if (!compositeImage)
     return;
 
   compositeImage(
     dst_image, src_image, pal,
-    gfx::Clip(x, y, 0, 0,
-              m_proj.applyX(src_image->width()),
-              m_proj.applyY(src_image->height())),
+    gfx::ClipF(x, y, 0, 0,
+               m_proj.applyX(src_image->width()),
+               m_proj.applyY(src_image->height())),
     opacity, blendMode,
-    m_proj);
+    m_proj.scaleX(),
+    m_proj.scaleY());
 }
 
 void Render::renderLayer(
@@ -960,21 +963,27 @@ void Render::renderLayer(
       if (cel) {
         Palette* pal = m_sprite->palette(frame);
         const Image* celImage;
-        gfx::Point celPos;
+        gfx::RectF celBounds;
 
         // Is the 'm_previewImage' set to be used with this layer?
         if ((m_previewImage) &&
             (m_selectedLayer == layer) &&
             (m_selectedFrame == frame)) {
           celImage = m_previewImage;
-          celPos = m_previewPos;
+          celBounds = gfx::RectF(m_previewPos.x,
+                                 m_previewPos.y,
+                                 m_previewImage->width(),
+                                 m_previewImage->height());
 
           ASSERT(celImage->pixelFormat() == cel->image()->pixelFormat());
         }
         // If not, we use the original cel-image from the images' stock
         else {
           celImage = cel->image();
-          celPos = cel->position();
+          if (cel->layer()->isReference())
+            celBounds = cel->boundsF();
+          else
+            celBounds = cel->bounds();
         }
 
         if (celImage) {
@@ -1005,7 +1014,7 @@ void Render::renderLayer(
 
             for (auto rc : originalAreas) {
               renderCel(
-                image, celImage, pal, celPos,
+                image, celImage, pal, celBounds,
                 gfx::Clip(area.dst.x+rc.x-area.src.x,
                           area.dst.y+rc.y-area.src.y, rc), compositeImage,
                 opacity, layerBlendMode);
@@ -1015,7 +1024,7 @@ void Render::renderLayer(
           else {
             renderCel(
               image, celImage, pal,
-              celPos, area, compositeImage,
+              celBounds, area, compositeImage,
               opacity, layerBlendMode);
           }
         }
@@ -1044,7 +1053,7 @@ void Render::renderLayer(
       renderCel(
         image, m_extraImage,
         m_sprite->palette(frame),
-        m_extraCel->position(),
+        m_extraCel->bounds(),
         gfx::Clip(area.dst.x+extraArea.x-area.src.x,
                   area.dst.y+extraArea.y-area.src.y,
                   extraArea),
@@ -1059,7 +1068,7 @@ void Render::renderCel(
   Image* dst_image,
   const Image* cel_image,
   const Palette* pal,
-  const gfx::Point& celPos,
+  const gfx::RectF& celBounds,
   const gfx::Clip& area,
   const CompositeImageFunc compositeImage,
   const int opacity,
@@ -1068,8 +1077,7 @@ void Render::renderCel(
   renderImage(dst_image,
               cel_image,
               pal,
-              celPos.x,
-              celPos.y,
+              celBounds,
               area,
               compositeImage,
               opacity,
@@ -1080,38 +1088,30 @@ void Render::renderImage(
   Image* dst_image,
   const Image* cel_image,
   const Palette* pal,
-  const int x,
-  const int y,
+  const gfx::RectF& celBounds,
   const gfx::Clip& area,
   const CompositeImageFunc compositeImage,
   const int opacity,
   const BlendMode blendMode)
 {
-  int cel_x = m_proj.applyX(x);
-  int cel_y = m_proj.applyY(y);
-
-  gfx::Rect srcBounds =
-    area.srcBounds().createIntersection(
-      gfx::Rect(
-        cel_x,
-        cel_y,
-        m_proj.applyX(cel_image->width()),
-        m_proj.applyY(cel_image->height())));
+  gfx::RectF scaledBounds = m_proj.apply(celBounds);
+  gfx::RectF srcBounds = gfx::RectF(area.srcBounds()).createIntersection(scaledBounds);
   if (srcBounds.isEmpty())
     return;
 
   compositeImage(
     dst_image, cel_image, pal,
-    gfx::Clip(
-      area.dst.x + srcBounds.x - area.src.x,
-      area.dst.y + srcBounds.y - area.src.y,
-      srcBounds.x - cel_x,
-      srcBounds.y - cel_y,
+    gfx::ClipF(
+      double(area.dst.x) + srcBounds.x - double(area.src.x),
+      double(area.dst.y) + srcBounds.y - double(area.src.y),
+      srcBounds.x - scaledBounds.x,
+      srcBounds.y - scaledBounds.y,
       srcBounds.w,
       srcBounds.h),
     opacity,
     blendMode,
-    m_proj);
+    m_proj.scaleX() * double(cel_image->width()) / celBounds.w,
+    m_proj.scaleY() * double(cel_image->height()) / celBounds.h);
 }
 
 void composite_image(Image* dst,

@@ -1028,6 +1028,17 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
     m_proj.removeY(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
+gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+
+  return gfx::PointF(
+    m_proj.removeX<double>(pt.x - vp.x + scroll.x - m_padding.x),
+    m_proj.removeY<double>(pt.y - vp.y + scroll.y - m_padding.y));
+}
+
 Point Editor::editorToScreen(const gfx::Point& pt)
 {
   View* view = View::getView(this);

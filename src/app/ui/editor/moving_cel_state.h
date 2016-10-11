@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,7 +25,6 @@ namespace app {
   class MovingCelState : public StandbyState {
   public:
     MovingCelState(Editor* editor, ui::MouseMessage* msg);
-    virtual ~MovingCelState();
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -36,11 +35,12 @@ namespace app {
   private:
     ContextReader m_reader;
     CelList m_celList;
-    std::vector<gfx::Point> m_celStarts;
-    gfx::Point m_celOffset;
-    gfx::Point m_cursorStart;
+    std::vector<gfx::RectF> m_celStarts;
+    gfx::PointF m_cursorStart;
+    gfx::PointF m_celOffset;
     bool m_canceled;
     bool m_maskVisible;
+    bool m_hasReference;
   };
 
 } // namespace app

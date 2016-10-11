@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,6 +20,7 @@ namespace doc {
   public:
     CelData(const ImageRef& image);
     CelData(const CelData& celData);
+    ~CelData();
 
     gfx::Point position() const { return m_bounds.origin(); }
     const gfx::Rect& bounds() const { return m_bounds; }
@@ -29,8 +30,28 @@ namespace doc {
 
     void setImage(const ImageRef& image);
     void setPosition(const gfx::Point& pos) { m_bounds.setOrigin(pos); }
-    void setBounds(const gfx::Rect& bounds) { m_bounds = bounds; }
     void setOpacity(int opacity) { m_opacity = opacity; }
+
+    void setBounds(const gfx::Rect& bounds) {
+      m_bounds = bounds;
+      if (m_boundsF)
+        *m_boundsF = gfx::RectF(bounds);
+    }
+
+    void setBoundsF(const gfx::RectF& boundsF) {
+      if (m_boundsF)
+        *m_boundsF = boundsF;
+      else
+        m_boundsF = new gfx::RectF(boundsF);
+
+      m_bounds = gfx::Rect(boundsF);
+    }
+
+    const gfx::RectF& boundsF() const {
+      if (!m_boundsF)
+        m_boundsF = new gfx::RectF(m_bounds);
+      return *m_boundsF;
+    }
 
     virtual int getMemSize() const override {
       ASSERT(m_image);
@@ -39,8 +60,12 @@ namespace doc {
 
   private:
     ImageRef m_image;
-    gfx::Rect m_bounds;
     int m_opacity;
+    gfx::Rect m_bounds;
+
+    // Special bounds for reference layers that can have subpixel
+    // position.
+    mutable gfx::RectF* m_boundsF;
   };
 
   typedef base::SharedPtr<CelData> CelDataRef;

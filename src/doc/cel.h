@@ -35,6 +35,7 @@ namespace doc {
     int y() const { return m_data->position().y; }
     gfx::Point position() const { return m_data->position(); }
     const gfx::Rect& bounds() const { return m_data->bounds(); }
+    const gfx::RectF& boundsF() const { return m_data->boundsF(); }
     int opacity() const { return m_data->opacity(); }
 
     LayerImage* layer() const { return m_layer; }
@@ -55,6 +56,7 @@ namespace doc {
     void setPosition(int x, int y);
     void setPosition(const gfx::Point& pos);
     void setBounds(const gfx::Rect& bounds);
+    void setBoundsF(const gfx::RectF& bounds);
     void setOpacity(int opacity);
 
     virtual int getMemSize() const override {
