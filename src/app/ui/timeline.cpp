@@ -1072,7 +1072,7 @@ bool Timeline::onProcessMessage(Message* msg)
         dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
 
         if (msg->altPressed()) {
-          double next_zoom = m_zoom + (dz < 0 ? -1 : 1);
+          double next_zoom = m_zoom + (dz < 0 ? 1 : -1);
           setZoomAndUpdate(next_zoom);
         }
         else {
