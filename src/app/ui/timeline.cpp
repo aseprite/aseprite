@@ -145,9 +145,6 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
   , m_fromTimeline(false)
-  , m_thumbnailsOverlayVisible(false)
-  , m_thumbnailsOverlayDirection(int(frameBoxWidth()*1.0),
-                                 int(frameBoxWidth()*0.5))
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -181,13 +178,26 @@ Timeline::~Timeline()
 void Timeline::setZoom(double zoom)
 {
   m_zoom = MID(1.0, zoom, 10.0);
+  m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
+  m_thumbnailsOverlayVisible = false;
+}
+
+void Timeline::setZoomAndUpdate(double zoom)
+{
+  if (zoom != m_zoom) {
+    setZoom(zoom);
+    updateScrollBars();
+    setViewScroll(viewScroll());
+    invalidate();
+  }
+  if (zoom != docPref().thumbnails.zoom()) {
+    docPref().thumbnails.zoom(zoom);
+  }
 }
 
 void Timeline::onThumbnailsPrefChange()
 {
-  setZoom(docPref().thumbnails.zoom());
-  m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
-  invalidate();
+  setZoomAndUpdate(docPref().thumbnails.zoom());
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -1055,23 +1065,35 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y;
-        int dx = 0;
-        int dy = 0;
+        int base_size = skinTheme()->dimensions.timelineBaseSize();
+        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y  * base_size;
 
-        dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
-
-        if (msg->ctrlPressed())
-          dx = dz * frameBoxWidth();
-        else
-          dy = dz * layerBoxHeight();
-
-        if (msg->shiftPressed()) {
-          dx *= 3;
-          dy *= 3;
+        if (msg->altPressed()) {
+          if (dz != 0) {
+            double next_zoom = m_zoom + (dz < 0 ? 1 : -1);
+            setZoomAndUpdate(next_zoom);
+          }
         }
+        else {
+          int dx;
+          int dy;
 
-        setViewScroll(viewScroll() + gfx::Point(dx, dy));
+          if (msg->ctrlPressed()) {
+            dx = dz;
+            dy = 0;
+          }
+          else {
+            dx = static_cast<MouseMessage*>(msg)->wheelDelta().x  * base_size;
+            dy = dz;
+          }
+
+          if (msg->shiftPressed()) {
+            dx *= frameBoxWidth() / base_size;
+            dy *= layerBoxHeight() / base_size;
+          }
+
+          setViewScroll(viewScroll() + gfx::Point(dx, dy));
+        }
       }
       break;
 
@@ -1083,8 +1105,7 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kTouchMagnifyMessage:
-      setZoom(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
-      invalidate();
+      setZoomAndUpdate(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
       break;
   }
 
@@ -3020,22 +3041,22 @@ gfx::Size Timeline::celBoxSize() const
 
 int Timeline::headerBoxWidth() const
 {
-  return int(12 * guiscale());
+  return int(skinTheme()->dimensions.timelineBaseSize() * guiscale());
 }
 
 int Timeline::headerBoxHeight() const
 {
-  return int(12 * guiscale());
+  return int(skinTheme()->dimensions.timelineBaseSize() * guiscale());
 }
 
 int Timeline::layerBoxHeight() const
 {
-  return int(m_zoom*12*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
+  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize()*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
 }
 
 int Timeline::frameBoxWidth() const
 {
-  return int(m_zoom*12*guiscale());
+  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize()*guiscale());
 }
 
 int Timeline::outlineWidth() const
