@@ -208,6 +208,11 @@ namespace render {
       const int opacity,
       const BlendMode blendMode);
 
+    CompositeImageFunc getImageComposition(
+      const PixelFormat dstFormat,
+      const PixelFormat srcFormat,
+      const Layer* layer);
+
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
     frame_t m_currentFrame;

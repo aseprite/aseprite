@@ -63,6 +63,13 @@ namespace gfx {
       , size(bounds.w, bounds.h) {
     }
 
+    template<typename T2>
+    ClipT(const ClipT<T2>& other)
+      : dst(other.dst)
+      , src(other.src)
+      , size(other.size) {
+    }
+
     RectT<T> dstBounds() const { return RectT<T>(dst, size); }
     RectT<T> srcBounds() const { return RectT<T>(src, size); }
 
