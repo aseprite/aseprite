@@ -88,8 +88,6 @@ enum {
   PART_FRAME_TAG,
 };
 
-static const int base_size = 12;
-
 struct Timeline::DrawCelData {
   CelIterator begin;
   CelIterator end;
@@ -1078,6 +1076,8 @@ bool Timeline::onProcessMessage(Message* msg)
           setZoomAndUpdate(next_zoom);
         }
         else {
+          int base_size = skinTheme()->dimensions.timelineBaseSize();
+
           if (msg->ctrlPressed())
             dx = dz * base_size;
           else
@@ -3037,22 +3037,22 @@ gfx::Size Timeline::celBoxSize() const
 
 int Timeline::headerBoxWidth() const
 {
-  return int(base_size * guiscale());
+  return int(skinTheme()->dimensions.timelineBaseSize() * guiscale());
 }
 
 int Timeline::headerBoxHeight() const
 {
-  return int(base_size * guiscale());
+  return int(skinTheme()->dimensions.timelineBaseSize() * guiscale());
 }
 
 int Timeline::layerBoxHeight() const
 {
-  return int(m_zoom*base_size*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
+  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize()*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
 }
 
 int Timeline::frameBoxWidth() const
 {
-  return int(m_zoom*base_size*guiscale());
+  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize()*guiscale());
 }
 
 int Timeline::outlineWidth() const
