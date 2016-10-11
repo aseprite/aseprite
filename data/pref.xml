@@ -218,6 +218,9 @@
     <section id="thumbnails">
       <option id="cache_limit" type="int" default="5000" />
     </section>
+    <section id="perf">
+      <option id="show_render_time" type="bool" default="false" />
+    </section>
   </global>
 
   <tool>

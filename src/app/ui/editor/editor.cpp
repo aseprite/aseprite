@@ -43,6 +43,7 @@
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
@@ -62,6 +63,10 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 using namespace render;
+
+// TODO these should be grouped in some kind of "performance counters"
+static base::Chrono renderChrono;
+static double renderElapsed = 0.0;
 
 class EditorPreRenderImpl : public EditorPreRender {
 public:
@@ -1441,7 +1446,22 @@ void Editor::onPaint(ui::PaintEvent& ev)
       DocumentReader documentReader(m_document, 0);
 
       // Draw the sprite in the editor
+      renderChrono.reset();
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
+      renderElapsed = renderChrono.elapsed();
+
+      // Show performance stats (TODO show performance stats in other widget)
+      if (Preferences::instance().perf.showRenderTime()) {
+        View* view = View::getView(this);
+        gfx::Rect vp = view->viewportBounds();
+        char buf[128];
+        sprintf(buf, "%.3f", renderElapsed);
+        g->drawString(
+          buf,
+          gfx::rgba(255, 255, 255, 255),
+          gfx::rgba(0, 0, 0, 255),
+          vp.origin() - bounds().origin());
+      }
 
       // Draw the mask boundaries
       if (m_document->getMaskBoundaries()) {
