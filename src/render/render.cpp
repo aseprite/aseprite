@@ -469,21 +469,20 @@ void composite_image_general(
 
   int dstY = dstBounds.y;
   for (int y=0; y<dstBounds.h; ++y, ++dstY) {
-    int dstX = dstBounds.x;
-    for (int x=0; x<dstBounds.w; ++x, ++dstX) {
-      int srcX = (srcBounds.x+x)/sx;
-      int srcY = (srcBounds.y+y)/sy;
+    int srcY = (srcBounds.y+y)/sy;
+    double srcX = srcBounds.x/sx;
+    double srcXDelta = 1.0/sx;
+    int oldSrcX;
 
-      if (srcX >= 0 && srcX < src->width() &&
-          srcY >= 0 && srcY < src->height() &&
-          dstX >= 0 && dstX < dst->width() &&
-          dstY >= 0 && dstY < dst->height()) {
-        put_pixel_fast<DstTraits>(
-          dst, dstX, dstY,
-          blender(get_pixel_fast<DstTraits>(dst, dstX, dstY),
-                  get_pixel_fast<SrcTraits>(src, srcX, srcY),
-                  opacity));
-      }
+    auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
+    auto srcPtr = get_pixel_address_fast<SrcTraits>(src, int(srcX), srcY);
+
+    for (int x=0; x<dstBounds.w; ++x, ++dstPtr) {
+      *dstPtr = blender(*dstPtr, *srcPtr, opacity);
+
+      oldSrcX = srcX;
+      srcX += srcXDelta;
+      srcPtr += (int(srcX) - oldSrcX);
     }
   }
 }
