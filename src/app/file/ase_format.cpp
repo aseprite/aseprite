@@ -18,6 +18,7 @@
 #include "base/file_handle.h"
 #include "base/path.h"
 #include "doc/doc.h"
+#include "fixmath/fixmath.h"
 #include "ui/alert.h"
 #include "zlib.h"
 
@@ -26,12 +27,13 @@
 #define ASE_FILE_MAGIC                      0xA5E0
 #define ASE_FILE_FRAME_MAGIC                0xF1FA
 
-#define ASE_FILE_FLAG_LAYER_WITH_OPACITY     1
+#define ASE_FILE_FLAG_LAYER_WITH_OPACITY    1
 
 #define ASE_FILE_CHUNK_FLI_COLOR2           4
 #define ASE_FILE_CHUNK_FLI_COLOR            11
 #define ASE_FILE_CHUNK_LAYER                0x2004
 #define ASE_FILE_CHUNK_CEL                  0x2005
+#define ASE_FILE_CHUNK_CEL_EXTRA            0x2006
 #define ASE_FILE_CHUNK_MASK                 0x2016
 #define ASE_FILE_CHUNK_PATH                 0x2017
 #define ASE_FILE_CHUNK_FRAME_TAGS           0x2018
@@ -49,6 +51,8 @@
 
 #define ASE_USER_DATA_FLAG_HAS_TEXT         1
 #define ASE_USER_DATA_FLAG_HAS_COLOR        2
+
+#define ASE_CEL_EXTRA_FLAG_PRECISE_BOUNDS   1
 
 namespace app {
 
@@ -119,12 +123,15 @@ static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header,
 static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* sprite, Layer** previous_layer, int* current_level);
 static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, const Layer* layer, int child_level);
 static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, LayerList& allLayers, frame_t frame, PixelFormat pixelFormat, FileOp* fop, ASE_Header* header, size_t chunk_end);
+static void ase_file_read_cel_extra_chunk(FILE* f, Cel* cel);
 static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header,
                                      const Cel* cel,
                                      const LayerImage* layer,
                                      const layer_t layer_index,
                                      const Sprite* sprite,
                                      const frame_t firstFrame);
+static void ase_file_write_cel_extra_chunk(FILE* f, ASE_FrameHeader* frame_header,
+                                           const Cel* cel);
 static Mask* ase_file_read_mask_chunk(FILE* f);
 #if 0
 static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Mask* mask);
@@ -214,6 +221,7 @@ bool AseFormat::onLoad(FileOp* fop)
   // Prepare variables for layer chunks
   Layer* last_layer = sprite->root();
   WithUserData* last_object_with_user_data = nullptr;
+  Cel* last_cel = nullptr;
   int current_level = -1;
   LayerList allLayers;
 
@@ -287,8 +295,15 @@ bool AseFormat::onLoad(FileOp* fop)
                                       sprite->pixelFormat(), fop, &header,
                                       chunk_pos+chunk_size);
             if (cel) {
+              last_cel = cel;
               last_object_with_user_data = cel->data();
             }
+            break;
+          }
+
+          case ASE_FILE_CHUNK_CEL_EXTRA: {
+            if (last_cel)
+              ase_file_read_cel_extra_chunk(f, last_cel);
             break;
           }
 
@@ -634,6 +649,9 @@ static layer_t ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header,
       ase_file_write_cel_chunk(f, frame_header, cel,
                                static_cast<const LayerImage*>(layer),
                                layer_index, sprite, firstFrame);
+
+      if (layer->isReference())
+        ase_file_write_cel_extra_chunk(f, frame_header, cel);
 
       if (!cel->link() &&
           !cel->data()->userData().isEmpty()) {
@@ -1320,6 +1338,25 @@ static Cel* ase_file_read_cel_chunk(FILE* f,
   return cel.release();
 }
 
+static void ase_file_read_cel_extra_chunk(FILE* f, Cel* cel)
+{
+  // Read chunk data
+  int flags = fgetl(f);
+  if (flags & ASE_CEL_EXTRA_FLAG_PRECISE_BOUNDS) {
+    fixmath::fixed x = fgetl(f);
+    fixmath::fixed y = fgetl(f);
+    fixmath::fixed w = fgetl(f);
+    fixmath::fixed h = fgetl(f);
+    if (w && h) {
+      gfx::RectF bounds(fixmath::fixtof(x),
+                        fixmath::fixtof(y),
+                        fixmath::fixtof(w),
+                        fixmath::fixtof(h));
+      cel->setBoundsF(bounds);
+    }
+  }
+}
+
 static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header,
                                      const Cel* cel,
                                      const LayerImage* layer,
@@ -1424,6 +1461,24 @@ static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header,
       break;
     }
   }
+}
+
+static void ase_file_write_cel_extra_chunk(FILE* f,
+                                           ASE_FrameHeader* frame_header,
+                                           const Cel* cel)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_CEL_EXTRA);
+
+  ASSERT(cel->layer()->isReference());
+
+  gfx::RectF bounds = cel->boundsF();
+
+  fputl(ASE_CEL_EXTRA_FLAG_PRECISE_BOUNDS, f);
+  fputl(fixmath::ftofix(bounds.x), f);
+  fputl(fixmath::ftofix(bounds.y), f);
+  fputl(fixmath::ftofix(bounds.w), f);
+  fputl(fixmath::ftofix(bounds.h), f);
+  ase_file_write_padding(f, 16);
 }
 
 static Mask* ase_file_read_mask_chunk(FILE* f)
