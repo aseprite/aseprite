@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/cmd/move_layer.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -21,7 +22,9 @@
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "doc/layer.h"
+#include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 #include "ui/ui.h"
 
 #include "new_layer.xml.h"
@@ -55,6 +58,7 @@ private:
   Type m_type;
   Place m_place;
   bool m_ask;
+  bool m_fromFile;
 };
 
 NewLayerCommand::NewLayerCommand()
@@ -78,6 +82,7 @@ void NewLayerCommand::onLoadParams(const Params& params)
     m_type = Type::ReferenceLayer;
 
   m_ask = (params.get("ask") == "true");
+  m_fromFile = (params.get("from-file") == "true");
   m_place = Place::AfterActiveLayer;
   if (params.get("top") == "true")
     m_place = Place::Top;
@@ -89,6 +94,16 @@ bool NewLayerCommand::onEnabled(Context* context)
                              ContextFlags::HasActiveSprite);
 }
 
+namespace {
+class Scoped {                  // TODO move this to base library
+public:
+  Scoped(const std::function<void()>& func) : m_func(func) { }
+  ~Scoped() { m_func(); }
+private:
+  std::function<void()> m_func;
+};
+}
+
 void NewLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
@@ -96,11 +111,33 @@ void NewLayerCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   std::string name;
 
+  app::Document* pasteDoc = nullptr;
+  Scoped destroyPasteDoc(
+    [&pasteDoc, context]{
+      if (pasteDoc) {
+        context->documents().remove(pasteDoc);
+        delete pasteDoc;
+      }
+    });
+
   // Default name (m_name is a name specified in params)
   if (!m_name.empty())
     name = m_name;
   else
     name = getUniqueLayerName(sprite);
+
+  // Select a file to copy its content
+  if (m_fromFile) {
+    Document* oldActiveDocument = context->activeDocument();
+    Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+    Params params;
+    params.set("filename", "");
+    context->executeCommand(openFile, params);
+
+    // The user have selected another document.
+    if (oldActiveDocument != context->activeDocument())
+      pasteDoc = context->activeDocument();
+  }
 
   // If params specify to ask the user about the name...
   if (m_ask) {
@@ -198,6 +235,53 @@ void NewLayerCommand::onExecute(Context* context)
       }
     }
 
+    // Paste sprite content
+    if (pasteDoc && layer->isImage()) {
+      Sprite* pasteSpr = pasteDoc->sprite();
+      render::Render render;
+      render.setBgType(render::BgType::NONE);
+
+      // Add more frames at the end
+      if (writer.frame()+pasteSpr->lastFrame() > sprite->lastFrame())
+        api.addEmptyFramesTo(sprite, writer.frame()+pasteSpr->lastFrame());
+
+      // Paste the given sprite as flatten
+      for (frame_t fr=0; fr<=pasteSpr->lastFrame(); ++fr) {
+        ImageRef pasteImage(Image::create(sprite->pixelFormat(),
+                                          pasteSpr->width(),
+                                          pasteSpr->height()));
+        clear_image(pasteImage.get(),
+                    pasteSpr->transparentColor());
+        render.renderSprite(pasteImage.get(), pasteSpr, fr);
+
+        frame_t dstFrame = writer.frame()+fr;
+        Cel* cel = layer->cel(dstFrame);
+        if (cel) {
+          api.replaceImage(sprite, cel->imageRef(), pasteImage);
+        }
+        else {
+          cel = api.addCel(static_cast<LayerImage*>(layer),
+                           dstFrame, pasteImage);
+        }
+
+        if (cel) {
+          if (layer->isReference()) {
+            gfx::RectF bounds(0, 0, pasteSpr->width(), pasteSpr->height());
+            double scale = MIN(double(sprite->width()) / bounds.w,
+                               double(sprite->height()) / bounds.h);
+            bounds.w *= scale;
+            bounds.h *= scale;
+            bounds.x = sprite->width()/2 - bounds.w/2;
+            bounds.y = sprite->height()/2 - bounds.h/2;
+            cel->setBoundsF(bounds);
+          }
+          else {
+            cel->setPosition(sprite->width()/2 - pasteSpr->width()/2,
+                             sprite->height()/2 - pasteSpr->height()/2);
+          }
+        }
+      }
+    }
 
     transaction.commit();
   }

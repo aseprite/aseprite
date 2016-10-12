@@ -682,6 +682,7 @@
         <separator />
         <item command="NewLayer" text="Add R&amp;eference Layer" >
           <param name="reference" value="true" />
+          <param name="from-file" value="true" />
         </item>
       </menu>
       <menu text="F&amp;rame">

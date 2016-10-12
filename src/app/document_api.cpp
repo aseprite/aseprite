@@ -501,9 +501,7 @@ Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef&
   base::UniquePtr<Cel> cel(new Cel(frameNumber, image));
 
   addCel(layer, cel);
-  cel.release();
-
-  return cel;
+  return cel.release();
 }
 
 void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage)

@@ -1033,8 +1033,8 @@ void Render::renderImage(
       srcBounds.h),
     opacity,
     blendMode,
-    m_proj.scaleX() * double(cel_image->width()) / celBounds.w,
-    m_proj.scaleY() * double(cel_image->height()) / celBounds.h);
+    m_proj.scaleX() * celBounds.w / double(cel_image->width()),
+    m_proj.scaleY() * celBounds.h / double(cel_image->height()));
 }
 
 CompositeImageFunc Render::getImageComposition(
@@ -1048,9 +1048,7 @@ CompositeImageFunc Render::getImageComposition(
   const bool finegrain =
     (m_bgCheckedSize.w < m_proj.applyX(1) ||
      m_bgCheckedSize.h < m_proj.applyY(1) ||
-     // Check if we are rendering reference images with zoom scale > 1
-     ((m_proj.applyX(1) > 1 || m_proj.applyY(1) > 1) &&
-      layer &&
+     (layer &&
       layer->isGroup() &&
       has_visible_reference_layers(static_cast<const LayerGroup*>(layer))));
 
