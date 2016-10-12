@@ -680,7 +680,7 @@
         <item command="MergeDownLayer" text="&amp;Merge Down" />
         <item command="FlattenLayers" text="&amp;Flatten" />
         <separator />
-        <item command="NewLayer" text="Add &amp;Reference Layer" >
+        <item command="NewLayer" text="Add R&amp;eference Layer" >
           <param name="reference" value="true" />
         </item>
       </menu>
