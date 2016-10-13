@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,10 @@ namespace doc {
   class Site;
 }
 
+namespace render {
+  class Projection;
+}
+
 namespace app {
 
   class EyedropperCommand : public Command {
@@ -24,7 +28,8 @@ namespace app {
 
     // Returns the color in the given sprite pos.
     void pickSample(const doc::Site& site,
-                    const gfx::Point& pixelPos,
+                    const gfx::PointF& pixelPos,
+                    const render::Projection& proj,
                     app::Color& color);
 
   protected:

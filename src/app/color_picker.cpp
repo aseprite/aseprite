@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,10 +30,12 @@ ColorPicker::ColorPicker()
 }
 
 void ColorPicker::pickColor(const doc::Site& site,
-  const gfx::Point& _pos, Mode mode)
+                            const gfx::PointF& _pos,
+                            const render::Projection& proj,
+                            const Mode mode)
 {
   const doc::Sprite* sprite = site.sprite();
-  gfx::Point pos = _pos;
+  gfx::PointF pos = _pos;
 
   m_alpha = 255;
   m_color = app::Color::fromMask();
@@ -44,17 +46,18 @@ void ColorPicker::pickColor(const doc::Site& site,
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
     if (int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS))
-      pos.x = wrap_value(pos.x, site.sprite()->width());
+      pos.x = wrap_value<double>(pos.x, site.sprite()->width());
 
     if (int(docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS))
-      pos.y = wrap_value(pos.y, site.sprite()->height());
+      pos.y = wrap_value<double>(pos.y, site.sprite()->height());
   }
 
   // Get the color from the image
   if (mode == FromComposition) { // Pick from the composed image
     m_color = app::Color::fromImage(
       sprite->pixelFormat(),
-      render::get_sprite_pixel(sprite, pos.x, pos.y, site.frame()));
+      render::get_sprite_pixel(sprite, pos.x, pos.y,
+                               site.frame(), proj));
 
     doc::CelList cels;
     sprite->pickCels(pos.x, pos.y, site.frame(), 128, cels);
@@ -62,12 +65,27 @@ void ColorPicker::pickColor(const doc::Site& site,
       m_layer = cels.front()->layer();
   }
   else {                        // Pick from the current layer
-    int u, v;
-    doc::Image* image = site.image(&u, &v, NULL);
-    gfx::Point pt(pos.x-u, pos.y-v);
+    const Cel* cel = site.cel();
+    if (cel) {
+      gfx::RectF celBounds;
+      if (cel->layer()->isReference())
+        celBounds = cel->boundsF();
+      else
+        celBounds = cel->bounds();
 
-    if (image && image->bounds().contains(pt)) {
-      doc::color_t imageColor = get_pixel(image, pt.x, pt.y);
+      const doc::Image* image = cel->image();
+
+      if (!celBounds.contains(pos))
+        return;
+
+      pos.x = (pos.x-celBounds.x)*image->width()/celBounds.w;
+      pos.y = (pos.y-celBounds.y)*image->height()/celBounds.h;
+      const gfx::Point ipos(pos);
+      if (!image->bounds().contains(ipos))
+        return;
+
+      const doc::color_t imageColor =
+        get_pixel(image, ipos.x, ipos.y);
 
       switch (image->pixelFormat()) {
         case IMAGE_RGB:

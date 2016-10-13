@@ -178,10 +178,11 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (clickedInk->isCelMovement()) {
     // Handle "Auto Select Layer"
     if (editor->isAutoSelectLayer()) {
-      gfx::Point cursor = editor->screenToEditor(msg->position());
-
+      gfx::PointF cursor = editor->screenToEditorF(msg->position());
       ColorPicker picker;
-      picker.pickColor(site, cursor, ColorPicker::FromComposition);
+      picker.pickColor(site, cursor,
+                       editor->projection(),
+                       ColorPicker::FromComposition);
 
       auto range = App::instance()->timeline()->range();
 
@@ -447,7 +448,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
-  gfx::Point spritePos = editor->screenToEditor(ui::get_mouse_position());
+  gfx::PointF spritePos = editor->screenToEditorF(ui::get_mouse_position());
 
   if (!sprite) {
     StatusBar::instance()->clearText();
@@ -456,10 +457,15 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   else if (ink->isEyedropper()) {
     EyedropperCommand cmd;
     app::Color color = Preferences::instance().colorBar.fgColor();
-    cmd.pickSample(editor->getSite(), spritePos, color);
+    cmd.pickSample(editor->getSite(),
+                   spritePos,
+                   editor->projection(),
+                   color);
 
     char buf[256];
-    sprintf(buf, " :pos: %d %d", spritePos.x, spritePos.y);
+    sprintf(buf, " :pos: %d %d",
+            int(spritePos.x),
+            int(spritePos.y));
 
     StatusBar::instance()->showColor(0, buf, color);
   }
@@ -471,7 +477,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     char buf[1024];
     sprintf(
       buf, ":pos: %d %d :%s: %d %d",
-      spritePos.x, spritePos.y,
+      int(spritePos.x),
+      int(spritePos.y),
       (mask ? "selsize": "size"),
       (mask ? mask->bounds().w: sprite->width()),
       (mask ? mask->bounds().h: sprite->height()));
@@ -485,8 +492,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     if (editor->docPref().show.grid()) {
       auto gb = editor->docPref().grid.bounds();
-      int col = (spritePos.x - (gb.x % gb.w)) / gb.w;
-      int row = (spritePos.y - (gb.y % gb.h)) / gb.h;
+      int col = (int(spritePos.x) - (gb.x % gb.w)) / gb.w;
+      int row = (int(spritePos.y) - (gb.y % gb.h)) / gb.h;
       sprintf(
         buf+std::strlen(buf), " :grid: %d %d", col, row);
     }

@@ -1232,10 +1232,11 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
 {
   Site site = getSite();
   if (site.sprite()) {
-    gfx::Point editorPos = screenToEditor(mousePos);
+    gfx::PointF editorPos = screenToEditorF(mousePos);
 
     ColorPicker picker;
-    picker.pickColor(site, editorPos, ColorPicker::FromComposition);
+    picker.pickColor(site, editorPos, m_proj,
+                     ColorPicker::FromComposition);
     return picker.color();
   }
   else

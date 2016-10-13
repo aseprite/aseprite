@@ -576,7 +576,7 @@ void Render::renderSprite(
 {
   renderSprite(
     dstImage, sprite, frame,
-    gfx::Clip(sprite->bounds()));
+    gfx::ClipF(sprite->bounds()));
 }
 
 void Render::renderLayer(
@@ -615,7 +615,7 @@ void Render::renderSprite(
   Image* dstImage,
   const Sprite* sprite,
   frame_t frame,
-  const gfx::Clip& area)
+  const gfx::ClipF& area)
 {
   m_sprite = sprite;
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,7 +40,8 @@ EyedropperCommand::EyedropperCommand()
 }
 
 void EyedropperCommand::pickSample(const doc::Site& site,
-                                   const gfx::Point& pixelPos,
+                                   const gfx::PointF& pixelPos,
+                                   const render::Projection& proj,
                                    app::Color& color)
 {
   // Check if we've to grab alpha channel or the merged color.
@@ -51,6 +52,7 @@ void EyedropperCommand::pickSample(const doc::Site& site,
   ColorPicker picker;
   picker.pickColor(site,
                    pixelPos,
+                   proj,
                    (allLayers ?
                     ColorPicker::FromComposition:
                     ColorPicker::FromActiveLayer));
@@ -171,7 +173,7 @@ void EyedropperCommand::onExecute(Context* context)
   }
 
   // Pixel position to get
-  gfx::Point pixelPos = editor->screenToEditor(ui::get_mouse_position());
+  gfx::PointF pixelPos = editor->screenToEditorF(ui::get_mouse_position());
 
   // Start with fg/bg color
   Preferences& pref = Preferences::instance();
@@ -179,7 +181,10 @@ void EyedropperCommand::onExecute(Context* context)
     m_background ? pref.colorBar.bgColor():
                    pref.colorBar.fgColor();
 
-  pickSample(editor->getSite(), pixelPos, color);
+  pickSample(editor->getSite(),
+             pixelPos,
+             editor->projection(),
+             color);
 
   if (m_background)
     pref.colorBar.bgColor(color);

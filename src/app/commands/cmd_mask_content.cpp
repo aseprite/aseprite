@@ -14,9 +14,11 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
 #include "app/transaction.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/toolbar.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -64,7 +66,10 @@ void MaskContentCommand::onExecute(Context* context)
     gfx::Color color;
     if (writer.layer()->isBackground()) {
       ColorPicker picker;
-      picker.pickColor(*writer.site(), gfx::Point(0, 0), ColorPicker::FromComposition);
+      picker.pickColor(*writer.site(),
+                       gfx::PointF(0.0, 0.0),
+                       current_editor->projection(),
+                       ColorPicker::FromComposition);
       color = color_utils::color_for_layer(picker.color(), writer.layer());
     }
     else

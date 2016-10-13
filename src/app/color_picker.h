@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,10 @@ namespace doc {
   class Site;
 }
 
+namespace render {
+  class Projection;
+}
+
 namespace app {
 
   class ColorPicker {
@@ -25,7 +29,9 @@ namespace app {
     ColorPicker();
 
     void pickColor(const doc::Site& site,
-      const gfx::Point& pos, Mode mode);
+                   const gfx::PointF& pos,
+                   const render::Projection& proj,
+                   const Mode mode);
 
     app::Color color() const { return m_color; }
     int alpha() const { return m_alpha; }

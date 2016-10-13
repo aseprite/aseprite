@@ -155,7 +155,7 @@ namespace render {
       Image* dstImage,
       const Sprite* sprite,
       frame_t frame,
-      const gfx::Clip& area);
+      const gfx::ClipF& area);
 
     // Extra functions
     void renderBackground(
