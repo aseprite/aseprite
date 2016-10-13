@@ -530,7 +530,6 @@ void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList
 
     cels.push_back(cel);
   }
-  fflush(stdout);
 }
 
 //////////////////////////////////////////////////////////////////////
