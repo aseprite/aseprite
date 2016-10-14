@@ -449,13 +449,17 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 //////////////////////////////////////////////////////////////////////
 // Drawing
 
-void Sprite::pickCels(double x, double y, frame_t frame, int opacityThreshold, CelList& cels) const
+void Sprite::pickCels(const double x,
+                      const double y,
+                      const frame_t frame,
+                      const int opacityThreshold,
+                      const LayerList& layers,
+                      CelList& cels) const
 {
-  LayerList layers = allVisibleLayers();
   gfx::PointF pos(x, y);
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
-    Layer* layer = layers[i];
+    const Layer* layer = layers[i];
     if (!layer->isImage())
       continue;
 
@@ -463,7 +467,7 @@ void Sprite::pickCels(double x, double y, frame_t frame, int opacityThreshold, C
     if (!cel)
       continue;
 
-    Image* image = cel->image();
+    const Image* image = cel->image();
     if (!image)
       continue;
 
@@ -519,6 +523,13 @@ LayerList Sprite::allVisibleLayers() const
 {
   LayerList list;
   m_root->allVisibleLayers(list);
+  return list;
+}
+
+LayerList Sprite::allVisibleReferenceLayers() const
+{
+  LayerList list;
+  m_root->allVisibleReferenceLayers(list);
   return list;
 }
 

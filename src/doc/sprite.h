@@ -140,13 +140,19 @@ namespace doc {
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
     void getImages(std::vector<Image*>& images) const;
     void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
-    void pickCels(double x, double y, frame_t frame, int opacityThreshold, CelList& cels) const;
+    void pickCels(const double x,
+                  const double y,
+                  const frame_t frame,
+                  const int opacityThreshold,
+                  const LayerList& layers,
+                  CelList& cels) const;
 
     ////////////////////////////////////////
     // Iterators
 
     LayerList allLayers() const;
     LayerList allVisibleLayers() const;
+    LayerList allVisibleReferenceLayers() const;
     LayerList allBrowsableLayers() const;
 
     CelsRange cels() const;

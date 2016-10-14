@@ -23,6 +23,37 @@
 
 namespace app {
 
+namespace {
+
+bool get_cel_pixel(const Cel* cel,
+                   const double x,
+                   const double y,
+                   const frame_t frame,
+                   color_t& output)
+{
+  gfx::RectF celBounds;
+  if (cel->layer()->isReference())
+    celBounds = cel->boundsF();
+  else
+    celBounds = cel->bounds();
+
+  const doc::Image* image = cel->image();
+  gfx::PointF pos(x, y);
+  if (!celBounds.contains(pos))
+    return false;
+
+  pos.x = (pos.x-celBounds.x)*image->width()/celBounds.w;
+  pos.y = (pos.y-celBounds.y)*image->height()/celBounds.h;
+  const gfx::Point ipos(pos);
+  if (!image->bounds().contains(ipos))
+    return false;
+
+  output = get_pixel(image, ipos.x, ipos.y);
+  return true;
+}
+
+}
+
 ColorPicker::ColorPicker()
   : m_alpha(0)
   , m_layer(NULL)
@@ -53,51 +84,64 @@ void ColorPicker::pickColor(const doc::Site& site,
   }
 
   // Get the color from the image
-  if (mode == FromComposition) { // Pick from the composed image
-    m_color = app::Color::fromImage(
-      sprite->pixelFormat(),
-      render::get_sprite_pixel(sprite, pos.x, pos.y,
-                               site.frame(), proj));
+  switch (mode) {
 
-    doc::CelList cels;
-    sprite->pickCels(pos.x, pos.y, site.frame(), 128, cels);
-    if (!cels.empty())
-      m_layer = cels.front()->layer();
-  }
-  else {                        // Pick from the current layer
-    const Cel* cel = site.cel();
-    if (cel) {
-      gfx::RectF celBounds;
-      if (cel->layer()->isReference())
-        celBounds = cel->boundsF();
-      else
-        celBounds = cel->bounds();
+    // Pick from the composed image
+    case FromComposition: {
+      m_color = app::Color::fromImage(
+        sprite->pixelFormat(),
+        render::get_sprite_pixel(sprite, pos.x, pos.y,
+                                 site.frame(), proj));
 
-      const doc::Image* image = cel->image();
+      doc::CelList cels;
+      sprite->pickCels(pos.x, pos.y, site.frame(), 128,
+                       sprite->allVisibleLayers(), cels);
+      if (!cels.empty())
+        m_layer = cels.front()->layer();
+      break;
+    }
 
-      if (!celBounds.contains(pos))
-        return;
+    // Pick from the current layer
+    case FromActiveLayer: {
+      const Cel* cel = site.cel();
+      if (cel) {
+        doc::color_t imageColor;
+        if (!get_cel_pixel(cel, pos.x, pos.y,
+                           site.frame(), imageColor))
+          return;
 
-      pos.x = (pos.x-celBounds.x)*image->width()/celBounds.w;
-      pos.y = (pos.y-celBounds.y)*image->height()/celBounds.h;
-      const gfx::Point ipos(pos);
-      if (!image->bounds().contains(ipos))
-        return;
+        const doc::Image* image = cel->image();
+        switch (image->pixelFormat()) {
+          case IMAGE_RGB:
+            m_alpha = doc::rgba_geta(imageColor);
+            break;
+          case IMAGE_GRAYSCALE:
+            m_alpha = doc::graya_geta(imageColor);
+            break;
+        }
 
-      const doc::color_t imageColor =
-        get_pixel(image, ipos.x, ipos.y);
-
-      switch (image->pixelFormat()) {
-        case IMAGE_RGB:
-          m_alpha = doc::rgba_geta(imageColor);
-          break;
-        case IMAGE_GRAYSCALE:
-          m_alpha = doc::graya_geta(imageColor);
-          break;
+        m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
+        m_layer = const_cast<Layer*>(site.layer());
       }
+      break;
+    }
 
-      m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
-      m_layer = const_cast<Layer*>(site.layer());
+    case FromFirstReferenceLayer: {
+      doc::CelList cels;
+      sprite->pickCels(pos.x, pos.y, site.frame(), 128,
+                       sprite->allVisibleReferenceLayers(), cels);
+
+      for (const Cel* cel : cels) {
+        doc::color_t imageColor;
+        if (get_cel_pixel(cel, pos.x, pos.y,
+                          site.frame(), imageColor)) {
+          m_color = app::Color::fromImage(
+            cel->image()->pixelFormat(), imageColor);
+          m_layer = cel->layer();
+          break;
+        }
+      }
+      break;
     }
   }
 }

@@ -46,16 +46,21 @@ void EyedropperCommand::pickSample(const doc::Site& site,
 {
   // Check if we've to grab alpha channel or the merged color.
   Preferences& pref = Preferences::instance();
-  bool allLayers =
-    (pref.eyedropper.sample() == app::gen::EyedropperSample::ALL_LAYERS);
+  ColorPicker::Mode mode = ColorPicker::FromComposition;
+  switch (pref.eyedropper.sample()) {
+    case app::gen::EyedropperSample::ALL_LAYERS:
+      mode = ColorPicker::FromComposition;
+      break;
+    case app::gen::EyedropperSample::CURRENT_LAYER:
+      mode = ColorPicker::FromActiveLayer;
+      break;
+    case app::gen::EyedropperSample::FIRST_REFERENCE_LAYER:
+      mode = ColorPicker::FromFirstReferenceLayer;
+      break;
+  }
 
   ColorPicker picker;
-  picker.pickColor(site,
-                   pixelPos,
-                   proj,
-                   (allLayers ?
-                    ColorPicker::FromComposition:
-                    ColorPicker::FromActiveLayer));
+  picker.pickColor(site, pixelPos, proj, mode);
 
   app::gen::EyedropperChannel channel =
     pref.eyedropper.channel();

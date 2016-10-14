@@ -192,6 +192,7 @@ namespace doc {
     void allLayers(LayerList& list) const;
     layer_t allLayersCount() const;
     void allVisibleLayers(LayerList& list) const;
+    void allVisibleReferenceLayers(LayerList& list) const;
     void allBrowsableLayers(LayerList& list) const;
 
     void getCels(CelList& cels) const override;
