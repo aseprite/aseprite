@@ -10,6 +10,7 @@
 
 #include "she/skia/skia_window_osx.h"
 
+#include "base/log.h"
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "she/event.h"
