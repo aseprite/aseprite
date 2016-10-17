@@ -202,8 +202,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
     }
 
-    if ((layer) &&
-        (layer->type() == ObjectType::LayerImage)) {
+    if (layer && layer->isImage()) {
       // TODO we should be able to move the `Background' with tiled mode
       if (layer->isBackground()) {
         StatusBar::instance()->showTip(1000,
@@ -271,6 +270,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       if (!layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
+        return true;
+      }
+
+      if (layer->isReference()) {
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is reference, cannot be transformed", layer->name().c_str());
         return true;
       }
 

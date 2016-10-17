@@ -512,6 +512,12 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
         1000, "Layer '%s' is locked", layer->name().c_str());
       return nullptr;
     }
+    // If the active layer is reference.
+    else if (layer->isReference()) {
+      StatusBar::instance()->showTip(
+        1000, "Layer '%s' is reference, cannot be modified", layer->name().c_str());
+      return nullptr;
+    }
   }
 
   // Get fg/bg colors
@@ -620,7 +626,8 @@ tools::ToolLoop* create_tool_loop_preview(
   Layer* layer = editor->layer();
   if (!layer ||
       !layer->isVisibleHierarchy() ||
-      !layer->isEditableHierarchy()) {
+      !layer->isEditableHierarchy() ||
+      layer->isReference()) {
     return nullptr;
   }
 

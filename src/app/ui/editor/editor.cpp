@@ -1542,7 +1542,8 @@ bool Editor::canDraw()
   return (m_layer != NULL &&
           m_layer->isImage() &&
           m_layer->isVisibleHierarchy() &&
-          m_layer->isEditableHierarchy());
+          m_layer->isEditableHierarchy() &&
+          !m_layer->isReference());
 }
 
 bool Editor::isInsideSelection()
