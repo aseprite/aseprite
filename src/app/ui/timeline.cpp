@@ -2629,7 +2629,9 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
       case PART_LAYER_TEXT:
         if (layer != NULL) {
-          sb->setStatusText(0, "Layer '%s' [%s%s]",
+          sb->setStatusText(
+            0, "%s '%s' [%s%s]",
+            layer->isReference() ? "Reference layer": "Layer",
             layer->name().c_str(),
             layer->isVisible() ? "visible": "hidden",
             layer->isEditable() ? "": " locked");
