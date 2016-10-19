@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013, 2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -139,6 +139,30 @@ namespace base {
     explicit utf8_const_iterator(const std::string::const_iterator& it)
       : utf8_iteratorT<std::string::const_iterator>(it) {
     }
+  };
+
+  class utf8 {
+  public:
+    utf8(std::string& s) : m_begin(utf8_iterator(s.begin())),
+                           m_end(utf8_iterator(s.end())) {
+    }
+    const utf8_iterator& begin() const { return m_begin; }
+    const utf8_iterator& end() const { return m_end; }
+  private:
+    utf8_iterator m_begin;
+    utf8_iterator m_end;
+  };
+
+  class utf8_const {
+  public:
+    utf8_const(const std::string& s) : m_begin(utf8_const_iterator(s.begin())),
+                                       m_end(utf8_const_iterator(s.end())) {
+    }
+    const utf8_const_iterator& begin() const { return m_begin; }
+    const utf8_const_iterator& end() const { return m_end; }
+  private:
+    utf8_const_iterator m_begin;
+    utf8_const_iterator m_end;
   };
 
 }
