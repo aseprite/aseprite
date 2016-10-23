@@ -139,7 +139,9 @@ private:
         if (name()->hasFocus() ||
             opacity()->hasFocus() ||
             mode()->hasFocus()) {
-          if (static_cast<KeyMessage*>(msg)->scancode() == kKeyEnter) {
+          KeyScancode scancode = static_cast<KeyMessage*>(msg)->scancode();
+          if (scancode == kKeyEnter ||
+              scancode == kKeyEsc) {
             onCommitChange();
             closeWindow(this);
             return true;
