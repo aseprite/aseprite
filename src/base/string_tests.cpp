@@ -36,13 +36,14 @@ TEST(String, Utf8Wrapper)
     a.push_back(ch);
   EXPECT_EQ("abc", a);
 
-  std::string c;
-  for (int ch : utf8_const("def"))
+  std::string c, d = "def";
+  for (int ch : utf8_const(d))  // TODO we should be able to specify a string-literal here
     c.push_back(ch);
   EXPECT_EQ("def", c);
 
   int i = 0;
-  for (int ch : utf8_const("\xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E")) { // 日本語
+  d = "\xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E";
+  for (int ch : utf8_const(d)) { // 日本語
     switch (i++) {
       case 0: EXPECT_EQ(ch, 0x65E5); break;
       case 1: EXPECT_EQ(ch, 0x672C); break;
