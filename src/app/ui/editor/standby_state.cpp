@@ -117,7 +117,9 @@ void StandbyState::onActiveToolChange(Editor* editor, tools::Tool* tool)
   // If the user change from a selection tool to a non-selection tool,
   // or viceversa, we've to show or hide the transformation handles.
   bool needDecorators = (tool && tool->getInk(0)->isSelection());
-  if (m_transformSelectionHandlesAreVisible != needDecorators) {
+  if (m_transformSelectionHandlesAreVisible != needDecorators ||
+      !editor->layer() ||
+      !editor->layer()->isReference()) {
     m_transformSelectionHandlesAreVisible = false;
     editor->invalidate();
   }
@@ -222,7 +224,11 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
       else {
         // Change to MovingCelState
-        editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
+        HandleType handle = MoveHandle;
+        if (resizeCelBounds(editor).contains(msg->position()))
+          handle = ScaleSEHandle;
+
+        editor->setState(EditorStatePtr(new MovingCelState(editor, msg, handle)));
       }
     }
 
@@ -418,7 +424,10 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
       return true;
     }
     else if (ink->isCelMovement()) {
-      editor->showMouseCursor(kMoveCursor);
+      if (resizeCelBounds(editor).contains(mouseScreenPos))
+        editor->showMouseCursor(kSizeSECursor);
+      else
+        editor->showMouseCursor(kMoveCursor);
       return true;
     }
     else if (ink->isSlice()) {
@@ -601,6 +610,22 @@ void StandbyState::onPivotChange(Editor* editor)
       !editor->document()->mask()->isFrozen()) {
     editor->invalidate();
   }
+}
+
+gfx::Rect StandbyState::resizeCelBounds(Editor* editor) const
+{
+  gfx::Rect bounds;
+  Cel* refCel = (editor->layer() &&
+                 editor->layer()->isReference() ?
+                 editor->layer()->cel(editor->frame()): nullptr);
+  if (refCel) {
+    bounds = editor->editorToScreen(refCel->boundsF());
+    bounds.w /= 4;
+    bounds.h /= 4;
+    bounds.x += 3*bounds.w;
+    bounds.y += 3*bounds.h;
+  }
+  return bounds;
 }
 
 //////////////////////////////////////////////////////////////////////

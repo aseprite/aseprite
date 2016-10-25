@@ -33,10 +33,16 @@ namespace app {
 
 using namespace ui;
 
-MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
+MovingCelState::MovingCelState(Editor* editor,
+                               MouseMessage* msg,
+                               const HandleType handle)
   : m_reader(UIContext::instance(), 500)
+  , m_celOffset(0.0, 0.0)
+  , m_celScale(1.0, 1.0)
   , m_canceled(false)
   , m_hasReference(false)
+  , m_scaled(false)
+  , m_handle(handle)
 {
   ContextWriter writer(m_reader);
   Document* document = editor->document();
@@ -44,11 +50,14 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   LayerImage* layer = static_cast<LayerImage*>(editor->layer());
   ASSERT(layer->isImage());
 
-  Cel* currentCel = layer->cel(editor->frame());
-  ASSERT(currentCel); // The cel cannot be null
+  m_cel = layer->cel(editor->frame());
+  ASSERT(m_cel); // The cel cannot be null
 
   if (!range.enabled())
-    range = DocumentRange(currentCel);
+    range = DocumentRange(m_cel);
+
+  if (m_cel)
+    m_celMainSize = m_cel->boundsF().size();
 
   // Record start positions of all cels in selected range
   for (Cel* cel : get_unique_cels(writer.sprite(), range)) {
@@ -68,7 +77,6 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   }
 
   m_cursorStart = editor->screenToEditorF(msg->position());
-  m_celOffset = gfx::PointF(0, 0);
   editor->captureMouse();
 
   // Hide the mask (temporarily, until mouse-up event)
@@ -85,7 +93,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   // Here we put back the cel into its original coordinate (so we can
   // add an undoer before).
-  if ((m_hasReference && m_celOffset != gfx::PointF(0, 0)) ||
+  if ((m_hasReference && (m_celOffset != gfx::PointF(0, 0) || m_scaled)) ||
       (!m_hasReference && gfx::Point(m_celOffset) != gfx::Point(0, 0))) {
     // Put the cels in the original position.
     for (size_t i=0; i<m_celList.size(); ++i) {
@@ -111,6 +119,10 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
           gfx::RectF celBounds = cel->boundsF();
           celBounds.x += m_celOffset.x;
           celBounds.y += m_celOffset.y;
+          if (m_scaled) {
+            celBounds.w *= m_celScale.w;
+            celBounds.h *= m_celScale.h;
+          }
           transaction.execute(new cmd::SetCelBoundsF(cel, celBounds));
         }
         else {
@@ -150,15 +162,35 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::PointF newCursorPos = editor->screenToEditorF(msg->position());
 
-  m_celOffset = newCursorPos - m_cursorStart;
+  switch (m_handle) {
 
-  if (int(editor->getCustomizationDelegate()
-          ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
-    if (ABS(m_celOffset.x) < ABS(m_celOffset.y)) {
-      m_celOffset.x = 0;
-    }
-    else {
-      m_celOffset.y = 0;
+    case MoveHandle:
+      m_celOffset = newCursorPos - m_cursorStart;
+      if (int(editor->getCustomizationDelegate()
+              ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
+        if (ABS(m_celOffset.x) < ABS(m_celOffset.y)) {
+          m_celOffset.x = 0;
+        }
+        else {
+          m_celOffset.y = 0;
+        }
+      }
+      break;
+
+    case ScaleSEHandle: {
+      gfx::PointF delta(newCursorPos - m_cursorStart);
+      m_celScale.w = 1.0 + (delta.x / m_celMainSize.w);
+      m_celScale.h = 1.0 + (delta.y / m_celMainSize.h);
+      if (m_celScale.w < 1.0/m_celMainSize.w) m_celScale.w = 1.0/m_celMainSize.w;
+      if (m_celScale.h < 1.0/m_celMainSize.h) m_celScale.h = 1.0/m_celMainSize.h;
+
+      if (int(editor->getCustomizationDelegate()
+              ->getPressedKeyAction(KeyContext::ScalingSelection) & KeyAction::MaintainAspectRatio)) {
+        m_celScale.w = m_celScale.h = MAX(m_celScale.w, m_celScale.h);
+      }
+
+      m_scaled = true;
+      break;
     }
   }
 
@@ -167,6 +199,11 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
     gfx::RectF celBounds = m_celStarts[i];
     celBounds.x += m_celOffset.x;
     celBounds.y += m_celOffset.y;
+
+    if (m_scaled) {
+      celBounds.w *= m_celScale.w;
+      celBounds.h *= m_celScale.h;
+    }
 
     if (cel->layer()->isReference())
       cel->setBoundsF(celBounds);
@@ -184,22 +221,29 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool MovingCelState::onUpdateStatusBar(Editor* editor)
 {
   if (m_hasReference) {
-    StatusBar::instance()->setStatusText
-      (0,
-       ":pos: %.2f %.2f :offset: %.2f %.2f",
-       m_cursorStart.x,
-       m_cursorStart.y,
-       m_celOffset.x,
-       m_celOffset.y);
+    if (m_scaled && m_cel) {
+      StatusBar::instance()->setStatusText
+        (0,
+         ":pos: %.2f %.2f :offset: %.2f %.2f :size: %.2f%% %.2f%%",
+         m_cursorStart.x, m_cursorStart.y,
+         m_celOffset.x, m_celOffset.y,
+         100.0*m_celScale.w*m_celMainSize.w/m_cel->image()->width(),
+         100.0*m_celScale.h*m_celMainSize.h/m_cel->image()->height());
+    }
+    else {
+      StatusBar::instance()->setStatusText
+        (0,
+         ":pos: %.2f %.2f :offset: %.2f %.2f",
+         m_cursorStart.x, m_cursorStart.y,
+         m_celOffset.x, m_celOffset.y);
+    }
   }
   else {
     StatusBar::instance()->setStatusText
       (0,
        ":pos: %3d %3d :offset: %3d %3d",
-       int(m_cursorStart.x),
-       int(m_cursorStart.y),
-       int(m_celOffset.x),
-       int(m_celOffset.y));
+       int(m_cursorStart.x), int(m_cursorStart.y),
+       int(m_celOffset.x), int(m_celOffset.y));
   }
 
   return true;

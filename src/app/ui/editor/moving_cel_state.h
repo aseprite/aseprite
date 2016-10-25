@@ -11,6 +11,7 @@
 #include "app/ui/editor/standby_state.h"
 
 #include "app/context_access.h"
+#include "app/ui/editor/handle_type.h"
 #include "doc/cel_list.h"
 
 #include <vector>
@@ -24,7 +25,9 @@ namespace app {
 
   class MovingCelState : public StandbyState {
   public:
-    MovingCelState(Editor* editor, ui::MouseMessage* msg);
+    MovingCelState(Editor* editor,
+                   ui::MouseMessage* msg,
+                   const HandleType handle);
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -34,13 +37,18 @@ namespace app {
 
   private:
     ContextReader m_reader;
+    Cel* m_cel;
     CelList m_celList;
     std::vector<gfx::RectF> m_celStarts;
     gfx::PointF m_cursorStart;
     gfx::PointF m_celOffset;
+    gfx::SizeF m_celMainSize;
+    gfx::SizeF m_celScale;
     bool m_canceled;
     bool m_maskVisible;
     bool m_hasReference;
+    bool m_scaled;
+    HandleType m_handle;
   };
 
 } // namespace app
