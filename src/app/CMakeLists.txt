@@ -451,6 +451,7 @@ target_link_libraries(app-lib
   clip
   css-lib
   doc-lib
+  docio-lib
   filters-lib
   fixmath-lib
   flic-lib

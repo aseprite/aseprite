@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -7,6 +7,8 @@
 #ifndef APP_FILE_FILE_FORMATS_MANAGER_H_INCLUDED
 #define APP_FILE_FILE_FORMATS_MANAGER_H_INCLUDED
 #pragma once
+
+#include "docio/file_format.h"
 
 #include <vector>
 
@@ -34,7 +36,7 @@ namespace app {
     FileFormatsList::iterator begin();
     FileFormatsList::iterator end();
 
-    FileFormat* getFileFormatByExtension(const char* extension) const;
+    FileFormat* getFileFormat(const docio::FileFormat docioFormat) const;
 
   private:
     // Register one format.

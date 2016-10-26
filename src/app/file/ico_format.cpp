@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,6 +26,7 @@ using namespace base;
 class IcoFormat : public FileFormat {
   const char* onGetName() const override { return "ico"; }
   const char* onGetExtensions() const override { return "ico"; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::ICO_IMAGES; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

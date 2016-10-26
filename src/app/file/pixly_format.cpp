@@ -31,6 +31,7 @@ using namespace base;
 class PixlyFormat : public FileFormat {
   const char* onGetName() const override { return "anim"; }
   const char* onGetExtensions() const override { return "anim"; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::PIXLY_ANIMATION; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
