@@ -474,7 +474,8 @@ bool has_visible_reference_layers(const LayerGroup* group)
 } // anonymous namespace
 
 Render::Render()
-  : m_sprite(NULL)
+  : m_flags(0)
+  , m_sprite(nullptr)
   , m_currentLayer(NULL)
   , m_currentFrame(0)
   , m_extraType(ExtraType::NONE)
@@ -489,6 +490,14 @@ Render::Render()
   , m_previewBlendMode(BlendMode::NORMAL)
   , m_onionskin(OnionskinType::NONE)
 {
+}
+
+void Render::setRefLayersVisiblity(const bool visible)
+{
+  if (visible)
+    m_flags |= Flags::ShowRefLayers;
+  else
+    m_flags &= ~Flags::ShowRefLayers;
 }
 
 void Render::setProjection(const Projection& projection)
@@ -880,6 +889,11 @@ void Render::renderLayer(
     case ObjectType::LayerImage: {
       if ((!render_background  &&  layer->isBackground()) ||
           (!render_transparent && !layer->isBackground()))
+        break;
+
+      // Ignore reference layers
+      if (!(m_flags & Flags::ShowRefLayers) &&
+          layer->isReference())
         break;
 
       const Cel* cel = layer->cel(frame);

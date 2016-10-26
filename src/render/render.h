@@ -97,8 +97,14 @@ namespace render {
     const double sy);
 
   class Render {
+    enum Flags {
+      ShowRefLayers = 1,
+    };
+
   public:
     Render();
+
+    void setRefLayersVisiblity(const bool visible);
 
     // Viewport configuration
     void setProjection(const Projection& projection);
@@ -213,6 +219,7 @@ namespace render {
       const PixelFormat srcFormat,
       const Layer* layer);
 
+    int m_flags;
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
     frame_t m_currentFrame;

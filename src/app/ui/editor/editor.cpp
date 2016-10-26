@@ -546,6 +546,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // Create a temporary RGB bitmap to draw all to it
     rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
 
+    m_renderEngine.setRefLayersVisiblity(true);
     m_renderEngine.setProjection(m_proj);
     m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
     m_renderEngine.disableOnionskin();

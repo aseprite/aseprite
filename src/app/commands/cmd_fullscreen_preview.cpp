@@ -173,6 +173,7 @@ protected:
   virtual void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.graphics();
     AppRender& render = m_editor->renderEngine();
+    render.setRefLayersVisiblity(false);
     render.setProjection(render::Projection());
     render.disableOnionskin();
     render.setBgType(render::BgType::TRANSPARENT);
