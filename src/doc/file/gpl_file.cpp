@@ -73,7 +73,7 @@ Palette* load_gpl_file(const char *filename)
 
   base::trim_string(comment, comment);
   if (!comment.empty()) {
-    LOG("%s comment: %s\n", filename, comment.c_str());
+    LOG(VERBOSE) << "PAL: " << filename << " comment: " << comment << "\n";
     pal->setComment(comment);
   }
 

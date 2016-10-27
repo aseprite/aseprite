@@ -33,6 +33,7 @@
 
 #endif
 
+#include <iostream>
 
 namespace she {
 
@@ -214,10 +215,10 @@ bool SkiaWindow::attachANGLE()
         GrContext::Create(kOpenGL_GrBackend,
                           (GrBackendContext)m_glInterfaces.get()));
 
-      LOG("Using EGL backend\n");
+      LOG("OS: Using EGL backend\n");
     }
     catch (const std::exception& ex) {
-      LOG("Error initializing EGL backend: %s\n", ex.what());
+      LOG(ERROR) << "OS: Error initializing EGL backend: " << ex.what() << "\n";
       detachGL();
     }
   }
@@ -250,10 +251,10 @@ bool SkiaWindow::attachGL()
         GrContext::Create(kOpenGL_GrBackend,
                           (GrBackendContext)m_glInterfaces.get()));
 
-      LOG("Using WGL backend\n");
+      LOG("OS: Using WGL backend\n");
     }
     catch (const std::exception& ex) {
-      LOG("Error initializing WGL backend: %s\n", ex.what());
+      LOG(ERROR) << "OS: Error initializing WGL backend: " << ex.what() << "\n";
       detachGL();
     }
   }

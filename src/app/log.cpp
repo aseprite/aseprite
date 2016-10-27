@@ -31,7 +31,7 @@ LoggerModule::LoggerModule(bool createLogInDesktop)
 
 LoggerModule::~LoggerModule()
 {
-  LOG("Logger module: shutting down (this is the last line)\n");
+  LOG("LOG: Done\n");
 
   // Close log file
   base::set_log_filename("");

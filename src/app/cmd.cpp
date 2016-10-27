@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,7 +27,7 @@ Cmd::~Cmd()
 
 void Cmd::execute(Context* ctx)
 {
-  TRACE("Cmd: Executing cmd '%s'\n", typeid(*this).name());
+  TRACE("CMD: Executing cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::NotExecuted);
 
   m_ctx = ctx;
@@ -42,7 +42,7 @@ void Cmd::execute(Context* ctx)
 
 void Cmd::undo()
 {
-  TRACE("Cmd: Undo cmd '%s'\n", typeid(*this).name());
+  TRACE("CMD: Undo cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::Executed || m_state == State::Redone);
 
   onUndo();
@@ -55,7 +55,7 @@ void Cmd::undo()
 
 void Cmd::redo()
 {
-  TRACE("Cmd: Redo cmd '%s'\n", typeid(*this).name());
+  TRACE("CMD: Redo cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::Undone);
 
   onRedo();

@@ -465,7 +465,7 @@ bool Document::lock(LockType lockType, int timeout)
             m_write_lock = true;
 
 #ifdef DEBUG_DOCUMENT_LOCKS
-            TRACE("Document::lock: Locked <%d> to write\n", id());
+            TRACE("DOC: Document::lock: Locked <%d> to write\n", id());
 #endif
             return true;
           }
@@ -479,7 +479,7 @@ bool Document::lock(LockType lockType, int timeout)
       timeout -= delay;
 
 #ifdef DEBUG_DOCUMENT_LOCKS
-      TRACE("Document::lock: wait 100 msecs for <%d>\n", id());
+      TRACE("DOC: Document::lock: wait 100 msecs for <%d>\n", id());
 #endif
 
       base::this_thread::sleep_for(double(delay) / 1000.0);
@@ -489,7 +489,7 @@ bool Document::lock(LockType lockType, int timeout)
   }
 
 #ifdef DEBUG_DOCUMENT_LOCKS
-  TRACE("Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
+  TRACE("DOC: Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
     id(), (lockType == ReadLock ? "read": "write"), m_read_locks, m_write_lock);
 #endif
 
@@ -508,7 +508,7 @@ bool Document::lockToWrite(int timeout)
         m_write_lock = true;
 
 #ifdef DEBUG_DOCUMENT_LOCKS
-        TRACE("Document::lockToWrite: Locked <%d> to write\n", id());
+        TRACE("DOC: Document::lockToWrite: Locked <%d> to write\n", id());
 #endif
 
         return true;
@@ -520,7 +520,7 @@ bool Document::lockToWrite(int timeout)
       timeout -= delay;
 
 #ifdef DEBUG_DOCUMENT_LOCKS
-      TRACE("Document::lockToWrite: wait 100 msecs for <%d>\n", id());
+      TRACE("DOC: Document::lockToWrite: wait 100 msecs for <%d>\n", id());
 #endif
 
       base::this_thread::sleep_for(double(delay) / 1000.0);
@@ -530,7 +530,7 @@ bool Document::lockToWrite(int timeout)
   }
 
 #ifdef DEBUG_DOCUMENT_LOCKS
-  TRACE("Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
+  TRACE("DOC: Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
     id(), m_read_locks, m_write_lock);
 #endif
 

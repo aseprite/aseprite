@@ -128,7 +128,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
   if (!fop)
     return nullptr;
 
-  LOG("Loading file \"%s\"\n", filename);
+  LOG("FILE: Loading file \"%s\"\n", filename);
 
   // Does file exist?
   if (!base::is_file(filename)) {
@@ -226,7 +226,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   fop->m_document = const_cast<Document*>(document);
 
   // Get the extension of the filename (in lower case)
-  LOG("Saving document \"%s\"\n", filename);
+  LOG("FILE: Saving document \"%s\"\n", filename);
 
   // Get the format through the extension of the filename
   fop->m_format = FileFormatsManager::instance()->getFileFormat(

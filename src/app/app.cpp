@@ -192,7 +192,7 @@ void App::initialize(const AppOptions& options)
   FileFormatsManager::instance()->registerAllFormats();
 
   if (isPortable())
-    LOG("Running in portable mode\n");
+    LOG("APP: Running in portable mode\n");
 
   // Load or create the default palette, or migrate the default
   // palette from an old format palette to the new one, etc.
@@ -201,7 +201,7 @@ void App::initialize(const AppOptions& options)
   // Initialize GUI interface
   UIContext* ctx = UIContext::instance();
   if (isGui()) {
-    LOG("GUI mode\n");
+    LOG("APP: GUI mode\n");
 
     // Setup the GUI cursor and redraw screen
 
@@ -229,7 +229,7 @@ void App::initialize(const AppOptions& options)
   }
 
   // Procress options
-  LOG("Processing options...\n");
+  LOG("APP: Processing options...\n");
 
   bool ignoreEmpty = false;
   bool trim = false;
@@ -636,7 +636,7 @@ void App::initialize(const AppOptions& options)
 
   // Export
   if (m_exporter) {
-    LOG("Exporting sheet...\n");
+    LOG("APP: Exporting sheet...\n");
 
     if (sheetType != SpriteSheetType::None)
       m_exporter->setSpriteSheetType(sheetType);
@@ -650,7 +650,7 @@ void App::initialize(const AppOptions& options)
     base::UniquePtr<Document> spriteSheet(m_exporter->exportSheet());
     m_exporter.reset(NULL);
 
-    LOG("Export sprite sheet: Done\n");
+    LOG("APP: Export sprite sheet: Done\n");
   }
 
   she::instance()->finishLaunching();
@@ -736,10 +736,8 @@ void App::run()
 App::~App()
 {
   try {
+    LOG("APP: Exit\n");
     ASSERT(m_instance == this);
-
-    // Remove Aseprite handlers
-    LOG("ASE: Uninstalling\n");
 
     // Delete file formats.
     FileFormatsManager::destroyInstance();
@@ -764,12 +762,13 @@ App::~App()
     m_instance = NULL;
   }
   catch (const std::exception& e) {
+    LOG(ERROR) << "APP: Error: " << e.what() << "\n";
     she::error_message(e.what());
 
     // no re-throw
   }
   catch (...) {
-    she::error_message("Error closing ASE.\n(uncaught exception)");
+    she::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
 
     // no re-throw
   }

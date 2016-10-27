@@ -123,8 +123,8 @@ void Session::removeFromDisk()
   }
   catch (const std::exception& ex) {
     (void)ex;
-    TRACE("Session directory cannot be removed, it's not empty\nError: '%s'\n",
-      ex.what());
+    LOG(ERROR) << "RECO: Session directory cannot be removed, it's not empty.\n"
+               << "      Error: " << ex.what() << "\n";
   }
 }
 
@@ -134,7 +134,7 @@ void Session::saveDocumentChanges(app::Document* doc)
   app::Context ctx;
   std::string dir = base::join_path(m_path,
     base::convert_to<std::string>(doc->id()));
-  TRACE("DataRecovery: Saving document '%s'...\n", dir.c_str());
+  TRACE("RECO: Saving document '%s'...\n", dir.c_str());
 
   if (!base::is_directory(dir))
     base::make_directory(dir);
@@ -237,7 +237,7 @@ void Session::deleteDirectory(const std::string& dir)
   for (auto& item : base::list_files(dir)) {
     std::string objfn = base::join_path(dir, item);
     if (base::is_file(objfn)) {
-      TRACE("DataRecovery: Deleting file '%s'\n", objfn.c_str());
+      TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
       base::delete_file(objfn);
     }
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,14 +27,11 @@ ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
   , m_cancel(false)
   , m_thread(base::Bind<void>(&ResourcesLoader::threadLoadResources, this))
 {
-  LOG("ResourcesLoader::ResourcesLoader()\n");
 }
 
 ResourcesLoader::~ResourcesLoader()
 {
   m_thread.join();
-
-  LOG("ResourcesLoader::~ResourcesLoader()\n");
 }
 
 void ResourcesLoader::cancel()
@@ -55,12 +52,10 @@ bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
 
 void ResourcesLoader::threadLoadResources()
 {
-  LOG("threadLoadResources()\n");
-
   base::ScopedValue<bool> scoped(m_done, false, true);
 
   std::string path = m_delegate->resourcesLocation();
-  LOG("Loading resources from %s...\n", path.c_str());
+  TRACE("RESLOAD: Loading resources from %s...\n", path.c_str());
   if (path.empty())
     return;
 

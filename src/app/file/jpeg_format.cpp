@@ -89,7 +89,7 @@ static void output_message(j_common_ptr cinfo)
   (*cinfo->err->format_message)(cinfo, buffer);
 
   // Put in the log file if.
-  LOG("JPEG library: \"%s\"\n", buffer);
+  LOG(ERROR) << "JPEG: \"" << buffer << "\"\n";
 
   // Leave the message for the application.
   ((struct error_mgr *)cinfo->err)->fop->setError("%s\n", buffer);
