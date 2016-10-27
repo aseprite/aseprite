@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -58,10 +58,15 @@ void Theme::regenerate()
 
 void CurrentTheme::set(Theme* theme)
 {
-  current_theme = theme;
+  if (theme) {
+    // As the regeneration may fail, first we regenerate the theme and
+    // then we set is as "the current theme." E.g. In case that we'd
+    // like to show some kind of error message with the UI controls,
+    // we should be able to use the previous theme to do so (instead
+    // of this new unsuccessfully regenerated theme).
+    theme->regenerate();
 
-  if (current_theme) {
-    current_theme->regenerate();
+    current_theme = theme;
 
     Manager* manager = Manager::getDefault();
     if (manager && !manager->theme())
