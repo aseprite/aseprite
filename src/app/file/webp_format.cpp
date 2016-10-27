@@ -41,7 +41,7 @@ class WebPFormat : public FileFormat {
 
   const char* onGetName() const override { return "webp"; }
   const char* onGetExtensions() const override { return "webp"; }
-  docio::FileFormat onGetDocioFormat() const override { return docio::WEBP_ANIMATION; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::WEBP_ANIMATION; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
