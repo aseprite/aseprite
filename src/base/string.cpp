@@ -8,7 +8,9 @@
 #include "config.h"
 #endif
 
+#include "base/debug.h"
 #include "base/string.h"
+
 #include <cassert>
 #include <cctype>
 #include <vector>
@@ -158,7 +160,7 @@ std::wstring from_utf8(const std::string& src)
   utf8_const_iterator end(src.end());
 
   while (it != end) {
-    assert(buf_it != buf_end);
+    ASSERT(buf_it != buf_end);
     *buf_it = *it;
     ++buf_it;
     ++it;

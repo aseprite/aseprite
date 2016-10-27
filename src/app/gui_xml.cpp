@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,7 +28,7 @@ GuiXml* GuiXml::instance()
 
 GuiXml::GuiXml()
 {
-  LOG("Loading gui.xml file...\n");
+  LOG("GUIXML: Loading gui.xml file\n");
 
   ResourceFinder rf;
   rf.includeDataDir("gui.xml");

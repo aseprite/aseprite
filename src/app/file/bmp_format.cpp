@@ -45,6 +45,7 @@ class BmpFormat : public FileFormat {
 
   const char* onGetName() const override { return "bmp"; }
   const char* onGetExtensions() const override { return "bmp"; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::BMP_IMAGE; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

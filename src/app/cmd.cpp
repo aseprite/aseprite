@@ -31,7 +31,7 @@ Cmd::~Cmd()
 void Cmd::execute(Context* ctx)
 {
 #if TRACE_CMD
-  TRACE("Cmd: Executing cmd '%s'\n", typeid(*this).name());
+  TRACE("CMD: Executing cmd '%s'\n", typeid(*this).name());
 #endif
   ASSERT(m_state == State::NotExecuted);
 
@@ -48,7 +48,7 @@ void Cmd::execute(Context* ctx)
 void Cmd::undo()
 {
 #if TRACE_CMD
-  TRACE("Cmd: Undo cmd '%s'\n", typeid(*this).name());
+  TRACE("CMD: Undo cmd '%s'\n", typeid(*this).name());
 #endif
   ASSERT(m_state == State::Executed || m_state == State::Redone);
 
@@ -63,7 +63,7 @@ void Cmd::undo()
 void Cmd::redo()
 {
 #if TRACE_CMD
-  TRACE("Cmd: Redo cmd '%s'\n", typeid(*this).name());
+  TRACE("CMD: Redo cmd '%s'\n", typeid(*this).name());
 #endif
   ASSERT(m_state == State::Undone);
 

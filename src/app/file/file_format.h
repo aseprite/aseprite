@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/shared_ptr.h"
+#include "docio/file_format.h"
 
 #include <vector>
 
@@ -44,6 +45,8 @@ namespace app {
 
     const char* name() const;       // File format name
     const char* extensions() const; // Extensions (e.g. "jpeg,jpg")
+    docio::FileFormat docioFormat() const;
+
     bool load(FileOp* fop);
 #ifdef ENABLE_SAVE
     bool save(FileOp* fop);
@@ -70,6 +73,7 @@ namespace app {
   protected:
     virtual const char* onGetName() const = 0;
     virtual const char* onGetExtensions() const = 0;
+    virtual docio::FileFormat onGetDocioFormat() const = 0;
     virtual int onGetFlags() const = 0;
 
     virtual bool onLoad(FileOp* fop) = 0;

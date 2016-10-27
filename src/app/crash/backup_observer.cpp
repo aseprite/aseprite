@@ -47,14 +47,14 @@ void BackupObserver::stop()
 
 void BackupObserver::onAddDocument(doc::Document* document)
 {
-  TRACE("DataRecovery: Observe document %p\n", document);
+  TRACE("RECO: Observe document %p\n", document);
   base::scoped_lock hold(m_mutex);
   m_documents.push_back(static_cast<app::Document*>(document));
 }
 
 void BackupObserver::onRemoveDocument(doc::Document* document)
 {
-  TRACE("DataRecovery:: Remove document %p\n", document);
+  TRACE("RECO:: Remove document %p\n", document);
   {
     base::scoped_lock hold(m_mutex);
     base::remove_from_container(m_documents, static_cast<app::Document*>(document));
@@ -77,7 +77,7 @@ void BackupObserver::backgroundThread()
   while (!m_done) {
     seconds++;
     if (seconds >= waitUntil) {
-      TRACE("DataRecovery: Start backup process for %d documents\n", m_documents.size());
+      TRACE("RECO: Start backup process for %d documents\n", m_documents.size());
 
       base::scoped_lock hold(m_mutex);
       base::Chrono chrono;
@@ -89,7 +89,7 @@ void BackupObserver::backgroundThread()
             m_session->saveDocumentChanges(doc);
         }
         catch (const std::exception&) {
-          TRACE("DataRecovery: Document '%d' is locked\n", doc->id());
+          TRACE("RECO: Document '%d' is locked\n", doc->id());
           somethingLocked = true;
         }
       }
@@ -97,7 +97,7 @@ void BackupObserver::backgroundThread()
       seconds = 0;
       waitUntil = (somethingLocked ? lockedPeriod: normalPeriod);
 
-      TRACE("DataRecovery: Backup process done (%.16g)\n", chrono.elapsed());
+      TRACE("RECO: Backup process done (%.16g)\n", chrono.elapsed());
     }
     base::this_thread::sleep_for(1.0);
   }

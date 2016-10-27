@@ -9,6 +9,7 @@
 #endif
 
 #include "base/fstream_path.h"
+#include "base/log.h"
 #include "base/split_string.h"
 #include "base/trim_string.h"
 #include "base/unique_ptr.h"
@@ -72,7 +73,7 @@ Palette* load_gpl_file(const char *filename)
 
   base::trim_string(comment, comment);
   if (!comment.empty()) {
-    LOG("%s comment: %s\n", filename, comment.c_str());
+    LOG(VERBOSE) << "PAL: " << filename << " comment: " << comment << "\n";
     pal->setComment(comment);
   }
 

@@ -10,6 +10,7 @@
 
 #include "she/skia/skia_window_osx.h"
 
+#include "base/log.h"
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "she/event.h"
@@ -29,6 +30,8 @@
   #include "she/skia/skia_surface.h"
 
 #endif
+
+#include <iostream>
 
 namespace she {
 
@@ -196,7 +199,7 @@ private:
 
         m_glInterfaces.reset(GrGLCreateNativeInterface());
         if (!m_glInterfaces || !m_glInterfaces->validate()) {
-          LOG("Cannot create GL interfaces\n");
+          LOG(ERROR) << "OS: Cannot create GL interfaces\n";
           detachGL();
           return false;
         }
@@ -209,10 +212,10 @@ private:
                    initWithCGLContextObj:static_cast<GLContextCGL*>(m_glCtx.get())->cglContext()];
 
         [m_nsGL setView:m_window.contentView];
-        LOG("Using CGL backend\n");
+        LOG("OS: Using CGL backend\n");
       }
       catch (const std::exception& ex) {
-        LOG("Cannot create GL context: %s\n", ex.what());
+        LOG(ERROR) << "OS: Cannot create GL context: " << ex.what() << "\n";
         detachGL();
         return false;
       }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -164,13 +164,10 @@ FileSystemModule::FileSystemModule()
   // get the root element of the file system (this will create
   // the 'rootitem' FileItem)
   getRootFileItem();
-
-  LOG("File system module installed\n");
 }
 
 FileSystemModule::~FileSystemModule()
 {
-  LOG("File system module: uninstalling\n");
   ASSERT(m_instance == this);
 
   for (FileItemMap::iterator
@@ -197,7 +194,6 @@ FileSystemModule::~FileSystemModule()
   delete fileitems_map;
   delete thumbnail_map;
 
-  LOG("File system module: uninstalled\n");
   m_instance = NULL;
 }
 
@@ -564,7 +560,7 @@ FileItem::FileItem(FileItem* parent)
 
 FileItem::~FileItem()
 {
-  LOG("FS: Destroying FileItem() with parent %p\n", m_parent);
+  TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
 
 #ifdef _WIN32
   if (m_fullpidl && m_fullpidl != m_pidl) {

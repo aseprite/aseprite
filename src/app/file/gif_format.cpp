@@ -63,6 +63,7 @@ class GifFormat : public FileFormat {
 
   const char* onGetName() const override { return "gif"; }
   const char* onGetExtensions() const override { return "gif"; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::GIF_ANIMATION; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
@@ -188,8 +189,8 @@ public:
     , m_remap(256)
     , m_hasLocalColormaps(false)
     , m_firstLocalColormap(nullptr) {
-    TRACE("[GifDecoder] GIF background index=%d\n", (int)m_gifFile->SBackGroundColor);
-    TRACE("[GifDecoder] GIF global colormap=%d, ncolors=%d\n",
+    TRACE("GIF: background index=%d\n", (int)m_gifFile->SBackGroundColor);
+    TRACE("GIF: global colormap=%d, ncolors=%d\n",
           (m_gifFile->SColorMap ? 1: 0),
           (m_gifFile->SColorMap ? m_gifFile->SColorMap->ColorCount: 0));
   }
@@ -309,7 +310,7 @@ private:
     UniquePtr<Image> frameImage(
       readFrameIndexedImage(frameBounds));
 
-    TRACE("[GifDecoder] Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
+    TRACE("GIF: Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
 
     if (m_frameNum == 0) {
       if (m_localTransparentIndex >= 0)
@@ -324,7 +325,7 @@ private:
     // Convert the sprite to RGB if we have more than 256 colors
     if ((m_sprite->pixelFormat() == IMAGE_INDEXED) &&
         (m_sprite->palette(m_frameNum)->size() > 256)) {
-      TRACE("[GifDecoder] Converting to RGB because we have %d colors\n",
+      TRACE("GIF: Converting to RGB because we have %d colors\n",
             m_sprite->palette(m_frameNum)->size());
 
       convertIndexedSpriteToRgb();
@@ -443,7 +444,7 @@ private:
     int ncolors = colormap->ColorCount;
     bool isLocalColormap = (m_gifFile->Image.ColorMap ? true: false);
 
-    TRACE("[GifDecoder] Local colormap=%d, ncolors=%d\n", isLocalColormap, ncolors);
+    TRACE("GIF: Local colormap=%d, ncolors=%d\n", isLocalColormap, ncolors);
 
     // We'll calculate the list of used colormap indexes in this
     // frameImage.
@@ -526,7 +527,7 @@ private:
     // Number of colors in the image that aren't in the palette.
     int missing = (usedNColors - found);
 
-    TRACE("[GifDecoder] Bg index=%d,\n"
+    TRACE("GIF: Bg index=%d,\n"
           "  Local transparent index=%d,\n"
           "  Need extra index to show bg color=%d,\n  "
           "  Found colors in palette=%d,\n"
@@ -644,7 +645,7 @@ private:
         m_localTransparentIndex = (extension[1] & 1) ? extension[4]: -1;
         m_frameDelay            = (extension[3] << 8) | extension[2];
 
-        TRACE("[GifDecoder] Disposal method: %d\n  Transparent index: %d\n  Frame delay: %d\n",
+        TRACE("GIF: Disposal method: %d\n  Transparent index: %d\n  Frame delay: %d\n",
               m_disposalMethod, m_localTransparentIndex, m_frameDelay);
       }
     }
@@ -1058,7 +1059,7 @@ private:
         }
       }
 
-      TRACE("[GifEncoder] frameBounds=%d %d %d %d  prev=%d %d %d %d  next=%d %d %d %d\n",
+      TRACE("GIF: frameBounds=%d %d %d %d  prev=%d %d %d %d  next=%d %d %d %d\n",
             frameBounds.x, frameBounds.y, frameBounds.w, frameBounds.h,
             prev.x, prev.y, prev.w, prev.h,
             next.x, next.y, next.w, next.h);

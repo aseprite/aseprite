@@ -8,6 +8,8 @@
 #define APP_FILE_FILE_FORMATS_MANAGER_H_INCLUDED
 #pragma once
 
+#include "docio/file_format.h"
+
 #include <vector>
 
 namespace app {
@@ -32,7 +34,7 @@ namespace app {
     FileFormatsList::iterator begin();
     FileFormatsList::iterator end();
 
-    FileFormat* getFileFormatByExtension(const char* extension) const;
+    FileFormat* getFileFormat(const docio::FileFormat docioFormat) const;
 
   private:
     FileFormatsManager();

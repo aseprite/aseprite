@@ -29,6 +29,7 @@ using namespace base;
 class PngFormat : public FileFormat {
   const char* onGetName() const override { return "png"; }
   const char* onGetExtensions() const override { return "png"; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::PNG_IMAGE; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

@@ -32,7 +32,7 @@ public:
   bool createGLContext() override {
     m_display = getD3DEGLDisplay((HDC)GetDC((HWND)m_nativeDisplay));
     if (m_display == EGL_NO_DISPLAY) {
-      LOG("Cannot create EGL display");
+      LOG("OS: Cannot create EGL display");
       return false;
     }
 

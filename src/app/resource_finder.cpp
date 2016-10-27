@@ -57,7 +57,7 @@ bool ResourceFinder::findFirst()
 {
   while (next()) {
     if (m_log)
-      LOG("Searching file \"%s\"...", filename().c_str());
+      LOG("FIND: \"%s\"", filename().c_str());
 
     if (base::is_file(filename())) {
       if (m_log)
@@ -142,7 +142,7 @@ void ResourceFinder::includeHomeDir(const char* filename)
     addPath(buf);
   }
   else {
-    LOG("You don't have set $HOME variable\n");
+    LOG("FIND: You don't have set $HOME variable\n");
     addPath(filename);
   }
 

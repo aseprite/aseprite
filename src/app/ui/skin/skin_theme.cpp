@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/console.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
@@ -191,12 +192,26 @@ void SkinTheme::onRegenerate()
   loadAll(pref.theme.selected.defaultValue());
 
   // Then we load the selected theme to redefine default theme parts.
-  if (pref.theme.selected.defaultValue() != pref.theme.selected())
-    loadAll(pref.theme.selected());
+  if (pref.theme.selected.defaultValue() != pref.theme.selected()) {
+    try {
+      loadAll(pref.theme.selected());
+    }
+    catch (const std::exception& e) {
+      LOG("SKIN: Error loading user-theme: %s\n", e.what());
+
+      if (CurrentTheme::get())
+        Console::showException(e);
+
+      // We can continue, as we've already loaded the default theme
+      // anyway...
+    }
+  }
 }
 
 void SkinTheme::loadAll(const std::string& skinId)
 {
+  LOG("SKIN: Loading theme %s\n", skinId.c_str());
+
   loadSheet(skinId);
   loadFonts(skinId);
   loadXml(skinId);
@@ -204,13 +219,6 @@ void SkinTheme::loadAll(const std::string& skinId)
 
 void SkinTheme::loadSheet(const std::string& skinId)
 {
-  TRACE("SkinTheme::loadSheet(%s)\n", skinId.c_str());
-
-  if (m_sheet) {
-    m_sheet->dispose();
-    m_sheet = NULL;
-  }
-
   // Load the skin sheet
   std::string sheet_filename("skins/" + skinId + "/sheet.png");
 
@@ -220,6 +228,10 @@ void SkinTheme::loadSheet(const std::string& skinId)
     throw base::Exception("File %s not found", sheet_filename.c_str());
 
   try {
+    if (m_sheet) {
+      m_sheet->dispose();
+      m_sheet = nullptr;
+    }
     m_sheet = she::instance()->loadRgbaSurface(rf.filename().c_str());
   }
   catch (...) {
@@ -229,8 +241,6 @@ void SkinTheme::loadSheet(const std::string& skinId)
 
 void SkinTheme::loadFonts(const std::string& skinId)
 {
-  TRACE("SkinTheme::loadFonts(%s)\n", skinId.c_str());
-
   if (m_defaultFont) m_defaultFont->dispose();
   if (m_miniFont) m_miniFont->dispose();
 
@@ -242,8 +252,6 @@ void SkinTheme::loadFonts(const std::string& skinId)
 
 void SkinTheme::loadXml(const std::string& skinId)
 {
-  TRACE("SkinTheme::loadXml(%s)\n", skinId.c_str());
-
   // Load the skin XML
   std::string xml_filename = "skins/" + skinId + "/skin.xml";
   ResourceFinder rf;
@@ -264,7 +272,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       std::string id = xmlDim->Attribute("id");
       uint32_t value = strtol(xmlDim->Attribute("value"), NULL, 10);
 
-      LOG("Loading dimension '%s'...\n", id.c_str());
+      LOG(VERBOSE) << "SKIN: Loading dimension '" << id << "\n";
 
       m_dimensions_by_id[id] = value;
       xmlDim = xmlDim->NextSiblingElement();
@@ -285,7 +293,7 @@ void SkinTheme::loadXml(const std::string& skinId)
         (value & 0xff00) >> 8,
         (value & 0xff));
 
-      LOG("Loading color '%s'...\n", id.c_str());
+      LOG(VERBOSE) << "SKIN: Loading color " << id << "\n";
 
       m_colors_by_id[id] = color;
       xmlColor = xmlColor->NextSiblingElement();
@@ -308,7 +316,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
       int c;
 
-      LOG("Loading cursor '%s'...\n", id.c_str());
+      LOG(VERBOSE) << "SKIN: Loading cursor " << id << "\n";
 
       for (c=0; c<kCursorTypes; ++c) {
         if (id != cursor_names[c])
@@ -341,17 +349,17 @@ void SkinTheme::loadXml(const std::string& skinId)
       .FirstChild("tool").ToElement();
     while (xmlIcon) {
       // Get the tool-icon rectangle
-      const char* tool_id = xmlIcon->Attribute("id");
+      const char* id = xmlIcon->Attribute("id");
       int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
       int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
       int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
       int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
 
-      LOG("Loading tool icon '%s'...\n", tool_id);
+      LOG(VERBOSE) << "SKIN: Loading tool icon " << id << "\n";
 
       // Crop the tool-icon from the sheet
-      m_toolicon[tool_id] = sliceSheet(
-        m_toolicon[tool_id], gfx::Rect(x, y, w, h));
+      m_toolicon[id] = sliceSheet(
+        m_toolicon[id], gfx::Rect(x, y, w, h));
 
       xmlIcon = xmlIcon->NextSiblingElement();
     }
@@ -371,7 +379,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
       int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
 
-      LOG("Loading part '%s'...\n", part_id);
+      LOG(VERBOSE) << "SKIN: Loading part " << part_id << "\n";
 
       SkinPartPtr part = m_parts_by_id[part_id];
       if (!part)
@@ -424,7 +432,8 @@ void SkinTheme::loadXml(const std::string& skinId)
       while (xmlRule) {
         const std::string ruleName = xmlRule->Value();
 
-        LOG("- Rule '%s' for '%s'\n", ruleName.c_str(), style_id);
+        LOG(VERBOSE) << "SKIN: Rule " << ruleName
+                     << " for " << style_id << "\n";
 
         // TODO This code design to read styles could be improved.
 

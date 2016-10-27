@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,7 +41,7 @@ LegacyModules::LegacyModules(int requirements)
 {
   for (int c=0; c<modules; c++)
     if ((module[c].reqs & requirements) == module[c].reqs) {
-      LOG("Installing module: %s\n", module[c].name);
+      LOG("MODS: Installing module: %s\n", module[c].name);
 
       if ((*module[c].init)() < 0)
         throw base::Exception("Error initializing module: %s",
@@ -55,7 +55,7 @@ LegacyModules::~LegacyModules()
 {
   for (int c=modules-1; c>=0; c--)
     if (module[c].installed) {
-      LOG("Unstalling module: %s\n", module[c].name);
+      LOG("MODS: Unstalling module: %s\n", module[c].name);
       (*module[c].exit)();
       module[c].installed = false;
     }

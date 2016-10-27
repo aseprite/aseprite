@@ -28,6 +28,7 @@
 #include "base/shared_ptr.h"
 #include "base/string.h"
 #include "doc/doc.h"
+#include "docio/detect_format.h"
 #include "render/quantization.h"
 #include "render/render.h"
 #include "ui/alert.h"
@@ -122,13 +123,10 @@ int save_document(Context* context, doc::Document* document)
 
 bool is_static_image_format(const std::string& filename)
 {
-  std::string extension =
-    base::string_to_lower(
-      base::get_file_extension(filename));
-
   // Get the format through the extension of the filename
-  FileFormat* format = FileFormatsManager::instance()
-    ->getFileFormatByExtension(extension.c_str());
+  FileFormat* format =
+    FileFormatsManager::instance()
+    ->getFileFormat(docio::detect_format_by_file_extension(filename));
 
   return (format && format->support(FILE_SUPPORT_SEQUENCES));
 }
@@ -172,10 +170,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
   if (!fop)
     return nullptr;
 
-  // Get the extension of the filename (in lower case)
-  std::string extension = base::string_to_lower(base::get_file_extension(filename));
-
-  LOG("Loading file \"%s\" (%s)\n", filename, extension.c_str());
+  LOG("FILE: Loading file \"%s\"\n", filename);
 
   // Does file exist?
   if (!base::is_file(filename)) {
@@ -184,12 +179,12 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
   }
 
   // Get the format through the extension of the filename
-  fop->m_format = FileFormatsManager::instance()
-    ->getFileFormatByExtension(extension.c_str());
-
+  fop->m_format = FileFormatsManager::instance()->getFileFormat(
+    docio::detect_format(filename));
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_LOAD)) {
-    fop->setError("%s can't load \"%s\" files\n", PACKAGE, extension.c_str());
+    fop->setError("%s can't load \"%s\" file (\"%s\")\n", PACKAGE,
+                  filename, base::get_file_extension(filename).c_str());
     goto done;
   }
 
@@ -274,17 +269,15 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   fop->m_roi = roi;
 
   // Get the extension of the filename (in lower case)
-  std::string extension = base::string_to_lower(base::get_file_extension(filename));
-
-  LOG("Saving document \"%s\" (%s)\n", filename, extension.c_str());
+  LOG("FILE: Saving document \"%s\"\n", filename);
 
   // Get the format through the extension of the filename
-  fop->m_format = FileFormatsManager::instance()
-    ->getFileFormatByExtension(extension.c_str());
-
+  fop->m_format = FileFormatsManager::instance()->getFileFormat(
+    docio::detect_format_by_file_extension(filename));
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_SAVE)) {
-    fop->setError("%s can't save \"%s\" files\n", PACKAGE, extension.c_str());
+    fop->setError("%s can't save \"%s\" file (\"%s\")\n", PACKAGE,
+                  filename, base::get_file_extension(filename).c_str());
     return fop.release();
   }
 

@@ -60,7 +60,7 @@ void Context::executeCommand(Command* command, const Params& params)
 
   ASSERT(command != NULL);
 
-  LOG("Context: Executing command '%s'...\n", command->id().c_str());
+  LOG(VERBOSE) << "CTXT: Executing command " << command->id() << "\n";
   try {
     m_flags.update(this);
 
@@ -70,14 +70,14 @@ void Context::executeCommand(Command* command, const Params& params)
     BeforeCommandExecution(ev);
 
     if (ev.isCanceled()) {
-      LOG("Context: '%s' was canceled/simulated.\n", command->id().c_str());
+      LOG(VERBOSE) << "CTXT: Command " << command->id() << " was canceled/simulated.\n";
     }
     else if (command->isEnabled(this)) {
       command->execute(this);
-      LOG("Context: '%s' executed successfully\n", command->id().c_str());
+      LOG(VERBOSE) << "CTXT: Command " << command->id() << " executed successfully\n";
     }
     else {
-      LOG("Context: '%s' is disabled\n", command->id().c_str());
+      LOG(VERBOSE) << "CTXT: Command " << command->id() << " is disabled\n";
     }
 
     AfterCommandExecution(ev);
@@ -87,21 +87,20 @@ void Context::executeCommand(Command* command, const Params& params)
       app_rebuild_documents_tabs();
   }
   catch (base::Exception& e) {
-    LOG("Context: Exception caught executing '%s' command\n%s\n",
-        command->id().c_str(), e.what());
+    LOG(ERROR) << "CTXT: Exception caught executing " << command->id() << " command\n"
+               << e.what() << "\n";
 
     Console::showException(e);
   }
   catch (std::exception& e) {
-    LOG("Context: std::exception caught executing '%s' command\n%s\n",
-        command->id().c_str(), e.what());
+    LOG(ERROR) << "CTXT: std::exception caught executing " << command->id() << " command\n"
+               << e.what() << "\n";
 
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
 #ifdef NDEBUG
   catch (...) {
-    LOG("Context: Unknown exception executing '%s' command\n",
-        command->id().c_str());
+    LOG(ERROR) << "CTXT: Unknown exception executing " << command->id() << " command\n";
 
     console.printf("An unknown error ocurred executing the command.\n"
                    "Please save your work, close the program, try it\n"

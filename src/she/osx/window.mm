@@ -10,6 +10,7 @@
 
 #include "she/osx/window.h"
 
+#include "base/debug.h"
 #include "she/event.h"
 #include "she/osx/event_queue.h"
 #include "she/osx/view.h"

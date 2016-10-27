@@ -103,13 +103,13 @@ void DefaultCliDelegate::loadPalette(const CliOpenFile& cof,
 
 void DefaultCliDelegate::exportFiles(DocumentExporter& exporter)
 {
-  LOG("Exporting sheet...\n");
+  LOG("APP: Exporting sheet...\n");
 
   base::UniquePtr<app::Document> spriteSheet(exporter.exportSheet());
 
   // Sprite sheet isn't used, we just delete it.
 
-  LOG("Export sprite sheet: Done\n");
+  LOG("APP: Export sprite sheet: Done\n");
 }
 
 void DefaultCliDelegate::execScript(const std::string& filename)

@@ -180,8 +180,6 @@ void ResourcesListBox::onTick()
   if (!m_resourcesLoader->next(resource)) {
     if (m_resourcesLoader->isDone()) {
       stop();
-
-      LOG("Done\n");
     }
     return;
   }

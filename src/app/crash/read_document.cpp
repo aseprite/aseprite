@@ -140,7 +140,7 @@ private:
       if (!ver)
         continue;
 
-      TRACE(" - Restoring %s #%d v%d\n", prefix, id, ver);
+      TRACE("RECO: Restoring %s #%d v%d\n", prefix, id, ver);
 
       std::string fn = prefix;
       fn.push_back('-');
@@ -154,11 +154,11 @@ private:
         obj = (this->*readMember)(s);
 
       if (obj) {
-        TRACE(" - %s #%d v%d restored successfully\n", prefix, id, ver);
+        TRACE("RECO: %s #%d v%d restored successfully\n", prefix, id, ver);
         return obj;
       }
       else {
-        TRACE(" - %s #%d v%d was not restored\n", prefix, id, ver);
+        TRACE("RECO: %s #%d v%d was not restored\n", prefix, id, ver);
       }
     }
 
