@@ -203,7 +203,8 @@ void SkinTheme::onRegenerate()
         Console::showException(e);
 
       // We can continue, as we've already loaded the default theme
-      // anyway...
+      // anyway. Here we restore the setting to its default value.
+      pref.theme.selected(pref.theme.selected.defaultValue());
     }
   }
 }
