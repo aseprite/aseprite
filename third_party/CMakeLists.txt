@@ -31,7 +31,10 @@ endif()
 
 if(WITH_WEBP_SUPPORT)
   if(NOT USE_SHARED_LIBWEBP)
-    add_subdirectory(libwebp-cmake)
+    # Skia already includes webp library
+    if(NOT USE_SKIA_BACKEND)
+      add_subdirectory(libwebp-cmake)
+    endif()
   endif()
 endif()
 

@@ -12,7 +12,7 @@
 	url = https://github.com/aseprite/duktape.git
 [submodule "third_party/libwebp"]
 	path = third_party/libwebp
-	url = https://chromium.googlesource.com/webm/libwebp
+	url = https://github.com/aseprite/libwebp.git
 [submodule "src/flic"]
 	path = src/flic
 	url = https://github.com/aseprite/flic.git

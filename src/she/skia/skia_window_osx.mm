@@ -229,7 +229,6 @@ private:
 
     m_skSurface.reset(nullptr);
     m_skSurfaceDirect.reset(nullptr);
-    m_grRenderTarget.reset(nullptr);
     m_grCtx.reset(nullptr);
     m_glCtx.reset(nullptr);
   }
@@ -246,11 +245,10 @@ private:
     desc.fSampleCnt = m_glCtx->getSampleCount();
     desc.fStencilBits = m_glCtx->getStencilBits();
     desc.fRenderTargetHandle = 0; // direct frame buffer
-    m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
 
     m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
-    m_skSurfaceDirect =
-      SkSurface::MakeRenderTargetDirect(m_grRenderTarget.get());
+    m_skSurfaceDirect = SkSurface::MakeFromBackendRenderTarget(
+      m_grCtx.get(), desc, nullptr);
 
     if (scale == 1) {
       m_skSurface = m_skSurfaceDirect;
@@ -330,7 +328,6 @@ private:
   SkAutoTUnref<const GrGLInterface> m_glInterfaces;
   NSOpenGLContext* m_nsGL;
   sk_sp<GrContext> m_grCtx;
-  sk_sp<GrRenderTarget> m_grRenderTarget;
   sk_sp<SkSurface> m_skSurfaceDirect;
   sk_sp<SkSurface> m_skSurface;
   gfx::Size m_lastSize;

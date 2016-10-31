@@ -54,7 +54,6 @@ private:
   base::UniquePtr<GLContext> m_glCtx;
   SkAutoTUnref<const GrGLInterface> m_glInterfaces;
   sk_sp<GrContext> m_grCtx;
-  sk_sp<GrRenderTarget> m_grRenderTarget;
   sk_sp<SkSurface> m_skSurfaceDirect;
   sk_sp<SkSurface> m_skSurface;
   int m_sampleCount;
