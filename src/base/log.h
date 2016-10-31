@@ -21,9 +21,6 @@ enum LogLevel {
   VERBOSE = 5, // Information step by step
 };
 
-// E.g. LOG("text in information log level\n");
-void LOG(const char* format, ...);
-
 #ifdef __cplusplus
 #include <iosfwd>
 
@@ -35,6 +32,9 @@ namespace base {
   std::ostream& get_log_stream(LogLevel level);
 
 } // namespace base
+
+// E.g. LOG("text in information log level\n");
+std::ostream& LOG(const char* format, ...);
 
 // E.g. LOG(INFO) << "some information\n";
 inline std::ostream& LOG(LogLevel level) {
