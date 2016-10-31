@@ -59,7 +59,8 @@ public:
     ASSERT(!m_surface);
 
     if (!m_bitmap.tryAllocPixels(
-          SkImageInfo::MakeN32(width, height, kOpaque_SkAlphaType)))
+          SkImageInfo::MakeN32(width, height, kOpaque_SkAlphaType,
+                               colorSpace())))
       throw base::Exception("Cannot create Skia surface");
 
     m_bitmap.eraseColor(SK_ColorTRANSPARENT);
@@ -70,7 +71,7 @@ public:
     ASSERT(!m_surface);
 
     if (!m_bitmap.tryAllocPixels(
-          SkImageInfo::MakeN32Premul(width, height)))
+          SkImageInfo::MakeN32Premul(width, height, colorSpace())))
       throw base::Exception("Cannot create Skia surface");
 
     m_bitmap.eraseColor(SK_ColorTRANSPARENT);
@@ -112,30 +113,30 @@ public:
 
   void setClipBounds(const gfx::Rect& rc) override {
     m_clip = rc;
-    m_canvas->clipRect(SkRect::Make(to_skia(m_clip)), SkRegion::kReplace_Op);
+    m_canvas->clipRect(SkRect::Make(to_skia(m_clip)), kReplace_SkClipOp);
   }
 
   bool intersectClipRect(const gfx::Rect& rc) override {
     m_clip &= rc;
-    m_canvas->clipRect(SkRect::Make(to_skia(m_clip)), SkRegion::kReplace_Op);
+    m_canvas->clipRect(SkRect::Make(to_skia(m_clip)), kReplace_SkClipOp);
     return !m_clip.isEmpty();
   }
 
   void setDrawMode(DrawMode mode, int param) override {
     switch (mode) {
       case DrawMode::Solid:
-        m_paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+        m_paint.setBlendMode(SkBlendMode::kSrcOver);
         m_paint.setShader(nullptr);
         break;
       case DrawMode::Xor:
-        m_paint.setXfermodeMode(SkXfermode::kXor_Mode);
+        m_paint.setBlendMode(SkBlendMode::kXor);
         m_paint.setShader(nullptr);
         break;
       case DrawMode::Checked: {
-        m_paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+        m_paint.setBlendMode(SkBlendMode::kSrcOver);
         {
           SkBitmap bitmap;
-          if (!bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(8, 8)))
+          if (!bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(8, 8, colorSpace())))
             throw base::Exception("Cannot create temporary Skia surface");
 
           {
@@ -184,7 +185,7 @@ public:
       throw base::Exception("Cannot create temporary Skia surface to change scale");
 
     SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    paint.setBlendMode(SkBlendMode::kSrc);
 
     SkCanvas canvas(result);
     SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, width(), height()));
@@ -270,7 +271,7 @@ public:
     SkColor c = 0;
 
     if (m_surface) {
-      SkImageInfo dstInfo = SkImageInfo::MakeN32Premul(1, 1);
+      SkImageInfo dstInfo = SkImageInfo::MakeN32Premul(1, 1, colorSpace());
       uint32_t dstPixels;
       if (m_canvas->readPixels(dstInfo, &dstPixels, 4, x, y))
         c = dstPixels;
@@ -324,7 +325,7 @@ public:
   }
 
   void blitTo(Surface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
-    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height, colorSpace());
     std::vector<uint32_t> pixels(width * height * 4);
     m_canvas->readPixels(info, (void*)&pixels[0], 4*width, srcx, srcy);
     static_cast<SkiaSurface*>(dest)
@@ -382,7 +383,7 @@ public:
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
 
     SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    paint.setBlendMode(SkBlendMode::kSrc);
 
     m_canvas->drawBitmapRect(
       ((SkiaSurface*)src)->m_bitmap, srcRect, dstRect, &paint,
@@ -401,7 +402,7 @@ public:
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
 
     SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    paint.setBlendMode(SkBlendMode::kSrcOver);
 
     m_canvas->drawBitmapRect(
       ((SkiaSurface*)src)->m_bitmap, srcRect, dstRect, &paint,
@@ -417,7 +418,7 @@ public:
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
 
     SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    paint.setBlendMode(SkBlendMode::kSrcOver);
 
     if (gfx::geta(bg) > 0) {
       SkPaint paint;
@@ -447,6 +448,8 @@ public:
     rebuild();
   }
 
+  static Surface* loadSurface(const char* filename);
+
 private:
   void rebuild() {
     ASSERT(!m_surface);
@@ -456,12 +459,16 @@ private:
     m_clip = gfx::Rect(0, 0, width(), height());
   }
 
+  static sk_sp<SkColorSpace> colorSpace();
+
   SkBitmap m_bitmap;
   sk_sp<SkSurface> m_surface;
   SkCanvas* m_canvas;
   SkPaint m_paint;
   gfx::Rect m_clip;
   int m_lock;
+  static sk_sp<SkColorSpace> m_colorSpace;
+
 };
 
 } // namespace she

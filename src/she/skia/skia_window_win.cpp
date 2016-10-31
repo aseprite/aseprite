@@ -272,7 +272,6 @@ void SkiaWindow::detachGL()
 
   m_skSurface.reset(nullptr);
   m_skSurfaceDirect.reset(nullptr);
-  m_grRenderTarget.reset(nullptr);
   m_grCtx.reset(nullptr);
   m_glCtx.reset(nullptr);
 }
@@ -290,11 +289,10 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
   desc.fSampleCnt = m_sampleCount;
   desc.fStencilBits = m_stencilBits;
   desc.fRenderTargetHandle = 0; // direct frame buffer
-  m_grRenderTarget.reset(m_grCtx->textureProvider()->wrapBackendRenderTarget(desc));
 
   m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
-  m_skSurfaceDirect =
-    SkSurface::MakeRenderTargetDirect(m_grRenderTarget.get());
+  m_skSurfaceDirect = SkSurface::MakeFromBackendRenderTarget(
+    m_grCtx.get(), desc, nullptr);
 
   if (scale == 1) {
     m_skSurface = m_skSurfaceDirect;

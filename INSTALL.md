@@ -226,7 +226,7 @@ Skia.
 
 You can always check the
 [official Skia instructions](https://skia.org/user/quick) and select
-the OS you are building for. Aseprite uses the `aseprite-m53` Skia
+the OS you are building for. Aseprite uses the `aseprite-m55` Skia
 branch from `https://github.com/aseprite/skia`.
 
 ## Skia on Windows
@@ -249,7 +249,7 @@ Just ignore it.)
     cd C:\deps
     git clone https://github.com/aseprite/skia.git
     cd skia
-    git checkout aseprite-m53
+    git checkout aseprite-m55
     python bin/sync-and-gyp
 
 (The `bin/sync-and-gyp` will take some minutes because it downloads a
@@ -273,7 +273,7 @@ several minutes to finish:
     git clone https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    git checkout aseprite-m53
+    git checkout aseprite-m55
     python bin/sync-and-gyp
     ninja -C out/Release dm
 
