@@ -27,6 +27,7 @@ using namespace base;
 class FliFormat : public FileFormat {
   const char* onGetName() const override { return "flc"; }
   const char* onGetExtensions() const  override{ return "flc,fli"; }
+  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::FLIC_ANIMATION; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

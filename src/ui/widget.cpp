@@ -160,10 +160,8 @@ void Widget::setTextQuiet(const std::string& text)
 
 she::Font* Widget::font() const
 {
-  if (!m_font) {
-    ASSERT(m_theme);
+  if (!m_font && m_theme)
     m_font = m_theme->getWidgetFont(this);
-  }
   return m_font;
 }
 

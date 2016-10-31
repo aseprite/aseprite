@@ -89,10 +89,10 @@ std::ostream& base::get_log_stream(LogLevel level)
     return log_stream;
 }
 
-void LOG(const char* format, ...)
+std::ostream& LOG(const char* format, ...)
 {
   if (log_level < INFO)
-    return;
+    return null_stream;
 
   char buf[2048];
   va_list ap;
@@ -106,4 +106,5 @@ void LOG(const char* format, ...)
 #endif
 
   va_end(ap);
+  return log_stream;
 }

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,7 @@ namespace doc {
 
   class CreateDocumentArgs {
   public:
-    CreateDocumentArgs() : m_doc(NULL) { }
+    CreateDocumentArgs() : m_doc(nullptr) { }
     Document* document() { return m_doc; }
     void setDocument(Document* doc) { m_doc = doc; }
   private:

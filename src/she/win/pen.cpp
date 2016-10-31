@@ -16,6 +16,8 @@
 #include "base/path.h"
 #include "base/string.h"
 
+#include <iostream>
+
 typedef UINT (API* WTInfoW_Func)(UINT, UINT, LPVOID);
 typedef HCTX (API* WTOpenW_Func)(HWND, LPLOGCONTEXTW, BOOL);
 typedef BOOL (API* WTClose_Func)(HCTX);
@@ -57,11 +59,10 @@ HCTX PenAPI::open(HWND hwnd)
   ASSERT(logctx.lcOptions & CXO_SYSTEM);
 
   if (infoRes != sizeof(LOGCONTEXTW)) {
-    LOG("Not supported WTInfo:\n"
-        "  Expected context size: %d\n"
-        "  Actual context size: %d (options %d)\n",
-        sizeof(LOGCONTEXTW),
-        infoRes, logctx.lcOptions);
+    LOG(ERROR)
+      << "PEN: Not supported WTInfo:\n"
+      << "     Expected context size: " << sizeof(LOGCONTEXTW) << "\n"
+      << "     Actual context size: " << infoRes << " (options " << logctx.lcOptions << ")\n";
     return nullptr;
   }
 
@@ -75,11 +76,11 @@ HCTX PenAPI::open(HWND hwnd)
 
   HCTX ctx = WTOpen(hwnd, &logctx, TRUE);
   if (!ctx) {
-    LOG("Error attaching pen to display\n");
+    LOG("PEN: Error attaching pen to display\n");
     return nullptr;
   }
 
-  LOG("Pen attached to display\n");
+  LOG("PEN: Pen attached to display\n");
   return ctx;
 }
 
@@ -87,7 +88,7 @@ void PenAPI::close(HCTX ctx)
 {
   if (ctx) {
     ASSERT(m_wintabLib);
-    LOG("Pen detached from window\n");
+    LOG("PEN: Pen detached from window\n");
     WTClose(ctx);
   }
 }
@@ -103,7 +104,7 @@ bool PenAPI::loadWintab()
 
   m_wintabLib = base::load_dll("wintab32.dll");
   if (!m_wintabLib) {
-    LOG("wintab32.dll is not present\n");
+    LOG(ERROR) << "PEN: wintab32.dll is not present\n";
     return false;
   }
 
@@ -112,11 +113,11 @@ bool PenAPI::loadWintab()
   WTClose = base::get_dll_proc<WTClose_Func>(m_wintabLib, "WTClose");
   WTPacket = base::get_dll_proc<WTPacket_Func>(m_wintabLib, "WTPacket");
   if (!WTInfo || !WTOpen || !WTClose || !WTPacket) {
-    LOG("wintab32.dll does not contain all required functions\n");
+    LOG(ERROR) << "PEN: wintab32.dll does not contain all required functions\n";
     return false;
   }
 
-  LOG("Pen initialized\n");
+  LOG("PEN: Pen initialized\n");
   return true;
 }
 

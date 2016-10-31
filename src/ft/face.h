@@ -8,6 +8,7 @@
 #define FT_FACE_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
 #include "base/disable_copying.h"
 #include "base/string.h"
 #include "ft/freetype_headers.h"

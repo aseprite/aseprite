@@ -29,11 +29,11 @@ DataRecovery::DataRecovery(doc::Context* ctx)
   std::string sessionsDir = rf.getFirstOrCreateDefault();
 
   // Existent sessions
-  TRACE("DataRecovery: Listing sessions from '%s'\n", sessionsDir.c_str());
+  TRACE("RECO: Listing sessions from '%s'\n", sessionsDir.c_str());
   for (auto& itemname : base::list_files(sessionsDir)) {
     std::string itempath = base::join_path(sessionsDir, itemname);
     if (base::is_directory(itempath)) {
-      TRACE("- Session '%s' ", itempath.c_str());
+      TRACE("RECO: Session '%s' ", itempath.c_str());
 
       SessionPtr session(new Session(itempath));
       if (!session->isRunning()) {
@@ -78,7 +78,7 @@ DataRecovery::DataRecovery(doc::Context* ctx)
 
   m_inProgress.reset(new Session(newSessionDir));
   m_inProgress->create(pid);
-  TRACE("DataRecovery: Session in progress '%s'\n", newSessionDir.c_str());
+  TRACE("RECO: Session in progress '%s'\n", newSessionDir.c_str());
 
   m_backup = new BackupObserver(m_inProgress.get(), ctx);
 }

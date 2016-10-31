@@ -166,7 +166,7 @@ void App::initialize(const AppOptions& options)
     m_modules->createDataRecovery();
 
   if (isPortable())
-    LOG("Running in portable mode\n");
+    LOG("APP: Running in portable mode\n");
 
   // Load or create the default palette, or migrate the default
   // palette from an old format palette to the new one, etc.
@@ -174,7 +174,7 @@ void App::initialize(const AppOptions& options)
 
   // Initialize GUI interface
   if (isGui()) {
-    LOG("GUI mode\n");
+    LOG("APP: GUI mode\n");
 
     // Setup the GUI cursor and redraw screen
 
@@ -202,7 +202,7 @@ void App::initialize(const AppOptions& options)
   }
 
   // Procress options
-  LOG("Processing options...\n");
+  LOG("APP: Processing options...\n");
   {
     base::UniquePtr<CliDelegate> delegate;
     if (options.previewCLI())
@@ -297,10 +297,8 @@ void App::run()
 App::~App()
 {
   try {
+    LOG("APP: Exit\n");
     ASSERT(m_instance == this);
-
-    // Remove Aseprite handlers
-    LOG("ASE: Uninstalling\n");
 
     // Delete file formats.
     FileFormatsManager::destroyInstance();
@@ -325,12 +323,13 @@ App::~App()
     m_instance = NULL;
   }
   catch (const std::exception& e) {
+    LOG(ERROR) << "APP: Error: " << e.what() << "\n";
     she::error_message(e.what());
 
     // no re-throw
   }
   catch (...) {
-    she::error_message("Error closing ASE.\n(uncaught exception)");
+    she::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
 
     // no re-throw
   }

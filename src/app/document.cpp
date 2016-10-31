@@ -8,6 +8,10 @@
 #include "config.h"
 #endif
 
+// Uncomment this line in case that you want TRACE() lock/unlock
+// operations.
+//#define DEBUG_DOCUMENT_LOCKS
+
 #include "app/document.h"
 
 #include "app/app.h"
@@ -455,7 +459,10 @@ bool Document::lock(LockType lockType, int timeout)
           if (m_read_locks == 0 && !m_write_lock) {
             // We can start writting the sprite...
             m_write_lock = true;
-            TRACE("Document::lock: Locked <%d> to write\n", id());
+
+#ifdef DEBUG_DOCUMENT_LOCKS
+            TRACE("DOC: Document::lock: Locked <%d> to write\n", id());
+#endif
             return true;
           }
           break;
@@ -467,15 +474,21 @@ bool Document::lock(LockType lockType, int timeout)
       int delay = MIN(100, timeout);
       timeout -= delay;
 
-      TRACE("Document::lock: wait 100 msecs for <%d>\n", id());
+#ifdef DEBUG_DOCUMENT_LOCKS
+      TRACE("DOC: Document::lock: wait 100 msecs for <%d>\n", id());
+#endif
+
       base::this_thread::sleep_for(double(delay) / 1000.0);
     }
     else
       break;
   }
 
-  TRACE("Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
+#ifdef DEBUG_DOCUMENT_LOCKS
+  TRACE("DOC: Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
     id(), (lockType == ReadLock ? "read": "write"), m_read_locks, m_write_lock);
+#endif
+
   return false;
 }
 
@@ -489,7 +502,11 @@ bool Document::lockToWrite(int timeout)
         ASSERT(!m_write_lock);
         m_read_locks = 0;
         m_write_lock = true;
-        TRACE("Document::lockToWrite: Locked <%d> to write\n", id());
+
+#ifdef DEBUG_DOCUMENT_LOCKS
+        TRACE("DOC: Document::lockToWrite: Locked <%d> to write\n", id());
+#endif
+
         return true;
       }
     }
@@ -498,15 +515,21 @@ bool Document::lockToWrite(int timeout)
       int delay = MIN(100, timeout);
       timeout -= delay;
 
-      TRACE("Document::lockToWrite: wait 100 msecs for <%d>\n", id());
+#ifdef DEBUG_DOCUMENT_LOCKS
+      TRACE("DOC: Document::lockToWrite: wait 100 msecs for <%d>\n", id());
+#endif
+
       base::this_thread::sleep_for(double(delay) / 1000.0);
     }
     else
       break;
   }
 
-  TRACE("Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
+#ifdef DEBUG_DOCUMENT_LOCKS
+  TRACE("DOC: Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
     id(), m_read_locks, m_write_lock);
+#endif
+
   return false;
 }
 

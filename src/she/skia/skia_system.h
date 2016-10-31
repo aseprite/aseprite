@@ -9,11 +9,6 @@
 #pragma once
 
 #include "base/base.h"
-#include "base/file_handle.h"
-
-#include "SkCodec.h"
-#include "SkPixelRef.h"
-#include "SkStream.h"
 
 #include "she/common/system.h"
 #include "she/skia/skia_display.h"
@@ -32,6 +27,8 @@
   #define SkiaSystemBase CommonSystem
 #endif
 
+#include "SkGraphics.h"
+
 namespace she {
 
 EventQueueImpl g_queue;
@@ -41,9 +38,11 @@ public:
   SkiaSystem()
     : m_defaultDisplay(nullptr)
     , m_gpuAcceleration(false) {
+    SkGraphics::Init();
   }
 
   ~SkiaSystem() {
+    SkGraphics::Term();
   }
 
   void dispose() override {
@@ -129,28 +128,7 @@ public:
   }
 
   Surface* loadSurface(const char* filename) override {
-    base::FileHandle fp(base::open_file_with_exception(filename, "rb"));
-
-    SkAutoTDelete<SkCodec> codec(
-      SkCodec::NewFromStream(
-        new SkFILEStream(fp.get(), SkFILEStream::kCallerRetains_Ownership)));
-    if (!codec)
-      return nullptr;
-
-    SkImageInfo info = codec->getInfo()
-      .makeColorType(kN32_SkColorType)
-      .makeAlphaType(kPremul_SkAlphaType);
-    SkBitmap bm;
-    if (!bm.tryAllocPixels(info))
-      return nullptr;
-
-    const SkCodec::Result r = codec->getPixels(info, bm.getPixels(), bm.rowBytes());
-    if (r != SkCodec::kSuccess)
-      return nullptr;
-
-    SkiaSurface* sur = new SkiaSurface();
-    sur->swapBitmap(bm);
-    return sur;
+    return SkiaSurface::loadSurface(filename);
   }
 
   Surface* loadRgbaSurface(const char* filename) override {

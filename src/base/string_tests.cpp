@@ -29,6 +29,30 @@ TEST(String, Utf8Conversion)
   ASSERT_EQ(a, c);
 }
 
+TEST(String, Utf8Wrapper)
+{
+  std::string a, b = "abc";
+  for (int ch : utf8(b))
+    a.push_back(ch);
+  EXPECT_EQ("abc", a);
+
+  std::string c, d = "def";
+  for (int ch : utf8_const(d))  // TODO we should be able to specify a string-literal here
+    c.push_back(ch);
+  EXPECT_EQ("def", c);
+
+  int i = 0;
+  d = "\xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E";
+  for (int ch : utf8_const(d)) { // 日本語
+    switch (i++) {
+      case 0: EXPECT_EQ(ch, 0x65E5); break;
+      case 1: EXPECT_EQ(ch, 0x672C); break;
+      case 2: EXPECT_EQ(ch, 0x8A9E); break;
+      default: EXPECT_FALSE(true); break;
+    }
+  }
+}
+
 TEST(String, Utf8Iterator)
 {
   std::string a = "Hello";

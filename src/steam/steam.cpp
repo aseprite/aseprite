@@ -40,22 +40,22 @@ public:
       base::join_path(base::get_file_path(base::get_app_path()),
                       STEAM_API_DLL_FILENAME));
     if (!m_steamLib) {
-      LOG("Steam library not found...\n");
+      LOG("STEAM: Steam library not found...\n");
       return;
     }
 
     auto SteamAPI_Init = base::get_dll_proc<SteamAPI_Init_Func>(m_steamLib, "SteamAPI_Init");
     if (!SteamAPI_Init) {
-      LOG("SteamAPI_Init not found...\n");
+      LOG("STEAM: SteamAPI_Init not found...\n");
       return;
     }
 
     if (!SteamAPI_Init()) {
-      LOG("Steam is not initialized...\n");
+      LOG("STEAM: Steam is not initialized...\n");
       return;
     }
 
-    LOG("Steam initialized...\n");
+    LOG("STEAM: Steam initialized...\n");
     m_initialized = true;
   }
 
@@ -65,7 +65,7 @@ public:
 
     auto SteamAPI_Shutdown = base::get_dll_proc<SteamAPI_Shutdown_Func>(m_steamLib, "SteamAPI_Shutdown");
     if (SteamAPI_Shutdown) {
-      LOG("Steam shutdown...\n");
+      LOG("STEAM: Steam shutdown...\n");
       SteamAPI_Shutdown();
     }
 

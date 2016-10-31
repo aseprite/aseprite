@@ -47,11 +47,11 @@ because they don't depend on any other component.
 
 ## Level 4
 
-  * [iff](iff/) (base, doc, render): Image File Formats library (load/save documents).
+  * [docio](docio/) (base, flic): Load/save documents.
 
 ## Level 5
 
-  * [app](app/) (allegro, base, doc, filters, fixmath, gfx, iff, pen, render, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (allegro, base, doc, docio, filters, fixmath, flic, gfx, pen, render, scripting, she, ui, undo, updater, webserver)
 
 ## Level 6
 

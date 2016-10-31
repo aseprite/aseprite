@@ -185,7 +185,7 @@ AppBrushes::AppBrushes()
       load(fn);
   }
   catch (const std::exception& ex) {
-    LOG("Error loading user brushes: %s", ex.what());
+    LOG(ERROR) << "BRSH: Error loading user brushes: " << ex.what() << "\n";
   }
 }
 

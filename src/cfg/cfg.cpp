@@ -14,7 +14,8 @@
 #include "base/log.h"
 #include "base/string.h"
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
 #include "SimpleIni.h"
 
 namespace cfg {
@@ -67,8 +68,9 @@ public:
     base::FileHandle file(base::open_file(m_filename, "rb"));
     if (file) {
       SI_Error err = m_ini.LoadFile(file.get());
-      if (err != SI_OK)
-        LOG("Error '%d' loading configuration from '%s'.", err, m_filename.c_str());
+      if (err != SI_OK) {
+        LOG(ERROR) << "CFG: Error " << err << " loading configuration from " << m_filename << "\n";
+      }
     }
   }
 
@@ -76,8 +78,9 @@ public:
     base::FileHandle file(base::open_file(m_filename, "wb"));
     if (file) {
       SI_Error err = m_ini.SaveFile(file.get());
-      if (err != SI_OK)
-        LOG("Error '%d' saving configuration into '%s'.", err, m_filename.c_str());
+      if (err != SI_OK) {
+        LOG(ERROR) << "CFG: Error " << err << " saving configuration into " << m_filename << "\n";
+      }
     }
   }
 

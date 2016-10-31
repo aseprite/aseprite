@@ -13,6 +13,7 @@
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "base/string.h"
+#include "docio/detect_format.h"
 
 #include <algorithm>
 #include <cstring>
@@ -93,21 +94,12 @@ FileFormatsList::iterator FileFormatsManager::end()
   return m_formats.end();
 }
 
-FileFormat* FileFormatsManager::getFileFormatByExtension(const char* extension) const
+FileFormat* FileFormatsManager::getFileFormat(const docio::FileFormat docioFormat) const
 {
-  char buf[512], *tok;
-
-  for (FileFormat* ff : m_formats) {
-    std::strcpy(buf, ff->extensions());
-
-    for (tok=std::strtok(buf, ","); tok;
-         tok=std::strtok(NULL, ",")) {
-      if (base::utf8_icmp(extension, tok) == 0)
-        return ff;
-    }
-  }
-
-  return NULL;
+  for (FileFormat* ff : m_formats)
+    if (ff->docioFormat() == docioFormat)
+      return ff;
+  return nullptr;
 }
 
 } // namespace app

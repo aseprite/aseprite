@@ -506,7 +506,6 @@ void Sprite::pickCels(const double x,
 
     cels.push_back(cel);
   }
-  fflush(stdout);
 }
 
 //////////////////////////////////////////////////////////////////////

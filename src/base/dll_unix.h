@@ -4,6 +4,7 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#include "base/config.h"
 #include "base/string.h"
 
 #ifdef HAVE_DLFCN_H

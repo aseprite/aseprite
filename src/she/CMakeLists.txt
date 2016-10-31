@@ -82,9 +82,8 @@ if(USE_SKIA_BACKEND)
   find_library(SKIA_GIF_LIBRARY giflib PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_IMAGES_LIBRARY skia_images PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_JPG_LIBRARY jpeg-turbo NAMES libjpeg-turbo PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
-  find_library(SKIA_OPTS_AVX2_LIBRARY skia_opts_avx2 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
-  find_library(SKIA_OPTS_AVX_LIBRARY skia_opts_avx PATH "${SKIA_BUILD_OUT_DIR}")
+  find_library(SKIA_OPTS_HSW_LIBRARY skia_opts_hsw PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_LIBRARY skia_opts PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSE41_LIBRARY skia_opts_sse41 PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_OPTS_SSE42_LIBRARY skia_opts_sse42 PATH "${SKIA_BUILD_OUT_DIR}")
@@ -97,7 +96,10 @@ if(USE_SKIA_BACKEND)
   find_library(SKIA_SKKTX_LIBRARY SkKTX libSkKTX PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_UTILS_LIBRARY skia_utils PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_WEBP_DEC_LIBRARY webp_dec NAMES libwebp_dec PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_WEBP_DEMUX_LIBRARY webp_demux NAMES libwebp_demux PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_WEBP_DSP_LIBRARY webp_dsp NAMES libwebp_dsp PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_WEBP_DSP_ENC_LIBRARY webp_dsp_enc NAMES libwebp_dsp_enc PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
+  find_library(SKIA_WEBP_ENC_LIBRARY webp_enc NAMES libwebp_enc PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_WEBP_UTILS_LIBRARY webp_utils NAMES libwebp_utils PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
   find_library(SKIA_ZLIB_LIBRARY zlib PATHS "${SKIA_BUILD_OUT_DIR}" "${SKIA_BUILD_OUT_DIR}/obj/gyp" NO_DEFAULT_PATH)
 
@@ -153,8 +155,8 @@ if(USE_SKIA_BACKEND)
     ${SKIA_OPTS_SSSE3_LIBRARY}
     ${SKIA_OPTS_SSE41_LIBRARY}
     ${SKIA_OPTS_SSE42_LIBRARY}
+    ${SKIA_OPTS_HSW_LIBRARY}
     ${SKIA_OPTS_AVX_LIBRARY}
-    ${SKIA_OPTS_AVX2_LIBRARY}
     ${SKIA_PORTS_LIBRARY}
     ${SKIA_EFFECTS_LIBRARY}
     ${SKIA_CODEC_LIBRARY}
@@ -164,7 +166,10 @@ if(USE_SKIA_BACKEND)
     ${SKIA_GIF_LIBRARY}
     ${SKIA_JPG_LIBRARY}
     ${SKIA_WEBP_DEC_LIBRARY}
+    ${SKIA_WEBP_DEMUX_LIBRARY}
     ${SKIA_WEBP_DSP_LIBRARY}
+    ${SKIA_WEBP_DSP_ENC_LIBRARY}
+    ${SKIA_WEBP_ENC_LIBRARY}
     ${SKIA_WEBP_UTILS_LIBRARY}
     ${SKIA_PNG_LIBRARY}
     ${SKIA_ZLIB_LIBRARY}
@@ -183,6 +188,7 @@ if(USE_SKIA_BACKEND)
 
   list(APPEND SHE_SOURCES
     skia/skia_display.cpp
+    skia/skia_surface.cpp
     skia/she.cpp)
 
   if(WIN32)

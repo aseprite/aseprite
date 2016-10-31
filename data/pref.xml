@@ -60,7 +60,7 @@
     <enum id="SelectionMode">
       <value id="DEFAULT" value="0" />
       <value id="ADD" value="1" />
-!      <value id="SUBTRACT" value="2" />
+      <value id="SUBTRACT" value="2" />
     </enum>
     <enum id="PivotPosition">
       <value id="NORTHWEST" value="0" />

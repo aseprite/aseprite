@@ -383,7 +383,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (tool) {
         Key* key = this->tool(tool);
         if (key && tool_key) {
-          LOG(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
+          LOG(VERBOSE) << "KEYS: Shortcut for tool " << tool_id << ": " << tool_key << "\n";
           Accelerator accel(tool_key);
 
           if (!removed)
@@ -411,7 +411,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (tool) {
         Key* key = this->quicktool(tool);
         if (key && tool_key) {
-          LOG(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
+          LOG(VERBOSE) << "KEYS: Shortcut for quicktool " << tool_id << ": " << tool_key << "\n";
           Accelerator accel(tool_key);
 
           if (!removed)
@@ -439,7 +439,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (action != KeyAction::None) {
         Key* key = this->action(action);
         if (key && tool_key) {
-          LOG(" - Shortcut for action '%s': <%s>\n", tool_action, tool_key);
+          LOG(VERBOSE) << "KEYS: Shortcut for action " << tool_action << ": " << tool_key << "\n";
           Accelerator accel(tool_key);
 
           if (!removed)

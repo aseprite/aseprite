@@ -24,6 +24,7 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "docio/detect_format.h"
 
 #include <cstring>
 
@@ -45,26 +46,34 @@ std::string get_writable_palette_extensions()
   return buf;
 }
 
-Palette* load_palette(const char *filename)
+Palette* load_palette(const char* filename)
 {
-  std::string ext = base::string_to_lower(base::get_file_extension(filename));
-  Palette* pal = NULL;
+  docio::FileFormat docioFormat = docio::detect_format(filename);
+  Palette* pal = nullptr;
 
-  if (ext == "col") {
-    pal = doc::file::load_col_file(filename);
-  }
-  else if (ext == "gpl") {
-    pal = doc::file::load_gpl_file(filename);
-  }
-  else if (ext == "hex") {
-    pal = doc::file::load_hex_file(filename);
-  }
-  else if (ext == "pal") {
-    pal = doc::file::load_pal_file(filename);
-  }
-  else {
-    FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
-    if (ff && ff->support(FILE_SUPPORT_LOAD)) {
+  switch (docioFormat) {
+
+    case docio::FileFormat::COL_PALETTE:
+      pal = doc::file::load_col_file(filename);
+      break;
+
+    case docio::FileFormat::GPL_PALETTE:
+      pal = doc::file::load_gpl_file(filename);
+      break;
+
+    case docio::FileFormat::HEX_PALETTE:
+      pal = doc::file::load_hex_file(filename);
+      break;
+
+    case docio::FileFormat::PAL_PALETTE:
+      pal = doc::file::load_pal_file(filename);
+      break;
+
+    default: {
+      FileFormat* ff = FileFormatsManager::instance()->getFileFormat(docioFormat);
+      if (!ff || !ff->support(FILE_SUPPORT_LOAD))
+        break;
+
       base::UniquePtr<FileOp> fop(
         FileOp::createLoadDocumentOperation(
           nullptr, filename,
@@ -85,6 +94,7 @@ Palette* load_palette(const char *filename)
         delete fop->releaseDocument();
         fop->done();
       }
+      break;
     }
   }
 
@@ -94,26 +104,34 @@ Palette* load_palette(const char *filename)
   return pal;
 }
 
-bool save_palette(const char *filename, const Palette* pal, int columns)
+bool save_palette(const char* filename, const Palette* pal, int columns)
 {
-  std::string ext = base::string_to_lower(base::get_file_extension(filename));
+  docio::FileFormat docioFormat = docio::detect_format_by_file_extension(filename);
   bool success = false;
 
-  if (ext == "col") {
-    success = doc::file::save_col_file(pal, filename);
-  }
-  else if (ext == "gpl") {
-    success = doc::file::save_gpl_file(pal, filename);
-  }
-  else if (ext == "hex") {
-    success = doc::file::save_hex_file(pal, filename);
-  }
-  else if (ext == "pal") {
-    success = doc::file::save_pal_file(pal, filename);
-  }
-  else {
-    FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
-    if (ff && ff->support(FILE_SUPPORT_SAVE)) {
+  switch (docioFormat) {
+
+    case docio::FileFormat::COL_PALETTE:
+      success = doc::file::save_col_file(pal, filename);
+      break;
+
+    case docio::FileFormat::GPL_PALETTE:
+      success = doc::file::save_gpl_file(pal, filename);
+      break;
+
+    case docio::FileFormat::HEX_PALETTE:
+      success = doc::file::save_hex_file(pal, filename);
+      break;
+
+    case docio::FileFormat::PAL_PALETTE:
+      success = doc::file::save_pal_file(pal, filename);
+      break;
+
+    default: {
+      FileFormat* ff = FileFormatsManager::instance()->getFileFormat(docioFormat);
+      if (!ff || !ff->support(FILE_SUPPORT_SAVE))
+        break;
+
       int w = (columns > 0 ? MID(0, columns, pal->size()): pal->size());
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
@@ -150,6 +168,7 @@ bool save_palette(const char *filename, const Palette* pal, int columns)
 
       doc->close();
       delete doc;
+      break;
     }
   }
 
