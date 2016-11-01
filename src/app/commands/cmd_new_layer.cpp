@@ -24,6 +24,7 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "render/quantization.h"
 #include "render/render.h"
 #include "ui/ui.h"
 
@@ -247,14 +248,33 @@ void NewLayerCommand::onExecute(Context* context)
 
       // Paste the given sprite as flatten
       for (frame_t fr=0; fr<=pasteSpr->lastFrame(); ++fr) {
-        ImageRef pasteImage(Image::create(sprite->pixelFormat(),
-                                          pasteSpr->width(),
-                                          pasteSpr->height()));
+        ImageRef pasteImage(
+          Image::create(
+            pasteSpr->pixelFormat(),
+            pasteSpr->width(),
+            pasteSpr->height()));
         clear_image(pasteImage.get(),
                     pasteSpr->transparentColor());
         render.renderSprite(pasteImage.get(), pasteSpr, fr);
 
         frame_t dstFrame = writer.frame()+fr;
+
+        if (sprite->pixelFormat() != pasteSpr->pixelFormat() ||
+            sprite->pixelFormat() == IMAGE_INDEXED) {
+          ImageRef pasteImageConv(
+            render::convert_pixel_format(
+              pasteImage.get(),
+              nullptr,
+              sprite->pixelFormat(),
+              DitheringMethod::NONE,
+              sprite->rgbMap(dstFrame),
+              pasteSpr->palette(fr),
+              (pasteSpr->backgroundLayer() ? true: false),
+              sprite->transparentColor()));
+          if (pasteImageConv)
+            pasteImage = pasteImageConv;
+        }
+
         Cel* cel = layer->cel(dstFrame);
         if (cel) {
           api.replaceImage(sprite, cel->imageRef(), pasteImage);
