@@ -36,7 +36,7 @@ set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 project(aseprite C CXX)
 
 # Check repository status
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists2.txt)
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt)
   message(FATAL_ERROR "Your Aseprite repository is incomplete, initialize submodules using:\n  git submodule update --init --recursive")
 endif()
 
