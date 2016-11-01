@@ -9,10 +9,8 @@ if(WIN32)
   # application target.
   cmake_minimum_required(VERSION 3.4)
 else()
-  cmake_minimum_required(VERSION 2.6)
+  cmake_minimum_required(VERSION 2.8)
 endif()
-
-enable_testing()
 
 if(COMMAND cmake_policy)
   # CMP0003: Libraries linked via full path no longer produce linker search paths.
@@ -37,10 +35,16 @@ set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 # Aseprite project
 project(aseprite C CXX)
 
+# Check repository status
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt)
+  message(FATAL_ERROR "Your Aseprite repository is incomplete, initialize submodules using:\n  git submodule update --init --recursive")
+endif()
+
 # This required for KDE/Qt destop integration, which sets BUILD_SHARED_LIBS to
 # TRUE by default
 set(BUILD_SHARED_LIBS off)
 
+enable_testing()
 
 ######################################################################
 # Options (these can be specified in cmake command line or modifying
@@ -142,7 +146,6 @@ set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 set(DUKTAPE_DIR         ${CMAKE_SOURCE_DIR}/third_party/duktape)
-set(MODP_B64_DIR        ${CMAKE_SOURCE_DIR}/third_party/modp_b64)
 
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -425,12 +428,17 @@ if(WITH_DESKTOP_INTEGRATION)
   add_subdirectory(desktop)
 endif()
 
-######################################################################
-# Main ASE targets
+# Third parties
+add_subdirectory(third_party)
+
+# LAF libraries + Aseprite are compiled with config.h
+include_directories(src)
+add_definitions(-DHAVE_CONFIG_H)
+if(ENABLE_MEMLEAK)
+  add_definitions(-DMEMLEAK)
+endif()
+
+set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
+add_subdirectory(laf)
 
 add_subdirectory(src)
-
-######################################################################
-# Third party libraries
-
-add_subdirectory(third_party)

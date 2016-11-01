@@ -10,4 +10,6 @@ if(UNIX)
   target_link_libraries(duktape m)
 endif()
 
-target_link_libraries(script-lib duktape)
+target_link_libraries(script-lib
+  laf-base
+  duktape)

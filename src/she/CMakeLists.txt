@@ -240,7 +240,7 @@ add_library(she ${SHE_SOURCES})
 
 target_link_libraries(she
   gfx-lib
-  base-lib
+  laf-base
   ${FREETYPE_LIBRARIES})
 
 if(USE_ALLEG4_BACKEND)
