@@ -1,5 +1,5 @@
 # Aseprite Code Generator
-# Copyright (C) 2014, 2015  David Capello
+# Copyright (C) 2014-2016  David Capello
 
 add_executable(gen
   gen.cpp
@@ -14,5 +14,5 @@ if(MSVC)
 endif()
 
 target_link_libraries(gen
-  base-lib
+  laf-base
   ${TINYXML_LIBRARY})

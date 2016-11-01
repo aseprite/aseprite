@@ -2,15 +2,6 @@
 # Copyright (C) 2001-2016  David Capello
 
 ######################################################################
-# Common definitions for all Aseprite libraries/projects
-
-add_definitions(-DHAVE_CONFIG_H)
-
-if(ENABLE_MEMLEAK)
-  add_definitions(-DMEMLEAK)
-endif()
-
-######################################################################
 # Compiler-specific flags
 
 if(MSVC)
@@ -32,8 +23,10 @@ if(ENABLE_UPDATER)
   add_definitions(-DENABLE_UPDATER)
 endif()
 
-# Directories where .h files can be found
-include_directories(. .. ../third_party)
+if(WIN32)
+  # Needed to include icons in win32 .rc file
+  include_directories(..)
+endif()
 
 # Use patched version of Allegro 4 (with window resize support).
 if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_ALLEGRO4)
@@ -92,12 +85,6 @@ add_subdirectory(clip)
 # Disable undo tests
 set(UNDO_TESTS OFF CACHE BOOL "Compile undo tests")
 add_subdirectory(undo)
-
-# Our base library
-add_subdirectory(base)
-
-# Directory where base/config.h file is located
-include_directories(${BASE_INCLUDE_DIR})
 
 add_subdirectory(cfg)
 add_subdirectory(css)
@@ -181,7 +168,6 @@ install(DIRECTORY ../data
 if(ENABLE_TESTS)
   include(FindTests)
 
-  find_tests(base base-lib)
   find_tests(gfx gfx-lib)
   find_tests(doc doc-lib)
   find_tests(render render-lib)

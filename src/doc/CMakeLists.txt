@@ -70,4 +70,4 @@ target_link_libraries(doc-lib
   she
   gfx-lib
   fixmath-lib
-  base-lib)
+  laf-base)

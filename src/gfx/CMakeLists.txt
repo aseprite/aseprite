@@ -9,4 +9,5 @@ add_library(gfx-lib
   rgb.cpp)
 
 target_link_libraries(gfx-lib
+  laf-base
   ${PIXMAN_LIBRARY})

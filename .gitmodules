@@ -36,3 +36,6 @@
 [submodule "src/undo"]
 	path = src/undo
 	url = https://github.com/aseprite/undo.git
+[submodule "laf"]
+	path = laf
+	url = https://github.com/aseprite/laf.git
