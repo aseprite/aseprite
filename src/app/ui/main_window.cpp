@@ -36,7 +36,7 @@
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "she/display.h"
 #include "ui/message.h"
 #include "ui/splitter.h"

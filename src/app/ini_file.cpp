@@ -11,7 +11,7 @@
 #include "app/ini_file.h"
 
 #include "app/resource_finder.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/split_string.h"
 #include "base/string.h"
 #include "cfg/cfg.h"

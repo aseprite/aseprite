@@ -32,7 +32,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "doc/document_event.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"

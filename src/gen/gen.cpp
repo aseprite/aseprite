@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #include "base/file_handle.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/program_options.h"
 #include "base/string.h"
 #include "gen/pref_types.h"

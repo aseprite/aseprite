@@ -14,7 +14,6 @@
 #include "app/crash/session.h"
 #include "app/resource_finder.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/time.h"
 
 namespace app {

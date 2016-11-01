@@ -12,7 +12,7 @@
 
 #include "she/osx/app_delegate.h"
 
-#include "base/path.h"
+#include "base/fs.h"
 #include "she/event.h"
 #include "she/event_queue.h"
 #include "she/osx/app.h"

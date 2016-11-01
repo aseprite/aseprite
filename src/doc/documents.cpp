@@ -10,8 +10,8 @@
 
 #include "doc/documents.h"
 
+#include "base/fs.h"
 #include "base/mutex.h"
-#include "base/path.h"
 #include "doc/document.h"
 
 #include <algorithm>

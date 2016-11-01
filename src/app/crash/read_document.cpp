@@ -17,7 +17,6 @@
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
-#include "base/path.h"
 #include "base/serialization.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"

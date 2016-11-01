@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,7 +10,7 @@
 
 #include "ui/listbox.h"
 
-#include "base/path.h"
+#include "base/fs.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/size_hint_event.h"

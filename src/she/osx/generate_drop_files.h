@@ -8,7 +8,7 @@
 #define SHE_OSX_APP_GENERATE_DROP_FILES_H_INCLUDED
 #pragma once
 
-#include "base/path.h"
+#include "base/fs.h"
 
 inline void generate_drop_files_from_nsarray(NSArray* filenames)
 {

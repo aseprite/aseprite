@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,7 @@
 
 #include "app/file/split_filename.h"
 #include "base/convert_to.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/string.h"
 
 #include <cstring>

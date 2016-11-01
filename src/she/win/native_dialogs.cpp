@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,7 +10,7 @@
 
 #include "she/win/native_dialogs.h"
 
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/string.h"
 #include "she/display.h"
 #include "she/error.h"

@@ -23,7 +23,6 @@
 #include "app/ui/status_bar.h"
 #include "base/fs.h"
 #include "base/mutex.h"
-#include "base/path.h"
 #include "base/scoped_lock.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"

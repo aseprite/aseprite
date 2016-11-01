@@ -12,7 +12,6 @@
 
 #include "app/app.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/string.h"
 
 #include <cstdio>

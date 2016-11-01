@@ -26,7 +26,6 @@
 #include "app/util/filetoks.h"
 #include "base/bind.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "ui/ui.h"
 
 #include "tinyxml.h"

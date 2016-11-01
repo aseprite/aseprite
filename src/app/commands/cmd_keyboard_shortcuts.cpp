@@ -22,7 +22,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/scoped_value.h"
 #include "base/split_string.h"
 #include "base/string.h"

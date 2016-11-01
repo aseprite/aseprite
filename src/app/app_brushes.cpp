@@ -16,7 +16,6 @@
 #include "base/base64.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/serialization.h"
 #include "doc/brush.h"
 #include "doc/color.h"

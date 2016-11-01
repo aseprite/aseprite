@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,6 @@
 #include "app/file_selector.h"
 #include "app/util/msk_file.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "ui/alert.h"
