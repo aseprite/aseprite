@@ -3,3 +3,6 @@
 
 add_library(fixmath-lib
   fixmath.cpp)
+
+target_link_libraries(fixmath-lib
+  laf-base)

@@ -6,4 +6,4 @@ add_library(docio-lib
 
 target_link_libraries(docio-lib
   flic-lib
-  base-lib)
+  laf-base)

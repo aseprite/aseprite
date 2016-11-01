@@ -46,15 +46,6 @@ if(NOT USE_SHARED_TINYXML)
   add_subdirectory(tinyxml)
 endif()
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.txt)
-  # We don't use add_subdirectory(gtest) because the gtest
-  # CMakeLists.txt modifies some MSVC flags.
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include)
-  add_library(gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/gtest-all.cc)
-else()
-  message(FATAL_ERROR "gtest/gtest.h is missing. Initialize submodules: git submodule update --init --recursive")
-endif()
-
 if(NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
@@ -95,4 +86,3 @@ if(NOT USE_SHARED_FREETYPE)
 endif()
 
 add_subdirectory(simpleini)
-add_subdirectory(modp_b64)

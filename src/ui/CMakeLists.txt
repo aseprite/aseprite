@@ -59,6 +59,6 @@ target_link_libraries(ui-lib
   she
   clip
   gfx-lib
-  base-lib
+  laf-base
   obs
   ${PIXMAN_LIBRARY})

@@ -455,7 +455,7 @@ add_library(app-lib
   ${generated_files})
 
 target_link_libraries(app-lib
-  base-lib
+  laf-base
   cfg-lib
   clip
   css-lib
