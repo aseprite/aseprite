@@ -35,7 +35,7 @@ namespace {
   // Memory leak detector wrapper
   class MemLeak {
   public:
-#ifdef MEMLEAK
+#ifdef LAF_MEMLEAK
     MemLeak() { base_memleak_init(); }
     ~MemLeak() { base_memleak_exit(); }
 #else

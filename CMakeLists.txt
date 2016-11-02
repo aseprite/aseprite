@@ -435,7 +435,7 @@ add_subdirectory(third_party)
 include_directories(src)
 add_definitions(-DHAVE_CONFIG_H)
 if(ENABLE_MEMLEAK)
-  add_definitions(-DMEMLEAK)
+  add_definitions(-DLAF_MEMLEAK)
 endif()
 
 set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
