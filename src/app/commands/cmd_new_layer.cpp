@@ -21,6 +21,7 @@
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui_context.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -136,8 +137,11 @@ void NewLayerCommand::onExecute(Context* context)
     context->executeCommand(openFile, params);
 
     // The user have selected another document.
-    if (oldActiveDocument != context->activeDocument())
+    if (oldActiveDocument != context->activeDocument()) {
       pasteDoc = context->activeDocument();
+      static_cast<UIContext*>(context)
+        ->setActiveDocument(oldActiveDocument);
+    }
   }
 
   // If params specify to ask the user about the name...
