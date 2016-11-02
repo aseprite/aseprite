@@ -776,8 +776,14 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       m_state->requireBrushPreview()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
-      g->drawRect(theme->colors.editorLayerEdges(),
-                  editorToScreen(cel->bounds()).offset(-bounds().origin()));
+      gfx::Rect layerEdges;
+      if (m_layer->isReference()) {
+        layerEdges = editorToScreenF(cel->boundsF()).offset(gfx::PointF(-bounds().origin()));
+      }
+      else {
+        layerEdges = editorToScreen(cel->bounds()).offset(-bounds().origin());
+      }
+      g->drawRect(theme->colors.editorLayerEdges(), layerEdges);
     }
   }
 
@@ -1028,7 +1034,6 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return gfx::Point(
     m_proj.removeX(pt.x - vp.x + scroll.x - m_padding.x),
     m_proj.removeY(pt.y - vp.y + scroll.y - m_padding.y));
@@ -1039,7 +1044,6 @@ gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return gfx::PointF(
     m_proj.removeX<double>(pt.x - vp.x + scroll.x - m_padding.x),
     m_proj.removeY<double>(pt.y - vp.y + scroll.y - m_padding.y));
@@ -1050,10 +1054,19 @@ Point Editor::editorToScreen(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return Point(
     (vp.x - scroll.x + m_padding.x + m_proj.applyX(pt.x)),
     (vp.y - scroll.y + m_padding.y + m_proj.applyY(pt.y)));
+}
+
+gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return PointF(
+    (vp.x - scroll.x + m_padding.x + m_proj.applyX<double>(pt.x)),
+    (vp.y - scroll.y + m_padding.y + m_proj.applyY<double>(pt.y)));
 }
 
 Rect Editor::screenToEditor(const Rect& rc)
@@ -1068,6 +1081,13 @@ Rect Editor::editorToScreen(const Rect& rc)
   return gfx::Rect(
     editorToScreen(rc.origin()),
     editorToScreen(rc.point2()));
+}
+
+gfx::RectF Editor::editorToScreenF(const gfx::RectF& rc)
+{
+  return gfx::RectF(
+    editorToScreenF(rc.origin()),
+    editorToScreenF(rc.point2()));
 }
 
 void Editor::add_observer(EditorObserver* observer)
