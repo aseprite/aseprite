@@ -19,6 +19,8 @@
 #include "gfx/clip.h"
 #include "gfx/region.h"
 
+#include <cmath>
+
 namespace render {
 
 namespace {
@@ -409,7 +411,10 @@ void composite_image_general(
 
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
 
-  gfx::Rect dstBounds = area.dstBounds();
+  gfx::Rect dstBounds(
+    area.dstBounds().x, area.dstBounds().y,
+    std::ceil(area.dstBounds().w),
+    std::ceil(area.dstBounds().h));
   gfx::RectF srcBounds = area.srcBounds();
 
   int dstY = dstBounds.y;
