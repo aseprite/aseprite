@@ -177,7 +177,8 @@ void PixelsMovement::trim()
 {
   ContextWriter writer(m_reader, 1000);
 
-  ASSERT(writer.cel());
+  // writer.cel() can be nullptr when we paste in an empty cel
+  // (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (writer.cel() &&
       writer.cel()->layer()->isTransparent())
     m_transaction.execute(new cmd::TrimCel(writer.cel()));
