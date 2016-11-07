@@ -14,12 +14,12 @@ These libraries are easy to be used and embedded in other software
 because they don't depend on any other component.
 
   * [allegro](allegro/): Modified version of [Allegro](http://alleg.sourceforge.net/) library, used for keyboard/mouse input, and drawing 2D graphics on screen.
-  * [base](base/): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
   * [clip](https://github.com/aseprite/clip): Clipboard library.
   * [css](css/): Pseudo-style sheet library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](https://github.com/aseprite/flic): Library to load/save FLI/FLC files.
   * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.
+  * [laf](https://github.com/aseprite/laf): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
   * [observable](https://github.com/dacap/observable): Signal/slot functions.
   * [scripting](scripting/): JavaScript engine.
   * [steam](steam/): Steam API wrapper to avoid static linking to the .lib file.
