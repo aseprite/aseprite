@@ -28,6 +28,7 @@
 #include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_bounds.h"
 #include "app/cmd/set_cel_frame.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
@@ -111,6 +112,13 @@ void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
           // Replace the image in the stock that is pointed by the cel
           replaceImage(sprite, cel->imageRef(), new_image);
         }
+      }
+      else if (layer->isReference()) {
+        // Update the ref cel's bounds
+        gfx::RectF newBounds = cel->boundsF();
+        newBounds.x -= bounds.x;
+        newBounds.y -= bounds.y;
+        m_transaction.execute(new cmd::SetCelBoundsF(cel, newBounds));
       }
       else {
         // Update the cel's position
