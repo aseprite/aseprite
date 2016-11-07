@@ -182,7 +182,16 @@ class StatusBar::Indicators : public HBox {
 
 public:
 
-  Indicators() {
+  Indicators() : m_backupIcon(BackupIcon::None) {
+    m_leftArea.setBorder(gfx::Border(0));
+    m_leftArea.setVisible(true);
+    m_leftArea.setExpansive(true);
+
+    m_rightArea.setBorder(gfx::Border(0));
+    m_rightArea.setVisible(false);
+
+    addChild(&m_leftArea);
+    addChild(&m_rightArea);
   }
 
   void startIndicators() {
@@ -210,7 +219,7 @@ public:
     auto indicator = new TextIndicator(text);
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
-    addChild(indicator);
+    m_leftArea.addChild(indicator);
   }
 
   void addIconIndicator(she::Surface* icon, bool colored) {
@@ -228,7 +237,7 @@ public:
     auto indicator = new IconIndicator(icon, colored);
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
-    addChild(indicator);
+    m_leftArea.addChild(indicator);
   }
 
   void addColorIndicator(const app::Color& color) {
@@ -246,7 +255,29 @@ public:
     auto indicator = new ColorIndicator(color);
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
-    addChild(indicator);
+    m_leftArea.addChild(indicator);
+  }
+
+  void showBackupIcon(BackupIcon icon) {
+    m_backupIcon = icon;
+    if (m_backupIcon != BackupIcon::None) {
+      she::Surface* icon =
+        (m_backupIcon == BackupIcon::Normal ?
+         SkinTheme::instance()->parts.iconSave()->bitmap(0):
+         SkinTheme::instance()->parts.iconSaveSmall()->bitmap(0));
+
+      m_rightArea.setVisible(true);
+      if (m_rightArea.children().empty()) {
+        m_rightArea.addChild(new IconIndicator(icon, true));
+      }
+      else {
+        ((IconIndicator*)m_rightArea.lastChild())->updateIndicator(icon, true);
+      }
+    }
+    else {
+      m_rightArea.setVisible(false);
+    }
+    layout();
   }
 
 private:
@@ -255,7 +286,7 @@ private:
     auto end = m_indicators.end();
     for (; it != end; ++it) {
       auto indicator = *it;
-      removeChild(indicator);
+      m_leftArea.removeChild(indicator);
       delete indicator;
     }
     m_indicators.erase(m_iterator, end);
@@ -263,6 +294,9 @@ private:
 
   std::vector<Indicator*> m_indicators;
   std::vector<Indicator*>::iterator m_iterator;
+  BackupIcon m_backupIcon;
+  HBox m_leftArea;
+  HBox m_rightArea;
 };
 
 class StatusBar::IndicatorsGeneration {
@@ -570,6 +604,11 @@ void StatusBar::updateFromEditor(Editor* editor)
 {
   if (editor)
     m_zoomEntry->setZoom(editor->zoom());
+}
+
+void StatusBar::showBackupIcon(BackupIcon icon)
+{
+  m_indicators->showBackupIcon(icon);
 }
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)

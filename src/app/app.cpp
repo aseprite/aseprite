@@ -40,6 +40,7 @@
 #include "app/shell.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
+#include "app/ui/backup_indicator.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
@@ -56,6 +57,7 @@
 #include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
+#include "base/scoped_lock.h"
 #include "base/split_string.h"
 #include "base/unique_ptr.h"
 #include "doc/document_observer.h"
@@ -148,6 +150,7 @@ App::App()
   , m_isGui(false)
   , m_isShell(false)
   , m_exporter(NULL)
+  , m_backupIndicator(nullptr)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -750,6 +753,11 @@ App::~App()
     // Save brushes
     m_brushes.reset(nullptr);
 
+    if (m_backupIndicator) {
+      delete m_backupIndicator;
+      m_backupIndicator = nullptr;
+    }
+
     delete m_legacy;
     delete m_modules;
     delete m_coreModules;
@@ -840,6 +848,20 @@ Preferences& App::preferences() const
 void App::showNotification(INotificationDelegate* del)
 {
   m_mainWindow->showNotification(del);
+}
+
+void App::showBackupNotification(bool state)
+{
+  base::scoped_lock lock(m_backupIndicatorMutex);
+  if (state) {
+    if (!m_backupIndicator)
+      m_backupIndicator = new BackupIndicator;
+    m_backupIndicator->start();
+  }
+  else {
+    if (m_backupIndicator)
+      m_backupIndicator->stop();
+  }
 }
 
 void App::updateDisplayTitleBar()

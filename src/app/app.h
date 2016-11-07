@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/app_brushes.h"
+#include "base/mutex.h"
 #include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
 #include "obs/signal.h"
@@ -27,6 +28,7 @@ namespace ui {
 namespace app {
 
   class AppOptions;
+  class BackupIndicator;
   class ContextBar;
   class Document;
   class DocumentExporter;
@@ -83,6 +85,8 @@ namespace app {
     }
 
     void showNotification(INotificationDelegate* del);
+    // This can be called from a non-UI thread.
+    void showBackupNotification(bool state);
     void updateDisplayTitleBar();
 
     InputChain& inputChain();
@@ -108,6 +112,8 @@ namespace app {
     FileList m_files;
     base::UniquePtr<DocumentExporter> m_exporter;
     base::UniquePtr<AppBrushes> m_brushes;
+    BackupIndicator* m_backupIndicator;
+    base::mutex m_backupIndicatorMutex;
   };
 
   void app_refresh_screen();
