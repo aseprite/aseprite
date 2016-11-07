@@ -29,13 +29,13 @@ SetCelOpacity::SetCelOpacity(Cel* cel, int opacity)
 void SetCelOpacity::onExecute()
 {
   cel()->setOpacity(m_newOpacity);
-  cel()->incrementVersion();
+  cel()->data()->incrementVersion();
 }
 
 void SetCelOpacity::onUndo()
 {
   cel()->setOpacity(m_oldOpacity);
-  cel()->incrementVersion();
+  cel()->data()->incrementVersion();
 }
 
 void SetCelOpacity::onFireNotifications()
