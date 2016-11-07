@@ -279,12 +279,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         return true;
       }
 
-      if (layer->isReference()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is reference, cannot be transformed", layer->name().c_str());
-        return true;
-      }
-
       // Change to MovingPixelsState
       transformSelection(editor, msg, MoveHandle);
       return true;
@@ -541,12 +535,19 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Document* document = editor->document();
-
   for (auto docView : UIContext::instance()->getAllDocumentViews(document)) {
     if (docView->editor()->isMovingPixels()) {
       // TODO Transfer moving pixels state to this editor
       docView->editor()->dropMovingPixels();
     }
+  }
+
+  Layer* layer = editor->layer();
+  if (layer && layer->isReference()) {
+    StatusBar::instance()->showTip(
+      1000, "Layer '%s' is reference, cannot be transformed",
+      layer->name().c_str());
+    return;
   }
 
   try {
