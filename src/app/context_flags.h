@@ -34,6 +34,7 @@ namespace app {
       ActiveLayerIsBackground     = 1 << 10,
       ActiveLayerIsVisible        = 1 << 11,
       ActiveLayerIsEditable       = 1 << 12,
+      ActiveLayerIsReference      = 1 << 13,
     };
 
     ContextFlags();

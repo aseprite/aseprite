@@ -449,12 +449,17 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 //////////////////////////////////////////////////////////////////////
 // Drawing
 
-void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const
+void Sprite::pickCels(const double x,
+                      const double y,
+                      const frame_t frame,
+                      const int opacityThreshold,
+                      const LayerList& layers,
+                      CelList& cels) const
 {
-  LayerList layers = allVisibleLayers();
+  gfx::PointF pos(x, y);
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
-    Layer* layer = layers[i];
+    const Layer* layer = layers[i];
     if (!layer->isImage())
       continue;
 
@@ -462,17 +467,26 @@ void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList
     if (!cel)
       continue;
 
-    Image* image = cel->image();
+    const Image* image = cel->image();
     if (!image)
       continue;
 
-    if (!cel->bounds().contains(gfx::Point(x, y)))
+    gfx::RectF celBounds;
+    if (cel->layer()->isReference())
+      celBounds = cel->boundsF();
+    else
+      celBounds = cel->bounds();
+
+    if (!celBounds.contains(pos))
       continue;
 
-    color_t color = get_pixel(image,
-      x - cel->x(),
-      y - cel->y());
+    const gfx::Point ipos(
+      (pos.x-celBounds.x)*image->width()/celBounds.w,
+      (pos.y-celBounds.y)*image->height()/celBounds.h);
+    if (!image->bounds().contains(ipos))
+      continue;
 
+    const color_t color = get_pixel(image, ipos.x, ipos.y);
     bool isOpaque = true;
 
     switch (image->pixelFormat()) {
@@ -508,6 +522,13 @@ LayerList Sprite::allVisibleLayers() const
 {
   LayerList list;
   m_root->allVisibleLayers(list);
+  return list;
+}
+
+LayerList Sprite::allVisibleReferenceLayers() const
+{
+  LayerList list;
+  m_root->allVisibleReferenceLayers(list);
   return list;
 }
 

@@ -13,15 +13,12 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
+#include "gfx/clip.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "render/extra_type.h"
 #include "render/onionskin_position.h"
 #include "render/projection.h"
-
-namespace gfx {
-  class Clip;
-}
 
 namespace doc {
   class Cel;
@@ -93,14 +90,21 @@ namespace render {
     Image* dst,
     const Image* src,
     const Palette* pal,
-    const gfx::Clip& area,
+    const gfx::ClipF& area,
     const int opacity,
     const BlendMode blendMode,
-    const Projection& proj);
+    const double sx,
+    const double sy);
 
   class Render {
+    enum Flags {
+      ShowRefLayers = 1,
+    };
+
   public:
     Render();
+
+    void setRefLayersVisiblity(const bool visible);
 
     // Viewport configuration
     void setProjection(const Projection& projection);
@@ -157,7 +161,7 @@ namespace render {
       Image* dstImage,
       const Sprite* sprite,
       frame_t frame,
-      const gfx::Clip& area);
+      const gfx::ClipF& area);
 
     // Extra functions
     void renderBackground(
@@ -194,7 +198,7 @@ namespace render {
       Image* dst_image,
       const Image* cel_image,
       const Palette* pal,
-      const gfx::Point& celPos,
+      const gfx::RectF& celBounds,
       const gfx::Clip& area,
       const CompositeImageFunc compositeImage,
       const int opacity,
@@ -204,13 +208,18 @@ namespace render {
       Image* dst_image,
       const Image* cel_image,
       const Palette* pal,
-      const int x,
-      const int y,
+      const gfx::RectF& celBounds,
       const gfx::Clip& area,
       const CompositeImageFunc compositeImage,
       const int opacity,
       const BlendMode blendMode);
 
+    CompositeImageFunc getImageComposition(
+      const PixelFormat dstFormat,
+      const PixelFormat srcFormat,
+      const Layer* layer);
+
+    int m_flags;
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
     frame_t m_currentFrame;

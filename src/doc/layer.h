@@ -37,6 +37,7 @@ namespace doc {
     Background = 8,             // Stack order cannot be changed
     Continuous = 16,            // Prefer to link cels when the user copy them
     Collapsed  = 32,            // Prefer to show this group layer collapsed
+    Reference  = 64,            // Is a reference layer
 
     BackgroundLayerFlags = LockMove | Background,
   };
@@ -76,6 +77,7 @@ namespace doc {
     bool isContinuous() const  { return hasFlags(LayerFlags::Continuous); }
     bool isCollapsed() const   { return hasFlags(LayerFlags::Collapsed); }
     bool isExpanded() const    { return !hasFlags(LayerFlags::Collapsed); }
+    bool isReference() const   { return hasFlags(LayerFlags::Reference); }
 
     bool isVisibleHierarchy() const;
     bool isEditableHierarchy() const;
@@ -86,6 +88,7 @@ namespace doc {
     void setMovable   (bool state) { switchFlags(LayerFlags::LockMove, !state); }
     void setContinuous(bool state) { switchFlags(LayerFlags::Continuous, state); }
     void setCollapsed (bool state) { switchFlags(LayerFlags::Collapsed, state); }
+    void setReference (bool state) { switchFlags(LayerFlags::Reference, state); }
 
     LayerFlags flags() const {
       return m_flags;
@@ -189,6 +192,7 @@ namespace doc {
     void allLayers(LayerList& list) const;
     layer_t allLayersCount() const;
     void allVisibleLayers(LayerList& list) const;
+    void allVisibleReferenceLayers(LayerList& list) const;
     void allBrowsableLayers(LayerList& list) const;
 
     void getCels(CelList& cels) const override;

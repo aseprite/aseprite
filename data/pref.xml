@@ -55,6 +55,7 @@
     <enum id="EyedropperSample">
       <value id="ALL_LAYERS" value="0" />
       <value id="CURRENT_LAYER" value="1" />
+      <value id="FIRST_REFERENCE_LAYER" value="2" />
     </enum>
     <enum id="SelectionMode">
       <value id="DEFAULT" value="0" />
@@ -217,6 +218,9 @@
     </section>
     <section id="thumbnails">
       <option id="cache_limit" type="int" default="5000" />
+    </section>
+    <section id="perf">
+      <option id="show_render_time" type="bool" default="false" />
     </section>
   </global>
 

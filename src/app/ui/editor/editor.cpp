@@ -43,6 +43,7 @@
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
@@ -62,6 +63,10 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 using namespace render;
+
+// TODO these should be grouped in some kind of "performance counters"
+static base::Chrono renderChrono;
+static double renderElapsed = 0.0;
 
 class EditorPreRenderImpl : public EditorPreRender {
 public:
@@ -541,6 +546,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // Create a temporary RGB bitmap to draw all to it
     rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
 
+    m_renderEngine.setRefLayersVisiblity(true);
     m_renderEngine.setProjection(m_proj);
     m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
     m_renderEngine.disableOnionskin();
@@ -770,8 +776,14 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       m_state->requireBrushPreview()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
-      g->drawRect(theme->colors.editorLayerEdges(),
-                  editorToScreen(cel->bounds()).offset(-bounds().origin()));
+      gfx::Rect layerEdges;
+      if (m_layer->isReference()) {
+        layerEdges = editorToScreenF(cel->boundsF()).offset(gfx::PointF(-bounds().origin()));
+      }
+      else {
+        layerEdges = editorToScreen(cel->bounds()).offset(-bounds().origin());
+      }
+      g->drawRect(theme->colors.editorLayerEdges(), layerEdges);
     }
   }
 
@@ -1022,10 +1034,19 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return gfx::Point(
     m_proj.removeX(pt.x - vp.x + scroll.x - m_padding.x),
     m_proj.removeY(pt.y - vp.y + scroll.y - m_padding.y));
+}
+
+gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return gfx::PointF(
+    m_proj.removeX<double>(pt.x - vp.x + scroll.x - m_padding.x),
+    m_proj.removeY<double>(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
 Point Editor::editorToScreen(const gfx::Point& pt)
@@ -1033,10 +1054,19 @@ Point Editor::editorToScreen(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return Point(
     (vp.x - scroll.x + m_padding.x + m_proj.applyX(pt.x)),
     (vp.y - scroll.y + m_padding.y + m_proj.applyY(pt.y)));
+}
+
+gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return PointF(
+    (vp.x - scroll.x + m_padding.x + m_proj.applyX<double>(pt.x)),
+    (vp.y - scroll.y + m_padding.y + m_proj.applyY<double>(pt.y)));
 }
 
 Rect Editor::screenToEditor(const Rect& rc)
@@ -1051,6 +1081,13 @@ Rect Editor::editorToScreen(const Rect& rc)
   return gfx::Rect(
     editorToScreen(rc.origin()),
     editorToScreen(rc.point2()));
+}
+
+gfx::RectF Editor::editorToScreenF(const gfx::RectF& rc)
+{
+  return gfx::RectF(
+    editorToScreenF(rc.origin()),
+    editorToScreenF(rc.point2()));
 }
 
 void Editor::add_observer(EditorObserver* observer)
@@ -1216,10 +1253,11 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
 {
   Site site = getSite();
   if (site.sprite()) {
-    gfx::Point editorPos = screenToEditor(mousePos);
+    gfx::PointF editorPos = screenToEditorF(mousePos);
 
     ColorPicker picker;
-    picker.pickColor(site, editorPos, ColorPicker::FromComposition);
+    picker.pickColor(site, editorPos, m_proj,
+                     ColorPicker::FromComposition);
     return picker.color();
   }
   else
@@ -1430,7 +1468,22 @@ void Editor::onPaint(ui::PaintEvent& ev)
       DocumentReader documentReader(m_document, 0);
 
       // Draw the sprite in the editor
+      renderChrono.reset();
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
+      renderElapsed = renderChrono.elapsed();
+
+      // Show performance stats (TODO show performance stats in other widget)
+      if (Preferences::instance().perf.showRenderTime()) {
+        View* view = View::getView(this);
+        gfx::Rect vp = view->viewportBounds();
+        char buf[128];
+        sprintf(buf, "%.3f", renderElapsed);
+        g->drawString(
+          buf,
+          gfx::rgba(255, 255, 255, 255),
+          gfx::rgba(0, 0, 0, 255),
+          vp.origin() - bounds().origin());
+      }
 
       // Draw the mask boundaries
       if (m_document->getMaskBoundaries()) {
@@ -1510,7 +1563,8 @@ bool Editor::canDraw()
   return (m_layer != NULL &&
           m_layer->isImage() &&
           m_layer->isVisibleHierarchy() &&
-          m_layer->isEditableHierarchy());
+          m_layer->isEditableHierarchy() &&
+          !m_layer->isReference());
 }
 
 bool Editor::isInsideSelection()

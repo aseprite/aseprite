@@ -74,6 +74,7 @@ namespace app {
   private:
     void transformSelection(Editor* editor, ui::MouseMessage* msg, HandleType handle);
     void onPivotChange(Editor* editor);
+    gfx::Rect resizeCelBounds(Editor* editor) const;
 
     Decorator* m_decorator;
     obs::scoped_connection m_pivotVisConn;

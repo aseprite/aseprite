@@ -319,6 +319,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       else {
         newCel.reset(create_cel_copy(sourceCel,
                                      destLayer->sprite(),
+                                     destLayer,
                                      sourceCel->frame()));
         linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
       }

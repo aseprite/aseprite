@@ -55,12 +55,28 @@ namespace render {
                        applyY(r.y+r.h) - v);
     }
 
+    gfx::RectF apply(const gfx::RectF& r) const {
+      double u = applyX(r.x);
+      double v = applyY(r.y);
+      return gfx::RectF(u, v,
+                        applyX(r.x+r.w) - u,
+                        applyY(r.y+r.h) - v);
+    }
+
     gfx::Rect remove(const gfx::Rect& r) const {
       int u = removeX(r.x);
       int v = removeY(r.y);
       return gfx::Rect(u, v,
                        removeX(r.x+r.w) - u,
                        removeY(r.y+r.h) - v);
+    }
+
+    gfx::RectF remove(const gfx::RectF& r) const {
+      double u = removeX(r.x);
+      double v = removeY(r.y);
+      return gfx::RectF(u, v,
+                        removeX(r.x+r.w) - u,
+                        removeY(r.y+r.h) - v);
     }
 
   private:

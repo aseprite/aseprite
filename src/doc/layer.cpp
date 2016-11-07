@@ -391,6 +391,22 @@ void LayerGroup::allVisibleLayers(LayerList& list) const
   }
 }
 
+void LayerGroup::allVisibleReferenceLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (!child->isVisible())
+      continue;
+
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allVisibleReferenceLayers(list);
+
+    if (!child->isReference())
+      continue;
+
+    list.push_back(child);
+  }
+}
+
 void LayerGroup::allBrowsableLayers(LayerList& list) const
 {
   for (Layer* child : m_layers) {

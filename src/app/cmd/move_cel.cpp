@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -119,7 +119,7 @@ void MoveCel::onExecute()
       executeAndAdd(new cmd::SetCelFrame(srcCel, m_dstFrame));
     }
     else {
-      dstCel = create_cel_copy(srcCel, dstSprite, m_dstFrame);
+      dstCel = create_cel_copy(srcCel, dstSprite, dstLayer, m_dstFrame);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
       executeAndAdd(new cmd::ClearCel(srcCel));

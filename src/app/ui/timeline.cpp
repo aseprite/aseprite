@@ -1699,6 +1699,16 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
         bounds.y+bounds.h-2*s,
         font()->textLength(layer->name().c_str()), s));
   }
+  else if (layer->isReference()) {
+    int s = ui::guiscale();
+    g->fillRect(
+      is_active ?
+      skinTheme()->colors.timelineClickedText():
+      skinTheme()->colors.timelineNormalText(),
+      gfx::Rect(bounds.x+4*s,
+        bounds.y+bounds.h/2,
+        font()->textLength(layer->name().c_str()), s));
+  }
 
   // If this layer wasn't clicked but there are another layer clicked,
   // we have to draw some indicators to show that the user can move
@@ -2640,7 +2650,9 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
       case PART_LAYER_TEXT:
         if (layer != NULL) {
-          sb->setStatusText(0, "Layer '%s' [%s%s]",
+          sb->setStatusText(
+            0, "%s '%s' [%s%s]",
+            layer->isReference() ? "Reference layer": "Layer",
             layer->name().c_str(),
             layer->isVisible() ? "visible": "hidden",
             layer->isEditable() ? "": " locked");
