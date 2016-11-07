@@ -15,7 +15,6 @@
 #include "app/console.h"
 #include "app/document.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -46,6 +45,11 @@
 #include <algorithm>
 #include <list>
 #include <vector>
+
+#if defined(_DEBUG) && defined(ENABLE_DATA_RECOVERY)
+#include "app/crash/data_recovery.h"
+#include "app/modules/editors.h"
+#endif
 
 namespace app {
 
@@ -372,14 +376,30 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
     case kKeyDownMessage: {
 #ifdef _DEBUG
-      // Left Shift+Ctrl+Q generates a crash (useful to test the anticrash feature)
+      // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
       if (msg->ctrlPressed() &&
           msg->shiftPressed() &&
           static_cast<KeyMessage*>(msg)->scancode() == kKeyQ) {
         int* p = nullptr;
         *p = 0;
       }
-#endif
+
+#ifdef ENABLE_DATA_RECOVERY
+      // Ctrl+Shift+R recover active sprite from the backup store
+      if (msg->ctrlPressed() &&
+          msg->shiftPressed() &&
+          static_cast<KeyMessage*>(msg)->scancode() == kKeyR &&
+          App::instance()->dataRecovery() &&
+          App::instance()->dataRecovery()->activeSession() &&
+          current_editor &&
+          current_editor->document()) {
+        App::instance()
+          ->dataRecovery()
+          ->activeSession()
+          ->restoreBackupById(current_editor->document()->id());
+      }
+#endif  // ENABLE_DATA_RECOVERY
+#endif  // _DEBUG
 
       // Call base impl to check if there is a foreground window as
       // top level that needs keys. (In this way we just do not

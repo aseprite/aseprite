@@ -129,6 +129,7 @@ public:
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
     delete m_recovery;
+    m_recovery = nullptr;
 #endif
   }
 
@@ -843,6 +844,11 @@ Timeline* App::timeline() const
 Preferences& App::preferences() const
 {
   return m_coreModules->m_preferences;
+}
+
+crash::DataRecovery* App::dataRecovery() const
+{
+  return m_modules->recovery();
 }
 
 void App::showNotification(INotificationDelegate* del)

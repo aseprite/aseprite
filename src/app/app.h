@@ -42,6 +42,10 @@ namespace app {
   class Timeline;
   class Workspace;
 
+  namespace crash {
+    class DataRecovery;
+  }
+
   namespace tools {
     class ActiveToolManager;
     class Tool;
@@ -78,6 +82,7 @@ namespace app {
     ContextBar* contextBar() const;
     Timeline* timeline() const;
     Preferences& preferences() const;
+    crash::DataRecovery* dataRecovery() const;
 
     AppBrushes& brushes() {
       ASSERT(m_brushes.get());

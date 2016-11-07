@@ -59,6 +59,9 @@ because they don't depend on any other component.
 
 # Debugging Tricks
 
-On Windows, you can use F5 to show the amount of used memory. Also
-`Ctrl+Shift+Q` crashes the application in case that you want to test
-the anticrash feature or your need a memory dump file.
+* On Windows, you can use F5 to show the amount of used memory.
+* On debug mode (when `_DEBUG` is defined), `Ctrl+Alt+Shift+Q` crashes
+  the application in case that you want to test the anticrash feature
+  or your need a memory dump file.
+* On debug mode, you can use `Ctrl+Alt+Shift+R` to recover the active
+  document from the data recovery store.
