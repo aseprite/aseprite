@@ -115,7 +115,7 @@ void CopyCel::onExecute()
         dstCel->setFrame(m_dstFrame);
       }
       else
-        dstCel = create_cel_copy(srcCel, dstSprite, m_dstFrame);
+        dstCel = create_cel_copy(srcCel, dstSprite, dstLayer, m_dstFrame);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
     }
