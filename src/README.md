@@ -14,12 +14,12 @@ These libraries are easy to be used and embedded in other software
 because they don't depend on any other component.
 
   * [allegro](allegro/): Modified version of [Allegro](http://alleg.sourceforge.net/) library, used for keyboard/mouse input, and drawing 2D graphics on screen.
-  * [base](base/): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
   * [clip](https://github.com/aseprite/clip): Clipboard library.
   * [css](css/): Pseudo-style sheet library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](https://github.com/aseprite/flic): Library to load/save FLI/FLC files.
   * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.
+  * [laf](https://github.com/aseprite/laf): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
   * [observable](https://github.com/dacap/observable): Signal/slot functions.
   * [scripting](scripting/): JavaScript engine.
   * [steam](steam/): Steam API wrapper to avoid static linking to the .lib file.
@@ -59,6 +59,9 @@ because they don't depend on any other component.
 
 # Debugging Tricks
 
-On Windows, you can use F5 to show the amount of used memory. Also
-`Ctrl+Shift+Q` crashes the application in case that you want to test
-the anticrash feature or your need a memory dump file.
+* On Windows, you can use F5 to show the amount of used memory.
+* On debug mode (when `_DEBUG` is defined), `Ctrl+Alt+Shift+Q` crashes
+  the application in case that you want to test the anticrash feature
+  or your need a memory dump file.
+* On debug mode, you can use `Ctrl+Alt+Shift+R` to recover the active
+  document from the data recovery store.

@@ -24,7 +24,7 @@
 #include "app/restore_visible_layers.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/split_string.h"
 #include "doc/frame_tag.h"
 #include "doc/frame_tags.h"

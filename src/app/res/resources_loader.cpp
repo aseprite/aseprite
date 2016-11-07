@@ -16,7 +16,6 @@
 #include "app/resource_finder.h"
 #include "base/bind.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/scoped_value.h"
 
 namespace app {

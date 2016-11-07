@@ -7,7 +7,7 @@
 #include "docio/detect_format.h"
 
 #include "base/file_handle.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/string.h"
 #include "flic/flic_details.h"
 

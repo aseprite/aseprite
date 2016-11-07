@@ -36,7 +36,6 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"

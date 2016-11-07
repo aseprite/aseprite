@@ -16,9 +16,9 @@
 #include "app/xml_document.h"
 #include "base/convert_to.h"
 #include "base/file_handle.h"
-#include "base/path.h"
-#include "doc/doc.h"
+#include "base/fs.h"
 #include "doc/algorithm/shrink_bounds.h"
+#include "doc/doc.h"
 #include "doc/primitives.h"
 
 #include <cmath>

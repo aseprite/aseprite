@@ -357,6 +357,7 @@ add_library(app-lib
   transformation.cpp
   ui/ani_controls.cpp
   ui/app_menuitem.cpp
+  ui/backup_indicator.cpp
   ui/brush_popup.cpp
   ui/button_set.cpp
   ui/color_bar.cpp

@@ -28,7 +28,6 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "doc/frame_tag.h"

@@ -23,6 +23,24 @@
 namespace app {
 namespace crash {
 
+namespace {
+
+class SwitchBackupIcon {
+public:
+  SwitchBackupIcon() {
+    App* app = App::instance();
+    if (app)
+      app->showBackupNotification(true);
+  }
+  ~SwitchBackupIcon() {
+    App* app = App::instance();
+    if (app)
+      app->showBackupNotification(false);
+  }
+};
+
+}
+
 BackupObserver::BackupObserver(Session* session, doc::Context* ctx)
   : m_session(session)
   , m_ctx(ctx)
@@ -79,6 +97,7 @@ void BackupObserver::backgroundThread()
     if (seconds >= waitUntil) {
       TRACE("RECO: Start backup process for %d documents\n", m_documents.size());
 
+      SwitchBackupIcon icon;
       base::scoped_lock hold(m_mutex);
       base::Chrono chrono;
       bool somethingLocked = false;

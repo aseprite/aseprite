@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,12 +7,11 @@
 #include <Cocoa/Cocoa.h>
 #include <vector>
 
+#include "base/fs.h"
 #include "she/display.h"
 #include "she/keys.h"
 #include "she/native_cursor.h"
 #include "she/osx/native_dialogs.h"
-
-#include "base/path.h"
 
 @interface OpenSaveHelper : NSObject {
 @private

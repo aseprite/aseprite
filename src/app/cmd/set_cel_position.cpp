@@ -30,14 +30,14 @@ SetCelPosition::SetCelPosition(Cel* cel, int x, int y)
 
 void SetCelPosition::onExecute()
 {
-  cel()->setPosition(m_newX, m_newY);
-  cel()->incrementVersion();
+  cel()->data()->setPosition(gfx::Point(m_newX, m_newY));
+  cel()->data()->incrementVersion();
 }
 
 void SetCelPosition::onUndo()
 {
-  cel()->setPosition(m_oldX, m_oldY);
-  cel()->incrementVersion();
+  cel()->data()->setPosition(gfx::Point(m_oldX, m_oldY));
+  cel()->data()->incrementVersion();
 }
 
 void SetCelPosition::onFireNotifications()

@@ -44,7 +44,7 @@ MovingCelState::MovingCelState(Editor* editor,
   , m_scaled(false)
   , m_handle(handle)
 {
-  ContextWriter writer(m_reader);
+  ContextWriter writer(m_reader, 500);
   Document* document = editor->document();
   auto range = App::instance()->timeline()->range();
   LayerImage* layer = static_cast<LayerImage*>(editor->layer());
@@ -108,7 +108,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
     // If the user didn't cancel the operation...
     if (!m_canceled) {
-      ContextWriter writer(m_reader);
+      ContextWriter writer(m_reader, 1000);
       Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
       DocumentApi api = document->getApi(transaction);
 

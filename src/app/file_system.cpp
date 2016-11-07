@@ -17,7 +17,6 @@
 #include "app/file_system.h"
 
 #include "base/fs.h"
-#include "base/path.h"
 #include "base/string.h"
 #include "she/display.h"
 #include "she/surface.h"

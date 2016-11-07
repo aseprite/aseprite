@@ -12,7 +12,7 @@
 #include "app/context.h"
 #include "app/document.h"
 #include "app/util/new_image_from_mask.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "doc/cel.h"
 #include "doc/mask.h"
 #include "doc/palette.h"

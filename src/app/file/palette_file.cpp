@@ -13,7 +13,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/string.h"
 #include "doc/cel.h"
 #include "doc/file/col_file.h"

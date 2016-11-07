@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/app_brushes.h"
+#include "base/mutex.h"
 #include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
 #include "obs/signal.h"
@@ -27,6 +28,7 @@ namespace ui {
 namespace app {
 
   class AppOptions;
+  class BackupIndicator;
   class ContextBar;
   class Document;
   class INotificationDelegate;
@@ -38,6 +40,10 @@ namespace app {
   class RecentFiles;
   class Timeline;
   class Workspace;
+
+  namespace crash {
+    class DataRecovery;
+  }
 
   namespace tools {
     class ActiveToolManager;
@@ -75,6 +81,7 @@ namespace app {
     ContextBar* contextBar() const;
     Timeline* timeline() const;
     Preferences& preferences() const;
+    crash::DataRecovery* dataRecovery() const;
 
     AppBrushes& brushes() {
       ASSERT(m_brushes.get());
@@ -82,6 +89,8 @@ namespace app {
     }
 
     void showNotification(INotificationDelegate* del);
+    // This can be called from a non-UI thread.
+    void showBackupNotification(bool state);
     void updateDisplayTitleBar();
 
     InputChain& inputChain();
@@ -106,6 +115,8 @@ namespace app {
     base::UniquePtr<MainWindow> m_mainWindow;
     FileList m_files;
     base::UniquePtr<AppBrushes> m_brushes;
+    BackupIndicator* m_backupIndicator;
+    base::mutex m_backupIndicatorMutex;
   };
 
   void app_refresh_screen();

@@ -22,7 +22,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite.h"

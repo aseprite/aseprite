@@ -12,6 +12,7 @@
 #include "base/disable_copying.h"
 #include "base/process.h"
 #include "base/shared_ptr.h"
+#include "doc/object_id.h"
 
 #include <fstream>
 #include <string>
@@ -53,6 +54,7 @@ namespace crash {
     void removeDocument(app::Document* doc);
 
     void restoreBackup(Backup* backup);
+    void restoreBackupById(const doc::ObjectId id);
     void restoreRawImages(Backup* backup, RawImagesAs as);
     void deleteBackup(Backup* backup);
 

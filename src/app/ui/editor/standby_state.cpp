@@ -223,12 +223,20 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           "Cel is empty, nothing to move");
       }
       else {
-        // Change to MovingCelState
-        HandleType handle = MoveHandle;
-        if (resizeCelBounds(editor).contains(msg->position()))
-          handle = ScaleSEHandle;
+        try {
+          // Change to MovingCelState
+          HandleType handle = MoveHandle;
+          if (resizeCelBounds(editor).contains(msg->position()))
+            handle = ScaleSEHandle;
 
-        editor->setState(EditorStatePtr(new MovingCelState(editor, msg, handle)));
+          MovingCelState* newState = new MovingCelState(editor, msg, handle);
+          editor->setState(EditorStatePtr(newState));
+        }
+        catch (const LockedDocumentException& ex) {
+          // TODO break the background task that is locking this sprite
+          StatusBar::instance()->showTip(1000,
+            "Sprite is used by a backup/data recovery task");
+        }
       }
     }
 

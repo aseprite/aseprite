@@ -10,7 +10,7 @@
 
 #include "app/cli/app_options.h"
 
-#include "base/path.h"
+#include "base/fs.h"
 
 #include <iostream>
 

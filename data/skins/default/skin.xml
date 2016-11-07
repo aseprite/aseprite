@@ -418,6 +418,8 @@
     <part id="icon_key"                         x="208" y="264" w="8" h="8" />
     <part id="icon_distance"                    x="216" y="264" w="8" h="8" />
     <part id="icon_grid"                        x="224" y="264" w="8" h="8" />
+    <part id="icon_save"                        x="232" y="264" w="8" h="8" />
+    <part id="icon_save_small"                  x="240" y="264" w="8" h="8" />
   </parts>
 
   <stylesheet>

@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
-#include "base/path.h"
 #include "base/replace_string.h"
 #include "base/scoped_value.h"
 #include "base/string.h"

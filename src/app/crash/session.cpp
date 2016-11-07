@@ -22,10 +22,10 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
-#include "base/path.h"
 #include "base/process.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "base/unique_ptr.h"
 
 namespace app {
 namespace crash {
@@ -185,6 +185,17 @@ void Session::restoreBackup(Backup* backup)
   catch (const std::exception& ex) {
     Console::showException(ex);
   }
+}
+
+void Session::restoreBackupById(const ObjectId id)
+{
+  std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
+  if (!base::is_directory(docDir))
+    return;
+
+  base::UniquePtr<Backup> backup(new Backup(docDir));
+  if (backup)
+    restoreBackup(backup.get());
 }
 
 void Session::restoreRawImages(Backup* backup, RawImagesAs as)

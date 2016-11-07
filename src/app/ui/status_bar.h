@@ -50,6 +50,8 @@ namespace app {
   public:
     static StatusBar* instance() { return m_instance; }
 
+    enum BackupIcon { None, Normal, Small };
+
     StatusBar();
     ~StatusBar();
 
@@ -63,6 +65,8 @@ namespace app {
 
     // Used by AppEditor to update the zoom level in the status bar.
     void updateFromEditor(Editor* editor);
+
+    void showBackupIcon(BackupIcon icon);
 
   protected:
     void onResize(ui::ResizeEvent& ev) override;

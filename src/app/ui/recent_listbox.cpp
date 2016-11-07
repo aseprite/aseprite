@@ -19,7 +19,7 @@
 #include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/path.h"
+#include "base/fs.h"
 #include "ui/graphics.h"
 #include "ui/link_label.h"
 #include "ui/listitem.h"

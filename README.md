@@ -100,9 +100,11 @@ This program is distributed under three different licenses:
    our [End-User License Agreement for Aseprite (EULA)](EULA.txt). Please check
    that there are [modules/libraries in the source code](src/README.md) that
    are distributed under the MIT license
-   (e.g. [base](https://github.com/aseprite/aseprite/tree/master/src/base),
+   (e.g. [laf](https://github.com/aseprite/laf),
+   [clip](https://github.com/aseprite/clip),
    [she](https://github.com/aseprite/aseprite/tree/master/src/she),
-   [clip](https://github.com/aseprite/clip), etc.).
+   [gfx](https://github.com/aseprite/gfx),
+   [ui](https://github.com/aseprite/ui), etc.).
 2. You can request a special
    [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license)
    in case you are a teacher in an educational institution and want to

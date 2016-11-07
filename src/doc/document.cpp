@@ -10,7 +10,7 @@
 
 #include "doc/document.h"
 
-#include "base/path.h"
+#include "base/fs.h"
 #include "doc/context.h"
 #include "doc/sprite.h"
 
