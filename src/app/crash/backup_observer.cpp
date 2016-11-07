@@ -84,7 +84,7 @@ void BackupObserver::backgroundThread()
 {
   int normalPeriod = 60*Preferences::instance().general.dataRecoveryPeriod();
   int lockedPeriod = 10;
-#if 1                           // Just for testing purposes
+#if 0                           // Just for testing purposes
   normalPeriod = 5;
   lockedPeriod = 5;
 #endif
