@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -70,7 +70,14 @@ Cel* create_cel_copy(const Cel* srcCel,
       0, 0, 255, BlendMode::SRC);
   }
 
-  dstCel->setPosition(srcCel->position());
+  if (srcCel->layer() &&
+      srcCel->layer()->isReference()) {
+    dstCel->setBoundsF(srcCel->boundsF());
+  }
+  else {
+    dstCel->setPosition(srcCel->position());
+  }
+
   dstCel->setOpacity(srcCel->opacity());
   dstCel->data()->setUserData(srcCel->data()->userData());
 
