@@ -29,6 +29,7 @@ color_t get_sprite_pixel(const Sprite* sprite,
     base::UniquePtr<Image> image(Image::create(sprite->pixelFormat(), 1, 1));
 
     render::Render render;
+    render.setRefLayersVisiblity(true);
     render.setProjection(proj);
     render.renderSprite(
       image, sprite, frame,
