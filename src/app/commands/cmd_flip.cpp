@@ -13,6 +13,7 @@
 #include "app/app.h"
 #include "app/cmd/flip_mask.h"
 #include "app/cmd/flip_masked_cel.h"
+#include "app/cmd/set_cel_bounds.h"
 #include "app/cmd/set_mask_position.h"
 #include "app/cmd/trim_cel.h"
 #include "app/commands/params.h"
@@ -94,6 +95,10 @@ void FlipCommand::onExecute(Context* context)
       Site site = *writer.site();
 
       for (Cel* cel : cels) {
+        // TODO add support to flip masked part of a reference layer
+        if (cel->layer()->isReference())
+          continue;
+
         site.frame(cel->frame());
         site.layer(cel->layer());
 
@@ -150,14 +155,27 @@ void FlipCommand::onExecute(Context* context)
       for (Cel* cel : cels) {
         Image* image = cel->image();
 
-        api.setCelPosition
-          (sprite, cel,
-            (m_flipType == doc::algorithm::FlipHorizontal ?
+        // Flip reference layer cel
+        if (cel->layer()->isReference()) {
+          gfx::RectF bounds = cel->boundsF();
+
+          if (m_flipType == doc::algorithm::FlipHorizontal)
+            bounds.x = sprite->width() - bounds.w - bounds.x;
+          if (m_flipType == doc::algorithm::FlipVertical)
+            bounds.y = sprite->height() - bounds.h - bounds.y;
+
+          transaction.execute(new cmd::SetCelBoundsF(cel, bounds));
+        }
+        else {
+          api.setCelPosition
+            (sprite, cel,
+             (m_flipType == doc::algorithm::FlipHorizontal ?
               sprite->width() - image->width() - cel->x():
               cel->x()),
-            (m_flipType == doc::algorithm::FlipVertical ?
+             (m_flipType == doc::algorithm::FlipVertical ?
               sprite->height() - image->height() - cel->y():
               cel->y()));
+        }
 
         api.flipImage(image, image->bounds(), m_flipType);
       }
