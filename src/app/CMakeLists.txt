@@ -324,6 +324,7 @@ add_library(app-lib
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
+  rw_lock.cpp
   script/app_object.cpp
   script/app_scripting.cpp
   script/console_object.cpp

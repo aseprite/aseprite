@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,7 @@
 
 namespace app {
 
+  // TODO remove exceptions and use "DocumentAccess::operator bool()"
   class LockedDocumentException : public base::Exception {
   public:
     LockedDocumentException(const char* msg) throw()
@@ -141,7 +142,7 @@ namespace app {
       , m_from_reader(true)
       , m_locked(false) {
       if (m_document) {
-        if (!m_document->lockToWrite(timeout))
+        if (!m_document->upgradeToWrite(timeout))
           throw CannotWriteDocumentException();
 
         m_locked = true;
@@ -156,7 +157,7 @@ namespace app {
     void unlock() {
       if (m_document && m_locked) {
         if (m_from_reader)
-          m_document->unlockToRead();
+          m_document->downgradeToRead();
         else
           m_document->unlock();
 

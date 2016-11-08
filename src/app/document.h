@@ -10,6 +10,7 @@
 
 #include "app/extra_cel.h"
 #include "app/file/format_options.h"
+#include "app/rw_lock.h"
 #include "app/transformation.h"
 #include "base/disable_copying.h"
 #include "base/mutex.h"
@@ -50,13 +51,9 @@ namespace app {
 
   // An application document. It is the class used to contain one file
   // opened and being edited by the user (a sprite).
-  class Document : public doc::Document {
+  class Document : public doc::Document,
+                   public RWLock {
   public:
-    enum LockType {
-      ReadLock,
-      WriteLock
-    };
-
     Document(Sprite* sprite);
     ~Document();
 
@@ -157,23 +154,6 @@ namespace app {
     void copyLayerContent(const Layer* sourceLayer, Document* destDoc, Layer* destLayer) const;
     Document* duplicate(DuplicateType type) const;
 
-    //////////////////////////////////////////////////////////////////////
-    // Multi-threading ("sprite wrappers" use this)
-
-    // Locks the sprite to read or write on it, returning true if the
-    // sprite can be accessed in the desired mode.
-    bool lock(LockType lockType, int timeout);
-
-    // If you've locked the sprite to read, using this method you can
-    // raise your access level to write it.
-    bool lockToWrite(int timeout);
-
-    // If you've locked the sprite to write, using this method you can
-    // your access level to only read it.
-    void unlockToRead();
-
-    void unlock();
-
   protected:
     virtual void onContextChanged() override;
 
@@ -186,15 +166,6 @@ namespace app {
 
     // Selected mask region boundaries
     base::UniquePtr<doc::MaskBoundaries> m_maskBoundaries;
-
-    // Mutex to modify the 'locked' flag.
-    base::mutex m_mutex;
-
-    // True if some thread is writing the sprite.
-    bool m_write_lock;
-
-    // Greater than zero when one or more threads are reading the sprite.
-    int m_read_locks;
 
     // Data to save the file in the same format that it was loaded
     base::SharedPtr<FormatOptions> m_format_options;

@@ -8,10 +8,6 @@
 #include "config.h"
 #endif
 
-// Uncomment this line in case that you want TRACE() lock/unlock
-// operations.
-//#define DEBUG_DOCUMENT_LOCKS
-
 #include "app/document.h"
 
 #include "app/app.h"
@@ -25,9 +21,6 @@
 #include "app/pref/preferences.h"
 #include "app/util/create_cel_copy.h"
 #include "base/memory.h"
-#include "base/mutex.h"
-#include "base/scoped_lock.h"
-#include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/context.h"
@@ -50,8 +43,6 @@ using namespace doc;
 Document::Document(Sprite* sprite)
   : m_undo(new DocumentUndo)
   , m_associated_to_file(false)
-  , m_write_lock(false)
-  , m_read_locks(0)
     // Information about the file format used to load/save this document
   , m_format_options(NULL)
   // Mask
@@ -437,130 +428,6 @@ Document* Document::duplicate(DuplicateType type) const
   documentCopy->generateMaskBoundaries();
 
   return documentCopy.release();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Multi-threading ("sprite wrappers" use this)
-
-bool Document::lock(LockType lockType, int timeout)
-{
-  while (timeout >= 0) {
-    {
-      scoped_lock lock(m_mutex);
-      switch (lockType) {
-
-        case ReadLock:
-          // If no body is writting the sprite...
-          if (!m_write_lock) {
-            // We can read it
-            ++m_read_locks;
-            return true;
-          }
-          break;
-
-        case WriteLock:
-          // If no body is reading and writting...
-          if (m_read_locks == 0 && !m_write_lock) {
-            // We can start writting the sprite...
-            m_write_lock = true;
-
-#ifdef DEBUG_DOCUMENT_LOCKS
-            TRACE("DOC: Document::lock: Locked <%d> to write\n", id());
-#endif
-            return true;
-          }
-          break;
-
-      }
-    }
-
-    if (timeout > 0) {
-      int delay = MIN(100, timeout);
-      timeout -= delay;
-
-#ifdef DEBUG_DOCUMENT_LOCKS
-      TRACE("DOC: Document::lock: wait 100 msecs for <%d>\n", id());
-#endif
-
-      base::this_thread::sleep_for(double(delay) / 1000.0);
-    }
-    else
-      break;
-  }
-
-#ifdef DEBUG_DOCUMENT_LOCKS
-  TRACE("DOC: Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
-    id(), (lockType == ReadLock ? "read": "write"), m_read_locks, m_write_lock);
-#endif
-
-  return false;
-}
-
-bool Document::lockToWrite(int timeout)
-{
-  while (timeout >= 0) {
-    {
-      scoped_lock lock(m_mutex);
-      // this only is possible if there are just one reader
-      if (m_read_locks == 1) {
-        ASSERT(!m_write_lock);
-        m_read_locks = 0;
-        m_write_lock = true;
-
-#ifdef DEBUG_DOCUMENT_LOCKS
-        TRACE("DOC: Document::lockToWrite: Locked <%d> to write\n", id());
-#endif
-
-        return true;
-      }
-    }
-
-    if (timeout > 0) {
-      int delay = MIN(100, timeout);
-      timeout -= delay;
-
-#ifdef DEBUG_DOCUMENT_LOCKS
-      TRACE("DOC: Document::lockToWrite: wait 100 msecs for <%d>\n", id());
-#endif
-
-      base::this_thread::sleep_for(double(delay) / 1000.0);
-    }
-    else
-      break;
-  }
-
-#ifdef DEBUG_DOCUMENT_LOCKS
-  TRACE("DOC: Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
-    id(), m_read_locks, m_write_lock);
-#endif
-
-  return false;
-}
-
-void Document::unlockToRead()
-{
-  scoped_lock lock(m_mutex);
-
-  ASSERT(m_read_locks == 0);
-  ASSERT(m_write_lock);
-
-  m_write_lock = false;
-  m_read_locks = 1;
-}
-
-void Document::unlock()
-{
-  scoped_lock lock(m_mutex);
-
-  if (m_write_lock) {
-    m_write_lock = false;
-  }
-  else if (m_read_locks > 0) {
-    --m_read_locks;
-  }
-  else {
-    ASSERT(false);
-  }
 }
 
 void Document::onContextChanged()
