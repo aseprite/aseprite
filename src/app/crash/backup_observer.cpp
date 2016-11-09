@@ -104,8 +104,12 @@ void BackupObserver::backgroundThread()
 
       for (app::Document* doc : m_documents) {
         try {
-          if (doc->needsBackup())
-            m_session->saveDocumentChanges(doc);
+          if (doc->needsBackup()) {
+            if (!m_session->saveDocumentChanges(doc)) {
+              TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
+              somethingLocked = true;
+            }
+          }
         }
         catch (const std::exception&) {
           TRACE("RECO: Document '%d' is locked\n", doc->id());

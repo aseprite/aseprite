@@ -50,7 +50,7 @@ namespace crash {
     void create(base::pid pid);
     void removeFromDisk();
 
-    void saveDocumentChanges(app::Document* doc);
+    bool saveDocumentChanges(app::Document* doc);
     void removeDocument(app::Document* doc);
 
     void restoreBackup(Backup* backup);

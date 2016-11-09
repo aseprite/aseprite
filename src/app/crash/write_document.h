@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,14 +10,19 @@
 
 #include <string>
 
+namespace doc {
+  class CancelIO;
+}
+
 namespace app {
-class Document;
-namespace crash {
+  class Document;
 
-  void write_document(const std::string& dir, app::Document* doc);
-  void delete_document_internals(app::Document* doc);
+  namespace crash {
 
-} // namespace crash
+    bool write_document(const std::string& dir, app::Document* doc, doc::CancelIO* cancel);
+    void delete_document_internals(app::Document* doc);
+
+  } // namespace crash
 } // namespace app
 
 #endif

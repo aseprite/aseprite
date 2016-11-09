@@ -331,6 +331,7 @@ add_library(app-lib
   res/resources_loader.cpp
   resource_finder.cpp
   restore_visible_layers.cpp
+  rw_lock.cpp
   script/app_object.cpp
   script/app_scripting.cpp
   script/console_object.cpp

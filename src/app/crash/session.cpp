@@ -26,6 +26,7 @@
 #include "base/split_string.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
+#include "doc/cancel_io.h"
 
 namespace app {
 namespace crash {
@@ -141,9 +142,25 @@ void Session::removeFromDisk()
   }
 }
 
-void Session::saveDocumentChanges(app::Document* doc)
+class CustomWeakDocumentReader : public WeakDocumentReader
+                               , public doc::CancelIO {
+public:
+  explicit CustomWeakDocumentReader(Document* doc)
+    : WeakDocumentReader(doc) {
+  }
+
+  // CancelIO impl
+  bool isCanceled() override {
+    return !isLocked();
+  }
+};
+
+bool Session::saveDocumentChanges(app::Document* doc)
 {
-  DocumentReader reader(doc, 250);
+  CustomWeakDocumentReader reader(doc);
+  if (!reader.isLocked())
+    return false;
+
   app::Context ctx;
   std::string dir = base::join_path(m_path,
     base::convert_to<std::string>(doc->id()));
@@ -153,7 +170,7 @@ void Session::saveDocumentChanges(app::Document* doc)
     base::make_directory(dir);
 
   // Save document information
-  write_document(dir, doc);
+  return write_document(dir, doc, &reader);
 }
 
 void Session::removeDocument(app::Document* doc)

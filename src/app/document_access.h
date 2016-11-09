@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,7 @@
 
 namespace app {
 
+  // TODO remove exceptions and use "DocumentAccess::operator bool()"
   class LockedDocumentException : public base::Exception {
   public:
     LockedDocumentException(const char* msg) throw()
@@ -141,7 +142,7 @@ namespace app {
       , m_from_reader(true)
       , m_locked(false) {
       if (m_document) {
-        if (!m_document->lockToWrite(timeout))
+        if (!m_document->upgradeToWrite(timeout))
           throw CannotWriteDocumentException();
 
         m_locked = true;
@@ -156,7 +157,7 @@ namespace app {
     void unlock() {
       if (m_document && m_locked) {
         if (m_from_reader)
-          m_document->unlockToRead();
+          m_document->downgradeToRead();
         else
           m_document->unlock();
 
@@ -193,6 +194,42 @@ namespace app {
       m_document = nullptr;
     }
 
+  };
+
+  class WeakDocumentReader : public DocumentAccess {
+  public:
+    WeakDocumentReader() {
+    }
+
+    explicit WeakDocumentReader(Document* doc)
+      : DocumentAccess(doc)
+      , m_weak_lock(RWLock::WeakUnlocked) {
+      if (m_document)
+        m_document->weakLock(&m_weak_lock);
+    }
+
+    ~WeakDocumentReader() {
+      weakUnlock();
+    }
+
+    bool isLocked() const {
+      return (m_weak_lock == RWLock::WeakLocked);
+    }
+
+  protected:
+    void weakUnlock() {
+      if (m_document && m_weak_lock != RWLock::WeakUnlocked) {
+        m_document->weakUnlock();
+        m_document = nullptr;
+      }
+    }
+
+  private:
+    // Disable operator=
+    WeakDocumentReader(const WeakDocumentReader&);
+    WeakDocumentReader& operator=(const WeakDocumentReader&);
+
+    RWLock::WeakLock m_weak_lock;
   };
 
 } // namespace app
