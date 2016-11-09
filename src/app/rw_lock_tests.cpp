@@ -59,3 +59,20 @@ TEST(RWLock, UpgradeToWrite)
   a.downgradeToRead();
   a.unlock();
 }
+
+TEST(RWLock, WeakLock)
+{
+  RWLock a;
+  RWLock::WeakLock flag = RWLock::WeakUnlocked;
+
+  EXPECT_TRUE(a.weakLock(&flag));
+  EXPECT_EQ(RWLock::WeakLocked, flag);
+  EXPECT_FALSE(a.lock(RWLock::ReadLock, 0));
+  EXPECT_EQ(RWLock::WeakUnlocking, flag);
+  a.weakUnlock();
+  EXPECT_EQ(RWLock::WeakUnlocked, flag);
+
+  EXPECT_TRUE(a.lock(RWLock::ReadLock, 0));
+  EXPECT_FALSE(a.weakLock(&flag));
+  a.unlock();
+}

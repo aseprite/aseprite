@@ -923,8 +923,9 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     goto paintNoDoc;
 
   try {
-    // Lock the sprite to read/render it.
-    const DocumentReader documentReader(m_document, 0);
+    // Lock the sprite to read/render it. We wait 1/4 secs in case
+    // the background thread is making a backup.
+    const DocumentReader documentReader(m_document, 250);
 
     LayerIndex layer, first_layer, last_layer;
     frame_t frame, first_frame, last_frame;

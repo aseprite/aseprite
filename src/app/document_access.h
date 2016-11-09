@@ -196,6 +196,42 @@ namespace app {
 
   };
 
+  class WeakDocumentReader : public DocumentAccess {
+  public:
+    WeakDocumentReader() {
+    }
+
+    explicit WeakDocumentReader(Document* doc)
+      : DocumentAccess(doc)
+      , m_weak_lock(RWLock::WeakUnlocked) {
+      if (m_document)
+        m_document->weakLock(&m_weak_lock);
+    }
+
+    ~WeakDocumentReader() {
+      weakUnlock();
+    }
+
+    bool isLocked() const {
+      return (m_weak_lock == RWLock::WeakLocked);
+    }
+
+  protected:
+    void weakUnlock() {
+      if (m_document && m_weak_lock != RWLock::WeakUnlocked) {
+        m_document->weakUnlock();
+        m_document = nullptr;
+      }
+    }
+
+  private:
+    // Disable operator=
+    WeakDocumentReader(const WeakDocumentReader&);
+    WeakDocumentReader& operator=(const WeakDocumentReader&);
+
+    RWLock::WeakLock m_weak_lock;
+  };
+
 } // namespace app
 
 #endif

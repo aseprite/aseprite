@@ -14,6 +14,7 @@
 #include "base/exception.h"
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
+#include "doc/cancel_io.h"
 #include "doc/image.h"
 #include "zlib.h"
 
@@ -26,7 +27,7 @@ using namespace base::serialization::little_endian;
 
 // TODO Create a zlib wrapper for iostreams
 
-void write_image(std::ostream& os, const Image* image)
+bool write_image(std::ostream& os, const Image* image, CancelIO* cancel)
 {
   write32(os, image->id());
   write8(os, image->pixelFormat());    // Pixel format
@@ -57,6 +58,11 @@ void write_image(std::ostream& os, const Image* image)
     int total_output_bytes = 0;
 
     for (int y=0; y<image->height(); y++) {
+      if (cancel && cancel->isCanceled()) {
+        deflateEnd(&zstream);
+        return false;
+      }
+
       zstream.next_in = (Bytef*)image->getPixelAddress(0, y);
       zstream.avail_in = rowSize;
       int flush = (y == image->height()-1 ? Z_FINISH: Z_NO_FLUSH);
@@ -90,6 +96,7 @@ void write_image(std::ostream& os, const Image* image)
     os.seekp(bak);
   }
 #endif
+  return true;
 }
 
 Image* read_image(std::istream& is, bool setId)
