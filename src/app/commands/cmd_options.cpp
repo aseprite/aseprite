@@ -252,7 +252,7 @@ public:
 
     std::string warnings;
 
-    int newPeriod = base::convert_to<int>(dataRecoveryPeriod()->getValue());
+    double newPeriod = base::convert_to<double>(dataRecoveryPeriod()->getValue());
     if (enableDataRecovery()->isSelected() != m_pref.general.dataRecovery() ||
         newPeriod != m_pref.general.dataRecoveryPeriod()) {
       m_pref.general.dataRecovery(enableDataRecovery()->isSelected());

@@ -43,6 +43,9 @@
           <hbox>
             <check text="Automatically save recovery data every" id="enable_data_recovery" tooltip="With this option you can recover your documents&#10;if the program finalizes unexpectedly." />
             <combobox id="data_recovery_period">
+              <listitem text="10 seconds" value="0.33" />
+              <listitem text="30 seconds" value="0.5" />
+              <listitem text="1 Minutes" value="1" />
               <listitem text="2 Minutes" value="2" />
               <listitem text="5 Minutes" value="5" />
               <listitem text="10 Minutes" value="10" />
