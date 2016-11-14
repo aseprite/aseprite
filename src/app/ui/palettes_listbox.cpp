@@ -10,14 +10,19 @@
 
 #include "app/ui/palettes_listbox.h"
 
+#include "app/document.h"
 #include "app/modules/palettes.h"
 #include "app/res/palette_resource.h"
 #include "app/res/palettes_loader_delegate.h"
+#include "app/ui/document_view.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/launcher.h"
 #include "doc/palette.h"
+#include "doc/sprite.h"
 #include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
@@ -128,9 +133,22 @@ void PalettesListBox::onResourceChange(Resource* resource)
   PalChange(palette);
 }
 
-void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Resource* resource)
+void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
 {
   doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
+  auto tick = SkinTheme::instance()->parts.checkSelected()->bitmap(0);
+
+  // Draw tick (to say "this palette matches the active sprite
+  // palette").
+  auto view = UIContext::instance()->activeView();
+  if (view && view->document()) {
+    auto docPal = view->document()->sprite()->palette(view->editor()->frame());
+    if (docPal && *docPal == *palette)
+      g->drawRgbaSurface(tick, bounds.x, bounds.y+bounds.h/2-tick->height()/2);
+  }
+
+  bounds.x += tick->width();
+  bounds.w -= tick->width();
 
   gfx::Rect box(
     bounds.x, bounds.y+bounds.h-6*guiscale(),

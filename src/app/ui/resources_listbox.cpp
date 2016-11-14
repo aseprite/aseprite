@@ -67,7 +67,7 @@ void ResourceListItem::onPaint(PaintEvent& ev)
 
   g->drawString(text(), fgcolor, gfx::ColorNone,
                 gfx::Point(
-                  bounds.x + guiscale()*2,
+                  bounds.x + 2*guiscale(),
                   bounds.y + bounds.h/2 - g->measureUIString(text()).h/2));
 }
 
@@ -124,7 +124,7 @@ Resource* ResourcesListBox::selectedResource()
     return NULL;
 }
 
-void ResourcesListBox::paintResource(Graphics* g, const gfx::Rect& bounds, Resource* resource)
+void ResourcesListBox::paintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
 {
   onPaintResource(g, bounds, resource);
 }
