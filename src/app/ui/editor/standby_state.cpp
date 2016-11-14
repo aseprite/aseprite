@@ -226,7 +226,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           MovingCelState* newState = new MovingCelState(editor, msg);
           editor->setState(EditorStatePtr(newState));
         }
-        catch (const LockedDocumentException& ex) {
+        catch (const LockedDocumentException&) {
           // TODO break the background task that is locking this sprite
           StatusBar::instance()->showTip(1000,
             "Sprite is used by a backup/data recovery task");
