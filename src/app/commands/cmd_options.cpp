@@ -158,9 +158,9 @@ public:
       showScrollbars()->setSelected(true);
 
     // Scope
-    gridScope()->addItem("Global");
+    gridScope()->addItem("New Documents");
     if (context->activeDocument()) {
-      gridScope()->addItem("Current Document");
+      gridScope()->addItem("Active Document");
       gridScope()->setSelectedItemIndex(1);
       gridScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeGridScope, this));
     }
