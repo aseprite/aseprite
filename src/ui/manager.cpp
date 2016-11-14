@@ -986,7 +986,7 @@ void Manager::dirtyRect(const gfx::Rect& bounds)
   m_dirtyRegion.createUnion(m_dirtyRegion, gfx::Region(bounds));
 }
 
-/* configures the window for begin the loop */
+// Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {
   // Free all widgets of special states.
@@ -1006,6 +1006,12 @@ void Manager::_openWindow(Window* window)
 
   // Update the new windows list to show.
   new_windows.push_back(window);
+
+  // Update mouse widget (as it can be a widget below the
+  // recently opened window).
+  Widget* widget = pick(ui::get_mouse_position());
+  if (widget)
+    setMouse(widget);
 }
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
