@@ -1256,7 +1256,7 @@ void Manager::pumpQueue()
 
 #ifdef REPORT_EVENTS
       {
-        static char *msg_name[] = {
+        static const char* msg_name[] = {
           "kOpenMessage",
           "kCloseMessage",
           "kCloseDisplayMessage",
