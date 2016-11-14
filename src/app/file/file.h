@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -69,6 +69,7 @@ namespace app {
     bool isOneFrame() const { return m_oneframe; }
 
     const std::string& filename() const { return m_filename; }
+    const std::vector<std::string>& filenames() const { return m_seq.filename_list; }
     Context* context() const { return m_context; }
     Document* document() const { return m_document; }
     Document* releaseDocument() {

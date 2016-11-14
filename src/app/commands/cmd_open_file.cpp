@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include "app/commands/cmd_open_file.h"
+
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -31,20 +33,6 @@
 #include <cstdio>
 
 namespace app {
-
-class OpenFileCommand : public Command {
-public:
-  OpenFileCommand();
-  Command* clone() const override { return new OpenFileCommand(*this); }
-
-protected:
-  void onLoadParams(const Params& params) override;
-  void onExecute(Context* context) override;
-
-private:
-  std::string m_filename;
-  std::string m_folder;
-};
 
 class OpenFileJob : public Job, public IFileOpProgress
 {
@@ -104,6 +92,8 @@ void OpenFileCommand::onExecute(Context* context)
 {
   Console console;
 
+  m_usedFiles.clear();
+
   // interactive
   if (context->isUIAvailable() && m_filename.empty()) {
     std::string exts = get_readable_extensions();
@@ -129,6 +119,11 @@ void OpenFileCommand::onExecute(Context* context)
         unrecent = true;
       }
       else {
+        if (fop->isSequence())
+          m_usedFiles = fop->filenames();
+        else
+          m_usedFiles.push_back(fop->filename());
+
         OpenFileJob task(fop);
         task.showProgressWindow();
 
