@@ -34,6 +34,7 @@ PalettePopup::PalettePopup()
 {
   setAutoRemap(false);
   setBorder(gfx::Border(4*guiscale()));
+  setEnterBehavior(EnterBehavior::DoNothingOnEnter);
 
   addChild(m_popup);
 
@@ -76,6 +77,8 @@ void PalettePopup::onLoadPal()
     CommandsModule::instance()->getCommandByName(CommandId::SetPalette));
   cmd->setPalette(palette);
   UIContext::instance()->executeCommand(cmd);
+
+  m_paletteListBox.requestFocus();
 }
 
 void PalettePopup::onOpenFolder()
