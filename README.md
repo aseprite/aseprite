@@ -102,8 +102,7 @@ This program is distributed under three different licenses:
    (e.g. [laf](https://github.com/aseprite/laf),
    [clip](https://github.com/aseprite/clip),
    [she](https://github.com/aseprite/aseprite/tree/master/src/she),
-   [gfx](https://github.com/aseprite/gfx),
-   [ui](https://github.com/aseprite/ui), etc.).
+   [gfx](src/gfx), [ui](src/ui), etc.).
 2. You can request a special
    [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license)
    in case you are a teacher in an educational institution and want to
