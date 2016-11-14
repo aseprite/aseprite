@@ -19,9 +19,18 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
+#include <atomic>
+
 static const int kMonitoringPeriod = 100;
+static std::atomic<int> g_runningJobs(0);
 
 namespace app {
+
+// static
+int Job::runningJobs()
+{
+  return g_runningJobs;
+}
 
 Job::Job(const char* jobName)
 {
@@ -60,6 +69,7 @@ Job::~Job()
 void Job::startJob()
 {
   m_thread = new base::thread(&Job::thread_proc, this);
+  ++g_runningJobs;
 
   if (m_alert_window) {
     m_alert_window->openWindowInForeground();
@@ -93,7 +103,9 @@ void Job::waitJob()
   if (m_thread) {
     m_thread->join();
     delete m_thread;
-    m_thread = NULL;
+    m_thread = nullptr;
+
+    --g_runningJobs;
   }
 }
 

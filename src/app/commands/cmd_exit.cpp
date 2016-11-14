@@ -13,6 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/document.h"
+#include "app/job.h"
 #include "app/ui/main_window.h"
 #include "ui/alert.h"
 
@@ -36,6 +37,11 @@ ExitCommand::ExitCommand()
 
 void ExitCommand::onExecute(Context* ctx)
 {
+  // Ignore ExitCommand when we are saving documents or doing a
+  // background task
+  if (Job::runningJobs() > 0)
+    return;
+
   if (ctx->hasModifiedDocuments()) {
     Command* closeAll = CommandsModule::instance()->getCommandByName(CommandId::CloseAllFiles);
     Params params;
