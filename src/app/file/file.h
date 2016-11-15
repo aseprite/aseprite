@@ -20,8 +20,9 @@
 
 #define FILE_LOAD_SEQUENCE_NONE         0x00000001
 #define FILE_LOAD_SEQUENCE_ASK          0x00000002
-#define FILE_LOAD_SEQUENCE_YES          0x00000004
-#define FILE_LOAD_ONE_FRAME             0x00000008
+#define FILE_LOAD_SEQUENCE_ASK_CHECKBOX 0x00000004
+#define FILE_LOAD_SEQUENCE_YES          0x00000008
+#define FILE_LOAD_ONE_FRAME             0x00000010
 
 namespace doc {
   class Document;
@@ -50,14 +51,18 @@ namespace app {
     FileOpSave
   } FileOpType;
 
-  class IFileOpProgress
-  {
+  class IFileOpProgress {
   public:
     virtual ~IFileOpProgress() { }
     virtual void ackFileOpProgress(double progress) = 0;
   };
 
   // Structure to load & save files.
+  //
+  // TODO This class do to many things. There should be a previous
+  // instance (class) to verify what the user want to do with the
+  // sequence of files, and the result of that operation should be the
+  // input of this one.
   class FileOp {
   public:
     static FileOp* createLoadDocumentOperation(Context* context, const char* filename, int flags);
@@ -107,6 +112,9 @@ namespace app {
     void sequenceSetHasAlpha(bool hasAlpha) {
       m_seq.has_alpha = hasAlpha;
     }
+    int sequenceFlags() const {
+      return m_seq.flags;
+    }
 
     const std::string& error() const { return m_error; }
     void setError(const char *error, ...);
@@ -152,6 +160,8 @@ namespace app {
       LayerImage* layer;
       Cel* last_cel;
       base::SharedPtr<FormatOptions> format_options;
+      // Flags after the user choose what to do with the sequence.
+      int flags;
     } m_seq;
 
     void prepareForSequence();

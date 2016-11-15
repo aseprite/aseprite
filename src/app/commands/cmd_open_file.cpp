@@ -34,8 +34,7 @@
 
 namespace app {
 
-class OpenFileJob : public Job, public IFileOpProgress
-{
+class OpenFileJob : public Job, public IFileOpProgress {
 public:
   OpenFileJob(FileOp* fop)
     : Job("Loading file")
@@ -79,6 +78,8 @@ OpenFileCommand::OpenFileCommand()
   : Command("OpenFile",
             "Open Sprite",
             CmdRecordableFlag)
+  , m_repeatCheckbox(false)
+  , m_seqDecision(SequenceDecision::Ask)
 {
 }
 
@@ -86,6 +87,7 @@ void OpenFileCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_folder = params.get("folder"); // Initial folder
+  m_repeatCheckbox = (params.get("repeat_checkbox") == "true");
 }
 
 void OpenFileCommand::onExecute(Context* context)
@@ -108,9 +110,23 @@ void OpenFileCommand::onExecute(Context* context)
   }
 
   if (!m_filename.empty()) {
+    int flags = (m_repeatCheckbox ? FILE_LOAD_SEQUENCE_ASK_CHECKBOX: 0);
+
+    switch (m_seqDecision) {
+      case SequenceDecision::Ask:
+        flags |= FILE_LOAD_SEQUENCE_ASK;
+        break;
+      case SequenceDecision::Agree:
+        flags |= FILE_LOAD_SEQUENCE_YES;
+        break;
+      case SequenceDecision::Skip:
+        flags |= FILE_LOAD_SEQUENCE_NONE;
+        break;
+    }
+
     base::UniquePtr<FileOp> fop(
       FileOp::createLoadDocumentOperation(
-        context, m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK));
+        context, m_filename.c_str(), flags));
     bool unrecent = false;
 
     if (fop) {
@@ -119,10 +135,20 @@ void OpenFileCommand::onExecute(Context* context)
         unrecent = true;
       }
       else {
-        if (fop->isSequence())
+        if (fop->isSequence()) {
+
+          if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_YES) {
+            m_seqDecision = SequenceDecision::Agree;
+          }
+          else if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_NONE) {
+            m_seqDecision = SequenceDecision::Skip;
+          }
+
           m_usedFiles = fop->filenames();
-        else
+        }
+        else {
           m_usedFiles.push_back(fop->filename());
+        }
 
         OpenFileJob task(fop);
         task.showProgressWindow();

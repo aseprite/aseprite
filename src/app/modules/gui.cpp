@@ -348,6 +348,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       {
         DropFilesMessage::Files files = static_cast<DropFilesMessage*>(msg)->files();
         UIContext* ctx = UIContext::instance();
+        OpenFileCommand cmd;
 
         while (!files.empty()) {
           auto fn = files.front();
@@ -365,9 +366,9 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           }
           // Load the file
           else {
-            OpenFileCommand cmd;
             Params params;
             params.set("filename", fn.c_str());
+            params.set("repeat_checkbox", "true");
             ctx->executeCommand(&cmd, params);
 
             // Remove all used file names from the "dropped files"

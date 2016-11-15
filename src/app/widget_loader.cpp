@@ -296,6 +296,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "listbox") {
     if (!widget)
       widget = new ListBox();
+
+    bool multiselect = bool_attr_is_true(elem, "multiselect");
+    if (multiselect)
+      static_cast<ListBox*>(widget)->setMultiselect(multiselect);
   }
   else if (elem_name == "listitem") {
     ListItem* listitem;

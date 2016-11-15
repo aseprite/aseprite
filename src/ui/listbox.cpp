@@ -19,15 +19,25 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
+#include <algorithm>
+
 namespace ui {
 
 using namespace gfx;
 
 ListBox::ListBox()
   : Widget(kListBoxWidget)
+  , m_multiselect(false)
+  , m_firstSelectedIndex(-1)
+  , m_lastSelectedIndex(-1)
 {
   setFocusStop(true);
   initTheme();
+}
+
+void ListBox::setMultiselect(const bool multiselect)
+{
+  m_multiselect = multiselect;
 }
 
 Widget* ListBox::getSelectedChild()
@@ -53,39 +63,87 @@ int ListBox::getSelectedIndex()
   return -1;
 }
 
-void ListBox::selectChild(Widget* item)
+int ListBox::getChildIndex(Widget* item)
 {
-  for (auto child : children()) {
-    if (child->isSelected()) {
-      if (item && child == item)
-        return;
+  const WidgetsList& children = this->children();
+  auto it = std::find(children.begin(), children.end(), item);
+  if (it != children.end())
+    return it - children.begin();
+  else
+    return -1;
+}
 
-      child->setSelected(false);
+Widget* ListBox::getChildByIndex(int index)
+{
+  const WidgetsList& children = this->children();
+  if (index >= 0 && index < int(children.size()))
+    return children[index];
+  else
+    return nullptr;
+}
+
+void ListBox::selectChild(Widget* item, Message* msg)
+{
+  int itemIndex = getChildIndex(item);
+  m_lastSelectedIndex = itemIndex;
+
+  if (m_multiselect) {
+    // Save current state of all children when we start selecting
+    if (msg == nullptr ||
+        msg->type() == kMouseDownMessage ||
+        msg->type() == kKeyDownMessage) {
+      m_firstSelectedIndex = itemIndex;
+      m_states.resize(children().size());
+
+      int i = 0;
+      for (auto child : children()) {
+        bool state = child->isSelected();
+        if (msg && !msg->ctrlPressed() && !msg->cmdPressed())
+          state = false;
+        m_states[i] = state;
+        ++i;
+      }
     }
   }
 
-  if (item) {
-    item->setSelected(true);
-    makeChildVisible(item);
+  int i = 0;
+  for (auto child : children()) {
+    bool newState;
+
+    if (m_multiselect) {
+      newState = m_states[i];
+
+      if (i >= MIN(itemIndex, m_firstSelectedIndex) &&
+          i <= MAX(itemIndex, m_firstSelectedIndex)) {
+        newState = !newState;
+      }
+    }
+    else {
+      newState = (child == item);
+    }
+
+    if (child->isSelected() != newState)
+      child->setSelected(newState);
+
+    ++i;
   }
+
+  if (item)
+    makeChildVisible(item);
 
   onChange();
 }
 
-void ListBox::selectIndex(int index)
+void ListBox::selectIndex(int index, Message* msg)
 {
-  const WidgetsList& children = this->children();
-  if (index < 0 || index >= (int)children.size())
-    return;
-
-  ListItem* child = static_cast<ListItem*>(children[index]);
-  ASSERT(child);
-  selectChild(child);
+  Widget* child = getChildByIndex(index);
+  if (child)
+    selectChild(child, msg);
 }
 
-std::size_t ListBox::getItemsCount() const
+int ListBox::getItemsCount() const
 {
-  return children().size();
+  return int(children().size());
 }
 
 void ListBox::makeChildVisible(Widget* child)
@@ -152,21 +210,20 @@ bool ListBox::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        int select = getSelectedIndex();
         View* view = View::getView(this);
         bool pick_item = true;
 
-        if (view) {
+        if (view && m_lastSelectedIndex >= 0) {
           gfx::Rect vp = view->viewportBounds();
 
           if (mousePos.y < vp.y) {
             int num = MAX(1, (vp.y - mousePos.y) / 8);
-            selectIndex(select-num);
+            selectIndex(MID(0, m_lastSelectedIndex-num, getItemsCount()-1), msg);
             pick_item = false;
           }
           else if (mousePos.y >= vp.y + vp.h) {
             int num = MAX(1, (mousePos.y - (vp.y+vp.h-1)) / 8);
-            selectIndex(select+num);
+            selectIndex(MID(0, m_lastSelectedIndex+num, getItemsCount()-1), msg);
             pick_item = false;
           }
         }
@@ -181,10 +238,11 @@ bool ListBox::onProcessMessage(Message* msg)
             picked = pick(mousePos);
           }
 
-          /* if the picked widget is a child of the list, select it */
+          // If the picked widget is a child of the list, select it
           if (picked && hasChild(picked)) {
-            if (ListItem* pickedItem = dynamic_cast<ListItem*>(picked))
-              selectChild(pickedItem);
+            if (ListItem* pickedItem = dynamic_cast<ListItem*>(picked)) {
+              selectChild(pickedItem, msg);
+            }
           }
         }
 
@@ -270,7 +328,7 @@ bool ListBox::onProcessMessage(Message* msg)
             return Widget::onProcessMessage(msg);
         }
 
-        selectIndex(MID(0, select, bottom));
+        selectIndex(MID(0, select, bottom), msg);
         return true;
       }
       break;

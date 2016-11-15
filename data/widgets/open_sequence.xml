@@ -1,0 +1,22 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2016 by David Capello -->
+<gui>
+<window text="Notice" id="open_sequence">
+  <vbox>
+    <label text="Do you want to load the following files as an animation?" />
+    <view expansive="true" id="view" minwidth="128" minheight="64">
+      <listbox id="files" multiselect="true" />
+    </view>
+    <separator horizontal="true" />
+    <check id="repeat" text="Do the same for other files" />
+    <hbox>
+      <boxfiller />
+      <hbox homogeneous="true">
+	<button id="agree" text="&amp;Agree" closewindow="true" minwidth="60" />
+	<button id="skip" text="&amp;Skip" closewindow="true" minwidth="60" magnet="true" />
+      </hbox>
+      <boxfiller />
+    </hbox>
+  </vbox>
+</window>
+</gui>
