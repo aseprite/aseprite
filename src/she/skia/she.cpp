@@ -51,9 +51,6 @@ void clear_keyboard_buffer()
 extern int app_main(int argc, char* argv[]);
 
 #if _WIN32
-extern int __argc;
-extern wchar_t** __wargv;
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                     PWSTR lpCmdLine, int nCmdShow) {
   int argc = __argc;
