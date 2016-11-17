@@ -135,6 +135,15 @@ public:
     return loadSurface(filename);
   }
 
+  void setTranslateDeadKeys(bool state) override {
+    if (m_defaultDisplay)
+      m_defaultDisplay->setTranslateDeadKeys(state);
+
+#ifdef _WIN32
+    g_queue.setTranslateDeadKeys(state);
+#endif
+  }
+
 private:
   SkiaDisplay* m_defaultDisplay;
   bool m_gpuAcceleration;

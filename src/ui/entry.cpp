@@ -14,6 +14,7 @@
 #include "base/string.h"
 #include "clip/clip.h"
 #include "she/font.h"
+#include "she/system.h"
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -41,6 +42,7 @@ Entry::Entry(std::size_t maxsize, const char* format, ...)
   , m_password(false)
   , m_recent_focused(false)
   , m_lock_selection(false)
+  , m_translate_dead_keys(true)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -165,6 +167,11 @@ void Entry::setSuffix(const std::string& suffix)
   invalidate();
 }
 
+void Entry::setTranslateDeadKeys(bool state)
+{
+  m_translate_dead_keys = state;
+}
+
 void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
                               int* selbeg, int* selend)
 {
@@ -213,6 +220,10 @@ bool Entry::onProcessMessage(Message* msg)
         selectAllText();
         m_recent_focused = true;
       }
+
+      // Start processing dead keys
+      if (m_translate_dead_keys)
+        she::instance()->setTranslateDeadKeys(true);
       break;
 
     case kFocusLeaveMessage:
@@ -224,6 +235,10 @@ bool Entry::onProcessMessage(Message* msg)
         deselectText();
 
       m_recent_focused = false;
+
+      // Stop processing dead keys
+      if (m_translate_dead_keys)
+        she::instance()->setTranslateDeadKeys(false);
       break;
 
     case kKeyDownMessage:
@@ -300,20 +315,24 @@ bool Entry::onProcessMessage(Message* msg)
               }
             }
             else if (manager()->isFocusMovementKey(msg)) {
-              break;
-            }
-            else if (keymsg->unicodeChar() >= 32) {
-              // Ctrl and Alt must be unpressed to insert a character
-              // in the text-field.
-              if ((msg->modifiers() & (kKeyCtrlModifier | kKeyAltModifier)) == 0) {
-                cmd = EntryCmd::InsertChar;
-              }
+              return Widget::onProcessMessage(msg);
             }
             break;
         }
 
-        if (cmd == EntryCmd::NoOp)
+        if (cmd == EntryCmd::NoOp) {
+          if (keymsg->unicodeChar() >= 32) {
+            executeCmd(EntryCmd::InsertChar, keymsg->unicodeChar(),
+                       (msg->shiftPressed()) ? true: false);
+
+            // Select dead-key
+            if (keymsg->isDeadKey()) {
+              selectText(m_caret-1, m_caret);
+            }
+            return true;
+          }
           break;
+        }
 
         executeCmd(cmd, keymsg->unicodeChar(),
                    (msg->shiftPressed()) ? true: false);

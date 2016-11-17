@@ -56,6 +56,7 @@ namespace she {
               m_scancode(kKeyNil),
               m_modifiers(kKeyUninitializedModifier),
               m_unicodeChar(0),
+              m_isDead(false),
               m_repeat(0),
               m_preciseWheel(false),
               m_pointerType(PointerType::Unknown),
@@ -70,6 +71,7 @@ namespace she {
     KeyScancode scancode() const { return m_scancode; }
     KeyModifiers modifiers() const { return m_modifiers; }
     int unicodeChar() const { return m_unicodeChar; }
+    bool isDeadKey() const { return m_isDead; }
     int repeat() const { return m_repeat; }
     gfx::Point position() const { return m_position; }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
@@ -92,6 +94,7 @@ namespace she {
     void setScancode(KeyScancode scancode) { m_scancode = scancode; }
     void setModifiers(KeyModifiers modifiers) { m_modifiers = modifiers; }
     void setUnicodeChar(int unicodeChar) { m_unicodeChar = unicodeChar; }
+    void setDeadKey(bool state) { m_isDead = state; }
     void setRepeat(int repeat) { m_repeat = repeat; }
     void setPosition(const gfx::Point& pos) { m_position = pos; }
     void setWheelDelta(const gfx::Point& delta) { m_wheelDelta = delta; }
@@ -108,6 +111,7 @@ namespace she {
     KeyScancode m_scancode;
     KeyModifiers m_modifiers;
     int m_unicodeChar;
+    bool m_isDead;
     int m_repeat; // repeat=0 means the first time the key is pressed
     gfx::Point m_position;
     gfx::Point m_wheelDelta;

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 #include "ui/message.h"
 
 #include "base/memory.h"
+#include "she/system.h"
 #include "ui/manager.h"
 #include "ui/widget.h"
 
@@ -29,6 +30,7 @@ Message::Message(MessageType type, KeyModifiers modifiers)
       ((she::is_key_pressed(kKeyLShift) || she::is_key_pressed(kKeyRShift) ? kKeyShiftModifier: 0) |
        (she::is_key_pressed(kKeyLControl) || she::is_key_pressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
        (she::is_key_pressed(kKeyAlt) ? kKeyAltModifier: 0) |
+       (she::is_key_pressed(kKeyAltGr) ? (kKeyCtrlModifier | kKeyAltModifier): 0) |
        (she::is_key_pressed(kKeyCommand) ? kKeyCmdModifier: 0) |
        (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0) |
        (she::is_key_pressed(kKeyLWin) || she::is_key_pressed(kKeyRWin) ? kKeyWinModifier: 0));
@@ -84,6 +86,7 @@ KeyMessage::KeyMessage(MessageType type,
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
   , m_repeat(repeat)
+  , m_isDead(false)
   , m_propagate_to_children(false)
   , m_propagate_to_parent(true)
 {

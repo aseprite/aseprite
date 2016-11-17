@@ -74,6 +74,8 @@ namespace ui {
     KeyScancode scancode() const { return m_scancode; }
     int unicodeChar() const { return m_unicodeChar; }
     int repeat() const { return m_repeat; }
+    bool isDeadKey() const { return m_isDead; }
+    void setDeadKey(bool state) { m_isDead = state; }
     bool propagateToChildren() const { return m_propagate_to_children; }
     bool propagateToParent() const { return m_propagate_to_parent; }
     void setPropagateToChildren(bool flag) { m_propagate_to_children = flag; }
@@ -83,8 +85,9 @@ namespace ui {
     KeyScancode m_scancode;
     int m_unicodeChar;
     int m_repeat; // repeat=0 means the first time the key is pressed
-    bool m_propagate_to_children : 1;
-    bool m_propagate_to_parent : 1;
+    bool m_isDead;
+    bool m_propagate_to_children;
+    bool m_propagate_to_parent;
   };
 
   class PaintMessage : public Message {

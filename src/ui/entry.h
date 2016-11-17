@@ -37,6 +37,8 @@ namespace ui {
     void setSuffix(const std::string& suffix);
     const std::string& getSuffix() { return m_suffix; }
 
+    void setTranslateDeadKeys(bool state);
+
     // for themes
     void getEntryThemeInfo(int* scroll, int* caret, int* state,
                            int* selbeg, int* selend);
@@ -95,6 +97,7 @@ namespace ui {
     bool m_password;
     bool m_recent_focused;
     bool m_lock_selection;
+    bool m_translate_dead_keys;
     std::string m_suffix;
   };
 

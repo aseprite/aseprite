@@ -317,6 +317,10 @@ void Manager::generateMessagesFromSheEvents()
           sheEvent.modifiers(),
           sheEvent.unicodeChar(),
           sheEvent.repeat());
+
+        if (sheEvent.isDeadKey())
+          static_cast<KeyMessage*>(msg)->setDeadKey(true);
+
         broadcastKeyMsg(msg);
         enqueueMessage(msg);
         break;

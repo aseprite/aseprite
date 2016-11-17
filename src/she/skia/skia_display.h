@@ -60,6 +60,8 @@ public:
   std::string getLayout() override;
   void setLayout(const std::string& layout) override;
 
+  void setTranslateDeadKeys(bool state);
+
   // Returns the HWND on Windows.
   DisplayHandle nativeHandle() override;
 

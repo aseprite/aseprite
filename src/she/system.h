@@ -49,6 +49,11 @@ namespace she {
     virtual Surface* loadRgbaSurface(const char* filename) = 0;
     virtual Font* loadSpriteSheetFont(const char* filename, int scale = 1) = 0;
     virtual Font* loadTrueTypeFont(const char* filename, int height) = 0;
+
+    // Indicates if you want to use dead keys or not. By default it's
+    // false, which behaves as regular shortcuts. You should set this
+    // to true when you're inside a text field in your app.
+    virtual void setTranslateDeadKeys(bool state) = 0;
   };
 
   System* create_system();

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013, 2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -156,9 +156,17 @@ namespace she {
     kKeyScancodes    = 127
   };
 
-  // Deprecated API, use modifiers in she::Event
-  // TODO mark these functions as deprecated
+  // TODO move these functions to she::System
+
+  // Returns true if the the given scancode key is pressed/actived.
   bool is_key_pressed(KeyScancode scancode);
+
+  // Returns the latest unicode character that activated the given
+  // scancode.
+  int get_unicode_from_scancode(KeyScancode scancode);
+
+  // Clears the keyboard buffer (used only in the Allegro port).
+  // TODO (deprecated)
   void clear_keyboard_buffer();
 
 } // namespace she

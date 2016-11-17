@@ -383,6 +383,8 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage: {
+      auto keymsg = static_cast<KeyMessage*>(msg);
+
 #ifdef _DEBUG
       // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
       if (msg->ctrlPressed() &&
@@ -396,7 +398,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       // Ctrl+Shift+R recover active sprite from the backup store
       if (msg->ctrlPressed() &&
           msg->shiftPressed() &&
-          static_cast<KeyMessage*>(msg)->scancode() == kKeyR &&
+          keymsg->scancode() == kKeyR &&
           App::instance()->dataRecovery() &&
           App::instance()->dataRecovery()->activeSession() &&
           current_editor &&

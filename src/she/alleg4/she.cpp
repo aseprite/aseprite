@@ -206,6 +206,10 @@ public:
     return sur;
   }
 
+  void setTranslateDeadKeys(bool state) override {
+    // Do nothing
+  }
+
 };
 
 System* create_system() {
@@ -245,6 +249,14 @@ bool is_key_pressed(KeyScancode scancode)
   }
 #endif
   return key[scancode] ? true: false;
+}
+
+int get_unicode_from_scancode(KeyScancode scancode)
+{
+  if (is_key_pressed(scancode))
+    return scancode_to_ascii(scancode);
+  else
+    return false;
 }
 
 void clear_keyboard_buffer()

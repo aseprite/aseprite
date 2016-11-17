@@ -485,9 +485,15 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                   msg->modifiers() == kKeyAltModifier)) ||
             ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
-          // TODO use scancode instead of unicodeChar
-          selected = check_for_letter(menu,
-            static_cast<KeyMessage*>(msg)->unicodeChar());
+          int unicode = static_cast<KeyMessage*>(msg)->unicodeChar();
+          selected = check_for_letter(menu, unicode);
+          if (!selected) {
+            KeyScancode scancode = static_cast<KeyMessage*>(msg)->scancode();
+            if (scancode >= kKeyA && scancode <= kKeyZ)
+              selected = check_for_letter(menu, 'a' + scancode - kKeyA);
+            else if (scancode >= kKey0 && scancode <= kKey9)
+              selected = check_for_letter(menu, '0' + scancode - kKey0);
+          }
 
           if (selected) {
             menu->highlightItem(selected, true, true, true);
@@ -1196,7 +1202,7 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
     int mnemonic = menuitem->mnemonicChar();
-    if (mnemonic > 0 && mnemonic == tolower(ascii))
+    if (mnemonic > 0 && mnemonic == std::tolower(ascii))
       return menuitem;
   }
   return NULL;

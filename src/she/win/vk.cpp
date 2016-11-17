@@ -8,9 +8,7 @@
 #include "config.h"
 #endif
 
-#include "she/keys.h"
-
-#include <windows.h>
+#include "she/win/vk.h"
 
 namespace she {
 
@@ -337,6 +335,8 @@ static int scancode_to_win32vk(KeyScancode scancode)
   return keymap[scancode];
 }
 
+// TODO Move these functions to she::System class
+
 bool is_key_pressed(KeyScancode scancode)
 {
   int vk = scancode_to_win32vk(scancode);
@@ -344,6 +344,41 @@ bool is_key_pressed(KeyScancode scancode)
     return (GetAsyncKeyState(vk) & 0x8000 ? true: false);
   else
     return false;
+}
+
+int get_unicode_from_scancode(KeyScancode scancode)
+{
+  int vk = scancode_to_win32vk(scancode);
+  if (vk && (GetAsyncKeyState(vk) & 0x8000 ? true: false)) {
+    VkToUnicode tu;
+    if (tu) {
+      tu.toUnicode(vk, 0);
+      if (tu.size() > 0)
+        return tu[0];
+    }
+
+#if 0
+    BYTE keystate[256];
+    if (GetKeyboardState(&keystate[0])) {
+      WCHAR buffer[8];
+      int charsInBuffer = ToUnicode(vk, scancode, keystate, buffer,
+                                    sizeof(buffer)/sizeof(buffer[0]), 0);
+
+      // ToUnicode() returns -1 if there is dead-key waiting
+      if (charsInBuffer == -1) {
+        return buffer[0];
+      }
+      // ToUnicode returns several characters inside the buffer in
+      // case that a dead-key wasn't combined with the next pressed
+      // character.
+      else if (charsInBuffer > 0) {
+        // return buffer[charsInBuffer-1];
+        return buffer[0];
+      }
+    }
+#endif
+  }
+  return 0;
 }
 
 } // namespace she

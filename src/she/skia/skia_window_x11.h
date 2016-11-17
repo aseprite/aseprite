@@ -44,6 +44,10 @@ public:
   std::string getLayout() { return ""; }
   void setLayout(const std::string& layout) { }
 
+  void setTranslateDeadKeys(bool state) {
+    // Do nothing
+  }
+
 private:
   void onExpose() override;
 
