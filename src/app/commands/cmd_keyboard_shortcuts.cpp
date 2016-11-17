@@ -385,6 +385,10 @@ public:
     }
   }
 
+  ~KeyboardShortcutsWindow() {
+    deleteAllKeyItems();
+  }
+
   void restoreKeys() {
     for (KeyItem* keyItem : m_allKeyItems) {
       keyItem->restoreKeys();
@@ -393,21 +397,12 @@ public:
 
 private:
   void deleteAllKeyItems() {
-    while (searchList()->lastChild())
-      searchList()->removeChild(searchList()->lastChild());
-    while (menus()->lastChild())
-      menus()->removeChild(menus()->lastChild());
-    while (commands()->lastChild())
-      commands()->removeChild(commands()->lastChild());
-    while (tools()->lastChild())
-      tools()->removeChild(tools()->lastChild());
-    while (actions()->lastChild())
-      actions()->removeChild(actions()->lastChild());
-
-    for (KeyItem* keyItem : m_allKeyItems) {
-      delete keyItem;
-    }
-    m_allKeyItems.clear();
+    deleteList(searchList());
+    deleteList(menus());
+    deleteList(commands());
+    deleteList(tools());
+    deleteList(actions());
+    ASSERT(m_allKeyItems.empty());
   }
 
   void fillAllLists() {
@@ -472,9 +467,21 @@ private:
     updateViews();
   }
 
+  void deleteList(Widget* listbox) {
+    while (listbox->lastChild()) {
+      Widget* item = listbox->lastChild();
+      listbox->removeChild(item);
+
+      auto it = std::find(m_allKeyItems.begin(), m_allKeyItems.end(), item);
+      if (it != m_allKeyItems.end())
+        m_allKeyItems.erase(it);
+
+      delete item;
+    }
+  }
+
   void fillSearchList(const std::string& search) {
-    while (searchList()->lastChild())
-      searchList()->removeChild(searchList()->lastChild());
+    deleteList(searchList());
 
     std::vector<std::string> parts;
     base::split_string(base::string_to_lower(search), parts, " ");
@@ -508,6 +515,8 @@ private:
               new KeyItem(itemText,
                           keyItem->key(),
                           keyItem->menuitem(), 0);
+
+            m_allKeyItems.push_back(copyItem);
             searchList()->addChild(copyItem);
           }
         }
@@ -590,6 +599,7 @@ private:
           menuItem->text().c_str(),
           menuItem->key(), menuItem, level);
 
+        m_allKeyItems.push_back(keyItem);
         listbox->addChild(keyItem);
 
         if (menuItem->hasSubmenu())
