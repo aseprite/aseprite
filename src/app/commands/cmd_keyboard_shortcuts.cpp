@@ -62,7 +62,7 @@ public:
   KeyItem(const std::string& text, Key* key, AppMenuItem* menuitem, int level)
     : ListItem(text)
     , m_key(key)
-    , m_keyOrig(key ? new Key(*key): NULL)
+    , m_keyOrig(key ? new Key(*key): nullptr)
     , m_menuitem(menuitem)
     , m_level(level)
     , m_hotAccel(-1)
@@ -71,6 +71,10 @@ public:
     border.top(0);
     border.bottom(0);
     setBorder(border);
+  }
+
+  ~KeyItem() {
+    delete m_keyOrig;
   }
 
   Key* key() { return m_key; }
