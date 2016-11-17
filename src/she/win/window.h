@@ -335,18 +335,6 @@ namespace she {
         if (tu.size() != 0)
           tu.toUnicode(VK_SPACE, 0);
       }
-#if 0
-      BYTE keystate[256];
-      if (GetKeyboardState(keystate)) {
-        WCHAR buffer[8];
-        int charsInBuffer =
-          ToUnicode(VK_SPACE, 0, keystate, buffer,
-                    sizeof(buffer)/sizeof(buffer[0]), 0);
-        if (charsInBuffer != 0)
-          ToUnicode(VK_SPACE, 0, keystate, buffer,
-                    sizeof(buffer)/sizeof(buffer[0]), 0);
-      }
-#endif
     }
 
     HWND handle() {
@@ -639,37 +627,6 @@ namespace she {
                 }
               }
             }
-#if 0
-            BYTE keystate[256];
-            if (GetKeyboardState(keystate)) {
-              WCHAR buffer[8];
-
-              // ToUnicode can return several characters inside the
-              // buffer in case that a dead-key wasn't combined with the
-              // next pressed character.
-              int charsInBuffer =
-                ToUnicode(vk, scancode, keystate, buffer,
-                          sizeof(buffer)/sizeof(buffer[0]), 0);
-
-              // ToUnicode() returns -1 if there is dead-key waiting
-              if (charsInBuffer == -1) {
-                // Call again to remove dead-key
-                ToUnicode(vk, scancode, keystate, buffer,
-                          sizeof(buffer)/sizeof(buffer[0]), 0);
-                ev.setUnicodeChar(buffer[0]);
-              }
-              // ToUnicode returns several characters inside the buffer in
-              // case that a dead-key wasn't combined with the next pressed
-              // character.
-              else if (charsInBuffer > 0) {
-                sendMsg = false;
-                for (int i=0; i<charsInBuffer; ++i) {
-                  ev.setUnicodeChar(buffer[i]);
-                  queueEvent(ev);
-                }
-              }
-            }
-#endif
           }
 
           if (sendMsg)

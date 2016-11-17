@@ -356,27 +356,6 @@ int get_unicode_from_scancode(KeyScancode scancode)
       if (tu.size() > 0)
         return tu[0];
     }
-
-#if 0
-    BYTE keystate[256];
-    if (GetKeyboardState(&keystate[0])) {
-      WCHAR buffer[8];
-      int charsInBuffer = ToUnicode(vk, scancode, keystate, buffer,
-                                    sizeof(buffer)/sizeof(buffer[0]), 0);
-
-      // ToUnicode() returns -1 if there is dead-key waiting
-      if (charsInBuffer == -1) {
-        return buffer[0];
-      }
-      // ToUnicode returns several characters inside the buffer in
-      // case that a dead-key wasn't combined with the next pressed
-      // character.
-      else if (charsInBuffer > 0) {
-        // return buffer[charsInBuffer-1];
-        return buffer[0];
-      }
-    }
-#endif
   }
   return 0;
 }
