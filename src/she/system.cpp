@@ -12,12 +12,19 @@
 
 namespace she {
 
+static System* g_system = nullptr;
+
+System* create_system_impl();   // Defined on each back-end
+
+System* create_system()
+{
+  ASSERT(!g_system);
+  return g_system = create_system_impl();
+}
+
 System* instance()
 {
-  static System* sys = nullptr;
-  if (!sys)
-    sys = create_system();
-  return sys;
+  return g_system;
 }
 
 } // namespace she

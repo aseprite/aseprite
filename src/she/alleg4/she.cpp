@@ -233,7 +233,7 @@ public:
 
 };
 
-System* create_system() {
+System* create_system_impl() {
   return new Alleg4System();
 }
 

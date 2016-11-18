@@ -24,7 +24,7 @@
 
 namespace she {
 
-System* create_system() {
+System* create_system_impl() {
   return new SkiaSystem();
 }
 

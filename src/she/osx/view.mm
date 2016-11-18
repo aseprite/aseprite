@@ -20,7 +20,9 @@
 
 #include <Carbon/Carbon.h>      // For VK codes
 
-using namespace she;
+namespace she {
+
+bool osx_is_key_pressed(KeyScancode scancode);
 
 namespace {
 
@@ -74,7 +76,7 @@ KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
   if (nsFlags & NSControlKeyMask) modifiers |= kKeyCtrlModifier;
   if (nsFlags & NSAlternateKeyMask) modifiers |= kKeyAltModifier;
   if (nsFlags & NSCommandKeyMask) modifiers |= kKeyCmdModifier;
-  if (she::instance()->isKeyPressed(kKeySpace)) modifiers |= kKeySpaceModifier;
+  if (osx_is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
   return (KeyModifiers)modifiers;
 }
 
@@ -119,8 +121,6 @@ CFStringRef get_unicode_from_key_code(NSEvent* event,
 
 } // anonymous namespace
 
-namespace she {
-
 bool osx_is_key_pressed(KeyScancode scancode)
 {
   if (scancode >= 0 && scancode < kKeyScancodes)
@@ -138,6 +138,8 @@ int osx_get_unicode_from_scancode(KeyScancode scancode)
 }
 
 } // namespace she
+
+using namespace she;
 
 @implementation OSXView
 

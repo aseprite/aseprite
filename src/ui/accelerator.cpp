@@ -337,6 +337,9 @@ bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int un
 bool Accelerator::isPressed() const
 {
   she::System* sys = she::instance();
+  if (!sys)
+    return false;
+
   KeyModifiers pressedModifiers = sys->keyModifiers();
 
   // Check if this shortcut is only
@@ -358,6 +361,9 @@ bool Accelerator::isPressed() const
 bool Accelerator::isLooselyPressed() const
 {
   she::System* sys = she::instance();
+  if (!sys)
+    return false;
+
   KeyModifiers pressedModifiers = sys->keyModifiers();
 
   if ((m_modifiers & pressedModifiers) != m_modifiers)

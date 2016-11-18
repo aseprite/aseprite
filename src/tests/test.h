@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
   #ifdef TEST_GUI
     {
       // Do not create a she::System, as we don't need it for testing purposes.
-      //she::ScopedHandle<she::System> system(she::instance());
+      //she::ScopedHandle<she::System> system(she::create_system());
       ui::UISystem uiSystem;
       ui::Manager uiManager;
   #endif
