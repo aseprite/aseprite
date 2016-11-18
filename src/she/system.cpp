@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "base/debug.h"
 #include "she/system.h"
 
 namespace she {
