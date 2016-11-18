@@ -314,7 +314,7 @@ bool Entry::onProcessMessage(Message* msg)
                 case kKeyA: cmd = EntryCmd::SelectAll; break;
               }
             }
-            else if (manager()->isFocusMovementKey(msg)) {
+            else if (manager()->isFocusMovementMessage(msg)) {
               return Widget::onProcessMessage(msg);
             }
             break;

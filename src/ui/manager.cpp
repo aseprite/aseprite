@@ -970,10 +970,13 @@ void Manager::removeMessageFilterFor(Widget* widget)
   }
 }
 
-bool Manager::isFocusMovementKey(Message* msg)
+bool Manager::isFocusMovementMessage(Message* msg)
 {
-  switch (static_cast<KeyMessage*>(msg)->scancode()) {
+  if (msg->type() != kKeyDownMessage &&
+      msg->type() != kKeyUpMessage)
+    return false;
 
+  switch (static_cast<KeyMessage*>(msg)->scancode()) {
     case kKeyTab:
     case kKeyLeft:
     case kKeyRight:

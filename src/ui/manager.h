@@ -83,7 +83,7 @@ namespace ui {
 
     LayoutIO* getLayoutIO();
 
-    bool isFocusMovementKey(Message* msg);
+    bool isFocusMovementMessage(Message* msg);
     bool processFocusMovementMessage(Message* msg);
 
     // Returns the invalid region in the screen to being updated with
