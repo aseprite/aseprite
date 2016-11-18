@@ -329,9 +329,8 @@ bool Entry::onProcessMessage(Message* msg)
             if (keymsg->isDeadKey()) {
               selectText(m_caret-1, m_caret);
             }
-            return true;
           }
-          break;
+          return true;
         }
 
         executeCmd(cmd, keymsg->unicodeChar(),
