@@ -75,7 +75,6 @@ static Widget* capture_widget;  // The widget that captures the mouse
 static bool first_time = true;    // true when we don't enter in poll yet
 
 /* keyboard focus movement stuff */
-static bool move_focus(Manager* manager, Message* msg);
 static int count_widgets_accept_focus(Widget* widget);
 static bool childs_accept_focus(Widget* widget, bool first);
 static Widget* next_widget(Widget* widget);
@@ -1113,7 +1112,7 @@ bool Manager::onProcessMessage(Message* msg)
       // Check the focus movement for foreground (non-desktop) windows.
       if (win && win->isForeground()) {
         if (msg->type() == kKeyDownMessage)
-          move_focus(this, msg);
+          processFocusMovementMessage(msg);
         return true;
       }
       else
@@ -1512,7 +1511,7 @@ void Manager::broadcastKeyMsg(Message* msg)
                             Focus Movement
  ***********************************************************************/
 
-static bool move_focus(Manager* manager, Message* msg)
+bool Manager::processFocusMovementMessage(Message* msg)
 {
   int (*cmp)(Widget*, int, int) = NULL;
   Widget* focus = NULL;
@@ -1525,8 +1524,8 @@ static bool move_focus(Manager* manager, Message* msg)
   if (focus_widget) {
     window = focus_widget->window();
   }
-  else if (!manager->children().empty()) {
-    window = manager->getTopWindow();
+  else if (!this->children().empty()) {
+    window = this->getTopWindow();
   }
 
   if (!window)
@@ -1612,7 +1611,7 @@ static bool move_focus(Manager* manager, Message* msg)
     }
 
     if ((focus) && (focus != focus_widget))
-      Manager::getDefault()->setFocus(focus);
+      setFocus(focus);
   }
 
   return ret;

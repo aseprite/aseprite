@@ -84,6 +84,7 @@ namespace ui {
     LayoutIO* getLayoutIO();
 
     bool isFocusMovementKey(Message* msg);
+    bool processFocusMovementMessage(Message* msg);
 
     // Returns the invalid region in the screen to being updated with
     // PaintMessages. This region is cleared when each widget receives
