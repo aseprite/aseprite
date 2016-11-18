@@ -23,21 +23,10 @@ Message::Message(MessageType type, KeyModifiers modifiers)
   : m_type(type)
   , m_used(false)
 {
-  if (modifiers == kKeyUninitializedModifier) {
-    // Get modifiers from the deprecated API
-    // TODO remove this
-    m_modifiers = (KeyModifiers)
-      ((she::is_key_pressed(kKeyLShift) || she::is_key_pressed(kKeyRShift) ? kKeyShiftModifier: 0) |
-       (she::is_key_pressed(kKeyLControl) || she::is_key_pressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
-       (she::is_key_pressed(kKeyAlt) ? kKeyAltModifier: 0) |
-       (she::is_key_pressed(kKeyAltGr) ? (kKeyCtrlModifier | kKeyAltModifier): 0) |
-       (she::is_key_pressed(kKeyCommand) ? kKeyCmdModifier: 0) |
-       (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0) |
-       (she::is_key_pressed(kKeyLWin) || she::is_key_pressed(kKeyRWin) ? kKeyWinModifier: 0));
-  }
-  else {
+  if (modifiers == kKeyUninitializedModifier)
+    m_modifiers = she::instance()->keyModifiers();
+  else
     m_modifiers = modifiers;
-  }
 }
 
 Message::~Message()

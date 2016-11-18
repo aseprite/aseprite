@@ -156,19 +156,6 @@ namespace she {
     kKeyScancodes    = 127
   };
 
-  // TODO move these functions to she::System
-
-  // Returns true if the the given scancode key is pressed/actived.
-  bool is_key_pressed(KeyScancode scancode);
-
-  // Returns the latest unicode character that activated the given
-  // scancode.
-  int get_unicode_from_scancode(KeyScancode scancode);
-
-  // Clears the keyboard buffer (used only in the Allegro port).
-  // TODO (deprecated)
-  void clear_keyboard_buffer();
-
 } // namespace she
 
 #endif

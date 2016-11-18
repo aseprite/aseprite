@@ -15,6 +15,7 @@
 #include "base/split_string.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
+#include "she/system.h"
 
 #include <cctype>
 #include <cstdlib>
@@ -140,20 +141,6 @@ const char* scancode_to_string[] = { // Same order that she::KeyScancode
 };
 int scancode_to_string_size =
   sizeof(scancode_to_string) / sizeof(scancode_to_string[0]);
-
-KeyModifiers get_pressed_modifiers_from_she()
-{
-  KeyModifiers mods = kKeyNoneModifier;
-  if (she::is_key_pressed(kKeyLShift)  ) mods = KeyModifiers(int(mods) | int(kKeyShiftModifier));
-  if (she::is_key_pressed(kKeyRShift)  ) mods = KeyModifiers(int(mods) | int(kKeyShiftModifier));
-  if (she::is_key_pressed(kKeyLControl)) mods = KeyModifiers(int(mods) | int(kKeyCtrlModifier));
-  if (she::is_key_pressed(kKeyRControl)) mods = KeyModifiers(int(mods) | int(kKeyCtrlModifier));
-  if (she::is_key_pressed(kKeyAlt)     ) mods = KeyModifiers(int(mods) | int(kKeyAltModifier));
-  if (she::is_key_pressed(kKeyCommand) ) mods = KeyModifiers(int(mods) | int(kKeyCmdModifier));
-  if (she::is_key_pressed(kKeyLWin)    ) mods = KeyModifiers(int(mods) | int(kKeyWinModifier));
-  if (she::is_key_pressed(kKeyRWin)    ) mods = KeyModifiers(int(mods) | int(kKeyWinModifier));
-  return mods;
-}
 
 } // anonymous namespace
 
@@ -349,7 +336,8 @@ bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int un
 
 bool Accelerator::isPressed() const
 {
-  KeyModifiers pressedModifiers = get_pressed_modifiers_from_she();
+  she::System* sys = she::instance();
+  KeyModifiers pressedModifiers = sys->keyModifiers();
 
   // Check if this shortcut is only
   if (m_scancode == kKeyNil && m_unicodeChar == 0)
@@ -357,10 +345,10 @@ bool Accelerator::isPressed() const
 
   // Compare with all pressed scancodes
   for (int s=int(kKeyNil); s<int(kKeyFirstModifierScancode); ++s) {
-    if (she::is_key_pressed(KeyScancode(s)) &&
+    if (sys->isKeyPressed(KeyScancode(s)) &&
         isPressed(pressedModifiers,
                   KeyScancode(s),
-                  she::get_unicode_from_scancode(KeyScancode(s))))
+                  sys->getUnicodeFromScancode(KeyScancode(s))))
       return true;
   }
 
@@ -369,7 +357,8 @@ bool Accelerator::isPressed() const
 
 bool Accelerator::isLooselyPressed() const
 {
-  KeyModifiers pressedModifiers = get_pressed_modifiers_from_she();
+  she::System* sys = she::instance();
+  KeyModifiers pressedModifiers = sys->keyModifiers();
 
   if ((m_modifiers & pressedModifiers) != m_modifiers)
     return false;
@@ -380,10 +369,10 @@ bool Accelerator::isLooselyPressed() const
 
   // Compare with all pressed scancodes
   for (int s=int(kKeyNil); s<int(kKeyFirstModifierScancode); ++s) {
-    if (she::is_key_pressed(KeyScancode(s)) &&
+    if (sys->isKeyPressed(KeyScancode(s)) &&
         isPressed(m_modifiers,  // Use same modifiers (we've already compared the modifiers)
                   KeyScancode(s),
-                  she::get_unicode_from_scancode(KeyScancode(s))))
+                  sys->getUnicodeFromScancode(KeyScancode(s))))
       return true;
   }
 

@@ -16,6 +16,7 @@
 #include "she/keys.h"
 #include "she/osx/generate_drop_files.h"
 #include "she/osx/window.h"
+#include "she/system.h"
 
 #include <Carbon/Carbon.h>      // For VK codes
 
@@ -23,7 +24,7 @@ using namespace she;
 
 namespace {
 
-// Internal array of pressed keys used in is_key_pressed()
+// Internal array of pressed keys used in isKeyPressed()
 int g_pressedKeys[kKeyScancodes];
 bool g_translateDeadKeys = false;
 UInt32 g_lastDeadKeyState = 0;
@@ -73,7 +74,7 @@ KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
   if (nsFlags & NSControlKeyMask) modifiers |= kKeyCtrlModifier;
   if (nsFlags & NSAlternateKeyMask) modifiers |= kKeyAltModifier;
   if (nsFlags & NSCommandKeyMask) modifiers |= kKeyCmdModifier;
-  if (she::is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
+  if (she::instance()->isKeyPressed(kKeySpace)) modifiers |= kKeySpaceModifier;
   return (KeyModifiers)modifiers;
 }
 
@@ -120,7 +121,7 @@ CFStringRef get_unicode_from_key_code(NSEvent* event,
 
 namespace she {
 
-bool is_key_pressed(KeyScancode scancode)
+bool osx_is_key_pressed(KeyScancode scancode)
 {
   if (scancode >= 0 && scancode < kKeyScancodes)
     return (g_pressedKeys[scancode] != 0);
@@ -128,7 +129,7 @@ bool is_key_pressed(KeyScancode scancode)
     return false;
 }
 
-int get_unicode_from_scancode(KeyScancode scancode)
+int osx_get_unicode_from_scancode(KeyScancode scancode)
 {
   if (scancode >= 0 && scancode < kKeyScancodes)
     return g_pressedKeys[scancode];

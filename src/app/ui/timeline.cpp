@@ -47,6 +47,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "she/font.h"
+#include "she/system.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
 
@@ -335,7 +336,8 @@ bool Timeline::onProcessMessage(Message* msg)
       if (!m_document)
         break;
 
-      if (mouseMsg->middle() || she::is_key_pressed(kKeySpace)) {
+      if (mouseMsg->middle() ||
+          she::instance()->isKeyPressed(kKeySpace)) {
         captureMouse();
         m_state = STATE_SCROLLING;
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
@@ -847,7 +849,7 @@ bool Timeline::onProcessMessage(Message* msg)
           m_scroll = false;
 
           // We have to clear all the kKeySpace keys in buffer.
-          she::clear_keyboard_buffer();
+          she::instance()->clearKeyboardBuffer();
           used = true;
           break;
         }

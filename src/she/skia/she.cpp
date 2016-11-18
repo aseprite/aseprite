@@ -34,11 +34,6 @@ void error_message(const char* msg)
   // TODO
 }
 
-void clear_keyboard_buffer()
-{
-  // Do nothing
-}
-
 } // namespace she
 
 extern int app_main(int argc, char* argv[]);

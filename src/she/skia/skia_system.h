@@ -21,7 +21,8 @@
 #elif __APPLE__
   #include "she/osx/app.h"
   #include "she/osx/event_queue.h"
-  #define SkiaSystemBase CommonSystem
+  #include "she/osx/system.h"
+  #define SkiaSystemBase OSXSystem
 #else
   #include "she/x11/event_queue.h"
   #define SkiaSystemBase CommonSystem

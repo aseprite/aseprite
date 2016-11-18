@@ -10,6 +10,7 @@
 
 #include "gfx/fwd.h"
 #include "she/capabilities.h"
+#include "she/keys.h"
 
 #include <stdexcept>
 
@@ -50,10 +51,25 @@ namespace she {
     virtual Font* loadSpriteSheetFont(const char* filename, int scale = 1) = 0;
     virtual Font* loadTrueTypeFont(const char* filename, int height) = 0;
 
+    // Returns true if the the given scancode key is pressed/actived.
+    virtual bool isKeyPressed(KeyScancode scancode) = 0;
+
+    // Returns the active pressed modifiers.
+    virtual KeyModifiers keyModifiers() = 0;
+
+    // Returns the latest unicode character that activated the given
+    // scancode.
+    virtual int getUnicodeFromScancode(KeyScancode scancode) = 0;
+
+    // Clears the keyboard buffer (used only in the Allegro port).
+    // TODO (deprecated)
+    virtual void clearKeyboardBuffer() = 0;
+
     // Indicates if you want to use dead keys or not. By default it's
     // false, which behaves as regular shortcuts. You should set this
     // to true when you're inside a text field in your app.
     virtual void setTranslateDeadKeys(bool state) = 0;
+
   };
 
   System* create_system();

@@ -335,9 +335,7 @@ static int scancode_to_win32vk(KeyScancode scancode)
   return keymap[scancode];
 }
 
-// TODO Move these functions to she::System class
-
-bool is_key_pressed(KeyScancode scancode)
+bool win_is_key_pressed(KeyScancode scancode)
 {
   int vk = scancode_to_win32vk(scancode);
   if (vk)
@@ -346,7 +344,7 @@ bool is_key_pressed(KeyScancode scancode)
     return false;
 }
 
-int get_unicode_from_scancode(KeyScancode scancode)
+int win_get_unicode_from_scancode(KeyScancode scancode)
 {
   int vk = scancode_to_win32vk(scancode);
   if (vk && (GetAsyncKeyState(vk) & 0x8000 ? true: false)) {

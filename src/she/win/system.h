@@ -13,6 +13,9 @@
 
 namespace she {
 
+bool win_is_key_pressed(KeyScancode scancode);
+int win_get_unicode_from_scancode(KeyScancode scancode);
+
 class WindowSystem : public CommonSystem {
 public:
   WindowSystem() { }
@@ -20,6 +23,14 @@ public:
 
   PenAPI& penApi() {
     return m_penApi;
+  }
+
+  bool isKeyPressed(KeyScancode scancode) override {
+    return win_is_key_pressed(scancode);
+  }
+
+  int getUnicodeFromScancode(KeyScancode scancode) override {
+    return win_get_unicode_from_scancode(scancode);
   }
 
 private:

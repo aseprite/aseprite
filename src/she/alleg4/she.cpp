@@ -200,6 +200,33 @@ public:
     return sur;
   }
 
+  bool isKeyPressed(KeyScancode scancode) override {
+#ifdef ALLEGRO_UNIX
+    if (scancode == kKeyLShift || scancode == kKeyRShift) {
+      return key_shifts & KB_SHIFT_FLAG;
+    }
+    else if (scancode == kKeyLControl || scancode == kKeyRControl) {
+      return key_shifts & KB_CTRL_FLAG;
+    }
+    else if (scancode == kKeyAlt) {
+      return key_shifts & KB_ALT_FLAG;
+    }
+#endif
+    return key[scancode] ? true: false;
+  }
+
+
+  int getUnicodeFromScancode(KeyScancode scancode) override {
+    if (isKeyPressed(scancode))
+      return scancode_to_ascii(scancode);
+    else
+      return false;
+  }
+
+  void clearKeyboardBuffer() override {
+    clear_keybuf();
+  }
+
   void setTranslateDeadKeys(bool state) override {
     // Do nothing
   }
@@ -223,35 +250,6 @@ void error_message(const char* msg)
 #else
   allegro_message("%s", msg);
 #endif
-}
-
-bool is_key_pressed(KeyScancode scancode)
-{
-#ifdef ALLEGRO_UNIX
-  if (scancode == kKeyLShift || scancode == kKeyRShift) {
-    return key_shifts & KB_SHIFT_FLAG;
-  }
-  else if (scancode == kKeyLControl || scancode == kKeyRControl) {
-    return key_shifts & KB_CTRL_FLAG;
-  }
-  else if (scancode == kKeyAlt) {
-    return key_shifts & KB_ALT_FLAG;
-  }
-#endif
-  return key[scancode] ? true: false;
-}
-
-int get_unicode_from_scancode(KeyScancode scancode)
-{
-  if (is_key_pressed(scancode))
-    return scancode_to_ascii(scancode);
-  else
-    return false;
-}
-
-void clear_keyboard_buffer()
-{
-  clear_keybuf();
 }
 
 } // namespace she
