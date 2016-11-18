@@ -63,8 +63,6 @@
   #include "she/alleg4/mouse_poller.h"
 #endif
 
-static she::System* g_instance = nullptr;
-
 namespace she {
 
 class Alleg4EventQueue : public EventQueue {
@@ -129,15 +127,11 @@ public:
 #ifdef USE_MOUSE_POLLER
     mouse_poller_init();
 #endif
-
-    g_instance = this;
   }
 
   ~Alleg4System() {
     remove_timer();
     allegro_exit();
-
-    g_instance = nullptr;
   }
 
   void dispose() override {
@@ -216,15 +210,11 @@ System* create_system() {
   return new Alleg4System();
 }
 
-System* instance()
-{
-  return g_instance;
-}
-
 void error_message(const char* msg)
 {
-  if (g_instance && g_instance->logger())
-    g_instance->logger()->logError(msg);
+  System* sys = instance();
+  if (sys && sys->logger())
+    sys->logger()->logError(msg);
 
 #ifdef _WIN32
   std::wstring wmsg = base::from_utf8(msg);

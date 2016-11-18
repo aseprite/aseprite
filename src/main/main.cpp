@@ -66,7 +66,7 @@ int app_main(int argc, char* argv[])
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
-    she::ScopedHandle<she::System> system(she::create_system());
+    she::ScopedHandle<she::System> system(she::instance());
     app::App app;
 
     // Change the name of the memory dump file

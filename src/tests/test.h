@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
   #ifdef TEST_GUI
     {
       // Do not create a she::System, as we don't need it for testing purposes.
-      //she::ScopedHandle<she::System> system(she::create_system());
+      //she::ScopedHandle<she::System> system(she::instance());
       ui::UISystem uiSystem;
       ui::Manager uiManager;
   #endif

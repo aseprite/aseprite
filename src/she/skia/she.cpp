@@ -24,15 +24,8 @@
 
 namespace she {
 
-static System* g_instance;
-
 System* create_system() {
-  return g_instance = new SkiaSystem();
-}
-
-System* instance()
-{
-  return g_instance;
+  return new SkiaSystem();
 }
 
 void error_message(const char* msg)
