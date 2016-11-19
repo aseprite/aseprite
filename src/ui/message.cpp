@@ -22,6 +22,7 @@ namespace ui {
 Message::Message(MessageType type, KeyModifiers modifiers)
   : m_type(type)
   , m_used(false)
+  , m_fromFilter(false)
 {
   if (modifiers == kKeyUninitializedModifier)
     m_modifiers = she::instance()->keyModifiers();

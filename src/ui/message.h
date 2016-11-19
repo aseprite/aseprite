@@ -37,6 +37,8 @@ namespace ui {
     const WidgetsList& recipients() const { return m_recipients; }
     bool hasRecipients() const { return !m_recipients.empty(); }
     bool isUsed() const { return m_used; }
+    bool fromFilter() const { return m_fromFilter; }
+    void setFromFilter(bool state) { m_fromFilter = state; }
     void markAsUsed() { m_used = true; }
     KeyModifiers modifiers() const { return m_modifiers; }
     bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
@@ -57,9 +59,10 @@ namespace ui {
     void broadcastToChildren(Widget* widget);
 
   private:
-    MessageType m_type;         // Type of message
+    MessageType m_type;       // Type of message
     WidgetsList m_recipients; // List of recipients of the message
     bool m_used;              // Was used
+    bool m_fromFilter;        // Sent from pre-filter
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
   };
 

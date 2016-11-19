@@ -45,11 +45,15 @@ namespace ui {
     // Refreshes the real display with the UI content.
     void flipDisplay();
 
+    // Adds the given "msg" message to the queue of messages to be
+    // dispached. "msg" cannot be used after this function, it'll be
+    // automatically deleted.
+    void enqueueMessage(Message* msg);
+
     // Returns true if there are messages in the queue to be
-    // distpatched through jmanager_dispatch_messages().
+    // dispatched through dispatchMessages().
     bool generateMessages();
     void dispatchMessages();
-    void enqueueMessage(Message* msg);
 
     void addToGarbage(Widget* widget);
     void collectGarbage();
@@ -146,6 +150,8 @@ namespace ui {
     void handleWindowZOrder();
 
     void pumpQueue();
+    bool sendMessageToWidget(Message* msg, Widget* widget);
+
     static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
