@@ -17,6 +17,7 @@
 #include "ui/entry.h"
 #include "ui/graphics.h"
 #include "ui/label.h"
+#include "ui/message.h"
 #include "ui/size_hint_event.h"
 #include "ui/slider.h"
 #include "ui/theme.h"
@@ -81,6 +82,30 @@ namespace {
     app::Color m_color;
   };
 
+  class ColorEntry : public Entry {
+  public:
+    ColorEntry() : Entry(4, "0") {
+    }
+
+    bool onProcessMessage(Message* msg) override {
+      switch (msg->type()) {
+
+        case kKeyDownMessage:
+          if (Entry::onProcessMessage(msg))
+            return true;
+          // Process focus movement key here because if our
+          // CustomizedGuiManager catches this kKeyDownMessage it will
+          // process it as a shortcut to switch the Timeline.
+          else if (manager()->processFocusMovementMessage(msg))
+            return true;
+          else
+            return false;
+      }
+      return Entry::onProcessMessage(msg);
+    }
+
+  };
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -136,7 +161,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   Label*  label     = new Label(labelText);
   Slider* absSlider = new Slider(min, max, 0);
   Slider* relSlider = new Slider(min-max, max-min, 0);
-  Entry*  entry     = new Entry(4, "0");
+  Entry*  entry     = new ColorEntry();
 
   m_label.push_back(label);
   m_absSlider.push_back(absSlider);
