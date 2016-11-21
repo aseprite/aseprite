@@ -314,9 +314,6 @@ bool Entry::onProcessMessage(Message* msg)
                 case kKeyA: cmd = EntryCmd::SelectAll; break;
               }
             }
-            else if (manager()->isFocusMovementMessage(msg)) {
-              return Widget::onProcessMessage(msg);
-            }
             break;
         }
 
@@ -329,8 +326,11 @@ bool Entry::onProcessMessage(Message* msg)
             if (keymsg->isDeadKey()) {
               selectText(m_caret-1, m_caret);
             }
+            return true;
           }
-          return true;
+          else {
+            break;              // Propagate to manager
+          }
         }
 
         executeCmd(cmd, keymsg->unicodeChar(),
