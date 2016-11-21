@@ -97,9 +97,12 @@ add_subdirectory(gfx)
 add_subdirectory(net)
 add_subdirectory(render)
 add_subdirectory(docio)
-add_subdirectory(script)
 add_subdirectory(she)
 add_subdirectory(ui)
+
+if(ENABLE_SCRIPTING)
+  add_subdirectory(script)
+endif()
 
 if(ENABLE_UPDATER)
   add_subdirectory(updater)

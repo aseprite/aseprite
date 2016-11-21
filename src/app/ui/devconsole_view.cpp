@@ -8,6 +8,10 @@
 #include "config.h"
 #endif
 
+#ifndef ENABLE_SCRIPTING
+  #error ENABLE_SCRIPTING must be defined
+#endif
+
 #include "app/ui/devconsole_view.h"
 
 #include "app/app_menus.h"

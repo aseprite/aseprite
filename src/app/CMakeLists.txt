@@ -60,6 +60,10 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
+if(ENABLE_SCRIPTING)
+  add_definitions(-DENABLE_SCRIPTING)
+endif()
+
 ######################################################################
 # app-lib target
 
@@ -87,6 +91,23 @@ set(file_formats
   file/tga_format.cpp)
 if(WITH_WEBP_SUPPORT)
   list(APPEND file_formats file/webp_format.cpp)
+endif()
+
+set(scripting_files)
+if(ENABLE_SCRIPTING)
+  set(scripting_files
+    commands/cmd_developer_console.cpp
+    commands/cmd_run_script.cpp
+    script/app_object.cpp
+    script/app_scripting.cpp
+    script/console_object.cpp
+    script/image_class.cpp
+    script/image_wrap.cpp
+    script/selection_class.cpp
+    script/sprite_class.cpp
+    script/sprite_wrap.cpp
+    shell.cpp
+    ui/devconsole_view.cpp)
 endif()
 
 add_library(app-lib
@@ -185,7 +206,6 @@ add_library(app-lib
   commands/cmd_crop.cpp
   commands/cmd_cut.cpp
   commands/cmd_deselect_mask.cpp
-  commands/cmd_developer_console.cpp
   commands/cmd_discard_brush.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
@@ -325,17 +345,8 @@ add_library(app-lib
   res/resources_loader.cpp
   resource_finder.cpp
   rw_lock.cpp
-  script/app_object.cpp
-  script/app_scripting.cpp
-  script/console_object.cpp
-  script/image_class.cpp
-  script/image_wrap.cpp
-  script/selection_class.cpp
-  script/sprite_class.cpp
-  script/sprite_wrap.cpp
   send_crash.cpp
   shade.cpp
-  shell.cpp
   snap_to_grid.cpp
   thumbnail_generator.cpp
   tools/active_tool.cpp
@@ -364,7 +375,6 @@ add_library(app-lib
   ui/color_wheel.cpp
   ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
-  ui/devconsole_view.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp
   ui/editor/brush_preview.cpp
@@ -445,6 +455,7 @@ add_library(app-lib
   xml_document.cpp
   xml_exception.cpp
   ${data_recovery_files}
+  ${scripting_files}
   ${generated_files})
 
 target_link_libraries(app-lib
@@ -460,7 +471,6 @@ target_link_libraries(app-lib
   gfx-lib
   net-lib
   render-lib
-  script-lib
   she
   ui-lib
   undo
@@ -471,6 +481,10 @@ target_link_libraries(app-lib
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${FREETYPE_LIBRARIES})
+
+if(ENABLE_SCRIPTING)
+  target_link_libraries(app-lib script-lib)
+endif()
 
 if(ENABLE_UPDATER)
   target_link_libraries(app-lib updater-lib)

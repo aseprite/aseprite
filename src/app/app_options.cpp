@@ -25,7 +25,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_startShell(false)
   , m_verboseLevel(kNoVerbose)
   , m_palette(m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default"))
+#ifdef ENABLE_SCRIPTING
   , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
+#endif
   , m_batch(m_po.add("batch").mnemonic('b').description("Do not start the UI"))
   , m_saveAs(m_po.add("save-as").requiresValue("<filename>").description("Save the last given document with other format"))
   , m_scale(m_po.add("scale").requiresValue("<factor>").description("Resize all previous opened documents"))
@@ -49,7 +51,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_trim(m_po.add("trim").description("Trim all images before exporting"))
   , m_crop(m_po.add("crop").requiresValue("x,y,width,height").description("Crop all the images to the given rectangle"))
   , m_filenameFormat(m_po.add("filename-format").requiresValue("<fmt>").description("Special format to generate filenames"))
+#ifdef ENABLE_SCRIPTING
   , m_script(m_po.add("script").requiresValue("<filename>").description("Execute a specific script"))
+#endif
   , m_listLayers(m_po.add("list-layers").description("List layers of the next given sprite\nor include layers in JSON data"))
   , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite sprite\nor include frame tags in JSON data"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
@@ -66,7 +70,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_verboseLevel = kVerbose;
 
     m_paletteFileName = m_po.value_of(m_palette);
+#ifdef ENABLE_SCRIPTING
     m_startShell = m_po.enabled(m_shell);
+#endif
 
     if (m_po.enabled(m_help)) {
       showHelp();
@@ -77,7 +83,11 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_startUI = false;
     }
 
-    if (m_po.enabled(m_shell) || m_po.enabled(m_batch)) {
+    if (
+#ifdef ENABLE_SCRIPTING
+        m_po.enabled(m_shell) ||
+#endif
+        m_po.enabled(m_batch)) {
       m_startUI = false;
     }
   }

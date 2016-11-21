@@ -241,6 +241,7 @@ bool MainWindow::isHomeSelected()
 
 void MainWindow::showDevConsole()
 {
+#ifdef ENABLE_SCRIPTING
   if (!m_devConsoleView)
     m_devConsoleView = new DevConsoleView;
 
@@ -248,6 +249,7 @@ void MainWindow::showDevConsole()
     m_workspace->addView(m_devConsoleView);
     m_tabsBar->selectTab(m_devConsoleView);
   }
+#endif
 }
 
 void MainWindow::setMode(Mode mode)
