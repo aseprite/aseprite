@@ -72,6 +72,7 @@ namespace app {
     std::vector<Channel> m_channel;
     ui::Grid m_grid;
     Mode m_mode;
+    int m_lockEntry;
   };
 
   //////////////////////////////////////////////////////////////////////

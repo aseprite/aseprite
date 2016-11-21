@@ -58,11 +58,11 @@ ColorPopup::ColorPopup(bool canPin)
   , m_canPin(canPin)
   , m_disableHexUpdate(false)
 {
-  m_colorType.addItem("Index");
-  m_colorType.addItem("RGB");
-  m_colorType.addItem("HSB");
-  m_colorType.addItem("Gray");
-  m_colorType.addItem("Mask");
+  m_colorType.addItem("Index")->setFocusStop(false);
+  m_colorType.addItem("RGB")->setFocusStop(false);
+  m_colorType.addItem("HSB")->setFocusStop(false);
+  m_colorType.addItem("Gray")->setFocusStop(false);
+  m_colorType.addItem("Mask")->setFocusStop(false);
 
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.setChildSpacing(0);

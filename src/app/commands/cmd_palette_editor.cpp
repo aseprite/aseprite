@@ -251,10 +251,10 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_selfPalChange(false)
   , m_fromPalette(0, 0)
 {
-  m_colorType.addItem("RGB");
-  m_colorType.addItem("HSB");
-  m_changeMode.addItem("Abs");
-  m_changeMode.addItem("Rel");
+  m_colorType.addItem("RGB")->setFocusStop(false);
+  m_colorType.addItem("HSB")->setFocusStop(false);
+  m_changeMode.addItem("Abs")->setFocusStop(false);
+  m_changeMode.addItem("Rel")->setFocusStop(false);
 
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.setChildSpacing(0);

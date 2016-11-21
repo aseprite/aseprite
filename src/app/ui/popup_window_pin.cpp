@@ -32,6 +32,7 @@ PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehav
 {
   SkinTheme* theme = SkinTheme::instance();
 
+  m_pin.setFocusStop(false);
   m_pin.Click.connect(&PopupWindowPin::onPinClick, this);
   m_pin.setIconInterface(
     new ButtonIconImpl(theme->parts.unpinned(),

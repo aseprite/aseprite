@@ -30,8 +30,15 @@ namespace app {
     void onEntryChange();
 
   private:
+    class CustomEntry : public ui::Entry {
+    public:
+      CustomEntry();
+    private:
+      bool onProcessMessage(ui::Message* msg) override;
+    };
+
     ui::Label m_label;
-    ui::Entry m_entry;
+    CustomEntry m_entry;
   };
 
 } // namespace app

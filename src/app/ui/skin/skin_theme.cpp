@@ -895,9 +895,13 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   if (iconInterface)
     paintIcon(widget, g, iconInterface, icon.x, icon.y);
 
-  // draw focus
-  if (look != WithoutBordersLook && widget->hasFocus())
+  // Draw focus
+  if (look != WithoutBordersLook &&
+      (widget->hasFocus() || (iconInterface &&
+                              widget->text().empty() &&
+                              widget->hasMouseOver()))) {
     drawRect(g, bounds, parts.checkFocus().get(), gfx::ColorNone);
+  }
 }
 
 void SkinTheme::paintGrid(PaintEvent& ev)

@@ -13,6 +13,7 @@
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
+#include "base/scoped_value.h"
 #include "ui/box.h"
 #include "ui/entry.h"
 #include "ui/graphics.h"
@@ -84,26 +85,100 @@ namespace {
 
   class ColorEntry : public Entry {
   public:
-    ColorEntry() : Entry(4, "0") {
+    ColorEntry(Slider* absSlider, Slider* relSlider)
+      : Entry(4, "0")
+      , m_absSlider(absSlider)
+      , m_relSlider(relSlider)
+      , m_recent_focus(false) {
+    }
+
+  private:
+    int minValue() const {
+      if (m_absSlider->isVisible())
+        return m_absSlider->getMinValue();
+      else if (m_relSlider->isVisible())
+        return m_relSlider->getMinValue();
+      else
+        return 0;
+    }
+
+    int maxValue() const {
+      if (m_absSlider->isVisible())
+        return m_absSlider->getMaxValue();
+      else if (m_relSlider->isVisible())
+        return m_relSlider->getMaxValue();
+      else
+        return 0;
     }
 
     bool onProcessMessage(Message* msg) override {
       switch (msg->type()) {
 
+        case kFocusEnterMessage:
+          m_recent_focus = true;
+          break;
+
         case kKeyDownMessage:
           if (Entry::onProcessMessage(msg))
             return true;
-          // Process focus movement key here because if our
-          // CustomizedGuiManager catches this kKeyDownMessage it will
-          // process it as a shortcut to switch the Timeline.
-          else if (manager()->processFocusMovementMessage(msg))
-            return true;
-          else
-            return false;
+
+          if (hasFocus()) {
+            int scancode = static_cast<KeyMessage*>(msg)->scancode();
+
+            switch (scancode) {
+              // Enter just remove the focus
+              case kKeyEnter:
+              case kKeyEnterPad:
+                releaseFocus();
+                return true;
+
+              case kKeyDown:
+              case kKeyUp: {
+                int value = textInt();
+                if (scancode == kKeyDown)
+                  --value;
+                else
+                  ++value;
+
+                setTextf("%d", MID(minValue(), value, maxValue()));
+                selectAllText();
+
+                onChange();
+                return true;
+              }
+            }
+
+            // Process focus movement key here because if our
+            // CustomizedGuiManager catches this kKeyDownMessage it
+            // will process it as a shortcut to switch the Timeline.
+            //
+            // Note: The default ui::Manager handles focus movement
+            // shortcuts only for foreground windows.
+            // TODO maybe that should change
+            if (hasFocus() &&
+                manager()->processFocusMovementMessage(msg))
+              return true;
+          }
+          return false;
       }
-      return Entry::onProcessMessage(msg);
+
+      bool result = Entry::onProcessMessage(msg);
+
+      if (msg->type() == kMouseDownMessage && m_recent_focus) {
+        m_recent_focus = false;
+        selectAllText();
+      }
+
+      return result;
     }
 
+    Slider* m_absSlider;
+    Slider* m_relSlider;
+
+    // TODO remove this calling setFocus() in
+    //      Widget::onProcessMessage() instead of
+    //      Manager::handleWindowZOrder()
+    bool m_recent_focus;
   };
 
 }
@@ -115,6 +190,7 @@ ColorSliders::ColorSliders()
   : Widget(kGenericWidget)
   , m_grid(3, false)
   , m_mode(Absolute)
+  , m_lockEntry(-1)
 {
   addChild(&m_grid);
   m_grid.setChildSpacing(0);
@@ -161,7 +237,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   Label*  label     = new Label(labelText);
   Slider* absSlider = new Slider(min, max, 0);
   Slider* relSlider = new Slider(min-max, max-min, 0);
-  Entry*  entry     = new ColorEntry();
+  Entry*  entry     = new ColorEntry(absSlider, relSlider);
 
   m_label.push_back(label);
   m_absSlider.push_back(absSlider);
@@ -180,6 +256,8 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   HBox* box = new HBox();
   box->addChild(absSlider);
   box->addChild(relSlider);
+  absSlider->setFocusStop(false);
+  relSlider->setFocusStop(false);
   absSlider->setExpansive(true);
   relSlider->setExpansive(true);
   relSlider->setVisible(false);
@@ -218,6 +296,8 @@ void ColorSliders::onSliderChange(int i)
 
 void ColorSliders::onEntryChange(int i)
 {
+  base::ScopedValue<int> lock(m_lockEntry, i, m_lockEntry);
+
   // Update the slider related to the changed entry widget.
   int value = m_entry[i]->textInt();
 
@@ -245,10 +325,15 @@ void ColorSliders::onControlChange(int i)
 // Updates the entry related to the changed slider widget.
 void ColorSliders::updateEntryText(int entryIndex)
 {
+  if (m_lockEntry == entryIndex)
+    return;
+
   Slider* slider = (m_mode == Absolute ? m_absSlider[entryIndex]:
                                          m_relSlider[entryIndex]);
 
   m_entry[entryIndex]->setTextf("%d", slider->getValue());
+  if (m_entry[entryIndex]->hasFocus())
+    m_entry[entryIndex]->selectAllText();
 }
 
 void ColorSliders::updateSlidersBgColor(const app::Color& color)
