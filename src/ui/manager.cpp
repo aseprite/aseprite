@@ -1533,6 +1533,9 @@ void Manager::broadcastKeyMsg(Message* msg)
                             Focus Movement
  ***********************************************************************/
 
+// TODO rewrite this function, it is based in an old code from the
+//      Allegro library GUI code
+
 bool Manager::processFocusMovementMessage(Message* msg)
 {
   int (*cmp)(Widget*, int, int) = NULL;
@@ -1612,7 +1615,7 @@ bool Manager::processFocusMovementMessage(Message* msg)
           for (i=c; i<count-1; i++) {
             for (j=i+1; j<count; j++) {
               // Sort the list in ascending order
-              if ((*cmp) (list[i], x, y) > (*cmp) (list[j], x, y)) {
+              if ((*cmp)(list[i], x, y) > (*cmp)(list[j], x, y)) {
                 Widget* tmp = list[i];
                 list[i] = list[j];
                 list[j] = tmp;
@@ -1621,7 +1624,7 @@ bool Manager::processFocusMovementMessage(Message* msg)
           }
 
           // Check if the new widget to put the focus is not in the wrong way.
-          if ((*cmp) (list[c], x, y) < std::numeric_limits<int>::max())
+          if ((*cmp)(list[c], x, y) < std::numeric_limits<int>::max())
             focus = list[c];
         }
         // If only there are one widget, put the focus in this
