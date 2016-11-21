@@ -389,7 +389,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
       if (msg->ctrlPressed() &&
           msg->shiftPressed() &&
-          static_cast<KeyMessage*>(msg)->scancode() == kKeyQ) {
+          keymsg->scancode() == kKeyQ) {
         int* p = nullptr;
         *p = 0;
       }
