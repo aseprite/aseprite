@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -151,10 +151,6 @@ void TextBox::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0;
   int h = 0;
-
-  // TODO is it necessary?
-  //w = widget->border_width.l + widget->border_width.r;
-  //h = widget->border_width.t + widget->border_width.b;
 
   drawTextBox(NULL, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
 
