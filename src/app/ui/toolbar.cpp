@@ -727,6 +727,11 @@ Rect ToolBar::ToolStrip::getToolBounds(int index)
               iconsize.w, bounds.h);
 }
 
+void ToolBar::onActiveToolChange(tools::Tool* tool)
+{
+  invalidate();
+}
+
 void ToolBar::onSelectedToolChange(tools::Tool* tool)
 {
   if (tool && m_selectedInGroup[tool->getGroup()] != tool)

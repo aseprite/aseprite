@@ -61,6 +61,7 @@ namespace app {
     void onClosePopup();
 
     // ActiveToolObserver impl
+    void onActiveToolChange(tools::Tool* tool) override;
     void onSelectedToolChange(tools::Tool* tool) override;
 
     // What tool is selected for each tool-group
