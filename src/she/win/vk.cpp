@@ -114,7 +114,7 @@ KeyScancode win32vk_to_scancode(int vk)
     kKeyZ, // 0x5A - VK_Z
     kKeyLWin, // 0x5B - VK_LWIN
     kKeyRWin, // 0x5C - VK_RWIN
-    kKeyNil, // 0x5D - VK_APPS
+    kKeyMenu, // 0x5D - VK_APPS
     kKeyNil, // 0x5E - Reserved
     kKeyNil, // 0x5F - VK_SLEEP
     // 0x60
