@@ -157,7 +157,7 @@ void OpenFileCommand::onExecute(Context* context)
         fop->postLoad();
 
         // Show any error
-        if (fop->hasError())
+        if (fop->hasError() && !fop->isStop())
           console.printf(fop->error().c_str());
 
         Document* document = fop->document();
