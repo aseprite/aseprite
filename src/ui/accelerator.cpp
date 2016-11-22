@@ -307,7 +307,11 @@ std::string Accelerator::toString() const
   if (m_modifiers & kKeyCmdModifier) buf += "Cmd+";
   if (m_modifiers & kKeyAltModifier) buf += "Alt+";
   if (m_modifiers & kKeyShiftModifier) buf += "Shift+";
-  if (m_modifiers & kKeySpaceModifier) buf += "Space+";
+  if ((m_modifiers & kKeySpaceModifier) &&
+      (m_scancode != kKeySpace) &&
+      (m_unicodeChar != ' ')) {
+    buf += "Space+";
+  }
   if (m_modifiers & kKeyWinModifier) {
     buf += kWinKeyName;
     buf += "+";
