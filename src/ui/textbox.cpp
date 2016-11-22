@@ -129,9 +129,13 @@ bool TextBox::onProcessMessage(Message* msg)
     case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
+        auto mouseMsg = static_cast<MouseMessage*>(msg);
         gfx::Point scroll = view->viewScroll();
 
-        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * textHeight()*3;
+        if (mouseMsg->preciseWheel())
+          scroll += mouseMsg->wheelDelta();
+        else
+          scroll += mouseMsg->wheelDelta() * textHeight()*3;
 
         view->setViewScroll(scroll);
       }
