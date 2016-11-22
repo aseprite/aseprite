@@ -300,7 +300,7 @@ bool Entry::onProcessMessage(Message* msg)
             break;
 
           default:
-            // Map common Windows shortcuts for Cut/Copy/Paste
+            // Map common macOS/Windows shortcuts for Cut/Copy/Paste/Select all
 #if defined __APPLE__
             if (msg->onlyCmdPressed())
 #else
@@ -326,6 +326,12 @@ bool Entry::onProcessMessage(Message* msg)
             if (keymsg->isDeadKey()) {
               selectText(m_caret-1, m_caret);
             }
+            return true;
+          }
+          // Consume all key down of modifiers only, e.g. so the user
+          // can press first "Ctrl" key, and then "Ctrl+C"
+          // combination.
+          else if (keymsg->scancode() >= kKeyFirstModifierScancode) {
             return true;
           }
           else {
