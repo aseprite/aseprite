@@ -382,13 +382,19 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
 
-      if (msg->onlyCtrlPressed()) {
+      if (msg->onlyCtrlPressed() ||
+          msg->onlyCmdPressed()) {
         int z = delta.x - delta.y;
         setBoxSize(m_boxsize + z);
       }
       else {
         gfx::Point scroll = view->viewScroll();
-        scroll += delta * 3 * m_boxsize;
+
+        if (static_cast<MouseMessage*>(msg)->preciseWheel())
+          scroll += delta;
+        else
+          scroll += delta * 3 * m_boxsize;
+
         view->setViewScroll(scroll);
       }
       break;
