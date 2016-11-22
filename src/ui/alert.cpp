@@ -35,6 +35,7 @@
 #include "ui/alert.h"
 
 #include "base/bind.h"
+#include "base/string.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/grid.h"
@@ -73,34 +74,30 @@ void Alert::setProgress(double progress)
 
 AlertPtr Alert::create(const char* format, ...)
 {
-  char buf[4096];               // TODO warning buffer overflow
-  va_list ap;
-
   // Process arguments
+  std::va_list ap;
   va_start(ap, format);
-  vsprintf(buf, format, ap);
+  std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
   // Create the alert window
   AlertPtr window(new Alert());
-  window->processString(buf);
+  window->processString(msg);
   return window;
 }
 
 // static
 int Alert::show(const char* format, ...)
 {
-  char buf[4096];               // TODO warning buffer overflow
-  va_list ap;
-
   // Process arguments
+  std::va_list ap;
   va_start(ap, format);
-  vsprintf(buf, format, ap);
+  std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
   // Create the alert window
   AlertPtr window(new Alert());
-  window->processString(buf);
+  window->processString(msg);
   return window->show();
 }
 
@@ -124,19 +121,18 @@ int Alert::show()
   return ret;
 }
 
-void Alert::processString(char* buf)
+void Alert::processString(std::string& buf)
 {
   bool title = true;
   bool label = false;
   bool separator = false;
   bool button = false;
   int align = 0;
-  char *beg;
-  int c, chr;
+  int c, beg;
 
   // Process buffer
   c = 0;
-  beg = buf;
+  beg = 0;
   for (; ; c++) {
     if ((!buf[c]) ||
         ((buf[c] == buf[c+1]) &&
@@ -146,14 +142,13 @@ void Alert::processString(char* buf)
           (buf[c] == '-') ||
           (buf[c] == '|')))) {
       if (title || label || separator || button) {
-        chr = buf[c];
-        buf[c] = 0;
+        std::string item = buf.substr(beg, c-beg);
 
         if (title) {
-          setText(beg);
+          setText(item);
         }
         else if (label) {
-          Label* label = new Label(beg);
+          Label* label = new Label(item);
           label->setAlign(align);
           m_labels.push_back(label);
         }
@@ -162,7 +157,7 @@ void Alert::processString(char* buf)
         }
         else if (button) {
           char buttonId[256];
-          Button* button_widget = new Button(beg);
+          Button* button_widget = new Button(item);
           button_widget->setMinSize(gfx::Size(60*guiscale(), 0));
           m_buttons.push_back(button_widget);
 
@@ -170,8 +165,6 @@ void Alert::processString(char* buf)
           button_widget->setId(buttonId);
           button_widget->Click.connect(base::Bind<void>(&Window::closeWindow, this, button_widget));
         }
-
-        buf[c] = chr;
       }
 
       // Done
@@ -180,7 +173,7 @@ void Alert::processString(char* buf)
       // Next widget
       else {
         title = label = separator = button = false;
-        beg = buf+c+2;
+        beg = c+2;
         align = 0;
 
         switch (buf[c]) {

@@ -8,11 +8,13 @@
 #include "config.h"
 #endif
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory.h"
+#include "base/string.h"
 #include "ui/ui.h"
 
 #include "app/app.h"
@@ -106,15 +108,13 @@ Console::~Console()
 
 void Console::printf(const char* format, ...)
 {
-  char buf[4096];               // TODO warning buffer overflow
-  va_list ap;
-
+  std::va_list ap;
   va_start(ap, format);
-  vsprintf(buf, format, ap);
+  std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
   if (!m_withUI || !wid_console) {
-    fputs(buf, stdout);
+    fputs(msg.c_str(), stdout);
     fflush(stdout);
     return;
   }
@@ -125,7 +125,7 @@ void Console::printf(const char* format, ...)
     ui::Manager::getDefault()->invalidate();
   }
 
-  /* update the textbox */
+  // Update the textbox
   if (!console_locked) {
     console_locked = true;
 
@@ -142,7 +142,7 @@ void Console::printf(const char* format, ...)
   std::string final;
   if (!text.empty())
     final += text;
-  final += buf;
+  final += msg;
 
   wid_textbox->setText(final.c_str());
 }

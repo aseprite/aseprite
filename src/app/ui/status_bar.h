@@ -58,8 +58,8 @@ namespace app {
 
     void clearText();
 
-    bool setStatusText(int msecs, const char *format, ...);
-    void showTip(int msecs, const char *format, ...);
+    bool setStatusText(int msecs, const char* format, ...);
+    void showTip(int msecs, const char* format, ...);
     void showColor(int msecs, const char* text, const Color& color);
     void showTool(int msecs, tools::Tool* tool);
     void showSnapToGridWarning(bool state);

@@ -11,6 +11,7 @@
 #include "base/shared_ptr.h"
 #include "ui/window.h"
 
+#include <string>
 #include <vector>
 
 namespace ui {
@@ -34,7 +35,7 @@ namespace ui {
     static int show(const char* format, ...);
 
   private:
-    void processString(char* buf);
+    void processString(std::string& buf);
 
     Slider* m_progress;
     Box* m_progressPlaceholder;
