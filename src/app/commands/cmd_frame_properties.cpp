@@ -66,7 +66,7 @@ void FramePropertiesCommand::onLoadParams(const Params& params)
   }
   else {
     m_target = SPECIFIC_FRAME;
-    m_frame = frame_t(base::convert_to<int>(frame)-1);
+    m_frame = frame_t(base::convert_to<int>(frame));
   }
 }
 
@@ -79,10 +79,11 @@ void FramePropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
-
+  auto& docPref = Preferences::instance().document(context->activeDocument());
   app::gen::FrameProperties window;
   frame_t firstFrame = 0;
   frame_t lastFrame = 0;
+  int base = docPref.timeline.firstFrame();
 
   switch (m_target) {
 
@@ -104,14 +105,14 @@ void FramePropertiesCommand::onExecute(Context* context)
     }
 
     case SPECIFIC_FRAME:
-      firstFrame = lastFrame = m_frame;
+      firstFrame = lastFrame = m_frame-base;
       break;
   }
 
   if (firstFrame != lastFrame)
-    window.frame()->setTextf("[%d...%d]", (int)firstFrame+1, (int)lastFrame+1);
+    window.frame()->setTextf("[%d...%d]", (int)firstFrame+base, (int)lastFrame+base);
   else
-    window.frame()->setTextf("%d", (int)firstFrame+1);
+    window.frame()->setTextf("%d", (int)firstFrame+base);
 
   window.frlen()->setTextf("%d", sprite->frameDuration(firstFrame));
 

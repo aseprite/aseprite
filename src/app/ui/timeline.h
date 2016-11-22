@@ -278,6 +278,7 @@ namespace app {
     // Configure timeline
     ConfigureTimelinePopup* m_confPopup;
     obs::scoped_connection m_ctxConn;
+    obs::connection m_firstFrameConn;
 
     // Marching ants stuff to show the range in the clipboard.
     // TODO merge this with the marching ants of the sprite editor (ui::Editor)

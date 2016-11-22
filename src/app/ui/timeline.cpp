@@ -38,6 +38,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
 #include "base/scoped_value.h"
@@ -206,6 +207,9 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
+  m_firstFrameConn = Preferences::instance().document(m_document)
+    .timeline.firstFrame.AfterChange.connect(base::Bind<void>(&Timeline::invalidate, this));
+
   setFocusStop(true);
   regenerateLayers();
   setViewScroll(viewScroll());
@@ -214,6 +218,8 @@ void Timeline::updateUsingEditor(Editor* editor)
 
 void Timeline::detachDocument()
 {
+  m_firstFrameConn.disconnect();
+
   if (m_document) {
     m_document->remove_observer(this);
     m_document = NULL;
@@ -1357,8 +1363,11 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
     return;
 
   // Draw the header for the layers.
-  char buf[256];
-  std::sprintf(buf, "%d", (frame+1)%100); // Draw only the first two digits.
+  char buf[4];
+  std::snprintf(
+    buf, sizeof(buf), "%d",
+    // Draw only the first two digits
+    (docPref().timeline.firstFrame()+frame) % 100);
 
   she::Font* oldFont = g->font();
   g->setFont(skinTheme()->getMiniFont());
@@ -2236,9 +2245,10 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
       case PART_HEADER_FRAME:
         if (validFrame(m_hot.frame)) {
-          sb->setStatusText(0,
+          sb->setStatusText(
+            0,
             ":frame: %d :clock: %d",
-            (int)m_hot.frame+1,
+            (int)m_hot.frame+docPref().timeline.firstFrame(),
             m_sprite->frameDuration(m_hot.frame));
           return;
         }

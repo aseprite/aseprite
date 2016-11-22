@@ -109,6 +109,8 @@ public:
     if (m_pref.general.rewindOnStop())
       rewindOnStop()->setSelected(true);
 
+    firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
+
     if (m_pref.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
 
@@ -244,6 +246,7 @@ public:
   void saveConfig() {
     m_pref.general.autoshowTimeline(autotimeline()->isSelected());
     m_pref.general.rewindOnStop(rewindOnStop()->isSelected());
+    m_globPref.timeline.firstFrame(firstFrame()->textInt());
     m_pref.general.showFullPath(showFullPath()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();

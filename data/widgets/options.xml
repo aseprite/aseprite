@@ -82,6 +82,10 @@
           <separator text="Timeline" horizontal="true" />
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Rewind on Stop" id="rewind_on_stop" tooltip="The 'Stop' button should rewind the animation&#10;where it was started." />
+	  <hbox>
+	    <label text="Default First Frame:" />
+	    <entry id="first_frame" maxsize="3" />
+	  </hbox>
 	</vbox>
 
         <!-- Cursors -->

@@ -269,6 +269,9 @@
       <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" migrate="Option.CheckedBgColor1" />
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
     </section>
+    <section id="timeline">
+      <option id="first_frame" type="int" default="1" />
+    </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />
       <option id="prev_frames" type="int" default="1" migrate="Onionskin.PrevFrames" />

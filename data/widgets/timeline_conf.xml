@@ -2,13 +2,24 @@
 <!-- Copyright (C) 2014-2016 by David Capello -->
 <gui>
 <vbox id="timeline_conf">
-  <separator cell_hspan="2" text="Position:" left="true" horizontal="true" />
   <hbox>
-    <buttonset columns="2" id="position">
-      <item text="&amp;Left" />
-      <item text="&amp;Right" />
-      <item text="&amp;Bottom" hspan="2" />
-    </buttonset>
+    <vbox>
+      <separator cell_hspan="2" text="Position:" left="true" horizontal="true" />
+      <hbox>
+	<buttonset columns="2" id="position">
+	  <item text="&amp;Left" />
+	  <item text="&amp;Right" />
+	  <item text="&amp;Bottom" hspan="2" />
+	</buttonset>
+      </hbox>
+    </vbox>
+    <vbox>
+      <separator cell_hspan="2" text="Frame Header:" left="true" horizontal="true" />
+      <hbox>
+	<label text="First Frame:" />
+	<entry id="first_frame" maxsize="3" />
+      </hbox>
+    </vbox>
   </hbox>
 
   <separator cell_hspan="2" text="Onion Skin:" left="true" horizontal="true" />

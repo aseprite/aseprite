@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -137,22 +137,27 @@ class GotoFrameCommand : public GotoCommand {
 public:
   GotoFrameCommand() : GotoCommand("GotoFrame",
                                    "Go to Frame")
-                     , m_frame(0) { }
+                     , m_showUI(true) { }
   Command* clone() const override { return new GotoFrameCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override {
     std::string frame = params.get("frame");
-    if (!frame.empty()) m_frame = strtol(frame.c_str(), NULL, 10);
-    else m_frame = 0;
+    if (!frame.empty()) {
+      m_frame = strtol(frame.c_str(), nullptr, 10);
+      m_showUI = false;
+    }
+    else
+      m_showUI = true;
   }
 
   frame_t onGetFrame(Editor* editor) override {
-    if (m_frame == 0) {
+    auto& docPref = editor->docPref();
+
+    if (m_showUI) {
       app::gen::GotoFrame window;
-
-      window.frame()->setTextf("%d", editor->frame()+1);
-
+      window.frame()->setTextf(
+        "%d", editor->frame()+docPref.timeline.firstFrame());
       window.openWindowInForeground();
       if (window.closer() != window.ok())
         return editor->frame();
@@ -160,12 +165,11 @@ protected:
       m_frame = window.frame()->textInt();
     }
 
-    return MID(0, m_frame-1, editor->sprite()->lastFrame());
+    return MID(0, m_frame-docPref.timeline.firstFrame(), editor->sprite()->lastFrame());
   }
 
 private:
-  // The frame to go. 0 is "show the UI dialog", another value is the
-  // frame (1 is the first name for the user).
+  bool m_showUI;
   int m_frame;
 };
 

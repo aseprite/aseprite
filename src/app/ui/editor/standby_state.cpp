@@ -487,7 +487,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     if (sprite->totalFrames() > 1) {
       sprintf(
         buf+std::strlen(buf), " :frame: %d :clock: %d",
-        editor->frame()+1,
+        editor->frame()+editor->docPref().timeline.firstFrame(),
         sprite->frameDuration(editor->frame()));
     }
 
