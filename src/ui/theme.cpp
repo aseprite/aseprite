@@ -109,6 +109,10 @@ void drawTextBox(Graphics* g, Widget* widget,
   x2 = vp.x + vp.w;
   y2 = vp.y + vp.h;
 
+  // Fill background
+  if (g)
+    g->fillRect(bg, vp);
+
   chr = 0;
 
   // Without word-wrap
@@ -202,11 +206,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else                      // Left align
         xout = x;
 
-      g->drawUIString(beg, fg, bg, gfx::Point(xout, y));
-      g->fillAreaBetweenRects(
-        bg,
-        gfx::Rect(x1, y, x2 - x1, textheight),
-        gfx::Rect(xout, y, len, textheight));
+      g->drawUIString(beg, fg, gfx::ColorNone, gfx::Point(xout, y));
     }
 
     if (w)
@@ -225,10 +225,6 @@ void drawTextBox(Graphics* g, Widget* widget,
 
   if (w) *w += widget->border().width();
   if (h) *h += widget->border().height();
-
-  // Fill bottom area
-  if (g && y < y2)
-    g->fillRect(bg, gfx::Rect(x1, y, x2 - x1, y2 - y));
 }
 
 } // namespace ui
