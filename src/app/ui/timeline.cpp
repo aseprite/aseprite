@@ -872,23 +872,23 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y;
-        int dx = 0;
-        int dy = 0;
+        gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
+        if (!static_cast<MouseMessage*>(msg)->preciseWheel()) {
+          delta.x *= FRMSIZE;
+          delta.y *= LAYSIZE;
 
-        dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
+          if (msg->shiftPressed()) {
+            // On macOS shift already changes the wheel axis
+            if (std::fabs(delta.y) > delta.x)
+              std::swap(delta.x, delta.y);
+          }
 
-        if (msg->ctrlPressed())
-          dx = dz * FRMSIZE;
-        else
-          dy = dz * LAYSIZE;
-
-        if (msg->shiftPressed()) {
-          dx *= 3;
-          dy *= 3;
+          if (msg->altPressed()) {
+            delta.x *= 3;
+            delta.y *= 3;
+          }
         }
-
-        setViewScroll(viewScroll() + gfx::Point(dx, dy));
+        setViewScroll(viewScroll() + delta);
       }
       break;
 
