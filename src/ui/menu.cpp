@@ -118,7 +118,7 @@ protected:
 static MenuBox* get_base_menubox(Widget* widget);
 static MenuBaseData* get_base(Widget* widget);
 
-static MenuItem* check_for_letter(Menu* menu, int ascii);
+static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg);
 
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
@@ -485,17 +485,9 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                   msg->modifiers() == kKeyAltModifier)) ||
             ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
-          int unicode = static_cast<KeyMessage*>(msg)->unicodeChar();
-          selected = check_for_letter(menu, unicode);
-          if (!selected) {
-            KeyScancode scancode = static_cast<KeyMessage*>(msg)->scancode();
-            if (scancode >= kKeyA && scancode <= kKeyZ)
-              selected = check_for_letter(menu, 'a' + scancode - kKeyA);
-            else if (scancode >= kKey0 && scancode <= kKey9)
-              selected = check_for_letter(menu, '0' + scancode - kKey0);
-          }
+          auto keymsg = static_cast<KeyMessage*>(msg);
 
-          if (selected) {
+          if (check_for_letter(menu, keymsg)) {
             menu->highlightItem(selected, true, true, true);
             return true;
           }
@@ -1194,15 +1186,14 @@ void MenuItem::executeClick()
   Manager::getDefault()->enqueueMessage(msg);
 }
 
-static MenuItem* check_for_letter(Menu* menu, int ascii)
+static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg)
 {
   for (auto child : menu->children()) {
     if (child->type() != kMenuItemWidget)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
-    int mnemonic = menuitem->mnemonicChar();
-    if (mnemonic > 0 && mnemonic == std::tolower(ascii))
+    if (menuitem->mnemonicCharPressed(keymsg))
       return menuitem;
   }
   return NULL;

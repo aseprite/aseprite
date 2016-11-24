@@ -161,10 +161,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kKeyDownMessage:
       if (isEnabled() && hasText()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-        bool mnemonicPressed =
-          (msg->altPressed() &&
-           mnemonicChar() &&
-           mnemonicChar() == tolower(keymsg->unicodeChar()));
+        bool mnemonicPressed = (msg->altPressed() &&
+                                mnemonicCharPressed(keymsg));
 
         if (mnemonicPressed ||
             (hasFocus() && keymsg->scancode() == kKeySpace)) {

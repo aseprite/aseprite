@@ -1275,9 +1275,19 @@ int Widget::mnemonicChar() const
   if (hasText()) {
     for (int c=0; m_text[c]; ++c)
       if ((m_text[c] == '&') && (m_text[c+1] != '&'))
-        return tolower(m_text[c+1]);
+        return std::tolower(m_text[c+1]);
   }
   return 0;
+}
+
+bool Widget::mnemonicCharPressed(const KeyMessage* keyMsg) const
+{
+  int chr = mnemonicChar();
+  return
+    ((chr) &&
+     ((chr == std::tolower(keyMsg->unicodeChar())) ||
+      (chr >= 'a' && chr <= 'z' && keyMsg->scancode() == (kKeyA + chr - 'a')) ||
+      (chr >= '0' && chr <= '9' && keyMsg->scancode() == (kKey0 + chr - '0'))));
 }
 
 bool Widget::onProcessMessage(Message* msg)

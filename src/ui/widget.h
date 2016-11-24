@@ -31,14 +31,15 @@ namespace she {
 namespace ui {
 
   class InitThemeEvent;
+  class KeyMessage;
   class LoadLayoutEvent;
   class Manager;
   class Message;
   class MouseMessage;
   class PaintEvent;
-  class SizeHintEvent;
   class ResizeEvent;
   class SaveLayoutEvent;
+  class SizeHintEvent;
   class Theme;
   class Window;
 
@@ -347,6 +348,9 @@ namespace ui {
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).
     int mnemonicChar() const;
+
+    // Returns true if the mnemonic character is pressed.
+    bool mnemonicCharPressed(const ui::KeyMessage* keyMsg) const;
 
   protected:
     // ===============================================================
