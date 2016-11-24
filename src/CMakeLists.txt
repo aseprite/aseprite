@@ -102,6 +102,7 @@ add_subdirectory(ui)
 
 if(ENABLE_SCRIPTING)
   add_subdirectory(script)
+  add_definitions(-DENABLE_SCRIPTING)
 endif()
 
 if(ENABLE_UPDATER)

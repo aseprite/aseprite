@@ -60,10 +60,6 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
-if(ENABLE_SCRIPTING)
-  add_definitions(-DENABLE_SCRIPTING)
-endif()
-
 ######################################################################
 # app-lib target
 
