@@ -100,7 +100,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       // If the button is enabled.
       if (isEnabled()) {
         bool mnemonicPressed =
-          (msg->altPressed() &&
+          ((msg->altPressed() || msg->cmdPressed()) &&
            mnemonicCharPressed(keymsg));
 
         // For kButtonWidget
