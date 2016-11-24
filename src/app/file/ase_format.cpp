@@ -898,8 +898,20 @@ static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* spr
       (*previous_layer)->parent()->addLayer(layer);
     else if (child_level > *current_level)
       static_cast<LayerGroup*>(*previous_layer)->addLayer(layer);
-    else if (child_level < *current_level)
-      (*previous_layer)->parent()->parent()->addLayer(layer);
+    else if (child_level < *current_level) {
+      LayerGroup* parent = (*previous_layer)->parent();
+      ASSERT(parent);
+      if (parent) {
+        int levels = (*current_level - child_level);
+        while (levels--) {
+          ASSERT(parent->parent());
+          if (!parent->parent())
+            break;
+          parent = parent->parent();
+        }
+        parent->addLayer(layer);
+      }
+    }
 
     *previous_layer = layer;
     *current_level = child_level;
