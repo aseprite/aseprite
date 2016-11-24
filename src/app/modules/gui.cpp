@@ -383,9 +383,9 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage: {
+#ifdef _DEBUG
       auto keymsg = static_cast<KeyMessage*>(msg);
 
-#ifdef _DEBUG
       // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
       if (msg->ctrlPressed() &&
           msg->shiftPressed() &&
