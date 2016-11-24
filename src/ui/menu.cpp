@@ -486,8 +486,8 @@ bool MenuBox::onProcessMessage(Message* msg)
                                                   msg->modifiers() == kKeyAltModifier)) ||
             ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
           auto keymsg = static_cast<KeyMessage*>(msg);
-
-          if (check_for_letter(menu, keymsg)) {
+          selected = check_for_letter(menu, keymsg);
+          if (selected) {
             menu->highlightItem(selected, true, true, true);
             return true;
           }
