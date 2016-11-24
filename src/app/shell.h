@@ -8,6 +8,10 @@
 #define APP_SHELL_H_INCLUDED
 #pragma once
 
+#ifndef ENABLE_SCRIPTING
+  #error ENABLE_SCRIPTING must be defined
+#endif
+
 namespace script {
   class Engine;
 }

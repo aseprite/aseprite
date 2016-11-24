@@ -19,7 +19,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/devconsole_view.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
@@ -42,6 +41,10 @@
 #include "ui/splitter.h"
 #include "ui/system.h"
 #include "ui/view.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/ui/devconsole_view.h"
+#endif
 
 namespace app {
 

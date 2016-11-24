@@ -8,6 +8,10 @@
 #define APP_SCRIPTING_H_INCLUDED
 #pragma once
 
+#ifndef ENABLE_SCRIPTING
+  #error ENABLE_SCRIPTING must be defined
+#endif
+
 #include "doc/object_id.h"
 #include "script/engine.h"
 
