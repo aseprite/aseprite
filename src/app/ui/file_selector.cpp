@@ -198,8 +198,8 @@ protected:
         int unicode = keyMsg->unicodeChar();
         bool up = (msg->cmdPressed() && scancode == kKeyUp);
         bool enter = (msg->cmdPressed() && scancode == kKeyDown);
-        bool back = (msg->cmdPressed() && msg->shiftPressed() && unicode == '[');
-        bool forward = (msg->cmdPressed() && msg->shiftPressed() && unicode == ']');
+        bool back = (msg->cmdPressed() && (unicode == '[' || scancode == kKeyOpenbrace));
+        bool forward = (msg->cmdPressed() && (unicode == ']' || scancode == kKeyClosebrace));
 #else
         bool up = (msg->altPressed() && scancode == kKeyUp);
         bool enter = (msg->altPressed() && scancode == kKeyDown);
