@@ -90,8 +90,10 @@ public:
 MainWindow::MainWindow()
   : m_mode(NormalMode)
   , m_homeView(nullptr)
-  , m_devConsoleView(nullptr)
   , m_scalePanic(nullptr)
+#ifdef ENABLE_SCRIPTING
+  , m_devConsoleView(nullptr)
+#endif
 {
   // Load all menus by first time.
   AppMenus::instance()->reload();
@@ -154,11 +156,14 @@ MainWindow::~MainWindow()
 {
   delete m_scalePanic;
 
+#ifdef ENABLE_SCRIPTING
   if (m_devConsoleView) {
     if (m_devConsoleView->parent())
       m_workspace->removeView(m_devConsoleView);
     delete m_devConsoleView;
   }
+#endif
+
   if (m_homeView) {
     if (m_homeView->parent())
       m_workspace->removeView(m_homeView);
