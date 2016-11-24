@@ -779,12 +779,12 @@ void FileSelector::onLocationCloseListBox()
     }
   }
 
-  if (fileItem != NULL) {
+  if (fileItem) {
     m_fileList->setCurrentFolder(fileItem);
 
     // Refocus the 'fileview' (the focus in that widget is more
     // useful for the user)
-    manager()->setFocus(m_fileList);
+    m_fileList->requestFocus();
   }
 }
 
