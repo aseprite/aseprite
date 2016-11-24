@@ -114,9 +114,11 @@ namespace app {
     Workspace* m_workspace;
     PreviewEditorWindow* m_previewEditor;
     HomeView* m_homeView;
-    DevConsoleView* m_devConsoleView;
     Notifications* m_notifications;
     INotificationDelegate* m_scalePanic;
+#ifdef ENABLE_SCRIPTING
+    DevConsoleView* m_devConsoleView;
+#endif
   };
 
 }

@@ -60,10 +60,6 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
-if(ENABLE_SCRIPTING)
-  add_definitions(-DENABLE_SCRIPTING)
-endif()
-
 ######################################################################
 # app-lib target
 
@@ -267,7 +263,6 @@ add_library(app-lib
   commands/cmd_reselect_mask.cpp
   commands/cmd_reverse_frames.cpp
   commands/cmd_rotate.cpp
-  commands/cmd_run_script.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
