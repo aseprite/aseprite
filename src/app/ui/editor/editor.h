@@ -177,7 +177,7 @@ namespace app {
     tools::Ink* getCurrentEditorInk();
 
     tools::ToolLoopModifiers getToolLoopModifiers() const { return m_toolLoopModifiers; }
-    bool isAutoSelectLayer() const { return m_autoSelectLayer; }
+    bool isAutoSelectLayer() const;
     bool isSecondaryButton() const { return m_secondaryButton; }
 
     gfx::Point lastDrawingPosition() const { return m_lastDrawingPosition; }
@@ -289,7 +289,6 @@ namespace app {
     gfx::Point m_lastDrawingPosition;
 
     tools::ToolLoopModifiers m_toolLoopModifiers;
-    bool m_autoSelectLayer;
 
     // Extra space around the sprite.
     gfx::Point m_padding;

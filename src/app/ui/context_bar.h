@@ -53,6 +53,7 @@ namespace app {
     void updateForSelectingBox(const std::string& text);
     void updateToolLoopModifiersIndicators(app::tools::ToolLoopModifiers modifiers);
     void updateAutoSelectLayer(bool state);
+    bool isAutoSelectLayer() const;
 
     void setActiveBrush(const doc::BrushRef& brush);
     void setActiveBrushBySlot(tools::Tool* tool, int slot);

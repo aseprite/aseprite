@@ -158,7 +158,6 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_brushPreview(this)
   , m_lastDrawingPosition(-1, -1)
   , m_toolLoopModifiers(tools::ToolLoopModifiers::kNone)
-  , m_autoSelectLayer(false)
   , m_padding(0, 0)
   , m_antsTimer(100, this)
   , m_antsOffset(0)
@@ -991,6 +990,11 @@ tools::Ink* Editor::getCurrentEditorInk()
     return App::instance()->activeToolManager()->activeInk();
 }
 
+bool Editor::isAutoSelectLayer() const
+{
+  return App::instance()->contextBar()->isAutoSelectLayer();
+}
+
 gfx::Point Editor::screenToEditor(const gfx::Point& pt)
 {
   View* view = View::getView(this);
@@ -1122,7 +1126,8 @@ void Editor::updateToolByTipProximity(ui::PointerType pointerType)
 void Editor::updateToolLoopModifiersIndicators()
 {
   int modifiers = int(tools::ToolLoopModifiers::kNone);
-  bool autoSelectLayer = Preferences::instance().editor.autoSelectLayer();
+  const bool autoSelectLayer = isAutoSelectLayer();
+  bool newAutoSelectLayer = autoSelectLayer;
   KeyAction action;
 
   if (m_customizationDelegate) {
@@ -1134,7 +1139,6 @@ void Editor::updateToolLoopModifiersIndicators()
                     (int(tools::ToolLoopModifiers::kReplaceSelection) |
                      int(tools::ToolLoopModifiers::kAddSelection) |
                      int(tools::ToolLoopModifiers::kSubtractSelection)));
-      autoSelectLayer = m_autoSelectLayer;
 
       // Shape tools (line, curves, rectangles, etc.)
       action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
@@ -1163,7 +1167,9 @@ void Editor::updateToolLoopModifiersIndicators()
       // For move tool
       action = m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool);
       if (int(action & KeyAction::AutoSelectLayer))
-        autoSelectLayer = true;
+        newAutoSelectLayer = true;
+      else
+        newAutoSelectLayer = Preferences::instance().editor.autoSelectLayer();
     }
   }
 
@@ -1180,10 +1186,8 @@ void Editor::updateToolLoopModifiersIndicators()
     }
   }
 
-  if (m_autoSelectLayer != autoSelectLayer) {
-    m_autoSelectLayer = autoSelectLayer;
-    ctxBar->updateAutoSelectLayer(autoSelectLayer);
-  }
+  if (autoSelectLayer != newAutoSelectLayer)
+    ctxBar->updateAutoSelectLayer(newAutoSelectLayer);
 }
 
 app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
