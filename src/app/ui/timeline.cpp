@@ -306,6 +306,18 @@ void Timeline::setLayer(Layer* layer)
   ASSERT(m_editor != NULL);
 
   m_layer = layer;
+
+  // Expand all parents
+  if (m_layer) {
+    LayerGroup* group = m_layer->parent();
+    while (group != m_layer->sprite()->root()) {
+      // Expand this group
+      group->setCollapsed(false);
+      group = group->parent();
+    }
+    regenerateLayers();
+  }
+
   invalidate();
 
   if (m_editor->layer() != layer)
