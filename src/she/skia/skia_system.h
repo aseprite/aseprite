@@ -21,7 +21,8 @@
 #elif __APPLE__
   #include "she/osx/app.h"
   #include "she/osx/event_queue.h"
-  #define SkiaSystemBase CommonSystem
+  #include "she/osx/system.h"
+  #define SkiaSystemBase OSXSystem
 #else
   #include "she/x11/event_queue.h"
   #define SkiaSystemBase CommonSystem
@@ -133,6 +134,15 @@ public:
 
   Surface* loadRgbaSurface(const char* filename) override {
     return loadSurface(filename);
+  }
+
+  void setTranslateDeadKeys(bool state) override {
+    if (m_defaultDisplay)
+      m_defaultDisplay->setTranslateDeadKeys(state);
+
+#ifdef _WIN32
+    g_queue.setTranslateDeadKeys(state);
+#endif
   }
 
 private:

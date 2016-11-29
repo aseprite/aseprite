@@ -99,7 +99,7 @@
       <option id="rewind_on_stop" type="bool" default="false" />
       <option id="expand_menubar_on_mouseover" type="bool" default="false" migrate="Options.ExpandMenuBarOnMouseover" />
       <option id="data_recovery" type="bool" default="true" />
-      <option id="data_recovery_period" type="int" default="2" />
+      <option id="data_recovery_period" type="double" default="2.0" />
       <option id="show_full_path" type="bool" default="true" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
     </section>
@@ -277,6 +277,9 @@
       <option id="zoom" type="bool" default="true" migrate="Option.CheckedBgZoom" />
       <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" migrate="Option.CheckedBgColor1" />
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
+    </section>
+    <section id="timeline">
+      <option id="first_frame" type="int" default="1" />
     </section>
     <section id="thumbnails">
       <option id="zoom" type="double" default="1" />

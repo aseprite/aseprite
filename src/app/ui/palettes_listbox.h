@@ -28,7 +28,7 @@ namespace app {
   protected:
     virtual ResourceListItem* onCreateResourceItem(Resource* resource) override;
     virtual void onResourceChange(Resource* resource) override;
-    virtual void onPaintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource) override;
+    virtual void onPaintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource) override;
     virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) override;
 
     ui::TooltipManager m_tooltips;

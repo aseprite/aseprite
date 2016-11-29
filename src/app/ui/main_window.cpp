@@ -19,7 +19,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/devconsole_view.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
@@ -42,6 +41,10 @@
 #include "ui/splitter.h"
 #include "ui/system.h"
 #include "ui/view.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/ui/devconsole_view.h"
+#endif
 
 namespace app {
 
@@ -90,8 +93,10 @@ public:
 MainWindow::MainWindow()
   : m_mode(NormalMode)
   , m_homeView(nullptr)
-  , m_devConsoleView(nullptr)
   , m_scalePanic(nullptr)
+#ifdef ENABLE_SCRIPTING
+  , m_devConsoleView(nullptr)
+#endif
 {
   // Load all menus by first time.
   AppMenus::instance()->reload();
@@ -154,11 +159,14 @@ MainWindow::~MainWindow()
 {
   delete m_scalePanic;
 
+#ifdef ENABLE_SCRIPTING
   if (m_devConsoleView) {
     if (m_devConsoleView->parent())
       m_workspace->removeView(m_devConsoleView);
     delete m_devConsoleView;
   }
+#endif
+
   if (m_homeView) {
     if (m_homeView->parent())
       m_workspace->removeView(m_homeView);
@@ -241,6 +249,7 @@ bool MainWindow::isHomeSelected()
 
 void MainWindow::showDevConsole()
 {
+#ifdef ENABLE_SCRIPTING
   if (!m_devConsoleView)
     m_devConsoleView = new DevConsoleView;
 
@@ -248,6 +257,7 @@ void MainWindow::showDevConsole()
     m_workspace->addView(m_devConsoleView);
     m_tabsBar->selectTab(m_devConsoleView);
   }
+#endif
 }
 
 void MainWindow::setMode(Mode mode)

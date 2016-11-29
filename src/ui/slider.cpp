@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -35,7 +35,7 @@ Slider::Slider(int min, int max, int value, SliderDelegate* delegate)
   , m_readOnly(false)
   , m_delegate(delegate)
 {
-  this->setFocusStop(true);
+  setFocusStop(true);
   initTheme();
 }
 
@@ -136,7 +136,6 @@ bool Slider::onProcessMessage(Message* msg)
         }
 
         value = MID(m_min, value, m_max);
-
         if (m_value != value) {
           setValue(value);
           onChange();
@@ -165,21 +164,20 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
       if (hasFocus() && !isReadOnly()) {
-        int min = m_min;
-        int max = m_max;
         int value = m_value;
 
         switch (static_cast<KeyMessage*>(msg)->scancode()) {
-          case kKeyLeft:     value = MAX(value-1, min); break;
-          case kKeyRight:    value = MIN(value+1, max); break;
-          case kKeyPageDown: value = MAX(value-(max-min+1)/4, min); break;
-          case kKeyPageUp:   value = MIN(value+(max-min+1)/4, max); break;
-          case kKeyHome:     value = min; break;
-          case kKeyEnd:      value = max; break;
+          case kKeyLeft:     --value; break;
+          case kKeyRight:    ++value; break;
+          case kKeyPageDown: value -= (m_max-m_min+1)/4; break;
+          case kKeyPageUp:   value += (m_max-m_min+1)/4; break;
+          case kKeyHome:     value = m_min; break;
+          case kKeyEnd:      value = m_max; break;
           default:
             goto not_used;
         }
 
+        value = MID(m_min, value, m_max);
         if (m_value != value) {
           setValue(value);
           onChange();

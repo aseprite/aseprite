@@ -52,6 +52,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   addChild(m_box);
 
   m_box->position()->ItemChange.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangePosition, this));
+  m_box->firstFrame()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeFirstFrame, this));
   m_box->merge()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
   m_box->tint()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
   m_box->opacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
@@ -91,6 +92,9 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
     case gen::TimelinePosition::BOTTOM: selItem = 2; break;
   }
   m_box->position()->setSelectedItem(selItem, false);
+
+  m_box->firstFrame()->setTextf(
+    "%d", docPref.timeline.firstFrame());
 
   switch (docPref.onionskin.type()) {
     case app::gen::OnionskinType::MERGE:
@@ -153,6 +157,12 @@ void ConfigureTimelinePopup::onChangePosition()
     case 2: newTimelinePos = gen::TimelinePosition::BOTTOM; break;
   }
   Preferences::instance().general.timelinePosition(newTimelinePos);
+}
+
+void ConfigureTimelinePopup::onChangeFirstFrame()
+{
+  docPref().timeline.firstFrame(
+    m_box->firstFrame()->textInt());
 }
 
 void ConfigureTimelinePopup::onChangeType()

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -130,7 +130,6 @@ namespace ui {
   using she::kKeyEqualsPad;
   using she::kKeyBackquote;
   using she::kKeySemicolon;
-  using she::kKeyCommand;
   using she::kKeyUnknown1;
   using she::kKeyUnknown2;
   using she::kKeyUnknown3;
@@ -151,6 +150,7 @@ namespace ui {
   using she::kKeyLWin;
   using she::kKeyRWin;
   using she::kKeyMenu;
+  using she::kKeyCommand;
   using she::kKeyScrLock;
   using she::kKeyNumLock;
   using she::kKeyCapsLock;

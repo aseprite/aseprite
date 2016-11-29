@@ -8,9 +8,7 @@
 #include "config.h"
 #endif
 
-#include "she/keys.h"
-
-#include <windows.h>
+#include "she/win/vk.h"
 
 namespace she {
 
@@ -116,7 +114,7 @@ KeyScancode win32vk_to_scancode(int vk)
     kKeyZ, // 0x5A - VK_Z
     kKeyLWin, // 0x5B - VK_LWIN
     kKeyRWin, // 0x5C - VK_RWIN
-    kKeyNil, // 0x5D - VK_APPS
+    kKeyMenu, // 0x5D - VK_APPS
     kKeyNil, // 0x5E - Reserved
     kKeyNil, // 0x5F - VK_SLEEP
     // 0x60
@@ -337,13 +335,27 @@ static int scancode_to_win32vk(KeyScancode scancode)
   return keymap[scancode];
 }
 
-bool is_key_pressed(KeyScancode scancode)
+bool win_is_key_pressed(KeyScancode scancode)
 {
   int vk = scancode_to_win32vk(scancode);
   if (vk)
     return (GetAsyncKeyState(vk) & 0x8000 ? true: false);
   else
     return false;
+}
+
+int win_get_unicode_from_scancode(KeyScancode scancode)
+{
+  int vk = scancode_to_win32vk(scancode);
+  if (vk && (GetAsyncKeyState(vk) & 0x8000 ? true: false)) {
+    VkToUnicode tu;
+    if (tu) {
+      tu.toUnicode(vk, 0);
+      if (tu.size() > 0)
+        return tu[0];
+    }
+  }
+  return 0;
 }
 
 } // namespace she

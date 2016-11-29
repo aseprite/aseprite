@@ -86,7 +86,7 @@ void AddLayer::removeLayer(Layer* group, Layer* layer)
 
   static_cast<LayerGroup*>(group)->removeLayer(layer);
   group->incrementVersion();
-  layer->sprite()->incrementVersion();
+  group->sprite()->incrementVersion();
 
   doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
 

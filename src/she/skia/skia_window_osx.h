@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -46,6 +46,7 @@ public:
   void updateWindow(const gfx::Rect& bounds);
   std::string getLayout() { return ""; }
   void setLayout(const std::string& layout) { }
+  void setTranslateDeadKeys(bool state);
   void* handle();
 
 private:

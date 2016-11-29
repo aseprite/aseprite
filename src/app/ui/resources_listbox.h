@@ -47,11 +47,11 @@ class ResourceListItem : public ui::ListItem {
 
     // abstract
     virtual void onResourceChange(Resource* resource) = 0;
-    virtual void onPaintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource) = 0;
+    virtual void onPaintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource) = 0;
     virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) = 0;
 
   private:
-    void paintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource);
+    void paintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource);
     gfx::Size resourceSizeHint(Resource* resource);
 
     void onTick();

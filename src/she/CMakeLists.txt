@@ -2,7 +2,8 @@
 # Copyright (C) 2012-2016  David Capello
 
 set(SHE_SOURCES
-  common/freetype_font.cpp)
+  common/freetype_font.cpp
+  system.cpp)
 
 ######################################################################
 # Allegro 4 backend

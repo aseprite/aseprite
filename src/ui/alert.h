@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,9 @@
 
 #include "base/shared_ptr.h"
 #include "ui/window.h"
+
+#include <string>
+#include <vector>
 
 namespace ui {
 
@@ -26,14 +29,18 @@ namespace ui {
     void addProgress();
     void setProgress(double progress);
 
+    int show();
+
     static AlertPtr create(const char* format, ...);
     static int show(const char* format, ...);
 
   private:
-    void processString(char* buf, std::vector<Widget*>& labels, std::vector<Widget*>& buttons);
+    void processString(std::string& buf);
 
     Slider* m_progress;
     Box* m_progressPlaceholder;
+    std::vector<Widget*> m_labels;
+    std::vector<Widget*> m_buttons;
   };
 
 } // namespace ui

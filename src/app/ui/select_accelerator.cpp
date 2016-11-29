@@ -23,6 +23,7 @@ using namespace ui;
 class SelectAccelerator::KeyField : public ui::Entry {
 public:
   KeyField(const Accelerator& accel) : ui::Entry(256, "") {
+    setTranslateDeadKeys(false);
     setExpansive(true);
     setFocusMagnet(true);
     setAccel(accel);
@@ -38,9 +39,13 @@ public:
 protected:
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
+
       case kKeyDownMessage:
         if (hasFocus() && !isReadOnly()) {
           KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+          if (!keymsg->scancode() && keymsg->unicodeChar() < 32)
+            break;
+
           KeyModifiers modifiers = keymsg->modifiers();
 
           if (keymsg->scancode() == kKeySpace)

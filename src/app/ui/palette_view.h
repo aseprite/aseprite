@@ -74,7 +74,7 @@ namespace app {
     app::Color getColorByPosition(const gfx::Point& pos) override;
 
     int getBoxSize() const;
-    void setBoxSize(int boxsize);
+    void setBoxSize(double boxsize);
 
     void clearSelection();
     void cutToClipboard();
@@ -147,7 +147,7 @@ namespace app {
     PaletteViewStyle m_style;
     PaletteViewDelegate* m_delegate;
     int m_columns;
-    int m_boxsize;
+    double m_boxsize;
     int m_currentEntry;
     int m_rangeAnchor;
     doc::PalettePicks m_selectedEntries;

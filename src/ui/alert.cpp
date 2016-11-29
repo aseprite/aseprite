@@ -35,6 +35,7 @@
 #include "ui/alert.h"
 
 #include "base/bind.h"
+#include "base/string.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/grid.h"
@@ -73,50 +74,43 @@ void Alert::setProgress(double progress)
 
 AlertPtr Alert::create(const char* format, ...)
 {
-  char buf[4096];               // TODO warning buffer overflow
-  va_list ap;
-
   // Process arguments
+  std::va_list ap;
   va_start(ap, format);
-  vsprintf(buf, format, ap);
+  std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
   // Create the alert window
-  std::vector<Widget*> labels;
-  std::vector<Widget*> buttons;
-
   AlertPtr window(new Alert());
-  window->processString(buf, labels, buttons);
-
+  window->processString(msg);
   return window;
 }
 
 // static
 int Alert::show(const char* format, ...)
 {
-  char buf[4096];               // TODO warning buffer overflow
-  va_list ap;
-
   // Process arguments
+  std::va_list ap;
   va_start(ap, format);
-  vsprintf(buf, format, ap);
+  std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
   // Create the alert window
-  std::vector<Widget*> labels;
-  std::vector<Widget*> buttons;
-
   AlertPtr window(new Alert());
-  window->processString(buf, labels, buttons);
+  window->processString(msg);
+  return window->show();
+}
 
+int Alert::show()
+{
   // Open it
-  window->openWindowInForeground();
+  openWindowInForeground();
 
   // Check the closer
   int ret = 0;
-  if (Widget* closer = window->closer()) {
-    for (int i=0; i<(int)buttons.size(); ++i) {
-      if (closer == buttons[i]) {
+  if (Widget* closer = this->closer()) {
+    for (int i=0; i<(int)m_buttons.size(); ++i) {
+      if (closer == m_buttons[i]) {
         ret = i+1;
         break;
       }
@@ -127,19 +121,18 @@ int Alert::show(const char* format, ...)
   return ret;
 }
 
-void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<Widget*>& buttons)
+void Alert::processString(std::string& buf)
 {
   bool title = true;
   bool label = false;
   bool separator = false;
   bool button = false;
   int align = 0;
-  char *beg;
-  int c, chr;
+  int c, beg;
 
   // Process buffer
   c = 0;
-  beg = buf;
+  beg = 0;
   for (; ; c++) {
     if ((!buf[c]) ||
         ((buf[c] == buf[c+1]) &&
@@ -149,41 +142,38 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           (buf[c] == '-') ||
           (buf[c] == '|')))) {
       if (title || label || separator || button) {
-        chr = buf[c];
-        buf[c] = 0;
+        std::string item = buf.substr(beg, c-beg);
 
         if (title) {
-          setText(beg);
+          setText(item);
         }
         else if (label) {
-          Label* label = new Label(beg);
+          Label* label = new Label(item);
           label->setAlign(align);
-          labels.push_back(label);
+          m_labels.push_back(label);
         }
         else if (separator) {
-          labels.push_back(new Separator("", HORIZONTAL));
+          m_labels.push_back(new Separator("", HORIZONTAL));
         }
         else if (button) {
           char buttonId[256];
-          Button* button_widget = new Button(beg);
+          Button* button_widget = new Button(item);
           button_widget->setMinSize(gfx::Size(60*guiscale(), 0));
-          buttons.push_back(button_widget);
+          m_buttons.push_back(button_widget);
 
-          sprintf(buttonId, "button-%lu", buttons.size());
+          sprintf(buttonId, "button-%lu", m_buttons.size());
           button_widget->setId(buttonId);
           button_widget->Click.connect(base::Bind<void>(&Window::closeWindow, this, button_widget));
         }
-
-        buf[c] = chr;
       }
 
-      /* done */
+      // Done
       if (!buf[c])
         break;
-      /* next widget */
+      // Next widget
       else {
         title = label = separator = button = false;
-        beg = buf+c+2;
+        beg = c+2;
         align = 0;
 
         switch (buf[c]) {
@@ -230,15 +220,15 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
   grid->addChildInCell(box3, 1, 1, CENTER | BOTTOM | HORIZONTAL);
 
-  for (std::vector<Widget*>::iterator it = labels.begin(); it != labels.end(); ++it)
+  for (auto it=m_labels.begin(); it!=m_labels.end(); ++it)
     box2->addChild(*it);
 
-  for (std::vector<Widget*>::iterator it = buttons.begin(); it != buttons.end(); ++it)
+  for (auto it=m_buttons.begin(); it!=m_buttons.end(); ++it)
     box3->addChild(*it);
 
   // Default button is the last one
-  if (!buttons.empty())
-    buttons[buttons.size()-1]->setFocusMagnet(true);
+  if (!m_buttons.empty())
+    m_buttons[m_buttons.size()-1]->setFocusMagnet(true);
 }
 
 } // namespace ui

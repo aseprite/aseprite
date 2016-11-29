@@ -118,7 +118,7 @@ bool IntEntry::onProcessMessage(Message* msg)
       if (hasFocus() && !isReadOnly()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         int chr = keymsg->unicodeChar();
-        if (chr < '0' || chr > '9') {
+        if (chr && (chr < '0' || chr > '9')) {
           // By-pass Entry::onProcessMessage()
           return Widget::onProcessMessage(msg);
         }

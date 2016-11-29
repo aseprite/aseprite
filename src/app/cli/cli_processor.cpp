@@ -353,11 +353,13 @@ void CliProcessor::process()
             }
           }
         }
+#ifdef ENABLE_SCRIPTING
         // --script <filename>
         else if (opt == &m_options.script()) {
           std::string filename = value.value();
           m_delegate->execScript(filename);
         }
+#endif
         // --list-layers
         else if (opt == &m_options.listLayers()) {
           cof.listLayers = true;

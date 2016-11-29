@@ -17,11 +17,12 @@
 #include <sstream>
 
 #include "base/base.h"
+#include "base/debug.h"
 #include "gfx/size.h"
 #include "she/event.h"
-#include "she/keys.h"
 #include "she/native_cursor.h"
 #include "she/win/system.h"
+#include "she/win/vk.h"
 #include "she/win/window_dde.h"
 
 #ifndef WM_MOUSEHWHEEL
@@ -29,9 +30,6 @@
 #endif
 
 namespace she {
-
-  KeyScancode win32vk_to_scancode(int vk);
-  KeyModifiers get_modifiers_from_last_win32_message();
 
   #define SHE_WND_CLASS_NAME L"Aseprite.Window"
 
@@ -42,6 +40,7 @@ namespace she {
       : m_clientSize(1, 1)
       , m_restoredSize(0, 0)
       , m_isCreated(false)
+      , m_translateDeadKeys(false)
       , m_hasMouse(false)
       , m_captureMouse(false)
       , m_hpenctx(nullptr)
@@ -321,6 +320,23 @@ namespace she {
       }
     }
 
+    void setTranslateDeadKeys(bool state) {
+      m_translateDeadKeys = state;
+
+      // Here we clear dead keys so we don't get those keys in the new
+      // "translate dead keys" state. E.g. If we focus a text entry
+      // field and the translation of dead keys is enabled, we don't
+      // want to get previous dead keys. The same in case we leave the
+      // text field with a pending dead key, that dead key must be
+      // discarded.
+      VkToUnicode tu;
+      if (tu) {
+        tu.toUnicode(VK_SPACE, 0);
+        if (tu.size() != 0)
+          tu.toUnicode(VK_SPACE, 0);
+      }
+    }
+
     HWND handle() {
       return m_hwnd;
     }
@@ -531,8 +547,6 @@ namespace she {
             (msg == WM_MOUSEWHEEL ? -z: 0));
           ev.setWheelDelta(delta);
 
-          //LOG("WHEEL: %d %d\n", delta.x, delta.y);
-
           queueEvent(ev);
           break;
         }
@@ -578,8 +592,6 @@ namespace she {
             (msg == WM_VSCROLL ? (z-50): 0));
           ev.setWheelDelta(delta);
 
-          //LOG("SCROLL: %d %d\n", delta.x, delta.y);
-
           SetScrollPos(m_hwnd, bar, 50, FALSE);
 
           queueEvent(ev);
@@ -590,34 +602,38 @@ namespace she {
         case WM_KEYDOWN: {
           int vk = wparam;
           int scancode = (lparam >> 16) & 0xff;
-          BYTE keystate[256];
-          WCHAR buffer[8];
-          int charsInBuffer = 0;
-
-          if (GetKeyboardState(&keystate[0])) {
-            // ToUnicode can return several characters inside the
-            // buffer in case that a dead-key wasn't combined with the
-            // next pressed character.
-            charsInBuffer = ToUnicode(vk, scancode, keystate, buffer,
-                                      sizeof(buffer)/sizeof(buffer[0]), 0);
-          }
+          bool sendMsg = true;
 
           Event ev;
           ev.setType(Event::KeyDown);
           ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setScancode(win32vk_to_scancode(vk));
+          ev.setUnicodeChar(0);
           ev.setRepeat(MAX(0, (lparam & 0xffff)-1));
 
-          if (charsInBuffer < 1) {
-            ev.setUnicodeChar(0);
-            queueEvent(ev);
-          }
-          else {
-            for (int i=0; i<charsInBuffer; ++i) {
-              ev.setUnicodeChar(buffer[i]);
-              queueEvent(ev);
+          {
+            VkToUnicode tu;
+            if (tu) {
+              tu.toUnicode(vk, scancode);
+              if (tu.isDeadKey()) {
+                ev.setDeadKey(true);
+                ev.setUnicodeChar(tu[0]);
+                if (!m_translateDeadKeys)
+                  tu.toUnicode(vk, scancode); // Call again to remove dead-key
+              }
+              else if (tu.size() > 0) {
+                sendMsg = false;
+                for (int chr : tu) {
+                  ev.setUnicodeChar(chr);
+                  queueEvent(ev);
+                }
+              }
             }
           }
+
+          if (sendMsg)
+            queueEvent(ev);
+
           return 0;
         }
 
@@ -856,6 +872,7 @@ namespace she {
     gfx::Size m_restoredSize;
     int m_scale;
     bool m_isCreated;
+    bool m_translateDeadKeys;
     bool m_hasMouse;
     bool m_captureMouse;
     bool m_customHcursor;

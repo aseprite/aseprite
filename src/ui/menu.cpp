@@ -118,7 +118,7 @@ protected:
 static MenuBox* get_base_menubox(Widget* widget);
 static MenuBaseData* get_base(Widget* widget);
 
-static MenuItem* check_for_letter(Menu* menu, int ascii);
+static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg);
 
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
@@ -485,10 +485,8 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                   msg->modifiers() == kKeyAltModifier)) ||
             ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
-          // TODO use scancode instead of unicodeChar
-          selected = check_for_letter(menu,
-            static_cast<KeyMessage*>(msg)->unicodeChar());
-
+          auto keymsg = static_cast<KeyMessage*>(msg);
+          selected = check_for_letter(menu, keymsg);
           if (selected) {
             menu->highlightItem(selected, true, true, true);
             return true;
@@ -1188,15 +1186,14 @@ void MenuItem::executeClick()
   Manager::getDefault()->enqueueMessage(msg);
 }
 
-static MenuItem* check_for_letter(Menu* menu, int ascii)
+static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg)
 {
   for (auto child : menu->children()) {
     if (child->type() != kMenuItemWidget)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
-    int mnemonic = menuitem->mnemonicChar();
-    if (mnemonic > 0 && mnemonic == tolower(ascii))
+    if (menuitem->mnemonicCharPressed(keymsg))
       return menuitem;
   }
   return NULL;

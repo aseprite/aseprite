@@ -9,11 +9,12 @@
 #endif
 
 #include "app/app.h"
-#include "app/context.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "base/convert_to.h"
 #include "doc/sprite.h"
@@ -66,7 +67,7 @@ void FramePropertiesCommand::onLoadParams(const Params& params)
   }
   else {
     m_target = SPECIFIC_FRAME;
-    m_frame = frame_t(base::convert_to<int>(frame)-1);
+    m_frame = frame_t(base::convert_to<int>(frame));
   }
 }
 
@@ -79,7 +80,8 @@ void FramePropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
-
+  auto& docPref = Preferences::instance().document(context->activeDocument());
+  int base = docPref.timeline.firstFrame();
   app::gen::FrameProperties window;
   SelectedFrames selFrames;
 
@@ -101,7 +103,7 @@ void FramePropertiesCommand::onExecute(Context* context)
     }
 
     case SPECIFIC_FRAME:
-      selFrames.insert(m_frame);
+      selFrames.insert(m_frame-base);
       break;
   }
 
@@ -110,11 +112,11 @@ void FramePropertiesCommand::onExecute(Context* context)
     return;
 
   if (selFrames.size() == 1)
-    window.frame()->setTextf("%d", selFrames.firstFrame()+1);
+    window.frame()->setTextf("%d", selFrames.firstFrame()+base);
   else if (selFrames.ranges() == 1) {
     window.frame()->setTextf("[%d...%d]",
-                             selFrames.firstFrame()+1,
-                             selFrames.lastFrame()+1);
+                             selFrames.firstFrame()+base,
+                             selFrames.lastFrame()+base);
   }
   else
     window.frame()->setTextf("Multiple Frames");

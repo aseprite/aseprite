@@ -35,6 +35,7 @@
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
 #include "base/bind.h"
+#include "base/string.h"
 #include "doc/document_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -475,7 +476,7 @@ public:
       case kMouseEnterMessage:
         if (Preferences::instance().statusBar.focusFrameFieldOnMouseover()) {
           requestFocus();
-          selectText(0, -1);
+          selectAllText();
         }
         break;
 
@@ -488,13 +489,11 @@ public:
              scancode == kKeyEnterPad)) {
           Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFrame);
           Params params;
-          int frame = textInt();
-          if (frame > 0) {
-            params.set("frame", text().c_str());
-            UIContext::instance()->executeCommand(cmd, params);
-          }
+          params.set("frame", text().c_str());
+          UIContext::instance()->executeCommand(cmd, params);
+
           // Select the text again
-          selectText(0, -1);
+          selectAllText();
           releaseFocus();
           return true;          // Key used.
         }
@@ -611,17 +610,15 @@ void StatusBar::showBackupIcon(BackupIcon icon)
   m_indicators->showBackupIcon(icon);
 }
 
-bool StatusBar::setStatusText(int msecs, const char *format, ...)
+bool StatusBar::setStatusText(int msecs, const char* format, ...)
 {
   if ((base::current_tick() > m_timeout) || (msecs > 0)) {
-    char buf[256];              // TODO warning buffer overflow
-    va_list ap;
-
+    std::va_list ap;
     va_start(ap, format);
-    vsprintf(buf, format, ap);
+    std::string msg = base::string_vprintf(format, ap);
     va_end(ap);
 
-    IndicatorsGeneration(m_indicators).add(buf);
+    IndicatorsGeneration(m_indicators).add(msg.c_str());
     m_timeout = base::current_tick() + msecs;
     return true;
   }
@@ -629,21 +626,18 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
     return false;
 }
 
-void StatusBar::showTip(int msecs, const char *format, ...)
+void StatusBar::showTip(int msecs, const char* format, ...)
 {
-  char buf[256];                // TODO warning buffer overflow
-  va_list ap;
-  int x, y;
-
+  std::va_list ap;
   va_start(ap, format);
-  vsprintf(buf, format, ap);
+  std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
   if (m_tipwindow == NULL) {
-    m_tipwindow = new CustomizedTipWindow(buf);
+    m_tipwindow = new CustomizedTipWindow(msg);
   }
   else {
-    m_tipwindow->setText(buf);
+    m_tipwindow->setText(msg);
   }
 
   m_tipwindow->setInterval(msecs);
@@ -654,14 +648,14 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   m_tipwindow->openWindow();
   m_tipwindow->remapWindow();
 
-  x = bounds().x2() - m_tipwindow->bounds().w;
-  y = bounds().y - m_tipwindow->bounds().h;
+  int x = bounds().x2() - m_tipwindow->bounds().w;
+  int y = bounds().y - m_tipwindow->bounds().h;
   m_tipwindow->positionWindow(x, y);
 
   m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
-  IndicatorsGeneration(m_indicators).add(buf);
+  IndicatorsGeneration(m_indicators).add(msg.c_str());
   m_timeout = base::current_tick();
 }
 
@@ -744,13 +738,15 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
       ASSERT(m_doc == site.document());
     }
 
+    auto& docPref = Preferences::instance().document(
+      static_cast<app::Document*>(m_doc));
+
     m_docControls->setVisible(true);
-    showSnapToGridWarning(
-      Preferences::instance().document(
-        static_cast<app::Document*>(m_doc)).grid.snap());
+    showSnapToGridWarning(docPref.grid.snap());
 
     // Current frame
-    m_currentFrame->setTextf("%d", site.frame()+1);
+    m_currentFrame->setTextf(
+      "%d", site.frame()+docPref.timeline.firstFrame());
   }
   else {
     ASSERT(m_doc == nullptr);

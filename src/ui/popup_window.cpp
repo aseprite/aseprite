@@ -116,6 +116,13 @@ bool PopupWindow::onProcessMessage(Message* msg)
           closeWindow(this);
           return true;
         }
+
+        // If the message came from a filter, we don't send it back to
+        // the default Window processing (which will send the message
+        // to the Manager). In this way, the focused children can
+        // process the kKeyDownMessage.
+        if (msg->fromFilter())
+          return false;
       }
       break;
 

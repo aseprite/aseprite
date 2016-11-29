@@ -32,6 +32,8 @@
 #include "render/render.h"
 #include "ui/alert.h"
 
+#include "open_sequence.xml.h"
+
 #include <cstring>
 #include <cstdarg>
 
@@ -191,6 +193,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
   if (fop->m_format->support(FILE_SUPPORT_SEQUENCES)) {
     /* prepare to load a sequence */
     fop->prepareForSequence();
+    fop->m_seq.flags = flags;
 
     /* per now, we want load just one file */
     fop->m_seq.filename_list.push_back(filename);
@@ -221,18 +224,57 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
         }
       }
 
-      /* TODO add a better dialog to edit file-names */
-      if ((flags & FILE_LOAD_SEQUENCE_ASK) && context && context->isUIAvailable()) {
-        /* really want load all files? */
-        if ((fop->m_seq.filename_list.size() > 1) &&
-            (ui::Alert::show("Notice"
-              "<<Possible animation with:"
-              "<<%s, %s..."
-              "<<Do you want to load the sequence of bitmaps?"
-              "||&Agree||&Skip",
-              base::get_file_name(fop->m_seq.filename_list[0]).c_str(),
-              base::get_file_name(fop->m_seq.filename_list[1]).c_str()) != 1)) {
+      // TODO add a better dialog to edit file-names
+      if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
+          context &&
+          context->isUIAvailable() &&
+          fop->m_seq.filename_list.size() > 1) {
+        app::gen::OpenSequence window;
+        window.repeat()->setVisible(flags & FILE_LOAD_SEQUENCE_ASK_CHECKBOX ? true: false);
 
+        for (const auto& fn : fop->m_seq.filename_list) {
+          auto item = new ui::ListItem(base::get_file_name(fn));
+          item->setSelected(true);
+          window.files()->addChild(item);
+        }
+
+        window.files()->Change.connect(
+          [&window]{
+            window.agree()->setEnabled(
+              window.files()->getSelectedChild() != nullptr);
+          });
+
+        window.openWindowInForeground();
+
+        // If the user selected the "do the same for other files"
+        // checkbox, we've to save what the user want to do for the
+        // following files.
+        if (window.repeat()->isSelected()) {
+          if (window.closer() == window.agree())
+            fop->m_seq.flags = FILE_LOAD_SEQUENCE_YES;
+          else
+            fop->m_seq.flags = FILE_LOAD_SEQUENCE_NONE;
+        }
+
+        if (window.closer() == window.agree()) {
+          // If the user replies "Agree", we load the selected files.
+          std::vector<std::string> list;
+
+          auto it = window.files()->children().begin();
+          auto end = window.files()->children().end();
+          for (const auto& fn : fop->m_seq.filename_list) {
+            ASSERT(it != end);
+            if (it == end)
+              break;
+            if ((*it)->isSelected())
+              list.push_back(fn);
+            ++it;
+          }
+
+          ASSERT(!list.empty());
+          fop->m_seq.filename_list = list;
+        }
+        else {
           // If the user replies "Skip", we need just one file name
           // (the first one).
           if (fop->m_seq.filename_list.size() > 1) {
@@ -944,6 +986,7 @@ FileOp::FileOp(FileOpType type, Context* context)
   m_seq.frame = frame_t(0);
   m_seq.layer = nullptr;
   m_seq.last_cel = nullptr;
+  m_seq.flags = 0;
 }
 
 void FileOp::prepareForSequence()

@@ -14,21 +14,41 @@
 #include "app/ui/hex_color_entry.h"
 #include "base/hex.h"
 #include "gfx/border.h"
+#include "ui/message.h"
 #include "ui/theme.h"
 
 namespace app {
 
 using namespace ui;
 
+HexColorEntry::CustomEntry::CustomEntry()
+  : Entry(16, "")
+{
+}
+
+bool HexColorEntry::CustomEntry::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kMouseDownMessage:
+      setFocusStop(true);
+      requestFocus();
+      break;
+    case kFocusLeaveMessage:
+      setFocusStop(false);
+      break;
+  }
+  return Entry::onProcessMessage(msg);
+}
+
 HexColorEntry::HexColorEntry()
   : Box(HORIZONTAL)
   , m_label("#")
-  , m_entry(16, "")
 {
   addChild(&m_label);
   addChild(&m_entry);
 
   m_entry.Change.connect(&HexColorEntry::onEntryChange, this);
+  m_entry.setFocusStop(false);
 
   initTheme();
 

@@ -16,15 +16,22 @@
 #include "she/keys.h"
 #include "she/osx/generate_drop_files.h"
 #include "she/osx/window.h"
+#include "she/system.h"
 
-using namespace she;
+#include <Carbon/Carbon.h>      // For VK codes
+
+namespace she {
+
+bool osx_is_key_pressed(KeyScancode scancode);
 
 namespace {
 
-// Internal array of pressed keys used in is_key_pressed()
-bool pressed_keys[kKeyScancodes];
+// Internal array of pressed keys used in isKeyPressed()
+int g_pressedKeys[kKeyScancodes];
+bool g_translateDeadKeys = false;
+UInt32 g_lastDeadKeyState = 0;
 
-inline gfx::Point get_local_mouse_pos(NSView* view, NSEvent* event)
+gfx::Point get_local_mouse_pos(NSView* view, NSEvent* event)
 {
   NSPoint point = [view convertPoint:[event locationInWindow]
                             fromView:nil];
@@ -37,7 +44,7 @@ inline gfx::Point get_local_mouse_pos(NSView* view, NSEvent* event)
                     (view.bounds.size.height - point.y) / scale);
 }
 
-inline Event::MouseButton get_mouse_buttons(NSEvent* event)
+Event::MouseButton get_mouse_buttons(NSEvent* event)
 {
   // Some Wacom drivers on OS X report right-clicks with
   // buttonNumber=0, so we've to check the type event anyway.
@@ -61,7 +68,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   return Event::MouseButton::NoneButton;
 }
 
-inline KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
+KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
 {
   int modifiers = kKeyNoneModifier;
   NSEventModifierFlags nsFlags = event.modifierFlags;
@@ -69,36 +76,70 @@ inline KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
   if (nsFlags & NSControlKeyMask) modifiers |= kKeyCtrlModifier;
   if (nsFlags & NSAlternateKeyMask) modifiers |= kKeyAltModifier;
   if (nsFlags & NSCommandKeyMask) modifiers |= kKeyCmdModifier;
-  if (she::is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
+  if (osx_is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
   return (KeyModifiers)modifiers;
 }
 
-inline int get_unicodechar_from_nsevent(NSEvent* event)
+// Based on code from:
+// http://stackoverflow.com/questions/22566665/how-to-capture-unicode-from-key-events-without-an-nstextview
+// http://stackoverflow.com/questions/12547007/convert-key-code-into-key-equivalent-string
+// http://stackoverflow.com/questions/8263618/convert-virtual-key-code-to-unicode-string
+//
+// It includes a "translateDeadKeys" flag to avoid processing dead
+// keys in case that we want to use key
+CFStringRef get_unicode_from_key_code(NSEvent* event,
+                                      const bool translateDeadKeys)
 {
-  int chr = 0;
-  // TODO we should use "event.characters" for a new kind of event (Event::Char or something like that)
-  NSString* chars = event.charactersIgnoringModifiers;
-  if (chars && chars.length >= 1) {
-    chr = [chars characterAtIndex:0];
-    if (chr < 32)
-      chr = 0;
-  }
-  return chr;
+  TISInputSourceRef inputSource = TISCopyCurrentKeyboardInputSource();
+  CFDataRef keyLayoutData = (CFDataRef)TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout* keyLayout = (const UCKeyboardLayout*)CFDataGetBytePtr(keyLayoutData);
+
+  UInt32 deadKeyState = (translateDeadKeys ? g_lastDeadKeyState: 0);
+  UniChar output[4];
+  UniCharCount length;
+
+  // Reference here:
+  // https://developer.apple.com/reference/coreservices/1390584-uckeytranslate?language=objc
+  UCKeyTranslate(
+    keyLayout,
+    event.keyCode,
+    kUCKeyActionDown,
+    ((event.modifierFlags >> 16) & 0xFF),
+    LMGetKbdType(),
+    (translateDeadKeys ? 0: kUCKeyTranslateNoDeadKeysMask),
+    &deadKeyState,
+    sizeof(output) / sizeof(output[0]),
+    &length,
+    output);
+
+  if (translateDeadKeys)
+    g_lastDeadKeyState = deadKeyState;
+
+  CFRelease(inputSource);
+  return CFStringCreateWithCharacters(kCFAllocatorDefault, output, length);
 }
 
 } // anonymous namespace
 
-namespace she {
-
-bool is_key_pressed(KeyScancode scancode)
+bool osx_is_key_pressed(KeyScancode scancode)
 {
   if (scancode >= 0 && scancode < kKeyScancodes)
-    return pressed_keys[scancode];
+    return (g_pressedKeys[scancode] != 0);
   else
     return false;
 }
 
+int osx_get_unicode_from_scancode(KeyScancode scancode)
+{
+  if (scancode >= 0 && scancode < kKeyScancodes)
+    return g_pressedKeys[scancode];
+  else
+    return 0;
+}
+
 } // namespace she
+
+using namespace she;
 
 @implementation OSXView
 
@@ -167,17 +208,47 @@ bool is_key_pressed(KeyScancode scancode)
   [super keyDown:event];
 
   KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
-  if (scancode >= 0 && scancode < kKeyScancodes)
-    pressed_keys[scancode] = true;
-
   Event ev;
   ev.setType(Event::KeyDown);
   ev.setScancode(scancode);
   ev.setModifiers(get_modifiers_from_nsevent(event));
   ev.setRepeat(event.ARepeat ? 1: 0);
-  ev.setUnicodeChar(get_unicodechar_from_nsevent(event));
+  ev.setUnicodeChar(0);
 
-  queue_event(ev);
+  bool sendMsg = true;
+
+  CFStringRef strRef = get_unicode_from_key_code(event, false);
+  if (strRef) {
+    int length = CFStringGetLength(strRef);
+    if (length == 1)
+      ev.setUnicodeChar(CFStringGetCharacterAtIndex(strRef, 0));
+    CFRelease(strRef);
+  }
+
+  if (scancode >= 0 && scancode < kKeyScancodes)
+    g_pressedKeys[scancode] = (ev.unicodeChar() ? ev.unicodeChar(): 1);
+
+  if (g_translateDeadKeys) {
+    strRef = get_unicode_from_key_code(event, true);
+    if (strRef) {
+      int length = CFStringGetLength(strRef);
+      if (length > 0) {
+        sendMsg = false;
+        for (int i=0; i<length; ++i) {
+          ev.setUnicodeChar(CFStringGetCharacterAtIndex(strRef, i));
+          queue_event(ev);
+        }
+        g_lastDeadKeyState = 0;
+      }
+      else {
+        ev.setDeadKey(true);
+      }
+      CFRelease(strRef);
+    }
+  }
+
+  if (sendMsg)
+    queue_event(ev);
 }
 
 - (void)keyUp:(NSEvent*)event
@@ -186,14 +257,14 @@ bool is_key_pressed(KeyScancode scancode)
 
   KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
   if (scancode >= 0 && scancode < kKeyScancodes)
-    pressed_keys[scancode] = false;
+    g_pressedKeys[scancode] = 0;
 
   Event ev;
   ev.setType(Event::KeyUp);
   ev.setScancode(scancode);
   ev.setModifiers(get_modifiers_from_nsevent(event));
   ev.setRepeat(event.ARepeat ? 1: 0);
-  ev.setUnicodeChar(get_unicodechar_from_nsevent(event));
+  ev.setUnicodeChar(0);
 
   queue_event(ev);
 }
@@ -230,7 +301,7 @@ bool is_key_pressed(KeyScancode scancode)
         ((newFlags & flags[i]) != 0 ? Event::KeyDown:
                                       Event::KeyUp));
 
-      pressed_keys[scancodes[i]] = ((newFlags & flags[i]) != 0);
+      g_pressedKeys[scancodes[i]] = ((newFlags & flags[i]) != 0);
 
       ev.setScancode(scancodes[i]);
       ev.setModifiers(modifiers);
@@ -515,6 +586,17 @@ bool is_key_pressed(KeyScancode scancode)
   }
   else
     return NO;
+}
+
+- (void)doCommandBySelector:(SEL)selector
+{
+  // Do nothing (avoid beep pressing Escape key)
+}
+
+- (void)setTranslateDeadKeys:(BOOL)state
+{
+  g_translateDeadKeys = (state ? true: false);
+  g_lastDeadKeyState = 0;
 }
 
 @end

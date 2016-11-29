@@ -32,12 +32,11 @@ retry:;
                                 inMode:NSDefaultRunLoopMode
                                dequeue:YES];
     if (event) {
-      // Intercept Control+Tab and send it to the main NSView. Without
-      // this, the NSApplication intercepts the key combination and
-      // use it to go to the next key view.
-      if (event.type == NSKeyDown &&
-          event.modifierFlags & NSControlKeyMask &&
-          event.keyCode == kVK_Tab) {
+      // Intercept <Control+Tab>, <Cmd+[>, and other keyboard
+      // combinations, and send them directly to the main
+      // NSView. Without this, the NSApplication intercepts the key
+      // combination and use it to go to the next key view.
+      if (event.type == NSKeyDown) {
         [app.mainWindow.contentView keyDown:event];
       }
       else {

@@ -186,15 +186,15 @@ app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 
 int PaletteView::getBoxSize() const
 {
-  return m_boxsize / guiscale();
+  return int(m_boxsize) / guiscale();
 }
 
-void PaletteView::setBoxSize(int boxsize)
+void PaletteView::setBoxSize(double boxsize)
 {
-  m_boxsize = MID(4, boxsize, 32)*guiscale();
+  m_boxsize = MID(4.0, boxsize, 32.0)*guiscale();
 
   if (m_delegate)
-    m_delegate->onPaletteViewChangeSize(m_boxsize / guiscale());
+    m_delegate->onPaletteViewChangeSize(int(m_boxsize) / guiscale());
 
   View* view = View::getView(this);
   if (view)
@@ -382,13 +382,19 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
 
-      if (msg->onlyCtrlPressed()) {
+      if (msg->onlyCtrlPressed() ||
+          msg->onlyCmdPressed()) {
         int z = delta.x - delta.y;
         setBoxSize(m_boxsize + z);
       }
       else {
         gfx::Point scroll = view->viewScroll();
-        scroll += delta * 3 * m_boxsize;
+
+        if (static_cast<MouseMessage*>(msg)->preciseWheel())
+          scroll += delta;
+        else
+          scroll += delta * 3 * m_boxsize;
+
         view->setViewScroll(scroll);
       }
       break;
@@ -409,6 +415,11 @@ bool PaletteView::onProcessMessage(Message* msg)
       }
       setCursor();
       return true;
+    }
+
+    case kTouchMagnifyMessage: {
+      setBoxSize(m_boxsize + m_boxsize * static_cast<ui::TouchMessage*>(msg)->magnification());
+      break;
     }
 
   }
@@ -475,14 +486,14 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       case FgBgColors:
         if (fgIndex == i) {
           gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
-          for (int i=0; i<m_boxsize/2; ++i)
+          for (int i=0; i<int(m_boxsize/2); ++i)
             g->drawHLine(neg, box.x, box.y+i, m_boxsize/2-i);
         }
 
         if (bgIndex == i) {
           gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
-          for (int i=0; i<m_boxsize/4; ++i)
-            g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-m_boxsize/4+i, i+1);
+          for (int i=0; i<int(m_boxsize/4); ++i)
+            g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-int(m_boxsize/4)+i, i+1);
         }
 
         if (transparentIndex == i)
@@ -582,7 +593,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
     if (view) {
       int columns =
         (view->viewportBounds().w-this->childSpacing()*2)
-        / (m_boxsize+this->childSpacing());
+        / (int(m_boxsize)+this->childSpacing());
       setColumns(MAX(1, columns));
     }
     m_isUpdatingColumns = false;
@@ -602,8 +613,8 @@ void PaletteView::onSizeHint(ui::SizeHintEvent& ev)
   }
 
   gfx::Size sz;
-  sz.w = border().width() + cols*m_boxsize + (cols-1)*childSpacing();
-  sz.h = border().height() + rows*m_boxsize + (rows-1)*childSpacing();
+  sz.w = border().width() + cols*int(m_boxsize) + (cols-1)*childSpacing();
+  sz.h = border().height() + rows*int(m_boxsize) + (rows-1)*childSpacing();
 
   ev.setSizeHint(sz);
 }
@@ -629,18 +640,18 @@ void PaletteView::update_scroll(int color)
   d = div(currentPalette()->size(), m_columns);
   cols = m_columns;
 
-  y = (m_boxsize+childSpacing()) * (color / cols);
-  x = (m_boxsize+childSpacing()) * (color % cols);
+  y = (int(m_boxsize)+childSpacing()) * (color / cols);
+  x = (int(m_boxsize)+childSpacing()) * (color % cols);
 
   if (scroll.x > x)
     scroll.x = x;
-  else if (scroll.x+vp.w-m_boxsize-2 < x)
-    scroll.x = x-vp.w+m_boxsize+2;
+  else if (scroll.x+vp.w-int(m_boxsize)-2 < x)
+    scroll.x = x-vp.w+int(m_boxsize)+2;
 
   if (scroll.y > y)
     scroll.y = y;
-  else if (scroll.y+vp.h-m_boxsize-2 < y)
-    scroll.y = y-vp.h+m_boxsize+2;
+  else if (scroll.y+vp.h-int(m_boxsize)-2 < y)
+    scroll.y = y-vp.h+int(m_boxsize)+2;
 
   view->setViewScroll(scroll);
 }
@@ -662,9 +673,9 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
   int row = index / cols;
 
   return gfx::Rect(
-    bounds.x + border().left() + col*(m_boxsize+childSpacing()),
-    bounds.y + border().top() + row*(m_boxsize+childSpacing()),
-    m_boxsize, m_boxsize);
+    bounds.x + border().left() + col*(int(m_boxsize)+childSpacing()),
+    bounds.y + border().top() + row*(int(m_boxsize)+childSpacing()),
+    int(m_boxsize), int(m_boxsize));
 }
 
 PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
@@ -716,8 +727,8 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   }
 
   gfx::Rect box = getPaletteEntryBounds(0);
-  box.w = (m_boxsize+childSpacing());
-  box.h = (m_boxsize+childSpacing());
+  box.w = (int(m_boxsize)+childSpacing());
+  box.h = (int(m_boxsize)+childSpacing());
 
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)

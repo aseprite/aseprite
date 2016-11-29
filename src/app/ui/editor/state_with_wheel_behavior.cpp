@@ -113,15 +113,18 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       }
       break;
 
-    case WHEEL_FRAME:
-      {
-        Command* command = CommandsModule::instance()->getCommandByName
-          ((dz < 0.0) ? CommandId::GotoNextFrame:
-                        CommandId::GotoPreviousFrame);
-        if (command)
-          UIContext::instance()->executeCommand(command);
-      }
+    case WHEEL_FRAME: {
+      Command* command = nullptr;
+
+      if (dz < 0.0)
+        command = CommandsModule::instance()->getCommandByName(CommandId::GotoNextFrame);
+      else if (dz > 0.0)
+        command = CommandsModule::instance()->getCommandByName(CommandId::GotoPreviousFrame);
+
+      if (command)
+        UIContext::instance()->executeCommand(command);
       break;
+    }
 
     case WHEEL_ZOOM: {
       render::Zoom zoom = editor->zoom();

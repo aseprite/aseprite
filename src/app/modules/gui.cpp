@@ -9,6 +9,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/commands/cmd_open_file.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
@@ -345,16 +346,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
     case kDropFilesMessage:
       {
-        const DropFilesMessage::Files& files = static_cast<DropFilesMessage*>(msg)->files();
-
-        // Open all files
-        Command* cmd_open_file =
-          CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
-        Params params;
-
+        DropFilesMessage::Files files = static_cast<DropFilesMessage*>(msg)->files();
         UIContext* ctx = UIContext::instance();
+        OpenFileCommand cmd;
 
-        for (const auto& fn : files) {
+        while (!files.empty()) {
+          auto fn = files.front();
+          files.erase(files.begin());
+
           // If the document is already open, select it.
           Document* doc = static_cast<Document*>(ctx->documents().getByFileName(fn));
           if (doc) {
@@ -367,8 +366,17 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           }
           // Load the file
           else {
+            Params params;
             params.set("filename", fn.c_str());
-            ctx->executeCommand(cmd_open_file, params);
+            params.set("repeat_checkbox", "true");
+            ctx->executeCommand(&cmd, params);
+
+            // Remove all used file names from the "dropped files"
+            for (const auto& usedFn : cmd.usedFiles()) {
+              auto it = std::find(files.begin(), files.end(), usedFn);
+              if (it != files.end())
+                files.erase(it);
+            }
           }
         }
       }
@@ -376,10 +384,12 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
     case kKeyDownMessage: {
 #ifdef _DEBUG
+      auto keymsg = static_cast<KeyMessage*>(msg);
+
       // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
       if (msg->ctrlPressed() &&
           msg->shiftPressed() &&
-          static_cast<KeyMessage*>(msg)->scancode() == kKeyQ) {
+          keymsg->scancode() == kKeyQ) {
         int* p = nullptr;
         *p = 0;
       }
@@ -388,7 +398,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       // Ctrl+Shift+R recover active sprite from the backup store
       if (msg->ctrlPressed() &&
           msg->shiftPressed() &&
-          static_cast<KeyMessage*>(msg)->scancode() == kKeyR &&
+          keymsg->scancode() == kKeyR &&
           App::instance()->dataRecovery() &&
           App::instance()->dataRecovery()->activeSession() &&
           current_editor &&

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,14 +21,12 @@ int key_repeated[KEY_MAX];
 int she_keyboard_ucallback(int unicode_char, int* scancode)
 {
   int c = ((*scancode) & 0x7f);
-  Event ev;
 
+  Event ev;
   ev.setType(Event::KeyDown);
   ev.setScancode(static_cast<KeyScancode>(c));
   if (unicode_char > 0)
     ev.setUnicodeChar(unicode_char);
-  else
-    ev.setUnicodeChar(::scancode_to_ascii(c));
   ev.setRepeat(key_repeated[c]++);
   queue_event(ev);
 

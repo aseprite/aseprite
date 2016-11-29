@@ -8,6 +8,10 @@
 #define APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
 #pragma once
 
+#ifndef ENABLE_SCRIPTING
+  #error ENABLE_SCRIPTING must be defined
+#endif
+
 #include "app/script/app_scripting.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"

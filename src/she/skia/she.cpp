@@ -24,15 +24,8 @@
 
 namespace she {
 
-static System* g_instance;
-
-System* create_system() {
-  return g_instance = new SkiaSystem();
-}
-
-System* instance()
-{
-  return g_instance;
+System* create_system_impl() {
+  return new SkiaSystem();
 }
 
 void error_message(const char* msg)
@@ -41,19 +34,11 @@ void error_message(const char* msg)
   // TODO
 }
 
-void clear_keyboard_buffer()
-{
-  // Do nothing
-}
-
 } // namespace she
 
 extern int app_main(int argc, char* argv[]);
 
 #if _WIN32
-extern int __argc;
-extern wchar_t** __wargv;
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                     PWSTR lpCmdLine, int nCmdShow) {
   int argc = __argc;

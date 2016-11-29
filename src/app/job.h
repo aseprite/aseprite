@@ -24,6 +24,8 @@ namespace app {
 
   class Job {
   public:
+    static int runningJobs();
+
     Job(const char* jobName);
     virtual ~Job();
 

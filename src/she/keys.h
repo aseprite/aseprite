@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013, 2015  David Capello
+// Copyright (C) 2012-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -125,41 +125,36 @@ namespace she {
     kKeyCircumflex   = 100,
     kKeyColon2       = 101,
     kKeyKanji        = 102,
-    kKeyEqualsPad    = 103,  // MacOS X
-    kKeyBackquote    = 104,  // MacOS X
-    kKeySemicolon    = 105,  // MacOS X
-    kKeyCommand      = 106,  // MacOS X
-    kKeyUnknown1     = 107,
-    kKeyUnknown2     = 108,
-    kKeyUnknown3     = 109,
-    kKeyUnknown4     = 110,
-    kKeyUnknown5     = 111,
-    kKeyUnknown6     = 112,
-    kKeyUnknown7     = 113,
-    kKeyUnknown8     = 114,
+    kKeyEqualsPad    = 103,  // macOS
+    kKeyBackquote    = 104,  // macOS
+    kKeySemicolon    = 105,  // macOS
+    kKeyUnknown1     = 106,
+    kKeyUnknown2     = 107,
+    kKeyUnknown3     = 108,
+    kKeyUnknown4     = 109,
+    kKeyUnknown5     = 110,
+    kKeyUnknown6     = 111,
+    kKeyUnknown7     = 112,
+    kKeyUnknown8     = 113,
 
-    kKeyFirstModifierScancode = 115,
+    kKeyFirstModifierScancode = 114,
 
-    kKeyLShift       = 115,
-    kKeyRShift       = 116,
-    kKeyLControl     = 117,
-    kKeyRControl     = 118,
-    kKeyAlt          = 119,
-    kKeyAltGr        = 120,
-    kKeyLWin         = 121,
-    kKeyRWin         = 122,
-    kKeyMenu         = 123,
+    kKeyLShift       = 114,
+    kKeyRShift       = 115,
+    kKeyLControl     = 116,
+    kKeyRControl     = 117,
+    kKeyAlt          = 118,
+    kKeyAltGr        = 119,
+    kKeyLWin         = 120,
+    kKeyRWin         = 121,
+    kKeyMenu         = 122,
+    kKeyCommand      = 123,  // macOS - TODO This should be inside the modifiers range
     kKeyScrLock      = 124,
     kKeyNumLock      = 125,
     kKeyCapsLock     = 126,
 
     kKeyScancodes    = 127
   };
-
-  // Deprecated API, use modifiers in she::Event
-  // TODO mark these functions as deprecated
-  bool is_key_pressed(KeyScancode scancode);
-  void clear_keyboard_buffer();
 
 } // namespace she
 

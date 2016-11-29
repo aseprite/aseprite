@@ -78,6 +78,25 @@ public:
     return loadFreeTypeFont(filename, height);
   }
 
+  KeyModifiers keyModifiers() override {
+    return
+      (KeyModifiers)
+      ((isKeyPressed(kKeyLShift) ||
+        isKeyPressed(kKeyRShift) ? kKeyShiftModifier: 0) |
+       (isKeyPressed(kKeyLControl) ||
+        isKeyPressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
+       (isKeyPressed(kKeyAlt) ? kKeyAltModifier: 0) |
+       (isKeyPressed(kKeyAltGr) ? (kKeyCtrlModifier | kKeyAltModifier): 0) |
+       (isKeyPressed(kKeyCommand) ? kKeyCmdModifier: 0) |
+       (isKeyPressed(kKeySpace) ? kKeySpaceModifier: 0) |
+       (isKeyPressed(kKeyLWin) ||
+        isKeyPressed(kKeyRWin) ? kKeyWinModifier: 0));
+  }
+
+  void clearKeyboardBuffer() override {
+    // Do nothing
+  }
+
 private:
   NativeDialogs* m_nativeDialogs;
 };

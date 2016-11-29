@@ -77,8 +77,7 @@ And it uses the following third-party libraries:
 
 * [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
 * [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/FTL.txt)
-* [Google Test](https://github.com/google/googletest) - [gtest license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
-* [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
+* [Google Test](https://github.com/google/googletest) - [BSD-like license](https://github.com/aseprite/googletest/blob/master/googletest/LICENSE)
 * [curl](http://curl.haxx.se/) - [curl license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
 * [duktape](http://duktape.org/) - [MIT license](https://github.com/aseprite/aseprite/tree/master/third_party/duktape/LICENSE.txt)
 * [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
@@ -86,9 +85,9 @@ And it uses the following third-party libraries:
 * [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
 * [libwebp](https://developers.google.com/speed/webp/) - [libwebp license](https://chromium.googlesource.com/webm/libwebp/+/master/COPYING)
 * [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
-* [modp_b64](https://github.com/aseprite/aseprite/tree/master/third_party/modp_b64/modp_b64.h) - [BSD license](https://github.com/aseprite/aseprite/tree/master/third_party/modp_b64/LICENSE)
 * [pixman](http://www.pixman.org/) - [MIT license](http://cgit.freedesktop.org/pixman/plain/COPYING)
 * [simpleini](https://github.com/aseprite/simpleini/) - [MIT license](https://github.com/aseprite/simpleini/blob/aseprite/LICENCE.txt)
+* [stringencoders](https://github.com/client9/stringencoders) - [MIT license](https://github.com/aseprite/stringencoders/blob/master/LICENSE)
 * [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 
@@ -103,8 +102,7 @@ This program is distributed under three different licenses:
    (e.g. [laf](https://github.com/aseprite/laf),
    [clip](https://github.com/aseprite/clip),
    [she](https://github.com/aseprite/aseprite/tree/master/src/she),
-   [gfx](https://github.com/aseprite/gfx),
-   [ui](https://github.com/aseprite/ui), etc.).
+   [gfx](src/gfx), [ui](src/ui), etc.).
 2. You can request a special
    [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license)
    in case you are a teacher in an educational institution and want to

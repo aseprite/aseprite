@@ -80,7 +80,7 @@ Theme* CurrentTheme::get()
 }
 
 void drawTextBox(Graphics* g, Widget* widget,
-  int* w, int* h, gfx::Color bg, gfx::Color fg)
+                 int* w, int* h, gfx::Color bg, gfx::Color fg)
 {
   View* view = View::getView(widget);
   char* text = const_cast<char*>(widget->text().c_str());
@@ -88,31 +88,30 @@ void drawTextBox(Graphics* g, Widget* widget,
   int x1, y1, x2, y2;
   int x, y, chr, len;
   gfx::Point scroll;
-  int viewport_w, viewport_h;
   int textheight = widget->textHeight();
   she::Font* font = widget->font();
   char *beg_end, *old_end;
   int width;
+  gfx::Rect vp;
 
   if (view) {
-    gfx::Rect vp = view->viewportBounds()
-      .offset(-view->viewport()->bounds().origin());
-
-    x1 = vp.x;
-    y1 = vp.y;
-    viewport_w = vp.w;
-    viewport_h = vp.h;
+    vp = view->viewportBounds().offset(-widget->bounds().origin());
     scroll = view->viewScroll();
   }
   else {
-    x1 = widget->clientBounds().x + widget->border().left();
-    y1 = widget->clientBounds().y + widget->border().top();
-    viewport_w = widget->clientBounds().w - widget->border().width();
-    viewport_h = widget->clientBounds().h - widget->border().height();
+    vp = widget->clientBounds();
+    vp.w -= widget->border().width();
+    vp.h -= widget->border().height();
     scroll.x = scroll.y = 0;
   }
-  x2 = x1 + viewport_w;
-  y2 = y1 + viewport_h;
+  x1 = widget->clientBounds().x;
+  y1 = widget->clientBounds().y;
+  x2 = vp.x + vp.w;
+  y2 = vp.y + vp.h;
+
+  // Fill background
+  if (g)
+    g->fillRect(bg, vp);
 
   chr = 0;
 
@@ -127,27 +126,27 @@ void drawTextBox(Graphics* g, Widget* widget,
       *w = 0;
     }
     else {
-      /* TODO modificable option? I don't think so, this is very internal stuff */
+      // TODO modificable option? I don't think so, this is very internal stuff
 #if 0
-      /* shows more information in x-scroll 0 */
-      width = viewport_w;
+      // Shows more information in x-scroll 0
+      width = vp.w;
 #else
-      /* make good use of the complete text-box */
+      // Make good use of the complete text-box
       if (view) {
         gfx::Size maxSize = view->getScrollableSize();
-        width = MAX(viewport_w, maxSize.w);
+        width = MAX(vp.w, maxSize.w);
       }
       else {
-        width = viewport_w;
+        width = vp.w;
       }
 #endif
     }
   }
 
   // Draw line-by-line
-  y = y1 - scroll.y;
+  y = y1;
   for (beg=end=text; end; ) {
-    x = x1 - scroll.x;
+    x = x1;
 
     // Without word-wrap
     if (!(widget->align() & WORDWRAP)) {
@@ -207,10 +206,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else                      // Left align
         xout = x;
 
-      g->drawUIString(beg, fg, bg, gfx::Point(xout, y));
-      g->fillAreaBetweenRects(bg,
-        gfx::Rect(x1, y, x2 - x1, textheight),
-        gfx::Rect(xout, y, len, textheight));
+      g->drawUIString(beg, fg, gfx::ColorNone, gfx::Point(xout, y));
     }
 
     if (w)
@@ -229,10 +225,6 @@ void drawTextBox(Graphics* g, Widget* widget,
 
   if (w) *w += widget->border().width();
   if (h) *h += widget->border().height();
-
-  // Fill bottom area
-  if (g && y < y2)
-    g->fillRect(bg, gfx::Rect(x1, y, x2 - x1, y2 - y));
 }
 
 } // namespace ui

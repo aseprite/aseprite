@@ -18,14 +18,17 @@
 #include "app/document.h"
 #include "app/document_exporter.h"
 #include "app/file/palette_file.h"
-#include "app/script/app_scripting.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "script/engine_delegate.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/app_scripting.h"
+  #include "script/engine_delegate.h"
+#endif
 
 #include <iostream>
 
@@ -114,9 +117,11 @@ void DefaultCliDelegate::exportFiles(DocumentExporter& exporter)
 
 void DefaultCliDelegate::execScript(const std::string& filename)
 {
+#ifdef ENABLE_SCRIPTING
   script::StdoutEngineDelegate delegate;
   AppScripting engine(&delegate);
   engine.evalFile(filename);
+#endif
 }
 
 } // namespace app

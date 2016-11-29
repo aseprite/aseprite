@@ -232,7 +232,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           MovingCelState* newState = new MovingCelState(editor, msg, handle);
           editor->setState(EditorStatePtr(newState));
         }
-        catch (const LockedDocumentException& ex) {
+        catch (const LockedDocumentException&) {
           // TODO break the background task that is locking this sprite
           StatusBar::instance()->showTip(1000,
             "Sprite is used by a backup/data recovery task");
@@ -502,7 +502,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     if (sprite->totalFrames() > 1) {
       sprintf(
         buf+std::strlen(buf), " :frame: %d :clock: %d",
-        editor->frame()+1,
+        editor->frame()+editor->docPref().timeline.firstFrame(),
         sprite->frameDuration(editor->frame()));
     }
 

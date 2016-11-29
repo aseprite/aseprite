@@ -15,6 +15,7 @@
 #include "gfx/size.h"
 #include "she/event.h"
 #include "she/event_queue.h"
+#include "she/osx/view.h"
 #include "she/osx/window.h"
 #include "she/skia/skia_display.h"
 #include "she/skia/skia_surface.h"
@@ -120,6 +121,11 @@ public:
                        bounds.w*scale,
                        bounds.h*scale)];
     [view displayIfNeeded];
+  }
+
+  void setTranslateDeadKeys(bool state) {
+    OSXView* view = (OSXView*)m_window.contentView;
+    [view setTranslateDeadKeys:(state ? YES: NO)];
   }
 
   void* handle() {
@@ -448,6 +454,12 @@ void SkiaWindow::updateWindow(const gfx::Rect& bounds)
 {
   if (m_impl)
     m_impl->updateWindow(bounds);
+}
+
+void SkiaWindow::setTranslateDeadKeys(bool state)
+{
+  if (m_impl)
+    m_impl->setTranslateDeadKeys(state);
 }
 
 void* SkiaWindow::handle()

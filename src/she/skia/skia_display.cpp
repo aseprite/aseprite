@@ -184,6 +184,11 @@ void SkiaDisplay::setLayout(const std::string& layout)
   m_window.setLayout(layout);
 }
 
+void SkiaDisplay::setTranslateDeadKeys(bool state)
+{
+  m_window.setTranslateDeadKeys(state);
+}
+
 DisplayHandle SkiaDisplay::nativeHandle()
 {
   return (DisplayHandle)m_window.handle();

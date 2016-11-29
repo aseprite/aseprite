@@ -37,6 +37,8 @@ namespace ui {
     const WidgetsList& recipients() const { return m_recipients; }
     bool hasRecipients() const { return !m_recipients.empty(); }
     bool isUsed() const { return m_used; }
+    bool fromFilter() const { return m_fromFilter; }
+    void setFromFilter(bool state) { m_fromFilter = state; }
     void markAsUsed() { m_used = true; }
     KeyModifiers modifiers() const { return m_modifiers; }
     bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
@@ -57,9 +59,10 @@ namespace ui {
     void broadcastToChildren(Widget* widget);
 
   private:
-    MessageType m_type;         // Type of message
+    MessageType m_type;       // Type of message
     WidgetsList m_recipients; // List of recipients of the message
     bool m_used;              // Was used
+    bool m_fromFilter;        // Sent from pre-filter
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
   };
 
@@ -74,6 +77,8 @@ namespace ui {
     KeyScancode scancode() const { return m_scancode; }
     int unicodeChar() const { return m_unicodeChar; }
     int repeat() const { return m_repeat; }
+    bool isDeadKey() const { return m_isDead; }
+    void setDeadKey(bool state) { m_isDead = state; }
     bool propagateToChildren() const { return m_propagate_to_children; }
     bool propagateToParent() const { return m_propagate_to_parent; }
     void setPropagateToChildren(bool flag) { m_propagate_to_children = flag; }
@@ -83,8 +88,9 @@ namespace ui {
     KeyScancode m_scancode;
     int m_unicodeChar;
     int m_repeat; // repeat=0 means the first time the key is pressed
-    bool m_propagate_to_children : 1;
-    bool m_propagate_to_parent : 1;
+    bool m_isDead;
+    bool m_propagate_to_children;
+    bool m_propagate_to_parent;
   };
 
   class PaintMessage : public Message {

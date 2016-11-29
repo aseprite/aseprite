@@ -12,9 +12,14 @@
 
 namespace she {
 
-bool is_key_pressed(KeyScancode scancode)
+bool x11_is_key_pressed(KeyScancode scancode)
 {
   return false;                 // TODO
+}
+
+int x11_get_unicode_from_scancode(KeyScancode scancode)
+{
+  return 0;                     // TODO
 }
 
 } // namespace she

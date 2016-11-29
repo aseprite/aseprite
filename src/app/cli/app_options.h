@@ -70,7 +70,9 @@ public:
   const Option& trim() const { return m_trim; }
   const Option& crop() const { return m_crop; }
   const Option& filenameFormat() const { return m_filenameFormat; }
+#ifdef ENABLE_SCRIPTING
   const Option& script() const { return m_script; }
+#endif
   const Option& listLayers() const { return m_listLayers; }
   const Option& listTags() const { return m_listTags; }
 
@@ -86,7 +88,9 @@ private:
   bool m_showVersion;
   VerboseLevel m_verboseLevel;
 
+#ifdef ENABLE_SCRIPTING
   Option& m_shell;
+#endif
   Option& m_batch;
   Option& m_preview;
   Option& m_saveAs;
@@ -114,7 +118,9 @@ private:
   Option& m_trim;
   Option& m_crop;
   Option& m_filenameFormat;
+#ifdef ENABLE_SCRIPTING
   Option& m_script;
+#endif
   Option& m_listLayers;
   Option& m_listTags;
 

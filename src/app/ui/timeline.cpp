@@ -51,6 +51,7 @@
 #include "gfx/rect.h"
 #include "she/font.h"
 #include "she/surface.h"
+#include "she/system.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
 
@@ -250,6 +251,9 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
 
+  m_firstFrameConn = Preferences::instance().document(m_document)
+    .timeline.firstFrame.AfterChange.connect(base::Bind<void>(&Timeline::invalidate, this));
+
   setFocusStop(true);
   regenerateLayers();
   setViewScroll(viewScroll());
@@ -258,6 +262,8 @@ void Timeline::updateUsingEditor(Editor* editor)
 
 void Timeline::detachDocument()
 {
+  m_firstFrameConn.disconnect();
+
   if (m_document) {
     m_thumbnailsPrefConn.disconnect();
     m_document->remove_observer(this);
@@ -425,7 +431,8 @@ bool Timeline::onProcessMessage(Message* msg)
       if (!m_document)
         break;
 
-      if (mouseMsg->middle() || she::is_key_pressed(kKeySpace)) {
+      if (mouseMsg->middle() ||
+          she::instance()->isKeyPressed(kKeySpace)) {
         captureMouse();
         m_state = STATE_SCROLLING;
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
@@ -1048,7 +1055,7 @@ bool Timeline::onProcessMessage(Message* msg)
           m_scroll = false;
 
           // We have to clear all the kKeySpace keys in buffer.
-          she::clear_keyboard_buffer();
+          she::instance()->clearKeyboardBuffer();
           used = true;
           break;
         }
@@ -1065,35 +1072,23 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int base_size = skinTheme()->dimensions.timelineBaseSize();
-        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y  * base_size;
-
-        if (msg->altPressed()) {
-          if (dz != 0) {
-            double next_zoom = m_zoom + (dz < 0 ? 1 : -1);
-            setZoomAndUpdate(next_zoom);
-          }
-        }
-        else {
-          int dx;
-          int dy;
-
-          if (msg->ctrlPressed()) {
-            dx = dz;
-            dy = 0;
-          }
-          else {
-            dx = static_cast<MouseMessage*>(msg)->wheelDelta().x  * base_size;
-            dy = dz;
-          }
+        gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
+        if (!static_cast<MouseMessage*>(msg)->preciseWheel()) {
+          delta.x *= frameBoxWidth();
+          delta.y *= layerBoxHeight();
 
           if (msg->shiftPressed()) {
-            dx *= frameBoxWidth() / base_size;
-            dy *= layerBoxHeight() / base_size;
+            // On macOS shift already changes the wheel axis
+            if (std::fabs(delta.y) > delta.x)
+              std::swap(delta.x, delta.y);
           }
 
-          setViewScroll(viewScroll() + gfx::Point(dx, dy));
+          if (msg->altPressed()) {
+            delta.x *= 3;
+            delta.y *= 3;
+          }
         }
+        setViewScroll(viewScroll() + delta);
       }
       break;
 
@@ -1589,8 +1584,11 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
     return;
 
   // Draw the header for the layers.
-  char buf[256];
-  std::sprintf(buf, "%d", (frame+1)%100); // Draw only the first two digits.
+  char buf[4];
+  std::snprintf(
+    buf, sizeof(buf), "%d",
+    // Draw only the first two digits
+    (docPref().timeline.firstFrame()+frame) % 100);
 
   she::Font* oldFont = g->font();
   g->setFont(skinTheme()->getMiniFont());
@@ -2694,9 +2692,10 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
       case PART_HEADER_FRAME:
         if (validFrame(m_hot.frame)) {
-          sb->setStatusText(0,
+          sb->setStatusText(
+            0,
             ":frame: %d :clock: %d",
-            (int)m_hot.frame+1,
+            (int)m_hot.frame+docPref().timeline.firstFrame(),
             m_sprite->frameDuration(m_hot.frame));
           return;
         }

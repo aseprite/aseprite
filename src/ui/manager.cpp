@@ -47,8 +47,7 @@ namespace ui {
 
 static const int NFILTERS = (int)(kFirstRegisteredMessage+1);
 
-struct Filter
-{
+struct Filter {
   int message;
   Widget* widget;
 
@@ -67,6 +66,7 @@ static WidgetsList new_windows; // Windows that we should show
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
 static Filters msg_filters[NFILTERS]; // Filters for every enqueued message
+static int filter_locks = 0;
 
 static Widget* focus_widget;    // The widget with the focus
 static Widget* mouse_widget;    // The widget with the mouse
@@ -75,7 +75,6 @@ static Widget* capture_widget;  // The widget that captures the mouse
 static bool first_time = true;    // true when we don't enter in poll yet
 
 /* keyboard focus movement stuff */
-static bool move_focus(Manager* manager, Message* msg);
 static int count_widgets_accept_focus(Widget* widget);
 static bool childs_accept_focus(Widget* widget, bool first);
 static Widget* next_widget(Widget* widget);
@@ -83,6 +82,37 @@ static int cmp_left(Widget* widget, int x, int y);
 static int cmp_right(Widget* widget, int x, int y);
 static int cmp_up(Widget* widget, int x, int y);
 static int cmp_down(Widget* widget, int x, int y);
+
+namespace {
+
+class LockFilters {
+public:
+  LockFilters() {
+    ++filter_locks;
+  }
+  ~LockFilters() {
+    ASSERT(filter_locks > 0);
+    --filter_locks;
+
+    if (filter_locks == 0) {
+      // Clear empty filters
+      for (Filters& msg_filter : msg_filters) {
+        for (auto it = msg_filter.begin(); it != msg_filter.end(); ) {
+          Filter* filter = *it;
+          if (filter->widget == nullptr) {
+            delete filter;
+            it = msg_filter.erase(it);
+          }
+          else {
+            ++it;
+          }
+        }
+      }
+    }
+  }
+};
+
+} // anonymous namespace
 
 Manager::Manager()
   : Widget(kManagerWidget)
@@ -128,15 +158,13 @@ Manager::~Manager()
     Timer::checkNoTimers();
 
     // Destroy filters
-    for (int c=0; c<NFILTERS; ++c) {
-      for (Filters::iterator it=msg_filters[c].begin(), end=msg_filters[c].end();
-           it != end; ++it)
-        delete *it;
-      msg_filters[c].clear();
-    }
+#ifdef _DEBUG
+    for (Filters& msg_filter : msg_filters)
+      ASSERT(msg_filter.empty());
+#endif
 
     // No more default manager
-    m_defaultManager = NULL;
+    m_defaultManager = nullptr;
 
     // Shutdown system
     ASSERT(msg_queue.empty());
@@ -317,6 +345,10 @@ void Manager::generateMessagesFromSheEvents()
           sheEvent.modifiers(),
           sheEvent.unicodeChar(),
           sheEvent.repeat());
+
+        if (sheEvent.isDeadKey())
+          static_cast<KeyMessage*>(msg)->setDeadKey(true);
+
         broadcastKeyMsg(msg);
         enqueueMessage(msg);
         break;
@@ -589,48 +621,10 @@ void Manager::addToGarbage(Widget* widget)
   m_garbage.push_back(widget);
 }
 
-/**
- * @param msg You can't use the this message after calling this
- *            routine. The message will be automatically freed through
- *            @ref jmessage_free
- */
 void Manager::enqueueMessage(Message* msg)
 {
-  ASSERT(msg != NULL);
-
-#ifdef REPORT_EVENTS
-  if (msg->type() == kKeyDownMessage ||
-      msg->type() == kKeyUpMessage) {
-    int mods = (int)static_cast<KeyMessage*>(msg)->modifiers();
-    TRACE("Key%s scancode=%d unicode=%d mods=%s%s%s\n",
-          (msg->type() == kKeyDownMessage ? "Down": "Up"),
-          static_cast<KeyMessage*>(msg)->scancode(),
-          static_cast<KeyMessage*>(msg)->unicodeChar(),
-          mods & kKeyShiftModifier ? " Shift": "",
-          mods & kKeyCtrlModifier ? " Ctrl": "",
-          mods & kKeyAltModifier ? " Alt": "");
-  }
-#endif
-
-  // Check if this message must be filtered by some widget before
-  int c = msg->type();
-  if (c >= kFirstRegisteredMessage)
-    c = kFirstRegisteredMessage;
-
-  if (!msg_filters[c].empty()) { // OK, so are filters to add...
-    // Add all the filters in the destination list of the message
-    for (Filters::reverse_iterator it=msg_filters[c].rbegin(),
-           end=msg_filters[c].rend(); it != end; ++it) {
-      Filter* filter = *it;
-      if (msg->type() == filter->message)
-        msg->prependRecipient(filter->widget);
-    }
-  }
-
-  if (msg->hasRecipients())
-    msg_queue.push_back(msg);
-  else
-    delete msg;
+  ASSERT(msg);
+  msg_queue.push_back(msg);
 }
 
 Window* Manager::getTopWindow()
@@ -928,6 +922,7 @@ void Manager::removeMessagesForTimer(Timer* timer)
 
 void Manager::addMessageFilter(int message, Widget* widget)
 {
+  LockFilters lock;
   int c = message;
   if (c >= kFirstRegisteredMessage)
     c = kFirstRegisteredMessage;
@@ -937,40 +932,36 @@ void Manager::addMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilter(int message, Widget* widget)
 {
+  LockFilters lock;
   int c = message;
   if (c >= kFirstRegisteredMessage)
     c = kFirstRegisteredMessage;
 
-  for (Filters::iterator it=msg_filters[c].begin(); it != msg_filters[c].end(); ) {
-    Filter* filter = *it;
-    if (filter->widget == widget) {
-      delete filter;
-      it = msg_filters[c].erase(it);
-    }
-    else
-      ++it;
+  Filters& msg_filter = msg_filters[c];
+  for (Filter* filter : msg_filter) {
+    if (filter->widget == widget)
+      filter->widget = nullptr;
   }
 }
 
 void Manager::removeMessageFilterFor(Widget* widget)
 {
-  for (int c=0; c<NFILTERS; ++c) {
-    for (Filters::iterator it=msg_filters[c].begin(); it != msg_filters[c].end(); ) {
-      Filter* filter = *it;
-      if (filter->widget == widget) {
-        delete filter;
-        it = msg_filters[c].erase(it);
-      }
-      else
-        ++it;
+  LockFilters lock;
+  for (Filters& msg_filter : msg_filters) {
+    for (Filter* filter : msg_filter) {
+      if (filter->widget == widget)
+        filter->widget = nullptr;
     }
   }
 }
 
-bool Manager::isFocusMovementKey(Message* msg)
+bool Manager::isFocusMovementMessage(Message* msg)
 {
-  switch (static_cast<KeyMessage*>(msg)->scancode()) {
+  if (msg->type() != kKeyDownMessage &&
+      msg->type() != kKeyUpMessage)
+    return false;
 
+  switch (static_cast<KeyMessage*>(msg)->scancode()) {
     case kKeyTab:
     case kKeyLeft:
     case kKeyRight:
@@ -986,7 +977,7 @@ void Manager::dirtyRect(const gfx::Rect& bounds)
   m_dirtyRegion.createUnion(m_dirtyRegion, gfx::Region(bounds));
 }
 
-/* configures the window for begin the loop */
+// Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {
   // Free all widgets of special states.
@@ -1006,6 +997,12 @@ void Manager::_openWindow(Window* window)
 
   // Update the new windows list to show.
   new_windows.push_back(window);
+
+  // Update mouse widget (as it can be a widget below the
+  // recently opened window).
+  Widget* widget = pick(ui::get_mouse_position());
+  if (widget)
+    setMouse(widget);
 }
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
@@ -1103,7 +1100,7 @@ bool Manager::onProcessMessage(Message* msg)
       // Check the focus movement for foreground (non-desktop) windows.
       if (win && win->isForeground()) {
         if (msg->type() == kKeyDownMessage)
-          move_focus(this, msg);
+          processFocusMovementMessage(msg);
         return true;
       }
       else
@@ -1223,7 +1220,7 @@ void Manager::pumpQueue()
   base::tick_t t = base::current_tick();
 #endif
 
-  Messages::iterator it = msg_queue.begin();
+  auto it = msg_queue.begin();
   while (it != msg_queue.end()) {
 #ifdef LIMIT_DISPATCH_TIME
     if (base::current_tick()-t > 250)
@@ -1250,102 +1247,36 @@ void Manager::pumpQueue()
     }
 
     bool done = false;
-    for (auto widget : msg->recipients()) {
-      if (!widget)
-        continue;
 
-#ifdef REPORT_EVENTS
-      {
-        static char *msg_name[] = {
-          "kOpenMessage",
-          "kCloseMessage",
-          "kCloseDisplayMessage",
-          "kResizeDisplayMessage",
-          "kPaintMessage",
-          "kTimerMessage",
-          "kDropFilesMessage",
-          "kWinMoveMessage",
+    // Send this message to filters
+    {
+      Filters& msg_filter = msg_filters[MIN(msg->type(), kFirstRegisteredMessage)];
+      if (!msg_filter.empty()) {
+        LockFilters lock;
+        for (Filter* filter : msg_filter) {
+          // The widget can be nullptr in case that the filter was
+          // "pre-removed" (it'll finally erased from the
+          // msg_filter list from ~LockFilters()).
+          if (filter->widget != nullptr &&
+              msg->type() == filter->message) {
+            msg->setFromFilter(true);
+            done = sendMessageToWidget(msg, filter->widget);
+            msg->setFromFilter(false);
 
-          "kKeyDownMessage",
-          "kKeyUpMessage",
-          "kFocusEnterMessage",
-          "kFocusLeaveMessage",
-
-          "kMouseDownMessage",
-          "kMouseUpMessage",
-          "kDoubleClickMessage",
-          "kMouseEnterMessage",
-          "kMouseLeaveMessage",
-          "kMouseMoveMessage",
-          "kSetCursorMessage",
-          "kMouseWheelMessage",
-          "kTouchMagnifyMessage",
-        };
-        const char* string =
-          (msg->type() >= kOpenMessage &&
-           msg->type() <= kMouseWheelMessage) ? msg_name[msg->type()]:
-                                                "Unknown";
-
-        std::cout << "Event " << msg->type() << " (" << string << ") "
-                  << "for " << typeid(*widget).name();
-        if (!widget->id().empty())
-          std::cout << " (" << widget->id() << ")";
-        std::cout << std::endl;
-      }
-#endif
-
-      // We need to configure the clip region for paint messages
-      // before we call Widget::sendMessage().
-      if (msg->type() == kPaintMessage) {
-        if (widget->hasFlags(HIDDEN))
-          continue;
-
-        PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
-        she::Surface* surface = m_display->getSurface();
-        gfx::Rect oldClip = surface->getClipBounds();
-
-        if (surface->intersectClipRect(paintMsg->rect())) {
-#ifdef REPORT_EVENTS
-          std::cout << " - clip("
-                    << paintMsg->rect().x << ", "
-                    << paintMsg->rect().y << ", "
-                    << paintMsg->rect().w << ", "
-                    << paintMsg->rect().h << ")"
-                    << std::endl;
-#endif
-
-#ifdef DEBUG_PAINT_EVENTS
-          {
-            she::SurfaceLock lock(surface);
-            surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
-          }
-
-          if (m_display)
-            m_display->flip(gfx::Rect(0, 0, display_w(), display_h()));
-
-          base::this_thread::sleep_for(0.002);
-#endif
-
-          if (surface) {
-            // Call the message handler
-            done = widget->sendMessage(msg);
-
-            // Restore clip region for paint messages.
-            surface->setClipBounds(oldClip);
+            if (done)
+              break;
           }
         }
-
-        // As this kPaintMessage's rectangle was updated, we can
-        // remove it from "m_invalidRegion".
-        m_invalidRegion -= gfx::Region(paintMsg->rect());
       }
-      else {
-        // Call the message handler
-        done = widget->sendMessage(msg);
-      }
+    }
 
-      if (done)
-        break;
+    if (!done) {
+      // Then send the message to its recipients
+      for (Widget* widget : msg->recipients()) {
+        done = sendMessageToWidget(msg, widget);
+        if (done)
+          break;
+      }
     }
 
     // Remove the message from the msg_queue
@@ -1354,6 +1285,106 @@ void Manager::pumpQueue()
     // Destroy the message
     delete first_msg;
   }
+}
+
+bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
+{
+  if (!widget)
+    return false;
+
+#ifdef REPORT_EVENTS
+  {
+    static const char* msg_name[] = {
+      "kOpenMessage",
+      "kCloseMessage",
+      "kCloseDisplayMessage",
+      "kResizeDisplayMessage",
+      "kPaintMessage",
+      "kTimerMessage",
+      "kDropFilesMessage",
+      "kWinMoveMessage",
+
+      "kKeyDownMessage",
+      "kKeyUpMessage",
+      "kFocusEnterMessage",
+      "kFocusLeaveMessage",
+
+      "kMouseDownMessage",
+      "kMouseUpMessage",
+      "kDoubleClickMessage",
+      "kMouseEnterMessage",
+      "kMouseLeaveMessage",
+      "kMouseMoveMessage",
+      "kSetCursorMessage",
+      "kMouseWheelMessage",
+      "kTouchMagnifyMessage",
+    };
+    const char* string =
+      (msg->type() >= kOpenMessage &&
+       msg->type() <= kMouseWheelMessage) ? msg_name[msg->type()]:
+                                            "Unknown";
+
+    std::cout << "Event " << msg->type() << " (" << string << ") "
+              << "for " << typeid(*widget).name();
+    if (!widget->id().empty())
+      std::cout << " (" << widget->id() << ")";
+    std::cout << std::endl;
+  }
+#endif
+
+  bool used = false;
+
+  // We need to configure the clip region for paint messages
+  // before we call Widget::sendMessage().
+  if (msg->type() == kPaintMessage) {
+    if (widget->hasFlags(HIDDEN))
+      return false;
+
+    PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
+    she::Surface* surface = m_display->getSurface();
+    gfx::Rect oldClip = surface->getClipBounds();
+
+    if (surface->intersectClipRect(paintMsg->rect())) {
+#ifdef REPORT_EVENTS
+      std::cout << " - clip("
+                << paintMsg->rect().x << ", "
+                << paintMsg->rect().y << ", "
+                << paintMsg->rect().w << ", "
+                << paintMsg->rect().h << ")"
+                << std::endl;
+#endif
+
+#ifdef DEBUG_PAINT_EVENTS
+      {
+        she::SurfaceLock lock(surface);
+        surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
+      }
+
+      if (m_display)
+        m_display->flip(gfx::Rect(0, 0, display_w(), display_h()));
+
+      base::this_thread::sleep_for(0.002);
+#endif
+
+      if (surface) {
+        // Call the message handler
+        used = widget->sendMessage(msg);
+
+        // Restore clip region for paint messages.
+        surface->setClipBounds(oldClip);
+      }
+    }
+
+    // As this kPaintMessage's rectangle was updated, we can
+    // remove it from "m_invalidRegion".
+    m_invalidRegion -= gfx::Region(paintMsg->rect());
+  }
+  else {
+    // Call the message handler
+    used = widget->sendMessage(msg);
+  }
+
+  return used;
 }
 
 void Manager::invalidateDisplayRegion(const gfx::Region& region)
@@ -1502,7 +1533,10 @@ void Manager::broadcastKeyMsg(Message* msg)
                             Focus Movement
  ***********************************************************************/
 
-static bool move_focus(Manager* manager, Message* msg)
+// TODO rewrite this function, it is based in an old code from the
+//      Allegro library GUI code
+
+bool Manager::processFocusMovementMessage(Message* msg)
 {
   int (*cmp)(Widget*, int, int) = NULL;
   Widget* focus = NULL;
@@ -1515,8 +1549,8 @@ static bool move_focus(Manager* manager, Message* msg)
   if (focus_widget) {
     window = focus_widget->window();
   }
-  else if (!manager->children().empty()) {
-    window = manager->getTopWindow();
+  else if (!this->children().empty()) {
+    window = this->getTopWindow();
   }
 
   if (!window)
@@ -1581,7 +1615,7 @@ static bool move_focus(Manager* manager, Message* msg)
           for (i=c; i<count-1; i++) {
             for (j=i+1; j<count; j++) {
               // Sort the list in ascending order
-              if ((*cmp) (list[i], x, y) > (*cmp) (list[j], x, y)) {
+              if ((*cmp)(list[i], x, y) > (*cmp)(list[j], x, y)) {
                 Widget* tmp = list[i];
                 list[i] = list[j];
                 list[j] = tmp;
@@ -1590,7 +1624,7 @@ static bool move_focus(Manager* manager, Message* msg)
           }
 
           // Check if the new widget to put the focus is not in the wrong way.
-          if ((*cmp) (list[c], x, y) < std::numeric_limits<int>::max())
+          if ((*cmp)(list[c], x, y) < std::numeric_limits<int>::max())
             focus = list[c];
         }
         // If only there are one widget, put the focus in this
@@ -1602,7 +1636,7 @@ static bool move_focus(Manager* manager, Message* msg)
     }
 
     if ((focus) && (focus != focus_widget))
-      Manager::getDefault()->setFocus(focus);
+      setFocus(focus);
   }
 
   return ret;

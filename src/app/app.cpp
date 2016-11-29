@@ -32,9 +32,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
-#include "app/script/app_scripting.h"
 #include "app/send_crash.h"
-#include "app/shell.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/backup_indicator.h"
@@ -58,7 +56,7 @@
 #include "base/unique_ptr.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
-#include "script/engine_delegate.h"
+#include "render/render.h"
 #include "she/display.h"
 #include "she/error.h"
 #include "she/system.h"
@@ -66,6 +64,12 @@
 #include "ui/ui.h"
 
 #include <iostream>
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/app_scripting.h"
+  #include "app/shell.h"
+  #include "script/engine_delegate.h"
+#endif
 
 #ifdef ENABLE_STEAM
   #include "steam/steam.h"
@@ -258,6 +262,7 @@ void App::run()
     ui::Manager::getDefault()->run();
   }
 
+#ifdef ENABLE_SCRIPTING
   // Start shell to execute scripts.
   if (m_isShell) {
     script::StdoutEngineDelegate delegate;
@@ -266,6 +271,7 @@ void App::run()
     Shell shell;
     shell.run(engine);
   }
+#endif
 
   // Destroy all documents in the UIContext.
   const doc::Documents& docs = m_modules->m_ui_context.documents();

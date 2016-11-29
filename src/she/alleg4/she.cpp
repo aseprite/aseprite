@@ -63,8 +63,6 @@
   #include "she/alleg4/mouse_poller.h"
 #endif
 
-static she::System* g_instance = nullptr;
-
 namespace she {
 
 class Alleg4EventQueue : public EventQueue {
@@ -129,15 +127,11 @@ public:
 #ifdef USE_MOUSE_POLLER
     mouse_poller_init();
 #endif
-
-    g_instance = this;
   }
 
   ~Alleg4System() {
     remove_timer();
     allegro_exit();
-
-    g_instance = nullptr;
   }
 
   void dispose() override {
@@ -206,21 +200,48 @@ public:
     return sur;
   }
 
+  bool isKeyPressed(KeyScancode scancode) override {
+#ifdef ALLEGRO_UNIX
+    if (scancode == kKeyLShift || scancode == kKeyRShift) {
+      return key_shifts & KB_SHIFT_FLAG;
+    }
+    else if (scancode == kKeyLControl || scancode == kKeyRControl) {
+      return key_shifts & KB_CTRL_FLAG;
+    }
+    else if (scancode == kKeyAlt) {
+      return key_shifts & KB_ALT_FLAG;
+    }
+#endif
+    return key[scancode] ? true: false;
+  }
+
+
+  int getUnicodeFromScancode(KeyScancode scancode) override {
+    if (isKeyPressed(scancode))
+      return scancode_to_ascii(scancode);
+    else
+      return false;
+  }
+
+  void clearKeyboardBuffer() override {
+    clear_keybuf();
+  }
+
+  void setTranslateDeadKeys(bool state) override {
+    // Do nothing
+  }
+
 };
 
-System* create_system() {
+System* create_system_impl() {
   return new Alleg4System();
-}
-
-System* instance()
-{
-  return g_instance;
 }
 
 void error_message(const char* msg)
 {
-  if (g_instance && g_instance->logger())
-    g_instance->logger()->logError(msg);
+  System* sys = instance();
+  if (sys && sys->logger())
+    sys->logger()->logError(msg);
 
 #ifdef _WIN32
   std::wstring wmsg = base::from_utf8(msg);
@@ -229,27 +250,6 @@ void error_message(const char* msg)
 #else
   allegro_message("%s", msg);
 #endif
-}
-
-bool is_key_pressed(KeyScancode scancode)
-{
-#ifdef ALLEGRO_UNIX
-  if (scancode == kKeyLShift || scancode == kKeyRShift) {
-    return key_shifts & KB_SHIFT_FLAG;
-  }
-  else if (scancode == kKeyLControl || scancode == kKeyRControl) {
-    return key_shifts & KB_CTRL_FLAG;
-  }
-  else if (scancode == kKeyAlt) {
-    return key_shifts & KB_ALT_FLAG;
-  }
-#endif
-  return key[scancode] ? true: false;
-}
-
-void clear_keyboard_buffer()
-{
-  clear_keybuf();
 }
 
 } // namespace she

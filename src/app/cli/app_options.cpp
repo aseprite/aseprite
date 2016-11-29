@@ -26,7 +26,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_showHelp(false)
   , m_showVersion(false)
   , m_verboseLevel(kNoVerbose)
+#ifdef ENABLE_SCRIPTING
   , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
+#endif
   , m_batch(m_po.add("batch").mnemonic('b').description("Do not start the UI"))
   , m_preview(m_po.add("preview").mnemonic('p').description("Do not execute actions, just print what will be\ndone"))
   , m_saveAs(m_po.add("save-as").requiresValue("<filename>").description("Save the last given sprite with other format"))
@@ -54,7 +56,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_trim(m_po.add("trim").description("Trim all images before exporting"))
   , m_crop(m_po.add("crop").requiresValue("x,y,width,height").description("Crop all the images to the given rectangle"))
   , m_filenameFormat(m_po.add("filename-format").requiresValue("<fmt>").description("Special format to generate filenames"))
+#ifdef ENABLE_SCRIPTING
   , m_script(m_po.add("script").requiresValue("<filename>").description("Execute a specific script"))
+#endif
   , m_listLayers(m_po.add("list-layers").description("List layers of the next given sprite\nor include layers in JSON data"))
   , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite sprite\nor include frame tags in JSON data"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
@@ -70,7 +74,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
     else if (m_po.enabled(m_verbose))
       m_verboseLevel = kVerbose;
 
+#ifdef ENABLE_SCRIPTING
     m_startShell = m_po.enabled(m_shell);
+#endif
     m_previewCLI = m_po.enabled(m_preview);
     m_showHelp = m_po.enabled(m_help);
     m_showVersion = m_po.enabled(m_version);
