@@ -476,7 +476,7 @@ public:
       case kMouseEnterMessage:
         if (Preferences::instance().statusBar.focusFrameFieldOnMouseover()) {
           requestFocus();
-          selectText(0, -1);
+          selectAllText();
         }
         break;
 
