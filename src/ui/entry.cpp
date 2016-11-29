@@ -324,7 +324,8 @@ bool Entry::onProcessMessage(Message* msg)
 
             // Select dead-key
             if (keymsg->isDeadKey()) {
-              selectText(m_caret-1, m_caret);
+              if (base::from_utf8(text()).size() < m_maxsize)
+                selectText(m_caret-1, m_caret);
             }
             return true;
           }
