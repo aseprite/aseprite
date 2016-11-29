@@ -38,15 +38,15 @@ public:
 
       if (res) {
         // Avoid transforming WM_KEYDOWN/UP into WM_DEADCHAR/WM_CHAR
-        // messages when m_translateDeadKeys is disabled.
+        // messages. Dead keys are converted manually in the
+        // WM_KEYDOWN processing on our WinWindow<T> class.
         //
         // From MSDN TranslateMessage() documentation:
         //   "WM_KEYDOWN and WM_KEYUP combinations produce a WM_CHAR
         //   or WM_DEADCHAR message."
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms644955.aspx
-        if ((m_translateDeadKeys) ||
-            (msg.message != WM_KEYDOWN &&
-             msg.message != WM_KEYUP)) {
+        if (msg.message != WM_KEYDOWN &&
+            msg.message != WM_KEYUP) {
           TranslateMessage(&msg);
         }
         DispatchMessage(&msg);

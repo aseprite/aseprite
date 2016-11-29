@@ -611,13 +611,15 @@ namespace she {
           ev.setUnicodeChar(0);
           ev.setRepeat(MAX(0, (lparam & 0xffff)-1));
 
-          if (!m_translateDeadKeys) {
+          {
             VkToUnicode tu;
             if (tu) {
               tu.toUnicode(vk, scancode);
               if (tu.isDeadKey()) {
+                ev.setDeadKey(true);
                 ev.setUnicodeChar(tu[0]);
-                tu.toUnicode(vk, scancode); // Call again to remove dead-key
+                if (!m_translateDeadKeys)
+                  tu.toUnicode(vk, scancode); // Call again to remove dead-key
               }
               else if (tu.size() > 0) {
                 sendMsg = false;
@@ -647,25 +649,6 @@ namespace she {
 
           // TODO If we use native menus, this message should be given
           // to the DefWindowProc() in some cases (e.g. F10 or Alt keys)
-          return 0;
-        }
-
-        case WM_DEADCHAR: {
-          Event ev;
-          ev.setType(Event::KeyDown);
-          ev.setDeadKey(true);
-          ev.setUnicodeChar(wparam);
-          ev.setRepeat(lparam & 0xffff);
-          queueEvent(ev);
-          return 0;
-        }
-
-        case WM_CHAR: {
-          Event ev;
-          ev.setType(Event::KeyDown);
-          ev.setUnicodeChar(wparam);
-          ev.setRepeat(lparam & 0xffff);
-          queueEvent(ev);
           return 0;
         }
 
