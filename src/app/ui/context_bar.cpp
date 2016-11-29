@@ -1751,10 +1751,12 @@ void ContextBar::updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modi
 
 void ContextBar::updateAutoSelectLayer(bool state)
 {
-  if (!m_autoSelectLayer->isVisible())
-    return;
-
   m_autoSelectLayer->setSelected(state);
+}
+
+bool ContextBar::isAutoSelectLayer() const
+{
+  return m_autoSelectLayer->isSelected();
 }
 
 void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
