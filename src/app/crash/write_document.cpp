@@ -72,20 +72,37 @@ public:
       if (!saveObject("frtag", frtag, &Writer::writeFrameTag))
         return false;
 
-    for (Cel* cel : spr->uniqueCels()) {
-      if (!saveObject("img", cel->image(), &Writer::writeImage))
-        return false;
+    // Get all layers (visible, hidden, subchildren, etc.)
+    LayerList layers = spr->allLayers();
 
-      if (!saveObject("celdata", cel->data(), &Writer::writeCelData))
-        return false;
+    // Save original cel data (skip links)
+    for (Layer* lay : layers) {
+      CelList cels;
+      lay->getCels(cels);
+
+      for (Cel* cel : cels) {
+        if (cel->link())        // Skip link
+          continue;
+
+        if (!saveObject("img", cel->image(), &Writer::writeImage))
+          return false;
+
+        if (!saveObject("celdata", cel->data(), &Writer::writeCelData))
+          return false;
+      }
     }
 
-    for (Cel* cel : spr->cels())
-      if (!saveObject("cel", cel, &Writer::writeCel))
-        return false;
+    // Save all cels (original and links)
+    for (Layer* lay : layers) {
+      CelList cels;
+      lay->getCels(cels);
+
+      for (Cel* cel : cels)
+        if (!saveObject("cel", cel, &Writer::writeCel))
+          return false;
+    }
 
     // Save all layers (top level, groups, children, etc.)
-    LayerList layers = spr->allLayers();
     for (Layer* lay : layers)
       if (!saveObject("lay", lay, &Writer::writeLayerStructure))
         return false;
