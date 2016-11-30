@@ -19,7 +19,6 @@ namespace app {
     MovingSymmetryState(Editor* editor, ui::MouseMessage* msg,
                         app::gen::SymmetryMode mode,
                         Option<int>& symmetryAxis);
-    virtual ~MovingSymmetryState();
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,10 +27,6 @@ MovingSymmetryState::MovingSymmetryState(Editor* editor, MouseMessage* msg,
 {
   m_mouseStart = editor->screenToEditor(msg->position());
   editor->captureMouse();
-}
-
-MovingSymmetryState::~MovingSymmetryState()
-{
 }
 
 bool MovingSymmetryState::onMouseUp(Editor* editor, MouseMessage* msg)

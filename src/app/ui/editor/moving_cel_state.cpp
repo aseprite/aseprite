@@ -71,10 +71,6 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   }
 }
 
-MovingCelState::~MovingCelState()
-{
-}
-
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   Document* document = editor->document();

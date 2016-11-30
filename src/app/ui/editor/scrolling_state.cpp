@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,10 +24,6 @@ namespace app {
 using namespace ui;
 
 ScrollingState::ScrollingState()
-{
-}
-
-ScrollingState::~ScrollingState()
 {
 }
 
