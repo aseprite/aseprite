@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,8 @@ namespace app {
   public:
     EditorStatesHistory();
     ~EditorStatesHistory();
+
+    bool empty() const { return m_states.empty(); }
 
     // Gets the current state.
     EditorStatePtr top();

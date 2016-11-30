@@ -268,6 +268,7 @@ namespace app {
 
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;
+    EditorStatesHistory m_deletedStates;
 
     // Current editor state (it can be shared between several editors to
     // the same document). This member cannot be NULL.

@@ -260,6 +260,17 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   else {
     m_state->onBeforePopState(this);
 
+    // Save the current state into "m_deletedStates" just to keep a
+    // reference to it to avoid delete it right now. We'll delete it
+    // in the next Editor::onProcessMessage().
+    //
+    // This is necessary for PlayState because it removes itself
+    // calling Editor::stop() from PlayState::onPlaybackTick(). If we
+    // delete the PlayState inside the "Tick" timer signal, the
+    // program will crash (because we're iterating the
+    // PlayState::m_playTimer slots).
+    m_deletedStates.push(m_state);
+
     m_statesHistory.pop();
     m_state = m_statesHistory.top();
   }
@@ -1209,6 +1220,10 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
 
 bool Editor::onProcessMessage(Message* msg)
 {
+  // Delete states
+  if (!m_deletedStates.empty())
+    m_deletedStates.clear();
+
   switch (msg->type()) {
 
     case kTimerMessage:
@@ -1717,6 +1732,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   menu.showPopup(ui::get_mouse_position());
 
   if (isPlaying()) {
+    // Re-play
     stop();
     play(playOnce(),
          playAll());
