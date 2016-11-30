@@ -116,6 +116,7 @@
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="play_once" type="bool" default="false" />
+      <option id="play_all" type="bool" default="false" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" migrate="experimental.use_native_cursor" />
@@ -126,6 +127,7 @@
     </section>
     <section id="preview" text="Preview">
       <option id="play_once" type="bool" default="false" />
+      <option id="play_all" type="bool" default="false" />
     </section>
     <section id="theme" text="Theme">
       <option id="selected" type="std::string" default="&quot;default&quot;" migrate="Skin.Selected" />

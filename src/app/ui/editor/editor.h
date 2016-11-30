@@ -202,13 +202,15 @@ namespace app {
     void notifyZoomChanged();
 
     // Animation control
-    void play(bool playOnce);
+    void play(const bool playOnce,
+              const bool playAll);
     void stop();
     bool isPlaying() const;
 
     // Shows a popup menu to change the editor animation speed.
     void showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
-                                           bool withStopBehaviorOptions);
+                                           Option<bool>& playAll,
+                                           const bool withStopBehaviorOptions);
     double getAnimationSpeedMultiplier() const;
     void setAnimationSpeedMultiplier(double speed);
 

@@ -14,13 +14,18 @@
 #include "obs/connection.h"
 #include "ui/timer.h"
 
+namespace doc {
+  class FrameTag;
+}
+
 namespace app {
 
   class CommandExecutionEvent;
 
   class PlayState : public StateWithWheelBehavior {
   public:
-    PlayState(bool playOnce);
+    PlayState(const bool playOnce,
+              const bool playAll);
 
     void onEnterState(Editor* editor) override;
     LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
@@ -40,6 +45,7 @@ namespace app {
 
     Editor* m_editor;
     bool m_playOnce;
+    bool m_playAll;
     bool m_toScroll;
     ui::Timer m_playTimer;
 
@@ -50,6 +56,7 @@ namespace app {
 
     bool m_pingPongForward;
     doc::frame_t m_refFrame;
+    doc::FrameTag* m_tag;
 
     obs::scoped_connection m_ctxConn;
   };

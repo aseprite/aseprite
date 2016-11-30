@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -59,7 +59,8 @@ void PlayAnimationCommand::onExecute(Context* context)
   if (current_editor->isPlaying())
     current_editor->stop();
   else
-    current_editor->play(Preferences::instance().editor.playOnce());
+    current_editor->play(Preferences::instance().editor.playOnce(),
+                         Preferences::instance().editor.playAll());
 }
 
 Command* CommandFactory::createPlayAnimationCommand()

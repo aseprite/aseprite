@@ -27,13 +27,17 @@ namespace app {
 
 using namespace ui;
 
-PlayState::PlayState(bool playOnce)
+PlayState::PlayState(const bool playOnce,
+                     const bool playAll)
   : m_editor(nullptr)
   , m_playOnce(playOnce)
+  , m_playAll(playAll)
   , m_toScroll(false)
   , m_playTimer(10)
   , m_nextFrameTime(-1)
   , m_pingPongForward(true)
+  , m_refFrame(0)
+  , m_tag(nullptr)
 {
   m_playTimer.Tick.connect(&PlayState::onPlaybackTick, this);
 
@@ -52,16 +56,18 @@ void PlayState::onEnterState(Editor* editor)
     m_refFrame = editor->frame();
   }
 
+  // Get the tag
+  if (!m_playAll)
+    m_tag = get_animation_tag(m_editor->sprite(), m_refFrame);
+
   // Go to the first frame of the animation or active frame tag
   if (m_playOnce) {
     frame_t frame = 0;
 
-    doc::FrameTag* tag = get_animation_tag(
-      m_editor->sprite(), m_refFrame);
-    if (tag) {
-      frame = (tag->aniDir() == AniDir::REVERSE ?
-               tag->toFrame():
-               tag->fromFrame());
+    if (m_tag) {
+      frame = (m_tag->aniDir() == AniDir::REVERSE ?
+               m_tag->toFrame():
+               m_tag->fromFrame());
     }
 
     m_editor->setFrame(frame);
@@ -147,24 +153,23 @@ void PlayState::onPlaybackTick()
   m_nextFrameTime -= (base::current_tick() - m_curFrameTick);
 
   doc::Sprite* sprite = m_editor->sprite();
-  doc::FrameTag* tag = get_animation_tag(sprite, m_refFrame);
 
   while (m_nextFrameTime <= 0) {
     doc::frame_t frame = m_editor->frame();
 
     if (m_playOnce) {
       bool atEnd = false;
-      if (tag) {
-        switch (tag->aniDir()) {
+      if (m_tag) {
+        switch (m_tag->aniDir()) {
           case AniDir::FORWARD:
-            atEnd = (frame == tag->toFrame());
+            atEnd = (frame == m_tag->toFrame());
             break;
           case AniDir::REVERSE:
-            atEnd = (frame == tag->fromFrame());
+            atEnd = (frame == m_tag->fromFrame());
             break;
           case AniDir::PING_PONG:
             atEnd = (!m_pingPongForward &&
-                     frame == tag->fromFrame());
+                     frame == m_tag->fromFrame());
             break;
         }
       }
@@ -178,7 +183,7 @@ void PlayState::onPlaybackTick()
     }
 
     frame = calculate_next_frame(
-      sprite, frame, frame_t(1), tag,
+      sprite, frame, frame_t(1), m_tag,
       m_pingPongForward);
 
     m_editor->setFrame(frame);

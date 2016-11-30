@@ -1638,14 +1638,15 @@ void Editor::notifyZoomChanged()
   m_observers.notifyZoomChanged(this);
 }
 
-void Editor::play(bool playOnce)
+void Editor::play(const bool playOnce,
+                  const bool playAll)
 {
   ASSERT(m_state);
   if (!m_state)
     return;
 
   if (!dynamic_cast<PlayState*>(m_state.get()))
-    setState(EditorStatePtr(new PlayState(playOnce)));
+    setState(EditorStatePtr(new PlayState(playOnce, playAll)));
 }
 
 void Editor::stop()
@@ -1664,9 +1665,10 @@ bool Editor::isPlaying() const
 }
 
 void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
-                                               bool withStopBehaviorOptions)
+                                               Option<bool>& playAll,
+                                               const bool withStopBehaviorOptions)
 {
-  double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
+  const double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
   Menu menu;
 
   for (double option : options) {
@@ -1689,6 +1691,17 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
     menu.addChild(item);
   }
 
+  // Play all option
+  {
+    MenuItem* item = new MenuItem("Play All Frames (Ignore Tags)");
+    item->Click.connect(
+      [&playAll]() {
+        playAll(!playAll());
+      });
+    item->setSelected(playAll());
+    menu.addChild(item);
+  }
+
   if (withStopBehaviorOptions) {
     MenuItem* item = new MenuItem("Rewind on Stop");
     item->Click.connect(
@@ -1702,6 +1715,12 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   }
 
   menu.showPopup(ui::get_mouse_position());
+
+  if (isPlaying()) {
+    stop();
+    play(playOnce(),
+         playAll());
+  }
 }
 
 double Editor::getAnimationSpeedMultiplier() const
