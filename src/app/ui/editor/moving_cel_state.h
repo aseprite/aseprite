@@ -23,11 +23,26 @@ namespace doc {
 namespace app {
   class Editor;
 
+  class MovingCelCollect {
+  public:
+    MovingCelCollect(Editor* editor, Layer* layer);
+
+    bool empty() const { return m_celList.empty(); }
+
+    Cel* mainCel() const { return m_mainCel; }
+    const CelList& celList() const { return m_celList; }
+
+  private:
+    Cel* m_mainCel;
+    CelList m_celList;
+  };
+
   class MovingCelState : public StandbyState {
   public:
     MovingCelState(Editor* editor,
                    ui::MouseMessage* msg,
-                   const HandleType handle);
+                   const HandleType handle,
+                   const MovingCelCollect& collect);
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;

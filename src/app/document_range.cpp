@@ -65,6 +65,12 @@ void DocumentRange::endRange(Layer* toLayer, frame_t toFrame)
     selectFrameRange(m_selectingFromFrame, toFrame);
 }
 
+void DocumentRange::selectLayers(const SelectedLayers& selLayers)
+{
+  for (auto layer : selLayers)
+    m_selectedLayers.insert(layer);
+}
+
 bool DocumentRange::contains(Layer* layer) const
 {
   if (enabled())

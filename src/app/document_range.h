@@ -37,11 +37,9 @@ namespace app {
     void displace(layer_t layerDelta, frame_t frameDelta);
 
     bool contains(Layer* layer) const;
-
     bool contains(frame_t frame) const {
       return m_selectedFrames.contains(frame);
     }
-
     bool contains(Layer* layer, frame_t frame) const {
       return contains(layer) && contains(frame);
     }
@@ -49,6 +47,8 @@ namespace app {
     void clearRange();
     void startRange(Layer* fromLayer, frame_t fromFrame, Type type);
     void endRange(Layer* toLayer, frame_t toFrame);
+
+    void selectLayers(const SelectedLayers& selLayers);
 
     frame_t firstFrame() const { return m_selectedFrames.firstFrame(); }
     frame_t lastFrame() const { return m_selectedFrames.lastFrame(); }

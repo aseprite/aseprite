@@ -33,10 +33,51 @@ namespace app {
 
 using namespace ui;
 
+MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
+  : m_mainCel(nullptr)
+{
+  ASSERT(editor);
+
+  if (layer && layer->isImage())
+    m_mainCel = layer->cel(editor->frame());
+
+  DocumentRange range = App::instance()->timeline()->range();
+  if (!range.enabled()) {
+    range.startRange(editor->layer(), editor->frame(), DocumentRange::kCels);
+    range.endRange(editor->layer(), editor->frame());
+  }
+
+  DocumentRange range2 = range;
+  for (Layer* layer : range.selectedLayers()) {
+    if (layer && layer->isGroup()) {
+      LayerList childrenList;
+      static_cast<LayerGroup*>(layer)->allLayers(childrenList);
+
+      SelectedLayers selChildren;
+      for (auto layer : childrenList)
+        selChildren.insert(layer);
+
+      range2.selectLayers(selChildren);
+    }
+  }
+
+  // Record start positions of all cels in selected range
+  for (Cel* cel : get_unique_cels(editor->sprite(), range2)) {
+    Layer* layer = cel->layer();
+    ASSERT(layer);
+
+    if (layer && layer->isMovable() && !layer->isBackground())
+      m_celList.push_back(cel);
+  }
+}
+
 MovingCelState::MovingCelState(Editor* editor,
                                MouseMessage* msg,
-                               const HandleType handle)
+                               const HandleType handle,
+                               const MovingCelCollect& collect)
   : m_reader(UIContext::instance(), 500)
+  , m_cel(nullptr)
+  , m_celList(collect.celList())
   , m_celOffset(0.0, 0.0)
   , m_celScale(1.0, 1.0)
   , m_canceled(false)
@@ -46,28 +87,19 @@ MovingCelState::MovingCelState(Editor* editor,
 {
   ContextWriter writer(m_reader, 500);
   Document* document = editor->document();
-  auto range = App::instance()->timeline()->range();
-  LayerImage* layer = static_cast<LayerImage*>(editor->layer());
-  ASSERT(layer->isImage());
+  ASSERT(!m_celList.empty());
 
-  m_cel = layer->cel(editor->frame());
-  ASSERT(m_cel); // The cel cannot be null
-
-  if (!range.enabled())
-    range = DocumentRange(m_cel);
-
+  m_cel = collect.mainCel();
   if (m_cel)
     m_celMainSize = m_cel->boundsF().size();
 
   // Record start positions of all cels in selected range
-  for (Cel* cel : get_unique_cels(writer.sprite(), range)) {
+  for (Cel* cel : m_celList) {
     Layer* layer = cel->layer();
     ASSERT(layer);
 
     if (layer && layer->isMovable() && !layer->isBackground()) {
-      m_celList.push_back(cel);
-
-      if (cel->layer()->isReference()) {
+      if (layer->isReference()) {
         m_celStarts.push_back(cel->boundsF());
         m_hasReference = true;
       }

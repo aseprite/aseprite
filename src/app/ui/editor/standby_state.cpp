@@ -204,7 +204,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
     }
 
-    if (layer && layer->isImage()) {
+    if (layer) {
       // TODO we should be able to move the `Background' with tiled mode
       if (layer->isBackground()) {
         StatusBar::instance()->showTip(1000,
@@ -218,24 +218,28 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
       }
-      else if (!layer->cel(editor->frame())) {
-        StatusBar::instance()->showTip(1000,
-          "Cel is empty, nothing to move");
-      }
       else {
-        try {
-          // Change to MovingCelState
-          HandleType handle = MoveHandle;
-          if (resizeCelBounds(editor).contains(msg->position()))
-            handle = ScaleSEHandle;
-
-          MovingCelState* newState = new MovingCelState(editor, msg, handle);
-          editor->setState(EditorStatePtr(newState));
+        MovingCelCollect collect(editor, layer);
+        if (collect.empty()) {
+          StatusBar::instance()->showTip(
+            1000, "Nothing to move");
         }
-        catch (const LockedDocumentException&) {
-          // TODO break the background task that is locking this sprite
-          StatusBar::instance()->showTip(1000,
-            "Sprite is used by a backup/data recovery task");
+        else {
+          try {
+            // Change to MovingCelState
+            HandleType handle = MoveHandle;
+            if (resizeCelBounds(editor).contains(msg->position()))
+              handle = ScaleSEHandle;
+
+            MovingCelState* newState = new MovingCelState(
+              editor, msg, handle, collect);
+            editor->setState(EditorStatePtr(newState));
+          }
+          catch (const LockedDocumentException&) {
+            // TODO break the background task that is locking this sprite
+            StatusBar::instance()->showTip(
+              1000, "Sprite is used by a backup/data recovery task");
+          }
         }
       }
     }
