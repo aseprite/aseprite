@@ -119,7 +119,8 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "pal")
     return FileFormat::PAL_PALETTE;
 
-  if (ext == "pcx")
+  if (ext == "pcx" ||
+      ext == "pcc")
     return FileFormat::PCX_IMAGE;
 
   if (ext == "anim")
