@@ -23,7 +23,7 @@ using namespace base;
 
 class PcxFormat : public FileFormat {
   const char* onGetName() const override { return "pcx"; }
-  const char* onGetExtensions() const override { return "pcx"; }
+  const char* onGetExtensions() const override { return "pcx,pcc"; }
   docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::PCX_IMAGE; }
   int onGetFlags() const override {
     return
