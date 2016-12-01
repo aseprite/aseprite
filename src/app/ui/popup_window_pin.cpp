@@ -40,6 +40,12 @@ void PopupWindowPin::setPinned(const bool pinned)
   m_pinned = pinned;
   if (m_pinned)
     makeFloating();
+  else {
+    gfx::Rect rc = bounds();
+    rc.enlarge(8);
+    setHotRegion(gfx::Region(rc));
+    makeFixed();
+  }
 }
 
 bool PopupWindowPin::onProcessMessage(Message* msg)
@@ -48,7 +54,15 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
 
     case kOpenMessage: {
       if (!m_pinned)
-        makeFixed();
+        setPinned(false);
+      break;
+    }
+
+    case kCloseMessage: {
+      // If the closer() wasn't the hot region or the window, it might
+      // be because the user pressed the close button.
+      if (closer() && closer() != this)
+        m_pinned = false;
       break;
     }
 
