@@ -223,6 +223,17 @@
         <param name="action" value="in" />
       </key>
 
+      <!-- Layer opacity -->
+      <key command="LayerOpacity"><param name="opacity" value="0" /></key>
+      <key command="LayerOpacity"><param name="opacity" value="32" /></key>
+      <key command="LayerOpacity" shortcut="Shift+1"><param name="opacity" value="64" /></key>
+      <key command="LayerOpacity"><param name="opacity" value="96" /></key>
+      <key command="LayerOpacity" shortcut="Shift+2"><param name="opacity" value="128" /></key>
+      <key command="LayerOpacity"><param name="opacity" value="160" /></key>
+      <key command="LayerOpacity" shortcut="Shift+3"><param name="opacity" value="192" /></key>
+      <key command="LayerOpacity"><param name="opacity" value="224" /></key>
+      <key command="LayerOpacity" shortcut="Shift+4"><param name="opacity" value="255" /></key>
+
       <!-- Scroll to center -->
       <key command="ScrollCenter" shortcut="Shift+C" />
       <key command="FitScreen" shortcut="Ctrl+0" mac="Cmd+0" />

@@ -225,6 +225,7 @@ add_library(app-lib
   commands/cmd_keyboard_shortcuts.cpp
   commands/cmd_launch.cpp
   commands/cmd_layer_from_background.cpp
+  commands/cmd_layer_opacity.cpp
   commands/cmd_layer_properties.cpp
   commands/cmd_layer_visibility.cpp
   commands/cmd_link_cels.cpp
