@@ -1165,10 +1165,17 @@ void Editor::updateToolLoopModifiersIndicators()
       action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
 
       gen::SelectionMode mode = Preferences::instance().selection.mode();
-      if (int(action & KeyAction::AddSelection))
-        mode = gen::SelectionMode::ADD;
-      if (int(action & KeyAction::SubtractSelection) || m_secondaryButton)
+      if (int(action & KeyAction::SubtractSelection) ||
+          // Don't use "subtract" mode if the selection was activated
+          // with the "right click mode = a selection-like tool"
+          (m_secondaryButton &&
+           App::instance()->activeToolManager()->selectedTool() &&
+           App::instance()->activeToolManager()->selectedTool()->getInk(0)->isSelection())) {
         mode = gen::SelectionMode::SUBTRACT;
+      }
+      else if (int(action & KeyAction::AddSelection)) {
+        mode = gen::SelectionMode::ADD;
+      }
       switch (mode) {
         case gen::SelectionMode::DEFAULT:  modifiers |= int(tools::ToolLoopModifiers::kReplaceSelection);  break;
         case gen::SelectionMode::ADD:      modifiers |= int(tools::ToolLoopModifiers::kAddSelection);      break;
@@ -1260,13 +1267,16 @@ bool Editor::onProcessMessage(Message* msg)
         m_oldPos = mouseMsg->position();
         updateToolByTipProximity(mouseMsg->pointerType());
 
-        if (!m_secondaryButton && mouseMsg->right()) {
-          m_secondaryButton = mouseMsg->right();
-
-          updateToolLoopModifiersIndicators();
-          updateQuicktool();
-          setCursor(mouseMsg->position());
+        // Only when we right-click with the regular "paint bg-color
+        // right-click mode" we will mark indicate that the secondary
+        // button was used (m_secondaryButton == true).
+        if (mouseMsg->right() && !m_secondaryButton) {
+          m_secondaryButton = true;
         }
+
+        updateToolLoopModifiersIndicators();
+        updateQuicktool();
+        setCursor(mouseMsg->position());
 
         App::instance()->activeToolManager()
           ->pressButton(pointer_from_msg(this, mouseMsg));

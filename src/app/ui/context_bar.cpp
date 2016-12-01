@@ -1195,6 +1195,7 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
+    // TODO use real shortcuts in tooltips
     tooltipManager->addTooltipFor(at(0), "Replace selection", BOTTOM);
     tooltipManager->addTooltipFor(at(1), "Add to selection\n(Shift)", BOTTOM);
     tooltipManager->addTooltipFor(at(2), "Subtract from selection\n(Shift+Alt)", BOTTOM);

@@ -185,10 +185,20 @@ public:
     }
 
     // Right-click
+
+    static_assert(int(app::gen::RightClickMode::PAINT_BGCOLOR) == 0, "");
+    static_assert(int(app::gen::RightClickMode::PICK_FGCOLOR) == 1, "");
+    static_assert(int(app::gen::RightClickMode::ERASE) == 2, "");
+    static_assert(int(app::gen::RightClickMode::SCROLL) == 3, "");
+    static_assert(int(app::gen::RightClickMode::RECTANGULAR_MARQUEE) == 4, "");
+    static_assert(int(app::gen::RightClickMode::LASSO) == 5, "");
+
     rightClickBehavior()->addItem("Paint with background color");
     rightClickBehavior()->addItem("Pick foreground color");
     rightClickBehavior()->addItem("Erase");
     rightClickBehavior()->addItem("Scroll");
+    rightClickBehavior()->addItem("Rectangular Marquee");
+    rightClickBehavior()->addItem("Lasso");
     rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
 
     // Zoom with Scroll Wheel

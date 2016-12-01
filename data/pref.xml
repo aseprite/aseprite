@@ -10,6 +10,8 @@
       <value id="PICK_FGCOLOR" value="1" />
       <value id="ERASE" value="2" />
       <value id="SCROLL" value="3" />
+      <value id="RECTANGULAR_MARQUEE" value="4" />
+      <value id="LASSO" value="5" />
     </enum>
     <enum id="OnionskinType">
       <value id="MERGE" value="0" />
