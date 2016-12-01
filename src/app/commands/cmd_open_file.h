@@ -24,14 +24,6 @@ namespace app {
     OpenFileCommand();
     Command* clone() const override { return new OpenFileCommand(*this); }
 
-    SequenceDecision sequenceDecision() const {
-      return m_seqDecision;
-    }
-
-    void setSequenceDecision(SequenceDecision seqDecision) {
-      m_seqDecision = seqDecision;
-    }
-
     const std::vector<std::string>& usedFiles() const {
       return m_usedFiles;
     }
