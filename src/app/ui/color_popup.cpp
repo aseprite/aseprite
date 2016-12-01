@@ -48,7 +48,9 @@ enum {
 };
 
 ColorPopup::ColorPopup(bool canPin)
-  : PopupWindowPin("Color Selector", ClickBehavior::CloseOnClickInOtherWindow)
+  : PopupWindowPin("Color Selector",
+                   ClickBehavior::CloseOnClickInOtherWindow,
+                   canPin)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
   , m_color(app::Color::fromMask())
@@ -77,12 +79,22 @@ ColorPopup::ColorPopup(bool canPin)
   m_topBox.addChild(&m_colorType);
   m_topBox.addChild(new Separator("", VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
+
+  // Move close button (decorative widget) inside the m_topBox
   {
-    Box* miniVbox = new Box(VERTICAL);
-    miniVbox->addChild(getPin());
+    Widget* closeButton = nullptr;
+    WidgetsList decorators;
+    for (auto child : children()) {
+      if (child->isDecorative()) {
+        closeButton = child;
+        removeChild(child);
+        break;
+      }
+    }
     m_topBox.addChild(new BoxFiller);
-    m_topBox.addChild(miniVbox);
+    m_topBox.addChild(closeButton);
   }
+
   m_vbox.addChild(&m_topBox);
   m_vbox.addChild(&m_colorPaletteContainer);
   m_vbox.addChild(&m_rgbSliders);
@@ -98,9 +110,6 @@ ColorPopup::ColorPopup(bool canPin)
   m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
 
-  if (!m_canPin)
-    showPin(false);
-
   selectColorType(app::Color::RgbType);
   setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
 
@@ -112,7 +121,6 @@ ColorPopup::ColorPopup(bool canPin)
 
 ColorPopup::~ColorPopup()
 {
-  getPin()->parent()->removeChild(getPin());
 }
 
 void ColorPopup::setColor(const app::Color& color, SetColorOptions options)

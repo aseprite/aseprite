@@ -60,6 +60,11 @@ public:
   }
 
 protected:
+
+  void onSizeHint(SizeHintEvent& ev) override {
+    ev.setSizeHint(SkinTheme::instance()->parts.windowCloseButtonNormal()->size());
+  }
+
   void onClick(Event& ev) override {
     Button::onClick(ev);
     closeWindow();
@@ -1666,6 +1671,7 @@ void SkinTheme::paintWindowButton(ui::PaintEvent& ev)
   else
     part = parts.windowCloseButtonNormal();
 
+  g->fillRect(BGCOLOR, rc);
   g->drawRgbaSurface(part->bitmap(0), rc.x, rc.y);
 }
 

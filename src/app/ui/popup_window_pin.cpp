@@ -26,45 +26,20 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehavior)
-  : PopupWindow(text, clickBehavior)
-  , m_pin("")
+PopupWindowPin::PopupWindowPin(const std::string& text,
+                               const ClickBehavior clickBehavior,
+                               const bool canPin)
+  : PopupWindow(text, clickBehavior,
+                EnterBehavior::CloseOnEnter, canPin)
+  , m_pinned(false)
 {
-  SkinTheme* theme = SkinTheme::instance();
-
-  m_pin.setFocusStop(false);
-  m_pin.Click.connect(&PopupWindowPin::onPinClick, this);
-  m_pin.setIconInterface(
-    new ButtonIconImpl(theme->parts.unpinned(),
-                       theme->parts.pinned(),
-                       theme->parts.unpinned(),
-                       CENTER | MIDDLE));
 }
 
-void PopupWindowPin::showPin(bool state)
+void PopupWindowPin::setPinned(const bool pinned)
 {
-  m_pin.setVisible(state);
-}
-
-void PopupWindowPin::setPinned(bool pinned)
-{
-  m_pin.setSelected(pinned);
-
-  Event ev(this);
-  onPinClick(ev);
-}
-
-void PopupWindowPin::onPinClick(Event& ev)
-{
-  if (m_pin.isSelected()) {
+  m_pinned = pinned;
+  if (m_pinned)
     makeFloating();
-  }
-  else {
-    gfx::Rect rc = bounds();
-    rc.enlarge(8);
-    setHotRegion(gfx::Region(rc));
-    makeFixed();
-  }
 }
 
 bool PopupWindowPin::onProcessMessage(Message* msg)
@@ -72,7 +47,7 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage: {
-      if (!isPinned())
+      if (!m_pinned)
         makeFixed();
       break;
     }
@@ -88,7 +63,7 @@ void PopupWindowPin::onWindowMovement()
 
   // If the window isn't pinned and we move it, we can automatically
   // pin it.
-  if (!m_pin.isSelected())
+  if (!m_pinned)
     setPinned(true);
 }
 
