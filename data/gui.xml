@@ -201,7 +201,8 @@
       </key>
 
       <!-- Zoom -->
-      <key command="Zoom" shortcut="~"><param name="percentage" value="50" /></key>
+      <key command="Zoom" shortcut="~"><param name="percentage" value="50" /></key> <!-- US PC -->
+      <key command="Zoom" shortcut="`"><param name="percentage" value="50" /></key> <!-- US Mac -->
       <key command="Zoom" shortcut="1"><param name="percentage" value="100" /></key>
       <key command="Zoom" shortcut="2"><param name="percentage" value="200" /></key>
       <key command="Zoom" shortcut="3"><param name="percentage" value="400" /></key>
