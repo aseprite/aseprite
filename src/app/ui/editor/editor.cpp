@@ -326,7 +326,9 @@ void Editor::setLayer(const Layer* layer)
     if (// If the onion skinning depends on the active layer
         m_docPref.onionskin.currentLayer() ||
         // If the user want to see the active layer edges...
-        m_docPref.show.layerEdges()) {
+        m_docPref.show.layerEdges() ||
+        // If there is a different opacity for nonactive-layers
+        Preferences::instance().experimental.nonactiveLayersOpacity() < 255) {
       // We've to redraw the whole editor
       invalidate();
     }
@@ -546,6 +548,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
 
     m_renderEngine.setRefLayersVisiblity(true);
+    m_renderEngine.setSelectedLayer(m_layer);
+    m_renderEngine.setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
     m_renderEngine.setProjection(m_proj);
     m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
     m_renderEngine.disableOnionskin();

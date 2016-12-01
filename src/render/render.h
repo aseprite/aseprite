@@ -105,6 +105,7 @@ namespace render {
     Render();
 
     void setRefLayersVisiblity(const bool visible);
+    void setNonactiveLayersOpacity(const int opacity);
 
     // Viewport configuration
     void setProjection(const Projection& projection);
@@ -115,6 +116,8 @@ namespace render {
     void setBgColor1(color_t color);
     void setBgColor2(color_t color);
     void setBgCheckedSize(const gfx::Size& size);
+
+    void setSelectedLayer(const Layer* layer);
 
     // Sets the preview image. This preview image is an alternative
     // image to be used for the given layer/frame.
@@ -192,7 +195,8 @@ namespace render {
       const CompositeImageFunc compositeImage,
       const bool render_background,
       const bool render_transparent,
-      const BlendMode blendMode);
+      const BlendMode blendMode,
+      bool isSelected);
 
     void renderCel(
       Image* dst_image,
@@ -220,6 +224,7 @@ namespace render {
       const Layer* layer);
 
     int m_flags;
+    int m_nonactiveLayersOpacity;
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
     frame_t m_currentFrame;

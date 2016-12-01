@@ -480,6 +480,7 @@ bool has_visible_reference_layers(const LayerGroup* group)
 
 Render::Render()
   : m_flags(0)
+  , m_nonactiveLayersOpacity(255)
   , m_sprite(nullptr)
   , m_currentLayer(NULL)
   , m_currentFrame(0)
@@ -503,6 +504,11 @@ void Render::setRefLayersVisiblity(const bool visible)
     m_flags |= Flags::ShowRefLayers;
   else
     m_flags &= ~Flags::ShowRefLayers;
+}
+
+void Render::setNonactiveLayersOpacity(const int opacity)
+{
+  m_nonactiveLayersOpacity = opacity;
 }
 
 void Render::setProjection(const Projection& projection)
@@ -533,6 +539,11 @@ void Render::setBgColor2(color_t color)
 void Render::setBgCheckedSize(const gfx::Size& size)
 {
   m_bgCheckedSize = size;
+}
+
+void Render::setSelectedLayer(const Layer* layer)
+{
+  m_selectedLayer = layer;
 }
 
 void Render::setPreviewImage(const Layer* layer,
@@ -622,7 +633,7 @@ void Render::renderLayer(
   renderLayer(
     layer, dstImage, area,
     frame, compositeImage,
-    true, true, blendMode);
+    true, true, blendMode, false);
 }
 
 void Render::renderSprite(
@@ -685,7 +696,8 @@ void Render::renderSprite(
     area, frame, compositeImage,
     true,
     false,
-    BlendMode::UNSPECIFIED);
+    BlendMode::UNSPECIFIED,
+    false);
 
   // Draw onion skin behind the sprite.
   if (m_onionskin.position() == OnionskinPosition::BEHIND)
@@ -698,7 +710,7 @@ void Render::renderSprite(
     area, frame, compositeImage,
     false,
     true,
-    BlendMode::UNSPECIFIED);
+    BlendMode::UNSPECIFIED, false);
 
   // Draw onion skin in front of the sprite.
   if (m_onionskin.position() == OnionskinPosition::INFRONT)
@@ -778,8 +790,7 @@ void Render::renderOnionskin(
           // when opacity is < 255
           (m_globalOpacity < 255 &&
            m_onionskin.position() == OnionskinPosition::INFRONT),
-          true,
-          blendMode);
+          true, blendMode, false);
       }
     }
   }
@@ -862,11 +873,15 @@ void Render::renderLayer(
   const CompositeImageFunc compositeImage,
   const bool render_background,
   const bool render_transparent,
-  const BlendMode blendMode)
+  const BlendMode blendMode,
+  bool isSelected)
 {
   // we can't read from this layer
   if (!layer->isVisible())
     return;
+
+  if (m_selectedLayer == layer)
+    isSelected = true;
 
   gfx::Rect extraArea;
   bool drawExtra = (m_extraCel &&
@@ -940,11 +955,13 @@ void Render::renderLayer(
           ASSERT(imgLayer->opacity() >= 0);
           ASSERT(imgLayer->opacity() <= 255);
 
-          // Multiple three opacities: cel*layer*global
+          // Multiple three opacities: cel*layer*global (*nonactive-layer-opacity)
           int t;
           int opacity = cel->opacity();
           opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
           opacity = MUL_UN8(opacity, m_globalOpacity, t);
+          if (!isSelected && m_nonactiveLayersOpacity != 255)
+            opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
           ASSERT(celImage->maskColor() == m_sprite->transparentColor());
 
@@ -982,7 +999,8 @@ void Render::renderLayer(
           compositeImage,
           render_background,
           render_transparent,
-          blendMode);
+          blendMode,
+          isSelected);
       }
       break;
     }
