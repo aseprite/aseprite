@@ -61,6 +61,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
 #endif
   , m_listLayers(m_po.add("list-layers").description("List layers of the next given sprite\nor include layers in JSON data"))
   , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite sprite\nor include frame tags in JSON data"))
+  , m_oneFrame(m_po.add("oneframe").description("Load just the first frame"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
   , m_help(m_po.add("help").mnemonic('?').description("Display this help and exits"))

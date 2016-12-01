@@ -34,6 +34,7 @@ namespace app {
     bool listTags;
     bool ignoreEmpty;
     bool trim;
+    bool oneFrame;
     gfx::Rect crop;
 
     CliOpenFile();

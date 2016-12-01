@@ -30,6 +30,7 @@ CliOpenFile::CliOpenFile()
   listTags = false;
   ignoreEmpty = false;
   trim = false;
+  oneFrame = false;
   crop = gfx::Rect();
 }
 

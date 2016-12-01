@@ -75,6 +75,7 @@ public:
 #endif
   const Option& listLayers() const { return m_listLayers; }
   const Option& listTags() const { return m_listTags; }
+  const Option& oneFrame() const { return m_oneFrame; }
 
   bool hasExporterParams() const;
 
@@ -123,6 +124,7 @@ private:
 #endif
   Option& m_listLayers;
   Option& m_listTags;
+  Option& m_oneFrame;
 
   Option& m_verbose;
   Option& m_debug;

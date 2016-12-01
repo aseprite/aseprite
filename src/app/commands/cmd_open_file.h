@@ -36,6 +36,7 @@ namespace app {
     std::string m_filename;
     std::string m_folder;
     bool m_repeatCheckbox;
+    bool m_oneFrame;
     std::vector<std::string> m_usedFiles;
     SequenceDecision m_seqDecision;
   };

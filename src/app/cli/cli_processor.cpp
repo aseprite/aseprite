@@ -372,6 +372,10 @@ void CliProcessor::process()
           if (m_exporter)
             m_exporter->setListFrameTags(true);
         }
+        // --oneframe
+        else if (opt == &m_options.oneFrame()) {
+          cof.oneFrame = true;
+        }
       }
       // File names aren't associated to any option
       else {
@@ -412,6 +416,8 @@ bool CliProcessor::openFile(CliOpenFile& cof)
   Command* openCommand = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
   Params params;
   params.set("filename", cof.filename.c_str());
+  if (cof.oneFrame)
+    params.set("oneframe", "true");
   ctx->executeCommand(openCommand, params);
 
   app::Document* doc = ctx->activeDocument();

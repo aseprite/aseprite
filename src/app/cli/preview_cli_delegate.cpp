@@ -66,6 +66,9 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.listTags)
     std::cout << "  - List tags\n";
 
+  if (cof.oneFrame)
+    std::cout << "  - One frame\n";
+
   if (cof.allLayers)
     std::cout << "  - Make all layers visible\n";
 
