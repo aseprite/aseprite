@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/context.h"
@@ -15,6 +16,7 @@
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/tools/tool.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/search_entry.h"
@@ -38,8 +40,9 @@
 
 namespace app {
 
-using namespace ui;
 using namespace skin;
+using namespace tools;
+using namespace ui;
 
 static int g_sep = 0;
 
@@ -410,7 +413,13 @@ private:
 
     // Load keyboard shortcuts
     fillList(this->menus(), AppMenus::instance()->getRootMenu(), 0);
+    fillList(this->tools(), App::instance()->toolBox());
     for (Key* key : *app::KeyboardShortcuts::instance()) {
+      if (key->type() == KeyType::Tool ||
+          key->type() == KeyType::Quicktool) {
+        continue;
+      }
+
       std::string text = key->triggerString();
       switch (key->keycontext()) {
         case KeyContext::SelectionTool:
@@ -437,16 +446,11 @@ private:
       }
       KeyItem* keyItem = new KeyItem(text, key, NULL, 0);
 
-      ListBox* listBox = NULL;
+      ListBox* listBox = nullptr;
       switch (key->type()) {
         case KeyType::Command:
           listBox = this->commands();
           break;
-        case KeyType::Tool:
-        case KeyType::Quicktool: {
-          listBox = this->tools();
-          break;
-        }
         case KeyType::Action:
           listBox = this->actions();
           break;
@@ -605,6 +609,23 @@ private:
         if (menuItem->hasSubmenu())
           fillList(listbox, menuItem->getSubmenu(), level+1);
       }
+    }
+  }
+
+  void fillList(ListBox* listbox, ToolBox* toolbox) {
+    for (Tool* tool : *toolbox) {
+      std::string text = tool->getText();
+
+      Key* key = app::KeyboardShortcuts::instance()->tool(tool);
+      KeyItem* keyItem = new KeyItem(text, key, nullptr, 0);
+      m_allKeyItems.push_back(keyItem);
+      listbox->addChild(keyItem);
+
+      text += " (quick)";
+      key = app::KeyboardShortcuts::instance()->quicktool(tool);
+      keyItem = new KeyItem(text, key, nullptr, 0);
+      m_allKeyItems.push_back(keyItem);
+      listbox->addChild(keyItem);
     }
   }
 
