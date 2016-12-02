@@ -20,8 +20,9 @@ namespace ui {
 using namespace gfx;
 
 PopupWindow::PopupWindow(const std::string& text,
-                         ClickBehavior clickBehavior,
-                         EnterBehavior enterBehavior)
+                         const ClickBehavior clickBehavior,
+                         const EnterBehavior enterBehavior,
+                         const bool withCloseButton)
   : Window(text.empty() ? WithoutTitleBar: WithTitleBar, text)
   , m_clickBehavior(clickBehavior)
   , m_enterBehavior(enterBehavior)
@@ -33,7 +34,8 @@ PopupWindow::PopupWindow(const std::string& text,
   setWantFocus(false);
   setAlign(LEFT | TOP);
 
-  removeDecorativeWidgets();
+  if (!withCloseButton)
+    removeDecorativeWidgets();
 
   initTheme();
   noBorderNoChildSpacing();

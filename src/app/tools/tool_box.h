@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,6 +22,7 @@ namespace app {
 
     namespace WellKnownTools {
       extern const char* RectangularMarquee;
+      extern const char* Lasso;
       extern const char* Pencil;
       extern const char* Eraser;
       extern const char* Eyedropper;

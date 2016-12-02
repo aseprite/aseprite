@@ -29,6 +29,8 @@ namespace app {
     int onGetValueFromText(const std::string& text) override;
 
     void onValueChange() override;
+
+    bool m_locked;
   };
 
 } // namespace app

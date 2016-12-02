@@ -299,7 +299,8 @@ void PreviewEditorWindow::onPlayClicked()
 
   if (m_playButton->isPlaying()) {
     m_refFrame = miniEditor->frame();
-    miniEditor->play(Preferences::instance().preview.playOnce());
+    miniEditor->play(Preferences::instance().preview.playOnce(),
+                     Preferences::instance().preview.playAll());
   }
   else
     miniEditor->stop();
@@ -311,8 +312,12 @@ void PreviewEditorWindow::onPopupSpeed()
   if (!miniEditor || !miniEditor->document())
     return;
 
+  auto& pref = Preferences::instance();
+
   miniEditor->showAnimationSpeedMultiplierPopup(
-    Preferences::instance().preview.playOnce, false);
+    pref.preview.playOnce,
+    pref.preview.playAll,
+    false);
   m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
 }
 
@@ -383,7 +388,8 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     if (!miniEditor->isPlaying())
       miniEditor->setFrame(m_refFrame = editor->frame());
 
-    miniEditor->play(Preferences::instance().preview.playOnce());
+    miniEditor->play(Preferences::instance().preview.playOnce(),
+                     Preferences::instance().preview.playAll());
   }
 }
 

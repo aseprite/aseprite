@@ -16,6 +16,8 @@
 #include "base/fs.h"
 #include "base/time.h"
 
+#include <algorithm>
+
 namespace app {
 namespace crash {
 
@@ -52,6 +54,12 @@ DataRecovery::DataRecovery(doc::Context* ctx)
         TRACE("is running\n");
     }
   }
+
+  // Sort sessions from the most recent one to the oldest one
+  std::sort(m_sessions.begin(), m_sessions.end(),
+            [](const SessionPtr& a, const SessionPtr& b) {
+              return a->name() > b->name();
+            });
 
   // Create a new session
   base::pid pid = base::get_current_process_id();

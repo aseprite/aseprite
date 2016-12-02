@@ -18,6 +18,7 @@
 #include "app/document_range.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/pick_ink.h"
 #include "app/tools/tool.h"
@@ -254,7 +255,16 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
   }
 
-  if (clickedInk->isSelection()) {
+  // Only if the selected tool or quick tool is selection, we give the
+  // possibility to transform/move the selection. In other case,
+  // e.g. when selection is used with right-click mode, the
+  // transformation is disabled.
+  auto activeToolManager = App::instance()->activeToolManager();
+  if (clickedInk->isSelection() &&
+      ((activeToolManager->selectedTool() &&
+        activeToolManager->selectedTool()->getInk(0)->isSelection()) ||
+       (activeToolManager->quickTool() &&
+        activeToolManager->quickTool()->getInk(0)->isSelection()))) {
     // Transform selected pixels
     if (editor->isActive() &&
         document->isMaskVisible() &&

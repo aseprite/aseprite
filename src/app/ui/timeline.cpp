@@ -346,7 +346,8 @@ void Timeline::setFrame(frame_t frame, bool byUser)
     m_editor->setFrame(m_frame);
 
     if (isPlaying)
-      m_editor->play(false);
+      m_editor->play(false,
+                     Preferences::instance().editor.playAll());
   }
 }
 

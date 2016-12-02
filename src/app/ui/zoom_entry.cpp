@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,6 +32,7 @@ using namespace ui;
 
 ZoomEntry::ZoomEntry()
   : IntEntry(0, render::Zoom::linearValues()-1, this)
+  , m_locked(false)
 {
   setSuffix("%");
   setup_mini_look(this);
@@ -41,11 +42,15 @@ ZoomEntry::ZoomEntry()
 
 void ZoomEntry::setZoom(const render::Zoom& zoom)
 {
+  if (m_locked)
+    return;
+
   setText(onGetTextFromValue(zoom.linearScale()));
 }
 
 void ZoomEntry::onValueChange()
 {
+  base::ScopedValue<bool> lock(m_locked, true, m_locked);
   IntEntry::onValueChange();
 
   render::Zoom zoom = render::Zoom::fromLinearScale(getValue());

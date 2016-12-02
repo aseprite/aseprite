@@ -15,25 +15,19 @@ namespace app {
 
   class PopupWindowPin : public ui::PopupWindow {
   public:
-    PopupWindowPin(const std::string& text, ClickBehavior clickBehavior);
+    PopupWindowPin(const std::string& text,
+                   const ClickBehavior clickBehavior,
+                   const bool canPin = false);
 
-    void showPin(bool state);
-    bool isPinned() const { return m_pin.isSelected(); }
-    void setPinned(bool pinned);
+    bool isPinned() const { return m_pinned; }
+    void setPinned(const bool pinned);
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;
     virtual void onWindowMovement() override;
 
-    // The pin. Your derived class must add this pin in some place of
-    // the frame as a children, and you must to remove the pin from the
-    // parent in your class's dtor.
-    ui::CheckBox* getPin() { return &m_pin; }
-
   private:
-    void onPinClick(ui::Event& ev);
-
-    ui::CheckBox m_pin;
+    bool m_pinned;
   };
 
 } // namespace app

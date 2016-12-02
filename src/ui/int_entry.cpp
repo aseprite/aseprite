@@ -118,10 +118,13 @@ bool IntEntry::onProcessMessage(Message* msg)
       if (hasFocus() && !isReadOnly()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         int chr = keymsg->unicodeChar();
-        if (chr && (chr < '0' || chr > '9')) {
-          // By-pass Entry::onProcessMessage()
-          return Widget::onProcessMessage(msg);
+        if (chr >= 32 && (chr < '0' || chr > '9')) {
+          // "Eat" all keys that aren't number
+          return true;
         }
+        // Else we use the default Entry processing function which
+        // will process keys like Left/Right arrows, clipboard
+        // handling, etc.
       }
       break;
   }

@@ -26,8 +26,9 @@ namespace ui {
     };
 
     PopupWindow(const std::string& text = "",
-                ClickBehavior clickBehavior = ClickBehavior::CloseOnClickOutsideHotRegion,
-                EnterBehavior enterBehavior = EnterBehavior::CloseOnEnter);
+                const ClickBehavior clickBehavior = ClickBehavior::CloseOnClickOutsideHotRegion,
+                const EnterBehavior enterBehavior = EnterBehavior::CloseOnEnter,
+                const bool withCloseButton = false);
     ~PopupWindow();
 
     // Sets the hot region. This region indicates the area where the

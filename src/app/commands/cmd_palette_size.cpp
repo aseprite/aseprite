@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,10 +51,9 @@ void PaletteSizeCommand::onLoadParams(const Params& params)
 
 void PaletteSizeCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
-  Sprite* sprite = writer.sprite();
-  frame_t frame = writer.frame();
-  Palette palette(*sprite->palette(frame));
+  ContextReader reader(context);
+  frame_t frame = reader.frame();
+  Palette palette(*reader.sprite()->palette(frame));
 
   app::gen::PaletteSize window;
   window.colors()->setTextf("%d", palette.size());
@@ -66,8 +65,9 @@ void PaletteSizeCommand::onExecute(Context* context)
 
     palette.resize(MID(1, ncolors, INT_MAX));
 
+    ContextWriter writer(reader);
     Transaction transaction(context, "Palette Size", ModifyDocument);
-    transaction.execute(new cmd::SetPalette(sprite, frame, &palette));
+    transaction.execute(new cmd::SetPalette(writer.sprite(), frame, &palette));
     transaction.commit();
 
     set_current_palette(&palette, false);

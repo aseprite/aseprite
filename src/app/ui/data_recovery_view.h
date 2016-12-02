@@ -8,9 +8,12 @@
 #define APP_UI_DATA_RECOVERY_VIEW_H_INCLUDED
 #pragma once
 
+#include "app/crash/raw_images_as.h"
+#include "app/ui/drop_down_button.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
 #include "ui/box.h"
+#include "ui/button.h"
 #include "ui/listbox.h"
 #include "ui/view.h"
 
@@ -19,7 +22,7 @@ namespace app {
     class DataRecovery;
   }
 
-  class DataRecoveryView : public ui::Box
+  class DataRecoveryView : public ui::VBox
                          , public TabView
                          , public WorkspaceView {
   public:
@@ -43,9 +46,17 @@ namespace app {
   private:
     void fillList();
 
+    void onOpen();
+    void onOpenRaw(crash::RawImagesAs as);
+    void onOpenMenu();
+    void onDelete();
+    void onChangeSelection();
+
     crash::DataRecovery* m_dataRecovery;
     ui::View m_view;
     ui::ListBox m_listBox;
+    DropDownButton m_openButton;
+    ui::Button m_deleteButton;
   };
 
 } // namespace app

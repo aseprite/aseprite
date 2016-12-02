@@ -10,6 +10,8 @@
       <value id="PICK_FGCOLOR" value="1" />
       <value id="ERASE" value="2" />
       <value id="SCROLL" value="3" />
+      <value id="RECTANGULAR_MARQUEE" value="4" />
+      <value id="LASSO" value="5" />
     </enum>
     <enum id="OnionskinType">
       <value id="MERGE" value="0" />
@@ -117,6 +119,7 @@
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="play_once" type="bool" default="false" />
+      <option id="play_all" type="bool" default="false" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" migrate="experimental.use_native_cursor" />
@@ -127,6 +130,7 @@
     </section>
     <section id="preview" text="Preview">
       <option id="play_once" type="bool" default="false" />
+      <option id="play_all" type="bool" default="false" />
     </section>
     <section id="theme" text="Theme">
       <option id="selected" type="std::string" default="&quot;default&quot;" migrate="Skin.Selected" />

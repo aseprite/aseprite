@@ -229,7 +229,7 @@ bool ListBox::onProcessMessage(Message* msg)
         }
 
         if (pick_item) {
-          Widget* picked;
+          Widget* picked = nullptr;
 
           if (view) {
             picked = view->viewport()->pick(mousePos);
@@ -239,11 +239,8 @@ bool ListBox::onProcessMessage(Message* msg)
           }
 
           // If the picked widget is a child of the list, select it
-          if (picked && hasChild(picked)) {
-            if (ListItem* pickedItem = dynamic_cast<ListItem*>(picked)) {
-              selectChild(pickedItem, msg);
-            }
-          }
+          if (picked && hasChild(picked))
+            selectChild(picked, msg);
         }
 
         return true;
@@ -365,7 +362,7 @@ void ListBox::onSizeHint(SizeHintEvent& ev)
   int w = 0, h = 0;
 
   UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
-    Size reqSize = static_cast<ListItem*>(*it)->sizeHint();
+    Size reqSize = (*it)->sizeHint();
 
     w = MAX(w, reqSize.w);
     h += reqSize.h + (it+1 != end ? this->childSpacing(): 0);

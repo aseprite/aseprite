@@ -177,6 +177,14 @@ void ActiveToolManager::pressButton(const Pointer& pointer)
           tool = m_toolbox->getToolById(WellKnownTools::Hand);
           ink = m_toolbox->getInkById(tools::WellKnownInks::Scroll);
           break;
+        case app::gen::RightClickMode::RECTANGULAR_MARQUEE:
+          tool = m_toolbox->getToolById(WellKnownTools::RectangularMarquee);
+          ink = m_toolbox->getInkById(tools::WellKnownInks::Selection);
+          break;
+        case app::gen::RightClickMode::LASSO:
+          tool = m_toolbox->getToolById(WellKnownTools::Lasso);
+          ink = m_toolbox->getInkById(tools::WellKnownInks::Selection);
+          break;
       }
     }
   }
@@ -212,7 +220,8 @@ bool ActiveToolManager::isToolAffectedByRightClickMode(Tool* tool)
   return
     ((tool->getInk(0)->isPaint() && !shadingMode) ||
      (tool->getInk(0)->isEffect())) &&
-    (!tool->getInk(0)->isEraser());
+    (!tool->getInk(0)->isEraser()) &&
+    (!tool->getInk(0)->isSelection());
 }
 
 } // namespace tools

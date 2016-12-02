@@ -273,6 +273,17 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   else {
     m_state->onBeforePopState(this);
 
+    // Save the current state into "m_deletedStates" just to keep a
+    // reference to it to avoid delete it right now. We'll delete it
+    // in the next Editor::onProcessMessage().
+    //
+    // This is necessary for PlayState because it removes itself
+    // calling Editor::stop() from PlayState::onPlaybackTick(). If we
+    // delete the PlayState inside the "Tick" timer signal, the
+    // program will crash (because we're iterating the
+    // PlayState::m_playTimer slots).
+    m_deletedStates.push(m_state);
+
     m_statesHistory.pop();
     m_state = m_statesHistory.top();
   }
@@ -1221,10 +1232,17 @@ void Editor::updateToolLoopModifiersIndicators()
       action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
 
       gen::SelectionMode mode = Preferences::instance().selection.mode();
-      if (int(action & KeyAction::AddSelection))
-        mode = gen::SelectionMode::ADD;
-      if (int(action & KeyAction::SubtractSelection) || m_secondaryButton)
+      if (int(action & KeyAction::SubtractSelection) ||
+          // Don't use "subtract" mode if the selection was activated
+          // with the "right click mode = a selection-like tool"
+          (m_secondaryButton &&
+           App::instance()->activeToolManager()->selectedTool() &&
+           App::instance()->activeToolManager()->selectedTool()->getInk(0)->isSelection())) {
         mode = gen::SelectionMode::SUBTRACT;
+      }
+      else if (int(action & KeyAction::AddSelection)) {
+        mode = gen::SelectionMode::ADD;
+      }
       switch (mode) {
         case gen::SelectionMode::DEFAULT:  modifiers |= int(tools::ToolLoopModifiers::kReplaceSelection);  break;
         case gen::SelectionMode::ADD:      modifiers |= int(tools::ToolLoopModifiers::kAddSelection);      break;
@@ -1277,6 +1295,10 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
 
 bool Editor::onProcessMessage(Message* msg)
 {
+  // Delete states
+  if (!m_deletedStates.empty())
+    m_deletedStates.clear();
+
   switch (msg->type()) {
 
     case kTimerMessage:
@@ -1313,13 +1335,16 @@ bool Editor::onProcessMessage(Message* msg)
         m_oldPos = mouseMsg->position();
         updateToolByTipProximity(mouseMsg->pointerType());
 
-        if (!m_secondaryButton && mouseMsg->right()) {
-          m_secondaryButton = mouseMsg->right();
-
-          updateToolLoopModifiersIndicators();
-          updateQuicktool();
-          setCursor(mouseMsg->position());
+        // Only when we right-click with the regular "paint bg-color
+        // right-click mode" we will mark indicate that the secondary
+        // button was used (m_secondaryButton == true).
+        if (mouseMsg->right() && !m_secondaryButton) {
+          m_secondaryButton = true;
         }
+
+        updateToolLoopModifiersIndicators();
+        updateQuicktool();
+        setCursor(mouseMsg->position());
 
         App::instance()->activeToolManager()
           ->pressButton(pointer_from_msg(this, mouseMsg));
@@ -1740,14 +1765,15 @@ void Editor::notifyZoomChanged()
   m_observers.notifyZoomChanged(this);
 }
 
-void Editor::play(bool playOnce)
+void Editor::play(const bool playOnce,
+                  const bool playAll)
 {
   ASSERT(m_state);
   if (!m_state)
     return;
 
   if (!dynamic_cast<PlayState*>(m_state.get()))
-    setState(EditorStatePtr(new PlayState(playOnce)));
+    setState(EditorStatePtr(new PlayState(playOnce, playAll)));
 }
 
 void Editor::stop()
@@ -1766,9 +1792,10 @@ bool Editor::isPlaying() const
 }
 
 void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
-                                               bool withStopBehaviorOptions)
+                                               Option<bool>& playAll,
+                                               const bool withStopBehaviorOptions)
 {
-  double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
+  const double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
   Menu menu;
 
   for (double option : options) {
@@ -1791,6 +1818,17 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
     menu.addChild(item);
   }
 
+  // Play all option
+  {
+    MenuItem* item = new MenuItem("Play All Frames (Ignore Tags)");
+    item->Click.connect(
+      [&playAll]() {
+        playAll(!playAll());
+      });
+    item->setSelected(playAll());
+    menu.addChild(item);
+  }
+
   if (withStopBehaviorOptions) {
     MenuItem* item = new MenuItem("Rewind on Stop");
     item->Click.connect(
@@ -1804,6 +1842,13 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   }
 
   menu.showPopup(ui::get_mouse_position());
+
+  if (isPlaying()) {
+    // Re-play
+    stop();
+    play(playOnce(),
+         playAll());
+  }
 }
 
 double Editor::getAnimationSpeedMultiplier() const
