@@ -525,8 +525,15 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
     if (command->id() != CommandId::Copy) {
       m_pixelsMovement->trim();
 
+      // Should we keep the mask after an Edit > Clear command?
+      auto keepMask = PixelsMovement::DontKeepMask;
+      if (command->id() == CommandId::Clear &&
+          Preferences::instance().selection.keepSelectionAfterClear()) {
+        keepMask = PixelsMovement::KeepMask;
+      }
+
       // Discard the dragged image.
-      m_pixelsMovement->discardImage();
+      m_pixelsMovement->discardImage(PixelsMovement::CommitChanges, keepMask);
       m_discarded = true;
 
       // Quit from MovingPixelsState, back to standby.
@@ -610,7 +617,7 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
       break;
 
     case ContextBarObserver::CancelDrag:
-      m_pixelsMovement->discardImage(false);
+      m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
       m_discarded = true;
 
       // Quit from MovingPixelsState, back to standby.

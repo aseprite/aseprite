@@ -47,6 +47,16 @@ namespace app {
       ScaleFromPivot = 32,
     };
 
+    enum CommitChangesOption {
+      DontCommitChanges,
+      CommitChanges,
+    };
+
+    enum KeepMaskOption {
+      DontKeepMask,
+      KeepMask,
+    };
+
     PixelsMovement(Context* context,
                    Site site,
                    const Image* moveThis,
@@ -76,7 +86,8 @@ namespace app {
 
     void dropImageTemporarily();
     void dropImage();
-    void discardImage(bool commit = true);
+    void discardImage(const CommitChangesOption commit = CommitChanges,
+                      const KeepMaskOption keepMask = DontKeepMask);
     bool isDragging() const;
 
     gfx::Rect getImageBounds();

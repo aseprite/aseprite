@@ -581,14 +581,16 @@ void PixelsMovement::dropImage()
   m_document->setExtraCel(ExtraCelRef(nullptr));
 }
 
-void PixelsMovement::discardImage(bool commit)
+void PixelsMovement::discardImage(const CommitChangesOption commit,
+                                  const KeepMaskOption keepMask)
 {
   m_isDragging = false;
 
   // Deselect the mask (here we don't stamp the image)
-  m_transaction.execute(new cmd::DeselectMask(m_document));
+  if (keepMask == DontKeepMask)
+    m_transaction.execute(new cmd::DeselectMask(m_document));
 
-  if (commit)
+  if (commit == CommitChanges)
     m_transaction.commit();
 
   // Destroy the extra cel and regenerate the mask boundaries (we've
