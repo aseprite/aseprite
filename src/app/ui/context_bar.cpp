@@ -1547,7 +1547,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // target to implement this new IContextBarUser and ask for
   // ContextBar elements.
 
-  base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+  const bool oldUpdatingFromCode = g_updatingFromCode;
+  base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, oldUpdatingFromCode);
 
   ToolPreferences* toolPref = nullptr;
   ToolPreferences::Brush* brushPref = nullptr;
@@ -1569,8 +1570,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_brushType->updateBrush(tool);
 
   if (brushPref) {
-    m_brushSize->setTextf("%d", brushPref->size());
-    m_brushAngle->setTextf("%d", brushPref->angle());
+    if (!oldUpdatingFromCode) {
+      m_brushSize->setTextf("%d", brushPref->size());
+      m_brushAngle->setTextf("%d", brushPref->angle());
+    }
   }
 
   m_brushPatternField->setBrushPattern(
