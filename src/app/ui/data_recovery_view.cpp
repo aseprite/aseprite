@@ -25,9 +25,12 @@
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
+#include "ui/separator.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -39,137 +42,61 @@ namespace {
 class Item : public ListItem {
 public:
   Item(crash::Session* session, crash::Session::Backup* backup)
-    : ListItem(backup ? " > " + backup->description(): session->name())
+    : ListItem(backup->description())
     , m_session(session)
     , m_backup(backup)
-    , m_openButton(backup ? "Open": "Open All")
-    , m_deleteButton(backup ? "Delete": "Delete All")
   {
-    m_hbox.setBgColor(gfx::ColorNone);
-    m_hbox.setTransparent(true);
-    m_hbox.addChild(&m_openButton);
-    m_hbox.addChild(&m_deleteButton);
-    addChild(&m_hbox);
-
-    m_openButton.Click.connect(base::Bind(&Item::onOpen, this));
-    m_openButton.DropDownClick.connect(base::Bind<void>(&Item::onOpenMenu, this));
-    m_deleteButton.Click.connect(base::Bind(&Item::onDelete, this));
-
-    setup_mini_look(&m_openButton);
-    setup_mini_look(&m_deleteButton);
   }
 
-  obs::signal<void()> Regenerate;
+  crash::Session* session() const { return m_session; }
+  crash::Session::Backup* backup() const { return m_backup; }
 
-protected:
+private:
   void onSizeHint(SizeHintEvent& ev) override {
-    gfx::Size sz = m_deleteButton.sizeHint();
+    ListItem::onSizeHint(ev);
+    gfx::Size sz = ev.sizeHint();
     sz.h += 4*guiscale();
     ev.setSizeHint(sz);
   }
 
-  void onResize(ResizeEvent& ev) override {
-    ListItem::onResize(ev);
-
-    gfx::Rect rc = ev.bounds();
-    gfx::Size sz = m_hbox.sizeHint();
-    m_hbox.setBounds(
-      gfx::Rect(
-        rc.x+rc.w-sz.w-2*guiscale(), rc.y+rc.h/2-sz.h/2, sz.w, sz.h));
-  }
-
-  void onOpen() {
-    if (m_backup)
-      m_session->restoreBackup(m_backup);
-    else
-      for (auto backup : m_session->backups())
-        m_session->restoreBackup(backup);
-  }
-
-  void onOpenRaw(crash::RawImagesAs as) {
-    if (m_backup)
-      m_session->restoreRawImages(m_backup, as);
-    else
-      for (auto backup : m_session->backups())
-        m_session->restoreRawImages(backup, as);
-  }
-
-  void onOpenMenu() {
-    gfx::Rect bounds = m_openButton.bounds();
-
-    Menu menu;
-    MenuItem rawFrames("Raw Images as Frames");
-    MenuItem rawLayers("Raw Images as Layers");
-    menu.addChild(&rawFrames);
-    menu.addChild(&rawLayers);
-
-    rawFrames.Click.connect(base::Bind(&Item::onOpenRaw, this, crash::RawImagesAs::kFrames));
-    rawLayers.Click.connect(base::Bind(&Item::onOpenRaw, this, crash::RawImagesAs::kLayers));
-
-    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
-  }
-
-  void onDelete() {
-    Widget* parent = this->parent();
-
-    if (m_backup) {
-      // Delete one backup
-      if (Alert::show(PACKAGE
-          "<<Do you really want to delete this backup?"
-          "||&Yes||&No") != 1)
-        return;
-
-      m_session->deleteBackup(m_backup);
-
-      Widget* parent = this->parent(); // TODO remove this line
-      parent->removeChild(this);
-      deferDelete();
-    }
-    else {
-      // Delete the whole session
-      if (!m_session->isEmpty()) {
-        if (Alert::show(PACKAGE
-            "<<Do you want to delete the whole session?"
-            "<<You will lost all backups related to this session."
-            "||&Yes||&No") != 1)
-          return;
-      }
-
-      crash::Session::Backups backups = m_session->backups();
-      for (auto backup : backups)
-        m_session->deleteBackup(backup);
-
-      m_session->removeFromDisk();
-      Regenerate();
-    }
-
-    parent->layout();
-    View::getView(parent)->updateView();
-  }
-
-private:
   crash::Session* m_session;
   crash::Session::Backup* m_backup;
-  ui::HBox m_hbox;
-  DropDownButton m_openButton;
-  ui::Button m_deleteButton;
 };
 
 } // anonymous namespace
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
-  : Box(VERTICAL)
-  , m_dataRecovery(dataRecovery)
+  : m_dataRecovery(dataRecovery)
+  , m_openButton("Recover Sprite")
+  , m_deleteButton("Delete")
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setBgColor(theme->colors.workspace());
 
-  addChild(&m_view);
+  m_openButton.mainButton()->setSizeHint(
+    gfx::Size(std::max(m_openButton.mainButton()->sizeHint().w, 100*guiscale()),
+              m_openButton.mainButton()->sizeHint().h));
+
+  m_listBox.setMultiselect(true);
   m_view.setExpansive(true);
   m_view.attachToView(&m_listBox);
   m_view.setProperty(SkinStylePropertyPtr(new SkinStyleProperty(theme->styles.workspaceView())));
 
+  HBox* hbox = new HBox;
+  hbox->setBorder(gfx::Border(2, 0, 2, 0)*guiscale());
+  hbox->addChild(&m_openButton);
+  hbox->addChild(&m_deleteButton);
+  addChild(hbox);
+  addChild(&m_view);
+
   fillList();
+  onChangeSelection();
+
+  m_openButton.Click.connect(base::Bind(&DataRecoveryView::onOpen, this));
+  m_openButton.DropDownClick.connect(base::Bind<void>(&DataRecoveryView::onOpenMenu, this));
+  m_deleteButton.Click.connect(base::Bind(&DataRecoveryView::onDelete, this));
+  m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
+  m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
 }
 
 DataRecoveryView::~DataRecoveryView()
@@ -188,13 +115,13 @@ void DataRecoveryView::fillList()
     if (session->isEmpty())
       continue;
 
-    Item* item = new Item(session.get(), nullptr);
-    item->Regenerate.connect(&DataRecoveryView::fillList, this);
-    m_listBox.addChild(item);
+    auto sep = new Separator(session->name(), HORIZONTAL);
+    sep->setBgColor(SkinTheme::instance()->colors.background());
+    sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
+    m_listBox.addChild(sep);
 
     for (auto& backup : session->backups()) {
-      item = new Item(session.get(), backup);
-      item->Regenerate.connect(&DataRecoveryView::fillList, this);
+      auto item = new Item(session.get(), backup);
       m_listBox.addChild(item);
     }
   }
@@ -230,6 +157,103 @@ void DataRecoveryView::onTabPopup(Workspace* workspace)
     return;
 
   menu->showPopup(ui::get_mouse_position());
+}
+
+void DataRecoveryView::onOpen()
+{
+  for (auto widget : m_listBox.children()) {
+    if (!widget->isSelected())
+      continue;
+
+    if (auto item = dynamic_cast<Item*>(widget)) {
+      if (item->backup())
+        item->session()->restoreBackup(item->backup());
+    }
+  }
+}
+
+void DataRecoveryView::onOpenRaw(crash::RawImagesAs as)
+{
+  for (auto widget : m_listBox.children()) {
+    if (!widget->isSelected())
+      continue;
+
+    if (auto item = dynamic_cast<Item*>(widget)) {
+      if (item->backup())
+        item->session()->restoreRawImages(item->backup(), as);
+    }
+  }
+}
+
+void DataRecoveryView::onOpenMenu()
+{
+  gfx::Rect bounds = m_openButton.bounds();
+
+  Menu menu;
+  MenuItem rawFrames("Raw Images as Frames");
+  MenuItem rawLayers("Raw Images as Layers");
+  menu.addChild(&rawFrames);
+  menu.addChild(&rawLayers);
+
+  rawFrames.Click.connect(base::Bind(&DataRecoveryView::onOpenRaw, this, crash::RawImagesAs::kFrames));
+  rawLayers.Click.connect(base::Bind(&DataRecoveryView::onOpenRaw, this, crash::RawImagesAs::kLayers));
+
+  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+}
+
+void DataRecoveryView::onDelete()
+{
+  std::vector<Item*> items;
+
+  for (auto widget : m_listBox.children()) {
+    if (!widget->isSelected())
+      continue;
+
+    if (auto item = dynamic_cast<Item*>(widget)) {
+      if (item->backup())
+        items.push_back(item);
+    }
+  }
+
+  if (items.empty())
+    return;
+
+  // Delete one backup
+  if (Alert::show(PACKAGE
+                  "<<Do you really want to delete the selected %d backup(s)?"
+                  "||&Yes||&No",
+                  int(items.size())) != 1)
+    return;                     // Cancel
+
+  for (auto item : items) {
+    item->session()->deleteBackup(item->backup());
+    m_listBox.removeChild(item);
+    delete item;
+  }
+  onChangeSelection();
+
+  m_listBox.layout();
+  m_view.updateView();
+}
+
+void DataRecoveryView::onChangeSelection()
+{
+  int count = 0;
+  for (auto widget : m_listBox.children()) {
+    if (!widget->isSelected())
+      continue;
+
+    if (dynamic_cast<Item*>(widget)) {
+      ++count;
+    }
+  }
+
+  m_deleteButton.setEnabled(count > 0);
+  m_openButton.setEnabled(count > 0);
+  if (count < 2)
+    m_openButton.mainButton()->setText("Recover Sprite");
+  else
+    m_openButton.mainButton()->setTextf("Recover %d Sprites", count);
 }
 
 } // namespace app
