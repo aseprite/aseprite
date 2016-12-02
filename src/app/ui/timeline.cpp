@@ -464,7 +464,7 @@ bool Timeline::onProcessMessage(Message* msg)
       // select non-adjacents layer/frame ranges
       bool clearRange =
 #if !defined(__APPLE__)
-        !msg->ctrlPressed() ||
+        !msg->ctrlPressed() &&
 #endif
         !msg->shiftPressed();
 
