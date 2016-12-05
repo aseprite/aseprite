@@ -116,6 +116,7 @@
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
+      <option id="auto_scroll" type="bool" default="true" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="play_once" type="bool" default="false" />

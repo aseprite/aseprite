@@ -30,6 +30,8 @@
 
 namespace app {
 
+static const char* kSectionBgId = "section_bg";
+static const char* kSectionGridId = "section_grid";
 static const char* kSectionThemeId = "section_theme";
 
 using namespace ui;
@@ -161,10 +163,18 @@ public:
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
+    if (m_pref.editor.autoScroll())
+      autoScroll()->setSelected(true);
+
     // Scope
-    gridScope()->addItem("New Documents");
+    bgScope()->addItem("Background for New Documents");
+    gridScope()->addItem("Grid for New Documents");
     if (context->activeDocument()) {
-      gridScope()->addItem("Active Document");
+      bgScope()->addItem("Background for the Active Document");
+      bgScope()->setSelectedItemIndex(1);
+      bgScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeBgScope, this));
+
+      gridScope()->addItem("Grid for the Active Document");
       gridScope()->setSelectedItemIndex(1);
       gridScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeGridScope, this));
     }
@@ -223,8 +233,9 @@ public:
     checkedBgColor1Box()->addChild(m_checked_bg_color1);
     checkedBgColor2Box()->addChild(m_checked_bg_color2);
 
-    // Reset button
-    reset()->Click.connect(base::Bind<void>(&OptionsWindow::onReset, this));
+    // Reset buttons
+    resetBg()->Click.connect(base::Bind<void>(&OptionsWindow::onResetBg, this));
+    resetGrid()->Click.connect(base::Bind<void>(&OptionsWindow::onResetGrid, this));
 
     // Links
     locateFile()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateConfigFile, this));
@@ -247,6 +258,7 @@ public:
     // Apply button
     buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::saveConfig, this));
 
+    onChangeBgScope();
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
   }
@@ -279,6 +291,7 @@ public:
     m_pref.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
     m_pref.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
     m_pref.editor.showScrollbars(showScrollbars()->isSelected());
+    m_pref.editor.autoScroll(autoScroll()->isSelected());
     m_pref.editor.zoomWithWheel(wheelZoom()->isSelected());
 #if __APPLE__
     m_pref.editor.zoomWithSlide(slideZoom()->isSelected());
@@ -292,12 +305,17 @@ public:
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
 
+    m_curPref->show.grid(gridVisible()->isSelected());
+    m_curPref->grid.bounds(gridBounds());
     m_curPref->grid.color(m_gridColor->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());
     m_curPref->grid.autoOpacity(gridAutoOpacity()->isSelected());
+
+    m_curPref->show.pixelGrid(pixelGridVisible()->isSelected());
     m_curPref->pixelGrid.color(m_pixelGridColor->getColor());
     m_curPref->pixelGrid.opacity(pixelGridOpacity()->getValue());
     m_curPref->pixelGrid.autoOpacity(pixelGridAutoOpacity()->isSelected());
+
     m_curPref->bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
     m_curPref->bg.zoom(checkedBgZoom()->isSelected());
     m_curPref->bg.color1(m_checked_bg_color1->getColor());
@@ -374,9 +392,27 @@ private:
     panel()->showChild(findChild(item->getValue().c_str()));
     m_curSection = sectionListbox()->getSelectedIndex();
 
+    if (item->getValue() == kSectionBgId)
+      onChangeBgScope();
+    else if (item->getValue() == kSectionGridId)
+      onChangeGridScope();
     // Load themes
-    if (item->getValue() == kSectionThemeId)
+    else if (item->getValue() == kSectionThemeId)
       loadThemes();
+  }
+
+  void onChangeBgScope() {
+    int item = bgScope()->getSelectedItemIndex();
+
+    switch (item) {
+      case 0: m_curPref = &m_globPref; break;
+      case 1: m_curPref = &m_docPref; break;
+    }
+
+    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
+    checkedBgZoom()->setSelected(m_curPref->bg.zoom());
+    m_checked_bg_color1->setColor(m_curPref->bg.color1());
+    m_checked_bg_color2->setColor(m_curPref->bg.color2());
   }
 
   void onChangeGridScope() {
@@ -387,33 +423,27 @@ private:
       case 1: m_curPref = &m_docPref; break;
     }
 
+    gridVisible()->setSelected(m_curPref->show.grid());
+    gridX()->setTextf("%d", m_curPref->grid.bounds().x);
+    gridY()->setTextf("%d", m_curPref->grid.bounds().y);
+    gridW()->setTextf("%d", m_curPref->grid.bounds().w);
+    gridH()->setTextf("%d", m_curPref->grid.bounds().h);
+
     m_gridColor->setColor(m_curPref->grid.color());
     gridOpacity()->setValue(m_curPref->grid.opacity());
     gridAutoOpacity()->setSelected(m_curPref->grid.autoOpacity());
 
+    pixelGridVisible()->setSelected(m_curPref->show.pixelGrid());
     m_pixelGridColor->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
     pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
-
-    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
-    checkedBgZoom()->setSelected(m_curPref->bg.zoom());
-    m_checked_bg_color1->setColor(m_curPref->bg.color1());
-    m_checked_bg_color2->setColor(m_curPref->bg.color2());
   }
 
-  void onReset() {
+  void onResetBg() {
+    DocumentPreferences& pref = m_globPref;
+
     // Reset global preferences (use default values specified in pref.xml)
     if (m_curPref == &m_globPref) {
-      DocumentPreferences& pref = m_globPref;
-
-      m_gridColor->setColor(pref.grid.color.defaultValue());
-      gridOpacity()->setValue(pref.grid.opacity.defaultValue());
-      gridAutoOpacity()->setSelected(pref.grid.autoOpacity.defaultValue());
-
-      m_pixelGridColor->setColor(pref.pixelGrid.color.defaultValue());
-      pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
-      pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity.defaultValue());
-
       checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
       checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
       m_checked_bg_color1->setColor(pref.bg.color1.defaultValue());
@@ -421,20 +451,49 @@ private:
     }
     // Reset document preferences with global settings
     else {
-      DocumentPreferences& pref = m_globPref;
+      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
+      checkedBgZoom()->setSelected(pref.bg.zoom());
+      m_checked_bg_color1->setColor(pref.bg.color1());
+      m_checked_bg_color2->setColor(pref.bg.color2());
+    }
+  }
+
+  void onResetGrid() {
+    DocumentPreferences& pref = m_globPref;
+
+    // Reset global preferences (use default values specified in pref.xml)
+    if (m_curPref == &m_globPref) {
+      gridVisible()->setSelected(pref.show.grid.defaultValue());
+      gridX()->setTextf("%d", pref.grid.bounds.defaultValue().x);
+      gridY()->setTextf("%d", pref.grid.bounds.defaultValue().y);
+      gridW()->setTextf("%d", pref.grid.bounds.defaultValue().w);
+      gridH()->setTextf("%d", pref.grid.bounds.defaultValue().h);
+
+      m_gridColor->setColor(pref.grid.color.defaultValue());
+      gridOpacity()->setValue(pref.grid.opacity.defaultValue());
+      gridAutoOpacity()->setSelected(pref.grid.autoOpacity.defaultValue());
+
+      pixelGridVisible()->setSelected(pref.show.pixelGrid.defaultValue());
+      m_pixelGridColor->setColor(pref.pixelGrid.color.defaultValue());
+      pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
+      pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity.defaultValue());
+    }
+    // Reset document preferences with global settings
+    else {
+      gridVisible()->setSelected(pref.show.grid());
+      gridX()->setTextf("%d", pref.grid.bounds().x);
+      gridY()->setTextf("%d", pref.grid.bounds().y);
+      gridW()->setTextf("%d", pref.grid.bounds().w);
+      gridH()->setTextf("%d", pref.grid.bounds().h);
 
       m_gridColor->setColor(pref.grid.color());
       gridOpacity()->setValue(pref.grid.opacity());
       gridAutoOpacity()->setSelected(pref.grid.autoOpacity());
 
+      pixelGridVisible()->setSelected(pref.show.pixelGrid());
       m_pixelGridColor->setColor(pref.pixelGrid.color());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
-
-      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
-      checkedBgZoom()->setSelected(pref.bg.zoom());
-      m_checked_bg_color1->setColor(pref.bg.color1());
-      m_checked_bg_color2->setColor(pref.bg.color2());
     }
   }
 
@@ -515,6 +574,11 @@ private:
         break;
     }
     layout();
+  }
+
+  gfx::Rect gridBounds() const {
+    return gfx::Rect(gridX()->textInt(), gridY()->textInt(),
+                     gridW()->textInt(), gridH()->textInt());
   }
 
   static std::string userThemeFolder() {

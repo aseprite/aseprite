@@ -984,11 +984,14 @@ void Editor::flashCurrentLayer()
 
 gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
 {
-  // // Hide the brush preview
-  // HideBrushPreview hide(editor->brushPreview());
+  gfx::Point mousePos = msg->position();
+  if (!Preferences::instance().editor.autoScroll())
+    return mousePos;
+
+  // Hide the brush preview
+  //HideBrushPreview hide(editor->brushPreview());
   View* view = View::getView(this);
   gfx::Rect vp = view->viewportBounds();
-  gfx::Point mousePos = msg->position();
 
   if (!vp.contains(mousePos)) {
     gfx::Point delta = (mousePos - m_oldPos);
