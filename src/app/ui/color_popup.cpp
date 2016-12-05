@@ -91,8 +91,10 @@ ColorPopup::ColorPopup(bool canPin)
         break;
       }
     }
-    m_topBox.addChild(new BoxFiller);
-    m_topBox.addChild(closeButton);
+    if (closeButton) {
+      m_topBox.addChild(new BoxFiller);
+      m_topBox.addChild(closeButton);
+    }
   }
 
   m_vbox.addChild(&m_topBox);
