@@ -136,16 +136,19 @@
           <combobox id="bg_scope" />
 
           <separator text="Checked Background" horizontal="true" />
-          <hbox>
+          <grid columns="2">
             <label text="Size:" />
-            <combobox id="checked_bg_size" expansive="true" />
-          </hbox>
-          <check text="Apply Zoom" id="checked_bg_zoom" />
-          <hbox>
+	    <hbox>
+              <combobox id="checked_bg_size" />
+              <check text="Apply Zoom" id="checked_bg_zoom" />
+	    </hbox>
+
             <label text="Colors:" />
-            <box horizontal="true" id="checked_bg_color1_box" />
-            <box horizontal="true" id="checked_bg_color2_box" />
-          </hbox>
+	    <hbox>
+              <box horizontal="true" id="checked_bg_color1_box" />
+              <box horizontal="true" id="checked_bg_color2_box" />
+	    </hbox>
+          </grid>
 
 	  <hbox>
 	    <hbox expansive="true" />
