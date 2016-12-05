@@ -10,7 +10,8 @@
           <listitem text="Editor" value="section_editor" />
           <listitem text="Timeline" value="section_timeline" />
           <listitem text="Cursors" value="section_cursors" />
-          <listitem text="Grid &amp;&amp; Background" value="section_grid" />
+          <listitem text="Background" value="section_bg" />
+          <listitem text="Grid" value="section_grid" />
           <listitem text="Undo" value="section_undo" />
           <listitem text="Theme" value="section_theme" />
           <listitem text="Experimental" value="section_experimental" />
@@ -130,7 +131,29 @@
 	  </grid>
         </vbox>
 
-        <!-- Grid & background -->
+        <!-- Background -->
+        <vbox id="section_bg">
+          <combobox id="bg_scope" />
+
+          <separator text="Checked Background" horizontal="true" />
+          <hbox>
+            <label text="Size:" />
+            <combobox id="checked_bg_size" expansive="true" />
+          </hbox>
+          <check text="Apply Zoom" id="checked_bg_zoom" />
+          <hbox>
+            <label text="Colors:" />
+            <box horizontal="true" id="checked_bg_color1_box" />
+            <box horizontal="true" id="checked_bg_color2_box" />
+          </hbox>
+
+	  <hbox>
+	    <hbox expansive="true" />
+            <button id="reset_bg" text="Reset" width="60" />
+	  </hbox>
+        </vbox>
+
+        <!-- Grid -->
         <vbox id="section_grid">
           <combobox id="grid_scope" />
           <separator text="Grid" horizontal="true" />
@@ -152,21 +175,9 @@
             <check id="pixel_grid_auto_opacity" text="Auto" />
           </grid>
 
-          <separator text="Checked Background" horizontal="true" />
-          <hbox>
-            <label text="Size:" />
-            <combobox id="checked_bg_size" expansive="true" />
-          </hbox>
-          <check text="Apply Zoom" id="checked_bg_zoom" />
-          <hbox>
-            <label text="Colors:" />
-            <box horizontal="true" id="checked_bg_color1_box" />
-            <box horizontal="true" id="checked_bg_color2_box" />
-          </hbox>
-
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset" text="Reset" width="60" />
+            <button id="reset_grid" text="Reset" width="60" />
 	  </hbox>
         </vbox>
 

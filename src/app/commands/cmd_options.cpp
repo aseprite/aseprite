@@ -163,8 +163,13 @@ public:
       autoScroll()->setSelected(true);
 
     // Scope
+    bgScope()->addItem("New Documents");
     gridScope()->addItem("New Documents");
     if (context->activeDocument()) {
+      bgScope()->addItem("Active Document");
+      bgScope()->setSelectedItemIndex(1);
+      bgScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeBgScope, this));
+
       gridScope()->addItem("Active Document");
       gridScope()->setSelectedItemIndex(1);
       gridScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeGridScope, this));
@@ -224,8 +229,9 @@ public:
     checkedBgColor1Box()->addChild(m_checked_bg_color1);
     checkedBgColor2Box()->addChild(m_checked_bg_color2);
 
-    // Reset button
-    reset()->Click.connect(base::Bind<void>(&OptionsWindow::onReset, this));
+    // Reset buttons
+    resetBg()->Click.connect(base::Bind<void>(&OptionsWindow::onResetBg, this));
+    resetGrid()->Click.connect(base::Bind<void>(&OptionsWindow::onResetGrid, this));
 
     // Links
     locateFile()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateConfigFile, this));
@@ -248,6 +254,7 @@ public:
     // Apply button
     buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::saveConfig, this));
 
+    onChangeBgScope();
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
   }
@@ -380,6 +387,20 @@ private:
       loadThemes();
   }
 
+  void onChangeBgScope() {
+    int item = bgScope()->getSelectedItemIndex();
+
+    switch (item) {
+      case 0: m_curPref = &m_globPref; break;
+      case 1: m_curPref = &m_docPref; break;
+    }
+
+    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
+    checkedBgZoom()->setSelected(m_curPref->bg.zoom());
+    m_checked_bg_color1->setColor(m_curPref->bg.color1());
+    m_checked_bg_color2->setColor(m_curPref->bg.color2());
+  }
+
   void onChangeGridScope() {
     int item = gridScope()->getSelectedItemIndex();
 
@@ -395,14 +416,30 @@ private:
     m_pixelGridColor->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
     pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
-
-    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
-    checkedBgZoom()->setSelected(m_curPref->bg.zoom());
-    m_checked_bg_color1->setColor(m_curPref->bg.color1());
-    m_checked_bg_color2->setColor(m_curPref->bg.color2());
   }
 
-  void onReset() {
+  void onResetBg() {
+    // Reset global preferences (use default values specified in pref.xml)
+    if (m_curPref == &m_globPref) {
+      DocumentPreferences& pref = m_globPref;
+
+      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
+      checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
+      m_checked_bg_color1->setColor(pref.bg.color1.defaultValue());
+      m_checked_bg_color2->setColor(pref.bg.color2.defaultValue());
+    }
+    // Reset document preferences with global settings
+    else {
+      DocumentPreferences& pref = m_globPref;
+
+      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
+      checkedBgZoom()->setSelected(pref.bg.zoom());
+      m_checked_bg_color1->setColor(pref.bg.color1());
+      m_checked_bg_color2->setColor(pref.bg.color2());
+    }
+  }
+
+  void onResetGrid() {
     // Reset global preferences (use default values specified in pref.xml)
     if (m_curPref == &m_globPref) {
       DocumentPreferences& pref = m_globPref;
@@ -414,11 +451,6 @@ private:
       m_pixelGridColor->setColor(pref.pixelGrid.color.defaultValue());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity.defaultValue());
-
-      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
-      checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
-      m_checked_bg_color1->setColor(pref.bg.color1.defaultValue());
-      m_checked_bg_color2->setColor(pref.bg.color2.defaultValue());
     }
     // Reset document preferences with global settings
     else {
@@ -431,11 +463,6 @@ private:
       m_pixelGridColor->setColor(pref.pixelGrid.color());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
-
-      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
-      checkedBgZoom()->setSelected(pref.bg.zoom());
-      m_checked_bg_color1->setColor(pref.bg.color1());
-      m_checked_bg_color2->setColor(pref.bg.color2());
     }
   }
 
