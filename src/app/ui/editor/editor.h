@@ -149,7 +149,9 @@ namespace app {
     void flashCurrentLayer();
 
     gfx::Point screenToEditor(const gfx::Point& pt);
+    gfx::PointF screenToEditorF(const gfx::Point& pt);
     gfx::Point editorToScreen(const gfx::Point& pt);
+    gfx::PointF editorToScreenF(const gfx::PointF& pt);
     gfx::Rect screenToEditor(const gfx::Rect& rc);
     gfx::Rect editorToScreen(const gfx::Rect& rc);
 

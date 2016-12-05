@@ -716,23 +716,23 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         // Do nothing
         break;
       case app::gen::SymmetryMode::HORIZONTAL: {
-        int x = m_docPref.symmetry.xAxis();
+        double x = m_docPref.symmetry.xAxis();
         if (x > 0) {
           gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawVLine(color,
-                       spriteRect.x + m_zoom.apply(x),
+                       spriteRect.x + m_zoom.apply<double>(x),
                        enclosingRect.y,
                        enclosingRect.h);
         }
         break;
       }
       case app::gen::SymmetryMode::VERTICAL: {
-        int y = m_docPref.symmetry.yAxis();
+        double y = m_docPref.symmetry.yAxis();
         if (y > 0) {
           gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawHLine(color,
                        enclosingRect.x,
-                       spriteRect.y + m_zoom.apply(y),
+                       spriteRect.y + m_zoom.apply<double>(y),
                        enclosingRect.w);
         }
         break;
@@ -1020,6 +1020,16 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
     m_zoom.remove(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
+gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return gfx::PointF(
+    m_zoom.remove<double>(pt.x - vp.x + scroll.x - m_padding.x),
+    m_zoom.remove<double>(pt.y - vp.y + scroll.y - m_padding.y));
+}
+
 Point Editor::editorToScreen(const gfx::Point& pt)
 {
   View* view = View::getView(this);
@@ -1029,6 +1039,16 @@ Point Editor::editorToScreen(const gfx::Point& pt)
   return Point(
     (vp.x - scroll.x + m_padding.x + m_zoom.apply(pt.x)),
     (vp.y - scroll.y + m_padding.y + m_zoom.apply(pt.y)));
+}
+
+gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return PointF(
+    (vp.x - scroll.x + m_padding.x + m_zoom.apply<double>(pt.x)),
+    (vp.y - scroll.y + m_padding.y + m_zoom.apply<double>(pt.y)));
 }
 
 Rect Editor::screenToEditor(const Rect& rc)
