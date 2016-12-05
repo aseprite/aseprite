@@ -682,7 +682,8 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
 void StatusBar::showSnapToGridWarning(bool state)
 {
   if (state) {
-    ASSERT(m_doc);
+    // m_doc can be null if "snap to grid" command is pressed without
+    // an opened document. (E.g. to change the default setting)
     if (!m_doc)
       return;
 
