@@ -270,8 +270,13 @@ void ColorPopup::selectColorType(app::Color::Type type)
     case app::Color::MaskType:  m_colorType.setSelectedItem(MASK_MODE); break;
   }
 
-  // Remove focus from some RGB/HSB text entry
-  manager()->freeFocus();
+  // Remove focus from hidden RGB/HSB text entries
+  auto widget = manager()->getFocus();
+  if (widget && !widget->isVisible()) {
+    auto window = widget->window();
+    if (window && window == this)
+      widget->releaseFocus();
+  }
 
   m_vbox.layout();
   m_vbox.invalidate();
