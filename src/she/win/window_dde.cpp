@@ -120,7 +120,7 @@ bool handle_dde_messages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, LRES
 
     case WM_DDE_INITIATE: {
       HWND clienthwnd = (HWND)wparam;
-      UINT appAtom = 0, topicAtom = 0;
+      UINT_PTR appAtom = 0, topicAtom = 0;
       if (!UnpackDDElParam(msg, lparam,
                            &appAtom,
                            &topicAtom))
