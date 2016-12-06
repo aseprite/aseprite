@@ -38,7 +38,7 @@ and differents chunks.  Also, the color depth can be 8, 16 or 32 for
 Indexed, Grayscale and RGB respectively, and images are compressed
 images with zlib.  Color palettes are in FLI color chunks (it could be
 type=11 or type=4). For color depths more than 8bpp, palettes are
-optional. See fli.txt for details.
+optional.
 
 To read the sprite:
 
