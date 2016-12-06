@@ -132,6 +132,18 @@ foreach(fn ${src_data_files})
   list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/${fn})
 endforeach()
 
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/docs/README.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_BINARY_DIR}/bin/data/docs/README.md
+  MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/README.md)
+list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/docs/README.md)
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/docs/LICENSES.md ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
+  MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/docs/LICENSES.md)
+list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md)
+
 add_custom_target(copy_data DEPENDS ${out_data_files})
 
 ######################################################################

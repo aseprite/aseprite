@@ -17,6 +17,7 @@
 #include "app/modules/editors.h"
 #include "app/notification_delegate.h"
 #include "app/pref/preferences.h"
+#include "app/ui/browser_view.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/document_view.h"
@@ -94,6 +95,7 @@ MainWindow::MainWindow()
   : m_mode(NormalMode)
   , m_homeView(nullptr)
   , m_scalePanic(nullptr)
+  , m_browserView(nullptr)
 #ifdef ENABLE_SCRIPTING
   , m_devConsoleView(nullptr)
 #endif
@@ -166,6 +168,12 @@ MainWindow::~MainWindow()
     delete m_devConsoleView;
   }
 #endif
+
+  if (m_browserView) {
+    if (m_browserView->parent())
+      m_workspace->removeView(m_browserView);
+    delete m_browserView;
+  }
 
   if (m_homeView) {
     if (m_homeView->parent())
@@ -245,6 +253,19 @@ void MainWindow::showHome()
 bool MainWindow::isHomeSelected()
 {
   return (m_tabsBar->getSelectedTab() == m_homeView && m_homeView);
+}
+
+void MainWindow::showBrowser(const std::string& filename)
+{
+  if (!m_browserView)
+    m_browserView = new BrowserView;
+
+  m_browserView->loadFile(filename);
+
+  if (!m_browserView->parent()) {
+    m_workspace->addView(m_browserView);
+    m_tabsBar->selectTab(m_browserView);
+  }
 }
 
 void MainWindow::showDevConsole()

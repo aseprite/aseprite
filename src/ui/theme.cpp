@@ -206,7 +206,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else                      // Left align
         xout = x;
 
-      g->drawUIString(beg, fg, gfx::ColorNone, gfx::Point(xout, y));
+      g->drawString(beg, fg, gfx::ColorNone, gfx::Point(xout, y));
     }
 
     if (w)

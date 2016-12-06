@@ -39,3 +39,6 @@
 [submodule "laf"]
 	path = laf
 	url = https://github.com/aseprite/laf.git
+[submodule "third_party/cmark"]
+	path = third_party/cmark
+	url = https://github.com/aseprite/cmark.git

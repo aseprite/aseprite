@@ -60,6 +60,9 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
+# cmark include files
+include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
+
 ######################################################################
 # app-lib target
 
@@ -246,6 +249,7 @@ add_library(app-lib
   commands/cmd_new_layer_set.cpp
   commands/cmd_new_sprite_from_selection.cpp
   commands/cmd_onionskin.cpp
+  commands/cmd_open_browser.cpp
   commands/cmd_open_file.cpp
   commands/cmd_open_in_folder.cpp
   commands/cmd_open_with_app.cpp
@@ -359,6 +363,7 @@ add_library(app-lib
   ui/ani_controls.cpp
   ui/app_menuitem.cpp
   ui/backup_indicator.cpp
+  ui/browser_view.cpp
   ui/brush_popup.cpp
   ui/button_set.cpp
   ui/color_bar.cpp
@@ -470,6 +475,7 @@ target_link_libraries(app-lib
   she
   ui-lib
   undo
+  libcmark_static
   ${TINYXML_LIBRARY}
   ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}

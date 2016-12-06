@@ -23,6 +23,7 @@ namespace app {
   class CheckUpdateDelegate;
 #endif
 
+  class BrowserView;
   class ColorBar;
   class ContextBar;
   class DevConsoleView;
@@ -70,6 +71,7 @@ namespace app {
     void showHome();
     bool isHomeSelected();
     void showDevConsole();
+    void showBrowser(const std::string& filename);
 
     Mode getMode() const { return m_mode; }
     void setMode(Mode mode);
@@ -116,6 +118,7 @@ namespace app {
     HomeView* m_homeView;
     Notifications* m_notifications;
     INotificationDelegate* m_scalePanic;
+    BrowserView* m_browserView;
 #ifdef ENABLE_SCRIPTING
     DevConsoleView* m_devConsoleView;
 #endif
