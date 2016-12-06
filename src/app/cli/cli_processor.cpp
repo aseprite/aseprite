@@ -81,9 +81,6 @@ bool filter_layer(const Layer* layer,
                   const std::vector<std::string>& filters,
                   const bool result)
 {
-  if (filters.empty())
-    return true;
-
   for (const auto& filter : filters) {
     if (layer->name() == filter ||
         match_path(filter, layer_path, !result))
@@ -99,9 +96,15 @@ void filter_layers(const LayerList& layers,
   for (Layer* layer : layers) {
     auto layer_path = get_layer_path(layer);
 
-    if (filter_layer(layer, layer_path, cof.includeLayers, true) &&
-        filter_layer(layer, layer_path, cof.excludeLayers, false))
-      filteredLayers.insert(layer);
+    if ((cof.includeLayers.empty() && !layer->isVisibleHierarchy()) ||
+        (!cof.includeLayers.empty() && !filter_layer(layer, layer_path, cof.includeLayers, true)))
+      continue;
+
+    if (!cof.excludeLayers.empty() &&
+        !filter_layer(layer, layer_path, cof.excludeLayers, false))
+      continue;
+
+    filteredLayers.insert(layer);
   }
 }
 
