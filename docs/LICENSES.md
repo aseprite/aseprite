@@ -1,6 +1,6 @@
 Aseprite uses the following open source projects:
 
-# [Allegro 4](http://alleg.sourceforge.net/)
+# [Allegro 4](http://liballeg.org/)
 
 ```
 Allegro is gift-ware. It was created by a number of people working in
