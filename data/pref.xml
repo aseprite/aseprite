@@ -263,8 +263,8 @@
     </section>
     <section id="symmetry">
       <option id="mode" type="SymmetryMode" default="SymmetryMode::NONE" />
-      <option id="x_axis" type="int" default="0" />
-      <option id="y_axis" type="int" default="0" />
+      <option id="x_axis" type="double" default="0" />
+      <option id="y_axis" type="double" default="0" />
     </section>
     <section id="grid">
       <option id="snap" type="bool" default="false" migrate="Grid.SnapTo" />

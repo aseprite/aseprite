@@ -749,23 +749,23 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         // Do nothing
         break;
       case app::gen::SymmetryMode::HORIZONTAL: {
-        int x = m_docPref.symmetry.xAxis();
+        double x = m_docPref.symmetry.xAxis();
         if (x > 0) {
           gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawVLine(color,
-                       spriteRect.x + m_proj.applyX(x),
+                       spriteRect.x + m_proj.applyX<double>(x),
                        enclosingRect.y,
                        enclosingRect.h);
         }
         break;
       }
       case app::gen::SymmetryMode::VERTICAL: {
-        int y = m_docPref.symmetry.yAxis();
+        double y = m_docPref.symmetry.yAxis();
         if (y > 0) {
           gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawHLine(color,
                        enclosingRect.x,
-                       spriteRect.y + m_proj.applyY(y),
+                       spriteRect.y + m_proj.applyY<double>(y),
                        enclosingRect.w);
         }
         break;

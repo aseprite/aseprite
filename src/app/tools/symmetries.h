@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,20 +16,20 @@ namespace tools {
 
 class HorizontalSymmetry : public Symmetry {
 public:
-  HorizontalSymmetry(int x) : m_x(x) { }
+  HorizontalSymmetry(double x) : m_x(x) { }
   void generateStrokes(const Stroke& mainStroke, Strokes& strokes,
                        ToolLoop* loop) override;
 private:
-  int m_x;
+  double m_x;
 };
 
 class VerticalSymmetry : public Symmetry {
 public:
-  VerticalSymmetry(int y) : m_y(y) { }
+  VerticalSymmetry(double y) : m_y(y) { }
   void generateStrokes(const Stroke& mainStroke, Strokes& strokes,
                        ToolLoop* loop) override;
 private:
-  int m_y;
+  double m_y;
 };
 
 } // namespace tools

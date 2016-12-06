@@ -18,7 +18,7 @@ namespace app {
   public:
     MovingSymmetryState(Editor* editor, ui::MouseMessage* msg,
                         app::gen::SymmetryMode mode,
-                        Option<int>& symmetryAxis);
+                        Option<double>& symmetryAxis);
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -28,9 +28,9 @@ namespace app {
 
   private:
     app::gen::SymmetryMode m_symmetryMode;
-    Option<int>& m_symmetryAxis;
+    Option<double>& m_symmetryAxis;
     int m_symmetryAxisStart;
-    gfx::Point m_mouseStart;
+    gfx::PointF m_mouseStart;
   };
 
 } // namespace app
