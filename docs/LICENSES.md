@@ -905,7 +905,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-# [zlib](http://www.gzip.org/zlib/)
+# [zlib](http://www.zlib.net/)
 
 ```
  (C) 1995-2013 Jean-loup Gailly and Mark Adler
