@@ -16,23 +16,45 @@
 #include "app/ui/workspace.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
-#include "ui/box.h"
+#include "base/split_string.h"
+#include "she/font.h"
 #include "ui/link_label.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
 
 #include "cmark.h"
 
 #include <array>
+#include <cstring>
+#include <string>
+#include <vector>
 
 namespace app {
 
 using namespace ui;
 using namespace app::skin;
 
-class BrowserView::CMarkBox : public ui::VBox {
+// TODO This is not the best implementation, but it's "good enough"
+//      for a first version.
+class BrowserView::CMarkBox : public Widget {
+  class Break : public Widget {
+  public:
+    Break() {
+      setMinSize(gfx::Size(0, font()->height()));
+    }
+  };
+  class OpenList : public Widget { };
+  class CloseList : public Widget { };
+  class Item : public Label {
+  public:
+    Item(const std::string& text) : Label(text) { }
+  };
+
 public:
   CMarkBox() {
     setBgColor(SkinTheme::instance()->colors.textboxFace());
@@ -69,7 +91,7 @@ public:
     }
     else {
       clear();
-      addTextBox("File not found: " + file);
+      addText("File not found: " + file);
     }
     cmark_parser_free(parser);
 
@@ -77,6 +99,90 @@ public:
   }
 
 private:
+  void layoutElements(int width,
+                      std::function<void(const gfx::Rect& bounds,
+                                         Widget* child)> callback) {
+    const WidgetsList& children = this->children();
+    const gfx::Rect cpos = childrenBounds();
+
+    gfx::Point p = cpos.origin();
+    int maxH = 0;
+    int itemLevel = 0;
+    Widget* prevChild = nullptr;
+
+    for (auto child : children) {
+      gfx::Size sz = child->sizeHint(gfx::Size(width, 0));
+
+      bool isBreak = (dynamic_cast<Break*>(child) ? true: false);
+      bool isOpenList = (dynamic_cast<OpenList*>(child) ? true: false);
+      bool isCloseList = (dynamic_cast<CloseList*>(child) ? true: false);
+      bool isItem = (dynamic_cast<Item*>(child) ? true: false);
+
+      if (isOpenList) {
+        ++itemLevel;
+      }
+      else if (isCloseList) {
+        --itemLevel;
+      }
+      else if (isItem) {
+        p.x -= sz.w;
+      }
+
+      if (child->isExpansive() ||
+          p.x+sz.w > cpos.x+width ||
+          isBreak || isOpenList || isCloseList) {
+        p.x = cpos.x + itemLevel*font()->textLength(" - ");
+        p.y += maxH;
+        maxH = 0;
+        prevChild = nullptr;
+      }
+
+      if (child->isExpansive())
+        sz.w = std::max(sz.w, width);
+
+      callback(gfx::Rect(p, sz), child);
+
+      if (!isItem) prevChild = child;
+      if (isBreak) prevChild = nullptr;
+
+      maxH = std::max(maxH, sz.h);
+      p.x += sz.w;
+    }
+  }
+
+  void onSizeHint(SizeHintEvent& ev) override {
+    gfx::Size sz;
+
+    layoutElements(
+      View::getView(this)->viewportBounds().w - border().width(),
+      [&](const gfx::Rect& rc, Widget* child) {
+        sz.w = std::max(sz.w, rc.x+rc.w-this->bounds().x);
+        sz.h = std::max(sz.h, rc.y+rc.h-this->bounds().y);
+      });
+    sz.w += border().right();
+    sz.h += border().bottom();
+
+    ev.setSizeHint(sz);
+  }
+
+  void onResize(ResizeEvent& ev) override {
+    setBoundsQuietly(ev.bounds());
+
+    layoutElements(
+      View::getView(this)->viewportBounds().w - border().width(),
+      [](const gfx::Rect& rc, Widget* child) {
+        child->setBounds(rc);
+      });
+  }
+
+  void onPaint(PaintEvent& ev) override {
+    Graphics* g = ev.graphics();
+    gfx::Rect rc = clientBounds();
+    auto skin = (SkinTheme*)theme();
+
+    g->fillRect(skin->colors.textboxFace(), rc);
+  }
+
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
 
@@ -97,7 +203,7 @@ private:
       }
     }
 
-    return VBox::onProcessMessage(msg);
+    return Widget::onProcessMessage(msg);
   }
 
   void clear() {
@@ -109,10 +215,10 @@ private:
   void processNode(cmark_node* root) {
     clear();
 
-    std::string content;
+    m_content.clear();
+
     bool inHeading = false;
     bool inImage = false;
-    bool extraSeparation = true;
     const char* inLink = nullptr;
 
     cmark_iter* iter = cmark_iter_new(root);
@@ -122,44 +228,92 @@ private:
 
       switch (cmark_node_get_type(cur)) {
 
-        case CMARK_NODE_CODE_BLOCK:
         case CMARK_NODE_TEXT: {
           const char* text = cmark_node_get_literal(cur);
           if (!inImage && text) {
-            if (inLink && inHeading) {
-              closeContent(content);
-              addLink(inLink, text);
-              extraSeparation = false;
+            if (inLink) {
+              if (!m_content.empty() &&
+                  m_content[m_content.size()-1] != ' ') {
+                m_content += " ";
+              }
+              m_content += text;
             }
             else {
-              if (inLink && !content.empty() &&
-                  content[content.size()-1] != ' ') {
-                content += " ";
-              }
-              content += text;
+              m_content += text;
+              if (inHeading)
+                closeContent();
             }
           }
           break;
         }
 
+        case CMARK_NODE_INLINE_HTML: {
+          const char* text = cmark_node_get_literal(cur);
+          if (text && std::strncmp(text, "<br />", 6) == 0) {
+            closeContent();
+            addBreak();
+          }
+          break;
+        }
+
+        case CMARK_NODE_CODE: {
+          const char* text = cmark_node_get_literal(cur);
+          if (text) {
+            closeContent();
+            addCodeInline(text);
+          }
+          break;
+        }
+
+        case CMARK_NODE_CODE_BLOCK: {
+          const char* text = cmark_node_get_literal(cur);
+          if (text) {
+            closeContent();
+            addCodeBlock(text);
+          }
+          break;
+        }
+
+        case CMARK_NODE_SOFTBREAK: {
+          m_content += " ";
+          break;
+        }
+
         case CMARK_NODE_LINEBREAK: {
-          content += "\n";
+          closeContent();
+          addBreak();
+          break;
+        }
+
+        case CMARK_NODE_LIST: {
+          if (ev_type == CMARK_EVENT_ENTER) {
+            closeContent();
+            addChild(new OpenList);
+          }
+          else if (ev_type == CMARK_EVENT_EXIT) {
+            closeContent();
+            addChild(new CloseList);
+          }
           break;
         }
 
         case CMARK_NODE_ITEM: {
-          if (ev_type == CMARK_EVENT_ENTER)
-            content += " - ";
+          if (ev_type == CMARK_EVENT_ENTER) {
+            closeContent();
+            addChild(new Item(" - "));
+          }
           break;
         }
 
         case CMARK_NODE_THEMATIC_BREAK: {
           if (ev_type == CMARK_EVENT_ENTER) {
-            closeContent(content);
+            closeContent();
             addSeparator();
           }
           else if (ev_type == CMARK_EVENT_EXIT) {
-            content += "\n\n";
+            closeContent();
+            addBreak();
+            addBreak();
           }
           break;
         }
@@ -168,25 +322,24 @@ private:
           if (ev_type == CMARK_EVENT_ENTER) {
             inHeading = true;
 
-            closeContent(content);
+            closeContent();
             addSeparator();
           }
           else if (ev_type == CMARK_EVENT_EXIT) {
             inHeading = false;
 
-            content += "\n";
-            if (extraSeparation)
-              content += "\n";
-            else
-              extraSeparation = true;
+            closeContent();
+            addBreak();
+            addBreak();
           }
           break;
         }
 
-        case CMARK_NODE_LIST:
         case CMARK_NODE_PARAGRAPH: {
-          if (ev_type == CMARK_EVENT_EXIT)
-            content += "\n";
+          if (ev_type == CMARK_EVENT_EXIT) {
+            closeContent();
+            addBreak();
+          }
           break;
         }
 
@@ -200,8 +353,16 @@ private:
         case CMARK_NODE_LINK: {
           if (ev_type == CMARK_EVENT_ENTER) {
             inLink = cmark_node_get_url(cur);
+            if (inLink)
+              closeContent();
           }
           else if (ev_type == CMARK_EVENT_EXIT) {
+            if (inLink) {
+              if (!m_content.empty()) {
+                addLink(inLink, m_content);
+                m_content.clear();
+              }
+            }
             inLink = nullptr;
           }
         }
@@ -210,28 +371,68 @@ private:
     }
     cmark_iter_free(iter);
 
-    closeContent(content);
+    closeContent();
   }
 
-  void closeContent(std::string& content) {
-    if (!content.empty()) {
-      addTextBox(content);
-      content.clear();
+  void closeContent() {
+    if (!m_content.empty()) {
+      addText(m_content);
+      m_content.clear();
     }
   }
 
   void addSeparator() {
     auto sep = new Separator("", HORIZONTAL);
+    sep->setBorder(gfx::Border(0, font()->height(), 0, font()->height()));
     sep->setBgColor(SkinTheme::instance()->colors.textboxFace());
+    sep->setExpansive(true);
     addChild(sep);
   }
 
-  void addTextBox(const std::string& content) {
-    addChild(new TextBox(content, LEFT | WORDWRAP));
+  void addBreak() {
+    addChild(new Break);
+  }
+
+  void addText(const std::string& content) {
+    std::vector<std::string> words;
+    base::split_string(content, words, " ");
+    for (const auto& word : words)
+      if (!word.empty()) {
+        Label* label;
+
+        if (word.size() > 4 &&
+            std::strncmp(word.c_str(), "http", 4) == 0)
+          label = new LinkLabel(word);
+        else
+          label = new Label(word);
+
+        // Uncomment this line to debug labels
+        //label->setBgColor(gfx::rgba((rand()%128)+128, 128, 128));
+
+        addChild(label);
+      }
+  }
+
+  void addCodeInline(const std::string& content) {
+    auto label = new Label(content);
+    label->setBgColor(SkinTheme::instance()->colors.textboxCodeFace());
+    addChild(label);
+  }
+
+  void addCodeBlock(const std::string& content) {
+    auto textBox = new TextBox(content, LEFT);
+    textBox->setBorder(gfx::Border(4*guiscale()));
+    textBox->setBgColor(SkinTheme::instance()->colors.textboxCodeFace());
+    addChild(textBox);
   }
 
   void addLink(const std::string& url, const std::string& text) {
-    addChild(new LinkLabel(url, text));
+    auto label = new LinkLabel(url, text);
+
+    // Uncomment this line to debug labels
+    //label->setBgColor(gfx::rgba((rand()%128)+128, 128, 128));
+
+    addChild(label);
   }
 
   void relayout() {
@@ -241,10 +442,10 @@ private:
       view->updateView();
       view->setViewScroll(gfx::Point(0, 0));
     }
-
     invalidate();
   }
 
+  std::string m_content;
 };
 
 BrowserView::BrowserView()

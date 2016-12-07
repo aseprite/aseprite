@@ -31,6 +31,7 @@
     <color id="desktop" value="#968275" />
     <color id="textbox_text" value="#000000" />
     <color id="textbox_face" value="#ffffff" />
+    <color id="textbox_code_face" value="#eeeeee" />
     <color id="entry_suffix" value="#c6c6c6" />
     <color id="link_text" value="#2c4c91" />
     <color id="link_hover" value="#ff5555" />
