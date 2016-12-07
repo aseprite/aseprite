@@ -795,7 +795,7 @@
       </menu>
       <menu text="&amp;Help">
         <item command="OpenBrowser" text="Readme">
-          <param name="filename" value="data/docs/README.md" />
+          <param name="filename" value="README.md" />
         </item>
         <separator />
         <item command="Launch" text="Quick &amp;Reference">

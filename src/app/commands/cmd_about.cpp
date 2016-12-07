@@ -100,7 +100,7 @@ void AboutCommand::onExecute(Context* context)
   author5->Click.connect(
     [&window]{
       window->closeWindow(nullptr);
-      App::instance()->mainWindow()->showBrowser("data/docs/LICENSES.md");
+      App::instance()->mainWindow()->showBrowser("docs/LICENSES.md");
     });
 
   window->openWindowInForeground();

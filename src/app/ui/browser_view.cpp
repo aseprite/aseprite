@@ -8,9 +8,11 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/app_menus.h"
 #include "app/resource_finder.h"
 #include "app/ui/browser_view.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
@@ -18,6 +20,7 @@
 #include "base/fs.h"
 #include "base/split_string.h"
 #include "she/font.h"
+#include "ui/alert.h"
 #include "ui/link_label.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -38,6 +41,25 @@ namespace app {
 
 using namespace ui;
 using namespace app::skin;
+
+namespace {
+
+RegisterMessage kLoadFileMessage;
+
+class LoadFileMessage : public Message {
+public:
+  LoadFileMessage(const std::string& file)
+    : Message(kLoadFileMessage)
+    , m_file(file) {
+  }
+
+  const std::string& file() const { return m_file; }
+
+private:
+  std::string m_file;
+};
+
+} // annonymous namespace
 
 // TODO This is not the best implementation, but it's "good enough"
 //      for a first version.
@@ -63,11 +85,17 @@ public:
 
   void loadFile(const std::string& inputFile) {
     std::string file = inputFile;
-    if (file.size() >= 5 && file.substr(0, 5) == "data/") {
+    {
       ResourceFinder rf;
-      rf.includeDataDir(file.substr(5).c_str());
+      rf.includeDataDir(file.c_str());
       if (rf.findFirst())
         file = rf.filename();
+    }
+
+    if (!base::is_file(file)) {
+      Alert::show("Error<<File <%s> not found||&Close",
+                  file.c_str());
+      return;
     }
 
     cmark_parser* parser = cmark_parser_new(CMARK_OPT_DEFAULT);
@@ -184,6 +212,11 @@ private:
   }
 
   bool onProcessMessage(Message* msg) override {
+    if (msg->type() == kLoadFileMessage) {
+      loadFile(static_cast<LoadFileMessage*>(msg)->file());
+      return true;
+    }
+
     switch (msg->type()) {
 
       case kMouseWheelMessage: {
@@ -428,6 +461,16 @@ private:
 
   void addLink(const std::string& url, const std::string& text) {
     auto label = new LinkLabel(url, text);
+
+    if (url.find(':') == std::string::npos) {
+      label->setUrl("");
+      label->Click.connect(
+        [this, url]{
+          Message* msg = new LoadFileMessage(url);
+          msg->addRecipient(this);
+          Manager::getDefault()->enqueueMessage(msg);
+        });
+    }
 
     // Uncomment this line to debug labels
     //label->setBgColor(gfx::rgba((rand()%128)+128, 128, 128));

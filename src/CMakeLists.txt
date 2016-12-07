@@ -133,10 +133,16 @@ foreach(fn ${src_data_files})
 endforeach()
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/docs/README.md
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_BINARY_DIR}/bin/data/docs/README.md
+  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/README.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_BINARY_DIR}/bin/data/README.md
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/README.md)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/docs/README.md)
+list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/README.md)
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/EULA.txt
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/EULA.txt ${CMAKE_BINARY_DIR}/bin/data/EULA.txt
+  MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/EULA.txt)
+list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/EULA.txt)
 
 add_custom_command(
   OUTPUT ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
