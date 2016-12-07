@@ -51,10 +51,12 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
+    void onVisible(bool visible) override;
 
   private:
     int getToolGroupIndex(tools::ToolGroup* group);
     void openPopupWindow(int group_index, tools::ToolGroup* group);
+    void closePopupWindow();
     gfx::Rect getToolGroupBounds(int group_index);
     gfx::Point getToolPositionInGroup(int group_index, tools::Tool* tool);
     void openTipWindow(int group_index, tools::Tool* tool);

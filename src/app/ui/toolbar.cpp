@@ -352,6 +352,17 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   }
 }
 
+void ToolBar::onVisible(bool visible)
+{
+  Widget::onVisible(visible);
+  if (!visible) {
+    if (m_popupWindow) {
+      closePopupWindow();
+      closeTipWindow();
+    }
+  }
+}
+
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
   ToolBox* toolbox = App::instance()->toolBox();
@@ -377,11 +388,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
       m_closeConn.disconnect();
 
     onClosePopup();
-
-    // Close the current popup window
-    m_popupWindow->closeWindow(NULL);
-    delete m_popupWindow;
-    m_popupWindow = NULL;
+    closePopupWindow();
   }
 
   // Close tip window
@@ -433,6 +440,15 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   m_popupWindow->openWindow();
 
   toolstrip->setBounds(rc);
+}
+
+void ToolBar::closePopupWindow()
+{
+  if (m_popupWindow) {
+    m_popupWindow->closeWindow(nullptr);
+    delete m_popupWindow;
+    m_popupWindow = nullptr;
+  }
 }
 
 Rect ToolBar::getToolGroupBounds(int group_index)
