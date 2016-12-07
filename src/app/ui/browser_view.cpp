@@ -104,12 +104,21 @@ public:
     if (fp) {
       std::array<char, 4096> buffer;
       size_t bytes;
+      bool isTxt = (base::get_file_extension(file) == "txt");
+
+      if (isTxt)
+        cmark_parser_feed(parser, "```\n", 4);
+
       while ((bytes = std::fread(&buffer[0], 1, buffer.size(), fp)) > 0) {
         cmark_parser_feed(parser, &buffer[0], bytes);
         if (bytes < buffer.size()) {
           break;
         }
       }
+
+      if (isTxt)
+        cmark_parser_feed(parser, "\n```\n", 5);
+
       cmark_node* root = cmark_parser_finish(parser);
 
       if (root) {
