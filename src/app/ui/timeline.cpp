@@ -1319,6 +1319,7 @@ void Timeline::onAddLayer(doc::DocumentEvent& ev)
 
   regenerateLayers();
   showCurrentCel();
+  clearClipboardRange();
   invalidate();
 }
 
@@ -1346,6 +1347,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
 
   regenerateLayers();
   showCurrentCel();
+  clearClipboardRange();
   invalidate();
 }
 

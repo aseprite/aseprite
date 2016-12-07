@@ -686,8 +686,9 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kTextBoxWidget:
-      BORDER(0);
+      BORDER(4*guiscale());
       widget->setChildSpacing(0);
+      widget->setBgColor(colors.textboxFace());
       break;
 
     case kViewWidget:
@@ -1042,20 +1043,24 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Graphics* g = ev.graphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
   Style* style = styles.link();
-  gfx::Rect bounds = widget->clientBounds();
+  Rect text, rc = widget->clientBounds();
   gfx::Color bg = BGCOLOR;
 
   SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
   if (styleProp)
     style = styleProp->getStyle();
 
+  if (!is_transparent(bg))
+    g->fillRect(bg, rc);
+  rc.shrink(widget->border());
+
   Style::State state;
   if (widget->hasMouseOver()) state += Style::hover();
   if (widget->isSelected()) state += Style::clicked();
   if (!widget->isEnabled()) state += Style::disabled();
 
-  g->fillRect(bg, bounds);
-  style->paint(g, bounds, widget->text().c_str(), state);
+  widget->getTextIconInfo(nullptr, &text);
+  style->paint(g, text, widget->text().c_str(), state);
 }
 
 void SkinTheme::paintListBox(PaintEvent& ev)
@@ -1528,8 +1533,7 @@ void SkinTheme::paintTextBox(ui::PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
 
   drawTextBox(g, widget, NULL, NULL,
-    colors.textboxFace(),
-    colors.textboxText());
+              BGCOLOR, colors.textboxText());
 }
 
 void SkinTheme::paintView(PaintEvent& ev)

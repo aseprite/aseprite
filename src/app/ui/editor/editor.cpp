@@ -170,6 +170,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_flags(flags)
   , m_secondaryButton(false)
   , m_aniSpeed(1.0)
+  , m_isPlaying(false)
 {
   m_proj.setPixelRatio(m_sprite->pixelRatio());
 
@@ -1775,8 +1776,11 @@ void Editor::play(const bool playOnce,
   if (!m_state)
     return;
 
-  if (!dynamic_cast<PlayState*>(m_state.get()))
-    setState(EditorStatePtr(new PlayState(playOnce, playAll)));
+  if (m_isPlaying)
+    stop();
+
+  m_isPlaying = true;
+  setState(EditorStatePtr(new PlayState(playOnce, playAll)));
 }
 
 void Editor::stop()
@@ -1785,13 +1789,21 @@ void Editor::stop()
   if (!m_state)
     return;
 
-  if (dynamic_cast<PlayState*>(m_state.get()))
-    backToPreviousState();
+  if (m_isPlaying) {
+    while (m_state && !dynamic_cast<PlayState*>(m_state.get()))
+      backToPreviousState();
+
+    m_isPlaying = false;
+
+    ASSERT(m_state && dynamic_cast<PlayState*>(m_state.get()));
+    if (m_state)
+      backToPreviousState();
+  }
 }
 
 bool Editor::isPlaying() const
 {
-  return (dynamic_cast<PlayState*>(m_state.get()) != nullptr);
+  return m_isPlaying;
 }
 
 void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,

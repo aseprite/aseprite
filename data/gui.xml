@@ -806,9 +806,8 @@
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>
       <menu text="&amp;Help">
-        <item command="Launch" text="Readme">
-          <param name="type" value="url" />
-          <param name="path" value="https://github.com/aseprite/aseprite#readme" />
+        <item command="OpenBrowser" text="Readme">
+          <param name="filename" value="README.md" />
         </item>
         <separator />
         <item command="Launch" text="Quick &amp;Reference">

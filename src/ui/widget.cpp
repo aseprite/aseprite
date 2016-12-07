@@ -192,12 +192,16 @@ void Widget::setVisible(bool state)
     if (hasFlags(HIDDEN)) {
       disableFlags(HIDDEN);
       invalidate();
+
+      onVisible(true);
     }
   }
   else {
     if (!hasFlags(HIDDEN)) {
       manager()->freeWidget(this); // Free from manager
       enableFlags(HIDDEN);
+
+      onVisible(false);
     }
   }
 }
@@ -1441,6 +1445,11 @@ void Widget::onSetDecorativeWidgetBounds()
   if (m_theme) {
     m_theme->setDecorativeWidgetBounds(this);
   }
+}
+
+void Widget::onVisible(bool visible)
+{
+  // Do nothing
 }
 
 void Widget::onEnable(bool enabled)
