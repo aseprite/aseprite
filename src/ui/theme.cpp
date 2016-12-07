@@ -85,7 +85,7 @@ void drawTextBox(Graphics* g, Widget* widget,
   View* view = View::getView(widget);
   char* text = const_cast<char*>(widget->text().c_str());
   char* beg, *end;
-  int x1, y1, x2, y2;
+  int x1, y1;
   int x, y, chr, len;
   gfx::Point scroll;
   int textheight = widget->textHeight();
@@ -100,14 +100,10 @@ void drawTextBox(Graphics* g, Widget* widget,
   }
   else {
     vp = widget->clientBounds();
-    vp.w -= widget->border().width();
-    vp.h -= widget->border().height();
     scroll.x = scroll.y = 0;
   }
-  x1 = widget->clientBounds().x;
-  y1 = widget->clientBounds().y;
-  x2 = vp.x + vp.w;
-  y2 = vp.y + vp.h;
+  x1 = widget->clientBounds().x + widget->border().left();
+  y1 = widget->clientBounds().y + widget->border().top();
 
   // Fill background
   if (g)
@@ -117,7 +113,7 @@ void drawTextBox(Graphics* g, Widget* widget,
 
   // Without word-wrap
   if (!(widget->align() & WORDWRAP)) {
-    width = widget->clientBounds().w;
+    width = widget->clientChildrenBounds().w;
   }
   // With word-wrap
   else {
@@ -139,6 +135,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else {
         width = vp.w;
       }
+      width -= widget->border().width();
 #endif
     }
   }
@@ -167,7 +164,7 @@ void drawTextBox(Graphics* g, Widget* widget,
         }
 
         // To here we can print
-        if ((old_end) && (x+font->textLength(beg) > x1-scroll.x+width)) {
+        if ((old_end) && (x+font->textLength(beg) > x1+width-scroll.x)) {
           if (end)
             *end = chr;
 
