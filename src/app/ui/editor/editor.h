@@ -331,6 +331,7 @@ namespace app {
 
     // Animation speed multiplier.
     double m_aniSpeed;
+    bool m_isPlaying;
 
     static doc::ImageBufferPtr m_renderBuffer;
 
