@@ -56,6 +56,7 @@
 #include <vector>
 
 #include "she/alleg4/display_events.h"
+#include "she/alleg4/scancode.h"
 #ifdef USE_KEY_POLLER
   #include "she/alleg4/key_poller.h"
 #endif
@@ -201,24 +202,13 @@ public:
   }
 
   bool isKeyPressed(KeyScancode scancode) override {
-#ifdef ALLEGRO_UNIX
-    if (scancode == kKeyLShift || scancode == kKeyRShift) {
-      return key_shifts & KB_SHIFT_FLAG;
-    }
-    else if (scancode == kKeyLControl || scancode == kKeyRControl) {
-      return key_shifts & KB_CTRL_FLAG;
-    }
-    else if (scancode == kKeyAlt) {
-      return key_shifts & KB_ALT_FLAG;
-    }
-#endif
-    return key[scancode] ? true: false;
+    return key[she_to_alleg_scancode(scancode)] ? true: false;
   }
 
 
   int getUnicodeFromScancode(KeyScancode scancode) override {
     if (isKeyPressed(scancode))
-      return scancode_to_ascii(scancode);
+      return scancode_to_ascii(she_to_alleg_scancode(scancode));
     else
       return false;
   }

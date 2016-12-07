@@ -30,6 +30,7 @@ if(USE_ALLEG4_BACKEND)
     alleg4/display_events.cpp
     alleg4/key_poller.cpp
     alleg4/mouse_poller.cpp
+    alleg4/scancode.cpp
     alleg4/she.cpp)
 
   if(APPLE)
