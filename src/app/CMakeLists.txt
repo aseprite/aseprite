@@ -61,6 +61,7 @@ if(WITH_WEBP_SUPPORT)
 endif()
 
 # cmark include files
+add_definitions(-DCMARK_STATIC_DEFINE)
 include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
 
 ######################################################################
