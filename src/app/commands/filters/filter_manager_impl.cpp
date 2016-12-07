@@ -10,7 +10,7 @@
 
 #include "app/commands/filters/filter_manager_impl.h"
 
-#include "app/cmd/copy_rect.h"
+#include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/context_access.h"
@@ -189,12 +189,22 @@ void FilterManagerImpl::apply(Transaction& transaction)
     gfx::Rect output;
     if (algorithm::shrink_bounds2(m_src.get(), m_dst.get(),
                                   m_bounds, output)) {
-      // Patch "m_cel"
-      transaction.execute(
-        new cmd::PatchCel(
-          m_cel, m_dst.get(),
-          gfx::Region(output),
-          position()));
+      if (m_cel->layer()->isBackground()) {
+        transaction.execute(
+          new cmd::CopyRegion(
+            m_cel->image(),
+            m_dst.get(),
+            gfx::Region(output),
+            position()));
+      }
+      else {
+        // Patch "m_cel"
+        transaction.execute(
+          new cmd::PatchCel(
+            m_cel, m_dst.get(),
+            gfx::Region(output),
+            position()));
+      }
     }
   }
 }
