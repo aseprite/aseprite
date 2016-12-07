@@ -490,6 +490,7 @@ Render::Render()
   , m_bgType(BgType::TRANSPARENT)
   , m_bgCheckedSize(16, 16)
   , m_globalOpacity(255)
+  , m_selectedLayerForOpacity(nullptr)
   , m_selectedLayer(nullptr)
   , m_selectedFrame(-1)
   , m_previewImage(nullptr)
@@ -543,7 +544,7 @@ void Render::setBgCheckedSize(const gfx::Size& size)
 
 void Render::setSelectedLayer(const Layer* layer)
 {
-  m_selectedLayer = layer;
+  m_selectedLayerForOpacity = layer;
 }
 
 void Render::setPreviewImage(const Layer* layer,
@@ -880,7 +881,7 @@ void Render::renderLayer(
   if (!layer->isVisible())
     return;
 
-  if (m_selectedLayer == layer)
+  if (m_selectedLayerForOpacity == layer)
     isSelected = true;
 
   gfx::Rect extraArea;

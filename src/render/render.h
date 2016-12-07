@@ -239,6 +239,7 @@ namespace render {
     color_t m_bgColor2;
     gfx::Size m_bgCheckedSize;
     int m_globalOpacity;
+    const Layer* m_selectedLayerForOpacity;
     const Layer* m_selectedLayer;
     frame_t m_selectedFrame;
     const Image* m_previewImage;
