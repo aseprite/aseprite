@@ -39,8 +39,6 @@ namespace app {
 
     ui::View m_view;
     CMarkBox* m_textBox;
-    std::string m_title;
-    std::string m_filename;
   };
 
 } // namespace app

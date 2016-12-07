@@ -78,9 +78,15 @@ class BrowserView::CMarkBox : public Widget {
   };
 
 public:
+  obs::signal<void()> FileChange;
+
   CMarkBox() {
     setBgColor(SkinTheme::instance()->colors.textboxFace());
     setBorder(gfx::Border(4*guiscale()));
+  }
+
+  const std::string& file() {
+    return m_file;
   }
 
   void loadFile(const std::string& inputFile) {
@@ -91,12 +97,7 @@ public:
       if (rf.findFirst())
         file = rf.filename();
     }
-
-    if (!base::is_file(file)) {
-      Alert::show("Error<<File <%s> not found||&Close",
-                  file.c_str());
-      return;
-    }
+    m_file = file;
 
     cmark_parser* parser = cmark_parser_new(CMARK_OPT_DEFAULT);
     FILE* fp = base::open_file_raw(file, "rb");
@@ -119,11 +120,14 @@ public:
     }
     else {
       clear();
-      addText("File not found: " + file);
+      addText("File not found:");
+      addBreak();
+      addCodeBlock(file);
     }
     cmark_parser_free(parser);
 
     relayout();
+    FileChange();
   }
 
 private:
@@ -488,6 +492,7 @@ private:
     invalidate();
   }
 
+  std::string m_file;
   std::string m_content;
 };
 
@@ -502,6 +507,11 @@ BrowserView::BrowserView()
   m_view.setExpansive(true);
   m_view.setProperty(SkinStylePropertyPtr(
       new SkinStyleProperty(theme->styles.workspaceView())));
+
+  m_textBox->FileChange.connect(
+    []{
+      App::instance()->workspace()->updateTabs();
+    });
 }
 
 BrowserView::~BrowserView()
@@ -511,15 +521,12 @@ BrowserView::~BrowserView()
 
 void BrowserView::loadFile(const std::string& file)
 {
-  m_title = base::get_file_title(file);
-  m_filename = file;
-
   m_textBox->loadFile(file);
 }
 
 std::string BrowserView::getTabText()
 {
-  return m_title;
+  return base::get_file_title(m_textBox->file());
 }
 
 TabIcon BrowserView::getTabIcon()
