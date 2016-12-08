@@ -887,7 +887,6 @@ bool Timeline::onProcessMessage(Message* msg)
                   layer->setCollapsed(!layer->isCollapsed());
 
                   regenerateLayers();
-                  showCurrentCel();
                   invalidate();
 
                   updateByMousePos(
