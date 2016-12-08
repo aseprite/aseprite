@@ -127,7 +127,7 @@ void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
         goNext = true;
         break;
       }
-      it = it->getNextInWholeHierarchy();
+      it = it->getNextBrowsable();
     }
 
     if (!goNext) {
@@ -137,7 +137,7 @@ void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
           goPrev = true;
           break;
         }
-        it = it->getPreviousInWholeHierarchy();
+        it = it->getPreviousBrowsable();
       }
     }
   }
@@ -149,9 +149,9 @@ void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
       break;
 
     if (goNext)
-      it = it->getNextInWholeHierarchy();
+      it = it->getNextBrowsable();
     else if (goPrev)
-      it = it->getPreviousInWholeHierarchy();
+      it = it->getPreviousBrowsable();
     else
       break;
   } while (it);

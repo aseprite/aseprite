@@ -357,7 +357,7 @@ void paste()
           DocumentRange dstRange;
           dstRange.startRange(dstLayer, dstFrameFirst, DocumentRange::kCels);
           for (layer_t i=1; i<srcRange.layers(); ++i) {
-            dstLayer = dstLayer->getPreviousInWholeHierarchy();
+            dstLayer = dstLayer->getPreviousBrowsable();
             if (dstLayer == nullptr)
               break;
           }

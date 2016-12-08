@@ -495,7 +495,7 @@ Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, 
 Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
 {
   ASSERT(parent);
-  Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousInWholeHierarchy(): nullptr);
+  Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable(): nullptr);
   Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
   if (newLayer)
     restackLayerBefore(newLayer, parent, beforeLayer);

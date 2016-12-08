@@ -62,7 +62,7 @@ LayerList SelectedLayers::toLayerList() const
 
   for (Layer* layer = (*begin())->sprite()->firstBrowsableLayer();
        layer != nullptr;
-       layer = layer->getNextInWholeHierarchy()) {
+       layer = layer->getNextBrowsable()) {
     if (contains(layer))
       output.push_back(layer);
   }
@@ -114,11 +114,11 @@ retry:;
 
     if (layerDelta > 0) {
       for (layer_t i=0; layer && i<layerDelta; ++i)
-        layer = layer->getNextInWholeHierarchy();
+        layer = layer->getNextBrowsable();
     }
     else if (layerDelta < 0) {
       for (layer_t i=0; layer && i>layerDelta; --i) {
-        layer = layer->getPreviousInWholeHierarchy();
+        layer = layer->getPreviousBrowsable();
       }
     }
 

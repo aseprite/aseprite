@@ -74,10 +74,50 @@ Layer* Layer::getNext() const
   return nullptr;
 }
 
-Layer* Layer::getPreviousInWholeHierarchy() const
+Layer* Layer::getPreviousBrowsable() const
 {
   // Go to children
   if (isBrowsable())
+    return static_cast<const LayerGroup*>(this)->lastLayer();
+
+  // Go to previous layer
+  if (Layer* prev = getPrevious())
+    return prev;
+
+  // Go to previous layer in the parent
+  LayerGroup* parent = this->parent();
+  while (parent != sprite()->root() &&
+         !parent->getPrevious()) {
+    parent = parent->parent();
+  }
+  return parent->getPrevious();
+}
+
+Layer* Layer::getNextBrowsable() const
+{
+  // Go to next layer
+  if (Layer* next = getNext()) {
+    // Go to children
+    while (next->isBrowsable()) {
+      Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
+      if (!firstChild)
+        break;
+      next = firstChild;
+    }
+    return next;
+  }
+
+  // Go to parent
+  if (m_sprite && parent() != m_sprite->root())
+    return m_parent;
+
+  return nullptr;
+}
+
+Layer* Layer::getPreviousInWholeHierarchy() const
+{
+  // Go to children
+  if (isGroup() && static_cast<const LayerGroup*>(this)->layersCount() > 0)
     return static_cast<const LayerGroup*>(this)->lastLayer();
 
   // Go to previous layer
@@ -98,7 +138,7 @@ Layer* Layer::getNextInWholeHierarchy() const
   // Go to next layer
   if (Layer* next = getNext()) {
     // Go to children
-    while (next->isBrowsable()) {
+    while (next->isGroup() && static_cast<const LayerGroup*>(next)->layersCount() > 0) {
       Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
       if (!firstChild)
         break;
@@ -355,6 +395,18 @@ int LayerGroup::getMemSize() const
   }
 
   return size;
+}
+
+Layer* LayerGroup::firstLayerInWholeHierarchy() const
+{
+  Layer* layer = firstLayer();
+  if (layer) {
+    while (layer->isGroup() &&
+           static_cast<LayerGroup*>(layer)->layersCount() > 0) {
+      layer = static_cast<LayerGroup*>(layer)->firstLayer();
+    }
+  }
+  return layer;
 }
 
 void LayerGroup::allLayers(LayerList& list) const

@@ -62,6 +62,9 @@ namespace doc {
     Layer* getPrevious() const;
     Layer* getNext() const;
 
+    Layer* getPreviousBrowsable() const;
+    Layer* getNextBrowsable() const;
+
     Layer* getPreviousInWholeHierarchy() const;
     Layer* getNextInWholeHierarchy() const;
 
@@ -187,6 +190,7 @@ namespace doc {
     void stackLayer(Layer* layer, Layer* after);
 
     Layer* firstLayer() const { return (m_layers.empty() ? nullptr: m_layers.front()); }
+    Layer* firstLayerInWholeHierarchy() const;
     Layer* lastLayer() const { return (m_layers.empty() ? nullptr: m_layers.back()); }
 
     void allLayers(LayerList& list) const;

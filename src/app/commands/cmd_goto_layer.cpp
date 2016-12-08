@@ -48,7 +48,7 @@ protected:
     if (m_offset > 0) {
       int i = m_offset;
       while (i-- > 0) {
-        layer = layer->getNextInWholeHierarchy();
+        layer = layer->getNextBrowsable();
         if (!layer)
           layer = site.sprite()->firstBrowsableLayer();
       }
@@ -56,7 +56,7 @@ protected:
     else if (m_offset < 0) {
       int i = m_offset;
       while (i++ < 0) {
-        layer = layer->getPreviousInWholeHierarchy();
+        layer = layer->getPreviousBrowsable();
         if (!layer)
           layer = site.sprite()->root()->lastLayer();
       }
