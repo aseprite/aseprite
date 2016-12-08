@@ -324,7 +324,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   }
 
   // Start the Tool-Loop
-  if (layer && layer->isImage()) {
+  if (layer && (layer->isImage() || clickedInk->isSelection())) {
     // Disable layer edges to avoid showing the modified cel
     // information by ExpandCelCanvas (i.e. the cel origin is changed
     // to 0,0 coordinate.)

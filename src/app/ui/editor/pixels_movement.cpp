@@ -634,7 +634,7 @@ void PixelsMovement::setMaskColor(bool opaque, color_t mask_color)
 
 void PixelsMovement::redrawExtraImage()
 {
-  int t, opacity = static_cast<LayerImage*>(m_layer)->opacity();
+  int t, opacity = (m_layer->isImage() ? static_cast<LayerImage*>(m_layer)->opacity(): 255);
   Cel* cel = m_site.cel();
   if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
 
@@ -643,7 +643,9 @@ void PixelsMovement::redrawExtraImage()
   m_extraCel.reset(new ExtraCel);
   m_extraCel->create(m_document->sprite(), bounds, m_site.frame(), opacity);
   m_extraCel->setType(render::ExtraType::PATCH);
-  m_extraCel->setBlendMode(static_cast<LayerImage*>(m_layer)->blendMode());
+  m_extraCel->setBlendMode(m_layer->isImage() ?
+                           static_cast<LayerImage*>(m_layer)->blendMode():
+                           BlendMode::NORMAL);
   m_document->setExtraCel(m_extraCel);
 
   // Draw the transformed pixels in the extra-cel which is the chunk
