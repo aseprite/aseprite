@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -106,7 +106,9 @@ namespace app {
       }
 
       int getDimensionById(const std::string& id) {
-        return m_dimensions_by_id[id] * ui::guiscale();
+        // Warning! Don't use ui::guiscale(), as CurrentTheme::get()
+        // is still nullptr when we use this getDimensionById()
+        return m_dimensions_by_id[id] * this->guiscale();
       }
 
       gfx::Color getColorById(const std::string& id) {
