@@ -90,9 +90,15 @@ KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
 CFStringRef get_unicode_from_key_code(NSEvent* event,
                                       const bool translateDeadKeys)
 {
-  TISInputSourceRef inputSource = TISCopyCurrentKeyboardInputSource();
+  // The "TISCopyCurrentKeyboardInputSource()" doesn't contain
+  // kTISPropertyUnicodeKeyLayoutData (returns nullptr) when the input
+  // source is Japanese (Romaji/Hiragana/Katakana).
+
+  //TISInputSourceRef inputSource = TISCopyCurrentKeyboardInputSource();
+  TISInputSourceRef inputSource = TISCopyCurrentKeyboardLayoutInputSource();
   CFDataRef keyLayoutData = (CFDataRef)TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData);
-  const UCKeyboardLayout* keyLayout = (const UCKeyboardLayout*)CFDataGetBytePtr(keyLayoutData);
+  const UCKeyboardLayout* keyLayout =
+    (keyLayoutData ? (const UCKeyboardLayout*)CFDataGetBytePtr(keyLayoutData): nullptr);
 
   UInt32 deadKeyState = (translateDeadKeys ? g_lastDeadKeyState: 0);
   UniChar output[4];
