@@ -3067,22 +3067,22 @@ gfx::Size Timeline::celBoxSize() const
 
 int Timeline::headerBoxWidth() const
 {
-  return int(skinTheme()->dimensions.timelineBaseSize() * guiscale());
+  return skinTheme()->dimensions.timelineBaseSize();
 }
 
 int Timeline::headerBoxHeight() const
 {
-  return int(skinTheme()->dimensions.timelineBaseSize() * guiscale());
+  return skinTheme()->dimensions.timelineBaseSize();
 }
 
 int Timeline::layerBoxHeight() const
 {
-  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize()*guiscale() + (int)(m_zoom > 1) * headerBoxHeight());
+  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize() + int(m_zoom > 1) * headerBoxHeight());
 }
 
 int Timeline::frameBoxWidth() const
 {
-  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize()*guiscale());
+  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize());
 }
 
 int Timeline::outlineWidth() const
