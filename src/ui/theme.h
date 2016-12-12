@@ -79,17 +79,13 @@ namespace ui {
     int m_guiscale;
   };
 
-  namespace CurrentTheme
-  {
-    void set(Theme* theme);
-    Theme* get();
-  }
+  void set_theme(Theme* theme);
+  Theme* get_theme();
 
   // This value is a factor to multiply every screen size/coordinate.
   // Every icon/graphics/font should be scaled to this factor.
-  inline int guiscale()
-  {
-    return CurrentTheme::get() ? CurrentTheme::get()->guiscale(): 1;
+  inline int guiscale() {
+    return (get_theme() ? get_theme()->guiscale(): 1);
   }
 
 } // namespace ui

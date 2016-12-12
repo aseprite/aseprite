@@ -33,7 +33,7 @@ Theme::Theme()
 Theme::~Theme()
 {
   if (current_theme == this)
-    CurrentTheme::set(NULL);
+    set_theme(nullptr);
 }
 
 void Theme::regenerate()
@@ -56,7 +56,7 @@ void Theme::regenerate()
 
 //////////////////////////////////////////////////////////////////////
 
-void CurrentTheme::set(Theme* theme)
+void set_theme(Theme* theme)
 {
   if (theme) {
     // As the regeneration may fail, first we regenerate the theme and
@@ -74,7 +74,7 @@ void CurrentTheme::set(Theme* theme)
   }
 }
 
-Theme* CurrentTheme::get()
+Theme* get_theme()
 {
   return current_theme;
 }

@@ -53,7 +53,7 @@ static struct HandlesInfo {
 
 HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const Transformation& transform)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+  SkinTheme* theme = SkinTheme::instance();
   she::Surface* gfx = theme->parts.transformationHandle()->bitmap(0);
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
@@ -128,7 +128,7 @@ void TransformHandles::drawHandles(Editor* editor, const Transformation& transfo
   // Draw the pivot
   if (visiblePivot(angle)) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
-    SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+    SkinTheme* theme = SkinTheme::instance();
     she::Surface* part = theme->parts.pivotHandle()->bitmap(0);
 
     g.drawRgbaSurface(part, pivotBounds.x, pivotBounds.y);
@@ -137,7 +137,7 @@ void TransformHandles::drawHandles(Editor* editor, const Transformation& transfo
 
 void TransformHandles::invalidateHandles(Editor* editor, const Transformation& transform)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+  SkinTheme* theme = SkinTheme::instance();
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
   Transformation::Corners corners;
@@ -174,7 +174,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                                                  const Transformation& transform,
                                                  const Transformation::Corners& corners)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+  SkinTheme* theme = SkinTheme::instance();
   gfx::Size partSize = theme->parts.pivotHandle()->size();
   gfx::Point screenPivotPos = editor->editorToScreen(gfx::Point(transform.pivot()));
 
@@ -198,7 +198,7 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
 
 void TransformHandles::drawHandle(Graphics* g, int x, int y, fixmath::fixed angle)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+  SkinTheme* theme = SkinTheme::instance();
   she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
   adjustHandle(x, y, part->width(), part->height(), angle);

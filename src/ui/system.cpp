@@ -151,8 +151,8 @@ static void update_mouse_cursor()
   // Use a custom cursor
   if (nativeCursor == she::kNoCursor &&
       mouse_cursor_type != ui::kOutsideDisplay &&
-      CurrentTheme::get()) {
-    cursor = CurrentTheme::get()->getCursor(mouse_cursor_type);
+      get_theme()) {
+    cursor = get_theme()->getCursor(mouse_cursor_type);
   }
 
   // Try to use a custom native cursor if it's possible
@@ -179,7 +179,7 @@ UISystem::~UISystem()
   OverlayManager::destroyInstance();
 
   // finish theme
-  CurrentTheme::set(NULL);
+  set_theme(nullptr);
 
   details::exitWidgets();
 

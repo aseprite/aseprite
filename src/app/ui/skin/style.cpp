@@ -37,7 +37,7 @@ void Rule::paint(ui::Graphics* g,
 
 void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
+  SkinTheme* theme = SkinTheme::instance();
 
   if (m_part && m_part->countBitmaps() > 0) {
     if (m_part->countBitmaps() == 1) {
@@ -76,7 +76,7 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
 
 void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
+  SkinTheme* theme = SkinTheme::instance();
 
   if (text) {
     g->drawAlignedUIText(text,

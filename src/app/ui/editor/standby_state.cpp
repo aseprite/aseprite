@@ -746,7 +746,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   // Draw transformation handles (if the mask is visible and isn't frozen).
   gfx::Rect box1, box2;
   if (StandbyState::Decorator::getSymmetryHandles(editor, box1, box2)) {
-    skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
+    skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(ui::get_theme());
     she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
     ScreenGraphics g;
     g.drawRgbaSurface(part, box1.x, box1.y);
@@ -777,7 +777,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, gfx::Rect& box1
                            symmetry.yAxis());
       gfx::RectF spriteBounds = gfx::RectF(editor->sprite()->bounds());
       gfx::RectF editorViewport = gfx::RectF(View::getView(editor)->viewportBounds());
-      skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
+      skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(ui::get_theme());
       she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
       gfx::PointF pt1, pt2;
 

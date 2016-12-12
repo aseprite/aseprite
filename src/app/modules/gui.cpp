@@ -185,7 +185,7 @@ int init_module_gui()
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme();
   gui_theme->setScale(Preferences::instance().general.uiScale());
-  CurrentTheme::set(gui_theme);
+  ui::set_theme(gui_theme);
 
   if (maximized)
     main_display->maximize();
@@ -204,7 +204,7 @@ void exit_module_gui()
   delete manager;
 
   // Now we can destroy theme
-  CurrentTheme::set(NULL);
+  ui::set_theme(nullptr);
   delete gui_theme;
 
   main_display->dispose();

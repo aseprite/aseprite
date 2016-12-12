@@ -205,7 +205,7 @@ void SkinTheme::onRegenerate()
     catch (const std::exception& e) {
       LOG("SKIN: Error loading user-theme: %s\n", e.what());
 
-      if (CurrentTheme::get())
+      if (ui::get_theme())
         Console::showException(e);
 
       // We can continue, as we've already loaded the default theme

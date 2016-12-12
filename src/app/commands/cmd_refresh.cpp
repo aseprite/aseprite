@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,8 +40,7 @@ RefreshCommand::RefreshCommand()
 
 void RefreshCommand::onExecute(Context* context)
 {
-  ui::CurrentTheme::get()->regenerate();
-
+  ui::get_theme()->regenerate();
   app_refresh_screen();
 
   // Print memory information
