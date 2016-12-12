@@ -561,7 +561,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
     m_renderEngine.setRefLayersVisiblity(true);
     m_renderEngine.setSelectedLayer(m_layer);
-    m_renderEngine.setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
+    if (m_flags & Editor::kUseNonactiveLayersOpacityWhenEnabled)
+      m_renderEngine.setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
+    else
+      m_renderEngine.setNonactiveLayersOpacity(255);
     m_renderEngine.setProjection(m_proj);
     m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
     m_renderEngine.disableOnionskin();
