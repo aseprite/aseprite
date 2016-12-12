@@ -51,6 +51,8 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
   private:
+    gfx::Point intCelOffset() const;
+
     ContextReader m_reader;
     Cel* m_cel;
     CelList m_celList;

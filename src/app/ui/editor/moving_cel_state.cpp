@@ -29,6 +29,8 @@
 #include "doc/sprite.h"
 #include "ui/message.h"
 
+#include <cmath>
+
 namespace app {
 
 using namespace ui;
@@ -122,27 +124,35 @@ MovingCelState::MovingCelState(Editor* editor,
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   Document* document = editor->document();
+  bool modified = false;
 
-  // Here we put back the cel into its original coordinate (so we can
-  // add an undoer before).
-  if ((m_hasReference && (m_celOffset != gfx::PointF(0, 0) || m_scaled)) ||
-      (!m_hasReference && gfx::Point(m_celOffset) != gfx::Point(0, 0))) {
-    // Put the cels in the original position.
-    for (size_t i=0; i<m_celList.size(); ++i) {
-      Cel* cel = m_celList[i];
-      const gfx::RectF& celStart = m_celStarts[i];
+  // Here we put back all cels into their original coordinates (so we
+  // can add the undo information from the start position).
+  for (size_t i=0; i<m_celList.size(); ++i) {
+    Cel* cel = m_celList[i];
+    const gfx::RectF& celStart = m_celStarts[i];
 
-      if (cel->layer()->isReference())
+    if (cel->layer()->isReference()) {
+      if (cel->boundsF() != celStart) {
         cel->setBoundsF(celStart);
-      else
-        cel->setBounds(gfx::Rect(celStart));
+        modified = true;
+      }
     }
+    else {
+      if (cel->bounds() != gfx::Rect(celStart)) {
+        cel->setBounds(gfx::Rect(celStart));
+        modified = true;
+      }
+    }
+  }
 
+  if (modified) {
     // If the user didn't cancel the operation...
     if (!m_canceled) {
       ContextWriter writer(m_reader, 1000);
       Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
       DocumentApi api = document->getApi(transaction);
+      gfx::Point intOffset = intCelOffset();
 
       // And now we move the cel (or all selected range) to the new position.
       for (Cel* cel : m_celList) {
@@ -159,8 +169,8 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
         }
         else {
           api.setCelPosition(writer.sprite(), cel,
-                             cel->x() + m_celOffset.x,
-                             cel->y() + m_celOffset.y);
+                             cel->x() + intOffset.x,
+                             cel->y() + intOffset.y);
         }
       }
 
@@ -226,21 +236,26 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
     }
   }
 
+  gfx::Point intOffset = intCelOffset();
+
   for (size_t i=0; i<m_celList.size(); ++i) {
     Cel* cel = m_celList[i];
     gfx::RectF celBounds = m_celStarts[i];
-    celBounds.x += m_celOffset.x;
-    celBounds.y += m_celOffset.y;
 
-    if (m_scaled) {
-      celBounds.w *= m_celScale.w;
-      celBounds.h *= m_celScale.h;
-    }
-
-    if (cel->layer()->isReference())
+    if (cel->layer()->isReference()) {
+      celBounds.x += m_celOffset.x;
+      celBounds.y += m_celOffset.y;
+      if (m_scaled) {
+        celBounds.w *= m_celScale.w;
+        celBounds.h *= m_celScale.h;
+      }
       cel->setBoundsF(celBounds);
-    else
+    }
+    else {
+      celBounds.x += intOffset.x;
+      celBounds.y += intOffset.y;
       cel->setBounds(gfx::Rect(celBounds));
+    }
   }
 
   // Redraw the new cel position.
@@ -271,14 +286,21 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
     }
   }
   else {
+    gfx::Point intOffset = intCelOffset();
     StatusBar::instance()->setStatusText
       (0,
        ":pos: %3d %3d :offset: %3d %3d",
        int(m_cursorStart.x), int(m_cursorStart.y),
-       int(m_celOffset.x), int(m_celOffset.y));
+       intOffset.x, intOffset.y);
   }
 
   return true;
+}
+
+gfx::Point MovingCelState::intCelOffset() const
+{
+  return gfx::Point(std::round(m_celOffset.x),
+                    std::round(m_celOffset.y));
 }
 
 } // namespace app
