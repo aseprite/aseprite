@@ -1567,8 +1567,8 @@ void SkinTheme::paintTextBox(ui::PaintEvent& ev)
   Graphics* g = ev.graphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
 
-  drawTextBox(g, widget, NULL, NULL,
-              BGCOLOR, colors.textboxText());
+  Theme::drawTextBox(g, widget, nullptr, nullptr,
+                     BGCOLOR, colors.textboxText());
 }
 
 void SkinTheme::paintView(PaintEvent& ev)

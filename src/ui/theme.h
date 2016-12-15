@@ -8,6 +8,7 @@
 #define UI_THEME_H_INCLUDED
 #pragma once
 
+#include "gfx/color.h"
 #include "gfx/size.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
@@ -23,6 +24,7 @@ namespace she {
 namespace ui {
 
   class Cursor;
+  class Graphics;
   class PaintEvent;
   class Widget;
 
@@ -71,6 +73,9 @@ namespace ui {
     virtual void paintWindow(PaintEvent& ev) = 0;
     virtual void paintPopupWindow(PaintEvent& ev) = 0;
     virtual void paintTooltip(PaintEvent& ev) = 0;
+
+    static  void drawTextBox(Graphics* g, Widget* textbox,
+                             int* w, int* h, gfx::Color bg, gfx::Color fg);
 
   protected:
     virtual void onRegenerate() = 0;

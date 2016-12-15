@@ -79,8 +79,9 @@ Theme* get_theme()
   return current_theme;
 }
 
-void drawTextBox(Graphics* g, Widget* widget,
-                 int* w, int* h, gfx::Color bg, gfx::Color fg)
+// static
+void Theme::drawTextBox(Graphics* g, Widget* widget,
+                        int* w, int* h, gfx::Color bg, gfx::Color fg)
 {
   View* view = View::getView(widget);
   char* text = const_cast<char*>(widget->text().c_str());

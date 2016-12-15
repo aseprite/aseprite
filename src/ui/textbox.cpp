@@ -156,7 +156,7 @@ void TextBox::onSizeHint(SizeHintEvent& ev)
   int w = 0;
   int h = 0;
 
-  drawTextBox(NULL, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
+  Theme::drawTextBox(nullptr, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
 
   if (this->align() & WORDWRAP) {
     View* view = View::getView(this);
@@ -170,7 +170,7 @@ void TextBox::onSizeHint(SizeHintEvent& ev)
     }
 
     w = MAX(min, width);
-    drawTextBox(NULL, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
+    Theme::drawTextBox(nullptr, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
 
     w = min;
   }
