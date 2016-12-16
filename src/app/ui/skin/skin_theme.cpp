@@ -1050,17 +1050,15 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   if (styleProp)
     style = styleProp->getStyle();
 
-  if (!is_transparent(bg))
-    g->fillRect(bg, rc);
-  rc.shrink(widget->border());
-
   Style::State state;
   if (widget->hasMouseOver()) state += Style::hover();
   if (widget->isSelected()) state += Style::clicked();
   if (!widget->isEnabled()) state += Style::disabled();
 
-  widget->getTextIconInfo(nullptr, &text);
-  style->paint(g, text, widget->text().c_str(), state);
+  if (!is_transparent(bg))
+    g->fillRect(bg, rc);
+
+  style->paint(g, rc, widget->text().c_str(), state);
 }
 
 void SkinTheme::paintListBox(PaintEvent& ev)

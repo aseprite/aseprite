@@ -436,6 +436,11 @@
       <text color="link_hover" />
     </style>
 
+    <!-- browser_link -->
+    <style id="browser_link" base="link">
+      <text padding-top="1" />
+    </style>
+
     <!-- view -->
     <style id="view">
       <background part="sunken_normal" />
