@@ -1084,11 +1084,11 @@ CompositeImageFunc Render::getImageComposition(
   // blend src+dst one time and repeat the resulting color in dst
   // image n-times (where n is the zoom scale).
   const bool finegrain =
-    (m_bgCheckedSize.w < m_proj.applyX(1) ||
-     m_bgCheckedSize.h < m_proj.applyY(1) ||
-     (layer &&
-      layer->isGroup() &&
-      has_visible_reference_layers(static_cast<const LayerGroup*>(layer))));
+    (!m_bgZoom && (m_bgCheckedSize.w < m_proj.applyX(1) ||
+                   m_bgCheckedSize.h < m_proj.applyY(1))) ||
+    (layer &&
+     layer->isGroup() &&
+     has_visible_reference_layers(static_cast<const LayerGroup*>(layer)));
 
   switch (srcFormat) {
 
