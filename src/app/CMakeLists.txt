@@ -334,6 +334,7 @@ add_library(app-lib
   filename_formatter.cpp
   flatten.cpp
   gui_xml.cpp
+  i18n/strings.cpp
   ini_file.cpp
   job.cpp
   launcher.cpp
