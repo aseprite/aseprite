@@ -95,6 +95,7 @@
       <option id="screen_scale" type="int" default="0" />
       <option id="ui_scale" type="int" default="1" migrate="experimental.ui_scale" />
       <option id="gpu_acceleration" type="bool" default="false" />
+      <option id="show_home" type="bool" default="true" />
       <option id="visible_timeline" type="bool" default="false" />
       <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />
       <option id="rewind_on_stop" type="bool" default="false" />

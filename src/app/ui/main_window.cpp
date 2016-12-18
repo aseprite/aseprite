@@ -229,6 +229,12 @@ void MainWindow::showNotification(INotificationDelegate* del)
 
 void MainWindow::showHomeOnOpen()
 {
+  // Don't open Home tab
+  if (!Preferences::instance().general.showHome()) {
+    configureWorkspaceLayout();
+    return;
+  }
+
   if (!getHomeView()->parent()) {
     TabView* selectedTab = m_tabsBar->getSelectedTab();
 

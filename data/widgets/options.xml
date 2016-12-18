@@ -40,6 +40,7 @@
             </grid>
           </hbox>
           <check text="GPU acceleration" id="gpu_acceleration" tooltip="Check this option to enable hardware acceleration" />
+          <check text="Show Home tab when Aseprite is started" id="show_home" />
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
           <hbox>
             <check text="Automatically save recovery data every" id="enable_data_recovery" tooltip="With this option you can recover your documents&#10;if the program finalizes unexpectedly." />
