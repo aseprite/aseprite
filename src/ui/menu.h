@@ -78,10 +78,13 @@ namespace ui {
 
   private:
     void closePopup();
+    void startFilteringMouseDown();
+    void stopFilteringMouseDown();
 
     MenuBaseData* m_base;
 
     friend class Menu;
+    friend class MenuItem;
   };
 
   class MenuBar : public MenuBox {
