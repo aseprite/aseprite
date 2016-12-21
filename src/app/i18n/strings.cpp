@@ -63,7 +63,11 @@ Strings::Strings()
 
 const std::string& Strings::translate(const char* id)
 {
-  return m_strings[id];
+  auto it = m_strings.find(id);
+  if (it != m_strings.end())
+    return it->second;
+  else
+    return m_strings[id] = id;
 }
 
 } // namespace app
