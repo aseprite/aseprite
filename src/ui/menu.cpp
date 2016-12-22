@@ -64,8 +64,7 @@ private:
 };
 
 // Data for the main jmenubar or the first popuped-jmenubox
-struct MenuBaseData
-{
+struct MenuBaseData {
   // True when the menu-items must be opened with the cursor movement
   bool was_clicked;
 
@@ -79,8 +78,7 @@ struct MenuBaseData
 
   bool close_all;
 
-  MenuBaseData()
-  {
+  MenuBaseData() {
     was_clicked = false;
     is_filtering = false;
     is_processing = false;
@@ -158,11 +156,7 @@ MenuBox::MenuBox(WidgetType type)
 
 MenuBox::~MenuBox()
 {
-  if (m_base && m_base->is_filtering) {
-    m_base->is_filtering = false;
-    Manager::getDefault()->removeMessageFilter(kMouseDownMessage, this);
-  }
-
+  stopFilteringMouseDown();
   delete m_base;
 }
 
@@ -219,7 +213,7 @@ Menu* MenuBox::getMenu()
 MenuBaseData* MenuBox::createBase()
 {
   delete m_base;
-  m_base = new MenuBaseData();
+  m_base = new MenuBaseData;
   return m_base;
 }
 
@@ -269,18 +263,29 @@ bool MenuItem::hasSubmenu() const
 
 void Menu::showPopup(const gfx::Point& pos)
 {
+  // Generally, when we call showPopup() the menu shouldn't contain a
+  // parent menu-box, because we're filtering kMouseDownMessage to
+  // close the popup automatically when we click outside the menubox.
+  // Anyway there is one specific case were a clicked widget might
+  // call showPopup() when it's clicked the first time, and a second
+  // click could generate a kDoubleClickMessage which is then
+  // converted to kMouseDownMessage to finally call showPopup() again.
+  // In this case, the menu is already in a menubox.
+  if (parent()) {
+    static_cast<MenuBox*>(parent())->cancelMenuLoop();
+    return;
+  }
+
   // New window and new menu-box
-  Window* window = new Window(Window::WithoutTitleBar);
+  base::UniquePtr<Window> window(new Window(Window::WithoutTitleBar));
   MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
-  base->is_filtering = true;
-  Manager::getDefault()->addMessageFilter(kMouseDownMessage, menubox);
-
   window->setMoveable(false);   // Can't move the window
 
   // Set children
   menubox->setMenu(this);
+  menubox->startFilteringMouseDown();
   window->addChild(menubox);
 
   window->remapWindow();
@@ -301,10 +306,9 @@ void Menu::showPopup(const gfx::Point& pos)
   Manager::getDefault()->freeFocus();
 
   // Fetch the "menu" so it isn't destroyed
-  menubox->setMenu(NULL);
+  menubox->setMenu(nullptr);
+  menubox->stopFilteringMouseDown();
 
-  // Destroy the window
-  delete window;
 }
 
 void Menu::onPaint(PaintEvent& ev)
@@ -374,7 +378,10 @@ bool MenuBox::onProcessMessage(Message* msg)
       // Fall through
 
     case kMouseDownMessage:
+    case kDoubleClickMessage:
       if (menu) {
+        ASSERT(menu->parent() == this);
+
         if (get_base(this)->is_processing)
           break;
 
@@ -650,7 +657,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     default:
       if (msg->type() == kClosePopupMessage) {
-        manager()->_closeWindow(window(), true);
+        window()->closeWindow(nullptr);
       }
       break;
 
@@ -829,9 +836,9 @@ bool MenuItem::onProcessMessage(Message* msg)
         else
           manager()->setFocus(this->parent()->parent());
 
-        // It is not necessary to delete this window because it's
-        // automatically destroyed by the manager
-        // ... delete window;
+        // Do not call "delete window" here, because it
+        // (CustomizedWindowForMenuBox) will be deferDelete()d on
+        // kCloseMessage.
 
         if (last_of_close_chain) {
           base->close_all = false;
@@ -928,7 +935,11 @@ static MenuBox* get_base_menubox(Widget* widget)
 static MenuBaseData* get_base(Widget* widget)
 {
   MenuBox* menubox = get_base_menubox(widget);
-  return menubox->getBase();
+  ASSERT(menubox);
+  if (menubox)
+    return menubox->getBase();
+  else
+    return nullptr;
 }
 
 MenuItem* Menu::getHighlightedItem()
@@ -1048,10 +1059,9 @@ void MenuItem::openSubmenu(bool select_first)
   // clicks outside the menu (and close all the hierarchy in that
   // case); the widget to intercept messages is the base menu-bar or
   // popuped menu-box
-  if (!base->is_filtering) {
-    base->is_filtering = true;
-    Manager::getDefault()->addMessageFilter(kMouseDownMessage, get_base_menubox(this));
-  }
+  MenuBox* base_menubox = get_base_menubox(this);
+  if (base_menubox)
+    base_menubox->startFilteringMouseDown();
 }
 
 void MenuItem::closeSubmenu(bool last_of_close_chain)
@@ -1128,10 +1138,7 @@ void Menu::closeAll()
 
   base->close_all = true;
   base->was_clicked = false;
-  if (base->is_filtering) {
-    base->is_filtering = false;
-    Manager::getDefault()->removeMessageFilter(kMouseDownMessage, base_menubox);
-  }
+  base_menubox->stopFilteringMouseDown();
 
   menu->unhighlightItem();
 
@@ -1160,6 +1167,24 @@ void MenuBox::closePopup()
   Message* msg = new Message(kClosePopupMessage);
   msg->addRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
+}
+
+void MenuBox::startFilteringMouseDown()
+{
+  if (m_base && !m_base->is_filtering) {
+    m_base->is_filtering = true;
+    Manager::getDefault()->addMessageFilter(kMouseDownMessage, this);
+    Manager::getDefault()->addMessageFilter(kDoubleClickMessage, this);
+  }
+}
+
+void MenuBox::stopFilteringMouseDown()
+{
+  if (m_base && m_base->is_filtering) {
+    m_base->is_filtering = false;
+    Manager::getDefault()->removeMessageFilter(kMouseDownMessage, this);
+    Manager::getDefault()->removeMessageFilter(kDoubleClickMessage, this);
+  }
 }
 
 void MenuBox::cancelMenuLoop()

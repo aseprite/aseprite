@@ -29,7 +29,7 @@ namespace ui {
 using namespace gfx;
 
 IntEntry::IntEntry(int min, int max, SliderDelegate* sliderDelegate)
-  : Entry(int(std::ceil(std::log10((double)max)))+1, "")
+  : Entry(int(std::floor(std::log10(double(max))))+1, "")
   , m_min(min)
   , m_max(max)
   , m_slider(m_min, m_max, m_min, sliderDelegate)

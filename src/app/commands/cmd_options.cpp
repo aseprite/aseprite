@@ -196,6 +196,8 @@ public:
       gpuAcceleration()->setVisible(false);
     }
 
+    showHome()->setSelected(m_pref.general.showHome());
+
     // Right-click
 
     static_assert(int(app::gen::RightClickMode::PAINT_BGCOLOR) == 0, "");
@@ -355,6 +357,10 @@ public:
       m_pref.general.gpuAcceleration(newGpuAccel);
       reset_screen = true;
     }
+
+    bool newShowHome = showHome()->isSelected();
+    if (newShowHome != m_pref.general.showHome())
+      m_pref.general.showHome(newShowHome);
 
     m_pref.save();
 

@@ -451,6 +451,8 @@ if(NOT USE_STATIC_LIBC)
 endif()
 
 set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
+set(UNDO_TESTS     ${ENABLE_TESTS} CACHE BOOL "Enable undo tests")
+
 add_subdirectory(laf)
 
 add_subdirectory(src)

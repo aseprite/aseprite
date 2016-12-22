@@ -1671,7 +1671,8 @@ static Widget* next_widget(Widget* widget)
   if (!widget->children().empty())
     return UI_FIRST_WIDGET(widget->children());
 
-  while (widget->parent()->type() != kManagerWidget) {
+  while (widget->parent() &&
+         widget->parent()->type() != kManagerWidget) {
     WidgetsList::const_iterator begin = widget->parent()->children().begin();
     WidgetsList::const_iterator end = widget->parent()->children().end();
     WidgetsList::const_iterator it = std::find(begin, end, widget);

@@ -447,8 +447,12 @@ private:
         Label* label;
 
         if (word.size() > 4 &&
-            std::strncmp(word.c_str(), "http", 4) == 0)
+            std::strncmp(word.c_str(), "http", 4) == 0) {
           label = new LinkLabel(word);
+          label->setProperty(
+            SkinStylePropertyPtr(
+              new SkinStyleProperty(SkinTheme::instance()->styles.browserLink())));
+        }
         else
           label = new Label(word);
 
@@ -474,6 +478,9 @@ private:
 
   void addLink(const std::string& url, const std::string& text) {
     auto label = new LinkLabel(url, text);
+    label->setProperty(
+      SkinStylePropertyPtr(
+        new SkinStyleProperty(SkinTheme::instance()->styles.browserLink())));
 
     if (url.find(':') == std::string::npos) {
       label->setUrl("");
