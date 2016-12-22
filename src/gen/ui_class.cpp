@@ -80,7 +80,9 @@ static std::string convert_type(const std::string& name)
   throw base::Exception("unknown widget name: " + name);
 }
 
-void gen_ui_class(TiXmlDocument* doc, const std::string& inputFn, const std::string& widgetId)
+void gen_ui_class(TiXmlDocument* doc,
+                  const std::string& inputFn,
+                  const std::string& widgetId)
 {
   std::cout
     << "// Don't modify, generated file from " << inputFn << "\n"
@@ -133,9 +135,8 @@ void gen_ui_class(TiXmlDocument* doc, const std::string& inputFn, const std::str
     << "      app::load_widget(\"" << base::get_file_name(inputFn) << "\", \"" << widgetId << "\", this);\n"
     << "      app::finder(this)\n";
 
-  for (XmlElements::iterator it=widgets.begin(), end=widgets.end();
-       it != end; ++it) {
-    const char* id = (*it)->Attribute("id");
+  for (TiXmlElement* elem : widgets) {
+    const char* id = elem->Attribute("id");
     std::string cppid = convert_xmlid_to_cppid(id, false);
     std::cout
       << "        >> \"" << id << "\" >> m_" << cppid << "\n";
@@ -146,10 +147,9 @@ void gen_ui_class(TiXmlDocument* doc, const std::string& inputFn, const std::str
     << "    }\n"
     << "\n";
 
-  for (XmlElements::iterator it=widgets.begin(), end=widgets.end();
-       it != end; ++it) {
-    std::string childType = convert_type((*it)->Value());
-    const char* id = (*it)->Attribute("id");
+  for (TiXmlElement* elem : widgets) {
+    std::string childType = convert_type(elem->Value());
+    const char* id = elem->Attribute("id");
     std::string cppid = convert_xmlid_to_cppid(id, false);
     std::cout
       << "    " << childType << "* " << cppid << "() const { return m_" << cppid << "; }\n";
@@ -159,10 +159,9 @@ void gen_ui_class(TiXmlDocument* doc, const std::string& inputFn, const std::str
     << "\n"
     << "  private:\n";
 
-  for (XmlElements::iterator it=widgets.begin(), end=widgets.end();
-       it != end; ++it) {
-    std::string childType = convert_type((*it)->Value());
-    const char* id = (*it)->Attribute("id");
+  for (TiXmlElement* elem : widgets) {
+    std::string childType = convert_type(elem->Value());
+    const char* id = elem->Attribute("id");
     std::string cppid = convert_xmlid_to_cppid(id, false);
     std::cout
       << "    " << childType << "* m_" << cppid << ";\n";
