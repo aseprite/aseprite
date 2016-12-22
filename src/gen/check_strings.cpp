@@ -65,6 +65,26 @@ static bool has_alpha_char(const char* p)
   return false;
 }
 
+static bool is_email(const char* p)
+{
+  if (!*p || !std::isalpha(*p))
+    return false;
+  ++p;
+
+  while (*p && (std::isalpha(*p) || *p == '.'))
+    ++p;
+
+  if (*p != '@')
+    return false;
+  ++p;
+
+  while (*p && (std::isalpha(*p) || *p == '.'))
+    ++p;
+
+  // Return true if we are in the end of string
+  return (*p == 0);
+}
+
 class CheckStrings {
 public:
 
@@ -136,7 +156,8 @@ public:
         }
       }
     }
-    else if (has_alpha_char(text)) {
+    else if (has_alpha_char(text) &&
+             !is_email(text)) {
       std::cerr << elem->GetDocument()->Value() << ":"
                 << elem->Row() << ":"
                 << elem->Column() << ": "
