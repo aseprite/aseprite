@@ -8,9 +8,11 @@
 #include "base/fs.h"
 #include "base/program_options.h"
 #include "base/string.h"
+#include "gen/check_strings.h"
 #include "gen/pref_types.h"
 #include "gen/skin_class.h"
 #include "gen/ui_class.h"
+#include "gen/check_strings.h"
 #include "tinyxml.h"
 
 #include <iostream>
@@ -25,10 +27,12 @@ static void run(int argc, const char* argv[])
   PO::Option& prefH = po.add("pref-h");
   PO::Option& prefCpp = po.add("pref-cpp");
   PO::Option& skin = po.add("skin");
+  PO::Option& widgetsDir = po.add("widgets-dir").requiresValue("<dir>");
+  PO::Option& stringsDir = po.add("strings-dir").requiresValue("<dir>");
   po.parse(argc, argv);
 
   // Try to load the XML file
-  TiXmlDocument* doc = NULL;
+  TiXmlDocument* doc = nullptr;
 
   std::string inputFilename = po.value_of(inputOpt);
   if (!inputFilename.empty()) {
@@ -55,6 +59,11 @@ static void run(int argc, const char* argv[])
       gen_pref_impl(doc, inputFilename);
     else if (po.enabled(skin))
       gen_skin_class(doc, inputFilename);
+  }
+  else if (po.enabled(widgetsDir) &&
+           po.enabled(stringsDir)) {
+    check_strings(po.value_of(widgetsDir),
+                  po.value_of(stringsDir));
   }
 }
 

@@ -53,6 +53,16 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
+# Check translations
+file(GLOB string_files ${CMAKE_SOURCE_DIR}/data/strings/*.ini)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/check-translations.txt)
+add_custom_command(
+  OUTPUT ${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --widgets-dir "${CMAKE_SOURCE_DIR}/data/widgets/" --strings-dir "${CMAKE_SOURCE_DIR}/data/strings/" >${output_fn}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  DEPENDS gen ${widget_files} ${string_files})
+list(APPEND generated_files ${output_fn})
+
 # Directory where generated files by "gen" utility will stay.
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
