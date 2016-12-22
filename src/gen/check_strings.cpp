@@ -17,9 +17,10 @@
 
 #include "tinyxml.h"
 
-#include <iostream>
-#include <vector>
 #include <cctype>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
 
 typedef std::vector<TiXmlElement*> XmlElements;
 
