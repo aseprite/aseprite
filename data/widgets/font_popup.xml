@@ -1,12 +1,12 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2015 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2015-2016 by David Capello -->
 <gui>
   <vbox id="font_popup">
-    <label text="Available Fonts:" />
+    <label text="@.available_fonts" />
     <view id="view" expansive="true" />
     <hbox>
       <boxfiller />
-      <button id="load_font" text="Load" magnet="true" width="80" />
+      <button id="load_font" text="@.load" magnet="true" width="80" />
     </hbox>
   </vbox>
 </gui>

@@ -1,19 +1,19 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014, 2015 by David Capello -->
+<!-- Copyright (C) 2014-2016 by David Capello -->
 <gui>
-<window text="GIF Options" id="gif_options">
+<window id="gif_options" text="@gif_options.title">
   <vbox>
-    <separator text="General Options:" left="true" horizontal="true" />
-    <check text="&amp;Interlaced" id="interlaced" />
-    <check text="Animation &amp;Loop" id="loop" />
+    <separator text="@gif_options.general_options" left="true" horizontal="true" />
+    <check text="@gif_options.interlaced" id="interlaced" />
+    <check text="@gif_options.animation_loop" id="loop" />
 
     <separator horizontal="true" />
 
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
-        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-        <button text="&amp;Cancel" closewindow="true" />
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
       </hbox>
     </hbox>
   </vbox>

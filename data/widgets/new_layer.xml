@@ -1,19 +1,19 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window text="New Layer" id="new_layer">
+  <window id="new_layer" text="@.title">
     <box vertical="true">
       <box horizontal="true">
 	<box vertical="true" homogeneous="true">
-          <label text="Name:" />
+          <label text="@.name" />
 	</box>
 	<box vertical="true" homogeneous="true">
-          <entry maxsize="256" text="New Layer" id="name" magnet="true" />
+          <entry maxsize="256" text="@.default_new_layer_name" id="name" magnet="true" />
 	</box>
       </box>
       <box horizontal="true" homogeneous="true">
-	<button text="&amp;OK" closewindow="true" id="ok" magnet="true" />
-	<button text="&amp;Cancel" closewindow="true" />
+	<button text="@general.ok" closewindow="true" id="ok" magnet="true" />
+	<button text="@general.cancel" closewindow="true" />
       </box>
     </box>
   </window>

@@ -1,9 +1,9 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2016 by David Capello -->
 <gui>
 <vbox id="file_selector_extras">
   <grid columns="2">
-    <label id="resize_label" text="Resize:" />
+    <label id="resize_label" text="@.resize" />
     <combobox id="resize" cell_align="horizontal">
       <listitem text="25%" value="0.25" />
       <listitem text="50%" value="0.5" />
@@ -19,10 +19,10 @@
       <listitem text="1000%" value="10" />
     </combobox>
 
-    <label id="layers_label" text="Layers:" />
+    <label id="layers_label" text="@.layers" />
     <combobox id="layers" text="" cell_align="horizontal" />
 
-    <label id="frames_label" text="Frames:" />
+    <label id="frames_label" text="@.frames" />
     <combobox id="frames" text="" cell_align="horizontal" />
   </grid>
 </vbox>

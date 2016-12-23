@@ -1,36 +1,36 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="options" text="Preferences">
+  <window id="options" text="@.title">
   <vbox>
     <hbox expansive="true">
       <view maxsize="true">
         <listbox id="section_listbox">
-          <listitem text="General" value="section_general" />
-          <listitem text="Editor" value="section_editor" />
-          <listitem text="Timeline" value="section_timeline" />
-          <listitem text="Cursors" value="section_cursors" />
-          <listitem text="Background" value="section_bg" />
-          <listitem text="Grid" value="section_grid" />
-          <listitem text="Undo" value="section_undo" />
-          <listitem text="Theme" value="section_theme" />
-          <listitem text="Experimental" value="section_experimental" />
+          <listitem text="@.section_general" value="section_general" />
+          <listitem text="@.section_editor" value="section_editor" />
+          <listitem text="@.section_timeline" value="section_timeline" />
+          <listitem text="@.section_cursors" value="section_cursors" />
+          <listitem text="@.section_background" value="section_bg" />
+          <listitem text="@.section_grid" value="section_grid" />
+          <listitem text="@.section_undo" value="section_undo" />
+          <listitem text="@.section_theme" value="section_theme" />
+          <listitem text="@.section_experimental" value="section_experimental" />
         </listbox>
       </view>
 
       <panel id="panel" expansive="true">
         <vbox id="section_general">
-          <separator text="General" horizontal="true" />
+          <separator text="@.section_general" horizontal="true" />
           <hbox>
             <grid columns="2">
-              <label text="Screen Scaling:" />
+              <label text="@.screen_scaling" />
               <combobox id="screen_scale">
                 <listitem text="100%" value="1" />
                 <listitem text="200%" value="2" />
                 <listitem text="300%" value="3" />
                 <listitem text="400%" value="4" />
               </combobox>
-              <label text="UI Elements Scaling:" />
+              <label text="@.ui_scaling" />
               <combobox id="ui_scale">
                 <listitem text="100%" value="1" />
                 <listitem text="200%" value="2" />
@@ -39,63 +39,71 @@
               </combobox>
             </grid>
           </hbox>
-          <check text="GPU acceleration" id="gpu_acceleration" tooltip="Check this option to enable hardware acceleration" />
-          <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
+          <check id="gpu_acceleration"
+                 text="@.gpu_acceleration"
+                 tooltip="@.gpu_acceleration_tooltip" />
+          <check id="expand_menubar_on_mouseover"
+                 text="@.expand_menu_bar_items_on_mouseover"
+                 tooltip="@.expand_menu_bar_items_on_mouseover" />
           <hbox>
-            <check text="Automatically save recovery data every" id="enable_data_recovery" tooltip="With this option you can recover your documents&#10;if the program finalizes unexpectedly." />
+            <check id="enable_data_recovery"
+                   text="@.auto_save_recovery_data"
+                   tooltip="@.auto_save_recovery_data_tooltip" />
             <combobox id="data_recovery_period">
-              <listitem text="10 seconds" value="0.33" />
-              <listitem text="30 seconds" value="0.5" />
-              <listitem text="1 Minutes" value="1" />
-              <listitem text="2 Minutes" value="2" />
-              <listitem text="5 Minutes" value="5" />
-              <listitem text="10 Minutes" value="10" />
-              <listitem text="15 Minutes" value="15" />
-              <listitem text="30 Minutes" value="30" />
+              <listitem text="@.10_seconds" value="0.33" />
+              <listitem text="@.30_seconds" value="0.5" />
+              <listitem text="@.1_minute" value="1" />
+              <listitem text="@.2_minutes" value="2" />
+              <listitem text="@.5_minutes" value="5" />
+              <listitem text="@.10_minutes" value="10" />
+              <listitem text="@.15_minutes" value="15" />
+              <listitem text="@.30_minutes" value="30" />
             </combobox>
           </hbox>
-          <check text="Show full file name path" id="show_full_path" tooltip="Uncheck this option if you would prefer to hide&#10;full path on UI (e.g. useful for live streaming)" />
+          <check id="show_full_path"
+		 text="@.show_full_path"
+		 tooltip="@.show_full_path_tooltip" />
           <separator horizontal="true" />
-          <link id="locate_file" text="Locate Configuration File" />
-          <link id="locate_crash_folder" text="Locate Crash Folder" />
+          <link id="locate_file" text="@.locate_file" />
+          <link id="locate_crash_folder" text="@.locate_crash_folder" />
         </vbox>
 
         <!-- Editor -->
         <vbox id="section_editor">
-          <separator text="Editor" horizontal="true" />
-          <check text="Zoom with scroll wheel" id="wheel_zoom" />
-          <check text="Zoom sliding two fingers up or down" id="slide_zoom" />
-          <check text="Zoom from center with scroll wheel" id="zoom_from_center_with_wheel" />
-          <check text="Zoom from center with keys" id="zoom_from_center_with_keys" />
-          <check text="Show scroll-bars in sprite editor" id="show_scrollbars" tooltip="Show scroll-bars in all sprite editors." />
-          <check text="Auto-scroll on editor edges" id="auto_scroll" />
+          <separator text="@.section_editor" horizontal="true" />
+          <check text="@.wheel_zoom" id="wheel_zoom" />
+          <check text="@.slide_zoom" id="slide_zoom" />
+          <check text="@.zoom_from_center_with_wheel" id="zoom_from_center_with_wheel" />
+          <check text="@.zoom_from_center_with_keys" id="zoom_from_center_with_keys" />
+          <check text="@.show_scrollbars" id="show_scrollbars" tooltip="@.show_scrollbars_tooltip" />
+          <check text="@.auto_scroll" id="auto_scroll" />
           <hbox>
-            <label text="Right-click:" />
+            <label text="@.right_click" />
             <combobox id="right_click_behavior" expansive="true" />
           </hbox>
 
-          <separator text="Selection" horizontal="true" />
-          <check text="Adjust opaque/transparent mode automatically" id="auto_opaque" tooltip="Depending on the layer (background/transparent),&#10;the pasted selection will be adjusted&#10;automatically (opaque/transparent)" />
-          <check text="Keep selection after &quot;Edit &gt; Clear&quot; command" id="keep_selection_after_clear" tooltip="Check this if you want to keep the selection&#10;after deleting it." />
+          <separator text="@.editor_selection" horizontal="true" />
+          <check text="@.auto_opaque" id="auto_opaque" tooltip="@.auto_opaque_tooltip" />
+          <check text="@.keep_selection_after_clear" id="keep_selection_after_clear" tooltip="@.keep_selection_after_clear_tooltip" />
         </vbox>
 
         <!-- Timeline -->
         <vbox id="section_timeline">
-          <separator text="Timeline" horizontal="true" />
-          <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
-          <check text="Rewind on Stop" id="rewind_on_stop" tooltip="The 'Stop' button should rewind the animation&#10;where it was started." />
+          <separator text="@.section_timeline" horizontal="true" />
+          <check text="@.autotimeline" id="autotimeline" tooltip="@.autotimeline_tooltip" />
+          <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip" />
 	  <hbox>
-	    <label text="Default First Frame:" />
+	    <label text="@.default_first_frame" />
 	    <entry id="first_frame" maxsize="3" />
 	  </hbox>
 	</vbox>
 
         <!-- Cursors -->
         <vbox id="section_cursors">
-          <separator text="UI Mouse Cursor" horizontal="true" />
-          <check id="native_cursor" text="Use native mouse cursors" />
+          <separator text="@.ui_mouse_cursor" horizontal="true" />
+          <check id="native_cursor" text="@.native_cursor" />
           <hbox>
-            <label id="cursor_scale_label" text="Mouse Cursor Scale:" />
+            <label id="cursor_scale_label" text="@.cursor_scale_label" />
             <combobox id="cursor_scale">
               <listitem text="100%" value="1" />
               <listitem text="200%" value="2" />
@@ -104,26 +112,26 @@
             </combobox>
           </hbox>
 
-          <separator text="Painting Cursors" horizontal="true" />
+          <separator text="@.painting_cursors" horizontal="true" />
 
           <grid columns="2">
-            <label text="Crosshair Type:" />
+            <label text="@.crosshair_type" />
             <combobox id="painting_cursor_type">
-	      <listitem text="Simple Crosshair" value="0" />
-	      <listitem text="Crosshair on Sprite" value="1" />
+	      <listitem text="@.simple_crosshair" value="0" />
+	      <listitem text="@.crosshair_on_sprite" value="1" />
             </combobox>
 
-	    <label text="Brush Preview:" />
+	    <label text="@.brush_preview" />
             <combobox id="brush_preview">
-              <listitem text="None" value="0" />
-              <listitem text="Brush Edges" value="1" />
-              <listitem text="Full Real-time Brush Preview" value="2" />
+              <listitem text="@.brush_preview_none" value="0" />
+              <listitem text="@.brush_preview_edges" value="1" />
+              <listitem text="@.brush_preview_full" value="2" />
             </combobox>
 
-	    <label text="Crosshair &amp; Brush Edges Color:" />
+	    <label text="@.cursor_color_type" />
 	    <combobox group="1" id="cursor_color_type">
-	      <listitem text="Negative Black and White" value="0" />
-	      <listitem text="Specific Color" value="1" />
+	      <listitem text="@.cursor_neg_bw" value="0" />
+	      <listitem text="@.cursor_specific_color" value="1" />
 	    </combobox>
 
 	    <boxfiller />
@@ -135,15 +143,15 @@
         <vbox id="section_bg">
           <combobox id="bg_scope" />
 
-          <separator text="Checked Background" horizontal="true" />
+          <separator text="@.bg_checked" horizontal="true" />
           <grid columns="2">
-            <label text="Size:" />
+            <label text="@.bg_size" />
 	    <hbox>
               <combobox id="checked_bg_size" />
-              <check text="Apply Zoom" id="checked_bg_zoom" />
+              <check text="@.bg_apply_zoom" id="checked_bg_zoom" />
 	    </hbox>
 
-            <label text="Colors:" />
+            <label text="@.bg_colors" />
 	    <hbox>
               <box horizontal="true" id="checked_bg_color1_box" />
               <box horizontal="true" id="checked_bg_color2_box" />
@@ -152,7 +160,7 @@
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_bg" text="Reset" width="60" />
+            <button id="reset_bg" text="@.reset_bg" width="60" />
 	  </hbox>
         </vbox>
 
@@ -160,87 +168,90 @@
         <vbox id="section_grid">
           <combobox id="grid_scope" />
 	  <hbox>
-            <check id="grid_visible" text="Visible Grid" />
+            <check id="grid_visible" text="@.grid_visible" />
             <separator horizontal="true" expansive="true" />
 	  </hbox>
 
 	  <grid columns="5">
-	    <label text="X:" />
+	    <label text="@.grid_x" />
 	    <entry id="grid_x" text="" maxsize="4" />
-	    <label text="Y:" />
+	    <label text="@.grid_y" />
 	    <entry id="grid_y" text="" maxsize="4" />
 	    <hbox />
 
-	    <label text="Width:" />
+	    <label text="@.grid_width" />
 	    <entry id="grid_w" text="" maxsize="4" />
-	    <label text="Height:" />
+	    <label text="@.grid_height" />
 	    <entry id="grid_h" text="" maxsize="4" />
 	    <hbox />
 
-            <label text="Color:" />
+            <label text="@.grid_color" />
             <box id="grid_color_placeholder" cell_hspan="3" /><!-- custom widget -->
 	    <hbox />
 
-	    <label text="Opacity:" />
+	    <label text="@.grid_opacity" />
             <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
-            <check id="grid_auto_opacity" text="Auto" />
+            <check id="grid_auto_opacity" text="@.grid_auto" />
 	  </grid>
 
 	  <hbox>
-            <check id="pixel_grid_visible" text="Visible Pixel Grid" />
+            <check id="pixel_grid_visible" text="@.grid_pixel_grid_visible" />
             <separator horizontal="true" expansive="true" />
 	  </hbox>
           <grid columns="3">
-            <label text="Color:" />
+            <label text="@.grid_color" />
             <box id="pixel_grid_color_placeholder" /><!-- custom widget -->
 	    <hbox />
 
-	    <label text="Opacity:" />
+	    <label text="@.grid_opacity" />
             <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
-            <check id="pixel_grid_auto_opacity" text="Auto" />
+            <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
           </grid>
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_grid" text="Reset" width="60" />
+            <button id="reset_grid" text="@.reset_grid" width="60" />
 	  </hbox>
         </vbox>
 
         <!-- Undo -->
         <vbox id="section_undo">
-          <separator text="Undo" horizontal="true" />
+          <separator text="@.section_undo" horizontal="true" />
           <hbox>
-            <label text="Undo Limit:" />
-            <entry id="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used&#10;for undo information per sprite.&#10;Specified in megabytes." />
-            <label text="MB" />
+            <label text="@.undo_size_limit" />
+            <entry id="undo_size_limit" maxsize="4" tooltip="@.undo_size_limit_tooltip" />
+            <label text="@.undo_mb" />
           </hbox>
 
           <vbox>
-            <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
-            <check id="undo_allow_nonlinear_history" text="Allow non-linear history" />
+            <check id="undo_goto_modified"
+                   text="@.undo_goto_modified"
+                   tooltip="@.undo_goto_modified_tooltip" />
+            <check id="undo_allow_nonlinear_history"
+                   text="@.undo_allow_nonlinear_history" />
           </vbox>
         </vbox>
 
         <!-- Theme -->
         <vbox id="section_theme">
-          <separator text="Available Themes" horizontal="true" />
+          <separator text="@.available_themes" horizontal="true" />
           <view expansive="true" maxsize="true">
             <listbox id="theme_list" />
 	  </view>
           <hbox>
-	    <button id="select_theme" text="&amp;Select" width="60" />
+	    <button id="select_theme" text="@.select_theme" width="60" />
 	    <boxfiller />
-	    <button id="open_theme_folder" text="Open &amp;Folder" width="100" />
+	    <button id="open_theme_folder" text="@.open_theme_folder" width="100" />
           </hbox>
         </vbox>
 
         <!-- Experimental -->
         <vbox id="section_experimental">
-          <separator text="User Interface" horizontal="true" />
-          <check id="native_file_dialog" text="Use native file dialog" />
-          <check id="flash_layer" text="Flash layer when it is selected" />
+          <separator text="@.user_interface" horizontal="true" />
+          <check id="native_file_dialog" text="@.native_file_dialog" />
+          <check id="flash_layer" text="@.flash_selected_layer" />
 	  <hbox>
-            <label text="Opacity for non-active layers:" />
+            <label text="@.non_active_layer_opacity" />
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
           </hbox>
         </vbox>
@@ -251,9 +262,9 @@
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
-        <button text="&amp;OK" closewindow="true" id="button_ok" magnet="true" width="60" />
-        <button text="&amp;Apply" id="button_apply" />
-        <button text="&amp;Cancel" closewindow="true" />
+        <button text="@.ok" closewindow="true" id="button_ok" magnet="true" width="60" />
+        <button text="@.apply" id="button_apply" />
+        <button text="@.cancel" closewindow="true" />
       </hbox>
     </hbox>
   </vbox>

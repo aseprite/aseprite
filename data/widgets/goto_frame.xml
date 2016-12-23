@@ -1,17 +1,17 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Go to Frame" id="goto_frame">
+<window id="goto_frame" text="@.title">
   <grid columns="3">
-    <label text="Frame number:" />
+    <label text="@.frame_number" />
     <entry expansive="true" maxsize="4" id="frame" magnet="true" />
     <box cell_align="horizontal" />
 
     <separator horizontal="true" cell_hspan="3" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="&amp;Cancel" closewindow="true" />
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.cancel" closewindow="true" />
     </box>
   </grid>
 </window>

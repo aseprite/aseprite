@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Frame Properties" id="frame_properties">
+<window id="frame_properties" text="@.title">
   <grid columns="3">
-    <label text="Frame number:" />
+    <label text="@.frame_number" />
     <label text="" id="frame" />
     <box cell_align="horizontal" />
 
-    <label text="Duration (milliseconds):" />
+    <label text="@.duration" />
     <entry maxsize="10" id="frlen" magnet="true" />
     <box cell_align="horizontal" />
 
     <separator horizontal="true" cell_hspan="3" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="&amp;Cancel" closewindow="true" />
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.cancel" closewindow="true" />
     </box>
   </grid>
 </window>

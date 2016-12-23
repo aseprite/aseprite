@@ -1,33 +1,33 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2015-2016 by David Capello -->
 <gui>
   <vbox id="brush_slot_params">
     <grid columns="2">
 
-      <label text="Brush:" />
+      <label text="@.brush" />
       <buttonset id="brush_params" columns="3" multiple="true">
-        <item id="brush_type" text="Type" />
-        <item id="brush_size" text="Size" />
-        <item id="brush_angle" text="Angle" />
+        <item id="brush_type" text="@.brush_type" />
+        <item id="brush_size" text="@.brush_size" />
+        <item id="brush_angle" text="@.brush_angle" />
       </buttonset>
 
-      <label text="Color:" />
+      <label text="@.color" />
       <buttonset id="color_params" columns="2" multiple="true">
-        <item id="fg_color" text="Foreground" />
-        <item id="bg_color" text="Background" />
-        <item id="image_color" text="Image Color" hspan="2" />
+        <item id="fg_color" text="@.foreground" />
+        <item id="bg_color" text="@.background" />
+        <item id="image_color" text="@.image_color" hspan="2" />
       </buttonset>
 
-      <label text="Ink:" />
+      <label text="@.ink" />
       <buttonset id="ink_params" columns="2" multiple="true">
-        <item id="ink_type" text="Type" />
-        <item id="ink_opacity" text="Opacity" />
+        <item id="ink_type" text="@.ink_type" />
+        <item id="ink_opacity" text="@.ink_opacity" />
       </buttonset>
 
-      <label text="Extras:" />
+      <label text="@.extras" />
       <buttonset id="extra_params" columns="2" multiple="true">
-        <item id="shade" text="Shade" />
-        <item id="pixel_perfect" text="Pixel-Perfect" />
+        <item id="shade" text="@.shade" />
+        <item id="pixel_perfect" text="@.pixel_perfect" />
       </buttonset>
 
     </grid>

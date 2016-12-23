@@ -1,45 +1,46 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2015 by Gabriel Rauter -->
+<!-- Copyright (C) 2016 by David Capello -->
 <gui>
-<window text="WebP Options" id="webp_options">
+<window id="webp_options" text="@.title">
   <vbox>
-    <label text="Save as:" />
-    <radio group="1" text="Lossless WebP" id="lossless" tooltip="Save in simple WebP lossless format." />
+    <label text="@.save_as" />
+    <radio group="1" text="@.lossless_webp" id="lossless" tooltip="@.lossless_webp_tooltip" />
     <hbox>
-      <label width="55" text="Compression:" />
+      <label width="55" text="@.compression" />
       <slider min="0" max="9" id="compression" cell_align="horizontal" width="128" />
     </hbox>
     <hbox>
-      <label width="55" text="Image Hint:" />
+      <label width="55" text="@.image_hint" />
       <combobox width="128" id="image_hint">
-        <listitem text="Default" value="0" />
-        <listitem text="Picture" value="1" />
-        <listitem text="Photo" value="2" />
-        <listitem text="Graph" value="3" />
+        <listitem text="@.image_hint_default" value="0" />
+        <listitem text="@.image_hint_picture" value="1" />
+        <listitem text="@.image_hint_photo" value="2" />
+        <listitem text="@.image_hint_graph" value="3" />
       </combobox>
     </hbox>
     <separator horizontal="true" />
-    <radio group="1" text="Lossy WebP" id="lossy" tooltip="Save in simple WebP lossy format." />
+    <radio group="1" text="@.lossy_webp" id="lossy" tooltip="@.lossy_webp_tooltip" />
     <hbox>
-      <label width="55" text="Quality:" />
+      <label width="55" text="@.quality" />
       <slider min="0" max="100" id="quality" cell_align="horizontal" width="128" />
     </hbox>
     <hbox>
-      <label width="55" text="Image Preset:" />
+      <label width="55" text="@.image_preset" />
       <combobox width="128" id="image_preset">
-        <listitem text="Default" value="0" />
-        <listitem text="Picture" value="1" />
-        <listitem text="Photo" value="2" />
-        <listitem text="Drawing" value="3" />
-        <listitem text="Icon" value="4" />
-        <listitem text="Text" value="5" />
+        <listitem text="@.image_preset_default" value="0" />
+        <listitem text="@.image_preset_picture" value="1" />
+        <listitem text="@.image_preset_photo" value="2" />
+        <listitem text="@.image_preset_drawing" value="3" />
+        <listitem text="@.image_preset_icon" value="4" />
+        <listitem text="@.image_preset_text" value="5" />
       </combobox>
     </hbox>
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
-        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-        <button text="&amp;Cancel" closewindow="true" />
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
       </hbox>
     </hbox>
   </vbox>

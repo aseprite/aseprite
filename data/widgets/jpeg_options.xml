@@ -1,16 +1,16 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="JPEG Options" id="jpeg_options">
+<window id="jpeg_options" text="@.title">
   <grid columns="2">
-    <label text="Quality:" />
+    <label text="@.quality" />
     <slider min="0" max="10" id="quality" cell_align="horizontal" width="128" />
 
     <separator horizontal="true" cell_hspan="2" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="&amp;Cancel" closewindow="true" />
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.cancel" closewindow="true" />
     </box>
   </grid>
 </window>

@@ -1,12 +1,12 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <box vertical="true" id="controls" expansive="true">
     <view expansive="true" id="view" minwidth="128" minheight="64">
       <listbox id="stock" />
     </view>
     <box horizontal="true">
-      <button text="&amp;Reload Stock" id="reload" />
+      <button text="@convolution_matrix.reload_stock" id="reload" />
     </box>
   </box>
 </gui>

@@ -1,13 +1,13 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Warning - Important" id="advanced_mode">
+<window text="@.title" id="advanced_mode">
   <grid columns="1">
-    <label text="You are going to enter in &quot;Advanced Mode&quot;." />
+    <label text="@.description" />
     <label text="" id="warning_label" />
-    <check text="Don't show this again" id="donot_show" />
+    <check text="@.dont_show_again" id="donot_show" />
     <separator horizontal="true" />
-    <button text="&amp;OK" closewindow="true" magnet="true" minwidth="60" cell_align="center" />
+    <button text="@general.ok" closewindow="true" magnet="true" minwidth="60" cell_align="center" />
   </grid>
 </window>
 </gui>

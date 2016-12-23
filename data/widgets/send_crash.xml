@@ -1,27 +1,27 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014, 2016 by David Capello -->
+<!-- Copyright (C) 2014-2016 by David Capello -->
 <gui>
-<window text="Crash Report" id="send_crash">
+<window id="send_crash" text="@.title">
   <vbox>
 
     <vbox id="official">
-      <label text="Please send the following file:" />
+      <label text="@.send_file" />
       <link id="filename" text="" url="" />
-      <label text="to this email:" />
+      <label text="@.to_email" />
       <entry readonly="true" text="support@aseprite.org" maxsize="256" />
-      <label text="explaining what you was doing when the program crashed." />
+      <label text="@.explaining" />
     </vbox>
 
     <vbox id="dev">
-      <label text="You are using a development version." />
-      <label text="Open the following file to debug your compilation:" />
+      <label text="@.using_dev_ver" />
+      <label text="@.open_dmp_file" />
       <link id="dev_filename" text="" url="" />
     </vbox>
 
     <separator horizontal="true" />
 
-    <button text="Do it later" closewindow="true" />
-    <button id="delete_file" text="Delete file, I've already sent it" closewindow="true" />
+    <button text="@.do_it_later" closewindow="true" />
+    <button text="@.delete_file" closewindow="true" id="delete_file" />
   </vbox>
 </window>
 </gui>

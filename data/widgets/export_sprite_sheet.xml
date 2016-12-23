@@ -1,70 +1,70 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="export_sprite_sheet" text="Export Sprite Sheet">
+  <window id="export_sprite_sheet" text="@.title">
   <grid columns="4">
-    <label text="Sheet Type:" />
+    <label text="@.sheet_type" />
     <combobox id="sheet_type" cell_hspan="3" />
 
-    <label id="columns_label" text="# of Columns:" />
+    <label id="columns_label" text="@.columns" />
     <entry id="columns" text="" maxsize="4" />
     <boxfiller cell_hspan="2" />
 
-    <label id="rows_label" text="# of Rows:" />
+    <label id="rows_label" text="@.rows" />
     <entry id="rows" text="" maxsize="4" />
     <boxfiller cell_hspan="2" />
 
     <hbox />
     <vbox>
-      <check id="padding_enabled" text="Padding" />
+      <check id="padding_enabled" text="@.padding" />
     </vbox>
     <grid columns="2" id="padding_container" cell_hspan="2">
-      <label text="Border:" />
+      <label text="@.border" />
       <entry id="border_padding" text="0" maxsize="4" />
-      <label text="Shape:" />
+      <label text="@.shape" />
       <entry id="shape_padding" text="0" maxsize="4" />
-      <label text="Inner:" />
+      <label text="@.inner" />
       <entry id="inner_padding" text="0" maxsize="4" />
     </grid>
 
-    <label id="fit_width_label" text="Width:" />
+    <label id="fit_width_label" text="@.width" />
     <combobox id="fit_width" text="" maxsize="5" editable="true" />
-    <label id="fit_height_label" text="Height:" />
+    <label id="fit_height_label" text="@.height" />
     <combobox id="fit_height" text="" maxsize="5" editable="true" />
 
     <hbox id="best_fit_filler" />
-    <check cell_hspan="3" id="best_fit" text="Best fit for texture" />
+    <check cell_hspan="3" id="best_fit" text="@.best_fit" />
 
-    <label text="Layers:" />
+    <label text="@.layers" />
     <combobox id="layers" text="" cell_hspan="3" />
 
-    <label text="Frames:" />
+    <label text="@.frames" />
     <combobox id="frames" text="" cell_hspan="3" />
 
-    <check id="image_enabled" text="Output File" />
+    <check id="image_enabled" text="@.output_file" />
     <button id="image_filename" cell_hspan="3" />
 
-    <check id="data_enabled" text="JSON Data" />
+    <check id="data_enabled" text="@.json_data" />
     <button id="data_filename" cell_hspan="3" />
 
     <hbox />
     <hbox id="data_meta" cell_hspan="3">
       <combobox id="data_format">
-        <listitem text="Hash" value="0" />
-        <listitem text="Array" value="1" />
+        <listitem text="@.json_data_hash" value="0" />
+        <listitem text="@.json_data_array" value="1" />
       </combobox>
-      <label text="Meta:" />
-      <check id="list_layers" text="Layers" />
-      <check id="list_tags" text="Frame Tags" />
+      <label text="@.meta" />
+      <check id="list_layers" text="@.meta_layers" />
+      <check id="list_tags" text="@.meta_frame_tags" />
     </hbox>
 
-    <check id="open_generated" text="Open generated sprite sheet" cell_hspan="4" />
+    <check id="open_generated" text="@.open_sprite_sheet" cell_hspan="4" />
 
     <hbox cell_hspan="4">
       <boxfiller />
       <hbox homogeneous="true">
-        <button id="export_button" text="&amp;Export" minwidth="60" magnet="true" />
-        <button text="&amp;Cancel" minwidth="60" closewindow="true" />
+        <button text="@.export" minwidth="60" id="export_button" magnet="true" />
+        <button text="@.cancel" minwidth="60" closewindow="true" />
       </hbox>
     </hbox>
   </grid>
