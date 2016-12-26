@@ -418,21 +418,38 @@ void composite_image_general(
   gfx::RectF srcBounds = area.srcBounds();
 
   int dstY = dstBounds.y;
+  double srcXStart = srcBounds.x / sx;
+  double srcXDelta = 1.0 / sx;
+  int srcWidth = src->width();
   for (int y=0; y<dstBounds.h; ++y, ++dstY) {
-    int srcY = (srcBounds.y+y)/sy;
-    double srcX = srcBounds.x/sx;
-    double srcXDelta = 1.0/sx;
+    int srcY = (srcBounds.y+y) / sy;
+    double srcX = srcXStart;
     int oldSrcX;
+
+    ASSERT(srcY >= 0 && srcY < src->height());
 
     auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
     auto srcPtr = get_pixel_address_fast<SrcTraits>(src, int(srcX), srcY);
 
+#if _DEBUG
+    int dstX = dstBounds.x;
+#endif
+
     for (int x=0; x<dstBounds.w; ++x, ++dstPtr) {
+      ASSERT(dstX >= 0 && dstX < dst->width());
+      ASSERT(srcX >= 0 && srcX < src->width());
+
       *dstPtr = blender(*dstPtr, *srcPtr, opacity);
 
-      oldSrcX = srcX;
+      oldSrcX = int(srcX);
       srcX += srcXDelta;
+      if (srcX >= srcWidth)
+        break;
       srcPtr += (int(srcX) - oldSrcX);
+
+#if _DEBUG
+      ++dstX;
+#endif
     }
   }
 }
