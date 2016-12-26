@@ -41,6 +41,16 @@ void MoveLayer::onExecute()
   ASSERT(oldParent);
   ASSERT(newParent);
 
+#if _DEBUG // Check that we are not inserting a layer inside itself
+  {
+    Layer* p = newParent;
+    while (p) {
+      ASSERT(p != layer);
+      p = p->parent();
+    }
+  }
+#endif
+
   oldParent->removeLayer(layer);
   newParent->insertLayer(layer, afterThis);
 
@@ -59,6 +69,16 @@ void MoveLayer::onUndo()
   ASSERT(layer);
   ASSERT(oldParent);
   ASSERT(newParent);
+
+#if _DEBUG // Check that we are not inserting a layer inside itself
+  {
+    Layer* p = newParent;
+    while (p) {
+      ASSERT(p != layer);
+      p = p->parent();
+    }
+  }
+#endif
 
   newParent->removeLayer(layer);
   oldParent->insertLayer(layer, afterThis);

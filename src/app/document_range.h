@@ -48,6 +48,7 @@ namespace app {
     void startRange(Layer* fromLayer, frame_t fromFrame, Type type);
     void endRange(Layer* toLayer, frame_t toFrame);
 
+    void selectLayer(Layer* layer);
     void selectLayers(const SelectedLayers& selLayers);
 
     frame_t firstFrame() const { return m_selectedFrames.firstFrame(); }

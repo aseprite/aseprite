@@ -65,8 +65,19 @@ void DocumentRange::endRange(Layer* toLayer, frame_t toFrame)
     selectFrameRange(m_selectingFromFrame, toFrame);
 }
 
+void DocumentRange::selectLayer(Layer* layer)
+{
+  if (m_type == kNone)
+    m_type = kLayers;
+
+  m_selectedLayers.insert(layer);
+}
+
 void DocumentRange::selectLayers(const SelectedLayers& selLayers)
 {
+  if (m_type == kNone)
+    m_type = kLayers;
+
   for (auto layer : selLayers)
     m_selectedLayers.insert(layer);
 }

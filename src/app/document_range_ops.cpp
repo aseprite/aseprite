@@ -166,6 +166,18 @@ static DocumentRange move_or_copy_frames(
   return result;
 }
 
+static bool has_child(LayerGroup* parent, Layer* child)
+{
+  for (auto c : parent->layers()) {
+    if (c == child)
+      return true;
+    else if (c->isGroup() &&
+             has_child(static_cast<LayerGroup*>(c), child))
+      return true;
+  }
+  return false;
+}
+
 static DocumentRange drop_range_op(
   Document* doc, Op op, const DocumentRange& from,
   DocumentRangePlace place, DocumentRange to)
@@ -185,6 +197,14 @@ static DocumentRange drop_range_op(
     }
     else {
       parent = (*to.selectedLayers().begin())->parent();
+    }
+
+    // Check that we're not moving a group inside itself
+    for (auto moveThis : from.selectedLayers()) {
+      if (moveThis == parent ||
+          (moveThis->isGroup() &&
+           has_child(static_cast<LayerGroup*>(moveThis), parent)))
+        return from;
     }
   }
 

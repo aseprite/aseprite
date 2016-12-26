@@ -1147,3 +1147,140 @@ TEST_F(DocRangeOps, ReverseFrames) {
 TEST_F(DocRangeOps, ReverseCels) {
   // TODO
 }
+
+// TODO this should be a TEST(), but Google Test doesn't allow to mix
+// a TEST() and TEST_F() in the same file.
+TEST_F(DocRangeOps, DropInsideBugs) {
+  doc->close();
+  doc.reset(static_cast<app::Document*>(ctx.documents().add(4, 4)));
+  auto sprite = doc->sprite();
+  auto layer1 = dynamic_cast<LayerImage*>(sprite->root()->firstLayer());
+  auto layer2 = new LayerGroup(sprite);
+  auto layer3 = new LayerGroup(sprite);
+  auto layer4 = new LayerGroup(sprite);
+  sprite->root()->addLayer(layer2);
+  sprite->root()->addLayer(layer3);
+  sprite->root()->addLayer(layer4);
+
+  EXPECT_EQ(layer1, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer2, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, sprite->root()->layers()[2]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[3]);
+
+  // layer4     layer4
+  // layer3 -->   layer1
+  // layer2     layer3
+  // layer1     layer2
+  DocumentRange from, to;
+  from.selectLayer(layer1);
+  to.selectLayer(layer4);
+  move_range(doc, from, to, kDocumentRangeFirstChild);
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer3, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[2]);
+  EXPECT_EQ(layer1, layer4->layers()[0]);
+
+  // layer4       layer4
+  //   layer1 -->   layer1
+  // layer3         layer3
+  // layer2       layer2
+  from.clearRange(); from.selectLayer(layer3);
+  to.clearRange(); to.selectLayer(layer1);
+  move_range(doc, from, to, kDocumentRangeBefore);
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer4->layers()[1]);
+
+  // layer4       layer4
+  //   layer1 -->   layer3
+  //   layer3         layer1
+  // layer2       layer2
+  from.clearRange(); from.selectLayer(layer1);
+  to.clearRange(); to.selectLayer(layer3);
+  move_range(doc, from, to, kDocumentRangeFirstChild);
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer3->layers()[0]);
+
+  // move layer4 as first child of layer4 (invalid operation)
+  from.clearRange(); from.selectLayer(layer4);
+  to.clearRange(); to.selectLayer(layer4);
+  move_range(doc, from, to, kDocumentRangeFirstChild);
+  // Everything is exactly the same (no new undo operation)
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer3->layers()[0]);
+
+  // move layer4 as first child of layer3 (invalid operation)
+  from.clearRange(); from.selectLayer(layer4);
+  to.clearRange(); to.selectLayer(layer3);
+  move_range(doc, from, to, kDocumentRangeFirstChild);
+  // Everything is exactly the same (no new undo operation)
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer3->layers()[0]);
+
+  // move layer4 after layer1 (invalid operation)
+  from.clearRange(); from.selectLayer(layer4);
+  to.clearRange(); to.selectLayer(layer1);
+  move_range(doc, from, to, kDocumentRangeAfter);
+  // Everything is exactly the same (no new undo operation)
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer3->layers()[0]);
+
+  // move layer4 after layer1 (invalid operation)
+  from.clearRange(); from.selectLayer(layer4);
+  to.clearRange(); to.selectLayer(layer1);
+  move_range(doc, from, to, kDocumentRangeBefore);
+  // Everything is exactly the same (no new undo operation)
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer3->layers()[0]);
+
+  // move layer2 inside layer2 (invalid operation)
+  from.clearRange(); from.selectLayer(layer2);
+  to.clearRange(); to.selectLayer(layer2);
+  move_range(doc, from, to, kDocumentRangeFirstChild);
+  // Everything is exactly the same (no new undo operation)
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer3->layers()[0]);
+
+  // layer4       layer4
+  //   layer1 <--   layer3
+  //   layer3         layer1
+  // layer2       layer2
+  doc->undoHistory()->undo();
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, layer4->layers()[0]);
+  EXPECT_EQ(layer1, layer4->layers()[1]);
+
+  // layer4        layer4
+  //   layer1 <--    layer1
+  // layer3          layer3
+  // layer2        layer2
+  doc->undoHistory()->undo();
+  EXPECT_EQ(layer2, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer3, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[2]);
+  EXPECT_EQ(layer1, layer4->layers()[0]);
+
+  // layer4     layer4
+  // layer3 <--   layer1
+  // layer2     layer3
+  // layer1     layer2
+  doc->undoHistory()->undo();
+  EXPECT_EQ(layer1, sprite->root()->layers()[0]);
+  EXPECT_EQ(layer2, sprite->root()->layers()[1]);
+  EXPECT_EQ(layer3, sprite->root()->layers()[2]);
+  EXPECT_EQ(layer4, sprite->root()->layers()[3]);
+}
