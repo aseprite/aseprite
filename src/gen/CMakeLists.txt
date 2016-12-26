@@ -6,6 +6,7 @@ add_executable(gen
   gen.cpp
   pref_types.cpp
   skin_class.cpp
+  strings_class.cpp
   ui_class.cpp)
 
 if(MSVC)

@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "strings.ini.h"
+
 namespace app {
 
   // Singleton class to load and access "strings/english.txt" file.

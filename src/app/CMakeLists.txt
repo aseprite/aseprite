@@ -41,7 +41,7 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
-# Generate generated_skin.h from data/skins/default/skin.xml
+# Generate skin.xml.h from data/skins/default/skin.xml
 set(skin_xml ${CMAKE_SOURCE_DIR}/data/skins/default/skin.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/skin.xml.h)
 add_custom_command(
@@ -50,6 +50,18 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${skin_xml}
+  DEPENDS gen)
+list(APPEND generated_files ${output_fn})
+
+# Generate strings.h from data/strings/en.ini
+set(strings_en_ini ${CMAKE_SOURCE_DIR}/data/strings/en.ini)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/strings.ini.h)
+add_custom_command(
+  OUTPUT ${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${strings_en_ini} --strings > ${output_fn}.tmp
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${strings_en_ini}
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
