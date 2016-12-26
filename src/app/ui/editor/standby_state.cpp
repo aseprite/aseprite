@@ -494,8 +494,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     char buf[256];
     sprintf(buf, " :pos: %d %d",
-            int(spritePos.x),
-            int(spritePos.y));
+            int(std::floor(spritePos.x)),
+            int(std::floor(spritePos.y)));
 
     StatusBar::instance()->showColor(0, buf, color);
   }
@@ -507,8 +507,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     char buf[1024];
     sprintf(
       buf, ":pos: %d %d :%s: %d %d",
-      int(spritePos.x),
-      int(spritePos.y),
+      int(std::floor(spritePos.x)),
+      int(std::floor(spritePos.y)),
       (mask ? "selsize": "size"),
       (mask ? mask->bounds().w: sprite->width()),
       (mask ? mask->bounds().h: sprite->height()));
@@ -522,8 +522,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     if (editor->docPref().show.grid()) {
       auto gb = editor->docPref().grid.bounds();
-      int col = (int(spritePos.x) - (gb.x % gb.w)) / gb.w;
-      int row = (int(spritePos.y) - (gb.y % gb.h)) / gb.h;
+      int col = (std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w;
+      int row = (std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h;
       sprintf(
         buf+std::strlen(buf), " :grid: %d %d", col, row);
     }

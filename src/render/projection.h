@@ -36,16 +36,16 @@ namespace render {
     double scaleY() const { return m_zoom.scale() * m_pixelRatio.h; }
 
     template<typename T>
-    T applyX(T x) const { return m_zoom.apply(x * m_pixelRatio.w); }
+    T applyX(T x) const { return m_zoom.apply<T>(x * T(m_pixelRatio.w)); }
 
     template<typename T>
-    T applyY(T y) const { return m_zoom.apply(y * m_pixelRatio.h); }
+    T applyY(T y) const { return m_zoom.apply<T>(y * T(m_pixelRatio.h)); }
 
     template<typename T>
-    T removeX(T x) const { return m_zoom.remove(x) / m_pixelRatio.w; }
+    T removeX(T x) const { return m_zoom.remove<T>(x) / T(m_pixelRatio.w); }
 
     template<typename T>
-    T removeY(T y) const { return m_zoom.remove(y) / m_pixelRatio.h; }
+    T removeY(T y) const { return m_zoom.remove<T>(y) / T(m_pixelRatio.h); }
 
     gfx::Rect apply(const gfx::Rect& r) const {
       int u = applyX(r.x);

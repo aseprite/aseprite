@@ -26,30 +26,13 @@ namespace render {
     }
 
     template<typename T>
-    T apply(T x) const {
-      return x * m_num / m_den;
-    }
+    T apply(T x) const { return (x * m_num / m_den); }
 
     template<typename T>
-    T remove(T x) const {
-      if (x < 0)
-        return (x * m_den / m_num) - 1;
-      else
-        return (x * m_den / m_num);
-    }
+    T remove(T x) const { return (x * m_den / m_num); }
 
-    gfx::Rect apply(const gfx::Rect& r) const {
-      return gfx::Rect(
-        apply(r.x), apply(r.y),
-        apply(r.x+r.w) - apply(r.x),
-        apply(r.y+r.h) - apply(r.y));
-    }
-    gfx::Rect remove(const gfx::Rect& r) const {
-      return gfx::Rect(
-        remove(r.x), remove(r.y),
-        remove(r.x+r.w) - remove(r.x),
-        remove(r.y+r.h) - remove(r.y));
-    }
+    gfx::Rect apply(const gfx::Rect& r) const;
+    gfx::Rect remove(const gfx::Rect& r) const;
 
     bool in();
     bool out();
@@ -79,6 +62,28 @@ namespace render {
     // Internal scale value used for precise zooming purposes.
     double m_internalScale;
   };
+
+  template<>
+  inline int Zoom::remove(int x) const {
+    if (x < 0)
+      return (x * m_den / m_num) - 1;
+    else
+      return (x * m_den / m_num);
+  }
+
+  inline gfx::Rect Zoom::apply(const gfx::Rect& r) const {
+    return gfx::Rect(
+      apply(r.x), apply(r.y),
+      apply(r.x+r.w) - apply(r.x),
+      apply(r.y+r.h) - apply(r.y));
+  }
+
+  inline gfx::Rect Zoom::remove(const gfx::Rect& r) const {
+    return gfx::Rect(
+      remove(r.x), remove(r.y),
+      remove(r.x+r.w) - remove(r.x),
+      remove(r.y+r.h) - remove(r.y));
+  }
 
 } // namespace render
 
