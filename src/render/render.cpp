@@ -422,7 +422,7 @@ void composite_image_general(
   double srcXDelta = 1.0 / sx;
   int srcWidth = src->width();
   for (int y=0; y<dstBounds.h; ++y, ++dstY) {
-    int srcY = (srcBounds.y+y) / sy;
+    int srcY = (srcBounds.y+double(y)) / sy;
     double srcX = srcXStart;
     int oldSrcX;
 
@@ -435,17 +435,19 @@ void composite_image_general(
     int dstX = dstBounds.x;
 #endif
 
-    for (int x=0; x<dstBounds.w; ++x, ++dstPtr) {
+    for (int x=0; x<dstBounds.w; ++dstPtr) {
       ASSERT(dstX >= 0 && dstX < dst->width());
       ASSERT(srcX >= 0 && srcX < src->width());
 
       *dstPtr = blender(*dstPtr, *srcPtr, opacity);
+      ++x;
 
       oldSrcX = int(srcX);
-      srcX += srcXDelta;
-      if (srcX >= srcWidth)
+      srcX = srcXStart + srcXDelta*x;
+      if (srcX >= srcWidth) {
         break;
-      srcPtr += (int(srcX) - oldSrcX);
+      }
+      srcPtr += int(srcX - oldSrcX);
 
 #if _DEBUG
       ++dstX;
