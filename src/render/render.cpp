@@ -1102,9 +1102,12 @@ CompositeImageFunc Render::getImageComposition(
   // True if we need blending pixel by pixel. If this is false we can
   // blend src+dst one time and repeat the resulting color in dst
   // image n-times (where n is the zoom scale).
+  double intpart;
   const bool finegrain =
     (!m_bgZoom && (m_bgCheckedSize.w < m_proj.applyX(1) ||
-                   m_bgCheckedSize.h < m_proj.applyY(1))) ||
+                   m_bgCheckedSize.h < m_proj.applyY(1) ||
+                   std::modf(double(m_bgCheckedSize.w) / m_proj.applyX(1.0), &intpart) != 0.0 ||
+                   std::modf(double(m_bgCheckedSize.h) / m_proj.applyY(1.0), &intpart) != 0.0)) ||
     (layer &&
      layer->isGroup() &&
      has_visible_reference_layers(static_cast<const LayerGroup*>(layer)));
