@@ -19,6 +19,8 @@
 #include "gfx/clip.h"
 #include "gfx/region.h"
 
+#include <cmath>
+
 namespace render {
 
 namespace {
@@ -753,6 +755,13 @@ void Render::renderBackground(Image* image,
   // Tile size
   if (tile_w < zoom.apply(1)) tile_w = zoom.apply(1);
   if (tile_h < zoom.apply(1)) tile_h = zoom.apply(1);
+
+  // Tiles must be aligned with pixels
+  double intpart;
+  if (std::modf(double(tile_w) / zoom.apply(1.0), &intpart) != 0.0)
+    tile_w = intpart*zoom.apply(1);
+  if (std::modf(double(tile_h) / zoom.apply(1.0), &intpart) != 0.0)
+    tile_h = intpart*zoom.apply(1);
 
   if (tile_w < 1) tile_w = 1;
   if (tile_h < 1) tile_h = 1;
