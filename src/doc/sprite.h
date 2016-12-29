@@ -58,7 +58,7 @@ namespace doc {
     ////////////////////////////////////////
     // Main properties
 
-    Document* document() { return m_document; }
+    Document* document() const { return m_document; }
     void setDocument(Document* doc) { m_document = doc; }
 
     PixelFormat pixelFormat() const { return m_format; }
