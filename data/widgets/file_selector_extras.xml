@@ -24,6 +24,8 @@
 
     <label id="frames_label" text="Frames:" />
     <combobox id="frames" text="" cell_align="horizontal" />
+
+    <check id="pixel_ratio" text="Apply pixel ratio" cell_hspan="2" />
   </grid>
 </vbox>
 </gui>

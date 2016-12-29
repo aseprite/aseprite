@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include "doc/pixel_ratio.h"
+
 namespace ui {
   class ComboBox;
 }
@@ -33,6 +35,10 @@ namespace app {
     virtual std::string getFrames() = 0;
     virtual void setLayers(const std::string& layers) = 0;
     virtual void setFrames(const std::string& frames) = 0;
+
+    virtual void setApplyPixelRatio(bool applyPixelRatio) = 0;
+    virtual bool applyPixelRatio() const = 0;
+    virtual doc::PixelRatio pixelRatio() = 0;
   };
 
   std::string show_file_selector(

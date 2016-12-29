@@ -10,6 +10,7 @@
 
 #include "app/ui/file_selector.h"
 
+#include "base/bind.h"
 #include "base/string.h"
 #include "app/app.h"
 #include "app/console.h"
@@ -246,13 +247,14 @@ public:
     addChild(m_extras);
     m_extras->resize()->setValue(
       base::convert_to<std::string>(m_delegate->getResizeScale()));
-
     m_delegate->fillLayersComboBox(m_extras->layers());
     m_delegate->fillFramesComboBox(m_extras->frames());
+    m_extras->pixelRatio()->setSelected(m_delegate->applyPixelRatio());
 
     m_extras->resize()->Change.connect(&ExtrasWindow::onUpdateExtras, this);
     m_extras->layers()->Change.connect(&ExtrasWindow::onUpdateExtras, this);
     m_extras->frames()->Change.connect(&ExtrasWindow::onUpdateExtras, this);
+    m_extras->pixelRatio()->Click.connect(base::Bind<void>(&ExtrasWindow::onUpdateExtras, this));
   }
 
   std::string extrasLabel() const {
@@ -265,6 +267,15 @@ public:
     auto frameItem = m_extras->frames()->getSelectedItem();
     if (frameItem && !frameItem->getValue().empty())
       label += ", " + frameItem->text();
+
+    if (m_extras->pixelRatio()->isSelected()) {
+      PixelRatio pr = m_delegate->pixelRatio();
+      label += " (";
+      label += base::convert_to<std::string>(pr.w);
+      label += ":";
+      label += base::convert_to<std::string>(pr.h);
+      label += ")";
+    }
 
     return label;
   }
@@ -279,6 +290,10 @@ public:
 
   std::string framesValue() const {
     return m_extras->frames()->getValue();
+  }
+
+  bool applyPixelRatio() const {
+    return m_extras->pixelRatio()->isSelected();
   }
 
   obs::signal<void()> UpdateExtras;
@@ -659,6 +674,7 @@ again:
       m_delegate->setResizeScale(m_extras->resizeValue());
       m_delegate->setLayers(m_extras->layersValue());
       m_delegate->setFrames(m_extras->framesValue());
+      m_delegate->setApplyPixelRatio(m_extras->applyPixelRatio());
     }
   }
 

@@ -41,11 +41,13 @@ public:
   SaveAsCopyDelegate(const Sprite* sprite,
                      const double scale,
                      const std::string& layer,
-                     const std::string& frame)
+                     const std::string& frame,
+                     const bool applyPixelRatio)
     : m_sprite(sprite),
       m_resizeScale(scale),
       m_layer(layer),
-      m_frame(frame) { }
+      m_frame(frame),
+      m_applyPixelRatio(applyPixelRatio) { }
 
   bool hasResizeCombobox() override {
     return true;
@@ -78,11 +80,24 @@ public:
     m_frame = frame;
   }
 
+  void setApplyPixelRatio(bool applyPixelRatio) override {
+    m_applyPixelRatio = applyPixelRatio;
+  }
+
+  bool applyPixelRatio() const override {
+    return m_applyPixelRatio;
+  }
+
+  doc::PixelRatio pixelRatio() override {
+    return m_sprite->pixelRatio();
+  }
+
 private:
   const Sprite* m_sprite;
   double m_resizeScale;
   std::string m_layer;
   std::string m_frame;
+  bool m_applyPixelRatio;
 };
 
 class SaveFileJob : public Job, public IFileOpProgress {
@@ -167,7 +182,8 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
   // have to mark the file as saved.
   bool saveCopyAs = (delegate != nullptr);
   bool markAsSaved = (!saveCopyAs);
-  double scale = 1.0;
+  double xscale = 1.0;
+  double yscale = 1.0;
 
   if (!m_filename.empty()) {
     filename = m_filename;
@@ -187,7 +203,7 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     filename = newfilename;
     if (delegate &&
         delegate->hasResizeCombobox()) {
-      scale = delegate->getResizeScale();
+      xscale = yscale = delegate->getResizeScale();
     }
   }
 
@@ -202,16 +218,24 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     m_selectedFilename = filename;
   }
 
+  // Pixel ratio
+  if (delegate &&
+      delegate->applyPixelRatio()) {
+    doc::PixelRatio pr = delegate->pixelRatio();
+    xscale *= pr.w;
+    yscale *= pr.h;
+  }
+
   // Apply scale
   bool undoResize = false;
-  if (scale != 1.0) {
+  if (xscale != 1.0 || yscale != 1.0) {
     Command* resizeCmd = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = document->sprite()->width();
       int height = document->sprite()->height();
-      int newWidth = int(double(width) * scale);
-      int newHeight = int(double(height) * scale);
+      int newWidth = int(double(width) * xscale);
+      int newHeight = int(double(height) * yscale);
       if (newWidth < 1) newWidth = 1;
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
@@ -396,7 +420,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         document->sprite(),
         docPref.saveCopy.resizeScale(),
         docPref.saveCopy.layer(),
-        docPref.saveCopy.frameTag()));
+        docPref.saveCopy.frameTag(),
+        docPref.saveCopy.applyPixelRatio()));
   }
 
   // Is a default output filename in the preferences?
@@ -412,6 +437,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       docPref.saveCopy.resizeScale(delegate->getResizeScale());
       docPref.saveCopy.layer(delegate->getLayers());
       docPref.saveCopy.frameTag(delegate->getFrames());
+      docPref.saveCopy.applyPixelRatio(delegate->applyPixelRatio());
     }
   }
 
