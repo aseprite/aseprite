@@ -31,11 +31,11 @@ using namespace gfx;
 using namespace ui;
 
 ZoomEntry::ZoomEntry()
-  : IntEntry(
-    0, render::Zoom::fromLinearScale(render::Zoom::linearValues()-1).scale()*100, this)
+  : IntEntry(0, render::Zoom::linearValues()-1, this)
   , m_locked(false)
 {
   setSuffix("%");
+  setMaxTextLength(6); // strlen("6400.0") == 6
   setup_mini_look(this);
 
   setZoom(render::Zoom(1, 1));

@@ -29,7 +29,7 @@
 
 namespace ui {
 
-Entry::Entry(std::size_t maxsize, const char* format, ...)
+Entry::Entry(const std::size_t maxsize, const char* format, ...)
   : Widget(kEntryWidget)
   , m_timer(500, this)
   , m_maxsize(maxsize)
@@ -69,6 +69,11 @@ Entry::Entry(std::size_t maxsize, const char* format, ...)
 
 Entry::~Entry()
 {
+}
+
+void Entry::setMaxTextLength(const std::size_t maxsize)
+{
+  m_maxsize = maxsize;
 }
 
 bool Entry::isReadOnly() const
