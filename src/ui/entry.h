@@ -18,8 +18,10 @@ namespace ui {
 
   class Entry : public Widget {
   public:
-    Entry(std::size_t maxsize, const char *format, ...);
+    Entry(const std::size_t maxsize, const char *format, ...);
     ~Entry();
+
+    void setMaxTextLength(const std::size_t maxsize);
 
     bool isPassword() const;
     bool isReadOnly() const;
