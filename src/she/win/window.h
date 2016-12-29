@@ -541,7 +541,15 @@ namespace she {
           ev.setModifiers(get_modifiers_from_last_win32_message());
           ev.setPosition(gfx::Point(pos.x, pos.y) / m_scale);
 
-          int z = ((short)HIWORD(wparam)) / WHEEL_DELTA;
+          int z = GET_WHEEL_DELTA_WPARAM(wparam);
+          if (ABS(z) >= WHEEL_DELTA)
+            z /= WHEEL_DELTA;
+          else {
+            // TODO use floating point numbers or something similar
+            //      (so we could use: z /= double(WHEEL_DELTA))
+            z = SGN(z);
+          }
+
           gfx::Point delta(
             (msg == WM_MOUSEHWHEEL ? z: 0),
             (msg == WM_MOUSEWHEEL ? -z: 0));

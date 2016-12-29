@@ -62,7 +62,7 @@ namespace doc {
 
     const ImageSpec& spec() const { return m_spec; }
 
-    Document* document() { return m_document; }
+    Document* document() const { return m_document; }
     void setDocument(Document* doc) { m_document = doc; }
 
     PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
