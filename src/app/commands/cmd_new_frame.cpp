@@ -123,6 +123,14 @@ void NewFrameCommand::onExecute(Context* context)
           for (LayerIndex layer = layerBegin; layer <= layerEnd; ++layer) {
             Layer* layerPtr = writer.sprite()->indexToLayer(layer);
             if (layerPtr->isImage()) {
+              LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
+              int celsCount = layerImagePtr->getCelsCount();
+              if (range.frameEnd() < (celsCount-1)) {
+                for (frame_t frame = (celsCount-1); frame > range.frameEnd(); --frame) {
+                  api.moveCel(layerImagePtr, frame, layerImagePtr, frame+(1 + range.frameEnd() - range.frameBegin()));
+                }
+              }
+
               for (frame_t frame = range.frameEnd(); frame >= range.frameBegin(); --frame) {
                 frame_t srcFrame = frame;
                 frame_t dstFrame = frame+range.frames();
