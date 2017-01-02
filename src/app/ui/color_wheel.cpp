@@ -84,6 +84,22 @@ app::Color ColorWheel::getColorInClientPos(const gfx::Point& pos)
   int v = (pos.y - (m_wheelBounds.y+m_wheelBounds.h/2));
   double d = std::sqrt(u*u + v*v);
 
+  if (m_colorModel == ColorModel::NORMAL_MAP) {
+    float x = float(u) / float(m_wheelBounds.w / 2);
+    float y = -float(v) / float(m_wheelBounds.h / 2);
+    float z = std::sqrt(1 - x*x - y*y);
+    if (z <= 1.f) {
+      return app::Color::fromRgb(
+        int(std::round((x + 1) * 127.5)),
+        int(std::round((y + 1) * 127.5)),
+        int(std::round((z + 1) * 127.5))
+      );
+    }
+    else {
+      return app::Color::fromRgb(128, 128, 255);
+    }
+  }
+
   // Pick from the wheel
   if (d < m_wheelRadius+2*guiscale()) {
     double a = std::atan2(-v, u);
@@ -231,7 +247,7 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
     }
   }
 
-  if (m_color.getAlpha() > 0) {
+  if (m_color.getAlpha() > 0 && m_colorModel != ColorModel::NORMAL_MAP) {
     int n = getHarmonies();
     int boxsize = MIN(rc.w/10, rc.h/10);
 
@@ -336,16 +352,32 @@ void ColorWheel::onOptions()
   menu.addChild(&tetradic);
   menu.addChild(&square);
 
-  if (isDiscrete()) discrete.setSelected(true);
-  switch (m_harmony) {
-    case Harmony::NONE: none.setSelected(true); break;
-    case Harmony::COMPLEMENTARY: complementary.setSelected(true); break;
-    case Harmony::MONOCHROMATIC: monochromatic.setSelected(true); break;
-    case Harmony::ANALOGOUS: analogous.setSelected(true); break;
-    case Harmony::SPLIT: split.setSelected(true); break;
-    case Harmony::TRIADIC: triadic.setSelected(true); break;
-    case Harmony::TETRADIC: tetradic.setSelected(true); break;
-    case Harmony::SQUARE: square.setSelected(true); break;
+  if (m_colorModel == ColorModel::NORMAL_MAP) {
+    discrete.setSelected(false);
+    discrete.setEnabled(false);
+
+    none.setSelected(true);
+    none.setEnabled(false);
+    complementary.setEnabled(false);
+    monochromatic.setEnabled(false);
+    analogous.setEnabled(false);
+    split.setEnabled(false);
+    triadic.setEnabled(false);
+    tetradic.setEnabled(false);
+    square.setEnabled(false);
+  }
+  else {
+    if (isDiscrete()) discrete.setSelected(true);
+    switch (m_harmony) {
+      case Harmony::NONE: none.setSelected(true); break;
+      case Harmony::COMPLEMENTARY: complementary.setSelected(true); break;
+      case Harmony::MONOCHROMATIC: monochromatic.setSelected(true); break;
+      case Harmony::ANALOGOUS: analogous.setSelected(true); break;
+      case Harmony::SPLIT: split.setSelected(true); break;
+      case Harmony::TRIADIC: triadic.setSelected(true); break;
+      case Harmony::TETRADIC: tetradic.setSelected(true); break;
+      case Harmony::SQUARE: square.setSelected(true); break;
+    }
   }
 
   discrete.Click.connect(base::Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));

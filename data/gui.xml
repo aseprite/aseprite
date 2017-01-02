@@ -925,6 +925,9 @@
       <item command="SetColorSelector" text="RYB Color Wheel">
         <param name="type" value="ryb-wheel" />
       </item>
+      <item command="SetColorSelector" text="Normal Map Color Wheel">
+        <param name="type" value="normal-map-wheel" />
+      </item>
       <separator />
       <item command="LoadPalette" text="L&amp;oad Palette" />
       <item command="SavePalette" text="S&amp;ave Palette" />

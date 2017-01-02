@@ -18,6 +18,7 @@ namespace app {
     enum class ColorModel {
       RGB,
       RYB,
+      NORMAL_MAP,
     };
 
     enum class Harmony {

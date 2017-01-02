@@ -55,6 +55,9 @@ void SetColorSelectorCommand::onLoadParams(const Params& params)
   else if (type == "ryb-wheel") {
     m_type = ColorBar::ColorSelector::RYB_WHEEL;
   }
+  else if (type == "normal-map-wheel") {
+    m_type = ColorBar::ColorSelector::NORMAL_MAP_WHEEL;
+  }
 }
 
 bool SetColorSelectorCommand::onChecked(Context* context)
@@ -83,6 +86,9 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
       break;
     case ColorBar::ColorSelector::RYB_WHEEL:
       result += "RYB Color Wheel";
+      break;
+    case ColorBar::ColorSelector::NORMAL_MAP_WHEEL:
+      result += "Normal Map Color Wheel";
       break;
     default:
       result += "Unknown";

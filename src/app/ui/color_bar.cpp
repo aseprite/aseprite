@@ -341,6 +341,7 @@ void ColorBar::setColorSelector(ColorSelector selector)
 
     case ColorSelector::RGB_WHEEL:
     case ColorSelector::RYB_WHEEL:
+    case ColorSelector::NORMAL_MAP_WHEEL:
       if (!m_wheel) {
         m_wheel = new ColorWheel;
         m_wheel->setExpansive(true);
@@ -348,10 +349,15 @@ void ColorBar::setColorSelector(ColorSelector selector)
         m_wheel->ColorChange.connect(&ColorBar::onPickSpectrum, this);
         m_selectorPlaceholder.addChild(m_wheel);
       }
-      m_wheel->setColorModel(
-        (m_selector == ColorSelector::RGB_WHEEL ?
-         ColorWheel::ColorModel::RGB:
-         ColorWheel::ColorModel::RYB));
+      if (m_selector == ColorSelector::RGB_WHEEL) {
+        m_wheel->setColorModel(ColorWheel::ColorModel::RGB);
+      }
+      else if (m_selector == ColorSelector::RYB_WHEEL) {
+        m_wheel->setColorModel(ColorWheel::ColorModel::RYB);
+      }
+      else if (m_selector == ColorSelector::NORMAL_MAP_WHEEL) {
+        m_wheel->setColorModel(ColorWheel::ColorModel::NORMAL_MAP);
+      }
       m_wheel->setVisible(true);
       break;
 
