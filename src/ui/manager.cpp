@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -258,9 +258,6 @@ bool Manager::generateMessages()
 
   // Generate messages for timers
   Timer::pollTimers();
-
-  // Generate redraw events.
-  flushRedraw();
 
   if (!msg_queue.empty())
     return true;
@@ -612,7 +609,15 @@ void Manager::handleWindowZOrder()
 
 void Manager::dispatchMessages()
 {
+  // Send messages in the queue (mouse/key/timer/etc. events) This
+  // might change the state of widgets, etc.
   pumpQueue();
+
+  // Generate and send only kPaintMessages with the latest UI state.
+  flushRedraw();
+  pumpQueue();
+
+  // Flip the back-buffer to the real display.
   flipDisplay();
 }
 
