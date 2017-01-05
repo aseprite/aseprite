@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,13 +8,15 @@
 #include "config.h"
 #endif
 
-#include "she/keys.h"
+#include "she/osx/vk.h"
 
 #include <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h> // TIS functions
 
 namespace she {
 
-KeyScancode cocoavk_to_scancode(UInt16 vk) {
+KeyScancode cocoavk_to_scancode(UInt16 keyCode)
+{
   static KeyScancode keymap[256] = {
     // 0x00
     kKeyA, // 0x00 - kVK_ANSI_A
@@ -153,9 +155,54 @@ KeyScancode cocoavk_to_scancode(UInt16 vk) {
     kKeyUp, // 0x7E - kVK_UpArrow
     kKeyNil // 0x7F - ?
   };
-  if (vk < 0 || vk > 127)
-    vk = 0;
-  return keymap[vk];
+  if (keyCode < 0 || keyCode > 127)
+    keyCode = 0;
+  return keymap[keyCode];
 }
 
-} // namespace shse
+// Based on code from:
+// http://stackoverflow.com/questions/22566665/how-to-capture-unicode-from-key-events-without-an-nstextview
+// http://stackoverflow.com/questions/12547007/convert-key-code-into-key-equivalent-string
+// http://stackoverflow.com/questions/8263618/convert-virtual-key-code-to-unicode-string
+//
+// If "deadKeyState" is = nullptr, it doesn't process dead keys.
+CFStringRef get_unicode_from_key_code(const UInt16 keyCode,
+                                      const NSEventModifierFlags modifierFlags,
+                                      UInt32* deadKeyState)
+{
+  // The "TISCopyCurrentKeyboardInputSource()" doesn't contain
+  // kTISPropertyUnicodeKeyLayoutData (returns nullptr) when the input
+  // source is Japanese (Romaji/Hiragana/Katakana).
+
+  //TISInputSourceRef inputSource = TISCopyCurrentKeyboardInputSource();
+  TISInputSourceRef inputSource = TISCopyCurrentKeyboardLayoutInputSource();
+  CFDataRef keyLayoutData = (CFDataRef)TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout* keyLayout =
+    (keyLayoutData ? (const UCKeyboardLayout*)CFDataGetBytePtr(keyLayoutData): nullptr);
+
+  UInt32 deadKeyStateWrap = (deadKeyState ? *deadKeyState: 0);
+  UniChar output[4];
+  UniCharCount length;
+
+  // Reference here:
+  // https://developer.apple.com/reference/coreservices/1390584-uckeytranslate?language=objc
+  UCKeyTranslate(
+    keyLayout,
+    keyCode,
+    kUCKeyActionDown,
+    ((modifierFlags >> 16) & 0xFF),
+    LMGetKbdType(),
+    (deadKeyState ? 0: kUCKeyTranslateNoDeadKeysMask),
+    &deadKeyStateWrap,
+    sizeof(output) / sizeof(output[0]),
+    &length,
+    output);
+
+  if (deadKeyState)
+    *deadKeyState = deadKeyStateWrap;
+
+  CFRelease(inputSource);
+  return CFStringCreateWithCharacters(kCFAllocatorDefault, output, length);
+}
+
+} // namespace she
