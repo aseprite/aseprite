@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -68,6 +68,11 @@ namespace she {
     Type type() const { return m_type; }
     Display* display() const { return m_display; }
     const Files& files() const { return m_files; }
+    // TODO Rename this to virtualKey(), which is the real
+    // meaning. Then we need another kind of "scan code" with the
+    // position in the keyboard, which might be useful to identify
+    // keys by its position (e.g. WASD keys in other keyboard
+    // layouts).
     KeyScancode scancode() const { return m_scancode; }
     KeyModifiers modifiers() const { return m_modifiers; }
     int unicodeChar() const { return m_unicodeChar; }

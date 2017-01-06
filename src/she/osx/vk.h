@@ -14,7 +14,9 @@
 
 namespace she {
 
-  KeyScancode cocoavk_to_scancode(UInt16 keyCode);
+  KeyScancode cocoavk_to_scancode(UInt16 keyCode,
+                                  const NSEventModifierFlags modifierFlags);
+
   CFStringRef get_unicode_from_key_code(const UInt16 keyCode,
                                         const NSEventModifierFlags modifierFlags,
                                         UInt32* deadKeyState = nullptr);
