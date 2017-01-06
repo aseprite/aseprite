@@ -610,12 +610,14 @@ void Manager::handleWindowZOrder()
 void Manager::dispatchMessages()
 {
   // Send messages in the queue (mouse/key/timer/etc. events) This
-  // might change the state of widgets, etc.
-  pumpQueue();
-
-  // Generate and send only kPaintMessages with the latest UI state.
-  flushRedraw();
-  pumpQueue();
+  // might change the state of widgets, etc. In case pumpQueue()
+  // returns a number greater than 0, it means that we've processed
+  // some messages, so we've to redraw the screen.
+  if (pumpQueue() > 0) {
+    // Generate and send just kPaintMessages with the latest UI state.
+    flushRedraw();
+    pumpQueue();
+  }
 
   // Flip the back-buffer to the real display.
   flipDisplay();
@@ -1219,12 +1221,13 @@ void Manager::onSizeHint(SizeHintEvent& ev)
   ev.setSizeHint(gfx::Size(w, h));
 }
 
-void Manager::pumpQueue()
+int Manager::pumpQueue()
 {
 #ifdef LIMIT_DISPATCH_TIME
   base::tick_t t = base::current_tick();
 #endif
 
+  int count = 0;                // Number of processed messages
   auto it = msg_queue.begin();
   while (it != msg_queue.end()) {
 #ifdef LIMIT_DISPATCH_TIME
@@ -1289,7 +1292,10 @@ void Manager::pumpQueue()
 
     // Destroy the message
     delete first_msg;
+    ++count;
   }
+
+  return count;
 }
 
 bool Manager::sendMessageToWidget(Message* msg, Widget* widget)

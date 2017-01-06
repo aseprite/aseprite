@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,7 +24,7 @@ Message::Message(MessageType type, KeyModifiers modifiers)
   , m_used(false)
   , m_fromFilter(false)
 {
-  if (modifiers == kKeyUninitializedModifier)
+  if (modifiers == kKeyUninitializedModifier && she::instance())
     m_modifiers = she::instance()->keyModifiers();
   else
     m_modifiers = modifiers;
