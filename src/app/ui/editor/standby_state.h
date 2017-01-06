@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -45,10 +45,6 @@ namespace app {
     void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
 
   protected:
-    // Returns true and changes to ScrollingState when "msg" says "the
-    // user wants to scroll".
-    bool checkForScroll(Editor* editor, ui::MouseMessage* msg);
-    bool checkForZoom(Editor* editor, ui::MouseMessage* msg);
     void callEyedropper(Editor* editor);
 
     class Decorator : public EditorDecorator {

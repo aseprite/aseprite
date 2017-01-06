@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -206,6 +206,15 @@ namespace app {
     // position.
     void notifyScrollChanged();
     void notifyZoomChanged();
+
+    // Returns true and changes to ScrollingState when "msg" says "the
+    // user wants to scroll". Same for zoom.
+    bool checkForScroll(ui::MouseMessage* msg);
+    bool checkForZoom(ui::MouseMessage* msg);
+
+    // Start Scrolling/ZoomingState
+    void startScrollingState(ui::MouseMessage* msg);
+    void startZoomingState(ui::MouseMessage* msg);
 
     // Animation control
     void play(const bool playOnce,

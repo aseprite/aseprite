@@ -9,7 +9,7 @@ set(SHE_SOURCES
 # Allegro 4 backend
 
 if(USE_ALLEG4_BACKEND)
-  add_definitions(-DUSE_KEY_POLLER)
+  add_definitions(-DUSE_KEY_POLLER -DUSE_MOUSE_POLLER)
   if(WIN32)
     find_package(DXGuid)
     if(NOT DXGUID_FOUND)
@@ -20,8 +20,6 @@ if(USE_ALLEG4_BACKEND)
       endif()
     endif()
     include_directories(SYSTEM ${DXGUID_INCLUDE_DIR})
-  else()
-    add_definitions(-DUSE_MOUSE_POLLER)
   endif()
 
   list(APPEND SHE_SOURCES

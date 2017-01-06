@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -36,7 +36,9 @@
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/play_state.h"
+#include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/standby_state.h"
+#include "app/ui/editor/zooming_state.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -1770,6 +1772,46 @@ void Editor::notifyScrollChanged()
 void Editor::notifyZoomChanged()
 {
   m_observers.notifyZoomChanged(this);
+}
+
+bool Editor::checkForScroll(ui::MouseMessage* msg)
+{
+  tools::Ink* clickedInk = getCurrentEditorInk();
+
+  // Start scroll loop
+  if (msg->middle() || clickedInk->isScrollMovement()) { // TODO msg->middle() should be customizable
+    startScrollingState(msg);
+    return true;
+  }
+  else
+    return false;
+}
+
+bool Editor::checkForZoom(ui::MouseMessage* msg)
+{
+  tools::Ink* clickedInk = getCurrentEditorInk();
+
+  // Start scroll loop
+  if (clickedInk->isZoom()) {
+    startZoomingState(msg);
+    return true;
+  }
+  else
+    return false;
+}
+
+void Editor::startScrollingState(ui::MouseMessage* msg)
+{
+  EditorStatePtr newState(new ScrollingState);
+  setState(newState);
+  newState->onMouseDown(this, msg);
+}
+
+void Editor::startZoomingState(ui::MouseMessage* msg)
+{
+  EditorStatePtr newState(new ZoomingState);
+  setState(newState);
+  newState->onMouseDown(this, msg);
 }
 
 void Editor::play(const bool playOnce,

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,12 +13,10 @@
 #include "gfx/point.h"
 #include "she/event.h"
 #include "she/event_queue.h"
-#include "she/keys.h"
 #include "she/osx/generate_drop_files.h"
+#include "she/osx/vk.h"
 #include "she/osx/window.h"
 #include "she/system.h"
-
-#include <Carbon/Carbon.h>      // For VK codes
 
 namespace she {
 
@@ -78,51 +76,6 @@ KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
   if (nsFlags & NSCommandKeyMask) modifiers |= kKeyCmdModifier;
   if (osx_is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
   return (KeyModifiers)modifiers;
-}
-
-// Based on code from:
-// http://stackoverflow.com/questions/22566665/how-to-capture-unicode-from-key-events-without-an-nstextview
-// http://stackoverflow.com/questions/12547007/convert-key-code-into-key-equivalent-string
-// http://stackoverflow.com/questions/8263618/convert-virtual-key-code-to-unicode-string
-//
-// It includes a "translateDeadKeys" flag to avoid processing dead
-// keys in case that we want to use key
-CFStringRef get_unicode_from_key_code(NSEvent* event,
-                                      const bool translateDeadKeys)
-{
-  // The "TISCopyCurrentKeyboardInputSource()" doesn't contain
-  // kTISPropertyUnicodeKeyLayoutData (returns nullptr) when the input
-  // source is Japanese (Romaji/Hiragana/Katakana).
-
-  //TISInputSourceRef inputSource = TISCopyCurrentKeyboardInputSource();
-  TISInputSourceRef inputSource = TISCopyCurrentKeyboardLayoutInputSource();
-  CFDataRef keyLayoutData = (CFDataRef)TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData);
-  const UCKeyboardLayout* keyLayout =
-    (keyLayoutData ? (const UCKeyboardLayout*)CFDataGetBytePtr(keyLayoutData): nullptr);
-
-  UInt32 deadKeyState = (translateDeadKeys ? g_lastDeadKeyState: 0);
-  UniChar output[4];
-  UniCharCount length;
-
-  // Reference here:
-  // https://developer.apple.com/reference/coreservices/1390584-uckeytranslate?language=objc
-  UCKeyTranslate(
-    keyLayout,
-    event.keyCode,
-    kUCKeyActionDown,
-    ((event.modifierFlags >> 16) & 0xFF),
-    LMGetKbdType(),
-    (translateDeadKeys ? 0: kUCKeyTranslateNoDeadKeysMask),
-    &deadKeyState,
-    sizeof(output) / sizeof(output[0]),
-    &length,
-    output);
-
-  if (translateDeadKeys)
-    g_lastDeadKeyState = deadKeyState;
-
-  CFRelease(inputSource);
-  return CFStringCreateWithCharacters(kCFAllocatorDefault, output, length);
 }
 
 } // anonymous namespace
@@ -213,7 +166,8 @@ using namespace she;
 {
   [super keyDown:event];
 
-  KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
+  KeyScancode scancode = cocoavk_to_scancode(event.keyCode,
+                                             event.modifierFlags);
   Event ev;
   ev.setType(Event::KeyDown);
   ev.setScancode(scancode);
@@ -223,7 +177,8 @@ using namespace she;
 
   bool sendMsg = true;
 
-  CFStringRef strRef = get_unicode_from_key_code(event, false);
+  CFStringRef strRef = get_unicode_from_key_code(event.keyCode,
+                                                 event.modifierFlags);
   if (strRef) {
     int length = CFStringGetLength(strRef);
     if (length == 1)
@@ -235,7 +190,9 @@ using namespace she;
     g_pressedKeys[scancode] = (ev.unicodeChar() ? ev.unicodeChar(): 1);
 
   if (g_translateDeadKeys) {
-    strRef = get_unicode_from_key_code(event, true);
+    strRef = get_unicode_from_key_code(event.keyCode,
+                                       event.modifierFlags,
+                                       &g_lastDeadKeyState);
     if (strRef) {
       int length = CFStringGetLength(strRef);
       if (length > 0) {
@@ -261,7 +218,8 @@ using namespace she;
 {
   [super keyUp:event];
 
-  KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
+  KeyScancode scancode = cocoavk_to_scancode(event.keyCode,
+                                             event.modifierFlags);
   if (scancode >= 0 && scancode < kKeyScancodes)
     g_pressedKeys[scancode] = 0;
 
