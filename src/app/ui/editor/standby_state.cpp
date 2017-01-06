@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -124,38 +124,6 @@ void StandbyState::onActiveToolChange(Editor* editor, tools::Tool* tool)
   }
 }
 
-bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
-{
-  tools::Ink* clickedInk = editor->getCurrentEditorInk();
-
-  // Start scroll loop
-  if (msg->middle() || clickedInk->isScrollMovement()) { // TODO msg->middle() should be customizable
-    EditorStatePtr newState(new ScrollingState());
-    editor->setState(newState);
-
-    newState->onMouseDown(editor, msg);
-    return true;
-  }
-  else
-    return false;
-}
-
-bool StandbyState::checkForZoom(Editor* editor, MouseMessage* msg)
-{
-  tools::Ink* clickedInk = editor->getCurrentEditorInk();
-
-  // Start scroll loop
-  if (clickedInk->isZoom()) {
-    EditorStatePtr newState(new ZoomingState());
-    editor->setState(newState);
-
-    newState->onMouseDown(editor, msg);
-    return true;
-  }
-  else
-    return false;
-}
-
 bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (editor->hasCapture())
@@ -172,7 +140,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   context->setActiveView(editor->getDocumentView());
 
   // Start scroll loop
-  if (checkForScroll(editor, msg) || checkForZoom(editor, msg))
+  if (editor->checkForScroll(msg) ||
+      editor->checkForZoom(msg))
     return true;
 
   // Move cel X,Y coordinates

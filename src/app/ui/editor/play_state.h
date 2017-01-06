@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,6 +34,7 @@ namespace app {
     bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
 
   private:
     void onPlaybackTick();

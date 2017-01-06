@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -239,7 +239,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   contextBar->updateForMovingPixels();
 
   // Start scroll loop
-  if (checkForScroll(editor, msg) || checkForZoom(editor, msg))
+  if (editor->checkForScroll(msg) ||
+      editor->checkForZoom(msg))
     return true;
 
   // Call the eyedropper command

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/commands/commands.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
+#include "app/tools/ink.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
@@ -116,10 +117,12 @@ bool PlayState::onMouseDown(Editor* editor, MouseMessage* msg)
   // some time, so we don't change the current frame.
   m_toScroll = true;
 
+  // If the active tool is the Zoom tool, we start zooming.
+  if (editor->checkForZoom(msg))
+    return true;
+
   // Start scroll loop
-  EditorStatePtr newState(new ScrollingState());
-  editor->setState(newState);
-  newState->onMouseDown(editor, msg);
+  editor->startScrollingState(msg);
   return true;
 }
 
@@ -143,6 +146,19 @@ bool PlayState::onKeyDown(Editor* editor, KeyMessage* msg)
 bool PlayState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   return false;
+}
+
+bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
+{
+  tools::Ink* ink = editor->getCurrentEditorInk();
+  if (ink) {
+    if (ink->isZoom()) {
+      editor->showMouseCursor(kMagnifierCursor);
+      return true;
+    }
+  }
+  editor->showMouseCursor(kScrollCursor);
+  return true;
 }
 
 void PlayState::onPlaybackTick()
