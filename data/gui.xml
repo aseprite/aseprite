@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui version="1.2-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
@@ -61,6 +61,7 @@
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
       <key command="LayerVisibility" shortcut="Shift+X" />
+      <key command="OpenGroup" shortcut="Shift+E" />
       <key command="NewLayer" shortcut="Shift+N" />
       <key command="NewLayer" shortcut="Alt+Shift+N">
         <param name="group" value="true" />
@@ -679,6 +680,7 @@
       <menu text="&amp;Layer">
         <item command="LayerProperties" text="&amp;Properties..." />
         <item command="LayerVisibility" text="&amp;Visible" />
+        <item command="OpenGroup" text="&amp;Open Group" />
         <separator />
         <item command="NewLayer" text="&amp;New Layer" />
         <item command="NewLayer" text="New &amp;Group">

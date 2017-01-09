@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
@@ -257,6 +257,7 @@ add_library(app-lib
   commands/cmd_onionskin.cpp
   commands/cmd_open_browser.cpp
   commands/cmd_open_file.cpp
+  commands/cmd_open_group.cpp
   commands/cmd_open_in_folder.cpp
   commands/cmd_open_with_app.cpp
   commands/cmd_options.cpp

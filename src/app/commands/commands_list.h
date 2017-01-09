@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -82,6 +82,7 @@ FOR_EACH_COMMAND(NewLayer)
 FOR_EACH_COMMAND(NewSpriteFromSelection)
 FOR_EACH_COMMAND(OpenBrowser)
 FOR_EACH_COMMAND(OpenFile)
+FOR_EACH_COMMAND(OpenGroup)
 FOR_EACH_COMMAND(OpenInFolder)
 FOR_EACH_COMMAND(OpenWithApp)
 FOR_EACH_COMMAND(Options)
@@ -121,7 +122,6 @@ FOR_EACH_COMMAND(ShowExtras)
 FOR_EACH_COMMAND(ShowGrid)
 FOR_EACH_COMMAND(ShowLayerEdges)
 FOR_EACH_COMMAND(ShowOnionSkin)
-FOR_EACH_COMMAND(ToggleTimelineThumbnails)
 FOR_EACH_COMMAND(ShowPixelGrid)
 FOR_EACH_COMMAND(ShowSelectionEdges)
 FOR_EACH_COMMAND(SnapToGrid)
@@ -132,6 +132,7 @@ FOR_EACH_COMMAND(SymmetryMode)
 FOR_EACH_COMMAND(TiledMode)
 FOR_EACH_COMMAND(Timeline)
 FOR_EACH_COMMAND(TogglePreview)
+FOR_EACH_COMMAND(ToggleTimelineThumbnails)
 FOR_EACH_COMMAND(Undo)
 FOR_EACH_COMMAND(UndoHistory)
 FOR_EACH_COMMAND(UnlinkCel)
