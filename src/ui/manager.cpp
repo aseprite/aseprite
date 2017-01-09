@@ -62,7 +62,6 @@ typedef std::list<Filter*> Filters;
 Manager* Manager::m_defaultManager = NULL;
 gfx::Region Manager::m_dirtyRegion;
 
-static WidgetsList new_windows; // Windows that we should show
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
 static Filters msg_filters[NFILTERS]; // Filters for every enqueued message
@@ -124,7 +123,6 @@ Manager::Manager()
   if (!m_defaultManager) {
     // Empty lists
     ASSERT(msg_queue.empty());
-    ASSERT(new_windows.empty());
     mouse_widgets_list.clear();
 
     // Reset variables
@@ -168,7 +166,6 @@ Manager::~Manager()
 
     // Shutdown system
     ASSERT(msg_queue.empty());
-    ASSERT(new_windows.empty());
     mouse_widgets_list.clear();
   }
 }
@@ -229,30 +226,6 @@ bool Manager::generateMessages()
   // First check: there are windows to manage?
   if (children().empty())
     return false;
-
-  // New windows to show?
-  if (!new_windows.empty()) {
-    for (auto window : new_windows) {
-      // Relayout
-      window->layout();
-
-      // Dirty the entire window and show it
-      window->setVisible(true);
-      window->invalidate();
-
-      // Attract the focus to the magnetic widget...
-      // 1) get the magnetic widget
-      Widget* magnet = findMagneticWidget(window->window());
-      // 2) if magnetic widget exists and it doesn't have the focus
-      if (magnet && !magnet->hasFocus())
-        setFocus(magnet);
-      // 3) if not, put the focus in the first child
-      else if (static_cast<Window*>(window)->isWantFocus())
-        focusFirstChild(window);
-    }
-
-    new_windows.clear();
-  }
 
   generateMessagesFromSheEvents();
 
@@ -998,12 +971,27 @@ void Manager::_openWindow(Window* window)
   insertChild(0, window);
 
   // Broadcast the open message.
-  Message* msg = new Message(kOpenMessage);
-  msg->addRecipient(window);
-  enqueueMessage(msg);
+  {
+    base::UniquePtr<Message> msg(new Message(kOpenMessage));
+    window->sendMessage(msg);
+  }
 
-  // Update the new windows list to show.
-  new_windows.push_back(window);
+  // Relayout
+  window->layout();
+
+  // Dirty the entire window and show it
+  window->setVisible(true);
+  window->invalidate();
+
+  // Attract the focus to the magnetic widget...
+  // 1) get the magnetic widget
+  Widget* magnet = findMagneticWidget(window);
+  // 2) if magnetic widget exists and it doesn't have the focus
+  if (magnet && !magnet->hasFocus())
+    setFocus(magnet);
+  // 3) if not, put the focus in the first child
+  else if (window->isWantFocus())
+    focusFirstChild(window);
 
   // Update mouse widget (as it can be a widget below the
   // recently opened window).
@@ -1051,21 +1039,16 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   window->setVisible(false);
 
   // Close message.
-  Message* msg = new Message(kCloseMessage);
-  msg->addRecipient(window);
-  enqueueMessage(msg);
+  {
+    base::UniquePtr<Message> msg(new Message(kCloseMessage));
+    window->sendMessage(msg);
+  }
 
   // Update manager list stuff.
   removeChild(window);
 
   // Redraw background.
   invalidateRegion(reg1);
-
-  // Maybe the window is in the "new_windows" list.
-  WidgetsList::iterator it =
-    std::find(new_windows.begin(), new_windows.end(), window);
-  if (it != new_windows.end())
-    new_windows.erase(it);
 
   // Update mouse widget (as it can be a widget below the
   // recently closed window).
