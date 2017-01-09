@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -1480,6 +1480,15 @@ void ContextBar::onToolSetFreehandAlgorithm()
   }
 }
 
+void ContextBar::onToolSetContiguous()
+{
+  Tool* tool = App::instance()->activeTool();
+  if (tool) {
+    m_contiguous->setSelected(
+      Preferences::instance().tool(tool).contiguous());
+  }
+}
+
 void ContextBar::onBrushSizeChange()
 {
   if (m_activeBrush->type() != kImageBrushType)
@@ -1564,6 +1573,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_angleConn = brushPref->angle.AfterChange.connect(base::Bind<void>(&ContextBar::onBrushAngleChange, this));
     m_opacityConn = toolPref->opacity.AfterChange.connect(&ContextBar::onToolSetOpacity, this);
     m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(base::Bind<void>(&ContextBar::onToolSetFreehandAlgorithm, this));
+    m_contiguousConn = toolPref->contiguous.AfterChange.connect(base::Bind<void>(&ContextBar::onToolSetContiguous, this));
   }
 
   if (tool)

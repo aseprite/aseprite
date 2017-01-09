@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
@@ -200,6 +200,7 @@ add_library(app-lib
   commands/cmd_clear_cel.cpp
   commands/cmd_close_file.cpp
   commands/cmd_color_quantization.cpp
+  commands/cmd_contiguous_fill.cpp
   commands/cmd_copy.cpp
   commands/cmd_copy_cel.cpp
   commands/cmd_copy_merged.cpp

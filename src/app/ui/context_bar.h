@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -77,6 +77,7 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onToolSetOpacity(const int& newOpacity);
     void onToolSetFreehandAlgorithm();
+    void onToolSetContiguous();
 
   private:
     void onBrushSizeChange();
@@ -145,6 +146,7 @@ namespace app {
     obs::scoped_connection m_angleConn;
     obs::scoped_connection m_opacityConn;
     obs::scoped_connection m_freehandAlgoConn;
+    obs::scoped_connection m_contiguousConn;
   };
 
 } // namespace app

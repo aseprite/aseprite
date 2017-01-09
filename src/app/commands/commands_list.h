@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,6 +21,7 @@ FOR_EACH_COMMAND(CloseAllFiles)
 FOR_EACH_COMMAND(CloseFile)
 FOR_EACH_COMMAND(ColorCurve)
 FOR_EACH_COMMAND(ColorQuantization)
+FOR_EACH_COMMAND(ContiguousFill)
 FOR_EACH_COMMAND(ConvolutionMatrix)
 FOR_EACH_COMMAND(Copy)
 FOR_EACH_COMMAND(CopyCel)

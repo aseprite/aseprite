@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui version="1.1.12-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
@@ -388,6 +388,7 @@
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
       <key command="PixelPerfectMode" />
+      <key command="ContiguousFill" />
       <key command="SetInkType"><param name="type" value="simple" /></key>
       <key command="SetInkType"><param name="type" value="alpha-compositing" /></key>
       <key command="SetInkType"><param name="type" value="copy-color" /></key>
