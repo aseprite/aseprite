@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
