@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,40 +19,42 @@ void OSXEventQueue::getEvent(Event& ev, bool canWait)
 {
   ev.setType(Event::None);
 
-retry:;
-  NSApplication* app = [NSApplication sharedApplication];
-  if (!app)
-    return;
+  @autoreleasepool {
+  retry:;
+    NSApplication* app = [NSApplication sharedApplication];
+    if (!app)
+      return;
 
-  // Pump the whole queue of Cocoa events
-  NSEvent* event;
-  do {
-    event = [app nextEventMatchingMask:NSAnyEventMask
-                             untilDate:[NSDate distantPast]
-                                inMode:NSDefaultRunLoopMode
-                               dequeue:YES];
-    if (event) {
-      // Intercept <Control+Tab>, <Cmd+[>, and other keyboard
-      // combinations, and send them directly to the main
-      // NSView. Without this, the NSApplication intercepts the key
-      // combination and use it to go to the next key view.
-      if (event.type == NSKeyDown) {
-        [app.mainWindow.contentView keyDown:event];
+    // Pump the whole queue of Cocoa events
+    NSEvent* event;
+    do {
+      event = [app nextEventMatchingMask:NSAnyEventMask
+                               untilDate:[NSDate distantPast]
+                                  inMode:NSDefaultRunLoopMode
+                                 dequeue:YES];
+      if (event) {
+        // Intercept <Control+Tab>, <Cmd+[>, and other keyboard
+        // combinations, and send them directly to the main
+        // NSView. Without this, the NSApplication intercepts the key
+        // combination and use it to go to the next key view.
+        if (event.type == NSKeyDown) {
+          [app.mainWindow.contentView keyDown:event];
+        }
+        else {
+          [app sendEvent:event];
+        }
       }
-      else {
-        [app sendEvent:event];
-      }
-    }
-  } while (event);
+    } while (event);
 
-  if (!m_events.try_pop(ev)) {
-    if (canWait) {
-      // Wait until there is a Cocoa event in queue
-      [NSApp nextEventMatchingMask:NSAnyEventMask
-                         untilDate:[NSDate distantFuture]
-                            inMode:NSDefaultRunLoopMode
-                           dequeue:NO];
-      goto retry;
+    if (!m_events.try_pop(ev)) {
+      if (canWait) {
+        // Wait until there is a Cocoa event in queue
+        [NSApp nextEventMatchingMask:NSAnyEventMask
+                           untilDate:[NSDate distantFuture]
+                              inMode:NSDefaultRunLoopMode
+                             dequeue:NO];
+        goto retry;
+      }
     }
   }
 }

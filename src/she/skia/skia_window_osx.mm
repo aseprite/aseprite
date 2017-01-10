@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -113,14 +113,16 @@ public:
   }
 
   void updateWindow(const gfx::Rect& bounds) {
-    int scale = this->scale();
-    NSView* view = m_window.contentView;
-    [view setNeedsDisplayInRect:
-            NSMakeRect(bounds.x*scale,
-                       view.frame.size.height - (bounds.y+bounds.h)*scale,
-                       bounds.w*scale,
-                       bounds.h*scale)];
-    [view displayIfNeeded];
+    @autoreleasepool {
+      int scale = this->scale();
+      NSView* view = m_window.contentView;
+      [view setNeedsDisplayInRect:
+        NSMakeRect(bounds.x*scale,
+                   view.frame.size.height - (bounds.y+bounds.h)*scale,
+                   bounds.w*scale,
+                   bounds.h*scale)];
+      [view displayIfNeeded];
+    }
   }
 
   void setTranslateDeadKeys(bool state) {
@@ -304,7 +306,7 @@ private:
       return;
 
     bitmap.lockPixels();
-    {
+    @autoreleasepool {
       NSGraphicsContext* gc = [NSGraphicsContext currentContext];
       CGContextRef cg = (CGContextRef)[gc graphicsPort];
       CGColorSpaceRef colorSpace = CGDisplayCopyColorSpace(CGMainDisplayID());
