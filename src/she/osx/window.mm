@@ -187,37 +187,39 @@ using namespace she;
     }
   }
 
-  CGDataProviderRef dataRef =
-    CGDataProviderCreateWithData(nullptr, &buf[0],
-                                 w*h*4, nullptr);
-  if (!dataRef)
-    return NO;
+  @autoreleasepool {
+    CGDataProviderRef dataRef =
+      CGDataProviderCreateWithData(nullptr, &buf[0],
+                                   w*h*4, nullptr);
+    if (!dataRef)
+      return NO;
 
-  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-  CGImageRef img =
-    CGImageCreate(
-      w, h, 8, 32, 4*w,
-      colorSpace, kCGImageAlphaLast, dataRef,
-      nullptr, false, kCGRenderingIntentDefault);
-  CGColorSpaceRelease(colorSpace);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGImageRef img =
+      CGImageCreate(
+        w, h, 8, 32, 4*w,
+        colorSpace, kCGImageAlphaLast, dataRef,
+        nullptr, false, kCGRenderingIntentDefault);
+    CGColorSpaceRelease(colorSpace);
 
-  CGDataProviderRelease(dataRef);
+    CGDataProviderRelease(dataRef);
 
-  NSCursor* nsCursor = nullptr;
-  if (img) {
-    NSImage* image =
-      [[NSImage new] initWithCGImage:img
-                                size:NSMakeSize(w, h)];
-    CGImageRelease(img);
+    NSCursor* nsCursor = nullptr;
+    if (img) {
+      NSImage* image =
+        [[NSImage alloc] initWithCGImage:img
+                                    size:NSMakeSize(w, h)];
+      CGImageRelease(img);
 
-    nsCursor =
-      [[NSCursor new] initWithImage:image
-                            hotSpot:NSMakePoint(scale*focus.x + scale/2,
-                                                scale*focus.y + scale/2)];
+      nsCursor =
+        [[NSCursor alloc] initWithImage:image
+                                hotSpot:NSMakePoint(scale*focus.x + scale/2,
+                                                    scale*focus.y + scale/2)];
+    }
+    if (nsCursor)
+      [self.contentView setCursor:nsCursor];
+    return (nsCursor ? YES: NO);
   }
-  if (nsCursor)
-    [self.contentView setCursor:nsCursor];
-  return (nsCursor ? YES: NO);
 }
 
 - (void)noResponderFor:(SEL)eventSelector
