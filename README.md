@@ -4,6 +4,9 @@
 [![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aseprite/aseprite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![Build Status](https://gitlab.com/ioncodes/aseprite/badges/master/build.svg)](https://gitlab.com/ioncodes/aseprite/commits/master)
+[![Download](https://img.shields.io/badge/download-here-blue.svg)](https://gitlab.com/ioncodes/aseprite/pipelines)
+
 ## Introduction
 
 **Aseprite** is a program to create animated sprites. Its main
