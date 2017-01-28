@@ -298,6 +298,7 @@ if(USE_SHARED_CMARK)
 else()
   add_definitions(-DCMARK_STATIC_DEFINE)
   set(CMARK_LIBRARIES libcmark_static)
+  include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
 endif()
 
 if(USE_SHARED_CURL)
