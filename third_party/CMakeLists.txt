@@ -88,19 +88,21 @@ endif()
 add_subdirectory(simpleini)
 
 # Add cmark without tests
-set(CMARK_TESTS OFF CACHE BOOL "Build cmark tests and enable testing")
-add_subdirectory(cmark)
-set(cmark_headers
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmark/src/cmark.h
-  ${CMAKE_CURRENT_BINARY_DIR}/cmark/src/cmark_export.h
-  ${CMAKE_CURRENT_BINARY_DIR}/cmark/src/cmark_version.h)
-foreach(fn ${cmark_headers})
-  get_filename_component(fn_name "${fn}" NAME)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name}
-    COMMAND ${CMAKE_COMMAND} -E copy ${fn} ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name}
-    MAIN_DEPENDENCY ${fn})
-  list(APPEND copy_cmark_headers ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name})
-endforeach()
-add_custom_target(copy_cmark_headers DEPENDS ${copy_cmark_headers})
-add_dependencies(libcmark_static copy_cmark_headers)
+if(NOT USE_SHARED_CMARK)
+  set(CMARK_TESTS OFF CACHE BOOL "Build cmark tests and enable testing")
+  add_subdirectory(cmark)
+  set(cmark_headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmark/src/cmark.h
+    ${CMAKE_CURRENT_BINARY_DIR}/cmark/src/cmark_export.h
+    ${CMAKE_CURRENT_BINARY_DIR}/cmark/src/cmark_version.h)
+  foreach(fn ${cmark_headers})
+    get_filename_component(fn_name "${fn}" NAME)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name}
+      COMMAND ${CMAKE_COMMAND} -E copy ${fn} ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name}
+      MAIN_DEPENDENCY ${fn})
+    list(APPEND copy_cmark_headers ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name})
+  endforeach()
+  add_custom_target(copy_cmark_headers DEPENDS ${copy_cmark_headers})
+  add_dependencies(libcmark_static copy_cmark_headers)
+endif()
