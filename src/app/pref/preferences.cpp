@@ -159,27 +159,36 @@ std::string Preferences::docConfigFileName(const app::Document* doc)
 
 void Preferences::serializeDocPref(const app::Document* doc, app::DocumentPreferences* docPref, bool save)
 {
-  bool specific_file = false;
+  bool flush_config = false;
 
   if (doc) {
-    if (doc->isAssociatedToFile()) {
-      push_config_state();
-      set_config_file(docConfigFileName(doc).c_str());
-      specific_file = true;
-    }
-    else if (save)
+    // We do nothing if the document isn't associated to a file and we
+    // want to save its specific preferences.
+    if (save && !doc->isAssociatedToFile())
       return;
+
+    // We always push a new configuration file in the stack to avoid
+    // modifying the default preferences when a document in "doc" is
+    // specified.
+    push_config_state();
+    if (doc->isAssociatedToFile()) {
+      set_config_file(docConfigFileName(doc).c_str());
+      flush_config = true;
+    }
   }
 
-  if (save)
+  if (save) {
     docPref->save();
+  }
   else {
     // Load default preferences, or preferences from .ini file.
     docPref->load();
   }
 
-  if (specific_file) {
-    flush_config_file();
+  if (doc) {
+    if (flush_config)
+      flush_config_file();
+
     pop_config_state();
   }
 }
