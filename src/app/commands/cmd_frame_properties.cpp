@@ -11,9 +11,10 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
-#include "app/ui/timeline.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "base/convert_to.h"
 #include "doc/sprite.h"
@@ -80,53 +81,60 @@ void FramePropertiesCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
   auto& docPref = Preferences::instance().document(context->activeDocument());
-  app::gen::FrameProperties window;
-  frame_t firstFrame = 0;
-  frame_t lastFrame = 0;
   int base = docPref.timeline.firstFrame();
+  app::gen::FrameProperties window;
+  SelectedFrames selFrames;
 
   switch (m_target) {
 
     case ALL_FRAMES:
-      lastFrame = sprite->lastFrame();
+      selFrames.insert(0, sprite->lastFrame());
       break;
 
     case CURRENT_RANGE: {
-      // TODO the range of selected frames should be in doc::Site.
-      auto range = App::instance()->timeline()->range();
-      if (range.enabled()) {
-        firstFrame = range.frameBegin();
-        lastFrame = range.frameEnd();
+      Site site = context->activeSite();
+      if (site.inTimeline()) {
+        selFrames = site.selectedFrames();
       }
       else {
-        firstFrame = lastFrame = reader.frame();
+        selFrames.insert(site.frame());
       }
       break;
     }
 
     case SPECIFIC_FRAME:
-      firstFrame = lastFrame = m_frame-base;
+      selFrames.insert(m_frame-base);
       break;
   }
 
-  if (firstFrame != lastFrame)
-    window.frame()->setTextf("[%d...%d]", (int)firstFrame+base, (int)lastFrame+base);
-  else
-    window.frame()->setTextf("%d", (int)firstFrame+base);
+  ASSERT(!selFrames.empty());
+  if (selFrames.empty())
+    return;
 
-  window.frlen()->setTextf("%d", sprite->frameDuration(firstFrame));
+  if (selFrames.size() == 1)
+    window.frame()->setTextf("%d", selFrames.firstFrame()+base);
+  else if (selFrames.ranges() == 1) {
+    window.frame()->setTextf("[%d...%d]",
+                             selFrames.firstFrame()+base,
+                             selFrames.lastFrame()+base);
+  }
+  else
+    window.frame()->setTextf("Multiple Frames");
+
+  window.frlen()->setTextf(
+    "%d", sprite->frameDuration(selFrames.firstFrame()));
 
   window.openWindowInForeground();
   if (window.closer() == window.ok()) {
-    int num = window.frlen()->textInt();
+    int newMsecs = window.frlen()->textInt();
 
     ContextWriter writer(reader);
     Transaction transaction(writer.context(), "Frame Duration");
     DocumentApi api = writer.document()->getApi(transaction);
-    if (firstFrame != lastFrame)
-      api.setFrameRangeDuration(writer.sprite(), firstFrame, lastFrame, num);
-    else
-      api.setFrameDuration(writer.sprite(), firstFrame, num);
+
+    for (frame_t frame : selFrames)
+      api.setFrameDuration(writer.sprite(), frame, newMsecs);
+
     transaction.commit();
   }
 }

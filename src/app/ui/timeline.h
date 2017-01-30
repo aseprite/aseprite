@@ -16,7 +16,8 @@
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/frame.h"
-#include "doc/layer_index.h"
+#include "doc/selected_frames.h"
+#include "doc/selected_layers.h"
 #include "doc/sprite.h"
 #include "obs/connection.h"
 #include "ui/scroll_bar.h"
@@ -87,6 +88,8 @@ namespace app {
     bool isMovingCel() const;
 
     Range range() const { return m_range; }
+    const SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
+    const SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
 
     void prepareToMoveRange();
     void moveRange(Range& range);
@@ -146,12 +149,13 @@ namespace app {
 
     struct Hit {
       int part;
-      LayerIndex layer;
+      layer_t layer;
       frame_t frame;
       ObjectId frameTag;
+      bool veryBottom;
 
-      Hit(int part = 0, LayerIndex layer = LayerIndex(0), frame_t frame = 0, ObjectId frameTag = NullId)
-        : part(part), layer(layer), frame(frame), frameTag(frameTag) {
+      Hit(int part = 0, layer_t layer = -1, frame_t frame = 0, ObjectId frameTag = NullId)
+        : part(part), layer(layer), frame(frame), frameTag(frameTag), veryBottom(false) {
       }
 
       bool operator!=(const Hit& other) const {
@@ -166,8 +170,20 @@ namespace app {
     };
 
     struct DropTarget {
-      enum HHit { HNone, Before, After };
-      enum VHit { VNone, Bottom, Top };
+
+      enum HHit {
+        HNone,
+        Before,
+        After
+      };
+
+      enum VHit {
+        VNone,
+        Bottom,
+        Top,
+        FirstChild,
+        VeryBottom
+      };
 
       DropTarget() {
         hhit = HNone;
@@ -177,10 +193,39 @@ namespace app {
       HHit hhit;
       VHit vhit;
       Layer* layer;
-      LayerIndex layerIdx;
+      ObjectId layerId;
       frame_t frame;
       int xpos, ypos;
     };
+
+    struct LayerInfo {
+      Layer* layer;
+      int level;
+      LayerFlags inheritedFlags;
+
+      LayerInfo()
+        : layer(nullptr),
+          level(0),
+          inheritedFlags(LayerFlags::None) {
+      }
+
+      LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags)
+        : layer(layer),
+          level(level),
+          inheritedFlags(inheritedFlags) {
+      }
+
+      bool parentVisible() const {
+        return ((int(inheritedFlags) & int(LayerFlags::Visible)) != 0);
+      }
+
+      bool parentEditable() const {
+        return ((int(inheritedFlags) & int(LayerFlags::Editable)) != 0);
+      }
+    };
+
+    bool selectedLayersBounds(const SelectedLayers& layers,
+                              layer_t* first, layer_t* last) const;
 
     void setLayer(Layer* layer);
     void setFrame(frame_t frame, bool byUser);
@@ -192,23 +237,24 @@ namespace app {
     bool allLayersDiscontinuous();
     void detachDocument();
     void setCursor(ui::Message* msg, const Hit& hit);
-    void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
-    void getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame);
+    void getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* lastLayer);
+    void getDrawableFrames(ui::Graphics* g, frame_t* firstFrame, frame_t* lastFrame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
-      const char* text, skin::Style* style,
-      bool is_active = false, bool is_hover = false, bool is_clicked = false);
+                  const char* text, skin::Style* style,
+                  bool is_active = false, bool is_hover = false,
+                  bool is_clicked = false, bool is_disabled = false);
     void drawTop(ui::Graphics* g);
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
-    void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
-    void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel, DrawCelData* data);
+    void drawLayer(ui::Graphics* g, layer_t layerIdx);
+    void drawCel(ui::Graphics* g, layer_t layerIdx, frame_t frame, Cel* cel, DrawCelData* data);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
                                Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                DrawCelData* data);
     void drawFrameTags(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
-    bool drawPart(ui::Graphics* g, int part, LayerIndex layer, frame_t frame);
+    bool drawPart(ui::Graphics* g, int part, layer_t layer, frame_t frame);
     void drawClipboardRange(ui::Graphics* g);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
@@ -223,14 +269,14 @@ namespace app {
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTestCel(const gfx::Point& mousePos);
     void setHot(const Hit& hit);
-    void showCel(LayerIndex layer, frame_t frame);
+    void showCel(layer_t layer, frame_t frame);
     void showCurrentCel();
     void cleanClk();
     gfx::Size getScrollableSize() const;
     gfx::Point getMaxScrollablePos() const;
-    LayerIndex getLayerIndex(const Layer* layer) const;
-    bool isLayerActive(LayerIndex layerIdx) const;
-    bool isFrameActive(frame_t frame) const;
+    layer_t getLayerIndex(const Layer* layer) const;
+    bool isLayerActive(const layer_t layerIdx) const;
+    bool isFrameActive(const frame_t frame) const;
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
@@ -238,25 +284,39 @@ namespace app {
     bool isCopyKeyPressed(ui::Message* msg);
 
     // The layer of the bottom (e.g. Background layer)
-    LayerIndex firstLayer() const { return LayerIndex(0); }
-
+    layer_t firstLayer() const { return 0; }
     // The layer of the top.
-    LayerIndex lastLayer() const { return LayerIndex(m_layers.size()-1); }
+    layer_t lastLayer() const { return m_layers.size()-1; }
 
     frame_t firstFrame() const { return frame_t(0); }
     frame_t lastFrame() const { return m_sprite->lastFrame(); }
 
-    bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
+    bool validLayer(layer_t layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
     bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
     int topHeight() const;
 
     DocumentPreferences& docPref() const;
+
+    // Theme/dimensions
     skin::SkinTheme* skinTheme() const;
+    gfx::Size celBoxSize() const;
+    int headerBoxWidth() const;
+    int headerBoxHeight() const;
+    int layerBoxHeight() const;
+    int frameBoxWidth() const;
+    int outlineWidth() const;
+
+    void updateCelOverlayBounds(const Hit& hit);
+    void drawCelOverlay(ui::Graphics* g);
+    void onThumbnailsPrefChange();
+    void setZoom(double zoom);
+    void setZoomAndUpdate(double zoom);
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
+    double m_zoom;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
@@ -264,9 +324,10 @@ namespace app {
     Layer* m_layer;
     frame_t m_frame;
     Range m_range;
+    Range m_startRange;
     Range m_dropRange;
     State m_state;
-    std::vector<Layer*> m_layers;
+    std::vector<LayerInfo> m_layers;
     int m_separator_x;
     int m_separator_w;
     int m_origFrames;
@@ -291,9 +352,17 @@ namespace app {
 
     AniControls m_aniControls;
 
+    // Data used for thumbnails.
+    bool m_thumbnailsOverlayVisible;
+    gfx::Rect m_thumbnailsOverlayInner;
+    gfx::Rect m_thumbnailsOverlayOuter;
+    Hit m_thumbnailsOverlayHit;
+    gfx::Point m_thumbnailsOverlayDirection;
+    obs::connection m_thumbnailsPrefConn;
+
     // Temporal data used to move the range.
     struct MoveRange {
-      int activeRelativeLayer;
+      layer_t activeRelativeLayer;
       frame_t activeRelativeFrame;
     } m_moveRangeData;
   };

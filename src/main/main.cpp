@@ -9,7 +9,7 @@
 #endif
 
 #include "app/app.h"
-#include "app/app_options.h"
+#include "app/cli/app_options.h"
 #include "app/console.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"

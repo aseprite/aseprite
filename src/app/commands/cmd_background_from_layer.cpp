@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -44,7 +44,9 @@ bool BackgroundFromLayerCommand::onEnabled(Context* context)
                         ContextFlags::ActiveLayerIsEditable |
                         ContextFlags::ActiveLayerIsImage) &&
     // Doesn't have a background layer
-    !context->checkFlags(ContextFlags::HasBackgroundLayer);
+    !context->checkFlags(ContextFlags::HasBackgroundLayer) &&
+    // Isn't a reference layer
+    !context->checkFlags(ContextFlags::ActiveLayerIsReference);
 }
 
 void BackgroundFromLayerCommand::onExecute(Context* context)

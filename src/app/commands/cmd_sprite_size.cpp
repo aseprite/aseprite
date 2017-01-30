@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_cel_bounds.h"
 #include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -48,8 +49,11 @@ class SpriteSizeJob : public Job {
   int m_new_height;
   ResizeMethod m_resize_method;
 
-  int scale_x(int x) const { return x * m_new_width / m_sprite->width(); }
-  int scale_y(int y) const { return y * m_new_height / m_sprite->height(); }
+  template<typename T>
+  T scale_x(T x) const { return x * T(m_new_width) / T(m_sprite->width()); }
+
+  template<typename T>
+  T scale_y(T y) const { return y * T(m_new_height) / T(m_sprite->height()); }
 
 public:
 
@@ -83,33 +87,44 @@ protected:
     // For each cel...
     int progress = 0;
     for (Cel* cel : m_sprite->uniqueCels()) {
-      // Change its location
-      api.setCelPosition(m_sprite, cel, scale_x(cel->x()), scale_y(cel->y()));
-
       // Get cel's image
       Image* image = cel->image();
       if (image && !cel->link()) {
-        // Resize the image
-        int w = scale_x(image->width());
-        int h = scale_y(image->height());
-        ImageRef new_image(Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h)));
-        new_image->setMaskColor(image->maskColor());
+        // Resize the cel bounds only if it's from a reference layer
+        if (cel->layer()->isReference()) {
+          gfx::RectF newBounds = cel->boundsF();
+          newBounds.x = scale_x(newBounds.x);
+          newBounds.y = scale_y(newBounds.y);
+          newBounds.w = scale_x(newBounds.w);
+          newBounds.h = scale_y(newBounds.h);
+          transaction.execute(new cmd::SetCelBoundsF(cel, newBounds));
+        }
+        else {
+          // Change its location
+          api.setCelPosition(m_sprite, cel, scale_x(cel->x()), scale_y(cel->y()));
 
-        doc::algorithm::fixup_image_transparent_colors(image);
-        doc::algorithm::resize_image(
-          image, new_image.get(),
-          m_resize_method,
-          m_sprite->palette(cel->frame()),
-          m_sprite->rgbMap(cel->frame()),
-          (cel->layer()->isBackground() ? -1: m_sprite->transparentColor()));
+          // Resize the image
+          int w = scale_x(image->width());
+          int h = scale_y(image->height());
+          ImageRef new_image(Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h)));
+          new_image->setMaskColor(image->maskColor());
 
-        api.replaceImage(m_sprite, cel->imageRef(), new_image);
+          doc::algorithm::fixup_image_transparent_colors(image);
+          doc::algorithm::resize_image(
+            image, new_image.get(),
+            m_resize_method,
+            m_sprite->palette(cel->frame()),
+            m_sprite->rgbMap(cel->frame()),
+            (cel->layer()->isBackground() ? -1: m_sprite->transparentColor()));
+
+          api.replaceImage(m_sprite, cel->imageRef(), new_image);
+        }
       }
 
       jobProgress((float)progress / cels_count);
       ++progress;
 
-      // cancel all the operation?
+      // Cancel all the operation?
       if (isCanceled())
         return;        // Transaction destructor will undo all operations
     }

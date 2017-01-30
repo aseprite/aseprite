@@ -38,7 +38,10 @@ DataRecovery::DataRecovery(doc::Context* ctx)
 
       SessionPtr session(new Session(itempath));
       if (!session->isRunning()) {
-        if (!session->isEmpty()) {
+        if (session->version() != VERSION) {
+          TRACE("cannot be loaded (incompatible version)\n");
+        }
+        else if (!session->isEmpty()) {
           TRACE("to be loaded\n");
           m_sessions.push_back(session);
         }

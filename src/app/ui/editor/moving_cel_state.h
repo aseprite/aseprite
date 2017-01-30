@@ -11,6 +11,7 @@
 #include "app/ui/editor/standby_state.h"
 
 #include "app/context_access.h"
+#include "app/ui/editor/handle_type.h"
 #include "doc/cel_list.h"
 
 #include <vector>
@@ -22,9 +23,26 @@ namespace doc {
 namespace app {
   class Editor;
 
+  class MovingCelCollect {
+  public:
+    MovingCelCollect(Editor* editor, Layer* layer);
+
+    bool empty() const { return m_celList.empty(); }
+
+    Cel* mainCel() const { return m_mainCel; }
+    const CelList& celList() const { return m_celList; }
+
+  private:
+    Cel* m_mainCel;
+    CelList m_celList;
+  };
+
   class MovingCelState : public StandbyState {
   public:
-    MovingCelState(Editor* editor, ui::MouseMessage* msg);
+    MovingCelState(Editor* editor,
+                   ui::MouseMessage* msg,
+                   const HandleType handle,
+                   const MovingCelCollect& collect);
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -33,13 +51,21 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
   private:
+    gfx::Point intCelOffset() const;
+
     ContextReader m_reader;
+    Cel* m_cel;
     CelList m_celList;
-    std::vector<gfx::Point> m_celStarts;
-    gfx::Point m_celOffset;
-    gfx::Point m_cursorStart;
+    std::vector<gfx::RectF> m_celStarts;
+    gfx::PointF m_cursorStart;
+    gfx::PointF m_celOffset;
+    gfx::SizeF m_celMainSize;
+    gfx::SizeF m_celScale;
     bool m_canceled;
     bool m_maskVisible;
+    bool m_hasReference;
+    bool m_scaled;
+    HandleType m_handle;
   };
 
 } // namespace app

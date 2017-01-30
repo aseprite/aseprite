@@ -21,8 +21,8 @@ namespace cmd {
 
 using namespace doc;
 
-AddLayer::AddLayer(Layer* folder, Layer* newLayer, Layer* afterThis)
-  : m_folder(folder)
+AddLayer::AddLayer(Layer* group, Layer* newLayer, Layer* afterThis)
+  : m_group(group)
   , m_newLayer(newLayer)
   , m_afterThis(afterThis)
   , m_size(0)
@@ -31,63 +31,62 @@ AddLayer::AddLayer(Layer* folder, Layer* newLayer, Layer* afterThis)
 
 void AddLayer::onExecute()
 {
-  Layer* folder = m_folder.layer();
+  Layer* group = m_group.layer();
   Layer* newLayer = m_newLayer.layer();
   Layer* afterThis = m_afterThis.layer();
 
-  addLayer(folder, newLayer, afterThis);
+  addLayer(group, newLayer, afterThis);
 }
 
 void AddLayer::onUndo()
 {
-  Layer* folder = m_folder.layer();
+  Layer* group = m_group.layer();
   Layer* layer = m_newLayer.layer();
 
   write_layer(m_stream, layer);
   m_size = size_t(m_stream.tellp());
 
-  removeLayer(folder, layer);
+  removeLayer(group, layer);
 }
 
 void AddLayer::onRedo()
 {
-  Layer* folder = m_folder.layer();
-  SubObjectsFromSprite io(folder->sprite());
+  Layer* group = m_group.layer();
+  SubObjectsFromSprite io(group->sprite());
   Layer* newLayer = read_layer(m_stream, &io);
   Layer* afterThis = m_afterThis.layer();
 
-  addLayer(folder, newLayer, afterThis);
+  addLayer(group, newLayer, afterThis);
 
   m_stream.str(std::string());
   m_stream.clear();
   m_size = 0;
 }
 
-void AddLayer::addLayer(Layer* folder, Layer* newLayer, Layer* afterThis)
+void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 {
-  static_cast<LayerFolder*>(folder)->addLayer(newLayer);
-  static_cast<LayerFolder*>(folder)->stackLayer(newLayer, afterThis);
-  folder->incrementVersion();
-  folder->sprite()->incrementVersion();
+  static_cast<LayerGroup*>(group)->insertLayer(newLayer, afterThis);
+  group->incrementVersion();
+  group->sprite()->incrementVersion();
 
-  Document* doc = folder->sprite()->document();
+  Document* doc = group->sprite()->document();
   DocumentEvent ev(doc);
-  ev.sprite(folder->sprite());
+  ev.sprite(group->sprite());
   ev.layer(newLayer);
   doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddLayer, ev);
 }
 
-void AddLayer::removeLayer(Layer* folder, Layer* layer)
+void AddLayer::removeLayer(Layer* group, Layer* layer)
 {
-  Document* doc = folder->sprite()->document();
+  Document* doc = group->sprite()->document();
   DocumentEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
   doc->notify_observers<DocumentEvent&>(&DocumentObserver::onBeforeRemoveLayer, ev);
 
-  static_cast<LayerFolder*>(folder)->removeLayer(layer);
-  folder->incrementVersion();
-  folder->sprite()->incrementVersion();
+  static_cast<LayerGroup*>(group)->removeLayer(layer);
+  group->incrementVersion();
+  group->sprite()->incrementVersion();
 
   doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
 

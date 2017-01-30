@@ -41,7 +41,7 @@ static FileFormatsManager* singleton = NULL;
 FileFormatsManager* FileFormatsManager::instance()
 {
   if (!singleton)
-    singleton = new FileFormatsManager();
+    singleton = new FileFormatsManager;
   return singleton;
 }
 
@@ -52,15 +52,7 @@ void FileFormatsManager::destroyInstance()
   singleton = NULL;
 }
 
-FileFormatsManager::~FileFormatsManager()
-{
-  FileFormatsList::iterator end = this->end();
-  for (FileFormatsList::iterator it = begin(); it != end; ++it) {
-    delete (*it);               // delete the FileFormat
-  }
-}
-
-void FileFormatsManager::registerAllFormats()
+FileFormatsManager::FileFormatsManager()
 {
   // The first format is the default image format in FileSelector
   registerFormat(CreateAseFormat());
@@ -77,6 +69,14 @@ void FileFormatsManager::registerAllFormats()
 #ifdef ASEPRITE_WITH_WEBP_SUPPORT
   registerFormat(CreateWebPFormat());
 #endif
+}
+
+FileFormatsManager::~FileFormatsManager()
+{
+  FileFormatsList::iterator end = this->end();
+  for (FileFormatsList::iterator it = begin(); it != end; ++it) {
+    delete (*it);               // delete the FileFormat
+  }
 }
 
 void FileFormatsManager::registerFormat(FileFormat* fileFormat)

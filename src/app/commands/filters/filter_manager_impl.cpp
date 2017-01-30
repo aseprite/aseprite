@@ -214,7 +214,7 @@ void FilterManagerImpl::applyToTarget()
   bool cancelled = false;
 
   ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
-                          m_site.sprite()->folder():
+                          m_site.sprite()->root():
                           m_site.layer()),
                          m_site.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
@@ -265,9 +265,9 @@ void FilterManagerImpl::flush()
           m_bounds.x,
           m_bounds.y+m_row-1)),
       gfx::Size(
-        editor->zoom().apply(m_bounds.w),
-        (editor->zoom().scale() >= 1 ? editor->zoom().apply(1):
-                                       editor->zoom().remove(1))));
+        editor->projection().applyX(m_bounds.w),
+        (editor->projection().scaleY() >= 1 ? editor->projection().applyY(1):
+                                              editor->projection().removeY(1))));
 
     gfx::Region reg1(rect);
     gfx::Region reg2;

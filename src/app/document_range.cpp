@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,103 +21,156 @@ using namespace doc;
 
 DocumentRange::DocumentRange()
   : m_type(kNone)
-  , m_layerBegin(0)
-  , m_layerEnd(-1)
-  , m_frameBegin(0)
-  , m_frameEnd(-1)
+  , m_selectingFromLayer(nullptr)
+  , m_selectingFromFrame(-1)
 {
 }
 
 DocumentRange::DocumentRange(Cel* cel)
   : m_type(kCels)
-  , m_layerBegin(cel->sprite()->layerToIndex(cel->layer()))
-  , m_layerEnd(m_layerBegin)
-  , m_frameBegin(cel->frame())
-  , m_frameEnd(m_frameBegin)
+  , m_selectingFromLayer(nullptr)
+  , m_selectingFromFrame(-1)
 {
+  m_selectedLayers.insert(cel->layer());
+  m_selectedFrames.insert(cel->frame());
 }
 
-void DocumentRange::startRange(LayerIndex layer, frame_t frame, Type type)
-{
-  m_type = type;
-  m_layerBegin = m_layerEnd = layer;
-  m_frameBegin = m_frameEnd = frame;
-}
-
-void DocumentRange::endRange(LayerIndex layer, frame_t frame)
-{
-  ASSERT(enabled());
-  m_layerEnd = layer;
-  m_frameEnd = frame;
-}
-
-void DocumentRange::disableRange()
+void DocumentRange::clearRange()
 {
   m_type = kNone;
+  m_selectedLayers.clear();
+  m_selectedFrames.clear();
 }
 
-bool DocumentRange::inRange(LayerIndex layer) const
+void DocumentRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
+{
+  m_type = type;
+  m_selectingFromLayer = fromLayer;
+  m_selectingFromFrame = fromFrame;
+
+  if (fromLayer)
+    m_selectedLayers.insert(fromLayer);
+  if (fromFrame >= 0)
+    m_selectedFrames.insert(fromFrame);
+}
+
+void DocumentRange::endRange(Layer* toLayer, frame_t toFrame)
+{
+  ASSERT(enabled());
+
+  if (m_selectingFromLayer && toLayer)
+    selectLayerRange(m_selectingFromLayer, toLayer);
+
+  if (m_selectingFromFrame >= 0)
+    selectFrameRange(m_selectingFromFrame, toFrame);
+}
+
+void DocumentRange::selectLayer(Layer* layer)
+{
+  if (m_type == kNone)
+    m_type = kLayers;
+
+  m_selectedLayers.insert(layer);
+}
+
+void DocumentRange::selectLayers(const SelectedLayers& selLayers)
+{
+  if (m_type == kNone)
+    m_type = kLayers;
+
+  for (auto layer : selLayers)
+    m_selectedLayers.insert(layer);
+}
+
+bool DocumentRange::contains(Layer* layer) const
 {
   if (enabled())
-    return (layer >= layerBegin() && layer <= layerEnd());
+    return m_selectedLayers.contains(layer);
   else
     return false;
 }
 
-bool DocumentRange::inRange(frame_t frame) const
+void DocumentRange::displace(layer_t layerDelta, frame_t frameDelta)
 {
-  if (enabled())
-    return (frame >= frameBegin() && frame <= frameEnd());
-  else
-    return false;
+  m_selectedLayers.displace(layerDelta);
+  m_selectedFrames.displace(frameDelta);
 }
 
-bool DocumentRange::inRange(LayerIndex layer, frame_t frame) const
-{
-  return inRange(layer) && inRange(frame);
-}
-
-void DocumentRange::setLayers(int layers)
-{
-  if (m_layerBegin <= m_layerEnd) m_layerEnd = m_layerBegin + LayerIndex(layers - 1);
-  else m_layerBegin = m_layerEnd + LayerIndex(layers - 1);
-}
-
-void DocumentRange::setFrames(frame_t frames)
-{
-  if (m_frameBegin <= m_frameEnd)
-    m_frameEnd = (m_frameBegin + frames) - 1;
-  else
-    m_frameBegin = (m_frameEnd + frames) - 1;
-}
-
-void DocumentRange::displace(int layerDelta, int frameDelta)
-{
-  m_layerBegin += LayerIndex(layerDelta);
-  m_layerEnd   += LayerIndex(layerDelta);
-  m_frameBegin += frame_t(frameDelta);
-  m_frameEnd   += frame_t(frameDelta);
-}
-
-bool DocumentRange::convertToCels(Sprite* sprite)
+bool DocumentRange::convertToCels(const Sprite* sprite)
 {
   switch (m_type) {
     case DocumentRange::kNone:
       return false;
     case DocumentRange::kCels:
       break;
-    case DocumentRange::kFrames:
-      m_layerBegin = sprite->firstLayer();
-      m_layerEnd = sprite->lastLayer();
-      m_type = DocumentRange::kCels;
+    case DocumentRange::kFrames: {
+      LayerList layers = sprite->allBrowsableLayers();
+      ASSERT(layers.empty());
+      if (!layers.empty()) {
+        selectLayerRange(layers.front(), layers.back());
+        m_type = DocumentRange::kCels;
+      }
+      else
+        return false;
       break;
+    }
     case DocumentRange::kLayers:
-      m_frameBegin = frame_t(0);
-      m_frameEnd = sprite->lastFrame();
+      selectFrameRange(0, sprite->lastFrame());
       m_type = DocumentRange::kCels;
       break;
   }
   return true;
+}
+
+void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
+{
+  ASSERT(fromLayer);
+  ASSERT(toLayer);
+
+  bool goNext = false;
+  bool goPrev = false;
+  Layer* it;
+
+  if (fromLayer != toLayer) {
+    it = m_selectingFromLayer;
+    while (it) {
+      if (it == toLayer) {
+        goNext = true;
+        break;
+      }
+      it = it->getNextBrowsable();
+    }
+
+    if (!goNext) {
+      it = m_selectingFromLayer;
+      while (it) {
+        if (it == toLayer) {
+          goPrev = true;
+          break;
+        }
+        it = it->getPreviousBrowsable();
+      }
+    }
+  }
+
+  it = m_selectingFromLayer;
+  do {
+    m_selectedLayers.insert(it);
+    if (it == toLayer)
+      break;
+
+    if (goNext)
+      it = it->getNextBrowsable();
+    else if (goPrev)
+      it = it->getPreviousBrowsable();
+    else
+      break;
+  } while (it);
+}
+
+void DocumentRange::selectFrameRange(frame_t fromFrame, frame_t toFrame)
+{
+  m_selectedFrames.insert(fromFrame, toFrame);
 }
 
 } // namespace app

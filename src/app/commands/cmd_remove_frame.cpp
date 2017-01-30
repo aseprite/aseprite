@@ -13,7 +13,6 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/timeline.h"
 #include "app/transaction.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -54,14 +53,10 @@ void RemoveFrameCommand::onExecute(Context* context)
   {
     Transaction transaction(writer.context(), "Remove Frame");
     DocumentApi api = document->getApi(transaction);
-
-    // TODO the range of selected frames should be in doc::Site.
-    auto range = App::instance()->timeline()->range();
-    if (range.enabled()) {
-      for (frame_t frame = range.frameEnd(),
-             begin = range.frameBegin()-1;
-           frame != begin;
-           --frame) {
+    const Site* site = writer.site();
+    if (site->inTimeline() &&
+        !site->selectedFrames().empty()) {
+      for (frame_t frame : site->selectedFrames().reversed()) {
         api.removeFrame(sprite, frame);
       }
     }

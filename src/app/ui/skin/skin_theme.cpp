@@ -474,10 +474,10 @@ void SkinTheme::loadXml(const std::string& skinId)
         else if (ruleName == "icon") {
           if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);
           if (part_id) (*style)[StyleSheet::iconPartRule()] = css::Value(part_id);
+          if (color_id) (*style)[StyleSheet::iconColorRule()] = value_or_none(color_id);
 
           const char* x = xmlRule->Attribute("x");
           const char* y = xmlRule->Attribute("y");
-
           if (x) (*style)[StyleSheet::iconXRule()] = css::Value(strtol(x, NULL, 10));
           if (y) (*style)[StyleSheet::iconYRule()] = css::Value(strtol(y, NULL, 10));
         }

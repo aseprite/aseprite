@@ -31,7 +31,6 @@ namespace app {
   class BackupIndicator;
   class ContextBar;
   class Document;
-  class DocumentExporter;
   class INotificationDelegate;
   class InputChain;
   class LegacyModules;
@@ -115,7 +114,6 @@ namespace app {
     bool m_isShell;
     base::UniquePtr<MainWindow> m_mainWindow;
     FileList m_files;
-    base::UniquePtr<DocumentExporter> m_exporter;
     base::UniquePtr<AppBrushes> m_brushes;
     BackupIndicator* m_backupIndicator;
     base::mutex m_backupIndicatorMutex;

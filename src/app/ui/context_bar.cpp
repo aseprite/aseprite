@@ -1261,6 +1261,7 @@ public:
 
     m_sample.addItem("All Layers");
     m_sample.addItem("Current Layer");
+    m_sample.addItem("First Reference Layer");
 
     addChild(new Label("Pick:"));
     addChild(&m_channel);

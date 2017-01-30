@@ -42,6 +42,11 @@ namespace app {
     void onCurrentLayerChange();
     void onPositionChange();
 
+    void onZoomChange();
+    void onThumbEnabledChange();
+    void onThumbOverlayEnabledChange();
+    void onThumbOverlaySizeChange();
+
   private:
     void updateWidgetsFromCurrentSettings();
     app::Document* doc();

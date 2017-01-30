@@ -9,6 +9,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_cel_bounds.h"
 #include "app/commands/cmd_rotate.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
@@ -57,6 +58,29 @@ public:
 
 protected:
 
+  template<typename T>
+  void rotate_rect(gfx::RectT<T>& newBounds) {
+    const gfx::RectT<T> bounds = newBounds;
+    switch (m_angle) {
+      case 180:
+        newBounds.x = m_sprite->width() - bounds.x - bounds.w;
+        newBounds.y = m_sprite->height() - bounds.y - bounds.h;
+        break;
+      case 90:
+        newBounds.x = m_sprite->height() - bounds.y - bounds.h;
+        newBounds.y = bounds.x;
+        newBounds.w = bounds.h;
+        newBounds.h = bounds.w;
+        break;
+      case -90:
+        newBounds.x = bounds.y;
+        newBounds.y = m_sprite->width() - bounds.x - bounds.w;
+        newBounds.w = bounds.h;
+        newBounds.h = bounds.w;
+        break;
+    }
+  }
+
   // [working thread]
   virtual void onJob()
   {
@@ -69,22 +93,17 @@ protected:
       if (!image)
         continue;
 
-      switch (m_angle) {
-        case 180:
-          api.setCelPosition(m_sprite, cel,
-            m_sprite->width() - cel->x() - image->width(),
-            m_sprite->height() - cel->y() - image->height());
-          break;
-        case 90:
-          api.setCelPosition(m_sprite, cel,
-            m_sprite->height() - cel->y() - image->height(),
-            cel->x());
-          break;
-        case -90:
-          api.setCelPosition(m_sprite, cel,
-            cel->y(),
-            m_sprite->width() - cel->x() - image->width());
-          break;
+      if (cel->layer()->isReference()) {
+        gfx::RectF bounds = cel->boundsF();
+        rotate_rect(bounds);
+        if (cel->boundsF() != bounds)
+          transaction.execute(new cmd::SetCelBoundsF(cel, bounds));
+      }
+      else {
+        gfx::Rect bounds = cel->bounds();
+        rotate_rect(bounds);
+        if (bounds.origin() != cel->bounds().origin())
+          api.setCelPosition(m_sprite, cel, bounds.x, bounds.y);
       }
     }
 

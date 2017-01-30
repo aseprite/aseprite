@@ -693,7 +693,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   }
 
   // Setup the file-data.
-  if (!fop->sequenceGetFormatOptions()) {
+  if (!fop->formatOptions()) {
     base::SharedPtr<BmpOptions> bmp_options(new BmpOptions());
 
     bmp_options->format = format;
@@ -703,7 +703,7 @@ bool BmpFormat::onLoad(FileOp *fop)
     bmp_options->green_mask = gmask;
     bmp_options->blue_mask = bmask;
 
-    fop->sequenceSetFormatOptions(bmp_options);
+    fop->setFormatOptions(bmp_options);
   }
 
   return true;

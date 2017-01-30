@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,7 +9,9 @@
 #pragma once
 
 #include "doc/color.h"
+#include "doc/color_mode.h"
 #include "doc/image_buffer.h"
+#include "doc/image_spec.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "gfx/clip.h"
@@ -33,18 +35,22 @@ namespace doc {
 
     static Image* create(PixelFormat format, int width, int height,
                          const ImageBufferPtr& buffer = ImageBufferPtr());
+    static Image* create(const ImageSpec& spec,
+                         const ImageBufferPtr& buffer = ImageBufferPtr());
     static Image* createCopy(const Image* image,
                              const ImageBufferPtr& buffer = ImageBufferPtr());
 
     virtual ~Image();
 
-    PixelFormat pixelFormat() const { return m_format; }
-    int width() const { return m_width; }
-    int height() const { return m_height; }
-    gfx::Size size() const { return gfx::Size(m_width, m_height); }
-    gfx::Rect bounds() const { return gfx::Rect(0, 0, m_width, m_height); }
-    color_t maskColor() const { return m_maskColor; }
-    void setMaskColor(color_t c) { m_maskColor = c; }
+    const ImageSpec& spec() const { return m_spec; }
+    ColorMode colorMode() const { return m_spec.colorMode(); }
+    PixelFormat pixelFormat() const { return (PixelFormat)colorMode(); }
+    int width() const { return m_spec.width(); }
+    int height() const { return m_spec.height(); }
+    gfx::Size size() const { return m_spec.size(); }
+    gfx::Rect bounds() const { return m_spec.bounds(); }
+    color_t maskColor() const { return m_spec.maskColor(); }
+    void setMaskColor(color_t c) { m_spec.setMaskColor(c); }
 
     virtual int getMemSize() const override;
     int getRowStrideSize() const;
@@ -81,10 +87,7 @@ namespace doc {
     Image(PixelFormat format, int width, int height);
 
   private:
-    PixelFormat m_format;
-    int m_width;
-    int m_height;
-    color_t m_maskColor;  // Skipped color in merge process.
+    ImageSpec m_spec;
   };
 
 } // namespace doc

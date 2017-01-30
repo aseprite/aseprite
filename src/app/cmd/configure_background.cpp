@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/cmd/set_layer_flags.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace cmd {
@@ -32,7 +33,7 @@ ConfigureBackground::ConfigureBackground(Layer* layer)
     add(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), 255));
   }
 
-  add(new cmd::MoveLayer(layer, nullptr));
+  add(new cmd::MoveLayer(layer, layer->sprite()->root(), nullptr));
 }
 
 } // namespace cmd

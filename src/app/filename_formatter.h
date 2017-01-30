@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,6 +18,7 @@ namespace app {
 
     const std::string& filename() const { return m_filename; }
     const std::string& layerName() const { return m_layerName; }
+    const std::string& groupName() const { return m_groupName; }
     const std::string& innerTagName() const { return m_innerTagName; }
     const std::string& outerTagName() const { return m_outerTagName; }
     int frame() const { return m_frame; }
@@ -30,6 +31,11 @@ namespace app {
 
     FilenameInfo& layerName(const std::string& value) {
       m_layerName = value;
+      return *this;
+    }
+
+    FilenameInfo& groupName(const std::string& value) {
+      m_groupName = value;
       return *this;
     }
 
@@ -56,11 +62,22 @@ namespace app {
   private:
     std::string m_filename;
     std::string m_layerName;
+    std::string m_groupName;
     std::string m_innerTagName;
     std::string m_outerTagName;
     int m_frame;
     int m_tagFrame;
   };
+
+  // Returns the information inside {frame} tag.
+  // E.g. For {frame001} returns width=3 and startFrom=1
+  bool get_frame_info_from_filename_format(
+    const std::string& format, int* startFrom, int* width);
+
+  // Returns true if the given filename format contains {tag}, {layer} or {group}
+  bool is_tag_in_filename_format(const std::string& format);
+  bool is_layer_in_filename_format(const std::string& format);
+  bool is_group_in_filename_format(const std::string& format);
 
   // If "replaceFrame" is false, this function doesn't replace all the
   // information that depends on the current frame ({frame},
@@ -68,15 +85,20 @@ namespace app {
   std::string filename_formatter(
     const std::string& format,
     FilenameInfo& info,
-    bool replaceFrame = true);
+    const bool replaceFrame = true);
 
-  std::string set_frame_format(
-    const std::string& format,
-    const std::string& newFrameFormat);
+  std::string get_default_filename_format(
+    std::string& filename,
+    const bool withPath,
+    const bool hasFrames,
+    const bool hasLayer,
+    const bool hasFrameTag);
 
-  std::string add_frame_format(
-    const std::string& format,
-    const std::string& newFrameFormat);
+  std::string get_default_filename_format_for_sheet(
+    const std::string& filename,
+    const bool hasFrames,
+    const bool hasLayer,
+    const bool hasFrameTag);
 
 } // namespace app
 

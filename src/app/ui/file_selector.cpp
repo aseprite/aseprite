@@ -10,6 +10,7 @@
 
 #include "app/ui/file_selector.h"
 
+#include "base/bind.h"
 #include "base/string.h"
 #include "app/app.h"
 #include "app/console.h"
@@ -31,6 +32,7 @@
 #include "ui/ui.h"
 
 #include "new_folder_window.xml.h"
+#include "file_selector_extras.xml.h"
 
 #include <algorithm>
 #include <cctype>
@@ -93,8 +95,7 @@ static void on_exit_delete_navigation_history()
   delete navigation_history;
 }
 
-class CustomFileNameEntry : public ComboBox
-{
+class FileSelector::CustomFileNameEntry : public ComboBox {
 public:
   CustomFileNameEntry()
     : m_fileList(nullptr) {
@@ -142,8 +143,7 @@ private:
   FileList* m_fileList;
 };
 
-class CustomFileNameItem : public ListItem
-{
+class FileSelector::CustomFileNameItem : public ListItem {
 public:
   CustomFileNameItem(const char* text, IFileItem* fileItem)
     : ListItem(text)
@@ -157,8 +157,7 @@ private:
   IFileItem* m_fileItem;
 };
 
-class CustomFolderNameItem : public ListItem
-{
+class FileSelector::CustomFolderNameItem : public ListItem {
 public:
   CustomFolderNameItem(const char* text)
     : ListItem(text)
@@ -173,7 +172,7 @@ public:
 // (comboboxes) that need to filter Esc key (e.g. to close the
 // combobox popup). And we cannot pre-add a filter that send that key
 // to the Manager before it's processed by the combobox filter.
-class ArrowNavigator : public Widget {
+class FileSelector::ArrowNavigator : public Widget {
 public:
   ArrowNavigator(FileSelector* filesel)
     : Widget(kGenericWidget)
@@ -233,9 +232,85 @@ private:
   FileSelector* m_filesel;
 };
 
+class FileSelector::ExtrasWindow : public PopupWindow {
+public:
+  ExtrasWindow(FileSelectorDelegate* delegate)
+    : PopupWindow("",
+                  ClickBehavior::CloseOnClickInOtherWindow,
+                  EnterBehavior::CloseOnEnter)
+    , m_delegate(delegate)
+    , m_extras(new gen::FileSelectorExtras) {
+
+    setAutoRemap(false);
+    setBorder(gfx::Border(4*guiscale()));
+
+    addChild(m_extras);
+    m_extras->resize()->setValue(
+      base::convert_to<std::string>(m_delegate->getResizeScale()));
+    m_delegate->fillLayersComboBox(m_extras->layers());
+    m_delegate->fillFramesComboBox(m_extras->frames());
+    m_extras->pixelRatio()->setSelected(m_delegate->applyPixelRatio());
+
+    m_extras->resize()->Change.connect(&ExtrasWindow::onUpdateExtras, this);
+    m_extras->layers()->Change.connect(&ExtrasWindow::onUpdateExtras, this);
+    m_extras->frames()->Change.connect(&ExtrasWindow::onUpdateExtras, this);
+    m_extras->pixelRatio()->Click.connect(base::Bind<void>(&ExtrasWindow::onUpdateExtras, this));
+  }
+
+  std::string extrasLabel() const {
+    std::string label = "Resize: " + m_extras->resize()->getSelectedItem()->text();
+
+    auto layerItem = m_extras->layers()->getSelectedItem();
+    if (layerItem && !layerItem->getValue().empty())
+      label += ", " + layerItem->text();
+
+    auto frameItem = m_extras->frames()->getSelectedItem();
+    if (frameItem && !frameItem->getValue().empty())
+      label += ", " + frameItem->text();
+
+    if (m_extras->pixelRatio()->isSelected()) {
+      PixelRatio pr = m_delegate->pixelRatio();
+      label += " (";
+      label += base::convert_to<std::string>(pr.w);
+      label += ":";
+      label += base::convert_to<std::string>(pr.h);
+      label += ")";
+    }
+
+    return label;
+  }
+
+  double resizeValue() const {
+    return base::convert_to<double>(m_extras->resize()->getValue());
+  }
+
+  std::string layersValue() const {
+    return m_extras->layers()->getValue();
+  }
+
+  std::string framesValue() const {
+    return m_extras->frames()->getValue();
+  }
+
+  bool applyPixelRatio() const {
+    return m_extras->pixelRatio()->isSelected();
+  }
+
+  obs::signal<void()> UpdateExtras;
+
+private:
+  void onUpdateExtras() {
+    UpdateExtras();
+  }
+
+  FileSelectorDelegate* m_delegate;
+  gen::FileSelectorExtras* m_extras;
+};
+
 FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate)
   : m_type(type)
   , m_delegate(delegate)
+  , m_extras(nullptr)
   , m_navigationLocked(false)
 {
   SkinTheme* theme = SkinTheme::instance();
@@ -297,11 +372,19 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
   m_fileList->FileAccepted.connect(base::Bind<void>(&FileSelector::onFileListFileAccepted, this));
   m_fileList->CurrentFolderChanged.connect(base::Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
 
-  resizeOptions()->setVisible(withResizeOptions);
   if (withResizeOptions) {
-    resize()->setValue("1");    // 100% is default
-    resize()->setValue(base::convert_to<std::string>(m_delegate->getResizeScale()));
+    extraOptions()->Click.connect(base::Bind<void>(&FileSelector::onExtraOptions, this));
+
+    m_extras = new ExtrasWindow(m_delegate);
+    m_extras->UpdateExtras.connect(base::Bind<void>(&FileSelector::updateExtraLabel, this));
   }
+
+  updateExtraLabel();
+}
+
+FileSelector::~FileSelector()
+{
+  delete m_extras;
 }
 
 void FileSelector::goBack()
@@ -585,8 +668,13 @@ again:
     set_config_string("FileSelect", "CurrentDirectory",
                       lastpath.c_str());
 
-    if (m_delegate && m_delegate->hasResizeCombobox()) {
-      m_delegate->setResizeScale(base::convert_to<double>(resize()->getValue()));
+    if (m_delegate &&
+        m_delegate->hasResizeCombobox() &&
+        m_extras) {
+      m_delegate->setResizeScale(m_extras->resizeValue());
+      m_delegate->setLayers(m_extras->layersValue());
+      m_delegate->setFrames(m_extras->framesValue());
+      m_delegate->setApplyPixelRatio(m_extras->applyPixelRatio());
     }
   }
 
@@ -842,12 +930,40 @@ void FileSelector::onFileListCurrentFolderChanged()
   m_fileName->closeListBox();
 }
 
+void FileSelector::onExtraOptions()
+{
+  ASSERT(m_extras);
+
+  m_extras->remapWindow();
+  gfx::Rect bounds = m_extras->bounds();
+  ui::fit_bounds(BOTTOM, extraOptions()->bounds(), bounds);
+
+  m_extras->moveWindow(bounds);
+  m_extras->openWindow();
+}
+
 std::string FileSelector::getSelectedExtension() const
 {
   std::string ext = fileType()->getValue();
   if (ext.empty() || ext.find(',') != std::string::npos)
     ext = m_defExtension;
   return ext;
+}
+
+void FileSelector::updateExtraLabel()
+{
+  if (!m_extras) {
+    extraOptions()->setVisible(false);
+    return;
+  }
+
+  extraOptions()->setVisible(true);
+
+  std::string newLabel = m_extras->extrasLabel();
+  if (extraOptions()->text() != newLabel) {
+    extraOptions()->setText(newLabel);
+    extraOptions()->window()->layout();
+  }
 }
 
 } // namespace app

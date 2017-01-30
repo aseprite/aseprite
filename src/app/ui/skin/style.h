@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -83,12 +83,14 @@ namespace app {
 
     class IconRule : public Rule {
     public:
-      explicit IconRule() : m_align(0) { }
+      explicit IconRule() : m_align(0),
+                            m_color(gfx::ColorNone) { }
 
       void setAlign(int align) { m_align = align; }
       void setPart(const SkinPartPtr& part) { m_part = part; }
       void setX(int x) { m_x = x; }
       void setY(int y) { m_y = y; }
+      void setColor(gfx::Color color) { m_color = color; }
 
       SkinPartPtr getPart() { return m_part; }
 
@@ -99,6 +101,7 @@ namespace app {
       int m_align;
       SkinPartPtr m_part;
       int m_x, m_y;
+      gfx::Color m_color;
     };
 
     class Rules {

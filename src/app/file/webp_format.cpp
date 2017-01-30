@@ -154,10 +154,10 @@ bool WebPFormat::onLoad(FileOp* fop)
       break;
   }
 
-  if (!fop->sequenceGetFormatOptions()) {
+  if (!fop->formatOptions()) {
     base::SharedPtr<WebPOptions> webPOptions(new WebPOptions());
     webPOptions->setLossless(std::min(config.input.format - 1, 1));
-    fop->sequenceSetFormatOptions(webPOptions);
+    fop->setFormatOptions(webPOptions);
   }
 
   WebPIDelete(idec);
@@ -251,8 +251,7 @@ bool WebPFormat::onSave(FileOp* fop)
     return false;
   }
 
-  base::SharedPtr<WebPOptions> webp_options =
-    fop->sequenceGetFormatOptions();
+  base::SharedPtr<WebPOptions> webp_options = fop->formatOptions();
 
   WebPConfig config;
 

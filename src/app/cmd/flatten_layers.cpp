@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -55,7 +55,7 @@ void FlattenLayers::onExecute()
     // Create a new transparent layer to flatten everything onto.
     flatLayer = new LayerImage(sprite);
     ASSERT(flatLayer->isVisible());
-    executeAndAdd(new cmd::AddLayer(sprite->folder(), flatLayer, nullptr));
+    executeAndAdd(new cmd::AddLayer(sprite->root(), flatLayer, nullptr));
     executeAndAdd(new cmd::SetLayerName(flatLayer, "Flattened"));
     bgcolor = sprite->transparentColor();
   }
@@ -91,7 +91,7 @@ void FlattenLayers::onExecute()
   }
 
   // Delete old layers.
-  LayerList layers = sprite->folder()->getLayersList();
+  LayerList layers = sprite->root()->layers();
   for (Layer* layer : layers)
     if (layer != flatLayer)
       executeAndAdd(new cmd::RemoveLayer(layer));

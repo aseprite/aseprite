@@ -114,9 +114,13 @@ add_library(app-lib
   app.cpp
   app_brushes.cpp
   app_menus.cpp
-  app_options.cpp
   app_render.cpp
   check_update.cpp
+  cli/app_options.cpp
+  cli/cli_open_file.cpp
+  cli/cli_processor.cpp
+  cli/default_cli_delegate.cpp
+  cli/preview_cli_delegate.cpp
   cmd.cpp
   cmd/add_cel.cpp
   cmd/add_frame.cpp
@@ -151,6 +155,7 @@ add_library(app-lib
   cmd/remove_palette.cpp
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
+  cmd/set_cel_bounds.cpp
   cmd/set_cel_data.cpp
   cmd/set_cel_frame.cpp
   cmd/set_cel_opacity.cpp
@@ -168,6 +173,7 @@ add_library(app-lib
   cmd/set_mask_position.cpp
   cmd/set_palette.cpp
   cmd/set_pixel_format.cpp
+  cmd/set_pixel_ratio.cpp
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
@@ -248,11 +254,11 @@ add_library(app-lib
   commands/cmd_new_frame.cpp
   commands/cmd_new_frame_tag.cpp
   commands/cmd_new_layer.cpp
-  commands/cmd_new_layer_set.cpp
   commands/cmd_new_sprite_from_selection.cpp
   commands/cmd_onionskin.cpp
   commands/cmd_open_browser.cpp
   commands/cmd_open_file.cpp
+  commands/cmd_open_group.cpp
   commands/cmd_open_in_folder.cpp
   commands/cmd_open_with_app.cpp
   commands/cmd_options.cpp
@@ -290,6 +296,7 @@ add_library(app-lib
   commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
   commands/cmd_toggle_preview.cpp
+  commands/cmd_toggle_timeline_thumbnails.cpp
   commands/cmd_undo.cpp
   commands/cmd_undo_history.cpp
   commands/cmd_unlink_cel.cpp
@@ -346,6 +353,7 @@ add_library(app-lib
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
+  restore_visible_layers.cpp
   rw_lock.cpp
   send_crash.cpp
   shade.cpp
@@ -410,6 +418,7 @@ add_library(app-lib
   ui/icon_button.cpp
   ui/input_chain.cpp
   ui/keyboard_shortcuts.cpp
+  ui/layer_frame_comboboxes.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/news_listbox.cpp
@@ -442,6 +451,7 @@ add_library(app-lib
   ui/workspace_tabs.cpp
   ui/zoom_entry.cpp
   ui_context.cpp
+  thumbnails.cpp
   util/autocrop.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp
@@ -452,6 +462,7 @@ add_library(app-lib
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/pic_file.cpp
+  util/pixel_ratio.cpp
   util/range_utils.cpp
   webserver.cpp
   widget_loader.cpp

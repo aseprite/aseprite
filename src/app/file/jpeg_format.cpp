@@ -237,8 +237,7 @@ bool JpegFormat::onSave(FileOp* fop)
   const Image* image = fop->sequenceImage();
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  const base::SharedPtr<JpegOptions> jpeg_options =
-    fop->sequenceGetFormatOptions();
+  const base::SharedPtr<JpegOptions> jpeg_options = fop->formatOptions();
   int c;
 
   // Open the file for write in it.

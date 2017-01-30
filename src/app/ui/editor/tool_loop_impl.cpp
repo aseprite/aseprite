@@ -199,7 +199,6 @@ public:
     }
     return m_rgbMap;
   }
-  const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }
   doc::color_t getFgColor() override { return m_fgColor; }
   doc::color_t getBgColor() override { return m_bgColor; }
@@ -317,8 +316,7 @@ public:
           m_floodfillSrcImage,
           m_sprite,
           m_frame,
-          gfx::Clip(m_sprite->bounds()),
-          render::Zoom(1, 1));
+          gfx::Clip(m_sprite->bounds()));
       }
       else {
         Cel* cel = m_layer->cel(m_frame);
@@ -503,15 +501,21 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
         1000, "There is no active layer");
       return nullptr;
     }
-    else if (!layer->isVisible()) {
+    else if (!layer->isVisibleHierarchy()) {
       StatusBar::instance()->showTip(
         1000, "Layer '%s' is hidden", layer->name().c_str());
       return nullptr;
     }
     // If the active layer is read-only.
-    else if (!layer->isEditable()) {
+    else if (!layer->isEditableHierarchy()) {
       StatusBar::instance()->showTip(
         1000, "Layer '%s' is locked", layer->name().c_str());
+      return nullptr;
+    }
+    // If the active layer is reference.
+    else if (layer->isReference()) {
+      StatusBar::instance()->showTip(
+        1000, "Layer '%s' is reference, cannot be modified", layer->name().c_str());
       return nullptr;
     }
   }
@@ -621,8 +625,9 @@ tools::ToolLoop* create_tool_loop_preview(
 
   Layer* layer = editor->layer();
   if (!layer ||
-      !layer->isVisible() ||
-      !layer->isEditable()) {
+      !layer->isVisibleHierarchy() ||
+      !layer->isEditableHierarchy() ||
+      layer->isReference()) {
     return nullptr;
   }
 

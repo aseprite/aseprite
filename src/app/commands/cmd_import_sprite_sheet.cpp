@@ -393,7 +393,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     // Add the layer in the sprite.
-    LayerImage* resultLayer = api.newLayer(sprite, "Sprite Sheet");
+    LayerImage* resultLayer = api.newLayer(sprite->root(), "Sprite Sheet");
 
     // Add all frames+cels to the new layer
     for (size_t i=0; i<animation.size(); ++i) {
@@ -406,12 +406,12 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     }
 
     // Copy the list of layers (because we will modify it in the iteration).
-    LayerList layers = sprite->folder()->getLayersList();
+    LayerList layers = sprite->root()->layers();
 
     // Remove all other layers
-    for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
-      if (*it != resultLayer)
-        api.removeLayer(*it);
+    for (Layer* child : layers) {
+      if (child != resultLayer)
+        api.removeLayer(child);
     }
 
     // Change the number of frames

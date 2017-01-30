@@ -21,6 +21,7 @@ BYTE            | An 8-bit unsigned integer value
 WORD            | A 16-bit unsigned integer value
 SIGNED WORD     | A 16-bit signed integer value
 DWORD           | A 32-bit unsigned integer value
+FIXED           | A 32-bit fixed point (16.16) value
 BYTE[n]         | "n" bytes.
 STRING          | WORD: string length (number of bytes)
                 | BYTE[length]: characters (in UTF-8)
@@ -72,7 +73,9 @@ DWORD         | Set be 0
 BYTE          | Palette entry (index) which represent transparent color in all non-background layers (only for Indexed sprites).
 BYTE[3]       | Ignore these bytes
 WORD          | Number of colors (0 means 256 for old sprites)
-BYTE[94]      | For future (set to zero)
+BYTE          | Pixel width (pixel ratio is "pixel width/pixel height"). If this or pixel height field is zero, pixel ratio is 1:1
+BYTE          | Pixel height
+BYTE[92]      | For future (set to zero)
 
 4. Frames
 ---------
@@ -143,7 +146,11 @@ Ignore this chunk if you find the new palette chunk (0x2019)
                   4 = Lock movement
                   8 = Background
                   16 = Prefer linked cels
-  WORD          Layer type (0=normal (image) layer, 1=layer set)
+                  32 = The layer group should be displayed collapsed
+                  64 = The layer is a reference layer
+  WORD          Layer type
+                  0 = Normal (image) layer
+                  1 = Group
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)
   WORD          Default layer height in pixels (ignored)
@@ -194,13 +201,27 @@ Ignore this chunk if you find the new palette chunk (0x2019)
 
     WORD        Frame position to link with
 
-  + For cel type = 2 (compressed image):
+  + For cel type = 2 (Compressed Image):
 
     WORD        Width in pixels
     WORD        Height in pixels
     BYTE[]      Compressed "Raw Cel" data. Details about the
                 compression method:
                 http://www.ietf.org/rfc/rfc1951.txt
+```
+
+### Cel Extra Chunk (0x2006)
+
+Adds extra information to the latest read cel.
+
+```
+  DWORD         Flags (set to zero)
+                  1 - precise bounds are set
+  FIXED         Precise X position
+  FIXED         Precise Y position
+  FIXED         Width of the cel in the sprite (scaled in real-time)
+  FIXED         Height of the cel in the sprite
+  BYTE[16]      For future use (set to zero)
 ```
 
 ### Mask Chunk (0x2016) DEPRECATED
@@ -217,11 +238,9 @@ Ignore this chunk if you find the new palette chunk (0x2019)
                 packed into the high order bits)
 ```
 
-
 ### Path Chunk (0x2017)
 
   Never used.
-
 
 ### Frame Tags Chunk (0x2018)
 

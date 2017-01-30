@@ -57,6 +57,7 @@
     <enum id="EyedropperSample">
       <value id="ALL_LAYERS" value="0" />
       <value id="CURRENT_LAYER" value="1" />
+      <value id="FIRST_REFERENCE_LAYER" value="2" />
     </enum>
     <enum id="SelectionMode">
       <value id="DEFAULT" value="0" />
@@ -141,6 +142,7 @@
     <section id="experimental" text="Experimental">
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
+      <option id="nonactive_layers_opacity" type="int" default="255" />
     </section>
     <section id="news">
       <option id="cache_file" type="std::string" />
@@ -210,6 +212,8 @@
       <option id="height" type="int" default="32" />
       <option id="color_mode" type="doc::PixelFormat" default="doc::IMAGE_RGB" />
       <option id="background_color" type="int" default="0" />
+      <option id="advanced" type="bool" default="false" />
+      <option id="pixel_ratio" type="std::string" />
     </section>
     <section id="text_tool">
       <option id="font_face" type="std::string" />
@@ -218,6 +222,12 @@
     </section>
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
+    </section>
+    <section id="thumbnails">
+      <option id="cache_limit" type="int" default="5000" />
+    </section>
+    <section id="perf">
+      <option id="show_render_time" type="bool" default="false" />
     </section>
   </global>
 
@@ -247,7 +257,7 @@
   <document>
     <section id="site">
       <option id="frame" type="doc::frame_t" default="doc::frame_t(0)" />
-      <option id="layer" type="doc::LayerIndex" />
+      <option id="layer" type="doc::layer_t" default="doc::layer_t(0)" />
     </section>
     <section id="tiled">
       <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" migrate="Tools.Tiled" />
@@ -278,6 +288,12 @@
     <section id="timeline">
       <option id="first_frame" type="int" default="1" />
     </section>
+    <section id="thumbnails">
+      <option id="zoom" type="double" default="1" />
+      <option id="enabled" type="bool" default="false" />
+      <option id="overlay_enabled" type="bool" default="false" />
+      <option id="overlay_size" type="int" default="5" />
+    </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />
       <option id="prev_frames" type="int" default="1" migrate="Onionskin.PrevFrames" />
@@ -292,6 +308,9 @@
     <section id="save_copy">
       <option id="filename" type="std::string" />
       <option id="resize_scale" type="double" default="1" />
+      <option id="layer" type="std::string" />
+      <option id="frame_tag" type="std::string" />
+      <option id="apply_pixel_ratio" type="bool" default="false" />
     </section>
     <section id="sprite_sheet">
       <option id="defined" type="bool" default="false" />

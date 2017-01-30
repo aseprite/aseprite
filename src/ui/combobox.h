@@ -18,6 +18,7 @@ namespace ui {
 
   class Button;
   class Entry;
+  class Event;
   class ListBox;
   class ListItem;
   class Window;

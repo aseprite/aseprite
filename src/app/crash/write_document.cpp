@@ -72,20 +72,37 @@ public:
       if (!saveObject("frtag", frtag, &Writer::writeFrameTag))
         return false;
 
-    for (Cel* cel : spr->uniqueCels()) {
-      if (!saveObject("img", cel->image(), &Writer::writeImage))
-        return false;
+    // Get all layers (visible, hidden, subchildren, etc.)
+    LayerList layers = spr->allLayers();
 
-      if (!saveObject("celdata", cel->data(), &Writer::writeCelData))
-        return false;
+    // Save original cel data (skip links)
+    for (Layer* lay : layers) {
+      CelList cels;
+      lay->getCels(cels);
+
+      for (Cel* cel : cels) {
+        if (cel->link())        // Skip link
+          continue;
+
+        if (!saveObject("img", cel->image(), &Writer::writeImage))
+          return false;
+
+        if (!saveObject("celdata", cel->data(), &Writer::writeCelData))
+          return false;
+      }
     }
 
-    for (Cel* cel : spr->cels())
-      if (!saveObject("cel", cel, &Writer::writeCel))
-        return false;
+    // Save all cels (original and links)
+    for (Layer* lay : layers) {
+      CelList cels;
+      lay->getCels(cels);
 
-    std::vector<Layer*> layers;
-    spr->getLayersList(layers);
+      for (Cel* cel : cels)
+        if (!saveObject("cel", cel, &Writer::writeCel))
+          return false;
+    }
+
+    // Save all layers (top level, groups, children, etc.)
     for (Layer* lay : layers)
       if (!saveObject("lay", lay, &Writer::writeLayerStructure))
         return false;
@@ -125,11 +142,8 @@ private:
       write32(s, spr->frameDuration(fr));
 
     // IDs of all main layers
-    std::vector<Layer*> layers;
-    spr->getLayersList(layers);
-    write32(s, layers.size());
-    for (Layer* lay : layers)
-      write32(s, lay->id());
+    write32(s, spr->allLayersCount());
+    writeAllLayersID(s, 0, spr->root());
 
     // IDs of all palettes
     write32(s, spr->getPalettes().size());
@@ -144,21 +158,40 @@ private:
     return true;
   }
 
+  void writeAllLayersID(std::ofstream& s, ObjectId parentId, const LayerGroup* group) {
+    for (const Layer* lay : group->layers()) {
+      write32(s, lay->id());
+      write32(s, parentId);
+
+      if (lay->isGroup())
+        writeAllLayersID(s, lay->id(), static_cast<const LayerGroup*>(lay));
+    }
+  }
+
   bool writeLayerStructure(std::ofstream& s, Layer* lay) {
     write32(s, static_cast<int>(lay->flags())); // Flags
     write16(s, static_cast<int>(lay->type()));  // Type
     write_string(s, lay->name());
 
-    if (lay->type() == ObjectType::LayerImage) {
-      CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
-      CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
+    switch (lay->type()) {
 
-      // Cels
-      write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
-      for (it=begin; it != end; ++it) {
-        const Cel* cel = *it;
-        write32(s, cel->id());
+      case ObjectType::LayerImage: {
+        CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
+        CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
+
+        // Cels
+        write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
+        for (it=begin; it != end; ++it) {
+          const Cel* cel = *it;
+          write32(s, cel->id());
+        }
+        break;
       }
+
+      case ObjectType::LayerGroup:
+        // Do nothing (the layer parent/children structure is saved in
+        // writeSprite/writeAllLayersID() functions)
+        break;
     }
     return true;
   }

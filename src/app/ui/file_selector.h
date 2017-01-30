@@ -23,7 +23,6 @@ namespace ui {
 }
 
 namespace app {
-  class CustomFileNameEntry;
   class FileList;
   class FileListView;
   class IFileItem;
@@ -31,6 +30,7 @@ namespace app {
   class FileSelector : public app::gen::FileSelector {
   public:
     FileSelector(FileSelectorType type, FileSelectorDelegate* delegate);
+    ~FileSelector();
 
     void goBack();
     void goForward();
@@ -55,7 +55,15 @@ namespace app {
     void onFileListFileSelected();
     void onFileListFileAccepted();
     void onFileListCurrentFolderChanged();
+    void onExtraOptions();
     std::string getSelectedExtension() const;
+    void updateExtraLabel();
+
+    class ArrowNavigator;
+    class CustomFileNameItem;
+    class CustomFolderNameItem;
+    class CustomFileNameEntry;
+    class ExtrasWindow;
 
     FileSelectorType m_type;
     FileSelectorDelegate* m_delegate;
@@ -63,6 +71,7 @@ namespace app {
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
     FileListView* m_fileView;
+    ExtrasWindow* m_extras;
 
     // If true the navigation_history isn't
     // modified if the current folder changes

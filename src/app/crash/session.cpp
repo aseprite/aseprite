@@ -72,6 +72,19 @@ std::string Session::name() const
     return name;
 }
 
+std::string Session::version()
+{
+  if (m_version.empty()) {
+    std::string verfile = verFilename();
+    if (base::is_file(verfile)) {
+      std::ifstream pf(FSTREAM_PATH(verfile));
+      if (pf)
+        pf >> m_version;
+    }
+  }
+  return m_version;
+}
+
 const Session::Backups& Session::backups()
 {
   if (m_backups.empty()) {

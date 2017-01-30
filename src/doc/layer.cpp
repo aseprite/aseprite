@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,7 +28,7 @@ Layer::Layer(ObjectType type, Sprite* sprite)
       int(LayerFlags::Visible) |
       int(LayerFlags::Editable)))
 {
-  ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerFolder);
+  ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup);
 
   setName("Layer");
 }
@@ -44,39 +44,141 @@ int Layer::getMemSize() const
 
 Layer* Layer::getPrevious() const
 {
-  if (m_parent != NULL) {
-    LayerConstIterator it =
-      std::find(m_parent->getLayerBegin(),
-                m_parent->getLayerEnd(), this);
+  if (m_parent) {
+    auto it =
+      std::find(m_parent->layers().begin(),
+                m_parent->layers().end(), this);
 
-    if (it != m_parent->getLayerEnd() &&
-        it != m_parent->getLayerBegin()) {
+    if (it != m_parent->layers().end() &&
+        it != m_parent->layers().begin()) {
       it--;
       return *it;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 Layer* Layer::getNext() const
 {
-  if (m_parent != NULL) {
-    LayerConstIterator it =
-      std::find(m_parent->getLayerBegin(),
-                m_parent->getLayerEnd(), this);
+  if (m_parent) {
+    auto it =
+      std::find(m_parent->layers().begin(),
+                m_parent->layers().end(), this);
 
-    if (it != m_parent->getLayerEnd()) {
+    if (it != m_parent->layers().end()) {
       it++;
-      if (it != m_parent->getLayerEnd())
+      if (it != m_parent->layers().end())
         return *it;
     }
   }
-  return NULL;
+  return nullptr;
+}
+
+Layer* Layer::getPreviousBrowsable() const
+{
+  // Go to children
+  if (isBrowsable())
+    return static_cast<const LayerGroup*>(this)->lastLayer();
+
+  // Go to previous layer
+  if (Layer* prev = getPrevious())
+    return prev;
+
+  // Go to previous layer in the parent
+  LayerGroup* parent = this->parent();
+  while (parent != sprite()->root() &&
+         !parent->getPrevious()) {
+    parent = parent->parent();
+  }
+  return parent->getPrevious();
+}
+
+Layer* Layer::getNextBrowsable() const
+{
+  // Go to next layer
+  if (Layer* next = getNext()) {
+    // Go to children
+    while (next->isBrowsable()) {
+      Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
+      if (!firstChild)
+        break;
+      next = firstChild;
+    }
+    return next;
+  }
+
+  // Go to parent
+  if (m_sprite && parent() != m_sprite->root())
+    return m_parent;
+
+  return nullptr;
+}
+
+Layer* Layer::getPreviousInWholeHierarchy() const
+{
+  // Go to children
+  if (isGroup() && static_cast<const LayerGroup*>(this)->layersCount() > 0)
+    return static_cast<const LayerGroup*>(this)->lastLayer();
+
+  // Go to previous layer
+  if (Layer* prev = getPrevious())
+    return prev;
+
+  // Go to previous layer in the parent
+  LayerGroup* parent = this->parent();
+  while (parent != sprite()->root() &&
+         !parent->getPrevious()) {
+    parent = parent->parent();
+  }
+  return parent->getPrevious();
+}
+
+Layer* Layer::getNextInWholeHierarchy() const
+{
+  // Go to next layer
+  if (Layer* next = getNext()) {
+    // Go to children
+    while (next->isGroup() && static_cast<const LayerGroup*>(next)->layersCount() > 0) {
+      Layer* firstChild = static_cast<const LayerGroup*>(next)->firstLayer();
+      if (!firstChild)
+        break;
+      next = firstChild;
+    }
+    return next;
+  }
+
+  // Go to parent
+  if (m_sprite && parent() != m_sprite->root())
+    return m_parent;
+
+  return nullptr;
+}
+
+bool Layer::isVisibleHierarchy() const
+{
+  const Layer* layer = this;
+  while (layer) {
+    if (!layer->isVisible())
+      return false;
+    layer = layer->parent();
+  }
+  return true;
+}
+
+bool Layer::isEditableHierarchy() const
+{
+  const Layer* layer = this;
+  while (layer) {
+    if (!layer->isEditable())
+      return false;
+    layer = layer->parent();
+  }
+  return true;
 }
 
 Cel* Layer::cel(frame_t frame) const
 {
-  return NULL;
+  return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -242,7 +344,7 @@ void LayerImage::configureAsBackground()
   switchFlags(LayerFlags::BackgroundLayerFlags, true);
   setName("Background");
 
-  sprite()->folder()->stackLayer(this, NULL);
+  sprite()->root()->stackLayer(this, NULL);
 }
 
 void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
@@ -264,90 +366,154 @@ void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
 }
 
 //////////////////////////////////////////////////////////////////////
-// LayerFolder class
+// LayerGroup class
 
-LayerFolder::LayerFolder(Sprite* sprite)
-  : Layer(ObjectType::LayerFolder, sprite)
+LayerGroup::LayerGroup(Sprite* sprite)
+  : Layer(ObjectType::LayerGroup, sprite)
 {
   setName("Layer Set");
 }
 
-LayerFolder::~LayerFolder()
+LayerGroup::~LayerGroup()
 {
   destroyAllLayers();
 }
 
-void LayerFolder::destroyAllLayers()
+void LayerGroup::destroyAllLayers()
 {
-  LayerIterator it = getLayerBegin();
-  LayerIterator end = getLayerEnd();
-
-  for (; it != end; ++it) {
-    Layer* layer = *it;
+  for (Layer* layer : m_layers)
     delete layer;
-  }
   m_layers.clear();
 }
 
-int LayerFolder::getMemSize() const
+int LayerGroup::getMemSize() const
 {
-  int size = sizeof(LayerFolder);
-  LayerConstIterator it = getLayerBegin();
-  LayerConstIterator end = getLayerEnd();
+  int size = sizeof(LayerGroup);
 
-  for (; it != end; ++it) {
-    const Layer* layer = *it;
+  for (const Layer* layer : m_layers) {
     size += layer->getMemSize();
   }
 
   return size;
 }
 
-void LayerFolder::getCels(CelList& cels) const
+Layer* LayerGroup::firstLayerInWholeHierarchy() const
 {
-  LayerConstIterator it = getLayerBegin();
-  LayerConstIterator end = getLayerEnd();
-
-  for (; it != end; ++it)
-    (*it)->getCels(cels);
+  Layer* layer = firstLayer();
+  if (layer) {
+    while (layer->isGroup() &&
+           static_cast<LayerGroup*>(layer)->layersCount() > 0) {
+      layer = static_cast<LayerGroup*>(layer)->firstLayer();
+    }
+  }
+  return layer;
 }
 
-void LayerFolder::addLayer(Layer* layer)
+void LayerGroup::allLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allLayers(list);
+
+    list.push_back(child);
+  }
+}
+
+layer_t LayerGroup::allLayersCount() const
+{
+  layer_t count = 0;
+  for (Layer* child : m_layers) {
+    if (child->isGroup())
+      count += static_cast<LayerGroup*>(child)->allLayersCount();
+    ++count;
+  }
+  return count;
+}
+
+void LayerGroup::allVisibleLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (!child->isVisible())
+      continue;
+
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allVisibleLayers(list);
+
+    list.push_back(child);
+  }
+}
+
+void LayerGroup::allVisibleReferenceLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (!child->isVisible())
+      continue;
+
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allVisibleReferenceLayers(list);
+
+    if (!child->isReference())
+      continue;
+
+    list.push_back(child);
+  }
+}
+
+void LayerGroup::allBrowsableLayers(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (child->isBrowsable())
+      static_cast<LayerGroup*>(child)->allBrowsableLayers(list);
+
+    list.push_back(child);
+  }
+}
+
+void LayerGroup::getCels(CelList& cels) const
+{
+  for (const Layer* layer : m_layers)
+    layer->getCels(cels);
+}
+
+void LayerGroup::addLayer(Layer* layer)
 {
   m_layers.push_back(layer);
   layer->setParent(this);
 }
 
-void LayerFolder::removeLayer(Layer* layer)
+void LayerGroup::removeLayer(Layer* layer)
 {
-  LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
+  auto it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
-  layer->setParent(NULL);
+  layer->setParent(nullptr);
 }
 
-void LayerFolder::stackLayer(Layer* layer, Layer* after)
+void LayerGroup::insertLayer(Layer* layer, Layer* after)
+{
+  auto after_it = m_layers.begin();
+  if (after) {
+    after_it = std::find(m_layers.begin(), m_layers.end(), after);
+    if (after_it != m_layers.end())
+      ++after_it;
+  }
+  m_layers.insert(after_it, layer);
+
+  layer->setParent(this);
+}
+
+void LayerGroup::stackLayer(Layer* layer, Layer* after)
 {
   ASSERT(layer != after);
   if (layer == after)
     return;
 
-  LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
-  ASSERT(it != m_layers.end());
-  m_layers.erase(it);
-
-  if (after) {
-    LayerIterator after_it = std::find(m_layers.begin(), m_layers.end(), after);
-    ASSERT(after_it != m_layers.end());
-    after_it++;
-    m_layers.insert(after_it, layer);
-  }
-  else
-    m_layers.insert(m_layers.begin(), layer);
+  removeLayer(layer);
+  insertLayer(layer, after);
 }
 
-void LayerFolder::displaceFrames(frame_t fromThis, frame_t delta)
+void LayerGroup::displaceFrames(frame_t fromThis, frame_t delta)
 {
   for (Layer* layer : m_layers)
     layer->displaceFrames(fromThis, delta);

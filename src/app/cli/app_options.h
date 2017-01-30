@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_APP_OPTIONS_H_INCLUDED
-#define APP_APP_OPTIONS_H_INCLUDED
+#ifndef APP_CLI_APP_OPTIONS_H_INCLUDED
+#define APP_CLI_APP_OPTIONS_H_INCLUDED
 #pragma once
 
 #include <stdexcept>
@@ -30,11 +30,15 @@ public:
 
   AppOptions(int argc, const char* argv[]);
 
+  const std::string& exeName() const { return m_exeName; }
+  const base::ProgramOptions& programOptions() const { return m_po; }
+
   bool startUI() const { return m_startUI; }
   bool startShell() const { return m_startShell; }
+  bool previewCLI() const { return m_previewCLI; }
+  bool showHelp() const { return m_showHelp; }
+  bool showVersion() const { return m_showVersion; }
   VerboseLevel verboseLevel() const { return m_verboseLevel; }
-
-  const std::string& paletteFileName() const { return m_paletteFileName; }
 
   const ValueList& values() const {
     return m_po.values();
@@ -42,6 +46,7 @@ public:
 
   // Export options
   const Option& saveAs() const { return m_saveAs; }
+  const Option& palette() const { return m_palette; }
   const Option& scale() const { return m_scale; }
   const Option& shrinkTo() const { return m_shrinkTo; }
   const Option& data() const { return m_data; }
@@ -52,8 +57,10 @@ public:
   const Option& sheetType() const { return m_sheetType; }
   const Option& sheetPack() const { return m_sheetPack; }
   const Option& splitLayers() const { return m_splitLayers; }
+  const Option& splitTags() const { return m_splitTags; }
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
+  const Option& ignoreLayer() const { return m_ignoreLayer; }
   const Option& frameTag() const { return m_frameTag; }
   const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
@@ -68,26 +75,27 @@ public:
 #endif
   const Option& listLayers() const { return m_listLayers; }
   const Option& listTags() const { return m_listTags; }
+  const Option& oneFrame() const { return m_oneFrame; }
 
   bool hasExporterParams() const;
 
 private:
-  void showHelp();
-  void showVersion();
-
   std::string m_exeName;
   base::ProgramOptions m_po;
   bool m_startUI;
   bool m_startShell;
+  bool m_previewCLI;
+  bool m_showHelp;
+  bool m_showVersion;
   VerboseLevel m_verboseLevel;
-  std::string m_paletteFileName;
 
-  Option& m_palette;
 #ifdef ENABLE_SCRIPTING
   Option& m_shell;
 #endif
   Option& m_batch;
+  Option& m_preview;
   Option& m_saveAs;
+  Option& m_palette;
   Option& m_scale;
   Option& m_shrinkTo;
   Option& m_data;
@@ -98,8 +106,10 @@ private:
   Option& m_sheetType;
   Option& m_sheetPack;
   Option& m_splitLayers;
+  Option& m_splitTags;
   Option& m_layer;
   Option& m_allLayers;
+  Option& m_ignoreLayer;
   Option& m_frameTag;
   Option& m_frameRange;
   Option& m_ignoreEmpty;
@@ -114,6 +124,7 @@ private:
 #endif
   Option& m_listLayers;
   Option& m_listTags;
+  Option& m_oneFrame;
 
   Option& m_verbose;
   Option& m_debug;

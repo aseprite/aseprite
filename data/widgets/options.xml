@@ -240,6 +240,10 @@
           <separator text="User Interface" horizontal="true" />
           <check id="native_file_dialog" text="Use native file dialog" />
           <check id="flash_layer" text="Flash layer when it is selected" />
+	  <hbox>
+            <label text="Opacity for non-active layers:" />
+            <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
+          </hbox>
         </vbox>
 
       </panel>

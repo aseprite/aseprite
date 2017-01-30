@@ -29,10 +29,6 @@ namespace doc {
   class Sprite;
 }
 
-namespace render {
-  class Zoom;
-}
-
 namespace app {
   class Context;
   class Document;
@@ -123,9 +119,6 @@ namespace app {
 
       // Gets mask X,Y origin coordinates
       virtual gfx::Point getMaskOrigin() = 0;
-
-      // Returns the zoom
-      virtual const render::Zoom& zoom() = 0;
 
       // Return the mouse button which start the tool-loop. It can be used
       // by some tools that instead of using the primary/secondary color

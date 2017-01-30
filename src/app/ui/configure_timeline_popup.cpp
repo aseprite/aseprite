@@ -40,6 +40,11 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   : PopupWindow("Timeline Settings", ClickBehavior::CloseOnClickInOtherWindow)
   , m_lockUpdates(false)
 {
+  // TODO we should add a new hot region to automatically close the
+  //      popup if the mouse is moved outside or find other kind of
+  //      dialog/window
+  setHotRegion(gfx::Region(manager()->bounds())); // for the color selector
+
   setAutoRemap(false);
   setBorder(gfx::Border(4*guiscale()));
 
@@ -57,6 +62,11 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->currentLayer()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
   m_box->behind()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
+
+  m_box->zoom()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onZoomChange, this));
+  m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
+  m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
+  m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -116,6 +126,11 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       m_box->infront()->setSelected(true);
       break;
   }
+
+  m_box->zoom()->setValue(docPref.thumbnails.zoom());
+  m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
+  m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
+  m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
 }
 
 bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
@@ -125,7 +140,6 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
     case kOpenMessage: {
       updateWidgetsFromCurrentSettings();
       break;
-
     }
   }
   return PopupWindow::onProcessMessage(msg);
@@ -206,6 +220,26 @@ void ConfigureTimelinePopup::onPositionChange()
   docPref().onionskin.position(m_box->behind()->isSelected() ?
                                render::OnionskinPosition::BEHIND:
                                render::OnionskinPosition::INFRONT);
+}
+
+void ConfigureTimelinePopup::onZoomChange()
+{
+  docPref().thumbnails.zoom(m_box->zoom()->getValue());
+}
+
+void ConfigureTimelinePopup::onThumbEnabledChange()
+{
+  docPref().thumbnails.enabled(m_box->thumbEnabled()->isSelected());
+}
+
+void ConfigureTimelinePopup::onThumbOverlayEnabledChange()
+{
+  docPref().thumbnails.overlayEnabled(m_box->thumbOverlayEnabled()->isSelected());
+}
+
+void ConfigureTimelinePopup::onThumbOverlaySizeChange()
+{
+  docPref().thumbnails.overlaySize(m_box->thumbOverlaySize()->getValue());
 }
 
 } // namespace app

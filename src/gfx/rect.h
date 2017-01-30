@@ -181,6 +181,18 @@ public:
     return *this;
   }
 
+  RectT& enlargeXW(const T& unit) {
+    x -= unit;
+    w += unit<<1;
+    return *this;
+  }
+
+  RectT& enlargeYH(const T& unit) {
+    y -= unit;
+    h += unit<<1;
+    return *this;
+  }
+
   RectT& shrink(const T& unit) {
     x += unit;
     y += unit;
@@ -265,6 +277,22 @@ public:
     return *this;
   }
 
+  RectT& operator*=(const SizeT<T>& size) const {
+    x *= size.w;
+    y *= size.h;
+    w *= size.w;
+    h *= size.h;
+    return *this;
+  }
+
+  RectT& operator/=(const SizeT<T>& size) const {
+    x /= size.w;
+    y /= size.h;
+    w /= size.w;
+    h /= size.h;
+    return *this;
+  }
+
   const RectT& operator|=(const RectT& rc) {
     return *this = createUnion(rc);
   }
@@ -287,6 +315,16 @@ public:
 
   RectT operator&(const RectT& other) const {
     return createIntersection(other);
+  }
+
+  RectT operator*(const SizeT<T>& size) const {
+    return RectT(x*size.w, y*size.h,
+                 w*size.w, h*size.h);
+  }
+
+  RectT operator/(const SizeT<T>& size) const {
+    return RectT(x/size.w, y/size.h,
+                 w/size.w, h/size.h);
   }
 
   bool operator==(const RectT& rc) const {

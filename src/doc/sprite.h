@@ -15,9 +15,10 @@
 #include "doc/frame.h"
 #include "doc/frame_tags.h"
 #include "doc/image_ref.h"
-#include "doc/layer_index.h"
+#include "doc/image_spec.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
+#include "doc/pixel_ratio.h"
 #include "doc/sprite_position.h"
 #include "gfx/rect.h"
 
@@ -29,13 +30,13 @@ namespace doc {
   class Document;
   class Image;
   class Layer;
-  class LayerFolder;
+  class LayerGroup;
   class LayerImage;
-  class LayersRange;
   class Mask;
   class Palette;
   class Remap;
   class RgbMap;
+  class SelectedFrames;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -51,6 +52,7 @@ namespace doc {
     // Constructors/Destructor
 
     Sprite(PixelFormat format, int width, int height, int ncolors);
+    Sprite(const ImageSpec& spec, int ncolors);
     virtual ~Sprite();
 
     static Sprite* createBasicSprite(PixelFormat format, int width, int height, int ncolors);
@@ -58,15 +60,19 @@ namespace doc {
     ////////////////////////////////////////
     // Main properties
 
+    const ImageSpec& spec() const { return m_spec; }
+
     Document* document() const { return m_document; }
     void setDocument(Document* doc) { m_document = doc; }
 
-    PixelFormat pixelFormat() const { return m_format; }
-    void setPixelFormat(PixelFormat format);
+    PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
+    const PixelRatio& pixelRatio() const { return m_pixelRatio; }
+    gfx::Rect bounds() const { return m_spec.bounds(); }
+    int width() const { return m_spec.width(); }
+    int height() const { return m_spec.height(); }
 
-    gfx::Rect bounds() const { return gfx::Rect(0, 0, m_width, m_height); }
-    int width() const { return m_width; }
-    int height() const { return m_height; }
+    void setPixelFormat(PixelFormat format);
+    void setPixelRatio(const PixelRatio& pixelRatio);
     void setSize(int width, int height);
 
     // Returns true if the rendered images will contain alpha values less
@@ -75,7 +81,7 @@ namespace doc {
     bool needAlpha() const;
     bool supportAlpha() const;
 
-    color_t transparentColor() const { return m_transparentColor; }
+    color_t transparentColor() const { return m_spec.maskColor(); }
     void setTransparentColor(color_t color);
 
     virtual int getMemSize() const override;
@@ -83,18 +89,10 @@ namespace doc {
     ////////////////////////////////////////
     // Layers
 
-    LayerFolder* folder() const;
+    LayerGroup* root() const { return m_root; }
     LayerImage* backgroundLayer() const;
-
-    LayerIndex countLayers() const;
-    LayerIndex firstLayer() const;
-    LayerIndex lastLayer() const;
-
-    Layer* layer(int layerIndex) const;
-    Layer* indexToLayer(LayerIndex index) const;
-    LayerIndex layerToIndex(const Layer* layer) const;
-
-    void getLayersList(std::vector<Layer*>& layers) const;
+    Layer* firstBrowsableLayer() const;
+    layer_t allLayersCount() const;
 
     ////////////////////////////////////////
     // Palettes
@@ -142,32 +140,37 @@ namespace doc {
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
     void getImages(std::vector<Image*>& images) const;
     void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
-    void pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const;
+    void pickCels(const double x,
+                  const double y,
+                  const frame_t frame,
+                  const int opacityThreshold,
+                  const LayerList& layers,
+                  CelList& cels) const;
 
     ////////////////////////////////////////
     // Iterators
 
-    LayersRange layers() const;
+    LayerList allLayers() const;
+    LayerList allVisibleLayers() const;
+    LayerList allVisibleReferenceLayers() const;
+    LayerList allBrowsableLayers() const;
+
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;
     CelsRange uniqueCels() const;
-    CelsRange uniqueCels(frame_t from, frame_t to) const;
+    CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 
   private:
     Document* m_document;
-    PixelFormat m_format;                  // pixel format
-    int m_width;                           // image width (in pixels)
-    int m_height;                          // image height (in pixels)
+    ImageSpec m_spec;
+    PixelRatio m_pixelRatio;
     frame_t m_frames;                      // how many frames has this sprite
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes
-    LayerFolder* m_folder;                 // main folder of layers
+    LayerGroup* m_root;                    // main group of layers
 
     // Current rgb map
     mutable RgbMap* m_rgbMap;
-
-    // Transparent color used in indexed images
-    color_t m_transparentColor;
 
     FrameTags m_frameTags;
 

@@ -45,6 +45,7 @@
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
@@ -65,40 +66,44 @@ using namespace gfx;
 using namespace ui;
 using namespace render;
 
+// TODO these should be grouped in some kind of "performance counters"
+static base::Chrono renderChrono;
+static double renderElapsed = 0.0;
+
 class EditorPreRenderImpl : public EditorPreRender {
 public:
-  EditorPreRenderImpl(Editor* editor, Image* image, const Point& offset, Zoom zoom)
+  EditorPreRenderImpl(Editor* editor, Image* image,
+                      const Point& offset,
+                      const Projection& proj)
     : m_editor(editor)
     , m_image(image)
     , m_offset(offset)
-    , m_zoom(zoom)
-  {
+    , m_proj(proj) {
   }
 
-  Editor* getEditor() override
-  {
+  Editor* getEditor() override {
     return m_editor;
   }
 
-  Image* getImage() override
-  {
+  Image* getImage() override {
     return m_image;
   }
 
   void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) override
   {
-    blend_rect(m_image,
-      m_offset.x + m_zoom.apply(rect.x),
-      m_offset.y + m_zoom.apply(rect.y),
-      m_offset.x + m_zoom.apply(rect.x+rect.w) - 1,
-      m_offset.y + m_zoom.apply(rect.y+rect.h) - 1, rgbaColor, opacity);
+    blend_rect(
+      m_image,
+      m_offset.x + m_proj.applyX(rect.x),
+      m_offset.y + m_proj.applyY(rect.y),
+      m_offset.x + m_proj.applyX(rect.x+rect.w) - 1,
+      m_offset.y + m_proj.applyY(rect.y+rect.h) - 1, rgbaColor, opacity);
   }
 
 private:
   Editor* m_editor;
   Image* m_image;
   Point m_offset;
-  Zoom m_zoom;
+  Projection m_proj;
 };
 
 class EditorPostRenderImpl : public EditorPostRender {
@@ -153,9 +158,8 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_decorator(NULL)
   , m_document(document)
   , m_sprite(m_document->sprite())
-  , m_layer(m_sprite->folder()->getFirstLayer())
+  , m_layer(m_sprite->root()->firstLayer())
   , m_frame(frame_t(0))
-  , m_zoom(1, 1)
   , m_docPref(Preferences::instance().document(document))
   , m_brushPreview(this)
   , m_lastDrawingPosition(-1, -1)
@@ -170,6 +174,8 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_aniSpeed(1.0)
   , m_isPlaying(false)
 {
+  m_proj.setPixelRatio(m_sprite->pixelRatio());
+
   // Add the first state into the history.
   m_statesHistory.push(m_state);
 
@@ -186,12 +192,16 @@ Editor::Editor(Document* document, EditorFlags flags)
       base::Bind<void>(&Editor::onContextBarBrushChange, this));
 
   // Restore last site in preferences
-  frame_t preferredFrame = m_docPref.site.frame();
-  Layer* preferredLayer = m_sprite->indexToLayer(m_docPref.site.layer());
-  if (preferredFrame >= 0 && preferredFrame <= m_sprite->lastFrame())
-    setFrame(preferredFrame);
-  if (preferredLayer)
-    setLayer(preferredLayer);
+  {
+    frame_t preferredFrame = m_docPref.site.frame();
+    if (preferredFrame >= 0 && preferredFrame <= m_sprite->lastFrame())
+      setFrame(preferredFrame);
+
+    LayerList layers = m_sprite->allBrowsableLayers();
+    layer_t layerIndex = m_docPref.site.layer();
+    if (layerIndex >= 0 && layerIndex < int(layers.size()))
+      setLayer(layers[layerIndex]);
+  }
 
   m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
@@ -211,8 +221,11 @@ Editor::Editor(Document* document, EditorFlags flags)
 Editor::~Editor()
 {
   if (m_document && m_sprite) {
+    LayerList layers = m_sprite->allBrowsableLayers();
+    layer_t layerIndex = doc::find_layer_index(layers, layer());
+
     m_docPref.site.frame(frame());
-    m_docPref.site.layer(m_sprite->layerToIndex(layer()));
+    m_docPref.site.layer(layerIndex);
   }
 
   m_observers.notifyDestroyEditor(this);
@@ -327,7 +340,9 @@ void Editor::setLayer(const Layer* layer)
     if (// If the onion skinning depends on the active layer
         m_docPref.onionskin.currentLayer() ||
         // If the user want to see the active layer edges...
-        m_docPref.show.layerEdges()) {
+        m_docPref.show.layerEdges() ||
+        // If there is a different opacity for nonactive-layers
+        Preferences::instance().experimental.nonactiveLayersOpacity() < 255) {
       // We've to redraw the whole editor
       invalidate();
     }
@@ -377,15 +392,15 @@ Site Editor::getSite() const
 
 void Editor::setZoom(const render::Zoom& zoom)
 {
-  if (m_zoom != zoom) {
-    m_zoom = zoom;
+  if (m_proj.zoom() != zoom) {
+    m_proj.setZoom(zoom);
     notifyZoomChanged();
   }
   else {
     // Just copy the zoom as the internal "Zoom::m_internalScale"
     // value might be different and we want to keep this value updated
     // for better zooming experience in StateWithWheelBehavior.
-    m_zoom = zoom;
+    m_proj.setZoom(zoom);
   }
 }
 
@@ -396,62 +411,69 @@ void Editor::setDefaultScroll()
 
   setEditorScroll(
     gfx::Point(
-      m_padding.x - vp.w/2 + m_zoom.apply(m_sprite->width())/2,
-      m_padding.y - vp.h/2 + m_zoom.apply(m_sprite->height())/2));
+      m_padding.x - vp.w/2 + m_proj.applyX(m_sprite->width())/2,
+      m_padding.y - vp.h/2 + m_proj.applyY(m_sprite->height())/2));
 }
 
 void Editor::setScrollAndZoomToFitScreen()
 {
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
-  Zoom zoom = m_zoom;
+  Zoom zoom = m_proj.zoom();
 
   if (float(vp.w) / float(m_sprite->width()) <
       float(vp.h) / float(m_sprite->height())) {
-    if (vp.w < zoom.apply(m_sprite->width())) {
-      while (vp.w < zoom.apply(m_sprite->width()))
+    if (vp.w < m_proj.applyX(m_sprite->width())) {
+      while (vp.w < m_proj.applyX(m_sprite->width())) {
         if (!zoom.out())
           break;
+        m_proj.setZoom(zoom);
+      }
     }
-    else if (vp.w > zoom.apply(m_sprite->width())) {
+    else if (vp.w > m_proj.applyX(m_sprite->width())) {
       bool out = true;
-      while (vp.w > zoom.apply(m_sprite->width())) {
+      while (vp.w > m_proj.applyX(m_sprite->width())) {
         if (!zoom.in()) {
           out = false;
           break;
         }
+        m_proj.setZoom(zoom);
       }
-      if (out)
+      if (out) {
         zoom.out();
+        m_proj.setZoom(zoom);
+      }
     }
   }
   else {
-    if (vp.h < zoom.apply(m_sprite->height())) {
-      while (vp.h < zoom.apply(m_sprite->height())) {
+    if (vp.h < m_proj.applyY(m_sprite->height())) {
+      while (vp.h < m_proj.applyY(m_sprite->height())) {
         if (!zoom.out())
           break;
+        m_proj.setZoom(zoom);
       }
     }
-    else if (vp.h > zoom.apply(m_sprite->height())) {
+    else if (vp.h > m_proj.applyY(m_sprite->height())) {
       bool out = true;
-      while (vp.h > zoom.apply(m_sprite->height())) {
+      while (vp.h > m_proj.applyY(m_sprite->height())) {
         if (!zoom.in()) {
           out = false;
           break;
         }
+        m_proj.setZoom(zoom);
       }
-      if (out)
+      if (out) {
         zoom.out();
+        m_proj.setZoom(zoom);
+      }
     }
   }
-
-  setZoom(zoom);
 
   updateEditor();
   setEditorScroll(
     gfx::Point(
-      m_padding.x - vp.w/2 + zoom.apply(m_sprite->width())/2,
-      m_padding.y - vp.h/2 + zoom.apply(m_sprite->height())/2));
+      m_padding.x - vp.w/2 + m_proj.applyX(m_sprite->width())/2,
+      m_padding.y - vp.h/2 + m_proj.applyY(m_sprite->height())/2));
 }
 
 // Sets the scroll position of the editor
@@ -476,7 +498,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 {
   // Clip from sprite and apply zoom
   gfx::Rect rc = m_sprite->bounds().createIntersection(spriteRectToDraw);
-  rc = m_zoom.apply(rc);
+  rc = m_proj.apply(rc);
 
   int dest_x = dx + m_padding.x + rc.x;
   int dest_y = dy + m_padding.y + rc.y;
@@ -513,26 +535,39 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // tool managers that need to validate this region (copy pixels from
     // the original cel) before it can be used by the RenderEngine.
     {
-      gfx::Rect expose = m_zoom.remove(rc);
+      gfx::Rect expose = m_proj.remove(rc);
+
       // If the zoom level is less than 100%, we add extra pixels to
       // the exposed area. Those pixels could be shown in the
       // rendering process depending on each cel position.
       // E.g. when we are drawing in a cel with position < (0,0)
-      if (m_zoom.scale() < 1.0) {
-        expose.enlarge(int(1./m_zoom.scale()));
-      }
+      if (m_proj.scaleX() < 1.0)
+        expose.enlargeXW(int(1./m_proj.scaleX()));
       // If the zoom level is more than %100 we add an extra pixel to
       // expose just in case the zoom requires to display it.  Note:
       // this is really necessary to avoid showing invalid destination
       // areas in ToolLoopImpl.
-      else if (m_zoom.scale() > 1.0) {
-        expose.enlarge(1);
-      }
+      else if (m_proj.scaleX() > 1.0)
+        expose.enlargeXW(1);
+
+      if (m_proj.scaleY() < 1.0)
+        expose.enlargeYH(int(1./m_proj.scaleY()));
+      else if (m_proj.scaleY() > 1.0)
+        expose.enlargeYH(1);
+
       m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
     }
 
     // Create a temporary RGB bitmap to draw all to it
     rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
+
+    m_renderEngine.setRefLayersVisiblity(true);
+    m_renderEngine.setSelectedLayer(m_layer);
+    if (m_flags & Editor::kUseNonactiveLayersOpacityWhenEnabled)
+      m_renderEngine.setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
+    else
+      m_renderEngine.setNonactiveLayersOpacity(255);
+    m_renderEngine.setProjection(m_proj);
     m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
     m_renderEngine.disableOnionskin();
 
@@ -571,8 +606,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         m_layer, m_frame);
     }
 
-    m_renderEngine.renderSprite(rendered, m_sprite, m_frame,
-      gfx::Clip(0, 0, rc), m_zoom);
+    m_renderEngine.renderSprite(
+      rendered, m_sprite, m_frame, gfx::Clip(0, 0, rc));
 
     m_renderEngine.removeExtraImage();
   }
@@ -584,7 +619,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // Pre-render decorator.
     if ((m_flags & kShowDecorators) && m_decorator) {
       EditorPreRenderImpl preRender(this, rendered,
-        Point(-rc.x, -rc.y), m_zoom);
+                                    Point(-rc.x, -rc.y), m_proj);
       m_decorator->preRenderDecorator(&preRender);
     }
 
@@ -615,15 +650,15 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   gfx::Rect rc = _rc;
   // For odd zoom scales minor than 100% we have to add an extra window
   // just to make sure the whole rectangle is drawn.
-  if (m_zoom.scale() < 1.0)
-    rc.inflate(int(1./m_zoom.scale()), int(1./m_zoom.scale()));
+  if (m_proj.scaleX() < 1.0) rc.w += int(1./m_proj.scaleX());
+  if (m_proj.scaleY() < 1.0) rc.h += int(1./m_proj.scaleY());
 
   gfx::Rect client = clientBounds();
   gfx::Rect spriteRect(
     client.x + m_padding.x,
     client.y + m_padding.y,
-    m_zoom.apply(m_sprite->width()),
-    m_zoom.apply(m_sprite->height()));
+    m_proj.applyX(m_sprite->width()),
+    m_proj.applyY(m_sprite->height()));
   gfx::Rect enclosingRect = spriteRect;
 
   // Draw the main sprite at the center.
@@ -677,11 +712,11 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       IntersectClip clip(g, cliprc);
 
       // Draw the pixel grid
-      if ((m_zoom.scale() > 2.0) && m_docPref.show.pixelGrid()) {
+      if ((m_proj.zoom().scale() > 2.0) && m_docPref.show.pixelGrid()) {
         int alpha = m_docPref.pixelGrid.opacity();
 
         if (m_docPref.pixelGrid.autoOpacity()) {
-          alpha = int(alpha * (m_zoom.scale()-2.) / (16.-2.));
+          alpha = int(alpha * (m_proj.zoom().scale()-2.) / (16.-2.));
           alpha = MID(0, alpha, 255);
         }
 
@@ -692,12 +727,13 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       // Draw the grid
       if (m_docPref.show.grid()) {
         gfx::Rect gridrc = m_docPref.grid.bounds();
-        if (m_zoom.apply(gridrc.w) > 2 &&
-          m_zoom.apply(gridrc.h) > 2) {
+        if (m_proj.applyX(gridrc.w) > 2 &&
+            m_proj.applyY(gridrc.h) > 2) {
           int alpha = m_docPref.grid.opacity();
 
           if (m_docPref.grid.autoOpacity()) {
-            double len = (m_zoom.apply(gridrc.w) + m_zoom.apply(gridrc.h)) / 2.;
+            double len = (m_proj.applyX(gridrc.w) +
+                          m_proj.applyY(gridrc.h)) / 2.;
             alpha = int(alpha * len / 32.);
             alpha = MID(0, alpha, 255);
           }
@@ -723,7 +759,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         if (x > 0) {
           gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawVLine(color,
-                       spriteRect.x + m_zoom.apply<double>(x),
+                       spriteRect.x + m_proj.applyX<double>(x),
                        enclosingRect.y,
                        enclosingRect.h);
         }
@@ -735,7 +771,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
           gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
           g->drawHLine(color,
                        enclosingRect.x,
-                       spriteRect.y + m_zoom.apply<double>(y),
+                       spriteRect.y + m_proj.applyY<double>(y),
                        enclosingRect.w);
         }
         break;
@@ -760,8 +796,14 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       m_state->requireBrushPreview()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
-      g->drawRect(theme->colors.editorLayerEdges(),
-                  editorToScreen(cel->bounds()).offset(-bounds().origin()));
+      gfx::Rect layerEdges;
+      if (m_layer->isReference()) {
+        layerEdges = editorToScreenF(cel->boundsF()).offset(gfx::PointF(-bounds().origin()));
+      }
+      else {
+        layerEdges = editorToScreen(cel->bounds()).offset(-bounds().origin());
+      }
+      g->drawRect(theme->colors.editorLayerEdges(), layerEdges);
     }
   }
 
@@ -813,13 +855,16 @@ void Editor::drawMask(Graphics* g)
 
   for (const auto& seg : *m_document->getMaskBoundaries()) {
     CheckedDrawMode checked(g, m_antsOffset);
-    gfx::Rect bounds = m_zoom.apply(seg.bounds());
+    gfx::Rect bounds = m_proj.apply(seg.bounds());
 
-    if (m_zoom.scale() >= 1.0) {
-      if (!seg.open()) {
-        if (seg.vertical()) --bounds.x;
-        else --bounds.y;
-      }
+    if (m_proj.scaleX() >= 1.0) {
+      if (!seg.open() && seg.vertical())
+        --bounds.x;
+    }
+
+    if (m_proj.scaleY() >= 1.0) {
+      if (!seg.open() && !seg.vertical())
+        --bounds.y;
     }
 
     // The color doesn't matter, we are using CheckedDrawMode
@@ -1017,10 +1062,9 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return gfx::Point(
-    m_zoom.remove(pt.x - vp.x + scroll.x - m_padding.x),
-    m_zoom.remove(pt.y - vp.y + scroll.y - m_padding.y));
+    m_proj.removeX(pt.x - vp.x + scroll.x - m_padding.x),
+    m_proj.removeY(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
 gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
@@ -1029,8 +1073,8 @@ gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
   return gfx::PointF(
-    m_zoom.remove<double>(pt.x - vp.x + scroll.x - m_padding.x),
-    m_zoom.remove<double>(pt.y - vp.y + scroll.y - m_padding.y));
+    m_proj.removeX<double>(pt.x - vp.x + scroll.x - m_padding.x),
+    m_proj.removeY<double>(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
 Point Editor::editorToScreen(const gfx::Point& pt)
@@ -1038,10 +1082,9 @@ Point Editor::editorToScreen(const gfx::Point& pt)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
-
   return Point(
-    (vp.x - scroll.x + m_padding.x + m_zoom.apply(pt.x)),
-    (vp.y - scroll.y + m_padding.y + m_zoom.apply(pt.y)));
+    (vp.x - scroll.x + m_padding.x + m_proj.applyX(pt.x)),
+    (vp.y - scroll.y + m_padding.y + m_proj.applyY(pt.y)));
 }
 
 gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt)
@@ -1050,8 +1093,8 @@ gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt)
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
   return PointF(
-    (vp.x - scroll.x + m_padding.x + m_zoom.apply<double>(pt.x)),
-    (vp.y - scroll.y + m_padding.y + m_zoom.apply<double>(pt.y)));
+    (vp.x - scroll.x + m_padding.x + m_proj.applyX<double>(pt.x)),
+    (vp.y - scroll.y + m_padding.y + m_proj.applyY<double>(pt.y)));
 }
 
 Rect Editor::screenToEditor(const Rect& rc)
@@ -1066,6 +1109,13 @@ Rect Editor::editorToScreen(const Rect& rc)
   return gfx::Rect(
     editorToScreen(rc.origin()),
     editorToScreen(rc.point2()));
+}
+
+gfx::RectF Editor::editorToScreenF(const gfx::RectF& rc)
+{
+  return gfx::RectF(
+    editorToScreenF(rc.origin()),
+    editorToScreenF(rc.point2()));
 }
 
 void Editor::add_observer(EditorObserver* observer)
@@ -1107,8 +1157,8 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
   Rect vp = view->viewportBounds();
 
   gfx::Point scroll(
-    m_padding.x - (vp.w/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.x),
-    m_padding.y - (vp.h/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.y));
+    m_padding.x - (vp.w/2) + m_proj.applyX(1)/2 + m_proj.applyX(spritePos.x),
+    m_padding.y - (vp.h/2) + m_proj.applyY(1)/2 + m_proj.applyY(spritePos.y));
 
   updateEditor();
   setEditorScroll(scroll);
@@ -1238,10 +1288,11 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
 {
   Site site = getSite();
   if (site.sprite()) {
-    gfx::Point editorPos = screenToEditor(mousePos);
+    gfx::PointF editorPos = screenToEditorF(mousePos);
 
     ColorPicker picker;
-    picker.pickColor(site, editorPos, ColorPicker::FromComposition);
+    picker.pickColor(site, editorPos, m_proj,
+                     ColorPicker::FromComposition);
     return picker.color();
   }
   else
@@ -1424,9 +1475,9 @@ void Editor::onSizeHint(SizeHintEvent& ev)
   gfx::Size sz(0, 0);
 
   if (m_sprite) {
-    gfx::Point padding = calcExtraPadding(m_zoom);
-    sz.w = m_zoom.apply(m_sprite->width()) + padding.x*2;
-    sz.h = m_zoom.apply(m_sprite->height()) + padding.y*2;
+    gfx::Point padding = calcExtraPadding(m_proj);
+    sz.w = m_proj.applyX(m_sprite->width()) + padding.x*2;
+    sz.h = m_proj.applyY(m_sprite->height()) + padding.y*2;
   }
   else {
     sz.w = 4;
@@ -1438,7 +1489,7 @@ void Editor::onSizeHint(SizeHintEvent& ev)
 void Editor::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
-  m_padding = calcExtraPadding(m_zoom);
+  m_padding = calcExtraPadding(m_proj);
 }
 
 void Editor::onPaint(ui::PaintEvent& ev)
@@ -1460,7 +1511,22 @@ void Editor::onPaint(ui::PaintEvent& ev)
       DocumentReader documentReader(m_document, 250);
 
       // Draw the sprite in the editor
+      renderChrono.reset();
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
+      renderElapsed = renderChrono.elapsed();
+
+      // Show performance stats (TODO show performance stats in other widget)
+      if (Preferences::instance().perf.showRenderTime()) {
+        View* view = View::getView(this);
+        gfx::Rect vp = view->viewportBounds();
+        char buf[128];
+        sprintf(buf, "%.3f", renderElapsed);
+        g->drawString(
+          buf,
+          gfx::rgba(255, 255, 255, 255),
+          gfx::rgba(0, 0, 0, 255),
+          vp.origin() - bounds().origin());
+      }
 
       // Draw the mask boundaries
       if (m_document->getMaskBoundaries()) {
@@ -1514,6 +1580,12 @@ void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
     m_state->onExposeSpritePixels(ev.region());
 }
 
+void Editor::onSpritePixelRatioChanged(doc::DocumentEvent& ev)
+{
+  m_proj.setPixelRatio(ev.sprite()->pixelRatio());
+  invalidate();
+}
+
 void Editor::setCursor(const gfx::Point& mouseScreenPos)
 {
   bool used = false;
@@ -1533,8 +1605,9 @@ bool Editor::canDraw()
 {
   return (m_layer != NULL &&
           m_layer->isImage() &&
-          m_layer->isVisible() &&
-          m_layer->isEditable());
+          m_layer->isVisibleHierarchy() &&
+          m_layer->isEditableHierarchy() &&
+          !m_layer->isReference());
 }
 
 bool Editor::isInsideSelection()
@@ -1549,11 +1622,14 @@ bool Editor::isInsideSelection()
 }
 
 void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
-  const gfx::Point& mousePos, ZoomBehavior zoomBehavior)
+                                     const gfx::Point& mousePos,
+                                     ZoomBehavior zoomBehavior)
 {
   HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
+  Projection proj = m_proj;
+  proj.setZoom(zoom);
 
   gfx::Point screenPos;
   gfx::Point spritePos;
@@ -1570,27 +1646,36 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   }
   spritePos = screenToEditor(screenPos);
 
-  if (zoomBehavior == ZoomBehavior::MOUSE &&
-      m_zoom.scale() > 1.0) {
+  if (zoomBehavior == ZoomBehavior::MOUSE) {
     gfx::Point screenPos2 = editorToScreen(spritePos);
-    subpixelPos.x = (0.5 + screenPos.x - screenPos2.x) / m_zoom.scale();
-    subpixelPos.y = (0.5 + screenPos.y - screenPos2.y) / m_zoom.scale();
 
-    if (zoom.scale() > m_zoom.scale()) {
-      double t = 1.0 / zoom.scale();
-      if (subpixelPos.x >= 0.5-t && subpixelPos.x <= 0.5+t) subpixelPos.x = 0.5;
-      if (subpixelPos.y >= 0.5-t && subpixelPos.y <= 0.5+t) subpixelPos.y = 0.5;
+    if (m_proj.scaleX() > 1.0) {
+      subpixelPos.x = (0.5 + screenPos.x - screenPos2.x) / m_proj.scaleX();
+      if (proj.scaleX() > m_proj.scaleX()) {
+        double t = 1.0 / proj.scaleX();
+        if (subpixelPos.x >= 0.5-t && subpixelPos.x <= 0.5+t)
+          subpixelPos.x = 0.5;
+      }
+    }
+
+    if (m_proj.scaleY() > 1.0) {
+      subpixelPos.y = (0.5 + screenPos.y - screenPos2.y) / m_proj.scaleY();
+      if (proj.scaleY() > m_proj.scaleY()) {
+        double t = 1.0 / proj.scaleY();
+        if (subpixelPos.y >= 0.5-t && subpixelPos.y <= 0.5+t)
+          subpixelPos.y = 0.5;
+      }
     }
   }
 
-  gfx::Point padding = calcExtraPadding(zoom);
+  gfx::Point padding = calcExtraPadding(proj);
   gfx::Point scrollPos(
-    padding.x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.x)),
-    padding.y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
+    padding.x - (screenPos.x-vp.x) + proj.applyX(spritePos.x+proj.removeX(1)/2) + int(proj.applyX(subpixelPos.x)),
+    padding.y - (screenPos.y-vp.y) + proj.applyY(spritePos.y+proj.removeY(1)/2) + int(proj.applyY(subpixelPos.y)));
 
   setZoom(zoom);
 
-  if ((m_zoom != zoom) || (screenPos != view->viewScroll())) {
+  if ((m_proj.zoom() != zoom) || (screenPos != view->viewScroll())) {
     updateEditor();
     setEditorScroll(scrollPos);
   }
@@ -1858,14 +1943,14 @@ ImageBufferPtr Editor::getRenderImageBuffer()
 }
 
 // static
-gfx::Point Editor::calcExtraPadding(const Zoom& zoom)
+gfx::Point Editor::calcExtraPadding(const Projection& proj)
 {
   View* view = View::getView(this);
   if (view) {
     Rect vp = view->viewportBounds();
     return gfx::Point(
-      std::max<int>(vp.w/2, vp.w - zoom.apply(m_sprite->width())),
-      std::max<int>(vp.h/2, vp.h - zoom.apply(m_sprite->height())));
+      std::max<int>(vp.w/2, vp.w - proj.applyX(m_sprite->width())),
+      std::max<int>(vp.h/2, vp.h - proj.applyY(m_sprite->height())));
   }
   else
     return gfx::Point(0, 0);

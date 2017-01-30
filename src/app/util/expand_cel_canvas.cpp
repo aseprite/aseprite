@@ -160,20 +160,27 @@ void ExpandCelCanvas::commit()
     validateDestCanvas(gfx::Region(m_bounds));
 
     // We can temporary remove the cel.
-    ASSERT(m_layer->isImage());
-    static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
+    if (m_layer->isImage()) {
+      static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
-    // Add a copy of m_dstImage in the sprite's image stock
-    gfx::Rect trimBounds = getTrimDstImageBounds();
-    if (!trimBounds.isEmpty()) {
-      ImageRef newImage(trimDstImage(trimBounds));
-      ASSERT(newImage);
+      // Add a copy of m_dstImage in the sprite's image stock
+      gfx::Rect trimBounds = getTrimDstImageBounds();
+      if (!trimBounds.isEmpty()) {
+        ImageRef newImage(trimDstImage(trimBounds));
+        ASSERT(newImage);
 
-      m_cel->data()->setImage(newImage);
-      m_cel->setPosition(m_cel->position() + trimBounds.origin());
+        m_cel->data()->setImage(newImage);
+        m_cel->setPosition(m_cel->position() + trimBounds.origin());
 
-      // And finally we add the cel again in the layer.
-      m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
+        // And finally we add the cel again in the layer.
+        m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
+      }
+    }
+    // We are selecting inside a layer group...
+    else {
+      // Just delete the created layer
+      delete m_cel;
+      m_cel = nullptr;
     }
   }
   else if (m_celImage) {

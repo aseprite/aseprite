@@ -118,7 +118,9 @@ void StandbyState::onActiveToolChange(Editor* editor, tools::Tool* tool)
   // If the user change from a selection tool to a non-selection tool,
   // or viceversa, we've to show or hide the transformation handles.
   bool needDecorators = (tool && tool->getInk(0)->isSelection());
-  if (m_transformSelectionHandlesAreVisible != needDecorators) {
+  if (m_transformSelectionHandlesAreVisible != needDecorators ||
+      !editor->layer() ||
+      !editor->layer()->isReference()) {
     m_transformSelectionHandlesAreVisible = false;
     editor->invalidate();
   }
@@ -148,10 +150,11 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (clickedInk->isCelMovement()) {
     // Handle "Auto Select Layer"
     if (editor->isAutoSelectLayer()) {
-      gfx::Point cursor = editor->screenToEditor(msg->position());
-
+      gfx::PointF cursor = editor->screenToEditorF(msg->position());
       ColorPicker picker;
-      picker.pickColor(site, cursor, ColorPicker::FromComposition);
+      picker.pickColor(site, cursor,
+                       editor->projection(),
+                       ColorPicker::FromComposition);
 
       auto range = App::instance()->timeline()->range();
 
@@ -171,35 +174,42 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
     }
 
-    if ((layer) &&
-        (layer->type() == ObjectType::LayerImage)) {
+    if (layer) {
       // TODO we should be able to move the `Background' with tiled mode
       if (layer->isBackground()) {
         StatusBar::instance()->showTip(1000,
           "The background layer cannot be moved");
       }
-      else if (!layer->isVisible()) {
+      else if (!layer->isVisibleHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is hidden", layer->name().c_str());
       }
-      else if (!layer->isMovable() || !layer->isEditable()) {
+      else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
       }
-      else if (!layer->cel(editor->frame())) {
-        StatusBar::instance()->showTip(1000,
-          "Cel is empty, nothing to move");
-      }
       else {
-        try {
-          // Change to MovingCelState
-          MovingCelState* newState = new MovingCelState(editor, msg);
-          editor->setState(EditorStatePtr(newState));
+        MovingCelCollect collect(editor, layer);
+        if (collect.empty()) {
+          StatusBar::instance()->showTip(
+            1000, "Nothing to move");
         }
-        catch (const LockedDocumentException&) {
-          // TODO break the background task that is locking this sprite
-          StatusBar::instance()->showTip(1000,
-            "Sprite is used by a backup/data recovery task");
+        else {
+          try {
+            // Change to MovingCelState
+            HandleType handle = MoveHandle;
+            if (resizeCelBounds(editor).contains(msg->position()))
+              handle = ScaleSEHandle;
+
+            MovingCelState* newState = new MovingCelState(
+              editor, msg, handle, collect);
+            editor->setState(EditorStatePtr(newState));
+          }
+          catch (const LockedDocumentException&) {
+            // TODO break the background task that is locking this sprite
+            StatusBar::instance()->showTip(
+              1000, "Sprite is used by a backup/data recovery task");
+          }
         }
       }
     }
@@ -239,7 +249,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         int x, y, opacity;
         Image* image = site.image(&x, &y, &opacity);
         if (layer && image) {
-          if (!layer->isEditable()) {
+          if (!layer->isEditableHierarchy()) {
             StatusBar::instance()->showTip(1000,
               "Layer '%s' is locked", layer->name().c_str());
             return true;
@@ -254,7 +264,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     // Move selected pixels
     if (layer && editor->isInsideSelection() && msg->left()) {
-      if (!layer->isEditable()) {
+      if (!layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
         return true;
@@ -283,7 +293,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   }
 
   // Start the Tool-Loop
-  if (layer) {
+  if (layer && (layer->isImage() || clickedInk->isSelection())) {
     // Disable layer edges to avoid showing the modified cel
     // information by ExpandCelCanvas (i.e. the cel origin is changed
     // to 0,0 coordinate.)
@@ -399,7 +409,10 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
       return true;
     }
     else if (ink->isCelMovement()) {
-      editor->showMouseCursor(kMoveCursor);
+      if (resizeCelBounds(editor).contains(mouseScreenPos))
+        editor->showMouseCursor(kSizeSECursor);
+      else
+        editor->showMouseCursor(kMoveCursor);
       return true;
     }
     else if (ink->isSlice()) {
@@ -434,7 +447,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
-  gfx::Point spritePos = editor->screenToEditor(ui::get_mouse_position());
+  gfx::PointF spritePos = editor->screenToEditorF(ui::get_mouse_position());
 
   if (!sprite) {
     StatusBar::instance()->clearText();
@@ -443,10 +456,15 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   else if (ink->isEyedropper()) {
     EyedropperCommand cmd;
     app::Color color = Preferences::instance().colorBar.fgColor();
-    cmd.pickSample(editor->getSite(), spritePos, color);
+    cmd.pickSample(editor->getSite(),
+                   spritePos,
+                   editor->projection(),
+                   color);
 
     char buf[256];
-    sprintf(buf, " :pos: %d %d", spritePos.x, spritePos.y);
+    sprintf(buf, " :pos: %d %d",
+            int(std::floor(spritePos.x)),
+            int(std::floor(spritePos.y)));
 
     StatusBar::instance()->showColor(0, buf, color);
   }
@@ -458,7 +476,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     char buf[1024];
     sprintf(
       buf, ":pos: %d %d :%s: %d %d",
-      spritePos.x, spritePos.y,
+      int(std::floor(spritePos.x)),
+      int(std::floor(spritePos.y)),
       (mask ? "selsize": "size"),
       (mask ? mask->bounds().w: sprite->width()),
       (mask ? mask->bounds().h: sprite->height()));
@@ -472,8 +491,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     if (editor->docPref().show.grid()) {
       auto gb = editor->docPref().grid.bounds();
-      int col = (spritePos.x - (gb.x % gb.w)) / gb.w;
-      int row = (spritePos.y - (gb.y % gb.h)) / gb.h;
+      int col = (std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w;
+      int row = (std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h;
       sprintf(
         buf+std::strlen(buf), " :grid: %d %d", col, row);
     }
@@ -507,12 +526,19 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Document* document = editor->document();
-
   for (auto docView : UIContext::instance()->getAllDocumentViews(document)) {
     if (docView->editor()->isMovingPixels()) {
       // TODO Transfer moving pixels state to this editor
       docView->editor()->dropMovingPixels();
     }
+  }
+
+  Layer* layer = editor->layer();
+  if (layer && layer->isReference()) {
+    StatusBar::instance()->showTip(
+      1000, "Layer '%s' is reference, cannot be transformed",
+      layer->name().c_str());
+    return;
   }
 
   try {
@@ -576,6 +602,22 @@ void StandbyState::onPivotChange(Editor* editor)
       !editor->document()->mask()->isFrozen()) {
     editor->invalidate();
   }
+}
+
+gfx::Rect StandbyState::resizeCelBounds(Editor* editor) const
+{
+  gfx::Rect bounds;
+  Cel* refCel = (editor->layer() &&
+                 editor->layer()->isReference() ?
+                 editor->layer()->cel(editor->frame()): nullptr);
+  if (refCel) {
+    bounds = editor->editorToScreen(refCel->boundsF());
+    bounds.w /= 4;
+    bounds.h /= 4;
+    bounds.x += 3*bounds.w;
+    bounds.y += 3*bounds.h;
+  }
+  return bounds;
 }
 
 //////////////////////////////////////////////////////////////////////

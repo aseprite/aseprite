@@ -127,7 +127,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Create the sprite with one background layer
   Sprite* sprite = new Sprite(pixelFormat, width, height, numcolors);
   LayerImage* layer = new LayerImage(sprite);
-  sprite->folder()->addLayer(layer);
+  sprite->root()->addLayer(layer);
 
   // Create the first image/cel
   ImageRef image(Image::create(pixelFormat, width, height));

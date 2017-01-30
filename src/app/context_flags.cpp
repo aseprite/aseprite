@@ -87,11 +87,14 @@ void ContextFlags::updateFlagsFromSite(const Site& site)
   if (layer->isBackground())
     m_flags |= ActiveLayerIsBackground;
 
-  if (layer->isVisible())
+  if (layer->isVisibleHierarchy())
     m_flags |= ActiveLayerIsVisible;
 
-  if (layer->isEditable())
+  if (layer->isEditableHierarchy())
     m_flags |= ActiveLayerIsEditable;
+
+  if (layer->isReference())
+    m_flags |= ActiveLayerIsReference;
 
   if (layer->isImage()) {
     m_flags |= ActiveLayerIsImage;

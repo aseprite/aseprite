@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
+#include "base/unique_ptr.h"
 #include "doc/doc.h"
 
 #include <cstdio>
@@ -22,7 +23,6 @@ using namespace app;
 TEST(File, SeveralSizes)
 {
   // Register all possible image formats.
-  FileFormatsManager::instance()->registerAllFormats();
   std::vector<char> fn(256);
   app::Context ctx;
 
@@ -32,11 +32,11 @@ TEST(File, SeveralSizes)
       std::sprintf(&fn[0], "test.ase");
 
       {
-        doc::Document* doc = ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256);
+        base::UniquePtr<doc::Document> doc(ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
         doc->setFilename(&fn[0]);
 
         // Random pixels
-        Layer* layer = doc->sprite()->folder()->getFirstLayer();
+        Layer* layer = doc->sprite()->root()->firstLayer();
         ASSERT_TRUE(layer != NULL);
         Image* image = layer->cel(frame_t(0))->image();
         std::srand(w*h);
@@ -49,19 +49,18 @@ TEST(File, SeveralSizes)
           }
         }
 
-        save_document(&ctx, doc);
+        save_document(&ctx, doc.get());
         doc->close();
-        delete doc;
       }
 
       {
-        app::Document* doc = load_document(&ctx, &fn[0]);
+        base::UniquePtr<app::Document> doc(load_document(&ctx, &fn[0]));
         ASSERT_EQ(w, doc->sprite()->width());
         ASSERT_EQ(h, doc->sprite()->height());
 
         // Same random pixels (see the seed)
-        Layer* layer = doc->sprite()->folder()->getFirstLayer();
-        ASSERT_TRUE(layer != NULL);
+        Layer* layer = doc->sprite()->root()->firstLayer();
+        ASSERT_TRUE(layer != nullptr);
         Image* image = layer->cel(frame_t(0))->image();
         std::srand(w*h);
         int c = std::rand()%256;
@@ -74,7 +73,6 @@ TEST(File, SeveralSizes)
         }
 
         doc->close();
-        delete doc;
       }
     }
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -42,6 +42,7 @@ namespace app {
       static css::Rule& iconPartRule() { return m_iconPartRule; }
       static css::Rule& iconXRule() { return m_iconXRule; }
       static css::Rule& iconYRule() { return m_iconYRule; }
+      static css::Rule& iconColorRule() { return m_iconColorRule; }
       static css::Rule& textAlignRule() { return m_textAlignRule; }
       static css::Rule& textColorRule() { return m_textColorRule; }
       static css::Rule& paddingLeftRule() { return m_paddingLeftRule; }
@@ -68,6 +69,7 @@ namespace app {
       static css::Rule m_iconPartRule;
       static css::Rule m_iconXRule;
       static css::Rule m_iconYRule;
+      static css::Rule m_iconColorRule;
       static css::Rule m_textAlignRule;
       static css::Rule m_textColorRule;
       static css::Rule m_paddingLeftRule;

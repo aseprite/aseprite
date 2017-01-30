@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  Carlo "zED" Caputo
+// Copyright (C) 2016  Carlo Caputo
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -85,7 +85,6 @@ template<typename Number> static Number check_number(const char* c_str) {
   }
 }
 
-
 bool PixlyFormat::onLoad(FileOp* fop)
 {
   try {
@@ -120,7 +119,7 @@ bool PixlyFormat::onLoad(FileOp* fop)
     sprite->setDurationForAllFrames(200);
 
     for (int i=0; i<layerCount; i++) {
-      sprite->folder()->addLayer(new LayerImage(sprite));
+      sprite->root()->addLayer(new LayerImage(sprite));
     }
 
     // load image sheet
@@ -131,16 +130,15 @@ bool PixlyFormat::onLoad(FileOp* fop)
       throw Exception("Pixly loader requires a valid PNG file");
     }
 
-    Image* sheet = sheet_doc->sprite()->layer(0)->cel(0)->image();
-
-    if (sheet->pixelFormat() != IMAGE_RGB) {
+    Image* sheet = sheet_doc->sprite()->root()->firstLayer()->cel(0)->image();
+    if (sheet->pixelFormat() != IMAGE_RGB)
       throw Exception("Pixly loader requires a RGBA PNG");
-    }
 
     int sheetWidth = sheet->width();
     int sheetHeight = sheet->height();
 
     // slice cels from sheet
+    LayerList layers = sprite->allLayers();
     std::vector<int> visible(layerCount, 0);
 
     TiXmlElement* xmlFrame = check(xmlFrames->FirstChild("Frame"))->ToElement();
@@ -150,8 +148,8 @@ bool PixlyFormat::onLoad(FileOp* fop)
 
       int index = check_number<int>(xmlIndex->Attribute("linear"));
       frame_t frame(index / layerCount);
-      LayerIndex layer_index(index % layerCount);
-      Layer *layer = sprite->indexToLayer(layer_index);
+      layer_t layer_index(index % layerCount);
+      Layer* layer = layers[layer_index];
 
       const char * duration = xmlFrame->Attribute("duration");
       if (duration) {
@@ -215,16 +213,14 @@ bool PixlyFormat::onLoad(FileOp* fop)
       fop->setProgress(0.5 + 0.5 * ((float)(index+1) / (float)imageCount));
     }
 
-    for (int i=0; i<layerCount; i++) {
-      LayerIndex layer_index(i);
-      Layer *layer = sprite->indexToLayer(layer_index);
-      layer->setVisible(visible[i] > frameCount/2);
+    for (layer_t i=0; i<layerCount; i++) {
+      layers[i]->setVisible(visible[i] > frameCount/2);
     }
 
     fop->createDocument(sprite);
     sprite.release();
   }
-  catch(Exception &e) {
+  catch(Exception& e) {
     fop->setError((std::string("Pixly file format: ")+std::string(e.what())+"\n").c_str());
     return false;
   }
@@ -237,19 +233,16 @@ bool PixlyFormat::onSave(FileOp* fop)
 {
   const Sprite* sprite = fop->document()->sprite();
 
-  auto it = sprite->folder()->getLayerBegin(),
-       end = sprite->folder()->getLayerEnd();
-  for (; it != end; ++it) { // layers
-    Layer *layer = *it;
+  for (const Layer* layer : sprite->root()->layers()) {
     if (!layer->isImage()) {
-      fop->setError("Pixly .anim file format does not support layer folders\n");
+      fop->setError("Pixly .anim file format does not support layer groups\n");
       return false;
     }
   }
 
   // account sheet size
   int frameCount = sprite->totalFrames();
-  int layerCount = sprite->folder()->getLayersCount();
+  int layerCount = sprite->root()->layersCount();
   int imageCount = frameCount * layerCount;
 
   int frameWidth = sprite->width();
@@ -263,7 +256,7 @@ bool PixlyFormat::onSave(FileOp* fop)
   // create PNG document
   Sprite* sheet_sprite = new Sprite(IMAGE_RGB, sheetWidth, sheetHeight, 256);
   LayerImage* sheet_layer = new LayerImage(sheet_sprite);
-  sheet_sprite->folder()->addLayer(sheet_layer);
+  sheet_sprite->root()->addLayer(sheet_layer);
   UniquePtr<Document> sheet_doc(new Document(sheet_sprite));
   ImageRef sheet_image(Image::create(IMAGE_RGB, sheetWidth, sheetHeight));
   Image* sheet = sheet_image.get();
@@ -291,11 +284,7 @@ bool PixlyFormat::onSave(FileOp* fop)
   // write cels on XML and PNG
   int index = 0;
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
-    auto it = sprite->folder()->getLayerBegin(),
-         end = sprite->folder()->getLayerEnd();
-    for (; it != end; ++it, ++index) { // layers
-      Layer *layer = *it;
-
+    for (const Layer* layer : sprite->root()->layers()) { // layers
       int col = index % squareSide;
       int row = index / squareSide;
 
@@ -337,8 +326,8 @@ bool PixlyFormat::onSave(FileOp* fop)
         } // image
       } // cel
 
-      fop->setProgress(0.25 + 0.5 * (double)(index+1) / (double)imageCount);
-
+      fop->setProgress(0.1 + 0.8 * (double)(index+1) / (double)imageCount);
+      ++index;
     } // layer
   } // frame
 

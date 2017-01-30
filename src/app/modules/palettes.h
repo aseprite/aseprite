@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,10 +21,8 @@ namespace app {
   void exit_module_palette();
 
   // Loads the default palette or creates it. Also it migrates the
-  // palette if the palette format changes, etc. The "userDefined"
-  // parameter can be a default palette name specified in the command
-  // line.
-  void load_default_palette(const std::string& userDefined);
+  // palette if the palette format changes, etc.
+  void load_default_palette();
 
   Palette* get_default_palette();
   Palette* get_current_palette();

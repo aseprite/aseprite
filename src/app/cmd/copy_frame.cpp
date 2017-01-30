@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,8 +40,7 @@ void CopyFrame::onExecute()
   if (fromFrame >= m_newFrame)
     ++fromFrame;
 
-  for (int i=0; i<sprite->countLayers(); ++i) {
-    Layer* layer = sprite->layer(i);
+  for (Layer* layer : sprite->allLayers()) {
     if (layer->isImage())  {
       executeAndAdd(new cmd::CopyCel(
           static_cast<LayerImage*>(layer), fromFrame,

@@ -24,14 +24,6 @@ namespace app {
     OpenFileCommand();
     Command* clone() const override { return new OpenFileCommand(*this); }
 
-    SequenceDecision sequenceDecision() const {
-      return m_seqDecision;
-    }
-
-    void setSequenceDecision(SequenceDecision seqDecision) {
-      m_seqDecision = seqDecision;
-    }
-
     const std::vector<std::string>& usedFiles() const {
       return m_usedFiles;
     }
@@ -44,6 +36,7 @@ namespace app {
     std::string m_filename;
     std::string m_folder;
     bool m_repeatCheckbox;
+    bool m_oneFrame;
     std::vector<std::string> m_usedFiles;
     SequenceDecision m_seqDecision;
   };

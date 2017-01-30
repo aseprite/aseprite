@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -70,7 +70,7 @@ void UndoCommand::onExecute(Context* context)
     Preferences::instance().undo.gotoModified();
 
   if (gotoModified) {
-    SpritePosition currentPosition(writer.site()->layerIndex(),
+    SpritePosition currentPosition(writer.site()->layer(),
                                    writer.site()->frame());
 
     if (m_type == Undo)
@@ -79,7 +79,9 @@ void UndoCommand::onExecute(Context* context)
       spritePosition = undo->nextRedoSpritePosition();
 
     if (spritePosition != currentPosition) {
-      current_editor->setLayer(sprite->indexToLayer(spritePosition.layerIndex()));
+      Layer* selectLayer = spritePosition.layer();
+      if (selectLayer)
+        current_editor->setLayer(selectLayer);
       current_editor->setFrame(spritePosition.frame());
 
       // Draw the current layer/frame (which is not undone yet) so the
@@ -111,11 +113,13 @@ void UndoCommand::onExecute(Context* context)
   // weren't able to reach before the undo).
   if (gotoModified) {
     SpritePosition currentPosition(
-      writer.site()->layerIndex(),
+      writer.site()->layer(),
       writer.site()->frame());
 
     if (spritePosition != currentPosition) {
-      current_editor->setLayer(sprite->indexToLayer(spritePosition.layerIndex()));
+      Layer* selectLayer = spritePosition.layer();
+      if (selectLayer)
+        current_editor->setLayer(selectLayer);
       current_editor->setFrame(spritePosition.frame());
     }
   }

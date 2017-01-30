@@ -71,20 +71,19 @@ void LayerOpacityCommand::onExecute(Context* context)
     Transaction transaction(writer.context(), "Set Layer Opacity");
 
     // TODO the range of selected frames should be in doc::Site.
+    SelectedLayers selLayers;
     auto range = App::instance()->timeline()->range();
     if (range.enabled()) {
-      for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
-        Layer* layer = writer.sprite()->indexToLayer(layerIdx);
-        if (!layer->isImage())
-          continue;
-
-        transaction.execute(
-          new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), m_opacity));
-      }
+      selLayers = range.selectedLayers();
     }
     else {
-      transaction.execute(
-        new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), m_opacity));
+      selLayers.insert(writer.layer());
+    }
+
+    for (auto layer : selLayers) {
+      if (layer->isImage())
+        transaction.execute(
+          new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), m_opacity));
     }
 
     transaction.commit();

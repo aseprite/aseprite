@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,9 +9,8 @@
 #pragma once
 
 #include "doc/frame.h"
-#include "doc/layer_index.h"
-
-#include <algorithm>
+#include "doc/selected_frames.h"
+#include "doc/selected_layers.h"
 
 namespace doc {
   class Cel;
@@ -30,39 +29,48 @@ namespace app {
 
     Type type() const { return m_type; }
     bool enabled() const { return m_type != kNone; }
-    LayerIndex layerBegin() const  { return std::min(m_layerBegin, m_layerEnd); }
-    LayerIndex layerEnd() const    { return std::max(m_layerBegin, m_layerEnd); }
-    frame_t frameBegin() const { return std::min(m_frameBegin, m_frameEnd); }
-    frame_t frameEnd() const   { return std::max(m_frameBegin, m_frameEnd); }
+    layer_t layers() const { return int(m_selectedLayers.size()); }
+    frame_t frames() const { return int(m_selectedFrames.size()); }
+    const SelectedLayers& selectedLayers() const  { return m_selectedLayers; }
+    const SelectedFrames& selectedFrames() const  { return m_selectedFrames; }
 
-    int layers() const { return layerEnd() - layerBegin() + 1; }
-    frame_t frames() const { return frameEnd() - frameBegin() + 1; }
-    void setLayers(int layers);
-    void setFrames(frame_t frames);
-    void displace(int layerDelta, int frameDelta);
+    void displace(layer_t layerDelta, frame_t frameDelta);
 
-    bool inRange(LayerIndex layer) const;
-    bool inRange(frame_t frame) const;
-    bool inRange(LayerIndex layer, frame_t frame) const;
-
-    void startRange(LayerIndex layer, frame_t frame, Type type);
-    void endRange(LayerIndex layer, frame_t frame);
-    void disableRange();
-
-    bool operator==(const DocumentRange& o) const {
-      return m_type == o.m_type &&
-        layerBegin() == o.layerBegin() && layerEnd() == o.layerEnd() &&
-        frameBegin() == o.frameBegin() && frameEnd() == o.frameEnd();
+    bool contains(Layer* layer) const;
+    bool contains(frame_t frame) const {
+      return m_selectedFrames.contains(frame);
+    }
+    bool contains(Layer* layer, frame_t frame) const {
+      return contains(layer) && contains(frame);
     }
 
-    bool convertToCels(Sprite* sprite);
+    void clearRange();
+    void startRange(Layer* fromLayer, frame_t fromFrame, Type type);
+    void endRange(Layer* toLayer, frame_t toFrame);
+
+    void selectLayer(Layer* layer);
+    void selectLayers(const SelectedLayers& selLayers);
+
+    frame_t firstFrame() const { return m_selectedFrames.firstFrame(); }
+    frame_t lastFrame() const { return m_selectedFrames.lastFrame(); }
+
+    bool operator==(const DocumentRange& o) const {
+      return (m_type == o.m_type &&
+              m_selectedLayers == o.m_selectedLayers &&
+              m_selectedFrames == o.m_selectedFrames);
+    }
+
+    bool convertToCels(const Sprite* sprite);
 
   private:
+    void selectLayerRange(Layer* fromLayer, Layer* toLayer);
+    void selectFrameRange(frame_t fromFrame, frame_t toFrame);
+
     Type m_type;
-    LayerIndex m_layerBegin;
-    LayerIndex m_layerEnd;
-    frame_t m_frameBegin;
-    frame_t m_frameEnd;
+    SelectedLayers m_selectedLayers;
+    SelectedFrames m_selectedFrames;
+    Layer* m_selectingFromLayer;
+    frame_t m_selectingFromFrame;
   };
 
 } // namespace app

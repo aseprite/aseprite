@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,16 +33,12 @@ CelList get_unique_cels(Sprite* sprite, const DocumentRange& inrange)
 
   std::set<ObjectId> visited;
 
-  for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
-    Layer* layer = sprite->indexToLayer(layerIdx);
+  for (Layer* layer : range.selectedLayers()) {
     if (!layer || !layer->isImage())
       continue;
 
     LayerImage* layerImage = static_cast<LayerImage*>(layer);
-    for (frame_t frame = range.frameEnd(),
-           begin = range.frameBegin()-1;
-         frame != begin;
-         --frame) {
+    for (frame_t frame : range.selectedFrames()) {
       Cel* cel = layerImage->cel(frame);
       if (!cel)
         continue;

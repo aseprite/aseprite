@@ -10,6 +10,7 @@
 
 #include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
+#include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "doc/object_id.h"
 #include "gfx/fwd.h"
@@ -23,7 +24,8 @@
 namespace doc {
   class FrameTag;
   class Image;
-  class Layer;
+  class SelectedLayers;
+  class SelectedFrames;
 }
 
 namespace app {
@@ -37,26 +39,29 @@ namespace app {
       DefaultDataFormat = JsonHashDataFormat
     };
 
-    enum TextureFormat {
-      JsonTextureFormat,
-      DefaultTextureFormat = JsonTextureFormat
-    };
-
-    enum ScaleMode {
-      DefaultScaleMode
-    };
-
     DocumentExporter();
+
+    DataFormat dataFormat() const { return m_dataFormat; }
+    const std::string& dataFilename() { return m_dataFilename; }
+    const std::string& textureFilename() { return m_textureFilename; }
+    int textureWidth() const { return m_textureWidth; }
+    int textureHeight() const { return m_textureHeight; }
+    SpriteSheetType spriteSheetType() { return m_sheetType; }
+    bool ignoreEmptyCels() { return m_ignoreEmptyCels; }
+    int borderPadding() const { return m_borderPadding; }
+    int shapePadding() const { return m_shapePadding; }
+    int innerPadding() const { return m_innerPadding; }
+    bool trimCels() const { return m_trimCels; }
+    const std::string& filenameFormat() const { return m_filenameFormat; }
+    bool listFrameTags() const { return m_listFrameTags; }
+    bool listLayers() const { return m_listLayers; }
 
     void setDataFormat(DataFormat format) { m_dataFormat = format; }
     void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
-    void setTextureFormat(TextureFormat format) { m_textureFormat = format; }
     void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
     void setTextureWidth(int width) { m_textureWidth = width; }
     void setTextureHeight(int height) { m_textureHeight = height; }
     void setSpriteSheetType(SpriteSheetType type) { m_sheetType = type; }
-    void setScale(double scale) { m_scale = scale; }
-    void setScaleMode(ScaleMode mode) { m_scaleMode = mode; }
     void setIgnoreEmptyCels(bool ignore) { m_ignoreEmptyCels = ignore; }
     void setBorderPadding(int padding) { m_borderPadding = padding; }
     void setShapePadding(int padding) { m_shapePadding = padding; }
@@ -67,13 +72,14 @@ namespace app {
     void setListLayers(bool value) { m_listLayers = value; }
 
     void addDocument(Document* document,
-                     doc::Layer* layer = nullptr,
-                     doc::FrameTag* tag = nullptr,
-                     bool temporalTag = false) {
-      m_documents.push_back(Item(document, layer, tag, temporalTag));
+                     doc::FrameTag* tag,
+                     doc::SelectedLayers* selLayers,
+                     doc::SelectedFrames* selFrames) {
+      m_documents.push_back(Item(document, tag, selLayers, selFrames));
     }
 
     Document* exportSheet();
+    gfx::Size calculateSheetSize();
 
   private:
     class Sample;
@@ -83,41 +89,43 @@ namespace app {
     class BestFitLayoutSamples;
 
     void captureSamples(Samples& samples);
-    Document* createEmptyTexture(const Samples& samples);
-    void renderTexture(const Samples& samples, doc::Image* textureImage);
+    void layoutSamples(Samples& samples);
+    gfx::Size calculateSheetSize(const Samples& samples) const;
+    Document* createEmptyTexture(const Samples& samples) const;
+    void renderTexture(const Samples& samples, doc::Image* textureImage) const;
     void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
-    void renderSample(const Sample& sample, doc::Image* dst, int x, int y);
+    void renderSample(const Sample& sample, doc::Image* dst, int x, int y) const;
 
     class Item {
     public:
       Document* doc;
-      doc::Layer* layer;
       doc::FrameTag* frameTag;
-      bool temporalTag;
+      doc::SelectedLayers* selLayers;
+      doc::SelectedFrames* selFrames;
 
       Item(Document* doc,
-           doc::Layer* layer,
            doc::FrameTag* frameTag,
-           bool temporalTag)
-        : doc(doc), layer(layer), frameTag(frameTag)
-        , temporalTag(temporalTag) {
-      }
+           doc::SelectedLayers* selLayers,
+           doc::SelectedFrames* selFrames);
+      Item(Item&& other);
+      ~Item();
+
+      Item() = delete;
+      Item(const Item&) = delete;
+      Item& operator=(const Item&) = delete;
 
       int frames() const;
-      int fromFrame() const;
-      int toFrame() const;
+      doc::frame_t firstFrame() const;
+      doc::SelectedFrames getSelectedFrames() const;
     };
     typedef std::vector<Item> Items;
 
     DataFormat m_dataFormat;
     std::string m_dataFilename;
-    TextureFormat m_textureFormat;
     std::string m_textureFilename;
     int m_textureWidth;
     int m_textureHeight;
     SpriteSheetType m_sheetType;
-    double m_scale;
-    ScaleMode m_scaleMode;
     bool m_ignoreEmptyCels;
     int m_borderPadding;
     int m_shapePadding;

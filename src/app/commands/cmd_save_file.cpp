@@ -22,12 +22,15 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
+#include "app/restore_visible_layers.h"
+#include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
+#include "doc/frame_tag.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -35,8 +38,16 @@ namespace app {
 
 class SaveAsCopyDelegate : public FileSelectorDelegate {
 public:
-  SaveAsCopyDelegate(double scale)
-    : m_resizeScale(scale) { }
+  SaveAsCopyDelegate(const Sprite* sprite,
+                     const double scale,
+                     const std::string& layer,
+                     const std::string& frame,
+                     const bool applyPixelRatio)
+    : m_sprite(sprite),
+      m_resizeScale(scale),
+      m_layer(layer),
+      m_frame(frame),
+      m_applyPixelRatio(applyPixelRatio) { }
 
   bool hasResizeCombobox() override {
     return true;
@@ -50,8 +61,43 @@ public:
     m_resizeScale = scale;
   }
 
+  void fillLayersComboBox(ui::ComboBox* layers) override {
+    fill_layers_combobox(m_sprite, layers, m_layer);
+  }
+
+  void fillFramesComboBox(ui::ComboBox* frames) override {
+    fill_frames_combobox(m_sprite, frames, m_frame);
+  }
+
+  std::string getLayers() override { return m_layer; }
+  std::string getFrames() override { return m_frame; }
+
+  void setLayers(const std::string& layer) override {
+    m_layer = layer;
+  }
+
+  void setFrames(const std::string& frame) override {
+    m_frame = frame;
+  }
+
+  void setApplyPixelRatio(bool applyPixelRatio) override {
+    m_applyPixelRatio = applyPixelRatio;
+  }
+
+  bool applyPixelRatio() const override {
+    return m_applyPixelRatio;
+  }
+
+  doc::PixelRatio pixelRatio() override {
+    return m_sprite->pixelRatio();
+  }
+
 private:
+  const Sprite* m_sprite;
   double m_resizeScale;
+  std::string m_layer;
+  std::string m_frame;
+  bool m_applyPixelRatio;
 };
 
 class SaveFileJob : public Job, public IFileOpProgress {
@@ -92,43 +138,6 @@ private:
   FileOp* m_fop;
 };
 
-static void save_document_in_background(const Context* context,
-                                        const Document* document, bool mark_as_saved,
-                                        const std::string& fn_format)
-{
-  base::UniquePtr<FileOp> fop(
-    FileOp::createSaveDocumentOperation(
-      context, document,
-      document->filename().c_str(), fn_format.c_str()));
-  if (!fop)
-    return;
-
-  SaveFileJob job(fop);
-  job.showProgressWindow();
-
-  if (fop->hasError()) {
-    Console console;
-    console.printf(fop->error().c_str());
-
-    // We don't know if the file was saved correctly or not. So mark
-    // it as it should be saved again.
-    const_cast<Document*>(document)->impossibleToBackToSavedState();
-  }
-  // If the job was cancelled, mark the document as modified.
-  else if (fop->isStop()) {
-    const_cast<Document*>(document)->impossibleToBackToSavedState();
-  }
-  else if (context->isUIAvailable()) {
-    App::instance()->recentFiles()->addRecentFile(document->filename().c_str());
-    if (mark_as_saved)
-      const_cast<Document*>(document)->markAsSaved();
-
-    StatusBar::instance()
-      ->setStatusText(2000, "File %s, saved.",
-        document->name().c_str());
-  }
-}
-
 //////////////////////////////////////////////////////////////////////
 
 SaveFileBaseCommand::SaveFileBaseCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
@@ -140,6 +149,19 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_filenameFormat = params.get("filename-format");
+  m_frameTag = params.get("frame-tag");
+
+  if (params.has_param("from-frame") ||
+      params.has_param("to-frame")) {
+    doc::frame_t fromFrame = params.get_as<doc::frame_t>("from-frame");
+    doc::frame_t toFrame = params.get_as<doc::frame_t>("to-frame");
+    m_selFrames.insert(fromFrame, toFrame);
+    m_adjustFramesByFrameTag = true;
+  }
+  else {
+    m_selFrames.clear();
+    m_adjustFramesByFrameTag = false;
+  }
 }
 
 // Returns true if there is a current sprite to save.
@@ -160,7 +182,8 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
   // have to mark the file as saved.
   bool saveCopyAs = (delegate != nullptr);
   bool markAsSaved = (!saveCopyAs);
-  double scale = 1.0;
+  double xscale = 1.0;
+  double yscale = 1.0;
 
   if (!m_filename.empty()) {
     filename = m_filename;
@@ -180,7 +203,7 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     filename = newfilename;
     if (delegate &&
         delegate->hasResizeCombobox()) {
-      scale = delegate->getResizeScale();
+      xscale = yscale = delegate->getResizeScale();
     }
   }
 
@@ -195,16 +218,24 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     m_selectedFilename = filename;
   }
 
+  // Pixel ratio
+  if (delegate &&
+      delegate->applyPixelRatio()) {
+    doc::PixelRatio pr = delegate->pixelRatio();
+    xscale *= pr.w;
+    yscale *= pr.h;
+  }
+
   // Apply scale
   bool undoResize = false;
-  if (scale != 1.0) {
+  if (xscale != 1.0 || yscale != 1.0) {
     Command* resizeCmd = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = document->sprite()->width();
       int height = document->sprite()->height();
-      int newWidth = int(double(width) * scale);
-      int newHeight = int(double(height) * scale);
+      int newWidth = int(double(width) * xscale);
+      int newHeight = int(double(height) * yscale);
       if (newWidth < 1) newWidth = 1;
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
@@ -219,10 +250,29 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     }
   }
 
-  // Save the document
-  save_document_in_background(
-    context, const_cast<Document*>(document),
-    markAsSaved, m_filenameFormat);
+  {
+    RestoreVisibleLayers layersVisibility;
+    if (delegate) {
+      Site site = context->activeSite();
+
+      // Selected layers to export
+      calculate_visible_layers(site,
+                               delegate->getLayers(),
+                               layersVisibility);
+
+      // Selected frames to export
+      SelectedFrames selFrames;
+      FrameTag* frameTag = calculate_selected_frames(
+        site, delegate->getFrames(), selFrames);
+      if (frameTag)
+        m_frameTag = frameTag->name();
+      m_selFrames = selFrames;
+      m_adjustFramesByFrameTag = false;
+    }
+
+    // Save the document
+    saveDocumentInBackground(context, const_cast<Document*>(document), markAsSaved);
+  }
 
   // Undo resize
   if (undoResize) {
@@ -242,6 +292,46 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
   }
 
   return true;
+}
+
+void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
+                                                   const app::Document* document,
+                                                   bool markAsSaved) const
+{
+  base::UniquePtr<FileOp> fop(
+    FileOp::createSaveDocumentOperation(
+      context,
+      FileOpROI(document, m_frameTag,
+                m_selFrames, m_adjustFramesByFrameTag),
+      document->filename().c_str(),
+      m_filenameFormat.c_str()));
+  if (!fop)
+    return;
+
+  SaveFileJob job(fop);
+  job.showProgressWindow();
+
+  if (fop->hasError()) {
+    Console console;
+    console.printf(fop->error().c_str());
+
+    // We don't know if the file was saved correctly or not. So mark
+    // it as it should be saved again.
+    const_cast<Document*>(document)->impossibleToBackToSavedState();
+  }
+  // If the job was cancelled, mark the document as modified.
+  else if (fop->isStop()) {
+    const_cast<Document*>(document)->impossibleToBackToSavedState();
+  }
+  else if (context->isUIAvailable()) {
+    App::instance()->recentFiles()->addRecentFile(document->filename().c_str());
+    if (markAsSaved)
+      const_cast<Document*>(document)->markAsSaved();
+
+    StatusBar::instance()
+      ->setStatusText(2000, "File %s, saved.",
+        document->name().c_str());
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -272,9 +362,7 @@ void SaveFileCommand::onExecute(Context* context)
     ContextWriter writer(context);
     Document* documentWriter = writer.document();
 
-    save_document_in_background(
-      context, documentWriter, true,
-      m_filenameFormat.c_str());
+    saveDocumentInBackground(context, documentWriter, true);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -324,7 +412,17 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   // show "Save As" dialog
   DocumentPreferences& docPref = Preferences::instance().document(document);
-  SaveAsCopyDelegate delegate(docPref.saveCopy.resizeScale());
+
+  base::UniquePtr<SaveAsCopyDelegate> delegate;
+  if (context->isUIAvailable()) {
+    delegate.reset(
+      new SaveAsCopyDelegate(
+        document->sprite(),
+        docPref.saveCopy.resizeScale(),
+        docPref.saveCopy.layer(),
+        docPref.saveCopy.frameTag(),
+        docPref.saveCopy.applyPixelRatio()));
+  }
 
   // Is a default output filename in the preferences?
   if (!docPref.saveCopy.filename().empty()) {
@@ -333,9 +431,14 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       docPref.saveCopy.filename());
   }
 
-  if (saveAsDialog(context, "Save Copy As", &delegate)) {
+  if (saveAsDialog(context, "Save Copy As", delegate)) {
     docPref.saveCopy.filename(document->filename());
-    docPref.saveCopy.resizeScale(delegate.getResizeScale());
+    if (delegate) {
+      docPref.saveCopy.resizeScale(delegate->getResizeScale());
+      docPref.saveCopy.layer(delegate->getLayers());
+      docPref.saveCopy.frameTag(delegate->getFrames());
+      docPref.saveCopy.applyPixelRatio(delegate->applyPixelRatio());
+    }
   }
 
   // Restore the file name.

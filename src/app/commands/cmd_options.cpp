@@ -158,6 +158,8 @@ public:
     if (m_pref.experimental.flashLayer())
       flashLayer()->setSelected(true);
 
+    nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
+
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
@@ -332,6 +334,7 @@ public:
     // Experimental features
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
+    m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
 
     ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
     ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());

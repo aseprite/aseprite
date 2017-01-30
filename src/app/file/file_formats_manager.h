@@ -30,8 +30,6 @@ namespace app {
 
     virtual ~FileFormatsManager();
 
-    void registerAllFormats();
-
     // Iterators to access to the list of formats.
     FileFormatsList::iterator begin();
     FileFormatsList::iterator end();
@@ -39,7 +37,7 @@ namespace app {
     FileFormat* getFileFormat(const docio::FileFormat docioFormat) const;
 
   private:
-    // Register one format.
+    FileFormatsManager();
     void registerFormat(FileFormat* fileFormat);
 
     FileFormatsList m_formats;

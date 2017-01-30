@@ -129,42 +129,6 @@ TEST(FilenameFormatter, WithFrame)
       FilenameInfo().filename("C:/temp/file.png").layerName("Background").frame(2)));
 }
 
-TEST(SetFrameFormat, Tests)
-{
-  EXPECT_EQ(
-    "{path}/{title}{frame1}.{extension}",
-    set_frame_format(
-      "{path}/{title}{frame}.{extension}",
-      "{frame1}"));
-
-  EXPECT_EQ(
-    "{path}/{title}{frame01}.{extension}",
-    set_frame_format(
-      "{path}/{title}{frame}.{extension}",
-      "{frame01}"));
-
-  EXPECT_EQ(
-    "{path}/{title}{frame}.{extension}",
-    set_frame_format(
-      "{path}/{title}{frame01}.{extension}",
-      "{frame}"));
-}
-
-TEST(AddFrameFormat, Tests)
-{
-  EXPECT_EQ(
-    base::fix_path_separators("{path}/{title}{frame001}.{extension}"),
-    add_frame_format(
-      "{path}/{title}.{extension}",
-      "{frame001}"));
-
-  EXPECT_EQ(
-    "{path}/{title}{frame1}.{extension}",
-    add_frame_format(
-      "{path}/{title}{frame1}.{extension}",
-      "{frame001}"));
-}
-
 TEST(FilenameFormatter, WithTagFrame)
 {
   EXPECT_EQ(
@@ -184,4 +148,88 @@ TEST(FilenameFormatter, WithTagFrame)
     filename_formatter(
       "{path}/{title}_{frame}_{tagframe24}.{extension}",
       FilenameInfo().filename("./file.png").frame(2).tagFrame(1)));
+}
+
+TEST(FilenameFormatter, WithGroup)
+{
+  EXPECT_EQ(
+    "C:/temp/file (-Eyes).png",
+    filename_formatter(
+      "{path}/{title} ({group}-{layer}).{extension}",
+      FilenameInfo().filename("C:/temp/file.png")
+        .layerName("Eyes")));
+  EXPECT_EQ(
+    "C:/temp/file (Face-Eyes).png",
+    filename_formatter(
+      "{path}/{title} ({group}-{layer}).{extension}",
+      FilenameInfo().filename("C:/temp/file.png")
+        .groupName("Face").layerName("Eyes")));
+}
+
+TEST(FilenameFormatter, GetFrameInfo)
+{
+  int frameBase, width;
+
+  EXPECT_EQ(false, get_frame_info_from_filename_format("hi.png", nullptr, nullptr));
+
+  frameBase = width = -1;
+  EXPECT_EQ(true, get_frame_info_from_filename_format("hi{frame}.png", &frameBase, &width));
+  EXPECT_EQ(0, frameBase);
+  EXPECT_EQ(0, width);
+
+  frameBase = width = -1;
+  EXPECT_EQ(true, get_frame_info_from_filename_format("hi{frame1}.png", &frameBase, &width));
+  EXPECT_EQ(1, frameBase);
+  EXPECT_EQ(1, width);
+
+  frameBase = width = -1;
+  EXPECT_EQ(true, get_frame_info_from_filename_format("hi{frame032}.png", &frameBase, &width));
+  EXPECT_EQ(32, frameBase);
+  EXPECT_EQ(3, width);
+}
+
+TEST(FilenameFormatter, DefaultFormat)
+{
+  std::string fn;
+
+  fn = "/path/hello.png";
+  EXPECT_EQ("{title}.{extension}", get_default_filename_format(fn, false, false, false, false));
+  EXPECT_EQ("/path/hello.png", fn);
+
+  fn = "/path/hello.png";
+  EXPECT_EQ("{path}/{title}.{extension}", get_default_filename_format(fn, true, false, false, false));
+  EXPECT_EQ("/path/hello.png", fn);
+
+  fn = "/path/hello.png";
+  EXPECT_EQ("{path}/{title}{frame1}.{extension}", get_default_filename_format(fn, true, true, false, false));
+  EXPECT_EQ("/path/hello.png", fn);
+
+  fn = "/path/hello.gif";
+  EXPECT_EQ("{path}/{title}.{extension}", get_default_filename_format(fn, true, true, false, false));
+  EXPECT_EQ("/path/hello.gif", fn);
+
+  fn = "/path/hello.png";
+  EXPECT_EQ("{path}/{title} ({layer}) {frame}.{extension}", get_default_filename_format(fn, true, true, true, false));
+  EXPECT_EQ("/path/hello.png", fn);
+
+  fn = "/path/hello.gif";
+  EXPECT_EQ("{path}/{title} ({layer}).{extension}", get_default_filename_format(fn, true, true, true, false));
+  EXPECT_EQ("/path/hello.gif", fn);
+
+  fn = "/path/hello1.png";
+  EXPECT_EQ("{path}/{title}{frame1}.{extension}", get_default_filename_format(fn, true, true, false, false));
+  EXPECT_EQ("/path/hello.png", fn);
+
+  fn = "/path/hello1.gif";
+  EXPECT_EQ("{path}/{title}.{extension}", get_default_filename_format(fn, true, true, false, false));
+  EXPECT_EQ("/path/hello1.gif", fn);
+
+  fn = "/path/hello001.png";
+  EXPECT_EQ("{path}/{title}{frame001}.{extension}", get_default_filename_format(fn, true, true, false, false));
+  EXPECT_EQ("/path/hello.png", fn);
+
+  // When layers or tags are used in the filename format, the 1 is not converted to {frame1}
+  fn = "/path/hello1.png";
+  EXPECT_EQ("{path}/{title} #{tag} {frame}.{extension}", get_default_filename_format(fn, true, true, false, true));
+  EXPECT_EQ("/path/hello1.png", fn);
 }

@@ -143,7 +143,7 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
 
-      LayerImage* layer = static_cast<LayerImage*>(sprite->folder()->getFirstLayer());
+      LayerImage* layer = static_cast<LayerImage*>(sprite->root()->firstLayer());
       layer->configureAsBackground();
 
       Image* image = layer->cel(frame_t(0))->image();

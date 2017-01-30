@@ -220,13 +220,38 @@ void UIContext::onGetActiveSite(Site* site) const
   DocumentView* view = activeView();
   if (view) {
     view->getSite(site);
+
+    if (site->sprite()) {
+      // Selected layers
+      Timeline* timeline = App::instance()->timeline();
+      if (timeline &&
+          timeline->range().enabled()) {
+        switch (timeline->range().type()) {
+          case DocumentRange::kCels:   site->focus(Site::InCels); break;
+          case DocumentRange::kFrames: site->focus(Site::InFrames); break;
+          case DocumentRange::kLayers: site->focus(Site::InLayers); break;
+        }
+        site->selectedLayers(timeline->selectedLayers());
+        site->selectedFrames(timeline->selectedFrames());
+      }
+      else {
+        ColorBar* colorBar = ColorBar::instance();
+        if (colorBar &&
+            colorBar->getPaletteView()->getSelectedEntriesCount() > 0) {
+          site->focus(Site::InColorBar);
+        }
+        else {
+          site->focus(Site::InEditor);
+        }
+      }
+    }
   }
   // Default/dummy site (maybe for batch/command line mode)
   else if (!isUIAvailable()) {
     if (Document* doc = m_lastSelectedDoc) {
       site->document(doc);
       site->sprite(doc->sprite());
-      site->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
+      site->layer(doc->sprite()->root()->firstLayer());
       site->frame(0);
     }
   }

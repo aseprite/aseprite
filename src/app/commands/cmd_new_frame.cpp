@@ -105,34 +105,37 @@ void NewFrameCommand::onExecute(Context* context)
 
       case Content::DUPLICATE_CELS:
       case Content::DUPLICATE_CELS_BLOCK: {
-        // TODO the range of selected frames should be in doc::Site.
-        Timeline* timeline = App::instance()->timeline();
-        Timeline::Range range = timeline->range();
-        if (range.enabled()) {
+        const Site* site = writer.site();
+        if (site->inTimeline() &&
+            !site->selectedLayers().empty() &&
+            !site->selectedFrames().empty()) {
           std::map<CelData*, Cel*> relatedCels;
+
+          auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
+          DocumentRange range = timeline->range();
 
-          LayerIndex layerBegin = range.layerBegin();
-          LayerIndex layerEnd = range.layerEnd();
+          SelectedLayers selLayers;
+          if (site->inFrames())
+            selLayers.selectAllLayers(writer.sprite()->root());
+          else
+            selLayers = site->selectedLayers();
 
-          if (range.type() == DocumentRange::kFrames) {
-            layerBegin = writer.sprite()->firstLayer();
-            layerEnd = writer.sprite()->lastLayer();
-          }
+          frame_t frameRange =
+            (site->selectedFrames().lastFrame() -
+             site->selectedFrames().firstFrame() + 1);
 
-          for (LayerIndex layer = layerBegin; layer <= layerEnd; ++layer) {
-            Layer* layerPtr = writer.sprite()->indexToLayer(layer);
-            if (layerPtr->isImage()) {
-              for (frame_t frame = range.frameEnd(); frame >= range.frameBegin(); --frame) {
-                frame_t srcFrame = frame;
-                frame_t dstFrame = frame+range.frames();
+          for (Layer* layer : selLayers) {
+            if (layer->isImage()) {
+              for (frame_t srcFrame : site->selectedFrames().reversed()) {
+                frame_t dstFrame = srcFrame+frameRange;
                 bool continuous;
                 CelData* srcCelData = nullptr;
 
                 if (m_content == Content::DUPLICATE_CELS_BLOCK) {
                   continuous = false;
 
-                  Cel* srcCel = static_cast<LayerImage*>(layerPtr)->cel(srcFrame);
+                  Cel* srcCel = static_cast<LayerImage*>(layer)->cel(srcFrame);
                   if (srcCel) {
                     srcCelData = srcCel->data();
 
@@ -144,19 +147,19 @@ void NewFrameCommand::onExecute(Context* context)
                   }
                 }
                 else
-                  continuous = layerPtr->isContinuous();
+                  continuous = layer->isContinuous();
 
                 api.copyCel(
-                  static_cast<LayerImage*>(layerPtr), srcFrame,
-                  static_cast<LayerImage*>(layerPtr), dstFrame, continuous);
+                  static_cast<LayerImage*>(layer), srcFrame,
+                  static_cast<LayerImage*>(layer), dstFrame, continuous);
 
                 if (srcCelData && !relatedCels[srcCelData])
-                  relatedCels[srcCelData] = layerPtr->cel(dstFrame);
+                  relatedCels[srcCelData] = layer->cel(dstFrame);
               }
             }
           }
 
-          range.displace(0, range.frames());
+          range.displace(0, frameRange);
           timeline->moveRange(range);
         }
         else {
