@@ -1,5 +1,5 @@
 // Aseprite Config Library
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2014-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace cfg {
 
@@ -18,6 +19,9 @@ namespace cfg {
     ~CfgFile();
 
     const std::string& filename() const;
+
+    void getAllSections(std::vector<std::string>& sections) const;
+    void getAllKeys(const char* section, std::vector<std::string>& keys) const;
 
     const char* getValue(const char* section, const char* name, const char* defaultValue) const;
     bool getBoolValue(const char* section, const char* name, bool defaultValue);

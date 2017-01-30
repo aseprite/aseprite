@@ -16,6 +16,8 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <list>
+
 #include "SimpleIni.h"
 
 namespace cfg {
@@ -24,6 +26,24 @@ class CfgFile::CfgFileImpl {
 public:
   const std::string& filename() const {
     return m_filename;
+  }
+
+  void getAllSections(std::vector<std::string>& sections) const {
+    std::list<CSimpleIniA::Entry> sectionsList;
+    m_ini.GetAllSections(sectionsList);
+    sections.reserve(sectionsList.size());
+    for (const auto& section : sectionsList)
+      sections.push_back(section.pItem);
+  }
+
+  void getAllKeys(const char* section, std::vector<std::string>& keys) const {
+    std::list<CSimpleIniA::Entry> keysList;
+    if (!m_ini.GetAllKeys(section, keysList))
+      return;
+
+    keys.reserve(keysList.size());
+    for (const auto& k : keysList)
+      keys.push_back(k.pItem);
   }
 
   const char* getValue(const char* section, const char* name, const char* defaultValue) const {
@@ -67,6 +87,7 @@ public:
 
     base::FileHandle file(base::open_file(m_filename, "rb"));
     if (file) {
+      m_ini.SetMultiLine();
       SI_Error err = m_ini.LoadFile(file.get());
       if (err != SI_OK) {
         LOG(ERROR) << "CFG: Error " << err << " loading configuration from " << m_filename << "\n";
@@ -102,6 +123,16 @@ CfgFile::~CfgFile()
 const std::string& CfgFile::filename() const
 {
   return m_impl->filename();
+}
+
+void CfgFile::getAllSections(std::vector<std::string>& sections) const
+{
+  m_impl->getAllSections(sections);
+}
+
+void CfgFile::getAllKeys(const char* section, std::vector<std::string>& keys) const
+{
+  m_impl->getAllKeys(section, keys);
 }
 
 const char* CfgFile::getValue(const char* section, const char* name, const char* defaultValue) const

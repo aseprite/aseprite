@@ -1,26 +1,26 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Grid Settings" id="grid_settings">
+<window id="grid_settings" text="@.title">
   <grid columns="4">
 
-    <label text="X:" />
+    <label text="@.x" />
     <entry id="grid_x" text="" maxsize="4" magnet="true" />
 
-    <label text="Y:" />
+    <label text="@.y" />
     <entry id="grid_y" text="" maxsize="4" />
 
-    <label text="Width:" />
+    <label text="@.width" />
     <entry id="grid_w" text="" maxsize="4" />
 
-    <label text="Height:" />
+    <label text="@.height" />
     <entry id="grid_h" text="" maxsize="4" />
 
     <separator horizontal="true" cell_hspan="4" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="4" cell_align="right">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="&amp;Cancel" closewindow="true" />
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.cancel" closewindow="true" />
     </box>
   </grid>
 </window>

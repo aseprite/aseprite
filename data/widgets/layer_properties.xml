@@ -1,17 +1,17 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Layer Properties" id="layer_properties">
+<window id="layer_properties" text="@.title">
   <vbox>
     <grid columns="3">
-      <label text="Name:" />
+      <label text="@.name" />
       <entry text="" id="name" magnet="true" maxsize="256" minwidth="64" cell_align="horizontal" />
-      <button id="user_data" icon="icon_user_data" tooltip="User Data" />
+      <button id="user_data" icon="icon_user_data" tooltip="@general.user_data" />
 
-      <label text="Mode:" />
+      <label text="@.mode" />
       <combobox id="mode" cell_hspan="2" />
 
-      <label text="Opacity:" />
+      <label text="@.opacity" />
       <slider id="opacity" min="0" max="255" width="128" cell_align="horizontal" cell_hspan="2" />
     </grid>
   </vbox>

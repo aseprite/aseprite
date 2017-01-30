@@ -1,39 +1,39 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Sprite Properties" id="sprite_properties">
+<window id="sprite_properties" text="@.title">
   <vbox>
     <grid columns="2">
-      <label text="File name:" />
+      <label text="@.filename" />
       <entry text="" id="name" maxsize="256" minwidth="64" readonly="true" cell_align="horizontal" />
 
-      <label text="Type:" />
+      <label text="@.type" />
       <label text="" id="type" />
 
-      <label text="Size:" />
+      <label text="@.size" />
       <label text="" id="size" />
 
-      <label text="Frames:" />
+      <label text="@.frames" />
       <label text="" id="frames" />
 
-      <separator text="Advanced" horizontal="true" cell_hspan="2" />
+      <separator text="@.advanced" horizontal="true" cell_hspan="2" />
 
-      <label text="Transparent Color:" />
-      <hbox id="transparent_color_placeholder" tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
+      <label text="@.transparent_color" />
+      <hbox id="transparent_color_placeholder" tooltip="@.transparent_color_tooltip" />
 
-      <label text="Pixel Ratio:" />
+      <label text="@.pixel_ratio" />
       <combobox id="pixel_ratio" cell_align="horizontal">
-	<listitem text="Square Pixels (1:1)" value="1:1" />
-	<listitem text="Double-wide Pixels (2:1)" value="2:1" />
-	<listitem text="Double-high Pixels (1:2)" value="1:2" />
+	<listitem text="@.square_pixels" value="1:1" />
+	<listitem text="@.double_wide" value="2:1" />
+	<listitem text="@.double_high" value="1:2" />
       </combobox>
 
     </grid>
     <separator horizontal="true" />
     <hbox>
       <boxfiller />
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-      <button text="&amp;Cancel" closewindow="true" id="cancel" width="60" />
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" width="60" />
+      <button text="@general.cancel" closewindow="true" id="cancel" width="60" />
     </hbox>
   </vbox>
 </window>

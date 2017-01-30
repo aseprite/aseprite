@@ -93,6 +93,7 @@
 
   <global>
     <section id="general">
+      <option id="language" type="std::string" default="&quot;en&quot;" />
       <option id="screen_scale" type="int" default="0" />
       <option id="ui_scale" type="int" default="1" migrate="experimental.ui_scale" />
       <option id="gpu_acceleration" type="bool" default="false" />

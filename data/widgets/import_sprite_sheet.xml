@@ -1,33 +1,33 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="import_sprite_sheet" text="Import Sprite Sheet">
+  <window id="import_sprite_sheet" text="@.title">
   <grid columns="4">
-    <button id="select_file" text="Select File" cell_hspan="4" />
+    <button id="select_file" text="@.select_file" cell_hspan="4" />
 
-    <label text="Type:" />
+    <label text="@.type" />
     <combobox id="sheet_type" cell_hspan="3" />
 
-    <label text="X:" />
+    <label text="@.x" />
     <entry id="x" text="0" maxsize="4" />
 
-    <label text="Y:" />
+    <label text="@.y" />
     <entry id="y" text="0" maxsize="4" />
 
-    <label text="Width:" />
+    <label text="@.width" />
     <entry id="width" text="16" maxsize="4" />
 
-    <label text="Height:" />
+    <label text="@.height" />
     <entry id="height" text="16" maxsize="4" />
 
-    <check id="partial_tiles" text="Include partial tiles at bottom/right edges" cell_hspan="4" />
+    <check id="partial_tiles" text="@.partial_tiles" cell_hspan="4" />
 
     <hbox cell_hspan="4">
       <boxfiller />
       <hbox>
       </hbox>
-      <button id="import" text="&amp;Import" minwidth="60" magnet="true" cell_align="center" closewindow="true" />
-      <button id="cancel" text="&amp;Cancel" minwidth="60" cell_align="center" closewindow="true" />
+      <button id="import" text="@.import" minwidth="60" magnet="true" cell_align="center" closewindow="true" />
+      <button id="cancel" text="@.cancel" minwidth="60" cell_align="center" closewindow="true" />
     </hbox>
   </grid>
   </window>

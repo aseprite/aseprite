@@ -1,50 +1,50 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Sprite Size" id="sprite_size">
+<window id="sprite_size" text="@.title">
   <box vertical="true">
     <box vertical="true">
-      <separator text="Pixels:" left="true" horizontal="true" />
+      <separator text="@.pixels" left="true" horizontal="true" />
       <box vertical="true" expansive="true">
         <box horizontal="true">
           <box vertical="true" homogeneous="true">
-            <label text="Width:" />
-            <label text="Height:" />
+            <label text="@.width" />
+            <label text="@.height" />
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
-            <entry expansive="true" id="width_px" suffix="px" maxsize="8" magnet="true" tooltip="New width for the sprite (in pixels)" />
-            <entry expansive="true" id="height_px" suffix="px" maxsize="8" tooltip="New height for the sprite (in pixels)" />
+            <entry expansive="true" id="width_px" suffix="px" maxsize="8" magnet="true" tooltip="@.width_px_tooltip" />
+            <entry expansive="true" id="height_px" suffix="px" maxsize="8" tooltip="@.height_px_tooltip" />
           </box>
-          <check text="Lock Ratio" id="lock_ratio" selected="true" />
+          <check text="@.lock_ratio" id="lock_ratio" selected="true" />
         </box>
       </box>
-      <separator text="Percentage:" left="true" horizontal="true" />
+      <separator text="@.percentage" left="true" horizontal="true" />
       <box vertical="true" expansive="true">
         <box horizontal="true">
           <box vertical="true" homogeneous="true">
-            <label text="Width:" />
-            <label text="Height:" />
+            <label text="@.width" />
+            <label text="@.height" />
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
-            <entry expansive="true" text="100" suffix="%" id="width_perc" maxsize="8" magnet="true" tooltip="New width for the sprite&#10;Percentage of current width." />
-            <entry expansive="true" text="100" suffix="%" id="height_perc" maxsize="8" tooltip="New height for the sprite&#10;Percentage of current height." />
+            <entry expansive="true" text="100" suffix="%" id="width_perc" maxsize="8" magnet="true" tooltip="@.width_perc_tooltip" />
+            <entry expansive="true" text="100" suffix="%" id="height_perc" maxsize="8" tooltip="@.height_perc_tooltip" />
           </box>
           <box horizontal="true" width="64" />
         </box>
       </box>
     </box>
-    <separator text="Interpolation:" left="true" horizontal="true" />
+    <separator text="@.interpolation" left="true" horizontal="true" />
     <box vertical="true" expansive="true">
       <box horizontal="true">
-        <label text="Method:" />
+        <label text="@.method" />
         <combobox id="method" expansive="true" />
       </box>
     </box>
     <box horizontal="true">
       <box horizontal="true" expansive="true" />
       <box horizontal="true" homogeneous="true">
-        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-        <button text="&amp;Cancel" closewindow="true" />
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" width="60" />
+        <button text="@general.cancel" closewindow="true" />
       </box>
     </box>
   </box>

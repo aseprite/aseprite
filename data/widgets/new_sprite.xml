@@ -1,48 +1,46 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window text="New Sprite" id="new_sprite">
+  <window id="new_sprite" text="@.title">
     <box vertical="true">
 
-      <separator text="Size:" left="true" horizontal="true" />
+      <separator text="@.size" left="true" horizontal="true" />
       <grid columns="2">
-        <label text="Width:" />
+        <label text="@.width" />
         <entry id="width" maxsize="8" magnet="true" cell_align="horizontal" suffix="px" />
-        <label text="Height:" />
+        <label text="@.height" />
         <entry id="height" maxsize="8" cell_align="horizontal" suffix="px" />
       </grid>
 
-      <separator text="Color Mode:" left="true" horizontal="true" />
+      <separator text="@.color_mode" left="true" horizontal="true" />
       <buttonset columns="3" id="color_mode">
-        <item text="&amp;RGBA" icon="icon_rgb" tooltip="Each pixel has Red, Green, Blue, and Alpha components&#10;(32 bits per pixel)" tooltip_dir="bottom" />
-        <item text="&amp;Grayscale" icon="icon_grayscale" tooltip="Each pixel has a Gray value and Alpha&#10;(16 bits per pixel)" tooltip_dir="bottom" />
-        <item text="&amp;Indexed" icon="icon_indexed" tooltip="Each pixel is a reference to the palette&#10;(8 bits per pixel)" tooltip_dir="bottom" />
+        <item text="@.rgba" icon="icon_rgb" tooltip="@.rgba_tooltip" tooltip_dir="bottom" />
+        <item text="@.grayscale" icon="icon_grayscale" tooltip="@.grayscale_tooltip" tooltip_dir="bottom" />
+        <item text="@.indexed" icon="icon_indexed" tooltip="@.indexed_tooltip" tooltip_dir="bottom" />
       </buttonset>
 
-      <separator text="Background:" left="true" horizontal="true" />
+      <separator text="@.background" left="true" horizontal="true" />
       <buttonset columns="3" id="bg_color">
-        <item text="&amp;Transparent" icon="icon_transparent" />
-        <item text="&amp;White" icon="icon_white" />
-        <item text="&amp;Black" icon="icon_black" />
+        <item text="@.transparent" icon="icon_transparent" />
+        <item text="@.white" icon="icon_white" />
+        <item text="@.black" icon="icon_black" />
       </buttonset>
 
-      <check id="advanced_check" text="Advanced Options" />
+      <check id="advanced_check" text="@.advanced_options" />
       <vbox id="advanced">
-	<grid columns="2">
-          <label text="Pixel Ratio:" />
-          <combobox id="pixel_ratio" cell_align="horizontal">
-	    <listitem text="Square Pixels (1:1)" value="1:1" />
-	    <listitem text="Double-wide Pixels (2:1)" value="2:1" />
-	    <listitem text="Double-high Pixels (1:2)" value="1:2" />
-          </combobox>
-	</grid>
+        <label text="@.pixel_ratio" />
+        <combobox id="pixel_ratio" cell_align="horizontal">
+          <listitem text="@.square_pixels" value="1:1" />
+          <listitem text="@.double_wide" value="2:1" />
+          <listitem text="@.double_high" value="1:2" />
+        </combobox>
       </vbox>
 
       <box horizontal="true">
         <box horizontal="true" expansive="true" />
         <box horizontal="true" homogeneous="true">
-          <button text="&amp;OK" closewindow="true" id="ok_button" magnet="true" width="60" />
-          <button text="&amp;Cancel" closewindow="true" />
+          <button text="@general.ok" closewindow="true" id="ok_button" magnet="true" width="60" />
+          <button text="@general.cancel" closewindow="true" />
         </box>
       </box>
 

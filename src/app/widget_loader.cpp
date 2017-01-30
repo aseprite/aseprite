@@ -11,6 +11,7 @@
 #include "app/widget_loader.h"
 
 #include "app/app.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/ui/button_set.h"
@@ -88,6 +89,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(
   ui::Widget* widget)
 {
   m_tooltipManager = NULL;
+  m_stringIdPrefix = widgetId;
 
   XmlDocumentRef doc(open_xml(xmlFilename));
   TiXmlHandle handle(doc.get());
@@ -380,8 +382,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       (middle ? MIDDLE: (bottom ? BOTTOM: TOP));
 
     if (!widget) {
-      const char* text = elem->Attribute("text");
-      widget = new Separator(text ? text: "", align);
+      widget = new Separator(textAttr(elem, "text"), align);
     }
     else
       widget->setAlign(widget->align() | align);
@@ -411,13 +412,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   else if (elem_name == "window") {
     if (!widget) {
-      const char* text = elem->Attribute("text");
       bool desktop = bool_attr_is_true(elem, "desktop");
 
       if (desktop)
         widget = new Window(Window::DesktopWindow);
-      else if (text)
-        widget = new Window(Window::WithTitleBar, text);
+      else if (elem->Attribute("text"))
+        widget = new Window(Window::WithTitleBar, textAttr(elem, "text"));
       else
         widget = new Window(Window::WithoutTitleBar);
     }
@@ -428,8 +428,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   else if (elem_name == "dropdownbutton")  {
     if (!widget) {
-      const char* text = elem->Attribute("text");
-      widget = new DropDownButton(text);
+      widget = new DropDownButton(textAttr(elem, "text").c_str());
     }
   }
   else if (elem_name == "buttonset") {
@@ -463,7 +462,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       }
 
       if (text)
-        item->setText(text);
+        item->setText(textAttr(elem, "text"));
 
       buttonset->addItem(item, hspan, vspan);
       fillWidgetWithXmlElementAttributes(elem, root, item);
@@ -505,8 +504,6 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, Widget* root, Widget* widget)
 {
   const char* id        = elem->Attribute("id");
-  const char* text      = elem->Attribute("text");
-  const char* tooltip   = elem->Attribute("tooltip");
   const char* tooltip_dir = elem->Attribute("tooltip_dir");
   bool selected         = bool_attr_is_true(elem, "selected");
   bool disabled         = bool_attr_is_true(elem, "disabled");
@@ -534,13 +531,13 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     if (!maxheight) maxheight = height;
   }
 
-  if (id != NULL)
+  if (id)
     widget->setId(id);
 
-  if (text)
-    widget->setText(text);
+  if (elem->Attribute("text"))
+    widget->setText(textAttr(elem, "text"));
 
-  if (tooltip && root) {
+  if (elem->Attribute("tooltip") && root) {
     if (!m_tooltipManager) {
       m_tooltipManager = new ui::TooltipManager();
       root->addChild(m_tooltipManager);
@@ -553,7 +550,8 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
       else if (strcmp(tooltip_dir, "left") == 0) dir = LEFT;
       else if (strcmp(tooltip_dir, "right") == 0) dir = RIGHT;
     }
-    m_tooltipManager->addTooltipFor(widget, tooltip, dir);
+
+    m_tooltipManager->addTooltipFor(widget, textAttr(elem, "tooltip"), dir);
   }
 
   if (selected)
@@ -701,6 +699,21 @@ static int int_attr(const TiXmlElement* elem, const char* attribute_name, int de
   const char* value = elem->Attribute(attribute_name);
 
   return (value ? strtol(value, NULL, 10): default_value);
+}
+
+std::string WidgetLoader::textAttr(const TiXmlElement* elem, const char* attrName)
+{
+  const char* value = elem->Attribute(attrName);
+  if (!value)
+    return std::string();
+  else if (value[0] == '@') {
+    if (value[1] == '.')
+      return Strings::instance()->translate((m_stringIdPrefix + (value+1)).c_str());
+    else
+      return Strings::instance()->translate(value+1);
+  }
+  else
+    return std::string(value);
 }
 
 } // namespace app

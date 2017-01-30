@@ -1,24 +1,24 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="select_accelerator" text="Keyboard Shortcut">
+  <window id="select_accelerator" text="@.title">
     <vbox expansive="true">
       <grid columns="3">
-        <label text="Key:" />
+        <label text="@.key" />
         <hbox id="key_placeholder" cell_align="horizontal" />
-        <button text="Clear" id="clear_button" width="60" />
+        <button text="@.clear" id="clear_button" width="60" />
 
-        <label text="Modifiers:" />
+        <label text="@.modifiers" />
         <hbox cell_hspan="2" cell_align="horizontal">
-          <check text="Ctrl" id="ctrl" />
-          <check text="Cmd" id="cmd" />
-          <check text="Alt" id="alt" />
-          <check text="Shift" id="shift" />
-          <check text="Space" id="space" />
-          <check text="Win" id="win" />
+          <check text="@.ctrl" id="ctrl" />
+          <check text="@.cmd" id="cmd" />
+          <check text="@.alt" id="alt" />
+          <check text="@.shift" id="shift" />
+          <check text="@.space" id="space" />
+          <check text="@.win" id="win" />
         </hbox>
 
-        <label text="Assigned to:" />
+        <label text="@.assigned_to" />
         <label text="" id="assigned_to" cell_hspan="2" />
       </grid>
 
@@ -28,8 +28,8 @@
       <box horizontal="true">
         <boxfiller />
         <box horizontal="true" homogeneous="true">
-          <button text="OK" id="ok_button" magnet="true" width="60" />
-          <button text="Cancel" id="cancel_button" />
+          <button text="@.ok" id="ok_button" magnet="true" width="60" />
+          <button text="@.cancel" id="cancel_button" />
         </box>
       </box>
 

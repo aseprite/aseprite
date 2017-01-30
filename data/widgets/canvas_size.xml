@@ -1,14 +1,14 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
- <window text="Canvas Size" id="canvas_size">
+ <window id="canvas_size" text="@.title">
   <vbox>
-    <separator text="Size:" left="true" horizontal="true" />
+    <separator text="@.size" left="true" horizontal="true" />
     <hbox>
       <grid columns="2">
-        <label text="Width:" />
+        <label text="@.width" />
         <entry text="0" id="width" maxsize="32" maxwidth="64" suffix="px" magnet="true" />
-        <label text="Height:" />
+        <label text="@.height" />
         <entry text="0" id="height" maxsize="32" maxwidth="64" suffix="px" />
         <hbox filler="true" cell_hspan="2" />
       </grid>
@@ -25,27 +25,27 @@
       </buttonset>
     </hbox>
 
-    <separator text="Borders:" left="true" horizontal="true" />
+    <separator text="@.borders" left="true" horizontal="true" />
     <grid columns="4">
-      <label text="Left:" />
-      <entry text="0" id="left" maxsize="32" maxwidth="64" suffix="px" tooltip="Columns to be added/removed in the left side.&#10;Use a negative number to remove columns." />
+      <label text="@.left" />
+      <entry text="0" id="left" maxsize="32" maxwidth="64" suffix="px" tooltip="@.left_tooltip" />
 
-      <label text="Top:" />
-      <entry text="0" id="top" maxsize="32" maxwidth="64" suffix="px" tooltip="Rows to be added/removed in the top side.&#10;Use a negative number to remove rows." />
+      <label text="@.top" />
+      <entry text="0" id="top" maxsize="32" maxwidth="64" suffix="px" tooltip="@.top_tooltip" />
 
-      <label text="Right:" />
-      <entry text="0" id="right" maxsize="32" maxwidth="64" suffix="px" tooltip="Columns to be added/removed in the right side.&#10;Use a negative number to remove columns." />
+      <label text="@.right" />
+      <entry text="0" id="right" maxsize="32" maxwidth="64" suffix="px" tooltip="@.right_tooltip" />
 
-      <label text="Bottom:" />
-      <entry text="0" id="bottom" maxsize="32" maxwidth="64" suffix="px" tooltip="Rows to be added/removed in the bottom side.&#10;Use a negative number to remove rows." />
+      <label text="@.bottom" />
+      <entry text="0" id="bottom" maxsize="32" maxwidth="64" suffix="px" tooltip="@.bottom_tooltip" />
     </grid>
 
     <separator horizontal="true" />
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
-        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-        <button text="&amp;Cancel" closewindow="true" />
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" width="60" />
+        <button text="@general.cancel" closewindow="true" />
       </hbox>
     </hbox>
   </vbox>

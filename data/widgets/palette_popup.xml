@@ -1,13 +1,13 @@
-<!-- ASEPRITE -->
+<!-- Aseprite -->
 <!-- Copyright (C) 2014-2016 by David Capello -->
 <gui>
   <vbox id="palette_popup">
-    <label text="Available Palettes:" />
+    <label text="@.title" />
     <view id="view" expansive="true" />
     <hbox>
-      <button id="load_pal" text="&amp;Load" width="80" magnet="true" />
+      <button id="load_pal" text="@.load" width="80" magnet="true" />
       <hbox expansive="true" />
-      <button id="open_folder" text="Open &amp;Folder" width="60" />
+      <button id="open_folder" text="@.open_folder" width="60" />
     </hbox>
   </vbox>
 </gui>

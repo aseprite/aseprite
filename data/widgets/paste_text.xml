@@ -1,29 +1,30 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2015 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2015-2016 by David Capello -->
 <gui>
-<window text="Insert Text" id="paste_text">
+<window id="paste_text" text="@.title">
   <grid columns="2">
-    <label text="Text:" />
+    <label text="@.text" />
     <entry expansive="true" maxsize="256" id="user_text" magnet="true" cell_align="horizontal" />
 
-    <label text="Font Size:" />
+    <label text="@.font_size" />
     <entry id="font_size" maxsize="3" text="32" cell_align="horizontal" />
 
-    <label text="Font:" />
-    <dropdownbutton minwidth="60" id="font_face" text="Select Font" cell_align="horizontal" />
+    <label text="@.font" />
+    <dropdownbutton minwidth="60" id="font_face" text="@.select_font" cell_align="horizontal" />
 
-    <label text="Color:" />
+    <label text="@.color" />
     <colorpicker id="font_color" cell_align="horizontal" />
 
     <hbox />
-    <check id="antialias" text="Anti-aliasing filter" cell_align="horizontal"
-           tooltip="Smooth font edges" />
+    <check id="antialias"
+           text="@.antialias" cell_align="horizontal"
+           tooltip="@.antialias_tooltip" />
 
     <separator horizontal="true" cell_hspan="2" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="&amp;Cancel" closewindow="true" />
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.cancel" closewindow="true" />
     </box>
   </grid>
 </window>

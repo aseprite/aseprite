@@ -1,18 +1,18 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
     <hbox noborders="true" id="recover_sprites_placeholder">
       <boxfiller />
-      <button id="recover_sprites" text="Recover Lost Sprites" border="8" />
+      <button id="recover_sprites" text="@.recover" border="8" />
       <boxfiller />
     </hbox>
 
     <hbox noborders="true" id="header_placeholder">
       <image file="icons/ase48.png" align="center" />
       <vbox border="4" childspacing="4">
-        <link id="new_file" text="New File..." style="workspace_link" />
-        <link id="open_file" text="Open File..." style="workspace_link" />
+        <link id="new_file" text="@.new_file" style="workspace_link" />
+        <link id="open_file" text="@.open_file" style="workspace_link" />
       </vbox>
       <boxfiller />
       <vbox border="4">
@@ -23,16 +23,16 @@
               expansive="true" by="percetage" position="50" >
       <splitter vertical="true" noborders="true" childspacing="2">
         <vbox id="files_placeholder">
-          <label text="Recent files:" style="workspace_label" />
+          <label text="@home_view.recent_files" style="workspace_label" />
           <view id="files_view" expansive="true" style="workspace_view" />
         </vbox>
         <vbox id="folders_placeholder">
-          <label text="Recent folders:" style="workspace_label" />
+          <label text="@home_view.recent_folders" style="workspace_label" />
           <view id="folders_view" expansive="true" style="workspace_view" />
         </vbox>
       </splitter>
       <vbox id="news_placeholder" noborders="true" childspacing="2">
-        <label text="News:" style="workspace_label" />
+        <label text="@home_view.news" style="workspace_label" />
         <view id="news_view" expansive="true" style="workspace_view" />
       </vbox>
     </splitter>

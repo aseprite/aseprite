@@ -1,7 +1,7 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2015 by David Capello -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="keyboard_shortcuts" text="Keyboard Shortcuts">
+  <window id="keyboard_shortcuts" text="@keyboard_shortcuts.title">
     <vbox>
       <hbox expansive="true">
         <vbox>
@@ -10,9 +10,9 @@
             <listbox id="section" expansive="true" />
           </view>
           <separator horizontal="true" />
-          <button text="&amp;Import" id="import_button" />
-          <button text="&amp;Export" id="export_button" />
-          <button text="&amp;Reset" id="reset_button" />
+          <button text="@keyboard_shortcuts.import" id="import_button" />
+          <button text="@keyboard_shortcuts.export" id="export_button" />
+          <button text="@keyboard_shortcuts.reset" id="reset_button" />
         </vbox>
         <vbox expansive="true">
           <view id="search_view" expansive="true">
@@ -35,8 +35,8 @@
       <hbox>
         <boxfiller />
         <hbox homogeneous="true">
-          <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-          <button text="&amp;Cancel" closewindow="true" />
+          <button text="@keyboard_shortcuts.ok" closewindow="true" id="ok" magnet="true" width="60" />
+          <button text="@keyboard_shortcuts.cancel" closewindow="true" />
         </hbox>
       </hbox>
     </vbox>

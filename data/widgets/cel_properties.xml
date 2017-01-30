@@ -1,11 +1,11 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-<window text="Cel Properties" id="cel_properties">
+<window id="cel_properties" text="@.title">
   <grid columns="3">
-    <label text="Opacity:" />
+    <label text="@.opacity" />
     <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" />
-    <button id="user_data" icon="icon_user_data" tooltip="User Data" />
+    <button id="user_data" icon="icon_user_data" tooltip="@.user_data_tooltip" />
   </grid>
 </window>
 </gui>

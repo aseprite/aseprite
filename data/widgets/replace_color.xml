@@ -1,16 +1,16 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <box vertical="true" expansive="true" id="controls">
     <box horizontal="true" expansive="true">
       <grid columns="2" id="controls">
-        <label text="From:" />
+        <label text="@replace_color.from" />
         <colorpicker id="from" cell_align="horizontal" />
-        <label text="To:" />
+        <label text="@replace_color.to" />
         <colorpicker id="to" cell_align="horizontal" />
       </grid>
     </box>
-    <label text="Tolerance:" />
+    <label text="@replace_color.tolerance" />
     <slider min="0" max="255" id="tolerance" />
   </box>
 </gui>
