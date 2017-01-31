@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -110,7 +110,7 @@ void FilterManagerImpl::beginForPreview()
     m_previewMask->replace(m_site.sprite()->bounds());
   }
 
-  m_row = 0;
+  m_row = m_nextRowToFlush = 0;
   m_mask = m_previewMask;
 
   {
@@ -257,17 +257,24 @@ void FilterManagerImpl::applyToTarget()
 
 void FilterManagerImpl::flush()
 {
-  if (m_row >= 0) {
+  int h = m_row - m_nextRowToFlush;
+
+  if (m_row >= 0 && h > 0) {
     Editor* editor = current_editor;
+
+    // We expand the region one pixel at the top and bottom of the
+    // region [m_row,m_nextRowToFlush) to be updated on the screen to
+    // avoid screen artifacts when we apply filters like convolution
+    // matrices.
     gfx::Rect rect(
       editor->editorToScreen(
         gfx::Point(
           m_bounds.x,
-          m_bounds.y+m_row-1)),
+          m_bounds.y+m_nextRowToFlush-1)),
       gfx::Size(
         editor->projection().applyX(m_bounds.w),
-        (editor->projection().scaleY() >= 1 ? editor->projection().applyY(1):
-                                              editor->projection().removeY(1))));
+        (editor->projection().scaleY() >= 1 ? editor->projection().applyY(h+2):
+                                              editor->projection().removeY(h+2))));
 
     gfx::Region reg1(rect);
     gfx::Region reg2;
@@ -275,6 +282,7 @@ void FilterManagerImpl::flush()
     reg1.createIntersection(reg1, reg2);
 
     editor->invalidateRegion(reg1);
+    m_nextRowToFlush = m_row+1;
   }
 }
 

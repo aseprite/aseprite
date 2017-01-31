@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -121,6 +121,8 @@ void FilterWindow::restartPreview()
 
 void FilterWindow::setNewTarget(Target target)
 {
+  stopPreview();
+
   m_filterMgr->setTarget(target);
   m_targetButton.setTarget(target);
 }
@@ -143,6 +145,8 @@ void FilterWindow::onShowPreview(Event& ev)
 // Called when the user changes the target-buttons.
 void FilterWindow::onTargetButtonChange()
 {
+  stopPreview();
+
   // Change the targets in the filter manager and restart the filter preview.
   m_filterMgr->setTarget(m_targetButton.getTarget());
   restartPreview();
@@ -150,7 +154,8 @@ void FilterWindow::onTargetButtonChange()
 
 void FilterWindow::onTiledChange()
 {
-  ASSERT(m_tiledCheck != NULL);
+  ASSERT(m_tiledCheck);
+  stopPreview();
 
   // Call derived class implementation of setupTiledMode() so the
   // filter is modified.
@@ -160,6 +165,11 @@ void FilterWindow::onTiledChange()
 
   // Restart the preview.
   restartPreview();
+}
+
+void FilterWindow::stopPreview()
+{
+  m_preview.stop();
 }
 
 } // namespace app

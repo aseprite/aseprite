@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,8 @@
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
+#include "base/bind.h"
+#include "base/scoped_lock.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
@@ -28,6 +30,7 @@ FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   : Widget(kGenericWidget)
   , m_filterMgr(filterMgr)
   , m_timer(1, this)
+  , m_filterThread(nullptr)
 {
   setVisible(false);
 }
@@ -39,25 +42,32 @@ FilterPreview::~FilterPreview()
 
 void FilterPreview::stop()
 {
-  if (m_timer.isRunning()) {
-    ASSERT(m_filterMgr != NULL);
-
-    m_filterMgr->end();
+  {
+    base::scoped_lock lock(m_filterMgrMutex);
+    if (m_timer.isRunning()) {
+      ASSERT(m_filterMgr);
+      m_filterMgr->end();
+    }
   }
 
-  m_filterMgr = NULL;
   m_timer.stop();
+
+  if (m_filterThread) {
+    m_filterThread->join();
+    m_filterThread.reset();
+  }
 }
 
 void FilterPreview::restartPreview()
 {
-  m_filterMgr->beginForPreview();
-  m_timer.start();
-}
+  base::scoped_lock lock(m_filterMgrMutex);
 
-FilterManagerImpl* FilterPreview::getFilterManager() const
-{
-  return m_filterMgr;
+  m_filterMgr->beginForPreview();
+  m_filterIsDone = false;
+  m_filterThread.reset(new base::thread(
+    base::Bind<void>(&FilterPreview::onFilterThread, this)));
+
+  m_timer.start();
 }
 
 bool FilterPreview::onProcessMessage(Message* msg)
@@ -80,17 +90,30 @@ bool FilterPreview::onProcessMessage(Message* msg)
       m_timer.stop();
       break;
 
-    case kTimerMessage:
+    case kTimerMessage: {
+      base::scoped_lock lock(m_filterMgrMutex);
       if (m_filterMgr) {
-        if (m_filterMgr->applyStep())
-          m_filterMgr->flush();
-        else
+        m_filterMgr->flush();
+        if (m_filterIsDone)
           m_timer.stop();
       }
       break;
+    }
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+// This is executed in other thread.
+void FilterPreview::onFilterThread()
+{
+  while (!m_filterIsDone && m_timer.isRunning()) {
+    {
+      base::scoped_lock lock(m_filterMgrMutex);
+      m_filterIsDone = !m_filterMgr->applyStep();
+    }
+    base::this_thread::yield();
+  }
 }
 
 } // namespace app

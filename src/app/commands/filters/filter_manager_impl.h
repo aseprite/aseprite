@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -120,6 +120,7 @@ namespace app {
     doc::ImageRef m_src;
     doc::ImageRef m_dst;
     int m_row;
+    int m_nextRowToFlush;
     gfx::Rect m_bounds;
     doc::Mask* m_mask;
     base::UniquePtr<doc::Mask> m_previewMask;
