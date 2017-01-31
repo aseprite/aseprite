@@ -381,8 +381,10 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     if (miniEditor->isPlaying()) {
       doc::FrameTag* tag = get_animation_tag(editor->sprite(), editor->frame());
       doc::FrameTag* playingTag = get_animation_tag(editor->sprite(), m_refFrame);
-      if (tag != playingTag)
-        miniEditor->stop();
+      if (tag == playingTag)
+        return;
+
+      miniEditor->stop();
     }
 
     if (!miniEditor->isPlaying())
