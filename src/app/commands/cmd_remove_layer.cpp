@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -43,9 +43,7 @@ bool RemoveLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite |
-                             ContextFlags::HasActiveLayer |
-                             ContextFlags::ActiveLayerIsVisible |
-                             ContextFlags::ActiveLayerIsEditable);
+                             ContextFlags::HasActiveLayer);
 }
 
 void RemoveLayerCommand::onExecute(Context* context)
