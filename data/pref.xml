@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2016 by David Capello -->
+<!-- Copyright (C) 2014-2017 by David Capello -->
 <preferences>
 
   <types>
@@ -225,7 +225,7 @@
       <option id="enabled" type="bool" default="false" />
     </section>
     <section id="thumbnails">
-      <option id="cache_limit" type="int" default="5000" />
+      <option id="visible_options" type="bool" default="false" />
     </section>
     <section id="perf">
       <option id="show_render_time" type="bool" default="false" />

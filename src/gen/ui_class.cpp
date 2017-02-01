@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014-2016 David Capello
+// Copyright (c) 2014-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -71,6 +71,7 @@ static std::string convert_type(const std::string& name)
   if (name == "popupwindow") return "ui::PopupWindow";
   if (name == "radio") return "ui::RadioButton";
   if (name == "search") return "app::SearchEntry";
+  if (name == "separator") return "ui::Separator";
   if (name == "slider") return "ui::Slider";
   if (name == "splitter") return "ui::Splitter";
   if (name == "tipwindow") return "ui::TipWindow";

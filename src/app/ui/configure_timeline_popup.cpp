@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -64,9 +64,14 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
 
   m_box->zoom()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onZoomChange, this));
+  m_box->thumbCheck()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbBoxChange, this));
   m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
   m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
   m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
+
+  bool visibleThumbBox = Preferences::instance().thumbnails.visibleOptions();
+  m_box->thumbHSeparator()->setVisible(visibleThumbBox);
+  m_box->thumbBox()->setVisible(visibleThumbBox);
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -127,10 +132,20 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
+  bool visibleThumbBox = Preferences::instance().thumbnails.visibleOptions();
+
   m_box->zoom()->setValue(docPref.thumbnails.zoom());
+  m_box->thumbCheck()->setSelected(visibleThumbBox);
+  m_box->thumbHSeparator()->setVisible(visibleThumbBox);
+  m_box->thumbBox()->setVisible(visibleThumbBox);
   m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
   m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
   m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
+
+  gfx::Rect prevBounds = bounds();
+  setBounds(gfx::Rect(gfx::Point(bounds().x, bounds().y), sizeHint()));
+  manager()->invalidateRect(prevBounds);
+  invalidate();
 }
 
 bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
@@ -225,6 +240,14 @@ void ConfigureTimelinePopup::onPositionChange()
 void ConfigureTimelinePopup::onZoomChange()
 {
   docPref().thumbnails.zoom(m_box->zoom()->getValue());
+}
+
+void ConfigureTimelinePopup::onThumbBoxChange()
+{
+  auto& option = Preferences::instance().thumbnails.visibleOptions;
+  option(!option());
+
+  updateWidgetsFromCurrentSettings();
 }
 
 void ConfigureTimelinePopup::onThumbEnabledChange()
