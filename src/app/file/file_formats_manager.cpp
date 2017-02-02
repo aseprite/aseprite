@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,7 +21,6 @@
 namespace app {
 
 extern FileFormat* CreateAseFormat();
-extern FileFormat* CreatePixlyFormat();
 extern FileFormat* CreateBmpFormat();
 extern FileFormat* CreateFliFormat();
 extern FileFormat* CreateGifFormat();
@@ -56,7 +55,6 @@ FileFormatsManager::FileFormatsManager()
 {
   // The first format is the default image format in FileSelector
   registerFormat(CreateAseFormat());
-  registerFormat(CreatePixlyFormat());
   registerFormat(CreateBmpFormat());
   registerFormat(CreateFliFormat());
   registerFormat(CreateGifFormat());

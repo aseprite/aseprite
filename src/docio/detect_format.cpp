@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -122,9 +122,6 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "pcx" ||
       ext == "pcc")
     return FileFormat::PCX_IMAGE;
-
-  if (ext == "anim")
-    return FileFormat::PIXLY_ANIMATION;
 
   if (ext == "png")
     return FileFormat::PNG_IMAGE;

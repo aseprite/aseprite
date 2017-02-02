@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,7 +26,6 @@ enum class FileFormat {
   JPEG_IMAGE,
   PAL_PALETTE,
   PCX_IMAGE,
-  PIXLY_ANIMATION,
   PNG_IMAGE,
   TARGA_IMAGE,
   WEBP_ANIMATION,
