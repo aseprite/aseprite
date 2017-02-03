@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -426,6 +426,10 @@ void composite_image_general(
     double srcX = srcXStart;
     int oldSrcX;
 
+    // Out of bounds
+    if (srcY >= src->height())
+      break;
+
     ASSERT(srcY >= 0 && srcY < src->height());
 
     auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
@@ -444,9 +448,9 @@ void composite_image_general(
 
       oldSrcX = int(srcX);
       srcX = srcXStart + srcXDelta*x;
-      if (srcX >= srcWidth) {
+      // Out of bounds
+      if (srcX >= srcWidth)
         break;
-      }
       srcPtr += int(srcX - oldSrcX);
 
 #if _DEBUG
