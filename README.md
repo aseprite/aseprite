@@ -20,7 +20,7 @@ features are:
 * Real-time **animation preview**.
 * [**Multiple editors**](http://www.aseprite.org/docs/workspace/#drag-and-drop-tabs) support.
 * Pixel-art specific tools like filled **Contour**, **Polygon**, [**Shading**](http://www.aseprite.org/docs/shading/) mode, etc.
-* **Onion skinning**
+* [**Onion skinning**](https://www.aseprite.org/docs/animation/#onion-skinning)
 
 ## Issues
 
