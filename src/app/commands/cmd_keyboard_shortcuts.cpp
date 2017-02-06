@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -211,7 +211,7 @@ private:
     g->fillRect(bg, bounds);
 
     bounds.shrink(border());
-    g->drawUIString(text(), fg, bg,
+    g->drawUIText(text(), fg, bg,
       gfx::Point(
         bounds.x + m_level*16 * guiscale(),
         bounds.y + 2*guiscale()));
@@ -224,7 +224,7 @@ private:
 
       for (const Accelerator& accel : m_key->accels()) {
         if (i != m_hotAccel || !m_changeButton) {
-          g->drawString(accel.toString(), fg, bg,
+          g->drawText(accel.toString(), fg, bg,
             gfx::Point(bounds.x + g_sep, y + 2*guiscale()));
         }
 
@@ -258,7 +258,7 @@ private:
         int maxi = (accels && accels->size() > 1 ? accels->size(): 1);
 
         for (int i=0; i<maxi; ++i, y += dh) {
-          int w = Graphics::measureUIStringLength(
+          int w = Graphics::measureUITextLength(
             (accels && i < (int)accels->size() ? (*accels)[i].toString().c_str(): ""),
             font());
           gfx::Rect itemBounds(bounds.x + g_sep, y, w, dh);
@@ -295,7 +295,7 @@ private:
               m_deleteButton->setBounds(gfx::Rect(
                                           itemBounds.x + itemBounds.w + 2*guiscale(),
                                           itemBounds.y,
-                                          Graphics::measureUIStringLength(
+                                          Graphics::measureUITextLength(
                                             label, font()) + 4*guiscale(),
                                           itemBounds.h));
               m_deleteButton->setText(label);
@@ -312,7 +312,7 @@ private:
             setup_mini_look(m_addButton.get());
             addChild(m_addButton.get());
 
-            itemBounds.w = 8*guiscale() + Graphics::measureUIStringLength("Add", font());
+            itemBounds.w = 8*guiscale() + Graphics::measureUITextLength("Add", font());
             itemBounds.x -= itemBounds.w + 2*guiscale();
 
             m_addButton->setBgColor(gfx::ColorNone);

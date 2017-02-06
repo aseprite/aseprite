@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,6 +32,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "she/draw_text.h"
 #include "she/font.h"
 #include "she/surface.h"
 #include "she/system.h"
@@ -850,8 +851,8 @@ void SkinTheme::paintButton(PaintEvent& ev)
     drawRect(g, widget->clientBounds(), part_nw.get(), bg);
 
   // text
-  drawTextString(g, NULL, fg, ColorNone, widget,
-                 widget->clientChildrenBounds(), get_button_selected_offset());
+  drawText(g, NULL, fg, ColorNone, widget,
+           widget->clientChildrenBounds(), get_button_selected_offset());
 
   // Paint the icon
   if (iconInterface) {
@@ -895,7 +896,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   }
 
   // Text
-  drawTextString(g, NULL, ColorNone, ColorNone, widget, text, 0);
+  drawText(g, NULL, ColorNone, ColorNone, widget, text, 0);
 
   // Paint the icon
   if (iconInterface)
@@ -924,13 +925,6 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   Graphics* g = ev.graphics();
   Entry* widget = static_cast<Entry*>(ev.getSource());
   gfx::Rect bounds = widget->clientBounds();
-  bool password = widget->isPassword();
-  int scroll, caret, state, selbeg, selend;
-  const std::string& textString = widget->text();
-  int c, ch, x, y, w;
-  int caret_x;
-
-  widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   // Outside borders
   g->fillRect(BGCOLOR, bounds);
@@ -947,26 +941,49 @@ void SkinTheme::paintEntry(PaintEvent& ev)
      (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())),
     bg);
 
-  // Draw the text
-  bounds = widget->getEntryTextBounds();
-  x = bounds.x;
-  y = bounds.y;
+  drawEntryText(g, widget);
+}
 
-  base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
-  int textlen = base::utf8_length(textString);
-  if (scroll < textlen)
-    utf8_it += scroll;
+namespace {
 
-  for (c=scroll; c<textlen; ++c, ++utf8_it) {
-    ch = password ? '*': *utf8_it;
+class DrawEntryTextDelegate : public she::DrawTextDelegate {
+public:
+  DrawEntryTextDelegate(Entry* widget, Graphics* graphics,
+                        const gfx::Point& pos, const int h)
+    : m_widget(widget)
+    , m_graphics(graphics)
+    , m_caretDrawn(false)
+      // m_lastX is an absolute position on screen
+    , m_lastX(pos.x+m_widget->bounds().x)
+    , m_y(pos.y)
+    , m_h(h)
+  {
+    m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_selbeg, &m_selend);
+  }
+
+  int index() const { return m_index; }
+  bool caretDrawn() const { return m_caretDrawn; }
+  const gfx::Rect& textBounds() const { return m_textBounds; }
+
+  void preProcessChar(const base::utf8_const_iterator& it,
+                      const base::utf8_const_iterator& end,
+                      int& chr,
+                      gfx::Color& fg,
+                      gfx::Color& bg,
+                      bool& drawChar,
+                      bool& moveCaret) override {
+    if (m_widget->isPassword())
+      chr = '*';
 
     // Normal text
+    auto& colors = SkinTheme::instance()->colors;
     bg = ColorNone;
-    gfx::Color fg = colors.text();
+    fg = colors.text();
 
     // Selected
-    if ((c >= selbeg) && (c <= selend)) {
-      if (widget->hasFocus())
+    if ((m_index >= m_selbeg) &&
+        (m_index <= m_selend)) {
+      if (m_widget->hasFocus())
         bg = colors.selected();
       else
         bg = colors.disabled();
@@ -974,43 +991,109 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     // Disabled
-    if (!widget->isEnabled()) {
+    if (!m_widget->isEnabled()) {
       bg = ColorNone;
       fg = colors.disabled();
     }
 
-    w = g->measureChar(ch).w;
-    if (x+w > bounds.x2())
-      return;
+    drawChar = true;
+    moveCaret = true;
+    m_bg = bg;
+  }
 
-    caret_x = x;
-    g->drawChar(ch, fg, bg, x, y);
-    x += w;
+  bool preDrawChar(const gfx::Rect& charBounds) override {
+    if (charBounds.x2()-m_widget->bounds().x < m_widget->clientBounds().x2()) {
+      if (m_bg != ColorNone) {
+        // Fill background e.g. needed for selected/highlighted
+        // regions with TTF fonts where the char is smaller than the
+        // text bounds [m_y,m_y+m_h)
+        gfx::Rect fillThisRect(m_lastX-m_widget->bounds().x,
+                               m_y, charBounds.x2()-m_lastX, m_h);
+        if (charBounds != fillThisRect)
+          m_graphics->fillRect(m_bg, fillThisRect);
+      }
+      m_lastX = charBounds.x2();
+      return true;
+    }
+    else
+      return false;
+  }
+
+  void postDrawChar(const gfx::Rect& charBounds) override {
+    m_textBounds |= charBounds;
 
     // Caret
-    if ((c == caret) && (state) && (widget->hasFocus()))
-      drawEntryCaret(g, widget, caret_x, y);
+    if (m_state &&
+        m_index == m_caret &&
+        m_widget->hasFocus() &&
+        m_widget->isEnabled()) {
+      SkinTheme::instance()->drawEntryCaret(
+        m_graphics, m_widget,
+        charBounds.x-m_widget->bounds().x, m_y);
+      m_caretDrawn = true;
+    }
+
+    ++m_index;
   }
+
+private:
+  Entry* m_widget;
+  Graphics* m_graphics;
+  int m_index;
+  int m_caret;
+  int m_state;
+  int m_selbeg;
+  int m_selend;
+  gfx::Rect m_textBounds;
+  bool m_caretDrawn;
+  gfx::Color m_bg;
+  // Last position used to fill the background
+  int m_lastX;
+  int m_y, m_h;
+};
+
+} // anonymous namespace
+
+void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
+{
+  // Draw the text
+  gfx::Rect bounds = widget->getEntryTextBounds();
+
+  DrawEntryTextDelegate delegate(widget, g, bounds.origin(), widget->textHeight());
+  int scroll = delegate.index();
+
+  const std::string& textString = widget->text();
+  base::utf8_const_iterator utf8_it((textString.begin()));
+  int textlen = base::utf8_length(textString);
+  if (scroll < textlen)
+    utf8_it += scroll;
+
+  g->drawText(utf8_it,
+              base::utf8_const_iterator(textString.end()),
+              colors.text(), ColorNone,
+              bounds.origin(), &delegate);
+
+  bounds.x += delegate.textBounds().w;
 
   // Draw suffix if there is enough space
   if (!widget->getSuffix().empty()) {
-    Rect sufBounds(x, y,
-                   bounds.x2()-widget->childSpacing()*guiscale()-x,
+    Rect sufBounds(bounds.x, bounds.y,
+                   bounds.x2()-widget->childSpacing()*guiscale()-bounds.x,
                    widget->textHeight());
     IntersectClip clip(g, sufBounds);
     if (clip) {
-      drawTextString(
+      drawText(
         g, widget->getSuffix().c_str(),
         colors.entrySuffix(), ColorNone,
         widget, sufBounds, 0);
     }
   }
 
-  // Draw the caret if it is next of the last character
-  if ((c == caret) && (state) &&
-      (widget->hasFocus()) &&
-      (widget->isEnabled())) {
-    drawEntryCaret(g, widget, x, y);
+  // Draw caret at the end of the text
+  if (!delegate.caretDrawn()) {
+    delegate.postDrawChar(
+      gfx::Rect(bounds.x+widget->bounds().x,
+                bounds.y+widget->bounds().y, 0, widget->textHeight()));
   }
 }
 
@@ -1092,7 +1175,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
 
   if (widget->hasText()) {
     bounds.shrink(widget->border());
-    drawTextString(g, NULL, fg, bg, widget, bounds, 0);
+    drawText(g, NULL, fg, bg, widget, bounds, 0);
   }
 }
 
@@ -1163,7 +1246,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   Rect pos = bounds;
   if (!bar)
     pos.offset(widget->childSpacing()/2, 0);
-  drawTextString(g, NULL, fg, ColorNone, widget, pos, 0);
+  drawText(g, NULL, fg, ColorNone, widget, pos, 0);
 
   // For menu-box
   if (!bar) {
@@ -1200,7 +1283,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
         std::string buf = appMenuItem->key()->accels().front().toString();
 
         widget->setAlign(RIGHT | MIDDLE);
-        drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
+        drawText(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
         widget->setAlign(old_align);
       }
     }
@@ -1240,7 +1323,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   }
 
   // Text
-  drawTextString(g, NULL, ColorNone, ColorNone, widget, text, 0);
+  drawText(g, NULL, ColorNone, ColorNone, widget, text, 0);
 
   // Icon
   if (iconInterface)
@@ -1282,7 +1365,7 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
       bounds.y + bounds.h/2 - h/2,
       widget->textWidth(), h);
 
-    drawTextString(g, NULL,
+    drawText(g, NULL,
       colors.separatorLabel(), BGCOLOR,
       widget, r, 0);
   }
@@ -1389,7 +1472,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     {
       IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
       if (clip) {
-        drawTextString(g, NULL,
+        drawText(g, NULL,
           colors.sliderFullText(), ColorNone,
           widget, rc, 0);
       }
@@ -1398,7 +1481,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     {
       IntersectClip clip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h));
       if (clip) {
-        drawTextString(g, NULL,
+        drawText(g, NULL,
           colors.sliderEmptyText(),
           ColorNone, widget, rc, 0);
       }
@@ -1413,75 +1496,18 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   Graphics* g = ev.graphics();
   Entry* widget = static_cast<Entry*>(ev.getSource());
   gfx::Rect bounds = widget->clientBounds();
-  bool password = widget->isPassword();
-  int scroll, caret, state, selbeg, selend;
-  const std::string& textString = widget->text();
-  int c, ch, x, y, w;
-  int caret_x;
-
-  widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   // Outside borders
   g->fillRect(BGCOLOR, bounds);
 
-  gfx::Color fg, bg = colors.background();
+  gfx::Color bg = colors.background();
 
   drawRect(g, bounds,
            (widget->hasFocus() ?
             parts.sunken2Focused().get():
             parts.sunken2Normal().get()), bg);
 
-  // Draw the text
-  x = bounds.x + widget->border().left();
-  y = bounds.y + bounds.h/2 - widget->textHeight()/2;
-
-  base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
-  int textlen = base::utf8_length(textString);
-
-  if (scroll < textlen)
-    utf8_it += scroll;
-
-  for (c=scroll; c<textlen; ++c, ++utf8_it) {
-    ch = password ? '*': *utf8_it;
-
-    // Normal text
-    bg = ColorNone;
-    fg = colors.text();
-
-    // Selected
-    if ((c >= selbeg) && (c <= selend)) {
-      if (widget->hasFocus())
-        bg = colors.selected();
-      else
-        bg = colors.disabled();
-      fg = colors.background();
-    }
-
-    // Disabled
-    if (!widget->isEnabled()) {
-      bg = ColorNone;
-      fg = colors.disabled();
-    }
-
-    w = g->measureChar(ch).w;
-    if (x+w > bounds.x2()-3)
-      return;
-
-    caret_x = x;
-    g->drawChar(ch, fg, bg, x, y);
-    x += w;
-
-    // Caret
-    if ((c == caret) && (state) && (widget->hasFocus()))
-      drawEntryCaret(g, widget, caret_x, y);
-  }
-
-  // Draw the caret if it is next of the last character
-  if ((c == caret) && (state) &&
-      (widget->hasFocus()) &&
-      (widget->isEnabled())) {
-    drawEntryCaret(g, widget, x, y);
-  }
+  drawEntryText(g, widget);
 }
 
 void SkinTheme::paintComboBoxButton(PaintEvent& ev)
@@ -1653,7 +1679,7 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
 
   pos.shrink(window->border());
 
-  g->drawAlignedUIString(window->text(),
+  g->drawAlignedUIText(window->text(),
     colors.text(),
     window->bgColor(), pos,
     window->align());
@@ -1749,7 +1775,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 
   rc.shrink(widget->border());
 
-  g->drawAlignedUIString(widget->text(), fg, bg, rc, widget->align());
+  g->drawAlignedUIText(widget->text(), fg, bg, rc, widget->align());
 }
 
 gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
@@ -1765,9 +1791,9 @@ gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
     return colors.face();
 }
 
-void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
-                               Widget* widget, const Rect& rc,
-                               int selected_offset)
+void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
+                         Widget* widget, const Rect& rc,
+                         int selected_offset)
 {
   if (t || widget->hasText()) {
     Rect textrc;
@@ -1777,7 +1803,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     if (!t)
       t = widget->text().c_str();
 
-    textrc.setSize(g->measureUIString(t));
+    textrc.setSize(g->measureUIText(t));
 
     // Horizontally text alignment
 
@@ -1820,13 +1846,13 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     if (clip) {
       if (!widget->isEnabled()) {
         // Draw white part
-        g->drawUIString(t,
+        g->drawUIText(t,
           colors.background(),
           gfx::ColorNone,
           textrc.origin() + Point(guiscale(), guiscale()));
       }
 
-      g->drawUIString(t,
+      g->drawUIText(t,
         (!widget->isEnabled() ?
           colors.disabled():
           (gfx::geta(fg_color) > 0 ? fg_color :
@@ -1840,9 +1866,10 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
   gfx::Color color = colors.text();
   int h = widget->textHeight();
+  int s = guiscale();
 
-  for (int u=x; u<x+2*guiscale(); ++u)
-    g->drawVLine(color, u, y-1, h+2);
+  for (int u=x; u<x+2*s; ++u)   // TODO the caret should be configurable from the skin file
+    g->drawVLine(color, u, y-s, h+2*s);
 }
 
 she::Surface* SkinTheme::getToolIcon(const char* toolId) const

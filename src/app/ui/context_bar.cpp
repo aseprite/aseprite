@@ -715,8 +715,8 @@ class ContextBar::InkShadesField : public HBox {
       }
       else {
         g->fillRect(theme->colors.editorFace(), bounds);
-        g->drawAlignedUIString(text(), theme->colors.face(), gfx::ColorNone, bounds,
-                               ui::CENTER | ui::MIDDLE);
+        g->drawAlignedUIText(text(), theme->colors.face(), gfx::ColorNone, bounds,
+                             ui::CENTER | ui::MIDDLE);
       }
     }
 

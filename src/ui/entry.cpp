@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/string.h"
 #include "clip/clip.h"
+#include "she/draw_text.h"
 #include "she/font.h"
 #include "she/system.h"
 #include "ui/manager.h"
@@ -126,8 +127,7 @@ void Entry::setCaretPos(int pos)
   while (true) {
     c = ++m_scroll;
     auto utf8_it = utf8_begin + MID(0, c, textlen);
-    int x = bounds().x + border().left()
-      - font()->charWidth(' '); // Space for the carret
+    int x = bounds().x + border().left() - font()->charWidth(' '); // Space for the caret
     for (; utf8_it != utf8_end; ++c, ++utf8_it) {
       int ch = *utf8_it;
       x += font()->charWidth(ch);

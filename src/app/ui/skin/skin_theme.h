@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -116,6 +116,8 @@ namespace app {
         return m_colors_by_id[id];
       }
 
+      void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
+
     protected:
       void onRegenerate() override;
 
@@ -127,10 +129,10 @@ namespace app {
 
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
-      void drawTextString(ui::Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
-                          ui::Widget* widget, const gfx::Rect& rc,
-                          int selected_offset);
-      void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
+      void drawText(ui::Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
+                    ui::Widget* widget, const gfx::Rect& rc,
+                    int selected_offset);
+      void drawEntryText(ui::Graphics* g, ui::Entry* widget);
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 

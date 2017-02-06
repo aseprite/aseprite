@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,7 +15,7 @@
 
 namespace she {
 
-  class Alleg4Surface : public GenericDrawTextSurface<GenericDrawColoredRgbaSurface<Surface> > {
+  class Alleg4Surface : public GenericDrawColoredRgbaSurface<Surface> {
   public:
     enum DestroyFlag {
       None = 0,

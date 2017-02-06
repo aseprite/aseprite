@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -79,7 +79,7 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
 
   if (text) {
-    g->drawAlignedUIString(text,
+    g->drawAlignedUIText(text,
       (gfx::is_transparent(m_color) ?
         theme->colors.text():
         m_color),

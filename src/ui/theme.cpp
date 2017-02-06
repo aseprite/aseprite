@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -203,7 +203,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else                      // Left align
         xout = x;
 
-      g->drawString(beg, fg, gfx::ColorNone, gfx::Point(xout, y));
+      g->drawText(beg, fg, gfx::ColorNone, gfx::Point(xout, y));
     }
 
     if (w)

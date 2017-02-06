@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -99,7 +99,7 @@ void AppMenuItem::onSizeHint(SizeHintEvent& ev)
       + border().height();
 
     if (m_key && !m_key->accels().empty()) {
-      size.w += Graphics::measureUIStringLength(
+      size.w += Graphics::measureUITextLength(
         m_key->accels().front().toString().c_str(), font());
     }
   }

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
+#include "base/string.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -22,6 +23,7 @@ namespace gfx {
 }
 
 namespace she {
+  class DrawTextDelegate;
   class Font;
   class Surface;
 }
@@ -79,14 +81,20 @@ namespace ui {
     she::Font* font() { return m_font; }
     void setFont(she::Font* font);
 
-    void drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y);
-    void drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
-    void drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, bool drawUnderscore = true);
-    void drawAlignedUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align);
+    void drawText(base::utf8_const_iterator it,
+                  const base::utf8_const_iterator& end,
+                  gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
+                  she::DrawTextDelegate* delegate);
 
-    gfx::Size measureChar(int chr);
-    gfx::Size measureUIString(const std::string& str);
-    static int measureUIStringLength(const std::string& str, she::Font* font);
+    void drawText(const std::string& str, gfx::Color fg, gfx::Color bg,
+                  const gfx::Point& pt);
+    void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
+                    const gfx::Point& pt, bool drawUnderscore = true);
+    void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
+                           const gfx::Rect& rc, int align);
+
+    gfx::Size measureUIText(const std::string& str);
+    static int measureUITextLength(const std::string& str, she::Font* font);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
   private:

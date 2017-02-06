@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -53,12 +53,12 @@ int FreeTypeFont::charWidth(int chr) const
   // TODO avoid creating a temporary string
   std::wstring tmp;
   tmp.push_back(chr);
-  return m_face.calcTextBounds(base::to_utf8(tmp)).w;
+  return ft::calc_text_bounds(m_face, base::to_utf8(tmp)).w;
 }
 
 int FreeTypeFont::textLength(const std::string& str) const
 {
-  return m_face.calcTextBounds(str).w;
+  return ft::calc_text_bounds(m_face, str).w;
 }
 
 bool FreeTypeFont::isScalable() const

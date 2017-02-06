@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -362,12 +362,12 @@ void FileList::onPaint(ui::PaintEvent& ev)
     if (fi->isFolder()) {
       int icon_w = font()->textLength("[+]");
 
-      g->drawString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
+      g->drawText("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
       x += icon_w+2*guiscale();
     }
 
     // item name
-    g->drawString(
+    g->drawText(
       fi->displayName().c_str(),
       fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
 

@@ -1521,7 +1521,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
         gfx::Rect vp = view->viewportBounds();
         char buf[128];
         sprintf(buf, "%.3f", renderElapsed);
-        g->drawString(
+        g->drawText(
           buf,
           gfx::rgba(255, 255, 255, 255),
           gfx::rgba(0, 0, 0, 255),
