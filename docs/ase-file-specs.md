@@ -1,7 +1,7 @@
 Aseprite File Format (.ase/.aseprite) Specifications
 ====================================================
 
-> Copyright (C) 2001-2016 by David Capello
+> Copyright (C) 2001-2017 by David Capello
 
 1. [References](#1-references)
 2. [Introduction](#2-introduction)
@@ -205,9 +205,12 @@ Ignore this chunk if you find the new palette chunk (0x2019)
 
     WORD        Width in pixels
     WORD        Height in pixels
-    BYTE[]      Compressed "Raw Cel" data. Details about the
-                compression method:
-                http://www.ietf.org/rfc/rfc1951.txt
+    BYTE[]      ZLIB compressed "Raw Cel" data. Details about the
+                ZLIB and DEFLATE compression methods:
+                  https://www.ietf.org/rfc/rfc1950
+                  https://www.ietf.org/rfc/rfc1951
+                Some extra notes that might help you to decode the data:
+                  http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
 ```
 
 ### Cel Extra Chunk (0x2006)
