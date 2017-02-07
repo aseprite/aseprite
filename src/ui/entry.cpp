@@ -30,6 +30,25 @@
 
 namespace ui {
 
+namespace {
+
+class MeasureTextDelegate : public she::DrawTextDelegate {
+public:
+  MeasureTextDelegate() { }
+
+  gfx::Rect bounds() const { return m_bounds; }
+
+  bool preDrawChar(const gfx::Rect& charBounds) override {
+    m_bounds |= charBounds;
+    return true;
+  }
+
+private:
+  gfx::Rect m_bounds;
+};
+
+}
+
 Entry::Entry(const std::size_t maxsize, const char* format, ...)
   : Widget(kEntryWidget)
   , m_timer(500, this)
@@ -111,31 +130,32 @@ void Entry::hideCaret()
 
 void Entry::setCaretPos(int pos)
 {
-  auto utf8_begin = base::utf8_const_iterator(text().begin());
-  auto utf8_end = base::utf8_const_iterator(text().end());
+  gfx::Size caretSize = theme()->getEntryCaretSize(this);
   int textlen = base::utf8_length(text());
-
   m_caret = MID(0, pos, textlen);
+  m_scroll = MID(0, m_scroll, textlen);
 
   // Backward scroll
-  if (m_scroll > m_caret)
+  if (m_caret < m_scroll)
     m_scroll = m_caret;
-
   // Forward scroll
-  --m_scroll;
-  int c;
-  while (true) {
-    c = ++m_scroll;
-    auto utf8_it = utf8_begin + MID(0, c, textlen);
-    int x = bounds().x + border().left() - font()->charWidth(' '); // Space for the caret
-    for (; utf8_it != utf8_end; ++c, ++utf8_it) {
-      int ch = *utf8_it;
-      x += font()->charWidth(ch);
-      if (x >= bounds().x2()-border().right())
+  else if (m_caret > m_scroll) {
+    auto it = base::utf8_const_iterator(text().begin()) + m_scroll;
+    while (m_caret > m_scroll) {
+      MeasureTextDelegate delegate;
+      she::draw_text(nullptr, font(), it, it+(m_caret-m_scroll),
+                     gfx::ColorNone, gfx::ColorNone, 0, 0,
+                     &delegate);
+
+      int x = bounds().x + border().left()
+        + delegate.bounds().w + caretSize.w;
+      if (x < bounds().x2() - border().right())
         break;
+      else {
+        ++it;
+        ++m_scroll;
+      }
     }
-    if (m_caret < c || utf8_it == utf8_end)
-      break;
   }
 
   m_timer.start();
@@ -356,58 +376,15 @@ bool Entry::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        auto utf8_begin = base::utf8_const_iterator(text().begin());
-        auto utf8_end = base::utf8_const_iterator(text().end());
-        int textlen = base::utf8_length(text());
-        int c, x;
-
-        bool move = true;
         bool is_dirty = false;
+        int c = getCaretFromMouse(static_cast<MouseMessage*>(msg));
 
-        // Backward scroll
-        if (mousePos.x < bounds().x) {
-          if (m_scroll > 0) {
-            m_caret = --m_scroll;
-            move = false;
-            is_dirty = true;
-            invalidate();
-          }
-        }
-        // Forward scroll
-        else if (mousePos.x >= bounds().x2()) {
-          if (m_scroll < textlen - getAvailableTextLength()) {
-            ++m_scroll;
-            x = bounds().x + border().left();
-
-            auto utf8_it = utf8_begin + MID(0, m_scroll, textlen);
-            for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
-              int ch = (c < textlen ? *utf8_it: ' ');
-
-              x += font()->charWidth(ch);
-              if (x > bounds().x2()-border().right()) {
-                c--;
-                break;
-              }
-            }
-            m_caret = MID(0, c, textlen);
-            move = false;
-            is_dirty = true;
-            invalidate();
-          }
-        }
-
-        c = getCaretFromMouse(static_cast<MouseMessage*>(msg));
-
-        if (static_cast<MouseMessage*>(msg)->left() ||
-            (move && !isPosInSelection(c))) {
+        if (static_cast<MouseMessage*>(msg)->left() || !isPosInSelection(c)) {
           // Move caret
-          if (move) {
-            if (m_caret != c) {
-              m_caret = c;
-              is_dirty = true;
-              invalidate();
-            }
+          if (m_caret != c) {
+            setCaretPos(c);
+            is_dirty = true;
+            invalidate();
           }
 
           // Move selection
@@ -465,7 +442,7 @@ bool Entry::onProcessMessage(Message* msg)
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
   int w =
-    + font()->charWidth('w') * MIN(m_maxsize, 6)
+    + font()->textLength("w") * MIN(m_maxsize, 6)
     + 2*guiscale()
     + border().width();
 
@@ -509,37 +486,40 @@ gfx::Rect Entry::onGetEntryTextBounds() const
 
 int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 {
-  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(text().begin());
-  base::utf8_const_iterator utf8_end = base::utf8_const_iterator(text().end());
-  int caret = m_caret;
+  int mouseX = mousemsg->position().x;
+  if (mouseX < bounds().x+border().left()) {
+    // Scroll to the left
+    return MAX(0, m_scroll-1);
+  }
+
   int textlen = base::utf8_length(text());
-  gfx::Rect bounds = getEntryTextBounds().offset(this->bounds().origin());
+  auto it = base::utf8_const_iterator(text().begin()) + m_scroll;
+  int i = MIN(m_scroll, textlen);
+  for (; i<textlen; ++i) {
+    MeasureTextDelegate delegate;
+    she::draw_text(nullptr, font(), it, it+(i-m_scroll),
+                   gfx::ColorNone, gfx::ColorNone, 0, 0,
+                   &delegate);
 
-  int mx = mousemsg->position().x;
-  mx = MID(bounds.x, mx, bounds.x2()-1);
+    int x = bounds().x + border().left() + delegate.bounds().w;
 
-  int x = bounds.x;
-
-  auto utf8_it = utf8_begin + MID(0, m_scroll, textlen);
-  int c = m_scroll;
-  for (; utf8_it != utf8_end; ++c, ++utf8_it) {
-    int w = font()->charWidth(*utf8_it);
-    if (x+w >= bounds.x2()-border().right())
-      break;
-    if ((mx >= x) && (mx < x+w)) {
-      caret = c;
-      break;
+    if (mouseX > bounds().x2() - border().right()) {
+      if (x >= bounds().x2() - border().right()) {
+        // Scroll to the right
+        break;
+      }
     }
-    x += w;
+    else {
+      if (x > mouseX) {
+        // Previous char is the selected one
+        if (i > m_scroll)
+          --i;
+        break;
+      }
+    }
   }
 
-  if (utf8_it == utf8_end) {
-    if ((mx >= x) && (mx < bounds.x2())) {
-      caret = c;
-    }
-  }
-
-  return MID(0, caret, textlen);
+  return MID(0, i, textlen);
 }
 
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
@@ -560,6 +540,16 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
         text.erase(selbeg, selend-selbeg+1);
 
         m_caret = selbeg;
+
+        // We set the caret to the beginning of the erased selection,
+        // needed to show the first inserted character in case
+        // m_scroll > m_caret. E.g. we select all text and insert a
+        // new character to replace the whole text, the new inserted
+        // character makes m_caret=1, so m_scroll will be 1 too, but
+        // we need to make m_scroll=0 to show the new inserted char.)
+        // In this way, we first ensure a m_scroll value enough to
+        // show the new inserted character.
+        setCaretPos(m_caret);
       }
 
       // put the character
@@ -780,11 +770,6 @@ void Entry::backwardWord()
 
   if (m_caret < 0)
     m_caret = 0;
-}
-
-int Entry::getAvailableTextLength()
-{
-  return clientChildrenBounds().w / font()->charWidth('w');
 }
 
 bool Entry::isPosInSelection(int pos)

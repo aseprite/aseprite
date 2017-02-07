@@ -48,14 +48,6 @@ int FreeTypeFont::height() const
   return int(m_face.height());
 }
 
-int FreeTypeFont::charWidth(int chr) const
-{
-  // TODO avoid creating a temporary string
-  std::wstring tmp;
-  tmp.push_back(chr);
-  return ft::calc_text_bounds(m_face, base::to_utf8(tmp)).w;
-}
-
 int FreeTypeFont::textLength(const std::string& str) const
 {
   return ft::calc_text_bounds(m_face, str).w;

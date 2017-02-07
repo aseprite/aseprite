@@ -235,7 +235,7 @@ public:
     , m_underscoreNext(false) {
   }
 
-  gfx::Rect bounds() const { return m_dirtyBounds; }
+  gfx::Rect bounds() const { return m_bounds; }
 
   void preProcessChar(const base::utf8_const_iterator& it,
                       const base::utf8_const_iterator& end,
@@ -261,9 +261,12 @@ public:
     }
   }
 
-  void postDrawChar(const gfx::Rect& charBounds) override {
-    m_dirtyBounds |= charBounds;
+  bool preDrawChar(const gfx::Rect& charBounds) override {
+    m_bounds |= charBounds;
+    return true;
+  }
 
+  void postDrawChar(const gfx::Rect& charBounds) override {
     if (m_underscoreNext) {
       m_underscoreNext = false;
       if (m_drawUnderscore) {
@@ -274,7 +277,7 @@ public:
         gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
                                    charBounds.w, guiscale());
         m_surface->fillRect(m_underscoreColor, underscoreBounds);
-        m_dirtyBounds |= underscoreBounds;
+        m_bounds |= underscoreBounds;
       }
     }
   }
@@ -285,7 +288,7 @@ private:
   bool m_drawUnderscore;
   bool m_underscoreNext;
   gfx::Color m_underscoreColor;
-  gfx::Rect m_dirtyBounds;
+  gfx::Rect m_bounds;
 };
 
 }

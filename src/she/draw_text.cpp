@@ -89,19 +89,22 @@ gfx::Rect draw_text(Surface* surface, Font* font,
 
         feg.processChar(
           chr,
-          [chr, x, y, fg, fg_alpha, bg, antialias, surface,
+          [x, y, fg, fg_alpha, bg, antialias, surface,
            &clipBounds, &textBounds, &fd, &done, delegate, drawChar]
           (const ft::Glyph& glyph) {
-            gfx::Rect origDstBounds(x + int(glyph.startX),
-                                    y + int(glyph.y),
-                                    int(glyph.endX) - int(glyph.startX),
-                                    int(glyph.bitmap->rows));
+            gfx::Rect origDstBounds(
+              x + int(glyph.startX),
+              y + int(glyph.y),
+              int(glyph.endX) - int(glyph.startX),
+              int(glyph.bitmap->rows) ? int(glyph.bitmap->rows): 1);
+
             if (delegate && !delegate->preDrawChar(origDstBounds)) {
               done = true;
               return;
             }
             origDstBounds.x = x + int(glyph.x);
             origDstBounds.w = int(glyph.bitmap->width);
+            origDstBounds.h = int(glyph.bitmap->rows);
 
             gfx::Rect dstBounds = origDstBounds;
             if (surface)

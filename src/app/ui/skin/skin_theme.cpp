@@ -770,6 +770,14 @@ int SkinTheme::getScrollbarSize()
   return dimensions.scrollbarSize();
 }
 
+gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
+{
+  if (widget->font()->type() == she::FontType::kTrueType)
+    return gfx::Size(2*guiscale(), widget->textHeight());
+  else
+    return gfx::Size(2*guiscale(), widget->textHeight()+2*guiscale());
+}
+
 void SkinTheme::paintDesktop(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
@@ -1002,6 +1010,9 @@ public:
   }
 
   bool preDrawChar(const gfx::Rect& charBounds) override {
+    m_textBounds |= charBounds;
+    m_charStartX = charBounds.x;
+
     if (charBounds.x2()-m_widget->bounds().x < m_widget->clientBounds().x2()) {
       if (m_bg != ColorNone) {
         // Fill background e.g. needed for selected/highlighted
@@ -1020,8 +1031,6 @@ public:
   }
 
   void postDrawChar(const gfx::Rect& charBounds) override {
-    m_textBounds |= charBounds;
-
     // Caret
     if (m_state &&
         m_index == m_caret &&
@@ -1029,7 +1038,7 @@ public:
         m_widget->isEnabled()) {
       SkinTheme::instance()->drawEntryCaret(
         m_graphics, m_widget,
-        charBounds.x-m_widget->bounds().x, m_y);
+        m_charStartX-m_widget->bounds().x, m_y);
       m_caretDrawn = true;
     }
 
@@ -1047,9 +1056,9 @@ private:
   gfx::Rect m_textBounds;
   bool m_caretDrawn;
   gfx::Color m_bg;
-  // Last position used to fill the background
-  int m_lastX;
+  int m_lastX; // Last position used to fill the background
   int m_y, m_h;
+  int m_charStartX;
 };
 
 } // anonymous namespace
@@ -1065,7 +1074,8 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   const std::string& textString = widget->text();
   base::utf8_const_iterator utf8_it((textString.begin()));
   int textlen = base::utf8_length(textString);
-  if (scroll < textlen)
+  scroll = MIN(scroll, textlen);
+  if (scroll)
     utf8_it += scroll;
 
   g->drawText(utf8_it,
@@ -1080,7 +1090,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
     Rect sufBounds(bounds.x, bounds.y,
                    bounds.x2()-widget->childSpacing()*guiscale()-bounds.x,
                    widget->textHeight());
-    IntersectClip clip(g, sufBounds);
+    IntersectClip clip(g, sufBounds & widget->clientChildrenBounds());
     if (clip) {
       drawText(
         g, widget->getSuffix().c_str(),
@@ -1091,9 +1101,10 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 
   // Draw caret at the end of the text
   if (!delegate.caretDrawn()) {
-    delegate.postDrawChar(
-      gfx::Rect(bounds.x+widget->bounds().x,
-                bounds.y+widget->bounds().y, 0, widget->textHeight()));
+    gfx::Rect charBounds(bounds.x+widget->bounds().x,
+                         bounds.y+widget->bounds().y, 0, widget->textHeight());
+    delegate.preDrawChar(charBounds);
+    delegate.postDrawChar(charBounds);
   }
 }
 
@@ -1865,11 +1876,11 @@ void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::C
 void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
   gfx::Color color = colors.text();
-  int h = widget->textHeight();
-  int s = guiscale();
+  int textHeight = widget->textHeight();
+  gfx::Size caretSize = getEntryCaretSize(widget);
 
-  for (int u=x; u<x+2*s; ++u)   // TODO the caret should be configurable from the skin file
-    g->drawVLine(color, u, y-s, h+2*s);
+  for (int u=x; u<x+caretSize.w; ++u)
+    g->drawVLine(color, u, y+textHeight/2-caretSize.h/2, caretSize.h);
 }
 
 she::Surface* SkinTheme::getToolIcon(const char* toolId) const

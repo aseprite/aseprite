@@ -41,10 +41,6 @@ public:
     return getCharBounds(' ').h;
   }
 
-  int charWidth(int chr) const override {
-    return getCharBounds(chr).w;
-  }
-
   int textLength(const std::string& str) const override {
     base::utf8_const_iterator it(str.begin()), end(str.end());
     int x = 0;
