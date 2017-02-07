@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define SHE_SURFACE_H_INCLUDED
 #pragma once
 
+#include "base/string.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
 #include "she/surface_format.h"
@@ -62,9 +63,6 @@ namespace she {
     virtual void drawSurface(const Surface* src, int dstx, int dsty) = 0;
     virtual void drawRgbaSurface(const Surface* src, int dstx, int dsty) = 0;
     virtual void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clip) = 0;
-
-    virtual void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) = 0;
-    virtual void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) = 0;
 
     virtual void applyScale(int scaleFactor) = 0;
     virtual void* nativeHandle() = 0;

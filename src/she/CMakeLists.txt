@@ -1,8 +1,9 @@
 # SHE
-# Copyright (C) 2012-2016  David Capello
+# Copyright (C) 2012-2017  David Capello
 
 set(SHE_SOURCES
   common/freetype_font.cpp
+  draw_text.cpp
   system.cpp)
 
 ######################################################################

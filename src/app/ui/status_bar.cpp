@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -101,8 +101,8 @@ class StatusBar::Indicators : public HBox {
 
       g->fillRect(bgColor(), rc);
       if (textLength() > 0) {
-        g->drawString(text(), textColor, ColorNone,
-                      Point(rc.x, rc.y + rc.h/2 - font()->height()/2));
+        g->drawText(text(), textColor, ColorNone,
+                    Point(rc.x, rc.y + rc.h/2 - font()->height()/2));
       }
     }
   };

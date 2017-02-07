@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define UI_THEME_H_INCLUDED
 #pragma once
 
+#include "gfx/size.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
 
@@ -43,6 +44,7 @@ namespace ui {
     virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
     virtual void setDecorativeWidgetBounds(Widget* widget) = 0;
     virtual int getScrollbarSize() = 0;
+    virtual gfx::Size getEntryCaretSize(Widget* widget) = 0;
 
     virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -546,9 +546,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         she::Font* minifont = theme->getMiniFont();
         std::string text = base::convert_to<std::string>(k);
         g->setFont(minifont);
-        g->drawString(text, neg, gfx::ColorNone,
-                      gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
-                                 box2.y + box2.h/2 - minifont->height()/2));
+        g->drawText(text, neg, gfx::ColorNone,
+                    gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
+                               box2.y + box2.h/2 - minifont->height()/2));
       }
 
       // Draw outlines

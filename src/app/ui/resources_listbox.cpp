@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -65,10 +65,10 @@ void ResourceListItem::onPaint(PaintEvent& ev)
   static_cast<ResourcesListBox*>(parent())->
     paintResource(g, bounds, m_resource);
 
-  g->drawString(text(), fgcolor, gfx::ColorNone,
-                gfx::Point(
-                  bounds.x + 2*guiscale(),
-                  bounds.y + bounds.h/2 - g->measureUIString(text()).h/2));
+  g->drawText(text(), fgcolor, gfx::ColorNone,
+              gfx::Point(
+                bounds.x + 2*guiscale(),
+                bounds.y + bounds.h/2 - g->measureUIText(text()).h/2));
 }
 
 void ResourceListItem::onSizeHint(SizeHintEvent& ev)

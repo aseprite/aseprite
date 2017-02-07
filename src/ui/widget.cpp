@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -754,7 +754,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 
 int Widget::textWidth() const
 {
-  return Graphics::measureUIStringLength(text().c_str(), font());
+  return Graphics::measureUITextLength(text().c_str(), font());
 }
 
 int Widget::textHeight() const

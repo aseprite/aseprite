@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,7 +24,6 @@ namespace she {
     void dispose() override;
     FontType type() override;
     int height() const override;
-    int charWidth(int chr) const override;
     int textLength(const std::string& str) const override;
     bool isScalable() const override;
     void setSize(int size) override;

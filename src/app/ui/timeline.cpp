@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -2032,7 +2032,7 @@ void Timeline::drawFrameTags(ui::Graphics* g)
 
       bounds.y += 2*ui::guiscale();
       bounds.x += 2*ui::guiscale();
-      g->drawString(
+      g->drawText(
         frameTag->name(),
         color_utils::blackandwhite_neg(bg),
         gfx::ColorNone,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,54 +38,61 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
     face.setAntialias(antialias);
 
     // Calculate text size
-    gfx::Rect bounds = face.calcTextBounds(text);
+    gfx::Rect bounds = ft::calc_text_bounds(face, text);
 
     // Render the image and copy it to the clipboard
     if (!bounds.isEmpty()) {
       image.reset(doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
       doc::clear_image(image, 0);
 
-      face.forEachGlyph(
-        text,
-        [&bounds, &image, color, antialias](const ft::Glyph& glyph) {
-          int t, yimg = - bounds.y + int(glyph.y);
+      ft::ForEachGlyph<ft::Face> feg(face);
+      auto it = base::utf8_const_iterator(text.begin());
+      auto end = base::utf8_const_iterator(text.end());
+      while (it != end) {
+        feg.processChar(
+          *it,
+          [&bounds, &image, color, antialias](const ft::Glyph& glyph) {
+            int t, yimg = - bounds.y + int(glyph.y);
 
-          for (int v=0; v<int(glyph.bitmap->rows); ++v, ++yimg) {
-            const uint8_t* p = glyph.bitmap->buffer + v*glyph.bitmap->pitch;
-            int ximg = - bounds.x + int(glyph.x);
-            int bit = 0;
+            for (int v=0; v<int(glyph.bitmap->rows); ++v, ++yimg) {
+              const uint8_t* p = glyph.bitmap->buffer + v*glyph.bitmap->pitch;
+              int ximg = - bounds.x + int(glyph.x);
+              int bit = 0;
 
-            for (int u=0; u<int(glyph.bitmap->width); ++u, ++ximg) {
-              int alpha;
+              for (int u=0; u<int(glyph.bitmap->width); ++u, ++ximg) {
+                int alpha;
 
-              if (antialias) {
-                alpha = *(p++);
-              }
-              else {
-                alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
-                if (bit == 8) {
-                  bit = 0;
-                  ++p;
+                if (antialias) {
+                  alpha = *(p++);
+                }
+                else {
+                  alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
+                  if (bit == 8) {
+                    bit = 0;
+                    ++p;
+                  }
+                }
+
+                int output_alpha = MUL_UN8(doc::rgba_geta(color), alpha, t);
+                if (output_alpha) {
+                  doc::color_t output_color =
+                    doc::rgba(doc::rgba_getr(color),
+                              doc::rgba_getg(color),
+                              doc::rgba_getb(color),
+                              output_alpha);
+
+                  doc::put_pixel(
+                    image, ximg, yimg,
+                    doc::rgba_blender_normal(
+                      doc::get_pixel(image, ximg, yimg),
+                      output_color));
                 }
               }
-
-              int output_alpha = MUL_UN8(doc::rgba_geta(color), alpha, t);
-              if (output_alpha) {
-                doc::color_t output_color =
-                  doc::rgba(doc::rgba_getr(color),
-                            doc::rgba_getg(color),
-                            doc::rgba_getb(color),
-                            output_alpha);
-
-                doc::put_pixel(
-                  image, ximg, yimg,
-                  doc::rgba_blender_normal(
-                    doc::get_pixel(image, ximg, yimg),
-                    output_color));
-              }
             }
-          }
-        });
+          });
+
+        ++it;
+      }
     }
     else {
       throw std::runtime_error("There is no text");

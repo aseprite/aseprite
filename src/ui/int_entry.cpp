@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -133,10 +133,10 @@ bool IntEntry::onProcessMessage(Message* msg)
 
 void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
-  int min_w = font()->textLength(m_slider.convertValueToText(m_min));
+  int min_w = font()->textLength(m_slider.convertValueToText(m_min) + "%");
   int max_w = font()->textLength(m_slider.convertValueToText(m_max));
 
-  int w = MAX(min_w, max_w) + font()->charWidth('%');
+  int w = MAX(min_w, max_w);
   int h = textHeight();
 
   w += border().width();

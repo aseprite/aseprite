@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -41,15 +41,11 @@ public:
     return getCharBounds(' ').h;
   }
 
-  int charWidth(int chr) const override {
-    return getCharBounds(chr).w;
-  }
-
   int textLength(const std::string& str) const override {
     base::utf8_const_iterator it(str.begin()), end(str.end());
     int x = 0;
     while (it != end) {
-      x += charWidth(*it);
+      x += getCharBounds(*it).w;
       ++it;
     }
     return x;
