@@ -157,15 +157,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
                        ColorPicker::FromComposition);
 
       auto range = App::instance()->timeline()->range();
-
-      // Change layer only when the layer is diffrent from current one, and
-      // the range we selected is not with multiple cels.
-      bool layerChanged = (layer != picker.layer());
-      bool rangeEnabled = range.enabled();
-      bool rangeSingleCel = ((range.type() == DocumentRange::kCels) &&
-                             (range.layers() == 1) && (range.frames() == 1));
-
-      if (layerChanged && (!rangeEnabled || rangeSingleCel)) {
+      if (picker.layer() &&
+          !range.contains(picker.layer())) {
         layer = picker.layer();
         if (layer) {
           editor->setLayer(layer);
