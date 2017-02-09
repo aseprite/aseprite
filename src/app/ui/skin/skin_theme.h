@@ -15,7 +15,7 @@
 #include "ui/manager.h"
 #include "ui/theme.h"
 
-#include "skin.xml.h"
+#include "theme.xml.h"
 
 #include <map>
 #include <string>
@@ -36,8 +36,9 @@ namespace app {
     // This is the GUI theme used by Aseprite (which use images from
     // data/skins directory).
     class SkinTheme : public ui::Theme
-                    , public app::gen::SkinFile<SkinTheme> {
+                    , public app::gen::ThemeFile<SkinTheme> {
     public:
+      static const char* kThemesFolderName;
       static const char* kThemeCloseButtonId;
 
       static SkinTheme* instance();
@@ -138,6 +139,8 @@ namespace app {
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
       she::Font* loadFont(const std::string& userFont, const std::string& themeFont);
+      std::string themeFileName(const std::string& skinId,
+                                const std::string& fileName) const;
 
       she::Surface* m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;

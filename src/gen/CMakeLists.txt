@@ -1,12 +1,12 @@
 # Aseprite Code Generator
-# Copyright (C) 2014-2016  David Capello
+# Copyright (C) 2014-2017  David Capello
 
 add_executable(gen
   check_strings.cpp
   gen.cpp
   pref_types.cpp
-  skin_class.cpp
   strings_class.cpp
+  theme_class.cpp
   ui_class.cpp)
 
 if(MSVC)

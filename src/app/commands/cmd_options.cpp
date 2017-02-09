@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,6 +17,7 @@
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
 #include "app/ui/color_button.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -589,7 +590,7 @@ private:
 
   static std::string userThemeFolder() {
     ResourceFinder rf;
-    rf.includeDataDir("skins");
+    rf.includeDataDir(skin::SkinTheme::kThemesFolderName);
 
     // Create user folder to store skins
     try {
@@ -605,7 +606,7 @@ private:
 
   static std::vector<std::string> themeFolders() {
     ResourceFinder rf;
-    rf.includeDataDir("skins");
+    rf.includeDataDir(skin::SkinTheme::kThemesFolderName);
 
     std::vector<std::string> paths;
     while (rf.next())

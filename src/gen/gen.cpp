@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014-2016 David Capello
+// Copyright (c) 2014-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,8 +11,8 @@
 #include "gen/check_strings.h"
 #include "gen/check_strings.h"
 #include "gen/pref_types.h"
-#include "gen/skin_class.h"
 #include "gen/strings_class.h"
+#include "gen/theme_class.h"
 #include "gen/ui_class.h"
 #include "tinyxml.h"
 
@@ -27,7 +27,7 @@ static void run(int argc, const char* argv[])
   PO::Option& widgetId = po.add("widgetid").requiresValue("<id>");
   PO::Option& prefH = po.add("pref-h");
   PO::Option& prefCpp = po.add("pref-cpp");
-  PO::Option& skin = po.add("skin");
+  PO::Option& theme = po.add("theme");
   PO::Option& strings = po.add("strings");
   PO::Option& widgetsDir = po.add("widgets-dir").requiresValue("<dir>");
   PO::Option& stringsDir = po.add("strings-dir").requiresValue("<dir>");
@@ -63,9 +63,9 @@ static void run(int argc, const char* argv[])
     // Generate preference c++ file
     else if (po.enabled(prefCpp))
       gen_pref_impl(doc, inputFilename);
-    // Generate skin class
-    else if (po.enabled(skin))
-      gen_skin_class(doc, inputFilename);
+    // Generate theme class
+    else if (po.enabled(theme))
+      gen_theme_class(doc, inputFilename);
   }
   // Generate strings.ini.h file
   else if (po.enabled(strings)) {

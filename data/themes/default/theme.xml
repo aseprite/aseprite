@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<skin name="Default"
-      author="Ilija Melentijevic &amp; David Capello"
-      url="http://ilkke.blogspot.com/">
+<theme name="Default"
+       author="Ilija Melentijevic &amp; David Capello"
+       url="http://ilkke.blogspot.com/">
 
   <dimensions>
     <dim id="scrollbar_size" value="12" />
@@ -911,4 +911,4 @@
 
   </stylesheet>
 
-</skin>
+</theme>

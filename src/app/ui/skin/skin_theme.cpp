@@ -49,6 +49,7 @@ namespace skin {
 using namespace gfx;
 using namespace ui;
 
+const char* SkinTheme::kThemesFolderName = "themes";
 const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
 
 // Controls the "X" button in a window to close it.
@@ -227,8 +228,7 @@ void SkinTheme::loadAll(const std::string& skinId)
 void SkinTheme::loadSheet(const std::string& skinId)
 {
   // Load the skin sheet
-  std::string sheet_filename("skins/" + skinId + "/sheet.png");
-
+  std::string sheet_filename(themeFileName(skinId, "sheet.png"));
   ResourceFinder rf;
   rf.includeDataDir(sheet_filename.c_str());
   if (!rf.findFirst())
@@ -253,14 +253,14 @@ void SkinTheme::loadFonts(const std::string& skinId)
 
   Preferences& pref = Preferences::instance();
 
-  m_defaultFont = loadFont(pref.theme.font(), "skins/" + skinId + "/font.png");
-  m_miniFont = loadFont(pref.theme.miniFont(), "skins/" + skinId + "/minifont.png");
+  m_defaultFont = loadFont(pref.theme.font(), themeFileName(skinId, "font.png"));
+  m_miniFont = loadFont(pref.theme.miniFont(), themeFileName(skinId, "minifont.png"));
 }
 
 void SkinTheme::loadXml(const std::string& skinId)
 {
   // Load the skin XML
-  std::string xml_filename = "skins/" + skinId + "/skin.xml";
+  std::string xml_filename(themeFileName(skinId, "theme.xml"));
   ResourceFinder rf;
   rf.includeDataDir(xml_filename.c_str());
   if (!rf.findFirst())
@@ -272,7 +272,7 @@ void SkinTheme::loadXml(const std::string& skinId)
   // Load dimension
   {
     TiXmlElement* xmlDim = handle
-      .FirstChild("skin")
+      .FirstChild("theme")
       .FirstChild("dimensions")
       .FirstChild("dim").ToElement();
     while (xmlDim) {
@@ -289,7 +289,7 @@ void SkinTheme::loadXml(const std::string& skinId)
   // Load colors
   {
     TiXmlElement* xmlColor = handle
-      .FirstChild("skin")
+      .FirstChild("theme")
       .FirstChild("colors")
       .FirstChild("color").ToElement();
     while (xmlColor) {
@@ -310,7 +310,7 @@ void SkinTheme::loadXml(const std::string& skinId)
   // Load cursors
   {
     TiXmlElement* xmlCursor = handle
-      .FirstChild("skin")
+      .FirstChild("theme")
       .FirstChild("cursors")
       .FirstChild("cursor").ToElement();
     while (xmlCursor) {
@@ -351,7 +351,7 @@ void SkinTheme::loadXml(const std::string& skinId)
   // Load tool icons
   {
     TiXmlElement* xmlIcon = handle
-      .FirstChild("skin")
+      .FirstChild("theme")
       .FirstChild("tools")
       .FirstChild("tool").ToElement();
     while (xmlIcon) {
@@ -375,7 +375,7 @@ void SkinTheme::loadXml(const std::string& skinId)
   // Load parts
   {
     TiXmlElement* xmlPart = handle
-      .FirstChild("skin")
+      .FirstChild("theme")
       .FirstChild("parts")
       .FirstChild("part").ToElement();
     while (xmlPart) {
@@ -421,7 +421,7 @@ void SkinTheme::loadXml(const std::string& skinId)
   // Load styles
   {
     TiXmlElement* xmlStyle = handle
-      .FirstChild("skin")
+      .FirstChild("theme")
       .FirstChild("stylesheet")
       .FirstChild("style").ToElement();
     while (xmlStyle) {
@@ -504,7 +504,7 @@ void SkinTheme::loadXml(const std::string& skinId)
     }
   }
 
-  SkinFile<SkinTheme>::updateInternals();
+  ThemeFile<SkinTheme>::updateInternals();
 }
 
 she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
@@ -2094,6 +2094,14 @@ she::Font* SkinTheme::loadFont(const std::string& userFont, const std::string& t
   }
 
   return nullptr;
+}
+
+std::string SkinTheme::themeFileName(const std::string& skinId,
+                                     const std::string& fileName) const
+{
+  std::string path = base::join_path(SkinTheme::kThemesFolderName, skinId);
+  path = base::join_path(path, fileName);
+  return path;
 }
 
 } // namespace skin

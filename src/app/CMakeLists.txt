@@ -41,15 +41,15 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
-# Generate skin.xml.h from data/skins/default/skin.xml
-set(skin_xml ${CMAKE_SOURCE_DIR}/data/skins/default/skin.xml)
-set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/skin.xml.h)
+# Generate theme.xml.h from data/themes/default/theme.xml
+set(theme_xml ${CMAKE_SOURCE_DIR}/data/themes/default/theme.xml)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${skin_xml} --skin > ${output_fn}.tmp
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${theme_xml} --theme > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  MAIN_DEPENDENCY ${skin_xml}
+  MAIN_DEPENDENCY ${theme_xml}
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
