@@ -62,6 +62,7 @@ namespace she {
     virtual void scrollTo(const gfx::Rect& rc, int dx, int dy) = 0;
     virtual void drawSurface(const Surface* src, int dstx, int dsty) = 0;
     virtual void drawRgbaSurface(const Surface* src, int dstx, int dsty) = 0;
+    virtual void drawRgbaSurface(const Surface* src, int srcx, int srcy, int dstx, int dsty, int width, int height) = 0;
     virtual void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clip) = 0;
 
     virtual void applyScale(int scaleFactor) = 0;

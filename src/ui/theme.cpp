@@ -11,6 +11,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "she/font.h"
+#include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
@@ -77,6 +78,81 @@ void set_theme(Theme* theme)
 Theme* get_theme()
 {
   return current_theme;
+}
+
+// static
+void Theme::drawSlices(Graphics* g, she::Surface* sheet,
+                       const gfx::Rect& rc,
+                       const gfx::Rect& sprite,
+                       const gfx::Rect& slices,
+                       const bool drawCenter)
+{
+  const int w1 = slices.x;
+  const int h1 = slices.y;
+  const int w2 = slices.w;
+  const int h2 = slices.h;
+  const int w3 = sprite.w-w1-w2;
+  const int h3 = sprite.h-h1-h2;
+  const int x2 = rc.x2()-w3;
+  const int y2 = rc.y2()-h3;
+
+  // Top
+  int x = rc.x;
+  int y = rc.y;
+  g->drawRgbaSurface(sheet, sprite.x, sprite.y,
+                     x, y, w1, h1);
+  {
+    IntersectClip clip(g, gfx::Rect(rc.x+w1, rc.y, rc.w-w1-w3, h1));
+    if (clip) {
+      for (x+=w1; x<x2; x+=w2) {
+        g->drawRgbaSurface(sheet, sprite.x+w1, sprite.y,
+                           x, y, w2, h1);
+      }
+    }
+  }
+  g->drawRgbaSurface(sheet, sprite.x+w1+w2, sprite.y,
+                     x2, y, w3, h1);
+
+  // Bottom
+  x = rc.x;
+  y = y2;
+  g->drawRgbaSurface(sheet, sprite.x, sprite.y+h1+h2,
+                     x, y, w1, h3);
+  {
+    IntersectClip clip(g, gfx::Rect(rc.x+w1, y2, rc.w-w1-w3, h3));
+    if (clip) {
+      for (x+=w1; x<x2; x+=w2) {
+        g->drawRgbaSurface(sheet, sprite.x+w1, sprite.y+h1+h2,
+                           x, y2, w2, h3);
+      }
+    }
+  }
+  g->drawRgbaSurface(sheet, sprite.x+w1+w2, sprite.y+h1+h2,
+                     x2, y2, w3, h3);
+
+  // Left & Right
+  IntersectClip clip(g, gfx::Rect(rc.x, rc.y+h1, rc.w, rc.h-h1-h3));
+  if (clip) {
+    for (y=rc.y+h1; y<y2; y+=h2) {
+      // Left
+      g->drawRgbaSurface(sheet, sprite.x, sprite.y+h1,
+                         rc.x, y, w1, h2);
+      // Right
+      g->drawRgbaSurface(sheet, sprite.x+w1+w2, sprite.y+h1,
+                         x2, y, w3, h2);
+    }
+  }
+
+  // Center
+  if (drawCenter) {
+    IntersectClip clip(g, gfx::Rect(rc.x+w1, rc.y+h1, rc.w-w1-w3, rc.h-h1-h3));
+    if (clip) {
+      for (y=rc.y+h1; y<y2; y+=h2) {
+        for (x=rc.x+w1; x<x2; x+=w2)
+          g->drawRgbaSurface(sheet, sprite.x+w1, sprite.y+h1, x, y, w2, h2);
+      }
+    }
+  }
 }
 
 // static

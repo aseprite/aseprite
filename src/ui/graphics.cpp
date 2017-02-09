@@ -177,6 +177,15 @@ void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
   m_surface->drawRgbaSurface(surface, m_dx+x, m_dy+y);
 }
 
+void Graphics::drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h)
+{
+  dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
+
+  she::SurfaceLock lockSrc(surface);
+  she::SurfaceLock lockDst(m_surface);
+  m_surface->drawRgbaSurface(surface, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
+}
+
 void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));

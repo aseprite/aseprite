@@ -70,6 +70,7 @@ namespace ui {
 
     void drawSurface(she::Surface* surface, int x, int y);
     void drawRgbaSurface(she::Surface* surface, int x, int y);
+    void drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
     void drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y);
 
     void blit(she::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);

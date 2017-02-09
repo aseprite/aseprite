@@ -393,6 +393,7 @@ void SkinTheme::loadXml(const std::string& skinId)
         part = m_parts_by_id[part_id] = SkinPartPtr(new SkinPart);
 
       if (w > 0 && h > 0) {
+        part->setSpriteBounds(gfx::Rect(x, y, w, h));
         part->setBitmap(0,
           sliceSheet(part->bitmap(0), gfx::Rect(x, y, w, h)));
       }
@@ -403,6 +404,9 @@ void SkinTheme::loadXml(const std::string& skinId)
         int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
         int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
         int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
+
+        part->setSpriteBounds(gfx::Rect(x, y, w1+w2+w3, h1+h2+h3));
+        part->setSlicesBounds(gfx::Rect(w1, h1, w2, h2));
 
         part->setBitmap(0, sliceSheet(part->bitmap(0), gfx::Rect(x, y, w1, h1))); // NW
         part->setBitmap(1, sliceSheet(part->bitmap(1), gfx::Rect(x+w1, y, w2, h1))); // N
@@ -1955,25 +1959,18 @@ void SkinTheme::drawRect(Graphics* g, const Rect& rc,
 
 void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, gfx::Color bg)
 {
-  drawRect(g, rc,
-    skinPart->bitmap(0),
-    skinPart->bitmap(1),
-    skinPart->bitmap(2),
-    skinPart->bitmap(3),
-    skinPart->bitmap(4),
-    skinPart->bitmap(5),
-    skinPart->bitmap(6),
-    skinPart->bitmap(7));
+  const gfx::Rect& sprite = skinPart->spriteBounds();
+  const gfx::Rect& slices = skinPart->slicesBounds();
+
+  Theme::drawSlices(g, m_sheet, rc, sprite, slices, false);
 
   // Center
   if (!is_transparent(bg)) {
     gfx::Rect inside = rc;
-    inside.shrink(Border(
-        skinPart->bitmap(7)->width(),
-        skinPart->bitmap(1)->height(),
-        skinPart->bitmap(3)->width(),
-        skinPart->bitmap(5)->height()));
-
+    inside.x += slices.x;
+    inside.y += slices.y;
+    inside.w -= sprite.w - slices.w;
+    inside.h -= sprite.h - slices.h;
     IntersectClip clip(g, inside);
     if (clip)
       g->fillRect(bg, inside);

@@ -19,6 +19,7 @@ namespace gfx {
 
 namespace she {
   class Font;
+  class Surface;
 }
 
 namespace ui {
@@ -73,6 +74,13 @@ namespace ui {
     virtual void paintWindow(PaintEvent& ev) = 0;
     virtual void paintPopupWindow(PaintEvent& ev) = 0;
     virtual void paintTooltip(PaintEvent& ev) = 0;
+
+    static void drawSlices(Graphics* g,
+                           she::Surface* sheet,
+                           const gfx::Rect& rc,
+                           const gfx::Rect& sprite,
+                           const gfx::Rect& slices,
+                           const bool drawCenter = true);
 
     static  void drawTextBox(Graphics* g, Widget* textbox,
                              int* w, int* h, gfx::Color bg, gfx::Color fg);
