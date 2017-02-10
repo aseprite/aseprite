@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -47,7 +47,7 @@ EditorView::EditorView(EditorView::Type type)
   int b = theme->parts.editorSelected()->bitmapS()->height();
 
   setBorder(gfx::Border(l, t, r, b));
-  setBgColor(gfx::rgba(0, 0, 0));
+  setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
   setupScrollbars();
 
   m_scrollSettingsConn =
@@ -75,12 +75,13 @@ void EditorView::onPaint(PaintEvent& ev)
 
   }
 
+  g->fillRect(bgColor(), clientBounds());
   theme->drawRect(
     g, clientBounds(),
     (selected ?
      theme->parts.editorSelected().get():
      theme->parts.editorNormal().get()),
-    bgColor());
+    false);                     // Do not fill the center portion
 }
 
 void EditorView::onResize(ResizeEvent& ev)

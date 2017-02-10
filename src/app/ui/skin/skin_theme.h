@@ -93,8 +93,8 @@ namespace app {
                     she::Surface* nw, she::Surface* n, she::Surface* ne,
                     she::Surface* e, she::Surface* se, she::Surface* s,
                     she::Surface* sw, she::Surface* w);
-      void drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, gfx::Color bg = gfx::ColorNone);
-      void drawRect2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, SkinPart* nw1, SkinPart* nw2, gfx::Color bg1, gfx::Color bg2);
+      void drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, const bool drawCenter = true);
+      void drawRect2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, SkinPart* nw1, SkinPart* nw2);
       void drawHline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
       void drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, double progress);

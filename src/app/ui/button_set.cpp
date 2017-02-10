@@ -70,7 +70,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   Graphics* g = ev.graphics();
   gfx::Rect rc = clientBounds();
-  gfx::Color fg, bg;
+  gfx::Color fg;
   SkinPartPtr nw;
   gfx::Rect boxRc, textRc, iconRc;
   gfx::Size iconSize;
@@ -98,20 +98,17 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     if (hasCapture()) {
       nw = theme->parts.toolbuttonPushed();
       fg = theme->colors.buttonSelectedText();
-      bg = theme->colors.buttonSelectedFace();
     }
     else {
       nw = (hasFocus() ? theme->parts.toolbuttonHotFocused():
                          theme->parts.toolbuttonHot());
       fg = theme->colors.buttonHotText();
-      bg = theme->colors.buttonHotFace();
     }
   }
   else {
     nw = (hasFocus() ? theme->parts.toolbuttonFocused():
                        theme->parts.toolbuttonLast());
     fg = theme->colors.buttonNormalText();
-    bg = theme->colors.buttonNormalFace();
   }
 
   if (!isLastCol)
@@ -124,7 +121,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
       rc.h += 3*guiscale();
   }
 
-  theme->drawRect(g, rc, nw.get(), bg);
+  theme->drawRect(g, rc, nw.get());
 
   if (m_icon) {
     she::Surface* bmp = m_icon->bitmap(0);

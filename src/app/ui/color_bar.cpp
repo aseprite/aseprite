@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -120,7 +120,7 @@ void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
     g, clientBounds(),
     (hasFocus() ? theme->parts.editorSelected().get():
                   theme->parts.editorNormal().get()),
-    gfx::ColorNone);
+    false);                     // Do not fill the center portion
 }
 
 //////////////////////////////////////////////////////////////////////

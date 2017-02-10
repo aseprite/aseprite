@@ -40,10 +40,10 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
   SkinTheme* theme = SkinTheme::instance();
 
   if (m_part && m_part->countBitmaps() > 0) {
-    if (m_part->countBitmaps() == 1) {
-      if (!gfx::is_transparent(m_color))
-        g->fillRect(m_color, bounds);
+    if (!gfx::is_transparent(m_color))
+      g->fillRect(m_color, bounds);
 
+    if (m_part->countBitmaps() == 1) {
       she::Surface* bmp = m_part->bitmap(0);
 
       if (m_repeat == BackgroundRepeat::NO_REPEAT) {
@@ -66,7 +66,13 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
       }
     }
     else if (m_part->countBitmaps() == 8) {
-      theme->drawRect(g, bounds, m_part.get(), m_color);
+      theme->drawRect(
+        g, bounds, m_part.get(),
+        // This is a hack (we could use a new property but anyway we
+        // have plans to change the whole theme structure). If
+        // "repeat" is REPEAT, the center will be filled with the
+        // center slice of the part.
+        m_repeat == BackgroundRepeat::REPEAT);
     }
   }
   else if (!gfx::is_transparent(m_color)) {

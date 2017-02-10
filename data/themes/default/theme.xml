@@ -37,11 +37,8 @@
     <color id="link_text" value="#2c4c91" />
     <color id="link_hover" value="#ff5555" />
     <color id="button_normal_text" value="#000000" />
-    <color id="button_normal_face" value="#c6c6c6" />
     <color id="button_hot_text" value="#000000" />
-    <color id="button_hot_face" value="#ffffff" />
     <color id="button_selected_text" value="#ffffff" />
-    <color id="button_selected_face" value="#7c909f" />
     <color id="check_hot_face" value="#ffebb6" />
     <color id="check_focus_face" value="#c6c6c6" />
     <color id="radio_hot_face" value="#ffebb6" />
@@ -64,16 +61,11 @@
     <color id="listitem_selected_text" value="#ffffff" />
     <color id="listitem_selected_face" value="#ff5555" />
     <color id="slider_empty_text" value="#000000" />
-    <color id="slider_empty_face" value="#aecbdf" />
     <color id="slider_full_text" value="#ffffff" />
-    <color id="slider_full_face" value="#7d929e" />
     <color id="tab_normal_text" value="#000000" />
-    <color id="tab_normal_face" value="#c6c6c6" />
     <color id="tab_active_text" value="#ffffff" />
     <color id="tab_active_face" value="#7d929e" />
     <color id="splitter_normal_face" value="#7d929e" />
-    <color id="scrollbar_bg_face" value="#7d929e" />
-    <color id="scrollbar_thumb_face" value="#c6c6c6" />
     <color id="popup_window_border" value="#000000" />
     <color id="tooltip_text" value="#000000" />
     <color id="tooltip_face" value="#ffff7d" />
@@ -474,10 +466,10 @@
 
     <!-- scrollbar -->
     <style id="scrollbar">
-      <background color="scrollbar_bg_face" part="scrollbar_bg" />
+      <background part="scrollbar_bg" repeat="repeat" />
     </style>
     <style id="scrollbar_thumb">
-      <background color="scrollbar_thumb_face" part="scrollbar_thumb" />
+      <background part="scrollbar_thumb" repeat="repeat" />
     </style>
 
     <!-- mini_scrollbar -->
@@ -761,11 +753,11 @@
 
     <!-- tab -->
     <style id="tab">
-      <background part="tab_normal" color="tab_normal_face" repeat="repeat-x" />
+      <background part="tab_normal" repeat="repeat" />
       <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
     </style>
     <style id="tab:active">
-      <background part="tab_active" color="tab_active_face" />
+      <background part="tab_active" repeat="repeat" />
       <text color="tab_active_text" />
     </style>
 
@@ -779,7 +771,7 @@
 
     <!-- tab_bottom -->
     <style id="tab_bottom">
-      <background part="tab_bottom_normal" color="tab_normal_face" repeat="repeat-x" />
+      <background part="tab_bottom_normal" repeat="repeat-x" />
     </style>
     <style id="tab_bottom:active">
       <background part="tab_bottom_active" color="tab_active_face" />
@@ -787,7 +779,7 @@
 
     <!-- tab_filler -->
     <style id="tab_filler">
-      <background part="tab_filler" color="window_face" repeat="repeat-x" />
+      <background part="tab_filler" repeat="repeat-x" />
     </style>
 
     <!-- tab_icon -->

@@ -806,7 +806,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   IButtonIcon* iconInterface = widget->iconInterface();
   gfx::Rect box, text, icon;
-  gfx::Color fg, bg;
+  gfx::Color fg;
   SkinPartPtr part_nw;
 
   widget->getTextIconInfo(&box, &text, &icon,
@@ -823,7 +823,6 @@ void SkinTheme::paintButton(PaintEvent& ev)
   // Selected
   if (widget->isSelected()) {
     fg = colors.buttonSelectedText();
-    bg = colors.buttonSelectedFace();
     part_nw = (look == MiniLook ? parts.toolbuttonNormal():
                look == LeftButtonLook ? parts.dropDownButtonLeftSelected():
                look == RightButtonLook ? parts.dropDownButtonRightSelected():
@@ -832,7 +831,6 @@ void SkinTheme::paintButton(PaintEvent& ev)
   // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
     fg = colors.buttonHotText();
-    bg = colors.buttonHotFace();
     part_nw = (look == MiniLook ? parts.toolbuttonHot():
                look == LeftButtonLook ? parts.dropDownButtonLeftHot():
                look == RightButtonLook ? parts.dropDownButtonRightHot():
@@ -841,7 +839,6 @@ void SkinTheme::paintButton(PaintEvent& ev)
   // Without mouse
   else {
     fg = colors.buttonNormalText();
-    bg = colors.buttonNormalFace();
 
     if (widget->hasFocus())
       part_nw = (look == MiniLook ? parts.toolbuttonHot():
@@ -860,7 +857,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
 
   // draw borders
   if (part_nw)
-    drawRect(g, widget->clientBounds(), part_nw.get(), bg);
+    drawRect(g, widget->clientBounds(), part_nw.get());
 
   // text
   drawText(g, NULL, fg, ColorNone, widget,
@@ -919,7 +916,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
       (widget->hasFocus() || (iconInterface &&
                               widget->text().empty() &&
                               widget->hasMouseOver()))) {
-    drawRect(g, bounds, parts.checkFocus().get(), gfx::ColorNone);
+    drawRect(g, bounds, parts.checkFocus().get());
   }
 }
 
@@ -946,12 +943,10 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  gfx::Color bg = colors.background();
   drawRect(g, bounds,
     (widget->hasFocus() ?
      (isMiniLook ? parts.sunkenMiniFocused().get(): parts.sunkenFocused().get()):
-     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())),
-    bg);
+     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())));
 
   drawEntryText(g, widget);
 }
@@ -1346,7 +1341,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
 
   // Focus
   if (widget->hasFocus())
-    drawRect(g, bounds, parts.radioFocus().get(), gfx::ColorNone);
+    drawRect(g, bounds, parts.radioFocus().get());
 }
 
 void SkinTheme::paintSeparator(ui::PaintEvent& ev)
@@ -1442,7 +1437,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     // Draw borders
     if (rc.h > 4*guiscale()) {
       rc.shrink(Border(3, 0, 3, 1) * guiscale());
-      drawRect(g, rc, nw.get(), gfx::ColorNone);
+      drawRect(g, rc, nw.get());
     }
 
     // Draw background (using the customized ISliderBgPainter implementation)
@@ -1471,14 +1466,12 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     }
 
     if (value == min)
-      drawRect(g, rc, empty_part.get(), colors.sliderEmptyFace());
+      drawRect(g, rc, empty_part.get());
     else if (value == max)
-      drawRect(g, rc, full_part.get(), colors.sliderFullFace());
+      drawRect(g, rc, full_part.get());
     else
       drawRect2(g, rc, x,
-                full_part.get(), empty_part.get(),
-                colors.sliderFullFace(),
-                colors.sliderEmptyFace());
+                full_part.get(), empty_part.get());
 
     // Draw text
     std::string old_text = widget->text();
@@ -1515,12 +1508,10 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   // Outside borders
   g->fillRect(BGCOLOR, bounds);
 
-  gfx::Color bg = colors.background();
-
   drawRect(g, bounds,
            (widget->hasFocus() ?
             parts.sunken2Focused().get():
-            parts.sunken2Normal().get()), bg);
+            parts.sunken2Normal().get()));
 
   drawEntryText(g, widget);
 }
@@ -1531,20 +1522,16 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   Graphics* g = ev.graphics();
   IButtonIcon* iconInterface = widget->iconInterface();
   SkinPartPtr part_nw;
-  gfx::Color bg;
 
   if (widget->isSelected()) {
-    bg = colors.buttonSelectedFace();
     part_nw = parts.toolbuttonPushed();
   }
   // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
-    bg = colors.buttonHotFace();
     part_nw = parts.toolbuttonHot();
   }
   // Without mouse
   else {
-    bg = colors.buttonNormalFace();
     part_nw = parts.toolbuttonLast();
   }
 
@@ -1554,7 +1541,7 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   g->fillRect(BGCOLOR, rc);
 
   // draw borders
-  drawRect(g, rc, part_nw.get(), bg);
+  drawRect(g, rc, part_nw.get());
 
   // Paint the icon
   if (iconInterface) {
@@ -1957,35 +1944,22 @@ void SkinTheme::drawRect(Graphics* g, const Rect& rc,
   }
 }
 
-void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, gfx::Color bg)
+void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc,
+                         SkinPart* skinPart, const bool drawCenter)
 {
-  const gfx::Rect& sprite = skinPart->spriteBounds();
-  const gfx::Rect& slices = skinPart->slicesBounds();
-
-  Theme::drawSlices(g, m_sheet, rc, sprite, slices, false);
-
-  // Center
-  if (!is_transparent(bg)) {
-    gfx::Rect inside = rc;
-    inside.x += slices.x;
-    inside.y += slices.y;
-    inside.w -= sprite.w - slices.w;
-    inside.h -= sprite.h - slices.h;
-    IntersectClip clip(g, inside);
-    if (clip)
-      g->fillRect(bg, inside);
-  }
+  Theme::drawSlices(g, m_sheet, rc,
+                    skinPart->spriteBounds(),
+                    skinPart->slicesBounds(), drawCenter);
 }
 
 void SkinTheme::drawRect2(Graphics* g, const Rect& rc, int x_mid,
-                          SkinPart* nw1, SkinPart* nw2,
-                          gfx::Color bg1, gfx::Color bg2)
+                          SkinPart* nw1, SkinPart* nw2)
 {
   Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
   {
     IntersectClip clip(g, rc2);
     if (clip)
-      drawRect(g, rc, nw1, bg1);
+      drawRect(g, rc, nw1);
   }
 
   rc2.x += rc2.w;
@@ -1993,7 +1967,7 @@ void SkinTheme::drawRect2(Graphics* g, const Rect& rc, int x_mid,
 
   IntersectClip clip(g, rc2);
   if (clip)
-    drawRect(g, rc, nw2, bg2);
+    drawRect(g, rc, nw2);
 }
 
 void SkinTheme::drawHline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* part)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -293,8 +293,6 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   gfx::Rect bounds = clientBounds();
   Graphics* g = ev.graphics();
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  gfx::Color normalFace = theme->colors.buttonNormalFace();
-  gfx::Color hotFace = theme->colors.buttonHotFace();
   ToolBox* toolbox = App::instance()->toolBox();
   Tool* activeTool = App::instance()->activeTool();
   ToolGroupList::iterator it = toolbox->begin_group();
@@ -306,22 +304,19 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   for (int c=0; c<groups; ++c, ++it) {
     ToolGroup* tool_group = *it;
     Tool* tool = m_selectedInGroup[tool_group];
-    gfx::Color face;
     SkinPartPtr nw;
 
     if (activeTool == tool || m_hotIndex == c) {
       nw = theme->parts.toolbuttonHot();
-      face = hotFace;
     }
     else {
       nw = c >= 0 && c < groups-1 ? theme->parts.toolbuttonNormal():
                                     theme->parts.toolbuttonLast();
-      face = normalFace;
     }
 
     toolrc = getToolGroupBounds(c);
     toolrc.offset(-origin());
-    theme->drawRect(g, toolrc, nw.get(), face);
+    theme->drawRect(g, toolrc, nw.get());
 
     // Draw the tool icon
     she::Surface* icon = theme->getToolIcon(tool->getId().c_str());
@@ -341,8 +336,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     g,
     toolrc,
     (isHot ? theme->parts.toolbuttonHot().get():
-             theme->parts.toolbuttonLast().get()),
-    (isHot ? hotFace: normalFace));
+             theme->parts.toolbuttonLast().get()));
 
   she::Surface* icon = theme->getToolIcon("minieditor");
   if (icon) {
@@ -706,21 +700,18 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (tool->getGroup() == m_group) {
-      gfx::Color face;
       SkinPartPtr nw;
 
       if (activeTool == tool || m_hotTool == tool) {
         nw = theme->parts.toolbuttonHot();
-        face = theme->colors.buttonHotFace();
       }
       else {
         nw = theme->parts.toolbuttonLast();
-        face = theme->colors.buttonNormalFace();
       }
 
       toolrc = getToolBounds(index++);
       toolrc.offset(-bounds().x, -bounds().y);
-      theme->drawRect(g, toolrc, nw.get(), face);
+      theme->drawRect(g, toolrc, nw.get());
 
       // Draw the tool icon
       she::Surface* icon = theme->getToolIcon(tool->getId().c_str());
