@@ -190,18 +190,13 @@
     <part id="sunken_mini_focused"              x="16" y="80" w1="4" w2="4" w3="4" h1="3" h2="6" h3="3" />
     <part id="window"                           x="0" y="0" w1="3" w2="7" w3="3" h1="15" h2="4" h3="5" />
     <part id="menu"                             x="0" y="96" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
-    <part id="window_close_button_normal"       x="16" y="0" w="9" h="11" />
-    <part id="window_close_button_hot"          x="25" y="0" w="9" h="11" />
-    <part id="window_close_button_selected"     x="34" y="0" w="9" h="11" />
-    <part id="window_play_button_normal"        x="16" y="11" w="9" h="11" />
-    <part id="window_play_button_hot"           x="25" y="11" w="9" h="11" />
-    <part id="window_play_button_selected"      x="34" y="11" w="9" h="11" />
-    <part id="window_stop_button_normal"        x="16" y="22" w="9" h="11" />
-    <part id="window_stop_button_hot"           x="25" y="22" w="9" h="11" />
-    <part id="window_stop_button_selected"      x="34" y="22" w="9" h="11" />
-    <part id="window_center_button_normal"      x="16" y="33" w="9" h="11" />
-    <part id="window_center_button_hot"         x="25" y="33" w="9" h="11" />
-    <part id="window_center_button_selected"    x="34" y="33" w="9" h="11" />
+    <part id="window_button_normal"             x="16" y="0" w="9" h="11" />
+    <part id="window_button_hot"                x="25" y="0" w="9" h="11" />
+    <part id="window_button_selected"           x="34" y="0" w="9" h="11" />
+    <part id="window_close_icon"                x="16" y="11" w="5" h="6" />
+    <part id="window_play_icon"                 x="21" y="11" w="5" h="6" />
+    <part id="window_stop_icon"                 x="26" y="11" w="5" h="6" />
+    <part id="window_center_icon"               x="31" y="11" w="5" h="6" />
     <part id="slider_full"                      x="0" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_empty"                     x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_full_focused"              x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />

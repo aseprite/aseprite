@@ -64,7 +64,7 @@ public:
 protected:
 
   void onSizeHint(SizeHintEvent& ev) override {
-    ev.setSizeHint(SkinTheme::instance()->parts.windowCloseButtonNormal()->size());
+    ev.setSizeHint(SkinTheme::instance()->parts.windowButtonNormal()->size());
   }
 
   void onClick(Event& ev) override {
@@ -760,7 +760,7 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 {
   if (widget->id() == kThemeCloseButtonId) {
     Widget* window = widget->parent();
-    gfx::Rect rect(parts.windowCloseButtonNormal()->size());
+    gfx::Rect rect(parts.windowButtonNormal()->size());
 
     rect.offset(window->bounds().x2() - 3*guiscale() - rect.w,
                 window->bounds().y + 3*guiscale());
@@ -1689,20 +1689,36 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
 
 void SkinTheme::paintWindowButton(ui::PaintEvent& ev)
 {
+  // Merge this code with SkinButton class
+
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   Graphics* g = ev.graphics();
   Rect rc = widget->clientBounds();
   SkinPartPtr part;
+  gfx::Color fg;
 
-  if (widget->isSelected())
-    part = parts.windowCloseButtonSelected();
-  else if (widget->hasMouseOver())
-    part = parts.windowCloseButtonHot();
-  else
-    part = parts.windowCloseButtonNormal();
+  if (widget->isSelected()) {
+    fg = colors.buttonSelectedText();
+    part = parts.windowButtonSelected();
+  }
+  else if (widget->hasMouseOver()) {
+    fg = colors.buttonHotText();
+    part = parts.windowButtonHot();
+  }
+  else {
+    fg = colors.buttonNormalText();
+    part = parts.windowButtonNormal();
+  }
 
   g->fillRect(BGCOLOR, rc);
   g->drawRgbaSurface(part->bitmap(0), rc.x, rc.y);
+  gfx::Size sz(part->bitmap(0)->width(),
+               part->bitmap(0)->height());
+
+  part = parts.windowCloseIcon();
+  g->drawColoredRgbaSurface(part->bitmap(0), fg,
+                            rc.x+sz.w/2-part->bitmap(0)->width()/2,
+                            rc.y+sz.h/2-part->bitmap(0)->height()/2);
 }
 
 void SkinTheme::paintTooltip(PaintEvent& ev)
