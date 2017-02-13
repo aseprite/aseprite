@@ -8,10 +8,13 @@
 #define UI_THEME_H_INCLUDED
 #pragma once
 
+#include "gfx/border.h"
 #include "gfx/color.h"
+#include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/style.h"
 
 namespace gfx {
   class Region;
@@ -27,6 +30,7 @@ namespace ui {
   class Cursor;
   class Graphics;
   class PaintEvent;
+  class SizeHintEvent;
   class Widget;
 
   class Theme {
@@ -51,7 +55,6 @@ namespace ui {
 
     virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;
-    virtual void paintButton(PaintEvent& ev) = 0;
     virtual void paintCheckBox(PaintEvent& ev) = 0;
     virtual void paintEntry(PaintEvent& ev) = 0;
     virtual void paintGrid(PaintEvent& ev) = 0;
@@ -66,7 +69,6 @@ namespace ui {
     virtual void paintSeparator(PaintEvent& ev) = 0;
     virtual void paintSlider(PaintEvent& ev) = 0;
     virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
-    virtual void paintComboBoxButton(PaintEvent& ev) = 0;
     virtual void paintTextBox(PaintEvent& ev) = 0;
     virtual void paintView(PaintEvent& ev) = 0;
     virtual void paintViewScrollbar(PaintEvent& ev) = 0;
@@ -74,6 +76,10 @@ namespace ui {
     virtual void paintWindow(PaintEvent& ev) = 0;
     virtual void paintPopupWindow(PaintEvent& ev) = 0;
     virtual void paintTooltip(PaintEvent& ev) = 0;
+
+    // Default implementation to draw widgets with new ui::Styles
+    virtual void paintWidget(PaintEvent& ev);
+    virtual void calcSizeHint(SizeHintEvent& ev);
 
     static void drawSlices(Graphics* g,
                            she::Surface* sheet,
@@ -89,6 +95,16 @@ namespace ui {
     virtual void onRegenerate() = 0;
 
   private:
+    void paintLayer(Graphics* g, Widget* widget,
+                    const Style::Layer& layer,
+                    gfx::Rect& rc);
+    void measureLayer(Widget* widget,
+                      const Style::Layer& layer,
+                      gfx::Border& hintBorder,
+                      gfx::Size& hintText,
+                      gfx::Size& hintIcon);
+    int compareLayerFlags(int a, int b);
+
     int m_guiscale;
   };
 

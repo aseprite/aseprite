@@ -64,6 +64,7 @@ Widget::Widget(WidgetType type)
   : m_type(type)
   , m_flags(0)
   , m_theme(get_theme())
+  , m_style(nullptr)
   , m_font(nullptr)
   , m_bgColor(gfx::ColorNone)
   , m_bounds(0, 0, 0, 0)
@@ -180,6 +181,11 @@ void Widget::setTheme(Theme* theme)
 {
   m_theme = theme;
   m_font = nullptr;
+}
+
+void Widget::setStyle(Style* style)
+{
+  m_style = style;
 }
 
 // ===============================================================
@@ -1397,7 +1403,12 @@ void Widget::onInvalidateRegion(const Region& region)
 
 void Widget::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(m_minSize);
+  if (m_style) {
+    m_theme->calcSizeHint(ev);
+  }
+  else {
+    ev.setSizeHint(m_minSize);
+  }
 }
 
 void Widget::onLoadLayout(LoadLayoutEvent& ev)
@@ -1422,7 +1433,8 @@ void Widget::onResize(ResizeEvent& ev)
 
 void Widget::onPaint(PaintEvent& ev)
 {
-  // Do nothing
+  if (m_style)
+    m_theme->paintWidget(ev);
 }
 
 void Widget::onBroadcastMouseMessage(WidgetsList& targets)

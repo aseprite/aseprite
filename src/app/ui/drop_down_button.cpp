@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,11 +28,10 @@ DropDownButton::DropDownButton(const char* text)
 {
   SkinTheme* theme = SkinTheme::instance();
 
-  setup_look(m_button, LeftButtonLook);
-  setup_look(m_dropDown, RightButtonLook);
+  m_button->setStyle(theme->newStyles.dropDownButton());
+  m_dropDown->setStyle(theme->newStyles.dropDownExpandButton());
 
   m_button->setExpansive(true);
-  m_button->setAlign(LEFT | MIDDLE);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);
   m_dropDown->Click.connect(&DropDownButton::onDropDownButtonClick, this);
 
@@ -40,12 +39,6 @@ DropDownButton::DropDownButton(const char* text)
   addChild(m_dropDown);
 
   setChildSpacing(0);
-
-  m_dropDown->setIconInterface
-    (new ButtonIconImpl(theme->parts.comboboxArrowDown(),
-                        theme->parts.comboboxArrowDownSelected(),
-                        theme->parts.comboboxArrowDownDisabled(),
-                        CENTER | MIDDLE));
 }
 
 void DropDownButton::onButtonClick(Event& ev)

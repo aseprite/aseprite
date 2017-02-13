@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include "ui/theme.h"
+
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "she/font.h"
@@ -15,11 +17,14 @@
 #include "she/system.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
+#include "ui/paint_event.h"
+#include "ui/size_hint_event.h"
+#include "ui/style.h"
 #include "ui/system.h"
-#include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/widget.h"
 
+#include <algorithm>
 #include <cstring>
 
 namespace ui {
@@ -53,6 +58,225 @@ void Theme::regenerate()
   //details::reinitThemeForAllWidgets();
 
   set_mouse_cursor(type);
+}
+
+void Theme::paintWidget(PaintEvent& ev)
+{
+  Widget* widget = static_cast<Widget*>(ev.getSource());
+  const Style* style = widget->style();
+  if (!style) {
+    // Without a ui::Style we don't know how to draw the widget
+    return;
+  }
+
+  Graphics* g = ev.graphics();
+  gfx::Rect rc = widget->clientBounds();
+  int flags =
+    (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
+    (widget->isSelected() ? Style::Layer::kSelected: 0) |
+    (widget->hasMouse() ? Style::Layer::kMouse: 0) |
+    (widget->hasFocus() ? Style::Layer::kFocus: 0);
+
+  // External background
+  g->fillRect(widget->bgColor(), rc);
+
+  const Style::Layer* bestLayer = nullptr;
+
+  for (const auto& layer : style->layers()) {
+    if (bestLayer &&
+        bestLayer->type() != layer.type()) {
+      paintLayer(g, widget, *bestLayer, rc);
+      bestLayer = nullptr;
+    }
+
+    if ((!layer.flags()
+         || (layer.flags() & flags) == layer.flags())
+        && (!bestLayer
+            || (bestLayer && compareLayerFlags(bestLayer->flags(), layer.flags()) <= 0))) {
+      bestLayer = &layer;
+    }
+  }
+
+  if (bestLayer)
+    paintLayer(g, widget, *bestLayer, rc);
+}
+
+void Theme::paintLayer(Graphics* g, Widget* widget,
+                       const Style::Layer& layer,
+                       gfx::Rect& rc)
+{
+  switch (layer.type()) {
+
+    case Style::Layer::Type::kBackground:
+      if (layer.color() != gfx::ColorNone) {
+        g->fillRect(layer.color(), rc);
+      }
+
+      if (layer.spriteSheet() &&
+          !layer.spriteBounds().isEmpty() &&
+          !layer.slicesBounds().isEmpty()) {
+        Theme::drawSlices(g, layer.spriteSheet(), rc,
+                          layer.spriteBounds(),
+                          layer.slicesBounds(), true);
+
+        rc.x += layer.slicesBounds().x;
+        rc.y += layer.slicesBounds().y;
+        rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
+        rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+      }
+      break;
+
+    case Style::Layer::Type::kBorder:
+      if (layer.color() != gfx::ColorNone) {
+        g->drawRect(layer.color(), rc);
+      }
+
+      if (layer.spriteSheet() &&
+          !layer.spriteBounds().isEmpty() &&
+          !layer.slicesBounds().isEmpty()) {
+        Theme::drawSlices(g, layer.spriteSheet(), rc,
+                          layer.spriteBounds(),
+                          layer.slicesBounds(), false);
+
+        rc.x += layer.slicesBounds().x;
+        rc.y += layer.slicesBounds().y;
+        rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
+        rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+      }
+      break;
+
+    case Style::Layer::Type::kText:
+      if (layer.color() != gfx::ColorNone) {
+        gfx::Size textSize = g->measureUIText(widget->text());
+        g->drawUIText(widget->text(),
+                      layer.color(),
+                      gfx::ColorNone,
+                      gfx::Point(rc.x+rc.w/2-textSize.w/2,
+                                 rc.y+rc.h/2-textSize.h/2), true);
+      }
+      break;
+
+    case Style::Layer::Type::kIcon: {
+      she::Surface* icon = layer.icon();
+      if (icon) {
+        if (layer.color() != gfx::ColorNone) {
+          g->drawColoredRgbaSurface(icon,
+                                    layer.color(),
+                                    rc.x+rc.w/2-icon->width()/2,
+                                    rc.y+rc.h/2-icon->height()/2);
+        }
+        else {
+          g->drawRgbaSurface(icon,
+                             rc.x+rc.w/2-icon->width()/2,
+                             rc.y+rc.h/2-icon->height()/2);
+        }
+      }
+      break;
+    }
+
+  }
+}
+
+void Theme::calcSizeHint(SizeHintEvent& ev)
+{
+  Widget* widget = static_cast<Widget*>(ev.getSource());
+  const Style* style = widget->style();
+  if (!style)
+    return;
+
+  gfx::Border hintBorder(0, 0, 0, 0);
+  gfx::Border hintPadding(0, 0, 0, 0);
+  gfx::Size hintText(0, 0);
+  gfx::Size hintIcon(0, 0);
+
+  int flags =
+    (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
+    (widget->isSelected() ? Style::Layer::kSelected: 0) |
+    (widget->hasMouse() ? Style::Layer::kMouse: 0) |
+    (widget->hasFocus() ? Style::Layer::kFocus: 0);
+
+  const Style::Layer* bestLayer = nullptr;
+
+  for (const auto& layer : style->layers()) {
+    if (bestLayer &&
+        bestLayer->type() != layer.type()) {
+      measureLayer(widget, *bestLayer,
+                   hintBorder, hintText, hintIcon);
+      bestLayer = nullptr;
+    }
+
+    if ((!layer.flags()
+         || (layer.flags() & flags) == layer.flags())
+        && (!bestLayer
+            || (bestLayer && compareLayerFlags(bestLayer->flags(), layer.flags()) < 0))) {
+      bestLayer = &layer;
+    }
+  }
+
+  if (bestLayer)
+    measureLayer(widget, *bestLayer,
+                 hintBorder, hintText, hintIcon);
+
+  if (style->border().left() >= 0) hintBorder.left(style->border().left());
+  if (style->border().top() >= 0) hintBorder.top(style->border().top());
+  if (style->border().right() >= 0) hintBorder.right(style->border().right());
+  if (style->border().bottom() >= 0) hintBorder.bottom(style->border().bottom());
+
+  if (style->padding().left() >= 0) hintPadding.left(style->padding().left());
+  if (style->padding().top() >= 0) hintPadding.top(style->padding().top());
+  if (style->padding().right() >= 0) hintPadding.right(style->padding().right());
+  if (style->padding().bottom() >= 0) hintPadding.bottom(style->padding().bottom());
+
+  gfx::Size sz(hintBorder.width() + hintPadding.width() + hintIcon.w + hintText.w,
+               hintBorder.height() + hintPadding.height() + std::max(hintIcon.h, hintText.h));
+  ev.setSizeHint(sz);
+}
+
+void Theme::measureLayer(Widget* widget,
+                         const Style::Layer& layer,
+                         gfx::Border& hintBorder,
+                         gfx::Size& hintText,
+                         gfx::Size& hintIcon)
+{
+  switch (layer.type()) {
+
+    case Style::Layer::Type::kBackground:
+    case Style::Layer::Type::kBorder:
+      if (layer.spriteSheet() &&
+          !layer.spriteBounds().isEmpty() &&
+          !layer.slicesBounds().isEmpty()) {
+        hintBorder.left(std::max(hintBorder.left(), layer.slicesBounds().x));
+        hintBorder.top(std::max(hintBorder.top(), layer.slicesBounds().y));
+        hintBorder.right(std::max(hintBorder.right(), layer.spriteBounds().w - layer.slicesBounds().x2()));
+        hintBorder.bottom(std::max(hintBorder.bottom(), layer.spriteBounds().h - layer.slicesBounds().y2()));
+      }
+      break;
+
+    case Style::Layer::Type::kText:
+      if (layer.color() != gfx::ColorNone) {
+        gfx::Size textSize(Graphics::measureUITextLength(widget->text(),
+                                                         widget->font()),
+                           widget->font()->height());
+        hintText.w = std::max(hintText.w, textSize.w);
+        hintText.h = std::max(hintText.h, textSize.h);
+      }
+      break;
+
+    case Style::Layer::Type::kIcon: {
+      she::Surface* icon = layer.icon();
+      if (icon) {
+        hintIcon.w = std::max(hintIcon.w, icon->width());
+        hintIcon.h = std::max(hintIcon.h, icon->height());
+      }
+      break;
+    }
+
+  }
+}
+
+int Theme::compareLayerFlags(int a, int b)
+{
+  return a - b;
 }
 
 //////////////////////////////////////////////////////////////////////

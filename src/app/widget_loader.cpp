@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -174,29 +174,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool top    = bool_attr_is_true(elem, "top");
     bool bottom = bool_attr_is_true(elem, "bottom");
     bool closewindow = bool_attr_is_true(elem, "closewindow");
-    const char *_bevel = elem->Attribute("bevel");
 
     widget->setAlign((left ? LEFT: (right ? RIGHT: CENTER)) |
       (top ? TOP: (bottom ? BOTTOM: MIDDLE)));
-
-    if (_bevel != NULL) {
-      char* bevel = base_strdup(_bevel);
-      int c, b[4];
-      char *tok;
-
-      for (c=0; c<4; ++c)
-        b[c] = 0;
-
-      for (tok=strtok(bevel, " "), c=0;
-           tok;
-           tok=strtok(NULL, " "), ++c) {
-        if (c < 4)
-          b[c] = strtol(tok, NULL, 10);
-      }
-      base_free(bevel);
-
-      setup_bevels(widget, b[0], b[1], b[2], b[3]);
-    }
 
     if (closewindow) {
       static_cast<Button*>(widget)
@@ -594,10 +574,18 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
 
   if (styleid) {
     SkinTheme* theme = static_cast<SkinTheme*>(root->theme());
-    skin::Style* style = theme->getStyle(styleid);
-    ASSERT(style);
-    SkinStylePropertyPtr prop(new SkinStyleProperty(style));
-    widget->setProperty(prop);
+
+    // New styles
+    ui::Style* style = theme->getNewStyle(styleid);
+    if (style)
+      widget->setStyle(style);
+    else {
+      skin::Style* style = theme->getStyle(styleid);
+      if (style) {
+        SkinStylePropertyPtr prop(new SkinStyleProperty(style));
+        widget->setProperty(prop);
+      }
+    }
   }
 }
 

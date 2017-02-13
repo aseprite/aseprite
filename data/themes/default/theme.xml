@@ -898,4 +898,91 @@
 
   </stylesheet>
 
+  <styles>
+
+    <style id="button">
+      <background part="button_normal" />
+      <background part="button_hot" state="mouse" />
+      <background part="button_focused" state="focus" />
+      <background part="button_selected" state="selected" />
+      <text color="button_normal_text" />
+      <text color="button_hot_text" state="mouse" />
+      <text color="button_selected_text" state="selected" />
+    </style>
+
+    <style id="mini_button">
+      <background part="toolbutton_last" />
+      <background part="toolbutton_hot" state="mouse" />
+      <background part="toolbutton_hot" state="focus" />
+      <background part="toolbutton_pushed" state="selected" />
+      <text color="button_normal_text" />
+      <text color="button_hot_text" state="mouse" />
+      <text color="button_selected_text" state="selected" />
+    </style>
+
+    <style id="combobox_button" extends="mini_button">
+      <icon part="combobox_arrow_down" />
+      <icon part="combobox_arrow_down_selected" state="selected" />
+      <icon part="combobox_arrow_down_disabled" state="disabled" />
+    </style>
+
+    <style id="drop_down_button" extends="button">
+      <background part="drop_down_button_left_normal" />
+      <background part="drop_down_button_left_selected" state="selected" />
+      <background part="drop_down_button_left_hot" state="mouse" />
+      <background part="drop_down_button_left_focused" state="focus" />
+    </style>
+
+    <style id="drop_down_expand_button" extends="button">
+      <background part="drop_down_button_right_normal" />
+      <background part="drop_down_button_right_selected" state="selected" />
+      <background part="drop_down_button_right_hot" state="mouse" />
+      <background part="drop_down_button_right_focused" state="focus" />
+      <icon part="combobox_arrow_down" />
+      <icon part="combobox_arrow_down_selected" state="selected" />
+      <icon part="combobox_arrow_down_disabled" state="disabled" />
+    </style>
+
+    <style id="go_back_button" extends="mini_button">
+      <icon part="combobox_arrow_left" />
+      <icon part="combobox_arrow_left_selected" state="selected" />
+      <icon part="combobox_arrow_left_disabled" state="disabled" />
+    </style>
+
+    <style id="go_forward_button" extends="mini_button">
+      <icon part="combobox_arrow_right" />
+      <icon part="combobox_arrow_right_selected" state="selected" />
+      <icon part="combobox_arrow_right_disabled" state="disabled" />
+    </style>
+
+    <style id="go_up_button" extends="mini_button">
+      <icon part="combobox_arrow_up" />
+      <icon part="combobox_arrow_up_selected" state="selected" />
+      <icon part="combobox_arrow_up_disabled" state="disabled" />
+    </style>
+
+    <style id="new_folder_button" extends="mini_button">
+      <icon part="newfolder" />
+      <icon part="newfolder_selected" state="selected" />
+    </style>
+
+    <style id="color_wheel_options" border="1">
+      <background color="editor_face" />
+      <background color="check_hot_face" state="mouse" />
+      <background color="check_hot_face" state="selected" />
+      <icon part="pal_options" />
+    </style>
+
+    <style id="recover_sprites_button" extends="button"
+           border="0" padding="8">
+    </style>
+
+    <style id="new_frame_button" extends="mini_button">
+    </style>
+
+    <style id="color_button" extends="mini_button" border="5">
+    </style>
+
+  </styles>
+
 </theme>

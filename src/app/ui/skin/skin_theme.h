@@ -59,7 +59,6 @@ namespace app {
 
       void paintDesktop(ui::PaintEvent& ev) override;
       void paintBox(ui::PaintEvent& ev) override;
-      void paintButton(ui::PaintEvent& ev) override;
       void paintCheckBox(ui::PaintEvent& ev) override;
       void paintEntry(ui::PaintEvent& ev) override;
       void paintGrid(ui::PaintEvent& ev) override;
@@ -74,7 +73,6 @@ namespace app {
       void paintSeparator(ui::PaintEvent& ev) override;
       void paintSlider(ui::PaintEvent& ev) override;
       void paintComboBoxEntry(ui::PaintEvent& ev) override;
-      void paintComboBoxButton(ui::PaintEvent& ev) override;
       void paintTextBox(ui::PaintEvent& ev) override;
       void paintView(ui::PaintEvent& ev) override;
       void paintViewScrollbar(ui::PaintEvent& ev) override;
@@ -101,6 +99,10 @@ namespace app {
 
       Style* getStyle(const std::string& id) {
         return m_stylesheet.getStyle(id);
+      }
+
+      ui::Style* getNewStyle(const std::string& id) {
+        return m_styles[id];
       }
 
       SkinPartPtr getPartById(const std::string& id) {
@@ -149,6 +151,7 @@ namespace app {
       std::map<std::string, int> m_dimensions_by_id;
       std::vector<ui::Cursor*> m_cursors;
       StyleSheet m_stylesheet;
+      std::map<std::string, ui::Style*> m_styles;
       she::Font* m_defaultFont;
       she::Font* m_miniFont;
     };

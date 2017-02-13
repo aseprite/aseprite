@@ -56,7 +56,6 @@ const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
 class WindowCloseButton : public Button {
 public:
   WindowCloseButton() : Button("") {
-    setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
     setId(SkinTheme::kThemeCloseButtonId);
   }
@@ -422,7 +421,7 @@ void SkinTheme::loadXml(const std::string& skinId)
     }
   }
 
-  // Load styles
+  // Load old stylesheet
   {
     TiXmlElement* xmlStyle = handle
       .FirstChild("theme")
@@ -508,6 +507,140 @@ void SkinTheme::loadXml(const std::string& skinId)
     }
   }
 
+  // Load new styles
+  {
+    TiXmlElement* xmlStyle = handle
+      .FirstChild("theme")
+      .FirstChild("styles")
+      .FirstChild("style").ToElement();
+    while (xmlStyle) {
+      const char* style_id = xmlStyle->Attribute("id");
+      if (!style_id) {
+        throw base::Exception("<style> without 'id' attribute in '%s'\n",
+                              xml_filename.c_str());
+      }
+
+      const char* extends_id = xmlStyle->Attribute("extends");
+      const ui::Style* base = nullptr;
+      if (extends_id)
+        base = m_styles[extends_id];
+
+      ui::Style* style = m_styles[style_id];
+      if (!style) {
+        m_styles[style_id] = style = new ui::Style(base);
+        style->setId(style_id);
+      }
+      else {
+        *style = ui::Style(base);
+      }
+
+      // Border
+      {
+        const char* m = xmlStyle->Attribute("border");
+        const char* l = xmlStyle->Attribute("border-left");
+        const char* t = xmlStyle->Attribute("border-top");
+        const char* r = xmlStyle->Attribute("border-right");
+        const char* b = xmlStyle->Attribute("border-bottom");
+        gfx::Border border(-1, -1, -1, -1);
+        if (m || l) border.left(std::strtol(l ? l: m, nullptr, 10));
+        if (m || t) border.top(std::strtol(t ? t: m, nullptr, 10));
+        if (m || r) border.right(std::strtol(r ? r: m, nullptr, 10));
+        if (m || b) border.bottom(std::strtol(b ? b: m, nullptr, 10));
+        style->setBorder(border*guiscale());
+      }
+
+      // Padding
+      {
+        const char* m = xmlStyle->Attribute("padding");
+        const char* l = xmlStyle->Attribute("padding-left");
+        const char* t = xmlStyle->Attribute("padding-top");
+        const char* r = xmlStyle->Attribute("padding-right");
+        const char* b = xmlStyle->Attribute("padding-bottom");
+        gfx::Border padding(-1, -1, -1, -1);
+        if (m || l) padding.left(std::strtol(l ? l: m, nullptr, 10));
+        if (m || t) padding.top(std::strtol(t ? t: m, nullptr, 10));
+        if (m || r) padding.right(std::strtol(r ? r: m, nullptr, 10));
+        if (m || b) padding.bottom(std::strtol(b ? b: m, nullptr, 10));
+        style->setPadding(padding*guiscale());
+      }
+
+      TiXmlElement* xmlLayer = xmlStyle->FirstChildElement();
+      while (xmlLayer) {
+        const std::string layerName = xmlLayer->Value();
+
+        LOG(VERBOSE) << "SKIN: Layer " << layerName
+                     << " for " << style_id << "\n";
+
+        ui::Style::Layer layer;
+
+        // Layer type
+        if (layerName == "background") {
+          layer.setType(ui::Style::Layer::Type::kBackground);
+        }
+        else if (layerName == "border") {
+          layer.setType(ui::Style::Layer::Type::kBorder);
+        }
+        else if (layerName == "icon") {
+          layer.setType(ui::Style::Layer::Type::kIcon);
+        }
+        else if (layerName == "text") {
+          layer.setType(ui::Style::Layer::Type::kText);
+        }
+        else if (layerName == "newlayer") {
+          layer.setType(ui::Style::Layer::Type::kNewLayer);
+        }
+
+        // Parse state condition
+        const char* stateValue = xmlLayer->Attribute("state");
+        if (stateValue) {
+          std::string state(stateValue);
+          int flags = 0;
+          if (state.find("disabled") != std::string::npos) flags |= ui::Style::Layer::kDisabled;
+          if (state.find("selected") != std::string::npos) flags |= ui::Style::Layer::kSelected;
+          if (state.find("focus") != std::string::npos) flags |= ui::Style::Layer::kFocus;
+          if (state.find("mouse") != std::string::npos) flags |= ui::Style::Layer::kMouse;
+          layer.setFlags(flags);
+        }
+
+        // Color
+        const char* colorId = xmlLayer->Attribute("color");
+        if (colorId) {
+          layer.setColor(getColorById(colorId));
+        }
+
+        // Sprite sheet
+        const char* partId = xmlLayer->Attribute("part");
+        if (partId) {
+          auto it = m_parts_by_id.find(partId);
+          if (it != m_parts_by_id.end()) {
+            SkinPartPtr part = it->second;
+            if (part) {
+              if (layer.type() == ui::Style::Layer::Type::kIcon)
+                layer.setIcon(part->bitmap(0));
+              else {
+                layer.setSpriteSheet(m_sheet);
+                layer.setSpriteBounds(part->spriteBounds());
+                layer.setSlicesBounds(part->slicesBounds());
+              }
+            }
+          }
+          else {
+            throw base::Exception("Part <%s part='%s' ...> was not found in '%s'\n",
+                                  layerName.c_str(), partId,
+                                  xml_filename.c_str());
+          }
+        }
+
+        if (layer.type() != ui::Style::Layer::Type::kNone)
+          style->addLayer(layer);
+
+        xmlLayer = xmlLayer->NextSiblingElement();
+      }
+
+      xmlStyle = xmlStyle->NextSiblingElement();
+    }
+  }
+
   ThemeFile<SkinTheme>::updateInternals();
 }
 
@@ -570,12 +703,7 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kButtonWidget:
-      BORDER4(
-        parts.buttonNormal()->bitmapW()->width(),
-        parts.buttonNormal()->bitmapN()->height(),
-        parts.buttonNormal()->bitmapE()->width(),
-        parts.buttonNormal()->bitmapS()->height());
-      widget->setChildSpacing(0);
+      widget->setStyle(newStyles.button());
       break;
 
     case kCheckWidget:
@@ -616,25 +744,12 @@ void SkinTheme::initWidget(Widget* widget)
       BORDER(1 * scale);
       break;
 
-    case kComboBoxWidget:
-      {
-        ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
-        ASSERT(combobox != NULL);
-
-        Button* button = combobox->getButtonWidget();
-
-        button->setBorder(gfx::Border(0));
-        button->setChildSpacing(0);
-        button->setMinSize(gfx::Size(15 * guiscale(),
-                                     16 * guiscale()));
-
-        static_cast<ButtonBase*>(button)->setIconInterface
-          (new ButtonIconImpl(parts.comboboxArrowDown(),
-                              parts.comboboxArrowDownSelected(),
-                              parts.comboboxArrowDownDisabled(),
-                              CENTER | MIDDLE));
-      }
+    case kComboBoxWidget: {
+      ComboBox* combobox = static_cast<ComboBox*>(widget);
+      Button* button = combobox->getButtonWidget();
+      button->setStyle(newStyles.comboboxButton());
       break;
+    }
 
     case kMenuWidget:
     case kMenuBarWidget:
@@ -797,79 +912,6 @@ void SkinTheme::paintBox(PaintEvent& ev)
   if (!widget->isTransparent() &&
       !is_transparent(BGCOLOR)) {
     g->fillRect(BGCOLOR, g->getClipBounds());
-  }
-}
-
-void SkinTheme::paintButton(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  IButtonIcon* iconInterface = widget->iconInterface();
-  gfx::Rect box, text, icon;
-  gfx::Color fg;
-  SkinPartPtr part_nw;
-
-  widget->getTextIconInfo(&box, &text, &icon,
-    iconInterface ? iconInterface->iconAlign(): 0,
-    iconInterface ? iconInterface->size().w: 0,
-    iconInterface ? iconInterface->size().h: 0);
-
-  // Tool buttons are smaller
-  LookType look = NormalLook;
-  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery)
-    look = skinPropery->getLook();
-
-  // Selected
-  if (widget->isSelected()) {
-    fg = colors.buttonSelectedText();
-    part_nw = (look == MiniLook ? parts.toolbuttonNormal():
-               look == LeftButtonLook ? parts.dropDownButtonLeftSelected():
-               look == RightButtonLook ? parts.dropDownButtonRightSelected():
-                                         parts.buttonSelected());
-  }
-  // With mouse
-  else if (widget->isEnabled() && widget->hasMouseOver()) {
-    fg = colors.buttonHotText();
-    part_nw = (look == MiniLook ? parts.toolbuttonHot():
-               look == LeftButtonLook ? parts.dropDownButtonLeftHot():
-               look == RightButtonLook ? parts.dropDownButtonRightHot():
-                                         parts.buttonHot());
-  }
-  // Without mouse
-  else {
-    fg = colors.buttonNormalText();
-
-    if (widget->hasFocus())
-      part_nw = (look == MiniLook ? parts.toolbuttonHot():
-                 look == LeftButtonLook ? parts.dropDownButtonLeftFocused():
-                 look == RightButtonLook ? parts.dropDownButtonRightFocused():
-                                           parts.buttonFocused());
-    else
-      part_nw = (look == MiniLook ? parts.toolbuttonNormal():
-                 look == LeftButtonLook ? parts.dropDownButtonLeftNormal():
-                 look == RightButtonLook ? parts.dropDownButtonRightNormal():
-                                           parts.buttonNormal());
-  }
-
-  // external background
-  g->fillRect(BGCOLOR, g->getClipBounds());
-
-  // draw borders
-  if (part_nw)
-    drawRect(g, widget->clientBounds(), part_nw.get());
-
-  // text
-  drawText(g, NULL, fg, ColorNone, widget,
-           widget->clientChildrenBounds(), get_button_selected_offset());
-
-  // Paint the icon
-  if (iconInterface) {
-    if (widget->isSelected())
-      icon.offset(get_button_selected_offset(),
-                  get_button_selected_offset());
-
-    paintIcon(widget, ev.graphics(), iconInterface, icon.x, icon.y);
   }
 }
 
@@ -1514,43 +1556,6 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
             parts.sunken2Normal().get()));
 
   drawEntryText(g, widget);
-}
-
-void SkinTheme::paintComboBoxButton(PaintEvent& ev)
-{
-  Button* widget = static_cast<Button*>(ev.getSource());
-  Graphics* g = ev.graphics();
-  IButtonIcon* iconInterface = widget->iconInterface();
-  SkinPartPtr part_nw;
-
-  if (widget->isSelected()) {
-    part_nw = parts.toolbuttonPushed();
-  }
-  // With mouse
-  else if (widget->isEnabled() && widget->hasMouseOver()) {
-    part_nw = parts.toolbuttonHot();
-  }
-  // Without mouse
-  else {
-    part_nw = parts.toolbuttonLast();
-  }
-
-  Rect rc = widget->clientBounds();
-
-  // external background
-  g->fillRect(BGCOLOR, rc);
-
-  // draw borders
-  drawRect(g, rc, part_nw.get());
-
-  // Paint the icon
-  if (iconInterface) {
-    // Icon
-    int x = rc.x + rc.w/2 - iconInterface->size().w/2;
-    int y = rc.y + rc.h/2 - iconInterface->size().h/2;
-
-    paintIcon(widget, ev.graphics(), iconInterface, x, y);
-  }
 }
 
 void SkinTheme::paintTextBox(ui::PaintEvent& ev)

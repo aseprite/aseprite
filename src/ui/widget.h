@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -40,6 +40,7 @@ namespace ui {
   class ResizeEvent;
   class SaveLayoutEvent;
   class SizeHintEvent;
+  class Style;
   class Theme;
   class Window;
 
@@ -151,7 +152,9 @@ namespace ui {
     void setBgColor(gfx::Color color);
 
     Theme* theme() const { return m_theme; }
+    Style* style() const { return m_style; }
     void setTheme(Theme* theme);
+    void setStyle(Style* style);
     void initTheme();
 
     // ===============================================================
@@ -387,6 +390,7 @@ namespace ui {
     std::string m_id;            // Widget's id
     int m_flags;                 // Special boolean properties (see flags in ui/base.h)
     Theme* m_theme;              // Widget's theme
+    Style* m_style;
     std::string m_text;          // Widget text
     mutable she::Font* m_font;   // Cached font returned by the theme
     gfx::Color m_bgColor;        // Background color

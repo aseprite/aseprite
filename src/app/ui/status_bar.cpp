@@ -548,11 +548,11 @@ StatusBar::StatusBar()
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(base::Bind<void>(&StatusBar::newFrame, this));
+    m_newFrame->setStyle(theme->newStyles.newFrameButton());
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
     setup_mini_look(m_currentFrame);
-    setup_mini_look(m_newFrame);
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
 

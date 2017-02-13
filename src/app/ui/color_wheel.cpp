@@ -53,20 +53,14 @@ ColorWheel::ColorWheel()
   : m_discrete(Preferences::instance().colorBar.discreteWheel())
   , m_colorModel((ColorModel)Preferences::instance().colorBar.wheelModel())
   , m_harmony((Harmony)Preferences::instance().colorBar.harmony())
-  , m_options("", kButtonWidget, kButtonWidget, kCheckWidget)
+  , m_options("")
   , m_harmonyPicked(false)
 {
   SkinTheme* theme = SkinTheme::instance();
-
   setBorder(gfx::Border(3*ui::guiscale()));
 
   m_options.Click.connect(base::Bind<void>(&ColorWheel::onOptions, this));
-  m_options.setBgColor(theme->colors.editorFace());
-  m_options.setIconInterface(
-    new ButtonIconImpl(theme->parts.palOptions(),
-                       theme->parts.palOptions(),
-                       theme->parts.palOptions(),
-                       CENTER | MIDDLE));
+  m_options.setStyle(theme->newStyles.colorWheelOptions());
 
   addChild(&m_options);
 }

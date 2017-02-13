@@ -45,6 +45,7 @@ add_library(ui-lib
   size_hint_event.cpp
   slider.cpp
   splitter.cpp
+  style.cpp
   system.cpp
   textbox.cpp
   theme.cpp

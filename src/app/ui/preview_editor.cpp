@@ -50,7 +50,6 @@ public:
       SkinTheme::instance()->parts.windowButtonSelected(),
       SkinTheme::instance()->parts.windowCenterIcon())
   {
-    setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
     setSelected(true);
   }
@@ -97,7 +96,6 @@ public:
     , m_isPlaying(false) {
     enableFlags(CTRL_RIGHT_CLICK);
     setupIcons();
-    setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
   }
 

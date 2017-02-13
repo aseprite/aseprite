@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,10 +20,6 @@ class ComboBoxButton : public Button {
 public:
   ComboBoxButton() : Button("") {
     setFocusStop(false);
-  }
-
-  void onPaint(PaintEvent& ev) override {
-    theme()->paintComboBoxButton(ev);
   }
 };
 

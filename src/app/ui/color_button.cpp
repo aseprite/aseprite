@@ -55,6 +55,7 @@ ColorButton::ColorButton(const app::Color& color,
   this->setFocusStop(true);
 
   setup_mini_font(this);
+  setStyle(SkinTheme::instance()->newStyles.colorButton());
 
   UIContext::instance()->add_observer(this);
 }
@@ -160,12 +161,15 @@ bool ColorButton::onProcessMessage(Message* msg)
 
 void ColorButton::onSizeHint(SizeHintEvent& ev)
 {
+  ButtonBase::onSizeHint(ev);
+
   gfx::Rect box;
   getTextIconInfo(&box);
   box.w = 64*guiscale();
 
-  ev.setSizeHint(box.w + border().width(),
-                 box.h + border().height());
+  gfx::Size sz = ev.sizeHint();
+  sz.w = std::max(sz.w, box.w);
+  ev.setSizeHint(sz);
 }
 
 void ColorButton::onPaint(PaintEvent& ev)
