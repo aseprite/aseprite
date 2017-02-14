@@ -62,8 +62,6 @@ namespace app {
       void paintCheckBox(ui::PaintEvent& ev) override;
       void paintEntry(ui::PaintEvent& ev) override;
       void paintGrid(ui::PaintEvent& ev) override;
-      void paintLabel(ui::PaintEvent& ev) override;
-      void paintLinkLabel(ui::PaintEvent& ev) override;
       void paintListBox(ui::PaintEvent& ev) override;
       void paintListItem(ui::PaintEvent& ev) override;
       void paintMenu(ui::PaintEvent& ev) override;
@@ -74,7 +72,6 @@ namespace app {
       void paintSlider(ui::PaintEvent& ev) override;
       void paintComboBoxEntry(ui::PaintEvent& ev) override;
       void paintTextBox(ui::PaintEvent& ev) override;
-      void paintView(ui::PaintEvent& ev) override;
       void paintViewScrollbar(ui::PaintEvent& ev) override;
       void paintViewViewport(ui::PaintEvent& ev) override;
       void paintWindow(ui::PaintEvent& ev) override;

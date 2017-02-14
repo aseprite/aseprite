@@ -274,10 +274,8 @@ void ButtonBase::onSizeHint(SizeHintEvent& ev)
 {
   // If there is a style specified in this widget, use the new generic
   // widget to calculate the size hint.
-  if (style()) {
-    Widget::onSizeHint(ev);
-    return;
-  }
+  if (style())
+    return Widget::onSizeHint(ev);
 
   gfx::Rect box;
   gfx::Size iconSize = (m_iconInterface ? m_iconInterface->size(): gfx::Size(0, 0));

@@ -25,6 +25,7 @@
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
+#include "base/exception.h"
 #include "base/fs.h"
 #include "base/memory.h"
 #include "she/system.h"
@@ -575,18 +576,11 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
 
   if (styleid) {
     SkinTheme* theme = static_cast<SkinTheme*>(root->theme());
-
-    // New styles
     ui::Style* style = theme->getNewStyle(styleid);
     if (style)
       widget->setStyle(style);
-    else {
-      skin::Style* style = theme->getStyle(styleid);
-      if (style) {
-        SkinStylePropertyPtr prop(new SkinStyleProperty(style));
-        widget->setProperty(prop);
-      }
-    }
+    else
+      throw base::Exception("Style %s not found", styleid);
   }
 
   // Assign widget mnemonic from the character preceded by a '&'

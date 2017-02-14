@@ -1,4 +1,4 @@
-# ASEPRITE
+# Aseprite UI Library
 # Copyright (C) 2001-2017  David Capello
 
 if(WIN32)
@@ -13,7 +13,6 @@ add_library(ui-lib
   combobox.cpp
   component.cpp
   cursor.cpp
-  custom_label.cpp
   entry.cpp
   event.cpp
   fit_bounds.cpp

@@ -103,24 +103,7 @@ protected:
 ColorBar::ScrollableView::ScrollableView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  int l = theme->parts.editorSelected()->bitmapW()->width();
-  int t = theme->parts.editorSelected()->bitmapN()->height();
-  int r = theme->parts.editorSelected()->bitmapE()->width();
-  int b = theme->parts.editorSelected()->bitmapS()->height();
-
-  setBorder(gfx::Border(l, t, r, b));
-}
-
-void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
-{
-  ui::Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
-  theme->drawRect(
-    g, clientBounds(),
-    (hasFocus() ? theme->parts.editorSelected().get():
-                  theme->parts.editorNormal().get()),
-    false);                     // Do not fill the center portion
+  setStyle(theme->newStyles.colorbarView());
 }
 
 //////////////////////////////////////////////////////////////////////

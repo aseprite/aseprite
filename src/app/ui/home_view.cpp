@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -152,15 +152,7 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 
   checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
   checkUpdate()->setUrl(url);
-  checkUpdate()->setProperty(
-    SkinStylePropertyPtr(new SkinStyleProperty(theme->styles.workspaceUpdateLink())));
-
-  // TODO this should be in a skin.xml's <style>
-  gfx::Size iconSize = theme->styles.workspaceUpdateLink()->sizeHint(
-    nullptr, Style::State());
-  checkUpdate()->setBorder(gfx::Border(6*guiscale())+gfx::Border(
-      0, 0, iconSize.w, 0));
-
+  checkUpdate()->setStyle(theme->newStyles.workspaceUpdateLink());
   checkUpdate()->setVisible(true);
 
   layout();

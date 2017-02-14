@@ -412,35 +412,6 @@
 
   <stylesheet>
 
-    <!-- label -->
-    <style id="label">
-      <text color="text" />
-    </style>
-    <style id="label:disabled">
-      <text color="disabled" />
-    </style>
-
-    <!-- link -->
-    <style id="link">
-      <text color="link_text" />
-    </style>
-    <style id="link:hover">
-      <text color="link_hover" />
-    </style>
-
-    <!-- browser_link -->
-    <style id="browser_link" base="link">
-      <text padding-top="1" />
-    </style>
-
-    <!-- view -->
-    <style id="view">
-      <background part="sunken_normal" />
-    </style>
-    <style id="view:active">
-      <background part="sunken_focused" />
-    </style>
-
     <!-- window -->
     <style id="window">
       <background color="window_face" part="window" />
@@ -824,42 +795,6 @@
       <icon part="tab_home_icon_active" />
     </style>
 
-    <!-- workspace_label -->
-    <style id="workspace_label">
-      <text color="workspace_text" />
-    </style>
-
-    <!-- workspace_link -->
-    <style id="workspace_link">
-      <text color="workspace_link" valign="middle" />
-    </style>
-    <style id="workspace_link:hover">
-      <text color="workspace_link_hover" />
-    </style>
-
-    <!-- workspace_link -->
-    <style id="workspace_update_link" base="workspace_link">
-      <background part="button_normal" color="button_normal_face" />
-      <icon part="warning_box" align="right" x="-4" y="4" />
-      <text padding-left="4" />
-    </style>
-    <style id="workspace_update_link:hover">
-      <background part="button_hot" color="button_hot_face" />
-      <text color="button_hot_text" />
-    </style>
-    <style id="workspace_update_link:clicked">
-      <background part="button_selected" color="button_selected_face" />
-      <text color="button_selected_text" />
-    </style>
-
-    <!-- workspace_view -->
-    <style id="workspace_view">
-      <background part="editor_normal" />
-    </style>
-    <style id="workspace_view:active">
-      <background part="editor_selected" />
-    </style>
-
     <!-- recent_file -->
     <style id="recent_file">
       <background color="background" />
@@ -899,6 +834,59 @@
   </stylesheet>
 
   <styles>
+
+    <style id="label" padding="1">
+      <text color="text" align="left" />
+      <text color="disabled" align="left" state="disabled" />
+    </style>
+
+    <style id="link">
+      <text color="link_text" align="left" />
+      <text color="link_hover" align="left" state="mouse" />
+    </style>
+
+    <style id="browser_link" extends="link" padding-top="1">
+    </style>
+
+    <style id="workspace_label">
+      <text color="workspace_text" align="left" />
+    </style>
+
+    <style id="workspace_link">
+      <text color="workspace_link" align="left" />
+      <text color="workspace_link_hover" align="left" state="mouse" />
+    </style>
+
+    <style id="workspace_update_link" padding-right="16">
+      <background part="button_normal" />
+      <background part="button_hot" state="mouse" />
+      <background part="button_selected" state="selected" />
+      <icon part="warning_box" align="right" />
+      <text color="button_normal_text" />
+      <text color="button_hot_text" state="mouse" />
+      <text color="button_selected_text" state="selected" />
+    </style>
+
+    <style id="view">
+      <background color="window_face" />
+      <border part="sunken_normal" />
+      <border part="sunken_focused" state="focus" />
+    </style>
+
+    <style id="editor_view">
+      <border part="editor_normal" />
+      <border part="editor_selected" state="selected" />
+    </style>
+
+    <style id="workspace_view" border-top="4">
+      <border part="editor_normal" />
+      <border part="editor_selected" state="focus" />
+    </style>
+
+    <style id="colorbar_view">
+      <border part="editor_normal" />
+      <border part="editor_selected" state="focus" />
+    </style>
 
     <style id="button">
       <background part="button_normal" />

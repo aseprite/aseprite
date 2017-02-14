@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -133,8 +133,6 @@ namespace app {
     class ScrollableView : public ui::View {
     public:
       ScrollableView();
-    protected:
-      void onPaint(ui::PaintEvent& ev) override;
     };
 
     class WarningIcon;

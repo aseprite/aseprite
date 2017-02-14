@@ -12,6 +12,7 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "ui/base.h"
 
 #include <string>
 #include <vector>
@@ -46,6 +47,7 @@ namespace ui {
       Layer()
         : m_type(Type::kNone)
         , m_flags(0)
+        , m_align(CENTER | MIDDLE)
         , m_color(gfx::ColorNone)
         , m_icon(nullptr)
         , m_spriteSheet(nullptr) {
@@ -53,6 +55,7 @@ namespace ui {
 
       Type type() const { return m_type; }
       int flags() const { return m_flags; }
+      int align() const { return m_align; }
 
       gfx::Color color() const { return m_color; }
       she::Surface* icon() const { return m_icon; }
@@ -62,6 +65,7 @@ namespace ui {
 
       void setType(const Type type) { m_type = type; }
       void setFlags(const int flags) { m_flags = flags; }
+      void setAlign(const int align) { m_align = align; }
       void setColor(gfx::Color color) { m_color = color; }
       void setIcon(she::Surface* icon) { m_icon = icon; }
       void setSpriteSheet(she::Surface* spriteSheet) { m_spriteSheet = spriteSheet; }
@@ -71,6 +75,7 @@ namespace ui {
     private:
       Type m_type;
       int m_flags;
+      int m_align;
       gfx::Color m_color;
       she::Surface* m_icon;
       she::Surface* m_spriteSheet;

@@ -665,7 +665,7 @@ class ContextBar::InkShadesField : public HBox {
 
       skin::Style::State state;
       if (hasMouseOver()) state += Style::hover();
-      theme->styles.view()->paint(g, bounds, nullptr, state);
+      theme->paintWidget(g, this, theme->newStyles.view(), bounds);
 
       bounds.shrink(3*guiscale());
 

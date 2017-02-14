@@ -58,8 +58,6 @@ namespace ui {
     virtual void paintCheckBox(PaintEvent& ev) = 0;
     virtual void paintEntry(PaintEvent& ev) = 0;
     virtual void paintGrid(PaintEvent& ev) = 0;
-    virtual void paintLabel(PaintEvent& ev) = 0;
-    virtual void paintLinkLabel(PaintEvent& ev) = 0;
     virtual void paintListBox(PaintEvent& ev) = 0;
     virtual void paintListItem(PaintEvent& ev) = 0;
     virtual void paintMenu(PaintEvent& ev) = 0;
@@ -70,7 +68,6 @@ namespace ui {
     virtual void paintSlider(PaintEvent& ev) = 0;
     virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
     virtual void paintTextBox(PaintEvent& ev) = 0;
-    virtual void paintView(PaintEvent& ev) = 0;
     virtual void paintViewScrollbar(PaintEvent& ev) = 0;
     virtual void paintViewViewport(PaintEvent& ev) = 0;
     virtual void paintWindow(PaintEvent& ev) = 0;
@@ -78,8 +75,14 @@ namespace ui {
     virtual void paintTooltip(PaintEvent& ev) = 0;
 
     // Default implementation to draw widgets with new ui::Styles
-    virtual void paintWidget(PaintEvent& ev);
-    virtual void calcSizeHint(SizeHintEvent& ev);
+    virtual void paintWidget(Graphics* g,
+                             Widget* widget,
+                             const Style* style,
+                             gfx::Rect rc);
+    virtual gfx::Size calcSizeHint(Widget* widget,
+                                   const Style* style);
+    virtual gfx::Border calcBorder(Widget* widget,
+                                   const Style* style);
 
     static void drawSlices(Graphics* g,
                            she::Surface* sheet,
@@ -100,10 +103,13 @@ namespace ui {
                     gfx::Rect& rc);
     void measureLayer(Widget* widget,
                       const Style::Layer& layer,
-                      gfx::Border& hintBorder,
-                      gfx::Size& hintText,
-                      gfx::Size& hintIcon);
-    int compareLayerFlags(int a, int b);
+                      gfx::Border& borderHint,
+                      gfx::Size& textHint, int& textAlign,
+                      gfx::Size& iconHint, int& iconAlign);
+    void calcWidgetMetrics(Widget* widget,
+                           const Style* style,
+                           gfx::Size& sizeHint,
+                           gfx::Border& borderHint);
 
     int m_guiscale;
   };

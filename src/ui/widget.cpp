@@ -187,6 +187,7 @@ void Widget::setTheme(Theme* theme)
 void Widget::setStyle(Style* style)
 {
   m_style = style;
+  m_border = m_theme->calcBorder(this, style);
 }
 
 // ===============================================================
@@ -643,6 +644,9 @@ void Widget::setBoundsQuietly(const gfx::Rect& rc)
 void Widget::setBorder(const Border& br)
 {
   m_border = br;
+  if (m_style) {
+    LOG(WARNING) << "Warning setting border to a widget with style\n";
+  }
 }
 
 void Widget::setChildSpacing(int childSpacing)
@@ -654,6 +658,10 @@ void Widget::noBorderNoChildSpacing()
 {
   m_border = gfx::Border(0, 0, 0, 0);
   m_childSpacing = 0;
+
+  if (m_style) {
+    LOG(WARNING) << "Warning setting border to a widget with style\n";
+  }
 }
 
 void Widget::getRegion(gfx::Region& region)
@@ -1424,7 +1432,7 @@ void Widget::onInvalidateRegion(const Region& region)
 void Widget::onSizeHint(SizeHintEvent& ev)
 {
   if (m_style) {
-    m_theme->calcSizeHint(ev);
+    ev.setSizeHint(m_theme->calcSizeHint(this, style()));
   }
   else {
     ev.setSizeHint(m_minSize);
@@ -1454,7 +1462,8 @@ void Widget::onResize(ResizeEvent& ev)
 void Widget::onPaint(PaintEvent& ev)
 {
   if (m_style)
-    m_theme->paintWidget(ev);
+    m_theme->paintWidget(ev.graphics(), this, style(),
+                         clientBounds());
 }
 
 void Widget::onBroadcastMouseMessage(WidgetsList& targets)

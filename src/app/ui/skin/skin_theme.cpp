@@ -602,10 +602,32 @@ void SkinTheme::loadXml(const std::string& skinId)
           layer.setFlags(flags);
         }
 
+        // Align
+        const char* alignValue = xmlLayer->Attribute("align");
+        if (alignValue) {
+          std::string alignString(alignValue);
+          int align = 0;
+          if (alignString.find("left") != std::string::npos) align |= LEFT;
+          if (alignString.find("center") != std::string::npos) align |= CENTER;
+          if (alignString.find("right") != std::string::npos) align |= RIGHT;
+          if (alignString.find("top") != std::string::npos) align |= TOP;
+          if (alignString.find("middle") != std::string::npos) align |= MIDDLE;
+          if (alignString.find("bottom") != std::string::npos) align |= BOTTOM;
+          if (alignString.find("wordwrap") != std::string::npos) align |= WORDWRAP;
+          layer.setAlign(align);
+        }
+
         // Color
         const char* colorId = xmlLayer->Attribute("color");
         if (colorId) {
-          layer.setColor(getColorById(colorId));
+          auto it = m_colors_by_id.find(colorId);
+          if (it != m_colors_by_id.end())
+            layer.setColor(it->second);
+          else {
+            throw base::Exception("Color <%s color='%s' ...> was not found in '%s'\n",
+                                  layerName.c_str(), colorId,
+                                  xml_filename.c_str());
+          }
         }
 
         // Sprite sheet
@@ -732,7 +754,11 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kLabelWidget:
-      BORDER(1 * scale);
+      widget->setStyle(newStyles.label());
+      break;
+
+    case kLinkLabelWidget:
+      widget->setStyle(newStyles.link());
       break;
 
     case kListBoxWidget:
@@ -812,13 +838,9 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kViewWidget:
-      BORDER4(
-        parts.sunkenNormal()->bitmapW()->width()-1*scale,
-        parts.sunkenNormal()->bitmapN()->height(),
-        parts.sunkenNormal()->bitmapE()->width()-1*scale,
-        parts.sunkenNormal()->bitmapS()->height()-1*scale);
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
+      widget->setStyle(newStyles.view());
       break;
 
     case kViewScrollbarWidget:
@@ -1148,53 +1170,6 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
     delegate.preDrawChar(charBounds);
     delegate.postDrawChar(charBounds);
   }
-}
-
-void SkinTheme::paintLabel(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  Label* widget = static_cast<Label*>(ev.getSource());
-  Style* style = styles.label();
-  gfx::Color bg = BGCOLOR;
-  Rect text, rc = widget->clientBounds();
-
-  SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
-  if (styleProp)
-    style = styleProp->getStyle();
-
-  if (!is_transparent(bg))
-    g->fillRect(bg, rc);
-
-  rc.shrink(widget->border());
-
-  Style::State state;
-  if (!widget->isEnabled()) state += Style::disabled();
-
-  widget->getTextIconInfo(NULL, &text);
-  style->paint(g, text, widget->text().c_str(), state);
-}
-
-void SkinTheme::paintLinkLabel(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  Style* style = styles.link();
-  Rect text, rc = widget->clientBounds();
-  gfx::Color bg = BGCOLOR;
-
-  SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
-  if (styleProp)
-    style = styleProp->getStyle();
-
-  Style::State state;
-  if (widget->hasMouseOver()) state += Style::hover();
-  if (widget->isSelected()) state += Style::clicked();
-  if (!widget->isEnabled()) state += Style::disabled();
-
-  if (!is_transparent(bg))
-    g->fillRect(bg, rc);
-
-  style->paint(g, rc, widget->text().c_str(), state);
 }
 
 void SkinTheme::paintListBox(PaintEvent& ev)
@@ -1567,27 +1542,6 @@ void SkinTheme::paintTextBox(ui::PaintEvent& ev)
 
   Theme::drawTextBox(g, widget, nullptr, nullptr,
                      BGCOLOR, colors.textboxText());
-}
-
-void SkinTheme::paintView(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  View* widget = static_cast<View*>(ev.getSource());
-  gfx::Rect bounds = widget->clientBounds();
-  gfx::Color bg = BGCOLOR;
-  Style* style = styles.view();
-
-  SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
-  if (styleProp)
-    style = styleProp->getStyle();
-
-  Style::State state;
-  if (widget->hasMouseOver()) state += Style::hover();
-
-  if (!is_transparent(bg))
-    g->fillRect(bg, bounds);
-
-  style->paint(g, bounds, nullptr, state);
 }
 
 void SkinTheme::paintViewScrollbar(PaintEvent& ev)

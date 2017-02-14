@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -77,11 +77,10 @@ DevConsoleView::DevConsoleView()
   m_bottomBox.addChild(&m_label);
   m_bottomBox.addChild(m_entry);
 
-  m_view.setProperty(SkinStylePropertyPtr(
-      new SkinStyleProperty(theme->styles.workspaceView())));
-
+  m_view.setStyle(theme->newStyles.workspaceView());
   m_view.attachToView(&m_textBox);
   m_view.setExpansive(true);
+
   m_entry->setExpansive(true);
   m_entry->ExecuteCommand.connect(&DevConsoleView::onExecuteCommand, this);
 }

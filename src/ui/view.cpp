@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -216,15 +216,10 @@ void View::onResize(ResizeEvent& ev)
 
 void View::onSizeHint(SizeHintEvent& ev)
 {
-  Size viewSize = m_viewport.sizeHint();
-  viewSize.w += border().width();
-  viewSize.h += border().height();
-  ev.setSizeHint(viewSize);
-}
-
-void View::onPaint(PaintEvent& ev)
-{
-  theme()->paintView(ev);
+  Widget::onSizeHint(ev);
+  gfx::Size sz = ev.sizeHint();
+  sz += m_viewport.sizeHint();
+  ev.setSizeHint(sz);
 }
 
 void View::onSetViewScroll(const gfx::Point& pt)

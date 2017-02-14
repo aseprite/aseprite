@@ -17,7 +17,6 @@
 #include "ui/component.h"
 #include "ui/cursor.h"
 #include "ui/cursor_type.h"
-#include "ui/custom_label.h"
 #include "ui/entry.h"
 #include "ui/event.h"
 #include "ui/fit_bounds.h"
