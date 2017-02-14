@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -158,6 +158,7 @@ void Alert::processString(std::string& buf)
         else if (button) {
           char buttonId[256];
           Button* button_widget = new Button(item);
+          button_widget->processMnemonicFromText();
           button_widget->setMinSize(gfx::Size(60*guiscale(), 0));
           m_buttons.push_back(button_widget);
 

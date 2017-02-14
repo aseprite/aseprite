@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -231,12 +231,14 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   // Create the item
   AppMenuItem* menuitem = new AppMenuItem(elem->Attribute("text"), command, params);
   if (!menuitem)
-    return NULL;
+    return nullptr;
 
-  /* has it a ID? */
+  menuitem->processMnemonicFromText();
+
+  // Has it a ID?
   const char* id = elem->Attribute("id");
   if (id) {
-    /* recent list menu */
+    // Recent list menu
     if (strcmp(id, "recent_list") == 0) {
       m_recentListMenuitem = menuitem;
     }

@@ -70,6 +70,7 @@ Widget::Widget(WidgetType type)
   , m_bounds(0, 0, 0, 0)
   , m_parent(nullptr)
   , m_sizeHint(nullptr)
+  , m_mnemonic(0)
   , m_minSize(0, 0)
   , m_maxSize(INT_MAX, INT_MAX)
   , m_childSpacing(0)
@@ -1260,12 +1261,12 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
   return false;
 }
 
-bool Widget::hasFocus()
+bool Widget::hasFocus() const
 {
   return hasFlags(HAS_FOCUS);
 }
 
-bool Widget::hasMouse()
+bool Widget::hasMouse() const
 {
   return hasFlags(HAS_MOUSE);
 }
@@ -1275,24 +1276,43 @@ bool Widget::hasMouseOver()
   return (this == pick(get_mouse_position()));
 }
 
-bool Widget::hasCapture()
+bool Widget::hasCapture() const
 {
   return hasFlags(HAS_CAPTURE);
 }
 
-int Widget::mnemonicChar() const
+void Widget::setMnemonic(int mnemonic)
 {
-  if (hasText()) {
-    for (int c=0; m_text[c]; ++c)
-      if ((m_text[c] == '&') && (m_text[c+1] != '&'))
-        return std::tolower(m_text[c+1]);
-  }
-  return 0;
+  m_mnemonic = mnemonic;
 }
 
-bool Widget::mnemonicCharPressed(const KeyMessage* keyMsg) const
+void Widget::processMnemonicFromText(int escapeChar)
 {
-  int chr = mnemonicChar();
+  std::string newText;
+  if (!m_text.empty())
+    newText.reserve(m_text.size());
+
+  for (base::utf8_const_iterator
+         it(m_text.begin()),
+         end(m_text.end()); it != end; ++it) {
+    if (*it == escapeChar) {
+      ++it;
+      if (it == end) {
+        break;    // Ill-formed string (it ends with escape character)
+      }
+      else if (*it != escapeChar) {
+        setMnemonic(*it);
+      }
+    }
+    newText.push_back(*it);
+  }
+
+  setText(newText);
+}
+
+bool Widget::isMnemonicPressed(const KeyMessage* keyMsg) const
+{
+  int chr = std::tolower(mnemonic());
   return
     ((chr) &&
      ((chr == std::tolower(keyMsg->unicodeChar())) ||

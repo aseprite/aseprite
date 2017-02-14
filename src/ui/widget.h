@@ -339,10 +339,10 @@ namespace ui {
     void captureMouse();
     void releaseMouse();
 
-    bool hasFocus();
-    bool hasMouse();
+    bool hasFocus() const;
+    bool hasMouse() const;
     bool hasMouseOver();
-    bool hasCapture();
+    bool hasCapture() const;
 
     // Offer the capture to widgets of the given type. Returns true if
     // the capture was passed to other widget.
@@ -350,10 +350,15 @@ namespace ui {
 
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).
-    int mnemonicChar() const;
+    int mnemonic() const { return m_mnemonic; }
+    void setMnemonic(int mnemonic);
+
+    // Assigns mnemonic from the character preceded by the given
+    // escapeChar ('&' by default).
+    void processMnemonicFromText(int escapeChar = '&');
 
     // Returns true if the mnemonic character is pressed.
-    bool mnemonicCharPressed(const ui::KeyMessage* keyMsg) const;
+    bool isMnemonicPressed(const ui::KeyMessage* keyMsg) const;
 
   protected:
     // ===============================================================
@@ -399,6 +404,7 @@ namespace ui {
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
     gfx::Size* m_sizeHint;
+    int m_mnemonic;               // Keyboard shortcut to access this widget like Alt+mnemonic
 
     // Widget size limits
     gfx::Size m_minSize, m_maxSize;

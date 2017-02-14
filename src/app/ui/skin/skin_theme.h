@@ -135,7 +135,7 @@ namespace app {
       gfx::Color getWidgetBgColor(ui::Widget* widget);
       void drawText(ui::Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
                     ui::Widget* widget, const gfx::Rect& rc,
-                    int selected_offset);
+                    int selected_offset, int mnemonic);
       void drawEntryText(ui::Graphics* g, ui::Entry* widget);
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);

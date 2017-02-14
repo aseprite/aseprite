@@ -214,7 +214,7 @@ private:
     g->drawUIText(text(), fg, bg,
       gfx::Point(
         bounds.x + m_level*16 * guiscale(),
-        bounds.y + 2*guiscale()));
+        bounds.y + 2*guiscale()), 0);
 
     if (m_key && !m_key->accels().empty()) {
       std::string buf;
@@ -292,12 +292,13 @@ private:
 
               const char* label = "x";
               m_deleteButton->setBgColor(gfx::ColorNone);
-              m_deleteButton->setBounds(gfx::Rect(
-                                          itemBounds.x + itemBounds.w + 2*guiscale(),
-                                          itemBounds.y,
-                                          Graphics::measureUITextLength(
-                                            label, font()) + 4*guiscale(),
-                                          itemBounds.h));
+              m_deleteButton->setBounds(
+                gfx::Rect(
+                  itemBounds.x + itemBounds.w + 2*guiscale(),
+                  itemBounds.y,
+                  Graphics::measureUITextLength(
+                    label, font()) + 4*guiscale(),
+                  itemBounds.h));
               m_deleteButton->setText(label);
 
               invalidate();

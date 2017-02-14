@@ -138,8 +138,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 
   if (hasText()) {
     g->setFont(font());
-    g->drawUIText(text(), fg, gfx::ColorNone, textRc.origin(),
-                  false);
+    g->drawUIText(text(), fg, gfx::ColorNone, textRc.origin(), 0);
   }
 }
 
@@ -159,7 +158,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       if (isEnabled() && hasText()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         bool mnemonicPressed = (msg->altPressed() &&
-                                mnemonicCharPressed(keymsg));
+                                isMnemonicPressed(keymsg));
 
         if (mnemonicPressed ||
             (hasFocus() && keymsg->scancode() == kKeySpace)) {

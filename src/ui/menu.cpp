@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -1218,7 +1218,7 @@ static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
-    if (menuitem->mnemonicCharPressed(keymsg))
+    if (menuitem->isMnemonicPressed(keymsg))
       return menuitem;
   }
   return NULL;

@@ -152,7 +152,8 @@ void Theme::paintLayer(Graphics* g, Widget* widget,
                       layer.color(),
                       gfx::ColorNone,
                       gfx::Point(rc.x+rc.w/2-textSize.w/2,
-                                 rc.y+rc.h/2-textSize.h/2), true);
+                                 rc.y+rc.h/2-textSize.h/2),
+                      widget->mnemonic());
       }
       break;
 

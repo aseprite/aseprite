@@ -947,7 +947,8 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   }
 
   // Text
-  drawText(g, NULL, ColorNone, ColorNone, widget, text, 0);
+  drawText(g, nullptr, ColorNone, ColorNone, widget, text, 0,
+           widget->mnemonic());
 
   // Paint the icon
   if (iconInterface)
@@ -1136,7 +1137,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
       drawText(
         g, widget->getSuffix().c_str(),
         colors.entrySuffix(), ColorNone,
-        widget, sufBounds, 0);
+        widget, sufBounds, 0, 0);
     }
   }
 
@@ -1227,7 +1228,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
 
   if (widget->hasText()) {
     bounds.shrink(widget->border());
-    drawText(g, NULL, fg, bg, widget, bounds, 0);
+    drawText(g, nullptr, fg, bg, widget, bounds, 0, 0);
   }
 }
 
@@ -1298,7 +1299,8 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   Rect pos = bounds;
   if (!bar)
     pos.offset(widget->childSpacing()/2, 0);
-  drawText(g, NULL, fg, ColorNone, widget, pos, 0);
+  drawText(g, nullptr, fg, ColorNone, widget, pos, 0,
+           widget->mnemonic());
 
   // For menu-box
   if (!bar) {
@@ -1335,7 +1337,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
         std::string buf = appMenuItem->key()->accels().front().toString();
 
         widget->setAlign(RIGHT | MIDDLE);
-        drawText(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
+        drawText(g, buf.c_str(), fg, ColorNone, widget, pos, 0, 0);
         widget->setAlign(old_align);
       }
     }
@@ -1375,7 +1377,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   }
 
   // Text
-  drawText(g, NULL, ColorNone, ColorNone, widget, text, 0);
+  drawText(g, nullptr, ColorNone, ColorNone, widget, text, 0, widget->mnemonic());
 
   // Icon
   if (iconInterface)
@@ -1417,9 +1419,9 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
       bounds.y + bounds.h/2 - h/2,
       widget->textWidth(), h);
 
-    drawText(g, NULL,
-      colors.separatorLabel(), BGCOLOR,
-      widget, r, 0);
+    drawText(g, nullptr,
+             colors.separatorLabel(), BGCOLOR,
+             widget, r, 0, widget->mnemonic());
   }
 }
 
@@ -1522,18 +1524,18 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     {
       IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
       if (clip) {
-        drawText(g, NULL,
-          colors.sliderFullText(), ColorNone,
-          widget, rc, 0);
+        drawText(g, nullptr,
+                 colors.sliderFullText(), ColorNone,
+                 widget, rc, 0, widget->mnemonic());
       }
     }
 
     {
       IntersectClip clip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h));
       if (clip) {
-        drawText(g, NULL,
-          colors.sliderEmptyText(),
-          ColorNone, widget, rc, 0);
+        drawText(g, nullptr,
+                 colors.sliderEmptyText(),
+                 ColorNone, widget, rc, 0, widget->mnemonic());
       }
     }
 
@@ -1816,7 +1818,7 @@ gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
 
 void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
                          Widget* widget, const Rect& rc,
-                         int selected_offset)
+                         int selected_offset, int mnemonic)
 {
   if (t || widget->hasText()) {
     Rect textrc;
@@ -1869,18 +1871,22 @@ void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::C
     if (clip) {
       if (!widget->isEnabled()) {
         // Draw white part
-        g->drawUIText(t,
+        g->drawUIText(
+          t,
           colors.background(),
           gfx::ColorNone,
-          textrc.origin() + Point(guiscale(), guiscale()));
+          textrc.origin() + Point(guiscale(), guiscale()),
+          mnemonic);
       }
 
-      g->drawUIText(t,
+      g->drawUIText(
+        t,
         (!widget->isEnabled() ?
-          colors.disabled():
-          (gfx::geta(fg_color) > 0 ? fg_color :
-            colors.text())),
-        bg_color, textrc.origin());
+         colors.disabled():
+         (gfx::geta(fg_color) > 0 ? fg_color :
+                                    colors.text())),
+        bg_color, textrc.origin(),
+        mnemonic);
     }
   }
 }

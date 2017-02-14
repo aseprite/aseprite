@@ -475,8 +475,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
 
   // Was the widget created?
-  if (widget)
+  if (widget) {
     fillWidgetWithXmlElementAttributesWithChildren(elem, root, widget);
+  }
 
   return widget;
 }
@@ -587,6 +588,9 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
       }
     }
   }
+
+  // Assign widget mnemonic from the character preceded by a '&'
+  widget->processMnemonicFromText();
 }
 
 void WidgetLoader::fillWidgetWithXmlElementAttributesWithChildren(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget)
