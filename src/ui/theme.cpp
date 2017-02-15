@@ -39,7 +39,7 @@ int compare_layer_flags(int a, int b)
   return a - b;
 }
 
-void for_each_layer(Widget* widget,
+void for_each_layer(const Widget* widget,
                     const Style* style,
                     std::function<void(const Style::Layer&)> callback)
 {
@@ -102,7 +102,7 @@ void Theme::regenerate()
 }
 
 void Theme::paintWidget(Graphics* g,
-                        Widget* widget,
+                        const Widget* widget,
                         const Style* style,
                         gfx::Rect rc)
 {
@@ -120,7 +120,8 @@ void Theme::paintWidget(Graphics* g,
     });
 }
 
-void Theme::paintLayer(Graphics* g, Widget* widget,
+void Theme::paintLayer(Graphics* g,
+                       const Widget* widget,
                        const Style::Layer& layer,
                        gfx::Rect& rc)
 {
@@ -221,7 +222,8 @@ void Theme::paintLayer(Graphics* g, Widget* widget,
   }
 }
 
-gfx::Size Theme::calcSizeHint(Widget* widget, const Style* style)
+gfx::Size Theme::calcSizeHint(const Widget* widget,
+                              const Style* style)
 {
   gfx::Size sizeHint;
   gfx::Border borderHint;
@@ -229,7 +231,7 @@ gfx::Size Theme::calcSizeHint(Widget* widget, const Style* style)
   return sizeHint;
 }
 
-void Theme::measureLayer(Widget* widget,
+void Theme::measureLayer(const Widget* widget,
                          const Style::Layer& layer,
                          gfx::Border& borderHint,
                          gfx::Size& textHint, int& textAlign,
@@ -273,7 +275,8 @@ void Theme::measureLayer(Widget* widget,
   }
 }
 
-gfx::Border Theme::calcBorder(Widget* widget, const Style* style)
+gfx::Border Theme::calcBorder(const Widget* widget,
+                              const Style* style)
 {
   gfx::Size sizeHint;
   gfx::Border borderHint;
@@ -281,7 +284,7 @@ gfx::Border Theme::calcBorder(Widget* widget, const Style* style)
   return borderHint;
 }
 
-void Theme::calcWidgetMetrics(Widget* widget,
+void Theme::calcWidgetMetrics(const Widget* widget,
                               const Style* style,
                               gfx::Size& sizeHint,
                               gfx::Border& borderHint)

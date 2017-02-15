@@ -348,27 +348,27 @@ bool Widget::isFocusMagnet() const
 // PARENTS & CHILDREN
 // ===============================================================
 
-Window* Widget::window()
+Window* Widget::window() const
 {
-  Widget* widget = this;
+  const Widget* widget = this;
 
   while (widget) {
     if (widget->type() == kWindowWidget)
-      return static_cast<Window*>(widget);
+      return static_cast<Window*>(const_cast<Widget*>(widget));
 
     widget = widget->m_parent;
   }
 
-  return NULL;
+  return nullptr;
 }
 
-Manager* Widget::manager()
+Manager* Widget::manager() const
 {
-  Widget* widget = this;
+  const Widget* widget = this;
 
   while (widget) {
     if (widget->type() == kManagerWidget)
-      return static_cast<Manager*>(widget);
+      return static_cast<Manager*>(const_cast<Widget*>(widget));
 
     widget = widget->m_parent;
   }
@@ -421,9 +421,10 @@ Widget* Widget::previousSibling()
   return *(++it);
 }
 
-Widget* Widget::pick(const gfx::Point& pt, bool checkParentsVisibility)
+Widget* Widget::pick(const gfx::Point& pt,
+                     const bool checkParentsVisibility) const
 {
-  Widget* inside, *picked = nullptr;
+  const Widget* inside, *picked = nullptr;
 
   // isVisible() checks visibility of widget's parent.
   if (((checkParentsVisibility && isVisible()) ||
@@ -440,7 +441,7 @@ Widget* Widget::pick(const gfx::Point& pt, bool checkParentsVisibility)
     }
   }
 
-  return picked;
+  return const_cast<Widget*>(picked);
 }
 
 bool Widget::hasChild(Widget* child)
@@ -1279,7 +1280,7 @@ bool Widget::hasMouse() const
   return hasFlags(HAS_MOUSE);
 }
 
-bool Widget::hasMouseOver()
+bool Widget::hasMouseOver() const
 {
   return (this == pick(get_mouse_position()));
 }

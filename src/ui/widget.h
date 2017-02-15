@@ -161,9 +161,9 @@ namespace ui {
     // PARENTS & CHILDREN
     // ===============================================================
 
-    Window* window();
-    Widget* parent() { return m_parent; }
-    Manager* manager();
+    Window* window() const;
+    Widget* parent() const { return m_parent; }
+    Manager* manager() const;
 
     // Returns a list of parents, if "ascendant" is true the list is
     // build from child to parents, else the list is from parent to
@@ -187,7 +187,8 @@ namespace ui {
     Widget* nextSibling();
     Widget* previousSibling();
 
-    Widget* pick(const gfx::Point& pt, bool checkParentsVisibility = true);
+    Widget* pick(const gfx::Point& pt,
+                 const bool checkParentsVisibility = true) const;
     bool hasChild(Widget* child);
     bool hasAncestor(Widget* ancestor);
     Widget* findChild(const char* id);
@@ -341,7 +342,7 @@ namespace ui {
 
     bool hasFocus() const;
     bool hasMouse() const;
-    bool hasMouseOver();
+    bool hasMouseOver() const;
     bool hasCapture() const;
 
     // Offer the capture to widgets of the given type. Returns true if

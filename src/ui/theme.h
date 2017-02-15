@@ -76,12 +76,12 @@ namespace ui {
 
     // Default implementation to draw widgets with new ui::Styles
     virtual void paintWidget(Graphics* g,
-                             Widget* widget,
+                             const Widget* widget,
                              const Style* style,
                              gfx::Rect rc);
-    virtual gfx::Size calcSizeHint(Widget* widget,
+    virtual gfx::Size calcSizeHint(const Widget* widget,
                                    const Style* style);
-    virtual gfx::Border calcBorder(Widget* widget,
+    virtual gfx::Border calcBorder(const Widget* widget,
                                    const Style* style);
 
     static void drawSlices(Graphics* g,
@@ -98,15 +98,16 @@ namespace ui {
     virtual void onRegenerate() = 0;
 
   private:
-    void paintLayer(Graphics* g, Widget* widget,
+    void paintLayer(Graphics* g,
+                    const Widget* widget,
                     const Style::Layer& layer,
                     gfx::Rect& rc);
-    void measureLayer(Widget* widget,
+    void measureLayer(const Widget* widget,
                       const Style::Layer& layer,
                       gfx::Border& borderHint,
                       gfx::Size& textHint, int& textAlign,
                       gfx::Size& iconHint, int& iconAlign);
-    void calcWidgetMetrics(Widget* widget,
+    void calcWidgetMetrics(const Widget* widget,
                            const Style* style,
                            gfx::Size& sizeHint,
                            gfx::Border& borderHint);
