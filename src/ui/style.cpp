@@ -12,10 +12,17 @@
 
 namespace ui {
 
+// static
+gfx::Border Style::UndefinedBorder()
+{
+  return gfx::Border(-1, -1, -1, -1);
+}
+
 Style::Style(const Style* base)
   : m_insertionPoint(0)
-  , m_border(base ? base->border(): gfx::Border(-1, -1, -1, -1))
-  , m_padding(base ? base->padding(): gfx::Border(-1, -1, -1, -1))
+  , m_margin(base ? base->margin(): Style::UndefinedBorder())
+  , m_border(base ? base->border(): Style::UndefinedBorder())
+  , m_padding(base ? base->padding(): Style::UndefinedBorder())
 {
   if (base)
     m_layers = base->layers();

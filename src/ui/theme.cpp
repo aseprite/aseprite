@@ -23,6 +23,7 @@
 #include "ui/system.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 
 #include <algorithm>
 #include <cstring>
@@ -101,23 +102,125 @@ void Theme::regenerate()
   set_mouse_cursor(type);
 }
 
+void Theme::setDecorativeWidgetBounds(Widget* widget)
+{
+  switch (widget->type()) {
+
+    case kWindowTitleLabelWidget: {
+      Window* window = widget->window();
+      gfx::Rect labelBounds(widget->sizeHint());
+      gfx::Rect windowBounds(window->bounds());
+      gfx::Border margin;
+      if (widget->style())
+        margin = widget->style()->margin();
+
+      labelBounds.offset(
+        windowBounds.x + margin.left(),
+        windowBounds.y + margin.top());
+
+      widget->setBounds(labelBounds);
+      break;
+    }
+
+    case kWindowCloseButtonWidget: {
+      Window* window = widget->window();
+      gfx::Rect buttonBounds(widget->sizeHint());
+      gfx::Rect windowBounds(window->bounds());
+      gfx::Border margin(0, 0, 0, 0);
+      if (widget->style())
+        margin = widget->style()->margin();
+
+      buttonBounds.offset(
+        windowBounds.x2() - margin.right() - buttonBounds.w,
+        windowBounds.y + margin.top());
+
+      widget->setBounds(buttonBounds);
+      break;
+    }
+
+  }
+}
+
 void Theme::paintWidget(Graphics* g,
                         const Widget* widget,
                         const Style* style,
-                        gfx::Rect rc)
+                        const gfx::Rect& bounds)
 {
   ASSERT(g);
   ASSERT(widget);
   ASSERT(style);
 
   // External background
-  g->fillRect(widget->bgColor(), rc);
+  g->fillRect(widget->bgColor(), bounds);
 
+  gfx::Rect rc = bounds;
   for_each_layer(
     widget, style,
     [this, g, widget, &rc](const Style::Layer& layer) {
       paintLayer(g, widget, layer, rc);
     });
+}
+
+void Theme::paintTooltip(Graphics* g,
+                         const Widget* widget,
+                         const Style* style,
+                         const Style* arrowStyle,
+                         const gfx::Rect& bounds,
+                         const int arrowAlign,
+                         const gfx::Rect& target)
+{
+  if (style)
+    paintWidget(g, widget, style, bounds);
+
+  // Draw arrow
+  if (arrowStyle) {
+    gfx::Size topLeft;
+    gfx::Size center;
+    gfx::Size bottomRight;
+    calcSlices(widget, arrowStyle,
+               topLeft, center, bottomRight);
+
+    gfx::Rect clip, rc(0, 0,
+                       topLeft.w+center.w+bottomRight.w,
+                       topLeft.h+center.h+bottomRight.h);
+
+    if (arrowAlign & LEFT) {
+      clip.w = topLeft.w;
+      clip.x = bounds.x;
+      rc.x = bounds.x;
+    }
+    else if (arrowAlign & RIGHT) {
+      clip.w = bottomRight.w;
+      clip.x = bounds.x+bounds.w-clip.w;
+      rc.x = bounds.x2()-rc.w;
+    }
+    else {
+      clip.w = center.w;
+      clip.x = target.x+target.w/2-clip.w/2;
+      rc.x = clip.x - topLeft.w;
+    }
+
+    if (arrowAlign & TOP) {
+      clip.h = topLeft.h;
+      clip.y = bounds.y;
+      rc.y = bounds.y;
+    }
+    else if (arrowAlign & BOTTOM) {
+      clip.h = bottomRight.h;
+      clip.y = bounds.y+bounds.h-clip.h;
+      rc.y = bounds.y2()-rc.h;
+    }
+    else {
+      clip.h = center.h;
+      clip.y = target.y+target.h/2-clip.h/2;
+      rc.y = clip.y - topLeft.h;
+    }
+
+    IntersectClip intClip(g, clip);
+    if (intClip)
+      paintWidget(g, widget, arrowStyle, rc);
+  }
+
 }
 
 void Theme::paintLayer(Graphics* g,
@@ -133,16 +236,26 @@ void Theme::paintLayer(Graphics* g,
       }
 
       if (layer.spriteSheet() &&
-          !layer.spriteBounds().isEmpty() &&
-          !layer.slicesBounds().isEmpty()) {
-        Theme::drawSlices(g, layer.spriteSheet(), rc,
-                          layer.spriteBounds(),
-                          layer.slicesBounds(), true);
+          !layer.spriteBounds().isEmpty()) {
+        if (!layer.slicesBounds().isEmpty()) {
+          Theme::drawSlices(g, layer.spriteSheet(), rc,
+                            layer.spriteBounds(),
+                            layer.slicesBounds(), true);
 
-        rc.x += layer.slicesBounds().x;
-        rc.y += layer.slicesBounds().y;
-        rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
-        rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+          rc.x += layer.slicesBounds().x;
+          rc.y += layer.slicesBounds().y;
+          rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
+          rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+        }
+        // Draw background as a solid piece
+        else {
+          g->drawRgbaSurface(layer.spriteSheet(),
+                             layer.spriteBounds().x,
+                             layer.spriteBounds().y,
+                             rc.x, rc.y,
+                             layer.spriteBounds().w,
+                             layer.spriteBounds().h);
+        }
       }
       break;
 
@@ -197,8 +310,9 @@ void Theme::paintLayer(Graphics* g,
         gfx::Size iconSize(icon->width(), icon->height());
         gfx::Point pt;
 
-        if (layer.align() & LEFT)
+        if (layer.align() & LEFT) {
           pt.x = rc.x;
+        }
         else if (layer.align() & RIGHT)
           pt.x = rc.x+rc.w-iconSize.w;
         else
@@ -242,12 +356,17 @@ void Theme::measureLayer(const Widget* widget,
     case Style::Layer::Type::kBackground:
     case Style::Layer::Type::kBorder:
       if (layer.spriteSheet() &&
-          !layer.spriteBounds().isEmpty() &&
-          !layer.slicesBounds().isEmpty()) {
-        borderHint.left(std::max(borderHint.left(), layer.slicesBounds().x));
-        borderHint.top(std::max(borderHint.top(), layer.slicesBounds().y));
-        borderHint.right(std::max(borderHint.right(), layer.spriteBounds().w - layer.slicesBounds().x2()));
-        borderHint.bottom(std::max(borderHint.bottom(), layer.spriteBounds().h - layer.slicesBounds().y2()));
+          !layer.spriteBounds().isEmpty()) {
+        if (!layer.slicesBounds().isEmpty()) {
+          borderHint.left(std::max(borderHint.left(), layer.slicesBounds().x));
+          borderHint.top(std::max(borderHint.top(), layer.slicesBounds().y));
+          borderHint.right(std::max(borderHint.right(), layer.spriteBounds().w - layer.slicesBounds().x2()));
+          borderHint.bottom(std::max(borderHint.bottom(), layer.spriteBounds().h - layer.slicesBounds().y2()));
+        }
+        else {
+          iconHint.w = std::max(iconHint.w, layer.spriteBounds().w);
+          iconHint.h = std::max(iconHint.h, layer.spriteBounds().h);
+        }
       }
       break;
 
@@ -284,6 +403,53 @@ gfx::Border Theme::calcBorder(const Widget* widget,
   return borderHint;
 }
 
+void Theme::calcSlices(const Widget* widget,
+                       const Style* style,
+                       gfx::Size& topLeft,
+                       gfx::Size& center,
+                       gfx::Size& bottomRight)
+{
+  ASSERT(widget);
+  ASSERT(style);
+
+  for_each_layer(
+    widget, style,
+    [&topLeft, &center, &bottomRight]
+    (const Style::Layer& layer) {
+      if (layer.spriteSheet() &&
+          !layer.spriteBounds().isEmpty() &&
+          !layer.slicesBounds().isEmpty()) {
+        gfx::Rect sprite = layer.spriteBounds();
+        gfx::Rect slices = layer.slicesBounds();
+        topLeft.w = MAX(topLeft.w, slices.x);
+        topLeft.h = MAX(topLeft.h, slices.y);
+        center.w = MAX(center.w, slices.w);
+        center.h = MAX(center.h, slices.h);
+        bottomRight.w = MAX(bottomRight.w, sprite.w - slices.x2());
+        bottomRight.h = MAX(bottomRight.h, sprite.h - slices.y2());
+      }
+    });
+}
+
+gfx::Color Theme::calcBgColor(const Widget* widget,
+                              const Style* style)
+{
+  ASSERT(widget);
+  ASSERT(style);
+
+  gfx::Color bgColor = gfx::ColorNone;
+
+  for_each_layer(
+    widget, style,
+    [&bgColor]
+    (const Style::Layer& layer) {
+      if (layer.type() == Style::Layer::Type::kBackground)
+        bgColor = layer.color();
+    });
+
+  return bgColor;
+}
+
 void Theme::calcWidgetMetrics(const Widget* widget,
                               const Style* style,
                               gfx::Size& sizeHint,
@@ -309,15 +475,17 @@ void Theme::calcWidgetMetrics(const Widget* widget,
                    iconHint, iconAlign);
     });
 
-  if (style->border().left() >= 0) borderHint.left(style->border().left());
-  if (style->border().top() >= 0) borderHint.top(style->border().top());
-  if (style->border().right() >= 0) borderHint.right(style->border().right());
-  if (style->border().bottom() >= 0) borderHint.bottom(style->border().bottom());
+  gfx::Border undef = Style::UndefinedBorder();
 
-  if (style->padding().left() >= 0) paddingHint.left(style->padding().left());
-  if (style->padding().top() >= 0) paddingHint.top(style->padding().top());
-  if (style->padding().right() >= 0) paddingHint.right(style->padding().right());
-  if (style->padding().bottom() >= 0) paddingHint.bottom(style->padding().bottom());
+  if (style->border().left() != undef.left()) borderHint.left(style->border().left());
+  if (style->border().top() != undef.top()) borderHint.top(style->border().top());
+  if (style->border().right() != undef.right()) borderHint.right(style->border().right());
+  if (style->border().bottom() != undef.bottom()) borderHint.bottom(style->border().bottom());
+
+  if (style->padding().left() != undef.left()) paddingHint.left(style->padding().left());
+  if (style->padding().top() != undef.top()) paddingHint.top(style->padding().top());
+  if (style->padding().right() != undef.right()) paddingHint.right(style->padding().right());
+  if (style->padding().bottom() != undef.bottom()) paddingHint.bottom(style->padding().bottom());
 
   sizeHint = gfx::Size(borderHint.width() + paddingHint.width(),
                        borderHint.height() + paddingHint.height());

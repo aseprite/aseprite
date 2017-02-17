@@ -412,24 +412,6 @@
 
   <stylesheet>
 
-    <!-- window -->
-    <style id="window">
-      <background color="window_face" part="window" />
-    </style>
-
-    <style id="window_title">
-      <background color="window_titlebar_face" />
-      <text color="window_titlebar_text" align="left" valign="middle" />
-    </style>
-
-    <style id="menubox">
-      <background color="window_face" part="menu" />
-    </style>
-
-    <style id="desktop">
-      <background color="desktop" />
-    </style>
-
     <!-- scrollbar -->
     <style id="scrollbar">
       <background part="scrollbar_bg" repeat="repeat" />
@@ -835,6 +817,66 @@
 
   <styles>
 
+    <style id="window_without_title" border="3">
+      <background color="window_face" />
+      <border part="menu" />
+    </style>
+
+    <style id="window_with_title" border="6" border-top="17">
+      <background color="window_face" />
+      <border part="window" />
+    </style>
+
+    <style id="window_title_label" margin-top="5" margin-left="5">
+      <background color="window_titlebar_face" />
+      <text color="window_titlebar_text" align="left middle" />
+    </style>
+
+    <style id="window_close_button" margin-top="3" margin-right="3">
+      <background part="window_button_normal" />
+      <background part="window_button_hot" state="mouse" />
+      <background part="window_button_selected" state="selected" />
+      <icon part="window_close_icon" color="button_normal_text" />
+      <icon part="window_close_icon" color="button_hot_text" state="mouse" />
+      <icon part="window_close_icon" color="button_selected_text" state="selected" />
+    </style>
+
+    <style id="popup_window">
+      <background color="window_face" />
+      <border part="menu" />
+    </style>
+
+    <style id="transparent_popup_window">
+      <!-- nothing (transparent) -->
+    </style>
+
+    <style id="menu">
+      <background color="window_face" />
+    </style>
+
+    <style id="menubox" extends="menu">
+    </style>
+
+    <style id="menubar" extends="menubox">
+    </style>
+
+    <style id="desktop">
+      <background color="desktop" />
+    </style>
+
+    <style id="tooltip_window">
+      <background part="tooltip" />
+    </style>
+
+    <style id="tooltip_window_arrow">
+      <background part="tooltip_arrow" />
+    </style>
+
+    <style id="tooltip_text">
+      <background color="tooltip_face" />
+      <text color="tooltip_text" />
+    </style>
+
     <style id="label" padding="1">
       <text color="text" align="left" />
       <text color="disabled" align="left" state="disabled" />
@@ -878,7 +920,7 @@
       <border part="editor_selected" state="selected" />
     </style>
 
-    <style id="workspace_view" border-top="4">
+    <style id="workspace_view" border-top="4" extends="view">
       <border part="editor_normal" />
       <border part="editor_selected" state="focus" />
     </style>

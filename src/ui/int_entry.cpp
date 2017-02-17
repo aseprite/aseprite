@@ -33,7 +33,7 @@ IntEntry::IntEntry(int min, int max, SliderDelegate* sliderDelegate)
   , m_min(min)
   , m_max(max)
   , m_slider(m_min, m_max, m_min, sliderDelegate)
-  , m_popupWindow(NULL)
+  , m_popupWindow(nullptr)
   , m_changeFromSlider(false)
 {
   m_slider.setFocusStop(false); // In this way the IntEntry doesn't lost the focus
@@ -160,31 +160,26 @@ void IntEntry::openPopup()
 {
   m_slider.setValue(getValue());
 
+  m_popupWindow = new TransparentPopupWindow(PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
+  m_popupWindow->setAutoRemap(false);
+  m_popupWindow->addChild(&m_slider);
+  m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
+
   Rect rc = bounds();
-  int sliderH = m_slider.sizeHint().h;
-
-  if (rc.y+rc.h+sliderH < ui::display_h())
-    rc.y += rc.h;
-  else
-    rc.y -= sliderH;
-
-  rc.h = sliderH;
+  gfx::Size sz = m_popupWindow->sizeHint();
   rc.w = 128*guiscale();
   if (rc.x+rc.w > ui::display_w())
-    rc.x = rc.x - rc.w + bounds().w;
-
-  m_popupWindow = new PopupWindow("", PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
-  m_popupWindow->setAutoRemap(false);
-  m_popupWindow->setTransparent(true);
-  m_popupWindow->setBgColor(gfx::ColorNone);
+    rc.x = rc.x-rc.w+bounds().w;
+  if (rc.y+rc.h+sz.h < ui::display_h())
+    rc.y += rc.h;
+  else
+    rc.y -= sz.h;
   m_popupWindow->setBounds(rc);
-  m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
   Region rgn(rc.createUnion(bounds()));
   rgn.createUnion(rgn, Region(bounds()));
   m_popupWindow->setHotRegion(rgn);
 
-  m_popupWindow->addChild(&m_slider);
   m_popupWindow->openWindow();
 }
 

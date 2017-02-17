@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -80,12 +80,13 @@ ColorPopup::ColorPopup(bool canPin)
   m_topBox.addChild(new Separator("", VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
 
+  // TODO fix this hack for close button in popup window
   // Move close button (decorative widget) inside the m_topBox
   {
     Widget* closeButton = nullptr;
     WidgetsList decorators;
     for (auto child : children()) {
-      if (child->isDecorative()) {
+      if (child->type() == kWindowCloseButtonWidget) {
         closeButton = child;
         removeChild(child);
         break;
@@ -93,7 +94,9 @@ ColorPopup::ColorPopup(bool canPin)
     }
     if (closeButton) {
       m_topBox.addChild(new BoxFiller);
-      m_topBox.addChild(closeButton);
+      VBox* vbox = new VBox;
+      vbox->addChild(closeButton);
+      m_topBox.addChild(vbox);
     }
   }
 

@@ -401,7 +401,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     return;
 
   // In case this tool contains more than just one tool, show the popup window
-  m_popupWindow = new PopupWindow("", PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion);
+  m_popupWindow = new TransparentPopupWindow(PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion);
   m_closeConn = m_popupWindow->Close.connect(base::Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
   m_openedRecently = true;
 
@@ -425,9 +425,6 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   Region rgn(gfx::Rect(rc).enlarge(16*guiscale()));
   rgn.createUnion(rgn, Region(bounds()));
   m_popupWindow->setHotRegion(rgn);
-
-  m_popupWindow->setTransparent(true);
-  m_popupWindow->setBgColor(gfx::ColorNone);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   toolstrip->setBounds(rc);

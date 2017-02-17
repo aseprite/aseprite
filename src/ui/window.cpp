@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,20 +11,24 @@
 #include "ui/window.h"
 
 #include "gfx/size.h"
+#include "ui/button.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
+#include "ui/label.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/message_loop.h"
 #include "ui/move_region.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
 namespace ui {
 
 using namespace gfx;
+
+namespace {
 
 enum {
   WINDOW_NONE = 0,
@@ -35,25 +39,88 @@ enum {
   WINDOW_RESIZE_BOTTOM = 16,
 };
 
-static gfx::Point clickedMousePos;
-static gfx::Rect* clickedWindowPos = NULL;
+gfx::Point clickedMousePos;
+gfx::Rect* clickedWindowPos = nullptr;
+
+class WindowTitleLabel : public Label {
+public:
+  WindowTitleLabel(const std::string& text) : Label(text) {
+    setDecorative(true);
+    setType(kWindowTitleLabelWidget);
+    initTheme();
+  }
+};
+
+
+// Controls the "X" button in a window to close it.
+class WindowCloseButton : public ButtonBase {
+public:
+  WindowCloseButton()
+    : ButtonBase("", kWindowCloseButtonWidget,
+                 kButtonWidget, kButtonWidget) {
+    setDecorative(true);
+    initTheme();
+  }
+
+protected:
+
+  void onClick(Event& ev) override {
+    ButtonBase::onClick(ev);
+    closeWindow();
+  }
+
+  bool onProcessMessage(Message* msg) override {
+    switch (msg->type()) {
+
+      case kSetCursorMessage:
+        ui::set_mouse_cursor(kArrowCursor);
+        return true;
+
+      case kKeyDownMessage:
+        if (window()->isForeground() &&
+            static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
+          setSelected(true);
+          return true;
+        }
+        break;
+
+      case kKeyUpMessage:
+        if (window()->isForeground() &&
+            static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
+          if (isSelected()) {
+            setSelected(false);
+            closeWindow();
+            return true;
+          }
+        }
+        break;
+    }
+
+    return ButtonBase::onProcessMessage(msg);
+  }
+};
+
+} // anonymous namespace
 
 Window::Window(Type type, const std::string& text)
   : Widget(kWindowWidget)
+  , m_closer(nullptr)
+  , m_titleLabel(nullptr)
+  , m_closeButton(nullptr)
+  , m_isDesktop(type == DesktopWindow)
+  , m_isMoveable(!m_isDesktop)
+  , m_isSizeable(!m_isDesktop)
+  , m_isOnTop(false)
+  , m_isWantFocus(true)
+  , m_isForeground(false)
+  , m_isAutoRemap(true)
 {
-  m_closer = NULL;
-  m_isDesktop = (type == DesktopWindow);
-  m_isMoveable = !m_isDesktop;
-  m_isSizeable = !m_isDesktop;
-  m_isOnTop = false;
-  m_isWantFocus = true;
-  m_isForeground = false;
-  m_isAutoRemap = true;
-
   setVisible(false);
   setAlign(LEFT | MIDDLE);
-  if (type == WithTitleBar)
+  if (type == WithTitleBar) {
     setText(text);
+    addChild(m_closeButton = new WindowCloseButton);
+  }
 
   initTheme();
 }
@@ -95,12 +162,6 @@ HitTest Window::hitTest(const gfx::Point& point)
   return ev.hit();
 }
 
-void Window::removeDecorativeWidgets()
-{
-  while (!children().empty())
-    delete children().front();
-}
-
 void Window::onClose(CloseEvent& ev)
 {
   // Fire Close signal
@@ -112,11 +173,18 @@ void Window::onHitTest(HitTestEvent& ev)
   HitTest ht = HitTestNowhere;
 
   // If this window is not movable or we are not completely visible.
-  if (!m_isMoveable ||
-      // TODO check why this is necessary, there should be a bug in
-      // the manager where we are receiving mouse events and are not
-      // the top most window.
-      this->manager()->pick(ev.point()) != this) {
+  if (!m_isMoveable) {
+    ev.setHit(ht);
+    return;
+  }
+
+  // TODO check why this is necessary, there should be a bug in
+  // the manager where we are receiving mouse events and are not
+  // the top most window.
+  Widget* picked = manager()->pick(ev.point());
+  if (picked &&
+      picked != this &&
+      picked->type() != kWindowTitleLabelWidget) {
     ev.setHit(ht);
     return;
   }
@@ -444,17 +512,12 @@ void Window::onSizeHint(SizeHintEvent& ev)
       }
     }
 
-    if (hasText())
-      maxSize.w = MAX(maxSize.w, textWidth());
+    if (m_titleLabel)
+      maxSize.w = MAX(maxSize.w, m_titleLabel->sizeHint().w);
 
     ev.setSizeHint(maxSize.w + border().width(),
                    maxSize.h + border().height());
   }
-}
-
-void Window::onPaint(PaintEvent& ev)
-{
-  theme()->paintWindow(ev);
 }
 
 void Window::onBroadcastMouseMessage(WidgetsList& targets)
@@ -473,8 +536,28 @@ void Window::onBroadcastMouseMessage(WidgetsList& targets)
 
 void Window::onSetText()
 {
+  onBuildTitleLabel();
   Widget::onSetText();
   initTheme();
+}
+
+void Window::onBuildTitleLabel()
+{
+  if (text().empty()) {
+    if (m_titleLabel) {
+      removeChild(m_titleLabel);
+      delete m_titleLabel;
+      m_titleLabel = nullptr;
+    }
+  }
+  else {
+    if (!m_titleLabel) {
+      m_titleLabel = new WindowTitleLabel(text());
+      addChild(m_titleLabel);
+    }
+    else
+      m_titleLabel->setText(text());
+  }
 }
 
 void Window::windowSetPosition(const gfx::Rect& rect)

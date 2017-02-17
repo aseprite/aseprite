@@ -176,6 +176,10 @@ void Widget::setBgColor(gfx::Color color)
 {
   m_bgColor = color;
   onSetBgColor();
+
+  if (m_style) {
+    LOG(WARNING) << "Warning setting bgColor to a widget with style\n";
+  }
 }
 
 void Widget::setTheme(Theme* theme)
@@ -188,6 +192,7 @@ void Widget::setStyle(Style* style)
 {
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
+  m_bgColor = m_theme->calcBgColor(this, m_style);
 }
 
 // ===============================================================
@@ -645,6 +650,7 @@ void Widget::setBoundsQuietly(const gfx::Rect& rc)
 void Widget::setBorder(const Border& br)
 {
   m_border = br;
+
   if (m_style) {
     LOG(WARNING) << "Warning setting border to a widget with style\n";
   }
@@ -1484,9 +1490,8 @@ void Widget::onInitTheme(InitThemeEvent& ev)
 
 void Widget::onSetDecorativeWidgetBounds()
 {
-  if (m_theme) {
+  if (m_theme)
     m_theme->setDecorativeWidgetBounds(this);
-  }
 }
 
 void Widget::onVisible(bool visible)

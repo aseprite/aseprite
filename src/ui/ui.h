@@ -25,6 +25,7 @@
 #include "ui/hit_test_event.h"
 #include "ui/image_view.h"
 #include "ui/init_theme_event.h"
+#include "ui/int_entry.h"
 #include "ui/keys.h"
 #include "ui/label.h"
 #include "ui/layout_io.h"

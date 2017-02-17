@@ -85,14 +85,18 @@ namespace ui {
 
     typedef std::vector<Layer> Layers;
 
+    static gfx::Border UndefinedBorder();
+
     Style(const Style* base);
 
     const std::string& id() const { return m_id; }
+    const gfx::Border& margin() const { return m_margin; }
     const gfx::Border& border() const { return m_border; }
     const gfx::Border& padding() const { return m_padding; }
     const Layers& layers() const { return m_layers; }
 
     void setId(const std::string& id) { m_id = id; }
+    void setMargin(const gfx::Border& value) { m_margin = value; }
     void setBorder(const gfx::Border& value) { m_border = value; }
     void setPadding(const gfx::Border& value) { m_padding = value; }
     void addLayer(const Layer& layer);
@@ -101,6 +105,7 @@ namespace ui {
     std::string m_id;         // Just for debugging purposes
     Layers m_layers;
     int m_insertionPoint;
+    gfx::Border m_margin;
     gfx::Border m_border;
     gfx::Border m_padding;
   };

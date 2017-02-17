@@ -39,7 +39,6 @@ namespace app {
                     , public app::gen::ThemeFile<SkinTheme> {
     public:
       static const char* kThemesFolderName;
-      static const char* kThemeCloseButtonId;
 
       static SkinTheme* instance();
 
@@ -53,7 +52,6 @@ namespace app {
       ui::Cursor* getCursor(ui::CursorType type) override;
       void initWidget(ui::Widget* widget) override;
       void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
-      void setDecorativeWidgetBounds(ui::Widget* widget) override;
       int getScrollbarSize() override;
       gfx::Size getEntryCaretSize(ui::Widget* widget) override;
 
@@ -74,10 +72,6 @@ namespace app {
       void paintTextBox(ui::PaintEvent& ev) override;
       void paintViewScrollbar(ui::PaintEvent& ev) override;
       void paintViewViewport(ui::PaintEvent& ev) override;
-      void paintWindow(ui::PaintEvent& ev) override;
-      void paintPopupWindow(ui::PaintEvent& ev) override;
-      void paintTooltip(ui::PaintEvent& ev) override;
-      void paintWindowButton(ui::PaintEvent& ev);
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 

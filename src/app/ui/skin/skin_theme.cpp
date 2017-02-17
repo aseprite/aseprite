@@ -50,61 +50,6 @@ using namespace gfx;
 using namespace ui;
 
 const char* SkinTheme::kThemesFolderName = "themes";
-const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
-
-// Controls the "X" button in a window to close it.
-class WindowCloseButton : public Button {
-public:
-  WindowCloseButton() : Button("") {
-    setDecorative(true);
-    setId(SkinTheme::kThemeCloseButtonId);
-  }
-
-protected:
-
-  void onSizeHint(SizeHintEvent& ev) override {
-    ev.setSizeHint(SkinTheme::instance()->parts.windowButtonNormal()->size());
-  }
-
-  void onClick(Event& ev) override {
-    Button::onClick(ev);
-    closeWindow();
-  }
-
-  void onPaint(PaintEvent& ev) override {
-    static_cast<SkinTheme*>(theme())->paintWindowButton(ev);
-  }
-
-  bool onProcessMessage(Message* msg) override {
-    switch (msg->type()) {
-
-      case kSetCursorMessage:
-        ui::set_mouse_cursor(kArrowCursor);
-        return true;
-
-      case kKeyDownMessage:
-        if (window()->isForeground() &&
-            static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
-          setSelected(true);
-          return true;
-        }
-        break;
-
-      case kKeyUpMessage:
-        if (window()->isForeground() &&
-            static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
-          if (isSelected()) {
-            setSelected(false);
-            closeWindow();
-            return true;
-          }
-        }
-        break;
-    }
-
-    return Button::onProcessMessage(msg);
-  }
-};
 
 static const char* cursor_names[kCursorTypes] = {
   "null",                       // kNoCursor
@@ -534,6 +479,21 @@ void SkinTheme::loadXml(const std::string& skinId)
         *style = ui::Style(base);
       }
 
+      // Margin
+      {
+        const char* m = xmlStyle->Attribute("margin");
+        const char* l = xmlStyle->Attribute("margin-left");
+        const char* t = xmlStyle->Attribute("margin-top");
+        const char* r = xmlStyle->Attribute("margin-right");
+        const char* b = xmlStyle->Attribute("margin-bottom");
+        gfx::Border margin = ui::Style::UndefinedBorder();
+        if (m || l) margin.left(std::strtol(l ? l: m, nullptr, 10));
+        if (m || t) margin.top(std::strtol(t ? t: m, nullptr, 10));
+        if (m || r) margin.right(std::strtol(r ? r: m, nullptr, 10));
+        if (m || b) margin.bottom(std::strtol(b ? b: m, nullptr, 10));
+        style->setMargin(margin*guiscale());
+      }
+
       // Border
       {
         const char* m = xmlStyle->Attribute("border");
@@ -541,7 +501,7 @@ void SkinTheme::loadXml(const std::string& skinId)
         const char* t = xmlStyle->Attribute("border-top");
         const char* r = xmlStyle->Attribute("border-right");
         const char* b = xmlStyle->Attribute("border-bottom");
-        gfx::Border border(-1, -1, -1, -1);
+        gfx::Border border = ui::Style::UndefinedBorder();
         if (m || l) border.left(std::strtol(l ? l: m, nullptr, 10));
         if (m || t) border.top(std::strtol(t ? t: m, nullptr, 10));
         if (m || r) border.right(std::strtol(r ? r: m, nullptr, 10));
@@ -556,7 +516,7 @@ void SkinTheme::loadXml(const std::string& skinId)
         const char* t = xmlStyle->Attribute("padding-top");
         const char* r = xmlStyle->Attribute("padding-right");
         const char* b = xmlStyle->Attribute("padding-bottom");
-        gfx::Border padding(-1, -1, -1, -1);
+        gfx::Border padding = ui::Style::UndefinedBorder();
         if (m || l) padding.left(std::strtol(l ? l: m, nullptr, 10));
         if (m || t) padding.top(std::strtol(t ? t: m, nullptr, 10));
         if (m || r) padding.right(std::strtol(r ? r: m, nullptr, 10));
@@ -778,10 +738,15 @@ void SkinTheme::initWidget(Widget* widget)
     }
 
     case kMenuWidget:
+      widget->setStyle(newStyles.menu());
+      break;
+
     case kMenuBarWidget:
+      widget->setStyle(newStyles.menubar());
+      break;
+
     case kMenuBoxWidget:
-      BORDER(0);
-      widget->setChildSpacing(0);
+      widget->setStyle(newStyles.menubox());
       break;
 
     case kMenuItemWidget:
@@ -854,33 +819,36 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kWindowWidget:
-      if (!static_cast<Window*>(widget)->isDesktop()) {
-        if (widget->hasText()) {
-          BORDER4(6 * scale,
-                  (4+6) * scale + widget->textHeight(),
-                  6 * scale,
-                  6 * scale);
-
-          if (!widget->hasFlags(INITIALIZED)) {
-            Button* button = new WindowCloseButton();
-            widget->addChild(button);
-          }
-        }
-        else {
-          BORDER(3 * scale);
-        }
+      if (TipWindow* window = dynamic_cast<TipWindow*>(widget)) {
+        window->setStyle(newStyles.tooltipWindow());
+        window->setArrowStyle(newStyles.tooltipWindowArrow());
+        window->textBox()->setStyle(SkinTheme::instance()->newStyles.tooltipText());
+      }
+      else if (dynamic_cast<TransparentPopupWindow*>(widget)) {
+        widget->setStyle(newStyles.transparentPopupWindow());
+      }
+      else if (dynamic_cast<PopupWindow*>(widget)) {
+        widget->setStyle(newStyles.popupWindow());
+      }
+      else if (static_cast<Window*>(widget)->isDesktop()) {
+        widget->setStyle(newStyles.desktop());
       }
       else {
-        BORDER(0);
+        if (widget->hasText()) {
+          widget->setStyle(newStyles.windowWithTitle());
+        }
+        else {
+          widget->setStyle(newStyles.windowWithoutTitle());
+        }
       }
+      break;
 
-      widget->setChildSpacing(4 * scale); // TODO this hard-coded 4 should be configurable in skin.xml
+    case kWindowTitleLabelWidget:
+      widget->setStyle(SkinTheme::instance()->newStyles.windowTitleLabel());
+      break;
 
-      // Tooltip background color
-      if (dynamic_cast<TipWindow*>(widget))
-        widget->setBgColor(SkinTheme::instance()->colors.tooltipFace());
-      else
-        widget->setBgColor(colors.windowFace());
+    case kWindowCloseButtonWidget:
+      widget->setStyle(SkinTheme::instance()->newStyles.windowCloseButton());
       break;
 
     default:
@@ -891,19 +859,6 @@ void SkinTheme::initWidget(Widget* widget)
 void SkinTheme::getWindowMask(Widget* widget, Region& region)
 {
   region = widget->bounds();
-}
-
-void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
-{
-  if (widget->id() == kThemeCloseButtonId) {
-    Widget* window = widget->parent();
-    gfx::Rect rect(parts.windowButtonNormal()->size());
-
-    rect.offset(window->bounds().x2() - 3*guiscale() - rect.w,
-                window->bounds().y + 3*guiscale());
-
-    widget->setBounds(rect);
-  }
 }
 
 int SkinTheme::getScrollbarSize()
@@ -1601,160 +1556,6 @@ void SkinTheme::paintViewViewport(PaintEvent& ev)
 
   if (!is_transparent(bg))
     g->fillRect(bg, widget->clientBounds());
-}
-
-void SkinTheme::paintWindow(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  Window* window = static_cast<Window*>(ev.getSource());
-  Rect pos = window->clientBounds();
-  Rect cpos = window->clientChildrenBounds();
-
-  if (!window->isDesktop()) {
-    // window frame
-    if (window->hasText()) {
-      styles.window()->paint(g, pos, NULL, Style::State());
-      styles.windowTitle()->paint(g,
-        gfx::Rect(cpos.x, pos.y+5*guiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
-          window->textHeight()),
-        window->text().c_str(), Style::State());
-    }
-    // menubox
-    else {
-      styles.menubox()->paint(g, pos, NULL, Style::State());
-    }
-  }
-  // desktop
-  else {
-    styles.desktop()->paint(g, pos, NULL, Style::State());
-  }
-}
-
-void SkinTheme::paintPopupWindow(PaintEvent& ev)
-{
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  Window* window = static_cast<Window*>(ev.getSource());
-  Graphics* g = ev.graphics();
-  gfx::Rect pos = window->clientBounds();
-
-  if (!is_transparent(BGCOLOR))
-    styles.menubox()->paint(g, pos, NULL, Style::State());
-
-  pos.shrink(window->border());
-
-  g->drawAlignedUIText(window->text(),
-    colors.text(),
-    window->bgColor(), pos,
-    window->align());
-}
-
-void SkinTheme::paintWindowButton(ui::PaintEvent& ev)
-{
-  // Merge this code with SkinButton class
-
-  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  Graphics* g = ev.graphics();
-  Rect rc = widget->clientBounds();
-  SkinPartPtr part;
-  gfx::Color fg;
-
-  if (widget->isSelected()) {
-    fg = colors.buttonSelectedText();
-    part = parts.windowButtonSelected();
-  }
-  else if (widget->hasMouseOver()) {
-    fg = colors.buttonHotText();
-    part = parts.windowButtonHot();
-  }
-  else {
-    fg = colors.buttonNormalText();
-    part = parts.windowButtonNormal();
-  }
-
-  g->fillRect(BGCOLOR, rc);
-  g->drawRgbaSurface(part->bitmap(0), rc.x, rc.y);
-  gfx::Size sz(part->bitmap(0)->width(),
-               part->bitmap(0)->height());
-
-  part = parts.windowCloseIcon();
-  g->drawColoredRgbaSurface(part->bitmap(0), fg,
-                            rc.x+sz.w/2-part->bitmap(0)->width()/2,
-                            rc.y+sz.h/2-part->bitmap(0)->height()/2);
-}
-
-void SkinTheme::paintTooltip(PaintEvent& ev)
-{
-  ui::TipWindow* widget = static_cast<ui::TipWindow*>(ev.getSource());
-  Graphics* g = ev.graphics();
-  Rect absRc = widget->bounds();
-  Rect rc = widget->clientBounds();
-  gfx::Color fg = colors.tooltipText();
-  gfx::Color bg = colors.tooltipFace();
-  SkinPartPtr tooltipPart = parts.tooltip();
-
-  she::Surface* nw = tooltipPart->bitmapNW();
-  she::Surface* n  = tooltipPart->bitmapN();
-  she::Surface* ne = tooltipPart->bitmapNE();
-  she::Surface* e  = tooltipPart->bitmapE();
-  she::Surface* se = tooltipPart->bitmapSE();
-  she::Surface* s  = tooltipPart->bitmapS();
-  she::Surface* sw = tooltipPart->bitmapSW();
-  she::Surface* w  = tooltipPart->bitmapW();
-
-  switch (widget->arrowAlign()) {
-    case TOP | LEFT:     nw = parts.tooltipArrow()->bitmapNW(); break;
-    case TOP | RIGHT:    ne = parts.tooltipArrow()->bitmapNE(); break;
-    case BOTTOM | LEFT:  sw = parts.tooltipArrow()->bitmapSW(); break;
-    case BOTTOM | RIGHT: se = parts.tooltipArrow()->bitmapSE(); break;
-  }
-
-  drawRect(g, rc, nw, n, ne, e, se, s, sw, w);
-
-  // Draw arrow in sides
-  she::Surface* arrow = NULL;
-  gfx::Rect target(widget->target());
-  target = target.createIntersection(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
-  target.offset(-absRc.origin());
-
-  switch (widget->arrowAlign()) {
-    case TOP:
-      arrow = parts.tooltipArrow()->bitmapN();
-      g->drawRgbaSurface(arrow,
-                         target.x+target.w/2-arrow->width()/2,
-                         rc.y);
-      break;
-    case BOTTOM:
-      arrow = parts.tooltipArrow()->bitmapS();
-      g->drawRgbaSurface(arrow,
-                         target.x+target.w/2-arrow->width()/2,
-                         rc.y+rc.h-arrow->height());
-      break;
-    case LEFT:
-      arrow = parts.tooltipArrow()->bitmapW();
-      g->drawRgbaSurface(arrow,
-                         rc.x,
-                         target.y+target.h/2-arrow->height()/2);
-      break;
-    case RIGHT:
-      arrow = parts.tooltipArrow()->bitmapE();
-      g->drawRgbaSurface(arrow,
-                         rc.x+rc.w-arrow->width(),
-                         target.y+target.h/2-arrow->height()/2);
-      break;
-  }
-
-  // Fill background
-  g->fillRect(
-    bg, Rect(rc).shrink(
-      Border(
-        w->width(),
-        n->height(),
-        e->width(),
-        s->height())));
-
-  rc.shrink(widget->border());
-
-  g->drawAlignedUIText(widget->text(), fg, bg, rc, widget->align());
 }
 
 gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)

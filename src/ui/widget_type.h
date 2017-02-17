@@ -42,6 +42,8 @@ namespace ui {
     kViewViewportWidget,
     kViewWidget,
     kWindowWidget,
+    kWindowTitleLabelWidget,
+    kWindowCloseButtonWidget,
 
     // User widgets.
     kFirstUserWidget,

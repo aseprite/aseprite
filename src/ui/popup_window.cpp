@@ -34,11 +34,17 @@ PopupWindow::PopupWindow(const std::string& text,
   setWantFocus(false);
   setAlign(LEFT | TOP);
 
-  if (!withCloseButton)
-    removeDecorativeWidgets();
+  if (!withCloseButton) {
+    // Remove close button
+    for (auto child : children()) {
+      if (child->type() == kWindowCloseButtonWidget) {
+        delete child;
+        break;
+      }
+    }
+  }
 
   initTheme();
-  noBorderNoChildSpacing();
 }
 
 PopupWindow::~PopupWindow()
@@ -172,50 +178,6 @@ bool PopupWindow::onProcessMessage(Message* msg)
   return Window::onProcessMessage(msg);
 }
 
-void PopupWindow::onSizeHint(SizeHintEvent& ev)
-{
-  ScreenGraphics g;
-  g.setFont(font());
-  Size resultSize(0, 0);
-
-  if (hasText())
-    resultSize = g.fitString(text(),
-                             (clientBounds() - border()).w,
-                             align());
-
-  resultSize.w += border().width();
-  resultSize.h += border().height();
-
-  if (!children().empty()) {
-    Size maxSize(0, 0);
-    Size reqSize;
-
-    for (auto child : children()) {
-      reqSize = child->sizeHint();
-
-      maxSize.w = MAX(maxSize.w, reqSize.w);
-      maxSize.h = MAX(maxSize.h, reqSize.h);
-    }
-
-    resultSize.w = MAX(resultSize.w, maxSize.w + border().width());
-    resultSize.h += maxSize.h;
-  }
-
-  ev.setSizeHint(resultSize);
-}
-
-void PopupWindow::onPaint(PaintEvent& ev)
-{
-  theme()->paintPopupWindow(ev);
-}
-
-void PopupWindow::onInitTheme(InitThemeEvent& ev)
-{
-  Widget::onInitTheme(ev);
-
-  setBorder(gfx::Border(3 * guiscale()));
-}
-
 void PopupWindow::onHitTest(HitTestEvent& ev)
 {
   Window::onHitTest(ev);
@@ -281,6 +243,14 @@ void PopupWindow::onMakeFloating()
 void PopupWindow::onMakeFixed()
 {
   // Do nothing
+}
+
+TransparentPopupWindow::TransparentPopupWindow(ClickBehavior clickBehavior)
+  : PopupWindow("", clickBehavior)
+{
+  setTransparent(true);
+  setBgColor(gfx::ColorNone);
+  initTheme();
 }
 
 } // namespace ui

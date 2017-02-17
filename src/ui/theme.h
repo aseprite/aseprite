@@ -49,7 +49,7 @@ namespace ui {
     virtual Cursor* getCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
     virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
-    virtual void setDecorativeWidgetBounds(Widget* widget) = 0;
+    virtual void setDecorativeWidgetBounds(Widget* widget);
     virtual int getScrollbarSize() = 0;
     virtual gfx::Size getEntryCaretSize(Widget* widget) = 0;
 
@@ -70,18 +70,31 @@ namespace ui {
     virtual void paintTextBox(PaintEvent& ev) = 0;
     virtual void paintViewScrollbar(PaintEvent& ev) = 0;
     virtual void paintViewViewport(PaintEvent& ev) = 0;
-    virtual void paintWindow(PaintEvent& ev) = 0;
-    virtual void paintPopupWindow(PaintEvent& ev) = 0;
-    virtual void paintTooltip(PaintEvent& ev) = 0;
 
     // Default implementation to draw widgets with new ui::Styles
     virtual void paintWidget(Graphics* g,
                              const Widget* widget,
                              const Style* style,
-                             gfx::Rect rc);
+                             const gfx::Rect& bounds);
+
+    virtual void paintTooltip(Graphics* g,
+                              const Widget* widget,
+                              const Style* style,
+                              const Style* arrowStyle,
+                              const gfx::Rect& bounds,
+                              const int arrowAlign,
+                              const gfx::Rect& target);
+
     virtual gfx::Size calcSizeHint(const Widget* widget,
                                    const Style* style);
     virtual gfx::Border calcBorder(const Widget* widget,
+                                   const Style* style);
+    virtual void calcSlices(const Widget* widget,
+                            const Style* style,
+                            gfx::Size& topLeft,
+                            gfx::Size& center,
+                            gfx::Size& bottomRight);
+    virtual gfx::Color calcBgColor(const Widget* widget,
                                    const Style* style);
 
     static void drawSlices(Graphics* g,

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -42,9 +42,6 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onPaint(PaintEvent& ev) override;
-    void onInitTheme(InitThemeEvent& ev) override;
     void onHitTest(HitTestEvent& ev) override;
 
     virtual void onMakeFloating();
@@ -59,6 +56,11 @@ namespace ui {
     gfx::Region m_hotRegion;
     bool m_filtering;
     bool m_fixed;
+  };
+
+  class TransparentPopupWindow : public PopupWindow {
+  public:
+    TransparentPopupWindow(ClickBehavior clickBehavior);
   };
 
 } // namespace ui
