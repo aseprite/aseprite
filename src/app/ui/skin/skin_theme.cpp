@@ -755,8 +755,8 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kSplitterWidget:
-      BORDER(0);
       widget->setChildSpacing(3 * scale);
+      widget->setStyle(newStyles.splitter());
       break;
 
     case kRadioWidget:
@@ -1269,13 +1269,6 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       }
     }
   }
-}
-
-void SkinTheme::paintSplitter(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-
-  g->fillRect(colors.splitterNormalFace(), g->getClipBounds());
 }
 
 void SkinTheme::paintRadioButton(PaintEvent& ev)

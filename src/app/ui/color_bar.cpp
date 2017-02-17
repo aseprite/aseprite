@@ -160,6 +160,7 @@ ColorBar::ColorBar(int align)
   m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
+  m_splitter.setStyle(theme->newStyles.workspaceSplitter());
   m_splitter.addChild(&m_palettePlaceholder);
   m_splitter.addChild(&m_selectorPlaceholder);
 

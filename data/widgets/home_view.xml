@@ -20,8 +20,10 @@
       </vbox>
     </hbox>
     <splitter horizontal="true" noborders="true" childspacing="2"
-              expansive="true" by="percetage" position="50" >
-      <splitter vertical="true" noborders="true" childspacing="2">
+              expansive="true" by="percetage" position="50"
+              style="workspace_splitter">
+      <splitter vertical="true" noborders="true" childspacing="2"
+                style="workspace_splitter">
         <vbox id="files_placeholder">
           <label text="@home_view.recent_files" style="workspace_label" />
           <view id="files_view" expansive="true" style="workspace_view" />

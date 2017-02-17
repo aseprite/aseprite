@@ -61,7 +61,6 @@ namespace ui {
     virtual void paintListItem(PaintEvent& ev) = 0;
     virtual void paintMenu(PaintEvent& ev) = 0;
     virtual void paintMenuItem(PaintEvent& ev) = 0;
-    virtual void paintSplitter(PaintEvent& ev) = 0;
     virtual void paintRadioButton(PaintEvent& ev) = 0;
     virtual void paintSeparator(PaintEvent& ev) = 0;
     virtual void paintSlider(PaintEvent& ev) = 0;

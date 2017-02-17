@@ -65,7 +65,6 @@
     <color id="tab_normal_text" value="#000000" />
     <color id="tab_active_text" value="#ffffff" />
     <color id="tab_active_face" value="#7d929e" />
-    <color id="splitter_normal_face" value="#7d929e" />
     <color id="popup_window_border" value="#000000" />
     <color id="tooltip_text" value="#000000" />
     <color id="tooltip_face" value="#ffff7d" />
@@ -1012,6 +1011,14 @@
     </style>
 
     <style id="color_button" extends="mini_button" border="5">
+    </style>
+
+    <style id="splitter">
+      <background color="face" />
+    </style>
+
+    <style id="workspace_splitter">
+      <background color="workspace" />
     </style>
 
   </styles>

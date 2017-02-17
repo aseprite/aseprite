@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -181,7 +181,7 @@ void Splitter::onResize(ResizeEvent& ev)
 {
 #define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                     \
   {                                                                     \
-    avail = rc.w - this->childSpacing();                                \
+    avail = rc.w - childSpacing();                                      \
                                                                         \
     pos.x = rc.x;                                                       \
     pos.y = rc.y;                                                       \
@@ -201,7 +201,7 @@ void Splitter::onResize(ResizeEvent& ev)
     child1->setBounds(pos);                                             \
     gfx::Rect child1Pos = child1->bounds();                             \
                                                                         \
-    pos.x = child1Pos.x + child1Pos.w + this->childSpacing();           \
+    pos.x = child1Pos.x + child1Pos.w + childSpacing();                 \
     pos.y = rc.y;                                                       \
     pos.w = avail - child1Pos.w;                                        \
     pos.h = rc.h;                                                       \
@@ -233,11 +233,6 @@ void Splitter::onResize(ResizeEvent& ev)
     child2->setBounds(rc);
 }
 
-void Splitter::onPaint(PaintEvent& ev)
-{
-  theme()->paintSplitter(ev);
-}
-
 void Splitter::onSizeHint(SizeHintEvent& ev)
 {
 #define GET_CHILD_SIZE(w, h)                    \
@@ -249,7 +244,7 @@ void Splitter::onSizeHint(SizeHintEvent& ev)
 #define FINAL_SIZE(w)                                     \
   do {                                                    \
     w *= visibleChildren;                                 \
-    w += this->childSpacing() * (visibleChildren-1);      \
+    w += childSpacing() * (visibleChildren-1);            \
   } while(0)
 
   int visibleChildren;
