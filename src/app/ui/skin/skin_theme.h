@@ -55,7 +55,6 @@ namespace app {
       int getScrollbarSize() override;
       gfx::Size getEntryCaretSize(ui::Widget* widget) override;
 
-      void paintDesktop(ui::PaintEvent& ev) override;
       void paintBox(ui::PaintEvent& ev) override;
       void paintCheckBox(ui::PaintEvent& ev) override;
       void paintEntry(ui::PaintEvent& ev) override;

@@ -818,6 +818,10 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setChildSpacing(0);
       break;
 
+    case kManagerWidget:
+      widget->setStyle(newStyles.desktop());
+      break;
+
     case kWindowWidget:
       if (TipWindow* window = dynamic_cast<TipWindow*>(widget)) {
         window->setStyle(newStyles.tooltipWindow());
@@ -872,13 +876,6 @@ gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
     return gfx::Size(2*guiscale(), widget->textHeight());
   else
     return gfx::Size(2*guiscale(), widget->textHeight()+2*guiscale());
-}
-
-void SkinTheme::paintDesktop(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-
-  g->fillRect(colors.disabled(), g->getClipBounds());
 }
 
 void SkinTheme::paintBox(PaintEvent& ev)

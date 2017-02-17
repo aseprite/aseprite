@@ -53,7 +53,6 @@ namespace ui {
     virtual int getScrollbarSize() = 0;
     virtual gfx::Size getEntryCaretSize(Widget* widget) = 0;
 
-    virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;
     virtual void paintCheckBox(PaintEvent& ev) = 0;
     virtual void paintEntry(PaintEvent& ev) = 0;
