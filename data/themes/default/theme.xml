@@ -56,6 +56,7 @@
     <color id="editor_sprite_border" value="#000000" />
     <color id="editor_sprite_bottom_border" value="#41412c" />
     <color id="editor_layer_edges" value="#0000ff" />
+    <color id="editor_view_face" value="#000000" />
     <color id="listitem_normal_text" value="#000000" />
     <color id="listitem_normal_face" value="#ffffff" />
     <color id="listitem_selected_text" value="#ffffff" />
@@ -916,6 +917,7 @@
     </style>
 
     <style id="editor_view">
+      <background color="editor_view_face" />
       <border part="editor_normal" />
       <border part="editor_selected" state="selected" />
     </style>
