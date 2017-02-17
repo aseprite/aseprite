@@ -154,10 +154,11 @@ void Theme::paintWidget(Graphics* g,
   g->fillRect(widget->bgColor(), bounds);
 
   gfx::Rect rc = bounds;
+  gfx::Color bgColor = gfx::ColorNone;
   for_each_layer(
     widget, style,
-    [this, g, widget, &rc](const Style::Layer& layer) {
-      paintLayer(g, widget, layer, rc);
+    [this, g, widget, &rc, &bgColor](const Style::Layer& layer) {
+      paintLayer(g, widget, layer, rc, bgColor);
     });
 }
 
@@ -226,12 +227,14 @@ void Theme::paintTooltip(Graphics* g,
 void Theme::paintLayer(Graphics* g,
                        const Widget* widget,
                        const Style::Layer& layer,
-                       gfx::Rect& rc)
+                       gfx::Rect& rc,
+                       gfx::Color& bgColor)
 {
   switch (layer.type()) {
 
     case Style::Layer::Type::kBackground:
       if (layer.color() != gfx::ColorNone) {
+        bgColor = layer.color();
         g->fillRect(layer.color(), rc);
       }
 
@@ -247,14 +250,61 @@ void Theme::paintLayer(Graphics* g,
           rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
           rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
         }
-        // Draw background as a solid piece
+        // Draw background using different methods
         else {
-          g->drawRgbaSurface(layer.spriteSheet(),
-                             layer.spriteBounds().x,
-                             layer.spriteBounds().y,
-                             rc.x, rc.y,
-                             layer.spriteBounds().w,
-                             layer.spriteBounds().h);
+          IntersectClip clip(g, rc);
+          if (clip) {
+            switch (layer.align()) {
+
+              // Horizontal line
+              case MIDDLE:
+                for (int x=rc.x; x<rc.x2(); x+=layer.spriteBounds().w) {
+                  g->drawRgbaSurface(layer.spriteSheet(),
+                                     layer.spriteBounds().x,
+                                     layer.spriteBounds().y,
+                                     x, rc.y+rc.h/2-layer.spriteBounds().h/2,
+                                     layer.spriteBounds().w,
+                                     layer.spriteBounds().h);
+                }
+                break;
+
+              // Vertical line
+              case CENTER:
+                for (int y=rc.y; y<rc.y2(); y+=layer.spriteBounds().h) {
+                  g->drawRgbaSurface(layer.spriteSheet(),
+                                     layer.spriteBounds().x,
+                                     layer.spriteBounds().y,
+                                     rc.x+rc.w/2-layer.spriteBounds().w/2, y,
+                                     layer.spriteBounds().w,
+                                     layer.spriteBounds().h);
+                }
+                break;
+
+              // One instance
+              case CENTER | MIDDLE:
+                g->drawRgbaSurface(layer.spriteSheet(),
+                                   layer.spriteBounds().x,
+                                   layer.spriteBounds().y,
+                                   rc.x+rc.w/2-layer.spriteBounds().w/2,
+                                   rc.y+rc.h/2-layer.spriteBounds().h/2,
+                                   layer.spriteBounds().w,
+                                   layer.spriteBounds().h);
+                break;
+
+              // Pattern
+              case 0:
+                for (int y=rc.y; y<rc.y2(); y+=layer.spriteBounds().h) {
+                  for (int x=rc.x; x<rc.x2(); x+=layer.spriteBounds().w)
+                    g->drawRgbaSurface(layer.spriteSheet(),
+                                       layer.spriteBounds().x,
+                                       layer.spriteBounds().y,
+                                       x, y,
+                                       layer.spriteBounds().w,
+                                       layer.spriteBounds().h);
+                }
+                break;
+            }
+          }
         }
       }
       break;
@@ -297,9 +347,11 @@ void Theme::paintLayer(Graphics* g,
         else
           pt.y = rc.y+rc.h/2-textSize.h/2;
 
+        pt += layer.offset();
+
         g->drawUIText(widget->text(),
                       layer.color(),
-                      gfx::ColorNone,
+                      bgColor,
                       pt, widget->mnemonic());
       }
       break;

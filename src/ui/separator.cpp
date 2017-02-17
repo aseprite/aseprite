@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,11 +27,6 @@ Separator::Separator(const std::string& text, int align)
     setText(text);
 
   initTheme();
-}
-
-void Separator::onPaint(PaintEvent& ev)
-{
-  theme()->paintSeparator(ev);
 }
 
 void Separator::onSizeHint(SizeHintEvent& ev)

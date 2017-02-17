@@ -511,7 +511,7 @@ private:
             if (!group) {
               group = new Separator(
                 section()->children()[sectionIdx]->text(), HORIZONTAL);
-              group->setBgColor(SkinTheme::instance()->colors.background());
+              group->setStyle(SkinTheme::instance()->newStyles.separatorInView());
 
               searchList()->addChild(group);
             }

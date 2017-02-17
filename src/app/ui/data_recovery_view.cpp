@@ -116,7 +116,7 @@ void DataRecoveryView::fillList()
       continue;
 
     auto sep = new Separator(session->name(), HORIZONTAL);
-    sep->setBgColor(SkinTheme::instance()->colors.background());
+    sep->setStyle(SkinTheme::instance()->newStyles.separatorInView());
     sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
     m_listBox.addChild(sep);
 

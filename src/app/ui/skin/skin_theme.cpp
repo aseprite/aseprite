@@ -590,6 +590,16 @@ void SkinTheme::loadXml(const std::string& skinId)
           }
         }
 
+        // Offset
+        const char* x = xmlLayer->Attribute("x");
+        const char* y = xmlLayer->Attribute("y");
+        if (x || y) {
+          gfx::Point offset(0, 0);
+          if (x) offset.x = std::strtol(x, nullptr, 10);
+          if (y) offset.y = std::strtol(y, nullptr, 10);
+          layer.setOffset(offset);
+        }
+
         // Sprite sheet
         const char* partId = xmlLayer->Attribute("part");
         if (partId) {
@@ -771,18 +781,16 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kSeparatorWidget:
-      // Frame
-      if ((widget->align() & HORIZONTAL) &&
-          (widget->align() & VERTICAL)) {
-        BORDER(4 * scale);
-      }
       // Horizontal bar
-      else if (widget->align() & HORIZONTAL) {
-        BORDER4(2 * scale, 4 * scale, 2 * scale, 0);
+      if (widget->align() & HORIZONTAL) {
+        if (dynamic_cast<MenuSeparator*>(widget))
+          widget->setStyle(newStyles.menuSeparator());
+        else
+          widget->setStyle(newStyles.horizontalSeparator());
       }
       // Vertical bar
       else {
-        BORDER4(4 * scale, 2 * scale, 1 * scale, 2 * scale);
+        widget->setStyle(newStyles.verticalSeparator());
       }
       break;
 
@@ -1306,43 +1314,6 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   // Focus
   if (widget->hasFocus())
     drawRect(g, bounds, parts.radioFocus().get());
-}
-
-void SkinTheme::paintSeparator(ui::PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  gfx::Rect bounds = widget->clientBounds();
-
-  // background
-  g->fillRect(BGCOLOR, bounds);
-
-  if (widget->align() & HORIZONTAL) {
-    int h = parts.separatorHorz()->bitmap(0)->height();
-    drawHline(g, gfx::Rect(bounds.x, bounds.y+bounds.h/2-h/2,
-                           bounds.w, h),
-              parts.separatorHorz().get());
-  }
-
-  if (widget->align() & VERTICAL) {
-    int w = parts.separatorVert()->bitmap(0)->width();
-    drawVline(g, gfx::Rect(bounds.x+bounds.w/2-w/2, bounds.y,
-                           w, bounds.h),
-              parts.separatorVert().get());
-  }
-
-  // text
-  if (widget->hasText()) {
-    int h = widget->textHeight();
-    Rect r(
-      bounds.x + widget->border().left()/2 + h/2,
-      bounds.y + bounds.h/2 - h/2,
-      widget->textWidth(), h);
-
-    drawText(g, nullptr,
-             colors.separatorLabel(), BGCOLOR,
-             widget, r, 0, widget->mnemonic());
-  }
 }
 
 void SkinTheme::paintSlider(PaintEvent& ev)

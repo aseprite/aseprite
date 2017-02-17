@@ -832,9 +832,9 @@
     </style>
 
     <style id="window_close_button" margin-top="3" margin-right="3">
-      <background part="window_button_normal" />
-      <background part="window_button_hot" state="mouse" />
-      <background part="window_button_selected" state="selected" />
+      <background part="window_button_normal" align="center middle" />
+      <background part="window_button_hot" state="mouse" align="center middle" />
+      <background part="window_button_selected" state="selected" align="center middle" />
       <icon part="window_close_icon" color="button_normal_text" />
       <icon part="window_close_icon" color="button_hot_text" state="mouse" />
       <icon part="window_close_icon" color="button_selected_text" state="selected" />
@@ -1019,6 +1019,30 @@
 
     <style id="workspace_splitter">
       <background color="workspace" />
+    </style>
+
+    <style id="horizontal_separator"
+	   border-left="2"
+	   border-top="4"
+	   border-right="2"
+	   border-bottom="0">
+      <background part="separator_horz" color="window_face" align="middle" />
+      <text color="separator_label" x="4" align="left middle" />
+    </style>
+
+    <style id="menu_separator" extends="horizontal_separator">
+    </style>
+
+    <style id="separator_in_view" extends="horizontal_separator">
+      <background part="separator_horz" color="background" align="middle" />
+    </style>
+
+    <style id="vertical_separator"
+	   border-left="4"
+	   border-top="2"
+	   border-right="1"
+	   border-bottom="2">
+      <background part="separator_vert" align="center" />
     </style>
 
   </styles>

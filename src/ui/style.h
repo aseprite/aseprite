@@ -10,6 +10,7 @@
 
 #include "gfx/border.h"
 #include "gfx/color.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ui/base.h"
@@ -50,7 +51,8 @@ namespace ui {
         , m_align(CENTER | MIDDLE)
         , m_color(gfx::ColorNone)
         , m_icon(nullptr)
-        , m_spriteSheet(nullptr) {
+        , m_spriteSheet(nullptr)
+        , m_offset(0, 0) {
       }
 
       Type type() const { return m_type; }
@@ -62,6 +64,7 @@ namespace ui {
       she::Surface* spriteSheet() const { return m_spriteSheet; }
       const gfx::Rect& spriteBounds() const { return m_spriteBounds; }
       const gfx::Rect& slicesBounds() const { return m_slicesBounds; }
+      const gfx::Point& offset() const { return m_offset; }
 
       void setType(const Type type) { m_type = type; }
       void setFlags(const int flags) { m_flags = flags; }
@@ -71,6 +74,7 @@ namespace ui {
       void setSpriteSheet(she::Surface* spriteSheet) { m_spriteSheet = spriteSheet; }
       void setSpriteBounds(const gfx::Rect& bounds) { m_spriteBounds = bounds; }
       void setSlicesBounds(const gfx::Rect& bounds) { m_slicesBounds = bounds; }
+      void setOffset(const gfx::Point& offset) { m_offset = offset; }
 
     private:
       Type m_type;
@@ -81,6 +85,7 @@ namespace ui {
       she::Surface* m_spriteSheet;
       gfx::Rect m_spriteBounds;
       gfx::Rect m_slicesBounds;
+      gfx::Point m_offset;
     };
 
     typedef std::vector<Layer> Layers;

@@ -429,8 +429,8 @@ private:
 
   void addSeparator() {
     auto sep = new Separator("", HORIZONTAL);
+    sep->setStyle(SkinTheme::instance()->newStyles.separatorInView());
     sep->setBorder(gfx::Border(0, font()->height(), 0, font()->height()));
-    sep->setBgColor(SkinTheme::instance()->colors.textboxFace());
     sep->setExpansive(true);
     addChild(sep);
   }

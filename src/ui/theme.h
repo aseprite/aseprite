@@ -62,7 +62,6 @@ namespace ui {
     virtual void paintMenu(PaintEvent& ev) = 0;
     virtual void paintMenuItem(PaintEvent& ev) = 0;
     virtual void paintRadioButton(PaintEvent& ev) = 0;
-    virtual void paintSeparator(PaintEvent& ev) = 0;
     virtual void paintSlider(PaintEvent& ev) = 0;
     virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
     virtual void paintTextBox(PaintEvent& ev) = 0;
@@ -112,7 +111,8 @@ namespace ui {
     void paintLayer(Graphics* g,
                     const Widget* widget,
                     const Style::Layer& layer,
-                    gfx::Rect& rc);
+                    gfx::Rect& rc,
+                    gfx::Color& bgColor);
     void measureLayer(const Widget* widget,
                       const Style::Layer& layer,
                       gfx::Border& borderHint,
