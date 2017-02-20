@@ -17,6 +17,8 @@ namespace she {
 
   class FreeTypeFont : public Font {
   public:
+    typedef ft::Face Face;
+
     FreeTypeFont(const char* filename, int height);
     ~FreeTypeFont();
 
@@ -29,11 +31,11 @@ namespace she {
     void setSize(int size) override;
     void setAntialias(bool antialias) override;
 
-    ft::Face& face() { return m_face; }
+    Face& face() { return m_face; }
 
   private:
     mutable ft::Lib m_ft;
-    mutable ft::Face m_face;
+    mutable Face m_face;
   };
 
   FreeTypeFont* loadFreeTypeFont(const char* filename, int height);

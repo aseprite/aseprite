@@ -16,6 +16,7 @@
 #include "doc/color.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
+#include "ft/algorithm.h"
 #include "ft/face.h"
 #include "ft/lib.h"
 

@@ -10,6 +10,7 @@
 
 #include "she/draw_text.h"
 
+#include "ft/algorithm.h"
 #include "gfx/clip.h"
 #include "she/common/freetype_font.h"
 #include "she/common/generic_surface.h"
@@ -76,7 +77,7 @@ gfx::Rect draw_text(Surface* surface, Font* font,
         surface->getFormat(&fd);
       }
 
-      ft::ForEachGlyph<ft::Face> feg(ttFont->face());
+      ft::ForEachGlyph<FreeTypeFont::Face> feg(ttFont->face());
       while (it != end) {
         int chr = *it;
         if (delegate)
