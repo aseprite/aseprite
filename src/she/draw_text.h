@@ -22,18 +22,10 @@ namespace she {
   public:
     virtual ~DrawTextDelegate() { }
 
-    // This is called before drawing the character. Here you can
-    // modify the final painted character (e.g. for passwords you can
-    // modify chr='*') and change the specific fg/bg color for this
-    // char (e.g. to change the color depending if is a
-    // selected/highlighted portion of text).
-    virtual void preProcessChar(const base::utf8_const_iterator& it,
-                                const base::utf8_const_iterator& end,
-                                int& chr,
+    // This is called before drawing the character.
+    virtual void preProcessChar(const int chr,
                                 gfx::Color& fg,
-                                gfx::Color& bg,
-                                bool& drawChar,
-                                bool& moveCaret) {
+                                gfx::Color& bg) {
       // Do nothing
     }
 

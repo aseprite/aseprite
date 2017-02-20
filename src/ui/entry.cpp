@@ -59,7 +59,6 @@ Entry::Entry(const std::size_t maxsize, const char* format, ...)
   , m_hidden(false)
   , m_state(false)
   , m_readonly(false)
-  , m_password(false)
   , m_recent_focused(false)
   , m_lock_selection(false)
   , m_translate_dead_keys(true)
@@ -101,19 +100,9 @@ bool Entry::isReadOnly() const
   return m_readonly;
 }
 
-bool Entry::isPassword() const
-{
-  return m_password;
-}
-
 void Entry::setReadOnly(bool state)
 {
   m_readonly = state;
-}
-
-void Entry::setPassword(bool state)
-{
-  m_password = state;
 }
 
 void Entry::showCaret()

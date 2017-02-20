@@ -246,16 +246,10 @@ public:
 
   gfx::Rect bounds() const { return m_bounds; }
 
-  void preProcessChar(const base::utf8_const_iterator& it,
-                      const base::utf8_const_iterator& end,
-                      int& chr,
+  void preProcessChar(const int chr,
                       gfx::Color& fg,
-                      gfx::Color& bg,
-                      bool& drawChar,
-                      bool& moveCaret) override {
-    if (!m_surface)
-      drawChar = false;
-    else {
+                      gfx::Color& bg) override {
+    if (m_surface) {
       if (m_mnemonic && std::tolower(chr) == m_mnemonic) {
         m_underscoreColor = fg;
         m_mnemonic = 0;         // Just one time

@@ -23,10 +23,8 @@ namespace ui {
 
     void setMaxTextLength(const std::size_t maxsize);
 
-    bool isPassword() const;
     bool isReadOnly() const;
     void setReadOnly(bool state);
-    void setPassword(bool state);
 
     void showCaret();
     void hideCaret();
@@ -95,7 +93,6 @@ namespace ui {
     bool m_hidden;
     bool m_state;             // show or not the text caret
     bool m_readonly;
-    bool m_password;
     bool m_recent_focused;
     bool m_lock_selection;
     bool m_translate_dead_keys;

@@ -997,16 +997,9 @@ public:
   bool caretDrawn() const { return m_caretDrawn; }
   const gfx::Rect& textBounds() const { return m_textBounds; }
 
-  void preProcessChar(const base::utf8_const_iterator& it,
-                      const base::utf8_const_iterator& end,
-                      int& chr,
+  void preProcessChar(const int chr,
                       gfx::Color& fg,
-                      gfx::Color& bg,
-                      bool& drawChar,
-                      bool& moveCaret) override {
-    if (m_widget->isPassword())
-      chr = '*';
-
+                      gfx::Color& bg) override {
     // Normal text
     auto& colors = SkinTheme::instance()->colors;
     bg = ColorNone;
@@ -1028,8 +1021,6 @@ public:
       fg = colors.disabled();
     }
 
-    drawChar = true;
-    moveCaret = true;
     m_bg = bg;
   }
 
