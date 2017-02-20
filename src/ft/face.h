@@ -188,8 +188,6 @@ namespace ft {
     std::map<FT_UInt, Glyph*> m_glyphMap;
   };
 
-  typedef FaceFT<SimpleCache> Face;
-
 } // namespace ft
 
 #endif

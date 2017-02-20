@@ -8,7 +8,7 @@
 #define SHE_COMMON_FREETYPE_FONT_H_INCLUDED
 #pragma once
 
-#include "ft/face.h"
+#include "ft/hb_face.h"
 #include "ft/lib.h"
 #include "she/font.h"
 

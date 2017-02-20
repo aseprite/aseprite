@@ -8,26 +8,14 @@
 #define FT_HB_SHAPER_H_INCLUDED
 #pragma once
 
-#include "ft/face.h"
-
-#include <hb.h>
-#include <hb-ft.h>
-
-#include <string>
+#include "ft/hb_face.h"
 
 namespace ft {
 
-  template<typename FaceFT>
+  template<typename HBFace>
   class HBShaper {
   public:
-    HBShaper(FaceFT& face) {
-      m_font = hb_ft_font_create((FT_Face)face, nullptr);
-      m_buffer = hb_buffer_create();
-    }
-
-    ~HBShaper() {
-      if (m_buffer) hb_buffer_destroy(m_buffer);
-      if (m_font) hb_font_destroy(m_font);
+    HBShaper(HBFace& face) : m_face(face) {
     }
 
     bool initialize(const base::utf8_const_iterator& it,
@@ -36,17 +24,16 @@ namespace ft {
       m_end = end;
       m_index = 0;
 
-      hb_buffer_reset(m_buffer);
+      hb_buffer_reset(m_face.buffer());
       for (auto it=m_it; it!=end; ++it)
-        hb_buffer_add(m_buffer, *it, 0);
-      hb_buffer_set_content_type(m_buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
-      hb_buffer_set_direction(m_buffer, HB_DIRECTION_LTR);
-      hb_buffer_guess_segment_properties(m_buffer);
+        hb_buffer_add(m_face.buffer(), *it, 0);
+      hb_buffer_set_content_type(m_face.buffer(), HB_BUFFER_CONTENT_TYPE_UNICODE);
+      hb_buffer_set_direction(m_face.buffer(), HB_DIRECTION_LTR);
+      hb_buffer_guess_segment_properties(m_face.buffer());
+      hb_shape(m_face.font(), m_face.buffer(), nullptr, 0);
 
-      hb_shape(m_font, m_buffer, nullptr, 0);
-
-      m_glyphInfo = hb_buffer_get_glyph_infos(m_buffer, &m_glyphCount);
-      m_glyphPos = hb_buffer_get_glyph_positions(m_buffer, &m_glyphCount);
+      m_glyphInfo = hb_buffer_get_glyph_infos(m_face.buffer(), &m_glyphCount);
+      m_glyphPos = hb_buffer_get_glyph_positions(m_face.buffer(), &m_glyphCount);
       return (m_glyphCount > 0);
     }
 
@@ -75,8 +62,7 @@ namespace ft {
     }
 
   private:
-    hb_buffer_t* m_buffer;
-    hb_font_t* m_font;
+    HBFace& m_face;
     hb_glyph_info_t* m_glyphInfo;
     hb_glyph_position_t* m_glyphPos;
     unsigned int m_glyphCount;
