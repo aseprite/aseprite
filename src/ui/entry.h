@@ -29,7 +29,11 @@ namespace ui {
     void showCaret();
     void hideCaret();
 
+    int caretPos() const { return m_caret; }
+    int lastCaretPos() const;
+
     void setCaretPos(int pos);
+    void setCaretToEnd();
     void selectText(int from, int to);
     void selectAllText();
     void deselectText();

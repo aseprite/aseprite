@@ -117,10 +117,16 @@ void Entry::hideCaret()
   invalidate();
 }
 
+int Entry::lastCaretPos() const
+{
+  // TODO we've to calculate the number of real (composed) Unicode chars
+  return base::utf8_length(text());
+}
+
 void Entry::setCaretPos(int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
-  int textlen = base::utf8_length(text());
+  int textlen = lastCaretPos();
   m_caret = MID(0, pos, textlen);
   m_scroll = MID(0, m_scroll, textlen);
 
@@ -153,9 +159,15 @@ void Entry::setCaretPos(int pos)
   invalidate();
 }
 
+void Entry::setCaretToEnd()
+{
+  int end = lastCaretPos();
+  selectText(end, end);
+}
+
 void Entry::selectText(int from, int to)
 {
-  int end = base::utf8_length(text());
+  int end = lastCaretPos();
 
   m_select = from;
   setCaretPos(from); // to move scroll
@@ -453,7 +465,7 @@ void Entry::onSetText()
 {
   Widget::onSetText();
 
-  int textlen = textLength();
+  int textlen = lastCaretPos();
   if (m_caret >= 0 && m_caret > textlen)
     m_caret = textlen;
 }

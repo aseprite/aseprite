@@ -125,11 +125,6 @@ double Widget::textDouble() const
   return strtod(m_text.c_str(), NULL);
 }
 
-int Widget::textLength() const
-{
-  return base::utf8_length(text());
-}
-
 void Widget::setText(const std::string& text)
 {
   setTextQuiet(text);
