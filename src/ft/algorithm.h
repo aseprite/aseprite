@@ -25,7 +25,7 @@ namespace ft {
 
     bool initialize(const base::utf8_const_iterator& it,
                     const base::utf8_const_iterator& end) {
-      m_it = it;
+      m_begin = m_it = it;
       m_end = end;
       return (m_it != end);
     }
@@ -37,6 +37,10 @@ namespace ft {
 
     int unicodeChar() const {
       return *m_it;
+    }
+
+    int charIndex() {
+      return m_it - m_begin;
     }
 
     unsigned int glyphIndex() {
@@ -54,8 +58,7 @@ namespace ft {
 
   private:
     FaceFT& m_face;
-    base::utf8_const_iterator m_it;
-    base::utf8_const_iterator m_end;
+    base::utf8_const_iterator m_begin, m_end, m_it;
   };
 
   template<typename FaceFT,
@@ -70,8 +73,7 @@ namespace ft {
       , m_glyph(nullptr)
       , m_useKerning(FT_HAS_KERNING((FT_Face)face) ? true: false)
       , m_prevGlyph(0)
-      , m_x(0.0), m_y(0.0)
-      , m_index(0) {
+      , m_x(0.0), m_y(0.0) {
     }
 
     ~ForEachGlyph() {
@@ -79,6 +81,7 @@ namespace ft {
     }
 
     int unicodeChar() { return m_shaper.unicodeChar(); }
+    int charIndex() { return m_shaper.charIndex(); }
 
     const Glyph* glyph() const { return m_glyph; }
 
@@ -148,7 +151,6 @@ namespace ft {
     bool m_useKerning;
     FT_UInt m_prevGlyph;
     double m_x, m_y;
-    int m_index;
   };
 
   template<typename FaceFT>

@@ -20,12 +20,13 @@
 namespace she {
 
 gfx::Rect draw_text(Surface* surface, Font* font,
-                    base::utf8_const_iterator it,
+                    const base::utf8_const_iterator& begin,
                     const base::utf8_const_iterator& end,
                     gfx::Color fg, gfx::Color bg,
                     int x, int y,
                     DrawTextDelegate* delegate)
 {
+  base::utf8_const_iterator it = begin;
   gfx::Rect textBounds;
 
   switch (font->type()) {
@@ -34,8 +35,10 @@ gfx::Rect draw_text(Surface* surface, Font* font,
       SpriteSheetFont* ssFont = static_cast<SpriteSheetFont*>(font);
       while (it != end) {
         int chr = *it;
-        if (delegate)
-          delegate->preProcessChar(chr, fg, bg);
+        if (delegate) {
+          int i = it-begin;
+          delegate->preProcessChar(i, chr, fg, bg);
+        }
 
         gfx::Rect charBounds = ssFont->getCharBounds(chr);
         gfx::Rect outCharBounds(x, y, charBounds.w, charBounds.h);
@@ -75,8 +78,10 @@ gfx::Rect draw_text(Surface* surface, Font* font,
       ft::ForEachGlyph<FreeTypeFont::Face> feg(ttFont->face());
       if (feg.initialize(it, end)) {
         do {
-          if (delegate)
-            delegate->preProcessChar(feg.unicodeChar(), fg, bg);
+          if (delegate) {
+            delegate->preProcessChar(feg.charIndex(),
+                                     feg.unicodeChar(), fg, bg);
+          }
 
           auto glyph = feg.glyph();
           if (!glyph)

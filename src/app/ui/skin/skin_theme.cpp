@@ -997,7 +997,8 @@ public:
   bool caretDrawn() const { return m_caretDrawn; }
   const gfx::Rect& textBounds() const { return m_textBounds; }
 
-  void preProcessChar(const int chr,
+  void preProcessChar(const int index,
+                      const int codepoint,
                       gfx::Color& fg,
                       gfx::Color& bg) override {
     // Normal text

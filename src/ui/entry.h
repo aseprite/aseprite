@@ -37,6 +37,7 @@ namespace ui {
     void selectText(int from, int to);
     void selectAllText();
     void deselectText();
+    std::string selectedText() const;
 
     void setSuffix(const std::string& suffix);
     const std::string& getSuffix() { return m_suffix; }
@@ -45,7 +46,7 @@ namespace ui {
 
     // for themes
     void getEntryThemeInfo(int* scroll, int* caret, int* state,
-                           int* selbeg, int* selend);
+                           int* selbeg, int* selend) const;
     gfx::Rect getEntryTextBounds() const;
 
     // Signals
@@ -88,7 +89,20 @@ namespace ui {
     void backwardWord();
     bool isPosInSelection(int pos);
     void showEditPopupMenu(const gfx::Point& pt);
+    void recalcCharBoxes(const std::string& text);
 
+    class CalcBoxesTextDelegate;
+
+    struct CharBox {
+      int codepoint;
+      int from, to;
+      int width;
+      CharBox() { codepoint = from = to = width = 0; }
+    };
+
+    typedef std::vector<CharBox> CharBoxes;
+
+    CharBoxes m_boxes;
     Timer m_timer;
     std::size_t m_maxsize;
     int m_caret;

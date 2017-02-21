@@ -23,9 +23,9 @@ namespace she {
     virtual ~DrawTextDelegate() { }
 
     // This is called before drawing the character.
-    virtual void preProcessChar(const int chr,
-                                gfx::Color& fg,
-                                gfx::Color& bg) {
+    virtual void preProcessChar(const int index,
+                                const int codepoint,
+                                gfx::Color& fg, gfx::Color& bg) {
       // Do nothing
     }
 
@@ -43,7 +43,7 @@ namespace she {
   // (e.g. measure how much space will use the text without drawing
   // it).
   gfx::Rect draw_text(Surface* surface, Font* font,
-                      base::utf8_const_iterator it,
+                      const base::utf8_const_iterator& begin,
                       const base::utf8_const_iterator& end,
                       gfx::Color fg, gfx::Color bg,
                       int x, int y,
