@@ -278,7 +278,7 @@ void ComboBox::setSelectedItemIndex(int itemIndex)
     ListItem* item = *it;
     m_entry->setText(item->text());
     if (isEditable())
-      m_entry->selectText(m_entry->textLength(), m_entry->textLength());
+      m_entry->setCaretToEnd();
 
     onChange();
   }
@@ -394,7 +394,7 @@ void ComboBox::onSizeHint(SizeHintEvent& ev)
   Size entrySize = m_entry->sizeHint();
   Size reqSize = entrySize;
 
-  // Get the text-length of every item and put in 'w' the maximum value
+  // Get the text-length of every item
   ListItems::iterator it, end = m_items.end();
   for (it = m_items.begin(); it != end; ++it) {
     int item_w =
@@ -498,7 +498,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         // of the text. We don't select the whole text so the user can
         // delete the last caracters using backspace and complete the
         // item name.
-        selectText(textLength(), textLength());
+        setCaretToEnd();
       }
       return result;
     }

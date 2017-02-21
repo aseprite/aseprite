@@ -23,18 +23,21 @@ namespace ui {
 
     void setMaxTextLength(const std::size_t maxsize);
 
-    bool isPassword() const;
     bool isReadOnly() const;
     void setReadOnly(bool state);
-    void setPassword(bool state);
 
     void showCaret();
     void hideCaret();
 
+    int caretPos() const { return m_caret; }
+    int lastCaretPos() const;
+
     void setCaretPos(int pos);
+    void setCaretToEnd();
     void selectText(int from, int to);
     void selectAllText();
     void deselectText();
+    std::string selectedText() const;
 
     void setSuffix(const std::string& suffix);
     const std::string& getSuffix() { return m_suffix; }
@@ -43,7 +46,7 @@ namespace ui {
 
     // for themes
     void getEntryThemeInfo(int* scroll, int* caret, int* state,
-                           int* selbeg, int* selend);
+                           int* selbeg, int* selend) const;
     gfx::Rect getEntryTextBounds() const;
 
     // Signals
@@ -86,7 +89,20 @@ namespace ui {
     void backwardWord();
     bool isPosInSelection(int pos);
     void showEditPopupMenu(const gfx::Point& pt);
+    void recalcCharBoxes(const std::string& text);
 
+    class CalcBoxesTextDelegate;
+
+    struct CharBox {
+      int codepoint;
+      int from, to;
+      int width;
+      CharBox() { codepoint = from = to = width = 0; }
+    };
+
+    typedef std::vector<CharBox> CharBoxes;
+
+    CharBoxes m_boxes;
     Timer m_timer;
     std::size_t m_maxsize;
     int m_caret;
@@ -95,7 +111,6 @@ namespace ui {
     bool m_hidden;
     bool m_state;             // show or not the text caret
     bool m_readonly;
-    bool m_password;
     bool m_recent_focused;
     bool m_lock_selection;
     bool m_translate_dead_keys;

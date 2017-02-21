@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
@@ -143,6 +143,7 @@ set(LOADPNG_DIR         ${CMAKE_SOURCE_DIR}/third_party/loadpng)
 set(LIBWEBP_DIR         ${CMAKE_SOURCE_DIR}/third_party/libwebp)
 set(PIXMAN_DIR          ${CMAKE_SOURCE_DIR}/third_party/pixman)
 set(FREETYPE_DIR        ${CMAKE_SOURCE_DIR}/third_party/freetype2)
+set(HARFBUZZ_DIR        ${CMAKE_SOURCE_DIR}/third_party/harfbuzz)
 set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
@@ -262,6 +263,10 @@ else()
   set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include)
 endif()
 include_directories(${FREETYPE_INCLUDE_DIRS})
+
+# harfbuzz
+set(HARFBUZZ_LIBRARIES harfbuzz)
+set(HARFBUZZ_INCLUDE_DIRS ${HARFBUZZ_DIR}/src)
 
 if(USE_SHARED_GIFLIB)
   find_package(GIF REQUIRED)

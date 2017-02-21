@@ -517,7 +517,8 @@ target_link_libraries(app-lib
   ${PNG_LIBRARIES}
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
-  ${FREETYPE_LIBRARIES})
+  ${FREETYPE_LIBRARIES}
+  ${HARFBUZZ_LIBRARIES})
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

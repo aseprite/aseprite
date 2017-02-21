@@ -246,17 +246,14 @@ public:
 
   gfx::Rect bounds() const { return m_bounds; }
 
-  void preProcessChar(const base::utf8_const_iterator& it,
-                      const base::utf8_const_iterator& end,
-                      int& chr,
+  void preProcessChar(const int index,
+                      const int codepoint,
                       gfx::Color& fg,
-                      gfx::Color& bg,
-                      bool& drawChar,
-                      bool& moveCaret) override {
-    if (!m_surface)
-      drawChar = false;
-    else {
-      if (m_mnemonic && std::tolower(chr) == m_mnemonic) {
+                      gfx::Color& bg) override {
+    if (m_surface) {
+      if (m_mnemonic &&
+          // TODO use ICU library to lower unicode chars
+          std::tolower(codepoint) == m_mnemonic) {
         m_underscoreColor = fg;
         m_mnemonic = 0;         // Just one time
       }

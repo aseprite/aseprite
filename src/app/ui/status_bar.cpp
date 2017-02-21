@@ -100,7 +100,7 @@ class StatusBar::Indicators : public HBox {
       Graphics* g = ev.graphics();
 
       g->fillRect(bgColor(), rc);
-      if (textLength() > 0) {
+      if (!text().empty()) {
         g->drawText(text(), textColor, ColorNone,
                     Point(rc.x, rc.y + rc.h/2 - font()->height()/2));
       }
