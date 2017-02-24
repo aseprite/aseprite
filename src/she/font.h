@@ -20,6 +20,7 @@ namespace she {
 
   class Font {
   public:
+    Font() : m_fallback(nullptr) { }
     virtual ~Font() { }
     virtual void dispose() = 0;
     virtual FontType type() = 0;
@@ -28,6 +29,17 @@ namespace she {
     virtual bool isScalable() const = 0;
     virtual void setSize(int size) = 0;
     virtual void setAntialias(bool antialias) = 0;
+    virtual bool hasCodePoint(int codepoint) const = 0;
+
+    she::Font* fallback() const {
+      return m_fallback;
+    }
+    void setFallback(she::Font* font) {
+      m_fallback = font;
+    }
+
+  private:
+    she::Font* m_fallback;
   };
 
 } // namespace she

@@ -9,12 +9,14 @@
 #endif
 
 #include "app/console.h"
+#include "app/font_path.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/button_icon_impl.h"
+#include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_style_property.h"
@@ -94,6 +96,104 @@ static css::Value value_or_none(const char* valueStr)
     return css::Value(valueStr);
 }
 
+static FontData* load_font(std::map<std::string, FontData*>& fonts,
+                           const TiXmlElement* xmlFont,
+                           const std::string& xmlFilename)
+{
+  const char* fontRef = xmlFont->Attribute("font");
+  if (fontRef) {
+    auto it = fonts.find(fontRef);
+    if (it == fonts.end())
+      throw base::Exception("Font named '%s' not found\n", fontRef);
+    return it->second;
+  }
+
+  const char* nameStr = xmlFont->Attribute("name");
+  if (!nameStr)
+    throw base::Exception("No \"name\" or \"font\" attributes specified on <font>");
+
+  std::string name(nameStr);
+  LOG(VERBOSE) << "SKIN: Loading font '" << name << "'\n";
+
+  const char* typeStr = xmlFont->Attribute("type");
+  if (!typeStr)
+    throw base::Exception("<font> without 'type' attribute in '%s'\n",
+                          xmlFilename.c_str());
+
+  std::string type(typeStr);
+  base::UniquePtr<FontData> font(nullptr);
+
+  if (type == "spritesheet") {
+    const char* fileStr = xmlFont->Attribute("file");
+    if (fileStr) {
+      font.reset(new FontData(she::FontType::kSpriteSheet));
+      font->setFilename(
+        base::join_path(
+          base::get_file_path(xmlFilename),
+          fileStr));
+    }
+  }
+  else if (type == "truetype") {
+    const char* platformFileAttrName =
+#ifdef _WIN32
+      "file_win"
+#elif defined __APPLE__
+      "file_mac"
+#else
+      "file_linux"
+#endif
+      ;
+
+    const char* platformFileStr = xmlFont->Attribute(platformFileAttrName);
+    const char* fileStr = xmlFont->Attribute("file");
+    bool antialias = true;
+    if (xmlFont->Attribute("antialias"))
+      antialias = bool_attr_is_true(xmlFont, "antialias");
+
+    std::string fontFilename;
+    if (platformFileStr)
+      fontFilename = app::find_font(platformFileStr);
+    if (fileStr && fontFilename.empty())
+      fontFilename = app::find_font(fileStr);
+
+    if (!fontFilename.empty()) {
+      font.reset(new FontData(she::FontType::kTrueType));
+      font->setFilename(fontFilename);
+      font->setAntialias(antialias);
+    }
+    else {
+      throw base::Exception("Invalid file for <font name=\"%s\" ...> in '%s'\n",
+                            name.c_str(), xmlFilename.c_str());
+    }
+  }
+  else {
+    throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",
+                          type.c_str(), xmlFilename.c_str(), name.c_str());
+  }
+
+  FontData* result = nullptr;
+  if (font) {
+    fonts[name] = result = font.get();
+    font.release();
+
+    // Fallback font
+    const TiXmlElement* xmlFallback =
+      (const TiXmlElement*)xmlFont->FirstChild("fallback");
+    if (xmlFallback) {
+      FontData* fallback = load_font(fonts, xmlFallback, xmlFilename);
+      if (fallback) {
+        int size = 10;
+        const char* sizeStr = xmlFont->Attribute("size");
+        if (sizeStr)
+          size = std::strtol(sizeStr, nullptr, 10);
+
+        result->setFallback(fallback, size);
+      }
+    }
+  }
+  return result;
+}
+
 // static
 SkinTheme* SkinTheme::instance()
 {
@@ -101,13 +201,11 @@ SkinTheme* SkinTheme::instance()
 }
 
 SkinTheme::SkinTheme()
-  : m_cursors(ui::kCursorTypes, NULL)
+  : m_sheet(nullptr)
+  , m_cursors(ui::kCursorTypes, nullptr)
+  , m_defaultFont(nullptr)
+  , m_miniFont(nullptr)
 {
-  m_defaultFont = nullptr;
-  m_miniFont = nullptr;
-
-  // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
-  m_sheet = NULL;
 }
 
 SkinTheme::~SkinTheme()
@@ -127,11 +225,8 @@ SkinTheme::~SkinTheme()
   m_parts_by_id.clear();
 
   // Destroy fonts
-  if (m_defaultFont)
-    m_defaultFont->dispose();
-
-  if (m_miniFont)
-    m_miniFont->dispose();
+  for (auto kv : m_fonts)
+    delete kv.second;          // Delete all FontDatas
 }
 
 void SkinTheme::onRegenerate()
@@ -160,12 +255,37 @@ void SkinTheme::onRegenerate()
   }
 }
 
+void SkinTheme::loadFontData()
+{
+  LOG("SKIN: Loading fonts\n");
+
+  std::string fonstFilename("fonts/fonts.xml");
+
+  ResourceFinder rf;
+  rf.includeDataDir(fonstFilename.c_str());
+  if (!rf.findFirst())
+    throw base::Exception("File %s not found", fonstFilename.c_str());
+
+  XmlDocumentRef doc = open_xml(rf.filename());
+  TiXmlHandle handle(doc.get());
+
+  TiXmlElement* xmlFont = handle
+    .FirstChild("fonts")
+    .FirstChild("font").ToElement();
+  while (xmlFont) {
+    load_font(m_fonts, xmlFont, rf.filename());
+    xmlFont = xmlFont->NextSiblingElement();
+  }
+}
+
 void SkinTheme::loadAll(const std::string& skinId)
 {
   LOG("SKIN: Loading theme %s\n", skinId.c_str());
 
+  if (m_fonts.empty())
+    loadFontData();
+
   loadSheet(skinId);
-  loadFonts(skinId);
   loadXml(skinId);
 }
 
@@ -190,17 +310,6 @@ void SkinTheme::loadSheet(const std::string& skinId)
   }
 }
 
-void SkinTheme::loadFonts(const std::string& skinId)
-{
-  if (m_defaultFont) m_defaultFont->dispose();
-  if (m_miniFont) m_miniFont->dispose();
-
-  Preferences& pref = Preferences::instance();
-
-  m_defaultFont = loadFont(pref.theme.font(), themeFileName(skinId, "font.png"));
-  m_miniFont = loadFont(pref.theme.miniFont(), themeFileName(skinId, "minifont.png"));
-}
-
 void SkinTheme::loadXml(const std::string& skinId)
 {
   // Load the skin XML
@@ -212,6 +321,42 @@ void SkinTheme::loadXml(const std::string& skinId)
 
   XmlDocumentRef doc = open_xml(rf.filename());
   TiXmlHandle handle(doc.get());
+
+  // Load fonts
+  {
+    TiXmlElement* xmlFont = handle
+      .FirstChild("theme")
+      .FirstChild("fonts")
+      .FirstChild("font").ToElement();
+    while (xmlFont) {
+      const char* idStr = xmlFont->Attribute("id");
+      FontData* fontData = load_font(m_fonts, xmlFont, rf.filename());
+      if (idStr && fontData) {
+        std::string id(idStr);
+        LOG(VERBOSE) << "SKIN: Loading theme font '" << id << "\n";
+
+        int size = 10;
+        const char* sizeStr = xmlFont->Attribute("size");
+        if (sizeStr)
+          size = std::strtol(sizeStr, nullptr, 10);
+
+        if (id == "default") {
+          m_defaultFont = fontData->getFont(size);
+        }
+        else if (id == "mini") {
+          m_miniFont = fontData->getFont(size);
+        }
+      }
+
+      xmlFont = xmlFont->NextSiblingElement();
+    }
+  }
+
+  // No available font to run the program
+  if (!m_defaultFont)
+    throw base::Exception("There is no default font");
+  if (!m_miniFont)
+    m_miniFont = m_defaultFont;
 
   // Load dimension
   {
@@ -1776,30 +1921,6 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
 
   if (icon_bmp)
     g->drawRgbaSurface(icon_bmp, x, y);
-}
-
-she::Font* SkinTheme::loadFont(const std::string& userFont, const std::string& themeFont)
-{
-  // Directories to find the font
-  ResourceFinder rf;
-  if (!userFont.empty())
-    rf.addPath(userFont.c_str());
-  rf.includeDataDir(themeFont.c_str());
-
-  // Try to load the font
-  while (rf.next()) {
-    try {
-      she::Font* f = she::instance()->loadSpriteSheetFont(rf.filename().c_str(), guiscale());
-      if (f->isScalable())
-        f->setSize(8);
-      return f;
-    }
-    catch (const std::exception&) {
-      // Do nothing
-    }
-  }
-
-  return nullptr;
 }
 
 std::string SkinTheme::themeFileName(const std::string& skinId,

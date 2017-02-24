@@ -29,6 +29,24 @@ gfx::Rect draw_text(Surface* surface, Font* font,
   base::utf8_const_iterator it = begin;
   gfx::Rect textBounds;
 
+retry:;
+  // Check if this font is enough to draw the given string or we will
+  // need the fallback for some special Unicode chars
+  if (font->fallback()) {
+    // TODO compose unicode characters and check those codepoints, the
+    //      same in the drawing code of sprite sheet font
+    for (auto it=begin; it!=end; ++it) {
+      uint32_t code = *it;
+      if (code && !font->hasCodePoint(code)) {
+        Font* newFont = font->fallback();
+        y += font->height()/2 - newFont->height()/2;
+
+        font = newFont;
+        goto retry;
+      }
+    }
+  }
+
   switch (font->type()) {
 
     case FontType::kSpriteSheet: {

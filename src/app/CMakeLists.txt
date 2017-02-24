@@ -89,6 +89,20 @@ include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
 ######################################################################
 # app-lib target
 
+# These specific-platform files should be in an external library
+# (e.g. "base" or "she").
+set(app_platform_files)
+if(WIN32)
+  set(app_platform_files
+    font_path_win32.cpp)
+elseif(APPLE)
+  set(app_platform_files
+    font_path_osx.mm)
+else()
+  set(app_platform_files
+    font_path_linux.cpp)
+endif()
+
 set(data_recovery_files)
 if(NOT ENABLE_TRIAL_MODE)
   set(data_recovery_files
@@ -356,6 +370,7 @@ add_library(app-lib
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
+  font_path.cpp
   gui_xml.cpp
   i18n/strings.cpp
   ini_file.cpp
@@ -455,6 +470,7 @@ add_library(app-lib
   ui/search_entry.cpp
   ui/select_accelerator.cpp
   ui/skin/button_icon_impl.cpp
+  ui/skin/font_data.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
@@ -490,6 +506,7 @@ add_library(app-lib
   widget_loader.cpp
   xml_document.cpp
   xml_exception.cpp
+  ${app_platform_files}
   ${data_recovery_files}
   ${scripting_files}
   ${generated_files})

@@ -63,6 +63,11 @@ public:
     // Do nothing
   }
 
+  bool hasCodePoint(int codepoint) const override {
+    codepoint -= (int)' ';
+    return (codepoint >= 0 && codepoint < (int)m_chars.size());
+  }
+
   Surface* getSurfaceSheet() const {
     return m_sheet;
   }

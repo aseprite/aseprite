@@ -33,6 +33,8 @@ namespace she {
 namespace app {
   namespace skin {
 
+    class FontData;
+
     // This is the GUI theme used by Aseprite (which use images from
     // data/skins directory).
     class SkinTheme : public ui::Theme
@@ -114,9 +116,9 @@ namespace app {
       void onRegenerate() override;
 
     private:
+      void loadFontData();
       void loadAll(const std::string& skinId);
       void loadSheet(const std::string& skinId);
-      void loadFonts(const std::string& skinId);
       void loadXml(const std::string& skinId);
 
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
@@ -128,7 +130,6 @@ namespace app {
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
-      she::Font* loadFont(const std::string& userFont, const std::string& themeFont);
       std::string themeFileName(const std::string& skinId,
                                 const std::string& fileName) const;
 
@@ -140,6 +141,7 @@ namespace app {
       std::vector<ui::Cursor*> m_cursors;
       StyleSheet m_stylesheet;
       std::map<std::string, ui::Style*> m_styles;
+      std::map<std::string, FontData*> m_fonts;
       she::Font* m_defaultFont;
       she::Font* m_miniFont;
     };

@@ -30,6 +30,7 @@ namespace she {
     bool isScalable() const override;
     void setSize(int size) override;
     void setAntialias(bool antialias) override;
+    bool hasCodePoint(int codepoint) const override;
 
     Face& face() { return m_face; }
 

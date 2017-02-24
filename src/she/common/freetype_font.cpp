@@ -69,6 +69,11 @@ void FreeTypeFont::setAntialias(bool antialias)
   m_face.setAntialias(antialias);
 }
 
+bool FreeTypeFont::hasCodePoint(int codepoint) const
+{
+  return true;                  // TODO
+}
+
 FreeTypeFont* loadFreeTypeFont(const char* filename, int height)
 {
   FreeTypeFont* font = new FreeTypeFont(filename, height);

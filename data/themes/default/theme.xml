@@ -3,6 +3,11 @@
        author="Ilija Melentijevic &amp; David Capello"
        url="http://ilkke.blogspot.com/">
 
+  <fonts>
+    <font id="default" font="Aseprite" />
+    <font id="mini" font="Aseprite Mini" />
+  </fonts>
+
   <dimensions>
     <dim id="scrollbar_size" value="12" />
     <dim id="mini_scrollbar_size" value="6" />
