@@ -100,7 +100,7 @@ elseif(APPLE)
     font_path_osx.mm)
 else()
   set(app_platform_files
-    font_path_linux.cpp)
+    font_path_unix.cpp)
 endif()
 
 set(data_recovery_files)
