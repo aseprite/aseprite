@@ -46,6 +46,7 @@ namespace app {
     Menu* getCelPopupMenu() { return m_celPopupMenu; }
     Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu; }
     Menu* getFrameTagPopupMenu() { return m_frameTagPopupMenu; }
+    Menu* getSlicePopupMenu() { return m_slicePopupMenu; }
     Menu* getPalettePopupMenu() { return m_palettePopupMenu; }
     Menu* getInkPopupMenu() { return m_inkPopupMenu; }
 
@@ -67,6 +68,7 @@ namespace app {
     base::UniquePtr<Menu> m_celPopupMenu;
     base::UniquePtr<Menu> m_celMovementPopupMenu;
     base::UniquePtr<Menu> m_frameTagPopupMenu;
+    base::UniquePtr<Menu> m_slicePopupMenu;
     base::UniquePtr<Menu> m_palettePopupMenu;
     base::UniquePtr<Menu> m_inkPopupMenu;
     obs::scoped_connection m_recentFilesConn;

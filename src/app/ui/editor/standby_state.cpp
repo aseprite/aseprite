@@ -11,6 +11,7 @@
 #include "app/ui/editor/standby_state.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/color_picker.h"
 #include "app/commands/cmd_eyedropper.h"
 #include "app/commands/commands.h"
@@ -22,6 +23,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/pick_ink.h"
 #include "app/tools/tool.h"
+#include "app/ui/app_menuitem.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor.h"
@@ -29,6 +31,7 @@
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/moving_cel_state.h"
 #include "app/ui/editor/moving_pixels_state.h"
+#include "app/ui/editor/moving_slice_state.h"
 #include "app/ui/editor/moving_symmetry_state.h"
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/editor/pixels_movement.h"
@@ -46,6 +49,7 @@
 #include "base/pi.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "fixmath/fixmath.h"
 #include "gfx/rect.h"
@@ -215,6 +219,29 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     editor->captureMouse();
     callEyedropper(editor);
     return true;
+  }
+
+  if (clickedInk->isSlice()) {
+    EditorHit hit = editor->calcHit(msg->position());
+    switch (hit.type()) {
+      case EditorHit::SliceBounds:
+      case EditorHit::SliceCenter:
+        if (msg->left()) {
+          MovingSliceState* newState = new MovingSliceState(editor, msg, hit);
+          editor->setState(EditorStatePtr(newState));
+        }
+        else {
+          Menu* popupMenu = AppMenus::instance()->getSlicePopupMenu();
+          if (popupMenu) {
+            Params params;
+            params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
+            AppMenuItem::setContextParams(params);
+            popupMenu->showPopup(msg->position());
+            AppMenuItem::setContextParams(Params());
+          }
+        }
+        return true;
+    }
   }
 
   // Only if the selected tool or quick tool is selection, we give the
@@ -409,8 +436,41 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
       return true;
     }
     else if (ink->isSlice()) {
-      editor->showBrushPreview(mouseScreenPos);
-      return true;
+      EditorHit hit = editor->calcHit(mouseScreenPos);
+      switch (hit.type()) {
+        case EditorHit::None:
+          // Do nothing, continue
+          break;
+        case EditorHit::SliceBounds:
+        case EditorHit::SliceCenter:
+          switch (hit.border()) {
+            case TOP | LEFT:
+              editor->showMouseCursor(kSizeNWCursor);
+              break;
+            case TOP:
+              editor->showMouseCursor(kSizeNCursor);
+              break;
+            case TOP | RIGHT:
+              editor->showMouseCursor(kSizeNECursor);
+              break;
+            case LEFT:
+              editor->showMouseCursor(kSizeWCursor);
+              break;
+            case RIGHT:
+              editor->showMouseCursor(kSizeECursor);
+              break;
+            case BOTTOM | LEFT:
+              editor->showMouseCursor(kSizeSWCursor);
+              break;
+            case BOTTOM:
+              editor->showMouseCursor(kSizeSCursor);
+              break;
+            case BOTTOM | RIGHT:
+              editor->showMouseCursor(kSizeSECursor);
+              break;
+          }
+          return true;
+      }
     }
   }
 
@@ -488,6 +548,27 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       int row = (std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h;
       sprintf(
         buf+std::strlen(buf), " :grid: %d %d", col, row);
+    }
+
+    if (editor->docPref().show.slices()) {
+      int count = 0;
+      for (auto slice : editor->document()->sprite()->slices()) {
+        auto key = slice->getByFrame(editor->frame());
+        if (key &&
+            key->bounds().contains(
+              int(std::floor(spritePos.x)),
+              int(std::floor(spritePos.y)))) {
+          if (++count == 3) {
+            sprintf(
+              buf+std::strlen(buf), " :slice: ...");
+            break;
+          }
+
+          sprintf(
+            buf+std::strlen(buf), " :slice: %s",
+            slice->name().c_str());
+        }
+      }
     }
 
     StatusBar::instance()->setStatusText(0, buf);
@@ -700,6 +781,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
     return true;
   }
 
+  // Move symmetry
   gfx::Rect box1, box2;
   if (getSymmetryHandles(editor, box1, box2) &&
       (box1.contains(mouseScreenPos) ||

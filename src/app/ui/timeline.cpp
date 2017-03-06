@@ -936,6 +936,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 if (popupMenu) {
                   AppMenuItem::setContextParams(params);
                   popupMenu->showPopup(mouseMsg->position());
+                  AppMenuItem::setContextParams(Params());
 
                   m_state = STATE_STANDBY;
                   invalidate();

@@ -82,7 +82,6 @@ MovingCelState::MovingCelState(Editor* editor,
   , m_celList(collect.celList())
   , m_celOffset(0.0, 0.0)
   , m_celScale(1.0, 1.0)
-  , m_canceled(false)
   , m_hasReference(false)
   , m_scaled(false)
   , m_handle(handle)
@@ -147,8 +146,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
   }
 
   if (modified) {
-    // If the user didn't cancel the operation...
-    if (!m_canceled) {
+    {
       ContextWriter writer(m_reader, 1000);
       Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
       DocumentApi api = document->getApi(transaction);

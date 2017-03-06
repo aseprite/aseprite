@@ -162,6 +162,7 @@ add_library(app-lib
   cmd/add_frame_tag.cpp
   cmd/add_layer.cpp
   cmd/add_palette.cpp
+  cmd/add_slice.cpp
   cmd/background_from_layer.cpp
   cmd/clear_cel.cpp
   cmd/clear_image.cpp
@@ -188,6 +189,7 @@ add_library(app-lib
   cmd/remove_frame_tag.cpp
   cmd/remove_layer.cpp
   cmd/remove_palette.cpp
+  cmd/remove_slice.cpp
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_bounds.cpp
@@ -209,6 +211,8 @@ add_library(app-lib
   cmd/set_palette.cpp
   cmd/set_pixel_format.cpp
   cmd/set_pixel_ratio.cpp
+  cmd/set_slice_key.cpp
+  cmd/set_slice_name.cpp
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
@@ -221,6 +225,7 @@ add_library(app-lib
   cmd/with_frame_tag.cpp
   cmd/with_image.cpp
   cmd/with_layer.cpp
+  cmd/with_slice.cpp
   cmd/with_sprite.cpp
   cmd_sequence.cpp
   cmd_transaction.cpp
@@ -307,6 +312,7 @@ add_library(app-lib
   commands/cmd_remove_frame.cpp
   commands/cmd_remove_frame_tag.cpp
   commands/cmd_remove_layer.cpp
+  commands/cmd_remove_slice.cpp
   commands/cmd_repeat_last_export.cpp
   commands/cmd_reselect_mask.cpp
   commands/cmd_reverse_frames.cpp
@@ -324,6 +330,7 @@ add_library(app-lib
   commands/cmd_set_palette_entry_size.cpp
   commands/cmd_set_same_ink.cpp
   commands/cmd_show.cpp
+  commands/cmd_slice_properties.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
@@ -433,6 +440,7 @@ add_library(app-lib
   ui/editor/editor_view.cpp
   ui/editor/moving_cel_state.cpp
   ui/editor/moving_pixels_state.cpp
+  ui/editor/moving_slice_state.cpp
   ui/editor/moving_symmetry_state.cpp
   ui/editor/navigate_state.cpp
   ui/editor/pivot_helpers.cpp
@@ -478,6 +486,7 @@ add_library(app-lib
   ui/skin/skin_theme.cpp
   ui/skin/style.cpp
   ui/skin/style_sheet.cpp
+  ui/slice_window.cpp
   ui/status_bar.cpp
   ui/styled_button.cpp
   ui/tabs.cpp

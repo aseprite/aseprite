@@ -89,6 +89,7 @@ void AppMenus::reload()
   m_celPopupMenu.reset(loadMenuById(handle, "cel_popup"));
   m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
   m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup"));
+  m_slicePopupMenu.reset(loadMenuById(handle, "slice_popup"));
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup"));
   m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup"));
 
@@ -284,6 +285,7 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Param
     m_celPopupMenu,
     m_celMovementPopupMenu,
     m_frameTagPopupMenu,
+    m_slicePopupMenu,
     m_palettePopupMenu,
     m_inkPopupMenu
   };

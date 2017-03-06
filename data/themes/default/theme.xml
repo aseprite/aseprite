@@ -282,12 +282,6 @@
     <part id="target_frames"                    x="176" y="224" w="32" h="16" />
     <part id="target_layers"                    x="208" y="224" w="32" h="16" />
     <part id="target_frames_layers"             x="240" y="224" w="32" h="16" />
-    <part id="brush_circle"                     x="144" y="144" w="7" h="8" />
-    <part id="brush_circle_selected"            x="144" y="152" w="7" h="8" />
-    <part id="brush_square"                     x="160" y="144" w="7" h="8" />
-    <part id="brush_square_selected"            x="160" y="152" w="7" h="8" />
-    <part id="brush_line"                       x="176" y="144" w="6" h="6" />
-    <part id="brush_line_selected"              x="176" y="152" w="6" h="6" />
     <part id="selection_replace"                x="176" y="160" w="7" h="7" />
     <part id="selection_replace_selected"       x="176" y="168" w="7" h="7" />
     <part id="selection_add"                    x="192" y="160" w="7" h="7" />
@@ -412,6 +406,7 @@
     <part id="icon_grid"                        x="224" y="264" w="8" h="8" />
     <part id="icon_save"                        x="232" y="264" w="8" h="8" />
     <part id="icon_save_small"                  x="240" y="264" w="8" h="8" />
+    <part id="icon_slice"                       x="248" y="264" w="8" h="8" />
   </parts>
 
   <stylesheet>

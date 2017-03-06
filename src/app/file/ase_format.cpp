@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -39,6 +39,7 @@
 #define ASE_FILE_CHUNK_FRAME_TAGS           0x2018
 #define ASE_FILE_CHUNK_PALETTE              0x2019
 #define ASE_FILE_CHUNK_USER_DATA            0x2020
+#define ASE_FILE_CHUNK_SLICES               0x2021
 
 #define ASE_FILE_LAYER_IMAGE                0
 #define ASE_FILE_LAYER_GROUP                1
@@ -53,6 +54,8 @@
 #define ASE_USER_DATA_FLAG_HAS_COLOR        2
 
 #define ASE_CEL_EXTRA_FLAG_PRECISE_BOUNDS   1
+
+#define ASE_SLICE_FLAG_HAS_CENTER_BOUNDS    1
 
 namespace app {
 
@@ -139,6 +142,9 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
 static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags);
 static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags,
                                             const frame_t fromFrame, const frame_t toFrame);
+static void ase_file_read_slices_chunk(FILE* f, Slices* slices);
+static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header, const Slices* slices,
+                                        const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_read_user_data_chunk(FILE* f, UserData* userData);
 static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData);
 static bool ase_has_groups(LayerGroup* group);
@@ -325,6 +331,10 @@ bool AseFormat::onLoad(FileOp* fop)
             ase_file_read_frame_tags_chunk(f, &sprite->frameTags());
             break;
 
+          case ASE_FILE_CHUNK_SLICES:
+            ase_file_read_slices_chunk(f, &sprite->slices());
+            break;
+
           case ASE_FILE_CHUNK_USER_DATA: {
             UserData userData;
             ase_file_read_user_data_chunk(f, &userData);
@@ -455,6 +465,13 @@ bool AseFormat::onSave(FileOp* fop)
         ase_file_write_frame_tags_chunk(f, &frame_header, &sprite->frameTags(),
                                         fop->roi().fromFrame(),
                                         fop->roi().toFrame());
+
+      // Writer slice chunks
+      if (sprite->slices().size() > 0)
+        ase_file_write_slices_chunk(f, &frame_header,
+                                    &sprite->slices(),
+                                    fop->roi().fromFrame(),
+                                    fop->roi().toFrame());
     }
 
     // Write cel chunks
@@ -1593,7 +1610,7 @@ static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_head
 
   int tags = 0;
   for (const FrameTag* tag : *frameTags) {
-    // Skip tags that are outside the given ROI
+    // Skip tags that are outside of the given ROI
     if (tag->fromFrame() > toFrame ||
         tag->toFrame() < fromFrame)
       continue;
@@ -1666,6 +1683,120 @@ static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_heade
     fputc(doc::rgba_getb(userData->color()), f);
     fputc(doc::rgba_geta(userData->color()), f);
   }
+}
+
+static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
+{
+  size_t nslices = fgetl(f);    // Number of slices
+  fgetl(f);                     // 8 bytes reserved
+  fgetl(f);
+
+  for (size_t i=0; i<nslices; ++i) {
+    size_t nkeys = fgetl(f);       // Number of keys
+    int flags = fgetl(f);       // Flags
+    fgetl(f);                   // 4 bytes reserved
+    std::string name = ase_file_read_string(f); // Name
+
+    base::UniquePtr<Slice> slice(new Slice);
+    slice->setName(name);
+
+    // For each key
+    for (size_t j=0; j<nkeys; ++j) {
+      frame_t frame = fgetl(f);
+      gfx::Rect bounds, center;
+      bounds.x = fgetl(f);
+      bounds.y = fgetl(f);
+      bounds.w = fgetl(f);
+      bounds.h = fgetl(f);
+
+      if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
+        center.x = fgetl(f);
+        center.y = fgetl(f);
+        center.w = fgetl(f);
+        center.h = fgetl(f);
+      }
+
+      slice->insert(frame, SliceKey(bounds, center));
+    }
+
+    slices->add(slice);
+    slice.release();
+  }
+}
+
+static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
+                                        const Slices* slices,
+                                        const frame_t fromFrame,
+                                        const frame_t toFrame)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_SLICES);
+
+  size_t nslices = 0;
+  for (Slice* slice : *slices) {
+    // Skip slices that are outside of the given ROI
+    if (slice->range(fromFrame, toFrame).empty())
+      continue;
+
+    ++nslices;
+  }
+
+  fputl(nslices, f);
+  fputl(0, f);  // 8 reserved bytes
+  fputl(0, f);
+
+  for (Slice* slice : *slices) {
+    // Skip slices that are outside of the given ROI
+    auto range = slice->range(fromFrame, toFrame);
+    if (range.empty())
+      continue;
+
+    int flags = 0;
+    for (auto key : range) {
+      if (key && !key->center().isEmpty()) {
+        flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
+        break;
+      }
+    }
+
+    fputl(range.countKeys(), f);             // number of keys
+    fputl(flags, f);                         // flags
+    fputl(0, f);                             // 4 bytes reserved
+    ase_file_write_string(f, slice->name()); // slice name
+
+    frame_t frame = fromFrame;
+    const SliceKey* oldKey = nullptr;
+    for (auto key : range) {
+      if (frame == fromFrame || key != oldKey) {
+        fputl(frame, f);
+        fputl(key ? key->bounds().x: 0, f);
+        fputl(key ? key->bounds().y: 0, f);
+        fputl(key ? key->bounds().w: 0, f);
+        fputl(key ? key->bounds().h: 0, f);
+
+        if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
+          if (key && !key->center().isEmpty()) {
+            fputl(key->center().x, f);
+            fputl(key->center().y, f);
+            fputl(key->center().w, f);
+            fputl(key->center().h, f);
+          }
+          else {
+            fputl(0, f);
+            fputl(0, f);
+            fputl(key ? key->bounds().w: 0, f);
+            fputl(key ? key->bounds().h: 0, f);
+          }
+        }
+
+        oldKey = key;
+      }
+      ++frame;
+    }
+
+    --nslices;
+  }
+
+  ASSERT(nslices == 0);
 }
 
 static bool ase_has_groups(LayerGroup* group)

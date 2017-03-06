@@ -349,6 +349,7 @@
       <option id="grid" type="bool" default="false" migrate="grid.visible" />
       <option id="pixel_grid" type="bool" default="false" migrate="pixel_grid.visible" />
       <option id="brush_preview" type="bool" default="true" />
+      <option id="slices" type="bool" default="true" />
     </section>
   </document>
 

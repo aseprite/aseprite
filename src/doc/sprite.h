@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,7 @@
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
+#include "doc/slices.h"
 #include "doc/sprite_position.h"
 #include "gfx/rect.h"
 
@@ -128,6 +129,9 @@ namespace doc {
     const FrameTags& frameTags() const { return m_frameTags; }
     FrameTags& frameTags() { return m_frameTags; }
 
+    const Slices& slices() const { return m_slices; }
+    Slices& slices() { return m_slices; }
+
     ////////////////////////////////////////
     // Shared Images and CelData (for linked Cels)
 
@@ -173,6 +177,7 @@ namespace doc {
     mutable RgbMap* m_rgbMap;
 
     FrameTags m_frameTags;
+    Slices m_slices;
 
     // Disable default constructor and copying
     Sprite();

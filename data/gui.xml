@@ -445,8 +445,8 @@
       <key tool="eyedropper" shortcut="I" />
       <key tool="hand" shortcut="H" />
       <key tool="move" shortcut="V" />
+      <key tool="slice" shortcut="C" />
       <key tool="zoom" shortcut="Z" />
-      <!-- key tool="slice" shortcut="K" /-->
 
       <key tool="paint_bucket" shortcut="G" />
 
@@ -769,6 +769,7 @@
           <item command="ShowLayerEdges" text="&amp;Layer Edges" />
           <item command="ShowSelectionEdges" text="&amp;Selection Edges" />
           <item command="ShowGrid" text="&amp;Grid" />
+          <item command="ShowSlices" text="Sl&amp;ices" />
           <item command="ShowPixelGrid" text="&amp;Pixel Grid" />
           <separator />
           <item command="ShowBrushPreview" text="&amp;Brush Preview" />
@@ -913,6 +914,11 @@
     <menu id="frame_tag_popup">
       <item command="FrameTagProperties" text="Tag &amp;Properties..." />
       <item command="RemoveFrameTag" text="&amp;Remove Tag" />
+    </menu>
+
+    <menu id="slice_popup">
+      <item command="SliceProperties" text="Slice &amp;Properties..." />
+      <item command="RemoveSlice" text="&amp;Remove Slice" />
     </menu>
 
     <menu id="palette_popup">
@@ -1118,15 +1124,15 @@
             ink="move"
             controller="freehand"
             />
-      <!-- tool id="slice"
+      <tool id="slice"
             text="Slice Tool"
-            fill="always"
+            fill="none"
             ink="slice"
             controller="two_points"
             pointshape="pixel"
             intertwine="as_rectangles"
             tracepolicy="last"
-            /-->
+            />
     </group>
 
     <group id="paint_bucket" text="Paint Bucket Tool">

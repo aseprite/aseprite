@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -61,7 +61,6 @@ namespace app {
     gfx::PointF m_celOffset;
     gfx::SizeF m_celMainSize;
     gfx::SizeF m_celScale;
-    bool m_canceled;
     bool m_maskVisible;
     bool m_hasReference;
     bool m_scaled;
