@@ -516,7 +516,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 {
   std::string text = this->text();
-  int c, selbeg, selend;
+  int selbeg, selend;
 
   getEntryThemeInfo(NULL, NULL, NULL, &selbeg, &selend);
 
