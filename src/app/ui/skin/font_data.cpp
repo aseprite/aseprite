@@ -28,7 +28,8 @@ FontData::~FontData()
 {
   // Destroy all fonts
   for (auto& it : m_fonts)
-    it.second->dispose();
+    if (it.second)
+      it.second->dispose();
 }
 
 she::Font* FontData::getFont(int size)
@@ -53,9 +54,14 @@ she::Font* FontData::getFont(int size)
       break;
   }
 
-  if (font && m_fallback)
-    font->setFallback(m_fallback->getFont(m_fallbackSize));
-
+  if (m_fallback) {
+    she::Font* fallback = m_fallback->getFont(m_fallbackSize);
+    if (font)
+      font->setFallback(fallback);
+    else
+      font = fallback;
+  }
+  
   return m_fonts[size] = font;
 }
 

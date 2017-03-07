@@ -156,15 +156,15 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     if (fileStr && fontFilename.empty())
       fontFilename = app::find_font(fileStr);
 
-    if (!fontFilename.empty()) {
-      font.reset(new FontData(she::FontType::kTrueType));
-      font->setFilename(fontFilename);
-      font->setAntialias(antialias);
-    }
-    else {
-      throw base::Exception("Invalid file for <font name=\"%s\" ...> in '%s'\n",
-                            name.c_str(), xmlFilename.c_str());
-    }
+    // The filename can be empty if the font was not found, anyway we
+    // want to keep the font information (e.g. to use the fallback
+    // information of this font).
+    font.reset(new FontData(she::FontType::kTrueType));
+    font->setFilename(fontFilename);
+    font->setAntialias(antialias);
+
+    if (!fontFilename.empty())
+      LOG(VERBOSE) << "SKIN: Font file '" << fontFilename << "' not found\n";
   }
   else {
     throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",

@@ -20,7 +20,7 @@ namespace ft {
   class HBFace : public FaceFT {
   public:
     HBFace(FT_Face face) : FaceFT(face) {
-      m_font = hb_ft_font_create((FT_Face)face, nullptr);
+      m_font = (face ? hb_ft_font_create((FT_Face)face, nullptr): nullptr);
       m_buffer = hb_buffer_create();
     }
 
