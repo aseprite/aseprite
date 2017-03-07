@@ -94,7 +94,7 @@ include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
 set(app_platform_files)
 if(WIN32)
   set(app_platform_files
-    font_path_win32.cpp)
+    font_path_win.cpp)
 elseif(APPLE)
   set(app_platform_files
     font_path_osx.mm)

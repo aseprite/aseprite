@@ -24,6 +24,8 @@
 #include "ui/manager.h"
 #include "ui/theme.h"
 
+#include <cctype>
+
 namespace ui {
 
 Graphics::Graphics(she::Surface* surface, int dx, int dy)
