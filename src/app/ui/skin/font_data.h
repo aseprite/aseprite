@@ -28,7 +28,7 @@ namespace skin {
       m_fallbackSize = fallbackSize;
     }
 
-    she::Font* getFont(int size);
+    she::Font* getFont(int size, bool useCache = true);
 
   private:
     she::FontType m_type;

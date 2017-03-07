@@ -21,7 +21,7 @@ namespace ft {
   public:
     HBFace(FT_Face face) : FaceFT(face) {
       m_font = (face ? hb_ft_font_create((FT_Face)face, nullptr): nullptr);
-      m_buffer = hb_buffer_create();
+      m_buffer = (face ? hb_buffer_create(): nullptr);
     }
 
     ~HBFace() {

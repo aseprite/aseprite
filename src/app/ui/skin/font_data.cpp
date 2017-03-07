@@ -27,19 +27,26 @@ FontData::FontData(she::FontType type)
 FontData::~FontData()
 {
   // Destroy all fonts
-  for (auto& it : m_fonts)
-    if (it.second)
-      it.second->dispose();
+  for (auto& it : m_fonts) {
+    she::Font* font = it.second;
+    if (font) {
+      if (font->fallback())
+        font->fallback()->dispose();
+      font->dispose();
+    }
+  }
 }
 
-she::Font* FontData::getFont(int size)
+she::Font* FontData::getFont(int size, bool useCache)
 {
   if (m_type == she::FontType::kSpriteSheet)
     size = 0;                   // Same size always
 
-  auto it = m_fonts.find(size);
-  if (it != m_fonts.end())
-    return it->second;
+  if (useCache) {
+    auto it = m_fonts.find(size);
+    if (it != m_fonts.end())
+      return it->second;
+  }
 
   she::Font* font = nullptr;
 
@@ -55,14 +62,20 @@ she::Font* FontData::getFont(int size)
   }
 
   if (m_fallback) {
-    she::Font* fallback = m_fallback->getFont(m_fallbackSize);
+    she::Font* fallback = m_fallback->getFont(
+      m_fallbackSize,
+      false); // Do not use cache
+
     if (font)
       font->setFallback(fallback);
     else
       font = fallback;
   }
-  
-  return m_fonts[size] = font;
+
+  if (useCache)
+    m_fonts[size] = font;
+
+  return font;
 }
 
 } // namespace skin
