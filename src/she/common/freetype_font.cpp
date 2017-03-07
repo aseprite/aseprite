@@ -20,7 +20,6 @@ namespace she {
 FreeTypeFont::FreeTypeFont(const char* filename, int height)
   : m_face(m_ft.open(filename))
 {
-  ASSERT(m_face.isValid());
   if (m_face.isValid())
     m_face.setSize(height);
 }
@@ -71,7 +70,7 @@ void FreeTypeFont::setAntialias(bool antialias)
 
 bool FreeTypeFont::hasCodePoint(int codepoint) const
 {
-  return true;                  // TODO
+  return m_face.hasCodePoint(codepoint);
 }
 
 FreeTypeFont* loadFreeTypeFont(const char* filename, int height)

@@ -83,6 +83,15 @@ namespace ft {
       return int(m_face->descender * y_scale);
     }
 
+    bool hasCodePoint(int codepoint) const {
+      if (m_face) {
+        codepoint = FT_Get_Char_Index(m_face, codepoint);
+        return (codepoint != 0);
+      }
+      else
+        return false;
+    }
+
     Cache& cache() { return m_cache; }
 
   protected:

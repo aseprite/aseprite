@@ -39,6 +39,13 @@ retry:;
       uint32_t code = *it;
       if (code && !font->hasCodePoint(code)) {
         Font* newFont = font->fallback();
+
+        // Search a valid fallback
+        while (newFont && !newFont->hasCodePoint(code))
+          newFont = newFont->fallback();
+        if (!newFont)
+          break;
+
         y += font->height()/2 - newFont->height()/2;
 
         font = newFont;
