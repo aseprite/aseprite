@@ -76,6 +76,8 @@ public:
     chr -= (int)' ';
     if (chr >= 0 && chr < (int)m_chars.size())
       return m_chars[chr];
+    else if (chr != 128)
+      return getCharBounds(128);
     else
       return gfx::Rect();
   }
