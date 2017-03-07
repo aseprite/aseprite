@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 
 ######################################################################
 # Compiler-specific flags
@@ -97,6 +97,7 @@ add_subdirectory(gfx)
 add_subdirectory(net)
 add_subdirectory(render)
 add_subdirectory(docio)
+add_subdirectory(ft)
 add_subdirectory(she)
 add_subdirectory(ui)
 

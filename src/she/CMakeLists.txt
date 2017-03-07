@@ -240,6 +240,7 @@ endif()
 add_library(she ${SHE_SOURCES})
 
 target_link_libraries(she
+  ft-lib
   gfx-lib
   laf-base
   ${FREETYPE_LIBRARIES})
