@@ -850,6 +850,10 @@ void Entry::recalcCharBoxes(const std::string& text)
                  gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
   m_boxes = delegate.boxes();
 
+  if (!m_boxes.empty()) {
+    m_boxes.back().to = lastTextIndex;
+  }
+
   // A last box for the last position
   CharBox box;
   box.codepoint = 0;

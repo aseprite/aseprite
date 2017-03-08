@@ -22,17 +22,18 @@ namespace ft {
       , m_unicodeFuncs(hb_buffer_get_unicode_funcs(face.buffer())) {
     }
 
-    bool initialize(const base::utf8_const_iterator& it,
+    bool initialize(const base::utf8_const_iterator& begin,
                     const base::utf8_const_iterator& end) {
-      m_begin = m_it = it;
-      m_end = end;
       m_index = 0;
+      if (begin == end)
+        return false;
 
       hb_buffer_t* buf = m_face.buffer();
 
       hb_buffer_reset(buf);
-      for (auto it=m_it; it!=end; ++it)
-        hb_buffer_add(buf, *it, 0);
+      for (auto it=begin; it!=end; ++it)
+        hb_buffer_add(buf, *it, it - begin);
+      hb_buffer_set_cluster_level(buf, HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
       hb_buffer_set_content_type(buf, HB_BUFFER_CONTENT_TYPE_UNICODE);
       hb_buffer_set_direction(buf, HB_DIRECTION_LTR);
       hb_buffer_guess_segment_properties(buf);
@@ -45,18 +46,16 @@ namespace ft {
     }
 
     bool nextChar() {
-      advanceIterator(m_it);
       ++m_index;
       return (m_index < m_glyphCount);
     }
 
     int unicodeChar() const {
-      auto it = m_it;
-      return advanceIterator(it);
+      return m_glyphInfo[m_index].codepoint;
     }
 
     int charIndex() {
-      return m_it - m_begin;
+      return m_glyphInfo[m_index].cluster;
     }
 
     unsigned int glyphIndex() const {
@@ -74,25 +73,11 @@ namespace ft {
     }
 
   private:
-    hb_codepoint_t advanceIterator(base::utf8_const_iterator& it) const {
-      hb_codepoint_t chr = *it;
-      hb_codepoint_t newChr = 0;
-      ++it;
-      while (it != m_end) {
-        if (!hb_unicode_compose(m_unicodeFuncs, chr, *it, &newChr))
-          break;
-        chr = newChr;
-        ++it;
-      }
-      return chr;
-    }
-
     HBFace& m_face;
     hb_glyph_info_t* m_glyphInfo;
     hb_glyph_position_t* m_glyphPos;
     unsigned int m_glyphCount;
-    int m_index;
-    base::utf8_const_iterator m_begin, m_end, m_it;
+    unsigned int m_index;
     hb_unicode_funcs_t* m_unicodeFuncs;
   };
 
