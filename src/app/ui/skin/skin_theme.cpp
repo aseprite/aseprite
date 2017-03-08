@@ -113,7 +113,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     throw base::Exception("No \"name\" or \"font\" attributes specified on <font>");
 
   std::string name(nameStr);
-  LOG(VERBOSE) << "SKIN: Loading font '" << name << "'\n";
+  LOG(VERBOSE) << "THEME: Loading font '" << name << "'\n";
 
   const char* typeStr = xmlFont->Attribute("type");
   if (!typeStr)
@@ -164,7 +164,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     font->setAntialias(antialias);
 
     if (!fontFilename.empty())
-      LOG(VERBOSE) << "SKIN: Font file '" << fontFilename << "' not found\n";
+      LOG(VERBOSE) << "THEME: Font file '" << fontFilename << "' not found\n";
   }
   else {
     throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",
@@ -243,7 +243,7 @@ void SkinTheme::onRegenerate()
       loadAll(pref.theme.selected());
     }
     catch (const std::exception& e) {
-      LOG("SKIN: Error loading user-theme: %s\n", e.what());
+      LOG("THEME: Error loading user-theme: %s\n", e.what());
 
       if (ui::get_theme())
         Console::showException(e);
@@ -257,7 +257,7 @@ void SkinTheme::onRegenerate()
 
 void SkinTheme::loadFontData()
 {
-  LOG("SKIN: Loading fonts\n");
+  LOG("THEME: Loading fonts\n");
 
   std::string fonstFilename("fonts/fonts.xml");
 
@@ -280,7 +280,7 @@ void SkinTheme::loadFontData()
 
 void SkinTheme::loadAll(const std::string& skinId)
 {
-  LOG("SKIN: Loading theme %s\n", skinId.c_str());
+  LOG("THEME: Loading theme %s\n", skinId.c_str());
 
   if (m_fonts.empty())
     loadFontData();
@@ -333,7 +333,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       FontData* fontData = load_font(m_fonts, xmlFont, rf.filename());
       if (idStr && fontData) {
         std::string id(idStr);
-        LOG(VERBOSE) << "SKIN: Loading theme font '" << id << "\n";
+        LOG(VERBOSE) << "THEME: Loading theme font '" << id << "\n";
 
         int size = 10;
         const char* sizeStr = xmlFont->Attribute("size");
@@ -369,7 +369,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       std::string id = xmlDim->Attribute("id");
       uint32_t value = strtol(xmlDim->Attribute("value"), NULL, 10);
 
-      LOG(VERBOSE) << "SKIN: Loading dimension '" << id << "\n";
+      LOG(VERBOSE) << "THEME: Loading dimension '" << id << "\n";
 
       m_dimensions_by_id[id] = value;
       xmlDim = xmlDim->NextSiblingElement();
@@ -390,7 +390,7 @@ void SkinTheme::loadXml(const std::string& skinId)
         (value & 0xff00) >> 8,
         (value & 0xff));
 
-      LOG(VERBOSE) << "SKIN: Loading color " << id << "\n";
+      LOG(VERBOSE) << "THEME: Loading color " << id << "\n";
 
       m_colors_by_id[id] = color;
       xmlColor = xmlColor->NextSiblingElement();
@@ -413,7 +413,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
       int c;
 
-      LOG(VERBOSE) << "SKIN: Loading cursor " << id << "\n";
+      LOG(VERBOSE) << "THEME: Loading cursor " << id << "\n";
 
       for (c=0; c<kCursorTypes; ++c) {
         if (id != cursor_names[c])
@@ -452,7 +452,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
       int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
 
-      LOG(VERBOSE) << "SKIN: Loading tool icon " << id << "\n";
+      LOG(VERBOSE) << "THEME: Loading tool icon " << id << "\n";
 
       // Crop the tool-icon from the sheet
       m_toolicon[id] = sliceSheet(
@@ -476,7 +476,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
       int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
 
-      LOG(VERBOSE) << "SKIN: Loading part " << part_id << "\n";
+      LOG(VERBOSE) << "THEME: Loading part " << part_id << "\n";
 
       SkinPartPtr part = m_parts_by_id[part_id];
       if (!part)
@@ -533,7 +533,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       while (xmlRule) {
         const std::string ruleName = xmlRule->Value();
 
-        LOG(VERBOSE) << "SKIN: Rule " << ruleName
+        LOG(VERBOSE) << "THEME: Rule " << ruleName
                      << " for " << style_id << "\n";
 
         // TODO This code design to read styles could be improved.
@@ -683,7 +683,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       while (xmlLayer) {
         const std::string layerName = xmlLayer->Value();
 
-        LOG(VERBOSE) << "SKIN: Layer " << layerName
+        LOG(VERBOSE) << "THEME: Layer " << layerName
                      << " for " << style_id << "\n";
 
         ui::Style::Layer layer;
