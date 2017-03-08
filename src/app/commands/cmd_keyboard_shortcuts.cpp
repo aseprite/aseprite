@@ -13,7 +13,6 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/file_selector.h"
-#include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -277,13 +276,13 @@ private:
               m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
               m_changeConn = m_changeButton->Click.connect(base::Bind<void>(&KeyItem::onChangeAccel, this, i));
-              setup_mini_look(m_changeButton.get());
+              m_changeButton->setStyle(SkinTheme::instance()->newStyles.miniButton());
               addChild(m_changeButton.get());
 
               m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
               m_deleteConn = m_deleteButton->Click.connect(base::Bind<void>(&KeyItem::onDeleteAccel, this, i));
-              setup_mini_look(m_deleteButton.get());
+              m_deleteButton->setStyle(SkinTheme::instance()->newStyles.miniButton());
               addChild(m_deleteButton.get());
 
               m_changeButton->setBgColor(gfx::ColorNone);
@@ -310,7 +309,7 @@ private:
             m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
             m_addConn = m_addButton->Click.connect(base::Bind<void>(&KeyItem::onAddAccel, this));
-            setup_mini_look(m_addButton.get());
+            m_addButton->setStyle(SkinTheme::instance()->newStyles.miniButton());
             addChild(m_addButton.get());
 
             itemBounds.w = 8*guiscale() + Graphics::measureUITextLength("Add", font());
