@@ -15,7 +15,6 @@
 #include "app/color_utils.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_popup.h"
 #include "app/ui/editor/editor.h"
@@ -52,11 +51,9 @@ ColorButton::ColorButton(const app::Color& color,
   , m_dependOnLayer(false)
   , m_canPinSelector(canPinSelector)
 {
-  this->setFocusStop(true);
-
-  setup_mini_font(this);
-  setStyle(SkinTheme::instance()->newStyles.colorButton());
-
+  setFocusStop(true);
+  initTheme();
+  
   UIContext::instance()->add_observer(this);
 }
 
@@ -101,6 +98,12 @@ app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
 {
   // Ignore the position
   return m_color;
+}
+
+void ColorButton::onInitTheme(InitThemeEvent& ev)
+{
+  ButtonBase::onInitTheme(ev);
+  setStyle(SkinTheme::instance()->newStyles.colorButton());
 }
 
 bool ColorButton::onProcessMessage(Message* msg)

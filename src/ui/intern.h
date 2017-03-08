@@ -31,7 +31,6 @@ namespace ui {
     void addWidget(Widget* widget);
     void removeWidget(Widget* widget);
 
-    void resetFontAllWidgets();
     void reinitThemeForAllWidgets();
 
   } // namespace details

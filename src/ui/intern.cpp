@@ -42,12 +42,6 @@ void removeWidget(Widget* widget)
     widgets->erase(it);
 }
 
-void resetFontAllWidgets()
-{
-  for (auto widget : *widgets)
-    widget->resetFont();
-}
-
 void reinitThemeForAllWidgets()
 {
   // Reinitialize the theme of each widget

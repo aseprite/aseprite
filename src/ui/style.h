@@ -19,6 +19,7 @@
 #include <vector>
 
 namespace she {
+  class Font;
   class Surface;
 }
 
@@ -98,12 +99,14 @@ namespace ui {
     const gfx::Border& margin() const { return m_margin; }
     const gfx::Border& border() const { return m_border; }
     const gfx::Border& padding() const { return m_padding; }
+    she::Font* font() const { return m_font; }
     const Layers& layers() const { return m_layers; }
 
     void setId(const std::string& id) { m_id = id; }
     void setMargin(const gfx::Border& value) { m_margin = value; }
     void setBorder(const gfx::Border& value) { m_border = value; }
     void setPadding(const gfx::Border& value) { m_padding = value; }
+    void setFont(she::Font* font) { m_font = font; }
     void addLayer(const Layer& layer);
 
   private:
@@ -113,6 +116,7 @@ namespace ui {
     gfx::Border m_margin;
     gfx::Border m_border;
     gfx::Border m_padding;
+    she::Font* m_font;
   };
 
 } // namespace ui

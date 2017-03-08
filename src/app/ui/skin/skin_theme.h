@@ -142,6 +142,7 @@ namespace app {
       StyleSheet m_stylesheet;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
+      std::map<std::string, she::Font*> m_themeFonts;
       she::Font* m_defaultFont;
       she::Font* m_miniFont;
     };

@@ -340,12 +340,13 @@ void SkinTheme::loadXml(const std::string& skinId)
         if (sizeStr)
           size = std::strtol(sizeStr, nullptr, 10);
 
-        if (id == "default") {
-          m_defaultFont = fontData->getFont(size);
-        }
-        else if (id == "mini") {
-          m_miniFont = fontData->getFont(size);
-        }
+        she::Font* font = fontData->getFont(size);
+        m_themeFonts[idStr] = font;
+
+        if (id == "default")
+          m_defaultFont = font;
+        else if (id == "mini")
+          m_miniFont = font;
       }
 
       xmlFont = xmlFont->NextSiblingElement();
@@ -667,6 +668,15 @@ void SkinTheme::loadXml(const std::string& skinId)
         if (m || r) padding.right(std::strtol(r ? r: m, nullptr, 10));
         if (m || b) padding.bottom(std::strtol(b ? b: m, nullptr, 10));
         style->setPadding(padding*guiscale());
+      }
+
+      // Font
+      {
+        const char* fontId = xmlStyle->Attribute("font");
+        if (fontId) {
+          she::Font* font = m_themeFonts[fontId];
+          style->setFont(font);
+        }
       }
 
       TiXmlElement* xmlLayer = xmlStyle->FirstChildElement();

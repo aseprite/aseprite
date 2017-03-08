@@ -23,6 +23,7 @@ Style::Style(const Style* base)
   , m_margin(base ? base->margin(): Style::UndefinedBorder())
   , m_border(base ? base->border(): Style::UndefinedBorder())
   , m_padding(base ? base->padding(): Style::UndefinedBorder())
+  , m_font(nullptr)
 {
   if (base)
     m_layers = base->layers();

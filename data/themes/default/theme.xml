@@ -1010,7 +1010,7 @@
     <style id="new_frame_button" extends="mini_button">
     </style>
 
-    <style id="color_button" extends="mini_button" border="5">
+    <style id="color_button" extends="mini_button" border="5" font="mini">
     </style>
 
     <style id="splitter">

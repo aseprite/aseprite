@@ -162,11 +162,6 @@ she::Font* Widget::font() const
   return m_font;
 }
 
-void Widget::resetFont()
-{
-  m_font = nullptr;
-}
-
 void Widget::setBgColor(gfx::Color color)
 {
   m_bgColor = color;
@@ -188,6 +183,8 @@ void Widget::setStyle(Style* style)
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
   m_bgColor = m_theme->calcBgColor(this, m_style);
+  if (style->font())
+    m_font = style->font();
 }
 
 // ===============================================================
