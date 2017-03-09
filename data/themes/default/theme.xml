@@ -874,6 +874,10 @@
       <background part="tooltip_arrow" />
     </style>
 
+    <style id="tooltip_face">
+      <background color="tooltip_face" />
+    </style>
+
     <style id="tooltip_text">
       <background color="tooltip_face" />
       <text color="tooltip_text" align="left" />

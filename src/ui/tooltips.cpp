@@ -135,6 +135,7 @@ TipWindow::TipWindow(const std::string& text)
 
   // Here we build our own custimized label for the window
   // (a text box).
+  m_textBox->setVisible(false);
   addChild(m_textBox);
   setText(text);
 
@@ -251,7 +252,12 @@ void TipWindow::onPaint(PaintEvent& ev)
 
 void TipWindow::onBuildTitleLabel()
 {
-  m_textBox->setText(text());
+  if (!text().empty()) {
+    m_textBox->setVisible(true);
+    m_textBox->setText(text());
+  }
+  else
+    m_textBox->setVisible(false);
 }
 
 } // namespace ui
