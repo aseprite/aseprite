@@ -1295,6 +1295,10 @@ void Widget::setMnemonic(int mnemonic)
 
 void Widget::processMnemonicFromText(int escapeChar)
 {
+  // Avoid calling setText() when the widget doesn't have the HAS_TEXT flag
+  if (!hasText())
+    return;
+
   std::string newText;
   if (!m_text.empty())
     newText.reserve(m_text.size());
