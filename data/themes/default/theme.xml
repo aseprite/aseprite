@@ -873,7 +873,7 @@
 
     <style id="tooltip_text">
       <background color="tooltip_face" />
-      <text color="tooltip_text" />
+      <text color="tooltip_text" align="left" />
     </style>
 
     <style id="label" padding="1">

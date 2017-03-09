@@ -3,10 +3,10 @@
 <gui>
   <tipwindow id="user_data" text="@.title">
     <vbox>
-      <label text="@.user_data" />
+      <label text="@.user_data" style="tooltip_text" />
       <entry id="text" magnet="true" maxsize="65535" minwidth="128" expansive="true" />
       <hbox>
-        <label text="@.color" />
+        <label text="@.color" style="tooltip_text" />
         <colorpicker id="color" expansive="true" />
       </hbox>
     </vbox>
