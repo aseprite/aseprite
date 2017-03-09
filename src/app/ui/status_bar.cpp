@@ -371,7 +371,7 @@ public:
       app::Color::LongHumanReadableString);
     if (color.getAlpha() < 255) {
       char buf[256];
-      sprintf(buf, " \xCE\xB1%d", color.getAlpha());
+      sprintf(buf, " A%d", color.getAlpha());
       str += buf;
     }
     m_indicators->addTextIndicator(str.c_str());
