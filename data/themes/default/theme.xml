@@ -816,6 +816,9 @@
 
   <styles>
 
+    <style id="box" />
+    <style id="grid" />
+
     <style id="window_without_title" border="3">
       <background color="window_face" />
       <border part="menu" />

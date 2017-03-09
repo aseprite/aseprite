@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -202,11 +202,6 @@ void Grid::onSizeHint(SizeHintEvent& ev)
   sz.h += border().height();
 
   ev.setSizeHint(sz);
-}
-
-void Grid::onPaint(PaintEvent& ev)
-{
-  theme()->paintGrid(ev);
 }
 
 void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)

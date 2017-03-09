@@ -845,6 +845,7 @@ void SkinTheme::initWidget(Widget* widget)
   switch (widget->type()) {
 
     case kBoxWidget:
+      widget->setStyle(newStyles.box());
       BORDER(0);
       widget->setChildSpacing(4 * scale);
       break;
@@ -874,6 +875,7 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kGridWidget:
+      widget->setStyle(newStyles.grid());
       BORDER(0);
       widget->setChildSpacing(4 * scale);
       break;
@@ -1041,17 +1043,6 @@ gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
     return gfx::Size(2*guiscale(), widget->textHeight()+2*guiscale());
 }
 
-void SkinTheme::paintBox(PaintEvent& ev)
-{
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  Graphics* g = ev.graphics();
-
-  if (!widget->isTransparent() &&
-      !is_transparent(BGCOLOR)) {
-    g->fillRect(BGCOLOR, g->getClipBounds());
-  }
-}
-
 void SkinTheme::paintCheckBox(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
@@ -1098,15 +1089,6 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
                               widget->hasMouseOver()))) {
     drawRect(g, bounds, parts.checkFocus().get());
   }
-}
-
-void SkinTheme::paintGrid(PaintEvent& ev)
-{
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  Graphics* g = ev.graphics();
-
-  if (!is_transparent(BGCOLOR))
-    g->fillRect(BGCOLOR, g->getClipBounds());
 }
 
 void SkinTheme::paintEntry(PaintEvent& ev)
