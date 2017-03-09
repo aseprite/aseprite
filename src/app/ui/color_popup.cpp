@@ -48,7 +48,7 @@ enum {
 };
 
 ColorPopup::ColorPopup(bool canPin)
-  : PopupWindowPin("Color Selector",
+  : PopupWindowPin(std::string(),
                    ClickBehavior::CloseOnClickInOtherWindow,
                    canPin)
   , m_vbox(VERTICAL)
