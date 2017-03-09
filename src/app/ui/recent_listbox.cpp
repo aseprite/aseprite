@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,7 +16,6 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/fs.h"
@@ -40,19 +39,25 @@ using namespace skin;
 class RecentFileItem : public LinkLabel {
 public:
   RecentFileItem(const std::string& file)
-    : LinkLabel(file)
+    : LinkLabel("")
+    , m_fullpath(file)
     , m_name(base::get_file_name(file))
     , m_path(base::get_file_path(file)) {
+    setStyle(SkinTheme::instance()->newStyles.recentItem());
   }
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-    Style* style = theme->styles.recentFile();
-    Style* styleDetail = theme->styles.recentFileDetail();
-    Style::State state;
-    gfx::Size sz1 = style->sizeHint(m_name.c_str(), state);
-    gfx::Size sz2 = styleDetail->sizeHint(m_path.c_str(), state);
+    ui::Style* style = theme->newStyles.recentFile();
+    ui::Style* styleDetail = theme->newStyles.recentFileDetail();
+    
+    setText(m_name);
+    gfx::Size sz1 = theme->calcSizeHint(this, style);
+
+    setText(m_path);
+    gfx::Size sz2 = theme->calcSizeHint(this, styleDetail);
+
     ev.setSizeHint(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
   }
 
@@ -60,30 +65,28 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Graphics* g = ev.graphics();
     gfx::Rect bounds = clientBounds();
-    Style* style = theme->styles.recentFile();
-    Style* styleDetail = theme->styles.recentFileDetail();
+    ui::Style* style = theme->newStyles.recentFile();
+    ui::Style* styleDetail = theme->newStyles.recentFileDetail();
 
-    Style::State state;
-    if (hasMouse() && !manager()->getCapture()) state += Style::hover();
-    if (isSelected()) state += Style::active();
-    if (parent()->hasCapture()) state += Style::clicked();
-
-    style->paint(g, bounds, m_name.c_str(), state);
+    setText(m_name.c_str());
+    theme->paintWidget(g, this, style, bounds);
 
     if (Preferences::instance().general.showFullPath()) {
-      gfx::Size textSize = style->sizeHint(m_name.c_str(), state);
+      gfx::Size textSize = theme->calcSizeHint(this, style);
       gfx::Rect detailsBounds(
         bounds.x+textSize.w, bounds.y,
         bounds.w-textSize.w, bounds.h);
-      styleDetail->paint(g, detailsBounds, m_path.c_str(), state);
+      setText(m_path.c_str());
+      theme->paintWidget(g, this, styleDetail, detailsBounds);
     }
   }
 
   void onClick() override {
-    static_cast<RecentListBox*>(parent())->onClick(text());
+    static_cast<RecentListBox*>(parent())->onClick(m_fullpath);
   }
 
 private:
+  std::string m_fullpath;
   std::string m_name;
   std::string m_path;
 };
