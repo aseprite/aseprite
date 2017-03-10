@@ -47,7 +47,7 @@ void for_each_layer(const Widget* widget,
   int flags =
     (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
     (widget->isSelected() ? Style::Layer::kSelected: 0) |
-    (widget->hasMouseOver() ? Style::Layer::kMouse: 0) |
+    (widget->hasMouse() ? Style::Layer::kMouse: 0) |
     (widget->hasFocus() ? Style::Layer::kFocus: 0);
 
   const Style::Layer* bestLayer = nullptr;
