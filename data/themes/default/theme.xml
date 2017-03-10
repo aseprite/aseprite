@@ -776,24 +776,6 @@
       <icon part="tab_home_icon_active" />
     </style>
 
-    <!-- news_item -->
-    <style id="news_item">
-      <background color="background" />
-      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="3" />
-    </style>
-    <style id="news_item:hover">
-      <background color="menuitem_hot_face" />
-    </style>
-    <style id="news_item:active">
-      <background color="listitem_selected_face" />
-      <text color="listitem_selected_text" />
-    </style>
-
-    <!-- news_item_detail -->
-    <style id="news_item_detail" base="news_item">
-      <text color="disabled" valign="top" wordwrap="true" padding-top="0" padding-bottom="0" />
-    </style>
-
   </stylesheet>
 
   <styles>
@@ -1039,11 +1021,23 @@
       <background color="background" />
       <background color="menuitem_hot_face" state="mouse" />
       <background color="listitem_selected_face" state="selected" />
-      <text color="text" align="left" x="2" /> <!-- padding-left="2" padding-right="2" padding-top="3" padding-bottom="1"  -->
+      <text color="text" align="left" x="2" />
       <text color="listitem_selected_text" align="left" x="2" state="selected" />
     </style>
     <style id="recent_file_detail" border="2" border-left="0" extends="recent_file">
       <text color="disabled" align="left" x="2" />
+    </style>
+
+    <style id="news_item" border="2">
+      <background color="background" />
+      <background color="menuitem_hot_face" state="mouse" />
+      <background color="listitem_selected_face" state="selected" />
+      <text color="text" align="left" x="2" />
+      <text color="listitem_selected_text" align="left" x="2" state="selected" />
+    </style>
+    <style id="news_item_detail" extends="news_item" border="2">
+      <text color="disabled" align="left top wordwrap" x="2" />
+      <text color="listitem_selected_text" align="left top wordwrap" x="2" state="selected" />
     </style>
 
   </styles>

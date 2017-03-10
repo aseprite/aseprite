@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,7 +14,6 @@
 #include "app/pref/preferences.h"
 #include "app/res/http_loader.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
 #include "app/xml_document.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -119,54 +118,49 @@ std::string parse_html(const std::string& str)
 class NewsItem : public LinkLabel {
 public:
   NewsItem(const std::string& link,
-    const std::string& title,
-    const std::string& desc)
+           const std::string& title,
+           const std::string& desc)
     : LinkLabel(link, title)
+    , m_title(title)
     , m_desc(desc) {
   }
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-    Style* style = theme->styles.newsItem();
-    Style* styleDetail = theme->styles.newsItemDetail();
-    Style::State state;
-    gfx::Size sz1 = style->sizeHint(text().c_str(), state);
-    gfx::Size sz2, sz2fourlines;
+    ui::Style* style = theme->newStyles.newsItem();
 
-    if (!m_desc.empty()) {
-      View* view = View::getView(parent());
-      sz2 = styleDetail->sizeHint(m_desc.c_str(), state,
-        (view ? view->viewportBounds().w: 0));
-      sz2fourlines = styleDetail->sizeHint("\n\n\n", state);
-    }
+    setText(m_title);
+    gfx::Size sz = theme->calcSizeHint(this, style);
 
-    ev.setSizeHint(gfx::Size(0, MIN(sz1.h+sz2fourlines.h, sz1.h+sz2.h)));
+    if (!m_desc.empty())
+      sz.h *= 5;
+
+    ev.setSizeHint(gfx::Size(0, sz.h));
   }
 
   void onPaint(PaintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Graphics* g = ev.graphics();
     gfx::Rect bounds = clientBounds();
-    Style* style = theme->styles.newsItem();
-    Style* styleDetail = theme->styles.newsItemDetail();
+    ui::Style* style = theme->newStyles.newsItem();
+    ui::Style* styleDetail = theme->newStyles.newsItemDetail();
 
-    Style::State state;
-    if (hasMouse() && !manager()->getCapture()) state += Style::hover();
-    if (isSelected()) state += Style::active();
-    if (parent()->hasCapture()) state += Style::clicked();
-
-    gfx::Size textSize = style->sizeHint(text().c_str(), state);
+    setText(m_title);
+    gfx::Size textSize = theme->calcSizeHint(this, style);
     gfx::Rect textBounds(bounds.x, bounds.y, bounds.w, textSize.h);
     gfx::Rect detailsBounds(
       bounds.x, bounds.y+textSize.h,
       bounds.w, bounds.h-textSize.h);
 
-    style->paint(g, textBounds, text().c_str(), state);
-    styleDetail->paint(g, detailsBounds, m_desc.c_str(), state);
+    theme->paintWidget(g, this, style, textBounds);
+
+    setText(m_desc);
+    theme->paintWidget(g, this, styleDetail, detailsBounds);
   }
 
 private:
+  std::string m_title;
   std::string m_desc;
 };
 

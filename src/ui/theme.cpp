@@ -328,29 +328,40 @@ void Theme::paintLayer(Graphics* g,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        gfx::Size textSize = g->measureUIText(widget->text());
-        gfx::Point pt;
+        if (layer.align() & WORDWRAP) {
+          gfx::Rect textBounds = rc;
+          textBounds.offset(layer.offset());
 
-        if (layer.align() & LEFT)
-          pt.x = rc.x;
-        else if (layer.align() & RIGHT)
-          pt.x = rc.x+rc.w-textSize.w;
-        else
-          pt.x = rc.x+rc.w/2-textSize.w/2;
+          g->drawAlignedUIText(widget->text(),
+                               layer.color(),
+                               bgColor,
+                               textBounds, layer.align());
+        }
+        else {
+          gfx::Size textSize = g->measureUIText(widget->text());
+          gfx::Point pt;
 
-        if (layer.align() & TOP)
-          pt.y = rc.y;
-        else if (layer.align() & BOTTOM)
-          pt.y = rc.y+rc.h-textSize.h;
-        else
-          pt.y = rc.y+rc.h/2-textSize.h/2;
+          if (layer.align() & LEFT)
+            pt.x = rc.x;
+          else if (layer.align() & RIGHT)
+            pt.x = rc.x+rc.w-textSize.w;
+          else
+            pt.x = rc.x+rc.w/2-textSize.w/2;
 
-        pt += layer.offset();
+          if (layer.align() & TOP)
+            pt.y = rc.y;
+          else if (layer.align() & BOTTOM)
+            pt.y = rc.y+rc.h-textSize.h;
+          else
+            pt.y = rc.y+rc.h/2-textSize.h/2;
 
-        g->drawUIText(widget->text(),
-                      layer.color(),
-                      bgColor,
-                      pt, widget->mnemonic());
+          pt += layer.offset();
+
+          g->drawUIText(widget->text(),
+                        layer.color(),
+                        bgColor,
+                        pt, widget->mnemonic());
+        }
       }
       break;
 
