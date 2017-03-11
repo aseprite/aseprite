@@ -158,13 +158,17 @@ Timeline::Timeline()
   addChild(&m_hbar);
   addChild(&m_vbar);
 
-  int barsize = skinTheme()->dimensions.miniScrollbarSize();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
+  int barsize = theme->dimensions.miniScrollbarSize();
   m_hbar.setBarWidth(barsize);
   m_vbar.setBarWidth(barsize);
-  m_hbar.setBgColor(gfx::rgba(0, 0, 0, 128));
-  m_vbar.setBgColor(gfx::rgba(0, 0, 0, 128));
   m_hbar.setTransparent(true);
   m_vbar.setTransparent(true);
+  m_hbar.setStyle(theme->newStyles.transparentScrollbar());
+  m_vbar.setStyle(theme->newStyles.transparentScrollbar());
+  m_hbar.setThumbStyle(theme->newStyles.transparentScrollbarThumb());
+  m_vbar.setThumbStyle(theme->newStyles.transparentScrollbarThumb());
 }
 
 Timeline::~Timeline()

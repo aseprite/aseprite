@@ -67,7 +67,6 @@ namespace app {
       void paintSlider(ui::PaintEvent& ev) override;
       void paintComboBoxEntry(ui::PaintEvent& ev) override;
       void paintTextBox(ui::PaintEvent& ev) override;
-      void paintViewScrollbar(ui::PaintEvent& ev) override;
       void paintViewViewport(ui::PaintEvent& ev) override;
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml

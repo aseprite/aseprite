@@ -149,12 +149,31 @@ void Theme::paintWidget(Graphics* g,
   ASSERT(style);
 
   // External background
-  g->fillRect(widget->bgColor(), bounds);
+  if (!widget->isTransparent())
+    g->fillRect(widget->bgColor(), bounds);
 
   gfx::Rect rc = bounds;
   gfx::Color bgColor = gfx::ColorNone;
   for_each_layer(
     widget, style,
+    [this, g, widget, &rc, &bgColor](const Style::Layer& layer) {
+      paintLayer(g, widget, layer, rc, bgColor);
+    });
+}
+
+void Theme::paintScrollBar(Graphics* g,
+                           const Widget* widget,
+                           const Style* style,
+                           const Style* thumbStyle,
+                           const gfx::Rect& bounds,
+                           const gfx::Rect& thumbBounds)
+{
+  paintWidget(g, widget, style, bounds);
+  
+  gfx::Rect rc = thumbBounds;
+  gfx::Color bgColor = gfx::ColorNone;
+  for_each_layer(
+    widget, thumbStyle,
     [this, g, widget, &rc, &bgColor](const Style::Layer& layer) {
       paintLayer(g, widget, layer, rc, bgColor);
     });
@@ -219,7 +238,6 @@ void Theme::paintTooltip(Graphics* g,
     if (intClip)
       paintWidget(g, widget, arrowStyle, rc);
   }
-
 }
 
 void Theme::paintLayer(Graphics* g,

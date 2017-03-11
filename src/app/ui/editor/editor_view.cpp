@@ -155,8 +155,10 @@ void EditorView::setupScrollbars()
     horizontalBar()->setBarWidth(barsize);
     verticalBar()->setBarWidth(barsize);
 
-    setup_mini_look(horizontalBar());
-    setup_mini_look(verticalBar());
+    horizontalBar()->setStyle(theme->newStyles.miniScrollbar());
+    verticalBar()->setStyle(theme->newStyles.miniScrollbar());
+    horizontalBar()->setThumbStyle(theme->newStyles.miniScrollbarThumb());
+    verticalBar()->setThumbStyle(theme->newStyles.miniScrollbarThumb());
 
     showScrollBars();
   }

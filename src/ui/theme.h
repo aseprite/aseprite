@@ -63,7 +63,6 @@ namespace ui {
     virtual void paintSlider(PaintEvent& ev) = 0;
     virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
     virtual void paintTextBox(PaintEvent& ev) = 0;
-    virtual void paintViewScrollbar(PaintEvent& ev) = 0;
     virtual void paintViewViewport(PaintEvent& ev) = 0;
 
     // Default implementation to draw widgets with new ui::Styles
@@ -71,6 +70,13 @@ namespace ui {
                              const Widget* widget,
                              const Style* style,
                              const gfx::Rect& bounds);
+
+    virtual void paintScrollBar(Graphics* g,
+                                const Widget* widget,
+                                const Style* style,
+                                const Style* thumbStyle,
+                                const gfx::Rect& bounds,
+                                const gfx::Rect& thumbBounds);
 
     virtual void paintTooltip(Graphics* g,
                               const Widget* widget,

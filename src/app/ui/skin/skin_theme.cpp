@@ -974,8 +974,8 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kViewScrollbarWidget:
-      BORDER(1 * scale);
-      widget->setChildSpacing(0);
+      widget->setStyle(newStyles.scrollbar());
+      static_cast<ScrollBar*>(widget)->setThumbStyle(newStyles.scrollbarThumb());
       break;
 
     case kViewViewportWidget:
@@ -1587,55 +1587,6 @@ void SkinTheme::paintTextBox(ui::PaintEvent& ev)
 
   Theme::drawTextBox(g, widget, nullptr, nullptr,
                      BGCOLOR, colors.textboxText());
-}
-
-void SkinTheme::paintViewScrollbar(PaintEvent& ev)
-{
-  ScrollBar* widget = static_cast<ScrollBar*>(ev.getSource());
-  Graphics* g = ev.graphics();
-  int pos, len;
-
-  bool isMiniLook = false;
-  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery)
-    isMiniLook = (skinPropery->getLook() == MiniLook);
-
-  skin::Style* bgStyle;
-  skin::Style* thumbStyle;
-
-  if (widget->isTransparent()) {
-    bgStyle = styles.transparentScrollbar();
-    thumbStyle = styles.transparentScrollbarThumb();
-  }
-  else if (isMiniLook) {
-    bgStyle = styles.miniScrollbar();
-    thumbStyle = styles.miniScrollbarThumb();
-  }
-  else {
-    bgStyle = styles.scrollbar();
-    thumbStyle = styles.scrollbarThumb();
-  }
-
-  widget->getScrollBarThemeInfo(&pos, &len);
-
-  Style::State state;
-  if (widget->hasMouse()) state += Style::hover();
-
-  gfx::Rect rc = widget->clientBounds();
-  bgStyle->paint(g, rc, NULL, state);
-
-  // Horizontal bar
-  if (widget->align() & HORIZONTAL) {
-    rc.x += pos;
-    rc.w = len;
-  }
-  // Vertical bar
-  else {
-    rc.y += pos;
-    rc.h = len;
-  }
-
-  thumbStyle->paint(g, rc, NULL, state);
 }
 
 void SkinTheme::paintViewViewport(PaintEvent& ev)

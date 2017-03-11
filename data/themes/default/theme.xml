@@ -411,42 +411,6 @@
 
   <stylesheet>
 
-    <!-- scrollbar -->
-    <style id="scrollbar">
-      <background part="scrollbar_bg" repeat="repeat" />
-    </style>
-    <style id="scrollbar_thumb">
-      <background part="scrollbar_thumb" repeat="repeat" />
-    </style>
-
-    <!-- mini_scrollbar -->
-    <style id="mini_scrollbar">
-      <background part="mini_scrollbar_bg" />
-    </style>
-    <style id="mini_scrollbar:hover">
-      <background part="mini_scrollbar_bg_hot" />
-    </style>
-    <style id="mini_scrollbar_thumb">
-      <background part="mini_scrollbar_thumb" />
-    </style>
-    <style id="mini_scrollbar_thumb:hover">
-      <background part="mini_scrollbar_thumb_hot" />
-    </style>
-
-    <!-- transparent_scrollbar -->
-    <style id="transparent_scrollbar">
-      <background part="transparent_scrollbar_bg" />
-    </style>
-    <style id="transparent_scrollbar:hover">
-      <background part="transparent_scrollbar_bg_hot" />
-    </style>
-    <style id="transparent_scrollbar_thumb">
-      <background part="transparent_scrollbar_thumb" />
-    </style>
-    <style id="transparent_scrollbar_thumb:hover">
-      <background part="transparent_scrollbar_thumb_hot" />
-    </style>
-
     <!-- timeline -->
     <style id="timeline">
       <background color="timeline_normal" part="timeline_normal" />
@@ -1038,6 +1002,29 @@
     <style id="news_item_detail" extends="news_item" border="2">
       <text color="disabled" align="left top wordwrap" x="2" />
       <text color="listitem_selected_text" align="left top wordwrap" x="2" state="selected" />
+    </style>
+
+    <style id="scrollbar">
+      <background part="scrollbar_bg" repeat="repeat" />
+    </style>
+    <style id="scrollbar_thumb">
+      <background part="scrollbar_thumb" repeat="repeat" />
+    </style>
+    <style id="mini_scrollbar">
+      <background part="mini_scrollbar_bg" />
+      <background part="mini_scrollbar_bg_hot" state="mouse" />
+    </style>
+    <style id="mini_scrollbar_thumb">
+      <background part="mini_scrollbar_thumb" />
+      <background part="mini_scrollbar_thumb_hot" state="mouse" />
+    </style>
+    <style id="transparent_scrollbar">
+      <background part="transparent_scrollbar_bg" />
+      <background part="transparent_scrollbar_bg_hot" state="mouse" />
+    </style>
+    <style id="transparent_scrollbar_thumb">
+      <background part="transparent_scrollbar_thumb" />
+      <background part="transparent_scrollbar_thumb_hot" state="mouse" />
     </style>
 
   </styles>
