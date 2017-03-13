@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,6 @@
 
 #include "app/notification_delegate.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
 #include "base/launcher.h"
 #include "ui/menu.h"
 #include "ui/paint_event.h"
@@ -41,7 +40,7 @@ private:
 
 Notifications::Notifications()
   : Button("")
-  , m_flagStyle(skin::SkinTheme::instance()->styles.flag())
+  , m_flagStyle(skin::SkinTheme::instance()->newStyles.flag())
   , m_withNotifications(false)
 {
 }
@@ -61,11 +60,13 @@ void Notifications::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
 
-  skin::Style::State state;
-  if (hasMouseOver()) state += skin::Style::hover();
-  if (m_withNotifications) state += skin::Style::active();
-  if (isSelected()) state += skin::Style::clicked();
-  m_flagStyle->paint(g, clientBounds(), NULL, state);
+  PaintWidgetPartInfo info;
+  if (hasMouseOver()) info.styleFlags |= ui::Style::Layer::kMouse;
+  if (m_withNotifications) info.styleFlags |= ui::Style::Layer::kFocus;
+  if (isSelected()) info.styleFlags |= ui::Style::Layer::kSelected;
+
+  theme()->paintWidgetPart(
+    g, m_flagStyle, clientBounds(), info);
 }
 
 void Notifications::onClick(ui::Event& ev)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,13 +41,9 @@ EditorView::EditorView(EditorView::Type type)
   , m_type(type)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  int l = theme->parts.editorSelected()->bitmapW()->width();
-  int t = theme->parts.editorSelected()->bitmapN()->height();
-  int r = theme->parts.editorSelected()->bitmapE()->width();
-  int b = theme->parts.editorSelected()->bitmapS()->height();
 
-  setBorder(gfx::Border(l, t, r, b));
-  setBgColor(gfx::rgba(0, 0, 0));
+  setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
+  setStyle(theme->newStyles.editorView());
   setupScrollbars();
 
   m_scrollSettingsConn =
@@ -57,30 +53,24 @@ EditorView::EditorView(EditorView::Type type)
 
 void EditorView::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  bool selected = false;
-
   switch (m_type) {
 
     // Only show the view selected if it is the current editor
     case CurrentEditorMode:
-      selected = (editor()->isActive());
+      if (editor()->isActive())
+        enableFlags(SELECTED);
+      else
+        disableFlags(SELECTED);
       break;
 
       // Always show selected
     case AlwaysSelected:
-      selected = true;
+      enableFlags(SELECTED);
       break;
 
   }
 
-  theme->drawRect(
-    g, clientBounds(),
-    (selected ?
-     theme->parts.editorSelected().get():
-     theme->parts.editorNormal().get()),
-    bgColor());
+  View::onPaint(ev);
 }
 
 void EditorView::onResize(ResizeEvent& ev)
@@ -165,8 +155,10 @@ void EditorView::setupScrollbars()
     horizontalBar()->setBarWidth(barsize);
     verticalBar()->setBarWidth(barsize);
 
-    setup_mini_look(horizontalBar());
-    setup_mini_look(verticalBar());
+    horizontalBar()->setStyle(theme->newStyles.miniScrollbar());
+    verticalBar()->setStyle(theme->newStyles.miniScrollbar());
+    horizontalBar()->setThumbStyle(theme->newStyles.miniScrollbarThumb());
+    verticalBar()->setThumbStyle(theme->newStyles.miniScrollbarThumb());
 
     showScrollBars();
   }

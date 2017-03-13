@@ -291,14 +291,40 @@ belongs to that cel, etc.
   DWORD         Flags
                    1 = Has text
                    2 = Has color
-  + If flags has bit 1:
+  + If flags have bit 1:
     STRING        Text
-  + If flags has bit 2:
+  + If flags have bit 2:
     BYTE          Color Red (0-255)
     BYTE          Color Green (0-255)
     BYTE          Color Blue (0-255)
     BYTE          Color Alpha (0-255)
 ```
+
+### Slices Chunk (0x2021)
+
+Field       | Details                          |
+----------- | -------------------------------- |
+DWORD       | Number of slices
+BYTE[8]     | Reserved
+For each slice... |
+DWORD       | Number of "slice keys"
+DWORD       | Flags
+            | 1 - It's a 9-patches slice
+DWORD       | Reserved
+STRING      | Name
+For each slice key ... |
+DWORD       | Frame number (this slice is valid from
+            | this frame to the end of the animation)
+SIGNED WORD | Slice X position
+SIGNED WORD | Slice Y position
+WORD        | Slice Width (can be 0 if this slice hidden in the
+            | animation from the given frame)
+WORD        | Slice Height
+If flags have bit 1 |
+SIGNED WORD | Center X position (relative to slice bounds)
+SIGNED WORD | Center Y position
+WORD        | Center Width
+WORD        | Center Height
 
 ### Notes
 

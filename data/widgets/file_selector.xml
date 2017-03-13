@@ -1,23 +1,23 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
   <window id="file_selector" text="">
   <vbox id="main">
     <box horizontal="true">
       <box horizontal="true" noborders="true">
-        <button text="" id="go_back_button" bevel="2 0 2 0" tooltip="@file_selector.go_back_button_tooltip" />
-        <button text="" id="go_forward_button" bevel="0 2 0 2" tooltip="@file_selector.go_forward_button_tooltip" />
+        <button text="" id="go_back_button" style="go_back_button" tooltip="@.go_back_button_tooltip" />
+        <button text="" id="go_forward_button" style="go_forward_button" tooltip="@.go_forward_button_tooltip" />
       </box>
-      <button text="" id="go_up_button" tooltip="@file_selector.go_up_button_tooltip" />
-      <button text="" id="new_folder_button" tooltip="@file_selector.new_folder_button_tooltip" />
+      <button text="" id="go_up_button" style="go_up_button" tooltip="@.go_up_button_tooltip" />
+      <button text="" id="new_folder_button" style="new_folder_button" tooltip="@.new_folder_button_tooltip" />
       <combobox id="location" expansive="true" />
     </box>
     <vbox id="file_view_placeholder" expansive="true" />
     <grid columns="2">
-      <label text="@file_selector.file_name" />
+      <label text="@.file_name" />
       <box id="file_name_placeholder" cell_align="horizontal" />
 
-      <label text="@file_selector.file_type" />
+      <label text="@.file_type" />
       <hbox cell_align="horizontal">
         <combobox id="file_type" minwidth="70" />
 	<vbox>

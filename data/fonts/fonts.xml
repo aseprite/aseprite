@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fonts>
+  <!-- Preset fonts that can be used by all themes -->
+
+  <font name="Arial"
+        type="truetype"
+        file="Arial.ttf" />
+
+  <font name="Arial Unicode"
+        type="truetype"
+        file_win="arialuni.ttf"
+        file_mac="Arial Unicode.ttf" />
+
+  <font name="Unicode Korean"
+        type="truetype"
+        file_win="malgun.ttf">
+    <fallback font="Arial Unicode" />
+  </font>
+  <font name="Unicode Chinese"
+        type="truetype"
+        file_win="msjh.ttc">
+    <fallback font="Unicode Korean" size="8" />
+  </font>
+  <font name="Unicode Japanese"
+        type="truetype"
+        file_win="YuGothR.ttc">
+    <fallback font="Unicode Chinese" size="8" />
+  </font>
+  <font name="Unicode"
+        type="truetype"
+        file="Arial.ttf"
+        file_mac="Arial Unicode.ttf">
+    <fallback font="Unicode Japanese" size="8" />
+  </font>
+
+  <font name="Aseprite"
+        type="spritesheet"
+        file="aseprite_font.png">
+    <fallback font="Unicode" size="8" />
+  </font>
+
+  <font name="Aseprite Mini"
+        type="spritesheet"
+        file="aseprite_mini.png">
+    <fallback font="Unicode" size="6" />
+  </font>
+
+</fonts>

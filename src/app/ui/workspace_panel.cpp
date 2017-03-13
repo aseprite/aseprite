@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -267,6 +267,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
 
   Splitter* splitter = new Splitter(Splitter::ByPercentage, splitterAlign);
   splitter->setExpansive(true);
+  splitter->setStyle(SkinTheme::instance()->newStyles.workspaceSplitter());
 
   Widget* parent = this->parent();
   if (parent->type() == kBoxWidget) {

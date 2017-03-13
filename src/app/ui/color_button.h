@@ -15,6 +15,10 @@
 #include "obs/signal.h"
 #include "ui/button.h"
 
+namespace ui {
+  class InitThemeEvent;
+}
+
 namespace app {
   class ColorPopup;
 
@@ -41,6 +45,7 @@ namespace app {
 
   protected:
     // Events
+    void onInitTheme(ui::InitThemeEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;

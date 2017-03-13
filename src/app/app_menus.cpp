@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -89,6 +89,7 @@ void AppMenus::reload()
   m_celPopupMenu.reset(loadMenuById(handle, "cel_popup"));
   m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
   m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup"));
+  m_slicePopupMenu.reset(loadMenuById(handle, "slice_popup"));
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup"));
   m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup"));
 
@@ -231,12 +232,14 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   // Create the item
   AppMenuItem* menuitem = new AppMenuItem(elem->Attribute("text"), command, params);
   if (!menuitem)
-    return NULL;
+    return nullptr;
 
-  /* has it a ID? */
+  menuitem->processMnemonicFromText();
+
+  // Has it a ID?
   const char* id = elem->Attribute("id");
   if (id) {
-    /* recent list menu */
+    // Recent list menu
     if (strcmp(id, "recent_list") == 0) {
       m_recentListMenuitem = menuitem;
     }
@@ -282,6 +285,7 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Param
     m_celPopupMenu,
     m_celMovementPopupMenu,
     m_frameTagPopupMenu,
+    m_slicePopupMenu,
     m_palettePopupMenu,
     m_inkPopupMenu
   };

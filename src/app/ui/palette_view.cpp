@@ -19,7 +19,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
 #include "base/convert_to.h"
@@ -515,8 +514,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
   // Draw selected entries
 
-  Style::State state = Style::active();
-  if (m_hot.part == Hit::OUTLINE) state += Style::hover();
+  PaintWidgetPartInfo info;
+  if (m_hot.part == Hit::OUTLINE)
+    info.styleFlags |= ui::Style::Layer::kMouse;
 
   PalettePicks dragPicks;
   int j = 0;
@@ -551,9 +551,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
                                box2.y + box2.h/2 - minifont->height()/2));
       }
 
-      // Draw outlines
-      theme->styles.timelineRangeOutline()->paint(
-        g, box, NULL, state);
+      // Draw the selection
+      theme->paintWidgetPart(
+        g, theme->newStyles.colorbarSelection(), box, info);
     }
 
     ++j;

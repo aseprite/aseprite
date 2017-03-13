@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -141,7 +141,7 @@ void draw_color_button(ui::Graphics* g,
   if (hot) {
     theme->drawRect(
       g, gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - 1*scale),
-      theme->parts.colorbarBorderHotfg().get());
+      theme->parts.colorbarSelection().get());
   }
 }
 

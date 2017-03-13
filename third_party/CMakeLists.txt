@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 
 include_directories(.)
 
@@ -85,6 +85,7 @@ if(NOT USE_SHARED_FREETYPE)
   endif()
 endif()
 
+add_subdirectory(harfbuzz-cmake)
 add_subdirectory(simpleini)
 
 # Add cmark without tests

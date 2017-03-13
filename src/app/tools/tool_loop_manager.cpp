@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -109,7 +109,9 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
-  if (!res && (m_toolLoop->getInk()->isSelection() || m_toolLoop->getFilled())) {
+  if (!res && (m_toolLoop->getInk()->isSelection() ||
+               m_toolLoop->getInk()->isSlice() ||
+               m_toolLoop->getFilled())) {
     m_toolLoop->getInk()->setFinalStep(m_toolLoop, true);
     doLoopStep(true);
     m_toolLoop->getInk()->setFinalStep(m_toolLoop, false);

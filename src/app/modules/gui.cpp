@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -185,7 +185,7 @@ int init_module_gui()
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme();
   gui_theme->setScale(Preferences::instance().general.uiScale());
-  CurrentTheme::set(gui_theme);
+  ui::set_theme(gui_theme);
 
   if (maximized)
     main_display->maximize();
@@ -204,7 +204,7 @@ void exit_module_gui()
   delete manager;
 
   // Now we can destroy theme
-  CurrentTheme::set(NULL);
+  ui::set_theme(nullptr);
   delete gui_theme;
 
   main_display->dispose();
@@ -287,39 +287,14 @@ Widget* setup_mini_font(Widget* widget)
 
 Widget* setup_mini_look(Widget* widget)
 {
-  return setup_look(widget, MiniLook);
-}
-
-Widget* setup_look(Widget* widget, LookType lookType)
-{
   SkinPropertyPtr skinProp = get_skin_property(widget);
-  skinProp->setLook(lookType);
+  skinProp->setLook(MiniLook);
   return widget;
-}
-
-void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
-{
-  SkinPropertyPtr skinProp = get_skin_property(widget);
-  skinProp->setUpperLeft(b1);
-  skinProp->setUpperRight(b2);
-  skinProp->setLowerLeft(b3);
-  skinProp->setLowerRight(b4);
 }
 
 //////////////////////////////////////////////////////////////////////
 // Button style (convert radio or check buttons and draw it like
 // normal buttons)
-
-CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
-{
-  CheckBox* widget = new CheckBox(text, kButtonWidget);
-
-  widget->setAlign(CENTER | MIDDLE);
-
-  setup_mini_look(widget);
-  setup_bevels(widget, b1, b2, b3, b4);
-  return widget;
-}
 
 void defer_invalid_rect(const gfx::Rect& rc)
 {

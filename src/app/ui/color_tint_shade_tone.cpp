@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -76,7 +76,7 @@ void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
 
   theme->drawRect(g, clientBounds(),
                   theme->parts.editorNormal().get(),
-                  bgColor());
+                  false);       // Do not fill the center
 
   gfx::Rect rc = clientChildrenBounds();
   if (rc.isEmpty())

@@ -70,6 +70,7 @@ namespace ui {
 
     void drawSurface(she::Surface* surface, int x, int y);
     void drawRgbaSurface(she::Surface* surface, int x, int y);
+    void drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
     void drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y);
 
     void blit(she::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
@@ -85,13 +86,9 @@ namespace ui {
                   const base::utf8_const_iterator& end,
                   gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
                   she::DrawTextDelegate* delegate);
-
-    void drawText(const std::string& str, gfx::Color fg, gfx::Color bg,
-                  const gfx::Point& pt);
-    void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
-                    const gfx::Point& pt, bool drawUnderscore = true);
-    void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
-                           const gfx::Rect& rc, int align);
+    void drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
+    void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, const int mnemonic);
+    void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, const int align);
 
     gfx::Size measureUIText(const std::string& str);
     static int measureUITextLength(const std::string& str, she::Font* font);

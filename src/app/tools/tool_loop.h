@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,6 +26,7 @@ namespace doc {
   class Mask;
   class Remap;
   class RgbMap;
+  class Slice;
   class Sprite;
 }
 
@@ -116,6 +117,9 @@ namespace app {
       // Current mask to limit paint area
       virtual Mask* getMask() = 0;
       virtual void setMask(Mask* newMask) = 0;
+
+      // Adds a new slice (only for slice ink)
+      virtual void addSlice(doc::Slice* newSlice) = 0;
 
       // Gets mask X,Y origin coordinates
       virtual gfx::Point getMaskOrigin() = 0;

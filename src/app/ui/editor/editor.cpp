@@ -52,6 +52,7 @@
 #include "doc/doc.h"
 #include "doc/document_event.h"
 #include "doc/mask_boundaries.h"
+#include "doc/slice.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/ui.h"
@@ -703,7 +704,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     g->fillRegion(theme->colors.editorFace(), outside);
   }
 
-  // Grids
+  // Grids & slices
   {
     // Clipping
     gfx::Rect cliprc = editorToScreen(rc).offset(-bounds().origin());
@@ -743,6 +744,10 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
               m_docPref.grid.color(), alpha);
         }
       }
+
+      // Draw slices
+      if (m_docPref.show.slices())
+        drawSlices(g);
     }
   }
 
@@ -952,6 +957,51 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
   for (int c=x1; c<=x2; c+=grid.w)
     g->drawVLine(grid_color, c, y1, spriteBounds.h);
+}
+
+void Editor::drawSlices(ui::Graphics* g)
+{
+  if ((m_flags & kShowSlices) == 0)
+    return;
+
+  if (!isVisible() || !m_document)
+    return;
+
+  for (auto slice : m_sprite->slices()) {
+    auto key = slice->getByFrame(m_frame);
+    if (!key)
+      continue;
+
+    doc::color_t docColor = slice->userData().color();
+    gfx::Color color = gfx::rgba(doc::rgba_getr(docColor),
+                                 doc::rgba_getg(docColor),
+                                 doc::rgba_getb(docColor),
+                                 doc::rgba_geta(docColor));
+    gfx::Rect out =
+      editorToScreen(key->bounds())
+               .offset(-bounds().origin());
+
+    if (!key->center().isEmpty()) {
+      gfx::Rect in =
+        editorToScreen(gfx::Rect(key->center()).offset(key->bounds().origin()))
+        .offset(-bounds().origin());
+
+      auto in_color = gfx::rgba(gfx::getr(color),
+                                gfx::getg(color),
+                                gfx::getb(color),
+                                doc::rgba_geta(docColor)/4);
+      if (in.y > out.y && in.y < out.y2())
+        g->drawHLine(in_color, out.x, in.y, out.w);
+      if (in.y2() > out.y && in.y2() < out.y2())
+        g->drawHLine(in_color, out.x, in.y2(), out.w);
+      if (in.x > out.x && in.x < out.x2())
+        g->drawVLine(in_color, in.x, out.y, out.h);
+      if (in.x2() > out.x && in.x2() < out.x2())
+        g->drawVLine(in_color, in.x2(), out.y, out.h);
+    }
+
+    g->drawRect(color, out);
+  }
 }
 
 void Editor::flashCurrentLayer()
@@ -1619,6 +1669,63 @@ bool Editor::isInsideSelection()
     m_document &&
     m_document->isMaskVisible() &&
     m_document->mask()->containsPoint(spritePos.x, spritePos.y);
+}
+
+EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
+{
+  tools::Ink* ink = getCurrentEditorInk();
+
+  if (ink) {
+    // Check if we can transform slices
+    if (ink->isSlice()) {
+      if (m_docPref.show.slices()) {
+        for (auto slice : m_sprite->slices()) {
+          auto key = slice->getByFrame(m_frame);
+          if (key) {
+            gfx::Rect bounds = editorToScreen(key->bounds());
+            gfx::Rect center = key->center();
+
+            if (bounds.contains(mouseScreenPos) &&
+                !bounds.shrink(5*guiscale()).contains(mouseScreenPos)) {
+              int border =
+                (mouseScreenPos.x <= bounds.x ? LEFT: 0) |
+                (mouseScreenPos.y <= bounds.y ? TOP: 0) |
+                (mouseScreenPos.x >= bounds.x2() ? RIGHT: 0) |
+                (mouseScreenPos.y >= bounds.y2() ? BOTTOM: 0);
+
+              EditorHit hit(EditorHit::SliceBounds);
+              hit.setBorder(border);
+              hit.setSlice(slice);
+              return hit;
+            }
+            else if (!center.isEmpty()) {
+              center = editorToScreen(
+                center.offset(key->bounds().origin()));
+
+              bool horz1 = gfx::Rect(bounds.x, center.y-2*guiscale(), bounds.w, 5*guiscale()).contains(mouseScreenPos);
+              bool horz2 = gfx::Rect(bounds.x, center.y2()-2*guiscale(), bounds.w, 5*guiscale()).contains(mouseScreenPos);
+              bool vert1 = gfx::Rect(center.x-2*guiscale(), bounds.y, 5*guiscale(), bounds.h).contains(mouseScreenPos);
+              bool vert2 = gfx::Rect(center.x2()-2*guiscale(), bounds.y, 5*guiscale(), bounds.h).contains(mouseScreenPos);
+
+              if (horz1 || horz2 || vert1 || vert2) {
+                int border =
+                  (horz1 ? TOP: 0) |
+                  (horz2 ? BOTTOM: 0) |
+                  (vert1 ? LEFT: 0) |
+                  (vert2 ? RIGHT: 0);
+                EditorHit hit(EditorHit::SliceCenter);
+                hit.setBorder(border);
+                hit.setSlice(slice);
+              return hit;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return EditorHit(EditorHit::None);
 }
 
 void Editor::setZoomAndCenterInMouse(const Zoom& zoom,

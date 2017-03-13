@@ -26,7 +26,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
@@ -100,7 +99,7 @@ class StatusBar::Indicators : public HBox {
       Graphics* g = ev.graphics();
 
       g->fillRect(bgColor(), rc);
-      if (textLength() > 0) {
+      if (!text().empty()) {
         g->drawText(text(), textColor, ColorNone,
                     Point(rc.x, rc.y + rc.h/2 - font()->height()/2));
       }
@@ -371,7 +370,7 @@ public:
       app::Color::LongHumanReadableString);
     if (color.getAlpha() < 255) {
       char buf[256];
-      sprintf(buf, " \xCE\xB1%d", color.getAlpha());
+      sprintf(buf, " A%d", color.getAlpha());
       str += buf;
     }
     m_indicators->addTextIndicator(str.c_str());
@@ -548,11 +547,11 @@ StatusBar::StatusBar()
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(base::Bind<void>(&StatusBar::newFrame, this));
+    m_newFrame->setStyle(theme->newStyles.newFrameButton());
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
     setup_mini_look(m_currentFrame);
-    setup_mini_look(m_newFrame);
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
 

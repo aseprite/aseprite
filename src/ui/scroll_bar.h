@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +24,9 @@ namespace ui {
   public:
     ScrollBar(int align, ScrollableViewDelegate* delegate);
 
+    Style* thumbStyle() { return m_thumbStyle; }
+    void setThumbStyle(Style* style) { m_thumbStyle = style; }
+
     int getBarWidth() const { return m_barWidth; }
     void setBarWidth(int barWidth) { m_barWidth = barWidth; }
 
@@ -45,6 +48,7 @@ namespace ui {
     void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);
 
     ScrollableViewDelegate* m_delegate;
+    Style* m_thumbStyle;
     int m_barWidth;
     int m_pos;
     int m_size;

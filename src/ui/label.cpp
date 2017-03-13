@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,27 +22,6 @@ Label::Label(const std::string& text)
   setAlign(LEFT | MIDDLE);
   setText(text);
   initTheme();
-}
-
-void Label::onSizeHint(SizeHintEvent& ev)
-{
-  gfx::Size sz(0, 0);
-
-  if (hasText()) {
-    // Labels are not UIString
-    sz.w = font()->textLength(text().c_str());
-    sz.h = textHeight();
-  }
-
-  sz.w += border().width();
-  sz.h += border().height();
-
-  ev.setSizeHint(sz);
-}
-
-void Label::onPaint(PaintEvent& ev)
-{
-  theme()->paintLabel(ev);
 }
 
 } // namespace ui

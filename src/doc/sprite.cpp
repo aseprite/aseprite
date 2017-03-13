@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -39,6 +39,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   , m_pixelRatio(1, 1)
   , m_frames(1)
   , m_frameTags(this)
+  , m_slices(this)
 {
   ASSERT(width > 0 && height > 0);
 

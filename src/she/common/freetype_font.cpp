@@ -11,6 +11,7 @@
 #include "she/common/freetype_font.h"
 
 #include "base/string.h"
+#include "ft/algorithm.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 
@@ -19,7 +20,6 @@ namespace she {
 FreeTypeFont::FreeTypeFont(const char* filename, int height)
   : m_face(m_ft.open(filename))
 {
-  ASSERT(m_face.isValid());
   if (m_face.isValid())
     m_face.setSize(height);
 }
@@ -66,6 +66,11 @@ void FreeTypeFont::setSize(int size)
 void FreeTypeFont::setAntialias(bool antialias)
 {
   m_face.setAntialias(antialias);
+}
+
+bool FreeTypeFont::hasCodePoint(int codepoint) const
+{
+  return m_face.hasCodePoint(codepoint);
 }
 
 FreeTypeFont* loadFreeTypeFont(const char* filename, int height)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,6 +31,8 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/slice.h"
+#include "doc/slice_io.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
@@ -286,6 +288,17 @@ private:
       }
     }
 
+    // Read slices
+    int nslices = read32(s);
+    if (nslices >= 1 && nslices < 0xffffff) {
+      for (int i = 0; i < nslices; ++i) {
+        ObjectId sliceId = read32(s);
+        Slice* slice = loadObject<Slice*>("slice", sliceId, &Reader::readSlice);
+        if (slice)
+          spr->slices().add(slice);
+      }
+    }
+
     return spr.release();
   }
 
@@ -348,6 +361,10 @@ private:
 
   FrameTag* readFrameTag(std::ifstream& s) {
     return read_frame_tag(s, false);
+  }
+
+  Slice* readSlice(std::ifstream& s) {
+    return read_slice(s, false);
   }
 
   // Fix issues that the restoration process could produce.

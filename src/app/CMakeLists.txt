@@ -41,15 +41,15 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
-# Generate skin.xml.h from data/skins/default/skin.xml
-set(skin_xml ${CMAKE_SOURCE_DIR}/data/skins/default/skin.xml)
-set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/skin.xml.h)
+# Generate theme.xml.h from data/themes/default/theme.xml
+set(theme_xml ${CMAKE_SOURCE_DIR}/data/themes/default/theme.xml)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${skin_xml} --skin > ${output_fn}.tmp
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${theme_xml} --theme > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  MAIN_DEPENDENCY ${skin_xml}
+  MAIN_DEPENDENCY ${theme_xml}
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
@@ -88,6 +88,20 @@ include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
 
 ######################################################################
 # app-lib target
+
+# These specific-platform files should be in an external library
+# (e.g. "base" or "she").
+set(app_platform_files)
+if(WIN32)
+  set(app_platform_files
+    font_path_win.cpp)
+elseif(APPLE)
+  set(app_platform_files
+    font_path_osx.mm)
+else()
+  set(app_platform_files
+    font_path_unix.cpp)
+endif()
 
 set(data_recovery_files)
 if(NOT ENABLE_TRIAL_MODE)
@@ -148,6 +162,7 @@ add_library(app-lib
   cmd/add_frame_tag.cpp
   cmd/add_layer.cpp
   cmd/add_palette.cpp
+  cmd/add_slice.cpp
   cmd/background_from_layer.cpp
   cmd/clear_cel.cpp
   cmd/clear_image.cpp
@@ -174,6 +189,7 @@ add_library(app-lib
   cmd/remove_frame_tag.cpp
   cmd/remove_layer.cpp
   cmd/remove_palette.cpp
+  cmd/remove_slice.cpp
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_bounds.cpp
@@ -195,6 +211,8 @@ add_library(app-lib
   cmd/set_palette.cpp
   cmd/set_pixel_format.cpp
   cmd/set_pixel_ratio.cpp
+  cmd/set_slice_key.cpp
+  cmd/set_slice_name.cpp
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
@@ -207,6 +225,7 @@ add_library(app-lib
   cmd/with_frame_tag.cpp
   cmd/with_image.cpp
   cmd/with_layer.cpp
+  cmd/with_slice.cpp
   cmd/with_sprite.cpp
   cmd_sequence.cpp
   cmd_transaction.cpp
@@ -293,6 +312,7 @@ add_library(app-lib
   commands/cmd_remove_frame.cpp
   commands/cmd_remove_frame_tag.cpp
   commands/cmd_remove_layer.cpp
+  commands/cmd_remove_slice.cpp
   commands/cmd_repeat_last_export.cpp
   commands/cmd_reselect_mask.cpp
   commands/cmd_reverse_frames.cpp
@@ -310,6 +330,7 @@ add_library(app-lib
   commands/cmd_set_palette_entry_size.cpp
   commands/cmd_set_same_ink.cpp
   commands/cmd_show.cpp
+  commands/cmd_slice_properties.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
@@ -356,6 +377,7 @@ add_library(app-lib
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
+  font_path.cpp
   gui_xml.cpp
   i18n/strings.cpp
   ini_file.cpp
@@ -418,6 +440,7 @@ add_library(app-lib
   ui/editor/editor_view.cpp
   ui/editor/moving_cel_state.cpp
   ui/editor/moving_pixels_state.cpp
+  ui/editor/moving_slice_state.cpp
   ui/editor/moving_symmetry_state.cpp
   ui/editor/navigate_state.cpp
   ui/editor/pivot_helpers.cpp
@@ -455,15 +478,13 @@ add_library(app-lib
   ui/search_entry.cpp
   ui/select_accelerator.cpp
   ui/skin/button_icon_impl.cpp
+  ui/skin/font_data.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
-  ui/skin/skin_style_property.cpp
   ui/skin/skin_theme.cpp
-  ui/skin/style.cpp
-  ui/skin/style_sheet.cpp
+  ui/slice_window.cpp
   ui/status_bar.cpp
-  ui/styled_button.cpp
   ui/tabs.cpp
   ui/timeline.cpp
   ui/toolbar.cpp
@@ -490,6 +511,7 @@ add_library(app-lib
   widget_loader.cpp
   xml_document.cpp
   xml_exception.cpp
+  ${app_platform_files}
   ${data_recovery_files}
   ${scripting_files}
   ${generated_files})
@@ -498,7 +520,6 @@ target_link_libraries(app-lib
   laf-base
   cfg-lib
   clip
-  css-lib
   doc-lib
   docio-lib
   filters-lib
@@ -517,7 +538,8 @@ target_link_libraries(app-lib
   ${PNG_LIBRARIES}
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
-  ${FREETYPE_LIBRARIES})
+  ${FREETYPE_LIBRARIES}
+  ${HARFBUZZ_LIBRARIES})
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

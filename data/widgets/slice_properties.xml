@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aseprite -->
+<!-- Copyright (C) 2017 by David Capello -->
+<gui>
+<window id="slice_properties" text="@.title">
+  <grid columns="2">
+    <label text="@.name" />
+    <hbox>
+      <entry maxsize="256" id="name" magnet="true" expansive="true" />
+      <button id="user_data" icon="icon_user_data" tooltip="@.user_data_tooltip" />
+    </hbox>
+
+    <separator horizontal="true" cell_hspan="2" />
+
+    <box />
+    <hbox homogeneous="true">
+      <label text="@.x" />
+      <label text="@.y" />
+      <label text="@.width" />
+      <label text="@.height" />
+    </hbox>
+
+    <label text="@.bounds" />
+    <hbox homogeneous="true">
+      <entry maxsize="8" id="bounds_x" />
+      <entry maxsize="8" id="bounds_y" />
+      <entry maxsize="8" id="bounds_w" />
+      <entry maxsize="8" id="bounds_h" />
+    </hbox>
+
+    <check text="@.center" id="center" />
+    <hbox homogeneous="true">
+      <entry maxsize="8" id="center_x" />
+      <entry maxsize="8" id="center_y" />
+      <entry maxsize="8" id="center_w" />
+      <entry maxsize="8" id="center_h" />
+    </hbox>
+
+    <separator horizontal="true" cell_hspan="2" />
+
+    <hbox cell_hspan="2">
+      <boxfiller />
+      <hbox homogeneous="true">
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
+      </hbox>
+    </hbox>
+  </grid>
+</window>
+</gui>

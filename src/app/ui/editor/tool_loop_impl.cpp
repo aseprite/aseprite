@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/ui/editor/tool_loop_impl.h"
 
 #include "app/app.h"
+#include "app/cmd/add_slice.h"
 #include "app/cmd/set_mask.h"
 #include "app/color.h"
 #include "app/color_utils.h"
@@ -415,6 +416,10 @@ public:
         // Show selection edges
         m_docPref.show.selectionEdges(true);
       }
+      // Slice ink
+      else if (getInk()->isSlice()) {
+        redraw = true;
+      }
 
       m_transaction.commit();
     }
@@ -460,6 +465,9 @@ public:
   Mask* getMask() override { return m_mask; }
   void setMask(Mask* newMask) override {
     m_transaction.execute(new cmd::SetMask(m_document, newMask));
+  }
+  void addSlice(Slice* newSlice) override {
+    m_transaction.execute(new cmd::AddSlice(m_sprite, newSlice));
   }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
   bool getFilled() override { return m_filled; }
@@ -603,6 +611,7 @@ public:
   bool useMask() override { return false; }
   Mask* getMask() override { return nullptr; }
   void setMask(Mask* newMask) override { }
+  void addSlice(Slice* newSlice) override { }
   gfx::Point getMaskOrigin() override { return gfx::Point(0, 0); }
   bool getFilled() override { return false; }
   bool getPreviewFilled() override { return false; }

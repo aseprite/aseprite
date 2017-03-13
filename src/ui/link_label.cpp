@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,15 +19,19 @@
 namespace ui {
 
 LinkLabel::LinkLabel(const std::string& urlOrText)
-  : CustomLabel(urlOrText)
+  : Label(urlOrText)
   , m_url(urlOrText)
 {
+  setType(kLinkLabelWidget);
+  initTheme();
 }
 
 LinkLabel::LinkLabel(const std::string& url, const std::string& text)
-  : CustomLabel(text)
+  : Label(text)
   , m_url(url)
 {
+  setType(kLinkLabelWidget);
+  initTheme();
 }
 
 void LinkLabel::setUrl(const std::string& url)
@@ -82,12 +86,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
       break;
   }
 
-  return CustomLabel::onProcessMessage(msg);
-}
-
-void LinkLabel::onPaint(PaintEvent& ev)
-{
-  theme()->paintLinkLabel(ev);
+  return Label::onProcessMessage(msg);
 }
 
 void LinkLabel::onClick()

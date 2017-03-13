@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015, 2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -56,7 +56,6 @@ namespace ui {
     bool onProcessMessage(Message* msg) override;
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
-    void onPaint(PaintEvent& ev) override;
 
     virtual void onSetViewScroll(const gfx::Point& pt);
     virtual void onScrollRegion(ScrollRegionEvent& ev);

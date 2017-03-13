@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,7 +15,6 @@
 #include "app/crash/session.h"
 #include "app/modules/gui.h"
 #include "app/ui/drop_down_button.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/bind.h"
@@ -80,7 +79,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_listBox.setMultiselect(true);
   m_view.setExpansive(true);
   m_view.attachToView(&m_listBox);
-  m_view.setProperty(SkinStylePropertyPtr(new SkinStyleProperty(theme->styles.workspaceView())));
+  m_view.setStyle(theme->newStyles.workspaceView());
 
   HBox* hbox = new HBox;
   hbox->setBorder(gfx::Border(2, 0, 2, 0)*guiscale());
@@ -116,7 +115,7 @@ void DataRecoveryView::fillList()
       continue;
 
     auto sep = new Separator(session->name(), HORIZONTAL);
-    sep->setBgColor(SkinTheme::instance()->colors.background());
+    sep->setStyle(SkinTheme::instance()->newStyles.separatorInView());
     sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
     m_listBox.addChild(sep);
 

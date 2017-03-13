@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -51,7 +51,7 @@ namespace doc {
 
     virtual int getMemSize() const override;
 
-    std::string name() const { return m_name; }
+    const std::string& name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
 
     Sprite* sprite() const { return m_sprite; }

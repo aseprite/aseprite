@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,6 @@
 #include "app/resource_finder.h"
 #include "app/ui/browser_view.h"
 #include "app/ui/main_window.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/file_handle.h"
@@ -429,8 +428,8 @@ private:
 
   void addSeparator() {
     auto sep = new Separator("", HORIZONTAL);
+    sep->setStyle(SkinTheme::instance()->newStyles.separatorInView());
     sep->setBorder(gfx::Border(0, font()->height(), 0, font()->height()));
-    sep->setBgColor(SkinTheme::instance()->colors.textboxFace());
     sep->setExpansive(true);
     addChild(sep);
   }
@@ -449,9 +448,7 @@ private:
         if (word.size() > 4 &&
             std::strncmp(word.c_str(), "http", 4) == 0) {
           label = new LinkLabel(word);
-          label->setProperty(
-            SkinStylePropertyPtr(
-              new SkinStyleProperty(SkinTheme::instance()->styles.browserLink())));
+          label->setStyle(SkinTheme::instance()->newStyles.browserLink());
         }
         else
           label = new Label(word);
@@ -478,9 +475,7 @@ private:
 
   void addLink(const std::string& url, const std::string& text) {
     auto label = new LinkLabel(url, text);
-    label->setProperty(
-      SkinStylePropertyPtr(
-        new SkinStyleProperty(SkinTheme::instance()->styles.browserLink())));
+    label->setStyle(SkinTheme::instance()->newStyles.browserLink());
 
     if (url.find(':') == std::string::npos) {
       label->setUrl("");
@@ -521,8 +516,7 @@ BrowserView::BrowserView()
 
   m_view.attachToView(m_textBox);
   m_view.setExpansive(true);
-  m_view.setProperty(SkinStylePropertyPtr(
-      new SkinStyleProperty(theme->styles.workspaceView())));
+  m_view.setStyle(theme->newStyles.workspaceView());
 
   m_textBox->FileChange.connect(
     []{

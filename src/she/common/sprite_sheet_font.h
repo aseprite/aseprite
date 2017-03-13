@@ -63,6 +63,11 @@ public:
     // Do nothing
   }
 
+  bool hasCodePoint(int codepoint) const override {
+    codepoint -= (int)' ';
+    return (codepoint >= 0 && codepoint < (int)m_chars.size());
+  }
+
   Surface* getSurfaceSheet() const {
     return m_sheet;
   }
@@ -71,6 +76,8 @@ public:
     chr -= (int)' ';
     if (chr >= 0 && chr < (int)m_chars.size())
       return m_chars[chr];
+    else if (chr != 128)
+      return getCharBounds(128);
     else
       return gfx::Rect();
   }

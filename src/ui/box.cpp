@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -150,11 +150,6 @@ void Box::onResize(ResizeEvent& ev)
       LAYOUT_CHILDREN(y, x, h, w);
     }
   }
-}
-
-void Box::onPaint(PaintEvent& ev)
-{
-  theme()->paintBox(ev);
 }
 
 } // namespace ui

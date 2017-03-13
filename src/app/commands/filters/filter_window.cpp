@@ -39,6 +39,12 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   , m_showPreview("&Preview")
   , m_tiledCheck(withTiled == WithTiledCheckBox ? new CheckBox("&Tiled") : NULL)
 {
+  m_okButton.processMnemonicFromText();
+  m_cancelButton.processMnemonicFromText();
+  m_showPreview.processMnemonicFromText();
+  if (m_tiledCheck)
+    m_tiledCheck->processMnemonicFromText();
+
   m_targetButton.setTarget(filterMgr->getTarget());
   m_targetButton.TargetChange.connect(&FilterWindow::onTargetButtonChange, this);
   m_okButton.Click.connect(&FilterWindow::onOk, this);

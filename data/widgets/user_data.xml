@@ -1,12 +1,12 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
-  <tipwindow id="user_data" text="@.title">
-    <vbox>
-      <label text="@.user_data" />
+  <tipwindow id="user_data">
+    <vbox style="tooltip_face">
+      <label text="@.user_data" style="tooltip_text" />
       <entry id="text" magnet="true" maxsize="65535" minwidth="128" expansive="true" />
       <hbox>
-        <label text="@.color" />
+        <label text="@.color" style="tooltip_text" />
         <colorpicker id="color" expansive="true" />
       </hbox>
     </vbox>

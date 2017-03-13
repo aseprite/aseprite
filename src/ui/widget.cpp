@@ -63,12 +63,14 @@ WidgetType register_widget_type()
 Widget::Widget(WidgetType type)
   : m_type(type)
   , m_flags(0)
-  , m_theme(CurrentTheme::get())
+  , m_theme(get_theme())
+  , m_style(nullptr)
   , m_font(nullptr)
   , m_bgColor(gfx::ColorNone)
   , m_bounds(0, 0, 0, 0)
   , m_parent(nullptr)
   , m_sizeHint(nullptr)
+  , m_mnemonic(0)
   , m_minSize(0, 0)
   , m_maxSize(INT_MAX, INT_MAX)
   , m_childSpacing(0)
@@ -123,11 +125,6 @@ double Widget::textDouble() const
   return strtod(m_text.c_str(), NULL);
 }
 
-int Widget::textLength() const
-{
-  return base::utf8_length(text());
-}
-
 void Widget::setText(const std::string& text)
 {
   setTextQuiet(text);
@@ -165,21 +162,29 @@ she::Font* Widget::font() const
   return m_font;
 }
 
-void Widget::resetFont()
-{
-  m_font = nullptr;
-}
-
 void Widget::setBgColor(gfx::Color color)
 {
   m_bgColor = color;
   onSetBgColor();
+
+  if (m_style) {
+    LOG(WARNING) << "Warning setting bgColor to a widget with style\n";
+  }
 }
 
 void Widget::setTheme(Theme* theme)
 {
   m_theme = theme;
   m_font = nullptr;
+}
+
+void Widget::setStyle(Style* style)
+{
+  m_style = style;
+  m_border = m_theme->calcBorder(this, style);
+  m_bgColor = m_theme->calcBgColor(this, m_style);
+  if (style->font())
+    m_font = style->font();
 }
 
 // ===============================================================
@@ -340,27 +345,27 @@ bool Widget::isFocusMagnet() const
 // PARENTS & CHILDREN
 // ===============================================================
 
-Window* Widget::window()
+Window* Widget::window() const
 {
-  Widget* widget = this;
+  const Widget* widget = this;
 
   while (widget) {
     if (widget->type() == kWindowWidget)
-      return static_cast<Window*>(widget);
+      return static_cast<Window*>(const_cast<Widget*>(widget));
 
     widget = widget->m_parent;
   }
 
-  return NULL;
+  return nullptr;
 }
 
-Manager* Widget::manager()
+Manager* Widget::manager() const
 {
-  Widget* widget = this;
+  const Widget* widget = this;
 
   while (widget) {
     if (widget->type() == kManagerWidget)
-      return static_cast<Manager*>(widget);
+      return static_cast<Manager*>(const_cast<Widget*>(widget));
 
     widget = widget->m_parent;
   }
@@ -413,9 +418,10 @@ Widget* Widget::previousSibling()
   return *(++it);
 }
 
-Widget* Widget::pick(const gfx::Point& pt, bool checkParentsVisibility)
+Widget* Widget::pick(const gfx::Point& pt,
+                     const bool checkParentsVisibility) const
 {
-  Widget* inside, *picked = nullptr;
+  const Widget* inside, *picked = nullptr;
 
   // isVisible() checks visibility of widget's parent.
   if (((checkParentsVisibility && isVisible()) ||
@@ -432,7 +438,7 @@ Widget* Widget::pick(const gfx::Point& pt, bool checkParentsVisibility)
     }
   }
 
-  return picked;
+  return const_cast<Widget*>(picked);
 }
 
 bool Widget::hasChild(Widget* child)
@@ -636,6 +642,10 @@ void Widget::setBoundsQuietly(const gfx::Rect& rc)
 void Widget::setBorder(const Border& br)
 {
   m_border = br;
+
+  if (m_style) {
+    LOG(WARNING) << "Warning setting border to a widget with style\n";
+  }
 }
 
 void Widget::setChildSpacing(int childSpacing)
@@ -647,6 +657,10 @@ void Widget::noBorderNoChildSpacing()
 {
   m_border = gfx::Border(0, 0, 0, 0);
   m_childSpacing = 0;
+
+  if (m_style) {
+    LOG(WARNING) << "Warning setting border to a widget with style\n";
+  }
 }
 
 void Widget::getRegion(gfx::Region& region)
@@ -1254,39 +1268,62 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
   return false;
 }
 
-bool Widget::hasFocus()
+bool Widget::hasFocus() const
 {
   return hasFlags(HAS_FOCUS);
 }
 
-bool Widget::hasMouse()
+bool Widget::hasMouse() const
 {
   return hasFlags(HAS_MOUSE);
 }
 
-bool Widget::hasMouseOver()
+bool Widget::hasMouseOver() const
 {
   return (this == pick(get_mouse_position()));
 }
 
-bool Widget::hasCapture()
+bool Widget::hasCapture() const
 {
   return hasFlags(HAS_CAPTURE);
 }
 
-int Widget::mnemonicChar() const
+void Widget::setMnemonic(int mnemonic)
 {
-  if (hasText()) {
-    for (int c=0; m_text[c]; ++c)
-      if ((m_text[c] == '&') && (m_text[c+1] != '&'))
-        return std::tolower(m_text[c+1]);
-  }
-  return 0;
+  m_mnemonic = mnemonic;
 }
 
-bool Widget::mnemonicCharPressed(const KeyMessage* keyMsg) const
+void Widget::processMnemonicFromText(int escapeChar)
 {
-  int chr = mnemonicChar();
+  // Avoid calling setText() when the widget doesn't have the HAS_TEXT flag
+  if (!hasText())
+    return;
+
+  std::string newText;
+  if (!m_text.empty())
+    newText.reserve(m_text.size());
+
+  for (base::utf8_const_iterator
+         it(m_text.begin()),
+         end(m_text.end()); it != end; ++it) {
+    if (*it == escapeChar) {
+      ++it;
+      if (it == end) {
+        break;    // Ill-formed string (it ends with escape character)
+      }
+      else if (*it != escapeChar) {
+        setMnemonic(*it);
+      }
+    }
+    newText.push_back(*it);
+  }
+
+  setText(newText);
+}
+
+bool Widget::isMnemonicPressed(const KeyMessage* keyMsg) const
+{
+  int chr = std::tolower(mnemonic());
   return
     ((chr) &&
      ((chr == std::tolower(keyMsg->unicodeChar())) ||
@@ -1397,7 +1434,12 @@ void Widget::onInvalidateRegion(const Region& region)
 
 void Widget::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(m_minSize);
+  if (m_style) {
+    ev.setSizeHint(m_theme->calcSizeHint(this, style()));
+  }
+  else {
+    ev.setSizeHint(m_minSize);
+  }
 }
 
 void Widget::onLoadLayout(LoadLayoutEvent& ev)
@@ -1422,7 +1464,9 @@ void Widget::onResize(ResizeEvent& ev)
 
 void Widget::onPaint(PaintEvent& ev)
 {
-  // Do nothing
+  if (m_style)
+    m_theme->paintWidget(ev.graphics(), this, style(),
+                         clientBounds());
 }
 
 void Widget::onBroadcastMouseMessage(WidgetsList& targets)
@@ -1442,9 +1486,8 @@ void Widget::onInitTheme(InitThemeEvent& ev)
 
 void Widget::onSetDecorativeWidgetBounds()
 {
-  if (m_theme) {
+  if (m_theme)
     m_theme->setDecorativeWidgetBounds(this);
-  }
 }
 
 void Widget::onVisible(bool visible)

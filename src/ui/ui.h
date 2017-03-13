@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,7 +17,6 @@
 #include "ui/component.h"
 #include "ui/cursor.h"
 #include "ui/cursor_type.h"
-#include "ui/custom_label.h"
 #include "ui/entry.h"
 #include "ui/event.h"
 #include "ui/fit_bounds.h"
@@ -26,6 +25,7 @@
 #include "ui/hit_test_event.h"
 #include "ui/image_view.h"
 #include "ui/init_theme_event.h"
+#include "ui/int_entry.h"
 #include "ui/keys.h"
 #include "ui/label.h"
 #include "ui/layout_io.h"
@@ -54,6 +54,7 @@
 #include "ui/size_hint_event.h"
 #include "ui/slider.h"
 #include "ui/splitter.h"
+#include "ui/style.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/theme.h"

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -171,6 +171,28 @@ protected:
   }
 };
 
+class ShowSlicesCommand : public Command {
+public:
+  ShowSlicesCommand()
+    : Command("ShowSlices",
+              "Show Slices",
+              CmdUIOnlyFlag) {
+  }
+
+  Command* clone() const override { return new ShowSlicesCommand(*this); }
+
+protected:
+  bool onChecked(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    return docPref.show.slices();
+  }
+
+  void onExecute(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    docPref.show.slices(!docPref.show.slices());
+  }
+};
+
 Command* CommandFactory::createShowExtrasCommand()
 {
   return new ShowExtrasCommand;
@@ -199,6 +221,11 @@ Command* CommandFactory::createShowSelectionEdgesCommand()
 Command* CommandFactory::createShowBrushPreviewCommand()
 {
   return new ShowBrushPreviewCommand;
+}
+
+Command* CommandFactory::createShowSlicesCommand()
+{
+  return new ShowSlicesCommand;
 }
 
 } // namespace app

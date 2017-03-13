@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -45,11 +45,11 @@ class MiniCenterButton : public SkinButton<CheckBox> {
 public:
   MiniCenterButton()
     : SkinButton<CheckBox>(
-      SkinTheme::instance()->parts.windowCenterButtonNormal(),
-      SkinTheme::instance()->parts.windowCenterButtonHot(),
-      SkinTheme::instance()->parts.windowCenterButtonSelected())
+      SkinTheme::instance()->parts.windowButtonNormal(),
+      SkinTheme::instance()->parts.windowButtonHot(),
+      SkinTheme::instance()->parts.windowButtonSelected(),
+      SkinTheme::instance()->parts.windowCenterIcon())
   {
-    setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
     setSelected(true);
   }
@@ -59,8 +59,8 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size iconSize = theme->parts.windowPlayButtonNormal()->size();
-    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->size();
+    gfx::Size iconSize = theme->parts.windowButtonNormal()->size();
+    gfx::Size closeSize = theme->parts.windowButtonNormal()->size();
 
     rect.w = iconSize.w;
     rect.h = iconSize.h;
@@ -89,13 +89,13 @@ protected:
 class MiniPlayButton : public SkinButton<Button> {
 public:
   MiniPlayButton()
-    : SkinButton<Button>(SkinPartPtr(nullptr),
-                         SkinPartPtr(nullptr),
+    : SkinButton<Button>(SkinTheme::instance()->parts.windowButtonNormal(),
+                         SkinTheme::instance()->parts.windowButtonHot(),
+                         SkinTheme::instance()->parts.windowButtonSelected(),
                          SkinPartPtr(nullptr))
     , m_isPlaying(false) {
     enableFlags(CTRL_RIGHT_CLICK);
     setupIcons();
-    setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
   }
 
@@ -121,8 +121,8 @@ private:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size playSize = theme->parts.windowPlayButtonNormal()->size();
-    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->size();
+    gfx::Size playSize = theme->parts.windowButtonNormal()->size();
+    gfx::Size closeSize = theme->parts.windowButtonNormal()->size();
 
     rect.w = playSize.w;
     rect.h = playSize.h;
@@ -163,13 +163,9 @@ private:
     SkinTheme* theme = SkinTheme::instance();
 
     if (m_isPlaying)
-      setParts(theme->parts.windowStopButtonNormal(),
-               theme->parts.windowStopButtonHot(),
-               theme->parts.windowStopButtonSelected());
+      setIcon(theme->parts.windowStopIcon());
     else
-      setParts(theme->parts.windowPlayButtonNormal(),
-               theme->parts.windowPlayButtonHot(),
-               theme->parts.windowPlayButtonSelected());
+      setIcon(theme->parts.windowPlayIcon());
   }
 
   bool m_isPlaying;
@@ -245,8 +241,8 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
 void PreviewEditorWindow::onClose(ui::CloseEvent& ev)
 {
   Button* closeButton = dynamic_cast<Button*>(ev.getSource());
-  if (closeButton != NULL &&
-      closeButton->id() == SkinTheme::kThemeCloseButtonId) {
+  if (closeButton &&
+      closeButton->type() == kWindowCloseButtonWidget) {
     // Here we don't use "setMiniEditorEnabled" to change the state of
     // "m_isEnabled" because we're coming from a close event of the
     // window.

@@ -1,10 +1,10 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
   <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
     <hbox noborders="true" id="recover_sprites_placeholder">
       <boxfiller />
-      <button id="recover_sprites" text="@.recover" border="8" />
+      <button id="recover_sprites" text="@.recover" style="recover_sprites_button" />
       <boxfiller />
     </hbox>
 
@@ -20,8 +20,10 @@
       </vbox>
     </hbox>
     <splitter horizontal="true" noborders="true" childspacing="2"
-              expansive="true" by="percetage" position="50" >
-      <splitter vertical="true" noborders="true" childspacing="2">
+              expansive="true" by="percetage" position="50"
+              style="workspace_splitter">
+      <splitter vertical="true" noborders="true" childspacing="2"
+                style="workspace_splitter">
         <vbox id="files_placeholder">
           <label text="@home_view.recent_files" style="workspace_label" />
           <view id="files_view" expansive="true" style="workspace_view" />

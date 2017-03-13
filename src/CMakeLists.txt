@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2016  David Capello
+# Copyright (C) 2001-2017  David Capello
 
 ######################################################################
 # Compiler-specific flags
@@ -87,7 +87,6 @@ set(UNDO_TESTS OFF CACHE BOOL "Compile undo tests")
 add_subdirectory(undo)
 
 add_subdirectory(cfg)
-add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(filters)
 add_subdirectory(fixmath)
@@ -97,6 +96,7 @@ add_subdirectory(gfx)
 add_subdirectory(net)
 add_subdirectory(render)
 add_subdirectory(docio)
+add_subdirectory(ft)
 add_subdirectory(she)
 add_subdirectory(ui)
 
@@ -193,7 +193,6 @@ if(ENABLE_TESTS)
   find_tests(gfx gfx-lib)
   find_tests(doc doc-lib)
   find_tests(render render-lib)
-  find_tests(css css-lib)
   find_tests(ui ui-lib)
   find_tests(app/cli app-lib)
   find_tests(app/file app-lib)

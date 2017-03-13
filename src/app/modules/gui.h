@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,10 +41,6 @@ namespace app {
 
   ui::Widget* setup_mini_font(ui::Widget* widget);
   ui::Widget* setup_mini_look(ui::Widget* widget);
-  ui::Widget* setup_look(ui::Widget* widget, skin::LookType lookType);
-  void setup_bevels(ui::Widget* widget, int b1, int b2, int b3, int b4);
-
-  ui::CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
 
   // This function can be used to reinvalidate a specific rectangle if
   // we weren't able to validate it on a onPaint() event. E.g. Because

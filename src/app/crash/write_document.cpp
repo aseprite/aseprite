@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,6 +30,8 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/slice.h"
+#include "doc/slice_io.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 
@@ -70,6 +72,10 @@ public:
 
     for (FrameTag* frtag : spr->frameTags())
       if (!saveObject("frtag", frtag, &Writer::writeFrameTag))
+        return false;
+
+    for (Slice* slice : spr->slices())
+      if (!saveObject("slice", slice, &Writer::writeSlice))
         return false;
 
     // Get all layers (visible, hidden, subchildren, etc.)
@@ -155,6 +161,11 @@ private:
     for (FrameTag* frtag : spr->frameTags())
       write32(s, frtag->id());
 
+    // IDs of all slices
+    write32(s, spr->slices().size());
+    for (const Slice* slice : spr->slices())
+      write32(s, slice->id());
+
     return true;
   }
 
@@ -217,6 +228,11 @@ private:
 
   bool writeFrameTag(std::ofstream& s, FrameTag* frameTag) {
     write_frame_tag(s, frameTag);
+    return true;
+  }
+
+  bool writeSlice(std::ofstream& s, Slice* slice) {
+    write_slice(s, slice);
     return true;
   }
 

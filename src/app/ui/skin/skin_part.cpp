@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,6 +41,16 @@ void SkinPart::setBitmap(std::size_t index, she::Surface* bitmap)
     m_bitmaps.resize(index+1, NULL);
 
   m_bitmaps[index] = bitmap;
+}
+
+void SkinPart::setSpriteBounds(const gfx::Rect& bounds)
+{
+  m_spriteBounds = bounds;
+}
+
+void SkinPart::setSlicesBounds(const gfx::Rect& bounds)
+{
+  m_slicesBounds = bounds;
 }
 
 gfx::Size SkinPart::size() const

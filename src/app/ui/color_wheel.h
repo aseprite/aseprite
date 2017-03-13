@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -63,7 +63,7 @@ namespace app {
     bool m_discrete;
     ColorModel m_colorModel;
     Harmony m_harmony;
-    ui::ButtonBase m_options;
+    ui::Button m_options;
 
     // Internal flag used to know if after pickColor() we selected an
     // harmony.

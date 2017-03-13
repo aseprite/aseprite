@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -101,7 +101,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       if (isEnabled()) {
         bool mnemonicPressed =
           ((msg->altPressed() || msg->cmdPressed()) &&
-           mnemonicCharPressed(keymsg));
+           isMnemonicPressed(keymsg));
 
         // For kButtonWidget
         if (m_behaviorType == kButtonWidget) {
@@ -272,6 +272,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
 void ButtonBase::onSizeHint(SizeHintEvent& ev)
 {
+  // If there is a style specified in this widget, use the new generic
+  // widget to calculate the size hint.
+  if (style())
+    return Widget::onSizeHint(ev);
+
   gfx::Rect box;
   gfx::Size iconSize = (m_iconInterface ? m_iconInterface->size(): gfx::Size(0, 0));
   getTextIconInfo(&box, NULL, NULL,
@@ -285,8 +290,13 @@ void ButtonBase::onSizeHint(SizeHintEvent& ev)
 
 void ButtonBase::onPaint(PaintEvent& ev)
 {
+  // If there is a style specified in this widget, use the new generic
+  // widget painting code.
+  if (style())
+    return Widget::onPaint(ev);
+
   switch (m_drawType) {
-    case kButtonWidget: theme()->paintButton(ev); break;
+    case kButtonWidget: ASSERT(false); break;
     case kCheckWidget:  theme()->paintCheckBox(ev); break;
     case kRadioWidget:  theme()->paintRadioButton(ev); break;
   }

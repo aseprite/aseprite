@@ -111,7 +111,6 @@ namespace ui {
   protected:
     bool onProcessMessage(Message* msg) override;
     void onResize(ResizeEvent& ev) override;
-    void onPaint(PaintEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
     void onBroadcastMouseMessage(WidgetsList& targets) override;
     virtual LayoutIO* onGetLayoutIO();

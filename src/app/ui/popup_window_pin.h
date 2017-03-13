@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,6 @@
 #define APP_UI_POPUP_FRAME_PIN_H_INCLUDED
 #pragma once
 
-#include "ui/button.h"
 #include "ui/popup_window.h"
 
 namespace app {

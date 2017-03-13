@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,7 +38,6 @@
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/styled_button.h"
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -82,18 +81,10 @@ enum class PalButton {
 using namespace app::skin;
 using namespace ui;
 
-class ColorBar::WarningIcon : public StyledButton {
+class ColorBar::WarningIcon : public ui::Button {
 public:
-  WarningIcon()
-    : StyledButton(skin::SkinTheme::instance()->styles.warningBox()) {
-  }
-
-protected:
-  void onPaint(ui::PaintEvent& ev) override {
-    // if (isEnabled())
-      StyledButton::onPaint(ev);
-    // else
-    //   ev.graphics()->fillRect(getBgColor(), clientBounds());
+  WarningIcon() : ui::Button(std::string()) {
+    setStyle(skin::SkinTheme::instance()->newStyles.warningBox());
   }
 };
 
@@ -103,24 +94,7 @@ protected:
 ColorBar::ScrollableView::ScrollableView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  int l = theme->parts.editorSelected()->bitmapW()->width();
-  int t = theme->parts.editorSelected()->bitmapN()->height();
-  int r = theme->parts.editorSelected()->bitmapE()->width();
-  int b = theme->parts.editorSelected()->bitmapS()->height();
-
-  setBorder(gfx::Border(l, t, r, b));
-}
-
-void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
-{
-  ui::Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
-  theme->drawRect(
-    g, clientBounds(),
-    (hasFocus() ? theme->parts.editorSelected().get():
-                  theme->parts.editorNormal().get()),
-    gfx::ColorNone);
+  setStyle(theme->newStyles.colorbarView());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -177,6 +151,7 @@ ColorBar::ColorBar(int align)
   m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
+  m_splitter.setStyle(theme->newStyles.workspaceSplitter());
   m_splitter.addChild(&m_palettePlaceholder);
   m_splitter.addChild(&m_selectorPlaceholder);
 

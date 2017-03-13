@@ -59,10 +59,8 @@ Console::Console(Context* ctx)
   TextBox* textbox = new TextBox("", WORDWRAP);
   Button* button = new Button("&Cancel");
 
-  if (!grid || !textbox || !button)
-    return;
-
   // The "button" closes the console
+  button->processMnemonicFromText();
   button->Click.connect(base::Bind<void>(&Window::closeWindow, window, button));
 
   view->attachToView(textbox);

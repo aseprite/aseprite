@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,7 @@
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
+#include "ui/textbox.h"
 #include "ui/theme.h"
 
 #include <string>
@@ -123,11 +124,20 @@ void TooltipManager::onTick()
 // TipWindow
 
 TipWindow::TipWindow(const std::string& text)
-  : PopupWindow(text, ClickBehavior::CloseOnClickInOtherWindow)
+  // Put an empty string in the ctor so the window label isn't build
+  : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
+  , m_arrowStyle(nullptr)
   , m_arrowAlign(0)
   , m_closeOnKeyDown(true)
+  , m_textBox(new TextBox("", LEFT | TOP))
 {
   setTransparent(true);
+
+  // Here we build our own custimized label for the window
+  // (a text box).
+  m_textBox->setVisible(false);
+  addChild(m_textBox);
+  setText(text);
 
   makeFixed();
   initTheme();
@@ -232,50 +242,22 @@ bool TipWindow::onProcessMessage(Message* msg)
   return PopupWindow::onProcessMessage(msg);
 }
 
-void TipWindow::onSizeHint(SizeHintEvent& ev)
-{
-  ScreenGraphics g;
-  g.setFont(font());
-  Size resultSize =
-    g.fitString(text(),
-                (clientBounds() - border()).w,
-                align());
-
-  resultSize.w += border().width();
-  resultSize.h += border().height();
-
-  if (!children().empty()) {
-    Size maxSize(0, 0);
-    Size reqSize;
-
-    for (auto child : children()) {
-      reqSize = child->sizeHint();
-
-      maxSize.w = MAX(maxSize.w, reqSize.w);
-      maxSize.h = MAX(maxSize.h, reqSize.h);
-    }
-
-    resultSize.w = MAX(resultSize.w, maxSize.w + border().width());
-    resultSize.h += maxSize.h;
-  }
-
-  ev.setSizeHint(resultSize);
-}
-
-void TipWindow::onInitTheme(InitThemeEvent& ev)
-{
-  Window::onInitTheme(ev);
-
-  setBorder(
-    gfx::Border(6 * guiscale(),
-                6 * guiscale(),
-                6 * guiscale(),
-                7 * guiscale()));
-}
-
 void TipWindow::onPaint(PaintEvent& ev)
 {
-  theme()->paintTooltip(ev);
+  theme()->paintTooltip(
+    ev.graphics(), this, style(), arrowStyle(),
+    clientBounds(), arrowAlign(),
+    gfx::Rect(target()).offset(-bounds().origin()));
+}
+
+void TipWindow::onBuildTitleLabel()
+{
+  if (!text().empty()) {
+    m_textBox->setVisible(true);
+    m_textBox->setText(text());
+  }
+  else
+    m_textBox->setVisible(false);
 }
 
 } // namespace ui

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,6 +25,7 @@
 #define FILE_LOAD_SEQUENCE_ASK_CHECKBOX 0x00000004
 #define FILE_LOAD_SEQUENCE_YES          0x00000008
 #define FILE_LOAD_ONE_FRAME             0x00000010
+#define FILE_LOAD_DATA_FILE             0x00000020
 
 namespace doc {
   class Document;
@@ -173,6 +174,7 @@ namespace app {
     //      releaseDocument() member function)
     Document* m_document;       // Loaded document, or document to be saved.
     std::string m_filename;     // File-name to load/save.
+    std::string m_dataFilename; // File-name for a special XML .aseprite-data where extra sprite data can be stored
     FileOpROI m_roi;
 
     // Shared fields between threads.
@@ -206,6 +208,8 @@ namespace app {
     } m_seq;
 
     void prepareForSequence();
+    void loadData();
+    void saveData();
   };
 
   // Available extensions for each load/save operation.

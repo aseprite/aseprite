@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,7 @@ namespace doc {
     }
 
     const UserData& userData() const { return m_userData; }
+    UserData& userData() { return m_userData; }
 
     void setUserData(const UserData& userData) {
       m_userData = userData;

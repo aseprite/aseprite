@@ -15,7 +15,6 @@
 #include "app/color_utils.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_popup.h"
 #include "app/ui/editor/editor.h"
@@ -52,10 +51,9 @@ ColorButton::ColorButton(const app::Color& color,
   , m_dependOnLayer(false)
   , m_canPinSelector(canPinSelector)
 {
-  this->setFocusStop(true);
-
-  setup_mini_font(this);
-
+  setFocusStop(true);
+  initTheme();
+  
   UIContext::instance()->add_observer(this);
 }
 
@@ -100,6 +98,12 @@ app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
 {
   // Ignore the position
   return m_color;
+}
+
+void ColorButton::onInitTheme(InitThemeEvent& ev)
+{
+  ButtonBase::onInitTheme(ev);
+  setStyle(SkinTheme::instance()->newStyles.colorButton());
 }
 
 bool ColorButton::onProcessMessage(Message* msg)
@@ -160,12 +164,15 @@ bool ColorButton::onProcessMessage(Message* msg)
 
 void ColorButton::onSizeHint(SizeHintEvent& ev)
 {
+  ButtonBase::onSizeHint(ev);
+
   gfx::Rect box;
   getTextIconInfo(&box);
   box.w = 64*guiscale();
 
-  ev.setSizeHint(box.w + border().width(),
-                 box.h + border().height());
+  gfx::Size sz = ev.sizeHint();
+  sz.w = std::max(sz.w, box.w);
+  ev.setSizeHint(sz);
 }
 
 void ColorButton::onPaint(PaintEvent& ev)
@@ -226,7 +233,7 @@ void ColorButton::onPaint(PaintEvent& ev)
 
   gfx::Rect textrc;
   getTextIconInfo(NULL, &textrc);
-  g->drawUIText(text(), textcolor, gfx::ColorNone, textrc.origin());
+  g->drawUIText(text(), textcolor, gfx::ColorNone, textrc.origin(), 0);
 }
 
 void ColorButton::onClick(Event& ev)

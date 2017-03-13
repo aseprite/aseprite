@@ -10,6 +10,7 @@
 *.exe.manifest
 *.log
 *.res
+.DS_Store
 
 # CMake output
 build

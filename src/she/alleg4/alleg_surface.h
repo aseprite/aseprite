@@ -56,6 +56,7 @@ namespace she {
     void scrollTo(const gfx::Rect& rc, int dx, int dy) override;
     void drawSurface(const Surface* src, int dstx, int dsty) override;
     void drawRgbaSurface(const Surface* src, int dstx, int dsty) override;
+    void drawRgbaSurface(const Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h) override;
 
   private:
     BITMAP* m_bmp;

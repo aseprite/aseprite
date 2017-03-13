@@ -24,6 +24,8 @@
 #include "ui/manager.h"
 #include "ui/theme.h"
 
+#include <cctype>
+
 namespace ui {
 
 Graphics::Graphics(she::Surface* surface, int dx, int dy)
@@ -177,6 +179,15 @@ void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
   m_surface->drawRgbaSurface(surface, m_dx+x, m_dy+y);
 }
 
+void Graphics::drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h)
+{
+  dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
+
+  she::SurfaceLock lockSrc(surface);
+  she::SurfaceLock lockDst(m_surface);
+  m_surface->drawRgbaSurface(surface, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
+}
+
 void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
@@ -228,35 +239,28 @@ namespace {
 class DrawUITextDelegate : public she::DrawTextDelegate {
 public:
   DrawUITextDelegate(she::Surface* surface,
-                     she::Font* font, const bool drawUnderscore)
+                     she::Font* font, const int mnemonic)
     : m_surface(surface)
     , m_font(font)
-    , m_drawUnderscore(drawUnderscore)
-    , m_underscoreNext(false) {
+    , m_mnemonic(std::tolower(mnemonic))
+    , m_underscoreColor(gfx::ColorNone) {
   }
 
   gfx::Rect bounds() const { return m_bounds; }
 
-  void preProcessChar(const base::utf8_const_iterator& it,
-                      const base::utf8_const_iterator& end,
-                      int& chr,
+  void preProcessChar(const int index,
+                      const int codepoint,
                       gfx::Color& fg,
-                      gfx::Color& bg,
-                      bool& drawChar,
-                      bool& moveCaret) override {
-    if (m_underscoreNext)
-      m_underscoreColor = fg;
-
-    if (!m_surface)
-      drawChar = false;
-
-    moveCaret = true;
-    if (chr == '&') { // TODO change this with other character, maybe '_' or configurable
-      auto it2 = it;
-      ++it2;
-      if (it2 != end && *it2 != '&') {
-        m_underscoreNext = true;
-        moveCaret = false;
+                      gfx::Color& bg) override {
+    if (m_surface) {
+      if (m_mnemonic &&
+          // TODO use ICU library to lower unicode chars
+          std::tolower(codepoint) == m_mnemonic) {
+        m_underscoreColor = fg;
+        m_mnemonic = 0;         // Just one time
+      }
+      else {
+        m_underscoreColor = gfx::ColorNone;
       }
     }
   }
@@ -267,40 +271,36 @@ public:
   }
 
   void postDrawChar(const gfx::Rect& charBounds) override {
-    if (m_underscoreNext) {
-      m_underscoreNext = false;
-      if (m_drawUnderscore) {
-        // TODO underscore height = guiscale() should be configurable from ui::Theme
-        int dy = 0;
-        if (m_font->type() == she::FontType::kTrueType) // TODO use other method to locate the underline
-          dy += guiscale();
-        gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
-                                   charBounds.w, guiscale());
-        m_surface->fillRect(m_underscoreColor, underscoreBounds);
-        m_bounds |= underscoreBounds;
-      }
+    if (!gfx::is_transparent(m_underscoreColor)) {
+      // TODO underscore height = guiscale() should be configurable from ui::Theme
+      int dy = 0;
+      if (m_font->type() == she::FontType::kTrueType) // TODO use other method to locate the underline
+        dy += guiscale();
+      gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
+                                 charBounds.w, guiscale());
+      m_surface->fillRect(m_underscoreColor, underscoreBounds);
+      m_bounds |= underscoreBounds;
     }
   }
 
 private:
   she::Surface* m_surface;
   she::Font* m_font;
-  bool m_drawUnderscore;
-  bool m_underscoreNext;
+  int m_mnemonic;
   gfx::Color m_underscoreColor;
   gfx::Rect m_bounds;
 };
 
 }
 
-void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
-                          bool drawUnderscore)
+void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
+                          const gfx::Point& pt, const int mnemonic)
 {
   she::SurfaceLock lock(m_surface);
   int x = m_dx+pt.x;
   int y = m_dy+pt.y;
 
-  DrawUITextDelegate delegate(m_surface, m_font, drawUnderscore);
+  DrawUITextDelegate delegate(m_surface, m_font, mnemonic);
   she::draw_text(m_surface, m_font,
                  base::utf8_const_iterator(str.begin()),
                  base::utf8_const_iterator(str.end()),
@@ -309,7 +309,8 @@ void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, 
   dirty(delegate.bounds());
 }
 
-void Graphics::drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align)
+void Graphics::drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
+                                 const gfx::Rect& rc, const int align)
 {
   doUIStringAlgorithm(str, fg, bg, rc, align, true);
 }
@@ -324,7 +325,7 @@ gfx::Size Graphics::measureUIText(const std::string& str)
 // static
 int Graphics::measureUITextLength(const std::string& str, she::Font* font)
 {
-  DrawUITextDelegate delegate(nullptr, font, false);
+  DrawUITextDelegate delegate(nullptr, font, 0);
   she::draw_text(nullptr, font,
                  base::utf8_const_iterator(str.begin()),
                  base::utf8_const_iterator(str.end()),
@@ -445,7 +446,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
 ScreenGraphics::ScreenGraphics()
   : Graphics(she::instance()->defaultDisplay()->getSurface(), 0, 0)
 {
-  setFont(CurrentTheme::get()->getDefaultFont());
+  setFont(get_theme()->getDefaultFont());
 }
 
 ScreenGraphics::~ScreenGraphics()

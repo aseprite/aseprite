@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -72,7 +72,9 @@ void AboutCommand::onExecute(Context* context)
   grid->addChildInCell(website, 2, 1, 0);
   grid->addChildInCell(bottom_box1, 2, 1, 0);
 
+  close_button->processMnemonicFromText();
   close_button->setFocusMagnet(true);
+  close_button->setMinSize(gfx::Size(60*guiscale(), 0));
 
   author3_line->addChild(author3);
   author3_line->addChild(author4);

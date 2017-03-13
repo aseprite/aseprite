@@ -1146,11 +1146,6 @@ void Manager::onResize(ResizeEvent& ev)
   }
 }
 
-void Manager::onPaint(PaintEvent& ev)
-{
-  theme()->paintDesktop(ev);
-}
-
 void Manager::onBroadcastMouseMessage(WidgetsList& targets)
 {
   // Ask to the first window in the "children" list to know how to

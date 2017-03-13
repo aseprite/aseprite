@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,6 +16,9 @@
 #include "ui/widget.h"
 
 namespace ui {
+
+  class ButtonBase;
+  class Label;
 
   class Window : public Widget {
   public:
@@ -51,8 +54,6 @@ namespace ui {
 
     HitTest hitTest(const gfx::Point& point);
 
-    void removeDecorativeWidgets();
-
     // Signals
     obs::signal<void (CloseEvent&)> Close;
 
@@ -60,7 +61,6 @@ namespace ui {
     virtual bool onProcessMessage(Message* msg) override;
     virtual void onResize(ResizeEvent& ev) override;
     virtual void onSizeHint(SizeHintEvent& ev) override;
-    virtual void onPaint(PaintEvent& ev) override;
     virtual void onBroadcastMouseMessage(WidgetsList& targets) override;
     virtual void onSetText() override;
 
@@ -69,6 +69,7 @@ namespace ui {
     virtual void onHitTest(HitTestEvent& ev);
     virtual void onWindowResize();
     virtual void onWindowMovement();
+    virtual void onBuildTitleLabel();
 
   private:
     void windowSetPosition(const gfx::Rect& rect);
@@ -77,6 +78,8 @@ namespace ui {
     void moveWindow(const gfx::Rect& rect, bool use_blit);
 
     Widget* m_closer;
+    Label* m_titleLabel;
+    ButtonBase* m_closeButton;
     bool m_isDesktop : 1;
     bool m_isMoveable : 1;
     bool m_isSizeable : 1;

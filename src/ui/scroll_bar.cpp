@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "gfx/size.h"
 #include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/scroll_bar.h"
 #include "ui/theme.h"
 
@@ -25,6 +26,7 @@ int ScrollBar::m_whereclick = 0;
 ScrollBar::ScrollBar(int align, ScrollableViewDelegate* delegate)
   : Widget(kViewScrollbarWidget)
   , m_delegate(delegate)
+  , m_thumbStyle(nullptr)
   , m_barWidth(theme()->getScrollbarSize())
   , m_pos(0)
   , m_size(0)
@@ -178,7 +180,15 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
 void ScrollBar::onPaint(PaintEvent& ev)
 {
-  theme()->paintViewScrollbar(ev);
+  gfx::Rect thumbBounds = clientBounds();
+  if (align() & HORIZONTAL)
+    getScrollBarThemeInfo(&thumbBounds.x, &thumbBounds.w);
+  else
+    getScrollBarThemeInfo(&thumbBounds.y, &thumbBounds.h);
+
+  theme()->paintScrollBar(
+    ev.graphics(), this, style(), thumbStyle(),
+    clientBounds(), thumbBounds);
 }
 
 void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_viewport_size)

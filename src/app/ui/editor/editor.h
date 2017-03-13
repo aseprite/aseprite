@@ -16,6 +16,7 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
+#include "app/ui/editor/editor_hit.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
@@ -74,13 +75,15 @@ namespace app {
       kShowOutside = 8,
       kShowDecorators = 16,
       kShowSymmetryLine = 32,
-      kUseNonactiveLayersOpacityWhenEnabled = 64,
+      kShowSlices = 64,
+      kUseNonactiveLayersOpacityWhenEnabled = 128,
       kDefaultEditorFlags = (kShowGrid |
                              kShowMask |
                              kShowOnionskin |
                              kShowOutside |
                              kShowDecorators |
                              kShowSymmetryLine |
+                             kShowSlices |
                              kUseNonactiveLayersOpacityWhenEnabled)
     };
 
@@ -195,6 +198,10 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
+    // Returns the element that will be modified if the mouse is used
+    // in the given position.
+    EditorHit calcHit(const gfx::Point& mouseScreenPos);
+
     void setZoomAndCenterInMouse(const render::Zoom& zoom,
       const gfx::Point& mousePos, ZoomBehavior zoomBehavior);
 
@@ -271,7 +278,8 @@ namespace app {
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
     void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
-      const app::Color& color, int alpha);
+                  const app::Color& color, int alpha);
+    void drawSlices(ui::Graphics* g);
 
     void setCursor(const gfx::Point& mouseScreenPos);
 
