@@ -520,7 +520,6 @@ target_link_libraries(app-lib
   laf-base
   cfg-lib
   clip
-  css-lib
   doc-lib
   docio-lib
   filters-lib

@@ -15,7 +15,6 @@ because they don't depend on any other component.
 
   * [allegro](allegro/): Modified version of [Allegro](http://alleg.sourceforge.net/) library, used for keyboard/mouse input, and drawing 2D graphics on screen.
   * [clip](https://github.com/aseprite/clip): Clipboard library.
-  * [css](css/): Pseudo-style sheet library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](https://github.com/aseprite/flic): Library to load/save FLI/FLC files.
   * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.

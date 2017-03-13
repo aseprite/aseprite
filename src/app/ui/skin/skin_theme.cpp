@@ -26,7 +26,6 @@
 #include "base/fs.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
-#include "css/sheet.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
