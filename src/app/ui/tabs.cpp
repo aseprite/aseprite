@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -63,13 +63,13 @@ Tabs::Tabs(TabsDelegate* delegate)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  setStyle(theme->newStyles.mainTabs());
   setDoubleBuffered(true);
   initTheme();
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   m_tabsHeight = theme->dimensions.tabsHeight();
   m_tabsBottomHeight = theme->dimensions.tabsBottomHeight();
-  setBgColor(theme->colors.windowFace());
 }
 
 Tabs::~Tabs()
@@ -256,7 +256,7 @@ void Tabs::setDockedStyle()
   m_tabsHeight = theme->dimensions.dockedTabsHeight();
   m_tabsBottomHeight = 0;
 
-  setBgColor(theme->colors.workspace());
+  setStyle(theme->newStyles.workspaceTabs());
 }
 
 void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
@@ -459,12 +459,13 @@ bool Tabs::onProcessMessage(Message* msg)
 
 void Tabs::onPaint(PaintEvent& ev)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   Graphics* g = ev.graphics();
   gfx::Rect rect = clientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
-    m_tabsHeight - m_tabsBottomHeight);
+                m_tabsHeight - m_tabsBottomHeight);
 
-  g->fillRect(bgColor(), g->getClipBounds());
+  theme->paintWidget(g, this, style(), rect);
 
   if (!m_docked)
     drawFiller(g, box);
@@ -513,7 +514,6 @@ void Tabs::onPaint(PaintEvent& ev)
 
   // New tab from other Tab that want to be dropped here.
   if (m_dropNewTab) {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Tab newTab(m_dropNewTab);
 
     newTab.width = newTab.oldWidth =
@@ -552,7 +552,7 @@ void Tabs::selectTabInternal(TabPtr& tab)
 }
 
 void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
-  Tab* tab, int dy, bool hover, bool selected)
+                   Tab* tab, int dy, bool hover, bool selected)
 {
   gfx::Rect box = _box;
   if (box.w < ui::guiscale()*8)
@@ -569,14 +569,15 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
     clipTextRightSide = closeBox.w;
   }
 
-  skin::Style::State state;
-  if (selected) state += skin::Style::active();
-  if (hover) state += skin::Style::hover();
-
   // Tab without text
-  theme->styles.tab()->paint(g,
+  PaintWidgetPartInfo info;
+  info.styleFlags =
+    (selected ? ui::Style::Layer::kFocus: 0) |
+    (hover ? ui::Style::Layer::kMouse: 0);
+  theme->paintWidgetPart(
+    g, theme->newStyles.tab(),
     gfx::Rect(box.x, box.y+dy, box.w, box.h),
-    nullptr, state);
+    info);
 
   {
     IntersectClip clip(g, gfx::Rect(box.x, box.y+dy, box.w-clipTextRightSide, box.h));
@@ -589,13 +590,14 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
         break;
       case TabIcon::HOME:
         {
-          theme->styles.tabHome()->paint(g,
+          theme->paintWidgetPart(
+            g, theme->newStyles.tabHome(),
             gfx::Rect(
               box.x,
               box.y+dy,
               box.x-dx,
               box.h),
-            nullptr, state);
+            info);
           dx += theme->dimensions.tabsIconWidth();
         }
         break;
@@ -603,21 +605,26 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
     // Tab with text + clipping the close button
     if (box.w > 8*ui::guiscale()) {
-      theme->styles.tabText()->paint(g,
+      info.text = &tab->text;
+      theme->paintWidgetPart(
+        g, theme->newStyles.tabText(),
         gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
-        tab->text.c_str(), state);
+        info);
+      info.text = nullptr;
     }
   }
 
   // Tab bottom part
-  if (!m_docked)
-    theme->styles.tabBottom()->paint(g,
+  if (!m_docked) {
+    theme->paintWidgetPart(
+      g, theme->newStyles.tabBottom(),
       gfx::Rect(box.x, box.y2(), box.w, bounds().y2()-box.y2()),
-      nullptr, state);
+      info);
+  }
 
   // Close button
   if (!closeBox.isEmpty()) {
-    skin::Style* style = theme->styles.tabCloseIcon();
+    ui::Style* style = theme->newStyles.tabCloseIcon();
 
     if (m_delegate) {
       if (tab->view)
@@ -625,22 +632,20 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
       if (tab->modified &&
           (!hover || !m_hotCloseButton)) {
-        style = theme->styles.tabModifiedIcon();
+        style = theme->newStyles.tabModifiedIcon();
       }
     }
 
-    state = skin::Style::State();
+    info.styleFlags = 0;
+    if (selected)
+      info.styleFlags |= ui::Style::Layer::kFocus;
     if (hover && m_hotCloseButton) {
-      state += skin::Style::hover();
-      if (selected)
-        state += skin::Style::active();
+      info.styleFlags |= ui::Style::Layer::kMouse;
       if (m_clickedCloseButton)
-        state += skin::Style::clicked();
+        info.styleFlags |= ui::Style::Layer::kSelected;
     }
-    else if (selected)
-      state += skin::Style::active();
 
-    style->paint(g, closeBox, nullptr, state);
+    theme->paintWidgetPart(g, style, closeBox, info);
   }
 }
 
@@ -648,13 +653,16 @@ void Tabs::drawFiller(ui::Graphics* g, const gfx::Rect& box)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   gfx::Rect rect = clientBounds();
-  skin::Style::State state;
 
-  theme->styles.tabFiller()->paint(g,
-    gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h), nullptr, state);
+  theme->paintWidgetPart(
+    g, theme->newStyles.tabFiller(),
+    gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h),
+    PaintWidgetPartInfo());
 
-  theme->styles.tabBottom()->paint(g,
-    gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()), nullptr, state);
+  theme->paintWidgetPart(
+    g, theme->newStyles.tabBottom(),
+    gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()),
+    PaintWidgetPartInfo());
 }
 
 Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)

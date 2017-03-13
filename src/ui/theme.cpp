@@ -40,16 +40,10 @@ int compare_layer_flags(int a, int b)
   return a - b;
 }
 
-void for_each_layer(const Widget* widget,
+void for_each_layer(const int flags,
                     const Style* style,
                     std::function<void(const Style::Layer&)> callback)
 {
-  int flags =
-    (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
-    (widget->isSelected() ? Style::Layer::kSelected: 0) |
-    (widget->hasMouse() ? Style::Layer::kMouse: 0) |
-    (widget->hasFocus() ? Style::Layer::kFocus: 0);
-
   const Style::Layer* bestLayer = nullptr;
 
   for (const auto& layer : style->layers()) {
@@ -71,7 +65,45 @@ void for_each_layer(const Widget* widget,
     callback(*bestLayer);
 }
 
+void for_each_layer(const Widget* widget,
+                    const Style* style,
+                    std::function<void(const Style::Layer&)> callback)
+{
+  for_each_layer(
+    PaintWidgetPartInfo::getStyleFlagsForWidget(widget),
+    style,
+    callback);
+}
+
 } // anonymous namespace
+
+PaintWidgetPartInfo::PaintWidgetPartInfo()
+{
+  bgColor = gfx::ColorNone;
+  styleFlags = 0;
+  text = nullptr;
+  mnemonic = 0;
+}
+
+PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
+{
+  bgColor = (!widget->isTransparent() ?
+             widget->bgColor():
+             gfx::ColorNone);
+  styleFlags = PaintWidgetPartInfo::getStyleFlagsForWidget(widget);
+  text = &widget->text();
+  mnemonic = widget->mnemonic();
+}
+
+// static
+int PaintWidgetPartInfo::getStyleFlagsForWidget(const Widget* widget)
+{
+  return
+    (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
+    (widget->isSelected() ? Style::Layer::kSelected: 0) |
+    (widget->hasMouse() ? Style::Layer::kMouse: 0) |
+    (widget->hasFocus() ? Style::Layer::kFocus: 0);
+}
 
 Theme::Theme()
   : m_guiscale(1)
@@ -139,26 +171,38 @@ void Theme::setDecorativeWidgetBounds(Widget* widget)
   }
 }
 
+void Theme::paintWidgetPart(Graphics* g,
+                            const Style* style,
+                            const gfx::Rect& bounds,
+                            const PaintWidgetPartInfo& info)
+{
+  ASSERT(g);
+  ASSERT(style);
+
+  // External background
+  if (!gfx::is_transparent(info.bgColor))
+    g->fillRect(info.bgColor, bounds);
+
+  gfx::Rect rc = bounds;
+  gfx::Color outBgColor = gfx::ColorNone;
+  for_each_layer(
+    info.styleFlags, style,
+    [this, g, &info, &rc, &outBgColor](const Style::Layer& layer) {
+      paintLayer(g, layer,
+                 (info.text ? *info.text: std::string()),
+                 info.mnemonic, rc, outBgColor);
+    });
+}
+
 void Theme::paintWidget(Graphics* g,
                         const Widget* widget,
                         const Style* style,
                         const gfx::Rect& bounds)
 {
-  ASSERT(g);
   ASSERT(widget);
-  ASSERT(style);
 
-  // External background
-  if (!widget->isTransparent())
-    g->fillRect(widget->bgColor(), bounds);
-
-  gfx::Rect rc = bounds;
-  gfx::Color bgColor = gfx::ColorNone;
-  for_each_layer(
-    widget, style,
-    [this, g, widget, &rc, &bgColor](const Style::Layer& layer) {
-      paintLayer(g, widget, layer, rc, bgColor);
-    });
+  PaintWidgetPartInfo info(widget);
+  paintWidgetPart(g, style, bounds, info);
 }
 
 void Theme::paintScrollBar(Graphics* g,
@@ -168,15 +212,14 @@ void Theme::paintScrollBar(Graphics* g,
                            const gfx::Rect& bounds,
                            const gfx::Rect& thumbBounds)
 {
-  paintWidget(g, widget, style, bounds);
-  
-  gfx::Rect rc = thumbBounds;
-  gfx::Color bgColor = gfx::ColorNone;
-  for_each_layer(
-    widget, thumbStyle,
-    [this, g, widget, &rc, &bgColor](const Style::Layer& layer) {
-      paintLayer(g, widget, layer, rc, bgColor);
-    });
+  PaintWidgetPartInfo info(widget);
+  paintWidgetPart(g, style, bounds, info);
+
+  // TODO flags for the thumb could have "mouse" only
+  //      when the mouse is inside the thumb
+
+  info.bgColor = gfx::ColorNone;
+  paintWidgetPart(g, thumbStyle, thumbBounds, info);
 }
 
 void Theme::paintTooltip(Graphics* g,
@@ -241,8 +284,9 @@ void Theme::paintTooltip(Graphics* g,
 }
 
 void Theme::paintLayer(Graphics* g,
-                       const Widget* widget,
                        const Style::Layer& layer,
+                       const std::string& text,
+                       const int mnemonic,
                        gfx::Rect& rc,
                        gfx::Color& bgColor)
 {
@@ -350,13 +394,13 @@ void Theme::paintLayer(Graphics* g,
           gfx::Rect textBounds = rc;
           textBounds.offset(layer.offset());
 
-          g->drawAlignedUIText(widget->text(),
+          g->drawAlignedUIText(text,
                                layer.color(),
                                bgColor,
                                textBounds, layer.align());
         }
         else {
-          gfx::Size textSize = g->measureUIText(widget->text());
+          gfx::Size textSize = g->measureUIText(text);
           gfx::Point pt;
 
           if (layer.align() & LEFT)
@@ -375,10 +419,10 @@ void Theme::paintLayer(Graphics* g,
 
           pt += layer.offset();
 
-          g->drawUIText(widget->text(),
+          g->drawUIText(text,
                         layer.color(),
                         bgColor,
-                        pt, widget->mnemonic());
+                        pt, mnemonic);
         }
       }
       break;
@@ -389,9 +433,8 @@ void Theme::paintLayer(Graphics* g,
         gfx::Size iconSize(icon->width(), icon->height());
         gfx::Point pt;
 
-        if (layer.align() & LEFT) {
+        if (layer.align() & LEFT)
           pt.x = rc.x;
-        }
         else if (layer.align() & RIGHT)
           pt.x = rc.x+rc.w-iconSize.w;
         else
@@ -403,6 +446,8 @@ void Theme::paintLayer(Graphics* g,
           pt.y = rc.y+rc.h-iconSize.h;
         else
           pt.y = rc.y+rc.h/2-iconSize.h/2;
+
+        pt += layer.offset();
 
         if (layer.color() != gfx::ColorNone)
           g->drawColoredRgbaSurface(icon, layer.color(), pt.x, pt.y);

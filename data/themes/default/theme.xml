@@ -662,84 +662,6 @@
       <background color="hot_face" />
     </style>
 
-    <!-- tab -->
-    <style id="tab">
-      <background part="tab_normal" repeat="repeat" />
-      <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
-    </style>
-    <style id="tab:active">
-      <background part="tab_active" repeat="repeat" />
-      <text color="tab_active_text" />
-    </style>
-
-    <!-- tab_text -->
-    <style id="tab_text">
-      <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
-    </style>
-    <style id="tab_text:active">
-      <text color="tab_active_text" />
-    </style>
-
-    <!-- tab_bottom -->
-    <style id="tab_bottom">
-      <background part="tab_bottom_normal" repeat="repeat-x" />
-    </style>
-    <style id="tab_bottom:active">
-      <background part="tab_bottom_active" color="tab_active_face" />
-    </style>
-
-    <!-- tab_filler -->
-    <style id="tab_filler">
-      <background part="tab_filler" repeat="repeat-x" />
-    </style>
-
-    <!-- tab_icon -->
-    <style id="tab_icon">
-      <icon align="left" valign="middle" x="3" />
-    </style>
-    <style id="tab_icon:hover">
-      <background part="tab_icon_bg_hover" />
-    </style>
-    <style id="tab_icon:clicked">
-      <background part="tab_icon_bg_clicked" />
-    </style>
-
-    <!-- tab_close_icon -->
-    <style id="tab_close_icon" base="tab_icon">
-      <icon part="tab_close_icon_normal" />
-    </style>
-    <style id="tab_close_icon:hover">
-      <icon part="tab_close_icon_normal" />
-    </style>
-    <style id="tab_close_icon:active">
-      <icon part="tab_close_icon_active" />
-    </style>
-    <style id="tab_close_icon:clicked">
-      <icon part="tab_close_icon_normal" />
-    </style>
-
-    <!-- tab_modified_icon -->
-    <style id="tab_modified_icon" base="tab_icon">
-      <icon part="tab_modified_icon_normal" />
-    </style>
-    <style id="tab_modified_icon:hover">
-      <icon part="tab_modified_icon_normal" />
-    </style>
-    <style id="tab_modified_icon:active">
-      <icon part="tab_modified_icon_active" />
-    </style>
-    <style id="tab_modified_icon:clicked">
-      <icon part="tab_modified_icon_normal" />
-    </style>
-
-    <!-- tab_home -->
-    <style id="tab_home">
-      <icon part="tab_home_icon_normal" align="left" valign="middle" x="4" y="1" />
-    </style>
-    <style id="tab_home:active">
-      <icon part="tab_home_icon_active" />
-    </style>
-
   </stylesheet>
 
   <styles>
@@ -957,10 +879,10 @@
     </style>
 
     <style id="horizontal_separator"
-	   border-left="2"
-	   border-top="4"
-	   border-right="2"
-	   border-bottom="0">
+	         border-left="2"
+	         border-top="4"
+	         border-right="2"
+	         border-bottom="0">
       <background part="separator_horz" color="window_face" align="middle" />
       <text color="separator_label" x="4" align="left middle" />
     </style>
@@ -973,10 +895,10 @@
     </style>
 
     <style id="vertical_separator"
-	   border-left="4"
-	   border-top="2"
-	   border-right="1"
-	   border-bottom="2">
+           border-left="4"
+           border-top="2"
+           border-right="1"
+           border-bottom="2">
       <background part="separator_vert" align="center" />
     </style>
 
@@ -1005,10 +927,10 @@
     </style>
 
     <style id="scrollbar">
-      <background part="scrollbar_bg" repeat="repeat" />
+      <background part="scrollbar_bg" />
     </style>
     <style id="scrollbar_thumb">
-      <background part="scrollbar_thumb" repeat="repeat" />
+      <background part="scrollbar_thumb" />
     </style>
     <style id="mini_scrollbar">
       <background part="mini_scrollbar_bg" />
@@ -1025,6 +947,48 @@
     <style id="transparent_scrollbar_thumb">
       <background part="transparent_scrollbar_thumb" />
       <background part="transparent_scrollbar_thumb_hot" state="mouse" />
+    </style>
+
+    <style id="main_tabs">
+      <background color="window_face" />
+    </style>
+    <style id="workspace_tabs">
+      <background color="workspace" />
+    </style>
+    <style id="tab">
+      <background part="tab_normal" align="middle" />
+      <background part="tab_active" align="middle" state="focus" />
+      <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
+      <text color="tab_active_text" state="focus" />
+    </style>
+    <style id="tab_text">
+      <text color="tab_normal_text" align="left middle" x="4" y="1" />
+      <text color="tab_active_text" align="left middle" x="4" y="1" state="focus" />
+    </style>
+    <style id="tab_bottom">
+      <background part="tab_bottom_normal" align="middle" />
+      <background part="tab_bottom_active" color="tab_active_face" state="focus" />
+    </style>
+    <style id="tab_filler">
+      <background part="tab_filler" align="middle" />
+    </style>
+    <style id="tab_icon">
+      <background part="tab_icon_bg_hover" state="mouse" />
+      <background part="tab_icon_bg_clicked" state="selected" />
+    </style>
+    <style id="tab_close_icon" extends="tab_icon">
+      <icon part="tab_close_icon_normal" align="left middle" x="3" />
+      <icon part="tab_close_icon_active" align="left middle" x="3" state="focus" />
+      <icon part="tab_close_icon_normal" align="left middle" x="3" state="selected" />
+    </style>
+    <style id="tab_modified_icon" extends="tab_icon">
+      <icon part="tab_modified_icon_normal" align="left middle" x="3" />
+      <icon part="tab_modified_icon_active" align="left middle" x="3" state="focus" />
+      <icon part="tab_modified_icon_normal" align="left middle" x="3" state="selected" />
+    </style>
+    <style id="tab_home">
+      <icon part="tab_home_icon_normal" align="left middle" x="4" y="1" />
+      <icon part="tab_home_icon_active" align="left middle" x="4" y="1" state="focus" />
     </style>
 
   </styles>

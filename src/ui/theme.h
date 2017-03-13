@@ -33,6 +33,18 @@ namespace ui {
   class SizeHintEvent;
   class Widget;
 
+  struct PaintWidgetPartInfo {
+    gfx::Color bgColor;
+    int styleFlags;           // ui::Style::Layer flags
+    const std::string* text;
+    int mnemonic;
+
+    PaintWidgetPartInfo();
+    PaintWidgetPartInfo(const Widget* widget);
+
+    static int getStyleFlagsForWidget(const Widget* widget);
+  };
+
   class Theme {
   public:
     Theme();
@@ -64,6 +76,11 @@ namespace ui {
     virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
     virtual void paintTextBox(PaintEvent& ev) = 0;
     virtual void paintViewViewport(PaintEvent& ev) = 0;
+
+    virtual void paintWidgetPart(Graphics* g,
+                                 const Style* style,
+                                 const gfx::Rect& bounds,
+                                 const PaintWidgetPartInfo& info);
 
     // Default implementation to draw widgets with new ui::Styles
     virtual void paintWidget(Graphics* g,
@@ -113,8 +130,9 @@ namespace ui {
 
   private:
     void paintLayer(Graphics* g,
-                    const Widget* widget,
                     const Style::Layer& layer,
+                    const std::string& text,
+                    const int mnemonic,
                     gfx::Rect& rc,
                     gfx::Color& bgColor);
     void measureLayer(const Widget* widget,
