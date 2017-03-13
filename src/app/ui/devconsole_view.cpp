@@ -15,7 +15,6 @@
 #include "app/ui/devconsole_view.h"
 
 #include "app/app_menus.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "ui/entry.h"

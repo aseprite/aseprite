@@ -187,8 +187,9 @@ void Theme::paintWidgetPart(Graphics* g,
   gfx::Color outBgColor = gfx::ColorNone;
   for_each_layer(
     info.styleFlags, style,
-    [this, g, &info, &rc, &outBgColor](const Style::Layer& layer) {
-      paintLayer(g, layer,
+    [this, g, style, &info, &rc, &outBgColor]
+    (const Style::Layer& layer) {
+      paintLayer(g, style, layer,
                  (info.text ? *info.text: std::string()),
                  info.mnemonic, rc, outBgColor);
     });
@@ -284,6 +285,7 @@ void Theme::paintTooltip(Graphics* g,
 }
 
 void Theme::paintLayer(Graphics* g,
+                       const Style* style,
                        const Style::Layer& layer,
                        const std::string& text,
                        const int mnemonic,
@@ -390,6 +392,10 @@ void Theme::paintLayer(Graphics* g,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
+        she::Font* oldFont = g->font();
+        if (style->font())
+          g->setFont(style->font());
+
         if (layer.align() & WORDWRAP) {
           gfx::Rect textBounds = rc;
           textBounds.offset(layer.offset());
@@ -424,6 +430,9 @@ void Theme::paintLayer(Graphics* g,
                         bgColor,
                         pt, mnemonic);
         }
+
+        if (style->font())
+          g->setFont(oldFont);
       }
       break;
 
@@ -470,6 +479,7 @@ gfx::Size Theme::calcSizeHint(const Widget* widget,
 }
 
 void Theme::measureLayer(const Widget* widget,
+                         const Style* style,
                          const Style::Layer& layer,
                          gfx::Border& borderHint,
                          gfx::Size& textHint, int& textAlign,
@@ -496,9 +506,9 @@ void Theme::measureLayer(const Widget* widget,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        gfx::Size textSize(Graphics::measureUITextLength(widget->text(),
-                                                         widget->font()),
-                           widget->font()->height());
+        she::Font* font = (style->font() ? style->font(): widget->font());
+        gfx::Size textSize(Graphics::measureUITextLength(widget->text(), font),
+                           font->height());
         textHint.w = std::max(textHint.w, textSize.w);
         textHint.h = std::max(textHint.h, textSize.h);
         textAlign = layer.align();
@@ -591,9 +601,9 @@ void Theme::calcWidgetMetrics(const Widget* widget,
 
   for_each_layer(
     widget, style,
-    [this, widget, &borderHint, &textHint, &textAlign, &iconHint, &iconAlign]
+    [this, widget, style, &borderHint, &textHint, &textAlign, &iconHint, &iconAlign]
     (const Style::Layer& layer) {
-      measureLayer(widget, layer,
+      measureLayer(widget, style, layer,
                    borderHint,
                    textHint, textAlign,
                    iconHint, iconAlign);

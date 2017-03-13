@@ -130,12 +130,14 @@ namespace ui {
 
   private:
     void paintLayer(Graphics* g,
+                    const Style* style,
                     const Style::Layer& layer,
                     const std::string& text,
                     const int mnemonic,
                     gfx::Rect& rc,
                     gfx::Color& bgColor);
     void measureLayer(const Widget* widget,
+                      const Style* style,
                       const Style::Layer& layer,
                       gfx::Border& borderHint,
                       gfx::Size& textHint, int& textAlign,

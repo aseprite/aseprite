@@ -14,7 +14,6 @@
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
 #include "she/font.h"
 #include "she/surface.h"
 #include "she/system.h"

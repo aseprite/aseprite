@@ -19,7 +19,6 @@
 #include "app/ui/drop_down_button.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/search_entry.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_not_found.h"
 #include "app/xml_document.h"

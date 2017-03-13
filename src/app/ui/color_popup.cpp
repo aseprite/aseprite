@@ -23,7 +23,6 @@
 #include "app/transaction.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"

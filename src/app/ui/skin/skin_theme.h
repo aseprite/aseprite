@@ -9,7 +9,6 @@
 #pragma once
 
 #include "app/ui/skin/skin_part.h"
-#include "app/ui/skin/style_sheet.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
 #include "ui/manager.h"
@@ -84,10 +83,6 @@ namespace app {
       void drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, double progress);
 
-      Style* getStyle(const std::string& id) {
-        return m_stylesheet.getStyle(id);
-      }
-
       ui::Style* getNewStyle(const std::string& id) {
         return m_styles[id];
       }
@@ -136,7 +131,6 @@ namespace app {
       std::map<std::string, gfx::Color> m_colors_by_id;
       std::map<std::string, int> m_dimensions_by_id;
       std::vector<ui::Cursor*> m_cursors;
-      StyleSheet m_stylesheet;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
       std::map<std::string, she::Font*> m_themeFonts;

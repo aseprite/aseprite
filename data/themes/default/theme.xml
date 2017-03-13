@@ -252,9 +252,8 @@
     <part id="colorbar_1"                       x="16" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="colorbar_2"                       x="0" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="colorbar_3"                       x="16" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
-    <part id="colorbar_border_fg"               x="0" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
-    <part id="colorbar_border_bg"               x="16" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
-    <part id="colorbar_border_hotfg"            x="32" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_selection_hot"           x="0" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_selection"               x="16" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_bg"                     x="64" y="144" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_thumb"                  x="64" y="160" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="mini_scrollbar_bg"                x="64" y="176" w1="3" w2="2" w3="3" h1="3" h2="2" h3="3" />
@@ -408,241 +407,6 @@
     <part id="icon_save_small"                  x="240" y="264" w="8" h="8" />
     <part id="icon_slice"                       x="248" y="264" w="8" h="8" />
   </parts>
-
-  <stylesheet>
-
-    <!-- timeline -->
-    <style id="timeline">
-      <background color="timeline_normal" part="timeline_normal" />
-    </style>
-
-    <!-- timeline_box -->
-    <style id="timeline_box">
-      <background color="timeline_normal" part="timeline_normal" />
-      <text color="timeline_normal_text" align="center" valign="middle" />
-    </style>
-    <style id="timeline_box:hover">
-      <background color="timeline_hover" part="timeline_hover" />
-      <text color="timeline_hover_text" />
-    </style>
-    <style id="timeline_box:active">
-      <background color="timeline_active" part="timeline_active" />
-      <text color="timeline_active_text" />
-    </style>
-    <style id="timeline_box:active:hover">
-      <background color="timeline_active_hover" part="timeline_active_hover" />
-      <text color="timeline_active_hover_text" />
-    </style>
-    <style id="timeline_box:clicked">
-      <background color="timeline_clicked" part="timeline_clicked" />
-      <text color="timeline_clicked_text" />
-    </style>
-
-    <!-- timeline_eye -->
-    <style id="timeline_open_eye" base="timeline_box">
-      <icon part="timeline_open_eye_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_open_eye:active">
-      <icon part="timeline_open_eye_active" />
-    </style>
-    <style id="timeline_open_eye:disabled">
-      <icon color="disabled" />
-    </style>
-    <style id="timeline_closed_eye" base="timeline_box">
-      <icon part="timeline_closed_eye_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_closed_eye:active">
-      <icon part="timeline_closed_eye_active" />
-    </style>
-    <style id="timeline_closed_eye:disabled">
-      <icon color="disabled" />
-    </style>
-
-    <!-- timeline_padlock -->
-    <style id="timeline_open_padlock" base="timeline_box">
-      <icon part="timeline_open_padlock_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_open_padlock:active">
-      <icon part="timeline_open_padlock_active" />
-    </style>
-    <style id="timeline_open_padlock:disabled">
-      <icon color="disabled" />
-    </style>
-    <style id="timeline_closed_padlock" base="timeline_box">
-      <icon part="timeline_closed_padlock_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_closed_padlock:active">
-      <icon part="timeline_closed_padlock_active" />
-    </style>
-    <style id="timeline_closed_padlock:disabled">
-      <icon color="disabled" />
-    </style>
-
-    <!-- timeline_continuous -->
-    <style id="timeline_continuous" base="timeline_box">
-      <icon part="timeline_continuous_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_continuous:active">
-      <icon part="timeline_continuous_active" />
-    </style>
-    <style id="timeline_discontinuous" base="timeline_box">
-      <icon part="timeline_discontinuous_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_discontinuous:active">
-      <icon part="timeline_discontinuous_active" />
-    </style>
-
-    <!-- timeline_group -->
-    <style id="timeline_closed_group" base="timeline_box">
-      <icon part="timeline_closed_group_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_closed_group:active">
-      <icon part="timeline_closed_group_active" />
-    </style>
-    <style id="timeline_open_group" base="timeline_box">
-      <icon part="timeline_open_group_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_open_group:active">
-      <icon part="timeline_open_group_active" />
-    </style>
-
-    <!-- timeline_layer -->
-    <style id="timeline_layer" base="timeline_box">
-      <text align="left" valign="middle" padding-left="4" />
-    </style>
-    <style id="timeline_layer_text_only" base="timeline_layer">
-      <background color="none" part="none" repeat="none" />
-    </style>
-    <style id="timeline_layer_text_only:hover" base="timeline_layer">
-      <background color="none" part="none" repeat="none" />
-    </style>
-    <style id="timeline_layer_text_only:active" base="timeline_layer">
-      <background color="none" part="none" repeat="none" />
-    </style>
-    <style id="timeline_layer_text_only:active:hover" base="timeline_layer">
-      <background color="none" part="none" repeat="none" />
-    </style>
-
-    <!-- timeline_selected_cel -->
-    <style id="timeline_selected_cel">
-      <background color="timeline_clicked" part="timeline_clicked" />
-      <text color="timeline_clicked_text" />
-    </style>
-
-    <!-- timeline_empty_frame -->
-    <style id="timeline_empty_frame">
-      <icon part="timeline_empty_frame_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_empty_frame:active">
-      <icon part="timeline_empty_frame_active" />
-    </style>
-
-    <!--timeline_keyframe-->
-    <style id="timeline_keyframe">
-      <icon part="timeline_keyframe_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_keyframe:active">
-      <icon part="timeline_keyframe_active" />
-    </style>
-
-    <style id="timeline_from_left">
-      <icon part="timeline_from_left_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_from_left:active">
-      <icon part="timeline_from_left_active" />
-    </style>
-
-    <style id="timeline_from_right">
-      <icon part="timeline_from_right_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_from_right:active">
-      <icon part="timeline_from_right_active" />
-    </style>
-
-    <style id="timeline_from_both">
-      <icon part="timeline_from_both_normal" align="center" valign="middle" />
-    </style>
-    <style id="timeline_from_both:active">
-      <icon part="timeline_from_both_active" />
-    </style>
-
-    <style id="timeline_left_link">
-      <icon part="timeline_left_link_active" align="center" valign="middle" />
-    </style>
-    <style id="timeline_right_link">
-      <icon part="timeline_right_link_active" align="center" valign="middle" />
-    </style>
-    <style id="timeline_both_links">
-      <icon part="timeline_both_links_active" align="center" valign="middle" />
-    </style>
-
-    <!-- timeline_gear -->
-    <style id="timeline_gear" base="timeline_box">
-      <icon part="timeline_gear" align="center" valign="middle" />
-    </style>
-    <style id="timeline_gear:active">
-      <icon part="timeline_gear_active" />
-    </style>
-    <style id="timeline_gear:clicked">
-      <icon part="timeline_gear_active" />
-    </style>
-
-    <!-- timeline_onionskin -->
-    <style id="timeline_onionskin" base="timeline_box">
-      <icon part="timeline_onionskin" align="center" valign="middle" />
-    </style>
-    <style id="timeline_onionskin:active">
-      <icon part="timeline_onionskin_active" />
-    </style>
-    <style id="timeline_onionskin:clicked">
-      <icon part="timeline_onionskin_active" />
-    </style>
-
-    <!-- timeline_onionskin_range -->
-    <style id="timeline_onionskin_range">
-      <background part="timeline_onionskin_range" />
-    </style>
-
-    <!-- paddings -->
-    <style id="timeline_padding">
-      <background color="timeline_normal" part="timeline_padding" />
-    </style>
-    <style id="timeline_padding_tr">
-      <background color="timeline_normal" part="timeline_padding_tr" />
-    </style>
-    <style id="timeline_padding_bl">
-      <background color="timeline_normal" part="timeline_padding_bl" />
-    </style>
-    <style id="timeline_padding_br">
-      <background color="timeline_normal" part="timeline_padding_br" />
-    </style>
-
-    <!-- timeline_range_outline -->
-    <style id="timeline_range_outline">
-    </style>
-    <style id="timeline_range_outline:active">
-      <background part="colorbar_border_hotfg" />
-    </style>
-    <style id="timeline_range_outline:hover">
-      <background part="colorbar_border_fg" />
-    </style>
-
-    <!-- timeline_drop_layer_deco -->
-    <style id="timeline_drop_layer_deco">
-      <background part="timeline_drop_layer_deco" />
-    </style>
-
-    <!-- timeline_drop_frame_deco -->
-    <style id="timeline_drop_frame_deco">
-      <background part="timeline_drop_frame_deco" />
-    </style>
-
-    <!-- timeline_loop_range -->
-    <style id="timeline_loop_range">
-      <background part="timeline_loop_range" />
-    </style>
-
-  </stylesheet>
 
   <styles>
 
@@ -981,6 +745,161 @@
       <background color="workspace" />
       <background color="hot_face" state="mouse" />
       <icon part="warning_box" align="center middle" />
+    </style>
+
+    <style id="timeline">
+      <background color="timeline_normal" part="timeline_normal" />
+    </style>
+    <style id="timeline_box">
+      <background color="timeline_normal" part="timeline_normal" />
+      <background color="timeline_hover" part="timeline_hover" state="mouse" />
+      <background color="timeline_active" part="timeline_active" state="focus" />
+      <background color="timeline_active_hover" part="timeline_active_hover" state="focus mouse" />
+      <background color="timeline_clicked" part="timeline_clicked" state="selected" />
+    </style>
+    <style id="timeline_open_eye" extends="timeline_box">
+      <icon part="timeline_open_eye_normal" />
+      <icon part="timeline_open_eye_active" state="focus" />
+      <icon part="timeline_open_eye_active" state="selected" />
+      <icon part="timeline_open_eye_normal" color="disabled" state="disabled" />
+    </style>
+    <style id="timeline_closed_eye" extends="timeline_box">
+      <icon part="timeline_closed_eye_normal" />
+      <icon part="timeline_closed_eye_active" state="focus" />
+      <icon part="timeline_closed_eye_active" state="selected" />
+      <icon part="timeline_closed_eye_normal" color="disabled" state="disabled" />
+    </style>
+    <style id="timeline_open_padlock" extends="timeline_box">
+      <icon part="timeline_open_padlock_normal" />
+      <icon part="timeline_open_padlock_active" state="focus" />
+      <icon part="timeline_open_padlock_active" state="selected" />
+      <icon part="timeline_open_padlock_normal" color="disabled" state="disabled" />
+    </style>
+    <style id="timeline_closed_padlock" extends="timeline_box">
+      <icon part="timeline_closed_padlock_normal" />
+      <icon part="timeline_closed_padlock_active" state="focus" />
+      <icon part="timeline_closed_padlock_active" state="selected" />
+      <icon part="timeline_closed_padlock_normal" color="disabled" state="disabled" />
+    </style>
+    <style id="timeline_continuous" extends="timeline_box">
+      <icon part="timeline_continuous_normal" />
+      <icon part="timeline_continuous_active" state="focus" />
+      <icon part="timeline_continuous_active" state="selected" />
+    </style>
+    <style id="timeline_discontinuous" extends="timeline_box">
+      <icon part="timeline_discontinuous_normal" />
+      <icon part="timeline_discontinuous_active" state="focus" />
+      <icon part="timeline_discontinuous_active" state="selected" />
+    </style>
+    <style id="timeline_closed_group" extends="timeline_box">
+      <icon part="timeline_closed_group_normal" />
+      <icon part="timeline_closed_group_active" state="focus" />
+      <icon part="timeline_closed_group_active" state="selected" />
+    </style>
+    <style id="timeline_open_group" extends="timeline_box">
+      <icon part="timeline_open_group_normal" />
+      <icon part="timeline_open_group_active" state="focus" />
+      <icon part="timeline_open_group_active" state="selected" />
+    </style>
+    <style id="timeline_layer" extends="timeline_box">
+      <text color="timeline_normal_text" align="left middle" x="2" />
+      <text color="timeline_hover_text" align="left middle" x="2" state="mouse" />
+      <text color="timeline_active_text" align="left middle" x="2" state="focus" />
+      <text color="timeline_active_hover_text" align="left middle" x="2" state="focus mouse" />
+      <text color="timeline_clicked_text" align="left middle" x="2" state="selected" />
+    </style>
+    <style id="timeline_layer_text_only" extends="timeline_layer">
+      <background color="none" part="none" repeat="none" />
+      <background color="none" part="none" repeat="none" state="mouse" />
+      <background color="none" part="none" repeat="none" state="focus" />
+      <background color="none" part="none" repeat="none" state="focus mouse" />
+    </style>
+    <style id="timeline_header_frame" extends="timeline_box" font="mini">
+      <text color="timeline_normal_text" />
+      <text color="timeline_hover_text" state="mouse" />
+      <text color="timeline_active_text" state="focus" />
+      <text color="timeline_active_hover_text" state="focus mouse" />
+      <text color="timeline_clicked_text" state="selected" />
+    </style>
+    <style id="timeline_selected_cel">
+      <background color="timeline_clicked" part="timeline_clicked" />
+      <text color="timeline_clicked_text" />
+    </style>
+    <style id="timeline_empty_frame">
+      <icon part="timeline_empty_frame_normal" />
+      <icon part="timeline_empty_frame_active" state="focus" />
+    </style>
+    <style id="timeline_keyframe">
+      <icon part="timeline_keyframe_normal" />
+      <icon part="timeline_keyframe_active" state="focus" />
+    </style>
+    <style id="timeline_from_left">
+      <icon part="timeline_from_left_normal" />
+      <icon part="timeline_from_left_active" state="focus" />
+    </style>
+    <style id="timeline_from_right">
+      <icon part="timeline_from_right_normal" />
+      <icon part="timeline_from_right_active" state="focus" />
+    </style>
+    <style id="timeline_from_both">
+      <icon part="timeline_from_both_normal" />
+      <icon part="timeline_from_both_active" state="focus" />
+    </style>
+    <style id="timeline_left_link">
+      <icon part="timeline_left_link_active" />
+    </style>
+    <style id="timeline_right_link">
+      <icon part="timeline_right_link_active" />
+    </style>
+    <style id="timeline_both_links">
+      <icon part="timeline_both_links_active" />
+    </style>
+    <style id="timeline_gear" extends="timeline_box">
+      <icon part="timeline_gear" />
+      <icon part="timeline_gear_active" state="focus" />
+      <icon part="timeline_gear_active" state="selected" />
+    </style>
+    <style id="timeline_onionskin" extends="timeline_box">
+      <icon part="timeline_onionskin" />
+      <icon part="timeline_onionskin_active" state="focus" />
+      <icon part="timeline_onionskin_active" state="selected" />
+    </style>
+    <style id="timeline_onionskin_range">
+      <background part="timeline_onionskin_range" />
+    </style>
+    <style id="timeline_padding">
+      <background color="timeline_normal" part="timeline_padding" />
+    </style>
+    <style id="timeline_padding_tr">
+      <background color="timeline_normal" part="timeline_padding_tr" />
+    </style>
+    <style id="timeline_padding_bl">
+      <background color="timeline_normal" part="timeline_padding_bl" />
+    </style>
+    <style id="timeline_padding_br">
+      <background color="timeline_normal" part="timeline_padding_br" />
+    </style>
+    <style id="timeline_range_outline">
+      <background part="colorbar_selection" state="focus" />
+      <background part="colorbar_selection_hot" state="focus mouse" />
+    </style>
+    <style id="timeline_drop_layer_deco">
+      <background part="timeline_drop_layer_deco" />
+    </style>
+    <style id="timeline_drop_frame_deco">
+      <background part="timeline_drop_frame_deco" />
+    </style>
+    <style id="timeline_loop_range">
+      <background part="timeline_loop_range" />
+    </style>
+
+    <style id="shade_selection">
+      <background part="colorbar_selection_hot" />
+    </style>
+
+    <style id="colorbar_selection">
+      <background part="colorbar_selection" />
+      <background part="colorbar_selection_hot" state="mouse" />
     </style>
 
   </styles>

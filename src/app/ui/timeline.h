@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,7 +40,6 @@ namespace ui {
 namespace app {
 
   namespace skin {
-    class Style;
     class SkinTheme;
   }
 
@@ -240,9 +239,12 @@ namespace app {
     void getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* lastLayer);
     void getDrawableFrames(ui::Graphics* g, frame_t* firstFrame, frame_t* lastFrame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
-                  const char* text, skin::Style* style,
-                  bool is_active = false, bool is_hover = false,
-                  bool is_clicked = false, bool is_disabled = false);
+                  const std::string* text,
+                  ui::Style* style,
+                  const bool is_active = false,
+                  const bool is_hover = false,
+                  const bool is_clicked = false,
+                  const bool is_disabled = false);
     void drawTop(ui::Graphics* g);
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);

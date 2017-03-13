@@ -18,7 +18,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui/news_listbox.h"
 #include "app/ui/recent_listbox.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"

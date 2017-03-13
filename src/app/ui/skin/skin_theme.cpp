@@ -19,10 +19,7 @@
 #include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
-#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/skin/style.h"
-#include "app/ui/skin/style_sheet.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
@@ -87,14 +84,6 @@ static const char* cursor_names[kCursorTypes] = {
   "eyedropper",                 // kEyedropperCursor
   "magnifier"                   // kMagnifierCursor
 };
-
-static css::Value value_or_none(const char* valueStr)
-{
-  if (strcmp(valueStr, "none") == 0)
-    return css::Value();
-  else
-    return css::Value(valueStr);
-}
 
 static FontData* load_font(std::map<std::string, FontData*>& fonts,
                            const TiXmlElement* xmlFont,
@@ -512,93 +501,7 @@ void SkinTheme::loadXml(const std::string& skinId)
     }
   }
 
-  // Load old stylesheet
-  {
-    TiXmlElement* xmlStyle = handle
-      .FirstChild("theme")
-      .FirstChild("stylesheet")
-      .FirstChild("style").ToElement();
-    while (xmlStyle) {
-      const char* style_id = xmlStyle->Attribute("id");
-      const char* base_id = xmlStyle->Attribute("base");
-      const css::Style* base = NULL;
-
-      if (base_id)
-        base = m_stylesheet.getCssStyle(base_id);
-
-      css::Style* style = new css::Style(style_id, base);
-      m_stylesheet.addCssStyle(style);
-
-      TiXmlElement* xmlRule = xmlStyle->FirstChildElement();
-      while (xmlRule) {
-        const std::string ruleName = xmlRule->Value();
-
-        LOG(VERBOSE) << "THEME: Rule " << ruleName
-                     << " for " << style_id << "\n";
-
-        // TODO This code design to read styles could be improved.
-
-        const char* part_id = xmlRule->Attribute("part");
-        const char* color_id = xmlRule->Attribute("color");
-
-        // Style align
-        int align = 0;
-        const char* halign = xmlRule->Attribute("align");
-        const char* valign = xmlRule->Attribute("valign");
-        const char* wordwrap = xmlRule->Attribute("wordwrap");
-        if (halign) {
-          if (strcmp(halign, "left") == 0) align |= LEFT;
-          else if (strcmp(halign, "right") == 0) align |= RIGHT;
-          else if (strcmp(halign, "center") == 0) align |= CENTER;
-        }
-        if (valign) {
-          if (strcmp(valign, "top") == 0) align |= TOP;
-          else if (strcmp(valign, "bottom") == 0) align |= BOTTOM;
-          else if (strcmp(valign, "middle") == 0) align |= MIDDLE;
-        }
-        if (wordwrap && strcmp(wordwrap, "true") == 0)
-          align |= WORDWRAP;
-
-        if (ruleName == "background") {
-          const char* repeat_id = xmlRule->Attribute("repeat");
-
-          if (color_id) (*style)[StyleSheet::backgroundColorRule()] = value_or_none(color_id);
-          if (part_id) (*style)[StyleSheet::backgroundPartRule()] = value_or_none(part_id);
-          if (repeat_id) (*style)[StyleSheet::backgroundRepeatRule()] = value_or_none(repeat_id);
-        }
-        else if (ruleName == "icon") {
-          if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);
-          if (part_id) (*style)[StyleSheet::iconPartRule()] = css::Value(part_id);
-          if (color_id) (*style)[StyleSheet::iconColorRule()] = value_or_none(color_id);
-
-          const char* x = xmlRule->Attribute("x");
-          const char* y = xmlRule->Attribute("y");
-          if (x) (*style)[StyleSheet::iconXRule()] = css::Value(strtol(x, NULL, 10));
-          if (y) (*style)[StyleSheet::iconYRule()] = css::Value(strtol(y, NULL, 10));
-        }
-        else if (ruleName == "text") {
-          if (color_id) (*style)[StyleSheet::textColorRule()] = css::Value(color_id);
-          if (align) (*style)[StyleSheet::textAlignRule()] = css::Value(align);
-
-          const char* l = xmlRule->Attribute("padding-left");
-          const char* t = xmlRule->Attribute("padding-top");
-          const char* r = xmlRule->Attribute("padding-right");
-          const char* b = xmlRule->Attribute("padding-bottom");
-
-          if (l) (*style)[StyleSheet::paddingLeftRule()] = css::Value(strtol(l, NULL, 10));
-          if (t) (*style)[StyleSheet::paddingTopRule()] = css::Value(strtol(t, NULL, 10));
-          if (r) (*style)[StyleSheet::paddingRightRule()] = css::Value(strtol(r, NULL, 10));
-          if (b) (*style)[StyleSheet::paddingBottomRule()] = css::Value(strtol(b, NULL, 10));
-        }
-
-        xmlRule = xmlRule->NextSiblingElement();
-      }
-
-      xmlStyle = xmlStyle->NextSiblingElement();
-    }
-  }
-
-  // Load new styles
+  // Load styles
   {
     TiXmlElement* xmlStyle = handle
       .FirstChild("theme")
@@ -738,6 +641,9 @@ void SkinTheme::loadXml(const std::string& skinId)
           auto it = m_colors_by_id.find(colorId);
           if (it != m_colors_by_id.end())
             layer.setColor(it->second);
+          else if (std::strcmp(colorId, "none") == 0) {
+            layer.setColor(gfx::ColorNone);
+          }
           else {
             throw base::Exception("Color <%s color='%s' ...> was not found in '%s'\n",
                                   layerName.c_str(), colorId,
@@ -770,6 +676,12 @@ void SkinTheme::loadXml(const std::string& skinId)
                 layer.setSlicesBounds(part->slicesBounds());
               }
             }
+          }
+          else if (std::strcmp(partId, "none") == 0) {
+            layer.setIcon(nullptr);
+            layer.setSpriteSheet(nullptr);
+            layer.setSpriteBounds(gfx::Rect(0, 0, 0, 0));
+            layer.setSlicesBounds(gfx::Rect(0, 0, 0, 0));
           }
           else {
             throw base::Exception("Part <%s part='%s' ...> was not found in '%s'\n",

@@ -482,10 +482,7 @@ add_library(app-lib
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
-  ui/skin/skin_style_property.cpp
   ui/skin/skin_theme.cpp
-  ui/skin/style.cpp
-  ui/skin/style_sheet.cpp
   ui/slice_window.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
