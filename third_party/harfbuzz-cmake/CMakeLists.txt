@@ -21,7 +21,7 @@ endif()
 
 if(UNIX AND NOT APPLE)
   include(CheckCSourceCompiles)
-  check_cxx_source_compiles("
+  check_c_source_compiles("
      void memory_barrier (void) { __sync_synchronize (); }
      int atomic_add (int *i) { return __sync_fetch_and_add (i, 1); }
      int mutex_trylock (int *m) { return __sync_lock_test_and_set (m, 1); }
