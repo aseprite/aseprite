@@ -19,6 +19,20 @@ if(USE_ICU)
     ../harfbuzz/src/hb-icu.cc)
 endif()
 
+if(UNIX AND NOT APPLE)
+  include(CheckCSourceCompiles)
+  check_cxx_source_compiles("
+     void memory_barrier (void) { __sync_synchronize (); }
+     int atomic_add (int *i) { return __sync_fetch_and_add (i, 1); }
+     int mutex_trylock (int *m) { return __sync_lock_test_and_set (m, 1); }
+     void mutex_unlock (int *m) { __sync_lock_release (m); }
+     int main() { ; return 0; }"
+    HAVE_INTEL_ATOMIC_PRIMITIVES)
+  if(HAVE_INTEL_ATOMIC_PRIMITIVES)
+    add_definitions(-DHAVE_INTEL_ATOMIC_PRIMITIVES)
+  endif()
+endif()
+
 add_library(harfbuzz
   ../harfbuzz/src/hb-blob.cc
   ../harfbuzz/src/hb-buffer-serialize.cc
