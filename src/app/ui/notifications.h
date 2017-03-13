@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,11 +11,11 @@
 #include "ui/button.h"
 #include "ui/menu.h"
 
-namespace app {
-  namespace skin {
-    class Style;
-  }
+namespace ui {
+  class Style;
+}
 
+namespace app {
   class INotificationDelegate;
 
   class Notifications : public ui::Button {
@@ -30,7 +30,7 @@ namespace app {
     void onClick(ui::Event& ev) override;
 
   private:
-    skin::Style* m_flagStyle;
+    ui::Style* m_flagStyle;
     bool m_withNotifications;
     ui::Menu m_popup;
   };

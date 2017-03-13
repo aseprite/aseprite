@@ -642,26 +642,6 @@
       <background part="timeline_loop_range" />
     </style>
 
-    <!-- flag -->
-    <style id="flag">
-      <background part="flag_normal" color="flag_normal" />
-    </style>
-    <style id="flag:active">
-      <background part="flag_highlight" color="flag_active" />
-    </style>
-    <style id="flag:clicked">
-      <background part="flag_highlight" color="flag_clicked" />
-    </style>
-
-    <!-- warning_box -->
-    <style id="warning_box">
-      <background color="workspace" />
-      <icon part="warning_box" align="center" valign="middle" />
-    </style>
-    <style id="warning_box:hover">
-      <background color="hot_face" />
-    </style>
-
   </stylesheet>
 
   <styles>
@@ -989,6 +969,18 @@
     <style id="tab_home">
       <icon part="tab_home_icon_normal" align="left middle" x="4" y="1" />
       <icon part="tab_home_icon_active" align="left middle" x="4" y="1" state="focus" />
+    </style>
+
+    <style id="flag">
+      <background part="flag_normal" color="flag_normal" />
+      <background part="flag_highlight" color="flag_active" state="focus" />
+      <background part="flag_highlight" color="flag_clicked" state="selected" />
+    </style>
+
+    <style id="warning_box" padding-left="2" padding-right="2">
+      <background color="workspace" />
+      <background color="hot_face" state="mouse" />
+      <icon part="warning_box" align="center middle" />
     </style>
 
   </styles>

@@ -38,7 +38,6 @@
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/styled_button.h"
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -82,18 +81,10 @@ enum class PalButton {
 using namespace app::skin;
 using namespace ui;
 
-class ColorBar::WarningIcon : public StyledButton {
+class ColorBar::WarningIcon : public ui::Button {
 public:
-  WarningIcon()
-    : StyledButton(skin::SkinTheme::instance()->styles.warningBox()) {
-  }
-
-protected:
-  void onPaint(ui::PaintEvent& ev) override {
-    // if (isEnabled())
-      StyledButton::onPaint(ev);
-    // else
-    //   ev.graphics()->fillRect(getBgColor(), clientBounds());
+  WarningIcon() : ui::Button(std::string()) {
+    setStyle(skin::SkinTheme::instance()->newStyles.warningBox());
   }
 };
 
