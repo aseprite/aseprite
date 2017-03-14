@@ -1688,7 +1688,6 @@ static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_heade
 
 static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
 {
-  TRACE("ase_file_read_slices_chunk\n");
   size_t nslices = fgetl(f);    // Number of slices
   fgetl(f);                     // 8 bytes reserved
   fgetl(f);
@@ -1724,11 +1723,6 @@ static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
         pivot.y = fgetl(f);
       }
 
-      TRACE(" read key bounds=(%d %d %d %d) center=(%d %d %d %d) pivot=(%d %d)\n",
-            bounds.x, bounds.y, bounds.w, bounds.h,
-            center.x, center.y, center.w, center.h,
-            pivot.x, pivot.y);
-
       slice->insert(frame, SliceKey(bounds, center, pivot));
     }
 
@@ -1742,15 +1736,10 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
                                         const frame_t fromFrame,
                                         const frame_t toFrame)
 {
-  TRACE("ase_file_write_slices_chunk\n");
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_SLICES);
 
   size_t nslices = 0;
   for (Slice* slice : *slices) {
-    TRACE(" fromFrame=%d toFrame=%d empty=%d\n",
-          fromFrame, toFrame,
-          slice->range(fromFrame, toFrame).empty());
-
     // Skip slices that are outside of the given ROI
     if (slice->range(fromFrame, toFrame).empty())
       continue;
@@ -1758,7 +1747,6 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
     ++nslices;
   }
 
-  TRACE(" nslices=%d\n", nslices);
   fputl(nslices, f);
   fputl(0, f);  // 8 reserved bytes
   fputl(0, f);
@@ -1768,8 +1756,6 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
     auto range = slice->range(fromFrame, toFrame);
     if (range.empty())
       continue;
-
-    TRACE(" range countKeys=%d\n", range.countKeys());
 
     int flags = 0;
     for (auto key : range) {
@@ -1823,11 +1809,6 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
             fputl(0, f);
           }
         }
-
-        TRACE(" write key bounds=(%d %d %d %d) center=(%d %d %d %d) pivot=(%d %d)\n",
-              key->bounds().x, key->bounds().y, key->bounds().w, key->bounds().h,
-              key->center().x, key->center().y, key->center().w, key->center().h,
-              key->pivot().x, key->pivot().y);
 
         oldKey = key;
       }
