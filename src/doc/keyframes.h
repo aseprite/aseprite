@@ -85,7 +85,8 @@ namespace doc {
         return RangeIterator(m_fromIt, m_endIt, m_to);
       }
       bool empty() const {
-        return (m_fromIt == m_endIt);
+        return (m_fromIt == m_endIt ||
+                m_to < m_fromIt->frame());
       }
       size_t countKeys() const {
         size_t count = 0;
@@ -129,7 +130,9 @@ namespace doc {
 
     T* operator[](const frame_t frame) {
       auto it = getIterator(frame);
-      if (it != end() && it->value())
+      if (it != end() &&
+          it->value() &&
+          frame >= it->frame())
         return it->value();
       else
         return nullptr;
@@ -150,8 +153,9 @@ namespace doc {
       auto next = it;
       for (; it != end; it=next) {
         ++next;
-        if ((frame >= it->frame()) &&
-            (next == end || frame < next->frame())) {
+        if (((frame >= it->frame()) &&
+             (next == end || frame < next->frame())) ||
+            (frame < it->frame())) {
           return it;
         }
       }

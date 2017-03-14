@@ -99,10 +99,12 @@ void SlicePropertiesCommand::onExecute(Context* context)
       transaction.execute(new cmd::SetUserData(slice, window.userDataValue()));
 
     if (key->bounds() != window.boundsValue() ||
-        key->center() != window.centerValue()) {
+        key->center() != window.centerValue() ||
+        key->pivot() != window.pivotValue()) {
       SliceKey newKey = *key;
       newKey.setBounds(window.boundsValue());
       newKey.setCenter(window.centerValue());
+      newKey.setPivot(window.pivotValue());
       transaction.execute(new cmd::SetSliceKey(slice, frame, newKey));
     }
 

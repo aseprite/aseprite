@@ -49,7 +49,7 @@ using namespace ui;
 
 const char* SkinTheme::kThemesFolderName = "themes";
 
-static const char* cursor_names[kCursorTypes] = {
+static const char* g_cursor_names[kCursorTypes] = {
   "null",                       // kNoCursor
   "normal",                     // kArrowCursor
   "normal_add",                 // kArrowPlusCursor
@@ -58,10 +58,8 @@ static const char* cursor_names[kCursorTypes] = {
   "hand",                       // kHandCursor
   "scroll",                     // kScrollCursor
   "move",                       // kMoveCursor
-
   "size_ns",                    // kSizeNSCursor
   "size_we",                    // kSizeWECursor
-
   "size_n",                     // kSizeNCursor
   "size_ne",                    // kSizeNECursor
   "size_e",                     // kSizeECursor
@@ -70,7 +68,6 @@ static const char* cursor_names[kCursorTypes] = {
   "size_sw",                    // kSizeSWCursor
   "size_w",                     // kSizeWCursor
   "size_nw",                    // kSizeNWCursor
-
   "rotate_n",                   // kRotateNCursor
   "rotate_ne",                  // kRotateNECursor
   "rotate_e",                   // kRotateECursor
@@ -79,7 +76,6 @@ static const char* cursor_names[kCursorTypes] = {
   "rotate_sw",                  // kRotateSWCursor
   "rotate_w",                   // kRotateWCursor
   "rotate_nw",                  // kRotateNWCursor
-
   "eyedropper",                 // kEyedropperCursor
   "magnifier"                   // kMagnifierCursor
 };
@@ -380,47 +376,6 @@ void SkinTheme::loadXml(const std::string& skinId)
     }
   }
 
-  // Load cursors
-  {
-    TiXmlElement* xmlCursor = handle
-      .FirstChild("theme")
-      .FirstChild("cursors")
-      .FirstChild("cursor").ToElement();
-    while (xmlCursor) {
-      std::string id = xmlCursor->Attribute("id");
-      int x = strtol(xmlCursor->Attribute("x"), NULL, 10);
-      int y = strtol(xmlCursor->Attribute("y"), NULL, 10);
-      int w = strtol(xmlCursor->Attribute("w"), NULL, 10);
-      int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
-      int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
-      int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
-      int c;
-
-      LOG(VERBOSE) << "THEME: Loading cursor " << id << "\n";
-
-      for (c=0; c<kCursorTypes; ++c) {
-        if (id != cursor_names[c])
-          continue;
-
-        delete m_cursors[c];
-        m_cursors[c] = NULL;
-
-        she::Surface* slice = sliceSheet(NULL, gfx::Rect(x, y, w, h));
-
-        m_cursors[c] = new Cursor(slice,
-          gfx::Point(focusx*guiscale(), focusy*guiscale()));
-        break;
-      }
-
-      if (c == kCursorTypes) {
-        throw base::Exception("Unknown cursor specified in '%s':\n"
-                              "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
-      }
-
-      xmlCursor = xmlCursor->NextSiblingElement();
-    }
-  }
-
   // Load parts
   {
     TiXmlElement* xmlPart = handle
@@ -465,6 +420,30 @@ void SkinTheme::loadXml(const std::string& skinId)
         part->setBitmap(5, sliceSheet(part->bitmap(5), gfx::Rect(x+w1, y+h1+h2, w2, h3))); // S
         part->setBitmap(6, sliceSheet(part->bitmap(6), gfx::Rect(x, y+h1+h2, w1, h3))); // SW
         part->setBitmap(7, sliceSheet(part->bitmap(7), gfx::Rect(x, y+h1, w1, h2))); // W
+      }
+
+      // Is it a mouse cursor?
+      if (std::strncmp(part_id, "cursor_", 7) == 0) {
+        std::string cursorName = std::string(part_id).substr(7);
+        int focusx = std::strtol(xmlPart->Attribute("focusx"), NULL, 10);
+        int focusy = std::strtol(xmlPart->Attribute("focusy"), NULL, 10);
+
+        for (int c=0; c<kCursorTypes; ++c) {
+          if (cursorName != g_cursor_names[c])
+            continue;
+
+          LOG(VERBOSE) << "THEME: Loading cursor '" << cursorName << "'\n";
+
+          delete m_cursors[c];
+          m_cursors[c] = nullptr;
+
+          // TODO share the Surface with the SkinPart
+          she::Surface* slice = sliceSheet(nullptr, gfx::Rect(x, y, w, h));
+          m_cursors[c] = new Cursor(slice,
+                                    gfx::Point(focusx*guiscale(),
+                                               focusy*guiscale()));
+          break;
+        }
       }
 
       xmlPart = xmlPart->NextSiblingElement();

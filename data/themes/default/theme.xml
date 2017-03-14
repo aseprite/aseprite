@@ -104,37 +104,34 @@
     <color id="select_box_grid" value="#64c864" />
   </colors>
 
-  <cursors>
-    <cursor id="normal"         x="80" y="0" w="16" h="16"      focusx="0" focusy="0" />
-    <cursor id="normal_add"     x="80" y="16" w="16" h="16"     focusx="0" focusy="0" />
-    <cursor id="crosshair"      x="96" y="32" w="16" h="16"     focusx="7" focusy="7" />
-    <cursor id="forbidden"      x="80" y="32" w="16" h="16"     focusx="0" focusy="0" />
-    <cursor id="hand"           x="80" y="48" w="16" h="16"     focusx="5" focusy="3" />
-    <cursor id="scroll"         x="80" y="64" w="16" h="16"     focusx="8" focusy="8" />
-    <cursor id="move"           x="80" y="80" w="16" h="16"     focusx="0" focusy="0" />
-    <cursor id="size_ns"        x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_we"        x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_n"         x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_ne"        x="80" y="128" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_e"         x="80" y="160" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_se"        x="80" y="208" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_s"         x="80" y="192" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_sw"        x="80" y="176" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_w"         x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_nw"        x="80" y="96" w="16" h="16"     focusx="8" focusy="8" />
-    <cursor id="rotate_n"       x="240" y="192" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_ne"      x="256" y="160" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_e"       x="256" y="176" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_se"      x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_s"       x="256" y="192" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_sw"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_w"       x="240" y="176" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_nw"      x="240" y="160" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="eyedropper"     x="80" y="224" w="16" h="16"    focusx="0" focusy="15" />
-    <cursor id="magnifier"      x="80" y="240" w="16" h="16"    focusx="5" focusy="5" />
-  </cursors>
-
   <parts>
+    <part id="cursor_normal"                    x="80" y="0" w="16" h="16"      focusx="0" focusy="0" />
+    <part id="cursor_normal_add"                x="80" y="16" w="16" h="16"     focusx="0" focusy="0" />
+    <part id="cursor_crosshair"                 x="96" y="32" w="16" h="16"     focusx="7" focusy="7" />
+    <part id="cursor_forbidden"                 x="80" y="32" w="16" h="16"     focusx="0" focusy="0" />
+    <part id="cursor_hand"                      x="80" y="48" w="16" h="16"     focusx="5" focusy="3" />
+    <part id="cursor_scroll"                    x="80" y="64" w="16" h="16"     focusx="8" focusy="8" />
+    <part id="cursor_move"                      x="80" y="80" w="16" h="16"     focusx="0" focusy="0" />
+    <part id="cursor_size_ns"                   x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_we"                   x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_n"                    x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_ne"                   x="80" y="128" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_e"                    x="80" y="160" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_se"                   x="80" y="208" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_s"                    x="80" y="192" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_sw"                   x="80" y="176" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_w"                    x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
+    <part id="cursor_size_nw"                   x="80" y="96" w="16" h="16"     focusx="8" focusy="8" />
+    <part id="cursor_rotate_n"                  x="240" y="192" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_ne"                 x="256" y="160" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_e"                  x="256" y="176" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_se"                 x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_s"                  x="256" y="192" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_sw"                 x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_w"                  x="240" y="176" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_rotate_nw"                 x="240" y="160" w="16" h="16"   focusx="8" focusy="8" />
+    <part id="cursor_eyedropper"                x="80" y="224" w="16" h="16"    focusx="0" focusy="15" />
+    <part id="cursor_magnifier"                 x="80" y="240" w="16" h="16"    focusx="5" focusy="5" />
     <part id="radio_normal"                     x="64" y="64" w="8" h="8" />
     <part id="radio_selected"                   x="64" y="80" w="8" h="8" />
     <part id="radio_disabled"                   x="64" y="64" w="8" h="8" />

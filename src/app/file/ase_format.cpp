@@ -56,6 +56,7 @@
 #define ASE_CEL_EXTRA_FLAG_PRECISE_BOUNDS   1
 
 #define ASE_SLICE_FLAG_HAS_CENTER_BOUNDS    1
+#define ASE_SLICE_FLAG_HAS_PIVOT_POINT      2
 
 namespace app {
 
@@ -1687,12 +1688,13 @@ static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_heade
 
 static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
 {
+  TRACE("ase_file_read_slices_chunk\n");
   size_t nslices = fgetl(f);    // Number of slices
   fgetl(f);                     // 8 bytes reserved
   fgetl(f);
 
   for (size_t i=0; i<nslices; ++i) {
-    size_t nkeys = fgetl(f);       // Number of keys
+    size_t nkeys = fgetl(f);    // Number of keys
     int flags = fgetl(f);       // Flags
     fgetl(f);                   // 4 bytes reserved
     std::string name = ase_file_read_string(f); // Name
@@ -1702,8 +1704,9 @@ static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
 
     // For each key
     for (size_t j=0; j<nkeys; ++j) {
-      frame_t frame = fgetl(f);
       gfx::Rect bounds, center;
+      gfx::Point pivot = SliceKey::NoPivot;
+      frame_t frame = fgetl(f);
       bounds.x = fgetl(f);
       bounds.y = fgetl(f);
       bounds.w = fgetl(f);
@@ -1716,7 +1719,17 @@ static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
         center.h = fgetl(f);
       }
 
-      slice->insert(frame, SliceKey(bounds, center));
+      if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
+        pivot.x = fgetl(f);
+        pivot.y = fgetl(f);
+      }
+
+      TRACE(" read key bounds=(%d %d %d %d) center=(%d %d %d %d) pivot=(%d %d)\n",
+            bounds.x, bounds.y, bounds.w, bounds.h,
+            center.x, center.y, center.w, center.h,
+            pivot.x, pivot.y);
+
+      slice->insert(frame, SliceKey(bounds, center, pivot));
     }
 
     slices->add(slice);
@@ -1729,10 +1742,15 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
                                         const frame_t fromFrame,
                                         const frame_t toFrame)
 {
+  TRACE("ase_file_write_slices_chunk\n");
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_SLICES);
 
   size_t nslices = 0;
   for (Slice* slice : *slices) {
+    TRACE(" fromFrame=%d toFrame=%d empty=%d\n",
+          fromFrame, toFrame,
+          slice->range(fromFrame, toFrame).empty());
+
     // Skip slices that are outside of the given ROI
     if (slice->range(fromFrame, toFrame).empty())
       continue;
@@ -1740,6 +1758,7 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
     ++nslices;
   }
 
+  TRACE(" nslices=%d\n", nslices);
   fputl(nslices, f);
   fputl(0, f);  // 8 reserved bytes
   fputl(0, f);
@@ -1750,11 +1769,17 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
     if (range.empty())
       continue;
 
+    TRACE(" range countKeys=%d\n", range.countKeys());
+
     int flags = 0;
     for (auto key : range) {
-      if (key && !key->center().isEmpty()) {
-        flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
-        break;
+      if (key) {
+        if (!key->center().isEmpty()) {
+          flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
+        }
+        if (key->hasPivot()) {
+          flags |= ASE_SLICE_FLAG_HAS_PIVOT_POINT;
+        }
       }
     }
 
@@ -1787,6 +1812,22 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
             fputl(key ? key->bounds().h: 0, f);
           }
         }
+
+        if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
+          if (key && key->hasPivot()) {
+            fputl(key->pivot().x, f);
+            fputl(key->pivot().y, f);
+          }
+          else {
+            fputl(0, f);
+            fputl(0, f);
+          }
+        }
+
+        TRACE(" write key bounds=(%d %d %d %d) center=(%d %d %d %d) pivot=(%d %d)\n",
+              key->bounds().x, key->bounds().y, key->bounds().w, key->bounds().h,
+              key->center().x, key->center().y, key->center().w, key->center().h,
+              key->pivot().x, key->pivot().y);
 
         oldKey = key;
       }

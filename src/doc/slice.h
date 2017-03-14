@@ -11,6 +11,7 @@
 #include "doc/frame.h"
 #include "doc/keyframes.h"
 #include "doc/with_user_data.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 
 #include <string>
@@ -20,21 +21,28 @@ namespace doc {
 
   class SliceKey {
   public:
+    static const gfx::Point NoPivot;
+
     SliceKey();
     SliceKey(const gfx::Rect& bounds,
-             const gfx::Rect& center = gfx::Rect());
+             const gfx::Rect& center = gfx::Rect(),
+             const gfx::Point& pivot = SliceKey::NoPivot);
 
     bool isEmpty() const { return m_bounds.isEmpty(); }
+    bool hasPivot() const { return m_pivot != NoPivot; }
 
     const gfx::Rect& bounds() const { return m_bounds; }
     const gfx::Rect& center() const { return m_center; }
+    const gfx::Point& pivot() const { return m_pivot; }
 
     void setBounds(const gfx::Rect& bounds) { m_bounds = bounds; }
     void setCenter(const gfx::Rect& center) { m_center = center; }
+    void setPivot(const gfx::Point& pivot) { m_pivot = pivot; }
 
   private:
     gfx::Rect m_bounds;
     gfx::Rect m_center;
+    gfx::Point m_pivot;
   };
 
   class Slice : public WithUserData {

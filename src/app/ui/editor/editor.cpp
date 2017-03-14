@@ -981,6 +981,7 @@ void Editor::drawSlices(ui::Graphics* g)
       editorToScreen(key->bounds())
                .offset(-bounds().origin());
 
+    // Center slices
     if (!key->center().isEmpty()) {
       gfx::Rect in =
         editorToScreen(gfx::Rect(key->center()).offset(key->bounds().origin()))
@@ -998,6 +999,19 @@ void Editor::drawSlices(ui::Graphics* g)
         g->drawVLine(in_color, in.x, out.y, out.h);
       if (in.x2() > out.x && in.x2() < out.x2())
         g->drawVLine(in_color, in.x2(), out.y, out.h);
+    }
+
+    // Pivot
+    if (key->hasPivot()) {
+      gfx::Rect in =
+        editorToScreen(gfx::Rect(key->pivot(), gfx::Size(1, 1)).offset(key->bounds().origin()))
+        .offset(-bounds().origin());
+
+      auto in_color = gfx::rgba(gfx::getr(color),
+                                gfx::getg(color),
+                                gfx::getb(color),
+                                doc::rgba_geta(docColor)/4);
+      g->drawRect(in_color, in);
     }
 
     g->drawRect(color, out);

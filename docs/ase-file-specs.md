@@ -310,21 +310,25 @@ For each slice... |
 DWORD       | Number of "slice keys"
 DWORD       | Flags
             | 1 - It's a 9-patches slice
+            | 2 - Has pivot information
 DWORD       | Reserved
 STRING      | Name
 For each slice key ... |
 DWORD       | Frame number (this slice is valid from
             | this frame to the end of the animation)
-SIGNED WORD | Slice X position
-SIGNED WORD | Slice Y position
-WORD        | Slice Width (can be 0 if this slice hidden in the
+SIGNED WORD | Slice X origin coordinate in the sprite
+SIGNED WORD | Slice Y origin coordinate in the sprite
+WORD        | Slice width (can be 0 if this slice hidden in the
             | animation from the given frame)
-WORD        | Slice Height
+WORD        | Slice height
 If flags have bit 1 |
 SIGNED WORD | Center X position (relative to slice bounds)
 SIGNED WORD | Center Y position
-WORD        | Center Width
-WORD        | Center Height
+WORD        | Center width
+WORD        | Center height
+If flags have bit 2 |
+WORD        | Pivot X position (relative to the slice origin)
+WORD        | Pivot Y position (relative to the slice origin)
 
 ### Notes
 

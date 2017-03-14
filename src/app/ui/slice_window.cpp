@@ -40,6 +40,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
   boundsH()->setTextf("%d", key->bounds().h);
 
   center()->Click.connect(base::Bind<void>(&SliceWindow::onCenterChange, this));
+  pivot()->Click.connect(base::Bind<void>(&SliceWindow::onPivotChange, this));
 
   if (!key->center().isEmpty()) {
     center()->setSelected(true);
@@ -48,8 +49,18 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
     centerW()->setTextf("%d", key->center().w);
     centerH()->setTextf("%d", key->center().h);
   }
-  else
+  else {
     onCenterChange();
+  }
+
+  if (key->hasPivot()) {
+    pivot()->setSelected(true);
+    pivotX()->setTextf("%d", key->pivot().x);
+    pivotY()->setTextf("%d", key->pivot().y);
+  }
+  else {
+    onPivotChange();
+  }
 }
 
 bool SliceWindow::show()
@@ -88,6 +99,15 @@ gfx::Rect SliceWindow::centerValue() const
   return rc;
 }
 
+gfx::Point SliceWindow::pivotValue() const
+{
+  if (!pivot()->isSelected())
+    return doc::SliceKey::NoPivot;
+
+  return gfx::Point(pivotX()->textInt(),
+                    pivotY()->textInt());
+}
+
 void SliceWindow::onCenterChange()
 {
   bool state = center()->isSelected();
@@ -102,6 +122,19 @@ void SliceWindow::onCenterChange()
     centerY()->setText("1");
     centerW()->setTextf("%d", std::max(1, boundsW()->textInt()-2));
     centerH()->setTextf("%d", std::max(1, boundsH()->textInt()-2));
+  }
+}
+
+void SliceWindow::onPivotChange()
+{
+  bool state = pivot()->isSelected();
+
+  pivotX()->setEnabled(state);
+  pivotY()->setEnabled(state);
+
+  if (state) {
+    pivotX()->setText("0");
+    pivotY()->setText("0");
   }
 }
 

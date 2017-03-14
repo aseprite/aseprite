@@ -123,7 +123,19 @@ TEST(Keyframes, Range)
   EXPECT_EQ(1, k.range(2, 3).countKeys());
   EXPECT_EQ(2, k.range(2, 4).countKeys());
   EXPECT_EQ(3, k.range(3, 7).countKeys());
+  EXPECT_EQ(2, k.range(5, 6).countKeys());
+  EXPECT_EQ(1, k.range(6, 6).countKeys());
   EXPECT_EQ(1, k.range(7, 7).countKeys());
+}
+
+TEST(Keyframes, BugEmptyCount)
+{
+  Keyframes<int> k;
+  k.insert(7, new int(5));
+  EXPECT_EQ(0, k.range(-1, 6).countKeys());
+  EXPECT_EQ(1, k.range(0, 7).countKeys());
+  EXPECT_EQ(1, k.range(8, 9).countKeys());
+  EXPECT_EQ(5, **k.range(8, 9).begin());
 }
 
 int main(int argc, char** argv)

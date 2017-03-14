@@ -65,11 +65,14 @@ void write_slicekey(std::ostream& os, const SliceKey& sliceKey)
   write32(os, sliceKey.center().y);
   write32(os, sliceKey.center().w);
   write32(os, sliceKey.center().h);
+  write32(os, sliceKey.pivot().x);
+  write32(os, sliceKey.pivot().y);
 }
 
 SliceKey read_slicekey(std::istream& is)
 {
   gfx::Rect bounds, center;
+  gfx::Point pivot;
   bounds.x = read32(is);
   bounds.y = read32(is);
   bounds.w = read32(is);
@@ -78,7 +81,9 @@ SliceKey read_slicekey(std::istream& is)
   center.y = read32(is);
   center.w = read32(is);
   center.h = read32(is);
-  return SliceKey(bounds, center);
+  pivot.x = read32(is);
+  pivot.y = read32(is);
+  return SliceKey(bounds, center, pivot);
 }
 
 }

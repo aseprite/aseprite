@@ -15,15 +15,20 @@
 
 namespace doc {
 
+const gfx::Point SliceKey::NoPivot(std::numeric_limits<int32_t>::min(),
+                                   std::numeric_limits<int32_t>::min());
+
 SliceKey::SliceKey()
+  : m_pivot(NoPivot)
 {
 }
 
-SliceKey::SliceKey(// const frame_t frame,
-                   const gfx::Rect& bounds,
-                   const gfx::Rect& center)
+SliceKey::SliceKey(const gfx::Rect& bounds,
+                   const gfx::Rect& center,
+                   const gfx::Point& pivot)
   : m_bounds(bounds)
   , m_center(center)
+  , m_pivot(pivot)
 {
 }
 

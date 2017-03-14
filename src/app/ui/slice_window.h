@@ -32,10 +32,12 @@ namespace app {
     std::string nameValue() const;
     gfx::Rect boundsValue() const;
     gfx::Rect centerValue() const;
+    gfx::Point pivotValue() const;
     const doc::UserData& userDataValue() { return m_userData; }
 
   private:
     void onCenterChange();
+    void onPivotChange();
     void onPopupUserData();
 
     doc::UserData m_userData;

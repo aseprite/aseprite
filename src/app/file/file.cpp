@@ -69,6 +69,15 @@ void updateXmlPartFromSliceKey(const SliceKey* key, TiXmlElement* xmlPart)
     if (xmlPart->Attribute("w")) xmlPart->RemoveAttribute("w");
     if (xmlPart->Attribute("h")) xmlPart->RemoveAttribute("h");
   }
+
+  if (key->hasPivot()) {
+    xmlPart->SetAttribute("focusx", key->pivot().x);
+    xmlPart->SetAttribute("focusy", key->pivot().y);
+  }
+  else {
+    if (xmlPart->Attribute("focusx")) xmlPart->RemoveAttribute("focusx");
+    if (xmlPart->Attribute("focusy")) xmlPart->RemoveAttribute("focusy");
+  }
 }
 
 } // anonymous namespace
@@ -1109,6 +1118,12 @@ void FileOp::loadData()
           int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
           int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
           key.setBounds(gfx::Rect(x, y, w, h));
+        }
+
+        if (xmlPart->Attribute("focusx")) {
+          int x = xmlPart->Attribute("focusx") ? strtol(xmlPart->Attribute("focusx"), NULL, 10): 0;
+          int y = xmlPart->Attribute("focusy") ? strtol(xmlPart->Attribute("focusy"), NULL, 10): 0;
+          key.setPivot(gfx::Point(x, y));
         }
 
         slice->insert(0, key);
