@@ -43,7 +43,7 @@ EditorView::EditorView(EditorView::Type type)
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
-  setStyle(theme->newStyles.editorView());
+  setStyle(theme->styles.editorView());
   setupScrollbars();
 
   m_scrollSettingsConn =
@@ -155,10 +155,10 @@ void EditorView::setupScrollbars()
     horizontalBar()->setBarWidth(barsize);
     verticalBar()->setBarWidth(barsize);
 
-    horizontalBar()->setStyle(theme->newStyles.miniScrollbar());
-    verticalBar()->setStyle(theme->newStyles.miniScrollbar());
-    horizontalBar()->setThumbStyle(theme->newStyles.miniScrollbarThumb());
-    verticalBar()->setThumbStyle(theme->newStyles.miniScrollbarThumb());
+    horizontalBar()->setStyle(theme->styles.miniScrollbar());
+    verticalBar()->setStyle(theme->styles.miniScrollbar());
+    horizontalBar()->setThumbStyle(theme->styles.miniScrollbarThumb());
+    verticalBar()->setThumbStyle(theme->styles.miniScrollbarThumb());
 
     showScrollBars();
   }

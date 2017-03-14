@@ -553,7 +553,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
       // Draw the selection
       theme->paintWidgetPart(
-        g, theme->newStyles.colorbarSelection(), box, info);
+        g, theme->styles.colorbarSelection(), box, info);
     }
 
     ++j;

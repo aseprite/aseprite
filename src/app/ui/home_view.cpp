@@ -151,7 +151,7 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 
   checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
   checkUpdate()->setUrl(url);
-  checkUpdate()->setStyle(theme->newStyles.workspaceUpdateLink());
+  checkUpdate()->setStyle(theme->styles.workspaceUpdateLink());
   checkUpdate()->setVisible(true);
 
   layout();

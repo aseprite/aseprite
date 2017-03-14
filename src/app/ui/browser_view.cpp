@@ -428,7 +428,7 @@ private:
 
   void addSeparator() {
     auto sep = new Separator("", HORIZONTAL);
-    sep->setStyle(SkinTheme::instance()->newStyles.separatorInView());
+    sep->setStyle(SkinTheme::instance()->styles.separatorInView());
     sep->setBorder(gfx::Border(0, font()->height(), 0, font()->height()));
     sep->setExpansive(true);
     addChild(sep);
@@ -448,7 +448,7 @@ private:
         if (word.size() > 4 &&
             std::strncmp(word.c_str(), "http", 4) == 0) {
           label = new LinkLabel(word);
-          label->setStyle(SkinTheme::instance()->newStyles.browserLink());
+          label->setStyle(SkinTheme::instance()->styles.browserLink());
         }
         else
           label = new Label(word);
@@ -475,7 +475,7 @@ private:
 
   void addLink(const std::string& url, const std::string& text) {
     auto label = new LinkLabel(url, text);
-    label->setStyle(SkinTheme::instance()->newStyles.browserLink());
+    label->setStyle(SkinTheme::instance()->styles.browserLink());
 
     if (url.find(':') == std::string::npos) {
       label->setUrl("");
@@ -516,7 +516,7 @@ BrowserView::BrowserView()
 
   m_view.attachToView(m_textBox);
   m_view.setExpansive(true);
-  m_view.setStyle(theme->newStyles.workspaceView());
+  m_view.setStyle(theme->styles.workspaceView());
 
   m_textBox->FileChange.connect(
     []{

@@ -43,15 +43,15 @@ public:
     , m_fullpath(file)
     , m_name(base::get_file_name(file))
     , m_path(base::get_file_path(file)) {
-    setStyle(SkinTheme::instance()->newStyles.recentItem());
+    setStyle(SkinTheme::instance()->styles.recentItem());
   }
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-    ui::Style* style = theme->newStyles.recentFile();
-    ui::Style* styleDetail = theme->newStyles.recentFileDetail();
-    
+    ui::Style* style = theme->styles.recentFile();
+    ui::Style* styleDetail = theme->styles.recentFileDetail();
+
     setText(m_name);
     gfx::Size sz1 = theme->calcSizeHint(this, style);
 
@@ -65,8 +65,8 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Graphics* g = ev.graphics();
     gfx::Rect bounds = clientBounds();
-    ui::Style* style = theme->newStyles.recentFile();
-    ui::Style* styleDetail = theme->newStyles.recentFileDetail();
+    ui::Style* style = theme->styles.recentFile();
+    ui::Style* styleDetail = theme->styles.recentFileDetail();
 
     setText(m_name.c_str());
     theme->paintWidget(g, this, style, bounds);

@@ -575,7 +575,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
 
   if (styleid) {
     SkinTheme* theme = static_cast<SkinTheme*>(root->theme());
-    ui::Style* style = theme->getNewStyle(styleid);
+    ui::Style* style = theme->getStyleById(styleid);
     if (style)
       widget->setStyle(style);
     else

@@ -267,7 +267,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
 
   Splitter* splitter = new Splitter(Splitter::ByPercentage, splitterAlign);
   splitter->setExpansive(true);
-  splitter->setStyle(SkinTheme::instance()->newStyles.workspaceSplitter());
+  splitter->setStyle(SkinTheme::instance()->styles.workspaceSplitter());
 
   Widget* parent = this->parent();
   if (parent->type() == kBoxWidget) {

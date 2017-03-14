@@ -40,7 +40,7 @@ private:
 
 Notifications::Notifications()
   : Button("")
-  , m_flagStyle(skin::SkinTheme::instance()->newStyles.flag())
+  , m_flagStyle(skin::SkinTheme::instance()->styles.flag())
   , m_withNotifications(false)
 {
 }

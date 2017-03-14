@@ -79,7 +79,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_listBox.setMultiselect(true);
   m_view.setExpansive(true);
   m_view.attachToView(&m_listBox);
-  m_view.setStyle(theme->newStyles.workspaceView());
+  m_view.setStyle(theme->styles.workspaceView());
 
   HBox* hbox = new HBox;
   hbox->setBorder(gfx::Border(2, 0, 2, 0)*guiscale());
@@ -115,7 +115,7 @@ void DataRecoveryView::fillList()
       continue;
 
     auto sep = new Separator(session->name(), HORIZONTAL);
-    sep->setStyle(SkinTheme::instance()->newStyles.separatorInView());
+    sep->setStyle(SkinTheme::instance()->styles.separatorInView());
     sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
     m_listBox.addChild(sep);
 

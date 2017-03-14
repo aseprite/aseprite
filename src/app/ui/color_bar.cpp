@@ -84,7 +84,7 @@ using namespace ui;
 class ColorBar::WarningIcon : public ui::Button {
 public:
   WarningIcon() : ui::Button(std::string()) {
-    setStyle(skin::SkinTheme::instance()->newStyles.warningBox());
+    setStyle(skin::SkinTheme::instance()->styles.warningBox());
   }
 };
 
@@ -94,7 +94,7 @@ public:
 ColorBar::ScrollableView::ScrollableView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setStyle(theme->newStyles.colorbarView());
+  setStyle(theme->styles.colorbarView());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ ColorBar::ColorBar(int align)
   m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
-  m_splitter.setStyle(theme->newStyles.workspaceSplitter());
+  m_splitter.setStyle(theme->styles.workspaceSplitter());
   m_splitter.addChild(&m_palettePlaceholder);
   m_splitter.addChild(&m_selectorPlaceholder);
 

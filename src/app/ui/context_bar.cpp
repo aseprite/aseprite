@@ -662,7 +662,7 @@ class ContextBar::InkShadesField : public HBox {
           bounds.w = w;
       }
 
-      theme->paintWidget(g, this, theme->newStyles.view(), bounds);
+      theme->paintWidget(g, this, theme->styles.view(), bounds);
 
       bounds.shrink(3*guiscale());
 
@@ -706,7 +706,7 @@ class ContextBar::InkShadesField : public HBox {
 
           PaintWidgetPartInfo info;
           theme->paintWidgetPart(
-            g, theme->newStyles.shadeSelection(), hotBounds, info);
+            g, theme->styles.shadeSelection(), hotBounds, info);
         }
       }
       else {

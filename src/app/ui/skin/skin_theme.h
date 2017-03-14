@@ -83,7 +83,7 @@ namespace app {
       void drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, double progress);
 
-      ui::Style* getNewStyle(const std::string& id) {
+      ui::Style* getStyleById(const std::string& id) {
         return m_styles[id];
       }
 

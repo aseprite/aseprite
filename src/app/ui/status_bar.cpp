@@ -547,7 +547,7 @@ StatusBar::StatusBar()
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(base::Bind<void>(&StatusBar::newFrame, this));
-    m_newFrame->setStyle(theme->newStyles.newFrameButton());
+    m_newFrame->setStyle(theme->styles.newFrameButton());
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 

@@ -128,7 +128,7 @@ public:
 protected:
   void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-    ui::Style* style = theme->newStyles.newsItem();
+    ui::Style* style = theme->styles.newsItem();
 
     setText(m_title);
     gfx::Size sz = theme->calcSizeHint(this, style);
@@ -143,8 +143,8 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Graphics* g = ev.graphics();
     gfx::Rect bounds = clientBounds();
-    ui::Style* style = theme->newStyles.newsItem();
-    ui::Style* styleDetail = theme->newStyles.newsItemDetail();
+    ui::Style* style = theme->styles.newsItem();
+    ui::Style* styleDetail = theme->styles.newsItemDetail();
 
     setText(m_title);
     gfx::Size textSize = theme->calcSizeHint(this, style);

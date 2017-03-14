@@ -17,7 +17,7 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   std::vector<std::string> dimensions;
   std::vector<std::string> colors;
   std::vector<std::string> parts;
-  std::vector<std::string> newStyles;
+  std::vector<std::string> styles;
 
   TiXmlHandle handle(doc);
   TiXmlElement* elem = handle
@@ -57,7 +57,7 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     .FirstChild("style").ToElement();
   while (elem) {
     const char* id = elem->Attribute("id");
-    newStyles.push_back(id);
+    styles.push_back(id);
     elem = elem->NextSiblingElement();
   }
 
@@ -139,17 +139,17 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   // New styles sub class
   std::cout
     << "\n"
-    << "    class NewStyles {\n"
+    << "    class Styles {\n"
     << "      template<typename> friend class ThemeFile;\n"
     << "    public:\n";
-  for (auto style : newStyles) {
+  for (auto style : styles) {
     std::string id = convert_xmlid_to_cppid(style, false);
     std::cout
       << "      ui::Style* " << id << "() const { return m_" << id << "; }\n";
   }
   std::cout
     << "    private:\n";
-  for (auto style : newStyles) {
+  for (auto style : styles) {
     std::string id = convert_xmlid_to_cppid(style, false);
     std::cout
       << "      ui::Style* m_" << id << ";\n";
@@ -162,7 +162,7 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     << "    Dimensions dimensions;\n"
     << "    Colors colors;\n"
     << "    Parts parts;\n"
-    << "    NewStyles newStyles;\n"
+    << "    Styles styles;\n"
     << "\n"
     << "  protected:\n"
     << "    void updateInternals() {\n";
@@ -181,10 +181,10 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     std::cout << "      byId(parts.m_" << id
               << ", \"" << part << "\");\n";
   }
-  for (auto newStyle : newStyles) {
-    std::string id = convert_xmlid_to_cppid(newStyle, false);
-    std::cout << "      byId(newStyles.m_" << id
-              << ", \"" << newStyle << "\");\n";
+  for (auto style : styles) {
+    std::string id = convert_xmlid_to_cppid(style, false);
+    std::cout << "      byId(styles.m_" << id
+              << ", \"" << style << "\");\n";
   }
   std::cout
     << "    }\n"
@@ -200,7 +200,7 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     << "      part = static_cast<T*>(this)->getPartById(id);\n"
     << "    }\n"
     << "    void byId(ui::Style*& style, const std::string& id) {\n"
-    << "      style = static_cast<T*>(this)->getNewStyle(id);\n"
+    << "      style = static_cast<T*>(this)->getStyleById(id);\n"
     << "    }\n";
 
   std::cout

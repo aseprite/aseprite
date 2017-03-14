@@ -756,13 +756,13 @@ void SkinTheme::initWidget(Widget* widget)
   switch (widget->type()) {
 
     case kBoxWidget:
-      widget->setStyle(newStyles.box());
+      widget->setStyle(styles.box());
       BORDER(0);
       widget->setChildSpacing(4 * scale);
       break;
 
     case kButtonWidget:
-      widget->setStyle(newStyles.button());
+      widget->setStyle(styles.button());
       break;
 
     case kCheckWidget:
@@ -786,17 +786,17 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kGridWidget:
-      widget->setStyle(newStyles.grid());
+      widget->setStyle(styles.grid());
       BORDER(0);
       widget->setChildSpacing(4 * scale);
       break;
 
     case kLabelWidget:
-      widget->setStyle(newStyles.label());
+      widget->setStyle(styles.label());
       break;
 
     case kLinkLabelWidget:
-      widget->setStyle(newStyles.link());
+      widget->setStyle(styles.link());
       break;
 
     case kListBoxWidget:
@@ -811,20 +811,20 @@ void SkinTheme::initWidget(Widget* widget)
     case kComboBoxWidget: {
       ComboBox* combobox = static_cast<ComboBox*>(widget);
       Button* button = combobox->getButtonWidget();
-      button->setStyle(newStyles.comboboxButton());
+      button->setStyle(styles.comboboxButton());
       break;
     }
 
     case kMenuWidget:
-      widget->setStyle(newStyles.menu());
+      widget->setStyle(styles.menu());
       break;
 
     case kMenuBarWidget:
-      widget->setStyle(newStyles.menubar());
+      widget->setStyle(styles.menubar());
       break;
 
     case kMenuBoxWidget:
-      widget->setStyle(newStyles.menubox());
+      widget->setStyle(styles.menubox());
       break;
 
     case kMenuItemWidget:
@@ -834,7 +834,7 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kSplitterWidget:
       widget->setChildSpacing(3 * scale);
-      widget->setStyle(newStyles.splitter());
+      widget->setStyle(styles.splitter());
       break;
 
     case kRadioWidget:
@@ -852,13 +852,13 @@ void SkinTheme::initWidget(Widget* widget)
       // Horizontal bar
       if (widget->align() & HORIZONTAL) {
         if (dynamic_cast<MenuSeparator*>(widget))
-          widget->setStyle(newStyles.menuSeparator());
+          widget->setStyle(styles.menuSeparator());
         else
-          widget->setStyle(newStyles.horizontalSeparator());
+          widget->setStyle(styles.horizontalSeparator());
       }
       // Vertical bar
       else {
-        widget->setStyle(newStyles.verticalSeparator());
+        widget->setStyle(styles.verticalSeparator());
       }
       break;
 
@@ -881,12 +881,12 @@ void SkinTheme::initWidget(Widget* widget)
     case kViewWidget:
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
-      widget->setStyle(newStyles.view());
+      widget->setStyle(styles.view());
       break;
 
     case kViewScrollbarWidget:
-      widget->setStyle(newStyles.scrollbar());
-      static_cast<ScrollBar*>(widget)->setThumbStyle(newStyles.scrollbarThumb());
+      widget->setStyle(styles.scrollbar());
+      static_cast<ScrollBar*>(widget)->setThumbStyle(styles.scrollbarThumb());
       break;
 
     case kViewViewportWidget:
@@ -895,40 +895,40 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kManagerWidget:
-      widget->setStyle(newStyles.desktop());
+      widget->setStyle(styles.desktop());
       break;
 
     case kWindowWidget:
       if (TipWindow* window = dynamic_cast<TipWindow*>(widget)) {
-        window->setStyle(newStyles.tooltipWindow());
-        window->setArrowStyle(newStyles.tooltipWindowArrow());
-        window->textBox()->setStyle(SkinTheme::instance()->newStyles.tooltipText());
+        window->setStyle(styles.tooltipWindow());
+        window->setArrowStyle(styles.tooltipWindowArrow());
+        window->textBox()->setStyle(SkinTheme::instance()->styles.tooltipText());
       }
       else if (dynamic_cast<TransparentPopupWindow*>(widget)) {
-        widget->setStyle(newStyles.transparentPopupWindow());
+        widget->setStyle(styles.transparentPopupWindow());
       }
       else if (dynamic_cast<PopupWindow*>(widget)) {
-        widget->setStyle(newStyles.popupWindow());
+        widget->setStyle(styles.popupWindow());
       }
       else if (static_cast<Window*>(widget)->isDesktop()) {
-        widget->setStyle(newStyles.desktop());
+        widget->setStyle(styles.desktop());
       }
       else {
         if (widget->hasText()) {
-          widget->setStyle(newStyles.windowWithTitle());
+          widget->setStyle(styles.windowWithTitle());
         }
         else {
-          widget->setStyle(newStyles.windowWithoutTitle());
+          widget->setStyle(styles.windowWithoutTitle());
         }
       }
       break;
 
     case kWindowTitleLabelWidget:
-      widget->setStyle(SkinTheme::instance()->newStyles.windowTitleLabel());
+      widget->setStyle(SkinTheme::instance()->styles.windowTitleLabel());
       break;
 
     case kWindowCloseButtonWidget:
-      widget->setStyle(SkinTheme::instance()->newStyles.windowCloseButton());
+      widget->setStyle(SkinTheme::instance()->styles.windowCloseButton());
       break;
 
     default:

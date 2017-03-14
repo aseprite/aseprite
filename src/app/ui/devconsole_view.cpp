@@ -76,7 +76,7 @@ DevConsoleView::DevConsoleView()
   m_bottomBox.addChild(&m_label);
   m_bottomBox.addChild(m_entry);
 
-  m_view.setStyle(theme->newStyles.workspaceView());
+  m_view.setStyle(theme->styles.workspaceView());
   m_view.attachToView(&m_textBox);
   m_view.setExpansive(true);
 

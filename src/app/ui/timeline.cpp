@@ -164,10 +164,10 @@ Timeline::Timeline()
   m_vbar.setBarWidth(barsize);
   m_hbar.setTransparent(true);
   m_vbar.setTransparent(true);
-  m_hbar.setStyle(theme->newStyles.transparentScrollbar());
-  m_vbar.setStyle(theme->newStyles.transparentScrollbar());
-  m_hbar.setThumbStyle(theme->newStyles.transparentScrollbarThumb());
-  m_vbar.setThumbStyle(theme->newStyles.transparentScrollbarThumb());
+  m_hbar.setStyle(theme->styles.transparentScrollbar());
+  m_vbar.setStyle(theme->styles.transparentScrollbar());
+  m_hbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
+  m_vbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
 }
 
 Timeline::~Timeline()
@@ -1178,7 +1178,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
         if (!bounds.isEmpty()) {
           drawPart(
             g, bounds, nullptr,
-            skinTheme()->newStyles.timelineOnionskinRange(),
+            skinTheme()->styles.timelineOnionskinRange(),
             false, false, false);
         }
       }
@@ -1291,7 +1291,7 @@ paintNoDoc:;
   if (noDoc)
     drawPart(
       g, clientBounds(), nullptr,
-      skinTheme()->newStyles.timelinePadding());
+      skinTheme()->styles.timelinePadding());
 }
 
 void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
@@ -1552,7 +1552,7 @@ void Timeline::drawTop(ui::Graphics* g)
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
-  auto& styles = skinTheme()->newStyles;
+  auto& styles = skinTheme()->styles;
   bool allInvisible = allLayersInvisible();
   bool allLocked = allLayersLocked();
   bool allContinuous = allLayersContinuous();
@@ -1611,13 +1611,13 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
     (docPref().timeline.firstFrame()+frame) % 100);
 
   drawPart(g, bounds, &text,
-           skinTheme()->newStyles.timelineHeaderFrame(),
+           skinTheme()->styles.timelineHeaderFrame(),
            is_active, is_hover, is_clicked);
 }
 
 void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 {
-  auto& styles = skinTheme()->newStyles;
+  auto& styles = skinTheme()->styles;
   Layer* layer = m_layers[layerIdx].layer;
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
@@ -1745,7 +1745,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 
 void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
 {
-  auto& styles = skinTheme()->newStyles;
+  auto& styles = skinTheme()->styles;
   Layer* layer = m_layers[layerIndex].layer;
   Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
@@ -1954,7 +1954,7 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& full_boun
                                      Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                      DrawCelData* data)
 {
-  auto& styles = skinTheme()->newStyles;
+  auto& styles = skinTheme()->styles;
   ObjectId imageId = (*data->activeIt)->image()->id();
 
   gfx::Rect bounds = gfx::Rect(full_bounds).setSize(gfx::Size(headerBoxWidth(), headerBoxHeight()));
@@ -2000,7 +2000,7 @@ void Timeline::drawFrameTags(ui::Graphics* g)
     return;
 
   SkinTheme* theme = skinTheme();
-  auto& styles = theme->newStyles;
+  auto& styles = theme->styles;
 
   g->fillRect(theme->colors.workspace(),
     gfx::Rect(
@@ -2052,7 +2052,7 @@ void Timeline::drawFrameTags(ui::Graphics* g)
 
 void Timeline::drawRangeOutline(ui::Graphics* g)
 {
-  auto& styles = skinTheme()->newStyles;
+  auto& styles = skinTheme()->styles;
 
   gfx::Rect clipBounds;
   switch (m_range.type()) {
@@ -2125,7 +2125,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
 void Timeline::drawPaddings(ui::Graphics* g)
 {
-  auto& styles = skinTheme()->newStyles;
+  auto& styles = skinTheme()->styles;
 
   gfx::Rect client = clientBounds();
   gfx::Rect bottomLayer;

@@ -53,7 +53,7 @@ ColorButton::ColorButton(const app::Color& color,
 {
   setFocusStop(true);
   initTheme();
-  
+
   UIContext::instance()->add_observer(this);
 }
 
@@ -103,7 +103,7 @@ app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
 void ColorButton::onInitTheme(InitThemeEvent& ev)
 {
   ButtonBase::onInitTheme(ev);
-  setStyle(SkinTheme::instance()->newStyles.colorButton());
+  setStyle(SkinTheme::instance()->styles.colorButton());
 }
 
 bool ColorButton::onProcessMessage(Message* msg)

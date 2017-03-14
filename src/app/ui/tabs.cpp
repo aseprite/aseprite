@@ -63,7 +63,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   enableFlags(CTRL_RIGHT_CLICK);
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setStyle(theme->newStyles.mainTabs());
+  setStyle(theme->styles.mainTabs());
   setDoubleBuffered(true);
   initTheme();
 
@@ -255,7 +255,7 @@ void Tabs::setDockedStyle()
   m_tabsHeight = theme->dimensions.dockedTabsHeight();
   m_tabsBottomHeight = 0;
 
-  setStyle(theme->newStyles.workspaceTabs());
+  setStyle(theme->styles.workspaceTabs());
 }
 
 void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
@@ -574,7 +574,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
     (selected ? ui::Style::Layer::kFocus: 0) |
     (hover ? ui::Style::Layer::kMouse: 0);
   theme->paintWidgetPart(
-    g, theme->newStyles.tab(),
+    g, theme->styles.tab(),
     gfx::Rect(box.x, box.y+dy, box.w, box.h),
     info);
 
@@ -590,7 +590,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
       case TabIcon::HOME:
         {
           theme->paintWidgetPart(
-            g, theme->newStyles.tabHome(),
+            g, theme->styles.tabHome(),
             gfx::Rect(
               box.x,
               box.y+dy,
@@ -606,7 +606,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
     if (box.w > 8*ui::guiscale()) {
       info.text = &tab->text;
       theme->paintWidgetPart(
-        g, theme->newStyles.tabText(),
+        g, theme->styles.tabText(),
         gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
         info);
       info.text = nullptr;
@@ -616,14 +616,14 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
   // Tab bottom part
   if (!m_docked) {
     theme->paintWidgetPart(
-      g, theme->newStyles.tabBottom(),
+      g, theme->styles.tabBottom(),
       gfx::Rect(box.x, box.y2(), box.w, bounds().y2()-box.y2()),
       info);
   }
 
   // Close button
   if (!closeBox.isEmpty()) {
-    ui::Style* style = theme->newStyles.tabCloseIcon();
+    ui::Style* style = theme->styles.tabCloseIcon();
 
     if (m_delegate) {
       if (tab->view)
@@ -631,7 +631,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
       if (tab->modified &&
           (!hover || !m_hotCloseButton)) {
-        style = theme->newStyles.tabModifiedIcon();
+        style = theme->styles.tabModifiedIcon();
       }
     }
 
@@ -654,12 +654,12 @@ void Tabs::drawFiller(ui::Graphics* g, const gfx::Rect& box)
   gfx::Rect rect = clientBounds();
 
   theme->paintWidgetPart(
-    g, theme->newStyles.tabFiller(),
+    g, theme->styles.tabFiller(),
     gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h),
     PaintWidgetPartInfo());
 
   theme->paintWidgetPart(
-    g, theme->newStyles.tabBottom(),
+    g, theme->styles.tabBottom(),
     gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()),
     PaintWidgetPartInfo());
 }

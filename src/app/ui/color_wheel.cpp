@@ -60,7 +60,7 @@ ColorWheel::ColorWheel()
   setBorder(gfx::Border(3*ui::guiscale()));
 
   m_options.Click.connect(base::Bind<void>(&ColorWheel::onOptions, this));
-  m_options.setStyle(theme->newStyles.colorWheelOptions());
+  m_options.setStyle(theme->styles.colorWheelOptions());
 
   addChild(&m_options);
 }

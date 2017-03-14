@@ -28,8 +28,8 @@ DropDownButton::DropDownButton(const char* text)
 {
   SkinTheme* theme = SkinTheme::instance();
 
-  m_button->setStyle(theme->newStyles.dropDownButton());
-  m_dropDown->setStyle(theme->newStyles.dropDownExpandButton());
+  m_button->setStyle(theme->styles.dropDownButton());
+  m_dropDown->setStyle(theme->styles.dropDownExpandButton());
 
   m_button->setExpansive(true);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);

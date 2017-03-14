@@ -276,13 +276,13 @@ private:
               m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
               m_changeConn = m_changeButton->Click.connect(base::Bind<void>(&KeyItem::onChangeAccel, this, i));
-              m_changeButton->setStyle(SkinTheme::instance()->newStyles.miniButton());
+              m_changeButton->setStyle(SkinTheme::instance()->styles.miniButton());
               addChild(m_changeButton.get());
 
               m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
               m_deleteConn = m_deleteButton->Click.connect(base::Bind<void>(&KeyItem::onDeleteAccel, this, i));
-              m_deleteButton->setStyle(SkinTheme::instance()->newStyles.miniButton());
+              m_deleteButton->setStyle(SkinTheme::instance()->styles.miniButton());
               addChild(m_deleteButton.get());
 
               m_changeButton->setBgColor(gfx::ColorNone);
@@ -309,7 +309,7 @@ private:
             m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
             m_addConn = m_addButton->Click.connect(base::Bind<void>(&KeyItem::onAddAccel, this));
-            m_addButton->setStyle(SkinTheme::instance()->newStyles.miniButton());
+            m_addButton->setStyle(SkinTheme::instance()->styles.miniButton());
             addChild(m_addButton.get());
 
             itemBounds.w = 8*guiscale() + Graphics::measureUITextLength("Add", font());
@@ -510,7 +510,7 @@ private:
             if (!group) {
               group = new Separator(
                 section()->children()[sectionIdx]->text(), HORIZONTAL);
-              group->setStyle(SkinTheme::instance()->newStyles.separatorInView());
+              group->setStyle(SkinTheme::instance()->styles.separatorInView());
 
               searchList()->addChild(group);
             }
