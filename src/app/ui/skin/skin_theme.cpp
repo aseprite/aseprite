@@ -202,11 +202,6 @@ SkinTheme::~SkinTheme()
   for (size_t c=0; c<m_cursors.size(); ++c)
     delete m_cursors[c];
 
-  for (std::map<std::string, she::Surface*>::iterator
-         it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
-    it->second->dispose();
-  }
-
   if (m_sheet)
     m_sheet->dispose();
 
@@ -423,30 +418,6 @@ void SkinTheme::loadXml(const std::string& skinId)
       }
 
       xmlCursor = xmlCursor->NextSiblingElement();
-    }
-  }
-
-  // Load tool icons
-  {
-    TiXmlElement* xmlIcon = handle
-      .FirstChild("theme")
-      .FirstChild("tools")
-      .FirstChild("tool").ToElement();
-    while (xmlIcon) {
-      // Get the tool-icon rectangle
-      const char* id = xmlIcon->Attribute("id");
-      int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
-      int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
-      int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
-      int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
-
-      LOG(VERBOSE) << "THEME: Loading tool icon " << id << "\n";
-
-      // Crop the tool-icon from the sheet
-      m_toolicon[id] = sliceSheet(
-        m_toolicon[id], gfx::Rect(x, y, w, h));
-
-      xmlIcon = xmlIcon->NextSiblingElement();
     }
   }
 
@@ -1610,11 +1581,11 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 
 she::Surface* SkinTheme::getToolIcon(const char* toolId) const
 {
-  std::map<std::string, she::Surface*>::const_iterator it = m_toolicon.find(toolId);
-  if (it != m_toolicon.end())
-    return it->second;
+  SkinPartPtr part = getPartById(std::string("tool_") + toolId);
+  if (part)
+    return part->bitmap(0);
   else
-    return NULL;
+    return nullptr;
 }
 
 void SkinTheme::drawRect(Graphics* g, const Rect& rc,

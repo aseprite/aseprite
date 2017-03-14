@@ -83,23 +83,38 @@ namespace app {
       void drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, double progress);
 
-      ui::Style* getStyleById(const std::string& id) {
-        return m_styles[id];
+      ui::Style* getStyleById(const std::string& id) const {
+        auto it = m_styles.find(id);
+        if (it != m_styles.end())
+          return it->second;
+        else
+          return nullptr;
       }
 
-      SkinPartPtr getPartById(const std::string& id) {
-        return m_parts_by_id[id];
+      SkinPartPtr getPartById(const std::string& id) const {
+        auto it = m_parts_by_id.find(id);
+        if (it != m_parts_by_id.end())
+          return it->second;
+        else
+          return SkinPartPtr(nullptr);
       }
 
-      int getDimensionById(const std::string& id) {
+      int getDimensionById(const std::string& id) const {
         // Warning! Don't use ui::guiscale(), as CurrentTheme::get()
         // is still nullptr when we use this getDimensionById()
-        return m_dimensions_by_id[id] * this->guiscale();
+        auto it = m_dimensions_by_id.find(id);
+        if (it != m_dimensions_by_id.end())
+          return it->second * this->guiscale();
+        else
+          return 0;
       }
 
-      gfx::Color getColorById(const std::string& id) {
-        ASSERT(m_colors_by_id.find(id) != m_colors_by_id.end());
-        return m_colors_by_id[id];
+      gfx::Color getColorById(const std::string& id) const {
+        auto it = m_colors_by_id.find(id);
+        if (it != m_colors_by_id.end())
+          return it->second;
+        else
+          return gfx::ColorNone;
       }
 
       void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
@@ -127,7 +142,6 @@ namespace app {
 
       she::Surface* m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
-      std::map<std::string, she::Surface*> m_toolicon;
       std::map<std::string, gfx::Color> m_colors_by_id;
       std::map<std::string, int> m_dimensions_by_id;
       std::vector<ui::Cursor*> m_cursors;

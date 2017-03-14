@@ -134,45 +134,6 @@
     <cursor id="magnifier"      x="80" y="240" w="16" h="16"    focusx="5" focusy="5" />
   </cursors>
 
-  <tools>
-
-    <tool id="rectangular_marquee"      x="144" y="0" w="16" h="16" />
-    <tool id="elliptical_marquee"       x="160" y="0" w="16" h="16" />
-    <tool id="lasso"                    x="176" y="0" w="16" h="16" />
-    <tool id="polygonal_lasso"          x="192" y="0" w="16" h="16" />
-    <tool id="magic_wand"               x="208" y="0" w="16" h="16" />
-
-    <tool id="pencil"                   x="144" y="16" w="16" h="16" />
-    <tool id="spray"                    x="160" y="16" w="16" h="16" />
-
-    <tool id="eraser"                   x="144" y="32" w="16" h="16" />
-    <tool id="eyedropper"               x="160" y="32" w="16" h="16" />
-    <tool id="hand"                     x="176" y="32" w="16" h="16" />
-    <tool id="move"                     x="192" y="32" w="16" h="16" />
-    <tool id="zoom"                     x="208" y="32" w="16" h="16" />
-    <tool id="slice"                    x="224" y="32" w="16" h="16" />
-
-    <tool id="paint_bucket"             x="144" y="48" w="16" h="16" />
-
-    <tool id="line"                     x="144" y="64" w="16" h="16" />
-    <tool id="curve"                    x="160" y="64" w="16" h="16" />
-
-    <tool id="rectangle"                x="144" y="80" w="16" h="16" />
-    <tool id="filled_rectangle"         x="160" y="80" w="16" h="16" />
-    <tool id="ellipse"                  x="176" y="80" w="16" h="16" />
-    <tool id="filled_ellipse"           x="192" y="80" w="16" h="16" />
-
-    <tool id="contour"                  x="144" y="96" w="16" h="16" />
-    <tool id="polygon"                  x="160" y="96" w="16" h="16" />
-
-    <!--tool id="shade"                 x="144" y="112" w="16" h="16" /-->
-    <tool id="blur"                     x="160" y="112" w="16" h="16" />
-    <tool id="jumble"                   x="176" y="112" w="16" h="16" />
-
-    <tool id="configuration"            x="144" y="128" w="16" h="16" />
-    <tool id="minieditor"               x="160" y="128" w="16" h="16" />
-  </tools>
-
   <parts>
     <part id="radio_normal"                     x="64" y="64" w="8" h="8" />
     <part id="radio_selected"                   x="64" y="80" w="8" h="8" />
@@ -406,6 +367,32 @@
     <part id="icon_save"                        x="232" y="264" w="8" h="8" />
     <part id="icon_save_small"                  x="240" y="264" w="8" h="8" />
     <part id="icon_slice"                       x="248" y="264" w="8" h="8" />
+    <part id="tool_rectangular_marquee"         x="144" y="0" w="16" h="16" />
+    <part id="tool_elliptical_marquee"          x="160" y="0" w="16" h="16" />
+    <part id="tool_lasso"                       x="176" y="0" w="16" h="16" />
+    <part id="tool_polygonal_lasso"             x="192" y="0" w="16" h="16" />
+    <part id="tool_magic_wand"                  x="208" y="0" w="16" h="16" />
+    <part id="tool_pencil"                      x="144" y="16" w="16" h="16" />
+    <part id="tool_spray"                       x="160" y="16" w="16" h="16" />
+    <part id="tool_eraser"                      x="144" y="32" w="16" h="16" />
+    <part id="tool_eyedropper"                  x="160" y="32" w="16" h="16" />
+    <part id="tool_hand"                        x="176" y="32" w="16" h="16" />
+    <part id="tool_move"                        x="192" y="32" w="16" h="16" />
+    <part id="tool_zoom"                        x="208" y="32" w="16" h="16" />
+    <part id="tool_slice"                       x="224" y="32" w="16" h="16" />
+    <part id="tool_paint_bucket"                x="144" y="48" w="16" h="16" />
+    <part id="tool_line"                        x="144" y="64" w="16" h="16" />
+    <part id="tool_curve"                       x="160" y="64" w="16" h="16" />
+    <part id="tool_rectangle"                   x="144" y="80" w="16" h="16" />
+    <part id="tool_filled_rectangle"            x="160" y="80" w="16" h="16" />
+    <part id="tool_ellipse"                     x="176" y="80" w="16" h="16" />
+    <part id="tool_filled_ellipse"              x="192" y="80" w="16" h="16" />
+    <part id="tool_contour"                     x="144" y="96" w="16" h="16" />
+    <part id="tool_polygon"                     x="160" y="96" w="16" h="16" />
+    <part id="tool_blur"                        x="160" y="112" w="16" h="16" />
+    <part id="tool_jumble"                      x="176" y="112" w="16" h="16" />
+    <part id="tool_configuration"               x="144" y="128" w="16" h="16" />
+    <part id="tool_minieditor"                  x="160" y="128" w="16" h="16" />
   </parts>
 
   <styles>
