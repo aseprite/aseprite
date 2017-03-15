@@ -39,6 +39,8 @@
 
 #include "tinyxml.h"
 
+#include <cstring>
+
 #define BGCOLOR                 (getWidgetBgColor(widget))
 
 namespace app {
