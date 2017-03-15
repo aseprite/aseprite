@@ -72,6 +72,8 @@ add_library(harfbuzz
 target_include_directories(harfbuzz PUBLIC
   ../harfbuzz/src)
 
+target_link_libraries(harfbuzz freetype)
+
 if(USE_UCDN)
   add_library(ucdn
     ../harfbuzz/src/hb-ucdn/ucdn.c)
