@@ -4,16 +4,13 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#define FT2_BUILD_LIBRARY 1
-
 #include "ft/stream.h"
 
 #include "base/file_handle.h"
 
-#include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_INTERNAL_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_MEMORY_H
+#include <freetype/internal/internal.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftmemory.h>
 
 #define STREAM_FILE(stream) ((FILE*)stream->descriptor.pointer)
 
