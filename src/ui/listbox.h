@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -49,6 +49,9 @@ namespace ui {
 
     int getChildIndex(Widget* item);
     Widget* getChildByIndex(int index);
+
+    int advanceIndexThroughVisibleItems(
+      int startIndex, int delta, const bool loop);
 
     // True if this listbox accepts selecting multiple items at the
     // same time.

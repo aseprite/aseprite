@@ -14,6 +14,8 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/font_path.h"
+#include "app/match_words.h"
+#include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "app/util/freetype_utils.h"
@@ -137,6 +139,7 @@ FontPopup::FontPopup()
 
   addChild(m_popup);
 
+  m_popup->search()->Change.connect(base::Bind<void>(&FontPopup::onSearchChange, this));
   m_popup->loadFont()->Click.connect(base::Bind<void>(&FontPopup::onLoadFont, this));
   m_listBox.setFocusMagnet(true);
   m_listBox.Change.connect(base::Bind<void>(&FontPopup::onChangeFont, this));
@@ -188,6 +191,23 @@ void FontPopup::showPopup(const gfx::Rect& bounds)
   setHotRegion(gfx::Region(gfx::Rect(bounds).enlarge(32 * guiscale())));
 
   openWindow();
+}
+
+void FontPopup::onSearchChange()
+{
+  std::string searchText = m_popup->search()->text();
+  Widget* firstItem = nullptr;
+
+  MatchWords match(searchText);
+  for (auto child : m_listBox.children()) {
+    bool visible = match(child->text());
+    if (visible && !firstItem)
+      firstItem = child;
+    child->setVisible(visible);
+  }
+
+  m_listBox.selectChild(firstItem);
+  layout();
 }
 
 void FontPopup::onChangeFont()

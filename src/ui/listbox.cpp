@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -270,33 +270,42 @@ bool ListBox::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (hasFocus() && !children().empty()) {
         int select = getSelectedIndex();
-        View* view = View::getView(this);
         int bottom = MAX(0, children().size()-1);
+        View* view = View::getView(this);
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
 
-        switch (keymsg->scancode()) {
+        if (keymsg->onlyCmdPressed()) {
+          if (scancode == kKeyUp) scancode = kKeyHome;
+          if (scancode == kKeyDown) scancode = kKeyEnd;
+        }
+
+        switch (scancode) {
           case kKeyUp:
             // Select previous element.
-            if (select >= 0)
-              select--;
+            if (select >= 0) {
+              select = advanceIndexThroughVisibleItems(select, -1, true);
+            }
             // Or select the bottom of the list if there is no
             // selected item.
-            else
-              select = bottom;
+            else {
+              select = advanceIndexThroughVisibleItems(bottom+1, -1, true);
+            }
             break;
           case kKeyDown:
-            select++;
+            select = advanceIndexThroughVisibleItems(select, +1, true);
             break;
           case kKeyHome:
-            select = 0;
+            select = advanceIndexThroughVisibleItems(-1, +1, false);
             break;
           case kKeyEnd:
-            select = bottom;
+            select = advanceIndexThroughVisibleItems(bottom+1, -1, false);
             break;
           case kKeyPageUp:
             if (view) {
               gfx::Rect vp = view->viewportBounds();
-              select -= vp.h / textHeight();
+              select = advanceIndexThroughVisibleItems(
+                select, -vp.h / textHeight(), false);
             }
             else
               select = 0;
@@ -304,10 +313,12 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyPageDown:
             if (view) {
               gfx::Rect vp = view->viewportBounds();
-              select += vp.h / textHeight();
+              select = advanceIndexThroughVisibleItems(
+                select, +vp.h / textHeight(), false);
             }
-            else
+            else {
               select = bottom;
+            }
             break;
           case kKeyLeft:
           case kKeyRight:
@@ -350,23 +361,33 @@ void ListBox::onResize(ResizeEvent& ev)
   Rect cpos = childrenBounds();
 
   for (auto child : children()) {
+    if (child->hasFlags(HIDDEN))
+      continue;
+
     cpos.h = child->sizeHint().h;
     child->setBounds(cpos);
 
-    cpos.y += child->bounds().h + this->childSpacing();
+    cpos.y += child->bounds().h + childSpacing();
   }
 }
 
 void ListBox::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0, h = 0;
+  int visibles = 0;
 
-  UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
-    Size reqSize = (*it)->sizeHint();
+  for (auto child : children()) {
+    if (child->hasFlags(HIDDEN))
+      continue;
+
+    Size reqSize = child->sizeHint();
 
     w = MAX(w, reqSize.w);
-    h += reqSize.h + (it+1 != end ? this->childSpacing(): 0);
+    h += reqSize.h;
+    ++visibles;
   }
+  if (visibles > 1)
+    h += childSpacing() * (visibles-1);
 
   w += border().width();
   h += border().height();
@@ -382,6 +403,47 @@ void ListBox::onChange()
 void ListBox::onDoubleClickItem()
 {
   DoubleClickItem();
+}
+
+int ListBox::advanceIndexThroughVisibleItems(
+  int startIndex, int delta, const bool loop)
+{
+  const int bottom = MAX(0, children().size()-1);
+  const int sgn = SGN(delta);
+  int index = startIndex;
+
+  startIndex = MID(0, startIndex, bottom);
+  int lastVisibleIndex = startIndex;
+
+  bool cycle = false;
+
+  while (delta) {
+    index += sgn;
+
+    if (cycle && index == startIndex) {
+      break;
+    }
+    else if (index < 0) {
+      if (!loop)
+        break;
+      index = bottom-sgn;
+      cycle = true;
+    }
+    else if (index > bottom) {
+      if (!loop)
+        break;
+      index = 0-sgn;
+      cycle = true;
+    }
+    else {
+      Widget* item = getChildByIndex(index);
+      if (item && !item->hasFlags(HIDDEN)) {
+        lastVisibleIndex = index;
+        delta -= sgn;
+      }
+    }
+  }
+  return lastVisibleIndex;
 }
 
 } // namespace ui

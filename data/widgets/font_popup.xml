@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!-- Copyright (C) 2015-2017 by David Capello -->
 <gui>
   <vbox id="font_popup">
-    <label text="@.available_fonts" />
+    <search id="search" magnet="true" />
     <view id="view" expansive="true" />
     <hbox>
       <boxfiller />
