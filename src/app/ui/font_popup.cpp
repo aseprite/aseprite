@@ -167,7 +167,9 @@ FontPopup::FontPopup()
 
   // Create one FontItem for each font
   for (auto& file : files) {
-    if (base::string_to_lower(base::get_file_extension(file)) == "ttf")
+    std::string ext = base::string_to_lower(base::get_file_extension(file));
+    if (ext == "ttf" || ext == "ttc" ||
+        ext == "otf" || ext == "dfont")
       m_listBox.addChild(new FontItem(file));
   }
 
