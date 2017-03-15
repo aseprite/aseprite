@@ -39,7 +39,7 @@ void get_font_dirs(std::vector<std::string>& fontDirs)
     for (const auto& file : base::list_files(fontDir)) {
       std::string fullpath = base::join_path(fontDir, file);
       if (base::is_directory(fullpath))
-        q.push(fontDir); // Add subdirectory in the queue
+        q.push(fullpath); // Add subdirectory in the queue
     }
   }
 
