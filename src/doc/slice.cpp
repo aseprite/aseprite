@@ -13,6 +13,8 @@
 #include "base/debug.h"
 #include "doc/slices.h"
 
+#include <limits>
+
 namespace doc {
 
 const gfx::Point SliceKey::NoPivot(std::numeric_limits<int32_t>::min(),
