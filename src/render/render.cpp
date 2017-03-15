@@ -365,9 +365,11 @@ void composite_image_scale_down(
   const LockImageBits<SrcTraits> srcBits(src, srcBounds);
   LockImageBits<DstTraits> dstBits(dst, dstBounds);
   auto src_it = srcBits.begin();
-  auto src_end = srcBits.end();
   auto dst_it = dstBits.begin();
+#ifdef _DEBUG
+  auto src_end = srcBits.end();
   auto dst_end = dstBits.end();
+#endif
 
   // Adjust to src_it for each line
   int adjust_per_line = (dstBounds.w*step_w)*(step_h-1);
