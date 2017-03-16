@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -128,8 +128,8 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     FileOp::createSaveDocumentOperation(
       UIContext::instance(),
       cof.roi(),
-      cof.filename.c_str(),
-      cof.filenameFormat.c_str()));
+      cof.filename,
+      cof.filenameFormat));
 
   if (fop) {
     std::vector<std::string> files;

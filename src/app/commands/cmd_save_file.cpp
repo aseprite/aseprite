@@ -303,8 +303,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
       context,
       FileOpROI(document, m_frameTag,
                 m_selFrames, m_adjustFramesByFrameTag),
-      document->filename().c_str(),
-      m_filenameFormat.c_str()));
+      document->filename(),
+      m_filenameFormat));
   if (!fop)
     return;
 

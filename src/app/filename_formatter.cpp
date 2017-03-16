@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -150,7 +150,7 @@ std::string get_default_filename_format(
     int frameBase = -1, frameWidth = 0;
     std::string left, right;
     if (autoFrameFromLastDigit)
-      frameBase = split_filename(filename.c_str(), left, right, frameWidth);
+      frameBase = split_filename(filename, left, right, frameWidth);
     if (frameBase >= 0) {
       std::vector<char> buf(32);
       std::sprintf(&buf[0], "{frame%0*d}", frameWidth, frameBase);

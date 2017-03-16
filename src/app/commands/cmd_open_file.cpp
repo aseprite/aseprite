@@ -145,7 +145,7 @@ void OpenFileCommand::onExecute(Context* context)
 
   base::UniquePtr<FileOp> fop(
     FileOp::createLoadDocumentOperation(
-      context, m_filename.c_str(), flags));
+      context, m_filename, flags));
   bool unrecent = false;
 
   // Do nothing (the user cancelled or something like that)

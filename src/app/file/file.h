@@ -94,13 +94,13 @@ namespace app {
   class FileOp {
   public:
     static FileOp* createLoadDocumentOperation(Context* context,
-                                               const char* filename,
+                                               const std::string& filename,
                                                int flags);
 
     static FileOp* createSaveDocumentOperation(const Context* context,
                                                const FileOpROI& roi,
-                                               const char* filename,
-                                               const char* filenameFormat);
+                                               const std::string& filename,
+                                               const std::string& filenameFormat);
 
     ~FileOp();
 
@@ -217,7 +217,7 @@ namespace app {
   std::string get_writable_extensions();
 
   // High-level routines to load/save documents.
-  app::Document* load_document(Context* context, const char* filename);
+  app::Document* load_document(Context* context, const std::string& filename);
   int save_document(Context* context, doc::Document* document);
 
   // Returns true if the given filename contains a file extension that

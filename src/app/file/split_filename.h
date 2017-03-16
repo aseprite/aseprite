@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 
 namespace app {
 
-  int split_filename(const char* filename, std::string& left, std::string& right, int& width);
+  int split_filename(const std::string& filename, std::string& left, std::string& right, int& width);
 
 } // namespace app
 

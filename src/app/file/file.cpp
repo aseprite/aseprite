@@ -112,7 +112,7 @@ std::string get_writable_extensions()
   return buf;
 }
 
-Document* load_document(Context* context, const char* filename)
+Document* load_document(Context* context, const std::string& filename)
 {
   /* TODO add a option to configure what to do with the sequence */
   base::UniquePtr<FileOp> fop(FileOp::createLoadDocumentOperation(context, filename, FILE_LOAD_SEQUENCE_NONE));
@@ -147,7 +147,7 @@ int save_document(Context* context, doc::Document* document)
       context,
       FileOpROI(static_cast<app::Document*>(document), "",
                 SelectedFrames(), false),
-      document->filename().c_str(), ""));
+      document->filename(), ""));
   if (!fop)
     return -1;
 
@@ -205,18 +205,18 @@ FileOpROI::FileOpROI(const app::Document* doc,
 }
 
 // static
-FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filename, int flags)
+FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string& filename, int flags)
 {
   base::UniquePtr<FileOp> fop(
     new FileOp(FileOpLoad, context));
   if (!fop)
     return nullptr;
 
-  LOG("FILE: Loading file \"%s\"\n", filename);
+  LOG("FILE: Loading file \"%s\"\n", filename.c_str());
 
   // Does file exist?
   if (!base::is_file(filename)) {
-    fop->setError("File not found: \"%s\"\n", filename);
+    fop->setError("File not found: \"%s\"\n", filename.c_str());
     goto done;
   }
 
@@ -226,7 +226,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const char* filena
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_LOAD)) {
     fop->setError("%s can't load \"%s\" file (\"%s\")\n", PACKAGE,
-                  filename, base::get_file_extension(filename).c_str());
+                  filename.c_str(), base::get_file_extension(filename).c_str());
     goto done;
   }
 
@@ -348,8 +348,8 @@ done:;
 // static
 FileOp* FileOp::createSaveDocumentOperation(const Context* context,
                                             const FileOpROI& roi,
-                                            const char* filename,
-                                            const char* filenameFormatArg)
+                                            const std::string& filename,
+                                            const std::string& filenameFormatArg)
 {
   base::UniquePtr<FileOp> fop(
     new FileOp(FileOpSave, const_cast<Context*>(context)));
@@ -359,7 +359,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   fop->m_roi = roi;
 
   // Get the extension of the filename (in lower case)
-  LOG("FILE: Saving document \"%s\"\n", filename);
+  LOG("FILE: Saving document \"%s\"\n", filename.c_str());
 
   // Get the format through the extension of the filename
   fop->m_format = FileFormatsManager::instance()->getFileFormat(
@@ -367,7 +367,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_SAVE)) {
     fop->setError("%s can't save \"%s\" file (\"%s\")\n", PACKAGE,
-                  filename, base::get_file_extension(filename).c_str());
+                  filename.c_str(), base::get_file_extension(filename).c_str());
     return fop.release();
   }
 
