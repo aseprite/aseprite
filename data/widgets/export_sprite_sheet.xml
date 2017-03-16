@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
   <window id="export_sprite_sheet" text="@.title">
   <grid columns="4">
@@ -56,6 +56,7 @@
       <label text="@.meta" />
       <check id="list_layers" text="@.meta_layers" />
       <check id="list_tags" text="@.meta_frame_tags" />
+      <check id="list_slices" text="@.meta_slices" />
     </hbox>
 
     <check id="open_generated" text="@.open_sprite_sheet" cell_hspan="4" />

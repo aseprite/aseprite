@@ -49,7 +49,7 @@ void updateXmlPartFromSliceKey(const SliceKey* key, TiXmlElement* xmlPart)
 {
   xmlPart->SetAttribute("x", key->bounds().x);
   xmlPart->SetAttribute("y", key->bounds().y);
-  if (key->center().isEmpty()) {
+  if (!key->hasCenter()) {
     xmlPart->SetAttribute("w", key->bounds().w);
     xmlPart->SetAttribute("h", key->bounds().h);
     if (xmlPart->Attribute("w1")) xmlPart->RemoveAttribute("w1");

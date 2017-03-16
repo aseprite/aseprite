@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -70,6 +70,7 @@ namespace app {
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
     void setListFrameTags(bool value) { m_listFrameTags = value; }
     void setListLayers(bool value) { m_listLayers = value; }
+    void setListSlices(bool value) { m_listSlices = value; }
 
     void addDocument(Document* document,
                      doc::FrameTag* tag,
@@ -136,6 +137,7 @@ namespace app {
     doc::ImageBufferPtr m_sampleRenderBuf;
     bool m_listFrameTags;
     bool m_listLayers;
+    bool m_listSlices;
 
     // Displacement for each tag from/to frames in case we export
     // them. It's used in case we trim frames outside tags and they

@@ -66,6 +66,9 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.listTags)
     std::cout << "  - List tags\n";
 
+  if (cof.listSlices)
+    std::cout << "  - List slices\n";
+
   if (cof.oneFrame)
     std::cout << "  - One frame\n";
 

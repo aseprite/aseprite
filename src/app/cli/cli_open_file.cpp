@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,6 +28,7 @@ CliOpenFile::CliOpenFile()
   allLayers = false;
   listLayers = false;
   listTags = false;
+  listSlices = false;
   ignoreEmpty = false;
   trim = false;
   oneFrame = false;

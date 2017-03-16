@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,6 +34,7 @@
 #include "doc/primitives.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
@@ -403,6 +404,7 @@ DocumentExporter::DocumentExporter()
  , m_trimCels(false)
  , m_listFrameTags(false)
  , m_listLayers(false)
+ , m_listSlices(false)
 {
 }
 
@@ -883,6 +885,70 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
           os << "]";
         }
 
+        os << " }";
+      }
+    }
+    os << "\n  ]";
+  }
+
+  // meta.slices
+  if (m_listSlices) {
+    os << ",\n"
+       << "  \"slices\": [";
+
+    bool firstSlice = true;
+    for (auto& item : m_documents) {
+      Document* doc = item.doc;
+      Sprite* sprite = doc->sprite();
+
+      // TODO add possibility to export some slices
+
+      for (Slice* slice : sprite->slices()) {
+        if (firstSlice)
+          firstSlice = false;
+        else
+          os << ",";
+        os << "\n   { \"name\": \"" << escape_for_json(slice->name()) << "\""
+           << slice->userData();
+
+        // Keys
+        if (!slice->empty()) {
+          bool firstKey = true;
+
+          os << ", \"keys\": [";
+          for (const auto& key : *slice) {
+            if (firstKey)
+              firstKey = false;
+            else
+              os << ", ";
+
+            const SliceKey* sliceKey = key.value();
+
+            os << "{ \"frame\": " << key.frame() << ", "
+               << "\"bounds\": {"
+               << "\"x\": " << sliceKey->bounds().x << ", "
+               << "\"y\": " << sliceKey->bounds().y << ", "
+               << "\"w\": " << sliceKey->bounds().w << ", "
+               << "\"h\": " << sliceKey->bounds().h << " }";
+
+            if (!sliceKey->center().isEmpty()) {
+              os << ", \"center\": {"
+                 << "\"x\": " << sliceKey->center().x << ", "
+                 << "\"y\": " << sliceKey->center().y << ", "
+                 << "\"w\": " << sliceKey->center().w << ", "
+                 << "\"h\": " << sliceKey->center().h << " }";
+            }
+
+            if (sliceKey->hasPivot()) {
+              os << ", \"pivot\": {"
+                 << "\"x\": " << sliceKey->pivot().x << ", "
+                 << "\"y\": " << sliceKey->pivot().y << " }";
+            }
+
+            os << " }";
+          }
+          os << "]";
+        }
         os << " }";
       }
     }

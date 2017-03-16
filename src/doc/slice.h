@@ -29,6 +29,7 @@ namespace doc {
              const gfx::Point& pivot = SliceKey::NoPivot);
 
     bool isEmpty() const { return m_bounds.isEmpty(); }
+    bool hasCenter() const { return !m_center.isEmpty(); }
     bool hasPivot() const { return m_pivot != NoPivot; }
 
     const gfx::Rect& bounds() const { return m_bounds; }

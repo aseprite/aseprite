@@ -1760,12 +1760,8 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
     int flags = 0;
     for (auto key : range) {
       if (key) {
-        if (!key->center().isEmpty()) {
-          flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
-        }
-        if (key->hasPivot()) {
-          flags |= ASE_SLICE_FLAG_HAS_PIVOT_POINT;
-        }
+        if (key->hasCenter()) flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
+        if (key->hasPivot()) flags |= ASE_SLICE_FLAG_HAS_PIVOT_POINT;
       }
     }
 
@@ -1785,7 +1781,7 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
         fputl(key ? key->bounds().h: 0, f);
 
         if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
-          if (key && !key->center().isEmpty()) {
+          if (key && key->hasCenter()) {
             fputl(key->center().x, f);
             fputl(key->center().y, f);
             fputl(key->center().w, f);
@@ -1794,8 +1790,8 @@ static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
           else {
             fputl(0, f);
             fputl(0, f);
-            fputl(key ? key->bounds().w: 0, f);
-            fputl(key ? key->bounds().h: 0, f);
+            fputl(0, f);
+            fputl(0, f);
           }
         }
 

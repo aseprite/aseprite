@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -231,6 +231,7 @@ public:
     dataFormat()->setSelectedItemIndex(int(m_docPref.spriteSheet.dataFormat()));
     listLayers()->setSelected(m_docPref.spriteSheet.listLayers());
     listTags()->setSelected(m_docPref.spriteSheet.listFrameTags());
+    listSlices()->setSelected(m_docPref.spriteSheet.listSlices());
     updateDataFields();
 
     std::string base = site.document()->filename();
@@ -371,6 +372,10 @@ public:
 
   bool listFrameTagsValue() const {
     return listTags()->isSelected();
+  }
+
+  bool listSlicesValue() const {
+    return listSlices()->isSelected();
   }
 
 private:
@@ -633,6 +638,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.frameTag(window.frameTagValue());
     docPref.spriteSheet.listLayers(window.listLayersValue());
     docPref.spriteSheet.listFrameTags(window.listFrameTagsValue());
+    docPref.spriteSheet.listSlices(window.listSlicesValue());
 
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));

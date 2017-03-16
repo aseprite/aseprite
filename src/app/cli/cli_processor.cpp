@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -374,6 +374,12 @@ void CliProcessor::process()
           cof.listTags = true;
           if (m_exporter)
             m_exporter->setListFrameTags(true);
+        }
+        // --list-slices
+        else if (opt == &m_options.listSlices()) {
+          cof.listSlices = true;
+          if (m_exporter)
+            m_exporter->setListSlices(true);
         }
         // --oneframe
         else if (opt == &m_options.oneFrame()) {

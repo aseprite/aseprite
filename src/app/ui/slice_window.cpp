@@ -42,7 +42,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
   center()->Click.connect(base::Bind<void>(&SliceWindow::onCenterChange, this));
   pivot()->Click.connect(base::Bind<void>(&SliceWindow::onPivotChange, this));
 
-  if (!key->center().isEmpty()) {
+  if (key->hasCenter()) {
     center()->setSelected(true);
     centerX()->setTextf("%d", key->center().x);
     centerY()->setTextf("%d", key->center().y);

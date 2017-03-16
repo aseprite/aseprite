@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,6 +23,7 @@
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 
 #ifdef ENABLE_SCRIPTING
@@ -64,6 +65,11 @@ void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.listTags) {
     for (doc::FrameTag* tag : cof.document->sprite()->frameTags())
       std::cout << tag->name() << "\n";
+  }
+
+  if (cof.listSlices) {
+    for (doc::Slice* slice : cof.document->sprite()->slices())
+      std::cout << slice->name() << "\n";
   }
 }
 

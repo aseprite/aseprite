@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -60,7 +60,8 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_script(m_po.add("script").requiresValue("<filename>").description("Execute a specific script"))
 #endif
   , m_listLayers(m_po.add("list-layers").description("List layers of the next given sprite\nor include layers in JSON data"))
-  , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite sprite\nor include frame tags in JSON data"))
+  , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite\nor include frame tags in JSON data"))
+  , m_listSlices(m_po.add("list-slices").description("List slices of the next given sprite\nor include slices in JSON data"))
   , m_oneFrame(m_po.add("oneframe").description("Load just the first frame"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))

@@ -982,7 +982,7 @@ void Editor::drawSlices(ui::Graphics* g)
                .offset(-bounds().origin());
 
     // Center slices
-    if (!key->center().isEmpty()) {
+    if (key->hasCenter()) {
       gfx::Rect in =
         editorToScreen(gfx::Rect(key->center()).offset(key->bounds().origin()))
         .offset(-bounds().origin());

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -75,6 +75,7 @@ public:
 #endif
   const Option& listLayers() const { return m_listLayers; }
   const Option& listTags() const { return m_listTags; }
+  const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
 
   bool hasExporterParams() const;
@@ -124,6 +125,7 @@ private:
 #endif
   Option& m_listLayers;
   Option& m_listTags;
+  Option& m_listSlices;
   Option& m_oneFrame;
 
   Option& m_verbose;
