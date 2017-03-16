@@ -23,13 +23,15 @@
   </font>
   <font name="Unicode Japanese"
         type="truetype"
-        file_win="YuGothR.ttc">
+        file_win="YuGothR.ttc"
+        file_linux="NotoSansCJK-Regular.ttc">
     <fallback font="Unicode Chinese" size="8" />
   </font>
   <font name="Unicode"
         type="truetype"
-        file="Arial.ttf"
-        file_mac="Arial Unicode.ttf">
+        file_win="Arial.ttf"
+        file_mac="Arial Unicode.ttf"
+        file_linux="DejaVuSans.ttf">
     <fallback font="Unicode Japanese" size="8" />
   </font>
 
