@@ -69,31 +69,38 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     (m_hit.type() == EditorHit::SliceCenter ? m_key.center():
                                               m_key.bounds());
 
-  if (m_hit.border() & LEFT) {
+  // Move slice
+  if (m_hit.border() == (CENTER | MIDDLE)) {
     rc.x += delta.x;
-    rc.w -= delta.x;
-    if (rc.w < 1) {
-      rc.x += rc.w-1;
-      rc.w = 1;
-    }
-  }
-  if (m_hit.border() & TOP) {
     rc.y += delta.y;
-    rc.h -= delta.y;
-    if (rc.h < 1) {
-      rc.y += rc.h-1;
-      rc.h = 1;
+  }
+  else {
+    if (m_hit.border() & LEFT) {
+      rc.x += delta.x;
+      rc.w -= delta.x;
+      if (rc.w < 1) {
+        rc.x += rc.w-1;
+        rc.w = 1;
+      }
     }
-  }
-  if (m_hit.border() & RIGHT) {
-    rc.w += delta.x;
-    if (rc.w < 1)
-      rc.w = 1;
-  }
-  if (m_hit.border() & BOTTOM) {
-    rc.h += delta.y;
-    if (rc.h < 1)
-      rc.h = 1;
+    if (m_hit.border() & TOP) {
+      rc.y += delta.y;
+      rc.h -= delta.y;
+      if (rc.h < 1) {
+        rc.y += rc.h-1;
+        rc.h = 1;
+      }
+    }
+    if (m_hit.border() & RIGHT) {
+      rc.w += delta.x;
+      if (rc.w < 1)
+        rc.w = 1;
+    }
+    if (m_hit.border() & BOTTOM) {
+      rc.h += delta.y;
+      if (rc.h < 1)
+        rc.h = 1;
+    }
   }
 
   if (m_hit.type() == EditorHit::SliceCenter)

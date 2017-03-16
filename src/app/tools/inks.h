@@ -209,6 +209,39 @@ public:
 };
 
 
+class MoveSliceInk : public Ink {
+  AlgoHLine m_proc;
+  bool m_selectSlices;
+
+public:
+  MoveSliceInk() {
+    m_selectSlices = false;
+  }
+
+  Ink* clone() override { return new MoveSliceInk(*this); }
+
+  bool isSlice() const override { return true; }
+  bool isMoveSlice() const override { return true; }
+  bool needsCelCoordinates() const override { return false; }
+
+  void prepareInk(ToolLoop* loop) override {
+    m_proc = get_ink_proc<XorInkProcessing>(loop->sprite()->pixelFormat());
+  }
+
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
+    if (m_selectSlices) {
+      // TODO
+    }
+    else
+      (*m_proc)(x1, y, x2, loop);
+  }
+
+  void setFinalStep(ToolLoop* loop, bool state) override {
+    m_selectSlices = state;
+  }
+};
+
+
 class EraserInk : public Ink {
 public:
   enum Type { Eraser, ReplaceFgWithBg, ReplaceBgWithFg };

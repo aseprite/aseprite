@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -64,6 +64,7 @@ namespace app {
 
       // Returns true if this ink is used to mark slices
       virtual bool isSlice() const { return false; }
+      virtual bool isMoveSlice() const { return false; }
 
       // Returns true if inkHline() needs source cel coordinates
       // instead of sprite coordinates (i.e. relative to

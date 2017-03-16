@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -64,6 +64,7 @@ const char* WellKnownInks::Zoom = "zoom";
 const char* WellKnownInks::Scroll = "scroll";
 const char* WellKnownInks::Move = "move";
 const char* WellKnownInks::Slice = "slice";
+const char* WellKnownInks::MoveSlice = "move_slice";
 const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
 
@@ -98,6 +99,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::Scroll]          = new ScrollInk();
   m_inks[WellKnownInks::Move]            = new MoveInk();
   m_inks[WellKnownInks::Slice]           = new SliceInk();
+  m_inks[WellKnownInks::MoveSlice]       = new MoveSliceInk();
   m_inks[WellKnownInks::Blur]            = new BlurInk();
   m_inks[WellKnownInks::Jumble]          = new JumbleInk();
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -46,6 +46,7 @@ namespace app {
       extern const char* Scroll;
       extern const char* Move;
       extern const char* Slice;
+      extern const char* MoveSlice;
       extern const char* Blur;
       extern const char* Jumble;
     };

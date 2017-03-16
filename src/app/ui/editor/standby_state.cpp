@@ -444,6 +444,9 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
         case EditorHit::SliceBounds:
         case EditorHit::SliceCenter:
           switch (hit.border()) {
+            case CENTER | MIDDLE:
+              editor->showMouseCursor(kMoveCursor);
+              break;
             case TOP | LEFT:
               editor->showMouseCursor(kSizeNWCursor);
               break;
