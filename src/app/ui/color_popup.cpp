@@ -47,7 +47,7 @@ enum {
 };
 
 ColorPopup::ColorPopup(bool canPin)
-  : PopupWindowPin(std::string(),
+  : PopupWindowPin(" ", // Non-empty to create title-bar and close button
                    ClickBehavior::CloseOnClickInOtherWindow,
                    canPin)
   , m_vbox(VERTICAL)
@@ -98,6 +98,7 @@ ColorPopup::ColorPopup(bool canPin)
       m_topBox.addChild(vbox);
     }
   }
+  setText("");                  // To remove title
 
   m_vbox.addChild(&m_topBox);
   m_vbox.addChild(&m_colorPaletteContainer);
