@@ -32,6 +32,7 @@ namespace ui {
       enum class Type {
         kNone,
         kBackground,
+        kBackgroundBorder,
         kBorder,
         kIcon,
         kText,

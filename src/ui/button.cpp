@@ -295,11 +295,7 @@ void ButtonBase::onPaint(PaintEvent& ev)
   if (style())
     return Widget::onPaint(ev);
 
-  switch (m_drawType) {
-    case kButtonWidget: ASSERT(false); break;
-    case kCheckWidget:  theme()->paintCheckBox(ev); break;
-    case kRadioWidget:  theme()->paintRadioButton(ev); break;
-  }
+  ASSERT(false);
 }
 
 void ButtonBase::generateButtonSelectSignal()

@@ -546,6 +546,9 @@ void SkinTheme::loadXml(const std::string& skinId)
         if (layerName == "background") {
           layer.setType(ui::Style::Layer::Type::kBackground);
         }
+        else if (layerName == "background-border") {
+          layer.setType(ui::Style::Layer::Type::kBackgroundBorder);
+        }
         else if (layerName == "border") {
           layer.setType(ui::Style::Layer::Type::kBorder);
         }
@@ -718,14 +721,11 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kCheckWidget:
-      BORDER(2 * scale);
-      widget->setChildSpacing(4 * scale);
+      widget->setStyle(styles.checkBox());
+      break;
 
-      static_cast<ButtonBase*>(widget)->setIconInterface
-        (new ButtonIconImpl(parts.checkNormal(),
-                            parts.checkSelected(),
-                            parts.checkDisabled(),
-                            LEFT | MIDDLE));
+    case kRadioWidget:
+      widget->setStyle(styles.radioButton());
       break;
 
     case kEntryWidget:
@@ -787,17 +787,6 @@ void SkinTheme::initWidget(Widget* widget)
     case kSplitterWidget:
       widget->setChildSpacing(3 * scale);
       widget->setStyle(styles.splitter());
-      break;
-
-    case kRadioWidget:
-      BORDER(2 * scale);
-      widget->setChildSpacing(4 * scale);
-
-      static_cast<ButtonBase*>(widget)->setIconInterface
-        (new ButtonIconImpl(parts.radioNormal(),
-                            parts.radioSelected(),
-                            parts.radioDisabled(),
-                            LEFT | MIDDLE));
       break;
 
     case kSeparatorWidget:
@@ -904,54 +893,6 @@ gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
     return gfx::Size(2*guiscale(), widget->textHeight());
   else
     return gfx::Size(2*guiscale(), widget->textHeight()+2*guiscale());
-}
-
-void SkinTheme::paintCheckBox(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  gfx::Rect bounds = widget->clientBounds();
-  IButtonIcon* iconInterface = widget->iconInterface();
-  gfx::Rect box, text, icon;
-  gfx::Color bg;
-
-  widget->getTextIconInfo(&box, &text, &icon,
-    iconInterface ? iconInterface->iconAlign(): 0,
-    iconInterface ? iconInterface->size().w: 0,
-    iconInterface ? iconInterface->size().h: 0);
-
-  // Check box look
-  LookType look = NormalLook;
-  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery)
-    look = skinPropery->getLook();
-
-  // Background
-  g->fillRect(bg = BGCOLOR, bounds);
-
-  // Mouse
-  if (widget->isEnabled()) {
-    if (widget->hasMouseOver())
-      g->fillRect(bg = colors.checkHotFace(), bounds);
-    else if (widget->hasFocus())
-      g->fillRect(bg = colors.checkFocusFace(), bounds);
-  }
-
-  // Text
-  drawText(g, nullptr, ColorNone, ColorNone, widget, text, 0,
-           widget->mnemonic());
-
-  // Paint the icon
-  if (iconInterface)
-    paintIcon(widget, g, iconInterface, icon.x, icon.y);
-
-  // Draw focus
-  if (look != WithoutBordersLook &&
-      (widget->hasFocus() || (iconInterface &&
-                              widget->text().empty() &&
-                              widget->hasMouseOver()))) {
-    drawRect(g, bounds, parts.checkFocus().get());
-  }
 }
 
 void SkinTheme::paintEntry(PaintEvent& ev)
@@ -1269,43 +1210,6 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       }
     }
   }
-}
-
-void SkinTheme::paintRadioButton(PaintEvent& ev)
-{
-  Graphics* g = ev.graphics();
-  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  gfx::Rect bounds = widget->clientBounds();
-  IButtonIcon* iconInterface = widget->iconInterface();
-  gfx::Color bg = BGCOLOR;
-
-  gfx::Rect box, text, icon;
-  widget->getTextIconInfo(&box, &text, &icon,
-    iconInterface ? iconInterface->iconAlign(): 0,
-    iconInterface ? iconInterface->size().w: 0,
-    iconInterface ? iconInterface->size().h: 0);
-
-  // Background
-  g->fillRect(bg, g->getClipBounds());
-
-  // Mouse
-  if (widget->isEnabled()) {
-    if (widget->hasMouseOver())
-      g->fillRect(bg = colors.radioHotFace(), bounds);
-    else if (widget->hasFocus())
-      g->fillRect(bg = colors.radioFocusFace(), bounds);
-  }
-
-  // Text
-  drawText(g, nullptr, ColorNone, ColorNone, widget, text, 0, widget->mnemonic());
-
-  // Icon
-  if (iconInterface)
-    paintIcon(widget, g, iconInterface, icon.x, icon.y);
-
-  // Focus
-  if (widget->hasFocus())
-    drawRect(g, bounds, parts.radioFocus().get());
 }
 
 void SkinTheme::paintSlider(PaintEvent& ev)

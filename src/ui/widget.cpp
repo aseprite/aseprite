@@ -182,7 +182,7 @@ void Widget::setStyle(Style* style)
 {
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
-  m_bgColor = m_theme->calcBgColor(this, m_style);
+  m_bgColor = m_theme->calcBgColor(this, style);
   if (style->font())
     m_font = style->font();
 }

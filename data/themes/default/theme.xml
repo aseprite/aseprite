@@ -445,6 +445,7 @@
             <text color="text" align="left" />
             <text color="disabled" align="left" state="disabled" />
         </style>
+        <style id="mini_label" extends="label" font="mini" />
         <style id="link">
             <text color="link_text" align="left" />
             <text color="link_hover" align="left" state="mouse" />
@@ -457,14 +458,14 @@
             <text color="workspace_link" align="left" />
             <text color="workspace_link_hover" align="left" state="mouse" />
         </style>
-        <style id="workspace_update_link" padding-right="16">
-            <background part="button_normal" />
-            <background part="button_hot" state="mouse" />
-            <background part="button_selected" state="selected" />
+        <style id="workspace_update_link">
+            <background-border part="button_normal" />
+            <background-border part="button_hot" state="mouse" />
+            <background-border part="button_selected" state="selected" />
             <icon part="warning_box" align="right" />
-            <text color="button_normal_text" />
-            <text color="button_hot_text" state="mouse" />
-            <text color="button_selected_text" state="selected" />
+            <text color="button_normal_text" align="left" />
+            <text color="button_hot_text" align="left" state="mouse" />
+            <text color="button_selected_text" align="left" state="selected" />
         </style>
         <style id="view" border="3" border-top="4">
             <background color="window_face" />
@@ -485,39 +486,63 @@
             <border part="editor_selected" state="focus" />
         </style>
         <style id="button">
-            <background part="button_normal" />
-            <background part="button_hot" state="mouse" />
-            <background part="button_focused" state="focus" />
-            <background part="button_selected" state="selected" />
+            <background-border part="button_normal" />
+            <background-border part="button_hot" state="mouse" />
+            <background-border part="button_focused" state="focus" />
+            <background-border part="button_selected" state="selected" />
             <text color="button_normal_text" />
             <text color="button_hot_text" state="mouse" />
             <text color="button_selected_text" state="selected" />
+            <text color="background" x="1" y="1" state="disabled" />
+	    <newlayer />
+            <text color="disabled" state="disabled" />
+        </style>
+        <style id="check_box" border="2">
+            <background part="check_focus" color="check_hot_face" state="mouse focus" />
+            <background part="check_focus" color="check_focus_face" state="focus" />
+            <background color="check_hot_face" state="mouse" />
+            <text color="text" align="left middle" x="14" />
+            <text color="disabled" align="left middle" x="14" state="disabled" />
+            <icon part="check_normal" align="left middle" x="2" />
+            <icon part="check_selected" align="left middle" x="2" state="selected" />
+            <icon part="check_disabled" align="left middle" x="2" state="disabled" />
+        </style>
+        <style id="radio_button" border="2">
+            <background part="radio_focus" color="radio_hot_face" state="mouse focus" />
+            <background part="radio_focus" color="radio_focus_face" state="focus" />
+            <background color="radio_hot_face" state="mouse" />
+            <text color="text" align="left middle" x="14" />
+            <text color="disabled" align="left middle" x="14" state="disabled" />
+            <icon part="radio_normal" align="left middle" x="2" />
+            <icon part="radio_selected" align="left middle" x="2" state="selected" />
+            <icon part="radio_disabled" align="left middle" x="2" state="disabled" />
         </style>
         <style id="mini_button">
-            <background part="toolbutton_last" />
-            <background part="toolbutton_hot" state="mouse" />
-            <background part="toolbutton_hot" state="focus" />
-            <background part="toolbutton_pushed" state="selected" />
+            <background-border part="toolbutton_last" />
+            <background-border part="toolbutton_hot" state="mouse" />
+            <background-border part="toolbutton_hot" state="focus" />
+            <background-border part="toolbutton_pushed" state="selected" />
             <text color="button_normal_text" />
             <text color="button_hot_text" state="mouse" />
             <text color="button_selected_text" state="selected" />
         </style>
+        <style id="mini_check_box" extends="check_box" font="mini" />
         <style id="combobox_button" extends="mini_button">
             <icon part="combobox_arrow_down" />
             <icon part="combobox_arrow_down_selected" state="selected" />
             <icon part="combobox_arrow_down_disabled" state="disabled" />
         </style>
         <style id="drop_down_button" extends="button">
-            <background part="drop_down_button_left_normal" />
-            <background part="drop_down_button_left_selected" state="selected" />
-            <background part="drop_down_button_left_hot" state="mouse" />
-            <background part="drop_down_button_left_focused" state="focus" />
+            <background-border part="drop_down_button_left_normal" />
+            <background-border part="drop_down_button_left_selected" state="selected" />
+            <background-border part="drop_down_button_left_hot" state="mouse" />
+            <background-border part="drop_down_button_left_focused" state="focus" />
         </style>
         <style id="drop_down_expand_button" extends="button">
-            <background part="drop_down_button_right_normal" />
-            <background part="drop_down_button_right_selected" state="selected" />
-            <background part="drop_down_button_right_hot" state="mouse" />
-            <background part="drop_down_button_right_focused" state="focus" />
+            <background-border part="drop_down_button_right_normal" />
+            <background-border part="drop_down_button_right_selected" state="selected" />
+            <background-border part="drop_down_button_right_hot" state="mouse" />
+            <background-border part="drop_down_button_right_focused" state="focus" />
             <icon part="combobox_arrow_down" />
             <icon part="combobox_arrow_down_selected" state="selected" />
             <icon part="combobox_arrow_down_disabled" state="disabled" />
@@ -557,15 +582,15 @@
             <background color="workspace" />
         </style>
         <style id="horizontal_separator" border-left="2" border-top="4" border-right="2" border-bottom="0">
-            <background part="separator_horz" color="window_face" align="middle" />
+            <background-border part="separator_horz" color="window_face" align="middle" />
             <text color="separator_label" x="4" align="left middle" />
         </style>
         <style id="menu_separator" extends="horizontal_separator" />
         <style id="separator_in_view" extends="horizontal_separator">
-            <background part="separator_horz" color="background" align="middle" />
+            <background-border part="separator_horz" color="background" align="middle" />
         </style>
         <style id="vertical_separator" border-left="4" border-top="2" border-right="1" border-bottom="2">
-            <background part="separator_vert" align="center" />
+            <background-border part="separator_vert" align="center" />
         </style>
         <style id="recent_item" />
         <style id="recent_file" border="2">
@@ -666,11 +691,11 @@
             <background color="timeline_normal" part="timeline_normal" />
         </style>
         <style id="timeline_box">
-            <background color="timeline_normal" part="timeline_normal" />
-            <background color="timeline_hover" part="timeline_hover" state="mouse" />
-            <background color="timeline_active" part="timeline_active" state="focus" />
-            <background color="timeline_active_hover" part="timeline_active_hover" state="focus mouse" />
-            <background color="timeline_clicked" part="timeline_clicked" state="selected" />
+            <background-border color="timeline_normal" part="timeline_normal" />
+            <background-border color="timeline_hover" part="timeline_hover" state="mouse" />
+            <background-border color="timeline_active" part="timeline_active" state="focus" />
+            <background-border color="timeline_active_hover" part="timeline_active_hover" state="focus mouse" />
+            <background-border color="timeline_clicked" part="timeline_clicked" state="selected" />
         </style>
         <style id="timeline_open_eye" extends="timeline_box">
             <icon part="timeline_open_eye_normal" />

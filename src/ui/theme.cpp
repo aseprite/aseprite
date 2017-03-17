@@ -295,6 +295,7 @@ void Theme::paintLayer(Graphics* g,
   switch (layer.type()) {
 
     case Style::Layer::Type::kBackground:
+    case Style::Layer::Type::kBackgroundBorder:
       if (layer.color() != gfx::ColorNone) {
         bgColor = layer.color();
         g->fillRect(layer.color(), rc);
@@ -307,10 +308,12 @@ void Theme::paintLayer(Graphics* g,
                             layer.spriteBounds(),
                             layer.slicesBounds(), true);
 
-          rc.x += layer.slicesBounds().x;
-          rc.y += layer.slicesBounds().y;
-          rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
-          rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+          if (layer.type() == Style::Layer::Type::kBackgroundBorder) {
+            rc.x += layer.slicesBounds().x;
+            rc.y += layer.slicesBounds().y;
+            rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
+            rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+          }
         }
         // Draw background using different methods
         else {
@@ -488,6 +491,7 @@ void Theme::measureLayer(const Widget* widget,
   switch (layer.type()) {
 
     case Style::Layer::Type::kBackground:
+    case Style::Layer::Type::kBackgroundBorder:
     case Style::Layer::Type::kBorder:
       if (layer.spriteSheet() &&
           !layer.spriteBounds().isEmpty()) {
@@ -509,8 +513,9 @@ void Theme::measureLayer(const Widget* widget,
         she::Font* font = (style->font() ? style->font(): widget->font());
         gfx::Size textSize(Graphics::measureUITextLength(widget->text(), font),
                            font->height());
-        textHint.w = std::max(textHint.w, textSize.w);
-        textHint.h = std::max(textHint.h, textSize.h);
+
+        textHint.w = std::max(textHint.w, textSize.w+ABS(layer.offset().x));
+        textHint.h = std::max(textHint.h, textSize.h+ABS(layer.offset().y));
         textAlign = layer.align();
       }
       break;
@@ -518,8 +523,8 @@ void Theme::measureLayer(const Widget* widget,
     case Style::Layer::Type::kIcon: {
       she::Surface* icon = layer.icon();
       if (icon) {
-        iconHint.w = std::max(iconHint.w, icon->width());
-        iconHint.h = std::max(iconHint.h, icon->height());
+        iconHint.w = std::max(iconHint.w, icon->width()+ABS(layer.offset().x));
+        iconHint.h = std::max(iconHint.h, icon->height()+ABS(layer.offset().y));
         iconAlign = layer.align();
       }
       break;
@@ -577,7 +582,8 @@ gfx::Color Theme::calcBgColor(const Widget* widget,
     widget, style,
     [&bgColor]
     (const Style::Layer& layer) {
-      if (layer.type() == Style::Layer::Type::kBackground)
+      if (layer.type() == Style::Layer::Type::kBackground ||
+          layer.type() == Style::Layer::Type::kBackgroundBorder)
         bgColor = layer.color();
     });
 
@@ -601,7 +607,8 @@ void Theme::calcWidgetMetrics(const Widget* widget,
 
   for_each_layer(
     widget, style,
-    [this, widget, style, &borderHint, &textHint, &textAlign, &iconHint, &iconAlign]
+    [this, widget, style, &borderHint,
+     &textHint, &textAlign, &iconHint, &iconAlign]
     (const Style::Layer& layer) {
       measureLayer(widget, style, layer,
                    borderHint,
