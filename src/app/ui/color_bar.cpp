@@ -95,6 +95,11 @@ ColorBar::ScrollableView::ScrollableView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setStyle(theme->styles.colorbarView());
+
+  horizontalBar()->setStyle(theme->styles.miniScrollbar());
+  verticalBar()->setStyle(theme->styles.miniScrollbar());
+  horizontalBar()->setThumbStyle(theme->styles.miniScrollbarThumb());
+  verticalBar()->setThumbStyle(theme->styles.miniScrollbarThumb());
 }
 
 //////////////////////////////////////////////////////////////////////
