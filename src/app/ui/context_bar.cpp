@@ -33,7 +33,6 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/icon_button.h"
-#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"

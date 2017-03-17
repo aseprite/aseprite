@@ -15,7 +15,6 @@
 #include "app/resource_finder.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
-#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
@@ -1611,26 +1610,6 @@ void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double p
 
   if (1+u < rc.w)
     g->fillRect(colors.background(), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
-}
-
-void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y)
-{
-  she::Surface* icon_bmp = NULL;
-
-  // enabled
-  if (widget->isEnabled()) {
-    if (widget->isSelected())   // selected
-      icon_bmp = iconInterface->selectedIcon();
-    else
-      icon_bmp = iconInterface->normalIcon();
-  }
-  // disabled
-  else {
-    icon_bmp = iconInterface->disabledIcon();
-  }
-
-  if (icon_bmp)
-    g->drawRgbaSurface(icon_bmp, x, y);
 }
 
 std::string SkinTheme::themeFileName(const std::string& skinId,

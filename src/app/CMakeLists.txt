@@ -473,7 +473,6 @@ add_library(app-lib
   ui/resources_listbox.cpp
   ui/search_entry.cpp
   ui/select_accelerator.cpp
-  ui/skin/button_icon_impl.cpp
   ui/skin/font_data.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp

@@ -22,7 +22,6 @@
 namespace ui {
   class Entry;
   class Graphics;
-  class IButtonIcon;
 }
 
 namespace she {
@@ -132,8 +131,6 @@ namespace app {
                     ui::Widget* widget, const gfx::Rect& rc,
                     int selected_offset, int mnemonic);
       void drawEntryText(ui::Graphics* g, ui::Entry* widget);
-
-      void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
       std::string themeFileName(const std::string& skinId,
                                 const std::string& fileName) const;

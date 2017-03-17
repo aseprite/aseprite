@@ -21,7 +21,6 @@
 #include "app/recent_files.h"
 #include "app/ui/file_list.h"
 #include "app/ui/file_list_view.h"
-#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"

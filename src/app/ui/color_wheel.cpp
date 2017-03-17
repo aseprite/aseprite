@@ -12,7 +12,6 @@
 
 #include "app/color_utils.h"
 #include "app/pref/preferences.h"
-#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"

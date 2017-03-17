@@ -11,9 +11,9 @@
 #include "app/ui/drop_down_button.h"
 
 #include "app/modules/gui.h"
-#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
+#include "ui/button.h"
 #include "ui/theme.h"
 
 namespace app {
