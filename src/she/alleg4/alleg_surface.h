@@ -39,7 +39,9 @@ namespace she {
     bool intersectClipRect(const gfx::Rect& rc) override;
     void lock() override;
     void unlock() override;
-    void setDrawMode(DrawMode mode, int param) override;
+    void setDrawMode(DrawMode mode, int param,
+                     const gfx::Color a,
+                     const gfx::Color b) override;
     void applyScale(int scale) override;
     void* nativeHandle() override;
     void clear() override;

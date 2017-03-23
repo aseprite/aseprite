@@ -174,6 +174,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_secondaryButton(false)
   , m_aniSpeed(1.0)
   , m_isPlaying(false)
+  , m_showGuidesThisCel(nullptr)
 {
   m_proj.setPixelRatio(m_sprite->pixelRatio());
 
@@ -343,7 +344,9 @@ void Editor::setLayer(const Layer* layer)
         // If the user want to see the active layer edges...
         m_docPref.show.layerEdges() ||
         // If there is a different opacity for nonactive-layers
-        Preferences::instance().experimental.nonactiveLayersOpacity() < 255) {
+        Preferences::instance().experimental.nonactiveLayersOpacity() < 255 ||
+        // If the automatic cel guides are visible...
+        m_showGuidesThisCel) {
       // We've to redraw the whole editor
       invalidate();
     }
@@ -793,22 +796,18 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
   }
 
-  // Draw active cel edges
-  if (m_docPref.show.layerEdges() &&
+  // Draw active layer/cel edges
+  bool showGuidesThisCel = this->showAutoCelGuides();
+  if ((m_docPref.show.layerEdges() || showGuidesThisCel) &&
       // Show layer edges only on "standby" like states where brush
       // preview is shown (e.g. with this we avoid to showing the
       // edges in states like DrawingState, etc.).
       m_state->requireBrushPreview()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
-      gfx::Rect layerEdges;
-      if (m_layer->isReference()) {
-        layerEdges = editorToScreenF(cel->boundsF()).offset(gfx::PointF(-bounds().origin()));
-      }
-      else {
-        layerEdges = editorToScreen(cel->bounds()).offset(-bounds().origin());
-      }
-      g->drawRect(theme->colors.editorLayerEdges(), layerEdges);
+      drawCelBounds(g, cel);
+      if (m_showGuidesThisCel != cel)
+        drawCelGuides(g, cel, m_showGuidesThisCel);
     }
   }
 
@@ -859,7 +858,9 @@ void Editor::drawMask(Graphics* g)
   int y = m_padding.y;
 
   for (const auto& seg : *m_document->getMaskBoundaries()) {
-    CheckedDrawMode checked(g, m_antsOffset);
+    CheckedDrawMode checked(g, m_antsOffset,
+                            gfx::rgba(0, 0, 0, 255),
+                            gfx::rgba(255, 255, 255, 255));
     gfx::Rect bounds = m_proj.apply(seg.bounds());
 
     if (m_proj.scaleX() >= 1.0) {
@@ -1016,6 +1017,154 @@ void Editor::drawSlices(ui::Graphics* g)
 
     g->drawRect(color, out);
   }
+}
+
+void Editor::drawCelBounds(ui::Graphics* g, const Cel* cel)
+{
+  g->drawRect(SkinTheme::instance()->colors.editorLayerEdges(),
+              getCelScreenBounds(cel));
+}
+
+void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
+{
+  gfx::Rect
+    sprCelBounds = cel->bounds(),
+    scrCelBounds = getCelScreenBounds(cel),
+    scrCmpBounds, sprCmpBounds;
+  if (mouseCel) {
+    scrCmpBounds = getCelScreenBounds(mouseCel);
+    sprCmpBounds = mouseCel->bounds();
+    drawCelBounds(g, mouseCel);
+  }
+  // Use whole canvas
+  else {
+    sprCmpBounds = m_sprite->bounds();
+    scrCmpBounds = editorToScreen(sprCmpBounds).offset(gfx::Point(-bounds().origin()));
+  }
+
+  const int midX = scrCelBounds.x+scrCelBounds.w/2;
+  const int midY = scrCelBounds.y+scrCelBounds.h/2;
+
+  if (sprCelBounds.x2() < sprCmpBounds.x) {
+    drawCelHGuide(g,
+                  sprCelBounds.x2(), sprCmpBounds.x,
+                  scrCelBounds.x2(), scrCmpBounds.x, midY,
+                  scrCelBounds, scrCmpBounds, scrCmpBounds.x);
+  }
+  else if (sprCelBounds.x > sprCmpBounds.x2()) {
+    drawCelHGuide(g,
+                  sprCmpBounds.x2(), sprCelBounds.x,
+                  scrCmpBounds.x2(), scrCelBounds.x, midY,
+                  scrCelBounds, scrCmpBounds, scrCmpBounds.x2()-1);
+  }
+  else {
+    if (sprCelBounds.x != sprCmpBounds.x &&
+        sprCelBounds.x2() != sprCmpBounds.x) {
+      drawCelHGuide(g,
+                    sprCmpBounds.x, sprCelBounds.x,
+                    scrCmpBounds.x, scrCelBounds.x, midY,
+                    scrCelBounds, scrCmpBounds, scrCmpBounds.x);
+    }
+    if (sprCelBounds.x != sprCmpBounds.x2() &&
+        sprCelBounds.x2() != sprCmpBounds.x2()) {
+      drawCelHGuide(g,
+                    sprCmpBounds.x2(), sprCelBounds.x2(),
+                    scrCmpBounds.x2(), scrCelBounds.x2(), midY,
+                    scrCelBounds, scrCmpBounds, scrCmpBounds.x2()-1);
+    }
+  }
+
+  if (sprCelBounds.y2() < sprCmpBounds.y) {
+    drawCelVGuide(g,
+                  sprCelBounds.y2(), sprCmpBounds.y,
+                  scrCelBounds.y2(), scrCmpBounds.y, midX,
+                  scrCelBounds, scrCmpBounds, scrCmpBounds.y);
+  }
+  else if (sprCelBounds.y > sprCmpBounds.y2()) {
+    drawCelVGuide(g,
+                  sprCmpBounds.y2(), sprCelBounds.y,
+                  scrCmpBounds.y2(), scrCelBounds.y, midX,
+                  scrCelBounds, scrCmpBounds, scrCmpBounds.y2()-1);
+  }
+  else {
+    if (sprCelBounds.y != sprCmpBounds.y &&
+        sprCelBounds.y2() != sprCmpBounds.y) {
+      drawCelVGuide(g,
+                    sprCmpBounds.y, sprCelBounds.y,
+                    scrCmpBounds.y, scrCelBounds.y, midX,
+                    scrCelBounds, scrCmpBounds, scrCmpBounds.y);
+    }
+    if (sprCelBounds.y != sprCmpBounds.y2() &&
+        sprCelBounds.y2() != sprCmpBounds.y2()) {
+      drawCelVGuide(g,
+                    sprCmpBounds.y2(), sprCelBounds.y2(),
+                    scrCmpBounds.y2(), scrCelBounds.y2(), midX,
+                    scrCelBounds, scrCmpBounds, scrCmpBounds.y2()-1);
+    }
+  }
+}
+
+void Editor::drawCelHGuide(ui::Graphics* g,
+                           const int sprX1, const int sprX2,
+                           const int scrX1, const int scrX2, const int scrY,
+                           const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
+                           const int dottedX)
+{
+  auto color = SkinTheme::instance()->colors.editorLayerEdges();
+  g->drawHLine(color, scrX1, scrY, scrX2 - scrX1);
+
+  // Vertical guide to touch the horizontal line
+  {
+    CheckedDrawMode checked(g, 0, color, gfx::ColorNone);
+
+    if (scrY < scrCmpBounds.y)
+      g->drawVLine(color, dottedX, scrCelBounds.y, scrCmpBounds.y - scrCelBounds.y);
+    else if (scrY > scrCmpBounds.y2())
+      g->drawVLine(color, dottedX, scrCmpBounds.y2(), scrCelBounds.y2() - scrCmpBounds.y2());
+  }
+
+  auto text = base::convert_to<std::string>(ABS(sprX2 - sprX1)) + "px";
+  const int textW = Graphics::measureUITextLength(text, font());
+  g->drawText(text,
+              gfx::rgba(255, 255, 255, 255), color,
+              gfx::Point((scrX1+scrX2)/2-textW/2, scrY-textHeight()));
+}
+
+void Editor::drawCelVGuide(ui::Graphics* g,
+                           const int sprY1, const int sprY2,
+                           const int scrY1, const int scrY2, const int scrX,
+                           const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
+                           const int dottedY)
+{
+  auto color = SkinTheme::instance()->colors.editorLayerEdges();
+  g->drawVLine(color, scrX, scrY1, scrY2 - scrY1);
+
+  // Horizontal guide to touch the vertical line
+  {
+    CheckedDrawMode checked(g, 0, color, gfx::ColorNone);
+
+    if (scrX < scrCmpBounds.x)
+      g->drawHLine(color, scrCelBounds.x, dottedY, scrCmpBounds.x - scrCelBounds.x);
+    else if (scrX > scrCmpBounds.x2())
+      g->drawHLine(color, scrCmpBounds.x2(), dottedY, scrCelBounds.x2() - scrCmpBounds.x2());
+  }
+
+  auto text = base::convert_to<std::string>(ABS(sprY2 - sprY1)) + "px";
+  g->drawText(text,
+              gfx::rgba(255, 255, 255, 255), color,
+              gfx::Point(scrX, (scrY1+scrY2)/2-textHeight()/2));
+}
+
+gfx::Rect Editor::getCelScreenBounds(const Cel* cel)
+{
+  gfx::Rect layerEdges;
+  if (m_layer->isReference()) {
+    layerEdges = editorToScreenF(cel->boundsF()).offset(gfx::PointF(-bounds().origin()));
+  }
+  else {
+    layerEdges = editorToScreen(cel->bounds()).offset(-bounds().origin());
+  }
+  return layerEdges;
 }
 
 void Editor::flashCurrentLayer()
@@ -1407,6 +1556,7 @@ bool Editor::onProcessMessage(Message* msg)
 
         m_oldPos = mouseMsg->position();
         updateToolByTipProximity(mouseMsg->pointerType());
+        updateAutoCelGuides(msg);
 
         // Only when we right-click with the regular "paint bg-color
         // right-click mode" we will mark indicate that the secondary
@@ -1433,6 +1583,7 @@ bool Editor::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
         updateToolByTipProximity(mouseMsg->pointerType());
+        updateAutoCelGuides(msg);
 
         return m_state->onMouseMove(this, static_cast<MouseMessage*>(msg));
       }
@@ -1445,6 +1596,7 @@ bool Editor::onProcessMessage(Message* msg)
         bool result = m_state->onMouseUp(this, mouseMsg);
 
         updateToolByTipProximity(mouseMsg->pointerType());
+        updateAutoCelGuides(msg);
 
         if (!hasCapture()) {
           App::instance()->activeToolManager()->releaseButtons();
@@ -1486,6 +1638,7 @@ bool Editor::onProcessMessage(Message* msg)
         bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));
 
         updateToolLoopModifiersIndicators();
+        updateAutoCelGuides(msg);
         if (hasMouse()) {
           updateQuicktool();
           setCursor(ui::get_mouse_position());
@@ -1502,6 +1655,7 @@ bool Editor::onProcessMessage(Message* msg)
         bool used = m_state->onKeyUp(this, static_cast<KeyMessage*>(msg));
 
         updateToolLoopModifiersIndicators();
+        updateAutoCelGuides(msg);
         if (hasMouse()) {
           updateQuicktool();
           setCursor(ui::get_mouse_position());
@@ -2100,6 +2254,40 @@ void Editor::dropMovingPixels()
 void Editor::invalidateIfActive()
 {
   if (isActive())
+    invalidate();
+}
+
+bool Editor::showAutoCelGuides()
+{
+  return
+    (getCurrentEditorInk()->isCelMovement() &&
+     m_customizationDelegate &&
+     int(m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool) & KeyAction::AutoSelectLayer));
+}
+
+void Editor::updateAutoCelGuides(ui::Message* msg)
+{
+  Cel* oldShowGuidesThisCel = m_showGuidesThisCel;
+
+  // Check if the user is pressing the Ctrl or Cmd key on move
+  // tool to show automatic guides.
+  if (showAutoCelGuides() &&
+      m_state->requireBrushPreview()) {
+    ui::MouseMessage* mouseMsg = dynamic_cast<ui::MouseMessage*>(msg);
+
+    ColorPicker picker;
+    picker.pickColor(getSite(),
+                     screenToEditorF(mouseMsg ? mouseMsg->position():
+                                                ui::get_mouse_position()),
+                     m_proj, ColorPicker::FromComposition);
+    m_showGuidesThisCel = (picker.layer() ? picker.layer()->cel(m_frame):
+                                            nullptr);
+  }
+  else {
+    m_showGuidesThisCel = nullptr;
+  }
+
+  if (m_showGuidesThisCel != oldShowGuidesThisCel)
     invalidate();
 }
 

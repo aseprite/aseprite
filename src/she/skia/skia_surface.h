@@ -122,7 +122,9 @@ public:
     return !m_clip.isEmpty();
   }
 
-  void setDrawMode(DrawMode mode, int param) override {
+  void setDrawMode(DrawMode mode, int param,
+                   const gfx::Color a,
+                   const gfx::Color b) override {
     switch (mode) {
       case DrawMode::Solid:
         m_paint.setBlendMode(SkBlendMode::kSrcOver);
@@ -141,12 +143,12 @@ public:
 
           {
             bitmap.lockPixels();
-            SkPMColor bg = SkPreMultiplyARGB(255, 0, 0, 0);
-            SkPMColor fg = SkPreMultiplyARGB(255, 255, 255, 255);
+            SkPMColor A = SkPreMultiplyARGB(gfx::geta(a), gfx::getr(a), gfx::getg(a), gfx::getb(a));
+            SkPMColor B = SkPreMultiplyARGB(gfx::geta(b), gfx::getr(b), gfx::getg(b), gfx::getb(b));
             int offset = 7 - (param & 7);
             for (int y=0; y<8; y++)
               for (int x=0; x<8; x++)
-                *bitmap.getAddr32(x, y) = (((x+y+offset)&7) < 4 ? fg: bg);
+                *bitmap.getAddr32(x, y) = (((x+y+offset)&7) < 4 ? B: A);
             bitmap.unlockPixels();
           }
 

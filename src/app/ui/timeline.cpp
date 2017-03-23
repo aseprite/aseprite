@@ -1539,7 +1539,9 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
   if (!m_clipboard_timer.isRunning())
     m_clipboard_timer.start();
 
-  CheckedDrawMode checked(g, m_offset_count);
+  CheckedDrawMode checked(g, m_offset_count,
+                          gfx::rgba(0, 0, 0, 255),
+                          gfx::rgba(255, 255, 255, 255));
   g->drawRect(gfx::rgba(0, 0, 0),
     getRangeBounds(clipboard_range));
 }

@@ -38,7 +38,9 @@ namespace she {
     virtual void setClipBounds(const gfx::Rect& rc) = 0;
     virtual bool intersectClipRect(const gfx::Rect& rc) = 0;
 
-    virtual void setDrawMode(DrawMode mode, int param = 0) = 0;
+    virtual void setDrawMode(DrawMode mode, int param = 0,
+                             const gfx::Color a = gfx::ColorNone,
+                             const gfx::Color b = gfx::ColorNone) = 0;
 
     virtual void lock() = 0;
     virtual void unlock() = 0;

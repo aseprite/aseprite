@@ -280,6 +280,19 @@ namespace app {
     void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
                   const app::Color& color, int alpha);
     void drawSlices(ui::Graphics* g);
+    void drawCelBounds(ui::Graphics* g, const Cel* cel);
+    void drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel);
+    void drawCelHGuide(ui::Graphics* g,
+                       const int sprX1, const int sprX2,
+                       const int scrX1, const int scrX2, const int scrY,
+                       const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
+                       const int dottedX);
+    void drawCelVGuide(ui::Graphics* g,
+                       const int sprY1, const int sprY2,
+                       const int scrY1, const int scrY2, const int scrX,
+                       const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
+                       const int dottedY);
+    gfx::Rect getCelScreenBounds(const Cel* cel);
 
     void setCursor(const gfx::Point& mouseScreenPos);
 
@@ -291,6 +304,8 @@ namespace app {
     gfx::Point calcExtraPadding(const render::Projection& proj);
 
     void invalidateIfActive();
+    bool showAutoCelGuides();
+    void updateAutoCelGuides(ui::Message* msg);
 
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;
@@ -356,6 +371,10 @@ namespace app {
     // Animation speed multiplier.
     double m_aniSpeed;
     bool m_isPlaying;
+
+    // The Cel that is above the mouse if the Ctrl (or Cmd) key is
+    // pressed (move key).
+    Cel* m_showGuidesThisCel;
 
     static doc::ImageBufferPtr m_renderBuffer;
 

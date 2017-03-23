@@ -17,40 +17,6 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-namespace {
-
-void checked_mode(int offset)
-{
-  static BITMAP* pattern = NULL;
-  int x, y, fg, bg;
-
-  if (offset < 0) {
-    if (pattern) {
-      destroy_bitmap(pattern);
-      pattern = NULL;
-    }
-    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
-    return;
-  }
-
-  if (!pattern)
-    pattern = create_bitmap(8, 8);
-
-  bg = makecol(0, 0, 0);
-  fg = makecol(255, 255, 255);
-  offset = 7 - (offset & 7);
-
-  clear_bitmap(pattern);
-
-  for (y=0; y<8; y++)
-    for (x=0; x<8; x++)
-      putpixel(pattern, x, y, ((x+y+offset)&7) < 4 ? fg: bg);
-
-  drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
-}
-
-}
-
 namespace she {
 
 inline int to_allegro(int color_depth, gfx::Color color)
@@ -75,6 +41,41 @@ inline gfx::Color from_allegro(int color_depth, int color)
     getb_depth(color_depth, color),
     // This condition is here because geta_depth() returns 0 if color depth != 32
     (color_depth == 32 ? geta32(color): 255));
+}
+
+namespace {
+
+void checked_mode(int offset,
+                  const gfx::Color a = gfx::ColorNone,
+                  const gfx::Color b = gfx::ColorNone)
+{
+  static BITMAP* pattern = NULL;
+
+  if (offset < 0) {
+    if (pattern) {
+      destroy_bitmap(pattern);
+      pattern = NULL;
+    }
+    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
+    return;
+  }
+
+  if (!pattern)
+    pattern = create_bitmap(8, 8);
+
+  int A = to_allegro(bitmap_color_depth(pattern), a);
+  int B = to_allegro(bitmap_color_depth(pattern), b);
+  offset = 7 - (offset & 7);
+
+  clear_bitmap(pattern);
+
+  for (int y=0; y<8; ++y)
+    for (int x=0; x<8; ++x)
+      putpixel(pattern, x, y, ((x+y+offset)&7) < 4 ? B: A);
+
+  drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
+}
+
 }
 
 Alleg4Surface::Alleg4Surface(BITMAP* bmp, DestroyFlag destroy)
@@ -175,12 +176,14 @@ void Alleg4Surface::unlock()
     release_bitmap(m_bmp);
 }
 
-void Alleg4Surface::setDrawMode(DrawMode mode, int param)
+void Alleg4Surface::setDrawMode(DrawMode mode, int param,
+                                const gfx::Color a,
+                                const gfx::Color b)
 {
   switch (mode) {
     case DrawMode::Solid: checked_mode(-1); break;
     case DrawMode::Xor: xor_mode(TRUE); break;
-    case DrawMode::Checked: checked_mode(param); break;
+    case DrawMode::Checked: checked_mode(param, a, b); break;
   }
 }
 
