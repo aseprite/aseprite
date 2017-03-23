@@ -45,6 +45,7 @@
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
 #include "doc/remap.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "render/render.h"
 #include "ui/ui.h"
@@ -467,6 +468,13 @@ public:
     m_transaction.execute(new cmd::SetMask(m_document, newMask));
   }
   void addSlice(Slice* newSlice) override {
+    auto color = m_docPref.guides.defaultSliceColor();
+    newSlice->userData().setColor(
+      doc::rgba(color.getRed(),
+                color.getGreen(),
+                color.getBlue(),
+                color.getAlpha()));
+
     m_transaction.execute(new cmd::AddSlice(m_sprite, newSlice));
   }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }

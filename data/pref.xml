@@ -280,6 +280,11 @@
       <option id="opacity" type="int" default="160" migrate="PixelGrid.Opacity" />
       <option id="auto_opacity" type="bool" default="true" migrate="PixelGrid.AutoOpacity" />
     </section>
+    <section id="guides">
+      <option id="layer_edges_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="default_slice_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="automatic_guides_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255, 128)" />
+    </section>
     <section id="bg">
       <option id="type" type="BgType" default="BgType::CHECKED_16x16" migrate="Option.CheckedBgType" />
       <option id="zoom" type="bool" default="true" migrate="Option.CheckedBgZoom" />

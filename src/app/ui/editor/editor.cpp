@@ -805,8 +805,12 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       m_state->requireBrushPreview()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
-      drawCelBounds(g, cel);
-      if (m_showGuidesThisCel != cel)
+      drawCelBounds(
+        g, cel,
+        color_utils::color_for_ui(m_docPref.guides.layerEdgesColor()));
+
+      if (showGuidesThisCel &&
+          m_showGuidesThisCel != cel)
         drawCelGuides(g, cel, m_showGuidesThisCel);
     }
   }
@@ -1019,10 +1023,9 @@ void Editor::drawSlices(ui::Graphics* g)
   }
 }
 
-void Editor::drawCelBounds(ui::Graphics* g, const Cel* cel)
+void Editor::drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color)
 {
-  g->drawRect(SkinTheme::instance()->colors.editorLayerEdges(),
-              getCelScreenBounds(cel));
+  g->drawRect(color, getCelScreenBounds(cel));
 }
 
 void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
@@ -1034,7 +1037,10 @@ void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
   if (mouseCel) {
     scrCmpBounds = getCelScreenBounds(mouseCel);
     sprCmpBounds = mouseCel->bounds();
-    drawCelBounds(g, mouseCel);
+
+    drawCelBounds(
+      g, mouseCel,
+      color_utils::color_for_ui(m_docPref.guides.automaticGuidesColor()));
   }
   // Use whole canvas
   else {
@@ -1110,7 +1116,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
                            const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
                            const int dottedX)
 {
-  auto color = SkinTheme::instance()->colors.editorLayerEdges();
+  auto color = color_utils::color_for_ui(m_docPref.guides.automaticGuidesColor());
   g->drawHLine(color, scrX1, scrY, scrX2 - scrX1);
 
   // Vertical guide to touch the horizontal line
@@ -1126,7 +1132,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
   auto text = base::convert_to<std::string>(ABS(sprX2 - sprX1)) + "px";
   const int textW = Graphics::measureUITextLength(text, font());
   g->drawText(text,
-              gfx::rgba(255, 255, 255, 255), color,
+              color_utils::blackandwhite_neg(color), color,
               gfx::Point((scrX1+scrX2)/2-textW/2, scrY-textHeight()));
 }
 
@@ -1136,7 +1142,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
                            const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
                            const int dottedY)
 {
-  auto color = SkinTheme::instance()->colors.editorLayerEdges();
+  auto color = color_utils::color_for_ui(m_docPref.guides.automaticGuidesColor());
   g->drawVLine(color, scrX, scrY1, scrY2 - scrY1);
 
   // Horizontal guide to touch the vertical line
@@ -1151,7 +1157,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
 
   auto text = base::convert_to<std::string>(ABS(sprY2 - sprY1)) + "px";
   g->drawText(text,
-              gfx::rgba(255, 255, 255, 255), color,
+              color_utils::blackandwhite_neg(color), color,
               gfx::Point(scrX, (scrY1+scrY2)/2-textHeight()/2));
 }
 

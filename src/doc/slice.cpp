@@ -39,8 +39,6 @@ Slice::Slice()
   , m_owner(nullptr)
   , m_name("Slice")
 {
-  // TODO default color should be configurable
-  userData().setColor(doc::rgba(0, 0, 255, 255));
 }
 
 Slice::~Slice()

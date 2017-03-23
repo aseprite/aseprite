@@ -280,7 +280,7 @@ namespace app {
     void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
                   const app::Color& color, int alpha);
     void drawSlices(ui::Graphics* g);
-    void drawCelBounds(ui::Graphics* g, const Cel* cel);
+    void drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color);
     void drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel);
     void drawCelHGuide(ui::Graphics* g,
                        const int sprX1, const int sprX2,
