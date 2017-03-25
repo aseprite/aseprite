@@ -70,40 +70,27 @@ public:
     , m_globPref(m_pref.document(nullptr))
     , m_docPref(m_pref.document(context->activeDocument()))
     , m_curPref(&m_docPref)
-    , m_checked_bg_color1(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
-    , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
-    , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
-    , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB, false))
-    , m_cursorColor(new ColorButton(m_pref.cursor.cursorColor(), IMAGE_RGB, false))
     , m_curSection(curSection)
   {
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
 
     // Cursor
     paintingCursorType()->setSelectedItemIndex(int(m_pref.cursor.paintingCursorType()));
-    cursorColorPlaceholder()->addChild(m_cursorColor);
+    cursorColor()->setColor(m_pref.cursor.cursorColor());
 
-    if (m_cursorColor->getColor().getType() == app::Color::MaskType) {
+    if (cursorColor()->getColor().getType() == app::Color::MaskType) {
       cursorColorType()->setSelectedItemIndex(0);
-      m_cursorColor->setVisible(false);
+      cursorColor()->setVisible(false);
     }
     else {
       cursorColorType()->setSelectedItemIndex(1);
-      m_cursorColor->setVisible(true);
+      cursorColor()->setVisible(true);
     }
     cursorColorType()->Change.connect(base::Bind<void>(&OptionsWindow::onCursorColorType, this));
 
     // Brush preview
     brushPreview()->setSelectedItemIndex(
       (int)m_pref.cursor.brushPreview());
-
-    // Grid color
-    m_gridColor->setId("grid_color");
-    gridColorPlaceholder()->addChild(m_gridColor);
-
-    // Pixel grid color
-    m_pixelGridColor->setId("pixel_grid_color");
-    pixelGridColorPlaceholder()->addChild(m_pixelGridColor);
 
     // Guide colors
     layerEdgesColor()->setColor(m_pref.guides.layerEdgesColor());
@@ -239,10 +226,6 @@ public:
     checkedBgSize()->addItem("4x4");
     checkedBgSize()->addItem("2x2");
 
-    // Checked background colors
-    checkedBgColor1Box()->addChild(m_checked_bg_color1);
-    checkedBgColor2Box()->addChild(m_checked_bg_color2);
-
     // Reset buttons
     resetBg()->Click.connect(base::Bind<void>(&OptionsWindow::onResetBg, this));
     resetGrid()->Click.connect(base::Bind<void>(&OptionsWindow::onResetGrid, this));
@@ -308,7 +291,7 @@ public:
 #endif
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
     m_pref.cursor.paintingCursorType(static_cast<app::gen::PaintingCursorType>(paintingCursorType()->getSelectedItemIndex()));
-    m_pref.cursor.cursorColor(m_cursorColor->getColor());
+    m_pref.cursor.cursorColor(cursorColor()->getColor());
     m_pref.cursor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
     m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());
     m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
@@ -320,19 +303,19 @@ public:
 
     m_curPref->show.grid(gridVisible()->isSelected());
     m_curPref->grid.bounds(gridBounds());
-    m_curPref->grid.color(m_gridColor->getColor());
+    m_curPref->grid.color(gridColor()->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());
     m_curPref->grid.autoOpacity(gridAutoOpacity()->isSelected());
 
     m_curPref->show.pixelGrid(pixelGridVisible()->isSelected());
-    m_curPref->pixelGrid.color(m_pixelGridColor->getColor());
+    m_curPref->pixelGrid.color(pixelGridColor()->getColor());
     m_curPref->pixelGrid.opacity(pixelGridOpacity()->getValue());
     m_curPref->pixelGrid.autoOpacity(pixelGridAutoOpacity()->isSelected());
 
     m_curPref->bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
     m_curPref->bg.zoom(checkedBgZoom()->isSelected());
-    m_curPref->bg.color1(m_checked_bg_color1->getColor());
-    m_curPref->bg.color2(m_checked_bg_color2->getColor());
+    m_curPref->bg.color1(checkedBgColor1()->getColor());
+    m_curPref->bg.color2(checkedBgColor2()->getColor());
 
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->textInt();
@@ -428,8 +411,8 @@ private:
 
     checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
     checkedBgZoom()->setSelected(m_curPref->bg.zoom());
-    m_checked_bg_color1->setColor(m_curPref->bg.color1());
-    m_checked_bg_color2->setColor(m_curPref->bg.color2());
+    checkedBgColor1()->setColor(m_curPref->bg.color1());
+    checkedBgColor2()->setColor(m_curPref->bg.color2());
   }
 
   void onChangeGridScope() {
@@ -446,12 +429,12 @@ private:
     gridW()->setTextf("%d", m_curPref->grid.bounds().w);
     gridH()->setTextf("%d", m_curPref->grid.bounds().h);
 
-    m_gridColor->setColor(m_curPref->grid.color());
+    gridColor()->setColor(m_curPref->grid.color());
     gridOpacity()->setValue(m_curPref->grid.opacity());
     gridAutoOpacity()->setSelected(m_curPref->grid.autoOpacity());
 
     pixelGridVisible()->setSelected(m_curPref->show.pixelGrid());
-    m_pixelGridColor->setColor(m_curPref->pixelGrid.color());
+    pixelGridColor()->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
     pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
   }
@@ -463,15 +446,15 @@ private:
     if (m_curPref == &m_globPref) {
       checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
       checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
-      m_checked_bg_color1->setColor(pref.bg.color1.defaultValue());
-      m_checked_bg_color2->setColor(pref.bg.color2.defaultValue());
+      checkedBgColor1()->setColor(pref.bg.color1.defaultValue());
+      checkedBgColor2()->setColor(pref.bg.color2.defaultValue());
     }
     // Reset document preferences with global settings
     else {
       checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
       checkedBgZoom()->setSelected(pref.bg.zoom());
-      m_checked_bg_color1->setColor(pref.bg.color1());
-      m_checked_bg_color2->setColor(pref.bg.color2());
+      checkedBgColor1()->setColor(pref.bg.color1());
+      checkedBgColor2()->setColor(pref.bg.color2());
     }
   }
 
@@ -486,12 +469,12 @@ private:
       gridW()->setTextf("%d", pref.grid.bounds.defaultValue().w);
       gridH()->setTextf("%d", pref.grid.bounds.defaultValue().h);
 
-      m_gridColor->setColor(pref.grid.color.defaultValue());
+      gridColor()->setColor(pref.grid.color.defaultValue());
       gridOpacity()->setValue(pref.grid.opacity.defaultValue());
       gridAutoOpacity()->setSelected(pref.grid.autoOpacity.defaultValue());
 
       pixelGridVisible()->setSelected(pref.show.pixelGrid.defaultValue());
-      m_pixelGridColor->setColor(pref.pixelGrid.color.defaultValue());
+      pixelGridColor()->setColor(pref.pixelGrid.color.defaultValue());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity.defaultValue());
     }
@@ -503,12 +486,12 @@ private:
       gridW()->setTextf("%d", pref.grid.bounds().w);
       gridH()->setTextf("%d", pref.grid.bounds().h);
 
-      m_gridColor->setColor(pref.grid.color());
+      gridColor()->setColor(pref.grid.color());
       gridOpacity()->setValue(pref.grid.opacity());
       gridAutoOpacity()->setSelected(pref.grid.autoOpacity());
 
       pixelGridVisible()->setSelected(pref.show.pixelGrid());
-      m_pixelGridColor->setColor(pref.pixelGrid.color());
+      pixelGridColor()->setColor(pref.pixelGrid.color());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
     }
@@ -582,12 +565,12 @@ private:
   void onCursorColorType() {
     switch (cursorColorType()->getSelectedItemIndex()) {
       case 0:
-        m_cursorColor->setColor(app::Color::fromMask());
-        m_cursorColor->setVisible(false);
+        cursorColor()->setColor(app::Color::fromMask());
+        cursorColor()->setVisible(false);
         break;
       case 1:
-        m_cursorColor->setColor(app::Color::fromRgb(0, 0, 0, 255));
-        m_cursorColor->setVisible(true);
+        cursorColor()->setColor(app::Color::fromRgb(0, 0, 0, 255));
+        cursorColor()->setVisible(true);
         break;
     }
     layout();
@@ -628,11 +611,6 @@ private:
   DocumentPreferences& m_globPref;
   DocumentPreferences& m_docPref;
   DocumentPreferences* m_curPref;
-  ColorButton* m_checked_bg_color1;
-  ColorButton* m_checked_bg_color2;
-  ColorButton* m_pixelGridColor;
-  ColorButton* m_gridColor;
-  ColorButton* m_cursorColor;
   int& m_curSection;
 };
 

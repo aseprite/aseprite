@@ -138,7 +138,7 @@
 	    </combobox>
 
 	    <boxfiller />
-	    <box id="cursor_color_placeholder" /><!-- custom widget -->
+	    <colorpicker id="cursor_color" rgba="true" />
 	  </grid>
         </vbox>
 
@@ -156,8 +156,8 @@
 
             <label text="@.bg_colors" />
 	    <hbox>
-              <box horizontal="true" id="checked_bg_color1_box" />
-              <box horizontal="true" id="checked_bg_color2_box" />
+              <colorpicker id="checked_bg_color1" rgba="true" />
+              <colorpicker id="checked_bg_color2" rgba="true" />
 	    </hbox>
           </grid>
 
@@ -189,7 +189,7 @@
 	    <hbox />
 
             <label text="@.grid_color" />
-            <box id="grid_color_placeholder" cell_hspan="3" /><!-- custom widget -->
+            <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
 	    <hbox />
 
 	    <label text="@.grid_opacity" />
@@ -203,7 +203,7 @@
 	  </hbox>
           <grid columns="3">
             <label text="@.grid_color" />
-            <box id="pixel_grid_color_placeholder" /><!-- custom widget -->
+            <colorpicker id="pixel_grid_color" rgba="true" />
 	    <hbox />
 
 	    <label text="@.grid_opacity" />
