@@ -105,6 +105,13 @@ public:
     m_pixelGridColor->setId("pixel_grid_color");
     pixelGridColorPlaceholder()->addChild(m_pixelGridColor);
 
+    // Guide colors
+    layerEdgesColor()->setColor(m_pref.guides.layerEdgesColor());
+    autoGuidesColor()->setColor(m_pref.guides.autoGuidesColor());
+
+    // Slices default color
+    defaultSliceColor()->setColor(m_pref.slices.defaultColor());
+
     // Others
     if (m_pref.general.autoshowTimeline())
       autotimeline()->setSelected(true);
@@ -307,6 +314,9 @@ public:
     m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
+    m_pref.guides.layerEdgesColor(layerEdgesColor()->getColor());
+    m_pref.guides.autoGuidesColor(autoGuidesColor()->getColor());
+    m_pref.slices.defaultColor(defaultSliceColor()->getColor());
 
     m_curPref->show.grid(gridVisible()->isSelected());
     m_curPref->grid.bounds(gridBounds());

@@ -770,6 +770,7 @@
           <item command="ShowLayerEdges" text="&amp;Layer Edges" />
           <item command="ShowSelectionEdges" text="&amp;Selection Edges" />
           <item command="ShowGrid" text="&amp;Grid" />
+          <item command="ShowAutoGuides" text="&amp;Auto Guides" />
           <item command="ShowSlices" text="Sl&amp;ices" />
           <item command="ShowPixelGrid" text="&amp;Pixel Grid" />
           <separator />

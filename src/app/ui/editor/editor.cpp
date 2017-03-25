@@ -807,7 +807,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     if (cel) {
       drawCelBounds(
         g, cel,
-        color_utils::color_for_ui(m_docPref.guides.layerEdgesColor()));
+        color_utils::color_for_ui(Preferences::instance().guides.layerEdgesColor()));
 
       if (showGuidesThisCel &&
           m_showGuidesThisCel != cel)
@@ -1040,7 +1040,7 @@ void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
 
     drawCelBounds(
       g, mouseCel,
-      color_utils::color_for_ui(m_docPref.guides.automaticGuidesColor()));
+      color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor()));
   }
   // Use whole canvas
   else {
@@ -1116,7 +1116,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
                            const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
                            const int dottedX)
 {
-  auto color = color_utils::color_for_ui(m_docPref.guides.automaticGuidesColor());
+  gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
   g->drawHLine(color, scrX1, scrY, scrX2 - scrX1);
 
   // Vertical guide to touch the horizontal line
@@ -1142,7 +1142,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
                            const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
                            const int dottedY)
 {
-  auto color = color_utils::color_for_ui(m_docPref.guides.automaticGuidesColor());
+  gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
   g->drawVLine(color, scrX, scrY1, scrY2 - scrY1);
 
   // Horizontal guide to touch the vertical line
@@ -2267,6 +2267,7 @@ bool Editor::showAutoCelGuides()
 {
   return
     (getCurrentEditorInk()->isCelMovement() &&
+     m_docPref.show.autoGuides() &&
      m_customizationDelegate &&
      int(m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool) & KeyAction::AutoSelectLayer));
 }

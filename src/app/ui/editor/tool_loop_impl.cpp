@@ -468,7 +468,7 @@ public:
     m_transaction.execute(new cmd::SetMask(m_document, newMask));
   }
   void addSlice(Slice* newSlice) override {
-    auto color = m_docPref.guides.defaultSliceColor();
+    auto color = Preferences::instance().slices.defaultColor();
     newSlice->userData().setColor(
       doc::rgba(color.getRed(),
                 color.getGreen(),

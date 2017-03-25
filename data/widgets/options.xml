@@ -12,6 +12,7 @@
           <listitem text="@.section_cursors" value="section_cursors" />
           <listitem text="@.section_background" value="section_bg" />
           <listitem text="@.section_grid" value="section_grid" />
+          <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
           <listitem text="@.section_undo" value="section_undo" />
           <listitem text="@.section_theme" value="section_theme" />
           <listitem text="@.section_experimental" value="section_experimental" />
@@ -214,6 +215,23 @@
 	    <hbox expansive="true" />
             <button id="reset_grid" text="@.reset_grid" width="60" />
 	  </hbox>
+        </vbox>
+
+        <!-- Guides -->
+        <vbox id="section_guides_and_slices">
+          <separator text="@.guides" horizontal="true" />
+          <grid columns="2">
+            <label text="@.layer_edges_color" />
+            <colorpicker id="layer_edges_color" rgba="true" />
+            <label text="@.auto_guides_color" />
+            <colorpicker id="auto_guides_color" rgba="true" />
+          </grid>
+
+          <separator text="@.slices" horizontal="true" />
+          <hbox>
+            <label text="@.default_slice_color" />
+            <colorpicker id="default_slice_color" rgba="true" />
+          </hbox>
         </vbox>
 
         <!-- Undo -->

@@ -171,6 +171,28 @@ protected:
   }
 };
 
+class ShowAutoGuidesCommand : public Command {
+public:
+  ShowAutoGuidesCommand()
+    : Command("ShowAutoGuides",
+              "Show Auto Guides",
+              CmdUIOnlyFlag) {
+  }
+
+  Command* clone() const override { return new ShowAutoGuidesCommand(*this); }
+
+protected:
+  bool onChecked(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    return docPref.show.autoGuides();
+  }
+
+  void onExecute(Context* ctx) override {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    docPref.show.autoGuides(!docPref.show.autoGuides());
+  }
+};
+
 class ShowSlicesCommand : public Command {
 public:
   ShowSlicesCommand()
@@ -221,6 +243,11 @@ Command* CommandFactory::createShowSelectionEdgesCommand()
 Command* CommandFactory::createShowBrushPreviewCommand()
 {
   return new ShowBrushPreviewCommand;
+}
+
+Command* CommandFactory::createShowAutoGuidesCommand()
+{
+  return new ShowAutoGuidesCommand;
 }
 
 Command* CommandFactory::createShowSlicesCommand()

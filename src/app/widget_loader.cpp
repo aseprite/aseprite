@@ -403,8 +403,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   else if (elem_name == "colorpicker") {
+    bool rgba = bool_attr_is_true(elem, "rgba");
+
     if (!widget)
-      widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format(), false);
+      widget = new ColorButton(Color::fromMask(),
+                               rgba ? IMAGE_RGB:
+                                      app_get_current_pixel_format(), false);
   }
   else if (elem_name == "dropdownbutton")  {
     if (!widget) {

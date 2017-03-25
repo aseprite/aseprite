@@ -230,6 +230,13 @@
     <section id="perf">
       <option id="show_render_time" type="bool" default="false" />
     </section>
+    <section id="guides">
+      <option id="layer_edges_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="auto_guides_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255, 128)" />
+    </section>
+    <section id="slices">
+      <option id="default_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+    </section>
   </global>
 
   <tool>
@@ -279,11 +286,6 @@
       <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" migrate="PixelGrid.Color" />
       <option id="opacity" type="int" default="160" migrate="PixelGrid.Opacity" />
       <option id="auto_opacity" type="bool" default="true" migrate="PixelGrid.AutoOpacity" />
-    </section>
-    <section id="guides">
-      <option id="layer_edges_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
-      <option id="default_slice_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
-      <option id="automatic_guides_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255, 128)" />
     </section>
     <section id="bg">
       <option id="type" type="BgType" default="BgType::CHECKED_16x16" migrate="Option.CheckedBgType" />
@@ -356,6 +358,7 @@
       <option id="pixel_grid" type="bool" default="false" migrate="pixel_grid.visible" />
       <option id="brush_preview" type="bool" default="true" />
       <option id="slices" type="bool" default="true" />
+      <option id="auto_guides" type="bool" default="true" />
     </section>
   </document>
 
