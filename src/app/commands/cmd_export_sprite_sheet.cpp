@@ -22,7 +22,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/timeline.h"
+#include "app/ui/timeline/timeline.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"

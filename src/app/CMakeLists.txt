@@ -481,7 +481,7 @@ add_library(app-lib
   ui/slice_window.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
-  ui/timeline.cpp
+  ui/timeline/timeline.cpp
   ui/toolbar.cpp
   ui/user_data_popup.cpp
   ui/workspace.cpp

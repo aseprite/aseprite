@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,7 +22,7 @@
 #include "app/document_range.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
-#include "app/ui/timeline.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/range_utils.h"
 #include "doc/algorithm/flip_image.h"

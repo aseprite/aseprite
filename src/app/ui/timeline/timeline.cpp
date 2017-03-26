@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/ui/timeline.h"
+#include "app/ui/timeline/timeline.h"
 
 #include "app/app.h"
 #include "app/app_menus.h"

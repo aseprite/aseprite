@@ -28,7 +28,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/timeline.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui/zoom_entry.h"
 #include "app/ui_context.h"

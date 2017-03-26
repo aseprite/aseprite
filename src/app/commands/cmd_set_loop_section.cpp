@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,7 +18,7 @@
 #include "app/context_access.h"
 #include "app/loop_tag.h"
 #include "app/transaction.h"
-#include "app/ui/timeline.h"
+#include "app/ui/timeline/timeline.h"
 #include "doc/frame_tag.h"
 
 namespace app {

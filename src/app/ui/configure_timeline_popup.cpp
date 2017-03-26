@@ -20,7 +20,7 @@
 #include "app/loop_tag.h"
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
-#include "app/ui/timeline.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
