@@ -20,6 +20,7 @@
 #include "app/filename_formatter.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/ui/status_bar.h"
 #include "app/xml_document.h"
 #include "base/fs.h"
@@ -28,7 +29,6 @@
 #include "base/shared_ptr.h"
 #include "base/string.h"
 #include "doc/doc.h"
-#include "doc/slice.h"          // TODO add this header file in doc.h
 #include "docio/detect_format.h"
 #include "render/quantization.h"
 #include "render/render.h"
@@ -1097,6 +1097,14 @@ void FileOp::loadData()
 
         auto slice = new doc::Slice();
         slice->setName(partId);
+
+        // Default slice color
+        auto color = Preferences::instance().slices.defaultColor();
+        slice->userData().setColor(
+          doc::rgba(color.getRed(),
+                    color.getGreen(),
+                    color.getBlue(),
+                    color.getAlpha()));
 
         doc::SliceKey key;
 
