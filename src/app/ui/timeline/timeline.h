@@ -337,7 +337,7 @@ namespace app {
     std::vector<LayerInfo> m_layers;
 
     // Data used to display frame tags
-    int m_tagBands = 0;
+    int m_tagBands;
     std::map<FrameTag*, int> m_tagBand;
 
     int m_separator_x;
