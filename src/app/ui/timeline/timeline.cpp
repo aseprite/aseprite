@@ -1136,9 +1136,11 @@ void Timeline::onResize(ui::ResizeEvent& ev)
 
   gfx::Size sz = m_aniControls.sizeHint();
   m_aniControls.setBounds(
-    gfx::Rect(rc.x, rc.y, MIN(sz.w, m_separator_x),
-      font()->height() +
-      skinTheme()->dimensions.timelineTagsAreaHeight()));
+    gfx::Rect(
+      rc.x,
+      rc.y+MAX(0, m_tagBands-1)*oneTagHeight(),
+      MIN(sz.w, m_separator_x),
+      oneTagHeight()));
 
   updateScrollBars();
 }
@@ -2010,11 +2012,15 @@ void Timeline::drawFrameTags(ui::Graphics* g)
       clientBounds().w,
       theme->dimensions.timelineTagsAreaHeight()));
 
+  std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
+
   for (FrameTag* frameTag : m_sprite->frameTags()) {
     gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame()));
     gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->toFrame()));
     gfx::Rect bounds = bounds1.createUnion(bounds2);
-    bounds.y -= theme->dimensions.timelineTagsAreaHeight();
+    gfx::Rect frameTagBounds = getPartBounds(Hit(PART_FRAME_TAG, 0, 0, frameTag->id()));
+    bounds.h = bounds.y2() - frameTagBounds.y2();
+    bounds.y = frameTagBounds.y2();
 
     {
       IntersectClip clip(g, bounds);
@@ -2023,7 +2029,7 @@ void Timeline::drawFrameTags(ui::Graphics* g)
     }
 
     {
-      bounds = getPartBounds(Hit(PART_FRAME_TAG, 0, 0, frameTag->id()));
+      bounds = frameTagBounds;
 
       gfx::Color bg = frameTag->color();
       if (m_clk.part == PART_FRAME_TAG && m_clk.frameTag == frameTag->id()) {
@@ -2048,6 +2054,11 @@ void Timeline::drawFrameTags(ui::Graphics* g)
         color_utils::blackandwhite_neg(bg),
         gfx::ColorNone,
         bounds.origin());
+    }
+
+    for (frame_t f=frameTag->fromFrame(); f<=frameTag->toFrame(); ++f) {
+      if (tagsPerFrame[f] < 255)
+        ++tagsPerFrame[f];
     }
   }
 }
@@ -2335,6 +2346,13 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         bounds.x += 3*ui::guiscale();
         bounds.w = font()->textLength(frameTag->name().c_str()) + 4*ui::guiscale();
         bounds.h = font()->height() + 2*ui::guiscale();
+
+        auto it = m_tagBand.find(frameTag);
+        if (it != m_tagBand.end()) {
+          int dy = (m_tagBands-it->second-1)*oneTagHeight();
+          bounds.y -= dy;
+        }
+
         return bounds;
       }
       break;
@@ -2405,7 +2423,44 @@ void Timeline::regenerateLayers()
       m_layers[i++] = LayerInfo(layer, level, flags);
     });
 
+  regenerateTagBands();
   updateScrollBars();
+}
+
+void Timeline::regenerateTagBands()
+{
+  // TODO improve this implementation
+  std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
+  std::vector<FrameTag*> bands(4, nullptr);
+  m_tagBand.clear();
+  for (FrameTag* frameTag : m_sprite->frameTags()) {
+    frame_t f = frameTag->fromFrame();
+
+    int b=0;
+    for (; b<int(bands.size()); ++b) {
+      if (!bands[b] ||
+          frameTag->fromFrame() > calcTagVisibleToFrame(bands[b])) {
+        bands[b] = frameTag;
+        m_tagBand[frameTag] = b;
+        break;
+      }
+    }
+    if (b == int(bands.size()))
+      m_tagBand[frameTag] = tagsPerFrame[f];
+
+    frame_t toFrame = calcTagVisibleToFrame(frameTag);
+    for (; f<=toFrame; ++f) {
+      if (tagsPerFrame[f] < 255)
+        ++tagsPerFrame[f];
+    }
+  }
+  int oldBands = m_tagBands;
+  m_tagBands = 0;
+  for (int i : tagsPerFrame)
+    m_tagBands = MAX(m_tagBands, i);
+
+  if (oldBands != m_tagBands)
+    layout();
 }
 
 void Timeline::updateScrollBars()
@@ -3108,13 +3163,30 @@ int Timeline::outlineWidth() const
   return skinTheme()->dimensions.timelineOutlineWidth();
 }
 
+int Timeline::oneTagHeight() const
+{
+  return
+    font()->height() +
+    2*ui::guiscale() +
+    skinTheme()->dimensions.timelineTagsAreaHeight();
+}
+
+// Returns the last frame where the frame tag (or frame tag label)
+// is visible in the timeline.
+int Timeline::calcTagVisibleToFrame(FrameTag* frameTag) const
+{
+  return
+    MAX(frameTag->toFrame(),
+        frameTag->fromFrame() +
+        font()->textLength(frameTag->name())/frameBoxWidth());
+}
+
 int Timeline::topHeight() const
 {
   int h = 0;
   if (m_document && m_sprite) {
     h += skinTheme()->dimensions.timelineTopBorder();
-    h += font()->height();
-    h += skinTheme()->dimensions.timelineTagsAreaHeight();
+    h += oneTagHeight() * MAX(1, m_tagBands);
   }
   return h;
 }

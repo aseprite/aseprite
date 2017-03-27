@@ -34,7 +34,9 @@ void FrameTags::add(FrameTag* tag)
 {
   auto it = begin(), end = this->end();
   for (; it != end; ++it) {
-    if ((*it)->fromFrame() > tag->fromFrame())
+    if ((*it)->fromFrame() > tag->fromFrame() ||
+        ((*it)->fromFrame() == tag->fromFrame() &&
+         (*it)->toFrame() < tag->toFrame()))
       break;
   }
   m_tags.insert(it, tag);

@@ -266,6 +266,7 @@ namespace app {
     gfx::Rect getRangeBounds(const Range& range) const;
     void invalidateHit(const Hit& hit);
     void regenerateLayers();
+    void regenerateTagBands();
     void updateScrollBars();
     void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
@@ -308,6 +309,8 @@ namespace app {
     int layerBoxHeight() const;
     int frameBoxWidth() const;
     int outlineWidth() const;
+    int oneTagHeight() const;
+    int calcTagVisibleToFrame(FrameTag* frameTag) const;
 
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
@@ -329,7 +332,14 @@ namespace app {
     Range m_startRange;
     Range m_dropRange;
     State m_state;
+
+    // Data used to display each layer
     std::vector<LayerInfo> m_layers;
+
+    // Data used to display frame tags
+    int m_tagBands = 0;
+    std::map<FrameTag*, int> m_tagBand;
+
     int m_separator_x;
     int m_separator_w;
     int m_origFrames;

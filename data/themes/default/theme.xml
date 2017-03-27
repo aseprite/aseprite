@@ -493,7 +493,7 @@
             <text color="button_hot_text" state="mouse" />
             <text color="button_selected_text" state="selected" />
             <text color="background" x="1" y="1" state="disabled" />
-	    <newlayer />
+            <newlayer />
             <text color="disabled" state="disabled" />
         </style>
         <style id="check_box" border="2">
