@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -50,6 +50,15 @@ void VerticalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stroke
   for (const auto& pt : mainStroke)
     stroke2.addPoint(gfx::Point(pt.x, m_y - (pt.y - m_y + adjust)));
   strokes.push_back(stroke2);
+}
+
+void SymmetryCombo::generateStrokes(const Stroke& mainStroke, Strokes& strokes,
+                                    ToolLoop* loop)
+{
+  Strokes strokes0;
+  m_a->generateStrokes(mainStroke, strokes0, loop);
+  for (const Stroke& stroke : strokes0)
+    m_b->generateStrokes(stroke, strokes, loop);
 }
 
 } // namespace tools

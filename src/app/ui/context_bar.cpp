@@ -1305,17 +1305,17 @@ protected:
 
 class ContextBar::SymmetryField : public ButtonSet {
 public:
-  SymmetryField() : ButtonSet(3) {
+  SymmetryField() : ButtonSet(2) {
+    setMultipleSelection(true);
+
     SkinTheme* theme = SkinTheme::instance();
-    addItem(theme->parts.noSymmetry());
     addItem(theme->parts.horizontalSymmetry());
     addItem(theme->parts.verticalSymmetry());
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(at(0), "Without Symmetry", BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Horizontal Symmetry", BOTTOM);
-    tooltipManager->addTooltipFor(at(2), "Vertical Symmetry", BOTTOM);
+    tooltipManager->addTooltipFor(at(0), "Horizontal Symmetry", BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Vertical Symmetry", BOTTOM);
   }
 
   void updateWithCurrentDocument() {
@@ -1325,7 +1325,8 @@ public:
 
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
-    setSelectedItem((int)docPref.symmetry.mode());
+    at(0)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::HORIZONTAL) ? true: false);
+    at(1)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL) ? true: false);
   }
 
 private:
@@ -1339,7 +1340,10 @@ private:
     DocumentPreferences& docPref =
       Preferences::instance().document(doc);
 
-    docPref.symmetry.mode((app::gen::SymmetryMode)selectedItem());
+    int mode = 0;
+    if (at(0)->isSelected()) mode |= int(app::gen::SymmetryMode::HORIZONTAL);
+    if (at(1)->isSelected()) mode |= int(app::gen::SymmetryMode::VERTICAL);
+    docPref.symmetry.mode(app::gen::SymmetryMode(mode));
 
     // Redraw symmetry rules
     doc->notifyGeneralUpdate();

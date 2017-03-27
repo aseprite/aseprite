@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/tools/stroke.h"
 #include "app/tools/symmetry.h"
+#include "base/unique_ptr.h"
 
 namespace app {
 namespace tools {
@@ -30,6 +31,16 @@ public:
                        ToolLoop* loop) override;
 private:
   double m_y;
+};
+
+class SymmetryCombo : public Symmetry {
+public:
+  SymmetryCombo(Symmetry* a, Symmetry* b) : m_a(a), m_b(b) { }
+  void generateStrokes(const Stroke& mainStroke, Strokes& strokes,
+                       ToolLoop* loop) override;
+private:
+  base::UniquePtr<tools::Symmetry> m_a;
+  base::UniquePtr<tools::Symmetry> m_b;
 };
 
 } // namespace tools

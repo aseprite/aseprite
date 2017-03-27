@@ -49,11 +49,19 @@ namespace app {
 
     class Decorator : public EditorDecorator {
     public:
+      struct Handle {
+        int align;
+        gfx::Rect bounds;
+        Handle(int align, const gfx::Rect& bounds)
+          : align(align), bounds(bounds) { }
+      };
+      typedef std::vector<Handle> Handles;
+
       Decorator(StandbyState* standbyState);
       virtual ~Decorator();
 
       TransformHandles* getTransformHandles(Editor* editor);
-      bool getSymmetryHandles(Editor* editor, gfx::Rect& box1, gfx::Rect& box2);
+      bool getSymmetryHandles(Editor* editor, Handles& handles);
 
       bool onSetCursor(tools::Ink* ink, Editor* editor, const gfx::Point& mouseScreenPos);
 

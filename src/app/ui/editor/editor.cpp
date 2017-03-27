@@ -758,31 +758,25 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   if (isActive() &&
       (m_flags & Editor::kShowSymmetryLine) &&
       Preferences::instance().symmetryMode.enabled()) {
-    switch (m_docPref.symmetry.mode()) {
-      case app::gen::SymmetryMode::NONE:
-        // Do nothing
-        break;
-      case app::gen::SymmetryMode::HORIZONTAL: {
-        double x = m_docPref.symmetry.xAxis();
-        if (x > 0) {
-          gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-          g->drawVLine(color,
-                       spriteRect.x + m_proj.applyX<double>(x),
-                       enclosingRect.y,
-                       enclosingRect.h);
-        }
-        break;
+    int mode = int(m_docPref.symmetry.mode());
+    if (mode & int(app::gen::SymmetryMode::HORIZONTAL)) {
+      double x = m_docPref.symmetry.xAxis();
+      if (x > 0) {
+        gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+        g->drawVLine(color,
+                     spriteRect.x + m_proj.applyX<double>(x),
+                     enclosingRect.y,
+                     enclosingRect.h);
       }
-      case app::gen::SymmetryMode::VERTICAL: {
-        double y = m_docPref.symmetry.yAxis();
-        if (y > 0) {
-          gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-          g->drawHLine(color,
-                       enclosingRect.x,
-                       spriteRect.y + m_proj.applyY<double>(y),
-                       enclosingRect.w);
-        }
-        break;
+    }
+    if (mode & int(app::gen::SymmetryMode::VERTICAL)) {
+      double y = m_docPref.symmetry.yAxis();
+      if (y > 0) {
+        gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+        g->drawHLine(color,
+                     enclosingRect.x,
+                     spriteRect.y + m_proj.applyY<double>(y),
+                     enclosingRect.w);
       }
     }
   }

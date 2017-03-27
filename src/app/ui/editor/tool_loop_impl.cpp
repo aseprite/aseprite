@@ -165,6 +165,13 @@ public:
         case app::gen::SymmetryMode::VERTICAL:
           m_symmetry.reset(new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis()));
           break;
+
+        case app::gen::SymmetryMode::BOTH:
+          m_symmetry.reset(
+            new app::tools::SymmetryCombo(
+              new app::tools::HorizontalSymmetry(m_docPref.symmetry.xAxis()),
+              new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis())));
+          break;
       }
     }
 
