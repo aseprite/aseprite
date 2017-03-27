@@ -1538,7 +1538,9 @@ void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc,
 {
   Theme::drawSlices(g, m_sheet, rc,
                     skinPart->spriteBounds(),
-                    skinPart->slicesBounds(), drawCenter);
+                    skinPart->slicesBounds(),
+                    gfx::ColorNone,
+                    drawCenter);
 }
 
 void SkinTheme::drawRect2(Graphics* g, const Rect& rc, int x_mid,

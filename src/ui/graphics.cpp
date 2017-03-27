@@ -200,6 +200,17 @@ void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, i
     gfx::Clip(m_dx+x, m_dy+y, 0, 0, surface->width(), surface->height()));
 }
 
+void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color,
+                                      int srcx, int srcy, int dstx, int dsty, int w, int h)
+{
+  dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
+
+  she::SurfaceLock lockSrc(surface);
+  she::SurfaceLock lockDst(m_surface);
+  m_surface->drawColoredRgbaSurface(surface, color, gfx::ColorNone,
+    gfx::Clip(m_dx+dstx, m_dy+dsty, srcx, srcy, w, h));
+}
+
 void Graphics::blit(she::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
   dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));

@@ -254,6 +254,7 @@
         <part id="drop_down_button_right_selected" x="71" y="48" w1="2" w2="2" w3="3" h1="4" h2="6" h3="6" />
         <part id="transformation_handle" x="208" y="144" w="5" h="5" />
         <part id="pivot_handle" x="224" y="144" w="9" h="9" />
+        <part id="timeline_none" x="228" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
         <part id="timeline_normal" x="240" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
         <part id="timeline_active" x="252" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
         <part id="timeline_hover" x="264" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
@@ -497,9 +498,11 @@
             <text color="disabled" state="disabled" />
         </style>
         <style id="check_box" border="2">
-            <background part="check_focus" color="check_hot_face" state="mouse focus" />
-            <background part="check_focus" color="check_focus_face" state="focus" />
+            <background color="check_hot_face" state="mouse focus" />
+            <background color="check_focus_face" state="focus" />
             <background color="check_hot_face" state="mouse" />
+            <newlayer />
+            <background part="check_focus" state="focus" />
             <text color="text" align="left middle" x="14" />
             <text color="disabled" align="left middle" x="14" state="disabled" />
             <icon part="check_normal" align="left middle" x="2" />
@@ -507,9 +510,11 @@
             <icon part="check_disabled" align="left middle" x="2" state="disabled" />
         </style>
         <style id="radio_button" border="2">
-            <background part="radio_focus" color="radio_hot_face" state="mouse focus" />
-            <background part="radio_focus" color="radio_focus_face" state="focus" />
+            <background color="radio_hot_face" state="mouse focus" />
+            <background color="radio_focus_face" state="focus" />
             <background color="radio_hot_face" state="mouse" />
+            <newlayer />
+            <background part="radio_focus" state="focus" />
             <text color="text" align="left middle" x="14" />
             <text color="disabled" align="left middle" x="14" state="disabled" />
             <icon part="radio_normal" align="left middle" x="2" />
@@ -581,12 +586,14 @@
             <background color="workspace" />
         </style>
         <style id="horizontal_separator" border-left="2" border-top="4" border-right="2" border-bottom="0">
-            <background-border part="separator_horz" color="window_face" align="middle" />
+            <background color="window_face" />
+            <background-border part="separator_horz" align="middle" />
             <text color="separator_label" x="4" align="left middle" />
         </style>
         <style id="menu_separator" extends="horizontal_separator" />
         <style id="separator_in_view" extends="horizontal_separator">
-            <background-border part="separator_horz" color="background" align="middle" />
+            <background color="background" />
+            <background-border part="separator_horz" align="middle" />
         </style>
         <style id="vertical_separator" border-left="4" border-top="2" border-right="1" border-bottom="2">
             <background-border part="separator_vert" align="center" />
@@ -652,8 +659,10 @@
             <text color="tab_active_text" align="left middle" x="4" y="1" state="focus" />
         </style>
         <style id="tab_bottom">
+            <background color="tab_active_face" state="focus" />
+            <newlayer />
             <background part="tab_bottom_normal" align="middle" />
-            <background part="tab_bottom_active" color="tab_active_face" state="focus" />
+            <background part="tab_bottom_active" state="focus" />
         </style>
         <style id="tab_filler">
             <background part="tab_filler" align="middle" />
@@ -677,9 +686,13 @@
             <icon part="tab_home_icon_active" align="left middle" x="4" y="1" state="focus" />
         </style>
         <style id="flag">
-            <background part="flag_normal" color="flag_normal" />
-            <background part="flag_highlight" color="flag_active" state="focus" />
-            <background part="flag_highlight" color="flag_clicked" state="selected" />
+            <background color="flag_normal" />
+            <background color="flag_active" state="focus" />
+            <background color="flag_clicked" state="selected" />
+            <newlayer />
+            <background part="flag_normal" />
+            <background part="flag_highlight" state="focus" />
+            <background part="flag_highlight" state="selected" />
         </style>
         <style id="warning_box" padding-left="2" padding-right="2">
             <background color="workspace" />
@@ -687,14 +700,14 @@
             <icon part="warning_box" align="center middle" />
         </style>
         <style id="timeline">
-            <background color="timeline_normal" part="timeline_normal" />
+            <background part="timeline_normal" />
         </style>
         <style id="timeline_box">
-            <background-border color="timeline_normal" part="timeline_normal" />
-            <background-border color="timeline_hover" part="timeline_hover" state="mouse" />
-            <background-border color="timeline_active" part="timeline_active" state="focus" />
-            <background-border color="timeline_active_hover" part="timeline_active_hover" state="focus mouse" />
-            <background-border color="timeline_clicked" part="timeline_clicked" state="selected" />
+            <background-border part="timeline_normal" />
+            <background-border part="timeline_hover" state="mouse" />
+            <background-border part="timeline_active" state="focus" />
+            <background-border part="timeline_active_hover" state="focus mouse" />
+            <background-border part="timeline_clicked" state="selected" />
         </style>
         <style id="timeline_open_eye" extends="timeline_box">
             <icon part="timeline_open_eye_normal" />
@@ -748,10 +761,11 @@
             <text color="timeline_clicked_text" align="left middle" x="2" state="selected" />
         </style>
         <style id="timeline_layer_text_only" extends="timeline_layer">
-            <background color="none" part="none" repeat="none" />
-            <background color="none" part="none" repeat="none" state="mouse" />
-            <background color="none" part="none" repeat="none" state="focus" />
-            <background color="none" part="none" repeat="none" state="focus mouse" />
+            <background-border part="timeline_none" />
+            <background-border part="timeline_none" state="mouse" />
+            <background-border part="timeline_none" state="focus" />
+            <background-border part="timeline_none" state="focus mouse" />
+            <background-border part="timeline_none" state="selected" />
         </style>
         <style id="timeline_header_frame" extends="timeline_box" font="mini">
             <text color="timeline_normal_text" />
@@ -761,7 +775,7 @@
             <text color="timeline_clicked_text" state="selected" />
         </style>
         <style id="timeline_selected_cel">
-            <background color="timeline_clicked" part="timeline_clicked" />
+            <background part="timeline_clicked" />
             <text color="timeline_clicked_text" />
         </style>
         <style id="timeline_empty_frame">
@@ -807,16 +821,16 @@
             <background part="timeline_onionskin_range" />
         </style>
         <style id="timeline_padding">
-            <background color="timeline_normal" part="timeline_padding" />
+            <background part="timeline_padding" />
         </style>
         <style id="timeline_padding_tr">
-            <background color="timeline_normal" part="timeline_padding_tr" />
+            <background part="timeline_padding_tr" />
         </style>
         <style id="timeline_padding_bl">
-            <background color="timeline_normal" part="timeline_padding_bl" />
+            <background part="timeline_padding_bl" />
         </style>
         <style id="timeline_padding_br">
-            <background color="timeline_normal" part="timeline_padding_br" />
+            <background part="timeline_padding_br" />
         </style>
         <style id="timeline_range_outline">
             <background part="colorbar_selection" state="focus" />

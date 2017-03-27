@@ -75,6 +75,19 @@ void for_each_layer(const Widget* widget,
     callback);
 }
 
+std::function<void(int srcx, int srcy, int dstx, int dsty, int w, int h)>
+getDrawSurfaceFunction(Graphics* g, she::Surface* sheet, gfx::Color color)
+{
+  if (color != gfx::ColorNone)
+    return [g, sheet, color](int srcx, int srcy, int dstx, int dsty, int w, int h) {
+      g->drawColoredRgbaSurface(sheet, color, srcx, srcy, dstx, dsty, w, h);
+    };
+  else
+    return [g, sheet](int srcx, int srcy, int dstx, int dsty, int w, int h) {
+      g->drawRgbaSurface(sheet, srcx, srcy, dstx, dsty, w, h);
+    };
+}
+
 } // anonymous namespace
 
 PaintWidgetPartInfo::PaintWidgetPartInfo()
@@ -296,17 +309,13 @@ void Theme::paintLayer(Graphics* g,
 
     case Style::Layer::Type::kBackground:
     case Style::Layer::Type::kBackgroundBorder:
-      if (layer.color() != gfx::ColorNone) {
-        bgColor = layer.color();
-        g->fillRect(layer.color(), rc);
-      }
-
       if (layer.spriteSheet() &&
           !layer.spriteBounds().isEmpty()) {
         if (!layer.slicesBounds().isEmpty()) {
           Theme::drawSlices(g, layer.spriteSheet(), rc,
                             layer.spriteBounds(),
-                            layer.slicesBounds(), true);
+                            layer.slicesBounds(),
+                            layer.color(), true);
 
           if (layer.type() == Style::Layer::Type::kBackgroundBorder) {
             rc.x += layer.slicesBounds().x;
@@ -319,77 +328,80 @@ void Theme::paintLayer(Graphics* g,
         else {
           IntersectClip clip(g, rc);
           if (clip) {
+            auto draw = getDrawSurfaceFunction(
+              g, layer.spriteSheet(), layer.color());
+
             switch (layer.align()) {
 
               // Horizontal line
               case MIDDLE:
                 for (int x=rc.x; x<rc.x2(); x+=layer.spriteBounds().w) {
-                  g->drawRgbaSurface(layer.spriteSheet(),
-                                     layer.spriteBounds().x,
-                                     layer.spriteBounds().y,
-                                     x, rc.y+rc.h/2-layer.spriteBounds().h/2,
-                                     layer.spriteBounds().w,
-                                     layer.spriteBounds().h);
+                  draw(layer.spriteBounds().x,
+                       layer.spriteBounds().y,
+                       x, rc.y+rc.h/2-layer.spriteBounds().h/2,
+                       layer.spriteBounds().w,
+                       layer.spriteBounds().h);
                 }
                 break;
 
               // Vertical line
               case CENTER:
                 for (int y=rc.y; y<rc.y2(); y+=layer.spriteBounds().h) {
-                  g->drawRgbaSurface(layer.spriteSheet(),
-                                     layer.spriteBounds().x,
-                                     layer.spriteBounds().y,
-                                     rc.x+rc.w/2-layer.spriteBounds().w/2, y,
-                                     layer.spriteBounds().w,
-                                     layer.spriteBounds().h);
+                  draw(layer.spriteBounds().x,
+                       layer.spriteBounds().y,
+                       rc.x+rc.w/2-layer.spriteBounds().w/2, y,
+                       layer.spriteBounds().w,
+                       layer.spriteBounds().h);
                 }
                 break;
 
               // One instance
               case CENTER | MIDDLE:
-                g->drawRgbaSurface(layer.spriteSheet(),
-                                   layer.spriteBounds().x,
-                                   layer.spriteBounds().y,
-                                   rc.x+rc.w/2-layer.spriteBounds().w/2,
-                                   rc.y+rc.h/2-layer.spriteBounds().h/2,
-                                   layer.spriteBounds().w,
-                                   layer.spriteBounds().h);
+                draw(layer.spriteBounds().x,
+                     layer.spriteBounds().y,
+                     rc.x+rc.w/2-layer.spriteBounds().w/2,
+                     rc.y+rc.h/2-layer.spriteBounds().h/2,
+                     layer.spriteBounds().w,
+                     layer.spriteBounds().h);
                 break;
 
               // Pattern
               case 0:
                 for (int y=rc.y; y<rc.y2(); y+=layer.spriteBounds().h) {
                   for (int x=rc.x; x<rc.x2(); x+=layer.spriteBounds().w)
-                    g->drawRgbaSurface(layer.spriteSheet(),
-                                       layer.spriteBounds().x,
-                                       layer.spriteBounds().y,
-                                       x, y,
-                                       layer.spriteBounds().w,
-                                       layer.spriteBounds().h);
+                    draw(layer.spriteBounds().x,
+                         layer.spriteBounds().y,
+                         x, y,
+                         layer.spriteBounds().w,
+                         layer.spriteBounds().h);
                 }
                 break;
             }
           }
         }
       }
+      else if (layer.color() != gfx::ColorNone) {
+        bgColor = layer.color();
+        g->fillRect(layer.color(), rc);
+      }
       break;
 
     case Style::Layer::Type::kBorder:
-      if (layer.color() != gfx::ColorNone) {
-        g->drawRect(layer.color(), rc);
-      }
-
       if (layer.spriteSheet() &&
           !layer.spriteBounds().isEmpty() &&
           !layer.slicesBounds().isEmpty()) {
         Theme::drawSlices(g, layer.spriteSheet(), rc,
                           layer.spriteBounds(),
-                          layer.slicesBounds(), false);
+                          layer.slicesBounds(),
+                          layer.color(), false);
 
         rc.x += layer.slicesBounds().x;
         rc.y += layer.slicesBounds().y;
         rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
         rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+      }
+      else if (layer.color() != gfx::ColorNone) {
+        g->drawRect(layer.color(), rc);
       }
       break;
 
@@ -672,6 +684,7 @@ void Theme::drawSlices(Graphics* g, she::Surface* sheet,
                        const gfx::Rect& rc,
                        const gfx::Rect& sprite,
                        const gfx::Rect& slices,
+                       const gfx::Color color,
                        const bool drawCenter)
 {
   const int w1 = slices.x;
@@ -682,51 +695,52 @@ void Theme::drawSlices(Graphics* g, she::Surface* sheet,
   const int h3 = sprite.h-h1-h2;
   const int x2 = rc.x2()-w3;
   const int y2 = rc.y2()-h3;
+  auto draw = getDrawSurfaceFunction(g, sheet, color);
 
   // Top
   int x = rc.x;
   int y = rc.y;
-  g->drawRgbaSurface(sheet, sprite.x, sprite.y,
-                     x, y, w1, h1);
+  draw(sprite.x, sprite.y,
+       x, y, w1, h1);
   {
     IntersectClip clip(g, gfx::Rect(rc.x+w1, rc.y, rc.w-w1-w3, h1));
     if (clip) {
       for (x+=w1; x<x2; x+=w2) {
-        g->drawRgbaSurface(sheet, sprite.x+w1, sprite.y,
-                           x, y, w2, h1);
+        draw(sprite.x+w1, sprite.y,
+             x, y, w2, h1);
       }
     }
   }
-  g->drawRgbaSurface(sheet, sprite.x+w1+w2, sprite.y,
-                     x2, y, w3, h1);
+  draw(sprite.x+w1+w2, sprite.y,
+       x2, y, w3, h1);
 
   // Bottom
   x = rc.x;
   y = y2;
-  g->drawRgbaSurface(sheet, sprite.x, sprite.y+h1+h2,
-                     x, y, w1, h3);
+  draw(sprite.x, sprite.y+h1+h2,
+       x, y, w1, h3);
   {
     IntersectClip clip(g, gfx::Rect(rc.x+w1, y2, rc.w-w1-w3, h3));
     if (clip) {
       for (x+=w1; x<x2; x+=w2) {
-        g->drawRgbaSurface(sheet, sprite.x+w1, sprite.y+h1+h2,
-                           x, y2, w2, h3);
+        draw(sprite.x+w1, sprite.y+h1+h2,
+             x, y2, w2, h3);
       }
     }
   }
-  g->drawRgbaSurface(sheet, sprite.x+w1+w2, sprite.y+h1+h2,
-                     x2, y2, w3, h3);
+  draw(sprite.x+w1+w2, sprite.y+h1+h2,
+       x2, y2, w3, h3);
 
   // Left & Right
   IntersectClip clip(g, gfx::Rect(rc.x, rc.y+h1, rc.w, rc.h-h1-h3));
   if (clip) {
     for (y=rc.y+h1; y<y2; y+=h2) {
       // Left
-      g->drawRgbaSurface(sheet, sprite.x, sprite.y+h1,
-                         rc.x, y, w1, h2);
+      draw(sprite.x, sprite.y+h1,
+           rc.x, y, w1, h2);
       // Right
-      g->drawRgbaSurface(sheet, sprite.x+w1+w2, sprite.y+h1,
-                         x2, y, w3, h2);
+      draw(sprite.x+w1+w2, sprite.y+h1,
+           x2, y, w3, h2);
     }
   }
 
@@ -736,7 +750,8 @@ void Theme::drawSlices(Graphics* g, she::Surface* sheet,
     if (clip) {
       for (y=rc.y+h1; y<y2; y+=h2) {
         for (x=rc.x+w1; x<x2; x+=w2)
-          g->drawRgbaSurface(sheet, sprite.x+w1, sprite.y+h1, x, y, w2, h2);
+          draw(sprite.x+w1, sprite.y+h1,
+               x, y, w2, h2);
       }
     }
   }

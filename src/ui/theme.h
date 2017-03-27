@@ -118,6 +118,7 @@ namespace ui {
                            const gfx::Rect& rc,
                            const gfx::Rect& sprite,
                            const gfx::Rect& slices,
+                           const gfx::Color color,
                            const bool drawCenter = true);
 
     static  void drawTextBox(Graphics* g, Widget* textbox,

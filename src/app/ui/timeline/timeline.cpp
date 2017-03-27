@@ -2023,16 +2023,24 @@ void Timeline::drawFrameTags(ui::Graphics* g)
     bounds.h = bounds.y2() - frameTagBounds.y2();
     bounds.y = frameTagBounds.y2();
 
+    gfx::Color bg = frameTag->color();
     {
       IntersectClip clip(g, bounds);
-      if (clip)
+      if (clip) {
+        for (auto& layer : styles.timelineLoopRange()->layers()) {
+          if (layer.type() == Style::Layer::Type::kBackground ||
+              layer.type() == Style::Layer::Type::kBackgroundBorder ||
+              layer.type() == Style::Layer::Type::kBorder) {
+            const_cast<Style::Layer*>(&layer)->setColor(bg);
+          }
+        }
         drawPart(g, bounds, nullptr, styles.timelineLoopRange());
+      }
     }
 
     {
       bounds = frameTagBounds;
 
-      gfx::Color bg = frameTag->color();
       if (m_clk.part == PART_FRAME_TAG && m_clk.frameTag == frameTag->id()) {
         bg = color_utils::blackandwhite_neg(bg);
       }
