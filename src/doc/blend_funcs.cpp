@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -73,9 +73,9 @@ inline uint32_t blend_soft_light(uint32_t _b, uint32_t _s)
     d = std::sqrt(b);
 
   if (s <= 0.5)
-    r = b - (1.0 - 2.0*s) * b * (1.0 - b);
+    r = b - (1.0 - 2.0 * s) * b * (1.0 - b);
   else
-    r = b - (1.0 - 2.0*s) * b * (1.0 - b);
+    r = b + (2.0 * s - 1.0) * (d - b);
 
   return (uint32_t)(r * 255 + 0.5);
 }
