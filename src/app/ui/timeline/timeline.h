@@ -4,15 +4,15 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_TIMELINE_H_INCLUDED
-#define APP_UI_TIMELINE_H_INCLUDED
+#ifndef APP_UI_TIMELINE_TIMELINE_H_INCLUDED
+#define APP_UI_TIMELINE_TIMELINE_H_INCLUDED
 #pragma once
 
 #include "app/document_range.h"
 #include "app/pref/preferences.h"
-#include "app/ui/ani_controls.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
+#include "app/ui/timeline/ani_controls.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/frame.h"

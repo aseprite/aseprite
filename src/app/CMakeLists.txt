@@ -410,7 +410,6 @@ add_library(app-lib
   tools/tool_loop_manager.cpp
   transaction.cpp
   transformation.cpp
-  ui/ani_controls.cpp
   ui/app_menuitem.cpp
   ui/backup_indicator.cpp
   ui/browser_view.cpp
@@ -481,6 +480,7 @@ add_library(app-lib
   ui/slice_window.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
+  ui/timeline/ani_controls.cpp
   ui/timeline/timeline.cpp
   ui/toolbar.cpp
   ui/user_data_popup.cpp
