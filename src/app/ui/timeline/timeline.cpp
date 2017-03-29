@@ -77,7 +77,6 @@ enum {
   PART_HEADER_ONIONSKIN_RANGE_RIGHT,
   PART_HEADER_LAYER,
   PART_HEADER_FRAME,
-  PART_HEADER_FRAME_TAGS,
   PART_LAYER,
   PART_LAYER_EYE_ICON,
   PART_LAYER_PADLOCK_ICON,
@@ -86,6 +85,10 @@ enum {
   PART_CEL,
   PART_RANGE_OUTLINE,
   PART_FRAME_TAG,
+  PART_FRAME_TAGS,
+  PART_FRAME_TAG_BAND,
+  PART_FRAME_TAG_SWITCH_BUTTONS,
+  PART_FRAME_TAG_SWITCH_BAND_BUTTON,
 };
 
 struct Timeline::DrawCelData {
@@ -139,6 +142,7 @@ Timeline::Timeline()
   , m_sprite(NULL)
   , m_state(STATE_STANDBY)
   , m_tagBands(0)
+  , m_tagFocusBand(-1)
   , m_separator_x(100 * guiscale())
   , m_separator_w(1)
   , m_confPopup(NULL)
@@ -712,6 +716,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         bool regenLayers = false;
+        bool relayout = false;
         setHot(hitTest(msg, mouseMsg->position() - bounds().origin()));
 
         switch (m_hot.part) {
@@ -955,12 +960,27 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
+          case PART_FRAME_TAG_SWITCH_BAND_BUTTON:
+            if (m_clk.band >= 0) {
+              if (m_tagFocusBand < 0) {
+                m_tagFocusBand = m_clk.band;
+              }
+              else {
+                m_tagFocusBand = -1;
+              }
+              regenLayers = true;
+              relayout = true;
+            }
+            break;
+
         }
 
         if (regenLayers) {
           regenerateLayers();
           invalidate();
         }
+        if (relayout)
+          layout();
 
         if (m_state == STATE_MOVING_RANGE &&
             m_dropRange.type() != Range::kNone) {
@@ -1139,7 +1159,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
   m_aniControls.setBounds(
     gfx::Rect(
       rc.x,
-      rc.y+MAX(0, m_tagBands-1)*oneTagHeight(),
+      rc.y+(visibleTagBands()-1)*oneTagHeight(),
       MIN(sz.w, m_separator_x),
       oneTagHeight()));
 
@@ -2000,7 +2020,7 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& full_boun
 
 void Timeline::drawFrameTags(ui::Graphics* g)
 {
-  IntersectClip clip(g, getPartBounds(Hit(PART_HEADER_FRAME_TAGS)));
+  IntersectClip clip(g, getPartBounds(Hit(PART_FRAME_TAGS)));
   if (!clip)
     return;
 
@@ -2013,9 +2033,29 @@ void Timeline::drawFrameTags(ui::Graphics* g)
       clientBounds().w,
       theme->dimensions.timelineTagsAreaHeight()));
 
+  // Draw active frame tag band
+  if (m_hot.band >= 0 &&
+      m_tagBands > 1 &&
+      m_tagFocusBand < 0) {
+    gfx::Rect bandBounds =
+      getPartBounds(Hit(PART_FRAME_TAG_BAND, -1, 0,
+                        doc::NullId, m_hot.band));
+    g->fillRect(theme->colors.timelineBandHighlight(), bandBounds);
+  }
+
   std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
 
   for (FrameTag* frameTag : m_sprite->frameTags()) {
+    int band = -1;
+    if (m_tagFocusBand >= 0) {
+      auto it = m_tagBand.find(frameTag);
+      if (it != m_tagBand.end()) {
+        band = it->second;
+        if (band != m_tagFocusBand)
+          continue;
+      }
+    }
+
     gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame()));
     gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->toFrame()));
     gfx::Rect bounds = bounds1.createUnion(bounds2);
@@ -2069,6 +2109,21 @@ void Timeline::drawFrameTags(ui::Graphics* g)
       if (tagsPerFrame[f] < 255)
         ++tagsPerFrame[f];
     }
+  }
+
+  // Draw button to expand/collapse the active band
+  if (m_hot.band >= 0 && m_tagBands > 1) {
+    gfx::Rect butBounds =
+      getPartBounds(Hit(PART_FRAME_TAG_SWITCH_BAND_BUTTON, -1, 0,
+                        doc::NullId, m_hot.band));
+    PaintWidgetPartInfo info;
+    if (m_hot.part == PART_FRAME_TAG_SWITCH_BAND_BUTTON) {
+      info.styleFlags |= ui::Style::Layer::kMouse;
+      if (hasCapture())
+        info.styleFlags |= ui::Style::Layer::kSelected;
+    }
+    theme->paintWidgetPart(g, styles.timelineSwitchBandButton(),
+                           butBounds, info);
   }
 }
 
@@ -2277,12 +2332,6 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         + frameBoxWidth()*MAX(firstFrame(), hit.frame) - viewScroll().x,
         bounds.y + y, frameBoxWidth(), headerBoxHeight());
 
-    case PART_HEADER_FRAME_TAGS:
-      return gfx::Rect(
-          bounds.x + m_separator_x + m_separator_w - 1,
-          bounds.y,
-          bounds.w - m_separator_x - m_separator_w + 1, y);
-
     case PART_LAYER:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
@@ -2356,15 +2405,53 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         bounds.w = font()->textLength(frameTag->name().c_str()) + 4*ui::guiscale();
         bounds.h = font()->height() + 2*ui::guiscale();
 
-        auto it = m_tagBand.find(frameTag);
-        if (it != m_tagBand.end()) {
-          int dy = (m_tagBands-it->second-1)*oneTagHeight();
-          bounds.y -= dy;
+        if (m_tagFocusBand < 0) {
+          auto it = m_tagBand.find(frameTag);
+          if (it != m_tagBand.end()) {
+            int dy = (m_tagBands-it->second-1)*oneTagHeight();
+            bounds.y -= dy;
+          }
         }
 
         return bounds;
       }
       break;
+    }
+
+    case PART_FRAME_TAGS:
+      return gfx::Rect(
+        bounds.x + m_separator_x + m_separator_w - 1,
+        bounds.y,
+        bounds.w - m_separator_x - m_separator_w + 1, y);
+
+    case PART_FRAME_TAG_BAND:
+      return gfx::Rect(
+        bounds.x + m_separator_x + m_separator_w - 1,
+        bounds.y
+        + (m_tagFocusBand < 0 ? oneTagHeight() * MAX(0, hit.band): 0),
+        bounds.w - m_separator_x - m_separator_w + 1,
+        oneTagHeight());
+
+    case PART_FRAME_TAG_SWITCH_BUTTONS: {
+      gfx::Size sz = theme()->calcSizeHint(
+        this, skinTheme()->styles.timelineSwitchBandButton());
+
+      return gfx::Rect(
+        bounds.x + bounds.w - sz.w,
+        bounds.y,
+        sz.w, y);
+    }
+
+    case PART_FRAME_TAG_SWITCH_BAND_BUTTON: {
+      gfx::Size sz = theme()->calcSizeHint(
+        this, skinTheme()->styles.timelineSwitchBandButton());
+
+      return gfx::Rect(
+        bounds.x + bounds.w - sz.w - 2*ui::guiscale(),
+        bounds.y
+        + (m_tagFocusBand < 0 ? oneTagHeight() * MAX(0, hit.band): 0)
+        + oneTagHeight()/2 - sz.h/2,
+        sz.w, sz.h);
     }
 
   }
@@ -2403,6 +2490,12 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
 
 void Timeline::invalidateHit(const Hit& hit)
 {
+  if (hit.band >= 0) {
+    Hit hit2 = hit;
+    hit2.part = PART_FRAME_TAG_BAND;
+    invalidateRect(getPartBounds(hit2).offset(origin()));
+  }
+
   invalidateRect(getPartBounds(hit).offset(origin()));
 }
 
@@ -2463,13 +2556,25 @@ void Timeline::regenerateTagBands()
         ++tagsPerFrame[f];
     }
   }
-  int oldBands = m_tagBands;
+
+  const int oldVisibleBands = visibleTagBands();
   m_tagBands = 0;
   for (int i : tagsPerFrame)
     m_tagBands = MAX(m_tagBands, i);
 
-  if (oldBands != m_tagBands)
+  if (m_tagFocusBand >= m_tagBands)
+    m_tagFocusBand = -1;
+
+  if (oldVisibleBands != visibleTagBands())
     layout();
+}
+
+int Timeline::visibleTagBands() const
+{
+  if (m_tagBands > 1 && m_tagFocusBand == -1)
+    return m_tagBands;
+  else
+    return 1;
 }
 
 void Timeline::updateScrollBars()
@@ -2544,13 +2649,72 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.part = PART_SEPARATOR;
     }
     // Is the mouse on the frame tags area?
-    else if (getPartBounds(Hit(PART_HEADER_FRAME_TAGS)).contains(mousePos)) {
-      for (FrameTag* frameTag : m_sprite->frameTags()) {
-        gfx::Rect bounds = getPartBounds(Hit(PART_FRAME_TAG, 0, 0, frameTag->id()));
-        if (bounds.contains(mousePos)) {
-          hit.part = PART_FRAME_TAG;
-          hit.frameTag = frameTag->id();
-          break;
+    else if (getPartBounds(Hit(PART_FRAME_TAGS)).contains(mousePos)) {
+      // Mouse in switch band button
+      if (hit.part == PART_NOTHING) {
+        if (m_tagFocusBand < 0) {
+          for (int band=0; band<m_tagBands; ++band) {
+            gfx::Rect bounds = getPartBounds(
+              Hit(PART_FRAME_TAG_SWITCH_BAND_BUTTON, 0, 0,
+                  doc::NullId, band));
+            if (bounds.contains(mousePos)) {
+              hit.part = PART_FRAME_TAG_SWITCH_BAND_BUTTON;
+              hit.band = band;
+              break;
+            }
+          }
+        }
+        else {
+          gfx::Rect bounds = getPartBounds(
+            Hit(PART_FRAME_TAG_SWITCH_BAND_BUTTON, 0, 0,
+                doc::NullId, m_tagFocusBand));
+          if (bounds.contains(mousePos)) {
+            hit.part = PART_FRAME_TAG_SWITCH_BAND_BUTTON;
+            hit.band = m_tagFocusBand;
+          }
+        }
+      }
+
+      // Mouse in frame tags
+      if (hit.part == PART_NOTHING) {
+        for (FrameTag* frameTag : m_sprite->frameTags()) {
+          gfx::Rect bounds = getPartBounds(Hit(PART_FRAME_TAG, 0, 0, frameTag->id()));
+          if (bounds.contains(mousePos)) {
+            const int band = m_tagBand[frameTag];
+            if (m_tagFocusBand >= 0 &&
+                m_tagFocusBand != band)
+              continue;
+
+            hit.part = PART_FRAME_TAG;
+            hit.frameTag = frameTag->id();
+            hit.band = band;
+            break;
+          }
+        }
+      }
+
+      // Mouse in bands
+      if (hit.part == PART_NOTHING) {
+        if (m_tagFocusBand < 0) {
+          for (int band=0; band<m_tagBands; ++band) {
+            gfx::Rect bounds = getPartBounds(
+              Hit(PART_FRAME_TAG_BAND, 0, 0,
+                  doc::NullId, band));
+            if (bounds.contains(mousePos)) {
+              hit.part = PART_FRAME_TAG_BAND;
+              hit.band = band;
+              break;
+            }
+          }
+        }
+        else {
+          gfx::Rect bounds = getPartBounds(
+            Hit(PART_FRAME_TAG_BAND, 0, 0,
+                doc::NullId, m_tagFocusBand));
+          if (bounds.contains(mousePos)) {
+            hit.part = PART_FRAME_TAG_BAND;
+            hit.band = m_tagFocusBand;
+          }
         }
       }
     }
@@ -3195,7 +3359,7 @@ int Timeline::topHeight() const
   int h = 0;
   if (m_document && m_sprite) {
     h += skinTheme()->dimensions.timelineTopBorder();
-    h += oneTagHeight() * MAX(1, m_tagBands);
+    h += oneTagHeight() * visibleTagBands();
   }
   return h;
 }

@@ -93,6 +93,7 @@
         <color id="timeline_clicked" value="#536069" />
         <color id="timeline_clicked_text" value="#ffffff" />
         <color id="timeline_padding" value="#7d929e" />
+        <color id="timeline_band_highlight" value="#bec8ce" />
         <color id="status_bar_text" value="#2e3234" />
         <color id="status_bar_face" value="#7d929e" />
         <color id="flag_normal" value="#d3cbbe" />
@@ -405,10 +406,12 @@
             <background color="window_titlebar_face" />
             <text color="window_titlebar_text" align="left middle" />
         </style>
-        <style id="window_close_button" margin-top="3" margin-right="3">
+        <style id="window_button">
             <background part="window_button_normal" align="center middle" />
             <background part="window_button_hot" state="mouse" align="center middle" />
             <background part="window_button_selected" state="selected" align="center middle" />
+        </style>
+        <style id="window_close_button" extends="window_button" margin-top="3" margin-right="3">
             <icon part="window_close_icon" color="button_normal_text" />
             <icon part="window_close_icon" color="button_hot_text" state="mouse" />
             <icon part="window_close_icon" color="button_selected_text" state="selected" />
@@ -844,6 +847,11 @@
         </style>
         <style id="timeline_loop_range">
             <background part="timeline_loop_range" />
+        </style>
+        <style id="timeline_switch_band_button" extends="window_button">
+            <icon part="window_center_icon" color="button_normal_text" />
+            <icon part="window_center_icon" color="button_hot_text" state="mouse" />
+            <icon part="window_center_icon" color="button_selected_text" state="selected" />
         </style>
         <style id="shade_selection">
             <background part="colorbar_selection_hot" />

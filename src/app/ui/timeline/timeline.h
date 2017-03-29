@@ -152,9 +152,19 @@ namespace app {
       frame_t frame;
       ObjectId frameTag;
       bool veryBottom;
+      int band;
 
-      Hit(int part = 0, layer_t layer = -1, frame_t frame = 0, ObjectId frameTag = NullId)
-        : part(part), layer(layer), frame(frame), frameTag(frameTag), veryBottom(false) {
+      Hit(int part = 0,
+          layer_t layer = -1,
+          frame_t frame = 0,
+          ObjectId frameTag = NullId,
+          int band = -1)
+        : part(part),
+          layer(layer),
+          frame(frame),
+          frameTag(frameTag),
+          veryBottom(false),
+          band(band) {
       }
 
       bool operator!=(const Hit& other) const {
@@ -162,7 +172,8 @@ namespace app {
           part != other.part ||
           layer != other.layer ||
           frame != other.frame ||
-          frameTag != other.frameTag;
+          frameTag != other.frameTag ||
+          band != other.band;
       }
 
       FrameTag* getFrameTag() const;
@@ -267,6 +278,7 @@ namespace app {
     void invalidateHit(const Hit& hit);
     void regenerateLayers();
     void regenerateTagBands();
+    int visibleTagBands() const;
     void updateScrollBars();
     void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
@@ -338,6 +350,7 @@ namespace app {
 
     // Data used to display frame tags
     int m_tagBands;
+    int m_tagFocusBand;
     std::map<FrameTag*, int> m_tagBand;
 
     int m_separator_x;
