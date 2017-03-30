@@ -230,10 +230,10 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
 
 void PreviewEditorWindow::onClose(ui::CloseEvent& ev)
 {
-  Button* closeButton = dynamic_cast<Button*>(ev.getSource());
+  ButtonBase* closeButton = dynamic_cast<ButtonBase*>(ev.getSource());
   if (closeButton &&
       closeButton->type() == kWindowCloseButtonWidget) {
-    // Here we don't use "setMiniEditorEnabled" to change the state of
+    // Here we don't use "setPreviewEnabled" to change the state of
     // "m_isEnabled" because we're coming from a close event of the
     // window.
     m_isEnabled = false;
