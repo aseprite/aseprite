@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 
 namespace doc {
   class Cel;
+  class FrameTag;
   class Image;
   class Layer;
   class LayerImage;
@@ -46,6 +47,7 @@ namespace doc {
     Image* image() const { return m_image; }
     int imageIndex() const { return m_imageIndex; }
     frame_t frame() const { return m_frame; }
+    FrameTag* frameTag() const { return m_frameTag; }
     const gfx::Region& region() const { return m_region; }
 
     void sprite(Sprite* sprite) { m_sprite = sprite; }
@@ -54,6 +56,7 @@ namespace doc {
     void image(Image* image) { m_image = image; }
     void imageIndex(int imageIndex) { m_imageIndex = imageIndex; }
     void frame(frame_t frame) { m_frame = frame; }
+    void frameTag(FrameTag* frameTag) { m_frameTag = frameTag; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
 
     // Destination of the operation.
@@ -71,6 +74,7 @@ namespace doc {
     Image* m_image;
     int m_imageIndex;
     frame_t m_frame;
+    FrameTag* m_frameTag;
     gfx::Region m_region;
 
     // For copy/move commands, the m_layer/m_frame are source of the

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,6 +27,7 @@ namespace doc {
     virtual void onAddLayer(DocumentEvent& ev) { }
     virtual void onAddFrame(DocumentEvent& ev) { }
     virtual void onAddCel(DocumentEvent& ev) { }
+    virtual void onAddFrameTag(DocumentEvent& ev) { }
 
     virtual void onBeforeRemoveLayer(DocumentEvent& ev) { }
     virtual void onAfterRemoveLayer(DocumentEvent& ev) { }
@@ -34,7 +35,7 @@ namespace doc {
     // Called when a frame is removed. It's called after the frame was
     // removed, and the sprite's total number of frames is modified.
     virtual void onRemoveFrame(DocumentEvent& ev) { }
-
+    virtual void onRemoveFrameTag(DocumentEvent& ev) { }
     virtual void onRemoveCel(DocumentEvent& ev) { }
 
     virtual void onSpriteSizeChanged(DocumentEvent& ev) { }

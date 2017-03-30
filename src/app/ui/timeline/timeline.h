@@ -126,6 +126,8 @@ namespace app {
     void onRemoveFrame(doc::DocumentEvent& ev) override;
     void onSelectionChanged(doc::DocumentEvent& ev) override;
     void onLayerNameChange(doc::DocumentEvent& ev) override;
+    void onAddFrameTag(DocumentEvent& ev) override;
+    void onRemoveFrameTag(DocumentEvent& ev) override;
 
     // app::Context slots.
     void onAfterCommandExecution(CommandExecutionEvent& ev);

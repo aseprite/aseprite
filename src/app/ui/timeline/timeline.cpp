@@ -211,7 +211,12 @@ void Timeline::onThumbnailsPrefChange()
 
 void Timeline::updateUsingEditor(Editor* editor)
 {
+  // TODO if editor == m_editor, avoid doing a lot of extra work here
+
   m_aniControls.updateUsingEditor(editor);
+
+  if (editor != m_editor)
+    m_tagFocusBand = -1;
 
   detachDocument();
 
@@ -1437,6 +1442,20 @@ void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
 void Timeline::onLayerNameChange(doc::DocumentEvent& ev)
 {
   invalidate();
+}
+
+void Timeline::onAddFrameTag(DocumentEvent& ev)
+{
+  if (m_tagFocusBand >= 0) {
+    m_tagFocusBand = -1;
+    regenerateLayers();
+    layout();
+  }
+}
+
+void Timeline::onRemoveFrameTag(DocumentEvent& ev)
+{
+  onAddFrameTag(ev);
 }
 
 void Timeline::onStateChanged(Editor* editor)

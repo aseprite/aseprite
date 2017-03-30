@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,8 @@
 
 #include "app/cmd/add_frame_tag.h"
 
+#include "doc/document.h"
+#include "doc/document_event.h"
 #include "doc/frame_tag.h"
 #include "doc/frame_tag_io.h"
 #include "doc/sprite.h"
@@ -33,6 +35,13 @@ void AddFrameTag::onExecute()
 
   sprite->frameTags().add(frameTag);
   sprite->incrementVersion();
+
+  // Notify observers about the new frame.
+  Document* doc = sprite->document();
+  DocumentEvent ev(doc);
+  ev.sprite(sprite);
+  ev.frameTag(frameTag);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrameTag, ev);
 }
 
 void AddFrameTag::onUndo()
@@ -41,6 +50,15 @@ void AddFrameTag::onUndo()
   FrameTag* frameTag = this->frameTag();
   write_frame_tag(m_stream, frameTag);
   m_size = size_t(m_stream.tellp());
+
+  // Notify observers about the new frame.
+  {
+    Document* doc = sprite->document();
+    DocumentEvent ev(doc);
+    ev.sprite(sprite);
+    ev.frameTag(frameTag);
+    doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveFrameTag, ev);
+  }
 
   sprite->frameTags().remove(frameTag);
   sprite->incrementVersion();
@@ -58,6 +76,13 @@ void AddFrameTag::onRedo()
   m_stream.str(std::string());
   m_stream.clear();
   m_size = 0;
+
+  // Notify observers about the new frame.
+  Document* doc = sprite->document();
+  DocumentEvent ev(doc);
+  ev.sprite(sprite);
+  ev.frameTag(frameTag);
+  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrameTag, ev);
 }
 
 } // namespace cmd
