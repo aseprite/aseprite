@@ -21,7 +21,6 @@
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
-#include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
@@ -42,17 +41,12 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-class MiniCenterButton : public SkinButton<CheckBox> {
+class MiniCenterButton : public CheckBox {
 public:
-  MiniCenterButton()
-    : SkinButton<CheckBox>(
-      SkinTheme::instance()->parts.windowButtonNormal(),
-      SkinTheme::instance()->parts.windowButtonHot(),
-      SkinTheme::instance()->parts.windowButtonSelected(),
-      SkinTheme::instance()->parts.windowCenterIcon())
-  {
+  MiniCenterButton() : CheckBox("") {
     setDecorative(true);
     setSelected(true);
+    setStyle(SkinTheme::instance()->styles.windowCenterButton());
   }
 
 protected:
@@ -60,22 +54,22 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size iconSize = theme->parts.windowButtonNormal()->size();
-    gfx::Size closeSize = theme->parts.windowButtonNormal()->size();
+    gfx::Size centerSize = this->sizeHint();
+    gfx::Size playSize = theme->calcSizeHint(this, theme->styles.windowPlayButton());
+    gfx::Size closeSize = theme->calcSizeHint(this, theme->styles.windowCloseButton());
 
-    rect.w = iconSize.w;
-    rect.h = iconSize.h;
-
-    rect.offset(window->bounds().x2() - 3*guiscale()
-      - iconSize.w - 1*guiscale()
-      - iconSize.w - 1*guiscale() - closeSize.w,
-      window->bounds().y + 3*guiscale());
+    rect.w = centerSize.w;
+    rect.h = centerSize.h;
+    rect.offset(window->bounds().x2()
+                - theme->styles.windowCloseButton()->margin().width() - closeSize.w
+                - theme->styles.windowPlayButton()->margin().width() - playSize.w
+                - style()->margin().right() - centerSize.w,
+                window->bounds().y + style()->margin().top());
 
     setBounds(rect);
   }
 
-  bool onProcessMessage(Message* msg) override
-  {
+  bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
 
       case kSetCursorMessage:
@@ -83,18 +77,13 @@ protected:
         return true;
     }
 
-    return SkinButton<CheckBox>::onProcessMessage(msg);
+    return CheckBox::onProcessMessage(msg);
   }
 };
 
-class MiniPlayButton : public SkinButton<Button> {
+class MiniPlayButton : public Button {
 public:
-  MiniPlayButton()
-    : SkinButton<Button>(SkinTheme::instance()->parts.windowButtonNormal(),
-                         SkinTheme::instance()->parts.windowButtonHot(),
-                         SkinTheme::instance()->parts.windowButtonSelected(),
-                         SkinPartPtr(nullptr))
-    , m_isPlaying(false) {
+  MiniPlayButton() : Button(""), m_isPlaying(false) {
     enableFlags(CTRL_RIGHT_CLICK);
     setupIcons();
     setDecorative(true);
@@ -115,22 +104,23 @@ private:
     m_isPlaying = !m_isPlaying;
     setupIcons();
 
-    SkinButton<Button>::onClick(ev);
+    Button::onClick(ev);
   }
 
   void onSetDecorativeWidgetBounds() override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size playSize = theme->parts.windowButtonNormal()->size();
-    gfx::Size closeSize = theme->parts.windowButtonNormal()->size();
+    gfx::Size playSize = this->sizeHint();
+    gfx::Size closeSize = theme->calcSizeHint(this, theme->styles.windowCloseButton());
+    gfx::Border margin(0, 0, 0, 0);
 
     rect.w = playSize.w;
     rect.h = playSize.h;
-
-    rect.offset(window->bounds().x2() - 3*guiscale()
-      - playSize.w - 1*guiscale() - closeSize.w,
-      window->bounds().y + 3*guiscale());
+    rect.offset(window->bounds().x2()
+                - theme->styles.windowCloseButton()->margin().width() - closeSize.w
+                - style()->margin().right() - playSize.w,
+                window->bounds().y + style()->margin().top());
 
     setBounds(rect);
   }
@@ -157,16 +147,15 @@ private:
       }
     }
 
-    return SkinButton<Button>::onProcessMessage(msg);
+    return Button::onProcessMessage(msg);
   }
 
   void setupIcons() {
     SkinTheme* theme = SkinTheme::instance();
-
     if (m_isPlaying)
-      setIcon(theme->parts.windowStopIcon());
+      setStyle(theme->styles.windowStopButton());
     else
-      setIcon(theme->parts.windowPlayIcon());
+      setStyle(theme->styles.windowPlayButton());
   }
 
   bool m_isPlaying;

@@ -407,14 +407,35 @@
             <text color="window_titlebar_text" align="left middle" />
         </style>
         <style id="window_button">
+            <background color="window_titlebar_face" />
+	    <newlayer />
             <background part="window_button_normal" align="center middle" />
             <background part="window_button_hot" state="mouse" align="center middle" />
             <background part="window_button_selected" state="selected" align="center middle" />
         </style>
         <style id="window_close_button" extends="window_button" margin-top="3" margin-right="3">
+            <newlayer />
             <icon part="window_close_icon" color="button_normal_text" />
             <icon part="window_close_icon" color="button_hot_text" state="mouse" />
             <icon part="window_close_icon" color="button_selected_text" state="selected" />
+        </style>
+        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="2">
+            <newlayer />
+            <icon part="window_center_icon" color="button_normal_text" />
+            <icon part="window_center_icon" color="button_hot_text" state="mouse" />
+            <icon part="window_center_icon" color="button_selected_text" state="selected" />
+        </style>
+        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="2">
+            <newlayer />
+            <icon part="window_play_icon" color="button_normal_text" />
+            <icon part="window_play_icon" color="button_hot_text" state="mouse" />
+            <icon part="window_play_icon" color="button_selected_text" state="selected" />
+        </style>
+        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="2">
+            <newlayer />
+            <icon part="window_stop_icon" color="button_normal_text" />
+            <icon part="window_stop_icon" color="button_hot_text" state="mouse" />
+            <icon part="window_stop_icon" color="button_selected_text" state="selected" />
         </style>
         <style id="popup_window">
             <background color="window_face" />
@@ -849,6 +870,8 @@
             <background part="timeline_loop_range" />
         </style>
         <style id="timeline_switch_band_button" extends="window_button">
+            <background color="none" />
+            <newlayer />
             <icon part="window_center_icon" color="button_normal_text" />
             <icon part="window_center_icon" color="button_hot_text" state="mouse" />
             <icon part="window_center_icon" color="button_selected_text" state="selected" />
