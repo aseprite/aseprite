@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,12 @@ namespace doc {
 }
 
 namespace app {
+
+  class FrameTagProvider {
+  public:
+    virtual ~FrameTagProvider() { }
+    virtual doc::FrameTag* getFrameTagByFrame(const doc::frame_t frame) = 0;
+  };
 
   doc::FrameTag* get_animation_tag(const doc::Sprite* sprite, doc::frame_t frame);
   doc::FrameTag* get_loop_tag(const doc::Sprite* sprite);

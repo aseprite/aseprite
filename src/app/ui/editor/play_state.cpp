@@ -16,6 +16,7 @@
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
 #include "doc/frame_tag.h"
@@ -59,7 +60,10 @@ void PlayState::onEnterState(Editor* editor)
 
   // Get the tag
   if (!m_playAll)
-    m_tag = get_animation_tag(m_editor->sprite(), m_refFrame);
+    m_tag = m_editor
+      ->getCustomizationDelegate()
+      ->getFrameTagProvider()
+      ->getFrameTagByFrame(m_refFrame);
 
   // Go to the first frame of the animation or active frame tag
   if (m_playOnce) {

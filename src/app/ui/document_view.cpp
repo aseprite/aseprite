@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,6 +29,7 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -99,6 +100,10 @@ public:
     return KeyboardShortcuts::instance()->getCurrentActionModifiers(context);
   }
 
+  FrameTagProvider* getFrameTagProvider() override {
+    return App::instance()->mainWindow()->getTimeline();
+  }
+
 protected:
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
@@ -146,11 +151,30 @@ private:
   DocumentViewPreviewDelegate* m_previewDelegate;
 };
 
-class PreviewEditor : public Editor {
+class PreviewEditor : public Editor,
+                      public EditorCustomizationDelegate {
 public:
   PreviewEditor(Document* document)
     : Editor(document, Editor::kShowOutside) // Don't show grid/mask in preview preview
   {
+    setCustomizationDelegate(this);
+  }
+
+  // EditorCustomizationDelegate implementation
+  void dispose() override {
+    // Do nothing
+  }
+
+  tools::Tool* getQuickTool(tools::Tool* currentTool) override {
+    return nullptr;
+  }
+
+  KeyAction getPressedKeyAction(KeyContext context) override {
+    return KeyAction::None;
+  }
+
+  FrameTagProvider* getFrameTagProvider() override {
+    return App::instance()->mainWindow()->getTimeline();
   }
 };
 

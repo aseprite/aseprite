@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,7 @@ namespace tools {
 
 namespace app {
   class Editor;
+  class FrameTagProvider;
 
   class EditorCustomizationDelegate {
   public:
@@ -29,6 +30,9 @@ namespace app {
 
     // Returns what action is pressed at this moment.
     virtual KeyAction getPressedKeyAction(KeyContext context) = 0;
+
+    // Returns the provider of active frame tag (it's the timeline).
+    virtual FrameTagProvider* getFrameTagProvider() = 0;
   };
 
 } // namespace app

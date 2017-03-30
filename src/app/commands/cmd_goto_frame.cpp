@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
 #include "ui/window.h"
@@ -96,7 +97,10 @@ public:
 protected:
   frame_t onGetFrame(Editor* editor) override {
     frame_t frame = editor->frame();
-    FrameTag* tag = get_animation_tag(editor->sprite(), frame);
+    FrameTag* tag = editor
+      ->getCustomizationDelegate()
+      ->getFrameTagProvider()
+      ->getFrameTagByFrame(frame);
     frame_t first = (tag ? tag->fromFrame(): 0);
     frame_t last = (tag ? tag->toFrame(): editor->sprite()->lastFrame());
 
@@ -113,7 +117,10 @@ public:
 protected:
   frame_t onGetFrame(Editor* editor) override {
     frame_t frame = editor->frame();
-    FrameTag* tag = get_animation_tag(editor->sprite(), frame);
+    FrameTag* tag = editor
+      ->getCustomizationDelegate()
+      ->getFrameTagProvider()
+      ->getFrameTagByFrame(frame);
     frame_t first = (tag ? tag->fromFrame(): 0);
     frame_t last = (tag ? tag->toFrame(): editor->sprite()->lastFrame());
 

@@ -18,6 +18,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
 #include "app/ui/skin/skin_button.h"
@@ -375,8 +376,16 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
   }
   else {
     if (miniEditor->isPlaying()) {
-      doc::FrameTag* tag = get_animation_tag(editor->sprite(), editor->frame());
-      doc::FrameTag* playingTag = get_animation_tag(editor->sprite(), m_refFrame);
+      doc::FrameTag* tag = editor
+        ->getCustomizationDelegate()
+        ->getFrameTagProvider()
+        ->getFrameTagByFrame(editor->frame());
+
+      doc::FrameTag* playingTag = editor
+        ->getCustomizationDelegate()
+        ->getFrameTagProvider()
+        ->getFrameTagByFrame(m_refFrame);
+
       if (tag == playingTag)
         return;
 

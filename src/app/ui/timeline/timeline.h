@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/document_range.h"
+#include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
@@ -56,7 +57,8 @@ namespace app {
                  , public doc::DocumentsObserver
                  , public doc::DocumentObserver
                  , public app::EditorObserver
-                 , public app::InputChainElement {
+                 , public app::InputChainElement
+                 , public app::FrameTagProvider {
   public:
     typedef DocumentRange Range;
 
@@ -98,6 +100,12 @@ namespace app {
     // Drag-and-drop operations. These actions are used by commands
     // called from popup menus.
     void dropRange(DropOp op);
+
+    // FrameTagProvider impl
+    // Returns the active frame tag depending on the timeline status
+    // E.g. if other frame tags are collapsed, the focused band has
+    // priority and tags in other bands are ignored.
+    FrameTag* getFrameTagByFrame(const frame_t frame) override;
 
     // ScrollableViewDelegate impl
     gfx::Size visibleSize() const override;
