@@ -93,7 +93,8 @@
         <color id="timeline_clicked" value="#536069" />
         <color id="timeline_clicked_text" value="#ffffff" />
         <color id="timeline_padding" value="#7d929e" />
-        <color id="timeline_band_highlight" value="#bec8ce" />
+        <color id="timeline_band_highlight" value="#93adbb" />
+        <color id="timeline_band_bg" value="#76858e" />
         <color id="status_bar_text" value="#2e3234" />
         <color id="status_bar_face" value="#7d929e" />
         <color id="flag_normal" value="#d3cbbe" />

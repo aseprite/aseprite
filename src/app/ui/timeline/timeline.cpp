@@ -2060,71 +2060,70 @@ void Timeline::drawFrameTags(ui::Graphics* g)
     g->fillRect(theme->colors.timelineBandHighlight(), bandBounds);
   }
 
-  std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
-
-  for (FrameTag* frameTag : m_sprite->frameTags()) {
-    int band = -1;
-    if (m_tagFocusBand >= 0) {
-      auto it = m_tagBand.find(frameTag);
-      if (it != m_tagBand.end()) {
-        band = it->second;
-        if (band != m_tagFocusBand)
-          continue;
-      }
-    }
-
-    gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame()));
-    gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->toFrame()));
-    gfx::Rect bounds = bounds1.createUnion(bounds2);
-    gfx::Rect frameTagBounds = getPartBounds(Hit(PART_FRAME_TAG, 0, 0, frameTag->id()));
-    bounds.h = bounds.y2() - frameTagBounds.y2();
-    bounds.y = frameTagBounds.y2();
-
-    gfx::Color bg = frameTag->color();
-    {
-      IntersectClip clip(g, bounds);
-      if (clip) {
-        for (auto& layer : styles.timelineLoopRange()->layers()) {
-          if (layer.type() == Style::Layer::Type::kBackground ||
-              layer.type() == Style::Layer::Type::kBackgroundBorder ||
-              layer.type() == Style::Layer::Type::kBorder) {
-            const_cast<Style::Layer*>(&layer)->setColor(bg);
-          }
+  int passes = (m_tagFocusBand >= 0 ? 2: 1);
+  for (int pass=0; pass<passes; ++pass) {
+    for (FrameTag* frameTag : m_sprite->frameTags()) {
+      int band = -1;
+      if (m_tagFocusBand >= 0) {
+        auto it = m_tagBand.find(frameTag);
+        if (it != m_tagBand.end()) {
+          band = it->second;
+          if ((pass == 0 && band == m_tagFocusBand) ||
+              (pass == 1 && band != m_tagFocusBand))
+            continue;
         }
-        drawPart(g, bounds, nullptr, styles.timelineLoopRange());
       }
-    }
 
-    {
-      bounds = frameTagBounds;
+      gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame()));
+      gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->toFrame()));
+      gfx::Rect bounds = bounds1.createUnion(bounds2);
+      gfx::Rect frameTagBounds = getPartBounds(Hit(PART_FRAME_TAG, 0, 0, frameTag->id()));
+      bounds.h = bounds.y2() - frameTagBounds.y2();
+      bounds.y = frameTagBounds.y2();
 
-      if (m_clk.part == PART_FRAME_TAG && m_clk.frameTag == frameTag->id()) {
-        bg = color_utils::blackandwhite_neg(bg);
+      gfx::Color bg =
+        (m_tagFocusBand < 0 || pass == 1) ?
+        frameTag->color(): theme->colors.timelineBandBg();
+      {
+        IntersectClip clip(g, bounds);
+        if (clip) {
+          for (auto& layer : styles.timelineLoopRange()->layers()) {
+            if (layer.type() == Style::Layer::Type::kBackground ||
+                layer.type() == Style::Layer::Type::kBackgroundBorder ||
+                layer.type() == Style::Layer::Type::kBorder) {
+              const_cast<Style::Layer*>(&layer)->setColor(bg);
+            }
+          }
+          drawPart(g, bounds, nullptr, styles.timelineLoopRange());
+        }
       }
-      else if (m_hot.part == PART_FRAME_TAG && m_hot.frameTag == frameTag->id()) {
-        int r, g, b;
-        r = gfx::getr(bg)+32;
-        g = gfx::getg(bg)+32;
-        b = gfx::getb(bg)+32;
-        r = MID(0, r, 255);
-        g = MID(0, g, 255);
-        b = MID(0, b, 255);
-        bg = gfx::rgba(r, g, b, gfx::geta(bg));
+
+      if (m_tagFocusBand < 0 || pass == 1) {
+        bounds = frameTagBounds;
+
+        if (m_clk.part == PART_FRAME_TAG && m_clk.frameTag == frameTag->id()) {
+          bg = color_utils::blackandwhite_neg(bg);
+        }
+        else if (m_hot.part == PART_FRAME_TAG && m_hot.frameTag == frameTag->id()) {
+          int r, g, b;
+          r = gfx::getr(bg)+32;
+          g = gfx::getg(bg)+32;
+          b = gfx::getb(bg)+32;
+          r = MID(0, r, 255);
+          g = MID(0, g, 255);
+          b = MID(0, b, 255);
+          bg = gfx::rgba(r, g, b, gfx::geta(bg));
+        }
+        g->fillRect(bg, bounds);
+
+        bounds.y += 2*ui::guiscale();
+        bounds.x += 2*ui::guiscale();
+        g->drawText(
+          frameTag->name(),
+          color_utils::blackandwhite_neg(bg),
+          gfx::ColorNone,
+          bounds.origin());
       }
-      g->fillRect(bg, bounds);
-
-      bounds.y += 2*ui::guiscale();
-      bounds.x += 2*ui::guiscale();
-      g->drawText(
-        frameTag->name(),
-        color_utils::blackandwhite_neg(bg),
-        gfx::ColorNone,
-        bounds.origin());
-    }
-
-    for (frame_t f=frameTag->fromFrame(); f<=frameTag->toFrame(); ++f) {
-      if (tagsPerFrame[f] < 255)
-        ++tagsPerFrame[f];
     }
   }
 
