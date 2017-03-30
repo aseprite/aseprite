@@ -7,4 +7,5 @@ add_library(ft-lib
 
 target_link_libraries(ft-lib
   laf-base
-  ${FREETYPE_LIBRARIES})
+  ${FREETYPE_LIBRARIES}
+  ${HARFBUZZ_LIBRARIES})
