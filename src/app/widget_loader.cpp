@@ -403,12 +403,14 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   else if (elem_name == "colorpicker") {
-    bool rgba = bool_attr_is_true(elem, "rgba");
+    const bool rgba = bool_attr_is_true(elem, "rgba");
+    const bool simple = bool_attr_is_true(elem, "simple");
 
     if (!widget)
       widget = new ColorButton(Color::fromMask(),
                                rgba ? IMAGE_RGB:
-                                      app_get_current_pixel_format(), false);
+                                      app_get_current_pixel_format(), false,
+                               simple);
   }
   else if (elem_name == "dropdownbutton")  {
     if (!widget) {

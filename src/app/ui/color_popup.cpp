@@ -17,15 +17,18 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/document.h"
+#include "app/file/palette_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/resource_finder.h"
 #include "app/transaction.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
+#include "base/unique_ptr.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
@@ -46,7 +49,73 @@ enum {
   MASK_MODE
 };
 
-ColorPopup::ColorPopup(bool canPin)
+static base::UniquePtr<doc::Palette> g_simplePal(nullptr);
+
+class ColorPopup::SimpleColors : public HBox {
+public:
+
+  class Item : public Button {
+  public:
+    Item(ColorPopup* colorPopup, const app::Color& color)
+      : Button("")
+      , m_colorPopup(colorPopup)
+      , m_color(color) {
+    }
+
+  private:
+    void onClick(Event& ev) override {
+      m_colorPopup->setColorWithSignal(m_color);
+    }
+
+    void onPaint(PaintEvent& ev) override {
+      Graphics* g = ev.graphics();
+      skin::SkinTheme* theme = skin::SkinTheme::instance();
+      gfx::Rect rc = clientBounds();
+
+      Button::onPaint(ev);
+
+      rc.shrink(theme->calcBorder(this, style()));
+      draw_color(g, rc, m_color, doc::ColorMode::RGB);
+    }
+
+    ColorPopup* m_colorPopup;
+    app::Color m_color;
+  };
+
+  SimpleColors(ColorPopup* colorPopup, TooltipManager* tooltips) {
+    for (int i=0; i<g_simplePal->size(); ++i) {
+      doc::color_t c = g_simplePal->getEntry(i);
+      app::Color color =
+        app::Color::fromRgb(doc::rgba_getr(c),
+                            doc::rgba_getg(c),
+                            doc::rgba_getb(c),
+                            doc::rgba_geta(c));
+
+      Item* item = new Item(colorPopup, color);
+      item->setSizeHint(gfx::Size(16, 16)*ui::guiscale());
+      item->setStyle(skin::SkinTheme::instance()->styles.simpleColor());
+      addChild(item);
+
+      tooltips->addTooltipFor(
+        item, g_simplePal->getEntryName(i), BOTTOM);
+    }
+  }
+
+  void selectColor(int index) {
+    for (int i=0; i<g_simplePal->size(); ++i) {
+      children()[i]->setSelected(i == index);
+    }
+  }
+
+  void deselect() {
+    for (int i=0; i<g_simplePal->size(); ++i) {
+      children()[i]->setSelected(false);
+    }
+  }
+};
+
+ColorPopup::ColorPopup(const bool canPin,
+                       bool showSimpleColors)
   : PopupWindowPin(" ", // Non-empty to create title-bar and close button
                    ClickBehavior::CloseOnClickInOtherWindow,
                    canPin)
@@ -54,11 +123,26 @@ ColorPopup::ColorPopup(bool canPin)
   , m_topBox(HORIZONTAL)
   , m_color(app::Color::fromMask())
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
+  , m_simpleColors(nullptr)
   , m_colorType(5)
   , m_maskLabel("Transparent Color Selected")
   , m_canPin(canPin)
   , m_disableHexUpdate(false)
 {
+  if (showSimpleColors) {
+    if (!g_simplePal) {
+      ResourceFinder rf;
+      rf.includeDataDir("palettes/tags.gpl");
+      if (rf.findFirst())
+        g_simplePal.reset(load_palette(rf.filename().c_str()));
+    }
+
+    if (g_simplePal)
+      m_simpleColors = new SimpleColors(this, &m_tooltips);
+    else
+      showSimpleColors = false;
+  }
+
   m_colorType.addItem("Index")->setFocusStop(false);
   m_colorType.addItem("RGB")->setFocusStop(false);
   m_colorType.addItem("HSB")->setFocusStop(false);
@@ -69,7 +153,6 @@ ColorPopup::ColorPopup(bool canPin)
   m_topBox.setChildSpacing(0);
 
   m_colorPaletteContainer.attachToView(&m_colorPalette);
-
   m_colorPaletteContainer.setExpansive(true);
   m_rgbSliders.setExpansive(true);
   m_hsvSliders.setExpansive(true);
@@ -100,6 +183,9 @@ ColorPopup::ColorPopup(bool canPin)
   }
   setText("");                  // To remove title
 
+  m_vbox.addChild(&m_tooltips);
+  if (m_simpleColors)
+    m_vbox.addChild(m_simpleColors);
   m_vbox.addChild(&m_topBox);
   m_vbox.addChild(&m_colorPaletteContainer);
   m_vbox.addChild(&m_rgbSliders);
@@ -115,8 +201,11 @@ ColorPopup::ColorPopup(bool canPin)
   m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
 
+  // Set RGB just for the sizeHint(), and then deselect the color type
+  // (the first setColor() call will setup it correctly.)
   selectColorType(app::Color::RgbType);
   setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
+  m_colorType.deselectItems();
 
   m_onPaletteChangeConn =
     App::instance()->PaletteChange.connect(&ColorPopup::onPaletteChange, this);
@@ -131,6 +220,18 @@ ColorPopup::~ColorPopup()
 void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
 {
   m_color = color;
+
+  if (m_simpleColors) {
+    int r = color.getRed();
+    int g = color.getGreen();
+    int b = color.getBlue();
+    int a = color.getAlpha();
+    int i = g_simplePal->findExactMatch(r, g, b, a, -1);
+    if (i >= 0)
+      m_simpleColors->selectColor(i);
+    else
+      m_simpleColors->deselect();
+  }
 
   if (color.getType() == app::Color::IndexType) {
     m_colorPalette.deselect();
@@ -195,8 +296,38 @@ void ColorPopup::onColorHexEntryChange(const app::Color& color)
   m_disableHexUpdate = false;
 }
 
+void ColorPopup::onSimpleColorClick()
+{
+  m_colorType.deselectItems();
+  if (!g_simplePal)
+    return;
+
+  app::Color color = getColor();
+
+  // Find bestfit palette entry
+  int r = color.getRed();
+  int g = color.getGreen();
+  int b = color.getBlue();
+  int a = color.getAlpha();
+
+  // Search for the closest color to the RGB values
+  int i = g_simplePal->findBestfit(r, g, b, a, 0);
+  if (i >= 0) {
+    color_t c = g_simplePal->getEntry(i);
+    color = app::Color::fromRgb(doc::rgba_getr(c),
+                                doc::rgba_getg(c),
+                                doc::rgba_getb(c),
+                                doc::rgba_geta(c));
+  }
+
+  setColorWithSignal(color);
+}
+
 void ColorPopup::onColorTypeClick()
 {
+  if (m_simpleColors)
+    m_simpleColors->deselect();
+
   app::Color newColor = getColor();
 
   switch (m_colorType.selectedItem()) {

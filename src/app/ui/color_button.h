@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,8 +27,9 @@ namespace app {
                     , public IColorSource {
   public:
     ColorButton(const app::Color& color,
-                PixelFormat pixelFormat,
-                bool canPinSelector);
+                const PixelFormat pixelFormat,
+                const bool canPinSelector,
+                const bool showSimpleColors);
     ~ColorButton();
 
     PixelFormat pixelFormat() const;
@@ -65,6 +66,7 @@ namespace app {
     gfx::Rect m_windowDefaultBounds;
     bool m_dependOnLayer;
     bool m_canPinSelector;
+    bool m_showSimpleColors;
   };
 
 } // namespace app

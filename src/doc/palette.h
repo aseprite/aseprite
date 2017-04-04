@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -92,9 +92,14 @@ namespace doc {
 
     void applyRemap(const Remap& remap);
 
+    // TODO add undo/redo support of entry names
+    void setEntryName(const int i, const std::string& name);
+    const std::string& getEntryName(const int i) const;
+
   private:
     frame_t m_frame;
     std::vector<color_t> m_colors;
+    std::vector<std::string> m_names;
     int m_modifications;
     std::string m_filename; // If the palette is associated with a file.
     std::string m_comment; // Some extra comment from the .gpl file (author, website, etc.).

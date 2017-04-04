@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -276,6 +276,23 @@ void Palette::applyRemap(const Remap& remap)
   Palette original(*this);
   for (int i=0; i<size(); ++i)
     setEntry(remap[i], original.getEntry(i));
+}
+
+void Palette::setEntryName(const int i, const std::string& name)
+{
+  if (i >= m_names.size())
+    m_names.resize(i+1);
+  m_names[i] = name;
+}
+
+const std::string& Palette::getEntryName(const int i) const
+{
+  if (i >= 0 && i < int(m_names.size()))
+    return m_names[i];
+  else {
+    static std::string emptyString;
+    return emptyString;
+  }
 }
 
 } // namespace doc

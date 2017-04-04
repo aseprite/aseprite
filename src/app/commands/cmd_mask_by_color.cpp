@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -104,7 +104,7 @@ void MaskByColorCommand::onExecute(Context* context)
    (get_config_color("MaskColor", "Color",
                      ColorBar::instance()->getFgColor()),
     sprite->pixelFormat(),
-    false);
+    false, false);
   label_tolerance = new Label("Tolerance:");
   m_sliderTolerance = new Slider(0, 255, get_config_int("MaskColor", "Tolerance", 0));
   m_checkPreview = new CheckBox("&Preview");

@@ -864,6 +864,7 @@ static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header,
 
   for (int c=from; c<=to; ++c) {
     color_t color = pal->getEntry(c);
+    // TODO add support to save palette entry name
     fputw(0, f);                // Entry flags (without name)
     fputc(rgba_getr(color), f);
     fputc(rgba_getg(color), f);

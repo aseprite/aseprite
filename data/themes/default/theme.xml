@@ -391,6 +391,8 @@
         <part id="tool_configuration" x="144" y="128" w="16" h="16" />
         <part id="tool_minieditor" x="160" y="128" w="16" h="16" />
         <part id="tool_move_slice" x="224" y="48" w="16" h="16" />
+        <part id="simple_color_border" x="16" y="32" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
+        <part id="simple_color_selected" x="32" y="32" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
     </parts>
     <styles>
         <style id="box" />
@@ -409,7 +411,7 @@
         </style>
         <style id="window_button">
             <background color="window_titlebar_face" />
-	    <newlayer />
+            <newlayer />
             <background part="window_button_normal" align="center middle" />
             <background part="window_button_hot" state="mouse" align="center middle" />
             <background part="window_button_selected" state="selected" align="center middle" />
@@ -883,6 +885,12 @@
         <style id="colorbar_selection">
             <background part="colorbar_selection" />
             <background part="colorbar_selection_hot" state="mouse" />
+        </style>
+        <style id="simple_color">
+            <background color="face" />
+            <background color="menuitem_hot_face" state="mouse" />
+            <border part="simple_color_border" />
+            <border part="simple_color_selected" state="selected" />
         </style>
     </styles>
 </theme>

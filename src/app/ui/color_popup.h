@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,6 +18,7 @@
 #include "obs/signal.h"
 #include "ui/grid.h"
 #include "ui/label.h"
+#include "ui/tooltips.h"
 #include "ui/view.h"
 
 namespace app {
@@ -31,7 +32,7 @@ namespace app {
       DoNotChangeType
     };
 
-    ColorPopup(bool canPin);
+    ColorPopup(const bool canPin, bool showSimpleColors);
     ~ColorPopup();
 
     void setColor(const app::Color& color, SetColorOptions options);
@@ -45,6 +46,7 @@ namespace app {
     void onMakeFixed() override;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
+    void onSimpleColorClick();
     void onColorTypeClick();
     void onPaletteChange();
 
@@ -53,14 +55,19 @@ namespace app {
 
   private:
     void selectColorType(app::Color::Type type);
+    // void selectSimpleColor(const app::Color& color);
     void setColorWithSignal(const app::Color& color);
     void findBestfitIndex(const app::Color& color);
 
+    class SimpleColors;
+
     ui::Box m_vbox;
+    ui::TooltipManager m_tooltips;
     ui::Box m_topBox;
     app::Color m_color;
     ui::View m_colorPaletteContainer;
     PaletteView m_colorPalette;
+    SimpleColors* m_simpleColors;
     ButtonSet m_colorType;
     HexColorEntry m_hexColorEntry;
     RgbSliders m_rgbSliders;

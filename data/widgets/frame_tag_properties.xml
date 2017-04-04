@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!-- Copyright (C) 2015-2017 by David Capello -->
 <gui>
 <window id="frame_tag_properties" text="@.title">
   <grid columns="2">
@@ -14,7 +14,7 @@
     <entry maxsize="10" id="to" />
 
     <label text="@.color" />
-    <colorpicker id="color" />
+    <colorpicker id="color" simple="true" />
 
     <label text="@.ani_dir" />
     <combobox id="anidir" />

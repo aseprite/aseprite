@@ -7,7 +7,7 @@
       <entry id="text" magnet="true" maxsize="65535" minwidth="128" expansive="true" />
       <hbox>
         <label text="@.color" style="tooltip_text" />
-        <colorpicker id="color" expansive="true" />
+        <colorpicker id="color" simple="true" expansive="true" />
       </hbox>
     </vbox>
   </tipwindow>
