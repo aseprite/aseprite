@@ -55,7 +55,6 @@ namespace app {
 
   private:
     void selectColorType(app::Color::Type type);
-    // void selectSimpleColor(const app::Color& color);
     void setColorWithSignal(const app::Color& color);
     void findBestfitIndex(const app::Color& color);
 
