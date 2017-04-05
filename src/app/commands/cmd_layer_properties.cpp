@@ -56,6 +56,7 @@ class LayerPropertiesWindow : public app::gen::LayerProperties
 public:
   LayerPropertiesWindow()
     : m_timer(250, this)
+    , m_document(nullptr)
     , m_layer(nullptr)
     , m_selfUpdate(false) {
     name()->setMinSize(gfx::Size(128, 0));
@@ -95,30 +96,24 @@ public:
     UIContext::instance()->remove_observer(this);
   }
 
-  void setLayer(Layer* layer) {
+  void setLayer(Document* doc, Layer* layer) {
     if (m_layer) {
-      document()->remove_observer(this);
+      m_document->remove_observer(this);
       m_layer = nullptr;
     }
 
     m_timer.stop();
+    m_document = doc;
     m_layer = layer;
+    m_range = App::instance()->timeline()->range();
 
-    if (m_layer)
-      document()->add_observer(this);
+    if (m_document)
+      m_document->add_observer(this);
 
     updateFromLayer();
   }
 
 private:
-
-  app::Document* document() {
-    ASSERT(m_layer);
-    if (m_layer)
-      return static_cast<app::Document*>(m_layer->sprite()->document());
-    else
-      return nullptr;
-  }
 
   std::string nameValue() const {
     return name()->text();
@@ -130,6 +125,17 @@ private:
 
   int opacityValue() const {
     return opacity()->getValue();
+  }
+
+  int countLayers() const {
+    if (!m_document)
+      return 0;
+    else if (m_layer && !m_range.enabled())
+      return 1;
+    else if (m_range.enabled())
+      return m_range.layers();
+    else
+      return 0;
   }
 
   bool onProcessMessage(ui::Message* msg) override {
@@ -151,7 +157,7 @@ private:
 
       case kCloseMessage:
         // Save changes before we close the window
-        setLayer(nullptr);
+        setLayer(nullptr, nullptr);
         save_window_pos(this, "LayerProperties");
 
         deferDelete();
@@ -178,31 +184,49 @@ private:
 
     m_timer.stop();
 
+    const int count = countLayers();
+
     std::string newName = nameValue();
     int newOpacity = opacityValue();
     BlendMode newBlendMode = blendModeValue();
 
-    if (newName != m_layer->name() ||
-        m_userData != m_layer->userData() ||
-        (m_layer->isImage() &&
-         (newOpacity != static_cast<LayerImage*>(m_layer)->opacity() ||
-          newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))) {
+    if ((count > 1) ||
+        (count == 1 && m_layer && (newName != m_layer->name() ||
+                                   m_userData != m_layer->userData() ||
+                                   (m_layer->isImage() &&
+                                    (newOpacity != static_cast<LayerImage*>(m_layer)->opacity() ||
+                                     newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))))) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Layer Properties");
 
-        if (newName != m_layer->name())
-          transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
+        DocumentRange range;
+        if (m_range.enabled())
+          range = m_range;
+        else {
+          range.startRange(m_layer, -1, DocumentRange::kLayers);
+          range.endRange(m_layer, -1);
+        }
 
-        if (m_userData != m_layer->userData())
-          transaction.execute(new cmd::SetUserData(writer.layer(), m_userData));
+        const bool nameChanged = (newName != m_layer->name());
+        const bool userDataChanged = (m_userData != m_layer->userData());
+        const bool opacityChanged = (m_layer->isImage() && newOpacity != static_cast<LayerImage*>(m_layer)->opacity());
+        const bool blendModeChanged = (m_layer->isImage() && newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode());
 
-        if (m_layer->isImage()) {
-          if (newOpacity != static_cast<LayerImage*>(m_layer)->opacity())
-            transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), newOpacity));
+        for (Layer* layer : range.selectedLayers()) {
+          if (nameChanged && newName != layer->name())
+            transaction.execute(new cmd::SetLayerName(layer, newName));
 
-          if (newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode())
-            transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
+          if (userDataChanged && m_userData != layer->userData())
+            transaction.execute(new cmd::SetUserData(layer, m_userData));
+
+          if (layer->isImage()) {
+            if (opacityChanged && newOpacity != static_cast<LayerImage*>(layer)->opacity())
+              transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), newOpacity));
+
+            if (blendModeChanged && newBlendMode != static_cast<LayerImage*>(layer)->blendMode())
+              transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(layer), newBlendMode));
+          }
         }
 
         // Redraw timeline because the layer's name/user data/color
@@ -215,16 +239,17 @@ private:
         Console::showException(e);
       }
 
-      update_screen_for_document(document());
+      update_screen_for_document(m_document);
     }
   }
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     if (isVisible())
-      setLayer(const_cast<Layer*>(site.layer()));
+      setLayer(const_cast<Document*>(static_cast<const Document*>(site.document())),
+               const_cast<Layer*>(site.layer()));
     else if (m_layer)
-      setLayer(nullptr);
+      setLayer(nullptr, nullptr);
   }
 
   // DocumentObserver impl
@@ -287,7 +312,9 @@ private:
   }
 
   Timer m_timer;
+  Document* m_document;
   Layer* m_layer;
+  DocumentRange m_range;
   bool m_selfUpdate;
   UserData m_userData;
 };
@@ -308,12 +335,13 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 void LayerPropertiesCommand::onExecute(Context* context)
 {
   ContextReader reader(context);
+  Document* doc = static_cast<Document*>(reader.document());
   LayerImage* layer = static_cast<LayerImage*>(reader.layer());
 
   if (!g_window)
     g_window = new LayerPropertiesWindow;
 
-  g_window->setLayer(layer);
+  g_window->setLayer(doc, layer);
   g_window->openWindow();
 
   // Focus layer name

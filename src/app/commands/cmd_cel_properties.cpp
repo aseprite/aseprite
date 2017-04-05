@@ -160,8 +160,8 @@ private:
 
     m_timer.stop();
 
-    int newOpacity = opacityValue();
-    int count = countCels();
+    const int newOpacity = opacityValue();
+    const int count = countCels();
 
     if ((count > 1) ||
         (count == 1 && m_cel && (newOpacity != m_cel->opacity() ||
