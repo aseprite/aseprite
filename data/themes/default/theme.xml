@@ -111,6 +111,7 @@
         <part id="cursor_hand" x="80" y="48" w="16" h="16" focusx="5" focusy="3" />
         <part id="cursor_scroll" x="80" y="64" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_move" x="80" y="80" w="16" h="16" focusx="0" focusy="0" />
+        <part id="cursor_move_selection" x="96" y="80" w="16" h="16" focusx="0" focusy="0" />
         <part id="cursor_size_ns" x="80" y="112" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_size_we" x="80" y="144" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_size_n" x="80" y="112" w="16" h="16" focusx="8" focusy="8" />
@@ -239,11 +240,8 @@
         <part id="target_layers" x="208" y="224" w="32" h="16" />
         <part id="target_frames_layers" x="240" y="224" w="32" h="16" />
         <part id="selection_replace" x="176" y="160" w="7" h="7" />
-        <part id="selection_replace_selected" x="176" y="168" w="7" h="7" />
-        <part id="selection_add" x="192" y="160" w="7" h="7" />
-        <part id="selection_add_selected" x="192" y="168" w="7" h="7" />
-        <part id="selection_subtract" x="208" y="160" w="7" h="7" />
-        <part id="selection_subtract_selected" x="208" y="168" w="7" h="7" />
+        <part id="selection_add" x="184" y="160" w="7" h="7" />
+        <part id="selection_subtract" x="192" y="160" w="7" h="7" />
         <part id="unpinned" x="192" y="144" w="8" h="8" />
         <part id="pinned" x="200" y="144" w="8" h="8" />
         <part id="drop_down_button_left_normal" x="48" y="32" w1="3" w2="2" w3="3" h1="4" h2="6" h3="6" />

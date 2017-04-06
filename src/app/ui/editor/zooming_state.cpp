@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,6 +12,7 @@
 
 #include "app/app.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "doc/sprite.h"
 #include "gfx/rect.h"
@@ -81,7 +82,8 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 
 bool ZoomingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
-  editor->showMouseCursor(kMagnifierCursor);
+  editor->showMouseCursor(
+    kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
   return true;
 }
 

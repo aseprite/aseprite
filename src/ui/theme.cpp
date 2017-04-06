@@ -131,9 +131,7 @@ Theme::~Theme()
 
 void Theme::regenerate()
 {
-  CursorType type = get_mouse_cursor();
   set_mouse_cursor(kNoCursor);
-
   onRegenerate();
 
   // TODO We cannot reinitialize all widgets because this mess all
@@ -141,8 +139,6 @@ void Theme::regenerate()
   // uiscale() and get the new look without the need to restart the
   // whole app.
   //details::reinitThemeForAllWidgets();
-
-  set_mouse_cursor(type);
 }
 
 void Theme::setDecorativeWidgetBounds(Widget* widget)

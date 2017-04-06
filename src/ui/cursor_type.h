@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,12 +16,12 @@ namespace ui {
     kFirstCursorType = 0,
     kNoCursor = 0,
     kArrowCursor,
-    kArrowPlusCursor,
+    kArrowPlusCursor,           // Copy element
     kCrosshairCursor,
     kForbiddenCursor,
-    kHandCursor,
-    kScrollCursor,
-    kMoveCursor,
+    kHandCursor,                // Hand to press a link
+    kScrollCursor,              // Hand to scroll
+    kMoveCursor,                // Drag and drop cursor
 
     kSizeNSCursor,
     kSizeWECursor,
@@ -35,20 +35,10 @@ namespace ui {
     kSizeWCursor,
     kSizeNWCursor,
 
-    kRotateNCursor,
-    kRotateNECursor,
-    kRotateECursor,
-    kRotateSECursor,
-    kRotateSCursor,
-    kRotateSWCursor,
-    kRotateWCursor,
-    kRotateNWCursor,
-
-    kEyedropperCursor,
-    kMagnifierCursor,
-
-    kLastCursorType = kMagnifierCursor,
+    kLastCursorType = kSizeNWCursor,
     kCursorTypes,
+
+    kCustomCursor,
   };
 
 } // namespace ui

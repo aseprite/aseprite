@@ -176,7 +176,7 @@ bool ColorTintShadeTone::onProcessMessage(ui::Message* msg)
     case kSetCursorMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       if (childrenBounds().contains(mouseMsg->position())) {
-        ui::set_mouse_cursor(kEyedropperCursor);
+        ui::set_mouse_cursor(kCustomCursor, SkinTheme::instance()->cursors.eyedropper());
         return true;
       }
       break;

@@ -17,6 +17,7 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   std::vector<std::string> dimensions;
   std::vector<std::string> colors;
   std::vector<std::string> parts;
+  std::vector<std::string> cursors;
   std::vector<std::string> styles;
 
   TiXmlHandle handle(doc);
@@ -46,7 +47,10 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     .FirstChild("part").ToElement();
   while (elem) {
     const char* id = elem->Attribute("id");
-    if (!strchr(id, ':'))
+    if (std::strncmp(id, "cursor_", 7) == 0) {
+      cursors.push_back(std::string(id).substr(7));
+    }
+    else if (!std::strchr(id, ':'))
       parts.push_back(id);
     elem = elem->NextSiblingElement();
   }
@@ -136,7 +140,27 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   std::cout
     << "    };\n";
 
-  // New styles sub class
+  // Cursors sub class
+  std::cout
+    << "    class Cursors {\n"
+    << "      template<typename> friend class ThemeFile;\n"
+    << "    public:\n";
+  for (auto cursor : cursors) {
+    std::string id = convert_xmlid_to_cppid(cursor, false);
+    std::cout
+      << "      const ui::Cursor* " << id << "() const { return m_" << id << "; }\n";
+  }
+  std::cout
+    << "    private:\n";
+  for (auto cursor : cursors) {
+    std::string id = convert_xmlid_to_cppid(cursor, false);
+    std::cout
+      << "      ui::Cursor* m_" << id << ";\n";
+  }
+  std::cout
+    << "    };\n";
+
+  // Styles sub class
   std::cout
     << "\n"
     << "    class Styles {\n"
@@ -162,6 +186,7 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     << "    Dimensions dimensions;\n"
     << "    Colors colors;\n"
     << "    Parts parts;\n"
+    << "    Cursors cursors;\n"
     << "    Styles styles;\n"
     << "\n"
     << "  protected:\n"
@@ -181,6 +206,11 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     std::cout << "      byId(parts.m_" << id
               << ", \"" << part << "\");\n";
   }
+  for (auto cursor : cursors) {
+    std::string id = convert_xmlid_to_cppid(cursor, false);
+    std::cout << "      byId(cursors.m_" << id
+              << ", \"" << cursor << "\");\n";
+  }
   for (auto style : styles) {
     std::string id = convert_xmlid_to_cppid(style, false);
     std::cout << "      byId(styles.m_" << id
@@ -198,6 +228,9 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
     << "    }\n"
     << "    void byId(skin::SkinPartPtr& part, const std::string& id) {\n"
     << "      part = static_cast<T*>(this)->getPartById(id);\n"
+    << "    }\n"
+    << "    void byId(ui::Cursor*& cursor, const std::string& id) {\n"
+    << "      cursor = static_cast<T*>(this)->getCursorById(id);\n"
     << "    }\n"
     << "    void byId(ui::Style*& style, const std::string& id) {\n"
     << "      style = static_cast<T*>(this)->getStyleById(id);\n"

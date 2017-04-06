@@ -295,7 +295,7 @@ bool ColorWheel::onProcessMessage(ui::Message* msg)
         - bounds().origin());
 
       if (color.getType() != app::Color::MaskType) {
-        ui::set_mouse_cursor(kEyedropperCursor);
+        ui::set_mouse_cursor(kCustomCursor, SkinTheme::instance()->cursors.eyedropper());
         return true;
       }
       break;

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,10 +28,11 @@ namespace ui {
 // Current mouse cursor type.
 
 static CursorType mouse_cursor_type = kOutsideDisplay;
-static Cursor* mouse_cursor = NULL;
-static she::Display* mouse_display = NULL;
-static Overlay* mouse_cursor_overlay = NULL;
-static bool use_native_mouse_cursor = false;
+static const Cursor* mouse_cursor_custom = nullptr;
+static const Cursor* mouse_cursor = nullptr;
+static she::Display* mouse_display = nullptr;
+static Overlay* mouse_cursor_overlay = nullptr;
+static bool use_native_mouse_cursor = true;
 static bool support_native_custom_cursor = false;
 
 // Mouse information (button and position).
@@ -42,7 +43,7 @@ static int mouse_cursor_scale = 1;
 
 static int mouse_scares = 0;
 
-static void update_mouse_overlay(Cursor* cursor)
+static void update_mouse_overlay(const Cursor* cursor)
 {
   mouse_cursor = cursor;
 
@@ -68,7 +69,7 @@ static void update_mouse_overlay(Cursor* cursor)
   }
 }
 
-static bool update_custom_native_cursor(Cursor* cursor)
+static bool update_custom_native_cursor(const Cursor* cursor)
 {
   bool result = false;
 
@@ -98,7 +99,7 @@ static bool update_custom_native_cursor(Cursor* cursor)
 static void update_mouse_cursor()
 {
   she::NativeCursor nativeCursor = she::kNoCursor;
-  Cursor* cursor = nullptr;
+  const Cursor* cursor = nullptr;
 
   if (use_native_mouse_cursor ||
       mouse_cursor_type == kOutsideDisplay) {
@@ -150,9 +151,11 @@ static void update_mouse_cursor()
 
   // Use a custom cursor
   if (nativeCursor == she::kNoCursor &&
-      mouse_cursor_type != ui::kOutsideDisplay &&
-      get_theme()) {
-    cursor = get_theme()->getCursor(mouse_cursor_type);
+      mouse_cursor_type != ui::kOutsideDisplay) {
+    if (get_theme() && mouse_cursor_type != ui::kCustomCursor)
+      cursor = get_theme()->getStandardCursor(mouse_cursor_type);
+    else
+      cursor = mouse_cursor_custom;
   }
 
   // Try to use a custom native cursor if it's possible
@@ -236,12 +239,14 @@ CursorType get_mouse_cursor()
   return mouse_cursor_type;
 }
 
-void set_mouse_cursor(CursorType type)
+void set_mouse_cursor(CursorType type, const Cursor* cursor)
 {
-  if (mouse_cursor_type == type)
+  if (mouse_cursor_type == type &&
+      mouse_cursor_custom == cursor)
     return;
 
   mouse_cursor_type = type;
+  mouse_cursor_custom = cursor;
   update_mouse_cursor();
 }
 

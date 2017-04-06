@@ -69,16 +69,6 @@ static const char* g_cursor_names[kCursorTypes] = {
   "size_sw",                    // kSizeSWCursor
   "size_w",                     // kSizeWCursor
   "size_nw",                    // kSizeNWCursor
-  "rotate_n",                   // kRotateNCursor
-  "rotate_ne",                  // kRotateNECursor
-  "rotate_e",                   // kRotateECursor
-  "rotate_se",                  // kRotateSECursor
-  "rotate_s",                   // kRotateSCursor
-  "rotate_sw",                  // kRotateSWCursor
-  "rotate_w",                   // kRotateWCursor
-  "rotate_nw",                  // kRotateNWCursor
-  "eyedropper",                 // kEyedropperCursor
-  "magnifier"                   // kMagnifierCursor
 };
 
 static FontData* load_font(std::map<std::string, FontData*>& fonts,
@@ -187,7 +177,7 @@ SkinTheme* SkinTheme::instance()
 
 SkinTheme::SkinTheme()
   : m_sheet(nullptr)
-  , m_cursors(ui::kCursorTypes, nullptr)
+  , m_standardCursors(ui::kCursorTypes, nullptr)
   , m_defaultFont(nullptr)
   , m_miniFont(nullptr)
 {
@@ -196,8 +186,8 @@ SkinTheme::SkinTheme()
 SkinTheme::~SkinTheme()
 {
   // Delete all cursors.
-  for (size_t c=0; c<m_cursors.size(); ++c)
-    delete m_cursors[c];
+  for (auto it : m_cursors)
+    delete it.second;           // Delete cursor
 
   if (m_sheet)
     m_sheet->dispose();
@@ -429,21 +419,27 @@ void SkinTheme::loadXml(const std::string& skinId)
         int focusx = std::strtol(xmlPart->Attribute("focusx"), NULL, 10);
         int focusy = std::strtol(xmlPart->Attribute("focusy"), NULL, 10);
 
+        LOG(VERBOSE) << "THEME: Loading cursor '" << cursorName << "'\n";
+
+        auto it = m_cursors.find(cursorName);
+        if (it != m_cursors.end() && it->second != nullptr) {
+          delete it->second;
+          it->second = nullptr;
+        }
+
+        // TODO share the Surface with the SkinPart
+        she::Surface* slice = sliceSheet(nullptr, gfx::Rect(x, y, w, h));
+        Cursor* cursor =
+          new Cursor(slice,
+                     gfx::Point(focusx*guiscale(),
+                                focusy*guiscale()));
+        m_cursors[cursorName] = cursor;
+
         for (int c=0; c<kCursorTypes; ++c) {
-          if (cursorName != g_cursor_names[c])
-            continue;
-
-          LOG(VERBOSE) << "THEME: Loading cursor '" << cursorName << "'\n";
-
-          delete m_cursors[c];
-          m_cursors[c] = nullptr;
-
-          // TODO share the Surface with the SkinPart
-          she::Surface* slice = sliceSheet(nullptr, gfx::Rect(x, y, w, h));
-          m_cursors[c] = new Cursor(slice,
-                                    gfx::Point(focusx*guiscale(),
-                                               focusy*guiscale()));
-          break;
+          if (cursorName == g_cursor_names[c]) {
+            m_standardCursors[c] = cursor;
+            break;
+          }
         }
       }
 
@@ -686,15 +682,12 @@ she::Font* SkinTheme::getWidgetFont(const Widget* widget) const
     return getDefaultFont();
 }
 
-Cursor* SkinTheme::getCursor(CursorType type)
+Cursor* SkinTheme::getStandardCursor(CursorType type)
 {
-  if (type == kNoCursor) {
-    return NULL;
-  }
-  else {
-    ASSERT(type >= kFirstCursorType && type <= kLastCursorType);
-    return m_cursors[type];
-  }
+  if (type >= kFirstCursorType && type <= kLastCursorType)
+    return m_standardCursors[type];
+  else
+    return nullptr;
 }
 
 void SkinTheme::initWidget(Widget* widget)

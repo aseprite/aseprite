@@ -18,6 +18,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace ui {
   class Entry;
@@ -49,7 +50,7 @@ namespace app {
       she::Font* getWidgetFont(const ui::Widget* widget) const override;
       she::Font* getMiniFont() const { return m_miniFont; }
 
-      ui::Cursor* getCursor(ui::CursorType type) override;
+      ui::Cursor* getStandardCursor(ui::CursorType type) override;
       void initWidget(ui::Widget* widget) override;
       void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
       int getScrollbarSize() override;
@@ -96,6 +97,14 @@ namespace app {
           return SkinPartPtr(nullptr);
       }
 
+      ui::Cursor* getCursorById(const std::string& id) const {
+        auto it = m_cursors.find(id);
+        if (it != m_cursors.end())
+          return it->second;
+        else
+          return nullptr;
+      }
+
       int getDimensionById(const std::string& id) const {
         // Warning! Don't use ui::guiscale(), as CurrentTheme::get()
         // is still nullptr when we use this getDimensionById()
@@ -139,21 +148,14 @@ namespace app {
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, gfx::Color> m_colors_by_id;
       std::map<std::string, int> m_dimensions_by_id;
-      std::vector<ui::Cursor*> m_cursors;
+      std::map<std::string, ui::Cursor*> m_cursors;
+      std::vector<ui::Cursor*> m_standardCursors;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
       std::map<std::string, she::Font*> m_themeFonts;
       she::Font* m_defaultFont;
       she::Font* m_miniFont;
     };
-
-    inline SkinPartPtr get_part_by_id(const std::string& id) {
-      return static_cast<SkinTheme*>(ui::Manager::getDefault()->theme())->getPartById(id);
-    }
-
-    inline gfx::Color get_color_by_id(const std::string& id) {
-      return static_cast<SkinTheme*>(ui::Manager::getDefault()->theme())->getColorById(id);
-    }
 
   } // namespace skin
 } // namespace app

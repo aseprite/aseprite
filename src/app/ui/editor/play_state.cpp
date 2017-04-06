@@ -18,6 +18,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/scrolling_state.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "doc/frame_tag.h"
 #include "doc/handle_anidir.h"
@@ -157,7 +158,8 @@ bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   tools::Ink* ink = editor->getCurrentEditorInk();
   if (ink) {
     if (ink->isZoom()) {
-      editor->showMouseCursor(kMagnifierCursor);
+      editor->showMouseCursor(
+        kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
       return true;
     }
   }

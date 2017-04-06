@@ -2205,10 +2205,11 @@ void Editor::setAnimationSpeedMultiplier(double speed)
   m_aniSpeed = speed;
 }
 
-void Editor::showMouseCursor(CursorType cursorType)
+void Editor::showMouseCursor(CursorType cursorType,
+                             const Cursor* cursor)
 {
   m_brushPreview.hide();
-  ui::set_mouse_cursor(cursorType);
+  ui::set_mouse_cursor(cursorType, cursor);
 }
 
 void Editor::showBrushPreview(const gfx::Point& screenPos)

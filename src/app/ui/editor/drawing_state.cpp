@@ -22,6 +22,7 @@
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/glue.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "doc/layer.h"
 #include "ui/message.h"
@@ -173,7 +174,8 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool DrawingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (m_toolLoop->getInk()->isEyedropper()) {
-    editor->showMouseCursor(kEyedropperCursor);
+    editor->showMouseCursor(
+      kCustomCursor, skin::SkinTheme::instance()->cursors.eyedropper());
   }
   else {
     editor->showBrushPreview(mouseScreenPos);

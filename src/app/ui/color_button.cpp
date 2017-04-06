@@ -154,7 +154,7 @@ bool ColorButton::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       if (hasCapture()) {
-        ui::set_mouse_cursor(kEyedropperCursor);
+        ui::set_mouse_cursor(kCustomCursor, SkinTheme::instance()->cursors.eyedropper());
         return true;
       }
       break;

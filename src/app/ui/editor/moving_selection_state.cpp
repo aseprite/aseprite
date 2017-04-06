@@ -14,6 +14,7 @@
 #include "app/context_access.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "doc/mask.h"
@@ -103,20 +104,9 @@ bool MovingSelectionState::onMouseMove(Editor* editor, MouseMessage* msg)
 
 bool MovingSelectionState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
-  editor->showMouseCursor(kMoveCursor);
+  editor->showMouseCursor(
+    kCustomCursor, skin::SkinTheme::instance()->cursors.moveSelection());
   return true;
-}
-
-bool MovingSelectionState::onKeyDown(Editor* editor, KeyMessage* msg)
-{
-  // Use StandbyState implementation
-  return StandbyState::onKeyDown(editor, msg);
-}
-
-bool MovingSelectionState::onKeyUp(Editor* editor, KeyMessage* msg)
-{
-  // Use StandbyState implementation
-  return StandbyState::onKeyUp(editor, msg);
 }
 
 bool MovingSelectionState::onUpdateStatusBar(Editor* editor)

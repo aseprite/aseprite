@@ -58,7 +58,7 @@ namespace ui {
     virtual she::Font* getDefaultFont() const = 0;
     virtual she::Font* getWidgetFont(const Widget* widget) const = 0;
 
-    virtual Cursor* getCursor(CursorType type) = 0;
+    virtual Cursor* getStandardCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
     virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
     virtual void setDecorativeWidgetBounds(Widget* widget);

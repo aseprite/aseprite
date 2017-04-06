@@ -42,6 +42,7 @@ namespace gfx {
   class Region;
 }
 namespace ui {
+  class Cursor;
   class Graphics;
   class View;
 }
@@ -237,7 +238,8 @@ namespace app {
     void setAnimationSpeedMultiplier(double speed);
 
     // Functions to be used in EditorState::onSetCursor()
-    void showMouseCursor(ui::CursorType cursorType);
+    void showMouseCursor(ui::CursorType cursorType,
+                         const ui::Cursor* cursor = nullptr);
     void showBrushPreview(const gfx::Point& pos);
 
     // Gets the brush preview controller.

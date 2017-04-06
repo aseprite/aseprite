@@ -67,7 +67,7 @@ namespace app {
 
 using namespace ui;
 
-static CursorType rotated_size_cursors[] = {
+static CursorType rotated_size_cursors[8] = {
   kSizeECursor,
   kSizeNECursor,
   kSizeNCursor,
@@ -76,17 +76,6 @@ static CursorType rotated_size_cursors[] = {
   kSizeSWCursor,
   kSizeSCursor,
   kSizeSECursor
-};
-
-static CursorType rotated_rotate_cursors[] = {
-  kRotateECursor,
-  kRotateNECursor,
-  kRotateNCursor,
-  kRotateNWCursor,
-  kRotateWCursor,
-  kRotateSWCursor,
-  kRotateSCursor,
-  kRotateSECursor
 };
 
 #ifdef _MSC_VER
@@ -413,7 +402,8 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
     // If the current tool change selection (e.g. rectangular marquee, etc.)
     if (ink->isSelection()) {
       if (overSelectionEdges(editor, mouseScreenPos)) {
-        editor->showMouseCursor(kHandCursor); // TODO create a new mouse cursor
+        editor->showMouseCursor(
+          kCustomCursor, skin::SkinTheme::instance()->cursors.moveSelection());
         return true;
       }
 
@@ -431,11 +421,13 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
       return true;
     }
     else if (ink->isEyedropper()) {
-      editor->showMouseCursor(kEyedropperCursor);
+      editor->showMouseCursor(
+        kCustomCursor, skin::SkinTheme::instance()->cursors.eyedropper());
       return true;
     }
     else if (ink->isZoom()) {
-      editor->showMouseCursor(kMagnifierCursor);
+      editor->showMouseCursor(
+        kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
       return true;
     }
     else if (ink->isScrollMovement()) {
@@ -722,10 +714,12 @@ bool StandbyState::overSelectionEdges(Editor* editor,
                                       const gfx::Point& mouseScreenPos) const
 {
   // Move selection edges
-  if (editor->isActive() &&
+  if (Preferences::instance().selection.moveEdges() &&
+      editor->isActive() &&
       editor->document()->isMaskVisible() &&
       editor->document()->getMaskBoundaries() &&
-      Preferences::instance().selection.moveEdges()) {
+      // TODO improve this check, how we can know that we aren't in the MovingPixelsState
+      !dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
     // For each selection edge
     for (const auto& seg : *editor->document()->getMaskBoundaries()) {
       gfx::Rect segBounds = editor->editorToScreen(seg.bounds());
@@ -771,31 +765,33 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
     return false;
 
   if (ink && ink->isSelection() && editor->document()->isMaskVisible()) {
+    auto theme = skin::SkinTheme::instance();
     const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);
     HandleType handle = tr->getHandleAtPoint(
       editor, mouseScreenPos, transformation);
 
-    CursorType newCursor = kArrowCursor;
+    CursorType newCursorType = kArrowCursor;
+    const Cursor* newCursor = nullptr;
 
     switch (handle) {
-      case ScaleNWHandle:         newCursor = kSizeNWCursor; break;
-      case ScaleNHandle:          newCursor = kSizeNCursor; break;
-      case ScaleNEHandle:         newCursor = kSizeNECursor; break;
-      case ScaleWHandle:          newCursor = kSizeWCursor; break;
-      case ScaleEHandle:          newCursor = kSizeECursor; break;
-      case ScaleSWHandle:         newCursor = kSizeSWCursor; break;
-      case ScaleSHandle:          newCursor = kSizeSCursor; break;
-      case ScaleSEHandle:         newCursor = kSizeSECursor; break;
-      case RotateNWHandle:        newCursor = kRotateNWCursor; break;
-      case RotateNHandle:         newCursor = kRotateNCursor; break;
-      case RotateNEHandle:        newCursor = kRotateNECursor; break;
-      case RotateWHandle:         newCursor = kRotateWCursor; break;
-      case RotateEHandle:         newCursor = kRotateECursor; break;
-      case RotateSWHandle:        newCursor = kRotateSWCursor; break;
-      case RotateSHandle:         newCursor = kRotateSCursor; break;
-      case RotateSEHandle:        newCursor = kRotateSECursor; break;
-      case PivotHandle:           newCursor = kHandCursor; break;
+      case ScaleNWHandle:         newCursorType = kSizeNWCursor; break;
+      case ScaleNHandle:          newCursorType = kSizeNCursor; break;
+      case ScaleNEHandle:         newCursorType = kSizeNECursor; break;
+      case ScaleWHandle:          newCursorType = kSizeWCursor; break;
+      case ScaleEHandle:          newCursorType = kSizeECursor; break;
+      case ScaleSWHandle:         newCursorType = kSizeSWCursor; break;
+      case ScaleSHandle:          newCursorType = kSizeSCursor; break;
+      case ScaleSEHandle:         newCursorType = kSizeSECursor; break;
+      case RotateNWHandle:        newCursor = theme->cursors.rotateNw(); break;
+      case RotateNHandle:         newCursor = theme->cursors.rotateN(); break;
+      case RotateNEHandle:        newCursor = theme->cursors.rotateNe(); break;
+      case RotateWHandle:         newCursor = theme->cursors.rotateW(); break;
+      case RotateEHandle:         newCursor = theme->cursors.rotateE(); break;
+      case RotateSWHandle:        newCursor = theme->cursors.rotateSw(); break;
+      case RotateSHandle:         newCursor = theme->cursors.rotateS(); break;
+      case RotateSEHandle:        newCursor = theme->cursors.rotateSe(); break;
+      case PivotHandle:           newCursorType = kHandCursor; break;
       default:
         return false;
     }
@@ -807,16 +803,28 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
     angle >>= 16;
     angle /= 32;
 
-    if (newCursor >= kSizeNCursor && newCursor <= kSizeNWCursor) {
+    if (newCursorType >= kSizeNCursor &&
+        newCursorType <= kSizeNWCursor) {
       size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
       size_t c;
       for (c=num-1; c>0; --c)
-        if (rotated_size_cursors[c] == newCursor)
+        if (rotated_size_cursors[c] == newCursorType)
           break;
 
-      newCursor = rotated_size_cursors[(c+angle) % num];
+      newCursorType = rotated_size_cursors[(c+angle) % num];
     }
-    else if (newCursor >= kRotateNCursor && newCursor <= kRotateNWCursor) {
+    else if (newCursor) {
+      auto theme = skin::SkinTheme::instance();
+      const Cursor* rotated_rotate_cursors[8] = {
+        theme->cursors.rotateE(),
+        theme->cursors.rotateNe(),
+        theme->cursors.rotateN(),
+        theme->cursors.rotateNw(),
+        theme->cursors.rotateW(),
+        theme->cursors.rotateSw(),
+        theme->cursors.rotateS(),
+        theme->cursors.rotateSe()
+      };
       size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
       size_t c;
       for (c=num-1; c>0; --c)
@@ -824,9 +832,10 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
           break;
 
       newCursor = rotated_rotate_cursors[(c+angle) % num];
+      newCursorType = kCustomCursor;
     }
 
-    editor->showMouseCursor(newCursor);
+    editor->showMouseCursor(newCursorType, newCursor);
     return true;
   }
 
