@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,7 +16,8 @@ namespace app {
     NoHandle,
     // This is the handle to move the pixels region, generally, the
     // whole region activates this handle.
-    MoveHandle,
+    MovePixelsHandle,
+    MoveSelectionHandle,
     // One of the region's corders to scale.
     ScaleNWHandle, ScaleNHandle, ScaleNEHandle,
     ScaleWHandle,                ScaleEHandle,

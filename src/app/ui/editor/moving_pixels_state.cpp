@@ -125,7 +125,7 @@ void MovingPixelsState::translate(const gfx::Point& delta)
   if (m_pixelsMovement->isDragging())
     m_pixelsMovement->dropImageTemporarily();
 
-  m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MoveHandle);
+  m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MovePixelsHandle);
   m_pixelsMovement->moveImage(delta, PixelsMovement::NormalMovement);
   m_pixelsMovement->dropImageTemporarily();
 }
@@ -287,7 +287,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     // Re-catch the image
     m_pixelsMovement->catchImageAgain(
-      editor->screenToEditor(msg->position()), MoveHandle);
+      editor->screenToEditor(msg->position()), MovePixelsHandle);
 
     editor->captureMouse();
     return true;
@@ -333,7 +333,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
     // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
     KeyContext keyContext = KeyContext::Normal;
     switch (m_pixelsMovement->handle()) {
-      case MoveHandle:
+      case MovePixelsHandle:
         keyContext = KeyContext::TranslatingSelection;
         break;
       case ScaleNWHandle:

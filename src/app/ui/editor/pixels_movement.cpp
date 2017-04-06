@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -255,7 +255,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 
   switch (m_handle) {
 
-    case MoveHandle:
+    case MovePixelsHandle:
       if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
         if (ABS(dx) < ABS(dy))
           dx = 0.0;

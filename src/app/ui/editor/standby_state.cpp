@@ -31,6 +31,7 @@
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/moving_cel_state.h"
 #include "app/ui/editor/moving_pixels_state.h"
+#include "app/ui/editor/moving_selection_state.h"
 #include "app/ui/editor/moving_slice_state.h"
 #include "app/ui/editor/moving_symmetry_state.h"
 #include "app/ui/editor/pivot_helpers.h"
@@ -194,7 +195,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         else {
           try {
             // Change to MovingCelState
-            HandleType handle = MoveHandle;
+            HandleType handle = MovePixelsHandle;
             if (resizeCelBounds(editor).contains(msg->position()))
               handle = ScaleSEHandle;
 
@@ -282,6 +283,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
     }
 
+    // Move selection edges
+    if (overSelectionEdges(editor, msg->position())) {
+      transformSelection(editor, msg, MoveSelectionHandle);
+      return true;
+    }
+
     // Move selected pixels
     if (layer && editor->isInsideSelection() && msg->left()) {
       if (!layer->isEditableHierarchy()) {
@@ -291,7 +298,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
 
       // Change to MovingPixelsState
-      transformSelection(editor, msg, MoveHandle);
+      transformSelection(editor, msg, MovePixelsHandle);
       return true;
     }
   }
@@ -405,6 +412,11 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   if (ink) {
     // If the current tool change selection (e.g. rectangular marquee, etc.)
     if (ink->isSelection()) {
+      if (overSelectionEdges(editor, mouseScreenPos)) {
+        editor->showMouseCursor(kHandCursor); // TODO create a new mouse cursor
+        return true;
+      }
+
       // Move pixels
       if (editor->isInsideSelection()) {
         EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
@@ -612,6 +624,13 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     }
   }
 
+  // Special case: Move only selection edges
+  if (handle == MoveSelectionHandle) {
+    EditorStatePtr newState(new MovingSelectionState(editor, msg));
+    editor->setState(newState);
+    return;
+  }
+
   Layer* layer = editor->layer();
   if (layer && layer->isReference()) {
     StatusBar::instance()->showTip(
@@ -697,6 +716,31 @@ gfx::Rect StandbyState::resizeCelBounds(Editor* editor) const
     bounds.y += 3*bounds.h;
   }
   return bounds;
+}
+
+bool StandbyState::overSelectionEdges(Editor* editor,
+                                      const gfx::Point& mouseScreenPos) const
+{
+  // Move selection edges
+  if (editor->isActive() &&
+      editor->document()->isMaskVisible() &&
+      editor->document()->getMaskBoundaries() &&
+      Preferences::instance().selection.moveEdges()) {
+    // For each selection edge
+    for (const auto& seg : *editor->document()->getMaskBoundaries()) {
+      gfx::Rect segBounds = editor->editorToScreen(seg.bounds());
+      if (seg.vertical())
+        segBounds.w = 1;
+      else
+        segBounds.h = 1;
+
+      if (gfx::Rect(segBounds).enlarge(2*guiscale()).contains(mouseScreenPos) &&
+          !gfx::Rect(segBounds).shrink(2*guiscale()).contains(mouseScreenPos)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -79,6 +79,7 @@ namespace app {
     void transformSelection(Editor* editor, ui::MouseMessage* msg, HandleType handle);
     void onPivotChange(Editor* editor);
     gfx::Rect resizeCelBounds(Editor* editor) const;
+    bool overSelectionEdges(Editor* editor, const gfx::Point& mouseScreenPos) const;
 
     Decorator* m_decorator;
     obs::scoped_connection m_pivotVisConn;

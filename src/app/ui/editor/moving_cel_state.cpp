@@ -204,7 +204,7 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   switch (m_handle) {
 
-    case MoveHandle:
+    case MovePixelsHandle:
       m_celOffset = newCursorPos - m_cursorStart;
       if (int(editor->getCustomizationDelegate()
               ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
