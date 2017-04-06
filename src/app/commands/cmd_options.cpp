@@ -133,6 +133,9 @@ public:
     if (m_pref.selection.keepSelectionAfterClear())
       keepSelectionAfterClear()->setSelected(true);
 
+    if (m_pref.selection.moveEdges())
+      moveEdges()->setSelected(true);
+
 #if defined(_WIN32) || defined(__APPLE__)
     if (m_pref.cursor.useNativeCursor())
       nativeCursor()->setSelected(true);
@@ -297,6 +300,7 @@ public:
     m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
+    m_pref.selection.moveEdges(moveEdges()->isSelected());
     m_pref.guides.layerEdgesColor(layerEdgesColor()->getColor());
     m_pref.guides.autoGuidesColor(autoGuidesColor()->getColor());
     m_pref.slices.defaultColor(defaultSliceColor()->getColor());

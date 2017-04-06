@@ -8,6 +8,7 @@
         <listbox id="section_listbox">
           <listitem text="@.section_general" value="section_general" />
           <listitem text="@.section_editor" value="section_editor" />
+          <listitem text="@.section_selection" value="section_selection" />
           <listitem text="@.section_timeline" value="section_timeline" />
           <listitem text="@.section_cursors" value="section_cursors" />
           <listitem text="@.section_background" value="section_bg" />
@@ -84,10 +85,14 @@
             <label text="@.right_click" />
             <combobox id="right_click_behavior" expansive="true" />
           </hbox>
+        </vbox>
 
+        <!-- Selection -->
+        <vbox id="section_selection">
           <separator text="@.editor_selection" horizontal="true" />
           <check text="@.auto_opaque" id="auto_opaque" tooltip="@.auto_opaque_tooltip" />
           <check text="@.keep_selection_after_clear" id="keep_selection_after_clear" tooltip="@.keep_selection_after_clear_tooltip" />
+          <check text="@.move_edges" id="move_edges" tooltip="@.move_edges_tooltip" />
         </vbox>
 
         <!-- Timeline -->
