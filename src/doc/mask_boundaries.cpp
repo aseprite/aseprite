@@ -133,7 +133,7 @@ MaskBoundaries::MaskBoundaries(const Image* bitmap)
             else {
               ASSERT(prevColor);
               new_hseg(true);
-			  stop_expanding_vseg();
+              stop_expanding_vseg();
             }
           }
         }
