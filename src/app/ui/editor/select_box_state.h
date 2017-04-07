@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,10 +11,11 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/ruler.h"
 #include "app/ui/editor/standby_state.h"
+#include "ui/cursor_type.h"
 #include "ui/mouse_buttons.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace app {
 
@@ -92,15 +93,25 @@ namespace app {
 
     void updateContextBar();
 
+    // This returns a ui align value (e.g. LEFT for the ruler)
+    int hitTestRulers(Editor* editor,
+                      const gfx::Point& mousePos,
+                      const bool updateMovingRulers);
+
     // Returns true if the position screen position (x, y) is touching
     // the given ruler.
-    bool touchRuler(Editor* editor, Ruler& ruler, int x, int y);
+    bool hitTestRuler(Editor* editor, const Ruler& ruler,
+                      const gfx::Point& mousePos);
+
+    ui::CursorType cursorFromAlign(const int align) const;
 
     bool hasFlag(Flags flag) const;
 
     SelectBoxDelegate* m_delegate;
     Rulers m_rulers;
-    int m_movingRuler;
+    Rulers m_startRulers;
+    int m_rulersDragAlign;      // Used to calculate the correct mouse cursor
+    std::vector<int> m_movingRulers;
     bool m_selectingBox;
     ui::MouseButtons m_selectingButtons;
     gfx::Point m_startingPos;

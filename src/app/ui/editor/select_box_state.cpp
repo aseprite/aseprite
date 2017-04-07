@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,7 +30,7 @@ using namespace ui;
 SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc, Flags flags)
   : m_delegate(delegate)
   , m_rulers(4)
-  , m_movingRuler(-1)
+  , m_rulersDragAlign(0)
   , m_selectingBox(false)
   , m_flags(flags)
 {
@@ -50,10 +50,10 @@ void SelectBoxState::setFlags(Flags flags)
 
 gfx::Rect SelectBoxState::getBoxBounds() const
 {
-  int x1 = std::min(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
-  int y1 = std::min(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
-  int x2 = std::max(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
-  int y2 = std::max(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
+  int x1 = std::min(m_rulers[V1].position(), m_rulers[V2].position());
+  int y1 = std::min(m_rulers[H1].position(), m_rulers[H2].position());
+  int x2 = std::max(m_rulers[V1].position(), m_rulers[V2].position());
+  int y2 = std::max(m_rulers[H1].position(), m_rulers[H2].position());
   return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
@@ -84,21 +84,17 @@ void SelectBoxState::onBeforePopState(Editor* editor)
 bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (msg->left() || msg->right()) {
-    m_movingRuler = -1;
+    m_startingPos = editor->screenToEditor(msg->position());
 
     if (hasFlag(Flags::Rulers)) {
-      for (int i=0; i<(int)m_rulers.size(); ++i) {
-        if (touchRuler(editor, m_rulers[i], msg->position().x, msg->position().y)) {
-          m_movingRuler = i;
-          break;
-        }
-      }
+      m_rulersDragAlign = hitTestRulers(editor, msg->position(), true);
+      if (m_rulersDragAlign)
+        m_startRulers = m_rulers; // Capture start positions
     }
 
-    if (hasFlag(Flags::QuickBox) && m_movingRuler == -1) {
+    if (hasFlag(Flags::QuickBox) && m_movingRulers.empty()) {
       m_selectingBox = true;
       m_selectingButtons = msg->buttons();
-      m_startingPos = editor->screenToEditor(msg->position());
       setBoxBounds(gfx::Rect(m_startingPos, gfx::Size(1, 1)));
     }
 
@@ -110,7 +106,8 @@ bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 
 bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  m_movingRuler = -1;
+  m_movingRulers.clear();
+  m_rulersDragAlign = 0;
 
   if (m_selectingBox) {
     m_selectingBox = false;
@@ -132,18 +129,18 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   updateContextBar();
 
-  if (hasFlag(Flags::Rulers) && m_movingRuler >= 0) {
-    gfx::Point pt = editor->screenToEditor(msg->position());
+  if (hasFlag(Flags::Rulers) && !m_movingRulers.empty()) {
+    gfx::Point newPos = editor->screenToEditor(msg->position());
+    gfx::Point delta = newPos - m_startingPos;
 
-    switch (m_rulers[m_movingRuler].getOrientation()) {
+    for (int i : m_movingRulers) {
+      Ruler& ruler = m_rulers[i];
+      const Ruler& start = m_startRulers[i];
 
-      case Ruler::Horizontal:
-        m_rulers[m_movingRuler].setPosition(pt.y);
-        break;
-
-      case Ruler::Vertical:
-        m_rulers[m_movingRuler].setPosition(pt.x);
-        break;
+      switch (ruler.orientation()) {
+        case Ruler::Horizontal: ruler.setPosition(start.position() + delta.y); break;
+        case Ruler::Vertical: ruler.setPosition(start.position() + delta.x); break;
+      }
     }
     used = true;
   }
@@ -175,30 +172,15 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool SelectBoxState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (hasFlag(Flags::Rulers)) {
-    if (m_movingRuler >= 0) {
-      switch (m_rulers[m_movingRuler].getOrientation()) {
-
-        case Ruler::Horizontal:
-          editor->showMouseCursor(kSizeNSCursor);
-          return true;
-
-        case Ruler::Vertical:
-          editor->showMouseCursor(kSizeWECursor);
-          return true;
-      }
+    if (!m_movingRulers.empty()) {
+      editor->showMouseCursor(cursorFromAlign(m_rulersDragAlign));
+      return true;
     }
 
-    for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
-      if (touchRuler(editor, *it, mouseScreenPos.x, mouseScreenPos.y)) {
-        switch (it->getOrientation()) {
-          case Ruler::Horizontal:
-            editor->showMouseCursor(kSizeNSCursor);
-            return true;
-          case Ruler::Vertical:
-            editor->showMouseCursor(kSizeWECursor);
-            return true;
-        }
-      }
+    int align = hitTestRulers(editor, mouseScreenPos, false);
+    if (align != 0) {
+      editor->showMouseCursor(cursorFromAlign(align));
+      return true;
     }
   }
 
@@ -304,14 +286,14 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   // Draw the rulers enclosing the box
   if (hasFlag(Flags::Rulers)) {
     for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
-      switch (it->getOrientation()) {
+      switch (it->orientation()) {
 
         case Ruler::Horizontal:
-          render->drawLine(vp.x, it->getPosition(), vp.x+vp.w-1, it->getPosition(), rulerColor);
+          render->drawLine(vp.x, it->position(), vp.x+vp.w-1, it->position(), rulerColor);
           break;
 
         case Ruler::Vertical:
-          render->drawLine(it->getPosition(), vp.y, it->getPosition(), vp.y+vp.h-1, rulerColor);
+          render->drawLine(it->position(), vp.y, it->position(), vp.y+vp.h-1, rulerColor);
           break;
       }
     }
@@ -333,14 +315,52 @@ void SelectBoxState::updateContextBar()
   contextBar->updateForSelectingBox(m_delegate->onGetContextBarHelp());
 }
 
-bool SelectBoxState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)
+int SelectBoxState::hitTestRulers(Editor* editor,
+                                  const gfx::Point& mousePos,
+                                  const bool updateMovingRulers)
+{
+  ASSERT(H1 == 0);
+  ASSERT(H2 == 1);
+  ASSERT(V1 == 2);
+  ASSERT(V2 == 3);
+  int aligns[] = { TOP, BOTTOM, LEFT, RIGHT };
+  int align = 0;
+
+  if (updateMovingRulers)
+    m_movingRulers.clear();
+
+  for (int i=0; i<int(m_rulers.size()); ++i) {
+    if (hitTestRuler(editor, m_rulers[i], mousePos)) {
+      align |= aligns[i];
+      if (updateMovingRulers)
+        m_movingRulers.push_back(i);
+    }
+  }
+
+  // Check moving all rulers at the same time
+  if (align == 0 && !hasFlag(Flags::QuickBox)) {
+    if (editor->editorToScreen(getBoxBounds()).contains(mousePos)) {
+      align = LEFT | TOP | RIGHT | BOTTOM;
+      if (updateMovingRulers) {
+        // Add all rulers
+        for (int i=0; i<4; ++i)
+          m_movingRulers.push_back(i);
+      }
+    }
+  }
+
+  return align;
+}
+
+bool SelectBoxState::hitTestRuler(Editor* editor, const Ruler& ruler,
+                                  const gfx::Point& mousePos)
 {
   gfx::Point pt = editor->editorToScreen(
-    gfx::Point(ruler.getPosition(), ruler.getPosition()));
+    gfx::Point(ruler.position(), ruler.position()));
 
-  switch (ruler.getOrientation()) {
-    case Ruler::Horizontal: return (y >= pt.y-2 && y <= pt.y+2);
-    case Ruler::Vertical:   return (x >= pt.x-2 && x <= pt.x+2);
+  switch (ruler.orientation()) {
+    case Ruler::Horizontal: return (mousePos.y >= pt.y-2*guiscale() && mousePos.y <= pt.y+2*guiscale());
+    case Ruler::Vertical:   return (mousePos.x >= pt.x-2*guiscale() && mousePos.x <= pt.x+2*guiscale());
   }
 
   return false;
@@ -349,6 +369,22 @@ bool SelectBoxState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)
 bool SelectBoxState::hasFlag(Flags flag) const
 {
   return (int(m_flags) & int(flag)) == int(flag);
+}
+
+CursorType SelectBoxState::cursorFromAlign(const int align) const
+{
+  switch (align) {
+    case LEFT: return kSizeWCursor;
+    case RIGHT: return kSizeECursor;
+    case TOP: return kSizeNCursor;
+    case TOP | LEFT: return kSizeNWCursor;
+    case TOP | RIGHT: return kSizeNECursor;
+    case BOTTOM: return kSizeSCursor;
+    case BOTTOM | LEFT: return kSizeSWCursor;
+    case BOTTOM | RIGHT: return kSizeSECursor;
+    case TOP | BOTTOM | LEFT | RIGHT: return kMoveCursor;
+  }
+  return kArrowCursor;
 }
 
 } // namespace app
