@@ -9,6 +9,7 @@
 #include "base/string.h"
 #include "gen/common.h"
 
+#include <cstring>
 #include <iostream>
 #include <vector>
 
