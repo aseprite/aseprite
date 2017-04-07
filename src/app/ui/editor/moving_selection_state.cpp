@@ -80,7 +80,8 @@ bool MovingSelectionState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool MovingSelectionState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  const gfx::Point newCursorPos = editor->screenToEditor(msg->position());
+  const gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
+  const gfx::Point newCursorPos = editor->screenToEditor(mousePos);
   m_delta = newCursorPos - m_cursorStart;
   const gfx::Point newMaskOrigin = m_selOrigin + m_delta;
   const gfx::Point oldMaskOrigin = editor->document()->mask()->bounds().origin();

@@ -200,7 +200,8 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  gfx::PointF newCursorPos = editor->screenToEditorF(msg->position());
+  const gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
+  const gfx::PointF newCursorPos = editor->screenToEditorF(mousePos);
 
   switch (m_handle) {
 
