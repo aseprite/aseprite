@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,11 +20,12 @@
 
 namespace app {
 
-std::string show_file_selector(
+bool show_file_selector(
   const std::string& title,
   const std::string& initialPath,
   const std::string& showExtensions,
   FileSelectorType type,
+  FileSelectorFiles& output,
   FileSelectorDelegate* delegate)
 {
   if (Preferences::instance().experimental.useNativeFileDialog() &&
@@ -33,31 +34,40 @@ std::string show_file_selector(
       she::instance()->nativeDialogs()->createFileDialog();
 
     if (dlg) {
-      std::string res;
-
       dlg->setTitle(title);
       dlg->setFileName(initialPath);
 
-      if (type == FileSelectorType::Save)
-        dlg->toSaveFile();
-      else
-        dlg->toOpenFile();
+      switch (type) {
+        case FileSelectorType::Open:
+        case FileSelectorType::OpenMultiple:
+          dlg->toOpenFile();
+          if (type == FileSelectorType::OpenMultiple)
+            dlg->setMultipleSelection(true);
+          break;
+        case FileSelectorType::Save:
+          dlg->toSaveFile();
+          break;
+      }
 
       std::vector<std::string> tokens;
       base::split_string(showExtensions, tokens, ",");
       for (const auto& tok : tokens)
         dlg->addFilter(tok, tok + " files (*." + tok + ")");
 
-      if (dlg->show(she::instance()->defaultDisplay()))
-        res = dlg->fileName();
-
+      bool res = dlg->show(she::instance()->defaultDisplay());
+      if (res) {
+        if (type == FileSelectorType::OpenMultiple)
+          dlg->getMultipleFileNames(output);
+        else
+          output.push_back(dlg->fileName());
+      }
       dlg->dispose();
       return res;
     }
   }
 
   FileSelector fileSelector(type, delegate);
-  return fileSelector.show(title, initialPath, showExtensions);
+  return fileSelector.show(title, initialPath, showExtensions, output);
 }
 
 } // namespace app

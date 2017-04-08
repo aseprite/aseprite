@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,9 +8,10 @@
 #define APP_FILE_SELECTOR_H_INCLUDED
 #pragma once
 
-#include <string>
-
 #include "doc/pixel_ratio.h"
+
+#include <string>
+#include <vector>
 
 namespace ui {
   class ComboBox;
@@ -18,7 +19,9 @@ namespace ui {
 
 namespace app {
 
-  enum class FileSelectorType { Open, Save };
+  enum class FileSelectorType { Open, OpenMultiple, Save };
+
+  typedef std::vector<std::string> FileSelectorFiles;
 
   class FileSelectorDelegate {
   public:
@@ -41,11 +44,12 @@ namespace app {
     virtual doc::PixelRatio pixelRatio() = 0;
   };
 
-  std::string show_file_selector(
+  bool show_file_selector(
     const std::string& title,
     const std::string& initialPath,
     const std::string& showExtensions,
     FileSelectorType type,
+    FileSelectorFiles& output,
     FileSelectorDelegate* delegate = nullptr);
 
 } // namespace app

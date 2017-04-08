@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -82,6 +82,7 @@ class FileDialogOSX : public FileDialog {
 public:
   FileDialogOSX()
     : m_save(false)
+    , m_multipleSelection(false)
   {
   }
 
@@ -105,6 +106,10 @@ public:
     m_defExtension = extension;
   }
 
+  void setMultipleSelection(bool multiple) override {
+    m_multipleSelection = multiple;
+  }
+
   void addFilter(const std::string& extension, const std::string& description) override {
     if (m_defExtension.empty())
       m_defExtension = extension;
@@ -114,6 +119,10 @@ public:
 
   std::string fileName() override {
     return m_filename;
+  }
+
+  void getMultipleFileNames(std::vector<std::string>& output) override {
+    output = m_filenames;
   }
 
   void setFileName(const std::string& filename) override {
@@ -128,7 +137,7 @@ public:
     }
     else {
       panel = [NSOpenPanel openPanel];
-      [(NSOpenPanel*)panel setAllowsMultipleSelection:NO];
+      [(NSOpenPanel*)panel setAllowsMultipleSelection:(m_multipleSelection ? YES: NO)];
       [(NSOpenPanel*)panel setCanChooseDirectories:NO];
     }
 
@@ -157,12 +166,22 @@ public:
 
     bool retValue;
     if ([helper result] == NSFileHandlingPanelOKButton) {
-      NSURL* url = [panel URL];
-      m_filename = [[url path] UTF8String];
+      if (m_multipleSelection) {
+        for (NSURL* url in [(NSOpenPanel*)panel URLs]) {
+          m_filename = [[url path] UTF8String];
+          m_filenames.push_back(m_filename);
+        }
+      }
+      else {
+        NSURL* url = [panel URL];
+        m_filename = [[url path] UTF8String];
+        m_filenames.push_back(m_filename);
+      }
       retValue = true;
     }
-    else
+    else {
       retValue = false;
+    }
 
 #if !__has_feature(objc_arc)
     [helper release];
@@ -176,8 +195,10 @@ private:
   std::vector<std::pair<std::string, std::string>> m_filters;
   std::string m_defExtension;
   std::string m_filename;
+  std::vector<std::string> m_filenames;
   std::string m_title;
   bool m_save;
+  bool m_multipleSelection;
 };
 
 NativeDialogsOSX::NativeDialogsOSX()

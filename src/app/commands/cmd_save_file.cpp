@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -192,15 +192,14 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     std::string exts = get_writable_extensions();
     filename = document->filename();
 
-    std::string newfilename = app::show_file_selector(
-      dlgTitle, filename, exts,
-      FileSelectorType::Save,
-      delegate);
-
-    if (newfilename.empty())
+    FileSelectorFiles newfilename;
+    if (!app::show_file_selector(
+          dlgTitle, filename, exts,
+          FileSelectorType::Save, newfilename,
+          delegate))
       return false;
 
-    filename = newfilename;
+    filename = newfilename.front();
     if (delegate &&
         delegate->hasResizeCombobox()) {
       xscale = yscale = delegate->getResizeScale();

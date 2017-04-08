@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -57,17 +57,14 @@ void LoadMaskCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
 
-  std::string filename = m_filename;
-
   if (context->isUIAvailable()) {
-    filename = app::show_file_selector(
-      "Load .msk File", filename, "msk",
-      FileSelectorType::Open);
-
-    if (filename.empty())
+    FileSelectorFiles selectedFilename;
+    if (!app::show_file_selector(
+          "Load .msk File", m_filename, "msk",
+          FileSelectorType::Open, selectedFilename))
       return;
 
-    m_filename = filename;
+    m_filename = selectedFilename.front();
   }
 
   base::UniquePtr<Mask> mask(load_msk_file(m_filename.c_str()));

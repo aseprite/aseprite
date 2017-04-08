@@ -109,6 +109,10 @@ public:
 protected:
 
   void onEntryChange() {
+    // Deselect multiple-selection
+    if (m_fileList->multipleSelection())
+      m_fileList->deselectedFileItems();
+
     removeAllItems();
 
     // String to be autocompleted
@@ -118,7 +122,7 @@ protected:
     if (left_part.empty())
       return;
 
-    for (const IFileItem* child : m_fileList->getFileList()) {
+    for (const IFileItem* child : m_fileList->fileList()) {
       std::string child_name = child->displayName();
       std::string::const_iterator it1, it2;
 
@@ -376,20 +380,19 @@ void FileSelector::goUp()
 
 void FileSelector::goInsideFolder()
 {
-  if (m_fileList->getSelectedFileItem() &&
-      m_fileList->getSelectedFileItem()->isBrowsable()) {
+  if (m_fileList->selectedFileItem() &&
+      m_fileList->selectedFileItem()->isBrowsable()) {
     m_fileList->setCurrentFolder(
-      m_fileList->getSelectedFileItem());
+      m_fileList->selectedFileItem());
   }
 }
 
-std::string FileSelector::show(
+bool FileSelector::show(
   const std::string& title,
   const std::string& initialPath,
-  const std::string& showExtensions)
+  const std::string& showExtensions,
+  FileSelectorFiles& output)
 {
-  std::string result;
-
   FileSystemModule* fs = FileSystemModule::instance();
   LockFS lock(fs);
 
@@ -432,7 +435,8 @@ std::string FileSelector::show(
   // Change the file formats/extensions to be shown
   std::string initialExtension = base::get_file_extension(initialPath);
   std::string exts = showExtensions;
-  if (m_type == FileSelectorType::Open) {
+  if (m_type == FileSelectorType::Open ||
+      m_type == FileSelectorType::OpenMultiple) {
     auto it = preferred_open_extensions.find(exts);
     if (it == preferred_open_extensions.end())
       exts = showExtensions;
@@ -444,13 +448,14 @@ std::string FileSelector::show(
     if (!initialExtension.empty())
       exts = initialExtension;
   }
+  m_fileList->setMultipleSelection(m_type == FileSelectorType::OpenMultiple);
   m_fileList->setExtensions(exts.c_str());
   if (start_folder)
     m_fileList->setCurrentFolder(start_folder);
 
   // current location
   navigation_position.reset();
-  addInNavigationHistory(m_fileList->getCurrentFolder());
+  addInNavigationHistory(m_fileList->currentFolder());
 
   // fill the location combo-box
   updateLocation();
@@ -501,18 +506,19 @@ std::string FileSelector::show(
   // update the view
   View::getView(m_fileList)->updateView();
 
-  // open the window and run... the user press ok?
+  // TODO this loop needs a complete refactor
+  // Open the window and run... the user press ok?
 again:
   openWindowInForeground();
   if (closer() == ok ||
       closer() == m_fileList) {
-    // open the selected file
-    IFileItem* folder = m_fileList->getCurrentFolder();
+    IFileItem* folder = m_fileList->currentFolder();
     ASSERT(folder);
 
+    // File name in the text entry field/combobox
     std::string fn = m_fileName->getValue();
     std::string buf;
-    IFileItem* enter_folder = NULL;
+    IFileItem* enter_folder = nullptr;
 
     // up a level?
     if (fn == "..") {
@@ -521,13 +527,15 @@ again:
         enter_folder = folder;
     }
     else if (fn.empty()) {
-      // show the window again
-      setVisible(true);
-      goto again;
+      if (m_type != FileSelectorType::OpenMultiple) {
+        // Show the window again
+        setVisible(true);
+        goto again;
+      }
     }
     else {
       // check if the user specified in "fn" a item of "fileview"
-      const FileItemList& children = m_fileList->getFileList();
+      const FileItemList& children = m_fileList->fileList();
 
       std::string fn2 = fn;
 #ifdef _WIN32
@@ -536,7 +544,6 @@ again:
 
       for (IFileItem* child : children) {
         std::string child_name = child->displayName();
-
 #ifdef _WIN32
         child_name = base::string_to_lower(child_name);
 #endif
@@ -604,7 +611,7 @@ again:
 
     // does it not have extension? ...we should add the extension
     // selected in the filetype combo-box
-    if (base::get_file_extension(buf).empty()) {
+    if (!buf.empty() && base::get_file_extension(buf).empty()) {
       buf += '.';
       buf += getSelectedExtension();
     }
@@ -628,12 +635,17 @@ again:
       }
       // Cancel
       else if (ret != 1) {
-        return "";
+        return false;
       }
     }
 
-    // duplicate the buffer to return a new string
-    result = buf;
+    // Put in output the selected filenames
+    if (!buf.empty())
+      output.push_back(buf);
+    else if (m_type == FileSelectorType::OpenMultiple) {
+      for (IFileItem* fi : m_fileList->selectedFileItems())
+        output.push_back(fi->fileName());
+    }
 
     // save the path in the configuration file
     std::string lastpath = folder->keyName();
@@ -650,19 +662,19 @@ again:
     }
   }
 
-  return result;
+  return (!output.empty());
 }
 
 // Updates the content of the combo-box that shows the current
 // location in the file-system.
 void FileSelector::updateLocation()
 {
-  IFileItem* currentFolder = m_fileList->getCurrentFolder();
+  IFileItem* currentFolder = m_fileList->currentFolder();
   IFileItem* fileItem = currentFolder;
   std::list<IFileItem*> locations;
   int selected_index = -1;
 
-  while (fileItem != NULL) {
+  while (fileItem) {
     locations.push_front(fileItem);
     fileItem = fileItem->parent();
   }
@@ -672,8 +684,7 @@ void FileSelector::updateLocation()
 
   // Add item by item (from root to the specific current folder)
   int level = 0;
-  for (std::list<IFileItem*>::iterator it=locations.begin(), end=locations.end();
-       it != end; ++it) {
+  for (auto it=locations.begin(), end=locations.end(); it!=end; ++it) {
     fileItem = *it;
 
     // Indentation
@@ -729,7 +740,7 @@ void FileSelector::updateNavigationButtons()
 
   // Update the state of the go up button: if the current-folder isn't
   // the root-item.
-  IFileItem* currentFolder = m_fileList->getCurrentFolder();
+  IFileItem* currentFolder = m_fileList->currentFolder();
   goUpButton()->setEnabled(currentFolder != FileSystemModule::instance()->getRootFileItem());
 }
 
@@ -797,7 +808,7 @@ void FileSelector::onNewFolder()
 
   window.openWindowInForeground();
   if (window.closer() == window.ok()) {
-    IFileItem* currentFolder = m_fileList->getCurrentFolder();
+    IFileItem* currentFolder = m_fileList->currentFolder();
     if (currentFolder) {
       std::string dirname = window.name()->text();
 
@@ -858,7 +869,8 @@ void FileSelector::onFileTypeChange()
     m_fileList->setExtensions(exts.c_str());
     m_navigationLocked = false;
 
-    if (m_type == FileSelectorType::Open) {
+    if (m_type == FileSelectorType::Open ||
+        m_type == FileSelectorType::OpenMultiple) {
       std::string origShowExtensions = fileType()->getItem(0)->getValue();
       preferred_open_extensions[origShowExtensions] = fileType()->getValue();
     }
@@ -876,12 +888,16 @@ void FileSelector::onFileTypeChange()
 
 void FileSelector::onFileListFileSelected()
 {
-  IFileItem* fileitem = m_fileList->getSelectedFileItem();
+  IFileItem* fileitem = m_fileList->selectedFileItem();
 
   if (!fileitem->isFolder()) {
     std::string filename = base::get_file_name(fileitem->fileName());
 
-    m_fileName->setValue(filename.c_str());
+    if (m_type != FileSelectorType::OpenMultiple ||
+        m_fileList->selectedFileItems().size() == 1)
+      m_fileName->setValue(filename.c_str());
+    else
+      m_fileName->setValue(std::string());
   }
 }
 
@@ -893,7 +909,7 @@ void FileSelector::onFileListFileAccepted()
 void FileSelector::onFileListCurrentFolderChanged()
 {
   if (!m_navigationLocked)
-    addInNavigationHistory(m_fileList->getCurrentFolder());
+    addInNavigationHistory(m_fileList->currentFolder());
 
   updateLocation();
   updateNavigationButtons();

@@ -90,16 +90,16 @@ private:
   }
 
   void onSelectFontFile() {
-    std::string face = show_file_selector(
-      "Select a TrueType Font",
-      m_face,
-      "ttf,ttc,otf,dfont",
-      FileSelectorType::Open,
-      nullptr);
+    FileSelectorFiles face;
+    if (!show_file_selector(
+          "Select a TrueType Font",
+          m_face,
+          "ttf,ttc,otf,dfont",
+          FileSelectorType::Open, face))
+      return;
 
-    if (!face.empty()) {
-      setFontFace(face);
-    }
+    ASSERT(!face.empty());
+    setFontFace(face.front());
   }
 
   void setFontFace(const std::string& face) {

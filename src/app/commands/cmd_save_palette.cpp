@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,10 +58,13 @@ void SavePaletteCommand::onExecute(Context* context)
   }
   else {
     std::string exts = get_writable_palette_extensions();
-    filename = app::show_file_selector("Save Palette", "", exts,
-                                       FileSelectorType::Save);
-    if (filename.empty())
+    FileSelectorFiles selFilename;
+    if (!app::show_file_selector("Save Palette", "", exts,
+                                 FileSelectorType::Save,
+                                 selFilename))
       return;
+
+    filename = selFilename.front();
   }
 
   if (!save_palette(filename.c_str(), palette, 16)) // TODO 16 should be configurable

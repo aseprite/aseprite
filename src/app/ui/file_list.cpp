@@ -33,19 +33,18 @@ using namespace ui;
 
 FileList::FileList()
   : Widget(kGenericWidget)
+  , m_currentFolder(FileSystemModule::instance()->getRootFileItem())
+  , m_req_valid(false)
+  , m_selected(nullptr)
+  , m_isearchClock(0)
   , m_generateThumbnailTimer(200, this)
   , m_monitoringTimer(50, this)
+  , m_itemToGenerateThumbnail(nullptr)
   , m_thumbnail(nullptr)
+  , m_multiselect(false)
 {
   setFocusStop(true);
   setDoubleBuffered(true);
-
-  m_currentFolder = FileSystemModule::instance()->getRootFileItem();
-  m_req_valid = false;
-  m_selected = NULL;
-  m_isearchClock = 0;
-
-  m_itemToGenerateThumbnail = NULL;
 
   m_generateThumbnailTimer.Tick.connect(&FileList::onGenerateThumbnailTick, this);
   m_monitoringTimer.Tick.connect(&FileList::onMonitoringTick, this);
@@ -80,7 +79,7 @@ void FileList::setCurrentFolder(IFileItem* folder)
 
   m_currentFolder = folder;
   m_req_valid = false;
-  m_selected = NULL;
+  m_selected = nullptr;
 
   regenerateList();
 
@@ -95,13 +94,56 @@ void FileList::setCurrentFolder(IFileItem* folder)
   View::getView(this)->updateView();
 }
 
+FileItemList FileList::selectedFileItems() const
+{
+  ASSERT(m_selectedItems.size() == m_list.size());
+
+  FileItemList result;
+  for (int i=0; i<int(m_list.size()); ++i) {
+    if (m_selectedItems[i])
+      result.push_back(m_list[i]);
+  }
+  return result;
+}
+
+void FileList::deselectedFileItems()
+{
+  if (!m_multiselect)
+    return;
+
+  bool redraw = false;
+
+  for (int i=0; i<int(m_list.size()); ++i) {
+    if (m_selected == m_list[i]) {
+      if (!m_selectedItems[i]) {
+        m_selectedItems[i] = true;
+        redraw = true;
+      }
+    }
+    else if (m_selectedItems[i]) {
+      m_selectedItems[i] = false;
+      redraw = true;
+    }
+  }
+
+  if (redraw)
+    invalidate();
+}
+
+void FileList::setMultipleSelection(bool multiple)
+{
+  m_multiselect = multiple;
+}
+
 void FileList::goUp()
 {
   IFileItem* folder = m_currentFolder;
   IFileItem* parent = folder->parent();
   if (parent) {
     setCurrentFolder(parent);
+
     m_selected = folder;
+    deselectedFileItems();
 
     // Make the selected item visible.
     makeSelectedFileitemVisible();
@@ -120,21 +162,38 @@ bool FileList::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         int th = textHeight();
         int y = bounds().y;
-        IFileItem* old_selected = m_selected;
-        m_selected = NULL;
+        IFileItem* oldSelected = m_selected;
+        m_selected = nullptr;
 
         // rows
-        for (FileItemList::iterator
-               it=m_list.begin();
-             it!=m_list.end(); ++it) {
+        int i = 0;
+        for (auto begin=m_list.begin(), end=m_list.end(), it=begin;
+             it!=end; ++it, ++i) {
           IFileItem* fi = *it;
           gfx::Size itemSize = getFileItemSize(fi);
 
           if (((mouseMsg->position().y >= y) &&
                (mouseMsg->position().y < y+th+4*guiscale())) ||
-              (it == m_list.begin() && mouseMsg->position().y < y) ||
-              (it == m_list.end()-1 && mouseMsg->position().y >= y+th+4*guiscale())) {
+              (it == begin && mouseMsg->position().y < y) ||
+              (it == end-1 && mouseMsg->position().y >= y+th+4*guiscale())) {
             m_selected = fi;
+
+            if (m_multiselect &&
+                oldSelected != fi &&
+                m_selectedItems.size() == m_list.size()) {
+              if (msg->shiftPressed() ||
+                  msg->ctrlPressed() ||
+                  msg->cmdPressed()) {
+                m_selectedItems[i] = !m_selectedItems[i];
+              }
+              else {
+                std::fill(m_selectedItems.begin(),
+                          m_selectedItems.end(), false);
+                m_selectedItems[i] = true;
+              }
+              invalidate();
+            }
+
             makeSelectedFileitemVisible();
             break;
           }
@@ -142,7 +201,7 @@ bool FileList::onProcessMessage(Message* msg)
           y += itemSize.h;
         }
 
-        if (old_selected != m_selected) {
+        if (oldSelected != m_selected) {
           generatePreviewOfSelectedItem();
 
           invalidate();
@@ -164,7 +223,7 @@ bool FileList::onProcessMessage(Message* msg)
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keyMsg->scancode();
         int unicodeChar = keyMsg->unicodeChar();
-        int select = getSelectedIndex();
+        int select = selectedIndex();
         View* view = View::getView(this);
         int bottom = m_list.size();
 
@@ -328,7 +387,6 @@ void FileList::onPaint(ui::PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   gfx::Rect bounds = clientBounds();
   int x, y = bounds.y;
-  int evenRow = 0;
   gfx::Color bgcolor;
   gfx::Color fgcolor;
 
@@ -336,10 +394,15 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
   // rows
   m_thumbnail = nullptr;
+  int i = 0;
   for (IFileItem* fi : m_list) {
     gfx::Size itemSize = getFileItemSize(fi);
+    const bool evenRow = ((i & 1) == 0);
 
-    if (fi == m_selected) {
+    if ((!m_multiselect && fi == m_selected) ||
+        (m_multiselect &&
+         m_selectedItems.size() == m_list.size() &&
+         m_selectedItems[i])) {
       fgcolor = theme->colors.filelistSelectedRowText();
       bgcolor = theme->colors.filelistSelectedRowFace();
     }
@@ -392,7 +455,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
       m_thumbnail = fi->getThumbnail();
 
     y += itemSize.h;
-    evenRow ^= 1;
+    ++i;
   }
 
   // Draw the thumbnail
@@ -524,36 +587,44 @@ void FileList::regenerateList()
            it=m_list.begin();
          it!=m_list.end(); ) {
       IFileItem* fileitem = *it;
+
       if (fileitem->isHidden())
         it = m_list.erase(it);
       else if (!fileitem->isFolder() &&
-          !fileitem->hasExtension(m_exts.c_str())) {
+               !fileitem->hasExtension(m_exts.c_str())) {
         it = m_list.erase(it);
       }
       else
         ++it;
     }
   }
+
+  if (m_multiselect && !m_list.empty()) {
+    m_selectedItems.resize(m_list.size());
+    deselectedFileItems();
+  }
+  else
+    m_selectedItems.clear();
 }
 
-int FileList::getSelectedIndex()
+int FileList::selectedIndex() const
 {
-  for (FileItemList::iterator
-         it = m_list.begin();
-       it != m_list.end(); ++it) {
+  for (auto it = m_list.begin(), end = m_list.end();
+       it != end; ++it) {
     if (*it == m_selected)
       return it - m_list.begin();
   }
-
   return -1;
 }
 
 void FileList::selectIndex(int index)
 {
-  IFileItem* old_selected = m_selected;
+  IFileItem* oldSelected = m_selected;
 
   m_selected = m_list.at(index);
-  if (old_selected != m_selected) {
+  deselectedFileItems();
+
+  if (oldSelected != m_selected) {
     makeSelectedFileitemVisible();
 
     invalidate();

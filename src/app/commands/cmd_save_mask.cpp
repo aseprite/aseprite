@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -45,12 +45,14 @@ void SaveMaskCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Document* document(reader.document());
-  std::string filename = "default.msk";
 
-  filename = app::show_file_selector(
-    "Save .msk File", filename, "msk", FileSelectorType::Save);
-  if (filename.empty())
+  FileSelectorFiles selFilename;
+  if (!app::show_file_selector(
+        "Save .msk File", "default.msk", "msk",
+        FileSelectorType::Save, selFilename))
     return;
+
+  std::string filename = selFilename.front();
 
   if (save_msk_file(document->mask(), filename.c_str()) != 0)
     ui::Alert::show("Error<<Error saving .msk file<<%s||&Close", filename.c_str());

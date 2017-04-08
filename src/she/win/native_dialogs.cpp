@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +29,8 @@ class FileDialogWin32 : public FileDialog {
 public:
   FileDialogWin32()
     : m_filename(FILENAME_BUFSIZE)
-    , m_save(false) {
+    , m_save(false)
+    , m_multipleSelection(false) {
   }
 
   void dispose() override {
@@ -52,6 +53,10 @@ public:
     m_defExtension = base::from_utf8(extension);
   }
 
+  void setMultipleSelection(bool multiple) override {
+    m_multipleSelection = multiple;
+  }
+
   void addFilter(const std::string& extension, const std::string& description) override {
     if (m_defExtension.empty()) {
       m_defExtension = base::from_utf8(extension);
@@ -62,6 +67,10 @@ public:
 
   std::string fileName() override {
     return base::to_utf8(&m_filename[0]);
+  }
+
+  void getMultipleFileNames(std::vector<std::string>& output) override {
+    output = m_filenames;
   }
 
   void setFileName(const std::string& filename) override {
@@ -92,16 +101,41 @@ public:
       OFN_NOCHANGEDIR |
       OFN_PATHMUSTEXIST;
 
-    if (!m_save)
+    if (!m_save) {
       ofn.Flags |= OFN_FILEMUSTEXIST;
+      if (m_multipleSelection)
+        ofn.Flags |= OFN_ALLOWMULTISELECT;
+    }
     else
       ofn.Flags |= OFN_OVERWRITEPROMPT;
 
     BOOL res;
     if (m_save)
       res = GetSaveFileName(&ofn);
-    else
+    else {
       res = GetOpenFileName(&ofn);
+      if (res && m_multipleSelection) {
+        WCHAR* p = &m_filename[0];
+        std::string path = base::to_utf8(p);
+
+        for (p+=std::wcslen(p)+1; ; ++p) {
+          if (*p) {
+            WCHAR* q = p;
+            for (++p; *p; ++p)
+              ;
+
+            m_filenames.push_back(
+              base::join_path(path, base::to_utf8(q)));
+          }
+          else                  // Two null chars in a row
+            break;
+        }
+
+        // Just one filename was selected
+        if (m_filenames.empty())
+          m_filenames.push_back(path);
+      }
+    }
 
     if (!res) {
       DWORD err = CommDlgExtendedError();
@@ -112,7 +146,7 @@ public:
       }
     }
 
-    return res != FALSE;
+    return (res != FALSE);
   }
 
 private:
@@ -158,9 +192,11 @@ private:
   std::wstring m_defExtension;
   int m_defFilter;
   std::vector<WCHAR> m_filename;
+  std::vector<std::string> m_filenames;
   std::wstring m_initialDir;
   std::wstring m_title;
   bool m_save;
+  bool m_multipleSelection;
 };
 
 NativeDialogsWin32::NativeDialogsWin32()

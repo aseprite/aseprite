@@ -448,12 +448,15 @@ private:
   void onImageFilename() {
     std::string exts = get_writable_extensions();
 
-    std::string newFilename = app::show_file_selector(
-      "Save Sprite Sheet", m_filename, exts, FileSelectorType::Save);
-    if (newFilename.empty())
+    FileSelectorFiles newFilename;
+    if (!app::show_file_selector(
+          "Save Sprite Sheet", m_filename, exts,
+          FileSelectorType::Save, newFilename))
       return;
 
-    m_filename = newFilename;
+    ASSERT(!newFilename.empty());
+
+    m_filename = newFilename.front();
     m_filenameAskOverwrite = false; // Already asked in file selector
     onFileNamesChange();
   }
@@ -468,12 +471,15 @@ private:
 
   void onDataFilename() {
     // TODO hardcoded "json" extension
-    std::string newFilename = app::show_file_selector(
-      "Save JSON Data", m_dataFilename, "json", FileSelectorType::Save);
-    if (newFilename.empty())
+    FileSelectorFiles newFilename;
+    if (!app::show_file_selector(
+          "Save JSON Data", m_dataFilename, "json",
+          FileSelectorType::Save, newFilename))
       return;
 
-    m_dataFilename = newFilename;
+    ASSERT(!newFilename.empty());
+
+    m_dataFilename = newFilename.front();
     m_dataFilenameAskOverwrite = false; // Already asked in file selector
     onFileNamesChange();
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -65,8 +65,12 @@ void LoadPaletteCommand::onExecute(Context* context)
   }
   else {
     std::string exts = get_readable_palette_extensions();
-    filename = app::show_file_selector("Load Palette", "", exts,
-                                       FileSelectorType::Open);
+
+    FileSelectorFiles filenames;
+    if (app::show_file_selector("Load Palette", "", exts,
+                                FileSelectorType::Open, filenames)) {
+      filename = filenames.front();
+    }
   }
 
   // Do nothing

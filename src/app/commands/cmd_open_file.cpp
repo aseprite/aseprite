@@ -106,6 +106,8 @@ void OpenFileCommand::onExecute(Context* context)
 
   m_usedFiles.clear();
 
+  FileSelectorFiles filenames;
+
   // interactive
   if (context->isUIAvailable() && m_filename.empty()) {
     std::string exts = get_readable_extensions();
@@ -115,13 +117,18 @@ void OpenFileCommand::onExecute(Context* context)
     if (!m_folder.empty() && !base::is_path_separator(m_folder[m_folder.size()-1]))
       m_folder.push_back(base::path_separator);
 
-    m_filename = app::show_file_selector("Open", m_folder, exts,
-                                         FileSelectorType::Open);
+    if (!app::show_file_selector("Open", m_folder, exts,
+                                 FileSelectorType::OpenMultiple,
+                                 filenames)) {
+      // The user cancelled the operation through UI
+      return;
+    }
+  }
+  else if (!m_filename.empty()) {
+    filenames.push_back(m_filename);
   }
 
-  // The user cancelled the operation through UI or isn't a filename
-  // specified in params.
-  if (m_filename.empty())
+  if (filenames.empty())
     return;
 
   int flags =
@@ -143,61 +150,63 @@ void OpenFileCommand::onExecute(Context* context)
   if (m_oneFrame)
     flags |= FILE_LOAD_ONE_FRAME;
 
-  base::UniquePtr<FileOp> fop(
-    FileOp::createLoadDocumentOperation(
-      context, m_filename, flags));
-  bool unrecent = false;
+  for (const auto& filename : filenames) {
+    base::UniquePtr<FileOp> fop(
+      FileOp::createLoadDocumentOperation(
+        context, filename, flags));
+    bool unrecent = false;
 
-  // Do nothing (the user cancelled or something like that)
-  if (!fop)
-    return;
+    // Do nothing (the user cancelled or something like that)
+    if (!fop)
+      return;
 
-  if (fop->hasError()) {
-    console.printf(fop->error().c_str());
-    unrecent = true;
-  }
-  else {
-    if (fop->isSequence()) {
-
-      if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_YES) {
-        m_seqDecision = SequenceDecision::Agree;
-      }
-      else if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_NONE) {
-        m_seqDecision = SequenceDecision::Skip;
-      }
-
-      m_usedFiles = fop->filenames();
+    if (fop->hasError()) {
+      console.printf(fop->error().c_str());
+      unrecent = true;
     }
     else {
-      m_usedFiles.push_back(fop->filename());
+      if (fop->isSequence()) {
+
+        if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_YES) {
+          m_seqDecision = SequenceDecision::Agree;
+        }
+        else if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_NONE) {
+          m_seqDecision = SequenceDecision::Skip;
+        }
+
+        m_usedFiles = fop->filenames();
+      }
+      else {
+        m_usedFiles.push_back(fop->filename());
+      }
+
+      OpenFileJob task(fop);
+      task.showProgressWindow();
+
+      // Post-load processing, it is called from the GUI because may require user intervention.
+      fop->postLoad();
+
+      // Show any error
+      if (fop->hasError() && !fop->isStop())
+        console.printf(fop->error().c_str());
+
+      Document* document = fop->document();
+      if (document) {
+        if (context->isUIAvailable())
+          App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
+
+        document->setContext(context);
+      }
+      else if (!fop->isStop())
+        unrecent = true;
     }
 
-    OpenFileJob task(fop);
-    task.showProgressWindow();
-
-    // Post-load processing, it is called from the GUI because may require user intervention.
-    fop->postLoad();
-
-    // Show any error
-    if (fop->hasError() && !fop->isStop())
-      console.printf(fop->error().c_str());
-
-    Document* document = fop->document();
-    if (document) {
+    // The file was not found or was loaded loaded with errors,
+    // so we can remove it from the recent-file list
+    if (unrecent) {
       if (context->isUIAvailable())
-        App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
-
-      document->setContext(context);
+        App::instance()->recentFiles()->removeRecentFile(m_filename.c_str());
     }
-    else if (!fop->isStop())
-      unrecent = true;
-  }
-
-  // The file was not found or was loaded loaded with errors,
-  // so we can remove it from the recent-file list
-  if (unrecent) {
-    if (context->isUIAvailable())
-      App::instance()->recentFiles()->removeRecentFile(m_filename.c_str());
   }
 }
 
