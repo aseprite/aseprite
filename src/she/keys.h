@@ -21,6 +21,8 @@ namespace she {
     kKeyUninitializedModifier = 64,
   };
 
+  // TODO These are virtual key code (not scancodes), we should rename
+  //      it to KeyCodes or something similar.
   enum KeyScancode {
     kKeyNil          = 0,
     kKeyA            = 1,
