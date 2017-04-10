@@ -973,7 +973,8 @@ void PaletteView::setNewPalette(doc::Palette* oldPalette,
 
   if (m_delegate) {
     m_delegate->onPaletteViewModification(newPalette, mod);
-    m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
+    if (m_currentEntry >= 0)
+      m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
   }
 
   set_current_palette(newPalette, false);
