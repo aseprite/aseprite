@@ -15,11 +15,151 @@
 
 namespace she {
 
-KeyScancode cocoavk_to_scancode(UInt16 keyCode,
-                                const NSEventModifierFlags modifierFlags)
+static KeyScancode from_char_to_scancode(int chr)
+{
+  static KeyScancode map[] = {
+    kKeyNil,        // 0 = 00 = NUL
+    kKeyNil,        // 1 = 01 = STX
+    kKeyNil,        // 2 = 02 = SOT
+    kKeyNil,        // 3 = 03 = ETX
+    kKeyNil,        // 4 = 04 = EOT
+    kKeyNil,        // 5 = 05 = ENQ
+    kKeyNil,        // 6 = 06 = ACK
+    kKeyNil,        // 7 = 07 = BEL
+    kKeyBackspace,  // 8 = 08 = BS
+    kKeyNil,        // 9 = 09 = HT
+    kKeyNil,        // 10 =0A = LF
+    kKeyNil,        // 11 =0B = VT
+    kKeyNil,        // 12 =0C = FF
+    kKeyNil,        // 13 =0D = CR
+    kKeyNil,        // 14 =0E = SO
+    kKeyNil,        // 15 =0F = SI
+    kKeyNil,        // 16 =10 = DLE
+    kKeyNil,        // 17 =11 = DC1
+    kKeyNil,        // 18 =12 = DC2
+    kKeyNil,        // 19 =13 = DC3
+    kKeyNil,        // 20 =14 = DC4
+    kKeyNil,        // 21 =15 = NAK
+    kKeyNil,        // 22 =16 = SYN
+    kKeyNil,        // 23 =17 = ETB
+    kKeyNil,        // 24 =18 = CAN
+    kKeyNil,        // 25 =19 = EM
+    kKeyNil,        // 26 =1A = SUB
+    kKeyNil,        // 27 =1B = ESC
+    kKeyNil,        // 28 =1C = FS
+    kKeyNil,        // 29 =1D = GS
+    kKeyNil,        // 30 =1E = RS
+    kKeyNil,        // 31 =1F = US
+    kKeySpace,      // 32 =20 = Space
+    kKeyNil,        // 33 =21 = !
+    kKeyQuote,      // 34 =22 = "
+    kKeyNil,        // 35 =23 = #
+    kKeyNil,        // 36 =24 = $
+    kKeyNil,        // 37 =25 = %
+    kKeyNil,        // 38 =26 = &
+    kKeyNil,        // 39 =27 = '
+    kKeyNil,        // 40 = 28 = (
+    kKeyNil,        // 41 = 29 = )
+    kKeyNil,        // 42 = 2A = *
+    kKeyNil,        // 43 = 2B = +
+    kKeyComma,      // 44 = 2C = ,
+    kKeyMinus,      // 45 = 2D = -
+    kKeyStop,       // 46 = 2E = .
+    kKeySlash,      // 47 = 2F = /
+    kKey0,          // 48 = 30 = 0
+    kKey1,          // 49 = 31 = 1
+    kKey2,          // 50 = 32 = 2
+    kKey3,          // 51 = 33 = 3
+    kKey4,          // 52 = 34 = 4
+    kKey5,          // 53 = 35 = 5
+    kKey6,          // 54 = 36 = 6
+    kKey7,          // 55 = 37 = 7
+    kKey8,          // 56 = 38 = 8
+    kKey9,          // 57 = 39 = 9
+    kKeyNil,        // 58 = 3A = :
+    kKeySemicolon,  // 59 = 3B = ;
+    kKeyNil,        // 60 = 3C = <
+    kKeyEquals,     // 61 = 3D = =
+    kKeyNil,        // 62 = 3E = >
+    kKeyNil,        // 63 = 3F = ?
+    kKeyNil,        // 64 = 40 = @
+    kKeyA,          // 65 = 41 = A
+    kKeyB,          // 66 = 42 = B
+    kKeyC,          // 67 = 43 = C
+    kKeyD,          // 68 = 44 = D
+    kKeyE,          // 69 = 45 = E
+    kKeyF,          // 70 = 46 = F
+    kKeyG,          // 71 = 47 = G
+    kKeyH,          // 72 = 48 = H
+    kKeyI,          // 73 = 49 = I
+    kKeyJ,          // 74 = 4A = J
+    kKeyK,          // 75 = 4B = K
+    kKeyL,          // 76 = 4C = L
+    kKeyM,          // 77 = 4D = M
+    kKeyN,          // 78 = 4E = N
+    kKeyO,          // 79 = 4F = O
+    kKeyP,          // 80 = 50 = P
+    kKeyQ,          // 81 = 51 = Q
+    kKeyR,          // 82 = 52 = R
+    kKeyS,          // 83 = 53 = S
+    kKeyT,          // 84 = 54 = T
+    kKeyU,          // 85 = 55 = U
+    kKeyV,          // 86 = 56 = V
+    kKeyW,          // 87 = 57 = W
+    kKeyX,          // 88 = 58 = X
+    kKeyY,          // 89 = 59 = Y
+    kKeyZ,          // 90 = 5A = Z
+    kKeyOpenbrace,  // 91 = 5B = [
+    kKeyBackslash,  // 92 = 5C = backslash
+    kKeyClosebrace, // 93 = 5D = ]
+    kKeyNil,        // 94 = 5E = ^
+    kKeyNil,        // 95 = 5F = _
+    kKeyNil,        // 96 = 60 = `
+    kKeyA,          // 97 = 61 = a
+    kKeyB,          // 98 = 62 = b
+    kKeyC,          // 99 = 63 = c
+    kKeyD,          // 100 = 64 = d
+    kKeyE,          // 101 = 65 = e
+    kKeyF,          // 102 = 66 = f
+    kKeyG,          // 103 = 67 = g
+    kKeyH,          // 104 = 68 = h
+    kKeyI,          // 105 = 69 = i
+    kKeyJ,          // 106 = 6A = j
+    kKeyK,          // 107 = 6B = k
+    kKeyL,          // 108 = 6C = l
+    kKeyM,          // 109 = 6D = m
+    kKeyN,          // 110 = 6E = n
+    kKeyO,          // 111 = 6F = o
+    kKeyP,          // 112 = 70 = p
+    kKeyQ,          // 113 = 71 = q
+    kKeyR,          // 114 = 72 = r
+    kKeyS,          // 115 = 73 = s
+    kKeyT,          // 116 = 74 = t
+    kKeyU,          // 117 = 75 = u
+    kKeyV,          // 118 = 76 = v
+    kKeyW,          // 119 = 77 = w
+    kKeyX,          // 120 = 78 = x
+    kKeyY,          // 121 = 79 = y
+    kKeyZ,          // 122 = 7A = z
+    kKeyNil,        // 123 = 7B = {
+    kKeyNil,        // 124 = 7C = |
+    kKeyNil,        // 125 = 7D = }
+    kKeyNil,        // 126 = 7E = ~
+    kKeyNil,        // 127 = 7F = DEL
+  };
+
+  if (chr >= 0 && chr < sizeof(map) / sizeof(map[0])) {
+    // Converts an ASCII character into a she::KeyScancode
+    return map[chr];
+  }
+  else
+    return kKeyNil;
+}
+
+static KeyScancode from_keycode_to_scancode(UInt16 keyCode)
 {
   // Converts macOS virtual key code into a she::KeyScancode
-  static KeyScancode keymap[256] = {
+  static KeyScancode map[256] = {
                     // 0x00
     kKeyA,          // 0x00 - kVK_ANSI_A
     kKeyS,          // 0x01 - kVK_ANSI_S
@@ -158,172 +298,39 @@ KeyScancode cocoavk_to_scancode(UInt16 keyCode,
     kKeyNil         // 0x7F - ?
   };
 
-  // Converts an ASCII character into an macOS virtual key
-  static int charmap[] = {
-    -1,                    // 0 = 00 = NUL
-    -1,                    // 1 = 01 = STX
-    -1,                    // 2 = 02 = SOT
-    -1,                    // 3 = 03 = ETX
-    -1,                    // 4 = 04 = EOT
-    -1,                    // 5 = 05 = ENQ
-    -1,                    // 6 = 06 = ACK
-    -1,                    // 7 = 07 = BEL
-    kVK_Delete,            // 8 = 08 = BS
-    -1,                    // 9 = 09 = HT
-    -1,                    // 10 =0A = LF
-    -1,                    // 11 =0B = VT
-    -1,                    // 12 =0C = FF
-    -1,                    // 13 =0D = CR
-    -1,                    // 14 =0E = SO
-    -1,                    // 15 =0F = SI
-    -1,                    // 16 =10 = DLE
-    -1,                    // 17 =11 = DC1
-    -1,                    // 18 =12 = DC2
-    -1,                    // 19 =13 = DC3
-    -1,                    // 20 =14 = DC4
-    -1,                    // 21 =15 = NAK
-    -1,                    // 22 =16 = SYN
-    -1,                    // 23 =17 = ETB
-    -1,                    // 24 =18 = CAN
-    -1,                    // 25 =19 = EM
-    -1,                    // 26 =1A = SUB
-    -1,                    // 27 =1B = ESC
-    -1,                    // 28 =1C = FS
-    -1,                    // 29 =1D = GS
-    -1,                    // 30 =1E = RS
-    -1,                    // 31 =1F = US
-    kVK_Space,             // 32 =20 = Space
-    -1,                    // 33 =21 = !
-    kVK_ANSI_Quote,        // 34 =22 = "
-    -1,                    // 35 =23 = #
-    -1,                    // 36 =24 = $
-    -1,                    // 37 =25 = %
-    -1,                    // 38 =26 = &
-    -1,                    // 39 =27 = '
-    -1,                    // 40 = 28 = (
-    -1,                    // 41 = 29 = )
-    -1,                    // 42 = 2A = *
-    -1,                    // 43 = 2B = +
-    kVK_ANSI_Comma,        // 44 = 2C = ,
-    kVK_ANSI_Minus,        // 45 = 2D = -
-    kVK_ANSI_Period,       // 46 = 2E = .
-    kVK_ANSI_Slash,        // 47 = 2F = /
-    kVK_ANSI_0,            // 48 = 30 = 0
-    kVK_ANSI_1,            // 49 = 31 = 1
-    kVK_ANSI_2,            // 50 = 32 = 2
-    kVK_ANSI_3,            // 51 = 33 = 3
-    kVK_ANSI_4,            // 52 = 34 = 4
-    kVK_ANSI_5,            // 53 = 35 = 5
-    kVK_ANSI_6,            // 54 = 36 = 6
-    kVK_ANSI_7,            // 55 = 37 = 7
-    kVK_ANSI_8,            // 56 = 38 = 8
-    kVK_ANSI_9,            // 57 = 39 = 9
-    -1,                    // 58 = 3A = :
-    kVK_ANSI_Semicolon,    // 59 = 3B = ;
-    -1,                    // 60 = 3C = <
-    kVK_ANSI_Equal,        // 61 = 3D = =
-    -1,                    // 62 = 3E = >
-    -1,                    // 63 = 3F = ?
-    -1,                    // 64 = 40 = @
-    kVK_ANSI_A,            // 65 = 41 = A
-    kVK_ANSI_B,            // 66 = 42 = B
-    kVK_ANSI_C,            // 67 = 43 = C
-    kVK_ANSI_D,            // 68 = 44 = D
-    kVK_ANSI_E,            // 69 = 45 = E
-    kVK_ANSI_F,            // 70 = 46 = F
-    kVK_ANSI_G,            // 71 = 47 = G
-    kVK_ANSI_H,            // 72 = 48 = H
-    kVK_ANSI_I,            // 73 = 49 = I
-    kVK_ANSI_J,            // 74 = 4A = J
-    kVK_ANSI_K,            // 75 = 4B = K
-    kVK_ANSI_L,            // 76 = 4C = L
-    kVK_ANSI_M,            // 77 = 4D = M
-    kVK_ANSI_N,            // 78 = 4E = N
-    kVK_ANSI_O,            // 79 = 4F = O
-    kVK_ANSI_P,            // 80 = 50 = P
-    kVK_ANSI_Q,            // 81 = 51 = Q
-    kVK_ANSI_R,            // 82 = 52 = R
-    kVK_ANSI_S,            // 83 = 53 = S
-    kVK_ANSI_T,            // 84 = 54 = T
-    kVK_ANSI_U,            // 85 = 55 = U
-    kVK_ANSI_V,            // 86 = 56 = V
-    kVK_ANSI_W,            // 87 = 57 = W
-    kVK_ANSI_X,            // 88 = 58 = X
-    kVK_ANSI_Y,            // 89 = 59 = Y
-    kVK_ANSI_Z,            // 90 = 5A = Z
-    kVK_ANSI_LeftBracket,  // 91 = 5B = [
-    kVK_ANSI_Backslash,    // 92 = 5C = backslash
-    kVK_ANSI_RightBracket, // 93 = 5D = ]
-    -1,                    // 94 = 5E = ^
-    -1,                    // 95 = 5F = _
-    kVK_ANSI_Grave,        // 96 = 60 = `
-    kVK_ANSI_A,            // 97 = 61 = a
-    kVK_ANSI_B,            // 98 = 62 = b
-    kVK_ANSI_C,            // 99 = 63 = c
-    kVK_ANSI_D,            // 100 = 64 = d
-    kVK_ANSI_E,            // 101 = 65 = e
-    kVK_ANSI_F,            // 102 = 66 = f
-    kVK_ANSI_G,            // 103 = 67 = g
-    kVK_ANSI_H,            // 104 = 68 = h
-    kVK_ANSI_I,            // 105 = 69 = i
-    kVK_ANSI_J,            // 106 = 6A = j
-    kVK_ANSI_K,            // 107 = 6B = k
-    kVK_ANSI_L,            // 108 = 6C = l
-    kVK_ANSI_M,            // 109 = 6D = m
-    kVK_ANSI_N,            // 110 = 6E = n
-    kVK_ANSI_O,            // 111 = 6F = o
-    kVK_ANSI_P,            // 112 = 70 = p
-    kVK_ANSI_Q,            // 113 = 71 = q
-    kVK_ANSI_R,            // 114 = 72 = r
-    kVK_ANSI_S,            // 115 = 73 = s
-    kVK_ANSI_T,            // 116 = 74 = t
-    kVK_ANSI_U,            // 117 = 75 = u
-    kVK_ANSI_V,            // 118 = 76 = v
-    kVK_ANSI_W,            // 119 = 77 = w
-    kVK_ANSI_X,            // 120 = 78 = x
-    kVK_ANSI_Y,            // 121 = 79 = y
-    kVK_ANSI_Z,            // 122 = 7A = z
-    -1,                    // 123 = 7B = {
-    -1,                    // 124 = 7C = |
-    -1,                    // 125 = 7D = }
-    -1,                    // 126 = 7E = ~
-    -1,                    // 127 = 7F = DEL
-  };
+  if (keyCode >= 0 && keyCode < sizeof(map) / sizeof(map[0])) {
+    // Converts macOS virtual key into a she::KeyScancode
+    return map[keyCode];
+  }
+  else
+    return kKeyNil;
+}
 
-  // When Cmd+key is used, macOS reports the "virtual key" as a QWERTY
-  // scan code, which doesn't represent the real keyboard layout
-  // (which might be DVORAK, AZERTY, etc.). So here we convert this
-  // QWERTY scan code into a unicode char, and finally the unicode
-  // char into the real kVK_ANSI_ virtual key. In this way Cmd+N will
-  // work in all keyboard layout (on Windows it works in this way
-  // automatically).
-  //
-  // TODO We might need (in a future) another kind of code (real
-  // QWERTY scan code) in case that we want to identify keys by its
-  // position in the keyboard (e.g. for WASD).
-  if (modifierFlags & NSCommandKeyMask) {
-    CFStringRef strRef = get_unicode_from_key_code(keyCode,
-                                                   modifierFlags & ~NSCommandKeyMask);
-    if (strRef) {
-      int length = CFStringGetLength(strRef);
-      if (length == 1) {
-        UInt16 unicodeChar = CFStringGetCharacterAtIndex(strRef, 0);
-        if (unicodeChar > 0 &&
-            unicodeChar < sizeof(charmap) / sizeof(charmap[0]) &&
-            charmap[unicodeChar] >= 0) {
-          // Converts ASCII char into a macOS virtual key
-          keyCode = charmap[unicodeChar];
-        }
-      }
-      CFRelease(strRef);
+KeyScancode scancode_from_nsevent(NSEvent* event)
+{
+  // For keys that are not in the numpad we try to get the scancode
+  // converting the first char in NSEvent.characters to a
+  // scancode. (It's a proper method to get the correct Cmd+letter
+  // combination on <Dvorak - QWERTY Cmd> keyboard layout)).
+  if ((event.modifierFlags & NSNumericPadKeyMask) == 0) {
+    KeyScancode code;
+
+    NSString* chars = event.characters;
+    if (chars.length > 0) {
+      code = from_char_to_scancode([chars characterAtIndex:0]);
+      if (code != kKeyNil)
+        return code;
+    }
+
+    chars = event.charactersIgnoringModifiers;
+    if (chars.length > 0) {
+      code = from_char_to_scancode([chars characterAtIndex:0]);
+      if (code != kKeyNil)
+        return code;
     }
   }
 
-  if (keyCode < 0 || keyCode > 127)
-    keyCode = 0;
-
-  // Converts macOS virtual key into she::KeyScancode
-  return keymap[keyCode];
+  return from_keycode_to_scancode(event.keyCode);
 }
 
 // Based on code from:

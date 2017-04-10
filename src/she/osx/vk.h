@@ -14,8 +14,7 @@
 
 namespace she {
 
-  KeyScancode cocoavk_to_scancode(UInt16 keyCode,
-                                  const NSEventModifierFlags modifierFlags);
+  KeyScancode scancode_from_nsevent(NSEvent* event);
 
   CFStringRef get_unicode_from_key_code(const UInt16 keyCode,
                                         const NSEventModifierFlags modifierFlags,

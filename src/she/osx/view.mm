@@ -166,8 +166,7 @@ using namespace she;
 {
   [super keyDown:event];
 
-  KeyScancode scancode = cocoavk_to_scancode(event.keyCode,
-                                             event.modifierFlags);
+  KeyScancode scancode = scancode_from_nsevent(event);
   Event ev;
   ev.setType(Event::KeyDown);
   ev.setScancode(scancode);
@@ -218,8 +217,7 @@ using namespace she;
 {
   [super keyUp:event];
 
-  KeyScancode scancode = cocoavk_to_scancode(event.keyCode,
-                                             event.modifierFlags);
+  KeyScancode scancode = scancode_from_nsevent(event);
   if (scancode >= 0 && scancode < kKeyScancodes)
     g_pressedKeys[scancode] = 0;
 
