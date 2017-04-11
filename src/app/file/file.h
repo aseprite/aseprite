@@ -38,6 +38,7 @@ namespace doc {
   class Layer;
   class LayerImage;
   class Palette;
+  class Slice;
   class Sprite;
 }
 
@@ -65,11 +66,13 @@ namespace app {
   public:
     FileOpROI();
     FileOpROI(const app::Document* doc,
+              const std::string& sliceName,
               const std::string& frameTagName,
               const doc::SelectedFrames& selFrames,
               const bool adjustByFrameTag);
 
     const app::Document* document() const { return m_document; }
+    doc::Slice* slice() const { return m_slice; }
     doc::FrameTag* frameTag() const { return m_frameTag; }
     doc::frame_t fromFrame() const { return m_selFrames.firstFrame(); }
     doc::frame_t toFrame() const { return m_selFrames.lastFrame(); }
@@ -81,6 +84,7 @@ namespace app {
 
   private:
     const app::Document* m_document;
+    doc::Slice* m_slice;
     doc::FrameTag* m_frameTag;
     doc::SelectedFrames m_selFrames;
   };

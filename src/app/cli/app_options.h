@@ -58,6 +58,7 @@ public:
   const Option& sheetPack() const { return m_sheetPack; }
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& splitTags() const { return m_splitTags; }
+  const Option& splitSlices() const { return m_splitSlices; }
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
   const Option& ignoreLayer() const { return m_ignoreLayer; }
@@ -69,6 +70,7 @@ public:
   const Option& innerPadding() const { return m_innerPadding; }
   const Option& trim() const { return m_trim; }
   const Option& crop() const { return m_crop; }
+  const Option& slice() const { return m_slice; }
   const Option& filenameFormat() const { return m_filenameFormat; }
 #ifdef ENABLE_SCRIPTING
   const Option& script() const { return m_script; }
@@ -108,6 +110,7 @@ private:
   Option& m_sheetPack;
   Option& m_splitLayers;
   Option& m_splitTags;
+  Option& m_splitSlices;
   Option& m_layer;
   Option& m_allLayers;
   Option& m_ignoreLayer;
@@ -119,6 +122,7 @@ private:
   Option& m_innerPadding;
   Option& m_trim;
   Option& m_crop;
+  Option& m_slice;
   Option& m_filenameFormat;
 #ifdef ENABLE_SCRIPTING
   Option& m_script;

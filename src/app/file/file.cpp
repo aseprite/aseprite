@@ -45,7 +45,7 @@ using namespace base;
 
 namespace {
 
-void updateXmlPartFromSliceKey(const SliceKey* key, TiXmlElement* xmlPart)
+void updateXmlPartFromSliceKey(const doc::SliceKey* key, TiXmlElement* xmlPart)
 {
   xmlPart->SetAttribute("x", key->bounds().x);
   xmlPart->SetAttribute("y", key->bounds().y);
@@ -145,8 +145,8 @@ int save_document(Context* context, doc::Document* document)
   UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(static_cast<app::Document*>(document), "",
-                SelectedFrames(), false),
+      FileOpROI(static_cast<app::Document*>(document),
+                "", "", SelectedFrames(), false),
       document->filename(), ""));
   if (!fop)
     return -1;
@@ -175,19 +175,25 @@ bool is_static_image_format(const std::string& filename)
 
 FileOpROI::FileOpROI()
   : m_document(nullptr)
+  , m_slice(nullptr)
   , m_frameTag(nullptr)
 {
 }
 
 FileOpROI::FileOpROI(const app::Document* doc,
+                     const std::string& sliceName,
                      const std::string& frameTagName,
                      const doc::SelectedFrames& selFrames,
                      const bool adjustByFrameTag)
   : m_document(doc)
+  , m_slice(nullptr)
   , m_frameTag(nullptr)
   , m_selFrames(selFrames)
 {
   if (doc) {
+    if (!sliceName.empty())
+      m_slice = doc->sprite()->slices().getByName(sliceName);
+
     m_frameTag = doc->sprite()->frameTags().getByName(frameTagName);
     if (m_frameTag) {
       if (m_selFrames.empty())
@@ -529,6 +535,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       FilenameInfo fnInfo;
       fnInfo
         .filename(fn)
+        .sliceName(fop->m_roi.slice() ? fop->m_roi.slice()->name(): "")
         .innerTagName(innerTag ? innerTag->name(): "")
         .outerTagName(outerTag ? outerTag->name(): "")
         .frame(outputFrame)
@@ -584,6 +591,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 //
 // After this function you must to mark the FileOp as "done" calling
 // FileOp::done() function.
+//
+// TODO refactor this code
 void FileOp::operate(IFileOpProgress* progress)
 {
   ASSERT(!isDone());
@@ -604,7 +613,7 @@ void FileOp::operate(IFileOpProgress* progress)
       frame_t frame(0);
       Image* old_image = nullptr;
 
-      // TODO set_palette for each frame???
+      // TODO setPalette for each frame???
       auto add_image = [&]() {
         m_seq.last_cel->data()->setImage(m_seq.image);
         m_seq.layer->addCel(m_seq.last_cel);
@@ -730,8 +739,8 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // Create a temporary bitmap
       m_seq.image.reset(Image::create(sprite->pixelFormat(),
-          sprite->width(),
-          sprite->height()));
+                                      sprite->width(),
+                                      sprite->height()));
 
       m_seq.progress_offset = 0.0f;
       m_seq.progress_fraction = 1.0f / (double)sprite->totalFrames();
@@ -741,7 +750,23 @@ void FileOp::operate(IFileOpProgress* progress)
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.selectedFrames()) {
         // Draw the "frame" in "m_seq.image"
-        render.renderSprite(m_seq.image.get(), sprite, frame);
+        if (m_roi.slice()) {
+          const SliceKey* key = m_roi.slice()->getByFrame(frame);
+          if (!key || key->isEmpty())
+            continue;           // Skip frame because there is no slice key
+
+          m_seq.image.reset(
+            Image::create(sprite->pixelFormat(),
+                          key->bounds().w,
+                          key->bounds().h));
+
+          render.renderSprite(
+            m_seq.image.get(), sprite, frame,
+            gfx::Clip(gfx::Point(0, 0), key->bounds()));
+        }
+        else {
+          render.renderSprite(m_seq.image.get(), sprite, frame);
+        }
 
         // Setup the palette.
         sprite->palette(frame)->copyColorsTo(m_seq.palette);

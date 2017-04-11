@@ -88,6 +88,11 @@ bool is_group_in_filename_format(const std::string& format)
   return (format.find("{group}") != std::string::npos);
 }
 
+bool is_slice_in_filename_format(const std::string& format)
+{
+  return (format.find("{slice}") != std::string::npos);
+}
+
 std::string filename_formatter(
   const std::string& format,
   FilenameInfo& info,
@@ -106,6 +111,7 @@ std::string filename_formatter(
   base::replace_string(output, "{extension}", base::get_file_extension(filename));
   base::replace_string(output, "{layer}", info.layerName());
   base::replace_string(output, "{group}", info.groupName());
+  base::replace_string(output, "{slice}", info.sliceName());
 
   if (replaceFrame) {
     base::replace_string(output, "{tag}", info.innerTagName());

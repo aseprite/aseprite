@@ -88,6 +88,9 @@ void DefaultCliDelegate::saveFile(const CliOpenFile& cof)
     params.set("from-frame", base::convert_to<std::string>(cof.fromFrame).c_str());
     params.set("to-frame", base::convert_to<std::string>(cof.toFrame).c_str());
   }
+  if (cof.hasSlice()) {
+    params.set("slice", cof.slice.c_str());
+  }
 
   ctx->executeCommand(saveAsCommand, params);
 }

@@ -150,6 +150,7 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
   m_filename = params.get("filename");
   m_filenameFormat = params.get("filename-format");
   m_frameTag = params.get("frame-tag");
+  m_slice = params.get("slice");
 
   if (params.has_param("from-frame") ||
       params.has_param("to-frame")) {
@@ -300,7 +301,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(document, m_frameTag,
+      FileOpROI(document, m_slice, m_frameTag,
                 m_selFrames, m_adjustFramesByFrameTag),
       document->filename(),
       m_filenameFormat));

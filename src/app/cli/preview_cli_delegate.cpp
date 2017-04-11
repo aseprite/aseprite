@@ -108,6 +108,10 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
   }
 
+  if (cof.hasSlice()) {
+    std::cout << "  - Slice: '" << cof.slice << "'\n";
+  }
+
   if (cof.hasFrameRange()) {
     const auto& selFrames = cof.roi().selectedFrames();
     if (!selFrames.empty()) {

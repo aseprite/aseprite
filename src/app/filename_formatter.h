@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,6 +21,7 @@ namespace app {
     const std::string& groupName() const { return m_groupName; }
     const std::string& innerTagName() const { return m_innerTagName; }
     const std::string& outerTagName() const { return m_outerTagName; }
+    const std::string& sliceName() const { return m_sliceName; }
     int frame() const { return m_frame; }
     int tagFrame() const { return m_tagFrame; }
 
@@ -49,6 +50,11 @@ namespace app {
       return *this;
     }
 
+    FilenameInfo& sliceName(const std::string& value) {
+      m_sliceName = value;
+      return *this;
+    }
+
     FilenameInfo& frame(int value) {
       m_frame = value;
       return *this;
@@ -65,6 +71,7 @@ namespace app {
     std::string m_groupName;
     std::string m_innerTagName;
     std::string m_outerTagName;
+    std::string m_sliceName;
     int m_frame;
     int m_tagFrame;
   };
@@ -78,6 +85,7 @@ namespace app {
   bool is_tag_in_filename_format(const std::string& format);
   bool is_layer_in_filename_format(const std::string& format);
   bool is_group_in_filename_format(const std::string& format);
+  bool is_slice_in_filename_format(const std::string& format);
 
   // If "replaceFrame" is false, this function doesn't replace all the
   // information that depends on the current frame ({frame},

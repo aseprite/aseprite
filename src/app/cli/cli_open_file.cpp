@@ -25,6 +25,7 @@ CliOpenFile::CliOpenFile()
   toFrame = -1;
   splitLayers = false;
   splitTags = false;
+  splitSlices = false;
   allLayers = false;
   listLayers = false;
   listTags = false;
@@ -38,10 +39,16 @@ CliOpenFile::CliOpenFile()
 FileOpROI CliOpenFile::roi() const
 {
   ASSERT(document);
+
   SelectedFrames selFrames;
   if (hasFrameRange())
     selFrames.insert(fromFrame, toFrame);
-  return FileOpROI(document, frameTag, selFrames, true);
+
+  return FileOpROI(document,
+                   slice,
+                   frameTag,
+                   selFrames,
+                   true);
 }
 
 } // namespace app

@@ -24,11 +24,13 @@ namespace app {
     std::string filename;
     std::string filenameFormat;
     std::string frameTag;
+    std::string slice;
     std::vector<std::string> includeLayers;
     std::vector<std::string> excludeLayers;
     doc::frame_t fromFrame, toFrame;
     bool splitLayers;
     bool splitTags;
+    bool splitSlices;
     bool allLayers;
     bool listLayers;
     bool listTags;
@@ -42,6 +44,10 @@ namespace app {
 
     bool hasFrameTag() const {
       return (!frameTag.empty());
+    }
+
+    bool hasSlice() const {
+      return (!slice.empty());
     }
 
     bool hasFrameRange() const {
