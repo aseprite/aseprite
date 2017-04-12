@@ -1853,17 +1853,9 @@ EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
             gfx::Rect bounds = editorToScreen(key->bounds());
             gfx::Rect center = key->center();
 
-            // Only move slice
-            if (ink->isMoveSlice()) {
-              if (bounds.contains(mouseScreenPos)) {
-                EditorHit hit(EditorHit::SliceBounds);
-                hit.setBorder(CENTER | MIDDLE);
-                hit.setSlice(slice);
-                return hit;
-              }
-            }
-            else if (bounds.contains(mouseScreenPos) &&
-                     !bounds.shrink(5*guiscale()).contains(mouseScreenPos)) {
+            // Move bounds
+            if (bounds.contains(mouseScreenPos) &&
+                !bounds.shrink(5*guiscale()).contains(mouseScreenPos)) {
               int border =
                 (mouseScreenPos.x <= bounds.x ? LEFT: 0) |
                 (mouseScreenPos.y <= bounds.y ? TOP: 0) |
@@ -1875,7 +1867,9 @@ EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
               hit.setSlice(slice);
               return hit;
             }
-            else if (!center.isEmpty()) {
+
+            // Move center
+            if (!center.isEmpty()) {
               center = editorToScreen(
                 center.offset(key->bounds().origin()));
 
@@ -1895,6 +1889,14 @@ EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
                 hit.setSlice(slice);
               return hit;
               }
+            }
+
+            // Move all the slice
+            if (bounds.contains(mouseScreenPos)) {
+              EditorHit hit(EditorHit::SliceBounds);
+              hit.setBorder(CENTER | MIDDLE);
+              hit.setSlice(slice);
+              return hit;
             }
           }
         }

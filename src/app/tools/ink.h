@@ -64,7 +64,6 @@ namespace app {
 
       // Returns true if this ink is used to mark slices
       virtual bool isSlice() const { return false; }
-      virtual bool isMoveSlice() const { return false; }
 
       // Returns true if inkHline() needs source cel coordinates
       // instead of sprite coordinates (i.e. relative to

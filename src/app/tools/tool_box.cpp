@@ -99,7 +99,6 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::Scroll]          = new ScrollInk();
   m_inks[WellKnownInks::Move]            = new MoveInk();
   m_inks[WellKnownInks::Slice]           = new SliceInk();
-  m_inks[WellKnownInks::MoveSlice]       = new MoveSliceInk();
   m_inks[WellKnownInks::Blur]            = new BlurInk();
   m_inks[WellKnownInks::Jumble]          = new JumbleInk();
 

@@ -446,7 +446,6 @@
       <key tool="hand" shortcut="H" />
       <key tool="move" shortcut="V" />
       <key tool="slice" shortcut="C" />
-      <key tool="move_slice" shortcut="C" />
       <key tool="zoom" shortcut="Z" />
 
       <key tool="paint_bucket" shortcut="G" />
@@ -1130,15 +1129,6 @@
             text="Slice Tool"
             fill="none"
             ink="slice"
-            controller="two_points"
-            pointshape="pixel"
-            intertwine="as_rectangles"
-            tracepolicy="last"
-            />
-      <tool id="move_slice"
-            text="Move Slice Tool"
-            fill="none"
-            ink="move_slice"
             controller="two_points"
             pointshape="pixel"
             intertwine="as_rectangles"
