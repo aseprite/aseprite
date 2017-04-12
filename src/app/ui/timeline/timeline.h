@@ -257,7 +257,7 @@ namespace app {
     gfx::Rect getPartBounds(const Hit& hit) const;
     gfx::Rect getRangeBounds(const Range& range) const;
     void invalidateHit(const Hit& hit);
-    void regenerateLayers();
+    void regenerateRows();
     void regenerateTagBands();
     int visibleTagBands() const;
     void updateScrollBars();

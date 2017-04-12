@@ -329,7 +329,7 @@ void Timeline::updateUsingEditor(Editor* editor)
     .timeline.firstFrame.AfterChange.connect(base::Bind<void>(&Timeline::invalidate, this));
 
   setFocusStop(true);
-  regenerateLayers();
+  regenerateRows();
   setViewScroll(viewScroll());
   showCurrentCel();
 }
@@ -389,7 +389,7 @@ void Timeline::setLayer(Layer* layer)
       group->setCollapsed(false);
       group = group->parent();
     }
-    regenerateLayers();
+    regenerateRows();
   }
 
   invalidate();
@@ -449,7 +449,7 @@ void Timeline::prepareToMoveRange()
 
 void Timeline::moveRange(Range& range)
 {
-  regenerateLayers();
+  regenerateRows();
 
   // We have to change the range before we generate an
   // onActiveSiteChange() event so observers (like cel properties
@@ -798,7 +798,7 @@ bool Timeline::onProcessMessage(Message* msg)
           return true;
         }
 
-        bool regenLayers = false;
+        bool regenRows = false;
         bool relayout = false;
         setHot(hitTest(msg, mouseMsg->position() - bounds().origin()));
 
@@ -820,7 +820,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (topLayer->isVisible() != newVisibleState) {
                 topLayer->setVisible(newVisibleState);
                 if (topLayer->isGroup())
-                  regenLayers = true;
+                  regenRows = true;
               }
             }
 
@@ -839,7 +839,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (topLayer->isEditable() != newEditableState) {
                 topLayer->setEditable(newEditableState);
                 if (topLayer->isGroup())
-                  regenLayers = true;
+                  regenRows = true;
               }
             }
             break;
@@ -920,7 +920,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
               // Show parents
               if (!row.parentVisible()) {
-                regenLayers = true;
+                regenRows = true;
 
                 layer->setVisible(true);
                 layer = layer->parent();
@@ -933,7 +933,7 @@ bool Timeline::onProcessMessage(Message* msg)
               else {
                 layer->setVisible(!layer->isVisible());
                 if (layer->isGroup() && layer->isExpanded())
-                  regenLayers = true;
+                  regenRows = true;
               }
 
               // Redraw all views.
@@ -950,7 +950,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
               // Unlock parents
               if (!row.parentEditable()) {
-                regenLayers = true;
+                regenRows = true;
 
                 layer->setEditable(true);
                 layer = layer->parent();
@@ -963,7 +963,7 @@ bool Timeline::onProcessMessage(Message* msg)
               else {
                 layer->setEditable(!layer->isEditable());
                 if (layer->isGroup() && layer->isExpanded())
-                  regenLayers = true;
+                  regenRows = true;
               }
             }
             break;
@@ -978,7 +978,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 else if (layer->isGroup()) {
                   layer->setCollapsed(!layer->isCollapsed());
 
-                  regenerateLayers();
+                  regenerateRows();
                   invalidate();
 
                   updateByMousePos(
@@ -1051,15 +1051,15 @@ bool Timeline::onProcessMessage(Message* msg)
               else {
                 m_tagFocusBand = -1;
               }
-              regenLayers = true;
+              regenRows = true;
               relayout = true;
             }
             break;
 
         }
 
-        if (regenLayers) {
-          regenerateLayers();
+        if (regenRows) {
+          regenerateRows();
           invalidate();
         }
         if (relayout)
@@ -1405,7 +1405,7 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
   if (!m_document)
     return;
 
-  regenerateLayers();
+  regenerateRows();
   showCurrentCel();
   invalidate();
 }
@@ -1428,7 +1428,7 @@ void Timeline::onAddLayer(doc::DocumentEvent& ev)
 
   setLayer(ev.layer());
 
-  regenerateLayers();
+  regenerateRows();
   showCurrentCel();
   clearClipboardRange();
   invalidate();
@@ -1456,7 +1456,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
     setLayer(layer_select);
   }
 
-  regenerateLayers();
+  regenerateRows();
   showCurrentCel();
   clearClipboardRange();
   invalidate();
@@ -1509,7 +1509,7 @@ void Timeline::onAddFrameTag(DocumentEvent& ev)
 {
   if (m_tagFocusBand >= 0) {
     m_tagFocusBand = -1;
-    regenerateLayers();
+    regenerateRows();
     layout();
   }
 }
@@ -2595,7 +2595,7 @@ void Timeline::invalidateHit(const Hit& hit)
   invalidateRect(getPartBounds(hit).offset(origin()));
 }
 
-void Timeline::regenerateLayers()
+void Timeline::regenerateRows()
 {
   ASSERT(m_document);
   ASSERT(m_sprite);
