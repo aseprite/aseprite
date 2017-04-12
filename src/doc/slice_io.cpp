@@ -46,10 +46,12 @@ Slice* read_slice(std::istream& is, bool setId)
 
   base::UniquePtr<Slice> slice(new Slice);
   slice->setName(name);
+  slice->setUserData(userData);
   while (nkeys--) {
     frame_t fr = read32(is);
     slice->insert(fr, read_slicekey(is));
   }
+
   if (setId)
     slice->setId(id);
   return slice.release();
