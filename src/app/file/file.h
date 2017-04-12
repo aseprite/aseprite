@@ -212,8 +212,6 @@ namespace app {
     } m_seq;
 
     void prepareForSequence();
-    void loadData();
-    void saveData();
   };
 
   // Available extensions for each load/save operation.

@@ -364,6 +364,7 @@ add_library(app-lib
   document_undo.cpp
   extra_cel.cpp
   file/file.cpp
+  file/file_data.cpp
   file/file_format.cpp
   file/file_formats_manager.cpp
   file/palette_file.cpp
