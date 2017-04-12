@@ -131,6 +131,65 @@ namespace {
 
 } // anonymous namespace
 
+Timeline::Hit::Hit(int part,
+                   layer_t layer,
+                   frame_t frame,
+                   ObjectId frameTag,
+                   int band)
+  : part(part),
+    layer(layer),
+    frame(frame),
+    frameTag(frameTag),
+    veryBottom(false),
+    band(band)
+{
+}
+
+bool Timeline::Hit::operator!=(const Hit& other) const
+{
+  return
+    part != other.part ||
+    layer != other.layer ||
+    frame != other.frame ||
+    frameTag != other.frameTag ||
+    band != other.band;
+}
+
+FrameTag* Timeline::Hit::getFrameTag() const
+{
+  return get<FrameTag>(frameTag);
+}
+
+Timeline::DropTarget::DropTarget()
+{
+  hhit = HNone;
+  vhit = VNone;
+}
+
+Timeline::LayerInfo::LayerInfo()
+  : layer(nullptr),
+    level(0),
+    inheritedFlags(LayerFlags::None)
+{
+}
+
+Timeline::LayerInfo::LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags)
+  : layer(layer),
+    level(level),
+    inheritedFlags(inheritedFlags)
+{
+}
+
+bool Timeline::LayerInfo::parentVisible() const
+{
+  return ((int(inheritedFlags) & int(LayerFlags::Visible)) != 0);
+}
+
+bool Timeline::LayerInfo::parentEditable() const
+{
+  return ((int(inheritedFlags) & int(LayerFlags::Editable)) != 0);
+}
+
 Timeline::Timeline()
   : Widget(kGenericWidget)
   , m_hbar(HORIZONTAL, this)
@@ -3397,11 +3456,6 @@ int Timeline::topHeight() const
     h += oneTagHeight() * visibleTagBands();
   }
   return h;
-}
-
-FrameTag* Timeline::Hit::getFrameTag() const
-{
-  return get<FrameTag>(frameTag);
 }
 
 void Timeline::onNewInputPriority(InputChainElement* element)

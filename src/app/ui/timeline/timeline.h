@@ -168,35 +168,17 @@ namespace app {
           layer_t layer = -1,
           frame_t frame = 0,
           ObjectId frameTag = NullId,
-          int band = -1)
-        : part(part),
-          layer(layer),
-          frame(frame),
-          frameTag(frameTag),
-          veryBottom(false),
-          band(band) {
-      }
-
-      bool operator!=(const Hit& other) const {
-        return
-          part != other.part ||
-          layer != other.layer ||
-          frame != other.frame ||
-          frameTag != other.frameTag ||
-          band != other.band;
-      }
-
+          int band = -1);
+      bool operator!=(const Hit& other) const;
       FrameTag* getFrameTag() const;
     };
 
     struct DropTarget {
-
       enum HHit {
         HNone,
         Before,
         After
       };
-
       enum VHit {
         VNone,
         Bottom,
@@ -205,10 +187,7 @@ namespace app {
         VeryBottom
       };
 
-      DropTarget() {
-        hhit = HNone;
-        vhit = VNone;
-      }
+      DropTarget();
 
       HHit hhit;
       VHit vhit;
@@ -223,25 +202,11 @@ namespace app {
       int level;
       LayerFlags inheritedFlags;
 
-      LayerInfo()
-        : layer(nullptr),
-          level(0),
-          inheritedFlags(LayerFlags::None) {
-      }
+      LayerInfo();
+      LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags);
 
-      LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags)
-        : layer(layer),
-          level(level),
-          inheritedFlags(inheritedFlags) {
-      }
-
-      bool parentVisible() const {
-        return ((int(inheritedFlags) & int(LayerFlags::Visible)) != 0);
-      }
-
-      bool parentEditable() const {
-        return ((int(inheritedFlags) & int(LayerFlags::Editable)) != 0);
-      }
+      bool parentVisible() const;
+      bool parentEditable() const;
     };
 
     bool selectedLayersBounds(const SelectedLayers& layers,
