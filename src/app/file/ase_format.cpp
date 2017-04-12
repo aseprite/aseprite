@@ -13,6 +13,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "app/pref/preferences.h"
 #include "base/cfile.h"
 #include "base/exception.h"
 #include "base/file_handle.h"
@@ -39,7 +40,8 @@
 #define ASE_FILE_CHUNK_FRAME_TAGS           0x2018
 #define ASE_FILE_CHUNK_PALETTE              0x2019
 #define ASE_FILE_CHUNK_USER_DATA            0x2020
-#define ASE_FILE_CHUNK_SLICES               0x2021
+#define ASE_FILE_CHUNK_SLICES               0x2021 // Deprecated chunk (used on dev versions only between v1.2-beta7 and v1.2-beta8)
+#define ASE_FILE_CHUNK_SLICE                0x2022
 
 #define ASE_FILE_LAYER_IMAGE                0
 #define ASE_FILE_LAYER_GROUP                1
@@ -143,9 +145,12 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
 static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags);
 static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, const FrameTags* frameTags,
                                             const frame_t fromFrame, const frame_t toFrame);
-static void ase_file_read_slices_chunk(FILE* f, Slices* slices);
-static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header, const Slices* slices,
+static void ase_file_read_slices_chunk(FILE* f, Slices& slices);
+static Slice* ase_file_read_slice_chunk(FILE* f, Slices& slices);
+static void ase_file_write_slice_chunks(FILE* f, ASE_FrameHeader* frame_header, const Slices& slices,
                                         const frame_t fromFrame, const frame_t toFrame);
+static void ase_file_write_slice_chunk(FILE* f, ASE_FrameHeader* frame_header, Slice* slice,
+                                       const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_read_user_data_chunk(FILE* f, UserData* userData);
 static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_header, const UserData* userData);
 static bool ase_has_groups(LayerGroup* group);
@@ -332,9 +337,17 @@ bool AseFormat::onLoad(FileOp* fop)
             ase_file_read_frame_tags_chunk(f, &sprite->frameTags());
             break;
 
-          case ASE_FILE_CHUNK_SLICES:
-            ase_file_read_slices_chunk(f, &sprite->slices());
+          case ASE_FILE_CHUNK_SLICES: {
+            ase_file_read_slices_chunk(f, sprite->slices());
             break;
+          }
+
+          case ASE_FILE_CHUNK_SLICE: {
+            Slice* slice = ase_file_read_slice_chunk(f, sprite->slices());
+            if (slice)
+              last_object_with_user_data = slice;
+            break;
+          }
 
           case ASE_FILE_CHUNK_USER_DATA: {
             UserData userData;
@@ -468,11 +481,10 @@ bool AseFormat::onSave(FileOp* fop)
                                         fop->roi().toFrame());
 
       // Writer slice chunks
-      if (sprite->slices().size() > 0)
-        ase_file_write_slices_chunk(f, &frame_header,
-                                    &sprite->slices(),
-                                    fop->roi().fromFrame(),
-                                    fop->roi().toFrame());
+      ase_file_write_slice_chunks(f, &frame_header,
+                                  sprite->slices(),
+                                  fop->roi().fromFrame(),
+                                  fop->roi().toFrame());
     }
 
     // Write cel chunks
@@ -1687,135 +1699,147 @@ static void ase_file_write_user_data_chunk(FILE* f, ASE_FrameHeader* frame_heade
   }
 }
 
-static void ase_file_read_slices_chunk(FILE* f, Slices* slices)
+static void ase_file_read_slices_chunk(FILE* f, Slices& slices)
 {
   size_t nslices = fgetl(f);    // Number of slices
   fgetl(f);                     // 8 bytes reserved
   fgetl(f);
 
   for (size_t i=0; i<nslices; ++i) {
-    size_t nkeys = fgetl(f);    // Number of keys
-    int flags = fgetl(f);       // Flags
-    fgetl(f);                   // 4 bytes reserved
-    std::string name = ase_file_read_string(f); // Name
-
-    base::UniquePtr<Slice> slice(new Slice);
-    slice->setName(name);
-
-    // For each key
-    for (size_t j=0; j<nkeys; ++j) {
-      gfx::Rect bounds, center;
-      gfx::Point pivot = SliceKey::NoPivot;
-      frame_t frame = fgetl(f);
-      bounds.x = fgetl(f);
-      bounds.y = fgetl(f);
-      bounds.w = fgetl(f);
-      bounds.h = fgetl(f);
-
-      if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
-        center.x = fgetl(f);
-        center.y = fgetl(f);
-        center.w = fgetl(f);
-        center.h = fgetl(f);
-      }
-
-      if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
-        pivot.x = fgetl(f);
-        pivot.y = fgetl(f);
-      }
-
-      slice->insert(frame, SliceKey(bounds, center, pivot));
+    Slice* slice = ase_file_read_slice_chunk(f, slices);
+    // Set the user data
+    if (slice) {
+      // Default slice color
+      auto color = Preferences::instance().slices.defaultColor();
+      slice->userData().setColor(
+        doc::rgba(color.getRed(),
+                  color.getGreen(),
+                  color.getBlue(),
+                  color.getAlpha()));
     }
-
-    slices->add(slice);
-    slice.release();
   }
 }
 
-static void ase_file_write_slices_chunk(FILE* f, ASE_FrameHeader* frame_header,
-                                        const Slices* slices,
+static Slice* ase_file_read_slice_chunk(FILE* f, Slices& slices)
+{
+  size_t nkeys = fgetl(f);    // Number of keys
+  int flags = fgetl(f);       // Flags
+  fgetl(f);                   // 4 bytes reserved
+  std::string name = ase_file_read_string(f); // Name
+
+  base::UniquePtr<Slice> slice(new Slice);
+  slice->setName(name);
+
+  // For each key
+  for (size_t j=0; j<nkeys; ++j) {
+    gfx::Rect bounds, center;
+    gfx::Point pivot = SliceKey::NoPivot;
+    frame_t frame = fgetl(f);
+    bounds.x = fgetl(f);
+    bounds.y = fgetl(f);
+    bounds.w = fgetl(f);
+    bounds.h = fgetl(f);
+
+    if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
+      center.x = fgetl(f);
+      center.y = fgetl(f);
+      center.w = fgetl(f);
+      center.h = fgetl(f);
+    }
+
+    if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
+      pivot.x = fgetl(f);
+      pivot.y = fgetl(f);
+    }
+
+    slice->insert(frame, SliceKey(bounds, center, pivot));
+  }
+
+  slices.add(slice);
+  return slice.release();
+}
+
+static void ase_file_write_slice_chunks(FILE* f, ASE_FrameHeader* frame_header,
+                                        const Slices& slices,
                                         const frame_t fromFrame,
                                         const frame_t toFrame)
 {
-  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_SLICES);
-
-  size_t nslices = 0;
-  for (Slice* slice : *slices) {
+  for (Slice* slice : slices) {
     // Skip slices that are outside of the given ROI
     if (slice->range(fromFrame, toFrame).empty())
       continue;
 
-    ++nslices;
+    ase_file_write_slice_chunk(f, frame_header, slice,
+                               fromFrame, toFrame);
+
+    if (!slice->userData().isEmpty())
+      ase_file_write_user_data_chunk(f, frame_header, &slice->userData());
+  }
+}
+
+static void ase_file_write_slice_chunk(FILE* f, ASE_FrameHeader* frame_header,
+                                       Slice* slice,
+                                       const frame_t fromFrame,
+                                       const frame_t toFrame)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_SLICE);
+
+  auto range = slice->range(fromFrame, toFrame);
+  ASSERT(!range.empty());
+
+  int flags = 0;
+  for (auto key : range) {
+    if (key) {
+      if (key->hasCenter()) flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
+      if (key->hasPivot()) flags |= ASE_SLICE_FLAG_HAS_PIVOT_POINT;
+    }
   }
 
-  fputl(nslices, f);
-  fputl(0, f);  // 8 reserved bytes
-  fputl(0, f);
+  fputl(range.countKeys(), f);             // number of keys
+  fputl(flags, f);                         // flags
+  fputl(0, f);                             // 4 bytes reserved
+  ase_file_write_string(f, slice->name()); // slice name
 
-  for (Slice* slice : *slices) {
-    // Skip slices that are outside of the given ROI
-    auto range = slice->range(fromFrame, toFrame);
-    if (range.empty())
-      continue;
+  frame_t frame = fromFrame;
+  const SliceKey* oldKey = nullptr;
+  for (auto key : range) {
+    if (frame == fromFrame || key != oldKey) {
+      fputl(frame, f);
+      fputl(key ? key->bounds().x: 0, f);
+      fputl(key ? key->bounds().y: 0, f);
+      fputl(key ? key->bounds().w: 0, f);
+      fputl(key ? key->bounds().h: 0, f);
 
-    int flags = 0;
-    for (auto key : range) {
-      if (key) {
-        if (key->hasCenter()) flags |= ASE_SLICE_FLAG_HAS_CENTER_BOUNDS;
-        if (key->hasPivot()) flags |= ASE_SLICE_FLAG_HAS_PIVOT_POINT;
-      }
-    }
-
-    fputl(range.countKeys(), f);             // number of keys
-    fputl(flags, f);                         // flags
-    fputl(0, f);                             // 4 bytes reserved
-    ase_file_write_string(f, slice->name()); // slice name
-
-    frame_t frame = fromFrame;
-    const SliceKey* oldKey = nullptr;
-    for (auto key : range) {
-      if (frame == fromFrame || key != oldKey) {
-        fputl(frame, f);
-        fputl(key ? key->bounds().x: 0, f);
-        fputl(key ? key->bounds().y: 0, f);
-        fputl(key ? key->bounds().w: 0, f);
-        fputl(key ? key->bounds().h: 0, f);
-
-        if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
-          if (key && key->hasCenter()) {
-            fputl(key->center().x, f);
-            fputl(key->center().y, f);
-            fputl(key->center().w, f);
-            fputl(key->center().h, f);
-          }
-          else {
-            fputl(0, f);
-            fputl(0, f);
-            fputl(0, f);
-            fputl(0, f);
-          }
+      if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
+        if (key && key->hasCenter()) {
+          fputl(key->center().x, f);
+          fputl(key->center().y, f);
+          fputl(key->center().w, f);
+          fputl(key->center().h, f);
         }
-
-        if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
-          if (key && key->hasPivot()) {
-            fputl(key->pivot().x, f);
-            fputl(key->pivot().y, f);
-          }
-          else {
-            fputl(0, f);
-            fputl(0, f);
-          }
+        else {
+          fputl(0, f);
+          fputl(0, f);
+          fputl(0, f);
+          fputl(0, f);
         }
-
-        oldKey = key;
       }
-      ++frame;
-    }
 
-    --nslices;
+      if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
+        if (key && key->hasPivot()) {
+          fputl(key->pivot().x, f);
+          fputl(key->pivot().y, f);
+        }
+        else {
+          fputl(0, f);
+          fputl(0, f);
+        }
+      }
+
+      oldKey = key;
+    }
+    ++frame;
   }
-
-  ASSERT(nslices == 0);
 }
 
 static bool ase_has_groups(LayerGroup* group)

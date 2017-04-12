@@ -287,26 +287,23 @@ Insert this user data in the last read chunk.  E.g. If we've read a
 layer, this user data belongs to that layer, if we've read a cel, it
 belongs to that cel, etc.
 
-```
-  DWORD         Flags
-                   1 = Has text
-                   2 = Has color
-  + If flags have bit 1:
-    STRING        Text
-  + If flags have bit 2:
-    BYTE          Color Red (0-255)
-    BYTE          Color Green (0-255)
-    BYTE          Color Blue (0-255)
-    BYTE          Color Alpha (0-255)
-```
+Field       | Details                          |
+----------- | -------------------------------- |
+DWORD       | Flags
+            | 1 - Has text
+            | 2 - Has color
+If flags have bit 1 |
+STRING      | Text
+If flags have bit 2 |
+BYTE        | Color Red (0-255)
+BYTE        | Color Green (0-255)
+BYTE        | Color Blue (0-255)
+BYTE        | Color Alpha (0-255)
 
-### Slices Chunk (0x2021)
+### Slice Chunk (0x2022)
 
 Field       | Details                          |
 ----------- | -------------------------------- |
-DWORD       | Number of slices
-BYTE[8]     | Reserved
-For each slice... |
 DWORD       | Number of "slice keys"
 DWORD       | Flags
             | 1 - It's a 9-patches slice
