@@ -166,26 +166,26 @@ Timeline::DropTarget::DropTarget()
   vhit = VNone;
 }
 
-Timeline::LayerInfo::LayerInfo()
+Timeline::Row::Row()
   : layer(nullptr),
     level(0),
     inheritedFlags(LayerFlags::None)
 {
 }
 
-Timeline::LayerInfo::LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags)
+Timeline::Row::Row(Layer* layer, int level, LayerFlags inheritedFlags)
   : layer(layer),
     level(level),
     inheritedFlags(inheritedFlags)
 {
 }
 
-bool Timeline::LayerInfo::parentVisible() const
+bool Timeline::Row::parentVisible() const
 {
   return ((int(inheritedFlags) & int(LayerFlags::Visible)) != 0);
 }
 
-bool Timeline::LayerInfo::parentEditable() const
+bool Timeline::Row::parentEditable() const
 {
   return ((int(inheritedFlags) & int(LayerFlags::Editable)) != 0);
 }
@@ -596,13 +596,13 @@ bool Timeline::onProcessMessage(Message* msg)
             m_state = STATE_SELECTING_LAYERS;
             if (clearRange)
               m_range.clearRange();
-            m_range.startRange(m_layers[m_clk.layer].layer,
+            m_range.startRange(m_rows[m_clk.layer].layer,
                                m_frame, Range::kLayers);
             m_startRange = m_range;
 
             // Did the user select another layer?
             if (old_layer != m_clk.layer) {
-              setLayer(m_layers[m_clk.layer].layer);
+              setLayer(m_rows[m_clk.layer].layer);
               invalidate();
             }
           }
@@ -628,7 +628,7 @@ bool Timeline::onProcessMessage(Message* msg)
           if (selectCel) {
             m_state = STATE_SELECTING_CELS;
             m_range.clearRange();
-            m_range.startRange(m_layers[m_clk.layer].layer,
+            m_range.startRange(m_rows[m_clk.layer].layer,
                                m_clk.frame, Range::kCels);
             m_startRange = m_range;
           }
@@ -636,7 +636,7 @@ bool Timeline::onProcessMessage(Message* msg)
           // Select the new clicked-part.
           if (old_layer != m_clk.layer
             || old_frame != m_clk.frame) {
-            setLayer(m_layers[m_clk.layer].layer);
+            setLayer(m_rows[m_clk.layer].layer);
             setFrame(m_clk.frame, true);
             invalidate();
           }
@@ -741,7 +741,7 @@ bool Timeline::onProcessMessage(Message* msg)
         switch (m_state) {
 
           case STATE_SELECTING_LAYERS: {
-            Layer* hitLayer = m_layers[hit.layer].layer;
+            Layer* hitLayer = m_rows[hit.layer].layer;
             if (m_layer != hitLayer) {
               m_clk.layer = hit.layer;
 
@@ -765,7 +765,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_SELECTING_CELS:
-            Layer* hitLayer = m_layers[hit.layer].layer;
+            Layer* hitLayer = m_rows[hit.layer].layer;
             if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
               m_clk.layer = hit.layer;
 
@@ -845,8 +845,8 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_HEADER_CONTINUOUS: {
             bool newContinuousState = !allLayersContinuous();
-            for (size_t i=0; i<m_layers.size(); i++)
-              m_layers[i].layer->setContinuous(newContinuousState);
+            for (size_t i=0; i<m_rows.size(); i++)
+              m_rows[i].layer->setContinuous(newContinuousState);
             break;
           }
 
@@ -912,12 +912,12 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_EYE_ICON:
             // Hide/show layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              LayerInfo& info = m_layers[m_clk.layer];
-              Layer* layer = info.layer;
+              Row& row = m_rows[m_clk.layer];
+              Layer* layer = row.layer;
               ASSERT(layer);
 
               // Show parents
-              if (!info.parentVisible()) {
+              if (!row.parentVisible()) {
                 regenLayers = true;
 
                 layer->setVisible(true);
@@ -942,12 +942,12 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              LayerInfo& info = m_layers[m_clk.layer];
-              Layer* layer = info.layer;
+              Row& row = m_rows[m_clk.layer];
+              Layer* layer = row.layer;
               ASSERT(layer);
 
               // Unlock parents
-              if (!info.parentEditable()) {
+              if (!row.parentEditable()) {
                 regenLayers = true;
 
                 layer->setEditable(true);
@@ -968,7 +968,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_LAYER_CONTINUOUS_ICON:
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_layers[m_clk.layer].layer;
+              Layer* layer = m_rows[m_clk.layer].layer;
               ASSERT(layer);
               if (layer) {
                 if (layer->isImage())
@@ -1301,7 +1301,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       if (!clip)
         continue;
 
-      Layer* layerPtr = m_layers[layer].layer;
+      Layer* layerPtr = m_rows[layer].layer;
       if (!layerPtr->isImage()) {
         // Draw empty cels
         for (frame=firstFrame; frame<=lastFrame; ++frame) {
@@ -1602,7 +1602,7 @@ void Timeline::getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* 
   i = MID(this->firstLayer(), i, this->lastLayer());
 
   layer_t j = i + (hpx / layerBoxHeight() + 1);
-  if (!m_layers.empty())
+  if (!m_rows.empty())
     j = MID(this->firstLayer(), j, this->lastLayer());
   else
     j = -1;
@@ -1738,7 +1738,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
 void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 {
   auto& styles = skinTheme()->styles;
-  Layer* layer = m_layers[layerIdx].layer;
+  Layer* layer = m_rows[layerIdx].layer;
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
   bool clklayer = (m_clk.layer == layerIdx);
@@ -1756,7 +1756,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     is_active,
     (hotlayer && m_hot.part == PART_LAYER_EYE_ICON),
     (clklayer && m_clk.part == PART_LAYER_EYE_ICON),
-    !m_layers[layerIdx].parentVisible());
+    !m_rows[layerIdx].parentVisible());
 
   // Draw the padlock (editable flag).
   bounds = getPartBounds(Hit(PART_LAYER_PADLOCK_ICON, layerIdx));
@@ -1767,7 +1767,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     is_active,
     (hotlayer && m_hot.part == PART_LAYER_PADLOCK_ICON),
     (clklayer && m_clk.part == PART_LAYER_PADLOCK_ICON),
-    !m_layers[layerIdx].parentEditable());
+    !m_rows[layerIdx].parentEditable());
 
   // Draw the continuous flag/group icon.
   bounds = getPartBounds(Hit(PART_LAYER_CONTINUOUS_ICON, layerIdx));
@@ -1794,8 +1794,8 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   // Draw layer name.
   doc::color_t layerColor = layer->userData().color();
   gfx::Rect textBounds = bounds;
-  if (m_layers[layerIdx].level > 0) {
-    int w = m_layers[layerIdx].level*frameBoxWidth();
+  if (m_rows[layerIdx].level > 0) {
+    int w = m_rows[layerIdx].level*frameBoxWidth();
     textBounds.x += w;
     textBounds.w -= w;
   }
@@ -1866,7 +1866,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
-  Layer* layer = m_layers[layerIndex].layer;
+  Layer* layer = m_rows[layerIndex].layer;
   Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
@@ -2029,7 +2029,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
     return;
   }
 
-  Layer* layer = m_layers[m_thumbnailsOverlayHit.layer].layer;
+  Layer* layer = m_rows[m_thumbnailsOverlayHit.layer].layer;
   Cel* cel = layer->cel(m_thumbnailsOverlayHit.frame);
   if (!cel) {
     return;
@@ -2303,7 +2303,7 @@ void Timeline::drawPaddings(ui::Graphics* g)
   gfx::Rect lastFrame;
   int top = topHeight();
 
-  if (!m_layers.empty()) {
+  if (!m_rows.empty()) {
     bottomLayer = getPartBounds(Hit(PART_LAYER, firstLayer()));
     lastFrame = getPartBounds(Hit(PART_CEL, firstLayer(), this->lastFrame()));
   }
@@ -2605,18 +2605,18 @@ void Timeline::regenerateLayers()
       ++nlayers;
     });
 
-  if (m_layers.size() != nlayers) {
+  if (m_rows.size() != nlayers) {
     if (nlayers > 0)
-      m_layers.resize(nlayers);
+      m_rows.resize(nlayers);
     else
-      m_layers.clear();
+      m_rows.clear();
   }
 
   size_t i = 0;
   for_each_expanded_layer(
     m_sprite->root(),
     [&i, this](Layer* layer, int level, LayerFlags flags) {
-      m_layers[i++] = LayerInfo(layer, level, flags);
+      m_rows[i++] = Row(layer, level, flags);
     });
 
   regenerateTagBands();
@@ -2970,7 +2970,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         else if (m_dropTarget.vhit == DropTarget::Top)
           layerIdx = lastLayer;
 
-        Layer* layer = (validLayer(layerIdx) ? m_layers[layerIdx].layer: nullptr);
+        Layer* layer = (validLayer(layerIdx) ? m_rows[layerIdx].layer: nullptr);
         if (layer) {
           switch (m_dropTarget.vhit) {
             case DropTarget::Bottom:
@@ -2990,7 +2990,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
     }
   }
   else {
-    Layer* layer = (validLayer(m_hot.layer) ? m_layers[m_hot.layer].layer:
+    Layer* layer = (validLayer(m_hot.layer) ? m_rows[m_hot.layer].layer:
                                               nullptr);
 
     switch (m_hot.part) {
@@ -3132,7 +3132,7 @@ gfx::Size Timeline::getScrollableSize() const
   if (m_sprite) {
     return gfx::Size(
       m_sprite->totalFrames() * frameBoxWidth() + getCelsBounds().w/2,
-      (m_layers.size()+1) * layerBoxHeight());
+      (m_rows.size()+1) * layerBoxHeight());
   }
   else
     return gfx::Size(0, 0);
@@ -3190,8 +3190,8 @@ bool Timeline::allLayersUnlocked()
 
 bool Timeline::allLayersContinuous()
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i].layer->isContinuous())
+  for (size_t i=0; i<m_rows.size(); i++)
+    if (!m_rows[i].layer->isContinuous())
       return false;
 
   return true;
@@ -3199,8 +3199,8 @@ bool Timeline::allLayersContinuous()
 
 bool Timeline::allLayersDiscontinuous()
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i].layer->isContinuous())
+  for (size_t i=0; i<m_rows.size(); i++)
+    if (m_rows[i].layer->isContinuous())
       return false;
 
   return true;
@@ -3208,8 +3208,8 @@ bool Timeline::allLayersDiscontinuous()
 
 layer_t Timeline::getLayerIndex(const Layer* layer) const
 {
-  for (int i=0; i<(int)m_layers.size(); i++)
-    if (m_layers[i].layer == layer)
+  for (int i=0; i<(int)m_rows.size(); i++)
+    if (m_rows[i].layer == layer)
       return i;
 
   return -1;
@@ -3220,7 +3220,7 @@ bool Timeline::isLayerActive(const layer_t layerIndex) const
   if (layerIndex == getLayerIndex(m_layer))
     return true;
   else
-    return m_range.contains(m_layers[layerIndex].layer);
+    return m_range.contains(m_rows[layerIndex].layer);
 }
 
 bool Timeline::isFrameActive(const frame_t frame) const
@@ -3335,8 +3335,8 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     case Range::kFrames:
     case Range::kLayers:
       m_dropRange.clearRange();
-      m_dropRange.startRange(m_layers[m_hot.layer].layer, m_hot.frame, m_range.type());
-      m_dropRange.endRange(m_layers[m_hot.layer].layer, m_hot.frame);
+      m_dropRange.startRange(m_rows[m_hot.layer].layer, m_hot.frame, m_range.type());
+      m_dropRange.endRange(m_rows[m_hot.layer].layer, m_hot.frame);
       break;
   }
 
@@ -3354,9 +3354,9 @@ void Timeline::updateDropRange(const gfx::Point& pt)
   // Special drop target for expanded groups
   else if (m_range.type() == Range::kLayers &&
            m_hot.layer >= 0 &&
-           m_hot.layer < m_layers.size() &&
-           m_layers[m_hot.layer].layer->isGroup() &&
-           static_cast<LayerGroup*>(m_layers[m_hot.layer].layer)->isExpanded()) {
+           m_hot.layer < m_rows.size() &&
+           m_rows[m_hot.layer].layer->isGroup() &&
+           static_cast<LayerGroup*>(m_rows[m_hot.layer].layer)->isExpanded()) {
     m_dropTarget.vhit = DropTarget::FirstChild;
   }
   else {

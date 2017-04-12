@@ -197,13 +197,13 @@ namespace app {
       int xpos, ypos;
     };
 
-    struct LayerInfo {
+    struct Row {
       Layer* layer;
       int level;
       LayerFlags inheritedFlags;
 
-      LayerInfo();
-      LayerInfo(Layer* layer, int level, LayerFlags inheritedFlags);
+      Row();
+      Row(Layer* layer, int level, LayerFlags inheritedFlags);
 
       bool parentVisible() const;
       bool parentEditable() const;
@@ -276,7 +276,7 @@ namespace app {
     // The layer of the bottom (e.g. Background layer)
     layer_t firstLayer() const { return 0; }
     // The layer of the top.
-    layer_t lastLayer() const { return m_layers.size()-1; }
+    layer_t lastLayer() const { return m_rows.size()-1; }
 
     frame_t firstFrame() const { return frame_t(0); }
     frame_t lastFrame() const { return m_sprite->lastFrame(); }
@@ -320,8 +320,8 @@ namespace app {
     Range m_dropRange;
     State m_state;
 
-    // Data used to display each layer
-    std::vector<LayerInfo> m_layers;
+    // Data used to display each row in the timeline
+    std::vector<Row> m_rows;
 
     // Data used to display frame tags
     int m_tagBands;
