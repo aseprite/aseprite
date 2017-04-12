@@ -18,10 +18,8 @@
 #include "doc/document.h"
 #include "doc/slice.h"
 
-// TODO define one way to use std:: functions, this is getting really strange on different compilers
-#include <cstdlib>              // Needed to use std::strtol() on clang
-#include <cstring>              // Needed to use std::strtol() on gcc
-
+#include <cstdlib>
+#include <cstring>
 #include <set>
 
 namespace app {
