@@ -198,15 +198,21 @@ namespace app {
     };
 
     struct Row {
-      Layer* layer;
-      int level;
-      LayerFlags inheritedFlags;
-
       Row();
-      Row(Layer* layer, int level, LayerFlags inheritedFlags);
+      Row(Layer* layer,
+          const int level,
+          const LayerFlags inheritedFlags);
+
+      Layer* layer() const { return m_layer; }
+      int level() const { return m_level; }
 
       bool parentVisible() const;
       bool parentEditable() const;
+
+    private:
+      Layer* m_layer;
+      int m_level;
+      LayerFlags m_inheritedFlags;
     };
 
     bool selectedLayersBounds(const SelectedLayers& layers,

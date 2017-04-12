@@ -167,27 +167,29 @@ Timeline::DropTarget::DropTarget()
 }
 
 Timeline::Row::Row()
-  : layer(nullptr),
-    level(0),
-    inheritedFlags(LayerFlags::None)
+  : m_layer(nullptr),
+    m_level(0),
+    m_inheritedFlags(LayerFlags::None)
 {
 }
 
-Timeline::Row::Row(Layer* layer, int level, LayerFlags inheritedFlags)
-  : layer(layer),
-    level(level),
-    inheritedFlags(inheritedFlags)
+Timeline::Row::Row(Layer* layer,
+                   const int level,
+                   const LayerFlags inheritedFlags)
+  : m_layer(layer),
+    m_level(level),
+    m_inheritedFlags(inheritedFlags)
 {
 }
 
 bool Timeline::Row::parentVisible() const
 {
-  return ((int(inheritedFlags) & int(LayerFlags::Visible)) != 0);
+  return ((int(m_inheritedFlags) & int(LayerFlags::Visible)) != 0);
 }
 
 bool Timeline::Row::parentEditable() const
 {
-  return ((int(inheritedFlags) & int(LayerFlags::Editable)) != 0);
+  return ((int(m_inheritedFlags) & int(LayerFlags::Editable)) != 0);
 }
 
 Timeline::Timeline()
@@ -596,13 +598,13 @@ bool Timeline::onProcessMessage(Message* msg)
             m_state = STATE_SELECTING_LAYERS;
             if (clearRange)
               m_range.clearRange();
-            m_range.startRange(m_rows[m_clk.layer].layer,
+            m_range.startRange(m_rows[m_clk.layer].layer(),
                                m_frame, Range::kLayers);
             m_startRange = m_range;
 
             // Did the user select another layer?
             if (old_layer != m_clk.layer) {
-              setLayer(m_rows[m_clk.layer].layer);
+              setLayer(m_rows[m_clk.layer].layer());
               invalidate();
             }
           }
@@ -628,7 +630,7 @@ bool Timeline::onProcessMessage(Message* msg)
           if (selectCel) {
             m_state = STATE_SELECTING_CELS;
             m_range.clearRange();
-            m_range.startRange(m_rows[m_clk.layer].layer,
+            m_range.startRange(m_rows[m_clk.layer].layer(),
                                m_clk.frame, Range::kCels);
             m_startRange = m_range;
           }
@@ -636,7 +638,7 @@ bool Timeline::onProcessMessage(Message* msg)
           // Select the new clicked-part.
           if (old_layer != m_clk.layer
             || old_frame != m_clk.frame) {
-            setLayer(m_rows[m_clk.layer].layer);
+            setLayer(m_rows[m_clk.layer].layer());
             setFrame(m_clk.frame, true);
             invalidate();
           }
@@ -741,7 +743,7 @@ bool Timeline::onProcessMessage(Message* msg)
         switch (m_state) {
 
           case STATE_SELECTING_LAYERS: {
-            Layer* hitLayer = m_rows[hit.layer].layer;
+            Layer* hitLayer = m_rows[hit.layer].layer();
             if (m_layer != hitLayer) {
               m_clk.layer = hit.layer;
 
@@ -765,7 +767,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_SELECTING_CELS:
-            Layer* hitLayer = m_rows[hit.layer].layer;
+            Layer* hitLayer = m_rows[hit.layer].layer();
             if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
               m_clk.layer = hit.layer;
 
@@ -846,7 +848,7 @@ bool Timeline::onProcessMessage(Message* msg)
           case PART_HEADER_CONTINUOUS: {
             bool newContinuousState = !allLayersContinuous();
             for (size_t i=0; i<m_rows.size(); i++)
-              m_rows[i].layer->setContinuous(newContinuousState);
+              m_rows[i].layer()->setContinuous(newContinuousState);
             break;
           }
 
@@ -913,7 +915,7 @@ bool Timeline::onProcessMessage(Message* msg)
             // Hide/show layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Row& row = m_rows[m_clk.layer];
-              Layer* layer = row.layer;
+              Layer* layer = row.layer();
               ASSERT(layer);
 
               // Show parents
@@ -943,7 +945,7 @@ bool Timeline::onProcessMessage(Message* msg)
             // Lock/unlock layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Row& row = m_rows[m_clk.layer];
-              Layer* layer = row.layer;
+              Layer* layer = row.layer();
               ASSERT(layer);
 
               // Unlock parents
@@ -968,7 +970,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_LAYER_CONTINUOUS_ICON:
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_rows[m_clk.layer].layer;
+              Layer* layer = m_rows[m_clk.layer].layer();
               ASSERT(layer);
               if (layer) {
                 if (layer->isImage())
@@ -1301,7 +1303,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       if (!clip)
         continue;
 
-      Layer* layerPtr = m_rows[layer].layer;
+      Layer* layerPtr = m_rows[layer].layer();
       if (!layerPtr->isImage()) {
         // Draw empty cels
         for (frame=firstFrame; frame<=lastFrame; ++frame) {
@@ -1738,7 +1740,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
 void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 {
   auto& styles = skinTheme()->styles;
-  Layer* layer = m_rows[layerIdx].layer;
+  Layer* layer = m_rows[layerIdx].layer();
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
   bool clklayer = (m_clk.layer == layerIdx);
@@ -1794,8 +1796,8 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   // Draw layer name.
   doc::color_t layerColor = layer->userData().color();
   gfx::Rect textBounds = bounds;
-  if (m_rows[layerIdx].level > 0) {
-    int w = m_rows[layerIdx].level*frameBoxWidth();
+  if (m_rows[layerIdx].level() > 0) {
+    int w = m_rows[layerIdx].level()*frameBoxWidth();
     textBounds.x += w;
     textBounds.w -= w;
   }
@@ -1866,7 +1868,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
-  Layer* layer = m_rows[layerIndex].layer;
+  Layer* layer = m_rows[layerIndex].layer();
   Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
@@ -2029,7 +2031,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
     return;
   }
 
-  Layer* layer = m_rows[m_thumbnailsOverlayHit.layer].layer;
+  Layer* layer = m_rows[m_thumbnailsOverlayHit.layer].layer();
   Cel* cel = layer->cel(m_thumbnailsOverlayHit.frame);
   if (!cel) {
     return;
@@ -2970,7 +2972,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         else if (m_dropTarget.vhit == DropTarget::Top)
           layerIdx = lastLayer;
 
-        Layer* layer = (validLayer(layerIdx) ? m_rows[layerIdx].layer: nullptr);
+        Layer* layer = (validLayer(layerIdx) ? m_rows[layerIdx].layer(): nullptr);
         if (layer) {
           switch (m_dropTarget.vhit) {
             case DropTarget::Bottom:
@@ -2990,7 +2992,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
     }
   }
   else {
-    Layer* layer = (validLayer(m_hot.layer) ? m_rows[m_hot.layer].layer:
+    Layer* layer = (validLayer(m_hot.layer) ? m_rows[m_hot.layer].layer():
                                               nullptr);
 
     switch (m_hot.part) {
@@ -3191,7 +3193,7 @@ bool Timeline::allLayersUnlocked()
 bool Timeline::allLayersContinuous()
 {
   for (size_t i=0; i<m_rows.size(); i++)
-    if (!m_rows[i].layer->isContinuous())
+    if (!m_rows[i].layer()->isContinuous())
       return false;
 
   return true;
@@ -3200,7 +3202,7 @@ bool Timeline::allLayersContinuous()
 bool Timeline::allLayersDiscontinuous()
 {
   for (size_t i=0; i<m_rows.size(); i++)
-    if (m_rows[i].layer->isContinuous())
+    if (m_rows[i].layer()->isContinuous())
       return false;
 
   return true;
@@ -3209,7 +3211,7 @@ bool Timeline::allLayersDiscontinuous()
 layer_t Timeline::getLayerIndex(const Layer* layer) const
 {
   for (int i=0; i<(int)m_rows.size(); i++)
-    if (m_rows[i].layer == layer)
+    if (m_rows[i].layer() == layer)
       return i;
 
   return -1;
@@ -3220,7 +3222,7 @@ bool Timeline::isLayerActive(const layer_t layerIndex) const
   if (layerIndex == getLayerIndex(m_layer))
     return true;
   else
-    return m_range.contains(m_rows[layerIndex].layer);
+    return m_range.contains(m_rows[layerIndex].layer());
 }
 
 bool Timeline::isFrameActive(const frame_t frame) const
@@ -3335,8 +3337,8 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     case Range::kFrames:
     case Range::kLayers:
       m_dropRange.clearRange();
-      m_dropRange.startRange(m_rows[m_hot.layer].layer, m_hot.frame, m_range.type());
-      m_dropRange.endRange(m_rows[m_hot.layer].layer, m_hot.frame);
+      m_dropRange.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, m_range.type());
+      m_dropRange.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
       break;
   }
 
@@ -3355,8 +3357,8 @@ void Timeline::updateDropRange(const gfx::Point& pt)
   else if (m_range.type() == Range::kLayers &&
            m_hot.layer >= 0 &&
            m_hot.layer < m_rows.size() &&
-           m_rows[m_hot.layer].layer->isGroup() &&
-           static_cast<LayerGroup*>(m_rows[m_hot.layer].layer)->isExpanded()) {
+           m_rows[m_hot.layer].layer()->isGroup() &&
+           static_cast<LayerGroup*>(m_rows[m_hot.layer].layer())->isExpanded()) {
     m_dropTarget.vhit = DropTarget::FirstChild;
   }
   else {
