@@ -77,11 +77,11 @@ enum {
   PART_HEADER_ONIONSKIN_RANGE_RIGHT,
   PART_HEADER_LAYER,
   PART_HEADER_FRAME,
-  PART_LAYER,
-  PART_LAYER_EYE_ICON,
-  PART_LAYER_PADLOCK_ICON,
-  PART_LAYER_CONTINUOUS_ICON,
-  PART_LAYER_TEXT,
+  PART_ROW,
+  PART_ROW_EYE_ICON,
+  PART_ROW_PADLOCK_ICON,
+  PART_ROW_CONTINUOUS_ICON,
+  PART_ROW_TEXT,
   PART_CEL,
   PART_RANGE_OUTLINE,
   PART_FRAME_TAG,
@@ -589,7 +589,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
           break;
         }
-        case PART_LAYER_TEXT: {
+        case PART_ROW_TEXT: {
           base::ScopedValue<bool> lock(m_fromTimeline, true, false);
           layer_t old_layer = getLayerIndex(m_layer);
           bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk.layer));
@@ -613,11 +613,11 @@ bool Timeline::onProcessMessage(Message* msg)
           showCel(m_clk.layer, m_frame);
           break;
         }
-        case PART_LAYER_EYE_ICON:
+        case PART_ROW_EYE_ICON:
           break;
-        case PART_LAYER_PADLOCK_ICON:
+        case PART_ROW_PADLOCK_ICON:
           break;
-        case PART_LAYER_CONTINUOUS_ICON:
+        case PART_ROW_CONTINUOUS_ICON:
           break;
         case PART_CEL: {
           base::ScopedValue<bool> lock(m_fromTimeline, true, false);
@@ -896,7 +896,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
 
-          case PART_LAYER_TEXT:
+          case PART_ROW_TEXT:
             // Show the layer pop-up menu.
             if (mouseMsg->right()) {
               if (m_clk.layer == m_hot.layer) {
@@ -911,7 +911,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
 
-          case PART_LAYER_EYE_ICON:
+          case PART_ROW_EYE_ICON:
             // Hide/show layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Row& row = m_rows[m_clk.layer];
@@ -941,7 +941,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
 
-          case PART_LAYER_PADLOCK_ICON:
+          case PART_ROW_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Row& row = m_rows[m_clk.layer];
@@ -968,7 +968,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
 
-          case PART_LAYER_CONTINUOUS_ICON:
+          case PART_ROW_CONTINUOUS_ICON:
             if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
               Layer* layer = m_rows[m_clk.layer].layer();
               ASSERT(layer);
@@ -1093,7 +1093,7 @@ bool Timeline::onProcessMessage(Message* msg)
     case kDoubleClickMessage:
       switch (m_hot.part) {
 
-        case PART_LAYER_TEXT: {
+        case PART_ROW_TEXT: {
           Command* command = CommandsModule::instance()
             ->getCommandByName(CommandId::LayerProperties);
 
@@ -1744,54 +1744,54 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot.layer == layerIdx);
   bool clklayer = (m_clk.layer == layerIdx);
-  gfx::Rect bounds = getPartBounds(Hit(PART_LAYER, layerIdx, firstFrame()));
+  gfx::Rect bounds = getPartBounds(Hit(PART_ROW, layerIdx, firstFrame()));
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
 
   // Draw the eye (visible flag).
-  bounds = getPartBounds(Hit(PART_LAYER_EYE_ICON, layerIdx));
+  bounds = getPartBounds(Hit(PART_ROW_EYE_ICON, layerIdx));
   drawPart(
     g, bounds, nullptr,
     (layer->isVisible() ? styles.timelineOpenEye():
                           styles.timelineClosedEye()),
     is_active,
-    (hotlayer && m_hot.part == PART_LAYER_EYE_ICON),
-    (clklayer && m_clk.part == PART_LAYER_EYE_ICON),
+    (hotlayer && m_hot.part == PART_ROW_EYE_ICON),
+    (clklayer && m_clk.part == PART_ROW_EYE_ICON),
     !m_rows[layerIdx].parentVisible());
 
   // Draw the padlock (editable flag).
-  bounds = getPartBounds(Hit(PART_LAYER_PADLOCK_ICON, layerIdx));
+  bounds = getPartBounds(Hit(PART_ROW_PADLOCK_ICON, layerIdx));
   drawPart(
     g, bounds, nullptr,
     (layer->isEditable() ? styles.timelineOpenPadlock():
                            styles.timelineClosedPadlock()),
     is_active,
-    (hotlayer && m_hot.part == PART_LAYER_PADLOCK_ICON),
-    (clklayer && m_clk.part == PART_LAYER_PADLOCK_ICON),
+    (hotlayer && m_hot.part == PART_ROW_PADLOCK_ICON),
+    (clklayer && m_clk.part == PART_ROW_PADLOCK_ICON),
     !m_rows[layerIdx].parentEditable());
 
   // Draw the continuous flag/group icon.
-  bounds = getPartBounds(Hit(PART_LAYER_CONTINUOUS_ICON, layerIdx));
+  bounds = getPartBounds(Hit(PART_ROW_CONTINUOUS_ICON, layerIdx));
   if (layer->isImage()) {
     drawPart(g, bounds, nullptr,
              layer->isContinuous() ? styles.timelineContinuous():
                                      styles.timelineDiscontinuous(),
              is_active,
-             (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
-             (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
+             (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
+             (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
   }
   else if (layer->isGroup()) {
     drawPart(g, bounds, nullptr,
              layer->isCollapsed() ? styles.timelineClosedGroup():
                                     styles.timelineOpenGroup(),
              is_active,
-             (hotlayer && m_hot.part == PART_LAYER_CONTINUOUS_ICON),
-             (clklayer && m_clk.part == PART_LAYER_CONTINUOUS_ICON));
+             (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
+             (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
   }
 
   // Get the layer's name bounds.
-  bounds = getPartBounds(Hit(PART_LAYER_TEXT, layerIdx));
+  bounds = getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
 
   // Draw layer name.
   doc::color_t layerColor = layer->userData().color();
@@ -1804,8 +1804,8 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 
   drawPart(g, bounds, nullptr, styles.timelineLayer(),
            is_active,
-           (hotlayer && m_hot.part == PART_LAYER_TEXT),
-           (clklayer && m_clk.part == PART_LAYER_TEXT));
+           (hotlayer && m_hot.part == PART_ROW_TEXT),
+           (clklayer && m_clk.part == PART_ROW_TEXT));
 
   if (doc::rgba_geta(layerColor) > 0) {
     // Fill with an user-defined custom color.
@@ -1821,16 +1821,16 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
              &layer->name(),
              styles.timelineLayerTextOnly(),
              is_active,
-             (hotlayer && m_hot.part == PART_LAYER_TEXT),
-             (clklayer && m_clk.part == PART_LAYER_TEXT));
+             (hotlayer && m_hot.part == PART_ROW_TEXT),
+             (clklayer && m_clk.part == PART_ROW_TEXT));
   }
   else {
     drawPart(g, textBounds,
              &layer->name(),
              styles.timelineLayer(),
              is_active,
-             (hotlayer && m_hot.part == PART_LAYER_TEXT),
-             (clklayer && m_clk.part == PART_LAYER_TEXT));
+             (hotlayer && m_hot.part == PART_ROW_TEXT),
+             (clklayer && m_clk.part == PART_ROW_TEXT));
   }
 
   if (layer->isBackground()) {
@@ -1857,7 +1857,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   // If this layer wasn't clicked but there are another layer clicked,
   // we have to draw some indicators to show that the user can move
   // layers.
-  if (hotlayer && !is_active && m_clk.part == PART_LAYER_TEXT) {
+  if (hotlayer && !is_active && m_clk.part == PART_ROW_TEXT) {
     // TODO this should be skinneable
     g->fillRect(
       skinTheme()->colors.timelineActive(),
@@ -2306,7 +2306,7 @@ void Timeline::drawPaddings(ui::Graphics* g)
   int top = topHeight();
 
   if (!m_rows.empty()) {
-    bottomLayer = getPartBounds(Hit(PART_LAYER, firstLayer()));
+    bottomLayer = getPartBounds(Hit(PART_ROW, firstLayer()));
     lastFrame = getPartBounds(Hit(PART_CEL, firstLayer(), this->lastFrame()));
   }
   else {
@@ -2428,7 +2428,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         + frameBoxWidth()*MAX(firstFrame(), hit.frame) - viewScroll().x,
         bounds.y + y, frameBoxWidth(), headerBoxHeight());
 
-    case PART_LAYER:
+    case PART_ROW:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
@@ -2436,7 +2436,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       }
       break;
 
-    case PART_LAYER_EYE_ICON:
+    case PART_ROW_EYE_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
@@ -2444,7 +2444,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       }
       break;
 
-    case PART_LAYER_PADLOCK_ICON:
+    case PART_ROW_PADLOCK_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x + headerBoxWidth(),
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
@@ -2452,7 +2452,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       }
       break;
 
-    case PART_LAYER_CONTINUOUS_ICON:
+    case PART_ROW_CONTINUOUS_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x + 2* headerBoxWidth(),
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
@@ -2460,7 +2460,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       }
       break;
 
-    case PART_LAYER_TEXT:
+    case PART_ROW_TEXT:
       if (validLayer(hit.layer)) {
         int x = headerBoxWidth()*3;
         return gfx::Rect(bounds.x + x,
@@ -2577,7 +2577,7 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
     case Range::kLayers:
       for (auto layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
-        rc |= getPartBounds(Hit(PART_LAYER, layerIdx));
+        rc |= getPartBounds(Hit(PART_ROW, layerIdx));
       }
       break;
   }
@@ -2837,16 +2837,16 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     else {
       // Is the mouse on a layer's label?
       if (mousePos.x < m_separator_x) {
-        if (getPartBounds(Hit(PART_LAYER_EYE_ICON, hit.layer)).contains(mousePos))
-          hit.part = PART_LAYER_EYE_ICON;
-        else if (getPartBounds(Hit(PART_LAYER_PADLOCK_ICON, hit.layer)).contains(mousePos))
-          hit.part = PART_LAYER_PADLOCK_ICON;
-        else if (getPartBounds(Hit(PART_LAYER_CONTINUOUS_ICON, hit.layer)).contains(mousePos))
-          hit.part = PART_LAYER_CONTINUOUS_ICON;
-        else if (getPartBounds(Hit(PART_LAYER_TEXT, hit.layer)).contains(mousePos))
-          hit.part = PART_LAYER_TEXT;
+        if (getPartBounds(Hit(PART_ROW_EYE_ICON, hit.layer)).contains(mousePos))
+          hit.part = PART_ROW_EYE_ICON;
+        else if (getPartBounds(Hit(PART_ROW_PADLOCK_ICON, hit.layer)).contains(mousePos))
+          hit.part = PART_ROW_PADLOCK_ICON;
+        else if (getPartBounds(Hit(PART_ROW_CONTINUOUS_ICON, hit.layer)).contains(mousePos))
+          hit.part = PART_ROW_CONTINUOUS_ICON;
+        else if (getPartBounds(Hit(PART_ROW_TEXT, hit.layer)).contains(mousePos))
+          hit.part = PART_ROW_TEXT;
         else
-          hit.part = PART_LAYER;
+          hit.part = PART_ROW;
       }
       else if (validLayer(hit.layer) && validFrame(hit.frame)) {
         hit.part = PART_CEL;
@@ -3003,7 +3003,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         return;
       }
 
-      case PART_LAYER_TEXT:
+      case PART_ROW_TEXT:
         if (layer != NULL) {
           sb->setStatusText(
             0, "%s '%s' [%s%s]",
@@ -3015,7 +3015,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         }
         break;
 
-      case PART_LAYER_EYE_ICON:
+      case PART_ROW_EYE_ICON:
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' is %s",
             layer->name().c_str(),
@@ -3024,7 +3024,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         }
         break;
 
-      case PART_LAYER_PADLOCK_ICON:
+      case PART_ROW_PADLOCK_ICON:
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' is %s",
             layer->name().c_str(),
@@ -3033,7 +3033,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         }
         break;
 
-      case PART_LAYER_CONTINUOUS_ICON:
+      case PART_ROW_CONTINUOUS_ICON:
         if (layer) {
           if (layer->isImage())
             sb->setStatusText(0, "Layer '%s' is %s (%s)",
