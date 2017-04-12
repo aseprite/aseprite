@@ -18,7 +18,10 @@
 #include "doc/document.h"
 #include "doc/slice.h"
 
-#include <cstdlib>
+// TODO define one way to use std:: functions, this is getting really strange on different compilers
+#include <cstdlib>              // Needed to use std::strtol() on clang
+#include <cstring>              // Needed to use std::strtol() on gcc
+
 #include <set>
 
 namespace app {
@@ -262,29 +265,29 @@ void load_aseprite_data_file(const std::string& dataFilename, doc::Document* doc
 
       doc::SliceKey key;
 
-      int x = strtol(xmlPart->Attribute("x"), NULL, 10);
-      int y = strtol(xmlPart->Attribute("y"), NULL, 10);
+      int x = std::strtol(xmlPart->Attribute("x"), NULL, 10);
+      int y = std::strtol(xmlPart->Attribute("y"), NULL, 10);
 
       if (xmlPart->Attribute("w1")) {
-        int w1 = xmlPart->Attribute("w1") ? strtol(xmlPart->Attribute("w1"), NULL, 10): 0;
-        int w2 = xmlPart->Attribute("w2") ? strtol(xmlPart->Attribute("w2"), NULL, 10): 0;
-        int w3 = xmlPart->Attribute("w3") ? strtol(xmlPart->Attribute("w3"), NULL, 10): 0;
-        int h1 = xmlPart->Attribute("h1") ? strtol(xmlPart->Attribute("h1"), NULL, 10): 0;
-        int h2 = xmlPart->Attribute("h2") ? strtol(xmlPart->Attribute("h2"), NULL, 10): 0;
-        int h3 = xmlPart->Attribute("h3") ? strtol(xmlPart->Attribute("h3"), NULL, 10): 0;
+        int w1 = xmlPart->Attribute("w1") ? std::strtol(xmlPart->Attribute("w1"), NULL, 10): 0;
+        int w2 = xmlPart->Attribute("w2") ? std::strtol(xmlPart->Attribute("w2"), NULL, 10): 0;
+        int w3 = xmlPart->Attribute("w3") ? std::strtol(xmlPart->Attribute("w3"), NULL, 10): 0;
+        int h1 = xmlPart->Attribute("h1") ? std::strtol(xmlPart->Attribute("h1"), NULL, 10): 0;
+        int h2 = xmlPart->Attribute("h2") ? std::strtol(xmlPart->Attribute("h2"), NULL, 10): 0;
+        int h3 = xmlPart->Attribute("h3") ? std::strtol(xmlPart->Attribute("h3"), NULL, 10): 0;
 
         key.setBounds(gfx::Rect(x, y, w1+w2+w3, h1+h2+h3));
         key.setCenter(gfx::Rect(w1, h1, w2, h2));
       }
       else if (xmlPart->Attribute("w")) {
-        int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
-        int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
+        int w = xmlPart->Attribute("w") ? std::strtol(xmlPart->Attribute("w"), NULL, 10): 0;
+        int h = xmlPart->Attribute("h") ? std::strtol(xmlPart->Attribute("h"), NULL, 10): 0;
         key.setBounds(gfx::Rect(x, y, w, h));
       }
 
       if (xmlPart->Attribute("focusx")) {
-        int x = xmlPart->Attribute("focusx") ? strtol(xmlPart->Attribute("focusx"), NULL, 10): 0;
-        int y = xmlPart->Attribute("focusy") ? strtol(xmlPart->Attribute("focusy"), NULL, 10): 0;
+        int x = xmlPart->Attribute("focusx") ? std::strtol(xmlPart->Attribute("focusx"), NULL, 10): 0;
+        int y = xmlPart->Attribute("focusy") ? std::strtol(xmlPart->Attribute("focusy"), NULL, 10): 0;
         key.setPivot(gfx::Point(x, y));
       }
 
