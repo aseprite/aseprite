@@ -16,16 +16,11 @@
         file_win="malgun.ttf">
     <fallback font="Arial Unicode" />
   </font>
-  <font name="Unicode Chinese"
-        type="truetype"
-        file_win="msjh.ttc">
-    <fallback font="Unicode Korean" size="8" />
-  </font>
   <font name="Unicode Japanese"
         type="truetype"
-        file_win="YuGothR.ttc"
+        file_win="msjh.ttc"
         file_linux="NotoSansCJK-Regular.ttc">
-    <fallback font="Unicode Chinese" size="8" />
+    <fallback font="Unicode Korean" />
   </font>
   <font name="Unicode"
         type="truetype"
