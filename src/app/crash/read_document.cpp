@@ -302,6 +302,7 @@ private:
     return spr.release();
   }
 
+  // TODO could we use doc::read_layer() here?
   Layer* readLayer(std::ifstream& s) {
     LayerFlags flags = (LayerFlags)read32(s);
     ObjectType type = (ObjectType)read16(s);
@@ -314,6 +315,10 @@ private:
       base::UniquePtr<LayerImage> lay(new LayerImage(m_sprite));
       lay->setName(name);
       lay->setFlags(flags);
+
+      // Blend mode & opacity
+      lay->setBlendMode((BlendMode)read16(s));
+      lay->setOpacity(read8(s));
 
       // Cels
       int ncels = read32(s);

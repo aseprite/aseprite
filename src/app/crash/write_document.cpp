@@ -190,6 +190,10 @@ private:
         CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
         CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
 
+        // Blend mode & opacity
+        write16(s, (int)static_cast<const LayerImage*>(lay)->blendMode());
+        write8(s, static_cast<const LayerImage*>(lay)->opacity());
+
         // Cels
         write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
         for (it=begin; it != end; ++it) {
