@@ -264,6 +264,8 @@ static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
     case she::Event::LeftButton:   return kButtonLeft; break;
     case she::Event::RightButton:  return kButtonRight; break;
     case she::Event::MiddleButton: return kButtonMiddle; break;
+    case she::Event::X1Button:     return kButtonX1; break;
+    case she::Event::X2Button:     return kButtonX2; break;
     default: return kButtonNone;
   }
 }

@@ -46,7 +46,9 @@ namespace she {
       NoneButton,
       LeftButton,
       RightButton,
-      MiddleButton
+      MiddleButton,
+      X1Button,
+      X2Button,
     };
 
     typedef std::vector<std::string> Files;

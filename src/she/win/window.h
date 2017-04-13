@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -458,7 +458,8 @@ namespace she {
 
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
-        case WM_MBUTTONDOWN: {
+        case WM_MBUTTONDOWN:
+        case WM_XBUTTONDOWN: {
           Event ev;
           ev.setType(Event::MouseDown);
           ev.setModifiers(get_modifiers_from_last_win32_message());
@@ -468,7 +469,10 @@ namespace she {
           ev.setButton(
             msg == WM_LBUTTONDOWN ? Event::LeftButton:
             msg == WM_RBUTTONDOWN ? Event::RightButton:
-            msg == WM_MBUTTONDOWN ? Event::MiddleButton: Event::NoneButton);
+            msg == WM_MBUTTONDOWN ? Event::MiddleButton:
+            msg == WM_XBUTTONDOWN && GET_XBUTTON_WPARAM(wparam) == 1 ? Event::X1Button:
+            msg == WM_XBUTTONDOWN && GET_XBUTTON_WPARAM(wparam) == 2 ? Event::X2Button:
+            Event::NoneButton);
 
           if (m_pointerType != PointerType::Unknown) {
             ev.setPointerType(m_pointerType);
@@ -481,7 +485,8 @@ namespace she {
 
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
-        case WM_MBUTTONUP: {
+        case WM_MBUTTONUP:
+        case WM_XBUTTONUP: {
           Event ev;
           ev.setType(Event::MouseUp);
           ev.setModifiers(get_modifiers_from_last_win32_message());
@@ -491,7 +496,10 @@ namespace she {
           ev.setButton(
             msg == WM_LBUTTONUP ? Event::LeftButton:
             msg == WM_RBUTTONUP ? Event::RightButton:
-            msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
+            msg == WM_MBUTTONUP ? Event::MiddleButton:
+            msg == WM_XBUTTONUP && GET_XBUTTON_WPARAM(wparam) == 1 ? Event::X1Button:
+            msg == WM_XBUTTONUP && GET_XBUTTON_WPARAM(wparam) == 2 ? Event::X2Button:
+            Event::NoneButton);
 
           if (m_pointerType != PointerType::Unknown) {
             ev.setPointerType(m_pointerType);
@@ -509,7 +517,8 @@ namespace she {
 
         case WM_LBUTTONDBLCLK:
         case WM_MBUTTONDBLCLK:
-        case WM_RBUTTONDBLCLK: {
+        case WM_RBUTTONDBLCLK:
+        case WM_XBUTTONDBLCLK: {
           Event ev;
           ev.setType(Event::MouseDoubleClick);
           ev.setModifiers(get_modifiers_from_last_win32_message());
@@ -519,7 +528,10 @@ namespace she {
           ev.setButton(
             msg == WM_LBUTTONDBLCLK ? Event::LeftButton:
             msg == WM_RBUTTONDBLCLK ? Event::RightButton:
-            msg == WM_MBUTTONDBLCLK ? Event::MiddleButton: Event::NoneButton);
+            msg == WM_MBUTTONDBLCLK ? Event::MiddleButton:
+            msg == WM_XBUTTONDBLCLK && GET_XBUTTON_WPARAM(wparam) == 1 ? Event::X1Button:
+            msg == WM_XBUTTONDBLCLK && GET_XBUTTON_WPARAM(wparam) == 2 ? Event::X2Button:
+            Event::NoneButton);
 
           if (m_pointerType != PointerType::Unknown) {
             ev.setPointerType(m_pointerType);
