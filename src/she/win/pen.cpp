@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -48,6 +48,29 @@ HCTX PenAPI::open(HWND hwnd)
   if (!m_wintabLib && !loadWintab())
     return nullptr;
 
+  // Log Wintab ID
+  {
+    UINT nchars = WTInfo(WTI_INTERFACE, IFC_WINTABID, nullptr);
+    if (nchars > 0 && nchars < 1024) {
+      std::vector<WCHAR> buf(nchars+1, 0);
+      WTInfo(WTI_INTERFACE, IFC_WINTABID, &buf[0]);
+      LOG("PEN: Wintab ID \"%s\"\n", base::to_utf8(&buf[0]).c_str());
+    }
+  }
+
+  // Log Wintab version for debugging purposes
+  {
+    WORD specVer = 0;
+    WORD implVer = 0;
+    UINT options = 0;
+    WTInfo(WTI_INTERFACE, IFC_SPECVERSION, &specVer);
+    WTInfo(WTI_INTERFACE, IFC_IMPLVERSION, &implVer);
+    WTInfo(WTI_INTERFACE, IFC_CTXOPTIONS, &options);
+    LOG("PEN: Wintab spec v%d.%d impl v%d.%d options 0x%x\n",
+        (specVer & 0xff00) >> 8, (specVer & 0xff),
+        (implVer & 0xff00) >> 8, (implVer & 0xff), options);
+  }
+
   LOGCONTEXTW logctx;
   memset(&logctx, 0, sizeof(LOGCONTEXTW));
   UINT infoRes = WTInfo(WTI_DEFSYSCTX, 0, &logctx);
@@ -57,22 +80,27 @@ HCTX PenAPI::open(HWND hwnd)
   ASSERT(infoRes == sizeof(LOGCONTEXTW));
   ASSERT(logctx.lcOptions & CXO_SYSTEM);
 
+#if 0 // We shouldn't bypass WTOpen() if the return value from
+      // WTInfo() isn't the expected one, WTOpen() should just fail
+      // anyway.
   if (infoRes != sizeof(LOGCONTEXTW)) {
     LOG(ERROR)
       << "PEN: Not supported WTInfo:\n"
       << "     Expected context size: " << sizeof(LOGCONTEXTW) << "\n"
-      << "     Actual context size: " << infoRes << " (options " << logctx.lcOptions << ")\n";
+      << "     Actual context size: " << infoRes << "\n"
+      << "     Options: " << logctx.lcOptions << ")\n";
     return nullptr;
   }
+#endif
 
-  logctx.lcOptions =
-    CXO_SYSTEM |
+  logctx.lcOptions |=
     CXO_MESSAGES |
     CXO_CSRMESSAGES;
   logctx.lcPktData = PACKETDATA;
   logctx.lcPktMode = PACKETMODE;
   logctx.lcMoveMask = PACKETDATA;
 
+  LOG("PEN: Opening context, options 0x%x\n", logctx.lcOptions);
   HCTX ctx = WTOpen(hwnd, &logctx, TRUE);
   if (!ctx) {
     LOG("PEN: Error attaching pen to display\n");
@@ -116,7 +144,7 @@ bool PenAPI::loadWintab()
     return false;
   }
 
-  LOG("PEN: Pen initialized\n");
+  LOG("PEN: Wintab library loaded\n");
   return true;
 }
 
