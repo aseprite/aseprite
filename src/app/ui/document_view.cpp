@@ -155,14 +155,17 @@ class PreviewEditor : public Editor,
                       public EditorCustomizationDelegate {
 public:
   PreviewEditor(Document* document)
-    : Editor(document, Editor::kShowOutside) // Don't show grid/mask in preview preview
-  {
+    : Editor(document, Editor::kShowOutside) { // Don't show grid/mask in preview preview
     setCustomizationDelegate(this);
   }
 
-  ~PreviewEditor()
-  {
-    setCustomizationDelegate(NULL);
+  ~PreviewEditor() {
+    // As we are destroying this instance, we have to remove it as the
+    // customization delegate. Editor::~Editor() will call
+    // setCustomizationDelegate(nullptr) too which triggers a
+    // EditorCustomizationDelegate::dispose() if the customization
+    // isn't nullptr.
+    setCustomizationDelegate(nullptr);
   }
 
   // EditorCustomizationDelegate implementation
