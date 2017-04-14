@@ -162,7 +162,7 @@ public:
 
   ~PreviewEditor()
   {
-	  setCustomizationDelegate(NULL);
+	setCustomizationDelegate(NULL);
   }
 
   // EditorCustomizationDelegate implementation
