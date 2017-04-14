@@ -276,8 +276,12 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   m_aniControls.updateUsingEditor(editor);
 
-  if (editor != m_editor)
+  if (editor != m_editor) {
+    // Save active m_tagFocusBand into the old focused editor
+    if (m_editor)
+      m_editor->setTagFocusBand(m_tagFocusBand);
     m_tagFocusBand = -1;
+  }
 
   detachDocument();
 
@@ -289,11 +293,11 @@ void Timeline::updateUsingEditor(Editor* editor)
   // We always update the editor. In this way the timeline keeps in
   // sync with the active editor.
   m_editor = editor;
-
-  if (m_editor)
-    m_editor->add_observer(this);
-  else
+  if (!m_editor)
     return;                // No editor specified.
+
+  m_editor->add_observer(this);
+  m_tagFocusBand = m_editor->tagFocusBand();
 
   Site site;
   DocumentView* view = m_editor->getDocumentView();

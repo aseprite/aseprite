@@ -175,6 +175,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_aniSpeed(1.0)
   , m_isPlaying(false)
   , m_showGuidesThisCel(nullptr)
+  , m_tagFocusBand(-1)
 {
   m_proj.setPixelRatio(m_sprite->pixelRatio());
 
@@ -1802,6 +1803,16 @@ void Editor::onSpritePixelRatioChanged(doc::DocumentEvent& ev)
 {
   m_proj.setPixelRatio(ev.sprite()->pixelRatio());
   invalidate();
+}
+
+void Editor::onAddFrameTag(DocumentEvent& ev)
+{
+  m_tagFocusBand = -1;
+}
+
+void Editor::onRemoveFrameTag(DocumentEvent& ev)
+{
+  m_tagFocusBand = -1;
 }
 
 void Editor::setCursor(const gfx::Point& mouseScreenPos)

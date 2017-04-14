@@ -254,6 +254,9 @@ namespace app {
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;
 
+    void setTagFocusBand(int value) { m_tagFocusBand = value; }
+    int tagFocusBand() const { return m_tagFocusBand; }
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
@@ -267,6 +270,8 @@ namespace app {
     // DocumentObserver impl
     void onExposeSpritePixels(doc::DocumentEvent& ev) override;
     void onSpritePixelRatioChanged(doc::DocumentEvent& ev) override;
+    void onAddFrameTag(DocumentEvent& ev) override;
+    void onRemoveFrameTag(DocumentEvent& ev) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
@@ -377,6 +382,10 @@ namespace app {
     // The Cel that is above the mouse if the Ctrl (or Cmd) key is
     // pressed (move key).
     Cel* m_showGuidesThisCel;
+
+    // Focused tag band. Used by the Timeline to save/restore the
+    // focused tag band for each sprite/editor.
+    int m_tagFocusBand;
 
     static doc::ImageBufferPtr m_renderBuffer;
 
