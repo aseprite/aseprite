@@ -1805,6 +1805,11 @@ void Editor::onSpritePixelRatioChanged(doc::DocumentEvent& ev)
   invalidate();
 }
 
+void Editor::onRemoveCel(DocumentEvent& ev)
+{
+  m_showGuidesThisCel = nullptr;
+}
+
 void Editor::onAddFrameTag(DocumentEvent& ev)
 {
   m_tagFocusBand = -1;
