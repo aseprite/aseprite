@@ -160,6 +160,11 @@ public:
     setCustomizationDelegate(this);
   }
 
+  ~PreviewEditor()
+  {
+    setCustomizationDelegate(NULL);
+  }
+
   // EditorCustomizationDelegate implementation
   void dispose() override {
     // Do nothing
