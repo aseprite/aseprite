@@ -33,7 +33,15 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
 
     Strokes strokes;
     symmetry->generateStrokes(main_stroke, strokes, loop);
+
+	// Get the next random number to use as the seed for each
+	// symmetry stroke
+	int random_seed = rand();
     for (const auto& stroke : strokes) {
+	  // Set the seed to random_seed to get same rand() output for each
+      // strokes
+	  srand(random_seed);
+
       // We call transformPoint() moving back each point to the cel
       // origin.
       loop->getPointShape()->transformPoint(
