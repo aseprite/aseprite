@@ -4,6 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/tools/symmetry.h"
+
 namespace app {
 namespace tools {
 
@@ -143,6 +145,10 @@ public:
   }
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
+    transformPoint(loop, x, y, 1, 1);
+  }
+
+  void transformPoint(ToolLoop* loop, int x, int y, int x_modifier, int y_modifier) override {
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
 
@@ -172,8 +178,10 @@ public:
       radius = rand() % fixmath::itofix(spray_width);
 #endif
 
-      int u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
-      int v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
+      // If there is a symmetry, reverse the sprayed points accordingly
+      int u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle))) * x_modifier;
+      int v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle))) * y_modifier;
+
       m_subPointShape.transformPoint(loop, x+u, y+v);
     }
   }
