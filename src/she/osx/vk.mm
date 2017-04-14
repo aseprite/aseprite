@@ -4,6 +4,9 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+// Uncomment this to log how scancodes are generated
+//#define REPORT_KEYS
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -57,7 +60,7 @@ static KeyScancode from_char_to_scancode(int chr)
     kKeyNil,        // 36 =24 = $
     kKeyNil,        // 37 =25 = %
     kKeyNil,        // 38 =26 = &
-    kKeyNil,        // 39 =27 = '
+    kKeyQuote,      // 39 =27 = '
     kKeyNil,        // 40 = 28 = (
     kKeyNil,        // 41 = 29 = )
     kKeyNil,        // 42 = 2A = *
@@ -141,9 +144,9 @@ static KeyScancode from_char_to_scancode(int chr)
     kKeyX,          // 120 = 78 = x
     kKeyY,          // 121 = 79 = y
     kKeyZ,          // 122 = 7A = z
-    kKeyNil,        // 123 = 7B = {
-    kKeyNil,        // 124 = 7C = |
-    kKeyNil,        // 125 = 7D = }
+    kKeyOpenbrace,  // 123 = 7B = {
+    kKeyBackslash,  // 124 = 7C = |
+    kKeyClosebrace, // 125 = 7D = }
     kKeyNil,        // 126 = 7E = ~
     kKeyNil,        // 127 = 7F = DEL
   };
@@ -308,29 +311,86 @@ static KeyScancode from_keycode_to_scancode(UInt16 keyCode)
 
 KeyScancode scancode_from_nsevent(NSEvent* event)
 {
+#if 1
   // For keys that are not in the numpad we try to get the scancode
   // converting the first char in NSEvent.characters to a
-  // scancode. (It's a proper method to get the correct Cmd+letter
-  // combination on <Dvorak - QWERTY Cmd> keyboard layout)).
+  // scancode.
   if ((event.modifierFlags & NSNumericPadKeyMask) == 0) {
     KeyScancode code;
 
+    // It looks like getting the first "event.characters" char is the
+    // only way to get the correct Cmd+letter combination on "Dvorak -
+    // QWERTY Cmd" keyboard layout.
     NSString* chars = event.characters;
     if (chars.length > 0) {
-      code = from_char_to_scancode([chars characterAtIndex:0]);
-      if (code != kKeyNil)
-        return code;
+      int chr = [chars characterAtIndex:chars.length-1];
+
+      // Avoid activating space bar modifier. E.g. pressing
+      // Ctrl+Alt+Shift+S on "Spanish ISO" layout generates a
+      // whitespace ' ', and we prefer the S scancode instead of the
+      // space bar scancode.
+      if (chr != 32) {
+        code = from_char_to_scancode(chr);
+        if (code != kKeyNil) {
+#ifdef REPORT_KEYS
+          TRACE("scancode_from_nsevent %d -> %d (characters)\n",
+                (int)chr, (int)code);
+#endif
+          return code;
+        }
+      }
     }
 
     chars = event.charactersIgnoringModifiers;
     if (chars.length > 0) {
-      code = from_char_to_scancode([chars characterAtIndex:0]);
-      if (code != kKeyNil)
+      int chr = [chars characterAtIndex:chars.length-1];
+      code = from_char_to_scancode(chr);
+      if (code != kKeyNil) {
+#ifdef REPORT_KEYS
+        TRACE("scancode_from_nsevent %d -> %d (charactersIgnoringModifiers)\n",
+              (int)chr, (int)code);
+#endif
         return code;
+      }
     }
   }
+#else // Don't use this code, it reports scancodes always as QWERTY
+      // and doesn't work for Dvorak or AZERTY layouts.
+  {
+    CFStringRef strRef = get_unicode_from_key_code(
+      event.keyCode,
+      event.modifierFlags & NSCommandKeyMask);
 
-  return from_keycode_to_scancode(event.keyCode);
+    if (strRef) {
+      KeyScancode code = kKeyNil;
+
+      int length = CFStringGetLength(strRef);
+      if (length > 0) {
+        // Converts the first unicode char into a macOS virtual key
+        UInt16 chr = CFStringGetCharacterAtIndex(strRef, length-1);
+        code = from_char_to_scancode(chr);
+        if (code != kKeyNil) {
+#ifdef REPORT_KEYS
+          TRACE("scancode_from_nsevent %d -> %d (get_unicode_from_key_code)\n",
+                (int)chr, (int)code);
+#endif
+        }
+      }
+
+      CFRelease(strRef);
+      if (code != kKeyNil) {
+        return code;
+      }
+    }
+  }
+#endif
+
+  KeyScancode code = from_keycode_to_scancode(event.keyCode);
+#ifdef REPORT_KEYS
+  TRACE("scancode_from_nsevent %d -> %d (keyCode)\n",
+        (int)event.keyCode, (int)code);
+#endif
+  return code;
 }
 
 // Based on code from:

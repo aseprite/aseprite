@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -72,7 +72,7 @@ void BackupObserver::onAddDocument(doc::Document* document)
 
 void BackupObserver::onRemoveDocument(doc::Document* document)
 {
-  TRACE("RECO:: Remove document %p\n", document);
+  TRACE("RECO: Remove document %p\n", document);
   {
     base::scoped_lock hold(m_mutex);
     base::remove_from_container(m_documents, static_cast<app::Document*>(document));

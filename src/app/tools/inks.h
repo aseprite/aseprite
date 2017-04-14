@@ -181,7 +181,9 @@ public:
   Ink* clone() override { return new SliceInk(*this); }
 
   bool isSlice() const override { return true; }
-  bool needsCelCoordinates() const override { return false; }
+  bool needsCelCoordinates() const override {
+    return (m_createSlice ? false: true);
+  }
 
   void prepareInk(ToolLoop* loop) override {
     m_proc = get_ink_proc<XorInkProcessing>(loop->sprite()->pixelFormat());
