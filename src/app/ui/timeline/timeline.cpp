@@ -1049,12 +1049,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_FRAME_TAG_SWITCH_BAND_BUTTON:
             if (m_clk.band >= 0) {
-              if (m_tagFocusBand < 0) {
-                m_tagFocusBand = m_clk.band;
-              }
-              else {
-                m_tagFocusBand = -1;
-              }
+              focusTagBand(m_clk.band);
               regenRows = true;
               relayout = true;
             }
@@ -1122,6 +1117,15 @@ bool Timeline::onProcessMessage(Message* msg)
           UIContext::instance()->executeCommand(command);
           return true;
         }
+
+        case PART_FRAME_TAG_BAND:
+          if (m_hot.band >= 0) {
+            focusTagBand(m_hot.band);
+            regenerateRows();
+            invalidate();
+            layout();
+          }
+          break;
 
       }
       break;
@@ -3127,6 +3131,16 @@ void Timeline::showCurrentCel()
     showCel(layer, m_frame);
 }
 
+void Timeline::focusTagBand(int band)
+{
+  if (m_tagFocusBand < 0) {
+    m_tagFocusBand = band;
+  }
+  else {
+    m_tagFocusBand = -1;
+  }
+}
+
 void Timeline::cleanClk()
 {
   invalidateHit(m_clk);
@@ -3360,7 +3374,7 @@ void Timeline::updateDropRange(const gfx::Point& pt)
   // Special drop target for expanded groups
   else if (m_range.type() == Range::kLayers &&
            m_hot.layer >= 0 &&
-           m_hot.layer < m_rows.size() &&
+           m_hot.layer < int(m_rows.size()) &&
            m_rows[m_hot.layer].layer()->isGroup() &&
            static_cast<LayerGroup*>(m_rows[m_hot.layer].layer())->isExpanded()) {
     m_dropTarget.vhit = DropTarget::FirstChild;

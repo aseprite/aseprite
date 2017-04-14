@@ -267,6 +267,7 @@ namespace app {
     void setHot(const Hit& hit);
     void showCel(layer_t layer, frame_t frame);
     void showCurrentCel();
+    void focusTagBand(int band);
     void cleanClk();
     gfx::Size getScrollableSize() const;
     gfx::Point getMaxScrollablePos() const;
