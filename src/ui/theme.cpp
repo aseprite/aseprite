@@ -119,7 +119,6 @@ int PaintWidgetPartInfo::getStyleFlagsForWidget(const Widget* widget)
 }
 
 Theme::Theme()
-  : m_guiscale(1)
 {
 }
 

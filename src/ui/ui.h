@@ -49,6 +49,7 @@
 #include "ui/register_message.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
+#include "ui/scale.h"
 #include "ui/scroll_bar.h"
 #include "ui/separator.h"
 #include "ui/size_hint_event.h"

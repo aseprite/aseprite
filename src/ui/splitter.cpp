@@ -13,9 +13,10 @@
 #include "ui/load_layout_event.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
+#include "ui/scale.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 

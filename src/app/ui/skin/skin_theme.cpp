@@ -274,6 +274,8 @@ void SkinTheme::loadSheet(const std::string& skinId)
       m_sheet = nullptr;
     }
     m_sheet = she::instance()->loadRgbaSurface(rf.filename().c_str());
+    if (m_sheet)
+      m_sheet->applyScale(guiscale());
   }
   catch (...) {
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
@@ -282,6 +284,8 @@ void SkinTheme::loadSheet(const std::string& skinId)
 
 void SkinTheme::loadXml(const std::string& skinId)
 {
+  const int scale = guiscale();
+
   // Load the skin XML
   std::string xml_filename(themeFileName(skinId, "theme.xml"));
   ResourceFinder rf;
@@ -376,10 +380,10 @@ void SkinTheme::loadXml(const std::string& skinId)
     while (xmlPart) {
       // Get the tool-icon rectangle
       const char* part_id = xmlPart->Attribute("id");
-      int x = strtol(xmlPart->Attribute("x"), NULL, 10);
-      int y = strtol(xmlPart->Attribute("y"), NULL, 10);
-      int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
-      int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
+      int x = scale*strtol(xmlPart->Attribute("x"), nullptr, 10);
+      int y = scale*strtol(xmlPart->Attribute("y"), nullptr, 10);
+      int w = (xmlPart->Attribute("w") ? scale*strtol(xmlPart->Attribute("w"), nullptr, 10): 0);
+      int h = (xmlPart->Attribute("h") ? scale*strtol(xmlPart->Attribute("h"), nullptr, 10): 0);
 
       LOG(VERBOSE) << "THEME: Loading part " << part_id << "\n";
 
@@ -389,16 +393,15 @@ void SkinTheme::loadXml(const std::string& skinId)
 
       if (w > 0 && h > 0) {
         part->setSpriteBounds(gfx::Rect(x, y, w, h));
-        part->setBitmap(0,
-          sliceSheet(part->bitmap(0), gfx::Rect(x, y, w, h)));
+        part->setBitmap(0, sliceSheet(part->bitmap(0), gfx::Rect(x, y, w, h)));
       }
       else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
-        int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
-        int w2 = strtol(xmlPart->Attribute("w2"), NULL, 10);
-        int w3 = strtol(xmlPart->Attribute("w3"), NULL, 10);
-        int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
-        int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
-        int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
+        int w1 = scale*strtol(xmlPart->Attribute("w1"), nullptr, 10);
+        int w2 = scale*strtol(xmlPart->Attribute("w2"), nullptr, 10);
+        int w3 = scale*strtol(xmlPart->Attribute("w3"), nullptr, 10);
+        int h1 = scale*strtol(xmlPart->Attribute("h1"), nullptr, 10);
+        int h2 = scale*strtol(xmlPart->Attribute("h2"), nullptr, 10);
+        int h3 = scale*strtol(xmlPart->Attribute("h3"), nullptr, 10);
 
         part->setSpriteBounds(gfx::Rect(x, y, w1+w2+w3, h1+h2+h3));
         part->setSlicesBounds(gfx::Rect(w1, h1, w2, h2));
@@ -416,8 +419,8 @@ void SkinTheme::loadXml(const std::string& skinId)
       // Is it a mouse cursor?
       if (std::strncmp(part_id, "cursor_", 7) == 0) {
         std::string cursorName = std::string(part_id).substr(7);
-        int focusx = std::strtol(xmlPart->Attribute("focusx"), NULL, 10);
-        int focusy = std::strtol(xmlPart->Attribute("focusy"), NULL, 10);
+        int focusx = scale*std::strtol(xmlPart->Attribute("focusx"), NULL, 10);
+        int focusy = scale*std::strtol(xmlPart->Attribute("focusy"), NULL, 10);
 
         LOG(VERBOSE) << "THEME: Loading cursor '" << cursorName << "'\n";
 
@@ -430,9 +433,7 @@ void SkinTheme::loadXml(const std::string& skinId)
         // TODO share the Surface with the SkinPart
         she::Surface* slice = sliceSheet(nullptr, gfx::Rect(x, y, w, h));
         Cursor* cursor =
-          new Cursor(slice,
-                     gfx::Point(focusx*guiscale(),
-                                focusy*guiscale()));
+          new Cursor(slice, gfx::Point(focusx, focusy));
         m_cursors[cursorName] = cursor;
 
         for (int c=0; c<kCursorTypes; ++c) {
@@ -482,11 +483,11 @@ void SkinTheme::loadXml(const std::string& skinId)
         const char* r = xmlStyle->Attribute("margin-right");
         const char* b = xmlStyle->Attribute("margin-bottom");
         gfx::Border margin = ui::Style::UndefinedBorder();
-        if (m || l) margin.left(std::strtol(l ? l: m, nullptr, 10));
-        if (m || t) margin.top(std::strtol(t ? t: m, nullptr, 10));
-        if (m || r) margin.right(std::strtol(r ? r: m, nullptr, 10));
-        if (m || b) margin.bottom(std::strtol(b ? b: m, nullptr, 10));
-        style->setMargin(margin*guiscale());
+        if (m || l) margin.left(scale*std::strtol(l ? l: m, nullptr, 10));
+        if (m || t) margin.top(scale*std::strtol(t ? t: m, nullptr, 10));
+        if (m || r) margin.right(scale*std::strtol(r ? r: m, nullptr, 10));
+        if (m || b) margin.bottom(scale*std::strtol(b ? b: m, nullptr, 10));
+        style->setMargin(margin);
       }
 
       // Border
@@ -497,11 +498,11 @@ void SkinTheme::loadXml(const std::string& skinId)
         const char* r = xmlStyle->Attribute("border-right");
         const char* b = xmlStyle->Attribute("border-bottom");
         gfx::Border border = ui::Style::UndefinedBorder();
-        if (m || l) border.left(std::strtol(l ? l: m, nullptr, 10));
-        if (m || t) border.top(std::strtol(t ? t: m, nullptr, 10));
-        if (m || r) border.right(std::strtol(r ? r: m, nullptr, 10));
-        if (m || b) border.bottom(std::strtol(b ? b: m, nullptr, 10));
-        style->setBorder(border*guiscale());
+        if (m || l) border.left(scale*std::strtol(l ? l: m, nullptr, 10));
+        if (m || t) border.top(scale*std::strtol(t ? t: m, nullptr, 10));
+        if (m || r) border.right(scale*std::strtol(r ? r: m, nullptr, 10));
+        if (m || b) border.bottom(scale*std::strtol(b ? b: m, nullptr, 10));
+        style->setBorder(border);
       }
 
       // Padding
@@ -512,11 +513,11 @@ void SkinTheme::loadXml(const std::string& skinId)
         const char* r = xmlStyle->Attribute("padding-right");
         const char* b = xmlStyle->Attribute("padding-bottom");
         gfx::Border padding = ui::Style::UndefinedBorder();
-        if (m || l) padding.left(std::strtol(l ? l: m, nullptr, 10));
-        if (m || t) padding.top(std::strtol(t ? t: m, nullptr, 10));
-        if (m || r) padding.right(std::strtol(r ? r: m, nullptr, 10));
-        if (m || b) padding.bottom(std::strtol(b ? b: m, nullptr, 10));
-        style->setPadding(padding*guiscale());
+        if (m || l) padding.left(scale*std::strtol(l ? l: m, nullptr, 10));
+        if (m || t) padding.top(scale*std::strtol(t ? t: m, nullptr, 10));
+        if (m || r) padding.right(scale*std::strtol(r ? r: m, nullptr, 10));
+        if (m || b) padding.bottom(scale*std::strtol(b ? b: m, nullptr, 10));
+        style->setPadding(padding);
       }
 
       // Font
@@ -607,7 +608,7 @@ void SkinTheme::loadXml(const std::string& skinId)
           gfx::Point offset(0, 0);
           if (x) offset.x = std::strtol(x, nullptr, 10);
           if (y) offset.y = std::strtol(y, nullptr, 10);
-          layer.setOffset(offset);
+          layer.setOffset(offset*scale);
         }
 
         // Sprite sheet
@@ -669,7 +670,6 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
     m_sheet->blitTo(sur, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
   }
 
-  sur->applyScale(guiscale());
   return sur;
 }
 
@@ -698,7 +698,7 @@ void SkinTheme::initWidget(Widget* widget)
 #define BORDER4(L,T,R,B)                                \
   widget->setBorder(gfx::Border((L), (T), (R), (B)))
 
-  int scale = guiscale();
+  const int scale = guiscale();
 
   switch (widget->type()) {
 

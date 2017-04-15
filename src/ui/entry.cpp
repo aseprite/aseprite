@@ -19,6 +19,7 @@
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,7 +15,7 @@
 #include "base/hex.h"
 #include "gfx/border.h"
 #include "ui/message.h"
-#include "ui/theme.h"
+#include "ui/scale.h"
 
 namespace app {
 
@@ -52,7 +52,7 @@ HexColorEntry::HexColorEntry()
 
   initTheme();
 
-  setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
+  setBorder(gfx::Border(2*ui::guiscale(), 0, 0, 0));
   setChildSpacing(0);
 }
 

@@ -12,6 +12,7 @@
 
 #include "she/font.h"
 #include "she/system.h"
+#include "ui/scale.h"
 
 namespace app {
 namespace skin {
@@ -52,10 +53,10 @@ she::Font* FontData::getFont(int size, bool useCache)
 
   switch (m_type) {
     case she::FontType::kSpriteSheet:
-      font = she::instance()->loadSpriteSheetFont(m_filename.c_str());
+      font = she::instance()->loadSpriteSheetFont(m_filename.c_str(), ui::guiscale());
       break;
     case she::FontType::kTrueType:
-      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size);
+      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size*ui::guiscale());
       if (font)
         font->setAntialias(m_antialias);
       break;

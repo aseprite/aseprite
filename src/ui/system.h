@@ -22,7 +22,7 @@ namespace ui {
 
   class UISystem {
   public:
-    UISystem();
+    UISystem(int uiscale);
     ~UISystem();
   };
 

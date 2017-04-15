@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -146,10 +146,9 @@ void App::initialize(const AppOptions& options)
 {
   m_isGui = options.startUI() && !options.previewCLI();
   m_isShell = options.startShell();
-  if (m_isGui)
-    m_uiSystem.reset(new ui::UISystem);
-
   m_coreModules = new CoreModules;
+  if (m_isGui)
+    m_uiSystem.reset(new ui::UISystem(preferences().general.uiScale()));
 
   bool createLogInDesktop = false;
   switch (options.verboseLevel()) {

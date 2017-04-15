@@ -183,8 +183,7 @@ int init_module_gui()
   manager->setDisplay(main_display);
 
   // Setup the GUI theme for all widgets
-  gui_theme = new SkinTheme();
-  gui_theme->setScale(Preferences::instance().general.uiScale());
+  gui_theme = new SkinTheme;
   ui::set_theme(gui_theme);
 
   if (maximized)

@@ -17,6 +17,7 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/textbox.h"

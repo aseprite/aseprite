@@ -25,6 +25,10 @@
 
 namespace ui {
 
+// Global UI Screen Scaling factor
+
+static int g_guiscale = 1;
+
 // Current mouse cursor type.
 
 static CursorType mouse_cursor_type = kOutsideDisplay;
@@ -165,8 +169,9 @@ static void update_mouse_cursor()
   }
 }
 
-UISystem::UISystem()
+UISystem::UISystem(int scale)
 {
+  g_guiscale = scale;
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
     ((she::instance() &&
@@ -189,6 +194,11 @@ UISystem::~UISystem()
   _internal_set_mouse_display(nullptr);
   if (!update_custom_native_cursor(nullptr))
     update_mouse_overlay(nullptr);
+}
+
+int guiscale()
+{
+  return g_guiscale;
 }
 
 void _internal_set_mouse_display(she::Display* display)

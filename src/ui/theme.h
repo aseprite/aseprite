@@ -52,9 +52,6 @@ namespace ui {
 
     void regenerate();
 
-    int guiscale() const { return m_guiscale; }
-    void setScale(int value) { m_guiscale = value; }
-
     virtual she::Font* getDefaultFont() const = 0;
     virtual she::Font* getWidgetFont(const Widget* widget) const = 0;
 
@@ -145,18 +142,10 @@ namespace ui {
                            const Style* style,
                            gfx::Size& sizeHint,
                            gfx::Border& borderHint);
-
-    int m_guiscale;
   };
 
   void set_theme(Theme* theme);
   Theme* get_theme();
-
-  // This value is a factor to multiply every screen size/coordinate.
-  // Every icon/graphics/font should be scaled to this factor.
-  inline int guiscale() {
-    return (get_theme() ? get_theme()->guiscale(): 1);
-  }
 
 } // namespace ui
 

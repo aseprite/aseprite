@@ -22,6 +22,7 @@
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/manager.h"
+#include "ui/scale.h"
 #include "ui/theme.h"
 
 #include <cctype>

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,8 +11,8 @@
 #include "app/ui/color_selector.h"
 
 #include "ui/message.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
-#include "ui/theme.h"
 
 #include <cmath>
 

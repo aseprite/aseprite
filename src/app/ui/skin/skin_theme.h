@@ -12,6 +12,7 @@
 #include "gfx/color.h"
 #include "gfx/fwd.h"
 #include "ui/manager.h"
+#include "ui/scale.h"
 #include "ui/theme.h"
 
 #include "theme.xml.h"
@@ -106,11 +107,9 @@ namespace app {
       }
 
       int getDimensionById(const std::string& id) const {
-        // Warning! Don't use ui::guiscale(), as CurrentTheme::get()
-        // is still nullptr when we use this getDimensionById()
         auto it = m_dimensions_by_id.find(id);
         if (it != m_dimensions_by_id.end())
-          return it->second * this->guiscale();
+          return it->second * ui::guiscale();
         else
           return 0;
       }

@@ -40,6 +40,7 @@
 #include "ui/button.h"
 #include "ui/grid.h"
 #include "ui/label.h"
+#include "ui/scale.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/theme.h"
