@@ -238,6 +238,7 @@ if(WITH_GTK_FILE_DIALOG_SUPPORT AND UNIX AND NOT APPLE AND NOT BEOS)
 endif()
 
 add_library(she ${SHE_SOURCES})
+target_link_libraries(she ${PLATFORM_LIBS})
 
 target_link_libraries(she
   ft-lib
