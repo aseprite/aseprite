@@ -322,7 +322,7 @@ public:
             break;
         }
 
-        if (*(j+1) == 0 || *(j+1) == ' ') {
+        if (*j == ':' && (*(j+1) == 0 || *(j+1) == ' ')) {
           if (i != text) {
             // Here i is ':' and i-1 is a whitespace ' '
             m_indicators->addTextIndicator(std::string(text, i-1).c_str());
@@ -334,6 +334,8 @@ public:
 
           text = i = (*(j+1) == ' ' ? j+2: j+1);
         }
+        else
+          i = j;
       }
       else
         ++i;
