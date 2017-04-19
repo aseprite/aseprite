@@ -18,10 +18,10 @@ namespace ui {
 
   class Entry : public Widget {
   public:
-    Entry(const std::size_t maxsize, const char *format, ...);
+    Entry(const int maxsize, const char *format, ...);
     ~Entry();
 
-    void setMaxTextLength(const std::size_t maxsize);
+    void setMaxTextLength(const int maxsize);
 
     bool isReadOnly() const;
     void setReadOnly(bool state);
@@ -104,7 +104,7 @@ namespace ui {
 
     CharBoxes m_boxes;
     Timer m_timer;
-    std::size_t m_maxsize;
+    int m_maxsize;
     int m_caret;
     int m_scroll;
     int m_select;

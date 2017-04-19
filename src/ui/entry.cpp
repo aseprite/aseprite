@@ -31,7 +31,7 @@
 
 namespace ui {
 
-Entry::Entry(const std::size_t maxsize, const char* format, ...)
+Entry::Entry(const int maxsize, const char* format, ...)
   : Widget(kEntryWidget)
   , m_timer(500, this)
   , m_maxsize(maxsize)
@@ -72,7 +72,7 @@ Entry::~Entry()
 {
 }
 
-void Entry::setMaxTextLength(const std::size_t maxsize)
+void Entry::setMaxTextLength(const int maxsize)
 {
   m_maxsize = maxsize;
 }
@@ -548,7 +548,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
       // Convert the unicode character -> wstring -> utf-8 string -> insert the utf-8 string
       if (lastCaretPos() < m_maxsize) {
-        ASSERT((std::size_t)m_caret <= lastCaretPos());
+        ASSERT(m_caret <= lastCaretPos());
 
         std::wstring unicodeStr;
         unicodeStr.push_back(unicodeChar);
