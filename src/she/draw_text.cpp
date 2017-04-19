@@ -58,6 +58,13 @@ retry:;
 
     case FontType::kSpriteSheet: {
       SpriteSheetFont* ssFont = static_cast<SpriteSheetFont*>(font);
+      Surface* sheet = ssFont->getSurfaceSheet();
+
+      if (surface) {
+        sheet->lock();
+        surface->lock();
+      }
+
       while (it != end) {
         int chr = *it;
         if (delegate) {
@@ -71,11 +78,8 @@ retry:;
           break;
 
         if (!charBounds.isEmpty()) {
-          if (surface) {
-            Surface* sheet = ssFont->getSurfaceSheet();
-            SurfaceLock lock(sheet);
+          if (surface)
             surface->drawColoredRgbaSurface(sheet, fg, bg, gfx::Clip(x, y, charBounds));
-          }
         }
 
         textBounds |= outCharBounds;
@@ -84,6 +88,11 @@ retry:;
 
         x += charBounds.w;
         ++it;
+      }
+
+      if (surface) {
+        surface->unlock();
+        sheet->unlock();
       }
       break;
     }
@@ -98,6 +107,7 @@ retry:;
       if (surface) {
         clipBounds = surface->getClipBounds();
         surface->getFormat(&fd);
+        surface->lock();
       }
 
       ft::ForEachGlyph<FreeTypeFont::Face> feg(ttFont->face());
@@ -204,6 +214,9 @@ retry:;
             delegate->postDrawChar(origDstBounds);
         } while (feg.nextChar());
       }
+
+      if (surface)
+        surface->unlock();
       break;
     }
 
