@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,7 +25,8 @@
   #define SkiaSystemBase OSXSystem
 #else
   #include "she/x11/event_queue.h"
-  #define SkiaSystemBase CommonSystem
+  #include "she/x11/system.h"
+  #define SkiaSystemBase X11System
 #endif
 
 #include "SkGraphics.h"

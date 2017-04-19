@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,13 +20,15 @@ namespace she {
 class EventQueue;
 class SkiaDisplay;
 
-class SkiaWindow : public X11Window {
+class SkiaWindow : public X11Window<SkiaWindow> {
 public:
   enum class Backend { NONE, GL };
 
   SkiaWindow(EventQueue* queue, SkiaDisplay* display,
              int width, int height, int scale);
   ~SkiaWindow();
+
+  void queueEventImpl(Event& ev);
 
   int scale() const;
   void setScale(int scale);
@@ -51,6 +53,8 @@ public:
 private:
   void onExpose() override;
 
+  EventQueue* m_queue;
+  SkiaDisplay* m_display;
   gfx::Size m_clientSize;
   int m_scale;
 

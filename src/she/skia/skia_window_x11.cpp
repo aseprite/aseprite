@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,16 +11,18 @@
 #include "she/skia/skia_window_x11.h"
 
 #include "gfx/size.h"
+#include "she/event.h"
+#include "she/event_queue.h"
+#include "she/skia/skia_display.h"
 #include "she/x11/x11.h"
-
-#include "SkBitmap.h"
-
 
 namespace she {
 
 SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display,
                        int width, int height, int scale)
   : X11Window(X11::instance()->display(), width, height)
+  , m_queue(queue)
+  , m_display(display)
   , m_clientSize(width, height)
   , m_scale(scale)
 {
@@ -28,6 +30,12 @@ SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display,
 
 SkiaWindow::~SkiaWindow()
 {
+}
+
+void SkiaWindow::queueEventImpl(Event& ev)
+{
+  ev.setDisplay(m_display);
+  m_queue->queueEvent(ev);
 }
 
 int SkiaWindow::scale() const

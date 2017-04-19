@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,6 +16,9 @@
 
 namespace she {
 
+class Event;
+
+template<typename T>
 class X11Window {
 public:
   X11Window(::Display* display, int width, int height)
@@ -46,6 +49,10 @@ public:
   ~X11Window() {
     XFreeGC(m_display, m_gc);
     XDestroyWindow(m_display, m_window);
+  }
+
+  void queueEvent(Event& ev) {
+    static_cast<T*>(this)->queueEventImpl(ev);
   }
 
   void setTitle(const std::string& title) {

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,38 +14,23 @@
 
 #include <queue>
 
-#pragma push_macro("None")
-#undef None // Undefine the X11 None macro
-
 namespace she {
 
 class X11EventQueue : public EventQueue {
 public:
-  void getEvent(Event& ev, bool canWait) override {
-    XEvent event;
-    XNextEvent(X11::instance()->display(), &event);
-
-    if (m_events.empty()) {
-      ev.setType(Event::None);
-    }
-    else {
-      ev = m_events.front();
-      m_events.pop();
-    }
-  }
-
+  void getEvent(Event& ev, bool canWait) override;
   void queueEvent(const Event& ev) override {
     m_events.push(ev);
   }
 
 private:
+  void processX11Event(XEvent& event);
+
   std::queue<Event> m_events;
 };
 
 typedef X11EventQueue EventQueueImpl;
 
 } // namespace she
-
-#pragma pop_macro("None")
 
 #endif

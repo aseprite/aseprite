@@ -210,6 +210,7 @@ if(USE_SKIA_BACKEND)
   else()
     list(APPEND SHE_SOURCES
       skia/skia_window_x11.cpp
+      x11/event_queue.cpp
       x11/keys.cpp
       x11/x11.cpp)
   endif()
