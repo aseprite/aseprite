@@ -765,7 +765,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       if (x > 0) {
         gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
         g->drawVLine(color,
-                     spriteRect.x + m_proj.applyX<double>(x),
+                     spriteRect.x + int(m_proj.applyX<double>(x)),
                      enclosingRect.y,
                      enclosingRect.h);
       }
@@ -776,7 +776,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
         g->drawHLine(color,
                      enclosingRect.x,
-                     spriteRect.y + m_proj.applyY<double>(y),
+                     spriteRect.y + int(m_proj.applyY<double>(y)),
                      enclosingRect.w);
       }
     }
@@ -1209,7 +1209,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
     return mousePos;
 
   // Hide the brush preview
-  //HideBrushPreview hide(editor->brushPreview());
+  //HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   gfx::Rect vp = view->viewportBounds();
 

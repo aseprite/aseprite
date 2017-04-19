@@ -209,7 +209,7 @@ void ColorButton::onPaint(PaintEvent& ev)
         current_editor->sprite()->pixelFormat() == IMAGE_INDEXED) {
       m_dependOnLayer = true;
 
-      if (current_editor->sprite()->transparentColor() == color.getIndex() &&
+      if (int(current_editor->sprite()->transparentColor()) == color.getIndex() &&
           current_editor->layer() &&
           !current_editor->layer()->isBackground()) {
         color = app::Color::fromMask();

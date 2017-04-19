@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -36,7 +36,7 @@ void resize_image_nearest(const Image* src, Image* dst)
     py = std::floor(y * y_ratio);
     for (int x=0; x<dst->width(); ++x, ++dstIt) {
       px = std::floor(x * x_ratio);
-      *dstIt = get_pixel_fast<ImageTraits>(src, px, py);
+      *dstIt = get_pixel_fast<ImageTraits>(src, int(px), int(py));
     }
   }
 }

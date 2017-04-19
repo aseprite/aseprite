@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -151,6 +151,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   bmpHeader.yPelsPerMeter        = fgetl(f); // unused for ico
   bmpHeader.clrUsed              = fgetl(f); // unused for ico
   bmpHeader.clrImportant         = fgetl(f); // unused for ico
+  (void)bmpHeader;                           // unused
 
   // Read the palette
   if (entry.bpp <= 8) {

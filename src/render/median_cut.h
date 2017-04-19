@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -126,10 +126,10 @@ namespace render {
       b /= count;
       a /= count;
 
-      return doc::rgba((255 * r / (Histogram::RElements-1)),
-                       (255 * g / (Histogram::GElements-1)),
-                       (255 * b / (Histogram::BElements-1)),
-                       (255 * a / (Histogram::AElements-1)));
+      return doc::rgba(int(255 * r / (Histogram::RElements-1)),
+                       int(255 * g / (Histogram::GElements-1)),
+                       int(255 * b / (Histogram::BElements-1)),
+                       int(255 * a / (Histogram::AElements-1)));
     }
 
     // The boxes will be sort in the priority_queue by volume.

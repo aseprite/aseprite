@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -43,8 +43,8 @@ Palette* load_hex_file(const char *filename)
       continue;
 
     // Find 6 consecutive hex digits
-    for (int i=0; i<line.size(); ++i) {
-      int j = i;
+    for (std::string::size_type i=0; i != line.size(); ++i) {
+      std::string::size_type j = i;
       for (; j<i+6; ++j) {
         if (!base::is_hex_digit(line[j]))
           break;

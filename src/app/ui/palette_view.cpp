@@ -392,7 +392,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         if (static_cast<MouseMessage*>(msg)->preciseWheel())
           scroll += delta;
         else
-          scroll += delta * 3 * m_boxsize;
+          scroll += delta * 3 * int(m_boxsize);
 
         view->setViewScroll(scroll);
       }
@@ -486,7 +486,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         if (fgIndex == i) {
           gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
           for (int i=0; i<int(m_boxsize/2); ++i)
-            g->drawHLine(neg, box.x, box.y+i, m_boxsize/2-i);
+            g->drawHLine(neg, box.x, box.y+i, int(m_boxsize/2)-i);
         }
 
         if (bgIndex == i) {

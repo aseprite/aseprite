@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -34,7 +34,7 @@ bool are_layers_adjacent(const LayerList& layers)
     prev = layer;
     ++count;
   }
-  if (count == layers.size())
+  if (count == layer_t(layers.size()))
     return true;
 
   count = 0;
@@ -45,7 +45,7 @@ bool are_layers_adjacent(const LayerList& layers)
     prev = layer;
     ++count;
   }
-  if (count == layers.size())
+  if (count == layer_t(layers.size()))
     return true;
 
   return false;

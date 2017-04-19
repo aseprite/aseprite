@@ -59,7 +59,7 @@ bool match_path(const std::string& filter,
   base::split_string(filter, a, "/");
   base::split_string(layer_path, b, "/");
 
-  for (int i=0; i<a.size() && i<b.size(); ++i) {
+  for (std::size_t i=0; i<a.size() && i<b.size(); ++i) {
     if (a[i] != b[i] && a[i] != "*")
       return false;
   }

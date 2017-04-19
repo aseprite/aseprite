@@ -134,7 +134,7 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 
   bool visibleThumbBox = Preferences::instance().thumbnails.visibleOptions();
 
-  m_box->zoom()->setValue(docPref.thumbnails.zoom());
+  m_box->zoom()->setValue(int(docPref.thumbnails.zoom())); // TODO add a slider for floating points
   m_box->thumbCheck()->setSelected(visibleThumbBox);
   m_box->thumbHSeparator()->setVisible(visibleThumbBox);
   m_box->thumbBox()->setVisible(visibleThumbBox);

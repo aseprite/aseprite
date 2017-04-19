@@ -173,9 +173,14 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       }
 
       // Move selection if it was visible
-      if (m_maskVisible)
-        api.setMaskPosition(document->mask()->bounds().x + m_celOffset.x,
-                            document->mask()->bounds().y + m_celOffset.y);
+      if (m_maskVisible) {
+        // TODO Moving the mask when we move a ref layer (e.g. by
+        //      m_celOffset=(0.5,0.5)) will not move the final
+        //      position of the mask (so the ref layer is moved and
+        //      the mask isn't).
+        api.setMaskPosition(document->mask()->bounds().x + int(m_celOffset.x),
+                            document->mask()->bounds().y + int(m_celOffset.y));
+      }
 
       transaction.commit();
     }
@@ -298,8 +303,8 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
 
 gfx::Point MovingCelState::intCelOffset() const
 {
-  return gfx::Point(std::round(m_celOffset.x),
-                    std::round(m_celOffset.y));
+  return gfx::Point(int(std::round(m_celOffset.x)),
+                    int(std::round(m_celOffset.y)));
 }
 
 } // namespace app

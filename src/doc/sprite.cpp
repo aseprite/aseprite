@@ -482,8 +482,8 @@ void Sprite::pickCels(const double x,
       continue;
 
     const gfx::Point ipos(
-      (pos.x-celBounds.x)*image->width()/celBounds.w,
-      (pos.y-celBounds.y)*image->height()/celBounds.h);
+      int((pos.x-celBounds.x)*image->width()/celBounds.w),
+      int((pos.y-celBounds.y)*image->height()/celBounds.h));
     if (!image->bounds().contains(ipos))
       continue;
 

@@ -148,7 +148,7 @@ private:
     gfx::Point p = cpos.origin();
     int maxH = 0;
     int itemLevel = 0;
-    Widget* prevChild = nullptr;
+    //Widget* prevChild = nullptr;
 
     for (auto child : children) {
       gfx::Size sz = child->sizeHint(gfx::Size(width, 0));
@@ -174,7 +174,7 @@ private:
         p.x = cpos.x + itemLevel*font()->textLength(" - ");
         p.y += maxH;
         maxH = 0;
-        prevChild = nullptr;
+        //prevChild = nullptr;
       }
 
       if (child->isExpansive())
@@ -182,8 +182,8 @@ private:
 
       callback(gfx::Rect(p, sz), child);
 
-      if (!isItem) prevChild = child;
-      if (isBreak) prevChild = nullptr;
+      //if (!isItem) prevChild = child;
+      //if (isBreak) prevChild = nullptr;
 
       maxH = std::max(maxH, sz.h);
       p.x += sz.w;

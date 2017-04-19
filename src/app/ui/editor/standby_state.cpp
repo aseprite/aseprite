@@ -553,8 +553,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     if (editor->docPref().show.grid()) {
       auto gb = editor->docPref().grid.bounds();
-      int col = (std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w;
-      int row = (std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h;
+      int col = int((std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w);
+      int row = int((std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h);
       sprintf(
         buf+std::strlen(buf), " :grid: %d %d", col, row);
     }
@@ -936,10 +936,10 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
 
         handles.push_back(
           Handle(TOP,
-                 gfx::Rect(pt1.x, pt1.y, part->width(), part->height())));
+                 gfx::Rect(int(pt1.x), int(pt1.y), part->width(), part->height())));
         handles.push_back(
           Handle(BOTTOM,
-                 gfx::Rect(pt2.x, pt2.y, part->width(), part->height())));
+                 gfx::Rect(int(pt2.x), int(pt2.y), part->width(), part->height())));
       }
 
       if (int(mode) & int(app::gen::SymmetryMode::VERTICAL)) {
@@ -957,10 +957,10 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
 
         handles.push_back(
           Handle(LEFT,
-                 gfx::Rect(pt1.x, pt1.y, part->width(), part->height())));
+                 gfx::Rect(int(pt1.x), int(pt1.y), part->width(), part->height())));
         handles.push_back(
           Handle(RIGHT,
-                 gfx::Rect(pt2.x, pt2.y, part->width(), part->height())));
+                 gfx::Rect(int(pt2.x), int(pt2.y), part->width(), part->height())));
       }
 
       return true;

@@ -1,5 +1,5 @@
 // Aseprite Scripting Library
-// Copyright (c) 2015-2016 David Capello
+// Copyright (c) 2015-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -512,7 +512,7 @@ void Engine::evalFile(const std::string& file)
     if (fseek(f, 0, SEEK_END) < 0)
       return;
 
-    int sz = ftell(f);
+    long sz = ftell(f);
     if (sz < 0)
       return;
 
@@ -521,7 +521,7 @@ void Engine::evalFile(const std::string& file)
 
     char* buf = (char*)duk_push_fixed_buffer(handle, sz);
     ASSERT(buf != nullptr);
-    if (fread(buf, 1, sz, f) != sz)
+    if (long(fread(buf, 1, sz, f)) != sz)
       return;
 
     fclose(f);

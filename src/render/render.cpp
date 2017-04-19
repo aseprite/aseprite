@@ -164,7 +164,9 @@ void composite_image_without_scale(
   const LockImageBits<SrcTraits> srcBits(src, srcBounds);
   LockImageBits<DstTraits> dstBits(dst, dstBounds);
   typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin();
+#ifdef _DEBUG
   typename LockImageBits<SrcTraits>::const_iterator src_end = srcBits.end();
+#endif
   typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
 
   // For each line to draw of the source image...
@@ -208,8 +210,8 @@ void composite_image_scale_up(
 
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
   int px_x, px_y;
-  int px_w = sx;
-  int px_h = sy;
+  int px_w = int(sx);
+  int px_h = int(sy);
   int first_px_w = px_w - (area.src.x % px_w);
   int first_px_h = px_h - (area.src.y % px_h);
 
@@ -346,8 +348,8 @@ void composite_image_scale_down(
     return;
 
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode);
-  int step_w = 1.0 / sx;
-  int step_h = 1.0 / sy;
+  int step_w = int(1.0 / sx);
+  int step_h = int(1.0 / sy);
   if (step_w < 1 || step_h < 1)
     return;
 
@@ -415,8 +417,8 @@ void composite_image_general(
 
   gfx::Rect dstBounds(
     area.dstBounds().x, area.dstBounds().y,
-    std::ceil(area.dstBounds().w),
-    std::ceil(area.dstBounds().h));
+    int(std::ceil(area.dstBounds().w)),
+    int(std::ceil(area.dstBounds().h)));
   gfx::RectF srcBounds = area.srcBounds();
 
   int dstY = dstBounds.y;
@@ -424,7 +426,7 @@ void composite_image_general(
   double srcXDelta = 1.0 / sx;
   int srcWidth = src->width();
   for (int y=0; y<dstBounds.h; ++y, ++dstY) {
-    int srcY = (srcBounds.y+double(y)) / sy;
+    int srcY = int((srcBounds.y+double(y)) / sy);
     double srcX = srcXStart;
     int oldSrcX;
 
@@ -702,9 +704,11 @@ void Render::renderSprite(
       else {
         renderBackground(dstImage, area);
         if (bgLayer && bgLayer->isVisible() && rgba_geta(bg_color) > 0) {
-          blend_rect(dstImage, area.dst.x, area.dst.y,
-                     area.dst.x+area.size.w-1,
-                     area.dst.y+area.size.h-1,
+          blend_rect(dstImage,
+                     int(area.dst.x),
+                     int(area.dst.y),
+                     int(area.dst.x+area.size.w-1),
+                     int(area.dst.y+area.size.h-1),
                      bg_color, 255);
         }
       }

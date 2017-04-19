@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -66,9 +66,9 @@ class PalettesListItem : public ResourceListItem {
     void onClick(Event& ev) override {
       IconButton::onClick(ev);
 
-      int j, i = m_comment.find("http");
+      std::string::size_type j, i = m_comment.find("http");
       if (i != std::string::npos) {
-        for (j=i+4; j<int(m_comment.size()) && is_url_char(m_comment[j]); ++j)
+        for (j=i+4; j != m_comment.size() && is_url_char(m_comment[j]); ++j)
           ;
         base::launcher::open_url(m_comment.substr(i, j-i));
       }

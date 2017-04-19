@@ -280,7 +280,7 @@ void Palette::applyRemap(const Remap& remap)
 
 void Palette::setEntryName(const int i, const std::string& name)
 {
-  if (i >= m_names.size())
+  if (i >= int(m_names.size()))
     m_names.resize(i+1);
   m_names[i] = name;
 }

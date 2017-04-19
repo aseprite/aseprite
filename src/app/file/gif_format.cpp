@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -581,7 +581,7 @@ private:
     for (int y=0; y<frameBounds.h; ++y) {
       for (int x=0; x<frameBounds.w; ++x) {
         color_t i = get_pixel_fast<IndexedTraits>(frameImage, x, y);
-        if (i == m_localTransparentIndex)
+        if (int(i) == m_localTransparentIndex)
           continue;
 
         i = m_remap[i];
@@ -600,7 +600,7 @@ private:
     for (int y=0; y<frameBounds.h; ++y) {
       for (int x=0; x<frameBounds.w; ++x) {
         color_t i = get_pixel_fast<IndexedTraits>(frameImage, x, y);
-        if (i == m_localTransparentIndex)
+        if (int(i) == m_localTransparentIndex)
           continue;
 
         i = rgba(
@@ -898,7 +898,9 @@ public:
     m_nextImage = m_images[2].get();
 
     auto frame_beg = m_fop->roi().selectedFrames().begin();
+#if _DEBUG
     auto frame_end = m_fop->roi().selectedFrames().end();
+#endif
     auto frame_it = frame_beg;
 
     // In this code "gifFrame" will be the GIF frame, and "frame" will
