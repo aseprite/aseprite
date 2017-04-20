@@ -212,6 +212,7 @@ if(USE_SKIA_BACKEND)
       skia/skia_window_x11.cpp
       x11/event_queue.cpp
       x11/keys.cpp
+      x11/window.cpp
       x11/x11.cpp)
   endif()
 endif()

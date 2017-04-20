@@ -70,10 +70,8 @@ public:
     return Capabilities(
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
-      int(Capabilities::DisplayScale)
-#if defined(_WIN32) || defined(__APPLE__)
-      | int(Capabilities::CustomNativeMouseCursor)
-#endif
+      int(Capabilities::DisplayScale) |
+      int(Capabilities::CustomNativeMouseCursor)
     // TODO enable this when the GPU support is ready
 #if 0 // SK_SUPPORT_GPU
       | int(Capabilities::GpuAccelerationSwitch)

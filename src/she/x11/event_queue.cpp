@@ -10,9 +10,56 @@
 
 #include "she/x11/event_queue.h"
 
+#include "she/x11/window.h"
+
 #include <X11/Xlib.h>
 
 namespace she {
+
+namespace {
+
+const char* get_event_name(XEvent& event)
+{
+  switch (event.type) {
+    case KeyPress: return "KeyPress";
+    case KeyRelease: return "KeyRelease";
+    case ButtonPress: return "ButtonPress";
+    case ButtonRelease: return "ButtonRelease";
+    case MotionNotify: return "MotionNotify";
+    case EnterNotify: return "EnterNotify";
+    case LeaveNotify: return "LeaveNotify";
+    case FocusIn: return "FocusIn";
+    case FocusOut: return "FocusOut";
+    case KeymapNotify: return "KeymapNotify";
+    case Expose: return "Expose";
+    case GraphicsExpose: return "GraphicsExpose";
+    case NoExpose: return "NoExpose";
+    case VisibilityNotify: return "VisibilityNotify";
+    case CreateNotify: return "CreateNotify";
+    case DestroyNotify: return "DestroyNotify";
+    case UnmapNotify: return "UnmapNotify";
+    case MapNotify: return "MapNotify";
+    case MapRequest: return "MapRequest";
+    case ReparentNotify: return "ReparentNotify";
+    case ConfigureNotify: return "ConfigureNotify";
+    case ConfigureRequest: return "ConfigureRequest";
+    case GravityNotify: return "GravityNotify";
+    case ResizeRequest: return "ResizeRequest";
+    case CirculateNotify: return "CirculateNotify";
+    case CirculateRequest: return "CirculateRequest";
+    case PropertyNotify: return "PropertyNotify";
+    case SelectionClear: return "SelectionClear";
+    case SelectionRequest: return "SelectionRequest";
+    case SelectionNotify: return "SelectionNotify";
+    case ColormapNotify: return "ColormapNotify";
+    case ClientMessage: return "ClientMessage";
+    case MappingNotify: return "MappingNotify";
+    case GenericEvent: return "GenericEvent";
+  }
+  return "Unknown";
+}
+
+} // anonymous namespace
 
 void X11EventQueue::getEvent(Event& ev, bool canWait)
 {
@@ -40,7 +87,12 @@ void X11EventQueue::getEvent(Event& ev, bool canWait)
 
 void X11EventQueue::processX11Event(XEvent& event)
 {
-  // TODO
+  TRACE("XEvent: %s (%d)\n", get_event_name(event), event.type);
+
+  X11Window* window = X11Window::getPointerFromHandle(event.xany.window);
+  ASSERT(window);
+  if (window)
+    window->processX11Event(event);
 }
 
 } // namespace she
