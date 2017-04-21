@@ -103,7 +103,6 @@ void X11Window::removeWindow(X11Window* window)
 X11Window::X11Window(::Display* display, int width, int height, int scale)
   : m_display(display)
   , m_scale(scale)
-  , m_clientSize(1, 1)
 {
   // Initialize special messages (just the first time a X11Window is
   // created)
@@ -146,7 +145,7 @@ X11Window::~X11Window()
 void X11Window::setScale(const int scale)
 {
   m_scale = scale;
-  resizeDisplay(m_clientSize);
+  resizeDisplay(clientSize());
 }
 
 void X11Window::setTitle(const std::string& title)
@@ -157,6 +156,26 @@ void X11Window::setTitle(const std::string& title)
   prop.format = 8;
   prop.nitems = std::strlen((char*)title.c_str());
   XSetWMName(m_display, m_window, &prop);
+}
+
+gfx::Size X11Window::clientSize() const
+{
+  Window root;
+  int x, y;
+  unsigned int width, height, border, depth;
+  XGetGeometry(m_display, m_window, &root,
+               &x, &y, &width, &height, &border, &depth);
+  return gfx::Size(int(width), int(height));
+}
+
+gfx::Size X11Window::restoredSize() const
+{
+  Window root;
+  int x, y;
+  unsigned int width, height, border, depth;
+  XGetGeometry(m_display, m_window, &root,
+               &x, &y, &width, &height, &border, &depth);
+  return gfx::Size(int(width), int(height));
 }
 
 void X11Window::captureMouse()
@@ -208,9 +227,8 @@ void X11Window::processX11Event(XEvent& event)
 
       if (newSize.w > 0 &&
           newSize.h > 0 &&
-          m_clientSize != newSize) {
-        m_clientSize = newSize;
-        resizeDisplay(m_clientSize);
+          newSize != clientSize()) {
+        resizeDisplay(newSize);
       }
       break;
     }

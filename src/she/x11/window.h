@@ -34,8 +34,8 @@ public:
 
   void setTitle(const std::string& title);
 
-  gfx::Size clientSize() const { return m_clientSize; }
-  gfx::Size restoredSize() const { return m_clientSize; }
+  gfx::Size clientSize() const;
+  gfx::Size restoredSize() const;
   void captureMouse();
   void releaseMouse();
   void setMousePosition(const gfx::Point& position);
@@ -65,7 +65,6 @@ private:
   ::Window m_window;
   ::GC m_gc;
   int m_scale;
-  gfx::Size m_clientSize;
 };
 
 } // namespace she
