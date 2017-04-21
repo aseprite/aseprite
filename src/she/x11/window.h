@@ -64,6 +64,7 @@ private:
   ::Display* m_display;
   ::Window m_window;
   ::GC m_gc;
+  ::Cursor m_cursor;
   int m_scale;
 };
 
