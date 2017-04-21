@@ -223,6 +223,18 @@ void X11Window::processX11Event(XEvent& event)
       break;
     }
 
+    case EnterNotify:
+    case LeaveNotify: {
+      Event ev;
+      ev.setType(event.type == EnterNotify ? Event::MouseEnter:
+                                             Event::MouseLeave);
+      ev.setModifiers(get_modifiers_from_xevent(event.xcrossing.state));
+      ev.setPosition(gfx::Point(event.xcrossing.x / m_scale,
+                                event.xcrossing.y / m_scale));
+      queueEvent(ev);
+      break;
+    }
+
   }
 }
 
