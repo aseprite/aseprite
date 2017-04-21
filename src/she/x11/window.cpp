@@ -28,13 +28,31 @@ Atom wmDeleteMessage = 0;
 // into our own user data pointer (X11Window instance) is using a map.
 std::map<::Window, X11Window*> g_activeWindows;
 
-KeyModifiers get_modifiers_from_xevent(int state)
+KeyModifiers get_modifiers_from_x(int state)
 {
   int modifiers = kKeyNoneModifier;
   if (state & ShiftMask) modifiers |= kKeyShiftModifier;
   if (state & LockMask) modifiers |= kKeyAltModifier;
   if (state & ControlMask) modifiers |= kKeyCtrlModifier;
   return (KeyModifiers)modifiers;
+}
+
+bool is_mouse_wheel_button(int button)
+{
+  return (button == Button4 || button == Button5);
+}
+
+Event::MouseButton get_mouse_button_from_x(int button)
+{
+  switch (button) {
+    case Button1: TRACE("LeftButton\n"); return Event::LeftButton;
+    case Button2: TRACE("MiddleButton\n"); return Event::MiddleButton;
+    case Button3: TRACE("RightButton\n"); return Event::RightButton;
+    case 8: TRACE("X1Button\n"); return Event::X1Button;
+    case 9: TRACE("X2Button\n"); return Event::X2Button;
+  }
+  TRACE("Unknown Button %d\n", button);
+  return Event::NoneButton;
 }
 
 } // anonymous namespace
@@ -189,35 +207,22 @@ void X11Window::processX11Event(XEvent& event)
       break;
     }
 
-    case ButtonPress: {
-      Event ev;
-      ev.setType(Event::MouseDown);
-      ev.setModifiers(get_modifiers_from_xevent(event.xbutton.state));
-      ev.setPosition(gfx::Point(event.xbutton.x / m_scale,
-                                event.xbutton.y / m_scale));
-      ev.setButton(
-        event.xbutton.button == 1 ? Event::LeftButton:
-        event.xbutton.button == 2 ? Event::MiddleButton:
-        event.xbutton.button == 3 ? Event::RightButton:
-        event.xbutton.button == 4 ? Event::X1Button:
-        event.xbutton.button == 5 ? Event::X2Button: Event::NoneButton);
-
-      queueEvent(ev);
-      break;
-    }
-
+    case ButtonPress:
     case ButtonRelease: {
       Event ev;
-      ev.setType(Event::MouseUp);
-      ev.setModifiers(get_modifiers_from_xevent(event.xbutton.state));
+
+      if (is_mouse_wheel_button(event.xbutton.button)) {
+        ev.setType(Event::MouseWheel);
+        ev.setWheelDelta(gfx::Point(0, event.xbutton.button == Button4 ? -1: 1));
+      }
+      else {
+        ev.setType(event.type == ButtonPress? Event::MouseDown:
+                                              Event::MouseUp);
+        ev.setButton(get_mouse_button_from_x(event.xbutton.button));
+      }
+      ev.setModifiers(get_modifiers_from_x(event.xbutton.state));
       ev.setPosition(gfx::Point(event.xbutton.x / m_scale,
                                 event.xbutton.y / m_scale));
-      ev.setButton(
-        event.xbutton.button == 1 ? Event::LeftButton:
-        event.xbutton.button == 2 ? Event::MiddleButton:
-        event.xbutton.button == 3 ? Event::RightButton:
-        event.xbutton.button == 4 ? Event::X1Button:
-        event.xbutton.button == 5 ? Event::X2Button: Event::NoneButton);
 
       queueEvent(ev);
       break;
@@ -226,7 +231,7 @@ void X11Window::processX11Event(XEvent& event)
     case MotionNotify: {
       Event ev;
       ev.setType(Event::MouseMove);
-      ev.setModifiers(get_modifiers_from_xevent(event.xmotion.state));
+      ev.setModifiers(get_modifiers_from_x(event.xmotion.state));
       ev.setPosition(gfx::Point(event.xmotion.x / m_scale,
                                 event.xmotion.y / m_scale));
       queueEvent(ev);
@@ -234,16 +239,21 @@ void X11Window::processX11Event(XEvent& event)
     }
 
     case EnterNotify:
-    case LeaveNotify: {
-      Event ev;
-      ev.setType(event.type == EnterNotify ? Event::MouseEnter:
-                                             Event::MouseLeave);
-      ev.setModifiers(get_modifiers_from_xevent(event.xcrossing.state));
-      ev.setPosition(gfx::Point(event.xcrossing.x / m_scale,
-                                event.xcrossing.y / m_scale));
-      queueEvent(ev);
+    case LeaveNotify:
+      // "mode" can be NotifyGrab or NotifyUngrab when middle mouse
+      // button is pressed/released. We must not generated
+      // MouseEnter/Leave events on those cases, only on NotifyNormal
+      // (when mouse leaves/enter the X11 window).
+      if (event.xcrossing.mode == NotifyNormal) {
+        Event ev;
+        ev.setType(event.type == EnterNotify ? Event::MouseEnter:
+                                               Event::MouseLeave);
+        ev.setModifiers(get_modifiers_from_x(event.xcrossing.state));
+        ev.setPosition(gfx::Point(event.xcrossing.x / m_scale,
+                                  event.xcrossing.y / m_scale));
+        queueEvent(ev);
+      }
       break;
-    }
 
     case ClientMessage:
       // When the close button is pressed
