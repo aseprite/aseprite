@@ -39,7 +39,22 @@ KeyModifiers get_modifiers_from_x(int state)
 
 bool is_mouse_wheel_button(int button)
 {
-  return (button == Button4 || button == Button5);
+  return (button == Button4 || button == Button5 ||
+          button == 6 || button == 7);
+}
+
+gfx::Point get_mouse_wheel_delta(int button)
+{
+  gfx::Point delta(0, 0);
+  switch (button) {
+    // Vertical wheel
+    case Button4: delta.y = -1; break;
+    case Button5: delta.y = +1; break;
+    // Horizontal wheel
+    case 6: delta.x = -1; break;
+    case 7: delta.x = +1; break;
+  }
+  return delta;
 }
 
 Event::MouseButton get_mouse_button_from_x(int button)
@@ -213,7 +228,7 @@ void X11Window::processX11Event(XEvent& event)
 
       if (is_mouse_wheel_button(event.xbutton.button)) {
         ev.setType(Event::MouseWheel);
-        ev.setWheelDelta(gfx::Point(0, event.xbutton.button == Button4 ? -1: 1));
+        ev.setWheelDelta(get_mouse_wheel_delta(event.xbutton.button));
       }
       else {
         ev.setType(event.type == ButtonPress? Event::MouseDown:
