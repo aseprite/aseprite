@@ -136,18 +136,21 @@ public:
     if (m_pref.selection.moveEdges())
       moveEdges()->setSelected(true);
 
-#if defined(_WIN32) || defined(__APPLE__)
-    if (m_pref.cursor.useNativeCursor())
-      nativeCursor()->setSelected(true);
-    nativeCursor()->Click.connect(base::Bind<void>(&OptionsWindow::onNativeCursorChange, this));
+    // If the platform supports native cursors...
+    if ((int(she::instance()->capabilities()) &
+         int(she::Capabilities::CustomNativeMouseCursor)) != 0) {
+      if (m_pref.cursor.useNativeCursor())
+        nativeCursor()->setSelected(true);
+      nativeCursor()->Click.connect(base::Bind<void>(&OptionsWindow::onNativeCursorChange, this));
 
-    cursorScale()->setSelectedItemIndex(
-      cursorScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.cursor.cursorScale())));
-#else
-    // TODO impl this on Linux
-    nativeCursor()->setEnabled(false);
-#endif
+      cursorScale()->setSelectedItemIndex(
+        cursorScale()->findItemIndexByValue(
+          base::convert_to<std::string>(m_pref.cursor.cursorScale())));
+    }
+    else {
+      nativeCursor()->setEnabled(false);
+    }
+
     onNativeCursorChange();
 
     if (m_pref.experimental.useNativeFileDialog())
@@ -379,11 +382,13 @@ public:
 
 private:
   void onNativeCursorChange() {
-#if defined(_WIN32) || defined(__APPLE__)
-    bool state = !nativeCursor()->isSelected();
-#else
-    bool state = false;
-#endif
+    bool state =
+      // If the platform supports native cursors...
+      (((int(she::instance()->capabilities()) &
+         int(she::Capabilities::CustomNativeMouseCursor)) != 0) &&
+       // If the native cursor option is not selec
+       !nativeCursor()->isSelected());
+
     cursorScaleLabel()->setEnabled(state);
     cursorScale()->setEnabled(state);
   }
