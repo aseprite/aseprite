@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #endif
 
 #include "app/cmd/set_cel_bounds.h"
+#include "app/cmd/set_slice_key.h"
 #include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -29,6 +30,7 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -54,6 +56,15 @@ class SpriteSizeJob : public Job {
 
   template<typename T>
   T scale_y(T y) const { return y * T(m_new_height) / T(m_sprite->height()); }
+
+  template<typename T>
+  gfx::RectT<T> scale_rect(const gfx::RectT<T>& rc) const {
+    T x1 = scale_x(rc.x);
+    T y1 = scale_y(rc.y);
+    return gfx::RectT<T>(x1, y1,
+                         scale_x(rc.x2()) - x1,
+                         scale_y(rc.y2()) - y1);
+  }
 
 public:
 
@@ -92,11 +103,7 @@ protected:
       if (image && !cel->link()) {
         // Resize the cel bounds only if it's from a reference layer
         if (cel->layer()->isReference()) {
-          gfx::RectF newBounds = cel->boundsF();
-          newBounds.x = scale_x(newBounds.x);
-          newBounds.y = scale_y(newBounds.y);
-          newBounds.w = scale_x(newBounds.w);
-          newBounds.h = scale_y(newBounds.h);
+          gfx::RectF newBounds = scale_rect<double>(cel->boundsF());
           transaction.execute(new cmd::SetCelBoundsF(cel, newBounds));
         }
         else {
@@ -161,10 +168,32 @@ protected:
       m_document->generateMaskBoundaries();
     }
 
-    // resize sprite
+    // Resize slices
+    for (auto& slice : m_document->sprite()->slices()) {
+      for (auto& k : *slice) {
+        const SliceKey& key = *k.value();
+        if (key.isEmpty())
+          continue;
+
+        SliceKey newKey = key;
+        newKey.setBounds(scale_rect(newKey.bounds()));
+
+        if (newKey.hasCenter())
+          newKey.setCenter(scale_rect(newKey.center()));
+
+        if (newKey.hasPivot())
+          newKey.setPivot(gfx::Point(scale_x(newKey.pivot().x),
+                                     scale_y(newKey.pivot().y)));
+
+        transaction.execute(
+          new cmd::SetSliceKey(slice, k.frame(), newKey));
+      }
+    }
+
+    // Resize Sprite
     api.setSpriteSize(m_sprite, m_new_width, m_new_height);
 
-    // commit changes
+    // Commit changes
     transaction.commit();
   }
 
