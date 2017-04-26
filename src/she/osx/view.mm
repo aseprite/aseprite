@@ -57,12 +57,15 @@ Event::MouseButton get_mouse_buttons(NSEvent* event)
       return Event::RightButton;
   }
 
-  switch ([event buttonNumber]) {
+  switch (event.buttonNumber) {
     case 0: return Event::LeftButton; break;
     case 1: return Event::RightButton; break;
     case 2: return Event::MiddleButton; break;
-    // TODO add support for other buttons
+    // NSOtherMouseDown/Up/Dragged
+    case 3: return Event::X1Button; break;
+    case 4: return Event::X2Button; break;
   }
+
   return Event::MouseButton::NoneButton;
 }
 
