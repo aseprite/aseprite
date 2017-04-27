@@ -23,11 +23,14 @@ using namespace doc;
 
 ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
 {
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  if (!cel)
+    return;
 
-  Image* image = (cel ? cel->image(): NULL);
+  Image* image = cel->image();
   if (!image)
     return;
+
+  app::Document* doc = static_cast<app::Document*>(cel->document());
 
   m_offsetX = bounds.x - cel->x();
   m_offsetY = bounds.y - cel->y();
