@@ -5,6 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #include "app/modules/palettes.h"
+#include "base/unique_ptr.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
@@ -28,10 +29,16 @@ namespace {
 // Ink Processing
 //////////////////////////////////////////////////////////////////////
 
-template<typename Derived>
-class InkProcessing {
+class BaseInkProcessing {
 public:
-  void operator()(int x1, int y, int x2, ToolLoop* loop) {
+  virtual ~BaseInkProcessing() { }
+  virtual void hline(int x1, int y, int x2, ToolLoop* loop) = 0;
+};
+
+template<typename Derived>
+class InkProcessing : public BaseInkProcessing {
+public:
+  void hline(int x1, int y, int x2, ToolLoop* loop) override {
     int x;
 
     // Use mask
@@ -1066,22 +1073,15 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
 
 //////////////////////////////////////////////////////////////////////
 
-template<template<typename> class InkProcessing,
-         typename ImageTraits>
-void ink_proc(int x1, int y, int x2, void* data)
-{
-  ToolLoop* loop = reinterpret_cast<ToolLoop*>(data);
-  InkProcessing<ImageTraits> ink(loop);
-  ink(x1, y, x2, loop);
-}
+typedef base::UniquePtr<BaseInkProcessing> InkProcessingPtr;
 
-template<template<typename> class InkProcessing>
-AlgoHLine get_ink_proc(PixelFormat pixelFormat)
+template<template<typename> class T>
+BaseInkProcessing* get_ink_proc(ToolLoop* loop)
 {
-  switch (pixelFormat) {
-    case IMAGE_RGB:       return ink_proc<InkProcessing, RgbTraits>;
-    case IMAGE_GRAYSCALE: return ink_proc<InkProcessing, GrayscaleTraits>;
-    case IMAGE_INDEXED:   return ink_proc<InkProcessing, IndexedTraits>;
+  switch (loop->sprite()->pixelFormat()) {
+    case IMAGE_RGB:       return new T<RgbTraits>(loop);
+    case IMAGE_GRAYSCALE: return new T<GrayscaleTraits>(loop);
+    case IMAGE_INDEXED:   return new T<IndexedTraits>(loop);
   }
   ASSERT(false);
   return nullptr;
