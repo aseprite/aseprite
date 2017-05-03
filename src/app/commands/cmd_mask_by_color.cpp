@@ -111,6 +111,10 @@ void MaskByColorCommand::onExecute(Context* context)
   button_ok = new Button("&OK");
   button_cancel = new Button("&Cancel");
 
+  m_checkPreview->processMnemonicFromText();
+  button_ok->processMnemonicFromText();
+  button_cancel->processMnemonicFromText();
+
   if (get_config_bool("MaskColor", "Preview", true))
     m_checkPreview->setSelected(true);
 
