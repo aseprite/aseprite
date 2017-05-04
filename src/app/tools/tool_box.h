@@ -37,6 +37,7 @@ namespace app {
       extern const char* PaintCopy;
       extern const char* PaintLockAlpha;
       extern const char* Shading;
+      extern const char* Gradient;
       extern const char* Eraser;
       extern const char* ReplaceFgWithBg;
       extern const char* ReplaceBgWithFg;
@@ -53,6 +54,7 @@ namespace app {
 
     namespace WellKnownIntertwiners {
       extern const char* None;
+      extern const char* FirstPoint;
       extern const char* AsLines;
       extern const char* AsRectangles;
       extern const char* AsEllipses;

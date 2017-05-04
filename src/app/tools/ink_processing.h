@@ -33,6 +33,7 @@ class BaseInkProcessing {
 public:
   virtual ~BaseInkProcessing() { }
   virtual void hline(int x1, int y, int x2, ToolLoop* loop) = 0;
+  virtual void updateInk(ToolLoop* loop, Strokes& strokes) { }
 };
 
 template<typename Derived>
@@ -193,6 +194,7 @@ public:
       c = m_palette->getEntry(c);
 
     color_t result = rgba_blender_normal(c, m_color, m_opacity);
+    // TODO should we use m_rgbmap->mapColor instead?
     *m_dstAddress = m_palette->findBestfit(
       rgba_getr(result),
       rgba_getg(result),
@@ -864,6 +866,272 @@ private:
   const Remap* m_remap;
   bool m_left;
 };
+
+//////////////////////////////////////////////////////////////////////
+// Gradient Ink
+//////////////////////////////////////////////////////////////////////
+
+static ImageBufferPtr tmpGradientBuffer; // TODO non-thread safe
+
+class TemporalPixmanGradient {
+public:
+  TemporalPixmanGradient(ToolLoop* loop) {
+    if (!tmpGradientBuffer)
+      tmpGradientBuffer.reset(new ImageBuffer(1));
+
+    m_tmpImage.reset(
+      Image::create(IMAGE_RGB,
+                    loop->getDstImage()->width(),
+                    loop->getDstImage()->height(),
+                    tmpGradientBuffer));
+    m_tmpImage->clear(0);
+  }
+
+  void renderRgbaGradient(ToolLoop* loop, Strokes& strokes,
+                          // RGBA colors
+                          color_t c0, color_t c1) {
+    if (strokes.empty() || strokes[0].size() < 2) {
+      m_tmpImage->clear(0);
+      return;
+    }
+
+    pixman_point_fixed_t u, v;
+    pixman_gradient_stop_t stops[2];
+
+    u.x = pixman_int_to_fixed(strokes[0].firstPoint().x);
+    u.y = pixman_int_to_fixed(strokes[0].firstPoint().y);
+    v.x = pixman_int_to_fixed(strokes[0].lastPoint().x);
+    v.y = pixman_int_to_fixed(strokes[0].lastPoint().y);
+
+    // As we use non-premultiplied RGB values, we need correct RGB
+    // values on each stop. So in case that one color has alpha=0
+    // (complete transparent), use the RGB values of the
+    // non-transparent color in the other stop point.
+    if (doc::rgba_geta(c0) == 0 &&
+        doc::rgba_geta(c1) != 0) {
+      c0 = (c1 & rgba_rgb_mask);
+    }
+    else if (doc::rgba_geta(c0) != 0 &&
+             doc::rgba_geta(c1) == 0) {
+      c1 = (c0 & rgba_rgb_mask);
+    }
+
+    stops[0].x = pixman_int_to_fixed(0);
+    stops[0].color.red   = int(doc::rgba_getr(c0)) << 8;
+    stops[0].color.green = int(doc::rgba_getg(c0)) << 8;
+    stops[0].color.blue  = int(doc::rgba_getb(c0)) << 8;
+    stops[0].color.alpha = int(doc::rgba_geta(c0)) << 8;
+
+    stops[1].x = pixman_int_to_fixed(1);
+    stops[1].color.red   = int(doc::rgba_getr(c1)) << 8;
+    stops[1].color.green = int(doc::rgba_getg(c1)) << 8;
+    stops[1].color.blue  = int(doc::rgba_getb(c1)) << 8;
+    stops[1].color.alpha = int(doc::rgba_geta(c1)) << 8;
+
+    pixman_image_t* gradientImg =
+      pixman_image_create_linear_gradient(
+        &u, &v, stops, 2);
+    pixman_image_set_repeat(gradientImg, PIXMAN_REPEAT_PAD);
+
+    pixman_image_t* rasterImg =
+      pixman_image_create_bits(PIXMAN_a8b8g8r8,
+                               m_tmpImage->width(),
+                               m_tmpImage->height(),
+                               (uint32_t*)m_tmpImage->getPixelAddress(0, 0),
+                               m_tmpImage->getRowStrideSize());
+
+    pixman_image_composite(PIXMAN_OP_SRC, // Copy the gradient (no alpha compositing)
+                           gradientImg, nullptr,
+                           rasterImg,
+                           0, 0, 0, 0, 0, 0,
+                           m_tmpImage->width(),
+                           m_tmpImage->height());
+
+    pixman_image_unref(gradientImg);
+    pixman_image_unref(rasterImg);
+  }
+
+protected:
+  ImageRef m_tmpImage;
+  RgbTraits::address_t m_tmpAddress;
+};
+
+template<typename ImageTraits>
+class GradientInkProcessing : public DoubleInkProcessing<GradientInkProcessing<ImageTraits>, ImageTraits> {
+public:
+  GradientInkProcessing(ToolLoop* loop) {
+  }
+
+  void processPixel(int x, int y) {
+    // Do nothing (it's specialized for each case)
+  }
+};
+
+template<>
+class GradientInkProcessing<RgbTraits> : public TemporalPixmanGradient,
+                                         public DoubleInkProcessing<GradientInkProcessing<RgbTraits>, RgbTraits> {
+public:
+  typedef DoubleInkProcessing<GradientInkProcessing<RgbTraits>, RgbTraits> base;
+
+  GradientInkProcessing(ToolLoop* loop)
+    : TemporalPixmanGradient(loop)
+    , m_opacity(loop->getOpacity()) {
+  }
+
+  void updateInk(ToolLoop* loop, Strokes& strokes) override {
+    color_t c0 = loop->getPrimaryColor();
+    color_t c1 = loop->getSecondaryColor();
+
+    renderRgbaGradient(loop, strokes, c0, c1);
+  }
+
+  void hline(int x1, int y, int x2, ToolLoop* loop) override {
+    m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
+    base::hline(x1, y, x2, loop);
+  }
+
+  void processPixel(int x, int y) {
+    // As m_tmpAddress is the rendered gradient from pixman, its RGB
+    // values are premultiplied, here we can divide them by the alpha
+    // value to get the non-premultiplied values.
+    doc::color_t c = *m_tmpAddress;
+    int a = doc::rgba_geta(c);
+    int r, g, b;
+    if (a > 0) {
+      r = doc::rgba_getr(c) * 255 / a;
+      g = doc::rgba_getg(c) * 255 / a;
+      b = doc::rgba_getb(c) * 255 / a;
+    }
+    else
+      r = g = b = 0;
+
+    *m_dstAddress = rgba_blender_normal(*m_srcAddress,
+                                        doc::rgba(r, g, b, a),
+                                        m_opacity);
+    ++m_tmpAddress;
+  }
+
+private:
+  const int m_opacity;
+};
+
+
+template<>
+class GradientInkProcessing<GrayscaleTraits> : public TemporalPixmanGradient,
+                                               public DoubleInkProcessing<GradientInkProcessing<GrayscaleTraits>, GrayscaleTraits> {
+public:
+  typedef DoubleInkProcessing<GradientInkProcessing<GrayscaleTraits>, GrayscaleTraits> base;
+
+  GradientInkProcessing(ToolLoop* loop)
+    : TemporalPixmanGradient(loop)
+    , m_opacity(loop->getOpacity()) {
+  }
+
+  void updateInk(ToolLoop* loop, Strokes& strokes) override {
+    color_t c0 = loop->getPrimaryColor();
+    color_t c1 = loop->getSecondaryColor();
+    int v0 = int(doc::graya_getv(c0));
+    int a0 = int(doc::graya_geta(c0));
+    int v1 = int(doc::graya_getv(c1));
+    int a1 = int(doc::graya_geta(c1));
+    c0 = doc::rgba(v0, v0, v0, a0);
+    c1 = doc::rgba(v1, v1, v1, a1);
+
+    renderRgbaGradient(loop, strokes, c0, c1);
+  }
+
+  void hline(int x1, int y, int x2, ToolLoop* loop) override {
+    m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
+    base::hline(x1, y, x2, loop);
+  }
+
+  void processPixel(int x, int y) {
+    // As m_tmpAddress is the rendered gradient from pixman, its RGB
+    // values are premultiplied, here we can divide them by the alpha
+    // value to get the non-premultiplied values.
+    doc::color_t c = *m_tmpAddress;
+    int a = doc::rgba_geta(c);
+    int v;
+    if (a > 0) {
+      // Here we could get R, G, or B because this is a grayscale gradient anyway.
+      v = doc::rgba_getr(c) * 255 / a;
+    }
+    else
+      v = 0;
+
+    *m_dstAddress = graya_blender_normal(*m_srcAddress,
+                                         doc::graya(v, a),
+                                         m_opacity);
+    ++m_tmpAddress;
+  }
+
+private:
+  const int m_opacity;
+};
+
+
+template<>
+class GradientInkProcessing<IndexedTraits> : public TemporalPixmanGradient,
+                                             public DoubleInkProcessing<GradientInkProcessing<IndexedTraits>, IndexedTraits> {
+public:
+  typedef DoubleInkProcessing<GradientInkProcessing<IndexedTraits>, IndexedTraits> base;
+
+  GradientInkProcessing(ToolLoop* loop)
+    : TemporalPixmanGradient(loop)
+    , m_opacity(loop->getOpacity())
+    , m_palette(get_current_palette())
+    , m_rgbmap(loop->getRgbMap())
+    , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
+  }
+
+  void updateInk(ToolLoop* loop, Strokes& strokes) override {
+    color_t c0 = m_palette->getEntry(loop->getPrimaryColor());
+    color_t c1 = m_palette->getEntry(loop->getSecondaryColor());
+
+    renderRgbaGradient(loop, strokes, c0, c1);
+  }
+
+  void hline(int x1, int y, int x2, ToolLoop* loop) override {
+    m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
+    base::hline(x1, y, x2, loop);
+  }
+
+  void processPixel(int x, int y) {
+    // As m_tmpAddress is the rendered gradient from pixman, its RGB
+    // values are premultiplied, here we can divide them by the alpha
+    // value to get the non-premultiplied values.
+    doc::color_t c = *m_tmpAddress;
+    int a = doc::rgba_geta(c);
+    int r, g, b;
+    if (a > 0) {
+      r = doc::rgba_getr(c) * 255 / a;
+      g = doc::rgba_getg(c) * 255 / a;
+      b = doc::rgba_getb(c) * 255 / a;
+    }
+    else
+      r = g = b = 0;
+
+    doc::color_t c0 = *m_srcAddress;
+    if (int(c0) == m_maskIndex)
+      c0 = m_palette->getEntry(c0) & rgba_rgb_mask;  // Alpha = 0
+    else
+      c0 = m_palette->getEntry(c0);
+    c = rgba_blender_normal(c0, c, m_opacity);
+
+    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
+                                       rgba_getg(c),
+                                       rgba_getb(c),
+                                       rgba_geta(c));
+    ++m_tmpAddress;
+  }
+
+private:
+  const int m_opacity;
+  const Palette* m_palette;
+  const RgbMap* m_rgbmap;
+  const int m_maskIndex;
+};
+
 
 //////////////////////////////////////////////////////////////////////
 // Xor Ink

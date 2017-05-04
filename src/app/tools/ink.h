@@ -8,6 +8,8 @@
 #define APP_TOOLS_INK_H_INCLUDED
 #pragma once
 
+#include "app/tools/stroke.h"
+
 namespace gfx {
   class Region;
 }
@@ -22,9 +24,6 @@ namespace app {
     // The main task of this class is to draw scanlines through its
     // inkHline function member.
     class Ink {
-      // selection, paint, paint_fg, paint_bg, eraser,
-      // replace_fg_with_bg, replace_bg_with_fg, pick_fg, pick_bg, scroll,
-      // move, shade, blur, jumble
     public:
       virtual ~Ink() { }
 
@@ -88,6 +87,12 @@ namespace app {
       // PointShapes call this method when they convert a mouse-point
       // to a shape (e.g. pen shape)  with various scanlines.
       virtual void inkHline(int x1, int y, int x2, ToolLoop* loop) = 0;
+
+      // Returns true in case that the ink needs to update something
+      // depending on the specific stroke points (e.g. for color
+      // gradients)
+      virtual bool dependsOnStroke() const { return false; }
+      virtual void updateInk(ToolLoop* loop, Strokes& strokes) { }
 
     };
 

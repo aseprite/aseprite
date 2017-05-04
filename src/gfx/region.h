@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2016 David Capello
+// Copyright (C) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,10 +26,6 @@ namespace gfx {
 #else
     struct Box {
       int32_t x1, y1, x2, y2;
-
-      operator Rect() const {
-        return Rect(x1, y1, x2-x1, y2-y1);
-      }
     };
     struct Region {
       Box extents;
@@ -51,7 +47,13 @@ namespace gfx {
       RegionIterator operator++(int) { RegionIterator o(*this); ++m_ptr; return o; }
       bool operator==(const RegionIterator& o) const { return m_ptr == o.m_ptr; }
       bool operator!=(const RegionIterator& o) const { return m_ptr != o.m_ptr; }
-      reference operator*() { m_rect = *m_ptr; return m_rect; }
+      reference operator*() {
+        m_rect.x = m_ptr->x1;
+        m_rect.y = m_ptr->y1;
+        m_rect.w = m_ptr->x2 - m_ptr->x1;
+        m_rect.h = m_ptr->y2 - m_ptr->y1;
+        return m_rect;
+      }
     private:
       Box* m_ptr;
       mutable Rect m_rect;

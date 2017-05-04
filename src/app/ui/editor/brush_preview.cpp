@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -130,7 +130,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
   }
   else if (
     (brush->type() == kImageBrushType ||
-     brush->size() > 1.0 / m_editor->zoom().scale()) &&
+     ((isFloodfill ? 1: brush->size()) > (1.0 / m_editor->zoom().scale()))) &&
     (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
      (ink->isEffect()) ||
      // or when the brush color is transparent and we are not in the background layer

@@ -449,6 +449,7 @@
       <key tool="zoom" shortcut="Z" />
 
       <key tool="paint_bucket" shortcut="G" />
+      <key tool="gradient" shortcut="G" />
 
       <key tool="line" shortcut="L" />
       <key tool="curve" shortcut="Shift+L" />
@@ -1143,6 +1144,14 @@
             controller="one_point"
             pointshape="floodfill"
             tracepolicy="accumulate"
+            />
+      <tool id="gradient"
+            text="Gradient Tool"
+            ink="gradient"
+            controller="two_points"
+            pointshape="floodfill"
+            intertwine="first_point"
+            tracepolicy="last"
             />
     </group>
 

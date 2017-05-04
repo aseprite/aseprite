@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,19 @@ public:
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
     for (int c=0; c<stroke.size(); ++c)
       doPointshapePoint(stroke[c].x, stroke[c].y, loop);
+  }
+
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
+    joinStroke(loop, stroke);
+  }
+};
+
+class IntertwineFirstPoint : public Intertwine {
+public:
+
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
+    if (!stroke.empty())
+      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {

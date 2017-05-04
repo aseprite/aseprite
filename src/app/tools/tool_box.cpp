@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include <pixman.h>             // Needed for GradientInk
+
 #include "app/tools/tool_box.h"
 
 #include "app/gui_xml.h"
@@ -55,6 +57,7 @@ const char* WellKnownInks::PaintBg = "paint_bg";
 const char* WellKnownInks::PaintCopy = "paint_copy";
 const char* WellKnownInks::PaintLockAlpha = "paint_lock_alpha";
 const char* WellKnownInks::Shading = "shading";
+const char* WellKnownInks::Gradient = "gradient";
 const char* WellKnownInks::Eraser = "eraser";
 const char* WellKnownInks::ReplaceFgWithBg = "replace_fg_with_bg";
 const char* WellKnownInks::ReplaceBgWithFg = "replace_bg_with_fg";
@@ -69,6 +72,7 @@ const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
 
 const char* WellKnownIntertwiners::None = "none";
+const char* WellKnownIntertwiners::FirstPoint = "first_point";
 const char* WellKnownIntertwiners::AsLines = "as_lines";
 const char* WellKnownIntertwiners::AsRectangles = "as_rectangles";
 const char* WellKnownIntertwiners::AsEllipses = "as_ellipses";
@@ -89,6 +93,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::PaintBg]         = new PaintInk(PaintInk::WithBg);
   m_inks[WellKnownInks::PaintCopy]       = new PaintInk(PaintInk::Copy);
   m_inks[WellKnownInks::PaintLockAlpha]  = new PaintInk(PaintInk::LockAlpha);
+  m_inks[WellKnownInks::Gradient]        = new GradientInk();
   m_inks[WellKnownInks::Shading]         = new ShadingInk();
   m_inks[WellKnownInks::Eraser]          = new EraserInk(EraserInk::Eraser);
   m_inks[WellKnownInks::ReplaceFgWithBg] = new EraserInk(EraserInk::ReplaceFgWithBg);
@@ -115,6 +120,7 @@ ToolBox::ToolBox()
   m_pointshapers[WellKnownPointShapes::Spray] = new SprayPointShape();
 
   m_intertwiners[WellKnownIntertwiners::None] = new IntertwineNone();
+  m_intertwiners[WellKnownIntertwiners::FirstPoint] = new IntertwineFirstPoint();
   m_intertwiners[WellKnownIntertwiners::AsLines] = new IntertwineAsLines();
   m_intertwiners[WellKnownIntertwiners::AsRectangles] = new IntertwineAsRectangles();
   m_intertwiners[WellKnownIntertwiners::AsEllipses] = new IntertwineAsEllipses();

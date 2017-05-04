@@ -34,6 +34,10 @@ protected:
     m_proc.reset(proc);
   }
 
+  BaseInkProcessing* proc() {
+    return m_proc;
+  }
+
 private:
   InkProcessingPtr m_proc;
 };
@@ -128,6 +132,25 @@ public:
 
   void prepareInk(ToolLoop* loop) override {
     setProc(get_ink_proc<ShadingInkProcessing>(loop));
+  }
+
+};
+
+
+class GradientInk : public BaseInk {
+public:
+  Ink* clone() override { return new GradientInk(*this); }
+
+  bool isPaint() const override { return true; }
+  bool isEffect() const override { return true; }
+  bool dependsOnStroke() const override { return true; }
+
+  void prepareInk(ToolLoop* loop) override {
+    setProc(get_ink_proc<GradientInkProcessing>(loop));
+  }
+
+  void updateInk(ToolLoop* loop, Strokes& strokes) override {
+    proc()->updateInk(loop, strokes);
   }
 
 };
