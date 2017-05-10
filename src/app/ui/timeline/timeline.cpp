@@ -1124,6 +1124,7 @@ bool Timeline::onProcessMessage(Message* msg)
             regenerateRows();
             invalidate();
             layout();
+            return true;
           }
           break;
 
