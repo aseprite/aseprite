@@ -217,7 +217,7 @@ private:
     if (m_loadInfo) {
       m_loadInfo->format = format;
       m_loadInfo->width = w;
-      m_loadInfo->height = w;
+      m_loadInfo->height = h;
       m_loadInfo->frames = nframes;
       return (Sprite*)1;
     }
