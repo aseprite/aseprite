@@ -26,7 +26,6 @@
 #include "base/unique_ptr.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
-#include "doc/dithering_method.h"
 #include "doc/frame_tag.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -38,6 +37,7 @@
 #include "doc/sprite.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
+#include "render/dithering_algorithm.h"
 #include "render/render.h"
 
 #include <cstdio>
@@ -707,7 +707,8 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
       cmd::SetPixelFormat(
         sample.sprite(),
         textureImage->pixelFormat(),
-        DitheringMethod::NONE).execute(UIContext::instance());
+        render::DitheringAlgorithm::None)
+        .execute(UIContext::instance());
     }
 
     renderSample(sample, textureImage,

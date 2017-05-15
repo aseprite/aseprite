@@ -184,7 +184,8 @@ void PasteTextCommand::onExecute(Context* ctx)
         image.reset(
           render::convert_pixel_format(
             image.get(), NULL, sprite->pixelFormat(),
-            DitheringMethod::NONE, rgbmap, sprite->palette(editor->frame()),
+            render::DitheringAlgorithm::None, rgbmap,
+            sprite->palette(editor->frame()),
             false, 0));
       }
 

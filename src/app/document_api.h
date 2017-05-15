@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,11 +10,11 @@
 
 #include "doc/algorithm/flip_type.h"
 #include "doc/color.h"
-#include "doc/dithering_method.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
+#include "render/dithering_algorithm.h"
 
 namespace doc {
   class Cel;
@@ -46,7 +46,9 @@ namespace app {
     void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
     void cropSprite(Sprite* sprite, const gfx::Rect& bounds);
     void trimSprite(Sprite* sprite);
-    void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering);
+    void setPixelFormat(Sprite* sprite,
+                        const PixelFormat newFormat,
+                        const render::DitheringAlgorithm dithering);
 
     // Frames API
     void addFrame(Sprite* sprite, frame_t newFrame);

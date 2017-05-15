@@ -8,10 +8,10 @@
 #define APP_CMD_SET_PIXEL_FORMAT_H_INCLUDED
 #pragma once
 
-#include "app/cmd_sequence.h"
 #include "app/cmd/with_sprite.h"
+#include "app/cmd_sequence.h"
 #include "doc/pixel_format.h"
-#include "doc/dithering_method.h"
+#include "render/dithering_algorithm.h"
 
 namespace doc {
   class Sprite;
@@ -19,14 +19,13 @@ namespace doc {
 
 namespace app {
 namespace cmd {
-  using namespace doc;
 
   class SetPixelFormat : public Cmd
                        , public WithSprite {
   public:
-    SetPixelFormat(Sprite* sprite,
-      PixelFormat newFormat,
-      DitheringMethod dithering);
+    SetPixelFormat(doc::Sprite* sprite,
+                   const doc::PixelFormat newFormat,
+                   const render::DitheringAlgorithm dithering);
 
   protected:
     void onExecute() override;
@@ -39,9 +38,9 @@ namespace cmd {
   private:
     void setFormat(PixelFormat format);
 
-    PixelFormat m_oldFormat;
-    PixelFormat m_newFormat;
-    DitheringMethod m_dithering;
+    doc::PixelFormat m_oldFormat;
+    doc::PixelFormat m_newFormat;
+    render::DitheringAlgorithm m_dithering;
     CmdSequence m_seq;
   };
 

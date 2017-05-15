@@ -16,15 +16,16 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/transaction.h"
-#include "doc/dithering_method.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
+#include "render/dithering_algorithm.h"
 
 namespace app {
 
 class ChangePixelFormatCommand : public Command {
-  PixelFormat m_format;
-  DitheringMethod m_dithering;
+  doc::PixelFormat m_format;
+  render::DitheringAlgorithm m_dithering;
+
 public:
   ChangePixelFormatCommand();
   Command* clone() const override { return new ChangePixelFormatCommand(*this); }
@@ -42,7 +43,7 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
             CmdUIOnlyFlag)
 {
   m_format = IMAGE_RGB;
-  m_dithering = DitheringMethod::NONE;
+  m_dithering = render::DitheringAlgorithm::None;
 }
 
 void ChangePixelFormatCommand::onLoadParams(const Params& params)
@@ -54,9 +55,9 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
 
   std::string dithering = params.get("dithering");
   if (dithering == "ordered")
-    m_dithering = DitheringMethod::ORDERED;
+    m_dithering = render::DitheringAlgorithm::Ordered;
   else
-    m_dithering = DitheringMethod::NONE;
+    m_dithering = render::DitheringAlgorithm::None;
 }
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
@@ -67,7 +68,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
   if (sprite != NULL &&
       sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering == DitheringMethod::ORDERED)
+      m_dithering == render::DitheringAlgorithm::Ordered)
     return false;
 
   return sprite != NULL;
@@ -81,7 +82,7 @@ bool ChangePixelFormatCommand::onChecked(Context* context)
   if (sprite != NULL &&
       sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering == DitheringMethod::ORDERED)
+      m_dithering == render::DitheringAlgorithm::Ordered)
     return false;
 
   return

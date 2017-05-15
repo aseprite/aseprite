@@ -181,7 +181,9 @@ void DocumentApi::trimSprite(Sprite* sprite)
     cropSprite(sprite, bounds);
 }
 
-void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering)
+void DocumentApi::setPixelFormat(Sprite* sprite,
+                                 const PixelFormat newFormat,
+                                 const render::DitheringAlgorithm dithering)
 {
   if (sprite->pixelFormat() == newFormat)
     return;

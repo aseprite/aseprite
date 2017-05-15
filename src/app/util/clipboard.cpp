@@ -332,7 +332,8 @@ void paste()
         src_image.reset(
           render::convert_pixel_format(
             clipboard_image.get(), NULL, dstSpr->pixelFormat(),
-            DitheringMethod::NONE, dst_rgbmap, clipboard_palette.get(),
+            render::DitheringAlgorithm::None,
+            dst_rgbmap, clipboard_palette.get(),
             false,
             0));
       }

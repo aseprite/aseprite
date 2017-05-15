@@ -1,5 +1,5 @@
 // Aseprite Rener Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2015, 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,11 +8,10 @@
 #define RENDER_QUANTIZATION_H_INCLUDED
 #pragma once
 
-#include "doc/dithering_method.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
-
 #include "render/color_histogram.h"
+#include "render/dithering_algorithm.h"
 
 #include <vector>
 
@@ -24,7 +23,6 @@ namespace doc {
 }
 
 namespace render {
-  using namespace doc;
 
   class PaletteOptimizerDelegate {
   public:
@@ -35,34 +33,36 @@ namespace render {
 
   class PaletteOptimizer {
   public:
-    void feedWithImage(Image* image, bool withAlpha);
-    void feedWithRgbaColor(color_t color);
-    void calculate(Palette* palette, int maskIndex, PaletteOptimizerDelegate* delegate);
+    void feedWithImage(doc::Image* image, bool withAlpha);
+    void feedWithRgbaColor(doc::color_t color);
+    void calculate(doc::Palette* palette,
+                   int maskIndex,
+                   render::PaletteOptimizerDelegate* delegate);
 
   private:
-    ColorHistogram<5, 6, 5, 5> m_histogram;
+    render::ColorHistogram<5, 6, 5, 5> m_histogram;
   };
 
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
-  Palette* create_palette_from_sprite(
-    const Sprite* sprite,
-    frame_t fromFrame,
-    frame_t toFrame,
-    bool withAlpha,
-    Palette* newPalette, // Can be NULL to create a new palette
-    PaletteOptimizerDelegate* delegate);
+  doc::Palette* create_palette_from_sprite(
+    const doc::Sprite* sprite,
+    const doc::frame_t fromFrame,
+    const doc::frame_t toFrame,
+    const bool withAlpha,
+    doc::Palette* newPalette, // Can be NULL to create a new palette
+    render::PaletteOptimizerDelegate* delegate);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.
   Image* convert_pixel_format(
-    const Image* src,
-    Image* dst,         // Can be NULL to create a new image
-    PixelFormat pixelFormat,
-    DitheringMethod ditheringMethod,
-    const RgbMap* rgbmap,
-    const Palette* palette,
+    const doc::Image* src,
+    doc::Image* dst,         // Can be NULL to create a new image
+    doc::PixelFormat pixelFormat,
+    render::DitheringAlgorithm ditheringAlgorithm,
+    const doc::RgbMap* rgbmap,
+    const doc::Palette* palette,
     bool is_background,
-    color_t new_mask_color);
+    doc::color_t new_mask_color);
 
 } // namespace render
 

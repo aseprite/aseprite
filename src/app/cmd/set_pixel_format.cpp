@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,7 +31,8 @@ namespace cmd {
 using namespace doc;
 
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
-  PixelFormat newFormat, DitheringMethod dithering)
+                               const PixelFormat newFormat,
+                               const render::DitheringAlgorithm dithering)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
   , m_newFormat(newFormat)

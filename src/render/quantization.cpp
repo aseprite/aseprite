@@ -36,9 +36,9 @@ using namespace gfx;
 
 Palette* create_palette_from_sprite(
   const Sprite* sprite,
-  frame_t fromFrame,
-  frame_t toFrame,
-  bool withAlpha,
+  const frame_t fromFrame,
+  const frame_t toFrame,
+  const bool withAlpha,
   Palette* palette,
   PaletteOptimizerDelegate* delegate)
 {
@@ -81,7 +81,7 @@ Image* convert_pixel_format(
   const Image* image,
   Image* new_image,
   PixelFormat pixelFormat,
-  DitheringMethod ditheringMethod,
+  DitheringAlgorithm ditheringAlgorithm,
   const RgbMap* rgbmap,
   const Palette* palette,
   bool is_background,
@@ -94,7 +94,7 @@ Image* convert_pixel_format(
   // RGB -> Indexed with ordered dithering
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
-      ditheringMethod == DitheringMethod::ORDERED) {
+      ditheringAlgorithm == DitheringAlgorithm::Ordered) {
     BayerMatrix<8> matrix;
     OrderedDither dither;
     dither.ditherRgbImageToIndexed(matrix, image, new_image, 0, 0, rgbmap, palette);

@@ -695,7 +695,8 @@ private:
       Image* oldImage = cel->image();
       ImageRef newImage(
         render::convert_pixel_format
-        (oldImage, NULL, IMAGE_RGB, DitheringMethod::NONE,
+        (oldImage, NULL, IMAGE_RGB,
+         render::DitheringAlgorithm::None,
          nullptr,
          m_sprite->palette(cel->frame()),
          m_opaque,
@@ -706,7 +707,8 @@ private:
 
     m_currentImage.reset(
       render::convert_pixel_format
-      (m_currentImage.get(), NULL, IMAGE_RGB, DitheringMethod::NONE,
+      (m_currentImage.get(), NULL, IMAGE_RGB,
+       render::DitheringAlgorithm::None,
        nullptr,
        m_sprite->palette(m_frameNum),
        m_opaque,
@@ -714,7 +716,8 @@ private:
 
     m_previousImage.reset(
       render::convert_pixel_format
-      (m_previousImage.get(), NULL, IMAGE_RGB, DitheringMethod::NONE,
+      (m_previousImage.get(), NULL, IMAGE_RGB,
+       render::DitheringAlgorithm::None,
        nullptr,
        m_sprite->palette(MAX(0, m_frameNum-1)),
        m_opaque,
