@@ -48,6 +48,7 @@ public:
   const Option& saveAs() const { return m_saveAs; }
   const Option& palette() const { return m_palette; }
   const Option& scale() const { return m_scale; }
+  const Option& colorMode() const { return m_colorMode; }
   const Option& shrinkTo() const { return m_shrinkTo; }
   const Option& data() const { return m_data; }
   const Option& format() const { return m_format; }
@@ -100,6 +101,7 @@ private:
   Option& m_saveAs;
   Option& m_palette;
   Option& m_scale;
+  Option& m_colorMode;
   Option& m_shrinkTo;
   Option& m_data;
   Option& m_format;

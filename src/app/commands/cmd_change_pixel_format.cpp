@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -100,7 +100,9 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     document->getApi(transaction).setPixelFormat(sprite, m_format, m_dithering);
     transaction.commit();
   }
-  app_refresh_screen();
+
+  if (context->isUIAvailable())
+    app_refresh_screen();
 }
 
 Command* CommandFactory::createChangePixelFormatCommand()

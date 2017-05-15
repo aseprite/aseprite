@@ -342,6 +342,34 @@ void CliProcessor::process()
             ctx->executeCommand(command);
           }
         }
+        // --color-mode <mode>
+        else if (opt == &m_options.colorMode()) {
+          Command* command = CommandsModule::instance()->getCommandByName(CommandId::ChangePixelFormat);
+          Params params;
+          if (value.value() == "rgb") {
+            params.set("format", "rgb");
+          }
+          else if (value.value() == "grayscale") {
+            params.set("format", "grayscale");
+          }
+          else if (value.value() == "indexed") {
+            params.set("format", "indexed");
+          }
+          else if (value.value() == "indexed-ordered-dithering") {
+            params.set("format", "indexed");
+            params.set("dithering", "ordered");
+          }
+          else {
+            throw std::runtime_error("--color-mode needs a valid color mode for conversion\n"
+                                     "Usage: --color-mode <mode>\n"
+                                     "Where <mode> can be rgb, grayscale, indexed, or indexed-ordered-dithering");
+          }
+
+          for (auto doc : ctx->documents()) {
+            ctx->setActiveDocument(static_cast<app::Document*>(doc));
+            ctx->executeCommand(command, params);
+          }
+        }
         // --shrink-to <width,height>
         else if (opt == &m_options.shrinkTo()) {
           std::vector<std::string> dimensions;
