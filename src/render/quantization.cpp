@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -85,7 +85,8 @@ Image* convert_pixel_format(
   const RgbMap* rgbmap,
   const Palette* palette,
   bool is_background,
-  color_t new_mask_color)
+  color_t new_mask_color,
+  bool* stopFlag)
 {
   if (!new_image)
     new_image = Image::create(pixelFormat, image->width(), image->height());
@@ -97,7 +98,9 @@ Image* convert_pixel_format(
       ditheringAlgorithm == DitheringAlgorithm::Ordered) {
     BayerMatrix<8> matrix;
     OrderedDither dither;
-    dither.ditherRgbImageToIndexed(matrix, image, new_image, 0, 0, rgbmap, palette);
+    dither.ditherRgbImageToIndexed(matrix, image, new_image,
+                                   0, 0, rgbmap, palette,
+                                   stopFlag);
     return new_image;
   }
 

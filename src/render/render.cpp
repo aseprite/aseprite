@@ -41,7 +41,7 @@ public:
   inline typename DstTraits::pixel_t
   operator()(const typename DstTraits::pixel_t& dst,
              const typename SrcTraits::pixel_t& src,
-             int opacity)
+             const int opacity)
   {
     if (src != m_mask_color)
       return (*m_blendFunc)(dst, src, opacity);
@@ -63,7 +63,7 @@ public:
   inline RgbTraits::pixel_t
   operator()(const RgbTraits::pixel_t& dst,
              const GrayscaleTraits::pixel_t& src,
-             int opacity)
+             const int opacity)
   {
     if (src != m_mask_color) {
       int v = graya_getv(src);
@@ -91,7 +91,7 @@ public:
   inline RgbTraits::pixel_t
   operator()(const RgbTraits::pixel_t& dst,
              const IndexedTraits::pixel_t& src,
-                         int opacity)
+             const int opacity)
   {
     if (m_blendMode == BlendMode::SRC) {
       return m_pal->getEntry(src);
@@ -119,7 +119,7 @@ public:
   inline IndexedTraits::pixel_t
   operator()(const IndexedTraits::pixel_t& dst,
              const IndexedTraits::pixel_t& src,
-             int opacity)
+             const int opacity)
   {
     if (m_blendMode == BlendMode::SRC) {
       return src;
@@ -758,7 +758,9 @@ void Render::renderSprite(
                 m_previewImage->width(),
                 m_previewImage->height()),
       area,
-      compositeImage,
+      getImageComposition(
+        dstImage->pixelFormat(),
+        m_previewImage->pixelFormat(), sprite->root()),
       255,
       m_previewBlendMode);
   }

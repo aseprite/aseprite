@@ -1,0 +1,20 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2017 by David Capello -->
+<gui>
+<window id="color_mode" text="@.title">
+  <vbox>
+    <view id="color_mode_view" expansive="true">
+      <listbox id="color_mode" />
+    </view>
+    <separator horizontal="true" />
+
+    <hbox>
+      <boxfiller />
+      <hbox homogeneous="true">
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
+      </hbox>
+    </hbox>
+  </vbox>
+</window>
+</gui>

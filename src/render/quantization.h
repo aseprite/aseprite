@@ -62,7 +62,8 @@ namespace render {
     const doc::RgbMap* rgbmap,
     const doc::Palette* palette,
     bool is_background,
-    doc::color_t new_mask_color);
+    doc::color_t new_mask_color,
+    bool* stopFlag = nullptr);
 
 } // namespace render
 

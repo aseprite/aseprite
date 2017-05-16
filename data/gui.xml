@@ -639,13 +639,11 @@
           <item command="ChangePixelFormat" text="&amp;Grayscale">
             <param name="format" value="grayscale" />
           </item>
-          <item command="ChangePixelFormat" text="&amp;Indexed (No Dithering)">
+          <item command="ChangePixelFormat" text="&amp;Indexed">
             <param name="format" value="indexed" />
           </item>
-          <item command="ChangePixelFormat" text="Indexed (Ordered &amp;Dither)">
-            <param name="format" value="indexed" />
-            <param name="dithering" value="ordered" />
-          </item>
+          <separator />
+          <item command="ChangePixelFormat" text="&amp;More Options" />
         </menu>
         <separator />
         <item command="DuplicateSprite" text="&amp;Duplicate..." />

@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -151,7 +151,8 @@ namespace render {
                                  doc::Image* dstImage,
                                  int u, int v,
                                  const doc::RgbMap* rgbmap,
-                                 const doc::Palette* palette) {
+                                 const doc::Palette* palette,
+                                 bool* stopFlag = nullptr) {
       const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
       doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
       auto srcIt = srcBits.begin();
@@ -165,6 +166,8 @@ namespace render {
           ASSERT(dstIt != dstBits.end());
           *dstIt = ditherRgbPixelToIndex(matrix, *srcIt, x+u, y+v, rgbmap, palette);
         }
+        if (stopFlag && *stopFlag)
+          break;
       }
     }
 
