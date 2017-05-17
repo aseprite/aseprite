@@ -707,7 +707,8 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
       cmd::SetPixelFormat(
         sample.sprite(),
         textureImage->pixelFormat(),
-        render::DitheringAlgorithm::None)
+        render::DitheringAlgorithm::None,
+        nullptr)                // TODO add a delegate to show progress
         .execute(UIContext::instance());
     }
 

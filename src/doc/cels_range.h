@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -63,6 +63,13 @@ namespace doc {
 
     iterator begin() { return m_begin; }
     iterator end() { return m_end; }
+
+    int size() {
+      int count = 0;
+      for (auto it=begin(), e=end(); it!=e; ++it)
+        ++count;
+      return count;
+    }
 
   private:
     SelectedFrames m_selFrames;

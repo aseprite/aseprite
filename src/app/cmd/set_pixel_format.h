@@ -17,6 +17,10 @@ namespace doc {
   class Sprite;
 }
 
+namespace render {
+  class TaskDelegate;
+}
+
 namespace app {
 namespace cmd {
 
@@ -25,7 +29,8 @@ namespace cmd {
   public:
     SetPixelFormat(doc::Sprite* sprite,
                    const doc::PixelFormat newFormat,
-                   const render::DitheringAlgorithm dithering);
+                   const render::DitheringAlgorithm dithering,
+                   render::TaskDelegate* delegate);
 
   protected:
     void onExecute() override;
@@ -40,7 +45,6 @@ namespace cmd {
 
     doc::PixelFormat m_oldFormat;
     doc::PixelFormat m_newFormat;
-    render::DitheringAlgorithm m_dithering;
     CmdSequence m_seq;
   };
 

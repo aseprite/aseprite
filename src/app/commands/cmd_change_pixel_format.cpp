@@ -16,6 +16,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/render_task_job.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
@@ -397,14 +398,20 @@ void ChangePixelFormatCommand::onExecute(Context* context)
   if (context->activeDocument()->sprite()->pixelFormat() == m_format)
     return;
 
-  {
-    ContextWriter writer(context);
-    Transaction transaction(writer.context(), "Color Mode Change");
-    Sprite* sprite(writer.sprite());
-
-    transaction.execute(new cmd::SetPixelFormat(sprite, m_format, m_dithering));
-    transaction.commit();
-  }
+  RenderTaskJob job(
+    "Converting Color Mode",
+    [this, &job, context]{
+      ContextWriter writer(context);
+      Transaction transaction(writer.context(), "Color Mode Change");
+      Sprite* sprite(writer.sprite());
+      transaction.execute(
+        new cmd::SetPixelFormat(
+          sprite, m_format, m_dithering, &job));
+      if (!job.isCanceled())
+        transaction.commit();
+    });
+  job.startJob();
+  job.waitJob();
 
   if (context->isUIAvailable())
     app_refresh_screen();

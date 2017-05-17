@@ -24,34 +24,74 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
+#include "render/task_delegate.h"
 
 namespace app {
 namespace cmd {
 
 using namespace doc;
 
+namespace {
+
+class SuperDelegate : public render::TaskDelegate {
+public:
+  SuperDelegate(int ncels, render::TaskDelegate* delegate)
+    : m_ncels(ncels)
+    , m_curCel(0)
+    , m_delegate(delegate) {
+  }
+
+  void notifyTaskProgress(double progress) override {
+    if (m_delegate)
+      m_delegate->notifyTaskProgress(
+        (progress + m_curCel) / m_ncels);
+  }
+
+  bool continueTask() override {
+    if (m_delegate)
+      return m_delegate->continueTask();
+    else
+      return true;
+  }
+
+  void nextCel() {
+    ++m_curCel;
+  }
+
+private:
+  int m_ncels;
+  int m_curCel;
+  TaskDelegate* m_delegate;
+};
+
+} // anonymous namespace
+
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
-                               const render::DitheringAlgorithm dithering)
+                               const render::DitheringAlgorithm dithering,
+                               render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
   , m_newFormat(newFormat)
-  , m_dithering(dithering)
 {
   if (sprite->pixelFormat() == newFormat)
     return;
+
+  SuperDelegate superDel(sprite->uniqueCels().size(), delegate);
 
   for (Cel* cel : sprite->uniqueCels()) {
     ImageRef old_image = cel->imageRef();
     ImageRef new_image(
       render::convert_pixel_format
-      (old_image.get(), NULL, newFormat, m_dithering,
+      (old_image.get(), NULL, newFormat, dithering,
        sprite->rgbMap(cel->frame()),
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),
-       old_image->maskColor()));
+       old_image->maskColor(),
+       &superDel));
 
     m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));
+    superDel.nextCel();
   }
 
   // Set all cels opacity to 100% if we are converting to indexed.
