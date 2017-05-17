@@ -23,21 +23,13 @@ namespace doc {
 }
 
 namespace render {
-
-  class PaletteOptimizerDelegate {
-  public:
-    virtual ~PaletteOptimizerDelegate() { }
-    virtual void onPaletteOptimizerProgress(double progress) = 0;
-    virtual bool onPaletteOptimizerContinue() = 0;
-  };
+  class TaskDelegate;
 
   class PaletteOptimizer {
   public:
     void feedWithImage(doc::Image* image, bool withAlpha);
     void feedWithRgbaColor(doc::color_t color);
-    void calculate(doc::Palette* palette,
-                   int maskIndex,
-                   render::PaletteOptimizerDelegate* delegate);
+    void calculate(doc::Palette* palette, int maskIndex);
 
   private:
     render::ColorHistogram<5, 6, 5, 5> m_histogram;
@@ -50,7 +42,7 @@ namespace render {
     const doc::frame_t toFrame,
     const bool withAlpha,
     doc::Palette* newPalette, // Can be NULL to create a new palette
-    render::PaletteOptimizerDelegate* delegate);
+    TaskDelegate* delegate);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.
@@ -63,7 +55,7 @@ namespace render {
     const doc::Palette* palette,
     bool is_background,
     doc::color_t new_mask_color,
-    bool* stopFlag = nullptr);
+    TaskDelegate* delegate = nullptr);
 
 } // namespace render
 

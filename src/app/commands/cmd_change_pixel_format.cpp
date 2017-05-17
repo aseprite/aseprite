@@ -26,6 +26,7 @@
 #include "render/dithering_algorithm.h"
 #include "render/quantization.h"
 #include "render/render.h"
+#include "render/task_delegate.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
@@ -75,7 +76,7 @@ private:
   render::DitheringAlgorithm m_dithering;
 };
 
-class ConvertThread {
+class ConvertThread : public render::TaskDelegate {
 public:
   ConvertThread(const doc::ImageRef& dstImage,
                 const doc::Sprite* sprite,
@@ -85,6 +86,7 @@ public:
     : m_image(dstImage)
     , m_running(true)
     , m_stopFlag(false)
+    , m_progress(0.0)
     , m_thread(
       [this,
        sprite, frame,
@@ -104,6 +106,10 @@ public:
 
   bool isRunning() const {
     return m_running;
+  }
+
+  double progress() const {
+    return m_progress;
   }
 
 private:
@@ -128,15 +134,25 @@ private:
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,
-      &m_stopFlag);
+      this);
 
     m_running = false;
   }
 
 private:
+  // render::TaskDelegate impl
+  bool continueTask() override {
+    return !m_stopFlag;
+  }
+
+  void notifyTaskProgress(double progress) override {
+    m_progress = progress;
+  }
+
   doc::ImageRef m_image;
   bool m_running;
   bool m_stopFlag;
+  double m_progress;
   base::thread m_thread;
 };
 
@@ -175,6 +191,8 @@ public:
 
     colorMode()->Change.connect(base::Bind<void>(&ColorModeWindow::onChangeColorMode, this));
     m_timer.Tick.connect(base::Bind<void>(&ColorModeWindow::onMonitorProgress, this));
+
+    progress()->setReadOnly(true);
 
     // Select first option
     colorMode()->selectIndex(0);
@@ -230,6 +248,9 @@ private:
 
     m_image->clear(0);
     m_editor->invalidate();
+    progress()->setValue(0);
+    progress()->setVisible(true);
+    layout();
 
     m_bgThread.reset(
       new ConvertThread(
@@ -251,7 +272,12 @@ private:
       m_timer.stop();
       m_bgThread->stop();
       m_bgThread.reset(nullptr);
+
+      progress()->setVisible(false);
+      layout();
     }
+    else
+      progress()->setValue(100 * m_bgThread->progress());
 
     m_editor->invalidate();
   }
@@ -374,7 +400,6 @@ void ChangePixelFormatCommand::onExecute(Context* context)
   {
     ContextWriter writer(context);
     Transaction transaction(writer.context(), "Color Mode Change");
-    Document* document(writer.document());
     Sprite* sprite(writer.sprite());
 
     transaction.execute(new cmd::SetPixelFormat(sprite, m_format, m_dithering));

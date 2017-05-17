@@ -6,8 +6,8 @@
     <view id="color_mode_view" expansive="true">
       <listbox id="color_mode" />
     </view>
+    <slider min="0" max="100" id="progress" minwidth="100" />
     <separator horizontal="true" />
-
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">

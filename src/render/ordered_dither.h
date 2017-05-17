@@ -12,6 +12,7 @@
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
+#include "render/task_delegate.h"
 
 #include <limits>
 
@@ -273,7 +274,7 @@ namespace render {
                                    int u, int v,
                                    const doc::RgbMap* rgbmap,
                                    const doc::Palette* palette,
-                                   bool* stopFlag = nullptr) {
+                                   TaskDelegate* delegate = nullptr) {
     const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
     doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
     auto srcIt = srcBits.begin();
@@ -286,8 +287,16 @@ namespace render {
         ASSERT(srcIt != srcBits.end());
         ASSERT(dstIt != dstBits.end());
         *dstIt = dithering.ditherRgbPixelToIndex(matrix, *srcIt, x+u, y+v, rgbmap, palette);
-        if (stopFlag && *stopFlag)
-          break;
+
+        if (delegate) {
+          if (!delegate->continueTask())
+            return;
+        }
+      }
+
+      if (delegate) {
+        delegate->notifyTaskProgress(
+          double(y+1) / double(h));
       }
     }
   }

@@ -23,6 +23,7 @@
 #include "gfx/rgb.h"
 #include "render/ordered_dither.h"
 #include "render/render.h"
+#include "render/task_delegate.h"
 
 #include <algorithm>
 #include <limits>
@@ -40,7 +41,7 @@ Palette* create_palette_from_sprite(
   const frame_t toFrame,
   const bool withAlpha,
   Palette* palette,
-  PaletteOptimizerDelegate* delegate)
+  TaskDelegate* delegate)
 {
   PaletteOptimizer optimizer;
 
@@ -58,10 +59,10 @@ Palette* create_palette_from_sprite(
     optimizer.feedWithImage(flat_image.get(), withAlpha);
 
     if (delegate) {
-      if (!delegate->onPaletteOptimizerContinue())
+      if (!delegate->continueTask())
         return nullptr;
 
-      delegate->onPaletteOptimizerProgress(
+      delegate->notifyTaskProgress(
         double(frame-fromFrame+1) / double(toFrame-fromFrame+1));
     }
   }
@@ -71,8 +72,7 @@ Palette* create_palette_from_sprite(
     palette,
     // Transparent color is needed if we have transparent layers
     (sprite->backgroundLayer() &&
-     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()),
-    delegate);
+     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
 
   return palette;
 }
@@ -86,7 +86,7 @@ Image* convert_pixel_format(
   const Palette* palette,
   bool is_background,
   color_t new_mask_color,
-  bool* stopFlag)
+  TaskDelegate* delegate)
 {
   if (!new_image)
     new_image = Image::create(pixelFormat, image->width(), image->height());
@@ -100,12 +100,12 @@ Image* convert_pixel_format(
     switch (ditheringAlgorithm) {
       case DitheringAlgorithm::OldOrdered: {
         OrderedDither dither;
-        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, stopFlag);
+        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, delegate);
         break;
       }
       case DitheringAlgorithm::Ordered: {
         OrderedDither2 dither;
-        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, stopFlag);
+        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, delegate);
         break;
       }
     }
@@ -388,8 +388,7 @@ void PaletteOptimizer::feedWithRgbaColor(color_t color)
   m_histogram.addSamples(color, 1);
 }
 
-void PaletteOptimizer::calculate(Palette* palette, int maskIndex,
-                                 PaletteOptimizerDelegate* delegate)
+void PaletteOptimizer::calculate(Palette* palette, int maskIndex)
 {
   bool addMask;
 

@@ -756,7 +756,7 @@ private:
     }
 
     Palette newPalette(0, 256);
-    optimizer.calculate(&newPalette, m_bgIndex, nullptr);
+    optimizer.calculate(&newPalette, m_bgIndex);
     m_sprite->setPalette(&newPalette, false);
   }
 
@@ -1245,7 +1245,7 @@ private:
     }
 
     Palette* palette = new Palette(0, 256);
-    optimizer.calculate(palette, m_transparentIndex, nullptr);
+    optimizer.calculate(palette, m_transparentIndex);
     return palette;
   }
 

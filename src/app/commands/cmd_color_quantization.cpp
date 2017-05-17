@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,6 +25,7 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
+#include "render/task_delegate.h"
 #include "ui/manager.h"
 
 #include "palette_from_sprite.xml.h"
@@ -42,7 +43,7 @@ protected:
 };
 
 class ColorQuantizationJob : public Job,
-                             public render::PaletteOptimizerDelegate {
+                             public render::TaskDelegate {
 public:
   ColorQuantizationJob(Sprite* sprite, bool withAlpha, Palette* palette)
     : Job("Creating Palette")
@@ -59,11 +60,11 @@ private:
       m_withAlpha, m_palette, this);
   }
 
-  bool onPaletteOptimizerContinue() override {
+  bool continueTask() override {
     return !isCanceled();
   }
 
-  void onPaletteOptimizerProgress(double progress) override {
+  void notifyTaskProgress(double progress) override {
     jobProgress(progress);
   }
 
