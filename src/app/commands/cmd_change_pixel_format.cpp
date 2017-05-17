@@ -9,10 +9,10 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_pixel_format.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -367,13 +367,17 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     m_dithering = window.ditheringAlgorithm();
   }
 
+  // No conversion needed
+  if (context->activeDocument()->sprite()->pixelFormat() == m_format)
+    return;
+
   {
     ContextWriter writer(context);
     Transaction transaction(writer.context(), "Color Mode Change");
     Document* document(writer.document());
     Sprite* sprite(writer.sprite());
 
-    document->getApi(transaction).setPixelFormat(sprite, m_format, m_dithering);
+    transaction.execute(new cmd::SetPixelFormat(sprite, m_format, m_dithering));
     transaction.commit();
   }
 

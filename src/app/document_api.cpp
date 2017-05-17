@@ -37,7 +37,6 @@
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_mask_position.h"
 #include "app/cmd/set_palette.h"
-#include "app/cmd/set_pixel_format.h"
 #include "app/cmd/set_slice_key.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_total_frames.h"
@@ -55,8 +54,8 @@
 #include "doc/frame_tag.h"
 #include "doc/frame_tags.h"
 #include "doc/mask.h"
+#include "doc/palette.h"
 #include "doc/slice.h"
-#include "render/quantization.h"
 #include "render/render.h"
 
 #include <set>
@@ -179,16 +178,6 @@ void DocumentApi::trimSprite(Sprite* sprite)
 
   if (!bounds.isEmpty())
     cropSprite(sprite, bounds);
-}
-
-void DocumentApi::setPixelFormat(Sprite* sprite,
-                                 const PixelFormat newFormat,
-                                 const render::DitheringAlgorithm dithering)
-{
-  if (sprite->pixelFormat() == newFormat)
-    return;
-
-  m_transaction.execute(new cmd::SetPixelFormat(sprite, newFormat, dithering));
 }
 
 void DocumentApi::addFrame(Sprite* sprite, frame_t newFrame)
