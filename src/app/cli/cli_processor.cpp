@@ -32,6 +32,7 @@
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/slice.h"
+#include "render/dithering_algorithm.h"
 
 namespace app {
 
@@ -138,6 +139,7 @@ void CliProcessor::process()
     CliOpenFile cof;
     SpriteSheetType sheetType = SpriteSheetType::None;
     app::Document* lastDoc = nullptr;
+    render::DitheringAlgorithm ditheringAlgorithm = render::DitheringAlgorithm::None;
 
     for (const auto& value : m_options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -342,6 +344,15 @@ void CliProcessor::process()
             ctx->executeCommand(command);
           }
         }
+        // --dithering-algorithm <algorithm>
+        else if (opt == &m_options.ditheringAlgorithm()) {
+          if (value.value() == "none")
+            ditheringAlgorithm = render::DitheringAlgorithm::None;
+          else if (value.value() == "old-ordered")
+            ditheringAlgorithm = render::DitheringAlgorithm::OldOrdered;
+          else if (value.value() == "ordered")
+            ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
+        }
         // --color-mode <mode>
         else if (opt == &m_options.colorMode()) {
           Command* command = CommandsModule::instance()->getCommandByName(CommandId::ChangePixelFormat);
@@ -354,15 +365,22 @@ void CliProcessor::process()
           }
           else if (value.value() == "indexed") {
             params.set("format", "indexed");
-          }
-          else if (value.value() == "indexed-ordered-dithering") {
-            params.set("format", "indexed");
-            params.set("dithering", "ordered");
+            switch (ditheringAlgorithm) {
+              case render::DitheringAlgorithm::None:
+                params.set("dithering", "none");
+                break;
+              case render::DitheringAlgorithm::OldOrdered:
+                params.set("dithering", "old-ordered");
+                break;
+              case render::DitheringAlgorithm::Ordered:
+                params.set("dithering", "ordered");
+                break;
+            }
           }
           else {
             throw std::runtime_error("--color-mode needs a valid color mode for conversion\n"
                                      "Usage: --color-mode <mode>\n"
-                                     "Where <mode> can be rgb, grayscale, indexed, or indexed-ordered-dithering");
+                                     "Where <mode> can be rgb, grayscale, or indexed");
           }
 
           for (auto doc : ctx->documents()) {

@@ -56,6 +56,9 @@ public:
           case render::DitheringAlgorithm::None:
             setText("-> Indexed");
             break;
+          case render::DitheringAlgorithm::OldOrdered:
+            setText("-> Indexed w/Old Ordered Dithering");
+            break;
           case render::DitheringAlgorithm::Ordered:
             setText("-> Indexed w/Ordered Dithering");
             break;
@@ -144,6 +147,7 @@ public:
     , m_editor(editor)
     , m_image(nullptr)
     , m_imageBuffer(new doc::ImageBuffer)
+    , m_selectedItem(nullptr)
   {
     doc::PixelFormat from = m_editor->sprite()->pixelFormat();
 
@@ -160,6 +164,7 @@ public:
     if (from != IMAGE_INDEXED) {
       colorMode()->addChild(new ConversionItem(IMAGE_INDEXED));
       colorMode()->addChild(new ConversionItem(IMAGE_INDEXED, render::DitheringAlgorithm::Ordered));
+      colorMode()->addChild(new ConversionItem(IMAGE_INDEXED, render::DitheringAlgorithm::OldOrdered));
     }
     if (from != IMAGE_GRAYSCALE)
       colorMode()->addChild(new ConversionItem(IMAGE_GRAYSCALE));
@@ -176,35 +181,39 @@ public:
   }
 
   ~ColorModeWindow() {
-    m_editor->renderEngine().removePreviewImage();
-    m_editor->invalidate();
+    stop();
   }
 
   doc::PixelFormat pixelFormat() const {
-    return
-      static_cast<ConversionItem*>(colorMode()->getSelectedChild())
-      ->pixelFormat();
+    ASSERT(m_selectedItem);
+    return m_selectedItem->pixelFormat();
   }
 
   render::DitheringAlgorithm ditheringAlgorithm() const {
-    return
-      static_cast<ConversionItem*>(colorMode()->getSelectedChild())
-      ->ditheringAlgorithm();
+    ASSERT(m_selectedItem);
+    return m_selectedItem->ditheringAlgorithm();
   }
 
 private:
-  void onChangeColorMode() {
-    m_timer.stop();
 
+  void stop() {
+    m_timer.stop();
     if (m_bgThread) {
       m_bgThread->stop();
       m_bgThread.reset(nullptr);
     }
-
     m_editor->renderEngine().removePreviewImage();
+    m_editor->invalidate();
+  }
 
+  void onChangeColorMode() {
     ConversionItem* item =
       static_cast<ConversionItem*>(colorMode()->getSelectedChild());
+    if (item == m_selectedItem) // Avoid restarting the conversion process for the same option
+      return;
+    m_selectedItem = item;
+
+    stop();
 
     m_image.reset(
       Image::create(item->pixelFormat(),
@@ -252,6 +261,7 @@ private:
   doc::ImageRef m_image;
   doc::ImageBufferPtr m_imageBuffer;
   base::UniquePtr<ConvertThread> m_bgThread;
+  ConversionItem* m_selectedItem;
 };
 
 } // anonymous namespace
@@ -297,6 +307,8 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
   std::string dithering = params.get("dithering");
   if (dithering == "ordered")
     m_dithering = render::DitheringAlgorithm::Ordered;
+  else if (dithering == "old-ordered")
+    m_dithering = render::DitheringAlgorithm::OldOrdered;
   else
     m_dithering = render::DitheringAlgorithm::None;
 }
@@ -314,7 +326,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
 
   if (sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering == render::DitheringAlgorithm::Ordered)
+      m_dithering != render::DitheringAlgorithm::None)
     return false;
 
   return true;
@@ -331,7 +343,7 @@ bool ChangePixelFormatCommand::onChecked(Context* context)
   if (sprite &&
       sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering == render::DitheringAlgorithm::Ordered)
+      m_dithering != render::DitheringAlgorithm::None)
     return false;
 
   return

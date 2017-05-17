@@ -95,12 +95,20 @@ Image* convert_pixel_format(
   // RGB -> Indexed with ordered dithering
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
-      ditheringAlgorithm == DitheringAlgorithm::Ordered) {
+      ditheringAlgorithm != DitheringAlgorithm::None) {
     BayerMatrix<8> matrix;
-    OrderedDither dither;
-    dither.ditherRgbImageToIndexed(matrix, image, new_image,
-                                   0, 0, rgbmap, palette,
-                                   stopFlag);
+    switch (ditheringAlgorithm) {
+      case DitheringAlgorithm::OldOrdered: {
+        OrderedDither dither;
+        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, stopFlag);
+        break;
+      }
+      case DitheringAlgorithm::Ordered: {
+        OrderedDither2 dither;
+        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, stopFlag);
+        break;
+      }
+    }
     return new_image;
   }
 
