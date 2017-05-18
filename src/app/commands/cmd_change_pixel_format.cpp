@@ -83,8 +83,10 @@ public:
                 const doc::Sprite* sprite,
                 const doc::frame_t frame,
                 const doc::PixelFormat pixelFormat,
-                const render::DitheringAlgorithm ditheringAlgorithm)
+                const render::DitheringAlgorithm ditheringAlgorithm,
+                const gfx::Point& pos)
     : m_image(dstImage)
+    , m_pos(pos)
     , m_running(true)
     , m_stopFlag(false)
     , m_progress(0.0)
@@ -118,13 +120,18 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::DitheringAlgorithm ditheringAlgorithm) {
-    doc::ImageRef tmp(Image::create(sprite->pixelFormat(),
-                                    sprite->width(),
-                                    sprite->height()));
+    doc::ImageRef tmp(
+      Image::create(sprite->pixelFormat(),
+                    m_image->width(),
+                    m_image->height()));
 
     render::Render render;
     render.renderSprite(
-      tmp.get(), sprite, frame);
+      tmp.get(), sprite, frame,
+      gfx::Clip(0, 0,
+                m_pos.x, m_pos.y,
+                m_image->width(),
+                m_image->height()));
 
     render::convert_pixel_format(
       tmp.get(),
@@ -151,6 +158,7 @@ private:
   }
 
   doc::ImageRef m_image;
+  gfx::Point m_pos;
   bool m_running;
   bool m_stopFlag;
   double m_progress;
@@ -234,17 +242,21 @@ private:
 
     stop();
 
+    gfx::Rect visibleBounds = m_editor->getVisibleSpriteBounds();
+    if (visibleBounds.isEmpty())
+      return;
+
     m_image.reset(
       Image::create(item->pixelFormat(),
-                    m_editor->sprite()->width(),
-                    m_editor->sprite()->height(),
+                    visibleBounds.w,
+                    visibleBounds.h,
                     m_imageBuffer));
 
     m_editor->renderEngine().setPreviewImage(
       nullptr,
       m_editor->frame(),
       m_image.get(),
-      gfx::Point(0, 0),
+      visibleBounds.origin(),
       doc::BlendMode::NORMAL);
 
     m_image->clear(0);
@@ -259,7 +271,8 @@ private:
         m_editor->sprite(),
         m_editor->frame(),
         item->pixelFormat(),
-        item->ditheringAlgorithm()));
+        item->ditheringAlgorithm(),
+        visibleBounds.origin()));
 
     m_timer.start();
   }
