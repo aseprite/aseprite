@@ -352,6 +352,10 @@ void CliProcessor::process()
             ditheringAlgorithm = render::DitheringAlgorithm::OldOrdered;
           else if (value.value() == "ordered")
             ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
+          else
+            throw std::runtime_error("--dithering-algorithm needs a valid algorithm name\n"
+                                     "Usage: --dithering-algorithm <algorithm>\n"
+                                     "Where <algorithm> can be none, old-ordered, or ordered");
         }
         // --color-mode <mode>
         else if (opt == &m_options.colorMode()) {
