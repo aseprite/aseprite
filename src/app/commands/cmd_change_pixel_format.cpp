@@ -316,6 +316,7 @@ protected:
   bool onEnabled(Context* context) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   bool m_useUI;
@@ -428,6 +429,37 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
   if (context->isUIAvailable())
     app_refresh_screen();
+}
+
+std::string ChangePixelFormatCommand::onGetFriendlyName() const
+{
+  std::string text = "Change Color Mode";
+
+  if (!m_useUI) {
+    switch (m_format) {
+      case IMAGE_RGB:
+        text += " to RGB";
+        break;
+      case IMAGE_INDEXED:
+        text += " to Indexed";
+        switch (m_dithering) {
+          case render::DitheringAlgorithm::None:
+            break;
+          case render::DitheringAlgorithm::OldOrdered:
+            text += " with Old Ordered Dithering";
+            break;
+          case render::DitheringAlgorithm::Ordered:
+            text += " with Ordered Dithering";
+            break;
+        }
+        break;
+      case IMAGE_GRAYSCALE:
+        text += " to Grayscale";
+        break;
+    }
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createChangePixelFormatCommand()

@@ -428,6 +428,20 @@
       <key command="SelectTile">
         <param name="mode" value="subtract" />
       </key>
+      <key command="ChangePixelFormat">
+        <param name="format" value="rgb" />
+      </key>
+      <key command="ChangePixelFormat">
+        <param name="format" value="grayscale" />
+      </key>
+      <key command="ChangePixelFormat">
+        <param name="format" value="indexed" />
+        <param name="dithering" value="ordered" />
+      </key>
+      <key command="ChangePixelFormat">
+        <param name="format" value="indexed" />
+        <param name="dithering" value="old-ordered" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
