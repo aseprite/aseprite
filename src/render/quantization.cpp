@@ -99,12 +99,12 @@ Image* convert_pixel_format(
     BayerMatrix<8> matrix;
     switch (ditheringAlgorithm) {
       case DitheringAlgorithm::OldOrdered: {
-        OrderedDither dither;
+        OrderedDither dither(is_background ? -1: new_mask_color);
         dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, delegate);
         break;
       }
       case DitheringAlgorithm::Ordered: {
-        OrderedDither2 dither;
+        OrderedDither2 dither(is_background ? -1: new_mask_color);
         dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, delegate);
         break;
       }

@@ -84,7 +84,8 @@ namespace render {
       const doc::RgbMap* rgbmap,
       const doc::Palette* palette) {
       // Alpha=0, output transparent color
-      if (m_transparentIndex >= 0 && !doc::rgba_geta(color))
+      if (m_transparentIndex >= 0 &&
+          doc::rgba_geta(color) == 0)
         return m_transparentIndex;
 
       // Get the nearest color in the palette with the given RGB
@@ -165,11 +166,17 @@ namespace render {
   class OrderedDither2 {
     static int colorDistance(int r1, int g1, int b1, int a1,
                              int r2, int g2, int b2, int a2) {
+      int result = 0;
+
       // The factor for RGB components came from doc::rba_luma()
-      return int(std::abs(r1-r2) * 2126 +
-                 std::abs(g1-g2) * 7152 +
-                 std::abs(b1-b2) *  722 +
-                 std::abs(a1-a2));
+      if (a1 && a2) {
+        result += int(std::abs(r1-r2) * 2126 +
+                      std::abs(g1-g2) * 7152 +
+                      std::abs(b1-b2) *  722);
+      }
+
+      result += (std::abs(a1-a2) * 20000);
+      return result;
     }
 
   public:
@@ -212,6 +219,9 @@ namespace render {
       int altIndex = -1;
       int closestDistance = std::numeric_limits<int>::max();
       for (int i=0; i<palette->size(); ++i) {
+        if (i == m_transparentIndex)
+          continue;
+
         const doc::color_t color1 = palette->getEntry(i);
         const int r1 = doc::rgba_getr(color1);
         const int g1 = doc::rgba_getg(color1);
@@ -228,9 +238,13 @@ namespace render {
 
         int mix = 0;
         int div = 0;
-        if (r1-r0) mix += 2126 * maxMixValue * (r-r0) / (r1-r0), div += 2126;
-        if (g1-g0) mix += 7152 * maxMixValue * (g-g0) / (g1-g0), div += 7152;
-        if (b1-b0) mix +=  722 * maxMixValue * (b-b0) / (b1-b0), div +=  722;
+        // If Alpha=0, RGB values are not representative for this entry.
+        if (a && a0 && a1) {
+          if (r1-r0) mix += 2126 * maxMixValue * (r-r0) / (r1-r0), div += 2126;
+          if (g1-g0) mix += 7152 * maxMixValue * (g-g0) / (g1-g0), div += 7152;
+          if (b1-b0) mix +=  722 * maxMixValue * (b-b0) / (b1-b0), div +=  722;
+        }
+        if (a1-a0) mix += 20000 * maxMixValue * (a-a0) / (a1-a0), div += 20000;
         if (mix) {
           if (div)
             mix /= div;
