@@ -84,7 +84,6 @@ namespace app {
     void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
     void backgroundFromLayer(Layer* layer);
     void layerFromBackground(Layer* layer);
-    void flattenLayers(Sprite* sprite);
     Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
     Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
 

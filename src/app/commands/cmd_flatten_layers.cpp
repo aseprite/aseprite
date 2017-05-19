@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,12 +8,12 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/flatten_layers.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/color_bar.h"
 #include "app/transaction.h"
+#include "app/ui/color_bar.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -43,11 +43,10 @@ bool FlattenLayersCommand::onEnabled(Context* context)
 void FlattenLayersCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document = writer.document();
   Sprite* sprite = writer.sprite();
   {
     Transaction transaction(writer.context(), "Flatten Layers");
-    document->getApi(transaction).flattenLayers(sprite);
+    transaction.execute(new cmd::FlattenLayers(sprite));
     transaction.commit();
   }
   update_screen_for_document(writer.document());

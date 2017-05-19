@@ -18,7 +18,6 @@
 #include "app/cmd/clear_image.h"
 #include "app/cmd/copy_cel.h"
 #include "app/cmd/copy_frame.h"
-#include "app/cmd/flatten_layers.h"
 #include "app/cmd/flip_image.h"
 #include "app/cmd/layer_from_background.h"
 #include "app/cmd/move_cel.h"
@@ -478,11 +477,6 @@ void DocumentApi::backgroundFromLayer(Layer* layer)
 void DocumentApi::layerFromBackground(Layer* layer)
 {
   m_transaction.execute(new cmd::LayerFromBackground(layer));
-}
-
-void DocumentApi::flattenLayers(Sprite* sprite)
-{
-  m_transaction.execute(new cmd::FlattenLayers(sprite));
 }
 
 Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
