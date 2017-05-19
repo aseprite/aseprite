@@ -9,6 +9,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/flatten_layers.h"
 #include "app/cmd/set_pixel_format.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -221,6 +222,10 @@ public:
     return m_selectedItem->ditheringAlgorithm();
   }
 
+  bool flattenEnabled() const {
+    return flatten()->isSelected();
+  }
+
 private:
 
   void stop() {
@@ -394,6 +399,8 @@ bool ChangePixelFormatCommand::onChecked(Context* context)
 
 void ChangePixelFormatCommand::onExecute(Context* context)
 {
+  bool flatten = false;
+
   if (m_useUI) {
     ColorModeWindow window(current_editor);
 
@@ -406,6 +413,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
     m_format = window.pixelFormat();
     m_dithering = window.ditheringAlgorithm();
+    flatten = window.flattenEnabled();
   }
 
   // No conversion needed
@@ -414,10 +422,14 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
   RenderTaskJob job(
     "Converting Color Mode",
-    [this, &job, context]{
+    [this, &job, context, flatten]{
       ContextWriter writer(context);
       Transaction transaction(writer.context(), "Color Mode Change");
       Sprite* sprite(writer.sprite());
+
+      if (flatten)
+        transaction.execute(new cmd::FlattenLayers(sprite));
+
       transaction.execute(
         new cmd::SetPixelFormat(
           sprite, m_format, m_dithering, &job));
