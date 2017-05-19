@@ -32,6 +32,7 @@
 #include "app/util/new_image_from_mask.h"
 #include "base/shared_ptr.h"
 #include "doc/doc.h"
+#include "render/ordered_dither.h"
 #include "render/quantization.h"
 
 #include <stdexcept>
@@ -333,6 +334,7 @@ void paste()
           render::convert_pixel_format(
             clipboard_image.get(), NULL, dstSpr->pixelFormat(),
             render::DitheringAlgorithm::None,
+            render::DitheringMatrix(),
             dst_rgbmap, clipboard_palette.get(),
             false,
             0));

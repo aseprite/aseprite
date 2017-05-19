@@ -140,6 +140,7 @@ void CliProcessor::process()
     SpriteSheetType sheetType = SpriteSheetType::None;
     app::Document* lastDoc = nullptr;
     render::DitheringAlgorithm ditheringAlgorithm = render::DitheringAlgorithm::None;
+    std::string ditheringMatrix;
 
     for (const auto& value : m_options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -357,6 +358,10 @@ void CliProcessor::process()
                                      "Usage: --dithering-algorithm <algorithm>\n"
                                      "Where <algorithm> can be none, old-ordered, or ordered");
         }
+        // --dithering-matrix <id>
+        else if (opt == &m_options.ditheringMatrix()) {
+          ditheringMatrix = value.value();
+        }
         // --color-mode <mode>
         else if (opt == &m_options.colorMode()) {
           Command* command = CommandsModule::instance()->getCommandByName(CommandId::ChangePixelFormat);
@@ -379,6 +384,11 @@ void CliProcessor::process()
               case render::DitheringAlgorithm::Ordered:
                 params.set("dithering", "ordered");
                 break;
+            }
+
+            if (ditheringAlgorithm != render::DitheringAlgorithm::None &&
+                !ditheringMatrix.empty()) {
+              params.set("dithering-matrix", ditheringMatrix.c_str());
             }
           }
           else {

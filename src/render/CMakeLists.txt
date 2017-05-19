@@ -1,8 +1,9 @@
 # Aseprite Render Library
-# Copyright (C) 2001-2016 David Capello
+# Copyright (C) 2001-2017 David Capello
 
 add_library(render-lib
   get_sprite_pixel.cpp
+  ordered_dither.cpp
   quantization.cpp
   render.cpp
   zoom.cpp)

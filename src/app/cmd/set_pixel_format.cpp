@@ -68,7 +68,8 @@ private:
 
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
-                               const render::DitheringAlgorithm dithering,
+                               const render::DitheringAlgorithm ditheringAlgorithm,
+                               const render::DitheringMatrix& ditheringMatrix,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
@@ -83,7 +84,9 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
     ImageRef old_image = cel->imageRef();
     ImageRef new_image(
       render::convert_pixel_format
-      (old_image.get(), NULL, newFormat, dithering,
+      (old_image.get(), nullptr, newFormat,
+       ditheringAlgorithm,
+       ditheringMatrix,
        sprite->rgbMap(cel->frame()),
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),

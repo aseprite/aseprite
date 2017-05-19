@@ -14,6 +14,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
+#include "app/file/file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -26,6 +27,7 @@
 #include "doc/image.h"
 #include "doc/sprite.h"
 #include "render/dithering_algorithm.h"
+#include "render/ordered_dither.h"
 #include "render/quantization.h"
 #include "render/render.h"
 #include "render/task_delegate.h"
@@ -85,6 +87,7 @@ public:
                 const doc::frame_t frame,
                 const doc::PixelFormat pixelFormat,
                 const render::DitheringAlgorithm ditheringAlgorithm,
+                const render::DitheringMatrix& ditheringMatrix,
                 const gfx::Point& pos)
     : m_image(dstImage)
     , m_pos(pos)
@@ -95,10 +98,12 @@ public:
       [this,
        sprite, frame,
        pixelFormat,
-       ditheringAlgorithm]() {
+       ditheringAlgorithm,
+       ditheringMatrix]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
-            ditheringAlgorithm);
+            ditheringAlgorithm,
+            ditheringMatrix);
       })
   {
   }
@@ -120,7 +125,8 @@ private:
   void run(const Sprite* sprite,
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
-           const render::DitheringAlgorithm ditheringAlgorithm) {
+           const render::DitheringAlgorithm ditheringAlgorithm,
+           const render::DitheringMatrix& ditheringMatrix) {
     doc::ImageRef tmp(
       Image::create(sprite->pixelFormat(),
                     m_image->width(),
@@ -139,6 +145,7 @@ private:
       m_image.get(),
       pixelFormat,
       ditheringAlgorithm,
+      ditheringMatrix,
       sprite->rgbMap(frame),
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
@@ -277,6 +284,7 @@ private:
         m_editor->frame(),
         item->pixelFormat(),
         item->ditheringAlgorithm(),
+        render::BayerMatrix(8), // TODO this must be configurable
         visibleBounds.origin()));
 
     m_timer.start();
@@ -326,7 +334,8 @@ protected:
 private:
   bool m_useUI;
   doc::PixelFormat m_format;
-  render::DitheringAlgorithm m_dithering;
+  render::DitheringAlgorithm m_ditheringAlgorithm;
+  render::DitheringMatrix m_ditheringMatrix;
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
@@ -336,7 +345,7 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
 {
   m_useUI = true;
   m_format = IMAGE_RGB;
-  m_dithering = render::DitheringAlgorithm::None;
+  m_ditheringAlgorithm = render::DitheringAlgorithm::None;
 }
 
 void ChangePixelFormatCommand::onLoadParams(const Params& params)
@@ -352,11 +361,54 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
 
   std::string dithering = params.get("dithering");
   if (dithering == "ordered")
-    m_dithering = render::DitheringAlgorithm::Ordered;
+    m_ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
   else if (dithering == "old-ordered")
-    m_dithering = render::DitheringAlgorithm::OldOrdered;
+    m_ditheringAlgorithm = render::DitheringAlgorithm::OldOrdered;
   else
-    m_dithering = render::DitheringAlgorithm::None;
+    m_ditheringAlgorithm = render::DitheringAlgorithm::None;
+
+  std::string matrix = params.get("dithering-matrix");
+  // TODO object slicing here (from BayerMatrix -> DitheringMatrix
+  if (!matrix.empty()) {
+    if (matrix == "bayer2x2")
+      m_ditheringMatrix = render::BayerMatrix(2);
+    else if (matrix == "bayer4x4")
+      m_ditheringMatrix = render::BayerMatrix(4);
+    else if (matrix == "bayer8x8")
+      m_ditheringMatrix = render::BayerMatrix(8);
+    else {
+      // Load a matrix from a file
+      base::UniquePtr<doc::Document> doc(load_document(nullptr, matrix));
+      if (doc) {
+        // Flatten layers
+        doc::Sprite* spr = doc->sprite();
+        app::Context ctx;
+        cmd::FlattenLayers(spr).execute(&ctx);
+
+        const doc::Layer* lay = spr->root()->firstLayer();
+        const doc::Image* img = (lay && lay->cel(0) ?
+                                 lay->cel(0)->image(): nullptr);
+        if (img) {
+          const int w = spr->width();
+          const int h = spr->height();
+          m_ditheringMatrix = render::DitheringMatrix(h, w);
+          for (int i=0; i<h; ++i)
+            for (int j=0; j<w; ++j)
+              m_ditheringMatrix(i, j) = img->getPixel(j, i);
+          m_ditheringMatrix.calcMaxValue();
+        }
+        else {
+          m_ditheringMatrix = render::DitheringMatrix();
+        }
+      }
+      else
+        throw std::runtime_error("Invalid matrix name");
+    }
+  }
+  // Default dithering matrix is BayerMatrix(8)
+  else {
+    m_ditheringMatrix = render::BayerMatrix(8);
+  }
 }
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
@@ -372,7 +424,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
 
   if (sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering != render::DitheringAlgorithm::None)
+      m_ditheringAlgorithm != render::DitheringAlgorithm::None)
     return false;
 
   return true;
@@ -389,7 +441,7 @@ bool ChangePixelFormatCommand::onChecked(Context* context)
   if (sprite &&
       sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering != render::DitheringAlgorithm::None)
+      m_ditheringAlgorithm != render::DitheringAlgorithm::None)
     return false;
 
   return
@@ -412,7 +464,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
       return;
 
     m_format = window.pixelFormat();
-    m_dithering = window.ditheringAlgorithm();
+    m_ditheringAlgorithm = window.ditheringAlgorithm();
     flatten = window.flattenEnabled();
   }
 
@@ -432,7 +484,9 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
       transaction.execute(
         new cmd::SetPixelFormat(
-          sprite, m_format, m_dithering, &job));
+          sprite, m_format,
+          m_ditheringAlgorithm,
+          m_ditheringMatrix, &job));
       if (!job.isCanceled())
         transaction.commit();
     });
@@ -454,7 +508,7 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
         break;
       case IMAGE_INDEXED:
         text += " to Indexed";
-        switch (m_dithering) {
+        switch (m_ditheringAlgorithm) {
           case render::DitheringAlgorithm::None:
             break;
           case render::DitheringAlgorithm::OldOrdered:

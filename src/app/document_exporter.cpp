@@ -38,6 +38,7 @@
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
 #include "render/dithering_algorithm.h"
+#include "render/ordered_dither.h"
 #include "render/render.h"
 
 #include <cstdio>
@@ -708,6 +709,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
         sample.sprite(),
         textureImage->pixelFormat(),
         render::DitheringAlgorithm::None,
+        render::DitheringMatrix(),
         nullptr)                // TODO add a delegate to show progress
         .execute(UIContext::instance());
     }

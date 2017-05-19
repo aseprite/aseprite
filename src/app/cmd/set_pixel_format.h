@@ -18,6 +18,7 @@ namespace doc {
 }
 
 namespace render {
+  class DitheringMatrix;
   class TaskDelegate;
 }
 
@@ -29,7 +30,8 @@ namespace cmd {
   public:
     SetPixelFormat(doc::Sprite* sprite,
                    const doc::PixelFormat newFormat,
-                   const render::DitheringAlgorithm dithering,
+                   const render::DitheringAlgorithm ditheringAlgorithm,
+                   const render::DitheringMatrix& ditheringMatrix,
                    render::TaskDelegate* delegate);
 
   protected:

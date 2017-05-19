@@ -10,7 +10,7 @@
 
 #include "render/quantization.h"
 
-#include "base/base.h"
+#include "base/unique_ptr.h"
 #include "doc/image_impl.h"
 #include "doc/images_collector.h"
 #include "doc/layer.h"
@@ -82,6 +82,7 @@ Image* convert_pixel_format(
   Image* new_image,
   PixelFormat pixelFormat,
   DitheringAlgorithm ditheringAlgorithm,
+  const DitheringMatrix& ditheringMatrix,
   const RgbMap* rgbmap,
   const Palette* palette,
   bool is_background,
@@ -96,19 +97,18 @@ Image* convert_pixel_format(
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
       ditheringAlgorithm != DitheringAlgorithm::None) {
-    BayerMatrix<8> matrix;
+    base::UniquePtr<DitheringAlgorithmBase> dither;
     switch (ditheringAlgorithm) {
-      case DitheringAlgorithm::OldOrdered: {
-        OrderedDither dither(is_background ? -1: new_mask_color);
-        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, delegate);
+      case DitheringAlgorithm::OldOrdered:
+        dither.reset(new OrderedDither(is_background ? -1: new_mask_color));
         break;
-      }
-      case DitheringAlgorithm::Ordered: {
-        OrderedDither2 dither(is_background ? -1: new_mask_color);
-        dither_rgb_image_to_indexed(dither, matrix, image, new_image, 0, 0, rgbmap, palette, delegate);
+      case DitheringAlgorithm::Ordered:
+        dither.reset(new OrderedDither2(is_background ? -1: new_mask_color));
         break;
-      }
     }
+    if (dither)
+      dither_rgb_image_to_indexed(
+        *dither, ditheringMatrix, image, new_image, 0, 0, rgbmap, palette, delegate);
     return new_image;
   }
 

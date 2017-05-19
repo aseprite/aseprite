@@ -49,6 +49,7 @@ public:
   const Option& palette() const { return m_palette; }
   const Option& scale() const { return m_scale; }
   const Option& ditheringAlgorithm() const { return m_ditheringAlgorithm; }
+  const Option& ditheringMatrix() const { return m_ditheringMatrix; }
   const Option& colorMode() const { return m_colorMode; }
   const Option& shrinkTo() const { return m_shrinkTo; }
   const Option& data() const { return m_data; }
@@ -103,6 +104,7 @@ private:
   Option& m_palette;
   Option& m_scale;
   Option& m_ditheringAlgorithm;
+  Option& m_ditheringMatrix;
   Option& m_colorMode;
   Option& m_shrinkTo;
   Option& m_data;

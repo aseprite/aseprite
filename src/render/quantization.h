@@ -23,6 +23,7 @@ namespace doc {
 }
 
 namespace render {
+  class DitheringMatrix;
   class TaskDelegate;
 
   class PaletteOptimizer {
@@ -51,6 +52,7 @@ namespace render {
     doc::Image* dst,         // Can be NULL to create a new image
     doc::PixelFormat pixelFormat,
     render::DitheringAlgorithm ditheringAlgorithm,
+    const render::DitheringMatrix& ditheringMatrix,
     const doc::RgbMap* rgbmap,
     const doc::Palette* palette,
     bool is_background,

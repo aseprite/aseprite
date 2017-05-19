@@ -25,6 +25,7 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "render/ordered_dither.h"
 #include "render/quantization.h"
 #include "render/render.h"
 #include "ui/ui.h"
@@ -271,6 +272,7 @@ void NewLayerCommand::onExecute(Context* context)
               nullptr,
               sprite->pixelFormat(),
               render::DitheringAlgorithm::None,
+              render::DitheringMatrix(),
               sprite->rgbMap(dstFrame),
               pasteSpr->palette(fr),
               (pasteSpr->backgroundLayer() ? true: false),

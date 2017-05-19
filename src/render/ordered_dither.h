@@ -14,33 +14,61 @@
 #include "doc/rgbmap.h"
 #include "render/task_delegate.h"
 
+#include <algorithm>
 #include <limits>
+#include <vector>
 
 namespace render {
 
-  // Creates a Bayer dither matrix.
-  template<int N>
-  class BayerMatrix {
-    static int D2[4];
-
-    int m_matrix[N*N];
-
+  class DitheringMatrix {
   public:
-    int maxValue() const { return N*N-1; }
+    DitheringMatrix()
+      : m_rows(1), m_cols(1)
+      , m_matrix(1, 1)
+      , m_maxValue(1) {
+    }
 
-    BayerMatrix() {
-      int c = 0;
-      for (int i=0; i<N; ++i)
-        for (int j=0; j<N; ++j)
-          m_matrix[c++] = Dn(i, j, N);
+    DitheringMatrix(int rows, int cols)
+      : m_rows(rows), m_cols(cols)
+      , m_matrix(rows*cols, 0)
+      , m_maxValue(1) {
+    }
+
+    int rows() const { return m_rows; }
+    int cols() const { return m_cols; }
+
+    int maxValue() const { return m_maxValue; }
+    void calcMaxValue() {
+      m_maxValue = *std::max_element(m_matrix.begin(),
+                                     m_matrix.end());
+      m_maxValue = std::max(m_maxValue, 1);
     }
 
     int operator()(int i, int j) const {
-      return m_matrix[(i%N)*N + (j%N)];
+      return m_matrix[(i%m_rows)*m_cols + (j%m_cols)];
     }
 
-    int operator[](int i) const {
-      return m_matrix[i];
+    int& operator()(int i, int j) {
+      return m_matrix[(i%m_rows)*m_cols + (j%m_cols)];
+    }
+
+  private:
+    int m_rows, m_cols;
+    std::vector<int> m_matrix;
+    int m_maxValue;
+  };
+
+  // Creates a Bayer dither matrix.
+  class BayerMatrix : public DitheringMatrix {
+    static int D2[4];
+
+  public:
+    BayerMatrix(int n) : DitheringMatrix(n, n) {
+      for (int i=0; i<n; ++i)
+        for (int j=0; j<n; ++j)
+          operator()(i, j) = Dn(i, j, n);
+
+      calcMaxValue();
     }
 
   private:
@@ -57,12 +85,19 @@ namespace render {
     }
   };
 
-  // Base 2x2 dither matrix, called D(2):
-  template<int N>
-  int BayerMatrix<N>::D2[4] = { 0, 2,
-                                3, 1 };
+  class DitheringAlgorithmBase {
+  public:
+    virtual ~DitheringAlgorithmBase() { }
+    virtual doc::color_t ditherRgbPixelToIndex(
+      const DitheringMatrix& matrix,
+      const doc::color_t color,
+      const int x,
+      const int y,
+      const doc::RgbMap* rgbmap,
+      const doc::Palette* palette) = 0;
+  };
 
-  class OrderedDither {
+  class OrderedDither : public DitheringAlgorithmBase {
     static int colorDistance(int r1, int g1, int b1, int a1,
                              int r2, int g2, int b2, int a2) {
       // The factor for RGB components came from doc::rba_luma()
@@ -76,13 +111,13 @@ namespace render {
     OrderedDither(int transparentIndex = -1) : m_transparentIndex(transparentIndex) {
     }
 
-    template<typename Matrix>
     doc::color_t ditherRgbPixelToIndex(
-      const Matrix& matrix,
-      doc::color_t color,
-      int x, int y,
+      const DitheringMatrix& matrix,
+      const doc::color_t color,
+      const int x,
+      const int y,
       const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) {
+      const doc::Palette* palette) override {
       // Alpha=0, output transparent color
       if (m_transparentIndex >= 0 &&
           doc::rgba_geta(color) == 0)
@@ -143,7 +178,7 @@ namespace render {
       // with the threshold. If d > threshold, it means that we're
       // closer to 'nearest2rgb' than to 'nearest1rgb'.
       d = matrix.maxValue() * d / D;
-      int threshold = matrix(x, y);
+      int threshold = matrix(y, x);
 
       return (d > threshold ? nearest2idx:
                               nearest1idx);
@@ -163,7 +198,7 @@ namespace render {
   // Some ideas from:
   // http://bisqwit.iki.fi/story/howto/dither/jy/
   //
-  class OrderedDither2 {
+  class OrderedDither2 : public DitheringAlgorithmBase {
     static int colorDistance(int r1, int g1, int b1, int a1,
                              int r2, int g2, int b2, int a2) {
       int result = 0;
@@ -183,13 +218,13 @@ namespace render {
     OrderedDither2(int transparentIndex = -1) : m_transparentIndex(transparentIndex) {
     }
 
-    template<typename Matrix>
     doc::color_t ditherRgbPixelToIndex(
-      const Matrix& matrix,
-      doc::color_t color,
-      int x, int y,
+      const DitheringMatrix& matrix,
+      const doc::color_t color,
+      const int x,
+      const int y,
       const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) {
+      const doc::Palette* palette) override {
       // Alpha=0, output transparent color
       if (m_transparentIndex >= 0 &&
           doc::rgba_geta(color) == 0) {
@@ -269,7 +304,7 @@ namespace render {
 
       // Using the bestMix factor the dithering matrix tells us if we
       // should paint with altIndex or index in this x,y position.
-      if (altIndex >= 0 && matrix(x, y) < bestMix)
+      if (altIndex >= 0 && matrix(y, x) < bestMix)
         return altIndex;
       else
         return index;
@@ -279,41 +314,15 @@ namespace render {
     int m_transparentIndex;
   };
 
-  template<typename Dithering,
-           typename Matrix>
-  void dither_rgb_image_to_indexed(Dithering& dithering,
-                                   const Matrix& matrix,
-                                   const doc::Image* srcImage,
-                                   doc::Image* dstImage,
-                                   int u, int v,
-                                   const doc::RgbMap* rgbmap,
-                                   const doc::Palette* palette,
-                                   TaskDelegate* delegate = nullptr) {
-    const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
-    doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
-    auto srcIt = srcBits.begin();
-    auto dstIt = dstBits.begin();
-    int w = srcImage->width();
-    int h = srcImage->height();
-
-    for (int y=0; y<h; ++y) {
-      for (int x=0; x<w; ++x, ++srcIt, ++dstIt) {
-        ASSERT(srcIt != srcBits.end());
-        ASSERT(dstIt != dstBits.end());
-        *dstIt = dithering.ditherRgbPixelToIndex(matrix, *srcIt, x+u, y+v, rgbmap, palette);
-
-        if (delegate) {
-          if (!delegate->continueTask())
-            return;
-        }
-      }
-
-      if (delegate) {
-        delegate->notifyTaskProgress(
-          double(y+1) / double(h));
-      }
-    }
-  }
+  void dither_rgb_image_to_indexed(
+    DitheringAlgorithmBase& algorithm,
+    const DitheringMatrix& matrix,
+    const doc::Image* srcImage,
+    doc::Image* dstImage,
+    int u, int v,
+    const doc::RgbMap* rgbmap,
+    const doc::Palette* palette,
+    TaskDelegate* delegate = nullptr);
 
 } // namespace render
 
