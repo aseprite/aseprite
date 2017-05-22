@@ -7,6 +7,7 @@
       <listbox id="color_mode" />
     </view>
     <slider min="0" max="100" id="progress" minwidth="100" />
+    <hbox id="dithering_placeholder" />
     <check text="@.flatten" id="flatten" />
     <separator horizontal="true" />
     <hbox>

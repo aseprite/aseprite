@@ -169,8 +169,10 @@ Image* convert_pixel_format(
 
             if (a == 0)
               *dst_it = new_mask_color;
-            else
+            else if (rgbmap)
               *dst_it = rgbmap->mapColor(r, g, b, a);
+            else
+              *dst_it = palette->findBestfit(r, g, b, a, new_mask_color);
           }
           ASSERT(dst_it == dst_end);
           break;
@@ -226,8 +228,10 @@ Image* convert_pixel_format(
 
             if (a == 0)
               *dst_it = new_mask_color;
-            else
+            else if (rgbmap)
               *dst_it = rgbmap->mapColor(c, c, c, a);
+            else
+              *dst_it = palette->findBestfit(c, c, c, a, new_mask_color);
           }
           ASSERT(dst_it == dst_end);
           break;
@@ -312,7 +316,11 @@ Image* convert_pixel_format(
               g = rgba_getg(c);
               b = rgba_getb(c);
               a = rgba_geta(c);
-              *dst_it = rgbmap->mapColor(r, g, b, a);
+
+              if (rgbmap)
+                *dst_it = rgbmap->mapColor(r, g, b, a);
+              else
+                *dst_it = palette->findBestfit(r, g, b, a, new_mask_color);
             }
           }
           ASSERT(dst_it == dst_end);

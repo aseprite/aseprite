@@ -8,9 +8,23 @@
 #include "config.h"
 #endif
 
+#include "ui/combobox.h"
+
 #include "gfx/size.h"
 #include "she/font.h"
-#include "ui/ui.h"
+#include "ui/button.h"
+#include "ui/entry.h"
+#include "ui/listbox.h"
+#include "ui/listitem.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/resize_event.h"
+#include "ui/scale.h"
+#include "ui/size_hint_event.h"
+#include "ui/system.h"
+#include "ui/theme.h"
+#include "ui/view.h"
+#include "ui/window.h"
 
 namespace ui {
 
@@ -41,15 +55,12 @@ private:
 class ComboBoxListBox : public ListBox {
 public:
   ComboBoxListBox(ComboBox* comboBox)
-    : m_comboBox(comboBox)
-  {
-    for (ComboBox::ListItems::iterator
-           it = comboBox->begin(), end = comboBox->end(); it != end; ++it)
+    : m_comboBox(comboBox) {
+    for (auto it=comboBox->begin(), end=comboBox->end(); it!=end; ++it)
       addChild(*it);
   }
 
-  void clean()
-  {
+  void clean() {
     // Remove all added items so ~Widget() don't delete them.
     removeAllChildren();
     selectChild(nullptr);
@@ -574,12 +585,18 @@ void ComboBox::openListBox()
   m_window->noBorderNoChildSpacing();
 
   Widget* viewport = view->viewport();
-  int size = getItemCount();
-  viewport->setMinSize
-    (gfx::Size(
-      m_button->bounds().x2() - m_entry->bounds().x - view->border().width(),
-      +(2*guiscale()+m_listbox->textHeight())*MID(1, size, 16)+
-      +viewport->border().height()));
+  {
+    gfx::Rect entryBounds = m_entry->bounds();
+    gfx::Size size;
+    size.w = m_button->bounds().x2() - entryBounds.x - view->border().width();
+    size.h = viewport->border().height();
+    for (ListItem* item : m_items)
+      size.h += item->sizeHint().h;
+
+    int max = MAX(entryBounds.y, ui::display_h() - entryBounds.y2()) - 8*guiscale();
+    size.h = MID(textHeight(), size.h, max);
+    viewport->setMinSize(size);
+  }
 
   m_window->addChild(view);
   view->attachToView(m_listbox);
@@ -631,13 +648,14 @@ void ComboBox::switchListBox()
 
 gfx::Rect ComboBox::getListBoxPos() const
 {
-  gfx::Rect rc(gfx::Point(m_entry->bounds().x,
-                          m_entry->bounds().y2()),
+  gfx::Rect entryBounds = m_entry->bounds();
+  gfx::Rect rc(gfx::Point(entryBounds.x,
+                          entryBounds.y2()),
                gfx::Point(m_button->bounds().x2(),
-                          m_entry->bounds().y2()+m_window->bounds().h));
+                          entryBounds.y2() + m_window->bounds().h));
 
   if (rc.y2() > ui::display_h())
-    rc.offset(0, -(rc.h + m_entry->bounds().h));
+    rc.offset(0, -(rc.h + entryBounds.h));
 
   return rc;
 }

@@ -427,6 +427,7 @@ add_library(app-lib
   ui/color_wheel.cpp
   ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
+  ui/dithering_selector.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp
   ui/editor/brush_preview.cpp

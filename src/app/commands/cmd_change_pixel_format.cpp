@@ -20,6 +20,7 @@
 #include "app/modules/palettes.h"
 #include "app/render_task_job.h"
 #include "app/transaction.h"
+#include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
@@ -45,10 +46,8 @@ namespace {
 
 class ConversionItem : public ListItem {
 public:
-  ConversionItem(const doc::PixelFormat pixelFormat,
-                 const render::DitheringAlgorithm dithering = render::DitheringAlgorithm::None)
-    : m_pixelFormat(pixelFormat)
-    , m_dithering(dithering) {
+  ConversionItem(const doc::PixelFormat pixelFormat)
+    : m_pixelFormat(pixelFormat) {
     switch (pixelFormat) {
       case IMAGE_RGB:
         setText("-> RGB");
@@ -57,27 +56,13 @@ public:
         setText("-> Grayscale");
         break;
       case IMAGE_INDEXED:
-        switch (m_dithering) {
-          case render::DitheringAlgorithm::None:
-            setText("-> Indexed");
-            break;
-          case render::DitheringAlgorithm::OldOrdered:
-            setText("-> Indexed w/Old Ordered Dithering");
-            break;
-          case render::DitheringAlgorithm::Ordered:
-            setText("-> Indexed w/Ordered Dithering");
-            break;
-        }
+        setText("-> Indexed");
         break;
     }
   }
-
   doc::PixelFormat pixelFormat() const { return m_pixelFormat; }
-  render::DitheringAlgorithm ditheringAlgorithm() const { return m_dithering; }
-
 private:
   doc::PixelFormat m_pixelFormat;
-  render::DitheringAlgorithm m_dithering;
 };
 
 class ConvertThread : public render::TaskDelegate {
@@ -181,6 +166,7 @@ public:
     , m_image(nullptr)
     , m_imageBuffer(new doc::ImageBuffer)
     , m_selectedItem(nullptr)
+    , m_ditheringSelector(nullptr)
   {
     doc::PixelFormat from = m_editor->sprite()->pixelFormat();
 
@@ -196,8 +182,12 @@ public:
       colorMode()->addChild(new ConversionItem(IMAGE_RGB));
     if (from != IMAGE_INDEXED) {
       colorMode()->addChild(new ConversionItem(IMAGE_INDEXED));
-      colorMode()->addChild(new ConversionItem(IMAGE_INDEXED, render::DitheringAlgorithm::Ordered));
-      colorMode()->addChild(new ConversionItem(IMAGE_INDEXED, render::DitheringAlgorithm::OldOrdered));
+
+      m_ditheringSelector = new DitheringSelector;
+      m_ditheringSelector->setExpansive(true);
+      m_ditheringSelector->Change.connect(
+        base::Bind<void>(&ColorModeWindow::onDithering, this));
+      ditheringPlaceholder()->addChild(m_ditheringSelector);
     }
     if (from != IMAGE_GRAYSCALE)
       colorMode()->addChild(new ConversionItem(IMAGE_GRAYSCALE));
@@ -225,8 +215,13 @@ public:
   }
 
   render::DitheringAlgorithm ditheringAlgorithm() const {
-    ASSERT(m_selectedItem);
-    return m_selectedItem->ditheringAlgorithm();
+    return (m_ditheringSelector ? m_ditheringSelector->ditheringAlgorithm():
+                                  render::DitheringAlgorithm::None);
+  }
+
+  render::DitheringMatrix ditheringMatrix() const {
+    return (m_ditheringSelector ? m_ditheringSelector->ditheringMatrix():
+                                  render::BayerMatrix(8));
   }
 
   bool flattenEnabled() const {
@@ -236,13 +231,14 @@ public:
 private:
 
   void stop() {
+    m_editor->renderEngine().removePreviewImage();
+    m_editor->invalidate();
+
     m_timer.stop();
     if (m_bgThread) {
       m_bgThread->stop();
       m_bgThread.reset(nullptr);
     }
-    m_editor->renderEngine().removePreviewImage();
-    m_editor->invalidate();
   }
 
   void onChangeColorMode() {
@@ -283,11 +279,17 @@ private:
         m_editor->sprite(),
         m_editor->frame(),
         item->pixelFormat(),
-        item->ditheringAlgorithm(),
-        render::BayerMatrix(8), // TODO this must be configurable
+        ditheringAlgorithm(),
+        ditheringMatrix(),
         visibleBounds.origin()));
 
     m_timer.start();
+  }
+
+  void onDithering() {
+    stop();
+    m_selectedItem = nullptr;
+    onChangeColorMode();
   }
 
   void onMonitorProgress() {
@@ -315,6 +317,7 @@ private:
   doc::ImageBufferPtr m_imageBuffer;
   base::UniquePtr<ConvertThread> m_bgThread;
   ConversionItem* m_selectedItem;
+  DitheringSelector* m_ditheringSelector;
 };
 
 } // anonymous namespace
@@ -465,6 +468,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
     m_format = window.pixelFormat();
     m_ditheringAlgorithm = window.ditheringAlgorithm();
+    m_ditheringMatrix = window.ditheringMatrix();
     flatten = window.flattenEnabled();
   }
 
@@ -472,26 +476,28 @@ void ChangePixelFormatCommand::onExecute(Context* context)
   if (context->activeDocument()->sprite()->pixelFormat() == m_format)
     return;
 
-  RenderTaskJob job(
-    "Converting Color Mode",
-    [this, &job, context, flatten]{
-      ContextWriter writer(context);
-      Transaction transaction(writer.context(), "Color Mode Change");
-      Sprite* sprite(writer.sprite());
+  {
+    RenderTaskJob job(
+      "Converting Color Mode",
+      [this, &job, context, flatten]{
+        ContextWriter writer(context);
+        Transaction transaction(writer.context(), "Color Mode Change");
+        Sprite* sprite(writer.sprite());
 
-      if (flatten)
-        transaction.execute(new cmd::FlattenLayers(sprite));
+        if (flatten)
+          transaction.execute(new cmd::FlattenLayers(sprite));
 
-      transaction.execute(
-        new cmd::SetPixelFormat(
-          sprite, m_format,
-          m_ditheringAlgorithm,
-          m_ditheringMatrix, &job));
-      if (!job.isCanceled())
-        transaction.commit();
-    });
-  job.startJob();
-  job.waitJob();
+        transaction.execute(
+          new cmd::SetPixelFormat(
+            sprite, m_format,
+            m_ditheringAlgorithm,
+            m_ditheringMatrix, &job));
+        if (!job.isCanceled())
+          transaction.commit();
+      });
+    job.startJob();
+    job.waitJob();
+  }
 
   if (context->isUIAvailable())
     app_refresh_screen();
