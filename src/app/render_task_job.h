@@ -25,18 +25,11 @@ public:
   }
 
 private:
-
-  void onJob() override {
-    m_func();
-  }
+  void onJob() override;
 
   // render::TaskDelegate impl
-  bool continueTask() override {
-    return !isCanceled();
-  }
-  void notifyTaskProgress(double progress) override {
-    jobProgress(progress);
-  }
+  bool continueTask() override;
+  void notifyTaskProgress(double progress) override;
 
   std::function<void()> m_func;
 };
