@@ -349,14 +349,14 @@ void CliProcessor::process()
         else if (opt == &m_options.ditheringAlgorithm()) {
           if (value.value() == "none")
             ditheringAlgorithm = render::DitheringAlgorithm::None;
-          else if (value.value() == "old-ordered")
-            ditheringAlgorithm = render::DitheringAlgorithm::OldOrdered;
           else if (value.value() == "ordered")
             ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
+          else if (value.value() == "old")
+            ditheringAlgorithm = render::DitheringAlgorithm::Old;
           else
             throw std::runtime_error("--dithering-algorithm needs a valid algorithm name\n"
                                      "Usage: --dithering-algorithm <algorithm>\n"
-                                     "Where <algorithm> can be none, old-ordered, or ordered");
+                                     "Where <algorithm> can be none, ordered, or old");
         }
         // --dithering-matrix <id>
         else if (opt == &m_options.ditheringMatrix()) {
@@ -378,11 +378,11 @@ void CliProcessor::process()
               case render::DitheringAlgorithm::None:
                 params.set("dithering", "none");
                 break;
-              case render::DitheringAlgorithm::OldOrdered:
-                params.set("dithering", "old-ordered");
-                break;
               case render::DitheringAlgorithm::Ordered:
                 params.set("dithering", "ordered");
+                break;
+              case render::DitheringAlgorithm::Old:
+                params.set("dithering", "old");
                 break;
             }
 

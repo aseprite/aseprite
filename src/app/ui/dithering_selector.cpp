@@ -124,11 +124,11 @@ DitheringSelector::DitheringSelector()
                          render::BayerMatrix(4), "Ordered Dithering - Bayer Matrix 4x4"));
   addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
                          render::BayerMatrix(2), "Ordered Dithering - Bayer Matrix 2x2"));
-  addItem(new DitherItem(render::DitheringAlgorithm::OldOrdered,
+  addItem(new DitherItem(render::DitheringAlgorithm::Old,
                          render::BayerMatrix(8), "Old Dithering - Bayer Matrix 8x8"));
-  addItem(new DitherItem(render::DitheringAlgorithm::OldOrdered,
+  addItem(new DitherItem(render::DitheringAlgorithm::Old,
                          render::BayerMatrix(4), "Old Dithering - Bayer Matrix 4x4"));
-  addItem(new DitherItem(render::DitheringAlgorithm::OldOrdered,
+  addItem(new DitherItem(render::DitheringAlgorithm::Old,
                          render::BayerMatrix(2), "Old Dithering - Bayer Matrix 2x2"));
 
   setSelectedItemIndex(0);

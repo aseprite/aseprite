@@ -13,8 +13,8 @@ namespace render {
   // Dithering algorithms
   enum class DitheringAlgorithm {
     None,
-    OldOrdered,
     Ordered,
+    Old,
   };
 
 } // namespace render

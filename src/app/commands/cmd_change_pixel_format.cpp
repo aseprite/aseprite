@@ -365,8 +365,8 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
   std::string dithering = params.get("dithering");
   if (dithering == "ordered")
     m_ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
-  else if (dithering == "old-ordered")
-    m_ditheringAlgorithm = render::DitheringAlgorithm::OldOrdered;
+  else if (dithering == "old")
+    m_ditheringAlgorithm = render::DitheringAlgorithm::Old;
   else
     m_ditheringAlgorithm = render::DitheringAlgorithm::None;
 
@@ -517,11 +517,11 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
         switch (m_ditheringAlgorithm) {
           case render::DitheringAlgorithm::None:
             break;
-          case render::DitheringAlgorithm::OldOrdered:
-            text += " with Old Ordered Dithering";
-            break;
           case render::DitheringAlgorithm::Ordered:
             text += " with Ordered Dithering";
+            break;
+          case render::DitheringAlgorithm::Old:
+            text += " with Old Dithering";
             break;
         }
         break;

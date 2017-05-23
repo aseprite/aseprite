@@ -99,11 +99,11 @@ Image* convert_pixel_format(
       ditheringAlgorithm != DitheringAlgorithm::None) {
     base::UniquePtr<DitheringAlgorithmBase> dither;
     switch (ditheringAlgorithm) {
-      case DitheringAlgorithm::OldOrdered:
-        dither.reset(new OrderedDither(is_background ? -1: new_mask_color));
-        break;
       case DitheringAlgorithm::Ordered:
         dither.reset(new OrderedDither2(is_background ? -1: new_mask_color));
+        break;
+      case DitheringAlgorithm::Old:
+        dither.reset(new OrderedDither(is_background ? -1: new_mask_color));
         break;
     }
     if (dither)
