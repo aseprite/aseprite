@@ -462,7 +462,10 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     window.remapWindow();
     window.centerWindow();
 
+    load_window_pos(&window, "ChangePixelFormat");
     window.openWindowInForeground();
+    save_window_pos(&window, "ChangePixelFormat");
+
     if (window.closer() != window.ok())
       return;
 
