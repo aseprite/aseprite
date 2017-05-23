@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -42,10 +42,12 @@ namespace ui {
     void setEditable(bool state);
     void setClickOpen(bool state);
     void setCaseSensitive(bool state);
+    void setUseCustomWidget(bool state);
 
     bool isEditable() const { return m_editable; }
     bool isClickOpen() const { return m_clickopen; }
     bool isCaseSensitive() const { return m_casesensitive; }
+    bool useCustomWidget() const { return m_useCustomWidget; }
 
     int addItem(ListItem* item);
     int addItem(const std::string& text);
@@ -100,6 +102,9 @@ namespace ui {
 
   private:
     void onButtonClick(Event& ev);
+    void filterMessages();
+    void removeMessageFilters();
+    void putSelectedItemAsCustomWidget();
 
     ComboBoxEntry* m_entry;
     Button* m_button;
@@ -110,6 +115,8 @@ namespace ui {
     bool m_editable;
     bool m_clickopen;
     bool m_casesensitive;
+    bool m_filtering;
+    bool m_useCustomWidget;
   };
 
 } // namespace ui

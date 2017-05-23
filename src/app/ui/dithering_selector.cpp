@@ -114,6 +114,8 @@ private:
 
 DitheringSelector::DitheringSelector()
 {
+  setUseCustomWidget(true);
+
   addItem(new DitherItem(render::DitheringAlgorithm::None,
                          render::DitheringMatrix(), "No Dithering"));
   addItem(new DitherItem(render::DitheringAlgorithm::Ordered,

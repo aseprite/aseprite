@@ -56,8 +56,11 @@ class ComboBoxListBox : public ListBox {
 public:
   ComboBoxListBox(ComboBox* comboBox)
     : m_comboBox(comboBox) {
-    for (auto it=comboBox->begin(), end=comboBox->end(); it!=end; ++it)
-      addChild(*it);
+    for (auto item : *comboBox) {
+      if (item->parent())
+        item->parent()->removeChild(item);
+      addChild(item);
+    }
   }
 
   void clean() {
@@ -88,6 +91,8 @@ ComboBox::ComboBox()
   , m_editable(false)
   , m_clickopen(true)
   , m_casesensitive(true)
+  , m_filtering(false)
+  , m_useCustomWidget(false)
 {
   // TODO this separation should be from the Theme*
   this->setChildSpacing(0);
@@ -108,6 +113,7 @@ ComboBox::ComboBox()
 
 ComboBox::~ComboBox()
 {
+  removeMessageFilters();
   removeAllItems();
 }
 
@@ -133,6 +139,11 @@ void ComboBox::setClickOpen(bool state)
 void ComboBox::setCaseSensitive(bool state)
 {
   m_casesensitive = state;
+}
+
+void ComboBox::setUseCustomWidget(bool state)
+{
+  m_useCustomWidget = state;
 }
 
 int ComboBox::addItem(ListItem* item)
@@ -398,6 +409,8 @@ void ComboBox::onResize(ResizeEvent& ev)
   // Entry
   m_entry->setBounds(Rect(bounds.x, bounds.y,
                           bounds.w - buttonSize.w, bounds.h));
+
+  putSelectedItemAsCustomWidget();
 }
 
 void ComboBox::onSizeHint(SizeHintEvent& ev)
@@ -609,8 +622,7 @@ void ComboBox::openListBox()
   m_window->positionWindow(rc.x, rc.y);
   m_window->openWindow();
 
-  manager()->addMessageFilter(kMouseDownMessage, this);
-  manager()->addMessageFilter(kKeyDownMessage, this);
+  filterMessages();
 
   if (isEditable())
     m_entry->requestFocus();
@@ -630,8 +642,8 @@ void ComboBox::closeListBox()
     m_window = nullptr;
     m_listbox = nullptr;
 
-    manager()->removeMessageFilter(kMouseDownMessage, this);
-    manager()->removeMessageFilter(kKeyDownMessage, this);
+    removeMessageFilters();
+    putSelectedItemAsCustomWidget();
     m_entry->requestFocus();
 
     onCloseListBox();
@@ -673,6 +685,41 @@ void ComboBox::onOpenListBox()
 void ComboBox::onCloseListBox()
 {
   CloseListBox();
+}
+
+void ComboBox::filterMessages()
+{
+  if (!m_filtering) {
+    manager()->addMessageFilter(kMouseDownMessage, this);
+    manager()->addMessageFilter(kKeyDownMessage, this);
+    m_filtering = true;
+  }
+}
+
+void ComboBox::removeMessageFilters()
+{
+  if (m_filtering) {
+    manager()->removeMessageFilter(kMouseDownMessage, this);
+    manager()->removeMessageFilter(kKeyDownMessage, this);
+    m_filtering = false;
+  }
+}
+
+void ComboBox::putSelectedItemAsCustomWidget()
+{
+  if (!useCustomWidget())
+    return;
+
+  ListItem* item = getSelectedItem();
+  if (item && item->parent() == nullptr) {
+    if (!m_listbox) {
+      item->setBounds(m_entry->childrenBounds());
+      m_entry->addChild(item);
+    }
+    else {
+      m_entry->removeChild(item);
+    }
+  }
 }
 
 } // namespace ui
