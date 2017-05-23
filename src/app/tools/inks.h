@@ -144,6 +144,7 @@ public:
   bool isPaint() const override { return true; }
   bool isEffect() const override { return true; }
   bool dependsOnStroke() const override { return true; }
+  bool withDitheringOptions() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
     setProc(get_ink_proc<GradientInkProcessing>(loop));

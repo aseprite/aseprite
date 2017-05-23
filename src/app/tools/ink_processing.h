@@ -16,6 +16,7 @@
 #include "filters/neighboring_pixels.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
+#include "render/dithering.h"
 
 namespace app {
 namespace tools {
@@ -957,138 +958,19 @@ protected:
 };
 
 template<typename ImageTraits>
-class GradientInkProcessing : public DoubleInkProcessing<GradientInkProcessing<ImageTraits>, ImageTraits> {
+class GradientInkProcessing : public TemporalPixmanGradient,
+                              public DoubleInkProcessing<GradientInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  GradientInkProcessing(ToolLoop* loop) {
-  }
-
-  void processPixel(int x, int y) {
-    // Do nothing (it's specialized for each case)
-  }
-};
-
-template<>
-class GradientInkProcessing<RgbTraits> : public TemporalPixmanGradient,
-                                         public DoubleInkProcessing<GradientInkProcessing<RgbTraits>, RgbTraits> {
-public:
-  typedef DoubleInkProcessing<GradientInkProcessing<RgbTraits>, RgbTraits> base;
-
-  GradientInkProcessing(ToolLoop* loop)
-    : TemporalPixmanGradient(loop)
-    , m_opacity(loop->getOpacity()) {
-  }
-
-  void updateInk(ToolLoop* loop, Strokes& strokes) override {
-    color_t c0 = loop->getPrimaryColor();
-    color_t c1 = loop->getSecondaryColor();
-
-    renderRgbaGradient(loop, strokes, c0, c1);
-  }
-
-  void hline(int x1, int y, int x2, ToolLoop* loop) override {
-    m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
-    base::hline(x1, y, x2, loop);
-  }
-
-  void processPixel(int x, int y) {
-    // As m_tmpAddress is the rendered gradient from pixman, its RGB
-    // values are premultiplied, here we can divide them by the alpha
-    // value to get the non-premultiplied values.
-    doc::color_t c = *m_tmpAddress;
-    int a = doc::rgba_geta(c);
-    int r, g, b;
-    if (a > 0) {
-      r = doc::rgba_getr(c) * 255 / a;
-      g = doc::rgba_getg(c) * 255 / a;
-      b = doc::rgba_getb(c) * 255 / a;
-    }
-    else
-      r = g = b = 0;
-
-    *m_dstAddress = rgba_blender_normal(*m_srcAddress,
-                                        doc::rgba(r, g, b, a),
-                                        m_opacity);
-    ++m_tmpAddress;
-  }
-
-private:
-  const int m_opacity;
-};
-
-
-template<>
-class GradientInkProcessing<GrayscaleTraits> : public TemporalPixmanGradient,
-                                               public DoubleInkProcessing<GradientInkProcessing<GrayscaleTraits>, GrayscaleTraits> {
-public:
-  typedef DoubleInkProcessing<GradientInkProcessing<GrayscaleTraits>, GrayscaleTraits> base;
-
-  GradientInkProcessing(ToolLoop* loop)
-    : TemporalPixmanGradient(loop)
-    , m_opacity(loop->getOpacity()) {
-  }
-
-  void updateInk(ToolLoop* loop, Strokes& strokes) override {
-    color_t c0 = loop->getPrimaryColor();
-    color_t c1 = loop->getSecondaryColor();
-    int v0 = int(doc::graya_getv(c0));
-    int a0 = int(doc::graya_geta(c0));
-    int v1 = int(doc::graya_getv(c1));
-    int a1 = int(doc::graya_geta(c1));
-    c0 = doc::rgba(v0, v0, v0, a0);
-    c1 = doc::rgba(v1, v1, v1, a1);
-
-    renderRgbaGradient(loop, strokes, c0, c1);
-  }
-
-  void hline(int x1, int y, int x2, ToolLoop* loop) override {
-    m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
-    base::hline(x1, y, x2, loop);
-  }
-
-  void processPixel(int x, int y) {
-    // As m_tmpAddress is the rendered gradient from pixman, its RGB
-    // values are premultiplied, here we can divide them by the alpha
-    // value to get the non-premultiplied values.
-    doc::color_t c = *m_tmpAddress;
-    int a = doc::rgba_geta(c);
-    int v;
-    if (a > 0) {
-      // Here we could get R, G, or B because this is a grayscale gradient anyway.
-      v = doc::rgba_getr(c) * 255 / a;
-    }
-    else
-      v = 0;
-
-    *m_dstAddress = graya_blender_normal(*m_srcAddress,
-                                         doc::graya(v, a),
-                                         m_opacity);
-    ++m_tmpAddress;
-  }
-
-private:
-  const int m_opacity;
-};
-
-
-template<>
-class GradientInkProcessing<IndexedTraits> : public TemporalPixmanGradient,
-                                             public DoubleInkProcessing<GradientInkProcessing<IndexedTraits>, IndexedTraits> {
-public:
-  typedef DoubleInkProcessing<GradientInkProcessing<IndexedTraits>, IndexedTraits> base;
+  typedef DoubleInkProcessing<GradientInkProcessing<ImageTraits>, ImageTraits> base;
 
   GradientInkProcessing(ToolLoop* loop)
     : TemporalPixmanGradient(loop)
     , m_opacity(loop->getOpacity())
     , m_palette(get_current_palette())
     , m_rgbmap(loop->getRgbMap())
-    , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
-  }
-
-  void updateInk(ToolLoop* loop, Strokes& strokes) override {
-    color_t c0 = m_palette->getEntry(loop->getPrimaryColor());
-    color_t c1 = m_palette->getEntry(loop->getSecondaryColor());
-
-    renderRgbaGradient(loop, strokes, c0, c1);
+    , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor())
+    , m_matrix(loop->getDitheringMatrix())
+    , m_dither(loop->getDitheringAlgorithm()) {
   }
 
   void hline(int x1, int y, int x2, ToolLoop* loop) override {
@@ -1096,33 +978,12 @@ public:
     base::hline(x1, y, x2, loop);
   }
 
+  void updateInk(ToolLoop* loop, Strokes& strokes) override {
+    // Do nothing
+  }
+
   void processPixel(int x, int y) {
-    // As m_tmpAddress is the rendered gradient from pixman, its RGB
-    // values are premultiplied, here we can divide them by the alpha
-    // value to get the non-premultiplied values.
-    doc::color_t c = *m_tmpAddress;
-    int a = doc::rgba_geta(c);
-    int r, g, b;
-    if (a > 0) {
-      r = doc::rgba_getr(c) * 255 / a;
-      g = doc::rgba_getg(c) * 255 / a;
-      b = doc::rgba_getb(c) * 255 / a;
-    }
-    else
-      r = g = b = 0;
-
-    doc::color_t c0 = *m_srcAddress;
-    if (int(c0) == m_maskIndex)
-      c0 = m_palette->getEntry(c0) & rgba_rgb_mask;  // Alpha = 0
-    else
-      c0 = m_palette->getEntry(c0);
-    c = rgba_blender_normal(c0, c, m_opacity);
-
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
-    ++m_tmpAddress;
+    // Do nothing (it's specialized for each case)
   }
 
 private:
@@ -1130,7 +991,133 @@ private:
   const Palette* m_palette;
   const RgbMap* m_rgbmap;
   const int m_maskIndex;
+  const render::DitheringMatrix m_matrix;
+  render::DitheringAlgorithmBase* m_dither;
 };
+
+template<>
+void GradientInkProcessing<RgbTraits>::updateInk(ToolLoop* loop, Strokes& strokes)
+{
+  color_t c0 = loop->getPrimaryColor();
+  color_t c1 = loop->getSecondaryColor();
+
+  renderRgbaGradient(loop, strokes, c0, c1);
+}
+
+template<>
+void GradientInkProcessing<RgbTraits>::processPixel(int x, int y)
+{
+  // As m_tmpAddress is the rendered gradient from pixman, its RGB
+  // values are premultiplied, here we can divide them by the alpha
+  // value to get the non-premultiplied values.
+  doc::color_t c = *m_tmpAddress;
+  int a = doc::rgba_geta(c);
+  int r, g, b;
+  if (a > 0) {
+    r = doc::rgba_getr(c) * 255 / a;
+    g = doc::rgba_getg(c) * 255 / a;
+    b = doc::rgba_getb(c) * 255 / a;
+  }
+  else
+    r = g = b = 0;
+
+  c = rgba_blender_normal(*m_srcAddress,
+                          doc::rgba(r, g, b, a),
+                          m_opacity);
+
+  if (m_dither) {
+    int i = m_dither->ditherRgbPixelToIndex(
+      m_matrix, c, x, y, m_rgbmap, m_palette);
+    c = m_palette->getEntry(i);
+  }
+
+  *m_dstAddress = c;
+  ++m_tmpAddress;
+}
+
+template<>
+void GradientInkProcessing<GrayscaleTraits>::updateInk(ToolLoop* loop, Strokes& strokes)
+{
+  color_t c0 = loop->getPrimaryColor();
+  color_t c1 = loop->getSecondaryColor();
+  int v0 = int(doc::graya_getv(c0));
+  int a0 = int(doc::graya_geta(c0));
+  int v1 = int(doc::graya_getv(c1));
+  int a1 = int(doc::graya_geta(c1));
+  c0 = doc::rgba(v0, v0, v0, a0);
+  c1 = doc::rgba(v1, v1, v1, a1);
+
+  renderRgbaGradient(loop, strokes, c0, c1);
+}
+
+template<>
+void GradientInkProcessing<GrayscaleTraits>::processPixel(int x, int y)
+{
+  // As m_tmpAddress is the rendered gradient from pixman, its RGB
+  // values are premultiplied, here we can divide them by the alpha
+  // value to get the non-premultiplied values.
+  doc::color_t c = *m_tmpAddress;
+  int a = doc::rgba_geta(c);
+  int v;
+  if (a > 0) {
+    // Here we could get R, G, or B because this is a grayscale gradient anyway.
+    v = doc::rgba_getr(c) * 255 / a;
+  }
+  else
+    v = 0;
+
+  *m_dstAddress = graya_blender_normal(*m_srcAddress,
+                                       doc::graya(v, a),
+                                       m_opacity);
+  ++m_tmpAddress;
+}
+
+template<>
+void GradientInkProcessing<IndexedTraits>::updateInk(ToolLoop* loop, Strokes& strokes)
+{
+  color_t c0 = m_palette->getEntry(loop->getPrimaryColor());
+  color_t c1 = m_palette->getEntry(loop->getSecondaryColor());
+
+  renderRgbaGradient(loop, strokes, c0, c1);
+}
+
+template<>
+void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
+{
+  // As m_tmpAddress is the rendered gradient from pixman, its RGB
+  // values are premultiplied, here we can divide them by the alpha
+  // value to get the non-premultiplied values.
+  doc::color_t c = *m_tmpAddress;
+  int a = doc::rgba_geta(c);
+  int r, g, b;
+  if (a > 0) {
+    r = doc::rgba_getr(c) * 255 / a;
+    g = doc::rgba_getg(c) * 255 / a;
+    b = doc::rgba_getb(c) * 255 / a;
+  }
+  else
+    r = g = b = 0;
+
+  doc::color_t c0 = *m_srcAddress;
+  if (int(c0) == m_maskIndex)
+    c0 = m_palette->getEntry(c0) & rgba_rgb_mask;  // Alpha = 0
+  else
+    c0 = m_palette->getEntry(c0);
+  c = rgba_blender_normal(c0, c, m_opacity);
+
+  if (m_dither) {
+    *m_dstAddress = m_dither->ditherRgbPixelToIndex(
+      m_matrix, c, x, y, m_rgbmap, m_palette);
+  }
+  else {
+    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
+                                       rgba_getg(c),
+                                       rgba_getb(c),
+                                       rgba_geta(c));
+  }
+
+  ++m_tmpAddress;
+}
 
 
 //////////////////////////////////////////////////////////////////////

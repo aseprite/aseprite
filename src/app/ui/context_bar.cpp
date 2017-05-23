@@ -32,6 +32,7 @@
 #include "app/ui/brush_popup.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/dithering_selector.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
@@ -44,6 +45,7 @@
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "obs/connection.h"
+#include "render/dithering.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/button.h"
@@ -1378,6 +1380,8 @@ ContextBar::ContextBar()
   addChild(m_tolerance = new ToleranceField());
   addChild(m_contiguous = new ContiguousField());
   addChild(m_paintBucketSettings = new PaintBucketSettingsField());
+  addChild(m_ditheringSelector = new DitheringSelector());
+  m_ditheringSelector->setUseCustomWidget(false); // Disable custom widget because the context bar is too small
 
   addChild(m_inkType = new InkTypeField(this));
   addChild(m_inkOpacityLabel = new Label("Opacity:"));
@@ -1628,64 +1632,68 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_spraySpeed->setValue(toolPref->spray.speed());
   }
 
-  bool updateShade = (!m_inkShades->isVisible() && hasInkShades);
+  const bool updateShade = (!m_inkShades->isVisible() && hasInkShades);
 
   m_eyedropperField->updateFromPreferences(preferences.eyedropper);
   m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
 
   // True if we have an image as brush
-  bool hasImageBrush = (activeBrush()->type() == kImageBrushType);
+  const bool hasImageBrush = (activeBrush()->type() == kImageBrushType);
 
   // True if the brush type supports angle.
-  bool hasBrushWithAngle =
+  const bool hasBrushWithAngle =
     (activeBrush()->size() > 1) &&
     (activeBrush()->type() == kSquareBrushType ||
      activeBrush()->type() == kLineBrushType);
 
   // True if the current tool is eyedropper.
-  bool needZoomButtons = tool &&
+  const bool needZoomButtons = tool &&
     (tool->getInk(0)->isZoom() ||
      tool->getInk(1)->isZoom() ||
      tool->getInk(0)->isScrollMovement() ||
      tool->getInk(1)->isScrollMovement());
 
   // True if the current tool is eyedropper.
-  bool isEyedropper = tool &&
+  const bool isEyedropper = tool &&
     (tool->getInk(0)->isEyedropper() ||
      tool->getInk(1)->isEyedropper());
 
   // True if the current tool is move tool.
-  bool isMove = tool &&
+  const bool isMove = tool &&
     (tool->getInk(0)->isCelMovement() ||
      tool->getInk(1)->isCelMovement());
 
   // True if the current tool is floodfill
-  bool isFloodfill = tool &&
+  const bool isFloodfill = tool &&
     (tool->getPointShape(0)->isFloodFill() ||
      tool->getPointShape(1)->isFloodFill());
 
   // True if the current tool needs tolerance options
-  bool hasTolerance = tool &&
+  const bool hasTolerance = tool &&
     (tool->getPointShape(0)->isFloodFill() ||
      tool->getPointShape(1)->isFloodFill());
 
   // True if the current tool needs spray options
-  bool hasSprayOptions = tool &&
+  const bool hasSprayOptions = tool &&
     (tool->getPointShape(0)->isSpray() ||
      tool->getPointShape(1)->isSpray());
 
-  bool hasSelectOptions = tool &&
+  const bool hasSelectOptions = tool &&
     (tool->getInk(0)->isSelection() ||
      tool->getInk(1)->isSelection());
 
-  bool isFreehand = tool &&
+  const bool isFreehand = tool &&
     (tool->getController(0)->isFreehand() ||
      tool->getController(1)->isFreehand());
 
-  bool showOpacity =
+  const bool showOpacity =
     (supportOpacity) &&
     ((isPaint && (hasInkWithOpacity || hasImageBrush)) ||
      (isEffect));
+
+  const bool withDithering =
+    (tool->getInk(0)->withDitheringOptions() ||
+     tool->getInk(1)->withDitheringOptions());
 
   // Show/Hide fields
   m_zoomButtons->setVisible(needZoomButtons);
@@ -1706,6 +1714,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_paintBucketSettings->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
+  m_ditheringSelector->setVisible(withDithering);
   m_selectionMode->setVisible(true);
   m_pivot->setVisible(true);
   m_dropPixels->setVisible(false);
@@ -1953,6 +1962,30 @@ void ContextBar::reverseShadeColors()
 void ContextBar::setInkType(tools::InkType type)
 {
   m_inkType->setInkType(type);
+}
+
+render::DitheringMatrix ContextBar::ditheringMatrix()
+{
+  return m_ditheringSelector->ditheringMatrix();
+}
+
+render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
+{
+  static base::UniquePtr<render::DitheringAlgorithmBase> s_dither;
+
+  switch (m_ditheringSelector->ditheringAlgorithm()) {
+    case render::DitheringAlgorithm::None:
+      s_dither.reset(nullptr);
+      break;
+    case render::DitheringAlgorithm::Ordered:
+      s_dither.reset(new render::OrderedDither2(-1));
+      break;
+    case render::DitheringAlgorithm::Old:
+      s_dither.reset(new render::OrderedDither(-1));
+      break;
+  }
+
+  return s_dither.get();
 }
 
 } // namespace app

@@ -47,6 +47,7 @@
 #include "doc/remap.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "render/dithering.h"
 #include "render/render.h"
 #include "ui/ui.h"
 
@@ -263,6 +264,14 @@ public:
 
   void updateStatusBar(const char* text) override {
     StatusBar::instance()->setStatusText(0, text);
+  }
+
+  render::DitheringMatrix getDitheringMatrix() override {
+    return App::instance()->contextBar()->ditheringMatrix();
+  }
+
+  render::DitheringAlgorithmBase* getDitheringAlgorithm() override {
+    return App::instance()->contextBar()->ditheringAlgorithm();
   }
 
 };

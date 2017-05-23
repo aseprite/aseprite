@@ -132,7 +132,7 @@ DitheringSelector::DitheringSelector()
                          render::BayerMatrix(2), "Old Dithering - Bayer Matrix 2x2"));
 
   setSelectedItemIndex(0);
-  setMinSize(getItem(0)->sizeHint());
+  setSizeHint(getItem(0)->sizeHint());
 }
 
 render::DitheringAlgorithm DitheringSelector::ditheringAlgorithm()

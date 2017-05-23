@@ -30,6 +30,11 @@ namespace doc {
   class Sprite;
 }
 
+namespace render {
+  class DitheringAlgorithmBase;
+  class DitheringMatrix;
+}
+
 namespace app {
   class Context;
   class Document;
@@ -222,6 +227,10 @@ namespace app {
       virtual void updateDirtyArea() = 0;
 
       virtual void updateStatusBar(const char* text) = 0;
+
+      // For gradients
+      virtual render::DitheringMatrix getDitheringMatrix() = 0;
+      virtual render::DitheringAlgorithmBase* getDitheringAlgorithm() = 0;
     };
 
   } // namespace tools
