@@ -254,8 +254,13 @@ private:
     if (visibleBounds.isEmpty())
       return;
 
+    doc::PixelFormat dstPixelFormat = item->pixelFormat();
+
+    if (m_ditheringSelector)
+      m_ditheringSelector->setVisible(dstPixelFormat == doc::IMAGE_INDEXED);
+
     m_image.reset(
-      Image::create(item->pixelFormat(),
+      Image::create(dstPixelFormat,
                     visibleBounds.w,
                     visibleBounds.h,
                     m_imageBuffer));
@@ -278,7 +283,7 @@ private:
         m_image,
         m_editor->sprite(),
         m_editor->frame(),
-        item->pixelFormat(),
+        dstPixelFormat,
         ditheringAlgorithm(),
         ditheringMatrix(),
         visibleBounds.origin()));
