@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,6 +34,7 @@ static Widget* wid_cancel = NULL;
 static int console_counter = 0;
 static bool console_locked;
 static bool want_close_flag = false;
+static bool has_text = false;
 
 Console::Console(Context* ctx)
   : m_withUI(false)
@@ -42,12 +43,16 @@ Console::Console(Context* ctx)
     m_withUI = (ctx->isUIAvailable());
   else
     m_withUI =
-      (App::instance()->isGui() &&
+      (App::instance() &&
+       App::instance()->isGui() &&
        Manager::getDefault() &&
        Manager::getDefault()->getDisplay());
 
   if (!m_withUI)
     return;
+
+  if (console_counter == 0)
+    has_text = false;
 
   console_counter++;
   if (wid_console || console_counter > 1)
@@ -104,8 +109,15 @@ Console::~Console()
   }
 }
 
+bool Console::hasText() const
+{
+  return has_text;
+}
+
 void Console::printf(const char* format, ...)
 {
+  has_text = true;
+
   std::va_list ap;
   va_start(ap, format);
   std::string msg = base::string_vprintf(format, ap);
