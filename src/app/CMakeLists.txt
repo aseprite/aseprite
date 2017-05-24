@@ -344,6 +344,7 @@ add_library(app-lib
   commands/filters/cmd_color_curve.cpp
   commands/filters/cmd_convolution_matrix.cpp
   commands/filters/cmd_despeckle.cpp
+  commands/filters/cmd_hue_saturation.cpp
   commands/filters/cmd_invert_color.cpp
   commands/filters/cmd_replace_color.cpp
   commands/filters/color_curve_editor.cpp

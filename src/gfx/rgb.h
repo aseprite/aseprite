@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,9 +13,9 @@
 namespace gfx {
 
 class Hsv;
+class Hsl;
 
-class Rgb
-{
+class Rgb {
 public:
   Rgb()
     : m_red(0)
@@ -39,8 +39,9 @@ public:
     , m_blue(rgb.blue())
   { }
 
-  // HSV to RGB conversion
+  // Conversions
   explicit Rgb(const Hsv& hsv);
+  explicit Rgb(const Hsl& hsl);
 
   int red() const {
     return m_red;

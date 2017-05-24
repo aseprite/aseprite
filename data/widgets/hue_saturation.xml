@@ -1,0 +1,11 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2017 by David Capello -->
+<gui>
+  <vbox expansive="true" id="hue_saturation">
+    <grid expansive="true" columns="2">
+      <label text="@.h" /><slider min="-180" max="180" id="hue" width="128" />
+      <label text="@.s" /><slider min="-100" max="100" id="saturation" />
+      <label text="@.l" /><slider min="-100" max="100" id="lightness" />
+    </grid>
+  </vbox>
+</gui>

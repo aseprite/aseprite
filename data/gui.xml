@@ -27,7 +27,6 @@
       </key>
       <!-- Edit -->
       <key command="Undo" shortcut="Ctrl+Z" mac="Cmd+Z" />
-      <key command="Undo" shortcut="Ctrl+U" mac="Cmd+U" />
       <key command="Redo" shortcut="Ctrl+Y" mac="Cmd+Y" />
       <key command="Redo" shortcut="Ctrl+R" mac="Cmd+R" />
       <key command="Redo" shortcut="Ctrl+Shift+Z" mac="Cmd+Shift+Z" />
@@ -49,6 +48,7 @@
         <param name="orientation" value="vertical" />
       </key>
       <key command="ReplaceColor" shortcut="Shift+R" />
+      <key command="HueSaturation" shortcut="Ctrl+U" mac="Cmd+U" />
       <key command="ConvolutionMatrix" shortcut="F9" />
       <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
@@ -627,7 +627,8 @@
         <item command="NewSpriteFromSelection" text="&amp;New Sprite from Selection" />
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
-        <item command="InvertColor" text="&amp;Invert" />
+        <item command="InvertColor" text="&amp;Invert..." />
+        <item command="HueSaturation" text="Ad&amp;just Hue/Saturation..." />
         <menu text="F&amp;X" id="fx_popup">
           <item command="ConvolutionMatrix" text="Convolution &amp;Matrix" />
           <item command="ColorCurve" text="&amp;Color Curve" />
