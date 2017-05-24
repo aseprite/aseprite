@@ -1160,6 +1160,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
 
       size_t uncompressed_bytes = scanline.size() - zstream.avail_out;
       if (uncompressed_bytes > 0) {
+        ASSERT(uncompressed_offset+uncompressed_bytes <= uncompressed.size());
         if (uncompressed_offset+uncompressed_bytes > uncompressed.size())
           throw base::Exception("Bad compressed image.");
 
