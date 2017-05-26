@@ -22,6 +22,9 @@ public:
 
 class IntertwineFirstPoint : public Intertwine {
 public:
+  // Snap angle because the angle between the first point and the last
+  // point might be useful for the ink (e.g. the gradient ink)
+  bool snapByAngle() override { return true; }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
     if (!stroke.empty())
