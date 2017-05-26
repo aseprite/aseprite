@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,8 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
+#include "gfx/hsl.h"
+#include "gfx/rgb.h"
 #include "ui/box.h"
 #include "ui/entry.h"
 #include "ui/graphics.h"
@@ -405,6 +407,39 @@ app::Color HsvSliders::getColorFromSliders()
                              getAbsSliderValue(1),
                              getAbsSliderValue(2),
                              getAbsSliderValue(3));
+}
+
+//////////////////////////////////////////////////////////////////////
+// HslSliders
+
+HslSliders::HslSliders()
+  : ColorSliders()
+{
+  addSlider(Hue,        "H", 0, 180);
+  addSlider(Saturation, "S", 0, 100);
+  addSlider(Value,      "L", 0, 100);
+}
+
+void HslSliders::onSetColor(const app::Color& color)
+{
+  gfx::Hsl hsl(gfx::Rgb(color.getRed(),
+                        color.getGreen(),
+                        color.getBlue()));
+
+  setAbsSliderValue(0, hsl.hue());
+  setAbsSliderValue(1, hsl.saturation() * 100.0);
+  setAbsSliderValue(2, hsl.lightness() * 100.0);
+}
+
+app::Color HslSliders::getColorFromSliders()
+{
+  gfx::Hsl hsl(getAbsSliderValue(0),
+               getAbsSliderValue(1) / 100.0,
+               getAbsSliderValue(2) / 100.0);
+  gfx::Rgb rgb(hsl);
+  return app::Color::fromRgb(rgb.red(),
+                             rgb.green(),
+                             rgb.blue(), 255);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -16,6 +16,7 @@
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_button.h"
+#include "app/ui/color_sliders.h"
 #include "base/bind.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -26,8 +27,6 @@
 #include "ui/slider.h"
 #include "ui/widget.h"
 #include "ui/window.h"
-
-#include "hue_saturation.xml.h"
 
 namespace app {
 
@@ -42,29 +41,23 @@ public:
                    WithoutTiledCheckBox)
     , m_filter(filter)
   {
-    getContainer()->addChild(&m_controls);
-
-    m_controls.hue()->setValue(0);
-    m_controls.saturation()->setValue(0);
-    m_controls.lightness()->setValue(0);
-
-    m_controls.hue()->Change.connect(base::Bind(&HueSaturationWindow::onChangeControls, this));
-    m_controls.saturation()->Change.connect(base::Bind(&HueSaturationWindow::onChangeControls, this));
-    m_controls.lightness()->Change.connect(base::Bind(&HueSaturationWindow::onChangeControls, this));
+    getContainer()->addChild(&m_sliders);
+    m_sliders.setMode(ColorSliders::Relative);
+    m_sliders.ColorChange.connect(base::Bind<void>(&HueSaturationWindow::onChangeControls, this));
   }
 
 private:
 
   void onChangeControls() {
-    m_filter.setHue(double(m_controls.hue()->getValue()));
-    m_filter.setSaturation(m_controls.saturation()->getValue() / 100.0);
-    m_filter.setLightness(m_controls.lightness()->getValue() / 100.0);
+    m_filter.setHue(double(m_sliders.getRelSliderValue(0)));
+    m_filter.setSaturation(m_sliders.getRelSliderValue(1) / 100.0);
+    m_filter.setLightness(m_sliders.getRelSliderValue(2) / 100.0);
 
     restartPreview();
   }
 
   HueSaturationFilter& m_filter;
-  app::gen::HueSaturation m_controls;
+  HslSliders m_sliders;
 };
 
 class HueSaturationCommand : public Command {

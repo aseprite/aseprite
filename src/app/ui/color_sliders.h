@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,6 +41,9 @@ namespace app {
     void setMode(Mode mode);
     void resetRelativeSliders();
 
+    int getAbsSliderValue(int sliderIndex) const;
+    int getRelSliderValue(int sliderIndex) const;
+
     // Signals
     obs::signal<void(ColorSlidersChangeEvent&)> ColorChange;
 
@@ -50,8 +53,6 @@ namespace app {
     // For derived classes
     void addSlider(Channel channel, const char* labelText, int min, int max);
     void setAbsSliderValue(int sliderIndex, int value);
-    int getAbsSliderValue(int sliderIndex) const;
-    int getRelSliderValue(int sliderIndex) const;
 
     virtual void onSetColor(const app::Color& color) = 0;
     virtual app::Color getColorFromSliders() = 0;
@@ -90,6 +91,15 @@ namespace app {
   class HsvSliders : public ColorSliders {
   public:
     HsvSliders();
+
+  private:
+    virtual void onSetColor(const app::Color& color) override;
+    virtual app::Color getColorFromSliders() override;
+  };
+
+  class HslSliders : public ColorSliders {
+  public:
+    HslSliders();
 
   private:
     virtual void onSetColor(const app::Color& color) override;
