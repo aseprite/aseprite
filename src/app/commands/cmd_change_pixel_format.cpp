@@ -485,8 +485,8 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     return;
 
   {
-    RenderTaskJob job(
-      "Converting Color Mode",
+    RenderTaskJob job("Converting Color Mode");
+    job.startJob(
       [this, &job, context, flatten]{
         ContextWriter writer(context);
         Transaction transaction(writer.context(), "Color Mode Change");
@@ -503,7 +503,6 @@ void ChangePixelFormatCommand::onExecute(Context* context)
         if (!job.isCanceled())
           transaction.commit();
       });
-    job.startJob();
     job.waitJob();
   }
 

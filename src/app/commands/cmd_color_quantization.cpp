@@ -114,14 +114,13 @@ void ColorQuantizationCommand::onExecute(Context* context)
 
     Palette tmpPalette(frame, entries.picks());
 
-    RenderTaskJob job(
-      "Creating Palette",
+    RenderTaskJob job("Creating Palette");
+    job.startJob(
       [sprite, withAlpha, &tmpPalette, &job]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette, &job);
       });
-    job.startJob();
     job.waitJob();
     if (job.isCanceled())
       return;

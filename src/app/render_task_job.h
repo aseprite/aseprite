@@ -18,10 +18,14 @@ namespace app {
 class RenderTaskJob : public Job,
                       public render::TaskDelegate {
 public:
+  RenderTaskJob(const char* jobName)
+    : Job(jobName) {
+  }
+
   template<typename T>
-  RenderTaskJob(const char* jobName, T&& func)
-    : Job(jobName)
-    , m_func(std::move(func)) {
+  void startJob(T&& func) {
+    m_func = std::move(func);
+    Job::startJob();
   }
 
 private:
