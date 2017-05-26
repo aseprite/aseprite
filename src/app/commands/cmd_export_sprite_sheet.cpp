@@ -678,6 +678,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   innerPadding = MID(0, innerPadding, 100);
   bool listLayers = docPref.spriteSheet.listLayers();
   bool listFrameTags = docPref.spriteSheet.listFrameTags();
+  bool listSlices = docPref.spriteSheet.listSlices();
 
   if (context->isUIAvailable() && askOverwrite) {
     if (!ask_overwrite(true, filename,
@@ -755,10 +756,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setBorderPadding(borderPadding);
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);
-  if (listLayers)
-    exporter.setListLayers(true);
-  if (listFrameTags)
-    exporter.setListFrameTags(true);
+  if (listLayers) exporter.setListLayers(true);
+  if (listFrameTags) exporter.setListFrameTags(true);
+  if (listSlices) exporter.setListSlices(true);
   exporter.addDocument(document, frameTag,
                        (!selLayers.empty() ? &selLayers: nullptr),
                        (!selFrames.empty() ? &selFrames: nullptr));
