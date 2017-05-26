@@ -918,16 +918,16 @@ public:
     }
 
     stops[0].x = pixman_int_to_fixed(0);
-    stops[0].color.red   = int(doc::rgba_getr(c0)) << 8;
-    stops[0].color.green = int(doc::rgba_getg(c0)) << 8;
-    stops[0].color.blue  = int(doc::rgba_getb(c0)) << 8;
-    stops[0].color.alpha = int(doc::rgba_geta(c0)) << 8;
+    stops[0].color.red   = 0xffff * int(doc::rgba_getr(c0)) / 255;
+    stops[0].color.green = 0xffff * int(doc::rgba_getg(c0)) / 255;
+    stops[0].color.blue  = 0xffff * int(doc::rgba_getb(c0)) / 255;
+    stops[0].color.alpha = 0xffff * int(doc::rgba_geta(c0)) / 255;
 
     stops[1].x = pixman_int_to_fixed(1);
-    stops[1].color.red   = int(doc::rgba_getr(c1)) << 8;
-    stops[1].color.green = int(doc::rgba_getg(c1)) << 8;
-    stops[1].color.blue  = int(doc::rgba_getb(c1)) << 8;
-    stops[1].color.alpha = int(doc::rgba_geta(c1)) << 8;
+    stops[1].color.red   = 0xffff * int(doc::rgba_getr(c1)) / 255;
+    stops[1].color.green = 0xffff * int(doc::rgba_getg(c1)) / 255;
+    stops[1].color.blue  = 0xffff * int(doc::rgba_getb(c1)) / 255;
+    stops[1].color.alpha = 0xffff * int(doc::rgba_geta(c1)) / 255;
 
     pixman_image_t* gradientImg =
       pixman_image_create_linear_gradient(
