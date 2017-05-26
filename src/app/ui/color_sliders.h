@@ -51,7 +51,10 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
 
     // For derived classes
-    void addSlider(Channel channel, const char* labelText, int min, int max);
+    void addSlider(const Channel channel,
+                   const char* labelText,
+                   const int absMin, const int absMax,
+                   const int relMin, const int relMax);
     void setAbsSliderValue(int sliderIndex, int value);
 
     virtual void onSetColor(const app::Color& color) = 0;

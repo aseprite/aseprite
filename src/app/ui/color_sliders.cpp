@@ -234,11 +234,14 @@ void ColorSliders::onSizeHint(SizeHintEvent& ev)
   ev.setSizeHint(m_grid.sizeHint());
 }
 
-void ColorSliders::addSlider(Channel channel, const char* labelText, int min, int max)
+void ColorSliders::addSlider(const Channel channel,
+                             const char* labelText,
+                             const int absMin, const int absMax,
+                             const int relMin, const int relMax)
 {
   Label*  label     = new Label(labelText);
-  Slider* absSlider = new Slider(min, max, 0);
-  Slider* relSlider = new Slider(min-max, max-min, 0);
+  Slider* absSlider = new Slider(absMin, absMax, 0);
+  Slider* relSlider = new Slider(relMin, relMax, 0);
   Entry*  entry     = new ColorEntry(absSlider, relSlider);
 
   m_label.push_back(label);
@@ -359,10 +362,10 @@ void ColorSliders::updateSliderBgColor(Slider* slider, const app::Color& color)
 RgbSliders::RgbSliders()
   : ColorSliders()
 {
-  addSlider(Red,   "R", 0, 255);
-  addSlider(Green, "G", 0, 255);
-  addSlider(Blue,  "B", 0, 255);
-  addSlider(Alpha, "A", 0, 255);
+  addSlider(Red,   "R", 0, 255, -255, 255);
+  addSlider(Green, "G", 0, 255, -255, 255);
+  addSlider(Blue,  "B", 0, 255, -255, 255);
+  addSlider(Alpha, "A", 0, 255, -255, 255);
 }
 
 void RgbSliders::onSetColor(const app::Color& color)
@@ -387,10 +390,10 @@ app::Color RgbSliders::getColorFromSliders()
 HsvSliders::HsvSliders()
   : ColorSliders()
 {
-  addSlider(Hue,        "H", 0, 360);
-  addSlider(Saturation, "S", 0, 100);
-  addSlider(Value,      "B", 0, 100);
-  addSlider(Alpha,      "A", 0, 255);
+  addSlider(Hue,        "H", 0, 360, -180, 180);
+  addSlider(Saturation, "S", 0, 100, -100, 100);
+  addSlider(Value,      "B", 0, 100, -100, 100);
+  addSlider(Alpha,      "A", 0, 255, -255, 255);
 }
 
 void HsvSliders::onSetColor(const app::Color& color)
@@ -415,9 +418,9 @@ app::Color HsvSliders::getColorFromSliders()
 HslSliders::HslSliders()
   : ColorSliders()
 {
-  addSlider(Hue,        "H", 0, 180);
-  addSlider(Saturation, "S", 0, 100);
-  addSlider(Value,      "L", 0, 100);
+  addSlider(Hue,        "H", 0, 360, -180, 180);
+  addSlider(Saturation, "S", 0, 100, -100, 100);
+  addSlider(Value,      "L", 0, 100, -100, 100);
 }
 
 void HslSliders::onSetColor(const app::Color& color)
@@ -448,8 +451,8 @@ app::Color HslSliders::getColorFromSliders()
 GraySlider::GraySlider()
   : ColorSliders()
 {
-  addSlider(Gray,  "V", 0, 255);
-  addSlider(Alpha, "A", 0, 255);
+  addSlider(Gray,  "V", 0, 255, -255, 255);
+  addSlider(Alpha, "A", 0, 255, -255, 255);
 }
 
 void GraySlider::onSetColor(const app::Color& color)
