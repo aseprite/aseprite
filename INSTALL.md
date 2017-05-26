@@ -288,14 +288,15 @@ More information about these steps in the
 
 # Creating an Application Bundle with Icon on macOS
 
-On macOS, after you successfully built aseprite. Now you will have executable aseprite.  
-If you are comfortable with clicking on such executable in which it will open a new terminal, and aseprite application itself, then you're fine, you have to need to do this.
+On macOS, after you successfully built aseprite. Now you will have executable aseprite.
+
+If you are comfortable with clicking on such executable in which it will open a new terminal, and aseprite application itself, then you're fine, you have no need to do this.
 
 But most likely for macOS users, it's much better to just click on application icon on the dock then aseprite shows up instantly. What we need to do is creating an application bundle wrapping around our aseprite executable file, and add application icon to it.
 
 Follow the following steps to create an application bundle
 * Open `Script Editor` by either searching via _Spotlight Search_ or directly open it at `/Applications/Utilities/Script\ Editor.app`.
-* Click on File->New to create a new script.
+* Click on _File->New_ to create a new script.
 * Enter the following code
 
    ```
@@ -304,16 +305,19 @@ Follow the following steps to create an application bundle
    end run
    ```
 
-   Replace `/Users/yourusername/Aseprite-v1.1.13-Source/build/bin` with the path you have built it. In general if you follow the steps, executable aseprite will locate inside `build/bin` from the directory you cloned the project.
-* Click File->Save then choose _File Format_ as _Application_.
-* Name the save file as `Aseprite`.
+   Replace `/Users/yourusername/Aseprite-v1.1.13-Source/build/bin` with the path of recently built aseprite file resides. In general if you follow the build steps, executable aseprite will locate inside `build/bin` from the directory you cloned the project.
+* Click _File->Save_ then choose _File Format_ as _Application_.
+* Name the save file as _Aseprite_.
 * Select the save location to be usually at `/Applications` thus when you search application to lanuch via Spotlight it will show there.
-* Try to double click on `/Applications/Aseprite`, it should launch aseprite. You can also right click on application icon on dock then select Options->Keep in Dock. So it will be convenient for to quickly open it later.
+* Try to double click on `/Applications/Aseprite`, it should launch aseprite. You can also right click on application icon on dock then select _Options->Keep_ in Dock. So it will be convenient to quickly open it later.
+
+We now application bundle wrapping around our built aseprite file. But the icon is still default one which is not aseprite yet. Next we will set aseprite icon to it.
 
 Follow the following steps to add aseprite's icon to our created application bundle
-* Download nice and transparent aseprite icon [here](https://github.com/aseprite/aseprite/blob/master/data/icons/ase64.png). Save it to your computer.
-* Go to [iconverticons.com](https://iconverticons.com/online/) to convert our icon into icon-resource file ready to be set to our application bundle (this is free, quick and practical way as of now, there might be other options included paid ones, or via applications).
-* Drag our saved icon onto website, then after it finished converting, click on dropdown menu of _ICNS_ and select _icns (finder ready)_. Save it to your computer.
+* Download a nice and transparent aseprite icon [here](https://github.com/aseprite/aseprite/blob/master/data/icons/ase64.png). Save it to your computer.
+   > You can use your own icon in this case too, or find other style of aseprite icon freely.
+* Go to [iconverticons.com](https://iconverticons.com/online/) to convert our icon into icon-resource file ready to be set to our application bundle (this is free, quick and practical way as of now, there might be other possible options included paid ones).
+* Drag our saved icon onto the page, then after it finished converting, click on dropdown menu of _ICNS_ and select _icns (finder ready)_. Save it to your computer.
 * Unzip the file. You will see instruction on how to proceed. You can follow it, or just continue steps here.
 * Right click on extracted file, and click _Get Info_.
 * Click on icon on the upper left then hit _CMD_ + _C_ to save.
