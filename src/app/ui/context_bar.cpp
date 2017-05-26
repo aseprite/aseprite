@@ -1691,7 +1691,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     ((isPaint && (hasInkWithOpacity || hasImageBrush)) ||
      (isEffect));
 
-  const bool withDithering =
+  const bool withDithering = tool &&
     (tool->getInk(0)->withDitheringOptions() ||
      tool->getInk(1)->withDitheringOptions());
 
