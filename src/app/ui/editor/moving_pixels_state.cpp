@@ -52,7 +52,8 @@ namespace app {
 using namespace ui;
 
 MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle)
-  : m_editor(editor)
+  : m_pixelsMovement(pixelsMovement)
+  , m_editor(editor)
   , m_observingEditor(false)
   , m_discarded(false)
 {
@@ -62,8 +63,6 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   //ASSERT(!editor->getCurrentEditorInk()->isSelection());
 
   UIContext* context = UIContext::instance();
-
-  m_pixelsMovement = pixelsMovement;
 
   if (handle != NoHandle) {
     gfx::Point pt = editor->screenToEditor(msg->position());
@@ -111,9 +110,9 @@ MovingPixelsState::~MovingPixelsState()
   contextBar->remove_observer(this);
   contextBar->updateForActiveTool();
 
-  m_pixelsMovement.reset(NULL);
-
+  removePixelsMovement();
   removeAsEditorObserver();
+
   m_editor->manager()->removeMessageFilter(kKeyDownMessage, m_editor);
   m_editor->manager()->removeMessageFilter(kKeyUpMessage, m_editor);
 
@@ -176,7 +175,7 @@ EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorS
 
     editor->document()->resetTransformation();
 
-    m_pixelsMovement.reset(NULL);
+    removePixelsMovement();
 
     editor->releaseMouse();
 
@@ -598,6 +597,8 @@ void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
 
 void MovingPixelsState::onTransparentColorChange()
 {
+  ASSERT(m_pixelsMovement);
+
   bool opaque = Preferences::instance().selection.opaque();
   setTransparentColor(
     opaque,
@@ -675,6 +676,14 @@ void MovingPixelsState::removeAsEditorObserver()
     m_observingEditor = false;
     m_editor->remove_observer(this);
   }
+}
+
+void MovingPixelsState::removePixelsMovement()
+{
+  m_pixelsMovement.reset(nullptr);
+  m_ctxConn.disconnect();
+  m_opaqueConn.disconnect();
+  m_transparentConn.disconnect();
 }
 
 } // namespace app
