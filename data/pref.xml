@@ -50,9 +50,11 @@
       <value id="RGB" value="4" />
       <value id="HSVA" value="5" />
       <value id="HSV" value="6" />
-      <value id="GRAYA" value="7" />
-      <value id="GRAY" value="8" />
-      <value id="INDEX" value="9" />
+      <value id="HSLA" value="7" />
+      <value id="HSL" value="8" />
+      <value id="GRAYA" value="9" />
+      <value id="GRAY" value="10" />
+      <value id="INDEX" value="11" />
     </enum>
     <enum id="EyedropperSample">
       <value id="ALL_LAYERS" value="0" />

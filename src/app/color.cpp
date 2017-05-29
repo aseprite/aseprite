@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,11 +12,12 @@
 
 #include "app/color_utils.h"
 #include "app/modules/palettes.h"
-#include "gfx/hsv.h"
-#include "gfx/rgb.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
+#include "gfx/hsl.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -53,6 +54,17 @@ Color Color::fromHsv(double h, double s, double v, int a)
   color.m_value.hsv.s = s;
   color.m_value.hsv.v = v;
   color.m_value.hsv.a = a;
+  return color;
+}
+
+// static
+Color Color::fromHsl(double h, double s, double l, int a)
+{
+  Color color(Color::HslType);
+  color.m_value.hsl.h = h;
+  color.m_value.hsl.s = s;
+  color.m_value.hsl.l = l;
+  color.m_value.hsl.a = a;
   return color;
 }
 
@@ -123,6 +135,7 @@ Color Color::fromString(const std::string& str)
   if (str != "mask") {
     if (str.find("rgb{") == 0 ||
         str.find("hsv{") == 0 ||
+        str.find("hsl{") == 0 ||
         str.find("gray{") == 0) {
       int c = 0;
       double table[4] = { 0.0, 0.0, 0.0, 255.0 };
@@ -139,8 +152,16 @@ Color Color::fromString(const std::string& str)
 
       if (str[0] == 'r')
         color = Color::fromRgb(int(table[0]), int(table[1]), int(table[2]), int(table[3]));
-      else if (str[0] == 'h')
-        color = Color::fromHsv(table[0], table[1], table[2], int(table[3]));
+      else if (str[0] == 'h' && str[1] == 's' && str[2] == 'v')
+        color = Color::fromHsv(table[0],
+                               table[1] / 100.0,
+                               table[2] / 100.0,
+                               int(table[3]));
+      else if (str[0] == 'h' && str[1] == 's' && str[2] == 'l')
+        color = Color::fromHsl(table[0],
+                               table[1] / 100.0,
+                               table[2] / 100.0,
+                               int(table[3]));
       else if (str[0] == 'g')
         color = Color::fromGray(int(table[0]), (c >= 2 ? int(table[1]): 255));
     }
@@ -175,9 +196,19 @@ std::string Color::toString() const
              << std::setprecision(2)
              << std::fixed
              << m_value.hsv.h << ","
-             << m_value.hsv.s << ","
-             << m_value.hsv.v << ","
+             << MID(0.0, m_value.hsv.s*100.0, 100.0) << ","
+             << MID(0.0, m_value.hsv.v*100.0, 100.0) << ","
              << m_value.hsv.a << "}";
+      break;
+
+    case Color::HslType:
+      result << "hsl{"
+             << std::setprecision(2)
+             << std::fixed
+             << m_value.hsl.h << ","
+             << MID(0.0, m_value.hsl.s*100.0, 100.0) << ","
+             << MID(0.0, m_value.hsl.l*100.0, 100.0) << ","
+             << m_value.hsl.a << "}";
       break;
 
     case Color::GrayType:
@@ -227,10 +258,30 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
           result << "Gray " << getGray();
         }
         else {
-          result << "HSB "
+          result << "HSV "
                  << int(m_value.hsv.h) << "\xc2\xb0 "
-                 << int(m_value.hsv.s) << "% "
-                 << int(m_value.hsv.v) << "%";
+                 << MID(0, int(m_value.hsv.s*100.0), 100) << "% "
+                 << MID(0, int(m_value.hsv.v*100.0), 100) << "%";
+
+          if (pixelFormat == IMAGE_INDEXED)
+            result << " Index " << color_utils::color_for_image(*this, pixelFormat);
+
+          result << " (RGB "
+                 << getRed() << " "
+                 << getGreen() << " "
+                 << getBlue() << ")";
+        }
+        break;
+
+      case Color::HslType:
+        if (pixelFormat == IMAGE_GRAYSCALE) {
+          result << "Gray " << getGray();
+        }
+        else {
+          result << "HSL "
+                 << int(m_value.hsl.h) << "\xc2\xb0 "
+                 << MID(0, int(m_value.hsl.s*100.0), 100) << "% "
+                 << MID(0, int(m_value.hsl.l*100.0), 100) << "%";
 
           if (pixelFormat == IMAGE_INDEXED)
             result << " Index " << color_utils::color_for_image(*this, pixelFormat);
@@ -299,8 +350,19 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         }
         else {
           result << int(m_value.hsv.h) << "\xc2\xb0"
-                 << int(m_value.hsv.s) << ","
-                 << int(m_value.hsv.v);
+                 << MID(0, int(m_value.hsv.s*100.0), 100) << ","
+                 << MID(0, int(m_value.hsv.v*100.0), 100);
+        }
+        break;
+
+      case Color::HslType:
+        if (pixelFormat == IMAGE_GRAYSCALE) {
+          result << "Gry-" << getGray();
+        }
+        else {
+          result << int(m_value.hsl.h) << "\xc2\xb0"
+                 << MID(0, int(m_value.hsl.s*100.0), 100) << ","
+                 << MID(0, int(m_value.hsl.l*100.0), 100);
         }
         break;
 
@@ -341,9 +403,16 @@ bool Color::operator==(const Color& other) const
     case Color::HsvType:
       return
         (std::fabs(m_value.hsv.h - other.m_value.hsv.h) < 0.001) &&
-        (std::fabs(m_value.hsv.s - other.m_value.hsv.s) < 0.001) &&
-        (std::fabs(m_value.hsv.v - other.m_value.hsv.v) < 0.001) &&
+        (std::fabs(m_value.hsv.s - other.m_value.hsv.s) < 0.00001) &&
+        (std::fabs(m_value.hsv.v - other.m_value.hsv.v) < 0.00001) &&
         (m_value.hsv.a == other.m_value.hsv.a);
+
+    case Color::HslType:
+      return
+        (std::fabs(m_value.hsl.h - other.m_value.hsl.h) < 0.001) &&
+        (std::fabs(m_value.hsl.s - other.m_value.hsl.s) < 0.00001) &&
+        (std::fabs(m_value.hsl.l - other.m_value.hsl.l) < 0.00001) &&
+        (m_value.hsl.a == other.m_value.hsl.a);
 
     case Color::GrayType:
       return
@@ -387,8 +456,13 @@ int Color::getRed() const
 
     case Color::HsvType:
       return Rgb(Hsv(m_value.hsv.h,
-                     m_value.hsv.s / 100.0,
-                     m_value.hsv.v / 100.0)).red();
+                     m_value.hsv.s,
+                     m_value.hsv.v)).red();
+
+    case Color::HslType:
+      return Rgb(Hsl(m_value.hsl.h,
+                     m_value.hsl.s,
+                     m_value.hsl.l)).red();
 
     case Color::GrayType:
       return m_value.gray.g;
@@ -419,8 +493,13 @@ int Color::getGreen() const
 
     case Color::HsvType:
       return Rgb(Hsv(m_value.hsv.h,
-                     m_value.hsv.s / 100.0,
-                     m_value.hsv.v / 100.0)).green();
+                     m_value.hsv.s,
+                     m_value.hsv.v)).green();
+
+    case Color::HslType:
+      return Rgb(Hsl(m_value.hsl.h,
+                     m_value.hsl.s,
+                     m_value.hsl.l)).green();
 
     case Color::GrayType:
       return m_value.gray.g;
@@ -451,8 +530,13 @@ int Color::getBlue() const
 
     case Color::HsvType:
       return Rgb(Hsv(m_value.hsv.h,
-                     m_value.hsv.s / 100.0,
-                     m_value.hsv.v / 100.0)).blue();
+                     m_value.hsv.s,
+                     m_value.hsv.v)).blue();
+
+    case Color::HslType:
+      return Rgb(Hsl(m_value.hsl.h,
+                     m_value.hsl.s,
+                     m_value.hsl.l)).blue();
 
     case Color::GrayType:
       return m_value.gray.g;
@@ -471,7 +555,7 @@ int Color::getBlue() const
   return -1;
 }
 
-double Color::getHue() const
+double Color::getHsvHue() const
 {
   switch (getType()) {
 
@@ -485,6 +569,9 @@ double Color::getHue() const
 
     case Color::HsvType:
       return m_value.hsv.h;
+
+    case Color::HslType:
+      return m_value.hsl.h;
 
     case Color::GrayType:
       return 0.0;
@@ -507,7 +594,7 @@ double Color::getHue() const
   return -1.0;
 }
 
-double Color::getSaturation() const
+double Color::getHsvSaturation() const
 {
   switch (getType()) {
 
@@ -517,10 +604,15 @@ double Color::getSaturation() const
     case Color::RgbType:
       return Hsv(Rgb(m_value.rgb.r,
                      m_value.rgb.g,
-                     m_value.rgb.b)).saturation() * 100.0;
+                     m_value.rgb.b)).saturation();
 
     case Color::HsvType:
       return m_value.hsv.s;
+
+    case Color::HslType:
+      return Hsv(Rgb(getRed(),
+                     getGreen(),
+                     getBlue())).saturation();
 
     case Color::GrayType:
       return 0;
@@ -531,7 +623,7 @@ double Color::getSaturation() const
         uint32_t c = get_current_palette()->getEntry(i);
         return Hsv(Rgb(rgba_getr(c),
                        rgba_getg(c),
-                       rgba_getb(c))).saturation() * 100.0;
+                       rgba_getb(c))).saturation();
       }
       else
         return 0.0;
@@ -543,7 +635,7 @@ double Color::getSaturation() const
   return -1.0;
 }
 
-double Color::getValue() const
+double Color::getHsvValue() const
 {
   switch (getType()) {
 
@@ -553,13 +645,18 @@ double Color::getValue() const
     case Color::RgbType:
       return Hsv(Rgb(m_value.rgb.r,
                      m_value.rgb.g,
-                     m_value.rgb.b)).value() * 100.0;
+                     m_value.rgb.b)).value();
 
     case Color::HsvType:
       return m_value.hsv.v;
 
+    case Color::HslType:
+      return Hsv(Rgb(getRed(),
+                     getGreen(),
+                     getBlue())).value();
+
     case Color::GrayType:
-      return 100.0 * m_value.gray.g / 255.0;
+      return m_value.gray.g / 255.0;
 
     case Color::IndexType: {
       int i = m_value.index;
@@ -567,7 +664,128 @@ double Color::getValue() const
         uint32_t c = get_current_palette()->getEntry(i);
         return Hsv(Rgb(rgba_getr(c),
                        rgba_getg(c),
-                       rgba_getb(c))).value() * 100.0;
+                       rgba_getb(c))).value();
+      }
+      else
+        return 0.0;
+    }
+
+  }
+
+  ASSERT(false);
+  return -1.0;
+}
+
+double Color::getHslHue() const
+{
+  switch (getType()) {
+
+    case Color::MaskType:
+      return 0.0;
+
+    case Color::RgbType:
+      return Hsl(Rgb(m_value.rgb.r,
+                     m_value.rgb.g,
+                     m_value.rgb.b)).hue();
+
+    case Color::HsvType:
+      return m_value.hsv.h;
+
+    case Color::HslType:
+      return m_value.hsl.h;
+
+    case Color::GrayType:
+      return 0.0;
+
+    case Color::IndexType: {
+      int i = m_value.index;
+      if (i >= 0 && i < get_current_palette()->size()) {
+        uint32_t c = get_current_palette()->getEntry(i);
+        return Hsl(Rgb(rgba_getr(c),
+                       rgba_getg(c),
+                       rgba_getb(c))).hue();
+      }
+      else
+        return 0.0;
+    }
+
+  }
+
+  ASSERT(false);
+  return -1.0;
+}
+
+double Color::getHslSaturation() const
+{
+  switch (getType()) {
+
+    case Color::MaskType:
+      return 0;
+
+    case Color::RgbType:
+      return Hsl(Rgb(m_value.rgb.r,
+                     m_value.rgb.g,
+                     m_value.rgb.b)).saturation();
+
+    case Color::HsvType:
+      return Hsl(Rgb(getRed(),
+                     getGreen(),
+                     getBlue())).saturation();
+
+    case Color::HslType:
+      return m_value.hsl.s;
+
+    case Color::GrayType:
+      return 0;
+
+    case Color::IndexType: {
+      int i = m_value.index;
+      if (i >= 0 && i < get_current_palette()->size()) {
+        uint32_t c = get_current_palette()->getEntry(i);
+        return Hsl(Rgb(rgba_getr(c),
+                       rgba_getg(c),
+                       rgba_getb(c))).saturation();
+      }
+      else
+        return 0.0;
+    }
+
+  }
+
+  ASSERT(false);
+  return -1.0;
+}
+
+double Color::getHslLightness() const
+{
+  switch (getType()) {
+
+    case Color::MaskType:
+      return 0.0;
+
+    case Color::RgbType:
+      return Hsl(Rgb(m_value.rgb.r,
+                     m_value.rgb.g,
+                     m_value.rgb.b)).lightness();
+
+    case Color::HsvType:
+      return Hsl(Rgb(getRed(),
+                     getGreen(),
+                     getBlue())).lightness();
+
+    case Color::HslType:
+      return m_value.hsl.l;
+
+    case Color::GrayType:
+      return m_value.gray.g / 255.0;
+
+    case Color::IndexType: {
+      int i = m_value.index;
+      if (i >= 0 && i < get_current_palette()->size()) {
+        uint32_t c = get_current_palette()->getEntry(i);
+        return Hsl(Rgb(rgba_getr(c),
+                       rgba_getg(c),
+                       rgba_getb(c))).lightness();
       }
       else
         return 0.0;
@@ -587,12 +805,17 @@ int Color::getGray() const
       return 0;
 
     case Color::RgbType:
-      return int(255.0 * Hsv(Rgb(m_value.rgb.r,
+      return int(255.0 * Hsl(Rgb(m_value.rgb.r,
                                  m_value.rgb.g,
-                                 m_value.rgb.b)).value());
+                                 m_value.rgb.b)).lightness());
 
     case Color::HsvType:
-      return int(255.0 * m_value.hsv.v / 100.0);
+      return int(255.0 * Hsl(Rgb(getRed(),
+                                 getGreen(),
+                                 getBlue())).lightness());
+
+    case Color::HslType:
+      return int(255.0 * m_value.hsl.l);
 
     case Color::GrayType:
       return m_value.gray.g;
@@ -601,9 +824,9 @@ int Color::getGray() const
       int i = m_value.index;
       if (i >= 0 && i < get_current_palette()->size()) {
         uint32_t c = get_current_palette()->getEntry(i);
-        return int(255.0 * Hsv(Rgb(rgba_getr(c),
+        return int(255.0 * Hsl(Rgb(rgba_getr(c),
                                    rgba_getg(c),
-                                   rgba_getb(c))).value());
+                                   rgba_getb(c))).lightness());
       }
       else
         return 0;
@@ -624,6 +847,7 @@ int Color::getIndex() const
 
     case Color::RgbType:
     case Color::HsvType:
+    case Color::HslType:
     case Color::GrayType: {
       int i = get_current_palette()->findExactMatch(getRed(), getGreen(), getBlue(), getAlpha(), -1);
       if (i >= 0)
@@ -653,6 +877,9 @@ int Color::getAlpha() const
 
     case Color::HsvType:
       return m_value.hsv.a;
+
+    case Color::HslType:
+      return m_value.hsl.a;
 
     case Color::GrayType:
       return m_value.gray.a;

@@ -44,9 +44,11 @@ using namespace doc;
 enum {
   INDEX_MODE,
   RGB_MODE,
-  HSB_MODE,
+  HSV_MODE,
+  HSL_MODE,
   GRAY_MODE,
-  MASK_MODE
+  MASK_MODE,
+  COLOR_MODES
 };
 
 static base::UniquePtr<doc::Palette> g_simplePal(nullptr);
@@ -124,7 +126,7 @@ ColorPopup::ColorPopup(const bool canPin,
   , m_color(app::Color::fromMask())
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
   , m_simpleColors(nullptr)
-  , m_colorType(5)
+  , m_colorType(COLOR_MODES)
   , m_maskLabel("Transparent Color Selected")
   , m_canPin(canPin)
   , m_disableHexUpdate(false)
@@ -145,7 +147,8 @@ ColorPopup::ColorPopup(const bool canPin,
 
   m_colorType.addItem("Index")->setFocusStop(false);
   m_colorType.addItem("RGB")->setFocusStop(false);
-  m_colorType.addItem("HSB")->setFocusStop(false);
+  m_colorType.addItem("HSV")->setFocusStop(false);
+  m_colorType.addItem("HSL")->setFocusStop(false);
   m_colorType.addItem("Gray")->setFocusStop(false);
   m_colorType.addItem("Mask")->setFocusStop(false);
 
@@ -156,6 +159,7 @@ ColorPopup::ColorPopup(const bool canPin,
   m_colorPaletteContainer.setExpansive(true);
   m_rgbSliders.setExpansive(true);
   m_hsvSliders.setExpansive(true);
+  m_hslSliders.setExpansive(true);
   m_graySlider.setExpansive(true);
 
   m_topBox.addChild(&m_colorType);
@@ -190,6 +194,7 @@ ColorPopup::ColorPopup(const bool canPin,
   m_vbox.addChild(&m_colorPaletteContainer);
   m_vbox.addChild(&m_rgbSliders);
   m_vbox.addChild(&m_hsvSliders);
+  m_vbox.addChild(&m_hslSliders);
   m_vbox.addChild(&m_graySlider);
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
@@ -198,6 +203,7 @@ ColorPopup::ColorPopup(const bool canPin,
 
   m_rgbSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
+  m_hslSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
 
@@ -240,6 +246,7 @@ void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
 
   m_rgbSliders.setColor(m_color);
   m_hsvSliders.setColor(m_color);
+  m_hslSliders.setColor(m_color);
   m_graySlider.setColor(m_color);
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(m_color);
@@ -340,10 +347,16 @@ void ColorPopup::onColorTypeClick()
                                      newColor.getBlue(),
                                      newColor.getAlpha());
       break;
-    case HSB_MODE:
-      newColor = app::Color::fromHsv(newColor.getHue(),
-                                     newColor.getSaturation(),
-                                     newColor.getValue(),
+    case HSV_MODE:
+      newColor = app::Color::fromHsv(newColor.getHsvHue(),
+                                     newColor.getHsvSaturation(),
+                                     newColor.getHsvValue(),
+                                     newColor.getAlpha());
+      break;
+    case HSL_MODE:
+      newColor = app::Color::fromHsl(newColor.getHslHue(),
+                                     newColor.getHslSaturation(),
+                                     newColor.getHslLightness(),
                                      newColor.getAlpha());
       break;
     case GRAY_MODE:
@@ -393,18 +406,20 @@ void ColorPopup::selectColorType(app::Color::Type type)
   m_colorPaletteContainer.setVisible(type == app::Color::IndexType);
   m_rgbSliders.setVisible(type == app::Color::RgbType);
   m_hsvSliders.setVisible(type == app::Color::HsvType);
+  m_hslSliders.setVisible(type == app::Color::HslType);
   m_graySlider.setVisible(type == app::Color::GrayType);
   m_maskLabel.setVisible(type == app::Color::MaskType);
 
   switch (type) {
     case app::Color::IndexType: m_colorType.setSelectedItem(INDEX_MODE); break;
     case app::Color::RgbType:   m_colorType.setSelectedItem(RGB_MODE); break;
-    case app::Color::HsvType:   m_colorType.setSelectedItem(HSB_MODE); break;
+    case app::Color::HsvType:   m_colorType.setSelectedItem(HSV_MODE); break;
+    case app::Color::HslType:   m_colorType.setSelectedItem(HSL_MODE); break;
     case app::Color::GrayType:  m_colorType.setSelectedItem(GRAY_MODE); break;
     case app::Color::MaskType:  m_colorType.setSelectedItem(MASK_MODE); break;
   }
 
-  // Remove focus from hidden RGB/HSB text entries
+  // Remove focus from hidden RGB/HSV/HSL text entries
   auto widget = manager()->getFocus();
   if (widget && !widget->isVisible()) {
     auto window = widget->window();

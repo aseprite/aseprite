@@ -18,16 +18,12 @@ using namespace std;
 
 Hsl::Hsl(double hue, double saturation, double lightness)
   : m_hue(hue)
-  , m_saturation(saturation)
-  , m_lightness(lightness)
+  , m_saturation(MID(0.0, saturation, 1.0))
+  , m_lightness(MID(0.0, lightness, 1.0))
 {
   while (m_hue < 0.0)
     m_hue += 360.0;
   m_hue = std::fmod(m_hue, 360.0);
-
-  assert(hue        >= 0.0 && hue        <= 360.0);
-  assert(saturation >= 0.0 && saturation <= 1.0);
-  assert(lightness  >= 0.0 && lightness  <= 1.0);
 }
 
 Hsl::Hsl(const Rgb& rgb)
@@ -76,17 +72,17 @@ Hsl::Hsl(const Rgb& rgb)
 
 int Hsl::hueInt() const
 {
-  return int(floor(m_hue + 0.5));
+  return int(std::floor(m_hue + 0.5));
 }
 
 int Hsl::saturationInt() const
 {
-  return int(floor(m_saturation*100.0 + 0.5));
+  return int(std::floor(m_saturation*100.0 + 0.5));
 }
 
 int Hsl::lightnessInt() const
 {
-  return int(floor(m_lightness*100.0 + 0.5));
+  return int(std::floor(m_lightness*100.0 + 0.5));
 }
 
 } // namespace gfx

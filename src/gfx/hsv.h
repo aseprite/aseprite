@@ -8,7 +8,7 @@
 #define GFX_HSV_H_INCLUDED
 #pragma once
 
-#include <cassert>
+#include "base/base.h"          // MID
 
 namespace gfx {
 
@@ -48,18 +48,15 @@ public:
   int valueInt() const;
 
   void hue(double hue) {
-    assert(hue >= 0.0 && hue <= 360.0);
-    m_hue = hue;
+    m_hue = MID(0.0, hue, 360.0);
   }
 
   void saturation(double saturation) {
-    assert(saturation >= 0.0 && saturation <= 1.0);
-    m_saturation = saturation;
+    m_saturation = MID(0.0, saturation, 1.0);
   }
 
   void value(double value) {
-    assert(value >= 0.0 && value <= 1.0);
-    m_value = value;
+    m_value = MID(0.0, value, 1.0);
   }
 
   // The comparison is done through the integer value of each component.

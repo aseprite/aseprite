@@ -105,8 +105,8 @@ app::Color ColorWheel::getColorInClientPos(const gfx::Point& pos)
 
     return app::Color::fromHsv(
       MID(0, hue, 360),
-      MID(0, sat, 100),
-      100);
+      MID(0, sat / 100.0, 1.0),
+      1.0);
   }
 
   // Pick harmonies
@@ -123,9 +123,9 @@ app::Color ColorWheel::getColorInClientPos(const gfx::Point& pos)
                     boxsize, boxsize).contains(pos)) {
         m_harmonyPicked = true;
 
-        color = app::Color::fromHsv(convertHueAngle(int(color.getHue()), 1),
-                                    color.getSaturation(),
-                                    color.getValue());
+        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
+                                    color.getHsvSaturation(),
+                                    color.getHsvValue());
         return color;
       }
     }
@@ -168,11 +168,11 @@ app::Color ColorWheel::getColorInHarmony(int j) const
 {
   int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
   j = MID(0, j, harmonies[i].n-1);
-  double hue = convertHueAngle(int(m_color.getHue()), -1) + harmonies[i].hues[j];
-  double sat = m_color.getSaturation() * harmonies[i].sats[j] / 100.0;
+  double hue = convertHueAngle(int(m_color.getHsvHue()), -1) + harmonies[i].hues[j];
+  double sat = m_color.getHsvSaturation() * harmonies[i].sats[j] / 100.0;
   return app::Color::fromHsv(std::fmod(hue, 360),
-                             MID(0.0, sat, 100.0),
-                             m_color.getValue());
+                             MID(0.0, sat, 1.0),
+                             m_color.getHsvValue());
 }
 
 void ColorWheel::onResize(ui::ResizeEvent& ev)
@@ -230,17 +230,17 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
-      double angle = color.getHue()-30.0;
-      double dist = color.getSaturation();
+      double angle = color.getHsvHue()-30.0;
+      double dist = color.getHsvSaturation();
 
-      color = app::Color::fromHsv(convertHueAngle(int(color.getHue()), 1),
-                                  color.getSaturation(),
-                                  color.getValue());
+      color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
+                                  color.getHsvSaturation(),
+                                  color.getHsvValue());
 
       gfx::Point pos =
         m_wheelBounds.center() +
-        gfx::Point(int(+std::cos(PI*angle/180.0)*double(m_wheelRadius)*dist/100.0),
-                   int(-std::sin(PI*angle/180.0)*double(m_wheelRadius)*dist/100.0));
+        gfx::Point(int(+std::cos(PI*angle/180.0)*double(m_wheelRadius)*dist),
+                   int(-std::sin(PI*angle/180.0)*double(m_wheelRadius)*dist));
 
       she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
       g->drawRgbaSurface(icon,

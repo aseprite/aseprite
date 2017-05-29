@@ -55,13 +55,13 @@ app::Color ColorSpectrum::getColorByPosition(const gfx::Point& pos)
   }
 
   double hue = 360.0 * u / umax;
-  double sat = (v < vmid ? 100.0 * v / vmid : 100.0);
-  double val = (v < vmid ? 100.0 : 100.0-(100.0 * (v-vmid) / vmid));
+  double sat = (v < vmid ? double(v) / double(vmid) : 1.0);
+  double val = (v < vmid ? 1.0 : 1.0-(double(v-vmid) / double(vmid)));
 
   return app::Color::fromHsv(
     MID(0.0, hue, 360.0),
-    MID(0.0, sat, 100.0),
-    MID(0.0, val, 100.0));
+    MID(0.0, sat, 1.0),
+    MID(0.0, val, 1.0));
 }
 
 void ColorSpectrum::onPaint(ui::PaintEvent& ev)
@@ -95,31 +95,31 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
       }
 
       double hue = 360.0 * u / umax;
-      double sat = (v < vmid ? 100.0 * v / vmid : 100.0);
-      double val = (v < vmid ? 100.0 : 100.0-(100.0 * (v-vmid) / vmid));
+      double sat = (v < vmid ? double(v) / double(vmid) : 1.0);
+      double val = (v < vmid ? 1.0 : 1.0-(double(v-vmid) / double(vmid)));
 
       gfx::Color color = color_utils::color_for_ui(
         app::Color::fromHsv(
           MID(0.0, hue, 360.0),
-          MID(0.0, sat, 100.0),
-          MID(0.0, val, 100.0)));
+          MID(0.0, sat, 1.0),
+          MID(0.0, val, 1.0)));
 
       g->putPixel(color, rc.x+x, rc.y+y);
     }
   }
 
   if (m_color.getType() != app::Color::MaskType) {
-    double hue = m_color.getHue();
-    double sat = m_color.getSaturation();
-    double val = m_color.getValue();
-    double lit = (200.0 - sat) * val / 200.0;
+    double hue = m_color.getHsvHue();
+    double sat = m_color.getHsvSaturation();
+    double val = m_color.getHsvValue();
+    double lit = (2.0 - sat) * val / 2.0;
     gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
-                   rc.y + rc.h - int(lit * rc.h / 100.0));
+                   rc.y + rc.h - int(lit * rc.h));
 
     she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
     g->drawColoredRgbaSurface(
       icon,
-      lit > 50.0 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
+      lit > 0.5 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
       pos.x-icon->width()/2,
       pos.y-icon->height()/2);
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,6 +48,7 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
 
     case app::Color::RgbType:
     case app::Color::HsvType:
+    case app::Color::HslType:
       c = gfx::rgba(
         color.getRed(),
         color.getGreen(),

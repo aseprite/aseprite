@@ -951,6 +951,7 @@ int PaletteView::findExactIndex(const app::Color& color) const
 
     case Color::RgbType:
     case Color::HsvType:
+    case Color::HslType:
     case Color::GrayType:
       return currentPalette()->findExactMatch(
         color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha(), -1);

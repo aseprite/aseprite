@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,6 +28,7 @@ namespace app {
       MaskType,
       RgbType,
       HsvType,
+      HslType,
       GrayType,
       IndexType,
     };
@@ -42,7 +43,8 @@ namespace app {
 
     static Color fromMask();
     static Color fromRgb(int r, int g, int b, int a = 255);
-    static Color fromHsv(double h, double s, double v, int a = 255); // h=[0,360], s=[0,100], v=[0,100]
+    static Color fromHsv(double h, double s, double v, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
+    static Color fromHsl(double h, double s, double l, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
     static Color fromGray(int g, int a = 255);
     static Color fromIndex(int index);
 
@@ -68,9 +70,12 @@ namespace app {
     int getRed() const;
     int getGreen() const;
     int getBlue() const;
-    double getHue() const;
-    double getSaturation() const;
-    double getValue() const;
+    double getHsvHue() const;
+    double getHsvSaturation() const;
+    double getHsvValue() const;
+    double getHslHue() const;
+    double getHslSaturation() const;
+    double getHslLightness() const;
     int getGray() const;
     int getIndex() const;
     int getAlpha() const;
@@ -90,6 +95,10 @@ namespace app {
         double h, s, v;
         int a;
       } hsv;
+      struct {
+        double h, s, l;
+        int a;
+      } hsl;
       struct {
         int g, a;
       } gray;

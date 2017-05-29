@@ -53,7 +53,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
           scale = 15.0;
         }
 
-        double newHue = m_color.getHue()
+        double newHue = m_color.getHsvHue()
           + scale*(+ static_cast<MouseMessage*>(msg)->wheelDelta().x
                    - static_cast<MouseMessage*>(msg)->wheelDelta().y);
 
@@ -61,12 +61,12 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
           newHue += 360.0;
         newHue = std::fmod(newHue, 360.0);
 
-        if (newHue != m_color.getHue()) {
+        if (newHue != m_color.getHsvHue()) {
           app::Color newColor =
             app::Color::fromHsv(
               newHue,
-              m_color.getSaturation(),
-              m_color.getValue());
+              m_color.getHsvSaturation(),
+              m_color.getHsvValue());
 
           ColorChange(newColor, kButtonNone);
         }

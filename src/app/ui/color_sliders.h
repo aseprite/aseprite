@@ -29,9 +29,9 @@ namespace app {
   class ColorSliders : public ui::Widget {
   public:
     enum Channel { Red, Green, Blue,
-                   Hue, Saturation, Value,
-                   Gray,
-                   Alpha };
+                   HsvHue, HsvSaturation, HsvValue,
+                   HslHue, HslSaturation, HslLightness,
+                   Gray, Alpha };
     enum Mode { Absolute, Relative };
 
     ColorSliders();

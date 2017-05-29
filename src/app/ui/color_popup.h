@@ -71,6 +71,7 @@ namespace app {
     HexColorEntry m_hexColorEntry;
     RgbSliders m_rgbSliders;
     HsvSliders m_hsvSliders;
+    HslSliders m_hslSliders;
     GraySlider m_graySlider;
     ui::Label m_maskLabel;
     obs::scoped_connection m_onPaletteChangeConn;

@@ -33,6 +33,7 @@ HueSaturationFilter::HueSaturationFilter()
   : m_h(0.0)
   , m_s(0.0)
   , m_l(0.0)
+  , m_a(0)
 {
 }
 
@@ -49,6 +50,11 @@ void HueSaturationFilter::setSaturation(double s)
 void HueSaturationFilter::setLightness(double l)
 {
   m_l = l;
+}
+
+void HueSaturationFilter::setAlpha(int a)
+{
+  m_a = a;
 }
 
 void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
@@ -95,6 +101,9 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
       if (target & TARGET_RED_CHANNEL  ) r = rgb.red();
       if (target & TARGET_GREEN_CHANNEL) g = rgb.green();
       if (target & TARGET_BLUE_CHANNEL ) b = rgb.blue();
+
+      if (a && (target & TARGET_ALPHA_CHANNEL))
+        a = MID(0, a+m_a, 255);
     }
 
     *(dst_address++) = rgba(r, g, b, a);
@@ -131,6 +140,9 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
       gfx::Rgb rgb(hsl);
 
       if (target & TARGET_GRAY_CHANNEL) k = rgb.red();
+
+      if (a && (target & TARGET_ALPHA_CHANNEL))
+        a = MID(0, a+m_a, 255);
     }
 
     *(dst_address++) = graya(k, a);
@@ -182,6 +194,9 @@ void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
       if (target & TARGET_RED_CHANNEL  ) r = rgb.red();
       if (target & TARGET_GREEN_CHANNEL) g = rgb.green();
       if (target & TARGET_BLUE_CHANNEL ) b = rgb.blue();
+
+      if (a && (target & TARGET_ALPHA_CHANNEL))
+        a = MID(0, a+m_a, 255);
     }
 
     c = rgbmap->mapColor(r, g, b, a);

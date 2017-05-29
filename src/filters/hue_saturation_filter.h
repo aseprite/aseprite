@@ -19,6 +19,7 @@ namespace filters {
     void setHue(double h);
     void setSaturation(double s);
     void setLightness(double v);
+    void setAlpha(int a);
 
     // Filter implementation
     const char* getName();
@@ -28,6 +29,7 @@ namespace filters {
 
   private:
     double m_h, m_s, m_l;
+    int m_a;
   };
 
 } // namespace filters

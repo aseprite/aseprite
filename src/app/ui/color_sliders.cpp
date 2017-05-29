@@ -62,18 +62,49 @@ namespace {
           case ColorSliders::Blue:
             color = gfx::rgba(m_color.getRed(), m_color.getGreen(), 255 * x / w);
             break;
-          case ColorSliders::Hue:
-            color = color_utils::color_for_ui(app::Color::fromHsv(360 * x / w, m_color.getSaturation(), m_color.getValue()));
+
+          case ColorSliders::HsvHue:
+            color = color_utils::color_for_ui(
+              app::Color::fromHsv(360.0 * x / w,
+                                  m_color.getHsvSaturation(),
+                                  m_color.getHsvValue()));
             break;
-          case ColorSliders::Saturation:
-            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), 100 * x / w, m_color.getValue()));
+          case ColorSliders::HsvSaturation:
+            color = color_utils::color_for_ui(
+              app::Color::fromHsv(m_color.getHsvHue(),
+                                  double(x) / double(w),
+                                  m_color.getHsvValue()));
             break;
-          case ColorSliders::Value:
-            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / w));
+          case ColorSliders::HsvValue:
+            color = color_utils::color_for_ui(
+              app::Color::fromHsv(m_color.getHsvHue(),
+                                  m_color.getHsvSaturation(),
+                                  double(x) / double(w)));
             break;
+
+          case ColorSliders::HslHue:
+            color = color_utils::color_for_ui(
+              app::Color::fromHsl(360.0 * x / w,
+                                  m_color.getHslSaturation(),
+                                  m_color.getHslLightness()));
+            break;
+          case ColorSliders::HslSaturation:
+            color = color_utils::color_for_ui(
+              app::Color::fromHsl(m_color.getHslHue(),
+                                  double(x) / double(w),
+                                  m_color.getHslLightness()));
+            break;
+          case ColorSliders::HslLightness:
+            color = color_utils::color_for_ui(
+              app::Color::fromHsl(m_color.getHslHue(),
+                                  m_color.getHslSaturation(),
+                                  double(x) / double(w)));
+            break;
+
           case ColorSliders::Gray:
           case ColorSliders::Alpha:
-            color = color_utils::color_for_ui(app::Color::fromGray(255 * x / w));
+            color = color_utils::color_for_ui(
+              app::Color::fromGray(255 * x / w));
             break;
         }
         g->drawVLine(color, rc.x+x, rc.y, rc.h);
@@ -390,25 +421,25 @@ app::Color RgbSliders::getColorFromSliders()
 HsvSliders::HsvSliders()
   : ColorSliders()
 {
-  addSlider(Hue,        "H", 0, 360, -180, 180);
-  addSlider(Saturation, "S", 0, 100, -100, 100);
-  addSlider(Value,      "B", 0, 100, -100, 100);
-  addSlider(Alpha,      "A", 0, 255, -255, 255);
+  addSlider(HsvHue,        "H", 0, 360, -180, 180);
+  addSlider(HsvSaturation, "S", 0, 100, -100, 100);
+  addSlider(HsvValue,      "V", 0, 100, -100, 100);
+  addSlider(Alpha,         "A", 0, 255, -255, 255);
 }
 
 void HsvSliders::onSetColor(const app::Color& color)
 {
-  setAbsSliderValue(0, int(color.getHue()));
-  setAbsSliderValue(1, int(color.getSaturation()));
-  setAbsSliderValue(2, int(color.getValue()));
+  setAbsSliderValue(0, int(color.getHsvHue()));
+  setAbsSliderValue(1, int(color.getHsvSaturation() * 100.0));
+  setAbsSliderValue(2, int(color.getHsvValue() * 100.0));
   setAbsSliderValue(3, color.getAlpha());
 }
 
 app::Color HsvSliders::getColorFromSliders()
 {
   return app::Color::fromHsv(getAbsSliderValue(0),
-                             getAbsSliderValue(1),
-                             getAbsSliderValue(2),
+                             getAbsSliderValue(1) / 100.0,
+                             getAbsSliderValue(2) / 100.0,
                              getAbsSliderValue(3));
 }
 
@@ -418,31 +449,26 @@ app::Color HsvSliders::getColorFromSliders()
 HslSliders::HslSliders()
   : ColorSliders()
 {
-  addSlider(Hue,        "H", 0, 360, -180, 180);
-  addSlider(Saturation, "S", 0, 100, -100, 100);
-  addSlider(Value,      "L", 0, 100, -100, 100);
+  addSlider(HslHue,        "H", 0, 360, -180, 180);
+  addSlider(HslSaturation, "S", 0, 100, -100, 100);
+  addSlider(HslLightness,  "L", 0, 100, -100, 100);
+  addSlider(Alpha,         "A", 0, 255, -255, 255);
 }
 
 void HslSliders::onSetColor(const app::Color& color)
 {
-  gfx::Hsl hsl(gfx::Rgb(color.getRed(),
-                        color.getGreen(),
-                        color.getBlue()));
-
-  setAbsSliderValue(0, hsl.hue());
-  setAbsSliderValue(1, hsl.saturation() * 100.0);
-  setAbsSliderValue(2, hsl.lightness() * 100.0);
+  setAbsSliderValue(0, int(color.getHslHue()));
+  setAbsSliderValue(1, int(color.getHslSaturation() * 100.0));
+  setAbsSliderValue(2, int(color.getHslLightness() * 100.0));
+  setAbsSliderValue(3, color.getAlpha());
 }
 
 app::Color HslSliders::getColorFromSliders()
 {
-  gfx::Hsl hsl(getAbsSliderValue(0),
-               getAbsSliderValue(1) / 100.0,
-               getAbsSliderValue(2) / 100.0);
-  gfx::Rgb rgb(hsl);
-  return app::Color::fromRgb(rgb.red(),
-                             rgb.green(),
-                             rgb.blue(), 255);
+  return app::Color::fromHsl(getAbsSliderValue(0),
+                             getAbsSliderValue(1) / 100.0,
+                             getAbsSliderValue(2) / 100.0,
+                             getAbsSliderValue(3));
 }
 
 //////////////////////////////////////////////////////////////////////

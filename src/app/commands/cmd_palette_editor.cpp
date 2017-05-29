@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -39,6 +39,7 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "gfx/hsl.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
@@ -54,7 +55,7 @@ namespace app {
 using namespace gfx;
 using namespace ui;
 
-enum { RGB_MODE, HSV_MODE };
+enum { RGB_MODE, HSV_MODE, HSL_MODE };
 enum { ABS_MODE, REL_MODE };
 
 class PaletteEntryEditor : public Window {
@@ -97,6 +98,7 @@ private:
   Label m_entryLabel;
   RgbSliders m_rgbSliders;
   HsvSliders m_hsvSliders;
+  HslSliders m_hslSliders;
 
   // This variable is used to avoid updating the m_hexColorEntry text
   // when the color change is generated from a
@@ -241,7 +243,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
   , m_bottomBox(HORIZONTAL)
-  , m_colorType(2)
+  , m_colorType(3)
   , m_changeMode(2)
   , m_entryLabel("")
   , m_disableHexUpdate(false)
@@ -252,7 +254,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_fromPalette(0, 0)
 {
   m_colorType.addItem("RGB")->setFocusStop(false);
-  m_colorType.addItem("HSB")->setFocusStop(false);
+  m_colorType.addItem("HSV")->setFocusStop(false);
+  m_colorType.addItem("HSL")->setFocusStop(false);
   m_changeMode.addItem("Abs")->setFocusStop(false);
   m_changeMode.addItem("Rel")->setFocusStop(false);
 
@@ -273,6 +276,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_vbox.addChild(&m_topBox);
   m_vbox.addChild(&m_rgbSliders);
   m_vbox.addChild(&m_hsvSliders);
+  m_vbox.addChild(&m_hslSliders);
   m_vbox.addChild(&m_bottomBox);
   addChild(&m_vbox);
 
@@ -281,6 +285,7 @@ PaletteEntryEditor::PaletteEntryEditor()
 
   m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
+  m_hslSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&PaletteEntryEditor::onColorHexEntryChange, this);
 
   m_changeMode.setSelectedItem(ABS_MODE);
@@ -309,6 +314,7 @@ void PaletteEntryEditor::setColor(const app::Color& color)
 {
   m_rgbSliders.setColor(color);
   m_hsvSliders.setColor(color);
+  m_hslSliders.setColor(color);
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(color);
 
@@ -455,6 +461,9 @@ void PaletteEntryEditor::onColorTypeClick()
     case HSV_MODE:
       selectColorType(app::Color::HsvType);
       break;
+    case HSL_MODE:
+      selectColorType(app::Color::HslType);
+      break;
   }
 }
 
@@ -464,10 +473,12 @@ void PaletteEntryEditor::onChangeModeClick()
     case ABS_MODE:
       m_rgbSliders.setMode(ColorSliders::Absolute);
       m_hsvSliders.setMode(ColorSliders::Absolute);
+      m_hslSliders.setMode(ColorSliders::Absolute);
       break;
     case REL_MODE:
       m_rgbSliders.setMode(ColorSliders::Relative);
       m_hsvSliders.setMode(ColorSliders::Relative);
+      m_hslSliders.setMode(ColorSliders::Relative);
       break;
   }
 
@@ -541,46 +552,86 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
         }
         break;
 
-      case app::Color::HsvType:
-        {
-          Hsv hsv;
+      case app::Color::HsvType: {
+        Hsv hsv;
 
-          // Modify one entry
-          if (picksCount == 1) {
-            hsv.hue(color.getHue());
-            hsv.saturation(double(color.getSaturation()) / 100.0);
-            hsv.value(double(color.getValue()) / 100.0);
-            a = color.getAlpha();
-          }
-          // Modify one channel a set of entries
-          else {
-            // Convert RGB to HSV
-            hsv = Hsv(Rgb(r, g, b));
-
-            // Only modify the desired HSV channel
-            switch (channel) {
-              case ColorSliders::Hue:
-                hsv.hue(color.getHue());
-                break;
-              case ColorSliders::Saturation:
-                hsv.saturation(double(color.getSaturation()) / 100.0);
-                break;
-              case ColorSliders::Value:
-                hsv.value(double(color.getValue()) / 100.0);
-                break;
-              case ColorSliders::Alpha:
-                a = color.getAlpha();
-                break;
-            }
-          }
-
-          // Convert HSV back to RGB
-          Rgb rgb(hsv);
-          r = rgb.red();
-          g = rgb.green();
-          b = rgb.blue();
+        // Modify one entry
+        if (picksCount == 1) {
+          hsv.hue(color.getHsvHue());
+          hsv.saturation(color.getHsvSaturation());
+          hsv.value(color.getHsvValue());
+          a = color.getAlpha();
         }
+        // Modify one channel a set of entries
+        else {
+          // Convert RGB to HSV
+          hsv = Hsv(Rgb(r, g, b));
+
+          // Only modify the desired HSV channel
+          switch (channel) {
+            case ColorSliders::HsvHue:
+              hsv.hue(color.getHsvHue());
+              break;
+            case ColorSliders::HsvSaturation:
+              hsv.saturation(color.getHsvSaturation());
+              break;
+            case ColorSliders::HsvValue:
+              hsv.value(color.getHsvValue());
+              break;
+            case ColorSliders::Alpha:
+              a = color.getAlpha();
+              break;
+          }
+        }
+
+        // Convert HSV back to RGB
+        Rgb rgb(hsv);
+        r = rgb.red();
+        g = rgb.green();
+        b = rgb.blue();
         break;
+      }
+
+      case app::Color::HslType: {
+        Hsl hsl;
+
+        // Modify one entry
+        if (picksCount == 1) {
+          hsl.hue(color.getHslHue());
+          hsl.saturation(color.getHslSaturation());
+          hsl.lightness(color.getHslLightness());
+          a = color.getAlpha();
+        }
+        // Modify one channel a set of entries
+        else {
+          // Convert RGB to HSL
+          hsl = Hsl(Rgb(r, g, b));
+
+          // Only modify the desired HSL channel
+          switch (channel) {
+            case ColorSliders::HslHue:
+              hsl.hue(color.getHslHue());
+              break;
+            case ColorSliders::HslSaturation:
+              hsl.saturation(color.getHslSaturation());
+              break;
+            case ColorSliders::HslLightness:
+              hsl.lightness(color.getHslLightness());
+              break;
+            case ColorSliders::Alpha:
+              a = color.getAlpha();
+              break;
+          }
+        }
+
+        // Convert HSL back to RGB
+        Rgb rgb(hsl);
+        r = rgb.red();
+        g = rgb.green();
+        b = rgb.blue();
+        break;
+      }
+
     }
 
     palette->setEntry(c, doc::rgba(r, g, b, a));
@@ -613,9 +664,9 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
     switch (m_type) {
 
       case app::Color::RgbType:
-        r = MID(0, r+m_relDeltas[ColorSliders::Red], 255);
+        r = MID(0, r+m_relDeltas[ColorSliders::Red],   255);
         g = MID(0, g+m_relDeltas[ColorSliders::Green], 255);
-        b = MID(0, b+m_relDeltas[ColorSliders::Blue], 255);
+        b = MID(0, b+m_relDeltas[ColorSliders::Blue],  255);
         a = MID(0, a+m_relDeltas[ColorSliders::Alpha], 255);
         break;
 
@@ -623,19 +674,43 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
         // Convert RGB to HSV
         Hsv hsv(Rgb(r, g, b));
 
-        double h = hsv.hue()+m_relDeltas[ColorSliders::Hue];
-        double s = 100.0*hsv.saturation()+m_relDeltas[ColorSliders::Saturation];
-        double v = 100.0*hsv.value()+m_relDeltas[ColorSliders::Value];
+        double h = hsv.hue()       +m_relDeltas[ColorSliders::HsvHue];
+        double s = hsv.saturation()+m_relDeltas[ColorSliders::HsvSaturation]/100.0;
+        double v = hsv.value()     +m_relDeltas[ColorSliders::HsvValue]     /100.0;
 
         if (h < 0.0) h += 360.0;
         else if (h > 360.0) h -= 360.0;
 
         hsv.hue       (MID(0.0, h, 360.0));
-        hsv.saturation(MID(0.0, s, 100.0) / 100.0);
-        hsv.value     (MID(0.0, v, 100.0) / 100.0);
+        hsv.saturation(MID(0.0, s, 1.0));
+        hsv.value     (MID(0.0, v, 1.0));
 
         // Convert HSV back to RGB
         Rgb rgb(hsv);
+        r = rgb.red();
+        g = rgb.green();
+        b = rgb.blue();
+        a = MID(0, a+m_relDeltas[ColorSliders::Alpha], 255);
+        break;
+      }
+
+      case app::Color::HslType: {
+        // Convert RGB to HSL
+        Hsl hsl(Rgb(r, g, b));
+
+        double h = hsl.hue()       +m_relDeltas[ColorSliders::HslHue];
+        double s = hsl.saturation()+m_relDeltas[ColorSliders::HslSaturation]/100.0;
+        double l = hsl.lightness() +m_relDeltas[ColorSliders::HslLightness] /100.0;
+
+        if (h < 0.0) h += 360.0;
+        else if (h > 360.0) h -= 360.0;
+
+        hsl.hue       (h);
+        hsl.saturation(MID(0.0, s, 1.0));
+        hsl.lightness (MID(0.0, l, 1.0));
+
+        // Convert HSL back to RGB
+        Rgb rgb(hsl);
         r = rgb.red();
         g = rgb.green();
         b = rgb.blue();
@@ -654,12 +729,14 @@ void PaletteEntryEditor::selectColorType(app::Color::Type type)
   m_type = type;
   m_rgbSliders.setVisible(type == app::Color::RgbType);
   m_hsvSliders.setVisible(type == app::Color::HsvType);
+  m_hslSliders.setVisible(type == app::Color::HslType);
 
   resetRelativeInfo();
 
   switch (type) {
     case app::Color::RgbType: m_colorType.setSelectedItem(RGB_MODE); break;
     case app::Color::HsvType: m_colorType.setSelectedItem(HSV_MODE); break;
+    case app::Color::HslType: m_colorType.setSelectedItem(HSL_MODE); break;
   }
 
   m_vbox.layout();
@@ -747,6 +824,7 @@ void PaletteEntryEditor::resetRelativeInfo()
 {
   m_rgbSliders.resetRelativeSliders();
   m_hsvSliders.resetRelativeSliders();
+  m_hslSliders.resetRelativeSliders();
   get_current_palette()->copyColorsTo(&m_fromPalette);
   m_relDeltas.clear();
 }

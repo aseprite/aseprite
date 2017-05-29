@@ -8,7 +8,7 @@
 #define GFX_HSL_H_INCLUDED
 #pragma once
 
-#include <cassert>
+#include "base/base.h"          // MID
 
 namespace gfx {
 
@@ -48,18 +48,15 @@ public:
   int lightnessInt() const;
 
   void hue(double hue) {
-    assert(hue >= 0.0 && hue <= 360.0);
-    m_hue = hue;
+    m_hue = MID(0.0, hue, 360.0);
   }
 
   void saturation(double saturation) {
-    assert(saturation >= 0.0 && saturation <= 1.0);
-    m_saturation = saturation;
+    m_saturation = MID(0.0, saturation, 1.0);
   }
 
   void lightness(double lightness) {
-    assert(lightness >= 0.0 && lightness <= 1.0);
-    m_lightness = lightness;
+    m_lightness = MID(0.0, lightness, 1.0);
   }
 
   // The comparison is done through the integer value of each component.

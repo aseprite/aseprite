@@ -1249,8 +1249,10 @@ public:
     m_channel.addItem("Alpha");
     m_channel.addItem("RGB+Alpha");
     m_channel.addItem("RGB");
-    m_channel.addItem("HSB+Alpha");
-    m_channel.addItem("HSB");
+    m_channel.addItem("HSV+Alpha");
+    m_channel.addItem("HSV");
+    m_channel.addItem("HSL+Alpha");
+    m_channel.addItem("HSL");
     m_channel.addItem("Gray+Alpha");
     m_channel.addItem("Gray");
     m_channel.addItem("Best fit Index");

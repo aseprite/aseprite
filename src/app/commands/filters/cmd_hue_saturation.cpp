@@ -52,6 +52,7 @@ private:
     m_filter.setHue(double(m_sliders.getRelSliderValue(0)));
     m_filter.setSaturation(m_sliders.getRelSliderValue(1) / 100.0);
     m_filter.setLightness(m_sliders.getRelSliderValue(2) / 100.0);
+    m_filter.setAlpha(m_sliders.getRelSliderValue(3));
 
     restartPreview();
   }
@@ -90,7 +91,8 @@ void HueSaturationCommand::onExecute(Context* context)
   filterMgr.setTarget(TARGET_RED_CHANNEL |
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |
-                      TARGET_GRAY_CHANNEL);
+                      TARGET_GRAY_CHANNEL |
+                      TARGET_ALPHA_CHANNEL);
 
   HueSaturationWindow window(filter, filterMgr);
   window.doModal();

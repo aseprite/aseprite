@@ -54,19 +54,19 @@ app::Color ColorTintShadeTone::getColorByPosition(const gfx::Point& pos)
 
   if (inHue) {
     hue = (360.0 * u / umax);
-    sat = m_color.getSaturation();
-    val = m_color.getValue();
+    sat = m_color.getHsvSaturation();
+    val = m_color.getHsvValue();
   }
   else {
-    hue = m_color.getHue();
-    sat = (100.0 * u / umax);
-    val = (100.0 - 100.0 * v / vmax);
+    hue = m_color.getHsvHue();
+    sat = (1.0 * u / umax);
+    val = (1.0 - double(v) / double(vmax));
   }
 
   return app::Color::fromHsv(
     MID(0.0, hue, 360.0),
-    MID(0.0, sat, 100.0),
-    MID(0.0, val, 100.0));
+    MID(0.0, sat, 1.0),
+    MID(0.0, val, 1.0));
 }
 
 void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
@@ -82,7 +82,7 @@ void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
   if (rc.isEmpty())
     return;
 
-  double hue = m_color.getHue();
+  double hue = m_color.getHsvHue();
   int umax, vmax;
   int huebar = getHueBarSize();
   umax = MAX(1, rc.w-1);
@@ -90,14 +90,14 @@ void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
 
   for (int y=0; y<rc.h-huebar; ++y) {
     for (int x=0; x<rc.w; ++x) {
-      double sat = (100.0 * x / umax);
-      double val = (100.0 - 100.0 * y / vmax);
+      double sat = double(x) / double(umax);
+      double val = 1.0 - double(y) / double(vmax);
 
       gfx::Color color = color_utils::color_for_ui(
         app::Color::fromHsv(
           hue,
-          MID(0.0, sat, 100.0),
-          MID(0.0, val, 100.0)));
+          MID(0.0, sat, 1.0),
+          MID(0.0, val, 1.0)));
 
       g->putPixel(color, rc.x+x, rc.y+y);
     }
@@ -108,7 +108,7 @@ void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
       for (int x=0; x<rc.w; ++x) {
         gfx::Color color = color_utils::color_for_ui(
           app::Color::fromHsv(
-            (360.0 * x / rc.w), 100.0, 100.0));
+            (360.0 * x / rc.w), 1.0, 1.0));
 
         g->putPixel(color, rc.x+x, rc.y+y);
       }
@@ -116,15 +116,15 @@ void ColorTintShadeTone::onPaint(ui::PaintEvent& ev)
   }
 
   if (m_color.getType() != app::Color::MaskType) {
-    double sat = m_color.getSaturation();
-    double val = m_color.getValue();
-    gfx::Point pos(rc.x + int(sat * rc.w / 100.0),
-                   rc.y + int((100.0-val) * (rc.h-huebar) / 100.0));
+    double sat = m_color.getHsvSaturation();
+    double val = m_color.getHsvValue();
+    gfx::Point pos(rc.x + int(sat * rc.w),
+                   rc.y + int((1.0-val) * (rc.h-huebar)));
 
     she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
     g->drawColoredRgbaSurface(
       icon,
-      val > 50.0 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
+      val > 0.5 ? gfx::rgba(0, 0, 0): gfx::rgba(255, 255, 255),
       pos.x-icon->width()/2,
       pos.y-icon->height()/2);
 

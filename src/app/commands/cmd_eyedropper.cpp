@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -90,9 +90,16 @@ void EyedropperCommand::pickSample(const doc::Site& site,
           break;
 
         case app::Color::HsvType:
-          color = app::Color::fromHsv(color.getHue(),
-                                      color.getSaturation(),
-                                      color.getValue(),
+          color = app::Color::fromHsv(color.getHsvHue(),
+                                      color.getHsvSaturation(),
+                                      color.getHsvValue(),
+                                      picked.getAlpha());
+          break;
+
+        case app::Color::HslType:
+          color = app::Color::fromHsl(color.getHslHue(),
+                                      color.getHslSaturation(),
+                                      color.getHslLightness(),
                                       picked.getAlpha());
           break;
 
@@ -123,16 +130,32 @@ void EyedropperCommand::pickSample(const doc::Site& site,
       if (picked.getType() == app::Color::HsvType)
         color = picked;
       else
-        color = app::Color::fromHsv(picked.getHue(),
-                                    picked.getSaturation(),
-                                    picked.getValue(),
+        color = app::Color::fromHsv(picked.getHsvHue(),
+                                    picked.getHsvSaturation(),
+                                    picked.getHsvValue(),
                                     picked.getAlpha());
       break;
     case app::gen::EyedropperChannel::HSV:
       if (picked.getAlpha() > 0)
-        color = app::Color::fromHsv(picked.getHue(),
-                                    picked.getSaturation(),
-                                    picked.getValue(),
+        color = app::Color::fromHsv(picked.getHsvHue(),
+                                    picked.getHsvSaturation(),
+                                    picked.getHsvValue(),
+                                    color.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::HSLA:
+      if (picked.getType() == app::Color::HslType)
+        color = picked;
+      else
+        color = app::Color::fromHsl(picked.getHslHue(),
+                                    picked.getHslSaturation(),
+                                    picked.getHslLightness(),
+                                    picked.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::HSL:
+      if (picked.getAlpha() > 0)
+        color = app::Color::fromHsl(picked.getHslHue(),
+                                    picked.getHslSaturation(),
+                                    picked.getHslLightness(),
                                     color.getAlpha());
       break;
     case app::gen::EyedropperChannel::GRAYA:
