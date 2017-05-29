@@ -35,6 +35,7 @@ namespace app {
     virtual app::Color getBottomBarColor(const int u, const int umax) = 0;
     virtual void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) = 0;
     virtual void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) = 0;
+    virtual bool subColorPicked() { return false; }
 
     void paintColorIndicator(ui::Graphics* g,
                              const gfx::Point& pos,

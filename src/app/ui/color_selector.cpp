@@ -12,6 +12,7 @@
 
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "base/scoped_value.h"
 #include "she/surface.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -89,7 +90,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
       app::Color color = getColorByPosition(mouseMsg->position());
       if (color != app::Color::fromMask()) {
-        // base::ScopedValue<bool> switcher(m_lockColor, m_harmonyPicked, false);
+        base::ScopedValue<bool> switcher(m_lockColor, subColorPicked(), false);
 
         StatusBar::instance()->showColor(0, "", color);
         if (hasCapture())

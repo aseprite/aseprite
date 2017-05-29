@@ -46,6 +46,7 @@ namespace app {
     app::Color getBottomBarColor(const int u, const int umax) override;
     void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
+    bool subColorPicked() override { return m_harmonyPicked; }
 
   private:
     void onResize(ui::ResizeEvent& ev) override;
@@ -58,7 +59,6 @@ namespace app {
     // With dir == -1, the angle came from HSV and is converted to the current color model.
     int convertHueAngle(int angle, int dir) const;
 
-    gfx::Rect m_clientBounds;
     gfx::Rect m_wheelBounds;
     int m_wheelRadius;
     bool m_discrete;

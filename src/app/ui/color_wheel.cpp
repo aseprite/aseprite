@@ -16,7 +16,6 @@
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
 #include "base/pi.h"
-#include "base/scoped_value.h"
 #include "filters/color_curve.h"
 #include "she/surface.h"
 #include "ui/graphics.h"
@@ -106,16 +105,16 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
   // Pick harmonies
   if (m_color.getAlpha() > 0) {
-    const gfx::Rect& rc = m_clientBounds;
+    const gfx::Point pos(_u, _v);
     int n = getHarmonies();
-    int boxsize = MIN(rc.w/10, rc.h/10);
+    int boxsize = MIN(umax/10, vmax/10);
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
 
-      if (gfx::Rect(rc.x+rc.w-(n-i)*boxsize,
-                    rc.y+rc.h-boxsize,
-                    boxsize, boxsize).contains(gfx::Point(u, v))) {
+      if (gfx::Rect(umax-(n-i)*boxsize,
+                    vmax-boxsize,
+                    boxsize, boxsize).contains(pos)) {
         m_harmonyPicked = true;
 
         color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
@@ -140,10 +139,10 @@ app::Color ColorWheel::getBottomBarColor(const int u, const int umax)
 
 void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
+  bool oldHarmonyPicked = m_harmonyPicked;
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   int r = MIN(rc.w/2, rc.h/2);
-  m_clientBounds = rc;
   m_wheelRadius = r;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
@@ -198,6 +197,8 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
                             boxsize, boxsize));
     }
   }
+
+  m_harmonyPicked = oldHarmonyPicked;
 }
 
 void ColorWheel::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
