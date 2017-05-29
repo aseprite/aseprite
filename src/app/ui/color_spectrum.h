@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,7 +9,6 @@
 #pragma once
 
 #include "app/ui/color_selector.h"
-#include "ui/button.h"
 
 namespace app {
 
@@ -17,12 +16,12 @@ namespace app {
   public:
     ColorSpectrum();
 
-    // IColorSource
-    app::Color getColorByPosition(const gfx::Point& pos) override;
-
   protected:
-    void onPaint(ui::PaintEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
+    app::Color getMainAreaColor(const int u, const int umax,
+                                const int v, const int vmax) override;
+    app::Color getBottomBarColor(const int u, const int umax) override;
+    void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
+    void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
   };
 
 } // namespace app

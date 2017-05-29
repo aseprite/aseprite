@@ -34,20 +34,21 @@ namespace app {
 
     ColorWheel();
 
-    // IColorSource
-    app::Color getColorByPosition(const gfx::Point& pos) override;
-
     bool isDiscrete() const { return m_discrete; }
     void setDiscrete(bool state);
 
     void setColorModel(ColorModel colorModel);
     void setHarmony(Harmony harmony);
 
+  protected:
+    app::Color getMainAreaColor(const int u, const int umax,
+                                const int v, const int vmax) override;
+    app::Color getBottomBarColor(const int u, const int umax) override;
+    void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
+    void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
+
   private:
-    app::Color getColorInClientPos(const gfx::Point& pos);
     void onResize(ui::ResizeEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
     void onOptions();
     int getHarmonies() const;
     app::Color getColorInHarmony(int i) const;

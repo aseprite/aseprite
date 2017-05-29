@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,19 +23,43 @@ namespace app {
 
     void selectColor(const app::Color& color);
 
+    // IColorSource impl
+    app::Color getColorByPosition(const gfx::Point& pos) override;
+
     // Signals
     obs::signal<void(const app::Color&, ui::MouseButtons)> ColorChange;
 
   protected:
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
+    virtual app::Color getMainAreaColor(const int u, const int umax,
+                                        const int v, const int vmax) = 0;
+    virtual app::Color getBottomBarColor(const int u, const int umax) = 0;
+    virtual void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) = 0;
+    virtual void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) = 0;
+
+    void paintColorIndicator(ui::Graphics* g,
+                             const gfx::Point& pos,
+                             const bool white);
 
     app::Color m_color;
+
+  private:
+    void onSizeHint(ui::SizeHintEvent& ev) override;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPaint(ui::PaintEvent& ev) override;
+
+    bool inBottomBarArea(const gfx::Point& pos) const;
+    int getBottomBarSize() const;
 
     // Internal flag used to lock the modification of m_color.
     // E.g. When the user picks a color harmony, we don't want to
     // change the main color.
     bool m_lockColor;
+
+    // True when the user pressed the mouse button in the bottom
+    // slider. It's used to avoid swapping in both areas (main color
+    // area vs bottom slider) when we drag the mouse above this
+    // widget.
+    bool m_capturedInBottom;
   };
 
 } // namespace app

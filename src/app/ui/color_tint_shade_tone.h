@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,21 +16,12 @@ namespace app {
   public:
     ColorTintShadeTone();
 
-    // IColorSource
-    app::Color getColorByPosition(const gfx::Point& pos) override;
-
   protected:
-    void onPaint(ui::PaintEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
-
-  private:
-    bool inHueBarArea(const gfx::Point& pos) const;
-    int getHueBarSize() const;
-
-    // True when the user pressed the mouse button in the hue slider.
-    // It's used to avoid swapping in both areas (tint/shades/tones
-    // area vs hue slider) when we drag the mouse above this widget.
-    bool m_capturedInHue;
+    app::Color getMainAreaColor(const int u, const int umax,
+                                const int v, const int vmax) override;
+    app::Color getBottomBarColor(const int u, const int umax) override;
+    void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
+    void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
   };
 
 } // namespace app
