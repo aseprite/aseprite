@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2016 by David Capello -->
+<!-- Copyright (C) 2014-2017 by David Capello -->
 <gui>
   <vbox id="palette_popup">
-    <label text="@.title" />
+    <search id="search" magnet="true" />
     <view id="view" expansive="true" />
     <hbox>
       <button id="load_pal" text="@.load" width="80" magnet="true" />

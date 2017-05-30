@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,8 +13,10 @@
 #include "app/commands/cmd_set_palette.h"
 #include "app/commands/commands.h"
 #include "app/launcher.h"
+#include "app/match_words.h"
 #include "app/res/palettes_loader_delegate.h"
 #include "app/ui/palettes_listbox.h"
+#include "app/ui/search_entry.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "ui/box.h"
@@ -39,6 +41,7 @@ PalettePopup::PalettePopup()
   addChild(m_popup);
 
   m_paletteListBox.DoubleClickItem.connect(base::Bind<void>(&PalettePopup::onLoadPal, this));
+  m_popup->search()->Change.connect(base::Bind<void>(&PalettePopup::onSearchChange, this));
   m_popup->loadPal()->Click.connect(base::Bind<void>(&PalettePopup::onLoadPal, this));
   m_popup->openFolder()->Click.connect(base::Bind<void>(&PalettePopup::onOpenFolder, this));
 
@@ -54,10 +57,7 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
 
   moveWindow(bounds);
 
-  // Setup the hot-region
-  setHotRegion(gfx::Region(gfx::Rect(bounds).enlarge(32 * guiscale())));
-
-  openWindow();
+  openWindowInForeground();
 }
 
 void PalettePopup::onPalChange(doc::Palette* palette)
@@ -65,6 +65,30 @@ void PalettePopup::onPalChange(doc::Palette* palette)
   m_popup->loadPal()->setEnabled(
     UIContext::instance()->activeDocument() &&
     palette != NULL);
+}
+
+void PalettePopup::onSearchChange()
+{
+  MatchWords match(m_popup->search()->text());
+  bool selected = false;
+
+  for (auto child : m_paletteListBox.children()) {
+    if (dynamic_cast<ResourceListItem*>(child)) {
+      const bool vis = match(child->text());
+      child->setVisible(vis);
+      if (!selected && vis) {
+        selected = true;
+        m_paletteListBox.selectChild(child);
+      }
+    }
+    else
+      child->setVisible(true);
+  }
+
+  if (!selected)
+    m_paletteListBox.selectChild(nullptr);
+
+  m_popup->view()->layout();
 }
 
 void PalettePopup::onLoadPal()

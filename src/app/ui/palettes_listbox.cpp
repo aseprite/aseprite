@@ -60,6 +60,7 @@ class PalettesListItem : public ResourceListItem {
     CommentButton(const std::string& comment)
       : IconButton(SkinTheme::instance()->parts.iconUserData()->bitmap(0))
       , m_comment(comment) {
+      setFocusStop(false);
     }
 
   private:

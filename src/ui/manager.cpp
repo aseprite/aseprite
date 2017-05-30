@@ -5,6 +5,7 @@
 // Read LICENSE.txt for more information.
 
 // #define REPORT_EVENTS
+// #define REPORT_FOCUS_MOVEMENT
 // #define DEBUG_PAINT_EVENTS
 // #define LIMIT_DISPATCH_TIME
 
@@ -32,8 +33,10 @@
 #include <iostream>
 #endif
 
+#include <algorithm>
 #include <limits>
 #include <list>
+#include <utility>
 #include <vector>
 
 namespace ui {
@@ -75,7 +78,7 @@ static bool first_time = true;    // true when we don't enter in poll yet
 
 /* keyboard focus movement stuff */
 static int count_widgets_accept_focus(Widget* widget);
-static bool childs_accept_focus(Widget* widget, bool first);
+static bool child_accept_focus(Widget* widget, bool first);
 static Widget* next_widget(Widget* widget);
 static int cmp_left(Widget* widget, int x, int y);
 static int cmp_right(Widget* widget, int x, int y);
@@ -820,7 +823,7 @@ void Manager::attractFocus(Widget* widget)
 void Manager::focusFirstChild(Widget* widget)
 {
   for (Widget* it=widget->window(); it; it=next_widget(it)) {
-    if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true))) {
+    if (ACCEPT_FOCUS(it) && !(child_accept_focus(it, true))) {
       setFocus(it);
       break;
     }
@@ -1547,7 +1550,7 @@ bool Manager::processFocusMovementMessage(Message* msg)
   if (!window)
     return false;
 
-  // How many child-widget want the focus in this widget?
+  // How many children want the focus in this window?
   count = count_widgets_accept_focus(window);
 
   // One at least
@@ -1556,14 +1559,13 @@ bool Manager::processFocusMovementMessage(Message* msg)
 
     c = 0;
 
-    /* list's 1st element is the focused widget */
+    // Create a list of possible candidates to receive the focus
     for (it=focus_widget; it; it=next_widget(it)) {
-      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true)))
+      if (ACCEPT_FOCUS(it) && !(child_accept_focus(it, true)))
         list[c++] = it;
     }
-
     for (it=window; it != focus_widget; it=next_widget(it)) {
-      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true)))
+      if (ACCEPT_FOCUS(it) && !(child_accept_focus(it, true)))
         list[c++] = it;
     }
 
@@ -1590,32 +1592,32 @@ bool Manager::processFocusMovementMessage(Message* msg)
 
         // More than one widget
         if (count > 1) {
-          int i, j, x, y;
-
           // Position where the focus come
-          x = ((focus_widget) ? focus_widget->bounds().x+focus_widget->bounds().x2():
-                                window->bounds().x+window->bounds().x2())
-            / 2;
-          y = ((focus_widget) ? focus_widget->bounds().y+focus_widget->bounds().y2():
-                                window->bounds().y+window->bounds().y2())
-            / 2;
+          gfx::Point pt = (focus_widget ? focus_widget->bounds().center():
+                                          window->bounds().center());
 
-          c = focus_widget ? 1: 0;
+          c = (focus_widget ? 1: 0);
 
           // Rearrange the list
-          for (i=c; i<count-1; i++) {
-            for (j=i+1; j<count; j++) {
+          for (int i=c; i<count-1; ++i) {
+            for (int j=i+1; j<count; ++j) {
               // Sort the list in ascending order
-              if ((*cmp)(list[i], x, y) > (*cmp)(list[j], x, y)) {
-                Widget* tmp = list[i];
-                list[i] = list[j];
-                list[j] = tmp;
-              }
+              if ((*cmp)(list[i], pt.x, pt.y) > (*cmp)(list[j], pt.x, pt.y))
+                std::swap(list[i], list[j]);
             }
           }
 
+#ifdef REPORT_FOCUS_MOVEMENT
+          // Print list of widgets
+          for (int i=c; i<count-1; ++i) {
+            TRACE("list[%d] = %d (%s)\n",
+                  i, (*cmp)(list[i], pt.x, pt.y),
+                  typeid(*list[i]).name());
+          }
+#endif
+
           // Check if the new widget to put the focus is not in the wrong way.
-          if ((*cmp)(list[c], x, y) < std::numeric_limits<int>::max())
+          if ((*cmp)(list[c], pt.x, pt.y) < std::numeric_limits<int>::max())
             focus = list[c];
         }
         // If only there are one widget, put the focus in this
@@ -1635,8 +1637,6 @@ bool Manager::processFocusMovementMessage(Message* msg)
 
 static int count_widgets_accept_focus(Widget* widget)
 {
-  ASSERT(widget != NULL);
-
   int count = 0;
 
   for (auto child : widget->children())
@@ -1648,10 +1648,10 @@ static int count_widgets_accept_focus(Widget* widget)
   return count;
 }
 
-static bool childs_accept_focus(Widget* widget, bool first)
+static bool child_accept_focus(Widget* widget, bool first)
 {
   for (auto child : widget->children())
-    if (childs_accept_focus(child, false))
+    if (child_accept_focus(child, false))
       return true;
 
   return (first ? false: ACCEPT_FOCUS(widget));
