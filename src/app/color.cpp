@@ -898,4 +898,37 @@ int Color::getAlpha() const
   return -1;
 }
 
+void Color::setAlpha(int alpha)
+{
+  alpha = MID(0, alpha, 255);
+
+  switch (getType()) {
+
+    case Color::MaskType:
+      break;
+
+    case Color::RgbType:
+      m_value.rgb.a = alpha;
+      break;
+
+    case Color::HsvType:
+      m_value.hsv.a = alpha;
+      break;
+
+    case Color::HslType:
+      m_value.hsl.a = alpha;
+      break;
+
+    case Color::GrayType:
+      m_value.gray.a = alpha;
+      break;
+
+    case Color::IndexType:
+      *this = Color::fromRgb(getRed(),
+                             getGreen(),
+                             getBlue(), alpha);
+      break;
+  }
+}
+
 } // namespace app

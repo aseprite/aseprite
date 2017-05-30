@@ -48,8 +48,11 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
 
-    bool inBottomBarArea(const gfx::Point& pos) const;
-    int getBottomBarSize() const;
+    app::Color getAlphaBarColor(const int u, const int umax);
+    void onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc);
+
+    gfx::Rect bottomBarBounds() const;
+    gfx::Rect alphaBarBounds() const;
 
     // Internal flag used to lock the modification of m_color.
     // E.g. When the user picks a color harmony, we don't want to
@@ -61,6 +64,7 @@ namespace app {
     // area vs bottom slider) when we drag the mouse above this
     // widget.
     bool m_capturedInBottom;
+    bool m_capturedInAlpha;
   };
 
 } // namespace app

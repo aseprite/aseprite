@@ -80,6 +80,9 @@ namespace app {
     int getIndex() const;
     int getAlpha() const;
 
+    // Setters
+    void setAlpha(int alpha);
+
   private:
     Color(Type type) : m_type(type) { }
 

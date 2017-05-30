@@ -10,9 +10,11 @@
 
 #include "app/ui/color_selector.h"
 
+#include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "base/scoped_value.h"
+#include "doc/blend_funcs.h"
 #include "she/surface.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -32,6 +34,7 @@ ColorSelector::ColorSelector()
   : Widget(kGenericWidget)
   , m_lockColor(false)
   , m_capturedInBottom(false)
+  , m_capturedInAlpha(false)
 {
   setBorder(gfx::Border(3*ui::guiscale()));
 }
@@ -51,18 +54,31 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
   if (rc.isEmpty())
     return app::Color::fromMask();
 
-  int u, v, umax, vmax;
-  int barSize = getBottomBarSize();
-  u = pos.x - rc.x;
-  v = pos.y - rc.y;
-  umax = MAX(1, rc.w-1);
-  vmax = MAX(1, rc.h-1-barSize);
+  const int u = pos.x - rc.x;
+  const int umax = MAX(1, rc.w-1);
 
+  const gfx::Rect bottomBarBounds = this->bottomBarBounds();
   if (( hasCapture() && m_capturedInBottom) ||
-      (!hasCapture() && inBottomBarArea(pos)))
+      (!hasCapture() && bottomBarBounds.contains(pos)))
     return getBottomBarColor(u, umax);
-  else
-    return getMainAreaColor(u, umax, v, vmax);
+
+  const gfx::Rect alphaBarBounds = this->alphaBarBounds();
+  if (( hasCapture() && m_capturedInAlpha) ||
+      (!hasCapture() && alphaBarBounds.contains(pos)))
+    return getAlphaBarColor(u, umax);
+
+  const int v = pos.y - rc.y;
+  const int vmax = MAX(1, rc.h-bottomBarBounds.h-alphaBarBounds.h-1);
+  return getMainAreaColor(u, umax,
+                          v, vmax);
+}
+
+app::Color ColorSelector::getAlphaBarColor(const int u, const int umax)
+{
+  int alpha = (255 * u / umax);
+  app::Color color = m_color;
+  color.setAlpha(MID(0, alpha, 255));
+  return color;
 }
 
 void ColorSelector::onSizeHint(SizeHintEvent& ev)
@@ -84,11 +100,14 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+      const gfx::Point pos = mouseMsg->position();
 
-      if (msg->type() == kMouseDownMessage)
-        m_capturedInBottom = inBottomBarArea(mouseMsg->position());
+      if (msg->type() == kMouseDownMessage) {
+        m_capturedInBottom = bottomBarBounds().contains(pos);
+        m_capturedInAlpha = alphaBarBounds().contains(pos);
+      }
 
-      app::Color color = getColorByPosition(mouseMsg->position());
+      app::Color color = getColorByPosition(pos);
       if (color != app::Color::fromMask()) {
         base::ScopedValue<bool> switcher(m_lockColor, subColorPicked(), false);
 
@@ -101,6 +120,8 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
     case kMouseUpMessage:
       if (hasCapture()) {
+        m_capturedInBottom = false;
+        m_capturedInAlpha = false;
         releaseMouse();
       }
       return true;
@@ -137,7 +158,8 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
             app::Color::fromHsv(
               newHue,
               m_color.getHsvSaturation(),
-              m_color.getHsvValue());
+              m_color.getHsvValue(),
+              m_color.getAlpha());
 
           ColorChange(newColor, kButtonNone);
         }
@@ -162,15 +184,51 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
   if (rc.isEmpty())
     return;
 
-  int barSize = getBottomBarSize();
-  rc.h -= barSize;
+  gfx::Rect bottomBarBounds = this->bottomBarBounds();
+  gfx::Rect alphaBarBounds = this->alphaBarBounds();
+  rc.h -= bottomBarBounds.h + alphaBarBounds.h;
   onPaintMainArea(g, rc);
 
-  if (barSize > 0) {
-    rc.y += rc.h;
-    rc.h = barSize;
-    onPaintBottomBar(g, rc);
+  if (!bottomBarBounds.isEmpty()) {
+    bottomBarBounds.offset(-bounds().origin());
+    onPaintBottomBar(g, bottomBarBounds);
   }
+
+  if (!alphaBarBounds.isEmpty()) {
+    alphaBarBounds.offset(-bounds().origin());
+    onPaintAlphaBar(g, alphaBarBounds);
+  }
+}
+
+void ColorSelector::onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc)
+{
+  const int xmax = MAX(1, rc.w-1);
+  const int alpha = m_color.getAlpha();
+  const doc::color_t c =
+    (m_color.getType() != app::Color::MaskType ?
+     doc::rgba(m_color.getRed(),
+               m_color.getGreen(),
+               m_color.getBlue(), 255): 0);
+
+  for (int x=0; x<rc.w; ++x) {
+    const int a = (255 * x / xmax);
+
+    // TODO These values are hard-coded in rectgrid() (modules/gfx.cpp) too, use pref.xml values
+    const doc::color_t c1 = doc::rgba_blender_normal(gfx::rgba(128, 128, 128), c, a);
+    const doc::color_t c2 = doc::rgba_blender_normal(gfx::rgba(192, 192, 192), c, a);
+    const int mid = rc.h/2;
+    const int odd = (x / rc.h) & 1;
+    g->drawVLine(
+      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c2: c1)),
+      rc.x+x, rc.y, mid);
+    g->drawVLine(
+      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c1: c2)),
+      rc.x+x, rc.y+mid, rc.h-mid);
+  }
+
+  gfx::Point pos(rc.x + int(rc.w * alpha / 255),
+                 rc.y + rc.h/2);
+  paintColorIndicator(g, pos, false);
 }
 
 void ColorSelector::paintColorIndicator(ui::Graphics* g,
@@ -187,20 +245,28 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
     pos.y-icon->height()/2);
 }
 
-bool ColorSelector::inBottomBarArea(const gfx::Point& pos) const
+gfx::Rect ColorSelector::bottomBarBounds() const
 {
-  gfx::Rect rc = childrenBounds();
-  if (rc.isEmpty() || !rc.contains(pos))
-    return false;
+  const gfx::Rect rc = childrenBounds();
+  const int size = 8*guiscale();      // TODO 8 should be configurable in theme.xml
+  if (rc.h > 2*size) {
+    if (rc.h > 3*size)          // Alpha bar is visible too
+      return gfx::Rect(rc.x, rc.y2()-size*2, rc.w, size);
+    else
+      return gfx::Rect(rc.x, rc.y2()-size, rc.w, size);
+  }
   else
-    return (pos.y >= rc.y+rc.h-getBottomBarSize());
+    return gfx::Rect();
 }
 
-int ColorSelector::getBottomBarSize() const
+gfx::Rect ColorSelector::alphaBarBounds() const
 {
-  gfx::Rect rc = clientChildrenBounds();
-  int size = 8*guiscale();
-  return rc.h < 2*size ? 0: size;
+  const gfx::Rect rc = childrenBounds();
+  const int size = 8*guiscale();      // TODO 8 should be configurable in theme.xml
+  if (rc.h > 3*size)
+    return gfx::Rect(rc.x, rc.y2()-size, rc.w, size);
+  else
+    return gfx::Rect();
 }
 
 } // namespace app

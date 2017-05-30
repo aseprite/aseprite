@@ -39,7 +39,8 @@ app::Color ColorSpectrum::getMainAreaColor(const int u, const int umax,
   return app::Color::fromHsl(
     MID(0.0, hue, 360.0),
     m_color.getHslSaturation(),
-    MID(0.0, lit, 1.0));
+    MID(0.0, lit, 1.0),
+    m_color.getAlpha());
 }
 
 app::Color ColorSpectrum::getBottomBarColor(const int u, const int umax)
@@ -48,7 +49,8 @@ app::Color ColorSpectrum::getBottomBarColor(const int u, const int umax)
   return app::Color::fromHsl(
     m_color.getHslHue(),
     MID(0.0, sat, 1.0),
-    m_color.getHslLightness());
+    m_color.getHslLightness(),
+    m_color.getAlpha());
 }
 
 void ColorSpectrum::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)

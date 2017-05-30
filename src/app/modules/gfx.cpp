@@ -37,6 +37,8 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
     return;
 
   int x, y, u, v;
+
+  // TODO these values are hard-coded in ColorSelector::onPaintAlphaBar() too, use pref.xml values
   gfx::Color c1 = gfx::rgba(128, 128, 128);
   gfx::Color c2 = gfx::rgba(192, 192, 192);
 

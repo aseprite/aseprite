@@ -100,7 +100,8 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     return app::Color::fromHsv(
       MID(0, hue, 360),
       MID(0, sat / 100.0, 1.0),
-      m_color.getHsvValue());
+      m_color.getHsvValue(),
+      m_color.getAlpha());
   }
 
   // Pick harmonies
@@ -119,7 +120,8 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
         color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
                                     color.getHsvSaturation(),
-                                    color.getHsvValue());
+                                    color.getHsvValue(),
+                                    m_color.getAlpha());
         return color;
       }
     }
@@ -159,6 +161,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 
       gfx::Color color;
       if (appColor.getType() != app::Color::MaskType) {
+        appColor.setAlpha(255);
         color = color_utils::color_for_ui(appColor);
       }
       else {

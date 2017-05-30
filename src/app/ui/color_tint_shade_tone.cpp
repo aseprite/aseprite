@@ -32,7 +32,8 @@ app::Color ColorTintShadeTone::getMainAreaColor(const int u, const int umax,
   return app::Color::fromHsv(
     m_color.getHsvHue(),
     MID(0.0, sat, 1.0),
-    MID(0.0, val, 1.0));
+    MID(0.0, val, 1.0),
+    m_color.getAlpha());
 }
 
 app::Color ColorTintShadeTone::getBottomBarColor(const int u, const int umax)
@@ -41,7 +42,8 @@ app::Color ColorTintShadeTone::getBottomBarColor(const int u, const int umax)
   return app::Color::fromHsv(
     MID(0.0, hue, 360.0),
     m_color.getHsvSaturation(),
-    m_color.getHsvValue());
+    m_color.getHsvValue(),
+    m_color.getAlpha());
 }
 
 void ColorTintShadeTone::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
