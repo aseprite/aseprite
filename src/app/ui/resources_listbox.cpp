@@ -177,22 +177,20 @@ void ResourcesListBox::onTick()
   base::UniquePtr<Resource> resource;
   std::string name;
 
-  if (!m_resourcesLoader->next(resource)) {
-    if (m_resourcesLoader->isDone()) {
-      stop();
-    }
-    return;
+  while (m_resourcesLoader->next(resource)) {
+    base::UniquePtr<ResourceListItem> listItem(onCreateResourceItem(resource));
+    insertChild(getItemsCount()-1, listItem);
+    layout();
+
+    if (View* view = View::getView(this))
+      view->updateView();
+
+    resource.release();
+    listItem.release();
   }
 
-  base::UniquePtr<ResourceListItem> listItem(onCreateResourceItem(resource));
-  insertChild(getItemsCount()-1, listItem);
-  layout();
-
-  if (View* view = View::getView(this))
-    view->updateView();
-
-  resource.release();
-  listItem.release();
+  if (m_resourcesLoader->isDone())
+    stop();
 }
 
 void ResourcesListBox::stop()
