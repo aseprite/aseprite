@@ -191,7 +191,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
         gfx::Point(int(+std::cos(PI*angle/180.0)*double(m_wheelRadius)*dist),
                    int(-std::sin(PI*angle/180.0)*double(m_wheelRadius)*dist));
 
-      paintColorIndicator(g, pos, false);
+      paintColorIndicator(g, pos, color.getHsvValue() < 0.5);
 
       g->fillRect(gfx::rgba(color.getRed(),
                             color.getGreen(),
@@ -221,7 +221,7 @@ void ColorWheel::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
     double val = m_color.getHsvValue();
     gfx::Point pos(rc.x + int(double(rc.w) * val),
                    rc.y + rc.h/2);
-    paintColorIndicator(g, pos, false);
+    paintColorIndicator(g, pos, val < 0.5);
   }
 }
 

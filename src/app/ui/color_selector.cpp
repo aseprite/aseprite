@@ -204,10 +204,11 @@ void ColorSelector::onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc)
 {
   draw_alpha_slider(g, rc, m_color);
 
+  const double lit = m_color.getHslLightness();
   const int alpha = m_color.getAlpha();
   const gfx::Point pos(rc.x + int(rc.w * alpha / 255),
                        rc.y + rc.h/2);
-  paintColorIndicator(g, pos, false);
+  paintColorIndicator(g, pos, lit < 0.5);
 }
 
 void ColorSelector::paintColorIndicator(ui::Graphics* g,

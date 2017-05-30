@@ -100,7 +100,7 @@ void ColorSpectrum::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
     double sat = m_color.getHslSaturation();
     gfx::Point pos(rc.x + int(double(rc.w) * sat),
                    rc.y + rc.h/2);
-    paintColorIndicator(g, pos, false);
+    paintColorIndicator(g, pos, lit < 0.5);
   }
 }
 
