@@ -204,7 +204,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 void ColorWheel::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 {
   double hue = m_color.getHsvHue();
-  double sat = m_color.getHsvValue();
+  double sat = m_color.getHsvSaturation();
 
   for (int x=0; x<rc.w; ++x) {
     gfx::Color color = color_utils::color_for_ui(
