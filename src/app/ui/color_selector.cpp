@@ -11,10 +11,10 @@
 #include "app/ui/color_selector.h"
 
 #include "app/color_utils.h"
+#include "app/modules/gfx.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "base/scoped_value.h"
-#include "doc/blend_funcs.h"
 #include "she/surface.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -202,32 +202,11 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
 
 void ColorSelector::onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc)
 {
-  const int xmax = MAX(1, rc.w-1);
+  draw_alpha_slider(g, rc, m_color);
+
   const int alpha = m_color.getAlpha();
-  const doc::color_t c =
-    (m_color.getType() != app::Color::MaskType ?
-     doc::rgba(m_color.getRed(),
-               m_color.getGreen(),
-               m_color.getBlue(), 255): 0);
-
-  for (int x=0; x<rc.w; ++x) {
-    const int a = (255 * x / xmax);
-
-    // TODO These values are hard-coded in rectgrid() (modules/gfx.cpp) too, use pref.xml values
-    const doc::color_t c1 = doc::rgba_blender_normal(gfx::rgba(128, 128, 128), c, a);
-    const doc::color_t c2 = doc::rgba_blender_normal(gfx::rgba(192, 192, 192), c, a);
-    const int mid = rc.h/2;
-    const int odd = (x / rc.h) & 1;
-    g->drawVLine(
-      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c2: c1)),
-      rc.x+x, rc.y, mid);
-    g->drawVLine(
-      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c1: c2)),
-      rc.x+x, rc.y+mid, rc.h-mid);
-  }
-
-  gfx::Point pos(rc.x + int(rc.w * alpha / 255),
-                 rc.y + rc.h/2);
+  const gfx::Point pos(rc.x + int(rc.w * alpha / 255),
+                       rc.y + rc.h/2);
   paintColorIndicator(g, pos, false);
 }
 
