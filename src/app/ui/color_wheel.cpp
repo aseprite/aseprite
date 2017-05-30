@@ -136,7 +136,8 @@ app::Color ColorWheel::getBottomBarColor(const int u, const int umax)
   return app::Color::fromHsv(
     m_color.getHsvHue(),
     m_color.getHsvSaturation(),
-    MID(0.0, val, 1.0));
+    MID(0.0, val, 1.0),
+    m_color.getAlpha());
 }
 
 void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
