@@ -270,7 +270,7 @@ private:
       m_editor->frame(),
       m_image.get(),
       visibleBounds.origin(),
-      doc::BlendMode::NORMAL);
+      doc::BlendMode::SRC);
 
     m_image->clear(0);
     m_editor->invalidate();
