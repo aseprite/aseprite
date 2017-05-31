@@ -434,8 +434,12 @@ bool Entry::onProcessMessage(Message* msg)
 
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
+  int trailing = font()->textLength(getSuffix());
+  trailing = MAX(trailing, 2*theme()->getEntryCaretSize(this).w);
+
   int w =
     + font()->textLength("w") * MIN(m_maxsize, 6)
+    + trailing
     + 2*guiscale()
     + border().width();
 

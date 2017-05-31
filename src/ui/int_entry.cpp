@@ -134,8 +134,11 @@ bool IntEntry::onProcessMessage(Message* msg)
 
 void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
-  int min_w = font()->textLength(m_slider.convertValueToText(m_min) + "%");
-  int max_w = font()->textLength(m_slider.convertValueToText(m_max));
+  int trailing = font()->textLength(getSuffix());
+  trailing = MAX(trailing, 2*theme()->getEntryCaretSize(this).w);
+
+  int min_w = font()->textLength(m_slider.convertValueToText(m_min));
+  int max_w = font()->textLength(m_slider.convertValueToText(m_max)) + trailing;
 
   int w = MAX(min_w, max_w);
   int h = textHeight();
