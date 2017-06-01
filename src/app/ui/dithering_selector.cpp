@@ -38,16 +38,31 @@ public:
              const std::string& text)
     : ListItem(text)
     , m_algo(algo)
-    , m_matrix(matrix) {
-    generatePreview();
+    , m_matrix(matrix)
+    , m_preview(nullptr)
+    , m_palId(0)
+    , m_palMods(0)
+  {
   }
 
   render::DitheringAlgorithm algo() const { return m_algo; }
   render::DitheringMatrix matrix() const { return m_matrix; }
 
 private:
-  void generatePreview() {
+  she::Surface* preview() {
     const doc::Palette* palette = get_current_palette();
+    ASSERT(palette);
+
+    if (m_preview) {
+      // Reuse the preview in case that the palette is exactly the same
+      if (palette->id() == m_palId &&
+          palette->getModifications() == m_palMods)
+        return m_preview;
+
+      // In other case regenerate the preview for the current palette
+      m_preview->dispose();
+      m_preview = nullptr;
+    }
 
     const int w = 128, h = 16;
     doc::ImageRef image1(doc::Image::create(doc::IMAGE_RGB, w, h));
@@ -67,13 +82,17 @@ private:
     m_preview = she::instance()->createRgbaSurface(w, h);
     doc::convert_image_to_surface(image2.get(), palette, m_preview,
                                   0, 0, 0, 0, w, h);
+
+    m_palId = palette->id();
+    m_palMods = palette->getModifications();
+    return m_preview;
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
     gfx::Size sz = textSize();
 
-    sz.w = MAX(sz.w, m_preview->width()) + 4*guiscale();
-    sz.h += 6*guiscale() + m_preview->height();
+    sz.w = MAX(sz.w, preview()->width()) + 4*guiscale();
+    sz.h += 6*guiscale() + preview()->height();
 
     ev.setSizeHint(sz);
   }
@@ -100,7 +119,7 @@ private:
                 gfx::Point(rc.x+2*guiscale(),
                            rc.y+2*guiscale()));
     g->drawRgbaSurface(
-      m_preview,
+      preview(),
       rc.x+2*guiscale(),
       rc.y+4*guiscale()+textsz.h);
   }
@@ -108,6 +127,8 @@ private:
   render::DitheringAlgorithm m_algo;
   render::DitheringMatrix m_matrix;
   she::Surface* m_preview;
+  doc::ObjectId m_palId;
+  int m_palMods;
 };
 
 } // anonymous namespace
