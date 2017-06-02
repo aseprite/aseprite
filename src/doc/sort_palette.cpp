@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -121,7 +121,9 @@ struct PalEntryWithIndexPredicate {
 
 } // anonymous namespace
 
-Remap sort_palette(Palette* palette, SortPaletteBy channel, bool ascending)
+Remap sort_palette(const Palette* palette,
+                   const SortPaletteBy channel,
+                   const bool ascending)
 {
   std::vector<PalEntryWithIndex> tmp(palette->size());
   for (int i=0; i<palette->size(); ++i) {
