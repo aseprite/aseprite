@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,7 +18,7 @@ namespace doc {
 
   class Remap {
   public:
-    Remap(int entries) : m_map(entries, 0) { }
+    Remap(int entries = 1) : m_map(entries, 0) { }
 
     int size() const {
       return (int)m_map.size();
