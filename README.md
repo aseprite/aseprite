@@ -65,8 +65,12 @@ report, feature requests, donations, and help me developing Aseprite.
 
 Aseprite includes color palettes created by:
 
-* [Richard "DawnBringer" Fhager](http://pixeljoint.com/p/23821.htm) palettes, [16 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=12795),  [32 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=16247).
-* [Arne Niklas Jansson](http://androidarts.com/) palettes, [16 colors](http://androidarts.com/palette/16pal.htm), [32 colors](http://wayofthepixel.net/index.php?topic=15824.msg144494).
+* [Richard "DawnBringer" Fhager](http://pixeljoint.com/p/23821.htm), [16 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=12795),  [32 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=16247).
+* [Arne Niklas Jansson](http://androidarts.com/), [16 colors](http://androidarts.com/palette/16pal.htm), [32 colors](http://wayofthepixel.net/index.php?topic=15824.msg144494).
+* [ENDESGA Studios](https://twitter.com/ENDESGA), [EDG16 and EDG32](https://forums.tigsource.com/index.php?topic=46126.msg1279124#msg1279124), and [other palettes](https://twitter.com/ENDESGA/status/865812366931353600)
+* [Hyohnoo Games](https://twitter.com/Hyohnoo), [mail24](https://twitter.com/Hyohnoo/status/797472587974639616) palette.
+* [Davit Masia](https://twitter.com/DavitMasia), [matriax8c](https://twitter.com/DavitMasia/status/834862452164612096) palette.
+* [Javier Guerrero](https://twitter.com/Xavier_Gd), [nyx8](https://twitter.com/Xavier_Gd/status/868519467864686594) palette.
 
 It tries to replicate some pixel-art algorithms:
 
