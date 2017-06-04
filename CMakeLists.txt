@@ -421,7 +421,7 @@ if(WIN32)
   add_definitions(-DUNICODE -D_UNICODE)
 endif(WIN32)
 
-# -- Mac OS X --
+# -- macOS --
 
 if(APPLE)
   find_library(COCOA_LIBRARY Cocoa)
