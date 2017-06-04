@@ -30,6 +30,14 @@ namespace app {
       const gfx::Point& operator[](int i) const { return m_points[i]; }
       gfx::Point& operator[](int i) { return m_points[i]; }
 
+      int horizontalModifier() const {
+        return m_horizontal_modifier;
+      }
+
+      int verticalModifier() const {
+        return m_vertical_modifier;
+      }
+
       const gfx::Point& firstPoint() const {
         ASSERT(!m_points.empty());
         return m_points[0];
@@ -57,6 +65,10 @@ namespace app {
 
     public:
       Points m_points;
+
+      // Symmetry modifiers that can be used by brush when drawing a symmetric stroke.
+      int m_horizontal_modifier = 1;
+      int m_vertical_modifier = 1;
     };
 
     typedef std::vector<Stroke> Strokes;

@@ -32,6 +32,10 @@ void HorizontalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stro
   Stroke stroke2;
   for (const auto& pt : mainStroke)
     stroke2.addPoint(gfx::Point(m_x - (pt.x - m_x + adjust), pt.y));
+
+  stroke2.m_horizontal_modifier = -mainStroke.m_horizontal_modifier;
+  stroke2.m_vertical_modifier = mainStroke.m_vertical_modifier;
+
   strokes.push_back(stroke2);
 }
 
@@ -49,6 +53,10 @@ void VerticalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stroke
   Stroke stroke2;
   for (const auto& pt : mainStroke)
     stroke2.addPoint(gfx::Point(pt.x, m_y - (pt.y - m_y + adjust)));
+
+  stroke2.m_horizontal_modifier = mainStroke.m_horizontal_modifier;
+  stroke2.m_vertical_modifier = -mainStroke.m_vertical_modifier;
+
   strokes.push_back(stroke2);
 }
 
