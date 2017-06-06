@@ -45,16 +45,31 @@ bool LayerVisibilityCommand::onEnabled(Context* context)
 bool LayerVisibilityCommand::onChecked(Context* context)
 {
   const ContextReader reader(context);
-  const Layer* layer = reader.layer();
-  return (layer && layer->isVisible());
+  const SelectedLayers& selLayers = reader.site()->selectedLayers();
+  bool visible = false;
+  for (auto layer : selLayers)
+  {
+    if(layer && layer->isVisible())
+      visible = true;
+  }
+  return visible;
 }
 
 void LayerVisibilityCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Layer* layer = writer.layer();
+  const SelectedLayers& selLayers = writer.site()->selectedLayers();
 
-  layer->setVisible(!layer->isVisible());
+  bool anyVisible = false;
+  for (auto layer : selLayers)
+  {
+    if(layer->isVisible())
+      anyVisible = true;
+  }
+  for(auto layer : selLayers)
+  {
+    layer->setVisible(!anyVisible);
+  }
 
   update_screen_for_document(writer.document());
 }
