@@ -8,9 +8,11 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
+#include "app/ui/timeline/timeline.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 
@@ -45,16 +47,41 @@ bool LayerVisibilityCommand::onEnabled(Context* context)
 bool LayerVisibilityCommand::onChecked(Context* context)
 {
   const ContextReader reader(context);
-  const Layer* layer = reader.layer();
-  return (layer && layer->isVisible());
+  SelectedLayers selLayers;
+  auto range = App::instance()->timeline()->range();
+  if (range.enabled()) {
+    selLayers = range.selectedLayers();
+  }
+  else {
+    selLayers.insert(const_cast<Layer*>(reader.layer()));
+  }
+  bool visible = false;
+  for (auto layer : selLayers) {
+    if(layer && layer->isVisible())
+      visible = true;
+  }
+  return visible;
 }
 
 void LayerVisibilityCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Layer* layer = writer.layer();
-
-  layer->setVisible(!layer->isVisible());
+  SelectedLayers selLayers;
+  auto range = App::instance()->timeline()->range();
+  if (range.enabled()) {
+    selLayers = range.selectedLayers();
+  }
+  else {
+    selLayers.insert(writer.layer());
+  }
+  bool anyVisible = false;
+  for (auto layer : selLayers) {
+    if(layer->isVisible())
+      anyVisible = true;
+  }
+  for(auto layer : selLayers) {
+    layer->setVisible(!anyVisible);
+  }
 
   update_screen_for_document(writer.document());
 }
