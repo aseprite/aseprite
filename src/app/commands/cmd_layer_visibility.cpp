@@ -9,10 +9,10 @@
 #endif
 
 #include "app/app.h"
-#include "app/ui/timeline/timeline.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
+#include "app/ui/timeline/timeline.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 
@@ -56,7 +56,7 @@ bool LayerVisibilityCommand::onChecked(Context* context)
     selLayers.insert(const_cast<Layer*>(reader.layer()));
   }
   bool visible = false;
-  for (auto layer : selLayers){
+  for (auto layer : selLayers) {
     if(layer && layer->isVisible())
       visible = true;
   }
@@ -75,11 +75,11 @@ void LayerVisibilityCommand::onExecute(Context* context)
     selLayers.insert(writer.layer());
   }
   bool anyVisible = false;
-  for (auto layer : selLayers){
+  for (auto layer : selLayers) {
     if(layer->isVisible())
       anyVisible = true;
   }
-  for(auto layer : selLayers){
+  for(auto layer : selLayers) {
     layer->setVisible(!anyVisible);
   }
 
