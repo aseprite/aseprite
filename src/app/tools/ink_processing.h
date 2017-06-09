@@ -905,6 +905,9 @@ public:
       return;
     }
 
+    const render::DitheringMatrix& m_matrix =
+      loop->getDitheringMatrix();
+
     base::Vector2d<double>
       u(strokes[0].firstPoint().x,
         strokes[0].firstPoint().y),
@@ -939,23 +942,36 @@ public:
     auto it = bits.begin();
     const int width = m_tmpImage->width();
     const int height = m_tmpImage->height();
-    for (int y=0; y<height; ++y) {
-      for (int x=0; x<width; ++x, ++it) {
-        base::Vector2d<double> q(x, y);
-        q -= u;
-        double f = (q * w.normalize()) / (w.magnitude());
 
-        doc::color_t c;
-        if (f < 0.0) c = c0;
-        else if (f > 1.0) c = c1;
-        else {
-          c = doc::rgba(int(255.0 * (r0 + f*(r1-r0))),
-                        int(255.0 * (g0 + f*(g1-g0))),
-                        int(255.0 * (b0 + f*(b1-b0))),
-                        int(255.0 * (a0 + f*(a1-a0))));
+    if (m_matrix.rows() == 1 && m_matrix.cols() == 1) {
+      for (int y=0; y<height; ++y) {
+        for (int x=0; x<width; ++x, ++it) {
+          base::Vector2d<double> q(x, y);
+          q -= u;
+          double f = (q * w.normalize()) / (w.magnitude());
+
+          doc::color_t c;
+          if (f < 0.0) c = c0;
+          else if (f > 1.0) c = c1;
+          else {
+            c = doc::rgba(int(255.0 * (r0 + f*(r1-r0))),
+                          int(255.0 * (g0 + f*(g1-g0))),
+                          int(255.0 * (b0 + f*(b1-b0))),
+                          int(255.0 * (a0 + f*(a1-a0))));
+          }
+
+          *it = c;
         }
-
-        *it = c;
+      }
+    }
+    else {
+      for (int y=0; y<height; ++y) {
+        for (int x=0; x<width; ++x, ++it) {
+          base::Vector2d<double> q(x, y);
+          q -= u;
+          double f = (q * w.normalize()) / (w.magnitude());
+          *it = (f*m_matrix.maxValue() < m_matrix(y, x) ? c0: c1);
+        }
       }
     }
   }
@@ -978,7 +994,7 @@ public:
     , m_rgbmap(loop->getRgbMap())
     , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor())
     , m_matrix(loop->getDitheringMatrix())
-    , m_dither(loop->getDitheringAlgorithm()) {
+  {
   }
 
   void hline(int x1, int y, int x2, ToolLoop* loop) override {
@@ -1000,7 +1016,6 @@ private:
   const RgbMap* m_rgbmap;
   const int m_maskIndex;
   const render::DitheringMatrix m_matrix;
-  render::DitheringAlgorithmBase* m_dither;
 };
 
 template<>
@@ -1032,12 +1047,6 @@ void GradientInkProcessing<RgbTraits>::processPixel(int x, int y)
   c = rgba_blender_normal(*m_srcAddress,
                           doc::rgba(r, g, b, a),
                           m_opacity);
-
-  if (m_dither) {
-    int i = m_dither->ditherRgbPixelToIndex(
-      m_matrix, c, x, y, m_rgbmap, m_palette);
-    c = m_palette->getEntry(i);
-  }
 
   *m_dstAddress = c;
   ++m_tmpAddress;
@@ -1113,16 +1122,10 @@ void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
     c0 = m_palette->getEntry(c0);
   c = rgba_blender_normal(c0, c, m_opacity);
 
-  if (m_dither) {
-    *m_dstAddress = m_dither->ditherRgbPixelToIndex(
-      m_matrix, c, x, y, m_rgbmap, m_palette);
-  }
-  else {
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
-  }
+  *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
+                                     rgba_getg(c),
+                                     rgba_getb(c),
+                                     rgba_geta(c));
 
   ++m_tmpAddress;
 }
