@@ -6,7 +6,6 @@
 
 #include "app/modules/palettes.h"
 #include "base/unique_ptr.h"
-#include "base/vector2d.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
@@ -18,6 +17,7 @@
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "render/dithering.h"
+#include "render/gradient.h"
 
 namespace app {
 namespace tools {
@@ -897,83 +897,12 @@ public:
       return;
     }
 
-    // If there is no vector defining the gradient (just one point),
-    // the "gradient" will be just "c0"
-    if (strokes[0].firstPoint().x == strokes[0].lastPoint().x &&
-        strokes[0].firstPoint().y == strokes[0].lastPoint().y) {
-      m_tmpImage->clear(c0);
-      return;
-    }
-
-    const render::DitheringMatrix& m_matrix =
-      loop->getDitheringMatrix();
-
-    base::Vector2d<double>
-      u(strokes[0].firstPoint().x,
-        strokes[0].firstPoint().y),
-      v(strokes[0].lastPoint().x,
-        strokes[0].lastPoint().y), w;
-    w = v - u;
-
-    // As we use non-premultiplied RGB values, we need correct RGB
-    // values on each stop. So in case that one color has alpha=0
-    // (complete transparent), use the RGB values of the
-    // non-transparent color in the other stop point.
-    if (doc::rgba_geta(c0) == 0 &&
-        doc::rgba_geta(c1) != 0) {
-      c0 = (c1 & rgba_rgb_mask);
-    }
-    else if (doc::rgba_geta(c0) != 0 &&
-             doc::rgba_geta(c1) == 0) {
-      c1 = (c0 & rgba_rgb_mask);
-    }
-
-    const double r0 = double(doc::rgba_getr(c0)) / 255.0;
-    const double g0 = double(doc::rgba_getg(c0)) / 255.0;
-    const double b0 = double(doc::rgba_getb(c0)) / 255.0;
-    const double a0 = double(doc::rgba_geta(c0)) / 255.0;
-
-    const double r1 = double(doc::rgba_getr(c1)) / 255.0;
-    const double g1 = double(doc::rgba_getg(c1)) / 255.0;
-    const double b1 = double(doc::rgba_getb(c1)) / 255.0;
-    const double a1 = double(doc::rgba_geta(c1)) / 255.0;
-
-    doc::LockImageBits<doc::RgbTraits> bits(m_tmpImage.get());
-    auto it = bits.begin();
-    const int width = m_tmpImage->width();
-    const int height = m_tmpImage->height();
-
-    if (m_matrix.rows() == 1 && m_matrix.cols() == 1) {
-      for (int y=0; y<height; ++y) {
-        for (int x=0; x<width; ++x, ++it) {
-          base::Vector2d<double> q(x, y);
-          q -= u;
-          double f = (q * w.normalize()) / (w.magnitude());
-
-          doc::color_t c;
-          if (f < 0.0) c = c0;
-          else if (f > 1.0) c = c1;
-          else {
-            c = doc::rgba(int(255.0 * (r0 + f*(r1-r0))),
-                          int(255.0 * (g0 + f*(g1-g0))),
-                          int(255.0 * (b0 + f*(b1-b0))),
-                          int(255.0 * (a0 + f*(a1-a0))));
-          }
-
-          *it = c;
-        }
-      }
-    }
-    else {
-      for (int y=0; y<height; ++y) {
-        for (int x=0; x<width; ++x, ++it) {
-          base::Vector2d<double> q(x, y);
-          q -= u;
-          double f = (q * w.normalize()) / (w.magnitude());
-          *it = (f*m_matrix.maxValue() < m_matrix(y, x) ? c0: c1);
-        }
-      }
-    }
+    render::render_rgba_linear_gradient(
+      m_tmpImage.get(),
+      strokes[0].firstPoint(),
+      strokes[0].lastPoint(),
+      c0, c1,
+      loop->getDitheringMatrix());
   }
 
 protected:

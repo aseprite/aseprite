@@ -3,6 +3,7 @@
 
 add_library(render-lib
   get_sprite_pixel.cpp
+  gradient.cpp
   ordered_dither.cpp
   quantization.cpp
   render.cpp
