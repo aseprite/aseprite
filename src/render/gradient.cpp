@@ -41,6 +41,8 @@ void render_rgba_linear_gradient(
     u(p0.x, p0.y),
     v(p1.x, p1.y), w;
   w = v - u;
+  const double wmag = w.magnitude();
+  w = w.normalize();
 
   // As we use non-premultiplied RGB values, we need correct RGB
   // values on each stop. So in case that one color has alpha=0
@@ -75,7 +77,7 @@ void render_rgba_linear_gradient(
       for (int x=0; x<width; ++x, ++it) {
         base::Vector2d<double> q(x, y);
         q -= u;
-        double f = (q * w.normalize()) / (w.magnitude());
+        double f = (q * w) / wmag;
 
         doc::color_t c;
         if (f < 0.0) c = c0;
@@ -96,7 +98,8 @@ void render_rgba_linear_gradient(
       for (int x=0; x<width; ++x, ++it) {
         base::Vector2d<double> q(x, y);
         q -= u;
-        double f = (q * w.normalize()) / (w.magnitude());
+        double f = (q * w) / wmag;
+
         *it = (f*matrix.maxValue() < matrix(y, x) ? c0: c1);
       }
     }
