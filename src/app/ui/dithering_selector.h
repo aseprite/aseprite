@@ -17,7 +17,12 @@ namespace app {
 
   class DitheringSelector : public ui::ComboBox {
   public:
-    DitheringSelector();
+    enum Type {
+      SelectBoth,
+      SelectMatrix,
+    };
+
+    DitheringSelector(Type type);
 
     render::DitheringAlgorithm ditheringAlgorithm();
     render::DitheringMatrix ditheringMatrix();

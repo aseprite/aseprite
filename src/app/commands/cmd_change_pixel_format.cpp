@@ -183,7 +183,7 @@ public:
     if (from != IMAGE_INDEXED) {
       colorMode()->addChild(new ConversionItem(IMAGE_INDEXED));
 
-      m_ditheringSelector = new DitheringSelector;
+      m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectBoth);
       m_ditheringSelector->setExpansive(true);
       m_ditheringSelector->Change.connect(
         base::Bind<void>(&ColorModeWindow::onDithering, this));

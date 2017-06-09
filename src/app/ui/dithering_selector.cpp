@@ -17,6 +17,7 @@
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
+#include "render/gradient.h"
 #include "render/quantization.h"
 #include "she/surface.h"
 #include "she/system.h"
@@ -33,11 +34,25 @@ namespace {
 
 class DitherItem : public ListItem {
 public:
+
   DitherItem(render::DitheringAlgorithm algo,
              const render::DitheringMatrix& matrix,
              const std::string& text)
     : ListItem(text)
+    , m_matrixOnly(false)
     , m_algo(algo)
+    , m_matrix(matrix)
+    , m_preview(nullptr)
+    , m_palId(0)
+    , m_palMods(0)
+  {
+  }
+
+  DitherItem(const render::DitheringMatrix& matrix,
+             const std::string& text)
+    : ListItem(text)
+    , m_matrixOnly(true)
+    , m_algo(render::DitheringAlgorithm::None)
     , m_matrix(matrix)
     , m_preview(nullptr)
     , m_palId(0)
@@ -66,18 +81,25 @@ private:
 
     const int w = 128, h = 16;
     doc::ImageRef image1(doc::Image::create(doc::IMAGE_RGB, w, h));
-    doc::clear_image(image1.get(), 0);
-    for (int y=0; y<h; ++y)
-      for (int x=0; x<w; ++x) {
-        int v = 255 * x / (w-1);
-        image1->putPixel(x, y, doc::rgba(v, v, v, 255));
-      }
+    render_rgba_linear_gradient(
+      image1.get(),
+      gfx::Point(0, 0),
+      gfx::Point(w-1, 0),
+      doc::rgba(0, 0, 0, 255),
+      doc::rgba(255, 255, 255, 255),
+      m_matrixOnly ? m_matrix: render::DitheringMatrix());
 
-    doc::ImageRef image2(doc::Image::create(doc::IMAGE_INDEXED, w, h));
-    doc::clear_image(image2.get(), 0);
-    render::convert_pixel_format(
-      image1.get(), image2.get(), IMAGE_INDEXED,
-      m_algo, m_matrix, nullptr, palette, true, -1, nullptr);
+    doc::ImageRef image2;
+    if (m_matrixOnly) {
+      image2 = image1;
+    }
+    else {
+      image2.reset(doc::Image::create(doc::IMAGE_INDEXED, w, h));
+      doc::clear_image(image2.get(), 0);
+      render::convert_pixel_format(
+        image1.get(), image2.get(), IMAGE_INDEXED,
+        m_algo, m_matrix, nullptr, palette, true, -1, nullptr);
+    }
 
     m_preview = she::instance()->createRgbaSurface(w, h);
     doc::convert_image_to_surface(image2.get(), palette, m_preview,
@@ -124,6 +146,7 @@ private:
       rc.y+4*guiscale()+textsz.h);
   }
 
+  bool m_matrixOnly;
   render::DitheringAlgorithm m_algo;
   render::DitheringMatrix m_matrix;
   she::Surface* m_preview;
@@ -133,24 +156,35 @@ private:
 
 } // anonymous namespace
 
-DitheringSelector::DitheringSelector()
+DitheringSelector::DitheringSelector(Type type)
 {
   setUseCustomWidget(true);
 
-  addItem(new DitherItem(render::DitheringAlgorithm::None,
-                         render::DitheringMatrix(), "No Dithering"));
-  addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
-                         render::BayerMatrix(8), "Ordered Dithering - Bayer Matrix 8x8"));
-  addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
-                         render::BayerMatrix(4), "Ordered Dithering - Bayer Matrix 4x4"));
-  addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
-                         render::BayerMatrix(2), "Ordered Dithering - Bayer Matrix 2x2"));
-  addItem(new DitherItem(render::DitheringAlgorithm::Old,
-                         render::BayerMatrix(8), "Old Dithering - Bayer Matrix 8x8"));
-  addItem(new DitherItem(render::DitheringAlgorithm::Old,
-                         render::BayerMatrix(4), "Old Dithering - Bayer Matrix 4x4"));
-  addItem(new DitherItem(render::DitheringAlgorithm::Old,
-                         render::BayerMatrix(2), "Old Dithering - Bayer Matrix 2x2"));
+  switch (type) {
+    case SelectBoth:
+      addItem(new DitherItem(render::DitheringAlgorithm::None,
+                             render::DitheringMatrix(), "No Dithering"));
+      addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
+                             render::BayerMatrix(8), "Ordered Dithering - Bayer Matrix 8x8"));
+      addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
+                             render::BayerMatrix(4), "Ordered Dithering - Bayer Matrix 4x4"));
+      addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
+                             render::BayerMatrix(2), "Ordered Dithering - Bayer Matrix 2x2"));
+      addItem(new DitherItem(render::DitheringAlgorithm::Old,
+                             render::BayerMatrix(8), "Old Dithering - Bayer Matrix 8x8"));
+      addItem(new DitherItem(render::DitheringAlgorithm::Old,
+                             render::BayerMatrix(4), "Old Dithering - Bayer Matrix 4x4"));
+      addItem(new DitherItem(render::DitheringAlgorithm::Old,
+                             render::BayerMatrix(2), "Old Dithering - Bayer Matrix 2x2"));
+      break;
+    case SelectMatrix:
+      addItem(new DitherItem(render::DitheringMatrix(), "No Dithering"));
+      addItem(new DitherItem(render::BayerMatrix(8), "Bayer Matrix 8x8"));
+      addItem(new DitherItem(render::BayerMatrix(4), "Bayer Matrix 4x4"));
+      addItem(new DitherItem(render::BayerMatrix(2), "Bayer Matrix 2x2"));
+      break;
+  }
+
 
   setSelectedItemIndex(0);
   setSizeHint(getItem(0)->sizeHint());

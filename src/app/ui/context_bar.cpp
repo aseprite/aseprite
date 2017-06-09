@@ -1382,7 +1382,7 @@ ContextBar::ContextBar()
   addChild(m_tolerance = new ToleranceField());
   addChild(m_contiguous = new ContiguousField());
   addChild(m_paintBucketSettings = new PaintBucketSettingsField());
-  addChild(m_ditheringSelector = new DitheringSelector());
+  addChild(m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectMatrix));
   m_ditheringSelector->setUseCustomWidget(false); // Disable custom widget because the context bar is too small
 
   addChild(m_inkType = new InkTypeField(this));
