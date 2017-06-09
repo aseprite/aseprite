@@ -100,7 +100,7 @@ void render_rgba_linear_gradient(
         q -= u;
         double f = (q * w) / wmag;
 
-        *it = (f*matrix.maxValue() < matrix(y, x) ? c0: c1);
+        *it = (f*(matrix.maxValue()+2) < matrix(y, x)+1 ? c0: c1);
       }
     }
   }
