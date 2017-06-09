@@ -959,25 +959,9 @@ void GradientInkProcessing<RgbTraits>::updateInk(ToolLoop* loop, Strokes& stroke
 template<>
 void GradientInkProcessing<RgbTraits>::processPixel(int x, int y)
 {
-  // As m_tmpAddress is the rendered gradient from pixman, its RGB
-  // values are premultiplied, here we can divide them by the alpha
-  // value to get the non-premultiplied values.
-  doc::color_t c = *m_tmpAddress;
-  int a = doc::rgba_geta(c);
-  int r, g, b;
-  if (a > 0) {
-    r = doc::rgba_getr(c) * 255 / a;
-    g = doc::rgba_getg(c) * 255 / a;
-    b = doc::rgba_getb(c) * 255 / a;
-  }
-  else
-    r = g = b = 0;
-
-  c = rgba_blender_normal(*m_srcAddress,
-                          doc::rgba(r, g, b, a),
-                          m_opacity);
-
-  *m_dstAddress = c;
+  *m_dstAddress = rgba_blender_normal(*m_srcAddress,
+                                      *m_tmpAddress,
+                                      m_opacity);
   ++m_tmpAddress;
 }
 
@@ -999,18 +983,9 @@ void GradientInkProcessing<GrayscaleTraits>::updateInk(ToolLoop* loop, Strokes& 
 template<>
 void GradientInkProcessing<GrayscaleTraits>::processPixel(int x, int y)
 {
-  // As m_tmpAddress is the rendered gradient from pixman, its RGB
-  // values are premultiplied, here we can divide them by the alpha
-  // value to get the non-premultiplied values.
   doc::color_t c = *m_tmpAddress;
   int a = doc::rgba_geta(c);
-  int v;
-  if (a > 0) {
-    // Here we could get R, G, or B because this is a grayscale gradient anyway.
-    v = doc::rgba_getr(c) * 255 / a;
-  }
-  else
-    v = 0;
+  int v = doc::rgba_getr(c);
 
   *m_dstAddress = graya_blender_normal(*m_srcAddress,
                                        doc::graya(v, a),
@@ -1030,20 +1005,7 @@ void GradientInkProcessing<IndexedTraits>::updateInk(ToolLoop* loop, Strokes& st
 template<>
 void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
 {
-  // As m_tmpAddress is the rendered gradient from pixman, its RGB
-  // values are premultiplied, here we can divide them by the alpha
-  // value to get the non-premultiplied values.
   doc::color_t c = *m_tmpAddress;
-  int a = doc::rgba_geta(c);
-  int r, g, b;
-  if (a > 0) {
-    r = doc::rgba_getr(c) * 255 / a;
-    g = doc::rgba_getg(c) * 255 / a;
-    b = doc::rgba_getb(c) * 255 / a;
-  }
-  else
-    r = g = b = 0;
-
   doc::color_t c0 = *m_srcAddress;
   if (int(c0) == m_maskIndex)
     c0 = m_palette->getEntry(c0) & rgba_rgb_mask;  // Alpha = 0
