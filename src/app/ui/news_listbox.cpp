@@ -273,36 +273,37 @@ void NewsListBox::parseFile(const std::string& filename)
     TiXmlElement* titleXml = itemXml->FirstChildElement("title");
     TiXmlElement* descXml = itemXml->FirstChildElement("description");
     TiXmlElement* linkXml = itemXml->FirstChildElement("link");
+    if (titleXml && titleXml->GetText() &&
+        descXml && descXml->GetText() &&
+        linkXml && linkXml->GetText()) {
+      std::string link = linkXml->GetText();
+      std::string title = titleXml->GetText();
+      std::string desc = parse_html(descXml->GetText());
+      // Limit the description text to 4 lines
+      std::string::size_type i = 0;
+      int j = 0;
+      while (true) {
+        i = desc.find('\n', i);
+        if (i == std::string::npos)
+          break;
+        i++;
+        j++;
+        if (j == 5)
+          desc = desc.substr(0, i);
+      }
 
-    std::string link = linkXml->GetText();
-    std::string title = titleXml->GetText();
-    std::string desc = parse_html(descXml->GetText());
-
-    // Limit the description text to 4 lines
-    std::string::size_type i = 0;
-    int j = 0;
-    while (true) {
-      i = desc.find('\n', i);
-      if (i == std::string::npos)
+      addChild(new NewsItem(link, title, desc));
+      if (++count == 4)
         break;
-      i++;
-      j++;
-      if (j == 5)
-        desc = desc.substr(0, i);
     }
-
-    addChild(new NewsItem(link, title, desc));
-
     itemXml = itemXml->NextSiblingElement();
-    if (++count == 4)
-      break;
   }
 
   TiXmlElement* linkXml = handle
     .FirstChild("rss")
     .FirstChild("channel")
     .FirstChild("link").ToElement();
-  if (linkXml)
+  if (linkXml && linkXml->GetText())
     addChild(new NewsItem(linkXml->GetText(), "More...", ""));
 
   if (view)
