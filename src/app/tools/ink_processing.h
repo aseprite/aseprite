@@ -6,6 +6,7 @@
 
 #include "app/modules/palettes.h"
 #include "base/unique_ptr.h"
+#include "base/vector2d.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
@@ -874,9 +875,9 @@ private:
 
 static ImageBufferPtr tmpGradientBuffer; // TODO non-thread safe
 
-class TemporalPixmanGradient {
+class GradientRenderer {
 public:
-  TemporalPixmanGradient(ToolLoop* loop) {
+  GradientRenderer(ToolLoop* loop) {
     if (!tmpGradientBuffer)
       tmpGradientBuffer.reset(new ImageBuffer(1));
 
@@ -896,13 +897,20 @@ public:
       return;
     }
 
-    pixman_point_fixed_t u, v;
-    pixman_gradient_stop_t stops[2];
+    // If there is no vector defining the gradient (just one point),
+    // the "gradient" will be just "c0"
+    if (strokes[0].firstPoint().x == strokes[0].lastPoint().x &&
+        strokes[0].firstPoint().y == strokes[0].lastPoint().y) {
+      m_tmpImage->clear(c0);
+      return;
+    }
 
-    u.x = pixman_int_to_fixed(strokes[0].firstPoint().x);
-    u.y = pixman_int_to_fixed(strokes[0].firstPoint().y);
-    v.x = pixman_int_to_fixed(strokes[0].lastPoint().x);
-    v.y = pixman_int_to_fixed(strokes[0].lastPoint().y);
+    base::Vector2d<double>
+      u(strokes[0].firstPoint().x,
+        strokes[0].firstPoint().y),
+      v(strokes[0].lastPoint().x,
+        strokes[0].lastPoint().y), w;
+    w = v - u;
 
     // As we use non-premultiplied RGB values, we need correct RGB
     // values on each stop. So in case that one color has alpha=0
@@ -917,39 +925,39 @@ public:
       c1 = (c0 & rgba_rgb_mask);
     }
 
-    stops[0].x = pixman_int_to_fixed(0);
-    stops[0].color.red   = 0xffff * int(doc::rgba_getr(c0)) / 255;
-    stops[0].color.green = 0xffff * int(doc::rgba_getg(c0)) / 255;
-    stops[0].color.blue  = 0xffff * int(doc::rgba_getb(c0)) / 255;
-    stops[0].color.alpha = 0xffff * int(doc::rgba_geta(c0)) / 255;
+    const double r0 = double(doc::rgba_getr(c0)) / 255.0;
+    const double g0 = double(doc::rgba_getg(c0)) / 255.0;
+    const double b0 = double(doc::rgba_getb(c0)) / 255.0;
+    const double a0 = double(doc::rgba_geta(c0)) / 255.0;
 
-    stops[1].x = pixman_int_to_fixed(1);
-    stops[1].color.red   = 0xffff * int(doc::rgba_getr(c1)) / 255;
-    stops[1].color.green = 0xffff * int(doc::rgba_getg(c1)) / 255;
-    stops[1].color.blue  = 0xffff * int(doc::rgba_getb(c1)) / 255;
-    stops[1].color.alpha = 0xffff * int(doc::rgba_geta(c1)) / 255;
+    const double r1 = double(doc::rgba_getr(c1)) / 255.0;
+    const double g1 = double(doc::rgba_getg(c1)) / 255.0;
+    const double b1 = double(doc::rgba_getb(c1)) / 255.0;
+    const double a1 = double(doc::rgba_geta(c1)) / 255.0;
 
-    pixman_image_t* gradientImg =
-      pixman_image_create_linear_gradient(
-        &u, &v, stops, 2);
-    pixman_image_set_repeat(gradientImg, PIXMAN_REPEAT_PAD);
+    doc::LockImageBits<doc::RgbTraits> bits(m_tmpImage.get());
+    auto it = bits.begin();
+    const int width = m_tmpImage->width();
+    const int height = m_tmpImage->height();
+    for (int y=0; y<height; ++y) {
+      for (int x=0; x<width; ++x, ++it) {
+        base::Vector2d<double> q(x, y);
+        q -= u;
+        double f = (q * w.normalize()) / (w.magnitude());
 
-    pixman_image_t* rasterImg =
-      pixman_image_create_bits(PIXMAN_a8b8g8r8,
-                               m_tmpImage->width(),
-                               m_tmpImage->height(),
-                               (uint32_t*)m_tmpImage->getPixelAddress(0, 0),
-                               m_tmpImage->getRowStrideSize());
+        doc::color_t c;
+        if (f < 0.0) c = c0;
+        else if (f > 1.0) c = c1;
+        else {
+          c = doc::rgba(int(255.0 * (r0 + f*(r1-r0))),
+                        int(255.0 * (g0 + f*(g1-g0))),
+                        int(255.0 * (b0 + f*(b1-b0))),
+                        int(255.0 * (a0 + f*(a1-a0))));
+        }
 
-    pixman_image_composite(PIXMAN_OP_SRC, // Copy the gradient (no alpha compositing)
-                           gradientImg, nullptr,
-                           rasterImg,
-                           0, 0, 0, 0, 0, 0,
-                           m_tmpImage->width(),
-                           m_tmpImage->height());
-
-    pixman_image_unref(gradientImg);
-    pixman_image_unref(rasterImg);
+        *it = c;
+      }
+    }
   }
 
 protected:
@@ -958,13 +966,13 @@ protected:
 };
 
 template<typename ImageTraits>
-class GradientInkProcessing : public TemporalPixmanGradient,
+class GradientInkProcessing : public GradientRenderer,
                               public DoubleInkProcessing<GradientInkProcessing<ImageTraits>, ImageTraits> {
 public:
   typedef DoubleInkProcessing<GradientInkProcessing<ImageTraits>, ImageTraits> base;
 
   GradientInkProcessing(ToolLoop* loop)
-    : TemporalPixmanGradient(loop)
+    : GradientRenderer(loop)
     , m_opacity(loop->getOpacity())
     , m_palette(get_current_palette())
     , m_rgbmap(loop->getRgbMap())

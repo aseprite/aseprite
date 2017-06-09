@@ -8,8 +8,6 @@
 #include "config.h"
 #endif
 
-#include <pixman.h>             // Needed for GradientInk
-
 #include "app/tools/tool_box.h"
 
 #include "app/gui_xml.h"
