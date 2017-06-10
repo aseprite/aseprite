@@ -53,35 +53,16 @@ void ResourcesLoader::threadLoadResources()
 {
   base::ScopedValue<bool> scoped(m_done, false, true);
 
-  std::string path = m_delegate->resourcesLocation();
-  TRACE("RESLOAD: Loading resources from %s...\n", path.c_str());
-  if (path.empty())
-    return;
-
-  FileSystemModule* fs = FileSystemModule::instance();
-  LockFS lock(fs);
-
-  IFileItem* item = fs->getFileItemFromPath(path);
-  if (!item)
-    return;
-
-  // Load resources from a fixed location
-  FileItemList list = item->children();
-  for (auto child : list) {
-    if (m_cancel)
-      break;
-
-    Resource* resource =
-      m_delegate->loadResource(base::get_file_title(child->fileName()),
-                               child->fileName());
-    if (resource)
-      m_queue.push(resource);
-  }
-
   // Load resources from extensions
-  for (const auto& idAndPath : m_delegate->extensionResources()) {
+  std::map<std::string, std::string> idAndPaths;
+  m_delegate->getResourcesPaths(idAndPaths);
+  for (const auto& idAndPath : idAndPaths) {
     if (m_cancel)
       break;
+
+    TRACE("RESLOAD: Loading resource '%s' from '%s'...\n",
+          idAndPath.first.c_str(),
+          idAndPath.second.c_str());
 
     Resource* resource =
       m_delegate->loadResource(idAndPath.first,

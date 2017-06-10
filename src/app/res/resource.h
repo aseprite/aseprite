@@ -14,6 +14,7 @@ namespace app {
   public:
     virtual ~Resource() { }
     virtual const std::string& id() const = 0;
+    virtual const std::string& path() const = 0;
   };
 
 } // namespace app

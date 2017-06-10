@@ -23,23 +23,33 @@
 
 namespace app {
 
-std::string PalettesLoaderDelegate::resourcesLocation() const
+void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string>& idAndPath) const
 {
+  // Include extension palettes
+  idAndPath = App::instance()->extensions().palettes();
+
+  // Search old palettes too
   std::string path;
   ResourceFinder rf;
-  rf.includeDataDir("palettes");
+  rf.includeDataDir("palettes"); // data/palettes/ in all places
+  rf.includeUserDir("palettes"); // palettes/ in user home
   while (rf.next()) {
     if (base::is_directory(rf.filename())) {
       path = rf.filename();
-      break;
+      path = base::fix_path_separators(path);
+      for (const auto& fn : base::list_files(path)) {
+        // Ignore the default palette that is inside the palettes/ dir
+        // in the user home dir.
+        if (fn == "default.ase" ||
+            fn == "default.gpl")
+          continue;
+
+        std::string fullFn = base::join_path(path, fn);
+        if (base::is_file(fullFn))
+          idAndPath[base::get_file_title(fn)] = fullFn;
+      }
     }
   }
-  return base::fix_path_separators(path);
-}
-
-const std::map<std::string, std::string>& PalettesLoaderDelegate::extensionResources() const
-{
-  return App::instance()->extensions().palettes();
 }
 
 Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
@@ -47,7 +57,7 @@ Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
 {
   doc::Palette* palette = load_palette(path.c_str());
   if (palette)
-    return new PaletteResource(id, palette);
+    return new PaletteResource(id, path, palette);
   else
     return nullptr;
 }

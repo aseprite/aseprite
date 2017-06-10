@@ -18,16 +18,21 @@ namespace app {
 
   class PaletteResource : public Resource {
   public:
-    PaletteResource(const std::string& id, doc::Palette* palette)
+    PaletteResource(const std::string& id,
+                    const std::string& path,
+                    doc::Palette* palette)
       : m_id(id)
+      , m_path(path)
       , m_palette(palette) {
     }
     virtual ~PaletteResource() { }
     virtual const std::string& id() const override { return m_id; }
+    virtual const std::string& path() const override { return m_path; }
     virtual doc::Palette* palette() { return m_palette; }
 
   private:
     std::string m_id;
+    std::string m_path;
     doc::Palette* m_palette;
   };
 

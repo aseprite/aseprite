@@ -15,6 +15,7 @@
 #include "app/launcher.h"
 #include "app/match_words.h"
 #include "app/res/palettes_loader_delegate.h"
+#include "app/res/resource.h"
 #include "app/ui/palettes_listbox.h"
 #include "app/ui/search_entry.h"
 #include "app/ui_context.h"
@@ -53,6 +54,7 @@ PalettePopup::PalettePopup()
 void PalettePopup::showPopup(const gfx::Rect& bounds)
 {
   m_popup->loadPal()->setEnabled(false);
+  m_popup->openFolder()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
   moveWindow(bounds);
@@ -62,9 +64,12 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
 
 void PalettePopup::onPalChange(doc::Palette* palette)
 {
-  m_popup->loadPal()->setEnabled(
-    UIContext::instance()->activeDocument() &&
-    palette != NULL);
+  const bool state =
+    (UIContext::instance()->activeDocument() &&
+     palette != nullptr);
+
+  m_popup->loadPal()->setEnabled(state);
+  m_popup->openFolder()->setEnabled(state);
 }
 
 void PalettePopup::onSearchChange()
@@ -107,7 +112,11 @@ void PalettePopup::onLoadPal()
 
 void PalettePopup::onOpenFolder()
 {
-  launcher::open_folder(PalettesLoaderDelegate().resourcesLocation());
+  Resource* res = m_paletteListBox.selectedResource();
+  if (!res)
+    return;
+
+  launcher::open_folder(res->path());
 }
 
 } // namespace app

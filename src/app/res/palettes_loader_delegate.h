@@ -15,8 +15,7 @@ namespace app {
   class PalettesLoaderDelegate : public ResourcesLoaderDelegate {
   public:
     // ResourcesLoaderDelegate impl
-    virtual std::string resourcesLocation() const override;
-    virtual const std::map<std::string, std::string>& extensionResources() const override;
+    virtual void getResourcesPaths(std::map<std::string, std::string>& idAndPath) const override;
     virtual Resource* loadResource(const std::string& id,
                                    const std::string& path) override;
   };

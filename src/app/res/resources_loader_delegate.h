@@ -18,8 +18,7 @@ namespace app {
   class ResourcesLoaderDelegate {
   public:
     virtual ~ResourcesLoaderDelegate() { }
-    virtual std::string resourcesLocation() const = 0;
-    virtual const std::map<std::string, std::string>& extensionResources() const = 0;
+    virtual void getResourcesPaths(std::map<std::string, std::string>& idAndPath) const = 0;
     virtual Resource* loadResource(const std::string& id,
                                    const std::string& path) = 0;
   };
