@@ -107,3 +107,7 @@ if(NOT USE_SHARED_CMARK)
   add_custom_target(copy_cmark_headers DEPENDS ${copy_cmark_headers})
   add_dependencies(libcmark_static copy_cmark_headers)
 endif()
+
+# JSON
+set(TAOCPP_JSON_BUILD_TESTS OFF CACHE BOOL "Build test programs")
+add_subdirectory(json)

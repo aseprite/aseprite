@@ -129,9 +129,9 @@ namespace app {
 
     private:
       void loadFontData();
-      void loadAll(const std::string& skinId);
-      void loadSheet(const std::string& skinId);
-      void loadXml(const std::string& skinId);
+      void loadAll(const std::string& themeId);
+      void loadSheet();
+      void loadXml();
 
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
@@ -140,9 +140,9 @@ namespace app {
                     int selected_offset, int mnemonic);
       void drawEntryText(ui::Graphics* g, ui::Entry* widget);
 
-      std::string themeFileName(const std::string& skinId,
-                                const std::string& fileName) const;
+      std::string themePath(const std::string& themeId) const;
 
+      std::string m_path;
       she::Surface* m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, gfx::Color> m_colors_by_id;

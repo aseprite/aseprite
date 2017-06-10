@@ -363,6 +363,7 @@ add_library(app-lib
   document_range.cpp
   document_range_ops.cpp
   document_undo.cpp
+  extensions.cpp
   extra_cel.cpp
   file/file.cpp
   file/file_data.cpp
@@ -539,7 +540,8 @@ target_link_libraries(app-lib
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${FREETYPE_LIBRARIES}
-  ${HARFBUZZ_LIBRARIES})
+  ${HARFBUZZ_LIBRARIES}
+  taocpp-json)
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

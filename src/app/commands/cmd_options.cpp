@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
+#include "app/extensions.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
 #include "app/pref/preferences.h"
@@ -34,6 +35,7 @@ namespace app {
 static const char* kSectionBgId = "section_bg";
 static const char* kSectionGridId = "section_grid";
 static const char* kSectionThemeId = "section_theme";
+static const char* kSectionExtensionsId = "section_extensions";
 
 using namespace ui;
 
@@ -64,6 +66,36 @@ class OptionsWindow : public app::gen::Options {
     std::string m_path;
     std::string m_name;
   };
+
+  class ExtensionItem : public ListItem {
+  public:
+    ExtensionItem(Extension* extension)
+      : ListItem(extension->displayName())
+      , m_extension(extension) {
+    }
+
+    bool isEnabled() const { return m_extension->isEnabled(); }
+    bool isInstalled() const { return m_extension->isInstalled(); }
+    bool canBeDisabled() const { return m_extension->canBeDisabled(); }
+    bool canBeUninstalled() const { return m_extension->canBeUninstalled(); }
+
+    void enable(bool state) {
+      m_extension->enable(state);
+    }
+
+    void uninstall() {
+      ASSERT(canBeUninstalled());
+      m_extension->uninstall();
+    }
+
+    void openFolder() const {
+      app::launcher::open_folder(m_extension->path());
+    }
+
+  private:
+    Extension* m_extension;
+  };
+
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_pref(Preferences::instance())
@@ -254,6 +286,13 @@ public:
     selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
     openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
+    // Extensions buttons
+    extensionsList()->Change.connect(base::Bind<void>(&OptionsWindow::onExtensionChange, this));
+    newExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onNewExtension, this));
+    disableExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onDisableExtension, this));
+    uninstallExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onUninstallExtension, this));
+    openExtensionFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenExtensionFolder, this));
+
     // Apply button
     buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::saveConfig, this));
 
@@ -408,6 +447,9 @@ private:
     // Load themes
     else if (item->getValue() == kSectionThemeId)
       loadThemes();
+    // Load extension
+    else if (item->getValue() == kSectionExtensionsId)
+      loadExtensions();
   }
 
   void onChangeBgScope() {
@@ -548,6 +590,20 @@ private:
     themeList()->layout();
   }
 
+  void loadExtensions() {
+    // Extensions already loaded
+    if (extensionsList()->getItemsCount() > 0)
+      return;
+
+    for (auto extension : App::instance()->extensions()) {
+      ExtensionItem* item = new ExtensionItem(extension);
+      extensionsList()->addChild(item);
+    }
+
+    onExtensionChange();
+    extensionsList()->layout();
+  }
+
   void onThemeChange() {
     ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
     selectTheme()->setEnabled(item && item->canSelect());
@@ -567,6 +623,47 @@ private:
 
   void onOpenThemeFolder() {
     ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
+    if (item)
+      item->openFolder();
+  }
+
+  void onExtensionChange() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (item && item->isInstalled()) {
+      disableExtension()->setText(item->isEnabled() ? "Disable": "Enable");
+      disableExtension()->setEnabled(item->isEnabled() ? item->canBeDisabled(): true);
+      uninstallExtension()->setEnabled(item->canBeUninstalled());
+      openExtensionFolder()->setEnabled(true);
+    }
+    else {
+      disableExtension()->setEnabled(false);
+      uninstallExtension()->setEnabled(false);
+      openExtensionFolder()->setEnabled(false);
+    }
+  }
+
+  void onNewExtension() {
+    // TODO open dialog to select a .zip file with the extension and uncompress it in the user folder
+  }
+
+  void onDisableExtension() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (item) {
+      item->enable(!item->isEnabled());
+      onExtensionChange();
+    }
+  }
+
+  void onUninstallExtension() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (item) {
+      item->uninstall();
+      onExtensionChange();
+    }
+  }
+
+  void onOpenExtensionFolder() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
     if (item)
       item->openFolder();
   }
