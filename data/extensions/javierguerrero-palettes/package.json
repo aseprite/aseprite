@@ -1,0 +1,16 @@
+{
+  "name": "javierguerrero-palettes",
+  "displayName": "Javier Guerrero Palettes",
+  "description": "Palettes contributed by Javier Guerrero",
+  "version": "1.0",
+  "author": { "name": "Javier Guerrero", "url": "https://twitter.com/Xavier_Gd" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "nyx8", "path": "./nyx8.gpl" }
+    ]
+  }
+}

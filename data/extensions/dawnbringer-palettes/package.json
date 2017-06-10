@@ -1,0 +1,17 @@
+{
+  "name": "dawnbringer-palettes",
+  "displayName": "Richard \"DawnBringer\" Fhager Palettes",
+  "description": "Palettes created by Richard \"DawnBringer\" Fhager",
+  "version": "1.0",
+  "author": { "name": "Richard Fhager", "url": "http://hem.fyristorg.com/dawnbringer/" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "db16", "path": "./db16.gpl" },
+      { "id": "db32", "path": "./db32.gpl" }
+    ]
+  }
+}

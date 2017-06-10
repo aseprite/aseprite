@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,6 +8,7 @@
 #define APP_RES_RESOURCES_LOADER_DELEGATE_H_INCLUDED
 #pragma once
 
+#include <map>
 #include <string>
 
 namespace app {
@@ -18,7 +19,9 @@ namespace app {
   public:
     virtual ~ResourcesLoaderDelegate() { }
     virtual std::string resourcesLocation() const = 0;
-    virtual Resource* loadResource(const std::string& filename) = 0;
+    virtual const std::map<std::string, std::string>& extensionResources() const = 0;
+    virtual Resource* loadResource(const std::string& id,
+                                   const std::string& path) = 0;
   };
 
 } // namespace app

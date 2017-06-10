@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,7 +16,9 @@ namespace app {
   public:
     // ResourcesLoaderDelegate impl
     virtual std::string resourcesLocation() const override;
-    virtual Resource* loadResource(const std::string& filename) override;
+    virtual const std::map<std::string, std::string>& extensionResources() const override;
+    virtual Resource* loadResource(const std::string& id,
+                                   const std::string& path) override;
   };
 
 } // namespace app

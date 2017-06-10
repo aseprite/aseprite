@@ -113,6 +113,11 @@ std::string Extensions::themePath(const std::string& themeId)
   return std::string();
 }
 
+const std::map<std::string, std::string>& Extensions::palettes() const
+{
+  return m_palettes;
+}
+
 Extension* Extensions::loadExtension(const std::string& path,
                                      const std::string& fullPackageFilename,
                                      const bool isBuiltinExtension)
@@ -132,37 +137,44 @@ Extension* Extensions::loadExtension(const std::string& path,
 
   auto contributes = json["contributes"];
   if (contributes.is_object()) {
+    // Themes
     auto themes = contributes["themes"];
     if (themes.is_array()) {
       for (const auto& theme : themes.get_array()) {
-        auto jsonThemeId = theme.at("id");
-        auto jsonThemePath = theme.at("path");
+        std::string themeId = theme.at("id").get_string();
+        std::string themePath = theme.at("path").get_string();
 
-        if (!jsonThemeId.is_string()) {
-          LOG("EXT: A theme doesn't have 'id' property\n");
-        }
-        else if (!jsonThemePath.is_string()) {
-          LOG("EXT: Theme '%s' doesn't have 'path' property\n",
-              jsonThemeId.get_string().c_str());
+        // The path must be always relative to the extension
+        themePath = base::join_path(path, themePath);
+
+        LOG("EXT: New theme '%s' in '%s'\n",
+            themeId.c_str(),
+            themePath.c_str());
+
+        if (isBuiltinExtension) {
+          m_builtinThemes[themeId] = themePath;
         }
         else {
-          std::string themeId = jsonThemeId.get_string();
-          std::string themePath = jsonThemePath.get_string();
-
-          // The path must be always relative to the extension
-          themePath = base::join_path(path, themePath);
-
-          LOG("EXT: New theme '%s' in '%s'\n",
-              themeId.c_str(),
-              themePath.c_str());
-
-          if (isBuiltinExtension) {
-            m_builtinThemes[themeId] = themePath;
-          }
-          else {
-            m_userThemes[themeId] = themePath;
-          }
+          m_userThemes[themeId] = themePath;
         }
+      }
+    }
+
+    // Palettes
+    auto palettes = contributes["palettes"];
+    if (palettes.is_array()) {
+      for (const auto& palette : palettes.get_array()) {
+        std::string palId = palette.at("id").get_string();
+        std::string palPath = palette.at("path").get_string();
+
+        // The path must be always relative to the extension
+        palPath = base::join_path(path, palPath);
+
+        LOG("EXT: New palette '%s' in '%s'\n",
+            palId.c_str(),
+            palPath.c_str());
+
+        m_palettes[palId] = palPath;
       }
     }
   }

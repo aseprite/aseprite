@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -65,12 +65,27 @@ void ResourcesLoader::threadLoadResources()
   if (!item)
     return;
 
+  // Load resources from a fixed location
   FileItemList list = item->children();
   for (auto child : list) {
     if (m_cancel)
       break;
 
-    Resource* resource = m_delegate->loadResource((child)->fileName());
+    Resource* resource =
+      m_delegate->loadResource(base::get_file_title(child->fileName()),
+                               child->fileName());
+    if (resource)
+      m_queue.push(resource);
+  }
+
+  // Load resources from extensions
+  for (const auto& idAndPath : m_delegate->extensionResources()) {
+    if (m_cancel)
+      break;
+
+    Resource* resource =
+      m_delegate->loadResource(idAndPath.first,
+                               idAndPath.second);
     if (resource)
       m_queue.push(resource);
   }

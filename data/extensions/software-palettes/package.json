@@ -1,0 +1,21 @@
+{
+  "name": "software-palettes",
+  "displayName": "Software Palettes",
+  "description": "Well-known palettes from software developers",
+  "version": "1.0",
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "google-ui", "path": "./google-ui.gpl" },
+      { "id": "monokai", "path": "./monokai.gpl" },
+      { "id": "smile-basic", "path": "./smile-basic.gpl" },
+      { "id": "solarized", "path": "./solarized.gpl" },
+      { "id": "web-safe-colors", "path": "./web-safe-colors.gpl" },
+      { "id": "win16", "path": "./win16.gpl" },
+      { "id": "x11", "path": "./x11.gpl" }
+    ]
+  }
+}

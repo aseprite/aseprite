@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,8 @@
 
 #include "app/res/palettes_loader_delegate.h"
 
+#include "app/app.h"
+#include "app/extensions.h"
 #include "app/file/palette_file.h"
 #include "app/file_system.h"
 #include "app/res/palette_resource.h"
@@ -35,13 +37,19 @@ std::string PalettesLoaderDelegate::resourcesLocation() const
   return base::fix_path_separators(path);
 }
 
-Resource* PalettesLoaderDelegate::loadResource(const std::string& filename)
+const std::map<std::string, std::string>& PalettesLoaderDelegate::extensionResources() const
 {
-  doc::Palette* palette = load_palette(filename.c_str());
-  if (!palette)
-    return NULL;
+  return App::instance()->extensions().palettes();
+}
 
-  return new PaletteResource(palette, base::get_file_title(filename));
+Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
+                                               const std::string& path)
+{
+  doc::Palette* palette = load_palette(path.c_str());
+  if (palette)
+    return new PaletteResource(id, palette);
+  else
+    return nullptr;
 }
 
 } // namespace app

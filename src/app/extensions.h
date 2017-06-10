@@ -67,6 +67,7 @@ namespace app {
     void installCompressedExtension(const std::string& zipFn);
 
     std::string themePath(const std::string& themeId);
+    const std::map<std::string, std::string>& palettes() const;
 
   private:
     Extension* loadExtension(const std::string& path,
@@ -78,6 +79,8 @@ namespace app {
     // Key=theme id, Value=theme path
     std::map<std::string, std::string> m_builtinThemes;
     std::map<std::string, std::string> m_userThemes;
+
+    std::map<std::string, std::string> m_palettes;
   };
 
 } // namespace app

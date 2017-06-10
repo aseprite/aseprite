@@ -1,0 +1,16 @@
+{
+  "name": "davitmasia-palettes",
+  "displayName": "Davit Masia Palettes",
+  "description": "Palettes contributed by Davit Masia",
+  "version": "1.0",
+  "author": { "name": "Davit Masia", "url": "https://twitter.com/DavitMasia" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "matriax8c", "path": "./matriax8c.gpl" }
+    ]
+  }
+}

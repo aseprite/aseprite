@@ -29,7 +29,7 @@ using namespace skin;
 // ResourceListItem
 
 ResourceListItem::ResourceListItem(Resource* resource)
-  : ListItem(resource->name()), m_resource(resource)
+  : ListItem(resource->id()), m_resource(resource)
 {
 }
 
