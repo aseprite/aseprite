@@ -41,8 +41,8 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
-# Generate theme.xml.h from data/themes/default/theme.xml
-set(theme_xml ${CMAKE_SOURCE_DIR}/data/themes/default/theme.xml)
+# Generate theme.xml.h from data/extensions/aseprite-theme/theme.xml
+set(theme_xml ${CMAKE_SOURCE_DIR}/data/extensions/aseprite-theme/theme.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
