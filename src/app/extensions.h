@@ -16,6 +16,10 @@
 
 namespace app {
 
+  // Key=theme/palette/etc. id
+  // Value=theme/palette/etc. path
+  typedef std::map<std::string, std::string> ExtensionItems;
+
   class Extension {
   public:
     Extension(const std::string& path,
@@ -28,10 +32,16 @@ namespace app {
     const std::string& name() const { return m_name; }
     const std::string& displayName() const { return m_displayName; }
 
+    const ExtensionItems& themes() const { return m_themes; }
+    const ExtensionItems& palettes() const { return m_palettes; }
+
+    void addTheme(const std::string& id, const std::string& path);
+    void addPalette(const std::string& id, const std::string& path);
+
     bool isEnabled() const { return m_isEnabled; }
     bool isInstalled() const { return m_isInstalled; }
-    bool canBeDisabled() const { return m_isEnabled; }
-    bool canBeUninstalled() const { return !m_isBuiltinExtension; }
+    bool canBeDisabled() const;
+    bool canBeUninstalled() const;
 
     void enable(const bool state);
     void uninstall();
@@ -41,6 +51,11 @@ namespace app {
     obs::signal<void(Extension*)> Uninstall;
 
   private:
+    void uninstallFiles(const std::string& path);
+    bool isCurrentTheme() const;
+
+    ExtensionItems m_themes;
+    ExtensionItems m_palettes;
     std::string m_path;
     std::string m_name;
     std::string m_displayName;
@@ -64,10 +79,12 @@ namespace app {
     void disableExtension(Extension* extension);
     void uninstallExtension(Extension* extension);
 
-    void installCompressedExtension(const std::string& zipFn);
+    Extension* installCompressedExtension(const std::string& zipFn);
 
     std::string themePath(const std::string& themeId);
-    const std::map<std::string, std::string>& palettes() const;
+    ExtensionItems palettes() const;
+
+    obs::signal<void(Extension*)> NewExtension;
 
   private:
     Extension* loadExtension(const std::string& path,
@@ -75,12 +92,7 @@ namespace app {
                              const bool isBuiltinExtension);
 
     List m_extensions;
-
-    // Key=theme id, Value=theme path
-    std::map<std::string, std::string> m_builtinThemes;
-    std::map<std::string, std::string> m_userThemes;
-
-    std::map<std::string, std::string> m_palettes;
+    std::string m_userExtensionsPath;
   };
 
 } // namespace app

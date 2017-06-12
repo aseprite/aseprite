@@ -10,8 +10,10 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/extensions.h"
+#include "app/file_selector.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
 #include "app/pref/preferences.h"
@@ -72,23 +74,45 @@ class OptionsWindow : public app::gen::Options {
     ExtensionItem(Extension* extension)
       : ListItem(extension->displayName())
       , m_extension(extension) {
+      setEnabled(extension->isEnabled());
     }
 
-    bool isEnabled() const { return m_extension->isEnabled(); }
-    bool isInstalled() const { return m_extension->isInstalled(); }
-    bool canBeDisabled() const { return m_extension->canBeDisabled(); }
-    bool canBeUninstalled() const { return m_extension->canBeUninstalled(); }
+    bool isEnabled() const {
+      ASSERT(m_extension);
+      return m_extension->isEnabled();
+    }
+
+    bool isInstalled() const {
+      ASSERT(m_extension);
+      return m_extension->isInstalled();
+    }
+
+    bool canBeDisabled() const {
+      ASSERT(m_extension);
+      return m_extension->canBeDisabled();
+    }
+
+    bool canBeUninstalled() const {
+      ASSERT(m_extension);
+      return m_extension->canBeUninstalled();
+    }
 
     void enable(bool state) {
+      ASSERT(m_extension);
       m_extension->enable(state);
+
+      setEnabled(m_extension->isEnabled());
     }
 
     void uninstall() {
+      ASSERT(m_extension);
       ASSERT(canBeUninstalled());
       m_extension->uninstall();
+      m_extension = nullptr;
     }
 
     void openFolder() const {
+      ASSERT(m_extension);
       app::launcher::open_folder(m_extension->path());
     }
 
@@ -288,7 +312,7 @@ public:
 
     // Extensions buttons
     extensionsList()->Change.connect(base::Bind<void>(&OptionsWindow::onExtensionChange, this));
-    newExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onNewExtension, this));
+    addExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onAddExtension, this));
     disableExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onDisableExtension, this));
     uninstallExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onUninstallExtension, this));
     openExtensionFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenExtensionFolder, this));
@@ -642,8 +666,28 @@ private:
     }
   }
 
-  void onNewExtension() {
-    // TODO open dialog to select a .zip file with the extension and uncompress it in the user folder
+  void onAddExtension() {
+    FileSelectorFiles filename;
+    if (!app::show_file_selector(
+          "Add Extension", "", "zip",
+          FileSelectorType::Open, filename))
+      return;
+
+    ASSERT(!filename.empty());
+
+    try {
+      Extension* extension =
+        App::instance()->extensions().installCompressedExtension(filename.front());
+
+      // Add the new extension in the listbox
+      ExtensionItem* item = new ExtensionItem(extension);
+      extensionsList()->addChild(item);
+      extensionsList()->selectChild(item);
+      extensionsList()->layout();
+    }
+    catch (std::exception& ex) {
+      Console::showException(ex);
+    }
   }
 
   void onDisableExtension() {
@@ -656,9 +700,27 @@ private:
 
   void onUninstallExtension() {
     ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
-    if (item) {
+    if (!item)
+      return;
+
+    if (ui::Alert::show(
+          "Warning"
+          "<<Do you really want to uninstall '%s' extension?"
+          "||&Yes||&No",
+          item->text().c_str()) != 1)
+      return;
+
+    try {
       item->uninstall();
-      onExtensionChange();
+
+      // Remove the item from the list
+      extensionsList()->removeChild(item);
+      extensionsList()->layout();
+
+      item->deferDelete();
+    }
+    catch (std::exception& ex) {
+      Console::showException(ex);
     }
   }
 

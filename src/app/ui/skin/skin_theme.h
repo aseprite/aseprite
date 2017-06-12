@@ -59,7 +59,6 @@ namespace app {
 
       void paintEntry(ui::PaintEvent& ev) override;
       void paintListBox(ui::PaintEvent& ev) override;
-      void paintListItem(ui::PaintEvent& ev) override;
       void paintMenu(ui::PaintEvent& ev) override;
       void paintMenuItem(ui::PaintEvent& ev) override;
       void paintSlider(ui::PaintEvent& ev) override;

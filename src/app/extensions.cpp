@@ -10,13 +10,138 @@
 
 #include "app/extensions.h"
 
+#include "app/ini_file.h"
+#include "app/pref/preferences.h"
 #include "app/resource_finder.h"
+#include "base/exception.h"
+#include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/unique_ptr.h"
 
+#include "archive.h"
+#include "archive_entry.h"
 #include "tao/json.hpp"
 
+#include <queue>
+
 namespace app {
+
+namespace {
+
+class ReadArchive {
+public:
+  ReadArchive(const std::string& filename)
+    : m_arch(nullptr), m_open(false) {
+    m_arch = archive_read_new();
+    archive_read_support_format_zip(m_arch);
+
+    m_file = base::open_file(filename, "rb");
+    if (!m_file)
+      throw base::Exception("Error loading file %s",
+                            filename.c_str());
+
+    int err;
+    if ((err = archive_read_open_FILE(m_arch, m_file.get())))
+      throw base::Exception("Error uncompressing extension\n%s (%d)",
+                            archive_error_string(m_arch), err);
+
+    m_open = true;
+  }
+
+  ~ReadArchive() {
+    if (m_arch) {
+      if (m_open)
+        archive_read_close(m_arch);
+      archive_read_free(m_arch);
+    }
+  }
+
+  archive_entry* readEntry() {
+    archive_entry* entry;
+    int err = archive_read_next_header(m_arch, &entry);
+
+    if (err == ARCHIVE_EOF)
+      return nullptr;
+
+    if (err != ARCHIVE_OK)
+      throw base::Exception("Error uncompressing extension\n%s",
+                            archive_error_string(m_arch));
+
+    return entry;
+  }
+
+  int copyDataTo(archive* out) {
+    const void* buf;
+    size_t size;
+    int64_t offset;
+    for (;;) {
+      int err = archive_read_data_block(m_arch, &buf, &size, &offset);
+      if (err == ARCHIVE_EOF)
+        break;
+      if (err != ARCHIVE_OK)
+        return err;
+
+      err = archive_write_data_block(out, buf, size, offset);
+      if (err != ARCHIVE_OK) {
+        throw base::Exception("Error writing data blocks\n%s (%d)",
+                              archive_error_string(out), err);
+        return err;
+      }
+    }
+    return ARCHIVE_OK;
+  }
+
+private:
+  base::FileHandle m_file;
+  archive* m_arch;
+  bool m_open;
+};
+
+class WriteArchive {
+public:
+  WriteArchive(const std::string& outputDir)
+   : m_arch(nullptr)
+   , m_open(false)
+   , m_outputDir(outputDir) {
+    m_arch = archive_write_disk_new();
+    m_open = true;
+  }
+
+  ~WriteArchive() {
+    if (m_arch) {
+      if (m_open)
+        archive_write_close(m_arch);
+      archive_write_free(m_arch);
+    }
+  }
+
+  void writeEntry(ReadArchive& in, archive_entry* entry) {
+    const std::string origFn = archive_entry_pathname(entry);
+    const std::string fullFn = base::join_path(m_outputDir, origFn);
+    archive_entry_set_pathname(entry, fullFn.c_str());
+
+    LOG("EXT: Uncompressing file <%s> to <%s>\n",
+        origFn.c_str(), fullFn.c_str());
+
+    int err = archive_write_header(m_arch, entry);
+    if (err != ARCHIVE_OK)
+      throw base::Exception("Error writing file into disk\n%s (%d)",
+                            archive_error_string(m_arch), err);
+
+    in.copyDataTo(m_arch);
+    err = archive_write_finish_entry(m_arch);
+    if (err != ARCHIVE_OK)
+      throw base::Exception("Error saving the last part of a file entry in disk\n%s (%d)",
+                            archive_error_string(m_arch), err);
+  }
+
+private:
+  archive* m_arch;
+  bool m_open;
+  std::string m_outputDir;
+};
+
+} // anonymous namespace
 
 Extension::Extension(const std::string& path,
                      const std::string& name,
@@ -32,13 +157,34 @@ Extension::Extension(const std::string& path,
 {
 }
 
+void Extension::addTheme(const std::string& id, const std::string& path)
+{
+  m_themes[id] = path;
+}
+
+void Extension::addPalette(const std::string& id, const std::string& path)
+{
+  m_palettes[id] = path;
+}
+
+bool Extension::canBeDisabled() const
+{
+  return (m_isEnabled && !isCurrentTheme());
+}
+
+bool Extension::canBeUninstalled() const
+{
+  return (!m_isBuiltinExtension && !isCurrentTheme());
+}
+
 void Extension::enable(const bool state)
 {
   // Do nothing
   if (m_isEnabled == state)
     return;
 
-  // TODO save the enable/disable state on configuration or other place
+  set_config_bool("extensions", m_name.c_str(), state);
+  flush_config_file();
 
   m_isEnabled = state;
   Enable(this, state);
@@ -49,15 +195,57 @@ void Extension::uninstall()
   if (!m_isInstalled)
     return;
 
-  // TODO remove files if the extension is not built-in
+  ASSERT(canBeUninstalled());
+  if (!canBeUninstalled())
+    return;
+
+  TRACE("EXT: Uninstall extension '%s' from '%s'...\n",
+        m_name.c_str(), m_path.c_str());
+
+  // Remove all files inside the extension path
+  uninstallFiles(m_path);
+  ASSERT(!base::is_directory(m_path));
 
   m_isEnabled = false;
   m_isInstalled = false;
   Uninstall(this);
 }
 
+void Extension::uninstallFiles(const std::string& path)
+{
+  for (auto& item : base::list_files(path)) {
+    std::string fn = base::join_path(path, item);
+    if (base::is_file(fn)) {
+      TRACE("EXT: Deleting file '%s'\n", fn.c_str());
+      base::delete_file(fn);
+    }
+    else if (base::is_directory(fn)) {
+      uninstallFiles(fn);
+    }
+  }
+
+  TRACE("EXT: Deleting directory '%s'\n", path.c_str());
+  base::remove_directory(path);
+}
+
+bool Extension::isCurrentTheme() const
+{
+  auto it = m_themes.find(Preferences::instance().theme.selected.defaultValue());
+  return (it != m_themes.end());
+}
+
 Extensions::Extensions()
 {
+  // Create and get the user extensions directory
+  {
+    ResourceFinder rf2;
+    rf2.includeUserDir("data/extensions/.");
+    m_userExtensionsPath = rf2.getFirstOrCreateDefault();
+    m_userExtensionsPath = base::normalize_path(m_userExtensionsPath);
+    m_userExtensionsPath = base::get_file_path(m_userExtensionsPath);
+    LOG("EXT: User extensions path '%s'\n", m_userExtensionsPath.c_str());
+  }
+
   ResourceFinder rf;
   rf.includeDataDir("extensions");
 
@@ -68,22 +256,24 @@ Extensions::Extensions()
 
     if (base::is_directory(extensionsDir)) {
       for (auto fn : base::list_files(extensionsDir)) {
-        auto dir = base::join_path(extensionsDir, fn);
+        const auto dir = base::join_path(extensionsDir, fn);
         if (!base::is_directory(dir))
           continue;
 
+        const bool isBuiltinExtension =
+          (m_userExtensionsPath != base::get_file_path(dir));
+
         auto fullFn = base::join_path(dir, "package.json");
+        fullFn = base::normalize_path(fullFn);
+
         LOG("EXT: Loading extension '%s'...\n", fullFn.c_str());
         if (!base::is_file(fullFn)) {
           LOG("EXT: File '%s' not found\n", fullFn.c_str());
           continue;
         }
 
-        bool isBuiltinExtension = true; // TODO check if the extension is in Aseprite installation folder or the user folder
-
         try {
-          Extension* extension = loadExtension(dir, fullFn, isBuiltinExtension);
-          m_extensions.push_back(extension);
+          loadExtension(dir, fullFn, isBuiltinExtension);
         }
         catch (const std::exception& ex) {
           LOG("EXT: Error loading JSON file: %s\n",
@@ -102,20 +292,46 @@ Extensions::~Extensions()
 
 std::string Extensions::themePath(const std::string& themeId)
 {
-  auto it = m_userThemes.find(themeId);
-  if (it != m_userThemes.end())
-    return it->second;
-
-  it = m_builtinThemes.find(themeId);
-  if (it != m_builtinThemes.end())
-    return it->second;
-
+  for (auto ext : m_extensions) {
+    auto it = ext->themes().find(themeId);
+    if (it != ext->themes().end())
+      return it->second;
+  }
   return std::string();
 }
 
-const std::map<std::string, std::string>& Extensions::palettes() const
+ExtensionItems Extensions::palettes() const
 {
-  return m_palettes;
+  ExtensionItems palettes;
+  for (auto ext : m_extensions)
+    for (auto item : ext->palettes())
+      palettes[item.first] = item.second;
+  return palettes;
+}
+
+Extension* Extensions::installCompressedExtension(const std::string& zipFn)
+{
+  std::string dstExtensionPath =
+    base::join_path(m_userExtensionsPath,
+                    base::get_file_title(zipFn));
+
+  ReadArchive in(zipFn);
+  WriteArchive out(dstExtensionPath);
+
+  archive_entry* entry;
+  while ((entry = in.readEntry()) != nullptr)
+    out.writeEntry(in, entry);
+
+  Extension* extension = loadExtension(
+    dstExtensionPath,
+    base::join_path(dstExtensionPath, "package.json"),
+    false);
+  if (!extension)
+    throw base::Exception("Error adding the new extension");
+
+  // Generate signal
+  NewExtension(extension);
+  return extension;
 }
 
 Extension* Extensions::loadExtension(const std::string& path,
@@ -132,7 +348,8 @@ Extension* Extensions::loadExtension(const std::string& path,
     new Extension(path,
                   name,
                   displayName,
-                  true, // TODO check if the extension is enabled in the configuration
+                  // Extensions are enabled by default
+                  get_config_bool("extensions", name.c_str(), true),
                   isBuiltinExtension));
 
   auto contributes = json["contributes"];
@@ -151,12 +368,7 @@ Extension* Extensions::loadExtension(const std::string& path,
             themeId.c_str(),
             themePath.c_str());
 
-        if (isBuiltinExtension) {
-          m_builtinThemes[themeId] = themePath;
-        }
-        else {
-          m_userThemes[themeId] = themePath;
-        }
+        extension->addTheme(themeId, themePath);
       }
     }
 
@@ -174,11 +386,13 @@ Extension* Extensions::loadExtension(const std::string& path,
             palId.c_str(),
             palPath.c_str());
 
-        m_palettes[palId] = palPath;
+        extension->addPalette(palId, palPath);
       }
     }
   }
 
+  if (extension)
+    m_extensions.push_back(extension.get());
   return extension.release();
 }
 

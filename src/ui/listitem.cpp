@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -41,11 +41,6 @@ bool ListItem::onProcessMessage(Message* msg)
       break;
   }
   return Widget::onProcessMessage(msg);
-}
-
-void ListItem::onPaint(PaintEvent& ev)
-{
-  theme()->paintListItem(ev);
 }
 
 void ListItem::onResize(ResizeEvent& ev)

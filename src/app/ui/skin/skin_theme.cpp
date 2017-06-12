@@ -748,7 +748,7 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kListItemWidget:
-      BORDER(1 * scale);
+      widget->setStyle(styles.listItem());
       break;
 
     case kComboBoxWidget: {
@@ -1061,34 +1061,6 @@ void SkinTheme::paintListBox(PaintEvent& ev)
   Graphics* g = ev.graphics();
 
   g->fillRect(colors.background(), g->getClipBounds());
-}
-
-void SkinTheme::paintListItem(ui::PaintEvent& ev)
-{
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  gfx::Rect bounds = widget->clientBounds();
-  Graphics* g = ev.graphics();
-  gfx::Color fg, bg;
-
-  if (!widget->isEnabled()) {
-    bg = colors.face();
-    fg = colors.disabled();
-  }
-  else if (widget->isSelected()) {
-    fg = colors.listitemSelectedText();
-    bg = colors.listitemSelectedFace();
-  }
-  else {
-    fg = colors.listitemNormalText();
-    bg = colors.listitemNormalFace();
-  }
-
-  g->fillRect(bg, bounds);
-
-  if (widget->hasText()) {
-    bounds.shrink(widget->border());
-    drawText(g, nullptr, fg, bg, widget, bounds, 0, 0);
-  }
 }
 
 void SkinTheme::paintMenu(PaintEvent& ev)

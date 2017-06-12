@@ -277,7 +277,7 @@
             <listbox id="extensions_list" />
 	  </view>
           <hbox>
-	    <button id="new_extension" text="@.new_extension" minwidth="60" />
+	    <button id="add_extension" text="@.add_extension" minwidth="60" />
 	    <boxfiller />
 	    <button id="disable_extension" text="@.disable_extension" minwidth="60" />
 	    <button id="uninstall_extension" text="@.uninstall_extension" minwidth="60" />
