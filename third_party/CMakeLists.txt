@@ -113,6 +113,8 @@ set(TAOCPP_JSON_BUILD_TESTS OFF CACHE BOOL "Build test programs")
 add_subdirectory(json)
 
 # libarchive
+set(ENABLE_TEST OFF CACHE BOOL "Enable unit and regression tests")
+set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage (GCC only, automatically sets ENABLE_TEST to ON)")
 add_subdirectory(libarchive)
 target_include_directories(archive_static INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)
