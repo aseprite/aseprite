@@ -111,7 +111,8 @@ private:
 ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
   : m_resourcesLoader(resourcesLoader)
   , m_resourcesTimer(100)
-  , m_loadingItem(NULL)
+  , m_reload(false)
+  , m_loadingItem(nullptr)
 {
   m_resourcesTimer.Tick.connect(base::Bind<void>(&ResourcesListBox::onTick, this));
 }
@@ -121,7 +122,22 @@ Resource* ResourcesListBox::selectedResource()
   if (ResourceListItem* listItem = dynamic_cast<ResourceListItem*>(getSelectedChild()))
     return listItem->resource();
   else
-    return NULL;
+    return nullptr;
+}
+
+void ResourcesListBox::reload()
+{
+  auto children = this->children(); // Create a copy because we'll
+                                    // modify the list in the for()
+
+  // Delete all ResourcesListItem. (PalettesListBox contains a tooltip
+  // manager too, so we cannot remove just all children.)
+  for (auto child : children) {
+    if (dynamic_cast<ResourceListItem*>(child))
+      delete child;
+  }
+
+  m_reload = true;
 }
 
 void ResourcesListBox::paintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
@@ -141,6 +157,11 @@ bool ResourcesListBox::onProcessMessage(ui::Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage: {
+      if (m_reload) {
+        m_reload = false;
+        m_resourcesLoader->reload();
+      }
+
       m_resourcesTimer.start();
       break;
     }
@@ -163,7 +184,7 @@ ResourceListItem* ResourcesListBox::onCreateResourceItem(Resource* resource)
 
 void ResourcesListBox::onTick()
 {
-  if (m_resourcesLoader == NULL) {
+  if (m_resourcesLoader == nullptr) {
     stop();
     return;
   }

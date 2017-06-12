@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,6 +40,8 @@ class ResourceListItem : public ui::ListItem {
 
     Resource* selectedResource();
 
+    void reload();
+
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;
     virtual void onChange() override;
@@ -57,8 +59,9 @@ class ResourceListItem : public ui::ListItem {
     void onTick();
     void stop();
 
-    ResourcesLoader* m_resourcesLoader;
+    base::UniquePtr<ResourcesLoader> m_resourcesLoader;
     ui::Timer m_resourcesTimer;
+    bool m_reload;
 
     class LoadingItem;
     LoadingItem* m_loadingItem;

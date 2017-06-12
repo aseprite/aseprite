@@ -99,15 +99,14 @@ class OptionsWindow : public app::gen::Options {
 
     void enable(bool state) {
       ASSERT(m_extension);
-      m_extension->enable(state);
-
+      App::instance()->extensions().enableExtension(m_extension, state);
       setEnabled(m_extension->isEnabled());
     }
 
     void uninstall() {
       ASSERT(m_extension);
       ASSERT(canBeUninstalled());
-      m_extension->uninstall();
+      App::instance()->extensions().uninstallExtension(m_extension);
       m_extension = nullptr;
     }
 

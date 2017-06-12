@@ -10,7 +10,9 @@
 
 #include "app/ui/palettes_listbox.h"
 
+#include "app/app.h"
 #include "app/document.h"
+#include "app/extensions.h"
 #include "app/modules/palettes.h"
 #include "app/res/palette_resource.h"
 #include "app/res/palettes_loader_delegate.h"
@@ -112,6 +114,10 @@ PalettesListBox::PalettesListBox()
   : ResourcesListBox(new ResourcesLoader(new PalettesLoaderDelegate))
 {
   addChild(&m_tooltips);
+
+  m_extPaletteChanges =
+    App::instance()->extensions().PalettesChange.connect(
+      base::Bind<void>(&PalettesListBox::reload, this));
 }
 
 doc::Palette* PalettesListBox::selectedPalette()

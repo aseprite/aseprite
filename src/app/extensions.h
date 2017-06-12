@@ -20,7 +20,10 @@ namespace app {
   // Value=theme/palette/etc. path
   typedef std::map<std::string, std::string> ExtensionItems;
 
+  class Extensions;
+
   class Extension {
+    friend class Extensions;
   public:
     Extension(const std::string& path,
               const std::string& name,
@@ -43,14 +46,9 @@ namespace app {
     bool canBeDisabled() const;
     bool canBeUninstalled() const;
 
+  private:
     void enable(const bool state);
     void uninstall();
-
-    obs::signal<void(Extension*, bool)> Enable;
-    obs::signal<void(Extension*)> Disable;
-    obs::signal<void(Extension*)> Uninstall;
-
-  private:
     void uninstallFiles(const std::string& path);
     bool isCurrentTheme() const;
 
@@ -75,21 +73,22 @@ namespace app {
     iterator begin() { return m_extensions.begin(); }
     iterator end() { return m_extensions.end(); }
 
-    void enableExtension(Extension* extension);
-    void disableExtension(Extension* extension);
+    void enableExtension(Extension* extension, const bool state);
     void uninstallExtension(Extension* extension);
-
     Extension* installCompressedExtension(const std::string& zipFn);
 
     std::string themePath(const std::string& themeId);
     ExtensionItems palettes() const;
 
     obs::signal<void(Extension*)> NewExtension;
+    obs::signal<void(Extension*)> ThemesChange;
+    obs::signal<void(Extension*)> PalettesChange;
 
   private:
     Extension* loadExtension(const std::string& path,
                              const std::string& fullPackageFilename,
                              const bool isBuiltinExtension);
+    void generateExtensionSignals(Extension* extension);
 
     List m_extensions;
     std::string m_userExtensionsPath;

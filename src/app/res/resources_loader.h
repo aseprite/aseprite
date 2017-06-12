@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,11 +24,12 @@ namespace app {
 
     void cancel();
     bool isDone() const { return m_done; }
-
     bool next(base::UniquePtr<Resource>& resource);
+    void reload();
 
   private:
     void threadLoadResources();
+    base::thread* createThread();
 
     typedef base::concurrent_queue<Resource*> Queue;
 
@@ -36,7 +37,7 @@ namespace app {
     bool m_done;
     bool m_cancel;
     Queue m_queue;
-    base::thread m_thread;
+    base::UniquePtr<base::thread> m_thread;
   };
 
 } // namespace app

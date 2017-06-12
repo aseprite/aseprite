@@ -24,13 +24,16 @@ ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
   : m_delegate(delegate)
   , m_done(false)
   , m_cancel(false)
-  , m_thread(base::Bind<void>(&ResourcesLoader::threadLoadResources, this))
+  , m_thread(
+    new base::thread(
+      base::Bind<void>(&ResourcesLoader::threadLoadResources, this)))
 {
 }
 
 ResourcesLoader::~ResourcesLoader()
 {
-  m_thread.join();
+  if (m_thread)
+    m_thread->join();
 }
 
 void ResourcesLoader::cancel()
@@ -47,6 +50,16 @@ bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
   }
   else
     return false;
+}
+
+void ResourcesLoader::reload()
+{
+  if (m_thread) {
+    m_thread->join();
+    m_thread.reset(nullptr);
+  }
+
+  m_thread.reset(createThread());
 }
 
 void ResourcesLoader::threadLoadResources()
@@ -70,6 +83,12 @@ void ResourcesLoader::threadLoadResources()
     if (resource)
       m_queue.push(resource);
   }
+}
+
+base::thread* ResourcesLoader::createThread()
+{
+  return new base::thread(
+    base::Bind<void>(&ResourcesLoader::threadLoadResources, this));
 }
 
 } // namespace app

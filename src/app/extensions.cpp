@@ -189,7 +189,6 @@ void Extension::enable(const bool state)
   flush_config_file();
 
   m_isEnabled = state;
-  Enable(this, state);
 }
 
 void Extension::uninstall()
@@ -210,7 +209,6 @@ void Extension::uninstall()
 
   m_isEnabled = false;
   m_isInstalled = false;
-  Uninstall(this);
 }
 
 void Extension::uninstallFiles(const std::string& path)
@@ -295,6 +293,9 @@ Extensions::~Extensions()
 std::string Extensions::themePath(const std::string& themeId)
 {
   for (auto ext : m_extensions) {
+    if (!ext->isEnabled())      // Ignore disabled themes
+      continue;
+
     auto it = ext->themes().find(themeId);
     if (it != ext->themes().end())
       return it->second;
@@ -305,10 +306,26 @@ std::string Extensions::themePath(const std::string& themeId)
 ExtensionItems Extensions::palettes() const
 {
   ExtensionItems palettes;
-  for (auto ext : m_extensions)
+  for (auto ext : m_extensions) {
+    if (!ext->isEnabled())      // Ignore disabled themes
+      continue;
+
     for (auto item : ext->palettes())
       palettes[item.first] = item.second;
+  }
   return palettes;
+}
+
+void Extensions::enableExtension(Extension* extension, const bool state)
+{
+  extension->enable(state);
+  generateExtensionSignals(extension);
+}
+
+void Extensions::uninstallExtension(Extension* extension)
+{
+  extension->uninstall();
+  generateExtensionSignals(extension);
 }
 
 Extension* Extensions::installCompressedExtension(const std::string& zipFn)
@@ -331,8 +348,10 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn)
   if (!extension)
     throw base::Exception("Error adding the new extension");
 
-  // Generate signal
+  // Generate signals
   NewExtension(extension);
+  generateExtensionSignals(extension);
+
   return extension;
 }
 
@@ -396,6 +415,12 @@ Extension* Extensions::loadExtension(const std::string& path,
   if (extension)
     m_extensions.push_back(extension.get());
   return extension.release();
+}
+
+void Extensions::generateExtensionSignals(Extension* extension)
+{
+  if (!extension->themes().empty()) ThemesChange(extension);
+  if (!extension->palettes().empty()) PalettesChange(extension);
 }
 
 } // namespace app

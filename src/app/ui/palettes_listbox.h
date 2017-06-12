@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/ui/resources_listbox.h"
+#include "obs/connection.h"
 #include "ui/tooltips.h"
 
 namespace doc {
@@ -32,6 +33,7 @@ namespace app {
     virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) override;
 
     ui::TooltipManager m_tooltips;
+    obs::scoped_connection m_extPaletteChanges;
   };
 
 } // namespace app
