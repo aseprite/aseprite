@@ -28,6 +28,8 @@ namespace app {
 
 namespace {
 
+const char* kPackageJson = "package.json";
+
 class ReadArchive {
 public:
   ReadArchive(const std::string& filename)
@@ -263,7 +265,7 @@ Extensions::Extensions()
         const bool isBuiltinExtension =
           (m_userExtensionsPath != base::get_file_path(dir));
 
-        auto fullFn = base::join_path(dir, "package.json");
+        auto fullFn = base::join_path(dir, kPackageJson);
         fullFn = base::normalize_path(fullFn);
 
         LOG("EXT: Loading extension '%s'...\n", fullFn.c_str());
@@ -324,7 +326,7 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn)
 
   Extension* extension = loadExtension(
     dstExtensionPath,
-    base::join_path(dstExtensionPath, "package.json"),
+    base::join_path(dstExtensionPath, kPackageJson),
     false);
   if (!extension)
     throw base::Exception("Error adding the new extension");
