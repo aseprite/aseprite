@@ -57,7 +57,7 @@ bool LayerVisibilityCommand::onChecked(Context* context)
   }
   bool visible = false;
   for (auto layer : selLayers) {
-    if(layer && layer->isVisible())
+    if (layer && layer->isVisible())
       visible = true;
   }
   return visible;
@@ -76,10 +76,10 @@ void LayerVisibilityCommand::onExecute(Context* context)
   }
   bool anyVisible = false;
   for (auto layer : selLayers) {
-    if(layer->isVisible())
+    if (layer->isVisible())
       anyVisible = true;
   }
-  for(auto layer : selLayers) {
+  for (auto layer : selLayers) {
     layer->setVisible(!anyVisible);
   }
 
