@@ -23,6 +23,7 @@
 #include "tao/json.hpp"
 
 #include <queue>
+#include <sstream>
 
 namespace app {
 
@@ -94,6 +95,21 @@ public:
     return ARCHIVE_OK;
   }
 
+  int copyDataTo(std::ostream& dst) {
+    const void* buf;
+    size_t size;
+    int64_t offset;
+    for (;;) {
+      int err = archive_read_data_block(m_arch, &buf, &size, &offset);
+      if (err == ARCHIVE_EOF)
+        break;
+      if (err != ARCHIVE_OK)
+        return err;
+      dst.write((const char*)buf, size);
+    }
+    return ARCHIVE_OK;
+  }
+
 private:
   base::FileHandle m_file;
   archive* m_arch;
@@ -102,10 +118,9 @@ private:
 
 class WriteArchive {
 public:
-  WriteArchive(const std::string& outputDir)
+  WriteArchive()
    : m_arch(nullptr)
-   , m_open(false)
-   , m_outputDir(outputDir) {
+   , m_open(false) {
     m_arch = archive_write_disk_new();
     m_open = true;
   }
@@ -119,13 +134,6 @@ public:
   }
 
   void writeEntry(ReadArchive& in, archive_entry* entry) {
-    const std::string origFn = archive_entry_pathname(entry);
-    const std::string fullFn = base::join_path(m_outputDir, origFn);
-    archive_entry_set_pathname(entry, fullFn.c_str());
-
-    LOG("EXT: Uncompressing file <%s> to <%s>\n",
-        origFn.c_str(), fullFn.c_str());
-
     int err = archive_write_header(m_arch, entry);
     if (err != ARCHIVE_OK)
       throw base::Exception("Error writing file into disk\n%s (%d)",
@@ -141,7 +149,6 @@ public:
 private:
   archive* m_arch;
   bool m_open;
-  std::string m_outputDir;
 };
 
 } // anonymous namespace
@@ -357,12 +364,64 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn)
     base::join_path(m_userExtensionsPath,
                     base::get_file_title(zipFn));
 
-  ReadArchive in(zipFn);
-  WriteArchive out(dstExtensionPath);
+  // First of all we read the package.json file inside the .zip to
+  // know 1) the extension name, 2) that the .json file can be parsed
+  // correctly, 3) the final destination directory.
+  std::string commonPath;
+  {
+    ReadArchive in(zipFn);
+    archive_entry* entry;
+    while ((entry = in.readEntry()) != nullptr) {
+      const std::string entryFn = archive_entry_pathname(entry);
+      if (base::get_file_name(entryFn) != kPackageJson)
+        continue;
 
-  archive_entry* entry;
-  while ((entry = in.readEntry()) != nullptr)
-    out.writeEntry(in, entry);
+      commonPath = base::get_file_path(entryFn);
+      if (!commonPath.empty() &&
+          entryFn.size() > commonPath.size())
+        commonPath.push_back(entryFn[commonPath.size()]);
+
+      std::stringstream out;
+      in.copyDataTo(out);
+      auto json = tao::json::from_stream(out);
+      auto name = json["name"].get_string();
+      dstExtensionPath =
+        base::join_path(m_userExtensionsPath, name);
+      break;
+    }
+  }
+
+  // Uncompress zipFn in dstExtensionPath
+  {
+    ReadArchive in(zipFn);
+    WriteArchive out;
+
+    archive_entry* entry;
+    while ((entry = in.readEntry()) != nullptr) {
+      // Fix the entry filename to write the file in the disk
+      std::string fn = archive_entry_pathname(entry);
+
+      LOG("EXT: Original filename in zip <%s>...\n", fn.c_str());
+
+      if (!commonPath.empty()) {
+        // Check mismatch with package.json common path
+        if (fn.compare(0, commonPath.size(), commonPath) != 0)
+          continue;
+
+        fn.erase(0, commonPath.size());
+        if (fn.empty())
+          continue;
+      }
+
+      const std::string fullFn = base::join_path(dstExtensionPath, fn);
+      archive_entry_set_pathname(entry, fullFn.c_str());
+
+      LOG("EXT: Uncompressing file <%s> to <%s>\n",
+          fn.c_str(), fullFn.c_str());
+
+      out.writeEntry(in, entry);
+    }
+  }
 
   Extension* extension = loadExtension(
     dstExtensionPath,
