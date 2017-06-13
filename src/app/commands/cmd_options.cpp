@@ -703,7 +703,8 @@ private:
   void onExtensionChange() {
     ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
     if (item && item->isInstalled()) {
-      disableExtension()->setText(item->isEnabled() ? "Disable": "Enable");
+      disableExtension()->setText(item->isEnabled() ? "&Disable": "&Enable");
+      disableExtension()->processMnemonicFromText();
       disableExtension()->setEnabled(item->isEnabled() ? item->canBeDisabled(): true);
       uninstallExtension()->setEnabled(item->canBeUninstalled());
       openExtensionFolder()->setEnabled(true);
