@@ -303,11 +303,24 @@ Extensions::~Extensions()
 std::string Extensions::themePath(const std::string& themeId)
 {
   for (auto ext : m_extensions) {
-    if (!ext->isEnabled())      // Ignore disabled themes
+    if (!ext->isEnabled())      // Ignore disabled extensions
       continue;
 
     auto it = ext->themes().find(themeId);
     if (it != ext->themes().end())
+      return it->second;
+  }
+  return std::string();
+}
+
+std::string Extensions::palettePath(const std::string& palId)
+{
+  for (auto ext : m_extensions) {
+    if (!ext->isEnabled())      // Ignore disabled extensions
+      continue;
+
+    auto it = ext->palettes().find(palId);
+    if (it != ext->palettes().end())
       return it->second;
   }
   return std::string();

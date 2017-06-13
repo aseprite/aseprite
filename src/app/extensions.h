@@ -79,6 +79,7 @@ namespace app {
     Extension* installCompressedExtension(const std::string& zipFn);
 
     std::string themePath(const std::string& themeId);
+    std::string palettePath(const std::string& palId);
     ExtensionItems palettes() const;
 
     obs::signal<void(Extension*)> NewExtension;
