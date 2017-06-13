@@ -51,6 +51,7 @@ namespace app {
     void uninstall();
     void uninstallFiles(const std::string& path);
     bool isCurrentTheme() const;
+    bool isDefaultTheme() const;
 
     ExtensionItems m_themes;
     ExtensionItems m_palettes;

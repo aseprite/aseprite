@@ -47,6 +47,8 @@ namespace app {
       SkinTheme();
       ~SkinTheme();
 
+      const std::string& path() { return m_path; }
+
       she::Font* getDefaultFont() const override { return m_defaultFont; }
       she::Font* getWidgetFont(const ui::Widget* widget) const override;
       she::Font* getMiniFont() const { return m_miniFont; }
@@ -139,7 +141,7 @@ namespace app {
                     int selected_offset, int mnemonic);
       void drawEntryText(ui::Graphics* g, ui::Entry* widget);
 
-      std::string themePath(const std::string& themeId) const;
+      std::string findThemePath(const std::string& themeId) const;
 
       std::string m_path;
       she::Surface* m_sheet;

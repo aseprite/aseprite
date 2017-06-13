@@ -29,6 +29,7 @@ namespace app {
 namespace {
 
 const char* kPackageJson = "package.json";
+const char* kAsepriteDefaultThemeExtensionName = "aseprite-theme";
 
 class ReadArchive {
 public:
@@ -171,12 +172,16 @@ void Extension::addPalette(const std::string& id, const std::string& path)
 
 bool Extension::canBeDisabled() const
 {
-  return (m_isEnabled && !isCurrentTheme());
+  return (m_isEnabled &&
+          !isCurrentTheme() &&
+          !isDefaultTheme());   // Default theme cannot be disabled or uninstalled
 }
 
 bool Extension::canBeUninstalled() const
 {
-  return (!m_isBuiltinExtension && !isCurrentTheme());
+  return (!m_isBuiltinExtension &&
+          !isCurrentTheme() &&
+          !isDefaultTheme());
 }
 
 void Extension::enable(const bool state)
@@ -230,8 +235,13 @@ void Extension::uninstallFiles(const std::string& path)
 
 bool Extension::isCurrentTheme() const
 {
-  auto it = m_themes.find(Preferences::instance().theme.selected.defaultValue());
+  auto it = m_themes.find(Preferences::instance().theme.selected());
   return (it != m_themes.end());
+}
+
+bool Extension::isDefaultTheme() const
+{
+  return (name() == kAsepriteDefaultThemeExtensionName);
 }
 
 Extensions::Extensions()

@@ -56,8 +56,7 @@ class OptionsWindow : public app::gen::Options {
     const std::string& themeName() const { return m_name; }
 
     void openFolder() const {
-      app::launcher::open_folder(
-        m_name.empty() ? m_path: base::join_path(m_path, m_name));
+      app::launcher::open_folder(m_path);
     }
 
     bool canSelect() const {
@@ -322,6 +321,11 @@ public:
     onChangeBgScope();
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
+
+    // Reload themes when extensions are enabled/disabled
+    m_extThemesChanges =
+      App::instance()->extensions().ThemesChange.connect(
+        base::Bind<void>(&OptionsWindow::reloadThemes, this));
   }
 
   bool ok() {
@@ -579,15 +583,25 @@ private:
     app::launcher::open_folder(app::main_config_filename());
   }
 
+  void reloadThemes() {
+    while (themeList()->firstChild())
+      delete themeList()->lastChild();
+
+    loadThemes();
+  }
+
   void loadThemes() {
     // Themes already loaded
     if (themeList()->getItemsCount() > 0)
       return;
 
+    auto theme = skin::SkinTheme::instance();
     auto userFolder = userThemeFolder();
     auto folders = themeFolders();
     std::sort(folders.begin(), folders.end());
+    const auto& selectedPath = theme->path();
 
+    bool first = true;
     for (const auto& path : folders) {
       auto files = base::list_files(path);
 
@@ -595,17 +609,52 @@ private:
       if (files.empty() && path != userFolder)
         continue;
 
-      themeList()->addChild(new ThemeItem(path, std::string()));
       std::sort(files.begin(), files.end());
       for (auto& fn : files) {
-        if (!base::is_directory(base::join_path(path, fn)))
+        std::string fullPath =
+          base::normalize_path(
+            base::join_path(path, fn));
+        if (!base::is_directory(fullPath))
           continue;
 
-        ThemeItem* item = new ThemeItem(path, fn);
+        if (first) {
+          first = false;
+          auto sep = new Separator(base::normalize_path(path), HORIZONTAL);
+          sep->setStyle(theme->styles.separatorInView());
+          themeList()->addChild(sep);
+        }
+
+        ThemeItem* item = new ThemeItem(fullPath, fn);
         themeList()->addChild(item);
 
         // Selected theme
-        if (fn == m_pref.theme.selected())
+        if (fullPath == selectedPath)
+          themeList()->selectChild(item);
+      }
+    }
+
+    // Themes from extensions
+    first = true;
+    for (auto ext : App::instance()->extensions()) {
+      if (!ext->isEnabled())
+        continue;
+
+      if (ext->themes().empty())
+        continue;
+
+      if (first) {
+        first = false;
+        auto sep = new Separator("Extension Themes", HORIZONTAL);
+        sep->setStyle(theme->styles.separatorInView());
+        themeList()->addChild(sep);
+      }
+
+      for (auto it : ext->themes()) {
+        ThemeItem* item = new ThemeItem(it.second, it.first);
+        themeList()->addChild(item);
+
+        // Selected theme
+        if (it.second == selectedPath)
           themeList()->selectChild(item);
       }
     }
@@ -630,6 +679,7 @@ private:
   void onThemeChange() {
     ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
     selectTheme()->setEnabled(item && item->canSelect());
+    openThemeFolder()->setEnabled(item != nullptr);
   }
 
   void onSelectTheme() {
@@ -779,6 +829,7 @@ private:
   DocumentPreferences& m_docPref;
   DocumentPreferences* m_curPref;
   int& m_curSection;
+  obs::scoped_connection m_extThemesChanges;
 };
 
 class OptionsCommand : public Command {

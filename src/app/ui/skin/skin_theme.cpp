@@ -259,7 +259,7 @@ void SkinTheme::loadAll(const std::string& themeId)
   if (m_fonts.empty())
     loadFontData();
 
-  m_path = themePath(themeId);
+  m_path = findThemePath(themeId);
   if (m_path.empty())
     throw base::Exception("Theme %s not found", themeId.c_str());
 
@@ -1578,7 +1578,7 @@ void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double p
     g->fillRect(colors.background(), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
 }
 
-std::string SkinTheme::themePath(const std::string& themeId) const
+std::string SkinTheme::findThemePath(const std::string& themeId) const
 {
   // First we try to find the theme on an extensions
   std::string path = App::instance()->extensions().themePath(themeId);
@@ -1594,7 +1594,7 @@ std::string SkinTheme::themePath(const std::string& themeId) const
 
     path = base::get_file_path(rf.filename());
   }
-  return path;
+  return base::normalize_path(path);
 }
 
 } // namespace skin
