@@ -8,6 +8,8 @@
 #define APP_LOAD_MATRIX_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace render {
   class DitheringMatrix;
 };
