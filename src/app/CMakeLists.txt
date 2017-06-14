@@ -382,6 +382,7 @@ add_library(app-lib
   ini_file.cpp
   job.cpp
   launcher.cpp
+  load_matrix.cpp
   log.cpp
   loop_tag.cpp
   modules.cpp

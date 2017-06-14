@@ -8,11 +8,16 @@
 #define APP_EXTENSIONS_H_INCLUDED
 #pragma once
 
+#include "base/unique_ptr.h"
 #include "obs/signal.h"
 
 #include <map>
 #include <string>
 #include <vector>
+
+namespace render {
+  class DitheringMatrix;
+}
 
 namespace app {
 
@@ -25,11 +30,29 @@ namespace app {
   class Extension {
     friend class Extensions;
   public:
+    class DitheringMatrixInfo {
+    public:
+      DitheringMatrixInfo() : m_matrix(nullptr) { }
+      DitheringMatrixInfo(const std::string& path,
+                          const std::string& name)
+        : m_path(path), m_name(name), m_matrix(nullptr) { }
+
+      const std::string& name() const { return m_name; }
+      const render::DitheringMatrix& matrix() const;
+      void destroyMatrix();
+
+    private:
+      std::string m_path;
+      std::string m_name;
+      mutable render::DitheringMatrix* m_matrix;
+    };
+
     Extension(const std::string& path,
               const std::string& name,
               const std::string& displayName,
               const bool isEnabled,
               const bool isBuiltinExtension);
+    ~Extension();
 
     const std::string& path() const { return m_path; }
     const std::string& name() const { return m_name; }
@@ -40,11 +63,18 @@ namespace app {
 
     void addTheme(const std::string& id, const std::string& path);
     void addPalette(const std::string& id, const std::string& path);
+    void addDitheringMatrix(const std::string& id,
+                            const std::string& path,
+                            const std::string& name);
 
     bool isEnabled() const { return m_isEnabled; }
     bool isInstalled() const { return m_isInstalled; }
     bool canBeDisabled() const;
     bool canBeUninstalled() const;
+
+    bool hasThemes() const { return !m_themes.empty(); }
+    bool hasPalettes() const { return !m_palettes.empty(); }
+    bool hasDitheringMatrices() const { return !m_ditheringMatrices.empty(); }
 
   private:
     void enable(const bool state);
@@ -55,6 +85,7 @@ namespace app {
 
     ExtensionItems m_themes;
     ExtensionItems m_palettes;
+    std::map<std::string, DitheringMatrixInfo> m_ditheringMatrices;
     std::string m_path;
     std::string m_name;
     std::string m_displayName;
@@ -81,10 +112,13 @@ namespace app {
     std::string themePath(const std::string& themeId);
     std::string palettePath(const std::string& palId);
     ExtensionItems palettes() const;
+    const render::DitheringMatrix* ditheringMatrix(const std::string& matrixId);
+    std::vector<Extension::DitheringMatrixInfo> ditheringMatrices();
 
     obs::signal<void(Extension*)> NewExtension;
     obs::signal<void(Extension*)> ThemesChange;
     obs::signal<void(Extension*)> PalettesChange;
+    obs::signal<void(Extension*)> DitheringMatricesChange;
 
   private:
     Extension* loadExtension(const std::string& path,

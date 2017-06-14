@@ -14,7 +14,8 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/file/file.h"
+#include "app/extensions.h"
+#include "app/load_matrix.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -376,45 +377,21 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     m_ditheringAlgorithm = render::DitheringAlgorithm::None;
 
   std::string matrix = params.get("dithering-matrix");
-  // TODO object slicing here (from BayerMatrix -> DitheringMatrix
   if (!matrix.empty()) {
-    if (matrix == "bayer2x2")
-      m_ditheringMatrix = render::BayerMatrix(2);
-    else if (matrix == "bayer4x4")
-      m_ditheringMatrix = render::BayerMatrix(4);
-    else if (matrix == "bayer8x8")
-      m_ditheringMatrix = render::BayerMatrix(8);
-    else {
-      // Load a matrix from a file
-      base::UniquePtr<doc::Document> doc(load_document(nullptr, matrix));
-      if (doc) {
-        // Flatten layers
-        doc::Sprite* spr = doc->sprite();
-        app::Context ctx;
-        cmd::FlattenLayers(spr).execute(&ctx);
-
-        const doc::Layer* lay = spr->root()->firstLayer();
-        const doc::Image* img = (lay && lay->cel(0) ?
-                                 lay->cel(0)->image(): nullptr);
-        if (img) {
-          const int w = spr->width();
-          const int h = spr->height();
-          m_ditheringMatrix = render::DitheringMatrix(h, w);
-          for (int i=0; i<h; ++i)
-            for (int j=0; j<w; ++j)
-              m_ditheringMatrix(i, j) = img->getPixel(j, i);
-          m_ditheringMatrix.calcMaxValue();
-        }
-        else {
-          m_ditheringMatrix = render::DitheringMatrix();
-        }
-      }
-      else
-        throw std::runtime_error("Invalid matrix name");
+    // Try to get the matrix from the extensions
+    const render::DitheringMatrix* knownMatrix =
+      App::instance()->extensions().ditheringMatrix(matrix);
+    if (knownMatrix) {
+      m_ditheringMatrix = *knownMatrix;
+    }
+    // Then, if the matrix doesn't exist we try to load it from a file
+    else if (!load_dithering_matrix_from_sprite(matrix, m_ditheringMatrix)) {
+      throw std::runtime_error("Invalid matrix name");
     }
   }
   // Default dithering matrix is BayerMatrix(8)
   else {
+    // TODO object slicing here (from BayerMatrix -> DitheringMatrix)
     m_ditheringMatrix = render::BayerMatrix(8);
   }
 }

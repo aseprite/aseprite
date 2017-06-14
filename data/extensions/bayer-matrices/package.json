@@ -1,0 +1,26 @@
+{
+  "name": "bayer-matrices",
+  "displayName": "Bayer Matrices for Dithering",
+  "description": "Dithering matrices created by Bryce E. Bayer",
+  "version": "1.0",
+  "publisher": "aseprite",
+  "contributes": {
+    "ditheringMatrices": [
+      {
+        "id": "bayer8x8",
+        "name": "Bayer Matrix 8x8",
+        "path": "./bayer8x8.bmp"
+      },
+      {
+        "id": "bayer4x4",
+        "name": "Bayer Matrix 4x4",
+        "path": "./bayer4x4.bmp"
+      },
+      {
+        "id": "bayer2x2",
+        "name": "Bayer Matrix 2x2",
+        "path": "./bayer2x2.bmp"
+      }
+    ]
+  }
+}

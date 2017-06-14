@@ -11,12 +11,14 @@
 #include "app/extensions.h"
 
 #include "app/ini_file.h"
+#include "app/load_matrix.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/unique_ptr.h"
+#include "render/dithering_matrix.h"
 
 #include "archive.h"
 #include "archive_entry.h"
@@ -153,6 +155,21 @@ private:
 
 } // anonymous namespace
 
+const render::DitheringMatrix& Extension::DitheringMatrixInfo::matrix() const
+{
+  if (!m_matrix) {
+    m_matrix = new render::DitheringMatrix;
+    load_dithering_matrix_from_sprite(m_path, *m_matrix);
+  }
+  return *m_matrix;
+}
+
+void Extension::DitheringMatrixInfo::destroyMatrix()
+{
+  if (m_matrix)
+    delete m_matrix;
+}
+
 Extension::Extension(const std::string& path,
                      const std::string& name,
                      const std::string& displayName,
@@ -167,6 +184,13 @@ Extension::Extension(const std::string& path,
 {
 }
 
+Extension::~Extension()
+{
+  // Delete all matrices
+  for (auto& it : m_ditheringMatrices)
+    it.second.destroyMatrix();
+}
+
 void Extension::addTheme(const std::string& id, const std::string& path)
 {
   m_themes[id] = path;
@@ -175,6 +199,14 @@ void Extension::addTheme(const std::string& id, const std::string& path)
 void Extension::addPalette(const std::string& id, const std::string& path)
 {
   m_palettes[id] = path;
+}
+
+void Extension::addDitheringMatrix(const std::string& id,
+                                   const std::string& path,
+                                   const std::string& name)
+{
+  DitheringMatrixInfo info(path, name);
+  m_ditheringMatrices[id] = info;
 }
 
 bool Extension::canBeDisabled() const
@@ -347,6 +379,32 @@ ExtensionItems Extensions::palettes() const
   return palettes;
 }
 
+const render::DitheringMatrix* Extensions::ditheringMatrix(const std::string& matrixId)
+{
+  for (auto ext : m_extensions) {
+    if (!ext->isEnabled())      // Ignore disabled themes
+      continue;
+
+    auto it = ext->m_ditheringMatrices.find(matrixId);
+    if (it != ext->m_ditheringMatrices.end())
+      return &it->second.matrix();
+  }
+  return nullptr;
+}
+
+std::vector<Extension::DitheringMatrixInfo> Extensions::ditheringMatrices()
+{
+  std::vector<Extension::DitheringMatrixInfo> result;
+  for (auto ext : m_extensions) {
+    if (!ext->isEnabled())      // Ignore disabled themes
+      continue;
+
+    for (auto it : ext->m_ditheringMatrices)
+      result.push_back(it.second);
+  }
+  return result;
+}
+
 void Extensions::enableExtension(Extension* extension, const bool state)
 {
   extension->enable(state);
@@ -493,6 +551,25 @@ Extension* Extensions::loadExtension(const std::string& path,
         extension->addPalette(palId, palPath);
       }
     }
+
+    // Dithering matrices
+    auto ditheringMatrices = contributes["ditheringMatrices"];
+    if (ditheringMatrices.is_array()) {
+      for (const auto& ditheringMatrix : ditheringMatrices.get_array()) {
+        std::string matId = ditheringMatrix.at("id").get_string();
+        std::string matPath = ditheringMatrix.at("path").get_string();
+        std::string matName = ditheringMatrix.at("name").get_string();
+
+        // The path must be always relative to the extension
+        matPath = base::join_path(path, matPath);
+
+        LOG("EXT: New dithering matrix '%s' in '%s'\n",
+            matId.c_str(),
+            matPath.c_str());
+
+        extension->addDitheringMatrix(matId, matPath, matName);
+      }
+    }
   }
 
   if (extension)
@@ -502,8 +579,9 @@ Extension* Extensions::loadExtension(const std::string& path,
 
 void Extensions::generateExtensionSignals(Extension* extension)
 {
-  if (!extension->themes().empty()) ThemesChange(extension);
-  if (!extension->palettes().empty()) PalettesChange(extension);
+  if (extension->hasThemes()) ThemesChange(extension);
+  if (extension->hasPalettes()) PalettesChange(extension);
+  if (extension->hasDitheringMatrices()) DitheringMatricesChange(extension);
 }
 
 } // namespace app
