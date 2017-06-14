@@ -82,6 +82,9 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
+# libarchive definitions
+add_definitions(-DLIBARCHIVE_STATIC)
+
 ######################################################################
 # app-lib target
 
