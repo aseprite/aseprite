@@ -17,15 +17,18 @@
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
+#include "base/fstream_path.h"
 #include "base/unique_ptr.h"
 #include "render/dithering_matrix.h"
 
 #include "archive.h"
 #include "archive_entry.h"
-#include "tao/json.hpp"
+#include "json11.hpp"
 
+#include <fstream>
 #include <queue>
 #include <sstream>
+#include <string>
 
 namespace app {
 
@@ -442,10 +445,13 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn)
 
       std::stringstream out;
       in.copyDataTo(out);
-      auto json = tao::json::from_stream(out);
-      auto name = json["name"].get_string();
-      dstExtensionPath =
-        base::join_path(m_userExtensionsPath, name);
+
+      std::string err;
+      auto json = json11::Json::parse(out.str(), err);
+      if (err.empty()) {
+        auto name = json["name"].string_value();
+        dstExtensionPath = base::join_path(m_userExtensionsPath, name);
+      }
       break;
     }
   }
@@ -500,9 +506,23 @@ Extension* Extensions::loadExtension(const std::string& path,
                                      const std::string& fullPackageFilename,
                                      const bool isBuiltinExtension)
 {
-  auto json = tao::json::parse_file(fullPackageFilename);
-  auto name = json["name"].get_string();
-  auto displayName = json["displayName"].get_string();
+  json11::Json json;
+  {
+    std::string jsonText, line;
+    std::ifstream in(FSTREAM_PATH(fullPackageFilename), std::ifstream::binary);
+    while (std::getline(in, line)) {
+      jsonText += line;
+      jsonText.push_back('\n');
+    }
+
+    std::string err;
+    json = json11::Json::parse(jsonText, err);
+    if (!err.empty())
+      throw base::Exception("Error parsing JSON file: %s\n",
+                            err.c_str());
+  }
+  auto name = json["name"].string_value();
+  auto displayName = json["displayName"].string_value();
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 
@@ -519,9 +539,9 @@ Extension* Extensions::loadExtension(const std::string& path,
     // Themes
     auto themes = contributes["themes"];
     if (themes.is_array()) {
-      for (const auto& theme : themes.get_array()) {
-        std::string themeId = theme.at("id").get_string();
-        std::string themePath = theme.at("path").get_string();
+      for (const auto& theme : themes.array_items()) {
+        std::string themeId = theme["id"].string_value();
+        std::string themePath = theme["path"].string_value();
 
         // The path must be always relative to the extension
         themePath = base::join_path(path, themePath);
@@ -537,9 +557,9 @@ Extension* Extensions::loadExtension(const std::string& path,
     // Palettes
     auto palettes = contributes["palettes"];
     if (palettes.is_array()) {
-      for (const auto& palette : palettes.get_array()) {
-        std::string palId = palette.at("id").get_string();
-        std::string palPath = palette.at("path").get_string();
+      for (const auto& palette : palettes.array_items()) {
+        std::string palId = palette["id"].string_value();
+        std::string palPath = palette["path"].string_value();
 
         // The path must be always relative to the extension
         palPath = base::join_path(path, palPath);
@@ -555,10 +575,12 @@ Extension* Extensions::loadExtension(const std::string& path,
     // Dithering matrices
     auto ditheringMatrices = contributes["ditheringMatrices"];
     if (ditheringMatrices.is_array()) {
-      for (const auto& ditheringMatrix : ditheringMatrices.get_array()) {
-        std::string matId = ditheringMatrix.at("id").get_string();
-        std::string matPath = ditheringMatrix.at("path").get_string();
-        std::string matName = ditheringMatrix.at("name").get_string();
+      for (const auto& ditheringMatrix : ditheringMatrices.array_items()) {
+        std::string matId = ditheringMatrix["id"].string_value();
+        std::string matPath = ditheringMatrix["path"].string_value();
+        std::string matName = ditheringMatrix["name"].string_value();
+        if (matName.empty())
+          matName = matId;
 
         // The path must be always relative to the extension
         matPath = base::join_path(path, matPath);

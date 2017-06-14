@@ -542,7 +542,7 @@ target_link_libraries(app-lib
   ${ZLIB_LIBRARIES}
   ${FREETYPE_LIBRARIES}
   ${HARFBUZZ_LIBRARIES}
-  taocpp-json
+  json11
   archive_static)
 
 if(ENABLE_SCRIPTING)

@@ -45,9 +45,9 @@
 [submodule "third_party/harfbuzz"]
 	path = third_party/harfbuzz
 	url = https://github.com/aseprite/harfbuzz.git
-[submodule "third_party/json"]
-	path = third_party/json
-	url = https://github.com/aseprite/json.git
 [submodule "third_party/libarchive"]
 	path = third_party/libarchive
 	url = https://github.com/aseprite/libarchive.git
+[submodule "third_party/json11"]
+	path = third_party/json11
+	url = https://github.com/aseprite/json11.git

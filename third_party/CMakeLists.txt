@@ -109,8 +109,7 @@ if(NOT USE_SHARED_CMARK)
 endif()
 
 # JSON
-set(TAOCPP_JSON_BUILD_TESTS OFF CACHE BOOL "Build test programs")
-add_subdirectory(json)
+add_subdirectory(json11)
 
 # libarchive
 set(ENABLE_TEST OFF CACHE BOOL "Enable unit and regression tests")
