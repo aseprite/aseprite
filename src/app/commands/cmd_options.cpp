@@ -803,7 +803,7 @@ private:
     ResourceFinder rf;
     rf.includeDataDir(skin::SkinTheme::kThemesFolderName);
 
-    // Create user folder to store skins
+#if 0 // Don't create the user folder to store themes because now we prefer extensions
     try {
       if (!base::is_directory(rf.defaultFilename()))
         base::make_all_directories(rf.defaultFilename());
@@ -811,6 +811,7 @@ private:
     catch (...) {
       // Ignore errors
     }
+#endif
 
     return base::normalize_path(rf.defaultFilename());
   }
