@@ -256,7 +256,7 @@ Extensions::Extensions()
   // Create and get the user extensions directory
   {
     ResourceFinder rf2;
-    rf2.includeUserDir("data/extensions/.");
+    rf2.includeUserDir("extensions/.");
     m_userExtensionsPath = rf2.getFirstOrCreateDefault();
     m_userExtensionsPath = base::normalize_path(m_userExtensionsPath);
     m_userExtensionsPath = base::get_file_path(m_userExtensionsPath);
@@ -264,6 +264,7 @@ Extensions::Extensions()
   }
 
   ResourceFinder rf;
+  rf.includeUserDir("extensions");
   rf.includeDataDir("extensions");
 
   // Load extensions from data/ directory on all possible locations
