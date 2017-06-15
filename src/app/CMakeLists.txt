@@ -41,8 +41,8 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
-# Generate theme.xml.h from data/themes/default/theme.xml
-set(theme_xml ${CMAKE_SOURCE_DIR}/data/themes/default/theme.xml)
+# Generate theme.xml.h from data/extensions/aseprite-theme/theme.xml
+set(theme_xml ${CMAKE_SOURCE_DIR}/data/extensions/aseprite-theme/theme.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
@@ -81,6 +81,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
+
+# libarchive definitions
+add_definitions(-DLIBARCHIVE_STATIC)
 
 ######################################################################
 # app-lib target
@@ -363,6 +366,7 @@ add_library(app-lib
   document_range.cpp
   document_range_ops.cpp
   document_undo.cpp
+  extensions.cpp
   extra_cel.cpp
   file/file.cpp
   file/file_data.cpp
@@ -381,6 +385,7 @@ add_library(app-lib
   ini_file.cpp
   job.cpp
   launcher.cpp
+  load_matrix.cpp
   log.cpp
   loop_tag.cpp
   modules.cpp
@@ -539,7 +544,9 @@ target_link_libraries(app-lib
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${FREETYPE_LIBRARIES}
-  ${HARFBUZZ_LIBRARIES})
+  ${HARFBUZZ_LIBRARIES}
+  json11
+  archive_static)
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

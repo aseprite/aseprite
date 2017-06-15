@@ -1,0 +1,20 @@
+{
+  "name": "aseprite-theme",
+  "displayName": "Aseprite Default Theme",
+  "description": "Default Aseprite Pixel-Art Theme",
+  "version": "1.0",
+  "author": { "name": "David Capello", "email": "davidcapello@gmail.com", "url": "http://davidcapello.com/" },
+  "contributors": [
+    { "name": "Ilija Melentijevic", "url": "http://ilkke.blogspot.com/" }
+  ],
+  "publisher": "aseprite",
+  "license": "CC-BY-4.0",
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      { "id": "default", "path": "." }
+    ]
+  }
+}

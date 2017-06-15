@@ -1,0 +1,36 @@
+{
+  "name": "harware-palettes",
+  "displayName": "Hardware Palettes",
+  "description": "Well-known palettes from old computer hardware",
+  "version": "1.0",
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "apple-ii", "path": "./apple-ii.gpl" },
+      { "id": "atari2600-ntsc", "path": "./atari2600-ntsc.gpl" },
+      { "id": "atari2600-pal", "path": "./atari2600-pal.gpl" },
+      { "id": "cga", "path": "./cga.gpl" },
+      { "id": "cga0", "path": "./cga0.gpl" },
+      { "id": "cga0hi", "path": "./cga0hi.gpl" },
+      { "id": "cga1", "path": "./cga1.gpl" },
+      { "id": "cga1hi", "path": "./cga1hi.gpl" },
+      { "id": "cga3rd", "path": "./cga3rd.gpl" },
+      { "id": "cga3rdhi", "path": "./cga3rdhi.gpl" },
+      { "id": "commodore-plus4", "path": "./commodore-plus4.gpl" },
+      { "id": "commodore-vic20", "path": "./commodore-vic20.gpl" },
+      { "id": "commodore64", "path": "./commodore64.gpl" },
+      { "id": "cpc", "path": "./cpc.gpl" },
+      { "id": "gameboy-color-type1", "path": "./gameboy-color-type1.gpl" },
+      { "id": "gameboy", "path": "./gameboy.gpl" },
+      { "id": "master-system", "path": "./master-system.gpl" },
+      { "id": "nes-ntsc", "path": "./nes-ntsc.gpl" },
+      { "id": "nes", "path": "./nes.gpl" },
+      { "id": "teletext", "path": "./teletext.gpl" },
+      { "id": "vga-13h", "path": "./vga-13h.gpl" },
+      { "id": "zx-spectrum", "path": "./zx-spectrum.gpl" }
+    ]
+  }
+}

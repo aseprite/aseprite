@@ -10,6 +10,8 @@
 
 #include "app/ui/dithering_selector.h"
 
+#include "app/app.h"
+#include "app/extensions.h"
 #include "app/modules/palettes.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
@@ -157,34 +159,52 @@ private:
 } // anonymous namespace
 
 DitheringSelector::DitheringSelector(Type type)
+  : m_type(type)
 {
-  setUseCustomWidget(true);
+  Extensions& extensions = App::instance()->extensions();
 
-  switch (type) {
+  // If an extension with "ditheringMatrices" is disable/enable, we
+  // regenerate this DitheringSelector
+  m_extChanges =
+    extensions.DitheringMatricesChange.connect(
+      base::Bind<void>(&DitheringSelector::regenerate, this));
+
+  setUseCustomWidget(true);
+  regenerate();
+}
+
+void DitheringSelector::regenerate()
+{
+  removeAllItems();
+
+  Extensions& extensions = App::instance()->extensions();
+  auto ditheringMatrices = extensions.ditheringMatrices();
+
+  switch (m_type) {
     case SelectBoth:
       addItem(new DitherItem(render::DitheringAlgorithm::None,
                              render::DitheringMatrix(), "No Dithering"));
-      addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
-                             render::BayerMatrix(8), "Ordered Dithering - Bayer Matrix 8x8"));
-      addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
-                             render::BayerMatrix(4), "Ordered Dithering - Bayer Matrix 4x4"));
-      addItem(new DitherItem(render::DitheringAlgorithm::Ordered,
-                             render::BayerMatrix(2), "Ordered Dithering - Bayer Matrix 2x2"));
-      addItem(new DitherItem(render::DitheringAlgorithm::Old,
-                             render::BayerMatrix(8), "Old Dithering - Bayer Matrix 8x8"));
-      addItem(new DitherItem(render::DitheringAlgorithm::Old,
-                             render::BayerMatrix(4), "Old Dithering - Bayer Matrix 4x4"));
-      addItem(new DitherItem(render::DitheringAlgorithm::Old,
-                             render::BayerMatrix(2), "Old Dithering - Bayer Matrix 2x2"));
+      for (const auto& it : ditheringMatrices) {
+        addItem(
+          new DitherItem(
+            render::DitheringAlgorithm::Ordered,
+            it.matrix(),
+            "Ordered Dithering+" + it.name()));
+      }
+      for (const auto& it : ditheringMatrices) {
+        addItem(
+          new DitherItem(
+            render::DitheringAlgorithm::Old,
+            it.matrix(),
+            "Old Dithering+" + it.name()));
+      }
       break;
     case SelectMatrix:
       addItem(new DitherItem(render::DitheringMatrix(), "No Dithering"));
-      addItem(new DitherItem(render::BayerMatrix(8), "Bayer Matrix 8x8"));
-      addItem(new DitherItem(render::BayerMatrix(4), "Bayer Matrix 4x4"));
-      addItem(new DitherItem(render::BayerMatrix(2), "Bayer Matrix 2x2"));
+      for (auto& it : ditheringMatrices)
+        addItem(new DitherItem(it.matrix(), it.name()));
       break;
   }
-
 
   setSelectedItemIndex(0);
   setSizeHint(getItem(0)->sizeHint());

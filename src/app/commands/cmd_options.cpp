@@ -10,7 +10,10 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/console.h"
 #include "app/context.h"
+#include "app/extensions.h"
+#include "app/file_selector.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
 #include "app/pref/preferences.h"
@@ -34,6 +37,7 @@ namespace app {
 static const char* kSectionBgId = "section_bg";
 static const char* kSectionGridId = "section_grid";
 static const char* kSectionThemeId = "section_theme";
+static const char* kSectionExtensionsId = "section_extensions";
 
 using namespace ui;
 
@@ -52,8 +56,7 @@ class OptionsWindow : public app::gen::Options {
     const std::string& themeName() const { return m_name; }
 
     void openFolder() const {
-      app::launcher::open_folder(
-        m_name.empty() ? m_path: base::join_path(m_path, m_name));
+      app::launcher::open_folder(m_path);
     }
 
     bool canSelect() const {
@@ -64,6 +67,57 @@ class OptionsWindow : public app::gen::Options {
     std::string m_path;
     std::string m_name;
   };
+
+  class ExtensionItem : public ListItem {
+  public:
+    ExtensionItem(Extension* extension)
+      : ListItem(extension->displayName())
+      , m_extension(extension) {
+      setEnabled(extension->isEnabled());
+    }
+
+    bool isEnabled() const {
+      ASSERT(m_extension);
+      return m_extension->isEnabled();
+    }
+
+    bool isInstalled() const {
+      ASSERT(m_extension);
+      return m_extension->isInstalled();
+    }
+
+    bool canBeDisabled() const {
+      ASSERT(m_extension);
+      return m_extension->canBeDisabled();
+    }
+
+    bool canBeUninstalled() const {
+      ASSERT(m_extension);
+      return m_extension->canBeUninstalled();
+    }
+
+    void enable(bool state) {
+      ASSERT(m_extension);
+      App::instance()->extensions().enableExtension(m_extension, state);
+      setEnabled(m_extension->isEnabled());
+    }
+
+    void uninstall() {
+      ASSERT(m_extension);
+      ASSERT(canBeUninstalled());
+      App::instance()->extensions().uninstallExtension(m_extension);
+      m_extension = nullptr;
+    }
+
+    void openFolder() const {
+      ASSERT(m_extension);
+      app::launcher::open_folder(m_extension->path());
+    }
+
+  private:
+    Extension* m_extension;
+  };
+
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_pref(Preferences::instance())
@@ -254,12 +308,24 @@ public:
     selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
     openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
+    // Extensions buttons
+    extensionsList()->Change.connect(base::Bind<void>(&OptionsWindow::onExtensionChange, this));
+    addExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onAddExtension, this));
+    disableExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onDisableExtension, this));
+    uninstallExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onUninstallExtension, this));
+    openExtensionFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenExtensionFolder, this));
+
     // Apply button
     buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::saveConfig, this));
 
     onChangeBgScope();
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
+
+    // Reload themes when extensions are enabled/disabled
+    m_extThemesChanges =
+      App::instance()->extensions().ThemesChange.connect(
+        base::Bind<void>(&OptionsWindow::reloadThemes, this));
   }
 
   bool ok() {
@@ -408,6 +474,9 @@ private:
     // Load themes
     else if (item->getValue() == kSectionThemeId)
       loadThemes();
+    // Load extension
+    else if (item->getValue() == kSectionExtensionsId)
+      loadExtensions();
   }
 
   void onChangeBgScope() {
@@ -514,15 +583,25 @@ private:
     app::launcher::open_folder(app::main_config_filename());
   }
 
+  void reloadThemes() {
+    while (themeList()->firstChild())
+      delete themeList()->lastChild();
+
+    loadThemes();
+  }
+
   void loadThemes() {
     // Themes already loaded
     if (themeList()->getItemsCount() > 0)
       return;
 
+    auto theme = skin::SkinTheme::instance();
     auto userFolder = userThemeFolder();
     auto folders = themeFolders();
     std::sort(folders.begin(), folders.end());
+    const auto& selectedPath = theme->path();
 
+    bool first = true;
     for (const auto& path : folders) {
       auto files = base::list_files(path);
 
@@ -530,17 +609,52 @@ private:
       if (files.empty() && path != userFolder)
         continue;
 
-      themeList()->addChild(new ThemeItem(path, std::string()));
       std::sort(files.begin(), files.end());
       for (auto& fn : files) {
-        if (!base::is_directory(base::join_path(path, fn)))
+        std::string fullPath =
+          base::normalize_path(
+            base::join_path(path, fn));
+        if (!base::is_directory(fullPath))
           continue;
 
-        ThemeItem* item = new ThemeItem(path, fn);
+        if (first) {
+          first = false;
+          auto sep = new Separator(base::normalize_path(path), HORIZONTAL);
+          sep->setStyle(theme->styles.separatorInView());
+          themeList()->addChild(sep);
+        }
+
+        ThemeItem* item = new ThemeItem(fullPath, fn);
         themeList()->addChild(item);
 
         // Selected theme
-        if (fn == m_pref.theme.selected())
+        if (fullPath == selectedPath)
+          themeList()->selectChild(item);
+      }
+    }
+
+    // Themes from extensions
+    first = true;
+    for (auto ext : App::instance()->extensions()) {
+      if (!ext->isEnabled())
+        continue;
+
+      if (ext->themes().empty())
+        continue;
+
+      if (first) {
+        first = false;
+        auto sep = new Separator("Extension Themes", HORIZONTAL);
+        sep->setStyle(theme->styles.separatorInView());
+        themeList()->addChild(sep);
+      }
+
+      for (auto it : ext->themes()) {
+        ThemeItem* item = new ThemeItem(it.second, it.first);
+        themeList()->addChild(item);
+
+        // Selected theme
+        if (it.second == selectedPath)
           themeList()->selectChild(item);
       }
     }
@@ -548,9 +662,24 @@ private:
     themeList()->layout();
   }
 
+  void loadExtensions() {
+    // Extensions already loaded
+    if (extensionsList()->getItemsCount() > 0)
+      return;
+
+    for (auto extension : App::instance()->extensions()) {
+      ExtensionItem* item = new ExtensionItem(extension);
+      extensionsList()->addChild(item);
+    }
+
+    onExtensionChange();
+    extensionsList()->layout();
+  }
+
   void onThemeChange() {
     ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
     selectTheme()->setEnabled(item && item->canSelect());
+    openThemeFolder()->setEnabled(item != nullptr);
   }
 
   void onSelectTheme() {
@@ -567,6 +696,86 @@ private:
 
   void onOpenThemeFolder() {
     ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
+    if (item)
+      item->openFolder();
+  }
+
+  void onExtensionChange() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (item && item->isInstalled()) {
+      disableExtension()->setText(item->isEnabled() ? "&Disable": "&Enable");
+      disableExtension()->processMnemonicFromText();
+      disableExtension()->setEnabled(item->isEnabled() ? item->canBeDisabled(): true);
+      uninstallExtension()->setEnabled(item->canBeUninstalled());
+      openExtensionFolder()->setEnabled(true);
+    }
+    else {
+      disableExtension()->setEnabled(false);
+      uninstallExtension()->setEnabled(false);
+      openExtensionFolder()->setEnabled(false);
+    }
+  }
+
+  void onAddExtension() {
+    FileSelectorFiles filename;
+    if (!app::show_file_selector(
+          "Add Extension", "", "zip",
+          FileSelectorType::Open, filename))
+      return;
+
+    ASSERT(!filename.empty());
+
+    try {
+      Extension* extension =
+        App::instance()->extensions().installCompressedExtension(filename.front());
+
+      // Add the new extension in the listbox
+      ExtensionItem* item = new ExtensionItem(extension);
+      extensionsList()->addChild(item);
+      extensionsList()->selectChild(item);
+      extensionsList()->layout();
+    }
+    catch (std::exception& ex) {
+      Console::showException(ex);
+    }
+  }
+
+  void onDisableExtension() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (item) {
+      item->enable(!item->isEnabled());
+      onExtensionChange();
+    }
+  }
+
+  void onUninstallExtension() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (!item)
+      return;
+
+    if (ui::Alert::show(
+          "Warning"
+          "<<Do you really want to uninstall '%s' extension?"
+          "||&Yes||&No",
+          item->text().c_str()) != 1)
+      return;
+
+    try {
+      item->uninstall();
+
+      // Remove the item from the list
+      extensionsList()->removeChild(item);
+      extensionsList()->layout();
+
+      item->deferDelete();
+    }
+    catch (std::exception& ex) {
+      Console::showException(ex);
+    }
+  }
+
+  void onOpenExtensionFolder() {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
     if (item)
       item->openFolder();
   }
@@ -594,7 +803,7 @@ private:
     ResourceFinder rf;
     rf.includeDataDir(skin::SkinTheme::kThemesFolderName);
 
-    // Create user folder to store skins
+#if 0 // Don't create the user folder to store themes because now we prefer extensions
     try {
       if (!base::is_directory(rf.defaultFilename()))
         base::make_all_directories(rf.defaultFilename());
@@ -602,6 +811,7 @@ private:
     catch (...) {
       // Ignore errors
     }
+#endif
 
     return base::normalize_path(rf.defaultFilename());
   }
@@ -621,6 +831,7 @@ private:
   DocumentPreferences& m_docPref;
   DocumentPreferences* m_curPref;
   int& m_curSection;
+  obs::scoped_connection m_extThemesChanges;
 };
 
 class OptionsCommand : public Command {

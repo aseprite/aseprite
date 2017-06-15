@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,13 +24,16 @@ ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
   : m_delegate(delegate)
   , m_done(false)
   , m_cancel(false)
-  , m_thread(base::Bind<void>(&ResourcesLoader::threadLoadResources, this))
+  , m_thread(
+    new base::thread(
+      base::Bind<void>(&ResourcesLoader::threadLoadResources, this)))
 {
 }
 
 ResourcesLoader::~ResourcesLoader()
 {
-  m_thread.join();
+  if (m_thread)
+    m_thread->join();
 }
 
 void ResourcesLoader::cancel()
@@ -49,31 +52,43 @@ bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
     return false;
 }
 
+void ResourcesLoader::reload()
+{
+  if (m_thread) {
+    m_thread->join();
+    m_thread.reset(nullptr);
+  }
+
+  m_thread.reset(createThread());
+}
+
 void ResourcesLoader::threadLoadResources()
 {
   base::ScopedValue<bool> scoped(m_done, false, true);
 
-  std::string path = m_delegate->resourcesLocation();
-  TRACE("RESLOAD: Loading resources from %s...\n", path.c_str());
-  if (path.empty())
-    return;
-
-  FileSystemModule* fs = FileSystemModule::instance();
-  LockFS lock(fs);
-
-  IFileItem* item = fs->getFileItemFromPath(path);
-  if (!item)
-    return;
-
-  FileItemList list = item->children();
-  for (auto child : list) {
+  // Load resources from extensions
+  std::map<std::string, std::string> idAndPaths;
+  m_delegate->getResourcesPaths(idAndPaths);
+  for (const auto& idAndPath : idAndPaths) {
     if (m_cancel)
       break;
 
-    Resource* resource = m_delegate->loadResource((child)->fileName());
+    TRACE("RESLOAD: Loading resource '%s' from '%s'...\n",
+          idAndPath.first.c_str(),
+          idAndPath.second.c_str());
+
+    Resource* resource =
+      m_delegate->loadResource(idAndPath.first,
+                               idAndPath.second);
     if (resource)
       m_queue.push(resource);
   }
+}
+
+base::thread* ResourcesLoader::createThread()
+{
+  return new base::thread(
+    base::Bind<void>(&ResourcesLoader::threadLoadResources, this));
 }
 
 } // namespace app

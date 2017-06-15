@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,8 @@
 
 #include "app/res/palettes_loader_delegate.h"
 
+#include "app/app.h"
+#include "app/extensions.h"
 #include "app/file/palette_file.h"
 #include "app/file_system.h"
 #include "app/res/palette_resource.h"
@@ -21,27 +23,43 @@
 
 namespace app {
 
-std::string PalettesLoaderDelegate::resourcesLocation() const
+void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string>& idAndPath) const
 {
+  // Include extension palettes
+  idAndPath = App::instance()->extensions().palettes();
+
+  // Search old palettes too
   std::string path;
   ResourceFinder rf;
-  rf.includeDataDir("palettes");
+  rf.includeDataDir("palettes"); // data/palettes/ in all places
+  rf.includeUserDir("palettes"); // palettes/ in user home
   while (rf.next()) {
     if (base::is_directory(rf.filename())) {
       path = rf.filename();
-      break;
+      path = base::fix_path_separators(path);
+      for (const auto& fn : base::list_files(path)) {
+        // Ignore the default palette that is inside the palettes/ dir
+        // in the user home dir.
+        if (fn == "default.ase" ||
+            fn == "default.gpl")
+          continue;
+
+        std::string fullFn = base::join_path(path, fn);
+        if (base::is_file(fullFn))
+          idAndPath[base::get_file_title(fn)] = fullFn;
+      }
     }
   }
-  return base::fix_path_separators(path);
 }
 
-Resource* PalettesLoaderDelegate::loadResource(const std::string& filename)
+Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
+                                               const std::string& path)
 {
-  doc::Palette* palette = load_palette(filename.c_str());
-  if (!palette)
-    return NULL;
-
-  return new PaletteResource(palette, base::get_file_title(filename));
+  doc::Palette* palette = load_palette(path.c_str());
+  if (palette)
+    return new PaletteResource(id, path, palette);
+  else
+    return nullptr;
 }
 
 } // namespace app

@@ -8,6 +8,7 @@
 #define APP_UI_DITHERING_SELECTOR_H_INCLUDED
 #pragma once
 
+#include "obs/connection.h"
 #include "render/dithering_algorithm.h"
 #include "render/ordered_dither.h"
 #include "ui/box.h"
@@ -26,6 +27,12 @@ namespace app {
 
     render::DitheringAlgorithm ditheringAlgorithm();
     render::DitheringMatrix ditheringMatrix();
+
+  private:
+    void regenerate();
+
+    Type m_type;
+    obs::scoped_connection m_extChanges;
   };
 
 } // namespace app

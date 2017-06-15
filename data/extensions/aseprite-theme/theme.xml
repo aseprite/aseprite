@@ -890,5 +890,14 @@
             <border part="simple_color_border" />
             <border part="simple_color_selected" state="selected" />
         </style>
+        <style id="list_item" border="1">
+            <background color="listitem_normal_face" />
+            <background color="listitem_selected_face" state="selected" />
+            <background color="face" state="disabled" />
+            <background color="listitem_selected_face" state="selected disabled" />
+            <text color="listitem_normal_text" align="left middle" x="1" />
+            <text color="listitem_selected_text" align="left middle" x="1" state="selected" />
+            <text color="disabled" align="left middle" x="1" state="disabled" />
+        </style>
     </styles>
 </theme>

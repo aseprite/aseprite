@@ -47,6 +47,8 @@ namespace app {
       SkinTheme();
       ~SkinTheme();
 
+      const std::string& path() { return m_path; }
+
       she::Font* getDefaultFont() const override { return m_defaultFont; }
       she::Font* getWidgetFont(const ui::Widget* widget) const override;
       she::Font* getMiniFont() const { return m_miniFont; }
@@ -59,7 +61,6 @@ namespace app {
 
       void paintEntry(ui::PaintEvent& ev) override;
       void paintListBox(ui::PaintEvent& ev) override;
-      void paintListItem(ui::PaintEvent& ev) override;
       void paintMenu(ui::PaintEvent& ev) override;
       void paintMenuItem(ui::PaintEvent& ev) override;
       void paintSlider(ui::PaintEvent& ev) override;
@@ -129,9 +130,9 @@ namespace app {
 
     private:
       void loadFontData();
-      void loadAll(const std::string& skinId);
-      void loadSheet(const std::string& skinId);
-      void loadXml(const std::string& skinId);
+      void loadAll(const std::string& themeId);
+      void loadSheet();
+      void loadXml();
 
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
@@ -140,9 +141,9 @@ namespace app {
                     int selected_offset, int mnemonic);
       void drawEntryText(ui::Graphics* g, ui::Entry* widget);
 
-      std::string themeFileName(const std::string& skinId,
-                                const std::string& fileName) const;
+      std::string findThemePath(const std::string& themeId) const;
 
+      std::string m_path;
       she::Surface* m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, gfx::Color> m_colors_by_id;

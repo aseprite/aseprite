@@ -17,7 +17,7 @@ void RenderTaskJob::onJob()
   try {
     m_func();
   }
-  catch (std::exception& ex) {
+  catch (const std::exception&) {
     // TODO show the exception
   }
 }

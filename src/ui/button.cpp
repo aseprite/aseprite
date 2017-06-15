@@ -78,8 +78,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
       KeyScancode scancode = keymsg->scancode();
 
-      // If the button is enabled.
-      if (isEnabled()) {
+      if (isEnabled() && isVisible()) {
         bool mnemonicPressed =
           ((msg->altPressed() || msg->cmdPressed()) &&
            isMnemonicPressed(keymsg));

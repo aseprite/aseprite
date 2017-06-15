@@ -107,3 +107,13 @@ if(NOT USE_SHARED_CMARK)
   add_custom_target(copy_cmark_headers DEPENDS ${copy_cmark_headers})
   add_dependencies(libcmark_static copy_cmark_headers)
 endif()
+
+# JSON
+add_subdirectory(json11)
+
+# libarchive
+set(ENABLE_TEST OFF CACHE BOOL "Enable unit and regression tests")
+set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage (GCC only, automatically sets ENABLE_TEST to ON)")
+add_subdirectory(libarchive)
+target_include_directories(archive_static INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)

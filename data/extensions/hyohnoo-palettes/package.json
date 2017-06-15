@@ -1,0 +1,16 @@
+{
+  "name": "hyohnoo-palettes",
+  "displayName": "Hyohnoo Palettes",
+  "description": "Palettes contributed by Hyohnoo",
+  "version": "1.0",
+  "author": { "name": "Hyohnoo", "url": "https://twitter.com/Hyohnoo" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "mail24", "path": "./mail24.gpl" }
+    ]
+  }
+}

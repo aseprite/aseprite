@@ -16,6 +16,7 @@
           <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
           <listitem text="@.section_undo" value="section_undo" />
           <listitem text="@.section_theme" value="section_theme" />
+          <listitem text="@.section_extensions" value="section_extensions" />
           <listitem text="@.section_experimental" value="section_experimental" />
         </listbox>
       </view>
@@ -267,6 +268,20 @@
 	    <button id="select_theme" text="@.select_theme" width="60" />
 	    <boxfiller />
 	    <button id="open_theme_folder" text="@.open_theme_folder" width="100" />
+          </hbox>
+        </vbox>
+
+        <!-- Extensions -->
+        <vbox id="section_extensions">
+          <view expansive="true" maxsize="true">
+            <listbox id="extensions_list" />
+	  </view>
+          <hbox>
+	    <button id="add_extension" text="@.add_extension" minwidth="60" />
+	    <boxfiller />
+	    <button id="disable_extension" text="@.disable_extension" minwidth="60" />
+	    <button id="uninstall_extension" text="@.uninstall_extension" minwidth="60" />
+	    <button id="open_extension_folder" text="@.open_extension_folder" minwidth="60" />
           </hbox>
         </vbox>
 

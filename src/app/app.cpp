@@ -19,6 +19,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/crash/data_recovery.h"
+#include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file_system.h"
@@ -96,6 +97,7 @@ public:
   RecentFiles m_recent_files;
   InputChain m_inputChain;
   clipboard::ClipboardManager m_clipboardManager;
+  Extensions m_extensions;
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
 
@@ -208,7 +210,7 @@ void App::initialize(const AppOptions& options)
     ui::Manager::getDefault()->invalidate();
   }
 
-  // Procress options
+  // Process options
   LOG("APP: Processing options...\n");
   {
     base::UniquePtr<CliDelegate> delegate;
@@ -411,6 +413,11 @@ Timeline* App::timeline() const
 Preferences& App::preferences() const
 {
   return m_coreModules->m_preferences;
+}
+
+Extensions& App::extensions() const
+{
+  return m_modules->m_extensions;
 }
 
 crash::DataRecovery* App::dataRecovery() const

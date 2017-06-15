@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,6 +31,7 @@ namespace app {
   class BackupIndicator;
   class ContextBar;
   class Document;
+  class Extensions;
   class INotificationDelegate;
   class InputChain;
   class LegacyModules;
@@ -81,6 +82,7 @@ namespace app {
     ContextBar* contextBar() const;
     Timeline* timeline() const;
     Preferences& preferences() const;
+    Extensions& extensions() const;
     crash::DataRecovery* dataRecovery() const;
 
     AppBrushes& brushes() {

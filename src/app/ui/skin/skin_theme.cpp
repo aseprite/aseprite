@@ -8,7 +8,11 @@
 #include "config.h"
 #endif
 
+#include "app/ui/skin/skin_theme.h"
+
+#include "app/app.h"
 #include "app/console.h"
+#include "app/extensions.h"
 #include "app/font_path.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -18,7 +22,6 @@
 #include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
-#include "app/ui/skin/skin_theme.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
@@ -48,6 +51,7 @@ namespace skin {
 using namespace gfx;
 using namespace ui;
 
+// TODO For backward compatibility, in future versions we should remove this (extensions are preferred)
 const char* SkinTheme::kThemesFolderName = "themes";
 
 static const char* g_cursor_names[kCursorTypes] = {
@@ -248,32 +252,31 @@ void SkinTheme::loadFontData()
   }
 }
 
-void SkinTheme::loadAll(const std::string& skinId)
+void SkinTheme::loadAll(const std::string& themeId)
 {
-  LOG("THEME: Loading theme %s\n", skinId.c_str());
+  LOG("THEME: Loading theme %s\n", themeId.c_str());
 
   if (m_fonts.empty())
     loadFontData();
 
-  loadSheet(skinId);
-  loadXml(skinId);
+  m_path = findThemePath(themeId);
+  if (m_path.empty())
+    throw base::Exception("Theme %s not found", themeId.c_str());
+
+  loadSheet();
+  loadXml();
 }
 
-void SkinTheme::loadSheet(const std::string& skinId)
+void SkinTheme::loadSheet()
 {
   // Load the skin sheet
-  std::string sheet_filename(themeFileName(skinId, "sheet.png"));
-  ResourceFinder rf;
-  rf.includeDataDir(sheet_filename.c_str());
-  if (!rf.findFirst())
-    throw base::Exception("File %s not found", sheet_filename.c_str());
-
+  std::string sheet_filename(base::join_path(m_path, "sheet.png"));
   try {
     if (m_sheet) {
       m_sheet->dispose();
       m_sheet = nullptr;
     }
-    m_sheet = she::instance()->loadRgbaSurface(rf.filename().c_str());
+    m_sheet = she::instance()->loadRgbaSurface(sheet_filename.c_str());
     if (m_sheet)
       m_sheet->applyScale(guiscale());
   }
@@ -282,18 +285,14 @@ void SkinTheme::loadSheet(const std::string& skinId)
   }
 }
 
-void SkinTheme::loadXml(const std::string& skinId)
+void SkinTheme::loadXml()
 {
   const int scale = guiscale();
 
   // Load the skin XML
-  std::string xml_filename(themeFileName(skinId, "theme.xml"));
-  ResourceFinder rf;
-  rf.includeDataDir(xml_filename.c_str());
-  if (!rf.findFirst())
-    return;
+  std::string xml_filename(base::join_path(m_path, "theme.xml"));
 
-  XmlDocumentRef doc = open_xml(rf.filename());
+  XmlDocumentRef doc = open_xml(xml_filename);
   TiXmlHandle handle(doc.get());
 
   // Load fonts
@@ -304,7 +303,7 @@ void SkinTheme::loadXml(const std::string& skinId)
       .FirstChild("font").ToElement();
     while (xmlFont) {
       const char* idStr = xmlFont->Attribute("id");
-      FontData* fontData = load_font(m_fonts, xmlFont, rf.filename());
+      FontData* fontData = load_font(m_fonts, xmlFont, xml_filename);
       if (idStr && fontData) {
         std::string id(idStr);
         LOG(VERBOSE) << "THEME: Loading theme font '" << id << "\n";
@@ -749,7 +748,7 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kListItemWidget:
-      BORDER(1 * scale);
+      widget->setStyle(styles.listItem());
       break;
 
     case kComboBoxWidget: {
@@ -1062,34 +1061,6 @@ void SkinTheme::paintListBox(PaintEvent& ev)
   Graphics* g = ev.graphics();
 
   g->fillRect(colors.background(), g->getClipBounds());
-}
-
-void SkinTheme::paintListItem(ui::PaintEvent& ev)
-{
-  Widget* widget = static_cast<Widget*>(ev.getSource());
-  gfx::Rect bounds = widget->clientBounds();
-  Graphics* g = ev.graphics();
-  gfx::Color fg, bg;
-
-  if (!widget->isEnabled()) {
-    bg = colors.face();
-    fg = colors.disabled();
-  }
-  else if (widget->isSelected()) {
-    fg = colors.listitemSelectedText();
-    bg = colors.listitemSelectedFace();
-  }
-  else {
-    fg = colors.listitemNormalText();
-    bg = colors.listitemNormalFace();
-  }
-
-  g->fillRect(bg, bounds);
-
-  if (widget->hasText()) {
-    bounds.shrink(widget->border());
-    drawText(g, nullptr, fg, bg, widget, bounds, 0, 0);
-  }
 }
 
 void SkinTheme::paintMenu(PaintEvent& ev)
@@ -1607,12 +1578,23 @@ void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double p
     g->fillRect(colors.background(), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
 }
 
-std::string SkinTheme::themeFileName(const std::string& skinId,
-                                     const std::string& fileName) const
+std::string SkinTheme::findThemePath(const std::string& themeId) const
 {
-  std::string path = base::join_path(SkinTheme::kThemesFolderName, skinId);
-  path = base::join_path(path, fileName);
-  return path;
+  // First we try to find the theme on an extensions
+  std::string path = App::instance()->extensions().themePath(themeId);
+  if (path.empty()) {
+    // Then we try a theme in the old themes/ folder
+    path = base::join_path(SkinTheme::kThemesFolderName, themeId);
+    path = base::join_path(path, "theme.xml");
+
+    ResourceFinder rf;
+    rf.includeDataDir(path.c_str());
+    if (!rf.findFirst())
+      return std::string();
+
+    path = base::get_file_path(rf.filename());
+  }
+  return base::normalize_path(path);
 }
 
 } // namespace skin

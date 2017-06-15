@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,17 +18,22 @@ namespace app {
 
   class PaletteResource : public Resource {
   public:
-    PaletteResource(doc::Palette* palette, const std::string& name)
-      : m_palette(palette)
-      , m_name(name) {
+    PaletteResource(const std::string& id,
+                    const std::string& path,
+                    doc::Palette* palette)
+      : m_id(id)
+      , m_path(path)
+      , m_palette(palette) {
     }
     virtual ~PaletteResource() { }
+    virtual const std::string& id() const override { return m_id; }
+    virtual const std::string& path() const override { return m_path; }
     virtual doc::Palette* palette() { return m_palette; }
-    virtual const std::string& name() const override { return m_name; }
 
   private:
+    std::string m_id;
+    std::string m_path;
     doc::Palette* m_palette;
-    std::string m_name;
   };
 
 } // namespace app
