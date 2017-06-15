@@ -341,9 +341,11 @@ static void replace_color(const Image* image, const gfx::Rect& bounds, int src_c
  */
 void floodfill(const Image* image,
                const Mask* mask,
-               int x, int y,
+               const int x, const int y,
                const gfx::Rect& bounds,
-               int tolerance, bool contiguous,
+               const doc::color_t src_color,
+               const int tolerance,
+               const bool contiguous,
                void* data,
                AlgoHLine proc)
 {
@@ -351,9 +353,6 @@ void floodfill(const Image* image,
   if ((x < 0) || (x >= image->width()) ||
       (y < 0) || (y >= image->height()))
     return;
-
-  // What color to replace?
-  color_t src_color = get_pixel(image, x, y);
 
   // Non-contiguous case, we replace colors in the whole image.
   if (!contiguous) {

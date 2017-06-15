@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/algorithm/hline.h"
+#include "doc/color.h"
 #include "gfx/fwd.h"
 
 namespace doc {
@@ -20,9 +21,11 @@ namespace doc {
 
     void floodfill(const Image* image,
                    const Mask* mask,
-                   int x, int y,
+                   const int x, const int y,
                    const gfx::Rect& bounds,
-                   int tolerance, bool contiguous,
+                   const doc::color_t srcColor,
+                   const int tolerance,
+                   const bool contiguous,
                    void* data,
                    AlgoHLine proc);
 
