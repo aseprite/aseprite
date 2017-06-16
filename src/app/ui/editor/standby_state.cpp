@@ -28,6 +28,7 @@
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
+#include "app/ui/editor/glue.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/moving_cel_state.h"
 #include "app/ui/editor/moving_pixels_state.h"
@@ -320,20 +321,9 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     if (layerEdges)
       layerEdgesOption(false);
 
-    // We need to clear and redraw the brush boundaries after the
-    // first mouse pressed/point shape if drawn. This is to avoid
-    // graphical glitches (invalid areas in the ToolLoop's src/dst
-    // images).
-    HideBrushPreview hide(editor->brushPreview());
-
-    tools::ToolLoop* toolLoop = create_tool_loop(editor, context);
-    if (toolLoop) {
-      EditorStatePtr newState(new DrawingState(toolLoop));
-      editor->setState(newState);
-
-      static_cast<DrawingState*>(newState.get())
-        ->initToolLoop(editor, msg);
-    }
+    startDrawingState(editor,
+                      DrawingType::Regular,
+                      pointer_from_msg(editor, msg));
 
     // Restore layer edges
     if (layerEdges)
@@ -497,6 +487,22 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
+  // Start line preview with shift key
+  if (editor->startStraightLineWithFreehandTool()) {
+    DrawingState* drawingState =
+      startDrawingState(editor,
+                        DrawingType::LineFreehand,
+                        tools::Pointer(
+                          editor->document()->lastDrawingPoint(),
+                          tools::Pointer::Left));
+    if (drawingState) {
+      drawingState->sendMovementToToolLoop(
+        tools::Pointer(
+          editor->screenToEditor(ui::get_mouse_position()),
+          tools::Pointer::Left));
+      return true;
+    }
+  }
   return false;
 }
 
@@ -584,6 +590,35 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
 
   return true;
+}
+
+DrawingState* StandbyState::startDrawingState(Editor* editor,
+                                              const DrawingType drawingType,
+                                              const tools::Pointer& pointer)
+{
+  // We need to clear and redraw the brush boundaries after the
+  // first mouse pressed/point shape if drawn. This is to avoid
+  // graphical glitches (invalid areas in the ToolLoop's src/dst
+  // images).
+  HideBrushPreview hide(editor->brushPreview());
+
+  tools::ToolLoop* toolLoop = create_tool_loop(
+    editor,
+    UIContext::instance(),
+    (drawingType == DrawingType::LineFreehand));
+  if (!toolLoop)
+    return nullptr;
+
+  EditorStatePtr newState(
+    new DrawingState(toolLoop,
+                     drawingType));
+  editor->setState(newState);
+
+  static_cast<DrawingState*>(newState.get())
+    ->initToolLoop(editor,
+                   pointer);
+
+  return static_cast<DrawingState*>(newState.get());
 }
 
 Transformation StandbyState::getTransformation(Editor* editor)

@@ -17,12 +17,16 @@
 namespace app {
   namespace tools {
     class Ink;
+    class Pointer;
   }
 
+  class DrawingState;
   class TransformHandles;
 
   class StandbyState : public StateWithWheelBehavior {
   public:
+    enum class DrawingType { Regular, LineFreehand };
+
     StandbyState();
     virtual ~StandbyState();
     virtual void onEnterState(Editor* editor) override;
@@ -76,6 +80,9 @@ namespace app {
     };
 
   private:
+    DrawingState* startDrawingState(Editor* editor,
+                                    const DrawingType drawingType,
+                                    const tools::Pointer& pointer);
     void transformSelection(Editor* editor, ui::MouseMessage* msg, HandleType handle);
     void onPivotChange(Editor* editor);
     gfx::Rect resizeCelBounds(Editor* editor) const;

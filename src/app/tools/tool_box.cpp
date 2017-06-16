@@ -69,6 +69,13 @@ const char* WellKnownInks::MoveSlice = "move_slice";
 const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
 
+const char* WellKnownControllers::Freehand = "freehand";
+const char* WellKnownControllers::PointByPoint = "point_by_point";
+const char* WellKnownControllers::OnePoints = "one_point";
+const char* WellKnownControllers::TwoPoints = "two_points";
+const char* WellKnownControllers::FourPoints = "four_points";
+const char* WellKnownControllers::LineFreehand = "line_freehand";
+
 const char* WellKnownIntertwiners::None = "none";
 const char* WellKnownIntertwiners::FirstPoint = "first_point";
 const char* WellKnownIntertwiners::AsLines = "as_lines";
@@ -105,11 +112,12 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::Blur]            = new BlurInk();
   m_inks[WellKnownInks::Jumble]          = new JumbleInk();
 
-  m_controllers["freehand"]              = new FreehandController();
-  m_controllers["point_by_point"]        = new PointByPointController();
-  m_controllers["one_point"]             = new OnePointController();
-  m_controllers["two_points"]            = new TwoPointsController();
-  m_controllers["four_points"]           = new FourPointsController();
+  m_controllers[WellKnownControllers::Freehand] = new FreehandController();
+  m_controllers[WellKnownControllers::PointByPoint] = new PointByPointController();
+  m_controllers[WellKnownControllers::OnePoints] = new OnePointController();
+  m_controllers[WellKnownControllers::TwoPoints] = new TwoPointsController(true);
+  m_controllers[WellKnownControllers::FourPoints] = new FourPointsController();
+  m_controllers[WellKnownControllers::LineFreehand] = new LineFreehandController();
 
   m_pointshapers[WellKnownPointShapes::None] = new NonePointShape();
   m_pointshapers[WellKnownPointShapes::Pixel] = new PixelPointShape();
@@ -159,6 +167,11 @@ Tool* ToolBox::getToolById(const std::string& id)
 Ink* ToolBox::getInkById(const std::string& id)
 {
   return m_inks[id];
+}
+
+Controller* ToolBox::getControllerById(const std::string& id)
+{
+  return m_controllers[id];
 }
 
 Intertwine* ToolBox::getIntertwinerById(const std::string& id)

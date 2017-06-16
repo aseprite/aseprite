@@ -254,6 +254,10 @@ namespace app {
     void setTagFocusBand(int value) { m_tagFocusBand = value; }
     int tagFocusBand() const { return m_tagFocusBand; }
 
+    // Returns true if the Shift key to draw straight lines with a
+    // freehand tool is pressed.
+    bool startStraightLineWithFreehandTool();
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;

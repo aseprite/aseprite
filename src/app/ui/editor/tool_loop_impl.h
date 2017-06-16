@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,10 +24,13 @@ namespace app {
   }
 
   tools::ToolLoop* create_tool_loop(
-    Editor* editor, Context* context);
+    Editor* editor,
+    Context* context,
+    const bool convertLineToFreehand);
 
   tools::ToolLoop* create_tool_loop_preview(
-    Editor* editor, doc::Image* image,
+    Editor* editor,
+    doc::Image* image,
     const gfx::Point& celOrigin);
 
 } // namespace app

@@ -52,6 +52,15 @@ namespace app {
       extern const char* Jumble;
     };
 
+    namespace WellKnownControllers {
+      extern const char* Freehand;
+      extern const char* PointByPoint;
+      extern const char* OnePoints;
+      extern const char* TwoPoints;
+      extern const char* FourPoints;
+      extern const char* LineFreehand;
+    };
+
     namespace WellKnownIntertwiners {
       extern const char* None;
       extern const char* FirstPoint;
@@ -92,6 +101,7 @@ namespace app {
 
       Tool* getToolById(const std::string& id);
       Ink* getInkById(const std::string& id);
+      Controller* getControllerById(const std::string& id);
       Intertwine* getIntertwinerById(const std::string& id);
       PointShape* getPointShapeById(const std::string& id);
       int getGroupsCount() const { return m_groups.size(); }

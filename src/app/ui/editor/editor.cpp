@@ -24,6 +24,7 @@
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool.h"
+#include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -59,6 +60,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <limits>
 
 namespace app {
 
@@ -1510,6 +1512,18 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
   }
   else
     return app::Color::fromMask();
+}
+
+bool Editor::startStraightLineWithFreehandTool()
+{
+  tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
+  return
+    (tool &&
+     tool->getController(0)->isFreehand() &&
+     tool->getInk(0)->isPaint() &&
+     (getCustomizationDelegate()
+      ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
+     document()->lastDrawingPoint() != app::Document::NoLastDrawingPoint());
 }
 
 //////////////////////////////////////////////////////////////////////

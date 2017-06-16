@@ -97,6 +97,7 @@ public:
                Layer* layer,
                tools::Tool* tool,
                tools::Ink* ink,
+               tools::Controller* controller,
                Document* document,
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
@@ -116,7 +117,7 @@ public:
     , m_contiguous(m_toolPref.contiguous())
     , m_button(button)
     , m_ink(ink->clone())
-    , m_controller(m_tool->getController(m_button))
+    , m_controller(controller)
     , m_pointShape(m_tool->getPointShape(m_button))
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
@@ -243,7 +244,12 @@ public:
   tools::Controller* getController() override { return m_controller; }
   tools::PointShape* getPointShape() override { return m_pointShape; }
   tools::Intertwine* getIntertwine() override { return m_intertwine; }
-  tools::TracePolicy getTracePolicy() override { return m_tracePolicy; }
+  tools::TracePolicy getTracePolicy() override {
+    if (m_controller->handleTracePolicy())
+      return m_controller->getTracePolicy();
+    else
+      return m_tracePolicy;
+  }
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
   doc::Remap* getShadingRemap() override { return m_shadingRemap; }
 
@@ -293,6 +299,7 @@ class ToolLoopImpl : public ToolLoopBase {
   Transaction m_transaction;
   ExpandCelCanvas* m_expandCelCanvas;
   Image* m_floodfillSrcImage;
+  bool m_saveLastPoint;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -300,12 +307,21 @@ public:
                Context* context,
                tools::Tool* tool,
                tools::Ink* ink,
+               tools::Controller* controller,
                Document* document,
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
-               const app::Color& bgColor)
-    : ToolLoopBase(editor, layer, tool, ink, document,
-                   button, fgColor, bgColor)
+               const app::Color& bgColor,
+               const bool saveLastPoint)
+    : ToolLoopBase(editor,
+                   layer,
+                   tool,
+                   ink,
+                   controller,
+                   document,
+                   button,
+                   fgColor,
+                   bgColor)
     , m_context(context)
     , m_canceled(false)
     , m_transaction(m_context,
@@ -318,6 +334,7 @@ public:
                                             ModifyDocument))
     , m_expandCelCanvas(nullptr)
     , m_floodfillSrcImage(nullptr)
+    , m_saveLastPoint(saveLastPoint)
   {
     ASSERT(m_context->activeDocument() == m_editor->document());
 
@@ -414,15 +431,16 @@ public:
     bool redraw = false;
 
     if (!m_canceled) {
+      // Freehand changes the last point
+      if (m_saveLastPoint) {
+        m_transaction.execute(
+          new cmd::SetLastPoint(
+            m_document,
+            getController()->getLastPoint()));
+      }
+
       // Paint ink
       if (getInk()->isPaint()) {
-        // Freehand changes the last point
-        if (getController()->isFreehand())
-          m_transaction.execute(
-            new cmd::SetLastPoint(
-              m_document,
-              getController()->getLastPoint()));
-
         try {
           ContextReader reader(m_context, 500);
           ContextWriter writer(reader, 500);
@@ -512,12 +530,15 @@ public:
 
 };
 
-tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
+tools::ToolLoop* create_tool_loop(
+  Editor* editor,
+  Context* context,
+  const bool convertLineToFreehand)
 {
-  tools::Tool* current_tool = editor->getCurrentEditorTool();
-  tools::Ink* current_ink = editor->getCurrentEditorInk();
-  if (!current_tool || !current_ink)
-    return NULL;
+  tools::Tool* tool = editor->getCurrentEditorTool();
+  tools::Ink* ink = editor->getCurrentEditorInk();
+  if (!tool || !ink)
+    return nullptr;
 
   Layer* layer;
 
@@ -530,8 +551,8 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
   // Anyway this cannot be used in 'magic wand' tool (isSelection +
   // isFloodFill) because we need the original layer source
   // image/pixels to stop the flood-fill algorithm.
-  if (current_ink->isSelection() &&
-      !current_tool->getPointShape(editor->isSecondaryButton() ? 1: 0)->isFloodFill()) {
+  if (ink->isSelection() &&
+      !tool->getPointShape(editor->isSecondaryButton() ? 1: 0)->isFloodFill()) {
     layer = nullptr;
   }
   else {
@@ -578,13 +599,30 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 
   // Create the new tool loop
   try {
+    tools::ToolLoop::Button button =
+      (!editor->isSecondaryButton() ? tools::ToolLoop::Left:
+                                      tools::ToolLoop::Right);
+
+    tools::Controller* controller =
+      (convertLineToFreehand ?
+       App::instance()->toolBox()->getControllerById(
+         tools::WellKnownControllers::LineFreehand):
+       tool->getController(button));
+
+    const bool saveLastPoint =
+      (ink->isPaint() &&
+       (controller->isFreehand() ||
+        convertLineToFreehand));
+
     return new ToolLoopImpl(
       editor, layer, context,
-      current_tool,
-      current_ink,
+      tool,
+      ink,
+      controller,
       editor->document(),
-      !editor->isSecondaryButton() ? tools::ToolLoop::Left: tools::ToolLoop::Right,
-      fg, bg);
+      button,
+      fg, bg,
+      saveLastPoint);
   }
   catch (const std::exception& ex) {
     Alert::show(PACKAGE
@@ -612,8 +650,15 @@ public:
     const app::Color& bgColor,
     Image* image,
     const gfx::Point& celOrigin)
-    : ToolLoopBase(editor, editor->layer(), tool, ink, document,
-                   tools::ToolLoop::Left, fgColor, bgColor)
+    : ToolLoopBase(editor,
+                   editor->layer(),
+                   tool,
+                   ink,
+                   tool->getController(tools::ToolLoop::Left),
+                   document,
+                   tools::ToolLoop::Left,
+                   fgColor,
+                   bgColor)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
@@ -661,9 +706,9 @@ tools::ToolLoop* create_tool_loop_preview(
   Editor* editor, Image* image,
   const gfx::Point& celOrigin)
 {
-  tools::Tool* current_tool = editor->getCurrentEditorTool();
-  tools::Ink* current_ink = editor->getCurrentEditorInk();
-  if (!current_tool || !current_ink)
+  tools::Tool* tool = editor->getCurrentEditorTool();
+  tools::Ink* ink = editor->getCurrentEditorInk();
+  if (!tool || !ink)
     return NULL;
 
   Layer* layer = editor->layer();
@@ -685,8 +730,8 @@ tools::ToolLoop* create_tool_loop_preview(
   try {
     return new PreviewToolLoopImpl(
       editor,
-      current_tool,
-      current_ink,
+      tool,
+      ink,
       editor->document(),
       fg, bg, image, celOrigin);
   }

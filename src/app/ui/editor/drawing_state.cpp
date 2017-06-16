@@ -39,10 +39,13 @@ namespace app {
 
 using namespace ui;
 
-DrawingState::DrawingState(tools::ToolLoop* toolLoop)
-  : m_toolLoop(toolLoop)
+DrawingState::DrawingState(tools::ToolLoop* toolLoop,
+                           const DrawingType type)
+  : m_type(type)
+  , m_toolLoop(toolLoop)
   , m_toolLoopManager(new tools::ToolLoopManager(toolLoop))
   , m_mouseMoveReceived(false)
+  , m_mousePressedReceived(false)
 {
 }
 
@@ -51,7 +54,8 @@ DrawingState::~DrawingState()
   destroyLoop(nullptr);
 }
 
-void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
+void DrawingState::initToolLoop(Editor* editor,
+                                const tools::Pointer& pointer)
 {
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
@@ -65,33 +69,16 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
      BlendMode::NEG_BW));
 
-  tools::Pointer pointer;
-  bool movement = false;
-
-  if (m_toolLoop->getController()->isFreehand() &&
-      m_toolLoop->getInk()->isPaint() &&
-      (editor->getCustomizationDelegate()
-         ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
-      editor->document()->lastDrawingPoint() != app::Document::NoLastDrawingPoint()) {
-    pointer = tools::Pointer(editor->document()->lastDrawingPoint(),
-                             button_from_msg(msg));
-    movement = true;
-  }
-  else {
-    pointer = pointer_from_msg(editor, msg);
-  }
-
   m_toolLoopManager->prepareLoop(pointer);
   m_toolLoopManager->pressButton(pointer);
 
-  // This first movement is done when the user pressed Shift+click in
-  // a freehand tool to draw a straight line.
-  if (movement) {
-    pointer = pointer_from_msg(editor, msg);
-    m_toolLoopManager->movement(pointer);
-  }
-
   editor->captureMouse();
+}
+
+void DrawingState::sendMovementToToolLoop(const tools::Pointer& pointer)
+{
+  ASSERT(m_toolLoopManager);
+  m_toolLoopManager->movement(pointer);
 }
 
 void DrawingState::notifyToolLoopModifiersChange(Editor* editor)
@@ -104,6 +91,8 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   // Drawing loop
   ASSERT(m_toolLoopManager != NULL);
+
+  m_mousePressedReceived = true;
 
   // Notify the mouse button down to the tool loop manager.
   m_toolLoopManager->pressButton(pointer_from_msg(editor, msg));
@@ -195,8 +184,15 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 
 bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
-  if (msg->scancode() == ui::kKeyEsc)
+  // Cancel loop pressing Esc key...
+  if (msg->scancode() == ui::kKeyEsc ||
+      // Cancel "Shift on freehand" line preview when the Shift key is
+      // released and the user didn't press the mouse button..
+      (m_type == DrawingType::LineFreehand &&
+       !m_mousePressedReceived &&
+       !editor->startStraightLineWithFreehandTool())) {
     m_toolLoop->cancel();
+  }
 
   // The user might have canceled the tool loop pressing the 'Esc' key.
   destroyLoopIfCanceled(editor);

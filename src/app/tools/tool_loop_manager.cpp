@@ -54,6 +54,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
+  m_toolLoop->getController()->prepareController(m_toolLoop);
   m_toolLoop->getIntertwine()->prepareIntertwine();
   m_toolLoop->getPointShape()->preparePointShape(m_toolLoop);
 }

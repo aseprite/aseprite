@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,13 +12,15 @@
 
 namespace app {
   namespace tools {
+    class Pointer;
     class ToolLoop;
     class ToolLoopManager;
   }
 
   class DrawingState : public StandbyState {
   public:
-    DrawingState(tools::ToolLoop* loop);
+    DrawingState(tools::ToolLoop* loop,
+                 const DrawingType type);
     virtual ~DrawingState();
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
@@ -33,12 +35,20 @@ namespace app {
     // already drawing (viewing the real trace).
     virtual bool requireBrushPreview() override { return false; }
 
-    void initToolLoop(Editor* editor, ui::MouseMessage* msg);
+    void initToolLoop(Editor* editor,
+                      const tools::Pointer& pointer);
+
+    // Used to send a movement() to the ToolLoopManager when
+    // Shift+brush tool is used to paint a line.
+    void sendMovementToToolLoop(const tools::Pointer& pointer);
+
     void notifyToolLoopModifiersChange(Editor* editor);
 
   private:
     void destroyLoopIfCanceled(Editor* editor);
     void destroyLoop(Editor* editor);
+
+    DrawingType m_type;
 
     // The tool-loop.
     tools::ToolLoop* m_toolLoop;
@@ -55,6 +65,12 @@ namespace app {
     // DrawingState. It's used to restore the last drawing position in
     // case this stroke is canceled.
     gfx::Point m_lastPoint;
+
+    // Used to know if the button was pressed after the DrawingState
+    // was initialized. In this way we can cancel the ToolLoop if the
+    // Shift press is used to draw a line, but then released without a
+    // mouse click.
+    bool m_mousePressedReceived;
   };
 
 } // namespace app

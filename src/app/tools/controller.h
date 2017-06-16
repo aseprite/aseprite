@@ -8,6 +8,7 @@
 #define APP_TOOLS_CONTROLLER_H_INCLUDED
 #pragma once
 
+#include "app/tools/trace_policy.h"
 #include "gfx/point.h"
 
 #include <string>
@@ -28,6 +29,8 @@ namespace app {
       virtual bool isFreehand() { return false; }
       virtual bool isOnePoint() { return false; }
 
+      virtual void prepareController(ToolLoop* loop) { }
+
       // Called when the user starts drawing and each time a new button is
       // pressed. The controller could be sure that this method is called
       // at least one time. The point is a position relative to sprite
@@ -47,6 +50,13 @@ namespace app {
       // Last point used by this controller, useful to save the last
       // point of a freehand tool.
       virtual gfx::Point getLastPoint() const { return gfx::Point(0, 0); }
+
+      // Special trace policy that can change in the middle of the
+      // ToolLoop. This is for LineFreehandController which uses a
+      // TracePolicy::Last for TwoPoints controller (Line-like tool)
+      // and then a TracePolicy::Accumulate for freehand (Pencil tool).
+      virtual bool handleTracePolicy() const { return false; }
+      virtual TracePolicy getTracePolicy() const { return TracePolicy::Accumulate; }
     };
 
   } // namespace tools
