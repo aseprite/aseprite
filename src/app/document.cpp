@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,6 +33,7 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
+#include <limits>
 #include <map>
 
 namespace app {
@@ -48,6 +49,7 @@ Document::Document(Sprite* sprite)
   // Mask
   , m_mask(new Mask())
   , m_maskVisible(true)
+  , m_lastDrawingPoint(Document::NoLastDrawingPoint())
 {
   setFilename("Sprite");
 
@@ -430,6 +432,13 @@ Document* Document::duplicate(DuplicateType type) const
 void Document::onContextChanged()
 {
   m_undo->setContext(context());
+}
+
+// static
+gfx::Point Document::NoLastDrawingPoint()
+{
+  return gfx::Point(std::numeric_limits<int>::min(),
+                    std::numeric_limits<int>::min());
 }
 
 } // namespace app

@@ -12,6 +12,7 @@
 
 #include "app/app.h"
 #include "app/cmd/add_slice.h"
+#include "app/cmd/set_last_point.h"
 #include "app/cmd/set_mask.h"
 #include "app/color.h"
 #include "app/color_utils.h"
@@ -409,13 +410,19 @@ public:
   }
 
   // IToolLoop interface
-  void dispose() override
-  {
+  void commitOrRollback() override {
     bool redraw = false;
 
     if (!m_canceled) {
       // Paint ink
       if (getInk()->isPaint()) {
+        // Freehand changes the last point
+        if (getController()->isFreehand())
+          m_transaction.execute(
+            new cmd::SetLastPoint(
+              m_document,
+              getController()->getLastPoint()));
+
         try {
           ContextReader reader(m_context, 500);
           ContextWriter writer(reader, 500);
@@ -440,8 +447,9 @@ public:
 
       m_transaction.commit();
     }
-    else
+    else {
       redraw = true;
+    }
 
     // If the trace was canceled or it is not a 'paint' ink...
     if (m_canceled || !getInk()->isPaint()) {
@@ -622,7 +630,9 @@ public:
   }
 
   // IToolLoop interface
-  void dispose() override { }
+  void commitOrRollback() override {
+    // Do nothing
+  }
   const Image* getSrcImage() override { return m_image; }
   const Image* getFloodFillSrcImage() override { return m_image; }
   Image* getDstImage() override { return m_image; }

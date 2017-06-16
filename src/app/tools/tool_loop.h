@@ -61,7 +61,8 @@ namespace app {
       enum Button { Left = 0, Right = 1 };
 
       virtual ~ToolLoop() { }
-      virtual void dispose() = 0;
+
+      virtual void commitOrRollback() = 0;
 
       // Returns the tool to use to draw or use
       virtual Tool* getTool() = 0;

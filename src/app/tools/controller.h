@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -43,6 +43,10 @@ namespace app {
       // The input and output strokes are relative to sprite coordinates.
       virtual void getStrokeToInterwine(const Stroke& input, Stroke& output) = 0;
       virtual void getStatusBarText(const Stroke& stroke, std::string& text) = 0;
+
+      // Last point used by this controller, useful to save the last
+      // point of a freehand tool.
+      virtual gfx::Point getLastPoint() const { return gfx::Point(0, 0); }
     };
 
   } // namespace tools

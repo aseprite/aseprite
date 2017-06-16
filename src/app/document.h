@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -149,6 +149,14 @@ namespace app {
     void resetTransformation();
 
     //////////////////////////////////////////////////////////////////////
+    // Last point used to draw straight lines using freehand tools + Shift key
+    // (EditorCustomizationDelegate::isStraightLineFromLastPoint() modifier)
+
+    static gfx::Point NoLastDrawingPoint();
+    gfx::Point lastDrawingPoint() const { return m_lastDrawingPoint; }
+    void setLastDrawingPoint(const gfx::Point& pos) { m_lastDrawingPoint = pos; }
+
+    //////////////////////////////////////////////////////////////////////
     // Copying
 
     void copyLayerContent(const Layer* sourceLayer, Document* destDoc, Layer* destLayer) const;
@@ -179,6 +187,8 @@ namespace app {
 
     // Current transformation.
     Transformation m_transformation;
+
+    gfx::Point m_lastDrawingPoint;
 
     DISABLE_COPYING(Document);
   };

@@ -65,8 +65,6 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
      BlendMode::NEG_BW));
 
-  m_lastPoint = editor->lastDrawingPosition();
-
   tools::Pointer pointer;
   bool movement = false;
 
@@ -74,8 +72,9 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
       m_toolLoop->getInk()->isPaint() &&
       (editor->getCustomizationDelegate()
          ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
-      m_lastPoint.x >= 0) {
-    pointer = tools::Pointer(m_lastPoint, button_from_msg(msg));
+      editor->document()->lastDrawingPoint() != app::Document::NoLastDrawingPoint()) {
+    pointer = tools::Pointer(editor->document()->lastDrawingPoint(),
+                             button_from_msg(msg));
     movement = true;
   }
   else {
@@ -92,7 +91,6 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
     m_toolLoopManager->movement(pointer);
   }
 
-  editor->setLastDrawingPosition(pointer.point());
   editor->captureMouse();
 }
 
@@ -165,9 +163,6 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   ASSERT(m_toolLoopManager != NULL);
   m_toolLoopManager->movement(pointer);
 
-  // Save the last point.
-  editor->setLastDrawingPosition(pointer.point());
-
   return true;
 }
 
@@ -235,17 +230,11 @@ void DrawingState::destroyLoopIfCanceled(Editor* editor)
 
 void DrawingState::destroyLoop(Editor* editor)
 {
-  if (editor) {
-    if (m_toolLoopManager &&
-        m_toolLoopManager->isCanceled()) {
-      editor->setLastDrawingPosition(m_lastPoint);
-    }
-
+  if (editor)
     editor->renderEngine().removePreviewImage();
-  }
 
   if (m_toolLoop)
-    m_toolLoop->dispose();
+    m_toolLoop->commitOrRollback();
 
   delete m_toolLoopManager;
   delete m_toolLoop;

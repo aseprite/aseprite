@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -65,6 +65,8 @@ public:
 
   // Should be called each time the user moves the mouse inside the editor.
   void movement(const Pointer& pointer);
+
+  const Pointer& lastPointer() const { return m_lastPointer; }
 
 private:
   void doLoopStep(bool last_step);

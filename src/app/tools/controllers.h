@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -52,7 +52,10 @@ class FreehandController : public Controller {
 public:
   bool isFreehand() override { return true; }
 
+  gfx::Point getLastPoint() const override { return m_last; }
+
   void pressButton(Stroke& stroke, const Point& point) override {
+    m_last = point;
     stroke.addPoint(point);
   }
 
@@ -61,6 +64,7 @@ public:
   }
 
   void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    m_last = point;
     stroke.addPoint(point);
   }
 
@@ -88,6 +92,8 @@ public:
     text = buf;
   }
 
+private:
+  Point m_last;
 };
 
 // Controls clicks for tools like line

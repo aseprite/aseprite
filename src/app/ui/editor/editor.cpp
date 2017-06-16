@@ -163,7 +163,6 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_frame(frame_t(0))
   , m_docPref(Preferences::instance().document(document))
   , m_brushPreview(this)
-  , m_lastDrawingPosition(-1, -1)
   , m_toolLoopModifiers(tools::ToolLoopModifiers::kNone)
   , m_padding(0, 0)
   , m_antsTimer(100, this)
@@ -1828,11 +1827,6 @@ void Editor::setCursor(const gfx::Point& mouseScreenPos)
 
   if (!used)
     showMouseCursor(kArrowCursor);
-}
-
-void Editor::setLastDrawingPosition(const gfx::Point& pos)
-{
-  m_lastDrawingPosition = pos;
 }
 
 bool Editor::canDraw()
