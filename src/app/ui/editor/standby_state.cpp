@@ -487,22 +487,8 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  // Start line preview with shift key
-  if (editor->startStraightLineWithFreehandTool()) {
-    DrawingState* drawingState =
-      startDrawingState(editor,
-                        DrawingType::LineFreehand,
-                        tools::Pointer(
-                          editor->document()->lastDrawingPoint(),
-                          tools::Pointer::Left));
-    if (drawingState) {
-      drawingState->sendMovementToToolLoop(
-        tools::Pointer(
-          editor->screenToEditor(ui::get_mouse_position()),
-          tools::Pointer::Left));
-      return true;
-    }
-  }
+  if (checkStartDrawingStraightLine(editor))
+    return true;
   return false;
 }
 
@@ -619,6 +605,27 @@ DrawingState* StandbyState::startDrawingState(Editor* editor,
                    pointer);
 
   return static_cast<DrawingState*>(newState.get());
+}
+
+bool StandbyState::checkStartDrawingStraightLine(Editor* editor)
+{
+  // Start line preview with shift key
+  if (editor->startStraightLineWithFreehandTool()) {
+    DrawingState* drawingState =
+      startDrawingState(editor,
+                        DrawingType::LineFreehand,
+                        tools::Pointer(
+                          editor->document()->lastDrawingPoint(),
+                          tools::Pointer::Left));
+    if (drawingState) {
+      drawingState->sendMovementToToolLoop(
+        tools::Pointer(
+          editor->screenToEditor(ui::get_mouse_position()),
+          tools::Pointer::Left));
+      return true;
+    }
+  }
+  return false;
 }
 
 Transformation StandbyState::getTransformation(Editor* editor)

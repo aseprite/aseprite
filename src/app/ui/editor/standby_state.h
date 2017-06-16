@@ -50,6 +50,7 @@ namespace app {
 
   protected:
     void callEyedropper(Editor* editor);
+    bool checkStartDrawingStraightLine(Editor* editor);
 
     class Decorator : public EditorDecorator {
     public:

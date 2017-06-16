@@ -128,6 +128,12 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   // Update the timeline. TODO make this state observable by the timeline.
   App::instance()->timeline()->updateUsingEditor(editor);
+
+  // Restart again? Here we handle the case to draw multiple lines
+  // using Shift+click with the Pencil tool. When we release the mouse
+  // button, if the Shift key is pressed, the whole ToolLoop starts
+  // again.
+  checkStartDrawingStraightLine(editor);
   return true;
 }
 
