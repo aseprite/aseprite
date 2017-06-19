@@ -1519,6 +1519,7 @@ bool Editor::startStraightLineWithFreehandTool()
   tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
   return
     (isActive() &&
+     (hasMouse() || hasCapture()) &&
      tool &&
      tool->getController(0)->isFreehand() &&
      tool->getInk(0)->isPaint() &&
