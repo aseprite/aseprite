@@ -596,7 +596,8 @@ DrawingState* StandbyState::startDrawingState(Editor* editor,
     return nullptr;
 
   EditorStatePtr newState(
-    new DrawingState(toolLoop,
+    new DrawingState(editor,
+                     toolLoop,
                      drawingType));
   editor->setState(newState);
 

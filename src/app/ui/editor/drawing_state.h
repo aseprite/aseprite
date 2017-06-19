@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/ui/editor/standby_state.h"
+#include "obs/connection.h"
 
 namespace app {
   namespace tools {
@@ -17,9 +18,12 @@ namespace app {
     class ToolLoopManager;
   }
 
+  class CommandExecutionEvent;
+
   class DrawingState : public StandbyState {
   public:
-    DrawingState(tools::ToolLoop* loop,
+    DrawingState(Editor* editor,
+                 tools::ToolLoop* loop,
                  const DrawingType type);
     virtual ~DrawingState();
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
@@ -45,9 +49,12 @@ namespace app {
     void notifyToolLoopModifiersChange(Editor* editor);
 
   private:
+    bool canExecuteCommands();
+    void onBeforeCommandExecution(CommandExecutionEvent& cmd);
     void destroyLoopIfCanceled(Editor* editor);
     void destroyLoop(Editor* editor);
 
+    Editor* m_editor;
     DrawingType m_type;
 
     // The tool-loop.
@@ -71,6 +78,8 @@ namespace app {
     // Shift press is used to draw a line, but then released without a
     // mouse click.
     bool m_mousePressedReceived;
+
+    obs::scoped_connection m_beforeCmdConn;
   };
 
 } // namespace app

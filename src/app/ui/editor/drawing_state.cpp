@@ -39,14 +39,19 @@ namespace app {
 
 using namespace ui;
 
-DrawingState::DrawingState(tools::ToolLoop* toolLoop,
+DrawingState::DrawingState(Editor* editor,
+                           tools::ToolLoop* toolLoop,
                            const DrawingType type)
-  : m_type(type)
+  : m_editor(editor)
+  , m_type(type)
   , m_toolLoop(toolLoop)
   , m_toolLoopManager(new tools::ToolLoopManager(toolLoop))
   , m_mouseMoveReceived(false)
   , m_mousePressedReceived(false)
 {
+  m_beforeCmdConn =
+    UIContext::instance()->BeforeCommandExecution.connect(
+      &DrawingState::onBeforeCommandExecution, this);
 }
 
 DrawingState::~DrawingState()
@@ -91,6 +96,9 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   // Drawing loop
   ASSERT(m_toolLoopManager != NULL);
+
+  if (!editor->hasCapture())
+    editor->captureMouse();
 
   m_mousePressedReceived = true;
 
@@ -180,12 +188,15 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
   if (KeyboardShortcuts::instance()
         ->getCommandFromKeyMessage(msg, &command, &params)) {
     // We accept zoom commands.
-    if (command->id() == CommandId::Zoom)
+    if (command->id() == CommandId::Zoom) {
       UIContext::instance()->executeCommand(command, params);
+      return true;
+    }
   }
 
-  // When we are drawing, we "eat" all pressed keys.
-  return true;
+  // Return true when we cannot execute commands (true = the onKeyDown
+  // event was used, so the key is not used to run a command).
+  return !canExecuteCommands();
 }
 
 bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
@@ -216,6 +227,25 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
 {
   if (m_toolLoop)
     m_toolLoop->validateDstImage(rgn);
+}
+
+bool DrawingState::canExecuteCommands()
+{
+  // Returning true here means that the user can trigger commands with
+  // keyboard shortcuts. In our case we want to be able to use
+  // keyboard shortcuts only when the Shift key was pressed to run a
+  // command (e.g. Shift+N), not to draw a straight line from the
+  // pencil (freehand) tool.
+  return (m_type == DrawingType::LineFreehand &&
+          !m_mousePressedReceived);
+}
+
+void DrawingState::onBeforeCommandExecution(CommandExecutionEvent& cmd)
+{
+  if (canExecuteCommands() && m_toolLoop) {
+    m_toolLoop->cancel();
+    destroyLoopIfCanceled(m_editor);
+  }
 }
 
 void DrawingState::destroyLoopIfCanceled(Editor* editor)
