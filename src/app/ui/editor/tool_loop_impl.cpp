@@ -131,13 +131,11 @@ public:
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
-    tools::FreehandAlgorithm algorithm = m_toolPref.freehandAlgorithm();
-
     if (m_tracePolicy == tools::TracePolicy::Accumulate ||
         m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
       tools::ToolBox* toolbox = App::instance()->toolBox();
 
-      switch (algorithm) {
+      switch (m_toolPref.freehandAlgorithm()) {
         case tools::FreehandAlgorithm::DEFAULT:
           m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines);
           m_tracePolicy = tools::TracePolicy::Accumulate;
