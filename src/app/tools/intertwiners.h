@@ -239,6 +239,14 @@ public:
   }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
+    // Required for LineFreehand controller in the first stage, when
+    // we are drawing the line and the trace policy is "Last". Each
+    // new joinStroke() is like a fresh start.  Without this fix, the
+    // first stage on LineFreehand will draw a "star" like pattern
+    // with lines from the first point to the last point.
+    if (loop->getTracePolicy() == TracePolicy::Last)
+      m_pts.reset();
+
     if (stroke.size() == 0)
       return;
     else if (m_pts.empty() && stroke.size() == 1) {
