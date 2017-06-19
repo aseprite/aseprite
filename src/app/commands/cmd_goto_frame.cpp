@@ -11,10 +11,12 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/loop_tag.h"
+#include "app/match_words.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
+#include "app/ui/search_entry.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
 #include "ui/window.h"
@@ -147,7 +149,35 @@ public:
                      , m_showUI(true) { }
   Command* clone() const override { return new GotoFrameCommand(*this); }
 
-protected:
+private:
+
+  // TODO this combobox is similar to FileSelector::CustomFileNameEntry
+  class TagsEntry : public ComboBox {
+  public:
+    TagsEntry(FrameTags& frameTags)
+      : m_frameTags(frameTags) {
+      setEditable(true);
+      getEntryWidget()->Change.connect(&TagsEntry::onEntryChange, this);
+    }
+
+  private:
+    void onEntryChange() {
+      removeAllItems();
+      closeListBox();
+
+      MatchWords match(getEntryWidget()->text());
+      for (const auto& frameTag : m_frameTags) {
+        if (match(frameTag->name()))
+          addItem(frameTag->name());
+      }
+
+      if (getItemCount() > 0)
+        openListBox();
+    }
+
+    FrameTags& m_frameTags;
+  };
+
   void onLoadParams(const Params& params) override {
     std::string frame = params.get("frame");
     if (!frame.empty()) {
@@ -163,13 +193,35 @@ protected:
 
     if (m_showUI) {
       app::gen::GotoFrame window;
-      window.frame()->setTextf(
+      TagsEntry combobox(editor->sprite()->frameTags());
+
+      window.framePlaceholder()->addChild(&combobox);
+
+      combobox.setFocusMagnet(true);
+      combobox.getEntryWidget()->setTextf(
         "%d", editor->frame()+docPref.timeline.firstFrame());
+
       window.openWindowInForeground();
       if (window.closer() != window.ok())
         return editor->frame();
 
-      m_frame = window.frame()->textInt();
+      std::string text = combobox.getEntryWidget()->text();
+      frame_t frameNum = base::convert_to<int>(text);
+      std::string textFromInt = base::convert_to<std::string>(frameNum);
+      if (text == textFromInt) {
+        m_frame = frameNum;
+      }
+      // Search a tag name
+      else {
+        MatchWords match(text);
+        for (const auto& frameTag : editor->sprite()->frameTags()) {
+          if (match(frameTag->name())) {
+            m_frame =
+              frameTag->fromFrame()+docPref.timeline.firstFrame();
+            break;
+          }
+        }
+      }
     }
 
     return MID(0, m_frame-docPref.timeline.firstFrame(), editor->sprite()->lastFrame());
