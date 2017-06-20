@@ -35,9 +35,8 @@ If you found a bug or have a new idea/feature for the program,
 
 You can ask for help in:
 
-* Our official support email address: [support@aseprite.org](mailto:support@aseprite.org)
-* [Aseprite Steam Community](https://steamcommunity.com/app/431730/discussions/)
-* [Aseprite mailing list](http://groups.google.com/group/aseprite-discuss) ([subscribe](mailto:aseprite-discuss+subscribe@googlegroups.com))
+* Official support: [support@aseprite.org](mailto:support@aseprite.org)
+* [Aseprite Community](https://community.aseprite.org/)
 * Social networks and community-driven places:
   [Twitter](https://twitter.com/aseprite/),
   [Facebook](https://facebook.com/aseprite/),
