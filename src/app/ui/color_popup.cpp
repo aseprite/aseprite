@@ -116,6 +116,54 @@ public:
   }
 };
 
+ColorPopup::CustomButtonSet::CustomButtonSet()
+  : ButtonSet(COLOR_MODES)
+{
+}
+
+int ColorPopup::CustomButtonSet::countSelectedItems()
+{
+  int count = 0;
+  for (int i=0; i<COLOR_MODES; ++i)
+    if (getItem(i)->isSelected())
+      ++count;
+  return count;
+}
+
+void ColorPopup::CustomButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
+{
+  int count = countSelectedItems();
+  int itemIndex = getItemIndex(item);
+
+  if (itemIndex == INDEX_MODE ||
+      itemIndex == MASK_MODE ||
+      !msg ||
+      // Any key modifier will act as multiple selection
+      (!msg->shiftPressed() &&
+       !msg->altPressed() &&
+       !msg->ctrlPressed() &&
+       !msg->cmdPressed())) {
+    if (item &&
+        item->isSelected() &&
+        count == 1)
+      return;
+
+    for (int i=0; i<COLOR_MODES; ++i)
+      if (getItem(i)->isSelected())
+        getItem(i)->setSelected(false);
+  }
+
+  if (item) {
+    // Item already selected
+    if (count == 1 && item == findSelectedItem())
+      return;
+
+    item->setSelected(!item->isSelected());
+    if (focusItem)
+      item->requestFocus();
+  }
+}
+
 ColorPopup::ColorPopup(const bool canPin,
                        bool showSimpleColors)
   : PopupWindowPin(" ", // Non-empty to create title-bar and close button
@@ -126,7 +174,6 @@ ColorPopup::ColorPopup(const bool canPin,
   , m_color(app::Color::fromMask())
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
   , m_simpleColors(nullptr)
-  , m_colorType(COLOR_MODES)
   , m_maskLabel("Transparent Color Selected")
   , m_canPin(canPin)
   , m_disableHexUpdate(false)
@@ -157,10 +204,7 @@ ColorPopup::ColorPopup(const bool canPin,
 
   m_colorPaletteContainer.attachToView(&m_colorPalette);
   m_colorPaletteContainer.setExpansive(true);
-  m_rgbSliders.setExpansive(true);
-  m_hsvSliders.setExpansive(true);
-  m_hslSliders.setExpansive(true);
-  m_graySlider.setExpansive(true);
+  m_sliders.setExpansive(true);
 
   m_topBox.addChild(&m_colorType);
   m_topBox.addChild(new Separator("", VERTICAL));
@@ -192,19 +236,13 @@ ColorPopup::ColorPopup(const bool canPin,
     m_vbox.addChild(m_simpleColors);
   m_vbox.addChild(&m_topBox);
   m_vbox.addChild(&m_colorPaletteContainer);
-  m_vbox.addChild(&m_rgbSliders);
-  m_vbox.addChild(&m_hsvSliders);
-  m_vbox.addChild(&m_hslSliders);
-  m_vbox.addChild(&m_graySlider);
+  m_vbox.addChild(&m_sliders);
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
 
   m_colorType.ItemChange.connect(base::Bind<void>(&ColorPopup::onColorTypeClick, this));
 
-  m_rgbSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
-  m_hsvSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
-  m_hslSliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
-  m_graySlider.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
+  m_sliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);
 
   // Set RGB just for the sizeHint(), and then deselect the color type
@@ -244,10 +282,7 @@ void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
     m_colorPalette.selectColor(color.getIndex());
   }
 
-  m_rgbSliders.setColor(m_color);
-  m_hsvSliders.setColor(m_color);
-  m_hslSliders.setColor(m_color);
-  m_graySlider.setColor(m_color);
+  m_sliders.setColor(m_color);
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(m_color);
 
@@ -404,20 +439,30 @@ void ColorPopup::setColorWithSignal(const app::Color& color)
 void ColorPopup::selectColorType(app::Color::Type type)
 {
   m_colorPaletteContainer.setVisible(type == app::Color::IndexType);
-  m_rgbSliders.setVisible(type == app::Color::RgbType);
-  m_hsvSliders.setVisible(type == app::Color::HsvType);
-  m_hslSliders.setVisible(type == app::Color::HslType);
-  m_graySlider.setVisible(type == app::Color::GrayType);
   m_maskLabel.setVisible(type == app::Color::MaskType);
 
-  switch (type) {
-    case app::Color::IndexType: m_colorType.setSelectedItem(INDEX_MODE); break;
-    case app::Color::RgbType:   m_colorType.setSelectedItem(RGB_MODE); break;
-    case app::Color::HsvType:   m_colorType.setSelectedItem(HSV_MODE); break;
-    case app::Color::HslType:   m_colorType.setSelectedItem(HSL_MODE); break;
-    case app::Color::GrayType:  m_colorType.setSelectedItem(GRAY_MODE); break;
-    case app::Color::MaskType:  m_colorType.setSelectedItem(MASK_MODE); break;
+  // Count selected items.
+  if (m_colorType.countSelectedItems() < 2) {
+    switch (type) {
+      case app::Color::IndexType: m_colorType.setSelectedItem(INDEX_MODE); break;
+      case app::Color::RgbType:   m_colorType.setSelectedItem(RGB_MODE); break;
+      case app::Color::HsvType:   m_colorType.setSelectedItem(HSV_MODE); break;
+      case app::Color::HslType:   m_colorType.setSelectedItem(HSL_MODE); break;
+      case app::Color::GrayType:  m_colorType.setSelectedItem(GRAY_MODE); break;
+      case app::Color::MaskType:  m_colorType.setSelectedItem(MASK_MODE); break;
+    }
   }
+
+  std::vector<app::Color::Type> types;
+  if (m_colorType.getItem(RGB_MODE)->isSelected())
+    types.push_back(app::Color::RgbType);
+  if (m_colorType.getItem(HSV_MODE)->isSelected())
+    types.push_back(app::Color::HsvType);
+  if (m_colorType.getItem(HSL_MODE)->isSelected())
+    types.push_back(app::Color::HslType);
+  if (m_colorType.getItem(GRAY_MODE)->isSelected())
+    types.push_back(app::Color::GrayType);
+  m_sliders.setColorTypes(types);
 
   // Remove focus from hidden RGB/HSV/HSL text entries
   auto widget = manager()->getFocus();

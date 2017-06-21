@@ -42,23 +42,31 @@ public:
     , m_filter(filter)
   {
     getContainer()->addChild(&m_sliders);
-    m_sliders.setMode(ColorSliders::Relative);
+    m_sliders.setColorType(app::Color::HslType);
+    m_sliders.setMode(ColorSliders::Mode::Relative);
     m_sliders.ColorChange.connect(base::Bind<void>(&HueSaturationWindow::onChangeControls, this));
   }
 
 private:
 
   void onChangeControls() {
-    m_filter.setHue(double(m_sliders.getRelSliderValue(0)));
-    m_filter.setSaturation(m_sliders.getRelSliderValue(1) / 100.0);
-    m_filter.setLightness(m_sliders.getRelSliderValue(2) / 100.0);
-    m_filter.setAlpha(m_sliders.getRelSliderValue(3));
+    m_filter.setHue(
+      double(m_sliders.getRelSliderValue(ColorSliders::Channel::HslHue)));
+
+    m_filter.setSaturation(
+      m_sliders.getRelSliderValue(ColorSliders::Channel::HslSaturation) / 100.0);
+
+    m_filter.setLightness(
+      m_sliders.getRelSliderValue(ColorSliders::Channel::HslLightness) / 100.0);
+
+    m_filter.setAlpha(
+      m_sliders.getRelSliderValue(ColorSliders::Channel::Alpha));
 
     restartPreview();
   }
 
   HueSaturationFilter& m_filter;
-  HslSliders m_sliders;
+  ColorSliders m_sliders;
 };
 
 class HueSaturationCommand : public Command {

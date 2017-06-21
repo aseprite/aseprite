@@ -96,9 +96,7 @@ private:
   ButtonSet m_changeMode;
   HexColorEntry m_hexColorEntry;
   Label m_entryLabel;
-  RgbSliders m_rgbSliders;
-  HsvSliders m_hsvSliders;
-  HslSliders m_hslSliders;
+  ColorSliders m_sliders;
 
   // This variable is used to avoid updating the m_hexColorEntry text
   // when the color change is generated from a
@@ -274,18 +272,14 @@ PaletteEntryEditor::PaletteEntryEditor()
 
   // Main vertical box
   m_vbox.addChild(&m_topBox);
-  m_vbox.addChild(&m_rgbSliders);
-  m_vbox.addChild(&m_hsvSliders);
-  m_vbox.addChild(&m_hslSliders);
+  m_vbox.addChild(&m_sliders);
   m_vbox.addChild(&m_bottomBox);
   addChild(&m_vbox);
 
   m_colorType.ItemChange.connect(base::Bind<void>(&PaletteEntryEditor::onColorTypeClick, this));
   m_changeMode.ItemChange.connect(base::Bind<void>(&PaletteEntryEditor::onChangeModeClick, this));
 
-  m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
-  m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
-  m_hslSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
+  m_sliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&PaletteEntryEditor::onColorHexEntryChange, this);
 
   m_changeMode.setSelectedItem(ABS_MODE);
@@ -312,9 +306,7 @@ PaletteEntryEditor::PaletteEntryEditor()
 
 void PaletteEntryEditor::setColor(const app::Color& color)
 {
-  m_rgbSliders.setColor(color);
-  m_hsvSliders.setColor(color);
-  m_hslSliders.setColor(color);
+  m_sliders.setColor(color);
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(color);
 
@@ -429,7 +421,7 @@ void PaletteEntryEditor::onColorSlidersChange(ColorSlidersChangeEvent& ev)
 {
   setColor(ev.color());
 
-  if (ev.mode() == ColorSliders::Absolute)
+  if (ev.mode() == ColorSliders::Mode::Absolute)
     setAbsolutePaletteEntryChannel(ev.channel(), ev.color());
   else
     setRelativePaletteEntryChannel(ev.channel(), ev.delta());
@@ -471,14 +463,10 @@ void PaletteEntryEditor::onChangeModeClick()
 {
   switch (m_changeMode.selectedItem()) {
     case ABS_MODE:
-      m_rgbSliders.setMode(ColorSliders::Absolute);
-      m_hsvSliders.setMode(ColorSliders::Absolute);
-      m_hslSliders.setMode(ColorSliders::Absolute);
+      m_sliders.setMode(ColorSliders::Mode::Absolute);
       break;
     case REL_MODE:
-      m_rgbSliders.setMode(ColorSliders::Relative);
-      m_hsvSliders.setMode(ColorSliders::Relative);
-      m_hslSliders.setMode(ColorSliders::Relative);
+      m_sliders.setMode(ColorSliders::Mode::Relative);
       break;
   }
 
@@ -537,15 +525,15 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
         else {
           // Setup the new RGB values depending of the modified channel.
           switch (channel) {
-            case ColorSliders::Red:
+            case ColorSliders::Channel::Red:
               r = color.getRed();
-            case ColorSliders::Green:
+            case ColorSliders::Channel::Green:
               g = color.getGreen();
               break;
-            case ColorSliders::Blue:
+            case ColorSliders::Channel::Blue:
               b = color.getBlue();
               break;
-            case ColorSliders::Alpha:
+            case ColorSliders::Channel::Alpha:
               a = color.getAlpha();
               break;
           }
@@ -569,16 +557,16 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
 
           // Only modify the desired HSV channel
           switch (channel) {
-            case ColorSliders::HsvHue:
+            case ColorSliders::Channel::HsvHue:
               hsv.hue(color.getHsvHue());
               break;
-            case ColorSliders::HsvSaturation:
+            case ColorSliders::Channel::HsvSaturation:
               hsv.saturation(color.getHsvSaturation());
               break;
-            case ColorSliders::HsvValue:
+            case ColorSliders::Channel::HsvValue:
               hsv.value(color.getHsvValue());
               break;
-            case ColorSliders::Alpha:
+            case ColorSliders::Channel::Alpha:
               a = color.getAlpha();
               break;
           }
@@ -609,16 +597,16 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
 
           // Only modify the desired HSL channel
           switch (channel) {
-            case ColorSliders::HslHue:
+            case ColorSliders::Channel::HslHue:
               hsl.hue(color.getHslHue());
               break;
-            case ColorSliders::HslSaturation:
+            case ColorSliders::Channel::HslSaturation:
               hsl.saturation(color.getHslSaturation());
               break;
-            case ColorSliders::HslLightness:
+            case ColorSliders::Channel::HslLightness:
               hsl.lightness(color.getHslLightness());
               break;
-            case ColorSliders::Alpha:
+            case ColorSliders::Channel::Alpha:
               a = color.getAlpha();
               break;
           }
@@ -664,19 +652,19 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
     switch (m_type) {
 
       case app::Color::RgbType:
-        r = MID(0, r+m_relDeltas[ColorSliders::Red],   255);
-        g = MID(0, g+m_relDeltas[ColorSliders::Green], 255);
-        b = MID(0, b+m_relDeltas[ColorSliders::Blue],  255);
-        a = MID(0, a+m_relDeltas[ColorSliders::Alpha], 255);
+        r = MID(0, r+m_relDeltas[ColorSliders::Channel::Red],   255);
+        g = MID(0, g+m_relDeltas[ColorSliders::Channel::Green], 255);
+        b = MID(0, b+m_relDeltas[ColorSliders::Channel::Blue],  255);
+        a = MID(0, a+m_relDeltas[ColorSliders::Channel::Alpha], 255);
         break;
 
       case app::Color::HsvType: {
         // Convert RGB to HSV
         Hsv hsv(Rgb(r, g, b));
 
-        double h = hsv.hue()       +m_relDeltas[ColorSliders::HsvHue];
-        double s = hsv.saturation()+m_relDeltas[ColorSliders::HsvSaturation]/100.0;
-        double v = hsv.value()     +m_relDeltas[ColorSliders::HsvValue]     /100.0;
+        double h = hsv.hue()       +m_relDeltas[ColorSliders::Channel::HsvHue];
+        double s = hsv.saturation()+m_relDeltas[ColorSliders::Channel::HsvSaturation]/100.0;
+        double v = hsv.value()     +m_relDeltas[ColorSliders::Channel::HsvValue]     /100.0;
 
         if (h < 0.0) h += 360.0;
         else if (h > 360.0) h -= 360.0;
@@ -690,7 +678,7 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
         r = rgb.red();
         g = rgb.green();
         b = rgb.blue();
-        a = MID(0, a+m_relDeltas[ColorSliders::Alpha], 255);
+        a = MID(0, a+m_relDeltas[ColorSliders::Channel::Alpha], 255);
         break;
       }
 
@@ -698,9 +686,9 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
         // Convert RGB to HSL
         Hsl hsl(Rgb(r, g, b));
 
-        double h = hsl.hue()       +m_relDeltas[ColorSliders::HslHue];
-        double s = hsl.saturation()+m_relDeltas[ColorSliders::HslSaturation]/100.0;
-        double l = hsl.lightness() +m_relDeltas[ColorSliders::HslLightness] /100.0;
+        double h = hsl.hue()       +m_relDeltas[ColorSliders::Channel::HslHue];
+        double s = hsl.saturation()+m_relDeltas[ColorSliders::Channel::HslSaturation]/100.0;
+        double l = hsl.lightness() +m_relDeltas[ColorSliders::Channel::HslLightness] /100.0;
 
         if (h < 0.0) h += 360.0;
         else if (h > 360.0) h -= 360.0;
@@ -727,9 +715,7 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
 void PaletteEntryEditor::selectColorType(app::Color::Type type)
 {
   m_type = type;
-  m_rgbSliders.setVisible(type == app::Color::RgbType);
-  m_hsvSliders.setVisible(type == app::Color::HsvType);
-  m_hslSliders.setVisible(type == app::Color::HslType);
+  m_sliders.setColorType(type);
 
   resetRelativeInfo();
 
@@ -822,9 +808,7 @@ void PaletteEntryEditor::onPalChange()
 
 void PaletteEntryEditor::resetRelativeInfo()
 {
-  m_rgbSliders.resetRelativeSliders();
-  m_hsvSliders.resetRelativeSliders();
-  m_hslSliders.resetRelativeSliders();
+  m_sliders.resetRelativeSliders();
   get_current_palette()->copyColorsTo(&m_fromPalette);
   m_relDeltas.clear();
 }

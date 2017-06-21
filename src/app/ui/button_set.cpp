@@ -162,7 +162,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
         if (mnemonicPressed ||
             (hasFocus() && keymsg->scancode() == kKeySpace)) {
-          buttonSet()->setSelectedItem(this);
+          buttonSet()->onSelectItem(this, true, msg);
           onClick();
         }
       }
@@ -179,7 +179,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       }
 
       captureMouse();
-      buttonSet()->setSelectedItem(this);
+      buttonSet()->onSelectItem(this, true, msg);
       invalidate();
 
       if (static_cast<MouseMessage*>(msg)->left() &&
@@ -213,10 +213,15 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
             // Only for ButtonSets trigerred on mouse up.
             if (buttonSet()->m_triggerOnMouseUp &&
                 g_itemBeforeCapture >= 0) {
-              // As we never received a kMouseUpMessage (so we never
-              // called onClick()), we have to restore the selected
-              // item at the point when we received the mouse capture.
-              buttonSet()->setSelectedItem(g_itemBeforeCapture);
+              if (g_itemBeforeCapture < (int)children().size()) {
+                Item* item = dynamic_cast<Item*>(at(g_itemBeforeCapture));
+                ASSERT(item);
+
+                // As we never received a kMouseUpMessage (so we never
+                // called onClick()), we have to restore the selected
+                // item at the point when we received the mouse capture.
+                buttonSet()->onSelectItem(item, true, msg);
+              }
               g_itemBeforeCapture = -1;
             }
           }
@@ -304,6 +309,17 @@ ButtonSet::Item* ButtonSet::getItem(int index)
   return dynamic_cast<Item*>(at(index));
 }
 
+int ButtonSet::getItemIndex(const Item* item) const
+{
+  int index = 0;
+  for (Widget* child : children()) {
+    if (child == item)
+      return index;
+    ++index;
+  }
+  return -1;
+}
+
 int ButtonSet::selectedItem() const
 {
   int index = 0;
@@ -324,6 +340,11 @@ void ButtonSet::setSelectedItem(int index, bool focusItem)
 }
 
 void ButtonSet::setSelectedItem(Item* item, bool focusItem)
+{
+  onSelectItem(item, focusItem, nullptr);
+}
+
+void ButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
 {
   if (!m_multipleSelection) {
     if (item && item->isSelected())

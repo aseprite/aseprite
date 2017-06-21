@@ -17,6 +17,7 @@
 #include <vector>
 
 namespace ui {
+  class Box;
   class Label;
   class Slider;
   class Entry;
@@ -31,23 +32,25 @@ namespace app {
     enum Channel { Red, Green, Blue,
                    HsvHue, HsvSaturation, HsvValue,
                    HslHue, HslSaturation, HslLightness,
-                   Gray, Alpha };
+                   Gray, Alpha,
+                   Channels };
     enum Mode { Absolute, Relative };
 
     ColorSliders();
-    ~ColorSliders();
 
     void setColor(const app::Color& color);
+    void setColorType(const app::Color::Type type);
+    void setColorTypes(const std::vector<app::Color::Type>& types);
     void setMode(Mode mode);
     void resetRelativeSliders();
 
-    int getAbsSliderValue(int sliderIndex) const;
-    int getRelSliderValue(int sliderIndex) const;
+    int getAbsSliderValue(const Channel i) const;
+    int getRelSliderValue(const Channel i) const;
 
     // Signals
     obs::signal<void(ColorSlidersChangeEvent&)> ColorChange;
 
-  protected:
+  private:
     void onSizeHint(ui::SizeHintEvent& ev) override;
 
     // For derived classes
@@ -55,67 +58,33 @@ namespace app {
                    const char* labelText,
                    const int absMin, const int absMax,
                    const int relMin, const int relMax);
-    void setAbsSliderValue(int sliderIndex, int value);
+    void setAbsSliderValue(const Channel i, int value);
 
-    virtual void onSetColor(const app::Color& color) = 0;
-    virtual app::Color getColorFromSliders() = 0;
+    void updateSlidersVisibility();
+    void onSetColor(const app::Color& color);
+    app::Color getColorFromSliders(const Channel channel) const;
+    void onSliderChange(const Channel i);
+    void onEntryChange(const Channel i);
+    void onControlChange(const Channel i);
 
-  private:
-    void onSliderChange(int i);
-    void onEntryChange(int i);
-    void onControlChange(int i);
-
-    void updateEntryText(int entryIndex);
-    void updateSlidersBgColor(const app::Color& color);
+    void updateEntryText(const Channel i);
+    void updateSlidersBgColor();
     void updateSliderBgColor(ui::Slider* slider, const app::Color& color);
 
-    std::vector<ui::Label*> m_label;
-    std::vector<ui::Slider*> m_absSlider;
-    std::vector<ui::Slider*> m_relSlider;
-    std::vector<ui::Entry*> m_entry;
-    std::vector<Channel> m_channel;
+    struct Item {
+      bool show = false;
+      ui::Label* label = nullptr;
+      ui::Box* box = nullptr;
+      ui::Slider* absSlider = nullptr;
+      ui::Slider* relSlider = nullptr;
+      ui::Entry* entry = nullptr;
+    };
+
+    std::vector<Item> m_items;
     ui::Grid m_grid;
     Mode m_mode;
     int m_lockEntry;
-  };
-
-  //////////////////////////////////////////////////////////////////////
-  // Derived-classes
-
-  class RgbSliders : public ColorSliders {
-  public:
-    RgbSliders();
-
-  private:
-    virtual void onSetColor(const app::Color& color) override;
-    virtual app::Color getColorFromSliders() override;
-  };
-
-  class HsvSliders : public ColorSliders {
-  public:
-    HsvSliders();
-
-  private:
-    virtual void onSetColor(const app::Color& color) override;
-    virtual app::Color getColorFromSliders() override;
-  };
-
-  class HslSliders : public ColorSliders {
-  public:
-    HslSliders();
-
-  private:
-    virtual void onSetColor(const app::Color& color) override;
-    virtual app::Color getColorFromSliders() override;
-  };
-
-  class GraySlider : public ColorSliders {
-  public:
-    GraySlider();
-
-  private:
-    virtual void onSetColor(const app::Color& color) override;
-    virtual app::Color getColorFromSliders() override;
+    app::Color m_color;
   };
 
   //////////////////////////////////////////////////////////////////////

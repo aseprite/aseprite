@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,8 +41,10 @@ namespace app {
     Item* addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1);
     Item* addItem(Item* item, int hspan = 1, int vspan = 1);
     Item* getItem(int index);
+    int getItemIndex(const Item* item) const;
 
     int selectedItem() const;
+    Item* findSelectedItem() const;
     void setSelectedItem(int index, bool focusItem = true);
     void setSelectedItem(Item* item, bool focusItem = true);
     void deselectItems();
@@ -57,10 +59,9 @@ namespace app {
   protected:
     virtual void onItemChange(Item* item);
     virtual void onRightClick(Item* item);
+    virtual void onSelectItem(Item* item, bool focusItem, ui::Message* msg);
 
   private:
-    Item* findSelectedItem() const;
-
     bool m_offerCapture;
     bool m_triggerOnMouseUp;
     bool m_multipleSelection;

@@ -59,6 +59,13 @@ namespace app {
     void findBestfitIndex(const app::Color& color);
 
     class SimpleColors;
+    class CustomButtonSet : public ButtonSet {
+    public:
+      CustomButtonSet();
+      int countSelectedItems();
+    private:
+      void onSelectItem(Item* item, bool focusItem, ui::Message* msg) override;
+    };
 
     ui::Box m_vbox;
     ui::TooltipManager m_tooltips;
@@ -67,12 +74,9 @@ namespace app {
     ui::View m_colorPaletteContainer;
     PaletteView m_colorPalette;
     SimpleColors* m_simpleColors;
-    ButtonSet m_colorType;
+    CustomButtonSet m_colorType;
     HexColorEntry m_hexColorEntry;
-    RgbSliders m_rgbSliders;
-    HsvSliders m_hsvSliders;
-    HslSliders m_hslSliders;
-    GraySlider m_graySlider;
+    ColorSliders m_sliders;
     ui::Label m_maskLabel;
     obs::scoped_connection m_onPaletteChangeConn;
     bool m_canPin;
