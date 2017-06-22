@@ -175,6 +175,7 @@ ColorPopup::ColorPopup(const ColorButtonOptions& options)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
   , m_color(app::Color::fromMask())
+  , m_closeButton(nullptr)
   , m_colorPaletteContainer(options.showIndexTab ?
                             new ui::View: nullptr)
   , m_colorPalette(options.showIndexTab ?
@@ -224,19 +225,18 @@ ColorPopup::ColorPopup(const ColorButtonOptions& options)
   // TODO fix this hack for close button in popup window
   // Move close button (decorative widget) inside the m_topBox
   {
-    Widget* closeButton = nullptr;
     WidgetsList decorators;
     for (auto child : children()) {
       if (child->type() == kWindowCloseButtonWidget) {
-        closeButton = child;
+        m_closeButton = child;
         removeChild(child);
         break;
       }
     }
-    if (closeButton) {
+    if (m_closeButton) {
       m_topBox.addChild(new BoxFiller);
       VBox* vbox = new VBox;
-      vbox->addChild(closeButton);
+      vbox->addChild(m_closeButton);
       m_topBox.addChild(vbox);
     }
   }
@@ -307,6 +307,19 @@ void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
 app::Color ColorPopup::getColor() const
 {
   return m_color;
+}
+
+void ColorPopup::onWindowResize()
+{
+  PopupWindowPin::onWindowResize();
+
+  if (m_closeButton) {
+    gfx::Rect rc = m_closeButton->bounds();
+    if (rc.x2() > bounds().x2()) {
+      rc.x = bounds().x2() - rc.w;
+      m_closeButton->setBounds(rc);
+    }
+  }
 }
 
 void ColorPopup::onMakeFloating()

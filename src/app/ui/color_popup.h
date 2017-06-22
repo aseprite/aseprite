@@ -43,6 +43,7 @@ namespace app {
     obs::signal<void(const app::Color&)> ColorChange;
 
   protected:
+    void onWindowResize() override;
     void onMakeFloating() override;
     void onMakeFixed() override;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
@@ -72,6 +73,7 @@ namespace app {
     ui::TooltipManager m_tooltips;
     ui::Box m_topBox;
     app::Color m_color;
+    Widget* m_closeButton;
     ui::View* m_colorPaletteContainer;
     PaletteView* m_colorPalette;
     SimpleColors* m_simpleColors;
