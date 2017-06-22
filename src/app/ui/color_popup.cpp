@@ -152,6 +152,10 @@ void ColorPopup::CustomButtonSet::onSelectItem(Item* item, bool focusItem, ui::M
       if (getItem(i)->isSelected())
         getItem(i)->setSelected(false);
   }
+  else {
+    if (getItem(INDEX_MODE)->isSelected()) getItem(INDEX_MODE)->setSelected(false);
+    if (getItem(MASK_MODE)->isSelected()) getItem(MASK_MODE)->setSelected(false);
+  }
 
   if (item) {
     // Item already selected
