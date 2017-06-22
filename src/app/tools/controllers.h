@@ -99,9 +99,7 @@ private:
 // Controls clicks for tools like line
 class TwoPointsController : public MoveOriginCapability {
 public:
-  TwoPointsController(const bool enableModifiers)
-    : m_enableModifiers(enableModifiers) {
-  }
+  bool isTwoPoints() override { return true; }
 
   void pressButton(Stroke& stroke, const Point& point) override {
     MoveOriginCapability::pressButton(stroke, point);
@@ -126,8 +124,7 @@ public:
 
     stroke[1] = point;
 
-    if (m_enableModifiers &&
-        (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
+    if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
       int dx = stroke[1].x - m_first.x;
       int dy = stroke[1].y - m_first.y;
       int minsize = MIN(ABS(dx), ABS(dy));
@@ -172,8 +169,7 @@ public:
 
     stroke[0] = m_first;
 
-    if (m_enableModifiers &&
-        (int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter))) {
+    if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter))) {
       int rx = stroke[1].x - m_first.x;
       int ry = stroke[1].y - m_first.y;
       stroke[0].x = m_first.x - rx;
@@ -232,7 +228,6 @@ private:
   }
 
   Point m_first;
-  bool m_enableModifiers;
 };
 
 // Controls clicks for tools like polygon
@@ -390,8 +385,6 @@ private:
 // freehand until the mouse is released.
 class LineFreehandController : public Controller {
 public:
-  LineFreehandController() : m_twoPoints(false) { }
-
   bool isFreehand() override { return true; }
 
   gfx::Point getLastPoint() const override { return m_last; }
@@ -414,6 +407,8 @@ public:
   }
 
   bool releaseButton(Stroke& stroke, const Point& point) override {
+    if (!stroke.empty())
+      m_last = stroke.lastPoint();
     return false;
   }
 

@@ -28,6 +28,7 @@ namespace app {
       virtual bool canSnapToGrid() { return true; }
       virtual bool isFreehand() { return false; }
       virtual bool isOnePoint() { return false; }
+      virtual bool isTwoPoints() { return false; }
 
       virtual void prepareController(ToolLoop* loop) { }
 

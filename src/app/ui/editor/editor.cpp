@@ -1442,14 +1442,27 @@ void Editor::updateToolLoopModifiersIndicators()
                      int(tools::ToolLoopModifiers::kAddSelection) |
                      int(tools::ToolLoopModifiers::kSubtractSelection)));
 
-      // Shape tools (line, curves, rectangles, etc.)
-      action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
-      if (int(action & KeyAction::MoveOrigin))
-        modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
-      if (int(action & KeyAction::SquareAspect))
-        modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
-      if (int(action & KeyAction::DrawFromCenter))
-        modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
+      tools::Controller* controller =
+        (App::instance()->activeToolManager()->selectedTool() ?
+         App::instance()->activeToolManager()->selectedTool()->getController(0): nullptr);
+
+      // Shape tools modifiers (line, curves, rectangles, etc.)
+      if (controller && controller->isTwoPoints()) {
+        action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
+        if (int(action & KeyAction::MoveOrigin))
+          modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
+        if (int(action & KeyAction::SquareAspect))
+          modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
+        if (int(action & KeyAction::DrawFromCenter))
+          modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
+      }
+
+      // Freehand modifiers
+      if (controller && controller->isFreehand()) {
+        action = m_customizationDelegate->getPressedKeyAction(KeyContext::FreehandTool);
+        if (int(action & KeyAction::AngleSnapFromLastPoint))
+          modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
+      }
     }
     else {
       // We update the selection mode only if we're not selecting.

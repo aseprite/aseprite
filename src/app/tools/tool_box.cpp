@@ -115,7 +115,7 @@ ToolBox::ToolBox()
   m_controllers[WellKnownControllers::Freehand] = new FreehandController();
   m_controllers[WellKnownControllers::PointByPoint] = new PointByPointController();
   m_controllers[WellKnownControllers::OnePoints] = new OnePointController();
-  m_controllers[WellKnownControllers::TwoPoints] = new TwoPointsController(true);
+  m_controllers[WellKnownControllers::TwoPoints] = new TwoPointsController();
   m_controllers[WellKnownControllers::FourPoints] = new FourPointsController();
   m_controllers[WellKnownControllers::LineFreehand] = new LineFreehandController();
 

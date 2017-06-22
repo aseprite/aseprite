@@ -523,6 +523,7 @@
 
       <!-- Modifiers for freehand tool controller  -->
       <key action="StraightLineFromLastPoint" shortcut="Shift" />
+      <key action="AngleSnapFromLastPoint" shortcut="Ctrl" />
 
       <!-- Modifiers for two-points tool controller -->
       <key action="SquareAspect" shortcut="Shift" />

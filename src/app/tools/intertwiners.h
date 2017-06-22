@@ -234,6 +234,10 @@ class IntertwineAsPixelPerfect : public Intertwine {
   Stroke m_pts;
 
 public:
+  // Useful for Shift+Ctrl+pencil to draw straight lines and snap
+  // angle when "pixel perfect" is selected.
+  bool snapByAngle() override { return true; }
+
   void prepareIntertwine() override {
     m_pts.reset();
   }
