@@ -20,7 +20,9 @@
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/transaction.h"
+#include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/palette_view.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -358,6 +360,17 @@ Palette* FilterManagerImpl::getNewPalette()
   if (!m_oldPalette)
     m_oldPalette.reset(new Palette(*getPalette()));
   return m_site.sprite()->palette(m_site.frame());
+}
+
+doc::PalettePicks FilterManagerImpl::getPalettePicks()
+{
+  doc::PalettePicks picks;
+  ColorBar::instance()
+    ->getPaletteView()
+    ->getSelectedEntries(picks);
+  if (picks.picks() == 0)
+    picks.all();
+  return picks;
 }
 
 void FilterManagerImpl::init(Cel* cel)

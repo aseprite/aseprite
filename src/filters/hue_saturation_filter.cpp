@@ -12,6 +12,7 @@
 
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "doc/palette_picks.h"
 #include "doc/rgbmap.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
@@ -154,11 +155,19 @@ void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
   if (!filterMgr->isFirstRow())
     return;
 
-  const Palette* pal = filterMgr->getIndexedData()->getPalette();
+  FilterIndexedData* fid = filterMgr->getIndexedData();
   const Target target = filterMgr->getTarget();
-  Palette* newPal = filterMgr->getIndexedData()->getNewPalette();
+  const Palette* pal = fid->getPalette();
+  PalettePicks picks = fid->getPalettePicks();
+  Palette* newPal = fid->getNewPalette();
 
-  for (int i=0; i<newPal->size(); ++i) {
+  int i = 0;
+  for (bool state : picks) {
+    if (!state) {
+      ++i;
+      continue;
+    }
+
     color_t c = pal->getEntry(i);
     int r = rgba_getr(c);
     int g = rgba_getg(c);
@@ -197,6 +206,7 @@ void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
     }
 
     newPal->setEntry(i, c);
+    ++i;
   }
 }
 

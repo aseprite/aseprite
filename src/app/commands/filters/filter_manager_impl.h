@@ -109,6 +109,7 @@ namespace app {
     const doc::Palette* getPalette() const override;
     const doc::RgbMap* getRgbMap() const override;
     doc::Palette* getNewPalette() override;
+    doc::PalettePicks getPalettePicks() override;
 
   private:
     void init(doc::Cel* cel);
