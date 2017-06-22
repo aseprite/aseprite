@@ -12,11 +12,13 @@
 
 #include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
+#include "app/cmd/set_palette.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
+#include "app/modules/palettes.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -50,6 +52,7 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   , m_dst(nullptr)
   , m_mask(nullptr)
   , m_previewMask(nullptr)
+  , m_oldPalette(nullptr)
   , m_progressDelegate(NULL)
 {
   m_row = 0;
@@ -62,6 +65,14 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
     throw NoImageException();
 
   init(m_site.cel());
+}
+
+FilterManagerImpl::~FilterManagerImpl()
+{
+  if (m_oldPalette) {
+    restoreSpritePalette();
+    set_current_palette(m_oldPalette.get(), false);
+  }
 }
 
 app::Document* FilterManagerImpl::document()
@@ -211,6 +222,7 @@ void FilterManagerImpl::apply(Transaction& transaction)
 
 void FilterManagerImpl::applyToTarget()
 {
+  const bool paletteChange = paletteHasChanged();
   bool cancelled = false;
 
   ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
@@ -219,7 +231,7 @@ void FilterManagerImpl::applyToTarget()
                          m_site.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
                          true); // we will write in each image
-  if (images.empty())
+  if (images.empty() && !paletteChange)
     return;
 
   // Initialize writting operation
@@ -231,6 +243,15 @@ void FilterManagerImpl::applyToTarget()
   m_progressWidth = 1.0f / images.size();
 
   std::set<ObjectId> visited;
+
+  // Palette change
+  if (paletteChange) {
+    Palette newPalette = *getNewPalette();
+    restoreSpritePalette();
+    transaction.execute(
+      new cmd::SetPalette(m_site.sprite(),
+                          m_site.frame(), &newPalette));
+  }
 
   // For each target image
   for (auto it = images.begin();
@@ -253,6 +274,9 @@ void FilterManagerImpl::applyToTarget()
   }
 
   transaction.commit();
+
+  // Reset m_oldPalette to avoid restoring the color palette
+  m_oldPalette.reset(nullptr);
 }
 
 void FilterManagerImpl::flush()
@@ -261,6 +285,12 @@ void FilterManagerImpl::flush()
 
   if (m_row >= 0 && h > 0) {
     Editor* editor = current_editor;
+
+    // Redraw the color palette
+    if (m_nextRowToFlush == 0 && paletteHasChanged()) {
+      set_current_palette(getNewPalette(), false);
+      ColorBar::instance()->invalidate();
+    }
 
     // We expand the region one pixel at the top and bottom of the
     // region [m_row,m_nextRowToFlush) to be updated on the screen to
@@ -310,14 +340,24 @@ bool FilterManagerImpl::skipPixel()
   return skip;
 }
 
-Palette* FilterManagerImpl::getPalette()
+const Palette* FilterManagerImpl::getPalette() const
 {
-  return m_site.sprite()->palette(m_site.frame());
+  if (m_oldPalette)
+    return m_oldPalette.get();
+  else
+    return m_site.sprite()->palette(m_site.frame());
 }
 
-RgbMap* FilterManagerImpl::getRgbMap()
+const RgbMap* FilterManagerImpl::getRgbMap() const
 {
   return m_site.sprite()->rgbMap(m_site.frame());
+}
+
+Palette* FilterManagerImpl::getNewPalette()
+{
+  if (!m_oldPalette)
+    m_oldPalette.reset(new Palette(*getPalette()));
+  return m_site.sprite()->palette(m_site.frame());
 }
 
 void FilterManagerImpl::init(Cel* cel)
@@ -362,6 +402,20 @@ bool FilterManagerImpl::updateBounds(doc::Mask* mask)
   }
   m_bounds = bounds;
   return !m_bounds.isEmpty();
+}
+
+bool FilterManagerImpl::paletteHasChanged()
+{
+  return
+    (m_oldPalette &&
+     getPalette()->countDiff(getNewPalette(), nullptr, nullptr));
+}
+
+void FilterManagerImpl::restoreSpritePalette()
+{
+  // Restore the original palette to save the undoable "cmd"
+  if (m_oldPalette)
+    m_site.sprite()->setPalette(m_oldPalette.get(), false);
 }
 
 } // namespace app

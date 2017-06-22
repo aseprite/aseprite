@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,8 +20,12 @@ namespace filters {
   class FilterIndexedData {
   public:
     virtual ~FilterIndexedData() { }
-    virtual doc::Palette* getPalette() = 0;
-    virtual doc::RgbMap* getRgbMap() = 0;
+    virtual const doc::Palette* getPalette() const = 0;
+    virtual const doc::RgbMap* getRgbMap() const = 0;
+
+    // If a filter ask for a new palette, it means that the filter
+    // will modify the palette instead of pixels.
+    virtual doc::Palette* getNewPalette() = 0;
   };
 
 } // namespace filters

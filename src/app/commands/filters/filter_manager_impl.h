@@ -69,6 +69,7 @@ namespace app {
     };
 
     FilterManagerImpl(Context* context, Filter* filter);
+    ~FilterManagerImpl();
 
     void setProgressDelegate(IProgressDelegate* progressDelegate);
 
@@ -100,18 +101,22 @@ namespace app {
     FilterIndexedData* getIndexedData() override { return this; }
     bool skipPixel() override;
     const doc::Image* getSourceImage() override { return m_src.get(); }
-    int x() override { return m_bounds.x; }
-    int y() override { return m_bounds.y+m_row; }
+    int x() const override { return m_bounds.x; }
+    int y() const override { return m_bounds.y+m_row; }
+    bool isFirstRow() const override { return m_row == 0; }
 
     // FilterIndexedData implementation
-    doc::Palette* getPalette() override;
-    doc::RgbMap* getRgbMap() override;
+    const doc::Palette* getPalette() const override;
+    const doc::RgbMap* getRgbMap() const override;
+    doc::Palette* getNewPalette() override;
 
   private:
     void init(doc::Cel* cel);
     void apply(Transaction& transaction);
     void applyToCel(Transaction& transaction, doc::Cel* cel);
     bool updateBounds(doc::Mask* mask);
+    bool paletteHasChanged();
+    void restoreSpritePalette();
 
     Context* m_context;
     doc::Site m_site;
@@ -128,6 +133,7 @@ namespace app {
     doc::ImageBits<doc::BitmapTraits>::iterator m_maskIterator;
     Target m_targetOrig;          // Original targets
     Target m_target;              // Filtered targets
+    base::UniquePtr<doc::Palette> m_oldPalette;
 
     // Hooks
     float m_progressBase;

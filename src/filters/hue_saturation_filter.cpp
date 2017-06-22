@@ -61,8 +61,8 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
 {
   const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
   uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
+  const int w = filterMgr->getWidth();
+  const Target target = filterMgr->getTarget();
   int x, c, r, g, b, a;
 
   for (x=0; x<w; x++) {
@@ -114,8 +114,8 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
 {
   const uint16_t* src_address = (uint16_t*)filterMgr->getSourceAddress();
   uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
+  const int w = filterMgr->getWidth();
+  const Target target = filterMgr->getTarget();
   int x, c, k, a;
 
   for (x=0; x<w; x++) {
@@ -151,27 +151,19 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
 
 void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
 {
-  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
+  if (!filterMgr->isFirstRow())
+    return;
+
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
-  const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
-  int x, c, r, g, b, a;
+  const Target target = filterMgr->getTarget();
+  Palette* newPal = filterMgr->getIndexedData()->getNewPalette();
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
-    c = pal->getEntry(c);
-    r = rgba_getr(c);
-    g = rgba_getg(c);
-    b = rgba_getb(c);
-    a = rgba_geta(c);
+  for (int i=0; i<newPal->size(); ++i) {
+    color_t c = pal->getEntry(i);
+    int r = rgba_getr(c);
+    int g = rgba_getg(c);
+    int b = rgba_getb(c);
+    int a = rgba_geta(c);
 
     {
       gfx::Hsl hsl(gfx::Rgb(r, g, b));
@@ -194,13 +186,17 @@ void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
       if (target & TARGET_RED_CHANNEL  ) r = rgb.red();
       if (target & TARGET_GREEN_CHANNEL) g = rgb.green();
       if (target & TARGET_BLUE_CHANNEL ) b = rgb.blue();
-
       if (a && (target & TARGET_ALPHA_CHANNEL))
         a = MID(0, a+m_a, 255);
+
+      if (target & (TARGET_RED_CHANNEL   |
+                    TARGET_GREEN_CHANNEL |
+                    TARGET_BLUE_CHANNEL  |
+                    TARGET_ALPHA_CHANNEL))
+        c = rgba(r, g, b, a);
     }
 
-    c = rgbmap->mapColor(r, g, b, a);
-    *(dst_address++) = c;
+    newPal->setEntry(i, c);
   }
 }
 

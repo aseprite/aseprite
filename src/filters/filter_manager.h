@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -64,10 +64,14 @@ namespace filters {
     virtual const doc::Image* getSourceImage() = 0;
 
     // Returns the first X coordinate of the row to apply the filter.
-    virtual int x() = 0;
+    virtual int x() const = 0;
 
     // Returns the Y coordinate of the row.
-    virtual int y() = 0;
+    virtual int y() const = 0;
+
+    // Returns true if this is the first row. Useful to apply a filter
+    // to the palette in the first row.
+    virtual bool isFirstRow() const = 0;
 
   };
 
