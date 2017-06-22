@@ -8,7 +8,9 @@
 #define FILTERS_HUE_SATURATION_FILTER_H_INCLUDED
 #pragma once
 
+#include "doc/color.h"
 #include "filters/filter.h"
+#include "filters/target.h"
 
 namespace filters {
 
@@ -28,6 +30,8 @@ namespace filters {
     void applyToIndexed(FilterManager* filterMgr);
 
   private:
+    void applyHslFilterToRgb(const Target target, doc::color_t& color);
+
     double m_h, m_s, m_l;
     int m_a;
   };

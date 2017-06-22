@@ -104,6 +104,7 @@ namespace app {
     int x() const override { return m_bounds.x; }
     int y() const override { return m_bounds.y+m_row; }
     bool isFirstRow() const override { return m_row == 0; }
+    bool isMaskActive() const override;
 
     // FilterIndexedData implementation
     const doc::Palette* getPalette() const override;

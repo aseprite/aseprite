@@ -431,4 +431,10 @@ void FilterManagerImpl::restoreSpritePalette()
     m_site.sprite()->setPalette(m_oldPalette.get(), false);
 }
 
+bool FilterManagerImpl::isMaskActive() const
+{
+  return static_cast<const app::Document*>(m_site.document())
+    ->isMaskVisible();
+}
+
 } // namespace app

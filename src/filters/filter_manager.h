@@ -73,6 +73,10 @@ namespace filters {
     // to the palette in the first row.
     virtual bool isFirstRow() const = 0;
 
+    // Returns true if the mask is actived (so we are applying the
+    // filter just to a part of the sprite).
+    virtual bool isMaskActive() const = 0;
+
   };
 
 } // namespace filters
