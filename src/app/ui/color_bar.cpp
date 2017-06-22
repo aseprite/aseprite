@@ -1067,7 +1067,7 @@ void ColorBar::onTimerTick()
 
     // Redraw all editors
     try {
-      ContextWriter writer(UIContext::instance());
+      ContextWriter writer(UIContext::instance(), 500);
       Document* document(writer.document());
       if (document != NULL)
         document->notifyGeneralUpdate();
@@ -1149,7 +1149,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
   if (UIContext::instance()->activeDocument() &&
       UIContext::instance()->activeDocument()->sprite()) {
     try {
-      ContextWriter writer(UIContext::instance());
+      ContextWriter writer(UIContext::instance(), 500);
       Document* document(writer.document());
       Sprite* sprite(writer.sprite());
       Palette* newPalette = get_current_palette(); // System current pal
