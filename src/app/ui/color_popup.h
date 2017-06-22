@@ -43,6 +43,7 @@ namespace app {
     obs::signal<void(const app::Color&)> ColorChange;
 
   protected:
+    bool onProcessMessage(ui::Message* msg) override;
     void onWindowResize() override;
     void onMakeFloating() override;
     void onMakeFixed() override;

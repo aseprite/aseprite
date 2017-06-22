@@ -309,6 +309,23 @@ app::Color ColorPopup::getColor() const
   return m_color;
 }
 
+bool ColorPopup::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kSetCursorMessage: {
+      if (m_canPin) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        if (hitTest(mousePos) == HitTestCaption) {
+          set_mouse_cursor(kMoveCursor);
+          return true;
+        }
+      }
+      break;
+    }
+  }
+  return PopupWindowPin::onProcessMessage(msg);
+}
+
 void ColorPopup::onWindowResize()
 {
   PopupWindowPin::onWindowResize();
