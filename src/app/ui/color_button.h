@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/color_button_options.h"
 #include "app/ui/color_source.h"
 #include "doc/context_observer.h"
 #include "doc/pixel_format.h"
@@ -28,8 +29,7 @@ namespace app {
   public:
     ColorButton(const app::Color& color,
                 const PixelFormat pixelFormat,
-                const bool canPinSelector,
-                const bool showSimpleColors);
+                const ColorButtonOptions& options);
     ~ColorButton();
 
     PixelFormat pixelFormat() const;
@@ -60,14 +60,14 @@ namespace app {
     void closeSelectorDialog();
     void onWindowColorChange(const app::Color& color);
     void onActiveSiteChange(const Site& site) override;
+    bool canPin() const { return m_options.canPinSelector; }
 
     app::Color m_color;
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     gfx::Rect m_windowDefaultBounds;
     bool m_dependOnLayer;
-    bool m_canPinSelector;
-    bool m_showSimpleColors;
+    ColorButtonOptions m_options;
   };
 
 } // namespace app

@@ -928,7 +928,7 @@ class ContextBar::TransparentColorField : public HBox {
 public:
   TransparentColorField(ContextBar* owner)
     : m_icon(1)
-    , m_maskColor(app::Color::fromMask(), IMAGE_RGB, false, false)
+    , m_maskColor(app::Color::fromMask(), IMAGE_RGB, ColorButtonOptions())
     , m_owner(owner) {
     SkinTheme* theme = SkinTheme::instance();
 

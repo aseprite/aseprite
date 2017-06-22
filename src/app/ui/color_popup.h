@@ -10,6 +10,7 @@
 
 #include "app/color.h"
 #include "app/ui/button_set.h"
+#include "app/ui/color_button_options.h"
 #include "app/ui/color_sliders.h"
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/palette_view.h"
@@ -29,10 +30,10 @@ namespace app {
   public:
     enum SetColorOptions {
       ChangeType,
-      DoNotChangeType
+      DontChangeType
     };
 
-    ColorPopup(const bool canPin, bool showSimpleColors);
+    ColorPopup(const ColorButtonOptions& options);
     ~ColorPopup();
 
     void setColor(const app::Color& color, SetColorOptions options);
@@ -71,8 +72,8 @@ namespace app {
     ui::TooltipManager m_tooltips;
     ui::Box m_topBox;
     app::Color m_color;
-    ui::View m_colorPaletteContainer;
-    PaletteView m_colorPalette;
+    ui::View* m_colorPaletteContainer;
+    PaletteView* m_colorPalette;
     SimpleColors* m_simpleColors;
     CustomButtonSet m_colorType;
     HexColorEntry m_hexColorEntry;

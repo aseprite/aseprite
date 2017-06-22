@@ -406,11 +406,16 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     const bool rgba = bool_attr_is_true(elem, "rgba");
     const bool simple = bool_attr_is_true(elem, "simple");
 
-    if (!widget)
+    if (!widget) {
+      ColorButtonOptions options;
+      options.canPinSelector = false;
+      options.showSimpleColors = simple;
+      options.showIndexTab = true;
       widget = new ColorButton(Color::fromMask(),
-                               rgba ? IMAGE_RGB:
-                                      app_get_current_pixel_format(), false,
-                               simple);
+                               (rgba ? IMAGE_RGB:
+                                       app_get_current_pixel_format()),
+                               options);
+    }
   }
   else if (elem_name == "dropdownbutton")  {
     if (!widget) {

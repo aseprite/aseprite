@@ -101,10 +101,10 @@ void MaskByColorCommand::onExecute(Context* context)
   box4 = new Box(HORIZONTAL | HOMOGENEOUS);
   label_color = new Label("Color:");
   m_buttonColor = new ColorButton
-   (get_config_color("MaskColor", "Color",
-                     ColorBar::instance()->getFgColor()),
-    sprite->pixelFormat(),
-    false, false);
+    (get_config_color("MaskColor", "Color",
+                      ColorBar::instance()->getFgColor()),
+     sprite->pixelFormat(),
+     ColorButtonOptions());
   label_tolerance = new Label("Tolerance:");
   m_sliderTolerance = new Slider(0, 255, get_config_int("MaskColor", "Tolerance", 0));
   m_checkPreview = new CheckBox("&Preview");

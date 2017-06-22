@@ -164,21 +164,24 @@ void ColorPopup::CustomButtonSet::onSelectItem(Item* item, bool focusItem, ui::M
   }
 }
 
-ColorPopup::ColorPopup(const bool canPin,
-                       bool showSimpleColors)
+ColorPopup::ColorPopup(const ColorButtonOptions& options)
   : PopupWindowPin(" ", // Non-empty to create title-bar and close button
                    ClickBehavior::CloseOnClickInOtherWindow,
-                   canPin)
+                   options.canPinSelector)
   , m_vbox(VERTICAL)
   , m_topBox(HORIZONTAL)
   , m_color(app::Color::fromMask())
-  , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
+  , m_colorPaletteContainer(options.showIndexTab ?
+                            new ui::View: nullptr)
+  , m_colorPalette(options.showIndexTab ?
+                   new PaletteView(false, PaletteView::SelectOneColor, this, 7*guiscale()):
+                   nullptr)
   , m_simpleColors(nullptr)
   , m_maskLabel("Transparent Color Selected")
-  , m_canPin(canPin)
+  , m_canPin(options.canPinSelector)
   , m_disableHexUpdate(false)
 {
-  if (showSimpleColors) {
+  if (options.showSimpleColors) {
     if (!g_simplePal) {
       ResourceFinder rf;
       rf.includeDataDir("palettes/tags.gpl");
@@ -188,11 +191,13 @@ ColorPopup::ColorPopup(const bool canPin,
 
     if (g_simplePal)
       m_simpleColors = new SimpleColors(this, &m_tooltips);
-    else
-      showSimpleColors = false;
   }
 
-  m_colorType.addItem("Index")->setFocusStop(false);
+  ButtonSet::Item* item = m_colorType.addItem("Index");
+  item->setFocusStop(false);
+  if (!options.showIndexTab)
+    item->setVisible(false);
+
   m_colorType.addItem("RGB")->setFocusStop(false);
   m_colorType.addItem("HSV")->setFocusStop(false);
   m_colorType.addItem("HSL")->setFocusStop(false);
@@ -202,8 +207,10 @@ ColorPopup::ColorPopup(const bool canPin,
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.setChildSpacing(0);
 
-  m_colorPaletteContainer.attachToView(&m_colorPalette);
-  m_colorPaletteContainer.setExpansive(true);
+  if (m_colorPalette) {
+    m_colorPaletteContainer->attachToView(m_colorPalette);
+    m_colorPaletteContainer->setExpansive(true);
+  }
   m_sliders.setExpansive(true);
 
   m_topBox.addChild(&m_colorType);
@@ -235,7 +242,8 @@ ColorPopup::ColorPopup(const bool canPin,
   if (m_simpleColors)
     m_vbox.addChild(m_simpleColors);
   m_vbox.addChild(&m_topBox);
-  m_vbox.addChild(&m_colorPaletteContainer);
+  if (m_colorPaletteContainer)
+    m_vbox.addChild(m_colorPaletteContainer);
   m_vbox.addChild(&m_sliders);
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
@@ -278,8 +286,10 @@ void ColorPopup::setColor(const app::Color& color, SetColorOptions options)
   }
 
   if (color.getType() == app::Color::IndexType) {
-    m_colorPalette.deselect();
-    m_colorPalette.selectColor(color.getIndex());
+    if (m_colorPalette) {
+      m_colorPalette->deselect();
+      m_colorPalette->selectColor(color.getIndex());
+    }
   }
 
   m_sliders.setColor(m_color);
@@ -408,12 +418,15 @@ void ColorPopup::onColorTypeClick()
 
 void ColorPopup::onPaletteChange()
 {
-  setColor(getColor(), DoNotChangeType);
+  setColor(getColor(), DontChangeType);
   invalidate();
 }
 
 void ColorPopup::findBestfitIndex(const app::Color& color)
 {
+  if (!m_colorPalette)
+    return;
+
   // Find bestfit palette entry
   int r = color.getRed();
   int g = color.getGreen();
@@ -423,8 +436,8 @@ void ColorPopup::findBestfitIndex(const app::Color& color)
   // Search for the closest color to the RGB values
   int i = get_current_palette()->findBestfit(r, g, b, a, 0);
   if (i >= 0) {
-    m_colorPalette.deselect();
-    m_colorPalette.selectColor(i);
+    m_colorPalette->deselect();
+    m_colorPalette->selectColor(i);
   }
 }
 
@@ -438,13 +451,20 @@ void ColorPopup::setColorWithSignal(const app::Color& color)
 
 void ColorPopup::selectColorType(app::Color::Type type)
 {
-  m_colorPaletteContainer.setVisible(type == app::Color::IndexType);
+  if (m_colorPaletteContainer)
+    m_colorPaletteContainer->setVisible(type == app::Color::IndexType);
+
   m_maskLabel.setVisible(type == app::Color::MaskType);
 
   // Count selected items.
   if (m_colorType.countSelectedItems() < 2) {
     switch (type) {
-      case app::Color::IndexType: m_colorType.setSelectedItem(INDEX_MODE); break;
+      case app::Color::IndexType:
+        if (m_colorPalette)
+          m_colorType.setSelectedItem(INDEX_MODE);
+        else
+          m_colorType.setSelectedItem(RGB_MODE);
+        break;
       case app::Color::RgbType:   m_colorType.setSelectedItem(RGB_MODE); break;
       case app::Color::HsvType:   m_colorType.setSelectedItem(HSV_MODE); break;
       case app::Color::HslType:   m_colorType.setSelectedItem(HSL_MODE); break;

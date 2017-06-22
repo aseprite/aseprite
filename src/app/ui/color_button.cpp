@@ -43,15 +43,13 @@ static WidgetType colorbutton_type()
 
 ColorButton::ColorButton(const app::Color& color,
                          const PixelFormat pixelFormat,
-                         const bool canPinSelector,
-                         const bool showSimpleColors)
+                         const ColorButtonOptions& options)
   : ButtonBase("", colorbutton_type(), kButtonWidget, kButtonWidget)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(nullptr)
   , m_dependOnLayer(false)
-  , m_canPinSelector(canPinSelector)
-  , m_showSimpleColors(showSimpleColors)
+  , m_options(options)
 {
   setFocusStop(true);
   initTheme();
@@ -96,7 +94,7 @@ void ColorButton::setColor(const app::Color& origColor)
     // BeforeChange() has changed the color type (e.g. to index), we
     // don't care, in the window we prefer to keep the original
     // HSV/HSL values.
-    m_window->setColor(origColor, ColorPopup::DoNotChangeType);
+    m_window->setColor(origColor, ColorPopup::DontChangeType);
   }
 
   // Emit signal
@@ -264,7 +262,7 @@ void ColorButton::onClick(Event& ev)
 
 void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
 {
-  if (m_canPinSelector) {
+  if (canPin()) {
     bool pinned = false;
     ev.stream() >> pinned;
     if (ev.stream() && pinned)
@@ -274,7 +272,7 @@ void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
 
 void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
 {
-  if (m_canPinSelector && m_window && m_window->isPinned())
+  if (canPin() && m_window && m_window->isPinned())
     ev.stream() << 1 << ' ' << m_window->bounds();
   else
     ev.stream() << 0;
@@ -285,7 +283,7 @@ void ColorButton::openSelectorDialog()
   bool pinned = (!m_windowDefaultBounds.isEmpty());
 
   if (m_window == NULL) {
-    m_window = new ColorPopup(m_canPinSelector, m_showSimpleColors);
+    m_window = new ColorPopup(m_options);
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 
@@ -339,7 +337,7 @@ void ColorButton::onActiveSiteChange(const Site& site)
   if (m_dependOnLayer)
     invalidate();
 
-  if (m_canPinSelector) {
+  if (canPin()) {
     // Hide window
     if (!site.document()) {
       if (m_window)
