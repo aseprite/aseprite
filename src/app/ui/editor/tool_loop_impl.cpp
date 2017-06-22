@@ -584,9 +584,6 @@ tools::ToolLoop* create_tool_loop(
   app::Color fg = colorbar->getFgColor();
   app::Color bg = colorbar->getBgColor();
 
-  ASSERT(fg.isValid());
-  ASSERT(bg.isValid());
-
   if (!fg.isValid() || !bg.isValid()) {
     Alert::show(PACKAGE
                 "<<The current selected foreground and/or background color"
