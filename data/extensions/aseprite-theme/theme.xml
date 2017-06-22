@@ -102,6 +102,7 @@
         <color id="flag_clicked" value="#7d929e" />
         <color id="select_box_ruler" value="#0000ff" />
         <color id="select_box_grid" value="#64c864" />
+        <color id="edit_pal_face" value="#655561" />
     </colors>
     <parts>
         <part id="cursor_normal" x="80" y="0" w="16" h="16" focusx="0" focusy="0" />

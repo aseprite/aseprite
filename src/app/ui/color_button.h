@@ -42,6 +42,7 @@ namespace app {
     app::Color getColorByPosition(const gfx::Point& pos) override;
 
     // Signals
+    obs::signal<void(app::Color&)> BeforeChange;
     obs::signal<void(const app::Color&)> Change;
 
   protected:

@@ -21,6 +21,7 @@ namespace app {
     class Item : public ui::Widget {
     public:
       Item();
+      void setHotColor(gfx::Color color);
       void setIcon(const skin::SkinPartPtr& icon, bool mono = false);
       skin::SkinPartPtr icon() const { return m_icon; }
       ButtonSet* buttonSet();
@@ -33,6 +34,7 @@ namespace app {
     private:
       skin::SkinPartPtr m_icon;
       bool m_mono;
+      gfx::Color m_hotColor;
     };
 
     ButtonSet(int columns);

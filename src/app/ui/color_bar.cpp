@@ -16,12 +16,14 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_palette.h"
 #include "app/cmd/set_transparent_color.h"
+#include "app/cmd_sequence.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/document_undo.h"
 #include "app/document_api.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
@@ -64,9 +66,7 @@
 #include "ui/system.h"
 #include "ui/tooltips.h"
 
-
 #include <cstring>
-
 
 namespace app {
 
@@ -122,11 +122,18 @@ ColorBar::ColorBar(int align)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB, true, false)
   , m_fgWarningIcon(new WarningIcon)
   , m_bgWarningIcon(new WarningIcon)
-  , m_lock(false)
-  , m_syncingWithPref(false)
+  , m_fromPalView(false)
+  , m_fromPref(false)
+  , m_fromFgButton(false)
+  , m_fromBgButton(false)
   , m_lastDocument(nullptr)
   , m_ascending(true)
   , m_lastButtons(kButtonLeft)
+  , m_editMode(false)
+  , m_redrawTimer(250, this)
+  , m_redrawAll(false)
+  , m_implantChange(false)
+  , m_selfPalChange(false)
 {
   m_instance = this;
 
@@ -135,9 +142,16 @@ ColorBar::ColorBar(int align)
   setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
   setChildSpacing(2*guiscale());
 
+  m_buttons.addItem(theme->parts.palEdit());
+  m_buttons.addItem(theme->parts.palSort());
+  m_buttons.addItem(theme->parts.palPresets());
+  m_buttons.addItem(theme->parts.palOptions());
+
   m_paletteView.setColumns(8);
   m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
   m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
+  m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
+                                 16*ui::guiscale()));
 
   // TODO hardcoded scroll bar width should be get from skin.xml file
   int scrollBarWidth = 6*guiscale();
@@ -184,9 +198,12 @@ ColorBar::ColorBar(int align)
 
   m_remapButton.Click.connect(base::Bind<void>(&ColorBar::onRemapButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
+  m_fgColor.BeforeChange.connect(&ColorBar::onFgColorButtonBeforeChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
   m_fgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
   m_bgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
+  m_redrawTimer.Tick.connect(base::Bind<void>(&ColorBar::onTimerTick, this));
+  m_buttons.ItemChange.connect(base::Bind<void>(&ColorBar::onPaletteButtonClick, this));
 
   m_tooltips.addTooltipFor(&m_fgColor, "Foreground color", LEFT);
   m_tooltips.addTooltipFor(&m_bgColor, "Background color", LEFT);
@@ -206,16 +223,6 @@ ColorBar::ColorBar(int align)
   Widget::setBgColor(theme->colors.tabActiveFace());
   m_paletteView.setBgColor(theme->colors.tabActiveFace());
 
-  // Change labels foreground color
-  m_buttons.ItemChange.connect(base::Bind<void>(&ColorBar::onPaletteButtonClick, this));
-
-  m_buttons.addItem(theme->parts.palEdit());
-  m_buttons.addItem(theme->parts.palSort());
-  m_buttons.addItem(theme->parts.palPresets());
-  m_buttons.addItem(theme->parts.palOptions());
-  m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
-                                 16*ui::guiscale()));
-
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
@@ -234,6 +241,8 @@ ColorBar::ColorBar(int align)
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
+
+  setEditMode(false);
 }
 
 ColorBar::~ColorBar()
@@ -247,29 +256,33 @@ void ColorBar::setPixelFormat(PixelFormat pixelFormat)
   m_bgColor.setPixelFormat(pixelFormat);
 }
 
-app::Color ColorBar::getFgColor()
+app::Color ColorBar::getFgColor() const
 {
   return m_fgColor.getColor();
 }
 
-app::Color ColorBar::getBgColor()
+app::Color ColorBar::getBgColor() const
 {
   return m_bgColor.getColor();
 }
 
 void ColorBar::setFgColor(const app::Color& color)
 {
-  m_fgColor.setColor(color);
+  if (m_fromFgButton)
+    return;
 
-  if (!m_lock)
+  m_fgColor.setColor(color);
+  if (!m_fromPalView)
     onColorButtonChange(color);
 }
 
 void ColorBar::setBgColor(const app::Color& color)
 {
-  m_bgColor.setColor(color);
+  if (m_fromBgButton)
+    return;
 
-  if (!m_lock)
+  m_bgColor.setColor(color);
+  if (!m_fromPalView)
     onColorButtonChange(color);
 }
 
@@ -278,7 +291,7 @@ PaletteView* ColorBar::getPaletteView()
   return &m_paletteView;
 }
 
-ColorBar::ColorSelector ColorBar::getColorSelector()
+ColorBar::ColorSelector ColorBar::getColorSelector() const
 {
   return m_selector;
 }
@@ -340,9 +353,20 @@ void ColorBar::setColorSelector(ColorSelector selector)
   m_selectorPlaceholder.layout();
 }
 
-void ColorBar::setPaletteEditorButtonState(bool state)
+void ColorBar::setEditMode(bool state)
 {
-  m_buttons.getItem(int(PalButton::EDIT))->setSelected(state);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  ButtonSet::Item* item = m_buttons.getItem((int)PalButton::EDIT);
+
+  m_editMode = state;
+  item->setIcon(state ? theme->parts.timelineOpenPadlockActive():
+                        theme->parts.timelineClosedPadlockNormal());
+  item->setHotColor(state ? theme->colors.editPalFace():
+                            gfx::ColorNone);
+
+  // Deselect color entries when we cancel editing
+  if (!state)
+    m_paletteView.deselect();
 }
 
 void ColorBar::onActiveSiteChange(const doc::Site& site)
@@ -368,6 +392,9 @@ void ColorBar::onGeneralUpdate(doc::DocumentEvent& ev)
 
 void ColorBar::onAppPaletteChange()
 {
+  if (inEditMode())
+    return;
+
   fixColorIndex(m_fgColor);
   fixColorIndex(m_bgColor);
 
@@ -594,7 +621,7 @@ void ColorBar::onRemapButtonClick()
 
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
-  m_lock = true;
+  base::ScopedValue<bool> lock(m_fromPalView, true, m_fromPalView);
 
   app::Color color = app::Color::fromIndex(index);
 
@@ -606,7 +633,6 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
     setTransparentIndex(index);
 
   ChangeSelection();
-  m_lock = false;
 }
 
 void ColorBar::onPaletteViewModification(const Palette* newPalette,
@@ -725,31 +751,62 @@ app::Color ColorBar::onPaletteViewGetBackgroundIndex()
 
 void ColorBar::onFgColorChangeFromPreferences()
 {
-  if (m_syncingWithPref)
+  if (m_fromPref)
     return;
 
-  base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+  base::ScopedValue<bool> sync(m_fromPref, true, false);
   setFgColor(Preferences::instance().colorBar.fgColor());
 }
 
 void ColorBar::onBgColorChangeFromPreferences()
 {
-  if (m_syncingWithPref)
+  if (m_fromPref)
     return;
 
-  base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
-  setBgColor(Preferences::instance().colorBar.bgColor());
+  if (inEditMode()) {
+    // In edit mode, clicking with right-click will copy the color
+    // selected with eyedropper to the active color entry.
+    setFgColor(Preferences::instance().colorBar.bgColor());
+  }
+  else {
+    base::ScopedValue<bool> sync(m_fromPref, true, false);
+    setBgColor(Preferences::instance().colorBar.bgColor());
+  }
+}
+
+void ColorBar::onFgColorButtonBeforeChange(app::Color& color)
+{
+  if (m_fromPalView)
+    return;
+
+  if (!inEditMode()) {
+    m_paletteView.deselect();
+    return;
+  }
+
+  // Here we change the selected colors in the
+  // palette. "m_fromPref" must be false to edit the color. (It
+  // means, if the eyedropper was used with the left-click, we don't
+  // edit the color, we just select the color to as the normal
+  // non-edit mode.)
+  if (!m_fromPref) {
+    int i = setPaletteEntry(color);
+    if (i >= 0) {
+      updateCurrentSpritePalette("Color Change");
+      color = app::Color::fromIndex(i);
+    }
+  }
 }
 
 void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
-  if (!m_lock) {
-    m_paletteView.deselect();
-    m_paletteView.invalidate();
-  }
+  if (m_fromFgButton)
+    return;
 
-  if (!m_syncingWithPref) {
-    base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+  base::ScopedValue<bool> lock(m_fromFgButton, true, false);
+
+  if (!m_fromPref) {
+    base::ScopedValue<bool> sync(m_fromPref, true, false);
     Preferences::instance().colorBar.fgColor(color);
   }
 
@@ -759,13 +816,16 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
 
 void ColorBar::onBgColorButtonChange(const app::Color& color)
 {
-  if (!m_lock) {
-    m_paletteView.deselect();
-    m_paletteView.invalidate();
-  }
+  if (m_fromBgButton)
+    return;
 
-  if (!m_syncingWithPref) {
-    base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+  base::ScopedValue<bool> lock(m_fromBgButton, true, false);
+
+  if (!m_fromPalView && !inEditMode())
+    m_paletteView.deselect();
+
+  if (!m_fromPref) {
+    base::ScopedValue<bool> sync(m_fromPref, true, false);
     Preferences::instance().colorBar.bgColor(color);
   }
 
@@ -775,14 +835,17 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
 
 void ColorBar::onColorButtonChange(const app::Color& color)
 {
-  if (color.getType() == app::Color::IndexType)
-    m_paletteView.selectColor(color.getIndex());
-  else {
-    m_paletteView.selectExactMatchColor(color);
+  if (!inEditMode() ||
+      m_fromPref) {
+    if (color.getType() == app::Color::IndexType)
+      m_paletteView.selectColor(color.getIndex());
+    else {
+      m_paletteView.selectExactMatchColor(color);
 
-    // As foreground or background color changed, we've to redraw the
-    // palette view fg/bg indicators.
-    m_paletteView.invalidate();
+      // As foreground or background color changed, we've to redraw the
+      // palette view fg/bg indicators.
+      m_paletteView.invalidate();
+    }
   }
 
   if (m_tintShadeTone && m_tintShadeTone->isVisible())
@@ -989,6 +1052,38 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
   UIContext::instance()->executeCommand(command, params);
 }
 
+void ColorBar::onTimerTick()
+{
+  // Redraw all editors
+  if (m_redrawAll) {
+    m_redrawAll = false;
+    m_implantChange = false;
+    m_redrawTimer.stop();
+
+    // Call all observers of PaletteChange event.
+    m_selfPalChange = true;
+    App::instance()->PaletteChange();
+    m_selfPalChange = false;
+
+    // Redraw all editors
+    try {
+      ContextWriter writer(UIContext::instance());
+      Document* document(writer.document());
+      if (document != NULL)
+        document->notifyGeneralUpdate();
+    }
+    catch (...) {
+      // Do nothing
+    }
+  }
+  // Redraw just the current editor
+  else {
+    m_redrawAll = true;
+    if (current_editor != NULL)
+      current_editor->updateEditor();
+  }
+}
+
 void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIcon)
 {
   int index = -1;
@@ -1011,6 +1106,94 @@ void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIco
 
   warningIcon->setVisible(index < 0);
   warningIcon->parent()->layout();
+}
+
+// Changes the selected color palettes with the given
+// app::Color. Returns the first modified index in the palette.
+int ColorBar::setPaletteEntry(const app::Color& color)
+{
+  int selIdx = m_paletteView.getSelectedEntry();
+  if (selIdx < 0) {
+    if (getFgColor().getType() == app::Color::IndexType) {
+      selIdx = getFgColor().getIndex();
+    }
+  }
+
+  PalettePicks entries;
+  m_paletteView.getSelectedEntries(entries);
+  if (entries.picks() == 0) {
+    if (selIdx >= 0 && selIdx < entries.size()) {
+      entries[selIdx] = true;
+    }
+  }
+
+  doc::color_t c =
+    doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+
+  Palette* palette = get_current_palette();
+  for (int i=0; i<palette->size(); ++i) {
+    if (entries[i])
+      palette->setEntry(i, c);
+  }
+
+  if (selIdx < 0 ||
+      selIdx >= entries.size() ||
+      !entries[selIdx])
+    selIdx = entries.firstPick();
+
+  return selIdx;
+}
+
+void ColorBar::updateCurrentSpritePalette(const char* operationName)
+{
+  if (UIContext::instance()->activeDocument() &&
+      UIContext::instance()->activeDocument()->sprite()) {
+    try {
+      ContextWriter writer(UIContext::instance());
+      Document* document(writer.document());
+      Sprite* sprite(writer.sprite());
+      Palette* newPalette = get_current_palette(); // System current pal
+      frame_t frame = writer.frame();
+      Palette* currentSpritePalette = sprite->palette(frame); // Sprite current pal
+      int from, to;
+
+      // Check differences between current sprite palette and current system palette
+      from = to = -1;
+      currentSpritePalette->countDiff(newPalette, &from, &to);
+
+      if (from >= 0 && to >= from) {
+        DocumentUndo* undo = document->undoHistory();
+        Cmd* cmd = new cmd::SetPalette(sprite, frame, newPalette);
+
+        // Add undo information to save the range of pal entries that will be modified.
+        if (m_implantChange &&
+            undo->lastExecutedCmd() &&
+            undo->lastExecutedCmd()->label() == operationName) {
+          // Implant the cmd in the last CmdSequence if it's
+          // related about color palette modifications
+          ASSERT(dynamic_cast<CmdSequence*>(undo->lastExecutedCmd()));
+          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd);
+          cmd->execute(UIContext::instance());
+        }
+        else {
+          Transaction transaction(writer.context(), operationName, ModifyDocument);
+          transaction.execute(cmd);
+          transaction.commit();
+        }
+      }
+    }
+    catch (base::Exception& e) {
+      Console::showException(e);
+    }
+  }
+
+  m_paletteView.invalidate();
+
+  if (!m_redrawTimer.isRunning())
+    m_redrawTimer.start();
+
+  m_redrawAll = false;
+  m_implantChange = true;
 }
 
 // static

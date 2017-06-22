@@ -114,6 +114,9 @@
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
       </key>
+      <key command="PaletteEditor" shortcut="A">
+        <param name="switch" value="true" />
+      </key>
       <key command="PaletteEditor" shortcut="F4">
         <param name="switch" value="true" />
       </key>
@@ -938,7 +941,7 @@
     </menu>
 
     <menu id="palette_popup">
-      <item command="PaletteEditor" text="&amp;Palette Editor">
+      <item command="PaletteEditor" text="Edit &amp;Palette">
         <param name="switch" value="true" />
       </item>
       <item command="PaletteSize" text="Palette Si&amp;ze" />
