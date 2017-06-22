@@ -48,7 +48,7 @@ ColorButton::ColorButton(const app::Color& color,
   : ButtonBase("", colorbutton_type(), kButtonWidget, kButtonWidget)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
-  , m_window(NULL)
+  , m_window(nullptr)
   , m_dependOnLayer(false)
   , m_canPinSelector(canPinSelector)
   , m_showSimpleColors(showSimpleColors)
@@ -82,13 +82,22 @@ app::Color ColorButton::getColor() const
   return m_color;
 }
 
-void ColorButton::setColor(const app::Color& color)
+void ColorButton::setColor(const app::Color& origColor)
 {
+  // Before change (this signal can modify the color)
+  app::Color color = origColor;
+  BeforeChange(color);
+
   m_color = color;
 
   // Change the color in its related window
-  if (m_window)
-    m_window->setColor(m_color, ColorPopup::DoNotChangeType);
+  if (m_window) {
+    // In the window we show the original color. In case
+    // BeforeChange() has changed the color type (e.g. to index), we
+    // don't care, in the window we prefer to keep the original
+    // HSV/HSL values.
+    m_window->setColor(origColor, ColorPopup::DoNotChangeType);
+  }
 
   // Emit signal
   Change(color);
