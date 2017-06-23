@@ -158,19 +158,31 @@ private:
       : m_frameTags(frameTags) {
       setEditable(true);
       getEntryWidget()->Change.connect(&TagsEntry::onEntryChange, this);
+      fill(true);
     }
 
   private:
-    void onEntryChange() {
+    void fill(bool all) {
       removeAllItems();
-      closeListBox();
 
       MatchWords match(getEntryWidget()->text());
+
+      bool matchAny = false;
       for (const auto& frameTag : m_frameTags) {
-        if (match(frameTag->name()))
+        if (match(frameTag->name())) {
+          matchAny = true;
+          break;
+        }
+      }
+      for (const auto& frameTag : m_frameTags) {
+        if (all || !matchAny || match(frameTag->name()))
           addItem(frameTag->name());
       }
+    }
 
+    void onEntryChange() {
+      closeListBox();
+      fill(false);
       if (getItemCount() > 0)
         openListBox();
     }
