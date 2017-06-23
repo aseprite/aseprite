@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -48,8 +48,8 @@ void write_mask(std::ostream& os, const Mask* mask)
 
 Mask* read_mask(std::istream& is)
 {
-  int x = read16(is);           // Xpos
-  int y = read16(is);           // Ypos
+  int x = int16_t(read16(is));  // Xpos (it's a signed int16 because we support negative mask coordinates)
+  int y = int16_t(read16(is));  // Ypos
   int w = read16(is);           // Width
   int h = read16(is);           // Height
 

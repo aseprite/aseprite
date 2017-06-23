@@ -172,6 +172,9 @@ namespace app {
       return m_customizationDelegate;
     }
 
+    // Returns the visible area of the viewport in sprite coordinates.
+    gfx::Rect getViewportBounds();
+
     // Returns the visible area of the active sprite.
     gfx::Rect getVisibleSpriteBounds();
 

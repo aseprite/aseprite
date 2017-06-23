@@ -1351,17 +1351,25 @@ void Editor::setCustomizationDelegate(EditorCustomizationDelegate* delegate)
   m_customizationDelegate = delegate;
 }
 
+Rect Editor::getViewportBounds()
+{
+  return screenToEditor(View::getView(this)->viewportBounds());
+}
+
 // Returns the visible area of the active sprite.
 Rect Editor::getVisibleSpriteBounds()
 {
+  if (m_sprite)
+    return getViewportBounds().createIntersection(m_sprite->bounds());
+
+  // This cannot happen, the sprite must be != nullptr. In old
+  // Aseprite versions we were using one Editor to show multiple
+  // sprites (switching the sprite inside the editor). Now we have one
+  // (or more) editor(s) for each sprite.
+  ASSERT(false);
+
   // Return an empty rectangle if there is not a active sprite.
-  if (!m_sprite) return Rect();
-
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  vp = screenToEditor(vp);
-
-  return vp.createIntersection(m_sprite->bounds());
+  return Rect();
 }
 
 // Changes the scroll to see the given point as the center of the editor.
@@ -2043,7 +2051,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   int x = mask->bounds().x;
   int y = mask->bounds().y;
   {
-    const Rect visibleBounds = getVisibleSpriteBounds();
+    const Rect visibleBounds = getViewportBounds();
     const Point maskCenter = mask->bounds().center();
 
     // If the pasted image original location center point isn't
@@ -2066,9 +2074,9 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
       y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
     }
 
-    // Also we always limit the image inside the sprite's bounds.
-    x = MID(0, x, sprite->width() - image->width());
-    y = MID(0, y, sprite->height() - image->height());
+    // Also we always limit the 1 image pixel inside the sprite's bounds.
+    x = MID(-image->width()+1, x, sprite->width()-1);
+    y = MID(-image->height()+1, y, sprite->height()-1);
   }
 
   // Clear brush preview, as the extra cel will be replaced with the
