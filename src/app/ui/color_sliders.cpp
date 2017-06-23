@@ -358,6 +358,8 @@ void ColorSliders::addSlider(const Channel channel,
   item.relSlider = new Slider(relMin, relMax, 0);
   item.entry     = new ColorEntry(item.absSlider, item.relSlider);
 
+  item.relSlider->setSizeHint(gfx::Size(128, 0));
+  item.absSlider->setSizeHint(gfx::Size(128, 0));
   item.absSlider->setProperty(SkinSliderPropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(channel))));
   item.absSlider->setDoubleBuffered(true);
   get_skin_property(item.entry)->setLook(MiniLook);
