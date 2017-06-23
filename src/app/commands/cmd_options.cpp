@@ -729,43 +729,46 @@ private:
 
     ASSERT(!filename.empty());
 
-    Extensions& exts = App::instance()->extensions();
-    ExtensionInfo info = exts.getCompressedExtensionInfo(filename.front());
-
-    // Check if the extension already exist
-    for (auto ext : exts) {
-      if (base::string_to_lower(ext->name()) !=
-          base::string_to_lower(info.name))
-        continue;
-
-      bool isDowngrade =
-        base::Version(info.version.c_str()) <
-        base::Version(ext->version().c_str());
-
-      // Uninstall?
-      if (ui::Alert::show(
-            "Update Extension"
-            "<<The extension '%s' already exists."
-            "<<Do you want to %s from v%s to v%s?"
-            "||&Yes||&No",
-            ext->name().c_str(),
-            (isDowngrade ? "downgrade": "upgrade"),
-            ext->version().c_str(),
-            info.version.c_str()) != 1)
-        return;
-
-      // Uninstall old version
-      if (ext->canBeUninstalled()) {
-        exts.uninstallExtension(ext);
-
-        ExtensionItem* item = getItemByExtension(ext);
-        if (item)
-          deleteExtensionItem(item);
-      }
-      break;
-    }
-
     try {
+      Extensions& exts = App::instance()->extensions();
+
+      // Get the extension information from the compressed
+      // package.json file.
+      ExtensionInfo info = exts.getCompressedExtensionInfo(filename.front());
+
+      // Check if the extension already exist
+      for (auto ext : exts) {
+        if (base::string_to_lower(ext->name()) !=
+            base::string_to_lower(info.name))
+          continue;
+
+        bool isDowngrade =
+          base::Version(info.version.c_str()) <
+          base::Version(ext->version().c_str());
+
+        // Uninstall?
+        if (ui::Alert::show(
+              "Update Extension"
+              "<<The extension '%s' already exists."
+              "<<Do you want to %s from v%s to v%s?"
+              "||&Yes||&No",
+              ext->name().c_str(),
+              (isDowngrade ? "downgrade": "upgrade"),
+              ext->version().c_str(),
+              info.version.c_str()) != 1)
+          return;
+
+        // Uninstall old version
+        if (ext->canBeUninstalled()) {
+          exts.uninstallExtension(ext);
+
+          ExtensionItem* item = getItemByExtension(ext);
+          if (item)
+            deleteExtensionItem(item);
+        }
+        break;
+      }
+
       Extension* ext =
         exts.installCompressedExtension(filename.front(), info);
 

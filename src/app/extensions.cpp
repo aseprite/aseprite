@@ -35,6 +35,7 @@ namespace app {
 namespace {
 
 const char* kPackageJson = "package.json";
+const char* kInfoJson = "__info.json";
 const char* kAsepriteDefaultThemeExtensionName = "aseprite-theme";
 
 class ReadArchive {
@@ -156,6 +157,29 @@ private:
   bool m_open;
 };
 
+void read_json_file(const std::string& path, json11::Json& json)
+{
+  std::string jsonText, line;
+  std::ifstream in(FSTREAM_PATH(path), std::ifstream::binary);
+  while (std::getline(in, line)) {
+    jsonText += line;
+    jsonText.push_back('\n');
+  }
+  std::string err;
+  json = json11::Json::parse(jsonText, err);
+  if (!err.empty())
+    throw base::Exception("Error parsing JSON file: %s\n",
+                          err.c_str());
+}
+
+void write_json_file(const std::string& path, const json11::Json& json)
+{
+  std::string text;
+  json.dump(text);
+  std::ofstream out(FSTREAM_PATH(path), std::ifstream::binary);
+  out.write(text.c_str(), text.size());
+}
+
 } // anonymous namespace
 
 const render::DitheringMatrix& Extension::DitheringMatrixInfo::matrix() const
@@ -262,6 +286,50 @@ void Extension::uninstall()
 
 void Extension::uninstallFiles(const std::string& path)
 {
+#if 1 // Read the list of files to be uninstalled from __info.json file
+
+  std::string infoFn = base::join_path(path, kInfoJson);
+  if (!base::is_file(infoFn))
+    throw base::Exception("Cannot remove extension, '%s' file doesn't exist",
+                          infoFn.c_str());
+
+  json11::Json json;
+  read_json_file(infoFn, json);
+
+  std::vector<std::string> installedDirs;
+
+  for (const auto& value : json["installedFiles"].array_items()) {
+    std::string fn = base::join_path(path, value.string_value());
+    if (base::is_file(fn)) {
+      TRACE("EXT: Deleting file '%s'\n", fn.c_str());
+      base::delete_file(fn);
+    }
+    else if (base::is_directory(fn)) {
+      installedDirs.push_back(fn);
+    }
+  }
+
+  std::sort(installedDirs.begin(),
+            installedDirs.end(),
+            [](const std::string& a,
+               const std::string& b) {
+              return b.size() < a.size();
+            });
+
+  for (const auto& dir : installedDirs) {
+    TRACE("EXT: Deleting directory '%s'\n", dir.c_str());
+    base::remove_directory(dir);
+  }
+
+  TRACE("EXT: Deleting file '%s'\n", infoFn.c_str());
+  base::delete_file(infoFn);
+
+  TRACE("EXT: Deleting extension directory '%s'\n", path.c_str());
+  base::remove_directory(path);
+
+#else // The following code delete the whole "path",
+      // we prefer the __info.json approach.
+
   for (auto& item : base::list_files(path)) {
     std::string fn = base::join_path(path, item);
     if (base::is_file(fn)) {
@@ -275,6 +343,8 @@ void Extension::uninstallFiles(const std::string& path)
 
   TRACE("EXT: Deleting directory '%s'\n", path.c_str());
   base::remove_directory(path);
+
+#endif
 }
 
 bool Extension::isCurrentTheme() const
@@ -471,6 +541,8 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
 Extension* Extensions::installCompressedExtension(const std::string& zipFn,
                                                   const ExtensionInfo& info)
 {
+  std::vector<std::string> installedFiles;
+
   // Uncompress zipFn in info.dstPath
   {
     ReadArchive in(zipFn);
@@ -493,6 +565,8 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
           continue;
       }
 
+      installedFiles.push_back(fn);
+
       const std::string fullFn = base::join_path(info.dstPath, fn);
       archive_entry_set_pathname(entry, fullFn.c_str());
 
@@ -503,6 +577,18 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
     }
   }
 
+  // Save the list of installed files in "__info.json" file
+  {
+    json11::Json::object obj;
+    obj["installedFiles"] = json11::Json::Json(installedFiles);
+    json11::Json json(obj);
+
+    const std::string fullFn = base::join_path(info.dstPath, kInfoJson);
+    LOG("EXT: Saving list of installed files in <%s>\n", fullFn.c_str());
+    write_json_file(fullFn, json);
+  }
+
+  // Load the extension
   Extension* extension = loadExtension(
     info.dstPath,
     base::join_path(info.dstPath, kPackageJson),
@@ -522,20 +608,7 @@ Extension* Extensions::loadExtension(const std::string& path,
                                      const bool isBuiltinExtension)
 {
   json11::Json json;
-  {
-    std::string jsonText, line;
-    std::ifstream in(FSTREAM_PATH(fullPackageFilename), std::ifstream::binary);
-    while (std::getline(in, line)) {
-      jsonText += line;
-      jsonText.push_back('\n');
-    }
-
-    std::string err;
-    json = json11::Json::parse(jsonText, err);
-    if (!err.empty())
-      throw base::Exception("Error parsing JSON file: %s\n",
-                            err.c_str());
-  }
+  read_json_file(fullPackageFilename, json);
   auto name = json["name"].string_value();
   auto version = json["version"].string_value();
   auto displayName = json["displayName"].string_value();
