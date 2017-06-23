@@ -175,6 +175,22 @@ namespace app {
     DISABLE_COPYING(KeyboardShortcuts);
   };
 
+  std::string key_tooltip(const char* str, Key* key);
+
+  inline std::string key_tooltip(const char* str,
+                                 const char* commandName,
+                                 const Params& params = Params(),
+                                 KeyContext keyContext = KeyContext::Any) {
+    return key_tooltip(
+      str, KeyboardShortcuts::instance()->command(
+        commandName, params, keyContext));
+  }
+
+  inline std::string key_tooltip(const char* str, KeyAction keyAction) {
+    return key_tooltip(
+      str, KeyboardShortcuts::instance()->action(keyAction));
+  }
+
 } // namespace app
 
 namespace base {

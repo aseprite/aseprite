@@ -34,6 +34,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/icon_button.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -1191,10 +1192,14 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    // TODO use real shortcuts in tooltips
-    tooltipManager->addTooltipFor(at(0), "Replace selection", BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Add to selection\n(Shift)", BOTTOM);
-    tooltipManager->addTooltipFor(at(2), "Subtract from selection\n(Shift+Alt)", BOTTOM);
+    tooltipManager->addTooltipFor(
+      at(0), "Replace selection", BOTTOM);
+
+    tooltipManager->addTooltipFor(
+      at(1), key_tooltip("Add to selection", KeyAction::AddSelection), BOTTOM);
+
+    tooltipManager->addTooltipFor(
+      at(2), key_tooltip("Subtract from selection", KeyAction::SubtractSelection), BOTTOM);
   }
 
   void setSelectionMode(gen::SelectionMode mode) {
@@ -1223,8 +1228,9 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(at(0), "Drop pixels here", BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", BOTTOM);
+    // TODO Enter and Esc should be configurable keys
+    tooltipManager->addTooltipFor(at(0), "Drop pixels here (Enter)", BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Cancel drag and drop (Esc)", BOTTOM);
   }
 
   obs::signal<void(ContextBarObserver::DropAction)> DropPixels;
@@ -1434,8 +1440,14 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_pivot, "Rotation Pivot", BOTTOM);
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
-  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", BOTTOM);
-  tooltipManager->addTooltipFor(m_paintBucketSettings, "Extra paint bucket options", BOTTOM);
+  tooltipManager->addTooltipFor(m_freehandAlgo,
+                                key_tooltip("Freehand trace algorithm",
+                                            CommandId::PixelPerfectMode), BOTTOM);
+  tooltipManager->addTooltipFor(m_contiguous,
+                                key_tooltip("Fill contiguous areas color",
+                                            CommandId::ContiguousFill), BOTTOM);
+  tooltipManager->addTooltipFor(m_paintBucketSettings,
+                                "Extra paint bucket options", BOTTOM);
 
   m_brushType->setupTooltips(tooltipManager);
   m_selectionMode->setupTooltips(tooltipManager);

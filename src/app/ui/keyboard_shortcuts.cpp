@@ -720,4 +720,17 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
   return flags;
 }
 
+std::string key_tooltip(const char* str, app::Key* key)
+{
+  std::string res;
+  if (str)
+    res += str;
+  if (key && !key->accels().empty()) {
+    res += " (";
+    res += key->accels().front().toString();
+    res += ")";
+  }
+  return res;
+}
+
 } // namespace app

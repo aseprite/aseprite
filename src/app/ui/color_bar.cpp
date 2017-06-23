@@ -23,8 +23,8 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
-#include "app/document_undo.h"
 #include "app/document_api.h"
+#include "app/document_undo.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -37,6 +37,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/input_chain.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -226,7 +227,13 @@ ColorBar::ColorBar(int align)
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::EDIT), "Edit Color", BOTTOM);
+
+  Params params;
+  params.set("switch", "true");
+  tooltipManager->addTooltipFor(
+    m_buttons.getItem((int)PalButton::EDIT),
+    key_tooltip("Edit Color", CommandId::PaletteEditor, params), BOTTOM);
+
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", BOTTOM);
