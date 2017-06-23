@@ -27,6 +27,13 @@ namespace app {
 
   class Extensions;
 
+  struct ExtensionInfo {
+    std::string name;
+    std::string version;
+    std::string dstPath;
+    std::string commonPath;
+  };
+
   class Extension {
     friend class Extensions;
   public:
@@ -49,6 +56,7 @@ namespace app {
 
     Extension(const std::string& path,
               const std::string& name,
+              const std::string& version,
               const std::string& displayName,
               const bool isEnabled,
               const bool isBuiltinExtension);
@@ -56,6 +64,7 @@ namespace app {
 
     const std::string& path() const { return m_path; }
     const std::string& name() const { return m_name; }
+    const std::string& version() const { return m_version; }
     const std::string& displayName() const { return m_displayName; }
 
     const ExtensionItems& themes() const { return m_themes; }
@@ -88,6 +97,7 @@ namespace app {
     std::map<std::string, DitheringMatrixInfo> m_ditheringMatrices;
     std::string m_path;
     std::string m_name;
+    std::string m_version;
     std::string m_displayName;
     bool m_isEnabled;
     bool m_isInstalled;
@@ -107,7 +117,9 @@ namespace app {
 
     void enableExtension(Extension* extension, const bool state);
     void uninstallExtension(Extension* extension);
-    Extension* installCompressedExtension(const std::string& zipFn);
+    ExtensionInfo getCompressedExtensionInfo(const std::string& zipFn);
+    Extension* installCompressedExtension(const std::string& zipFn,
+                                          const ExtensionInfo& info);
 
     std::string themePath(const std::string& themeId);
     std::string palettePath(const std::string& palId);

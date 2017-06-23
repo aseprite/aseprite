@@ -24,6 +24,8 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "base/string.h"
+#include "base/version.h"
 #include "doc/image.h"
 #include "render/render.h"
 #include "she/display.h"
@@ -75,6 +77,8 @@ class OptionsWindow : public app::gen::Options {
       , m_extension(extension) {
       setEnabled(extension->isEnabled());
     }
+
+    Extension* extension() { return m_extension; }
 
     bool isEnabled() const {
       ASSERT(m_extension);
@@ -725,12 +729,51 @@ private:
 
     ASSERT(!filename.empty());
 
+    Extensions& exts = App::instance()->extensions();
+    ExtensionInfo info = exts.getCompressedExtensionInfo(filename.front());
+
+    // Check if the extension already exist
+    for (auto ext : exts) {
+      if (base::string_to_lower(ext->name()) !=
+          base::string_to_lower(info.name))
+        continue;
+
+      bool isDowngrade =
+        base::Version(info.version.c_str()) <
+        base::Version(ext->version().c_str());
+
+      // Uninstall?
+      if (ui::Alert::show(
+            "Update Extension"
+            "<<The extension '%s' already exists."
+            "<<Do you want to %s from v%s to v%s?"
+            "||&Yes||&No",
+            ext->name().c_str(),
+            (isDowngrade ? "downgrade": "upgrade"),
+            ext->version().c_str(),
+            info.version.c_str()) != 1)
+        return;
+
+      // Uninstall old version
+      if (ext->canBeUninstalled()) {
+        exts.uninstallExtension(ext);
+
+        ExtensionItem* item = getItemByExtension(ext);
+        if (item)
+          deleteExtensionItem(item);
+      }
+      break;
+    }
+
     try {
-      Extension* extension =
-        App::instance()->extensions().installCompressedExtension(filename.front());
+      Extension* ext =
+        exts.installCompressedExtension(filename.front(), info);
+
+      // Enable extension
+      exts.enableExtension(ext, true);
 
       // Add the new extension in the listbox
-      ExtensionItem* item = new ExtensionItem(extension);
+      ExtensionItem* item = new ExtensionItem(ext);
       extensionsList()->addChild(item);
       extensionsList()->selectChild(item);
       extensionsList()->layout();
@@ -762,16 +805,27 @@ private:
 
     try {
       item->uninstall();
-
-      // Remove the item from the list
-      extensionsList()->removeChild(item);
-      extensionsList()->layout();
-
-      item->deferDelete();
+      deleteExtensionItem(item);
     }
     catch (std::exception& ex) {
       Console::showException(ex);
     }
+  }
+
+  void deleteExtensionItem(ExtensionItem* item) {
+    // Remove the item from the list
+    extensionsList()->removeChild(item);
+    extensionsList()->layout();
+    item->deferDelete();
+  }
+
+  ExtensionItem* getItemByExtension(Extension* ext) {
+    for (auto child : extensionsList()->children()) {
+      ExtensionItem* item = dynamic_cast<ExtensionItem*>(child);
+      if (item && item->extension() == ext)
+        return item;
+    }
+    return nullptr;
   }
 
   void onOpenExtensionFolder() {

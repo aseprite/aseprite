@@ -175,11 +175,13 @@ void Extension::DitheringMatrixInfo::destroyMatrix()
 
 Extension::Extension(const std::string& path,
                      const std::string& name,
+                     const std::string& version,
                      const std::string& displayName,
                      const bool isEnabled,
                      const bool isBuiltinExtension)
   : m_path(path)
   , m_name(name)
+  , m_version(version)
   , m_displayName(displayName)
   , m_isEnabled(isEnabled)
   , m_isInstalled(true)
@@ -418,45 +420,58 @@ void Extensions::uninstallExtension(Extension* extension)
 {
   extension->uninstall();
   generateExtensionSignals(extension);
+
+  auto it = std::find(m_extensions.begin(),
+                      m_extensions.end(), extension);
+  ASSERT(it != m_extensions.end());
+  if (it != m_extensions.end())
+    m_extensions.erase(it);
+
+  delete extension;
 }
 
-Extension* Extensions::installCompressedExtension(const std::string& zipFn)
+ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
 {
-  std::string dstExtensionPath =
+  ExtensionInfo info;
+  info.dstPath =
     base::join_path(m_userExtensionsPath,
                     base::get_file_title(zipFn));
 
   // First of all we read the package.json file inside the .zip to
   // know 1) the extension name, 2) that the .json file can be parsed
   // correctly, 3) the final destination directory.
-  std::string commonPath;
-  {
-    ReadArchive in(zipFn);
-    archive_entry* entry;
-    while ((entry = in.readEntry()) != nullptr) {
-      const std::string entryFn = archive_entry_pathname(entry);
-      if (base::get_file_name(entryFn) != kPackageJson)
-        continue;
+  ReadArchive in(zipFn);
+  archive_entry* entry;
+  while ((entry = in.readEntry()) != nullptr) {
+    const std::string entryFn = archive_entry_pathname(entry);
+    if (base::get_file_name(entryFn) != kPackageJson)
+      continue;
 
-      commonPath = base::get_file_path(entryFn);
-      if (!commonPath.empty() &&
-          entryFn.size() > commonPath.size())
-        commonPath.push_back(entryFn[commonPath.size()]);
-
-      std::stringstream out;
-      in.copyDataTo(out);
-
-      std::string err;
-      auto json = json11::Json::parse(out.str(), err);
-      if (err.empty()) {
-        auto name = json["name"].string_value();
-        dstExtensionPath = base::join_path(m_userExtensionsPath, name);
-      }
-      break;
+    info.commonPath = base::get_file_path(entryFn);
+    if (!info.commonPath.empty() &&
+        entryFn.size() > info.commonPath.size()) {
+      info.commonPath.push_back(entryFn[info.commonPath.size()]);
     }
-  }
 
-  // Uncompress zipFn in dstExtensionPath
+    std::stringstream out;
+    in.copyDataTo(out);
+
+    std::string err;
+    auto json = json11::Json::parse(out.str(), err);
+    if (err.empty()) {
+      info.name = json["name"].string_value();
+      info.version = json["version"].string_value();
+      info.dstPath = base::join_path(m_userExtensionsPath, info.name);
+    }
+    break;
+  }
+  return info;
+}
+
+Extension* Extensions::installCompressedExtension(const std::string& zipFn,
+                                                  const ExtensionInfo& info)
+{
+  // Uncompress zipFn in info.dstPath
   {
     ReadArchive in(zipFn);
     WriteArchive out;
@@ -468,17 +483,17 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn)
 
       LOG("EXT: Original filename in zip <%s>...\n", fn.c_str());
 
-      if (!commonPath.empty()) {
+      if (!info.commonPath.empty()) {
         // Check mismatch with package.json common path
-        if (fn.compare(0, commonPath.size(), commonPath) != 0)
+        if (fn.compare(0, info.commonPath.size(), info.commonPath) != 0)
           continue;
 
-        fn.erase(0, commonPath.size());
+        fn.erase(0, info.commonPath.size());
         if (fn.empty())
           continue;
       }
 
-      const std::string fullFn = base::join_path(dstExtensionPath, fn);
+      const std::string fullFn = base::join_path(info.dstPath, fn);
       archive_entry_set_pathname(entry, fullFn.c_str());
 
       LOG("EXT: Uncompressing file <%s> to <%s>\n",
@@ -489,8 +504,8 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn)
   }
 
   Extension* extension = loadExtension(
-    dstExtensionPath,
-    base::join_path(dstExtensionPath, kPackageJson),
+    info.dstPath,
+    base::join_path(info.dstPath, kPackageJson),
     false);
   if (!extension)
     throw base::Exception("Error adding the new extension");
@@ -522,6 +537,7 @@ Extension* Extensions::loadExtension(const std::string& path,
                             err.c_str());
   }
   auto name = json["name"].string_value();
+  auto version = json["version"].string_value();
   auto displayName = json["displayName"].string_value();
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
@@ -529,6 +545,7 @@ Extension* Extensions::loadExtension(const std::string& path,
   base::UniquePtr<Extension> extension(
     new Extension(path,
                   name,
+                  version,
                   displayName,
                   // Extensions are enabled by default
                   get_config_bool("extensions", name.c_str(), true),
