@@ -241,14 +241,15 @@ void Extension::addDitheringMatrix(const std::string& id,
 bool Extension::canBeDisabled() const
 {
   return (m_isEnabled &&
-          !isCurrentTheme() &&
-          !isDefaultTheme());   // Default theme cannot be disabled or uninstalled
+          //!isCurrentTheme() &&
+          !isDefaultTheme()); // Default theme cannot be disabled or uninstalled
 }
 
 bool Extension::canBeUninstalled() const
 {
   return (!m_isBuiltinExtension &&
-          !isCurrentTheme() &&
+          // We can uninstall the current theme (e.g. to upgrade it)
+          //!isCurrentTheme() &&
           !isDefaultTheme());
 }
 
