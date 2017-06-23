@@ -63,9 +63,9 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
 
   if (filterMgr->isFirstRow()) {
     m_picks = fid->getPalettePicks();
-    if (m_picks.picks() > 0) {
+    m_usePalette = (m_picks.picks() > 0);
+    if (m_usePalette)
       applyToPalette(filterMgr);
-    }
   }
 
   const Palette* pal = fid->getPalette();
@@ -83,7 +83,7 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
 
     color_t c = *(src_address++);
 
-    if (m_picks.picks() > 0) {
+    if (m_usePalette) {
       int i =
         pal->findExactMatch(rgba_getr(c),
                             rgba_getg(c),

@@ -37,6 +37,7 @@ namespace filters {
     double m_h, m_s, m_l;
     int m_a;
     doc::PalettePicks m_picks;
+    bool m_usePalette;
   };
 
 } // namespace filters
