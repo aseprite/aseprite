@@ -2043,18 +2043,26 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   int x = mask->bounds().x;
   int y = mask->bounds().y;
   {
-    Rect visibleBounds = getVisibleSpriteBounds();
+    const Rect visibleBounds = getVisibleSpriteBounds();
+    const Point maskCenter = mask->bounds().center();
 
     // If the pasted image original location center point isn't
     // visible, we center the image in the editor's visible bounds.
-    if (!visibleBounds.contains(mask->bounds().center())) {
+    if (maskCenter.x < visibleBounds.x ||
+        maskCenter.x >= visibleBounds.x2()) {
       x = visibleBounds.x + visibleBounds.w/2 - image->width()/2;
-      y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
     }
     // In other case, if the center is visible, we put the pasted
     // image in its original location.
     else {
       x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
+    }
+
+    if (maskCenter.y < visibleBounds.y ||
+        maskCenter.y >= visibleBounds.y2()) {
+      y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
+    }
+    else {
       y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
     }
 
