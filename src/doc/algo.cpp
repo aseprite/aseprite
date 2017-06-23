@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,94 +8,54 @@
 #include "config.h"
 #endif
 
-#include <math.h>
-
 #include "base/base.h"
 #include "doc/algo.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace doc {
 
-// Algorightm from Allegro (allegro/src/gfx.c)
-// Adapted for Aseprite by David Capello.
-void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
+void algo_line(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
 {
-  int dx = x2-x1;
-  int dy = y2-y1;
-  int i1, i2;
-  int x, y;
-  int dd;
+  bool yaxis;
 
-  /* worker macro */
-#define DO_LINE(pri_sign, pri_c, pri_cond, sec_sign, sec_c, sec_cond)   \
-  {                                                                     \
-    if (d##pri_c == 0) {                                                \
-      proc(x1, y1, data);                                               \
-      return;                                                           \
-    }                                                                   \
-                                                                        \
-    i1 = 2 * d##sec_c;                                                  \
-    dd = i1 - (sec_sign (pri_sign d##pri_c));                           \
-    i2 = dd - (sec_sign (pri_sign d##pri_c));                           \
-                                                                        \
-    x = x1;                                                             \
-    y = y1;                                                             \
-                                                                        \
-    while (pri_c pri_cond pri_c##2) {                                   \
-      proc(x, y, data);                                                 \
-                                                                        \
-      if (dd sec_cond 0) {                                              \
-        sec_c sec_sign##= 1;                                            \
-        dd += i2;                                                       \
-      }                                                                 \
-      else                                                              \
-        dd += i1;                                                       \
-                                                                        \
-      pri_c pri_sign##= 1;                                              \
-    }                                                                   \
+  // If the height if the line is bigger than the width, we'll iterate
+  // over the y-axis.
+  if (ABS(y2-y1) > ABS(x2-x1)) {
+    std::swap(x1, y1);
+    std::swap(x2, y2);
+    yaxis = true;
   }
+  else
+    yaxis = false;
 
-  if (dx >= 0) {
-    if (dy >= 0) {
-      if (dx >= dy) {
-        /* (x1 <= x2) && (y1 <= y2) && (dx >= dy) */
-        DO_LINE(+, x, <=, +, y, >=);
-      }
-      else {
-        /* (x1 <= x2) && (y1 <= y2) && (dx < dy) */
-        DO_LINE(+, y, <=, +, x, >=);
-      }
-    }
-    else {
-      if (dx >= -dy) {
-        /* (x1 <= x2) && (y1 > y2) && (dx >= dy) */
-        DO_LINE(+, x, <=, -, y, <=);
-      }
-      else {
-        /* (x1 <= x2) && (y1 > y2) && (dx < dy) */
-        DO_LINE(-, y, >=, +, x, >=);
-      }
-    }
-  }
-  else {
-    if (dy >= 0) {
-      if (-dx >= dy) {
-        /* (x1 > x2) && (y1 <= y2) && (dx >= dy) */
-        DO_LINE(-, x, >=, +, y, >=);
-      }
-      else {
-        /* (x1 > x2) && (y1 <= y2) && (dx < dy) */
-        DO_LINE(+, y, <=, -, x, <=);
-      }
-    }
-    else {
-      if (-dx >= -dy) {
-        /* (x1 > x2) && (y1 > y2) && (dx >= dy) */
-        DO_LINE(-, x, >=, -, y, <=);
-      }
-      else {
-        /* (x1 > x2) && (y1 > y2) && (dx < dy) */
-        DO_LINE(-, y, >=, -, x, <=);
-      }
+  const int w = ABS(x2-x1)+1;
+  const int h = ABS(y2-y1)+1;
+  const int dx = SGN(x2-x1);
+  const int dy = SGN(y2-y1);
+
+  int e = 0;
+  int y = y1;
+
+  // Move one x2 extra pixels to the dx direction so we can use
+  // operator!=() instead of operator<(). Here I prefer operator!=()
+  // instead of swapping x1 with x2 so the error always start from 0
+  // in the origin (x1,y1).
+  x2 += dx;
+
+  for (int x=x1; x!=x2; x+=dx) {
+    if (yaxis)
+      proc(y, x, data);
+    else
+      proc(x, y, data);
+
+    // The error advances "h/w" per each "x" step. As we're using a
+    // integer value for "e", we use "w" as the unit.
+    e += h;
+    if (e >= w) {
+      y += dy;
+      e -= w;
     }
   }
 }
