@@ -366,7 +366,10 @@ Extensions::Extensions()
     rf2.includeUserDir("extensions/.");
     m_userExtensionsPath = rf2.getFirstOrCreateDefault();
     m_userExtensionsPath = base::normalize_path(m_userExtensionsPath);
-    m_userExtensionsPath = base::get_file_path(m_userExtensionsPath);
+    if (!m_userExtensionsPath.empty() &&
+        m_userExtensionsPath.back() == '.') {
+      m_userExtensionsPath = base::get_file_path(m_userExtensionsPath);
+    }
     LOG("EXT: User extensions path '%s'\n", m_userExtensionsPath.c_str());
   }
 
