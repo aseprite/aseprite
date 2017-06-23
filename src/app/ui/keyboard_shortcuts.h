@@ -11,7 +11,9 @@
 #include "app/commands/params.h"
 #include "base/convert_to.h"
 #include "base/disable_copying.h"
+#include "obs/signal.h"
 #include "ui/accelerator.h"
+
 #include <vector>
 
 class TiXmlElement;
@@ -163,6 +165,10 @@ namespace app {
     bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params* params);
     tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
     KeyAction getCurrentActionModifiers(KeyContext context);
+
+    // Generated when the tooltips are modified by the user.
+    // Useful to regenerate tooltips with shortcuts.
+    obs::signal<void()> UserChange;
 
   private:
     KeyboardShortcuts();

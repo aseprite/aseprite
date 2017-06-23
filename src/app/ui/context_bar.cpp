@@ -1429,31 +1429,7 @@ ContextBar::ContextBar()
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
-  tooltipManager->addTooltipFor(m_brushType, "Brush Type", BOTTOM);
-  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", BOTTOM);
-  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkType, "Ink", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (paint intensity)", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkShades, "Shades", BOTTOM);
-  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
-  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
-  tooltipManager->addTooltipFor(m_pivot, "Rotation Pivot", BOTTOM);
-  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
-  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
-  tooltipManager->addTooltipFor(m_freehandAlgo,
-                                key_tooltip("Freehand trace algorithm",
-                                            CommandId::PixelPerfectMode), BOTTOM);
-  tooltipManager->addTooltipFor(m_contiguous,
-                                key_tooltip("Fill contiguous areas color",
-                                            CommandId::ContiguousFill), BOTTOM);
-  tooltipManager->addTooltipFor(m_paintBucketSettings,
-                                "Extra paint bucket options", BOTTOM);
-
-  m_brushType->setupTooltips(tooltipManager);
-  m_selectionMode->setupTooltips(tooltipManager);
-  m_dropPixels->setupTooltips(tooltipManager);
-  m_freehandAlgo->setupTooltips(tooltipManager);
-  m_symmetry->setupTooltips(tooltipManager);
+  setupTooltips(tooltipManager);
 
   App::instance()->activeToolManager()->add_observer(this);
 
@@ -1464,6 +1440,9 @@ ContextBar::ContextBar()
     base::Bind<void>(&ContextBar::onFgOrBgColorChange, this, doc::Brush::ImageColor::MainColor));
   pref.colorBar.bgColor.AfterChange.connect(
     base::Bind<void>(&ContextBar::onFgOrBgColorChange, this, doc::Brush::ImageColor::BackgroundColor));
+
+  KeyboardShortcuts::instance()->UserChange.connect(
+    base::Bind<void>(&ContextBar::setupTooltips, this, tooltipManager));
 
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
@@ -2000,6 +1979,35 @@ render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
   }
 
   return s_dither.get();
+}
+
+void ContextBar::setupTooltips(TooltipManager* tooltipManager)
+{
+  tooltipManager->addTooltipFor(m_brushType, "Brush Type", BOTTOM);
+  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", BOTTOM);
+  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkType, "Ink", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (paint intensity)", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkShades, "Shades", BOTTOM);
+  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
+  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
+  tooltipManager->addTooltipFor(m_pivot, "Rotation Pivot", BOTTOM);
+  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
+  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
+  tooltipManager->addTooltipFor(m_freehandAlgo,
+                                key_tooltip("Freehand trace algorithm",
+                                            CommandId::PixelPerfectMode), BOTTOM);
+  tooltipManager->addTooltipFor(m_contiguous,
+                                key_tooltip("Fill contiguous areas color",
+                                            CommandId::ContiguousFill), BOTTOM);
+  tooltipManager->addTooltipFor(m_paintBucketSettings,
+                                "Extra paint bucket options", BOTTOM);
+
+  m_brushType->setupTooltips(tooltipManager);
+  m_selectionMode->setupTooltips(tooltipManager);
+  m_dropPixels->setupTooltips(tooltipManager);
+  m_freehandAlgo->setupTooltips(tooltipManager);
+  m_symmetry->setupTooltips(tooltipManager);
 }
 
 } // namespace app

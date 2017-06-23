@@ -27,6 +27,10 @@
 #include "ui/tooltips.h"
 #include "ui/view.h"
 
+namespace ui {
+  class TooltipManager;
+}
+
 namespace app {
 
   class ColorButton;
@@ -133,6 +137,7 @@ namespace app {
     void updateWarningIcon(const app::Color& color, ui::Button* warningIcon);
     int setPaletteEntry(const app::Color& color);
     void updateCurrentSpritePalette(const char* operationName);
+    void setupTooltips(ui::TooltipManager* tooltipManager);
     static void fixColorIndex(ColorButton& color);
 
     class ScrollableView : public ui::View {

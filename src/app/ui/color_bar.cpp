@@ -227,17 +227,7 @@ ColorBar::ColorBar(int align)
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
-
-  Params params;
-  params.set("switch", "true");
-  tooltipManager->addTooltipFor(
-    m_buttons.getItem((int)PalButton::EDIT),
-    key_tooltip("Edit Color", CommandId::PaletteEditor, params), BOTTOM);
-
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", BOTTOM);
-  tooltipManager->addTooltipFor(&m_remapButton, "Matches old indexes with new indexes", BOTTOM);
+  setupTooltips(tooltipManager);
 
   onColorButtonChange(getFgColor());
 
@@ -248,6 +238,8 @@ ColorBar::ColorBar(int align)
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
+  KeyboardShortcuts::instance()->UserChange.connect(
+    base::Bind<void>(&ColorBar::setupTooltips, this, tooltipManager));
 
   setEditMode(false);
 }
@@ -1210,6 +1202,20 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
 
   m_redrawAll = false;
   m_implantChange = true;
+}
+
+void ColorBar::setupTooltips(TooltipManager* tooltipManager)
+{
+  Params params;
+  params.set("switch", "true");
+  tooltipManager->addTooltipFor(
+    m_buttons.getItem((int)PalButton::EDIT),
+    key_tooltip("Edit Color", CommandId::PaletteEditor, params), BOTTOM);
+
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", BOTTOM);
+  tooltipManager->addTooltipFor(&m_remapButton, "Matches old indexes with new indexes", BOTTOM);
 }
 
 // static

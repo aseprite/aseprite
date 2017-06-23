@@ -39,6 +39,7 @@ namespace ui {
   class Box;
   class Button;
   class Label;
+  class TooltipManager;
 }
 
 namespace app {
@@ -98,6 +99,8 @@ namespace app {
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
+
+    void setupTooltips(ui::TooltipManager* tooltipManager);
 
     class ZoomButtons;
     class BrushTypeField;

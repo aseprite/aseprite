@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,8 +48,12 @@ namespace app {
       return m_params[name] = value;
     }
 
-    const std::string& get(const char* name) const {
-      return m_params[name];
+    std::string get(const char* name) const {
+      auto it = m_params.find(name);
+      if (it != m_params.end())
+        return it->second;
+      else
+        return std::string();
     }
 
     void operator|=(const Params& params) const {

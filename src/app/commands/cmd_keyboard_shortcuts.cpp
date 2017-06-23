@@ -678,6 +678,8 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   window.openWindowInForeground();
 
   if (window.closer() == window.ok()) {
+    KeyboardShortcuts::instance()->UserChange();
+
     // Save keyboard shortcuts in configuration file
     {
       ResourceFinder rf;
