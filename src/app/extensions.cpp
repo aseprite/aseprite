@@ -580,7 +580,7 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
   // Save the list of installed files in "__info.json" file
   {
     json11::Json::object obj;
-    obj["installedFiles"] = json11::Json::Json(installedFiles);
+    obj["installedFiles"] = json11::Json(installedFiles);
     json11::Json json(obj);
 
     const std::string fullFn = base::join_path(info.dstPath, kInfoJson);
