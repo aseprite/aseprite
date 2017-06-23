@@ -72,7 +72,7 @@ namespace app {
 
     // Used by the Palette Editor command to change the status of button
     // when the visibility of the dialog changes.
-    bool inEditMode() const { return m_editMode; }
+    bool inEditMode() const;
     void setEditMode(bool state);
 
     // ContextObserver impl

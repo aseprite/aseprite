@@ -360,6 +360,15 @@ void ColorBar::setColorSelector(ColorSelector selector)
   m_selectorPlaceholder.layout();
 }
 
+bool ColorBar::inEditMode() const
+{
+  return
+    (m_editMode &&
+     m_lastDocument &&
+     m_lastDocument->sprite() &&
+     m_lastDocument->sprite()->pixelFormat() != IMAGE_GRAYSCALE);
+}
+
 void ColorBar::setEditMode(bool state)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
