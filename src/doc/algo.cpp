@@ -38,7 +38,7 @@ void algo_line(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
   int e = 0;
   int y = y1;
 
-  // Move one x2 extra pixels to the dx direction so we can use
+  // Move x2 one extra pixel to the dx direction so we can use
   // operator!=() instead of operator<(). Here I prefer operator!=()
   // instead of swapping x1 with x2 so the error always start from 0
   // in the origin (x1,y1).
