@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/color.h"
+#include "doc/palette_picks.h"
 #include "filters/filter.h"
 #include "filters/target.h"
 
@@ -30,10 +31,12 @@ namespace filters {
     void applyToIndexed(FilterManager* filterMgr);
 
   private:
+    void applyToPalette(FilterManager* filterMgr);
     void applyHslFilterToRgb(const Target target, doc::color_t& color);
 
     double m_h, m_s, m_l;
     int m_a;
+    doc::PalettePicks m_picks;
   };
 
 } // namespace filters

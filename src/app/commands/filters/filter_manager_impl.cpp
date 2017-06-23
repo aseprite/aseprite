@@ -368,8 +368,6 @@ doc::PalettePicks FilterManagerImpl::getPalettePicks()
   ColorBar::instance()
     ->getPaletteView()
     ->getSelectedEntries(picks);
-  if (picks.picks() == 0)
-    picks.all();
   return picks;
 }
 

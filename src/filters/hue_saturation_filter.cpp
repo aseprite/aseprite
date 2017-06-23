@@ -12,7 +12,6 @@
 
 #include "doc/image.h"
 #include "doc/palette.h"
-#include "doc/palette_picks.h"
 #include "doc/rgbmap.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
@@ -60,6 +59,16 @@ void HueSaturationFilter::setAlpha(int a)
 
 void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
 {
+  FilterIndexedData* fid = filterMgr->getIndexedData();
+
+  if (filterMgr->isFirstRow()) {
+    m_picks = fid->getPalettePicks();
+    if (m_picks.picks() > 0) {
+      applyToPalette(filterMgr);
+    }
+  }
+
+  const Palette* pal = fid->getPalette();
   const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
   uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
   const int w = filterMgr->getWidth();
@@ -73,7 +82,20 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
     }
 
     color_t c = *(src_address++);
-    applyHslFilterToRgb(target, c);
+
+    if (m_picks.picks() > 0) {
+      int i =
+        pal->findExactMatch(rgba_getr(c),
+                            rgba_getg(c),
+                            rgba_getb(c),
+                            rgba_geta(c), -1);
+      if (i >= 0)
+        c = fid->getNewPalette()->getEntry(i);
+    }
+    else {
+      applyHslFilterToRgb(target, c);
+    }
+
     *(dst_address++) = c;
   }
 }
@@ -117,52 +139,63 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
 
 void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
 {
-  const Target target = filterMgr->getTarget();
   FilterIndexedData* fid = filterMgr->getIndexedData();
-  const Palette* pal = fid->getPalette();
 
-  // Apply filter to color palette
+  // Apply filter to color palette if there is no selection
   if (!filterMgr->isMaskActive()) {
     if (!filterMgr->isFirstRow())
       return;
 
-    PalettePicks picks = fid->getPalettePicks();
-    Palette* newPal = fid->getNewPalette();
+    m_picks = fid->getPalettePicks();
+    if (m_picks.picks() == 0)
+      m_picks.all();
 
-    int i = 0;
-    for (bool state : picks) {
-      if (!state) {
-        ++i;
-        continue;
-      }
-
-      color_t c = pal->getEntry(i);
-      applyHslFilterToRgb(target, c);
-      newPal->setEntry(i, c);
-      ++i;
-    }
+    applyToPalette(filterMgr);
+    return;
   }
+
   // Apply filter to color region
-  else {
-    const RgbMap* rgbmap = fid->getRgbMap();
-    const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
-    uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
-    const int w = filterMgr->getWidth();
+  const Target target = filterMgr->getTarget();
+  const Palette* pal = fid->getPalette();
+  const RgbMap* rgbmap = fid->getRgbMap();
+  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
+  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
+  const int w = filterMgr->getWidth();
 
-    for (int x=0; x<w; x++) {
-      if (filterMgr->skipPixel()) {
-        ++src_address;
-        ++dst_address;
-        continue;
-      }
-
-      color_t c = pal->getEntry(*(src_address++));
-      applyHslFilterToRgb(target, c);
-      *(dst_address++) = rgbmap->mapColor(rgba_getr(c),
-                                          rgba_getg(c),
-                                          rgba_getb(c),
-                                          rgba_geta(c));
+  for (int x=0; x<w; x++) {
+    if (filterMgr->skipPixel()) {
+      ++src_address;
+      ++dst_address;
+      continue;
     }
+
+    color_t c = pal->getEntry(*(src_address++));
+    applyHslFilterToRgb(target, c);
+    *(dst_address++) = rgbmap->mapColor(rgba_getr(c),
+                                        rgba_getg(c),
+                                        rgba_getb(c),
+                                        rgba_geta(c));
+  }
+}
+
+void HueSaturationFilter::applyToPalette(FilterManager* filterMgr)
+{
+  const Target target = filterMgr->getTarget();
+  FilterIndexedData* fid = filterMgr->getIndexedData();
+  const Palette* pal = fid->getPalette();
+  Palette* newPal = fid->getNewPalette();
+
+  int i = 0;
+  for (bool state : m_picks) {
+    if (!state) {
+      ++i;
+      continue;
+    }
+
+    color_t c = pal->getEntry(i);
+    applyHslFilterToRgb(target, c);
+    newPal->setEntry(i, c);
+    ++i;
   }
 }
 
