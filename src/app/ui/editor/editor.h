@@ -274,6 +274,7 @@ namespace app {
     // DocumentObserver impl
     void onExposeSpritePixels(doc::DocumentEvent& ev) override;
     void onSpritePixelRatioChanged(doc::DocumentEvent& ev) override;
+    void onBeforeRemoveLayer(DocumentEvent& ev) override;
     void onRemoveCel(DocumentEvent& ev) override;
     void onAddFrameTag(DocumentEvent& ev) override;
     void onRemoveFrameTag(DocumentEvent& ev) override;

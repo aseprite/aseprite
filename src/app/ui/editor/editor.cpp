@@ -1841,6 +1841,11 @@ void Editor::onSpritePixelRatioChanged(doc::DocumentEvent& ev)
   invalidate();
 }
 
+void Editor::onBeforeRemoveLayer(DocumentEvent& ev)
+{
+  m_showGuidesThisCel = nullptr;
+}
+
 void Editor::onRemoveCel(DocumentEvent& ev)
 {
   m_showGuidesThisCel = nullptr;
