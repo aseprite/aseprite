@@ -269,6 +269,17 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
+bool MovingCelState::onKeyDown(Editor* editor, KeyMessage* msg)
+{
+  // Do not call StandbyState::onKeyDown() so we don't start a
+  // straight line when we are moving the cel with Ctrl and Shift key
+  // is pressed.
+  //
+  // TODO maybe MovingCelState shouldn't be a StandbyState (the same
+  // for several other states)
+  return false;
+}
+
 bool MovingCelState::onUpdateStatusBar(Editor* editor)
 {
   if (m_hasReference) {

@@ -46,6 +46,7 @@ namespace app {
 
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
 
     virtual bool requireBrushPreview() override { return false; }
