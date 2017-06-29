@@ -219,6 +219,9 @@ void SkinTheme::onRegenerate()
     catch (const std::exception& e) {
       LOG("THEME: Error loading user-theme: %s\n", e.what());
 
+      // Load default theme again
+      loadAll(pref.theme.selected.defaultValue());
+
       if (ui::get_theme())
         Console::showException(e);
 
@@ -271,17 +274,29 @@ void SkinTheme::loadSheet()
 {
   // Load the skin sheet
   std::string sheet_filename(base::join_path(m_path, "sheet.png"));
+  she::Surface* newSheet = nullptr;
   try {
-    if (m_sheet) {
-      m_sheet->dispose();
-      m_sheet = nullptr;
-    }
-    m_sheet = she::instance()->loadRgbaSurface(sheet_filename.c_str());
-    if (m_sheet)
-      m_sheet->applyScale(guiscale());
+    newSheet = she::instance()->loadRgbaSurface(sheet_filename.c_str());
   }
   catch (...) {
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
+  }
+
+  // Replace the sprite sheet
+  if (m_sheet) {
+    m_sheet->dispose();
+    m_sheet = nullptr;
+  }
+  m_sheet = newSheet;
+  if (m_sheet)
+    m_sheet->applyScale(guiscale());
+
+  // Change sprite sheet of all layer styles
+  for (auto it : m_styles) {
+    for (auto layer : it.second->layers()) {
+      if (layer.spriteSheet())
+        layer.setSpriteSheet(m_sheet);
+    }
   }
 }
 
@@ -453,6 +468,10 @@ void SkinTheme::loadXml()
       .FirstChild("theme")
       .FirstChild("styles")
       .FirstChild("style").ToElement();
+
+    if (!xmlStyle)              // Without styles?
+      throw base::Exception("There are no styles");
+
     while (xmlStyle) {
       const char* style_id = xmlStyle->Attribute("id");
       if (!style_id) {
