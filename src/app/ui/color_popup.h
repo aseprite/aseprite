@@ -36,7 +36,8 @@ namespace app {
     ColorPopup(const ColorButtonOptions& options);
     ~ColorPopup();
 
-    void setColor(const app::Color& color, SetColorOptions options);
+    void setColor(const app::Color& color,
+                  const SetColorOptions options);
     app::Color getColor() const;
 
     // Signals
@@ -58,7 +59,8 @@ namespace app {
 
   private:
     void selectColorType(app::Color::Type type);
-    void setColorWithSignal(const app::Color& color);
+    void setColorWithSignal(const app::Color& color,
+                            const SetColorOptions options);
     void findBestfitIndex(const app::Color& color);
 
     class SimpleColors;
