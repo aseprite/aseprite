@@ -1524,11 +1524,13 @@ void ContextBar::onFgOrBgColorChange(doc::Brush::ImageColor imageColor)
     auto& pref = Preferences::instance();
     m_activeBrush->setImageColor(
       imageColor,
-      color_utils::color_for_image(
+      color_utils::color_for_target_mask(
         (imageColor == doc::Brush::ImageColor::MainColor ?
          pref.colorBar.fgColor():
          pref.colorBar.bgColor()),
-        m_activeBrush->image()->pixelFormat()));
+        ColorTarget(ColorTarget::TransparentLayer,
+                    m_activeBrush->image()->pixelFormat(),
+                    -1)));
   }
 }
 
@@ -1822,13 +1824,19 @@ void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
 
       brush.brush()->setImageColor(
         Brush::ImageColor::MainColor,
-        color_utils::color_for_image(pref.colorBar.fgColor(),
-                                     pixelFormat));
+        color_utils::color_for_target_mask(
+          pref.colorBar.fgColor(),
+          ColorTarget(ColorTarget::TransparentLayer,
+                      pixelFormat,
+                      -1)));
 
       brush.brush()->setImageColor(
         Brush::ImageColor::BackgroundColor,
-        color_utils::color_for_image(pref.colorBar.bgColor(),
-                                     pixelFormat));
+        color_utils::color_for_target_mask(
+          pref.colorBar.bgColor(),
+          ColorTarget(ColorTarget::TransparentLayer,
+                      pixelFormat,
+                      -1)));
     }
 
     if (brush.hasFlag(BrushSlot::Flags::InkType))

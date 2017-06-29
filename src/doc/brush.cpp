@@ -13,6 +13,7 @@
 #include "base/pi.h"
 #include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
+#include "doc/blend_internals.h"
 #include "doc/image.h"
 #include "doc/image_impl.h"
 #include "doc/primitives.h"
@@ -114,7 +115,8 @@ void Brush::setImage(const Image* image,
 
 template<class ImageTraits,
          color_t color_mask,
-         color_t alpha_mask>
+         color_t alpha_mask,
+         color_t alpha_shift>
 static void replace_image_colors(
   Image* image,
   Image* maskBitmap,
@@ -145,25 +147,36 @@ static void replace_image_colors(
     ++mask_it;
   }
 
-  mainColor &= color_mask;
-  bgColor &= color_mask;
-
+  int t;
   if (hasAlpha) {
-    for (auto& pixel : bits) {
-      if (useMain)
-        pixel = (pixel & alpha_mask) | mainColor;
-      else if (useBg)
-        pixel = (pixel & alpha_mask) | bgColor;
+    if (useMain || useBg) {
+      const color_t color = (useMain ? mainColor: useBg);
+      for (auto& pixel : bits) {
+        color_t a1 = (pixel & alpha_mask) >> alpha_shift;
+        const color_t a2 = (color & alpha_mask) >> alpha_shift;
+        a1 = MUL_UN8(a1, a2, t);
+        pixel =
+          (a1 << alpha_shift) |
+          (color & color_mask);
+      }
     }
   }
   else {
     for (auto& pixel : bits) {
-      if (useMain && ((pixel != srcBgColor) || (srcMainColor == srcBgColor))) {
-        pixel = (pixel & alpha_mask) | mainColor;
-      }
-      else if (useBg && (pixel == srcBgColor)) {
-        pixel = (pixel & alpha_mask) | bgColor;
-      }
+      color_t color;
+      if (useMain && ((pixel != srcBgColor) || (srcMainColor == srcBgColor)))
+        color = mainColor;
+      else if (useBg && (pixel == srcBgColor))
+        color = bgColor;
+      else
+        continue;
+
+      color_t a1 = (pixel & alpha_mask) >> alpha_shift;
+      color_t a2 = (color & alpha_mask) >> alpha_shift;
+      a1 = MUL_UN8(a1, a2, t);
+      pixel =
+        (a1 << alpha_shift) |
+        (color & color_mask);
     }
   }
 }
@@ -246,14 +259,14 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
   switch (m_image->pixelFormat()) {
 
     case IMAGE_RGB:
-      replace_image_colors<RgbTraits, rgba_rgb_mask, rgba_a_mask>(
+      replace_image_colors<RgbTraits, rgba_rgb_mask, rgba_a_mask, rgba_a_shift>(
         m_image.get(), m_maskBitmap.get(),
         (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
 
     case IMAGE_GRAYSCALE:
-      replace_image_colors<GrayscaleTraits, graya_v_mask, graya_a_mask>(
+      replace_image_colors<GrayscaleTraits, graya_v_mask, graya_a_mask, graya_a_shift>(
         m_image.get(), m_maskBitmap.get(),
         (m_mainColor ? true: false), (m_mainColor ? *m_mainColor: 0),
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
