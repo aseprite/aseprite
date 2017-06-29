@@ -2079,9 +2079,17 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
       y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
     }
 
-    // Also we always limit the 1 image pixel inside the sprite's bounds.
-    x = MID(-image->width()+1, x, sprite->width()-1);
-    y = MID(-image->height()+1, y, sprite->height()-1);
+    // Limit the image inside the sprite's bounds.
+    if (sprite->width() <= image->width() ||
+        sprite->height() <= image->height()) {
+      x = MID(0, x, sprite->width() - image->width());
+      y = MID(0, y, sprite->height() - image->height());
+    }
+    else {
+      // Also we always limit the 1 image pixel inside the sprite's bounds.
+      x = MID(-image->width()+1, x, sprite->width()-1);
+      y = MID(-image->height()+1, y, sprite->height()-1);
+    }
   }
 
   // Clear brush preview, as the extra cel will be replaced with the
