@@ -180,8 +180,7 @@ public:
 
     // Adjust points for selection like tools (so we can select tiles)
     if (loop->getController()->canSnapToGrid() &&
-        loop->getSnapToGrid() &&
-        loop->getInk()->isSelection()) {
+        loop->getSnapToGrid()) {
       if (stroke[0].x < stroke[1].x)
         stroke[1].x--;
       else if (stroke[0].x > stroke[1].x)
