@@ -1692,10 +1692,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
 
   // Show/Hide fields
   m_zoomButtons->setVisible(needZoomButtons);
-  m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
+  m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush && !withDithering)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
-  m_brushPatternField->setVisible(supportOpacity && hasImageBrush);
+  m_brushPatternField->setVisible(supportOpacity && hasImageBrush && !withDithering);
   m_inkType->setVisible(hasInk);
   m_inkOpacityLabel->setVisible(showOpacity);
   m_inkOpacity->setVisible(showOpacity);
