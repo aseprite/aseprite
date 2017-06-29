@@ -42,7 +42,7 @@ because they don't depend on any other component.
   * [filters](filters/) (base, doc, gfx): Effects for images.
   * [render](render/) (base, doc, gfx): Library to render documents.
   * [ui](ui/) (base, gfx, she): Portable UI library (buttons, windows, text fields, etc.)
-  * [updater](updater/) (base, net): Component to check for updates.
+  * [updater](updater/) (base, cfg, net): Component to check for updates.
 
 ## Level 4
 
