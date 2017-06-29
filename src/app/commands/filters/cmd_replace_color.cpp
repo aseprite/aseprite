@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
 #include "app/context.h"
@@ -22,12 +23,14 @@
 #include "app/load_widget.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
+#include "app/ui/keyboard_shortcuts.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
-#include "filters/replace_color_filter.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
+#include "filters/replace_color_filter.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -82,26 +85,41 @@ public:
     m_toleranceSlider->Change.connect(&ReplaceColorWindow::onToleranceChange, this);
   }
 
-protected:
-  void onFromChange(const app::Color& color)
-  {
+private:
+
+  void onFromChange(const app::Color& color) {
     m_filter.setFrom(color);
     restartPreview();
   }
 
-  void onToChange(const app::Color& color)
-  {
+  void onToChange(const app::Color& color) {
     m_filter.setTo(color);
     restartPreview();
   }
 
-  void onToleranceChange()
-  {
+  void onToleranceChange() {
     m_filter.setTolerance(m_toleranceSlider->getValue());
     restartPreview();
   }
 
-private:
+  bool onProcessMessage(ui::Message* msg) override {
+    switch (msg->type()) {
+      case ui::kKeyDownMessage: {
+        const Key* key =
+          KeyboardShortcuts::instance()->command(CommandId::SwitchColors);
+        if (key && key->isPressed(msg)) {
+          // Switch colors
+          app::Color from = m_fromButton->getColor();
+          app::Color to = m_toButton->getColor();
+          m_fromButton->setColor(to);
+          m_toButton->setColor(from);
+        }
+        break;
+      }
+    }
+    return FilterWindow::onProcessMessage(msg);
+  }
+
   ReplaceColorFilterWrapper& m_filter;
   base::UniquePtr<ui::Widget> m_controlsWidget;
   ColorButton* m_fromButton;
