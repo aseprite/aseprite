@@ -18,6 +18,7 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
+#include "doc/brush.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -218,6 +219,7 @@ void ToolLoopManager::snapToGrid(Point& point)
 
   point = snap_to_grid(m_toolLoop->getGridBounds(), point,
                        PreferSnapTo::ClosestGridVertex);
+  point += m_toolLoop->getBrush()->center();
 }
 
 // Strokes are relative to sprite origin.

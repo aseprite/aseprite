@@ -108,9 +108,7 @@ void Brush::setImage(const Image* image,
   m_mainColor.reset();
   m_bgColor.reset();
 
-  m_bounds = gfx::Rect(
-    -m_image.get()->width()/2, -m_image.get()->height()/2,
-    m_image.get()->width(), m_image.get()->height());
+  resetBounds();
 }
 
 template<class ImageTraits,
@@ -359,9 +357,16 @@ void Brush::regenerate()
     }
   }
 
-  m_bounds = gfx::Rect(
-    -m_image->width()/2, -m_image->height()/2,
-    m_image->width(), m_image->height());
+  resetBounds();
+}
+
+void Brush::resetBounds()
+{
+  m_center = gfx::Point(m_image->width()/2,
+                        m_image->height()/2);
+  m_bounds = gfx::Rect(-m_center,
+                       gfx::Size(m_image->width(),
+                                 m_image->height()));
 }
 
 } // namespace doc

@@ -181,15 +181,17 @@ public:
     // Adjust points for selection like tools (so we can select tiles)
     if (loop->getController()->canSnapToGrid() &&
         loop->getSnapToGrid()) {
+      auto bounds = loop->getBrush()->bounds();
+
       if (stroke[0].x < stroke[1].x)
-        stroke[1].x--;
+        stroke[1].x -= bounds.w;
       else if (stroke[0].x > stroke[1].x)
-        stroke[0].x--;
+        stroke[0].x -= bounds.w;
 
       if (stroke[0].y < stroke[1].y)
-        stroke[1].y--;
+        stroke[1].y -= bounds.h;
       else if (stroke[0].y > stroke[1].y)
-        stroke[0].y--;
+        stroke[0].y -= bounds.h;
     }
   }
 
