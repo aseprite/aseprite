@@ -855,6 +855,18 @@ void Render::renderBackground(
 
   gfx::Rect dstBounds = area.dstBounds();
 
+  // Fix background color (make them opaque)
+  switch (image->pixelFormat()) {
+    case IMAGE_RGB:
+      m_bgColor1 |= doc::rgba_a_mask;
+      m_bgColor2 |= doc::rgba_a_mask;
+      break;
+    case IMAGE_GRAYSCALE:
+      m_bgColor1 |= doc::graya_a_mask;
+      m_bgColor2 |= doc::graya_a_mask;
+      break;
+  }
+
   // Draw checked background (tile by tile)
   int u_start = u;
   for (y=y_start-tile_h; y<image->height()+tile_h; y+=tile_h) {
