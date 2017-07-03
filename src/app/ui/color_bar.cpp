@@ -447,14 +447,9 @@ void ColorBar::onPaletteButtonClick()
 
   switch (static_cast<PalButton>(item)) {
 
-    case PalButton::EDIT: {
-      Command* cmd_show_palette_editor = CommandsModule::instance()->getCommandByName(CommandId::PaletteEditor);
-      Params params;
-      params.set("switch", "true");
-
-      UIContext::instance()->executeCommand(cmd_show_palette_editor, params);
+    case PalButton::EDIT:
+      setEditMode(!inEditMode());
       break;
-    }
 
     case PalButton::SORT: {
       gfx::Rect bounds = m_buttons.getItem(item)->bounds();
@@ -1206,11 +1201,9 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
 
 void ColorBar::setupTooltips(TooltipManager* tooltipManager)
 {
-  Params params;
-  params.set("switch", "true");
   tooltipManager->addTooltipFor(
     m_buttons.getItem((int)PalButton::EDIT),
-    key_tooltip("Edit Color", CommandId::PaletteEditor, params), BOTTOM);
+    key_tooltip("Edit Color", CommandId::PaletteEditor), BOTTOM);
 
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);

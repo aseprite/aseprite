@@ -38,6 +38,10 @@ namespace app {
     app::Color getColor() const;
     void setColor(const app::Color& color);
 
+    bool isPopupVisible();
+    void openPopup(const bool forcePinned);
+    void closePopup();
+
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;
 
@@ -56,8 +60,6 @@ namespace app {
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
 
   private:
-    void openSelectorDialog();
-    void closeSelectorDialog();
     void onWindowColorChange(const app::Color& color);
     void onActiveSiteChange(const Site& site) override;
     bool canPin() const { return m_options.canPinSelector; }
@@ -66,6 +68,7 @@ namespace app {
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     gfx::Rect m_windowDefaultBounds;
+    gfx::Rect m_hiddenPopupBounds;
     bool m_dependOnLayer;
     ColorButtonOptions m_options;
   };

@@ -122,7 +122,7 @@ bool ColorButton::onProcessMessage(Message* msg)
     case kOpenMessage:
       if (!m_windowDefaultBounds.isEmpty() &&
           this->isVisible()) {
-        openSelectorDialog();
+        openPopup(false);
       }
       break;
 
@@ -250,13 +250,13 @@ void ColorButton::onClick(Event& ev)
   ButtonBase::onClick(ev);
 
   // If the popup window was not created or shown yet..
-  if (m_window == NULL || !m_window->isVisible()) {
+  if (!m_window || !m_window->isVisible()) {
     // Open it
-    openSelectorDialog();
+    openPopup(false);
   }
   else if (!m_window->isMoveable()) {
     // If it is visible, close it
-    closeSelectorDialog();
+    closePopup();
   }
 }
 
@@ -267,6 +267,8 @@ void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
     ev.stream() >> pinned;
     if (ev.stream() && pinned)
       ev.stream() >> m_windowDefaultBounds;
+
+    m_hiddenPopupBounds = m_windowDefaultBounds;
   }
 }
 
@@ -278,9 +280,15 @@ void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
     ev.stream() << 0;
 }
 
-void ColorButton::openSelectorDialog()
+bool ColorButton::isPopupVisible()
 {
-  bool pinned = (!m_windowDefaultBounds.isEmpty());
+  return (m_window && m_window->isVisible());
+}
+
+void ColorButton::openPopup(const bool forcePinned)
+{
+  bool pinned = forcePinned ||
+    (!m_windowDefaultBounds.isEmpty());
 
   if (m_window == NULL) {
     m_window = new ColorPopup(m_options);
@@ -293,8 +301,8 @@ void ColorButton::openSelectorDialog()
   m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->openWindow();
 
-  gfx::Rect winBounds = m_windowDefaultBounds;
-  if (!pinned) {
+  gfx::Rect winBounds;
+  if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
     winBounds = gfx::Rect(m_window->bounds().origin(),
                           m_window->sizeHint());
     winBounds.x = MID(0, bounds().x, ui::display_w()-winBounds.w);
@@ -302,6 +310,12 @@ void ColorButton::openSelectorDialog()
       winBounds.y = MAX(0, bounds().y2());
     else
       winBounds.y = MAX(0, bounds().y-winBounds.h);
+  }
+  else if (forcePinned) {
+    winBounds = m_hiddenPopupBounds;
+  }
+  else {
+    winBounds = m_windowDefaultBounds;
   }
   winBounds.x = MID(0, winBounds.x, ui::display_w()-winBounds.w);
   winBounds.y = MID(0, winBounds.y, ui::display_h()-winBounds.h);
@@ -321,10 +335,12 @@ void ColorButton::openSelectorDialog()
   m_windowDefaultBounds = gfx::Rect();
 }
 
-void ColorButton::closeSelectorDialog()
+void ColorButton::closePopup()
 {
-  if (m_window != NULL)
-    m_window->closeWindow(NULL);
+  if (m_window) {
+    m_hiddenPopupBounds = m_window->bounds();
+    m_window->closeWindow(nullptr);
+  }
 }
 
 void ColorButton::onWindowColorChange(const app::Color& color)
@@ -347,7 +363,7 @@ void ColorButton::onActiveSiteChange(const Site& site)
     else {
       // Check if it's pinned from the preferences (m_windowDefaultBounds)
       if (!m_window && !m_windowDefaultBounds.isEmpty())
-        openSelectorDialog();
+        openPopup(false);
       // Or check if the window was hidden but it's pinned, so we've
       // to show it again.
       else if (m_window && m_window->isPinned())

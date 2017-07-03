@@ -114,11 +114,16 @@
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
       </key>
-      <key command="PaletteEditor" shortcut="A">
-        <param name="switch" value="true" />
-      </key>
+      <key command="PaletteEditor" shortcut="A" />
       <key command="PaletteEditor" shortcut="F4">
-        <param name="switch" value="true" />
+        <param name="edit" value="switch" />
+        <param name="popup" value="foreground" />
+      </key>
+      <key command="PaletteEditor">
+        <param name="popup" value="foreground" />
+      </key>
+      <key command="PaletteEditor">
+        <param name="popup" value="background" />
       </key>
       <key command="ShowExtras" shortcut="Ctrl+H" mac="Cmd+H" />
       <!-- Tabs -->
@@ -941,9 +946,7 @@
     </menu>
 
     <menu id="palette_popup">
-      <item command="PaletteEditor" text="Edit &amp;Palette">
-        <param name="switch" value="true" />
-      </item>
+      <item command="PaletteEditor" text="Edit &amp;Palette" />
       <item command="PaletteSize" text="Palette Si&amp;ze" />
       <separator />
       <item command="SetPaletteEntrySize" text="&amp;Small Size">

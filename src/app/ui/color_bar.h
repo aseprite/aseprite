@@ -79,6 +79,9 @@ namespace app {
     bool inEditMode() const;
     void setEditMode(bool state);
 
+    ColorButton* fgColorButton() { return &m_fgColor; }
+    ColorButton* bgColorButton() { return &m_bgColor; }
+
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
 
