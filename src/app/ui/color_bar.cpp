@@ -4,6 +4,9 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+// Uncomment this in case you want to debug ColorBar events
+//#define TRACE_COLOR_BAR_EVENTS
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -400,8 +403,9 @@ void ColorBar::onGeneralUpdate(doc::DocumentEvent& ev)
 
 void ColorBar::onAppPaletteChange()
 {
-  if (inEditMode())
-    return;
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onAppPaletteChange()\n");
+#endif
 
   fixColorIndex(m_fgColor);
   fixColorIndex(m_bgColor);
@@ -624,6 +628,10 @@ void ColorBar::onRemapButtonClick()
 
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onPaletteViewIndexChange(%d)\n", index);
+#endif
+
   base::ScopedValue<bool> lock(m_fromPalView, true, m_fromPalView);
 
   app::Color color = app::Color::fromIndex(index);
@@ -754,6 +762,11 @@ app::Color ColorBar::onPaletteViewGetBackgroundIndex()
 
 void ColorBar::onFgColorChangeFromPreferences()
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onFgColorChangeFromPreferences() -> %s\n",
+        Preferences::instance().colorBar.fgColor().toString().c_str());
+#endif
+
   if (m_fromPref)
     return;
 
@@ -763,6 +776,11 @@ void ColorBar::onFgColorChangeFromPreferences()
 
 void ColorBar::onBgColorChangeFromPreferences()
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onBgColorChangeFromPreferences() -> %s\n",
+        Preferences::instance().colorBar.bgColor().toString().c_str());
+#endif
+
   if (m_fromPref)
     return;
 
@@ -779,6 +797,10 @@ void ColorBar::onBgColorChangeFromPreferences()
 
 void ColorBar::onFgColorButtonBeforeChange(app::Color& color)
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onFgColorButtonBeforeChange(%s)\n", color.toString().c_str());
+#endif
+
   if (m_fromPalView)
     return;
 
@@ -803,6 +825,10 @@ void ColorBar::onFgColorButtonBeforeChange(app::Color& color)
 
 void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onFgColorButtonChange(%s)\n", color.toString().c_str());
+#endif
+
   if (m_fromFgButton)
     return;
 
@@ -819,6 +845,10 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
 
 void ColorBar::onBgColorButtonChange(const app::Color& color)
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onBgColorButtonChange(%s)\n", color.toString().c_str());
+#endif
+
   if (m_fromBgButton)
     return;
 
@@ -838,6 +868,10 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
 
 void ColorBar::onColorButtonChange(const app::Color& color)
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onColorButtonChange(%s)\n", color.toString().c_str());
+#endif
+
   if (!inEditMode() ||
       m_fromPref) {
     if (color.getType() == app::Color::IndexType)
@@ -1047,12 +1081,30 @@ void ColorBar::onCancel(Context* ctx)
 
 void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIcon)
 {
+#ifdef TRACE_COLOR_BAR_EVENTS
+  TRACE("ColorBar::onFixWarningClick(%s)\n", colorButton->getColor().toString().c_str());
+#endif
+
+  Palette* palette = get_current_palette();
+  const int oldEntries = palette->size();
+
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::AddColor);
   Params params;
   params.set("source", "color");
   params.set("color", colorButton->getColor().toString().c_str());
-
   UIContext::instance()->executeCommand(command, params);
+
+  // Select the new FG/BG color as an indexed color
+  if (inEditMode()) {
+    const int newEntries = palette->size();
+    if (oldEntries != newEntries) {
+      base::ScopedValue<bool> sync(m_fromPref, true, m_fromPref);
+      app::Color newIndex = app::Color::fromIndex(newEntries-1);
+      if (colorButton == &m_bgColor)
+        setBgColor(newIndex);
+      setFgColor(newIndex);
+    }
+  }
 }
 
 void ColorBar::onTimerTick()
