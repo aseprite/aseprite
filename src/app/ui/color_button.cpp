@@ -287,16 +287,13 @@ bool ColorButton::isPopupVisible()
 
 void ColorButton::openPopup(const bool forcePinned)
 {
-  bool pinned = forcePinned ||
+  const bool pinned = forcePinned ||
     (!m_windowDefaultBounds.isEmpty());
 
   if (m_window == NULL) {
     m_window = new ColorPopup(m_options);
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
-
-  if (pinned)
-    m_window->setPinned(true);
 
   m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->openWindow();
@@ -324,7 +321,9 @@ void ColorButton::openPopup(const bool forcePinned)
   m_window->manager()->dispatchMessages();
   m_window->layout();
 
-  // Setup the hot-region
+  m_window->setPinned(pinned);
+
+  // Add the ColorButton area to the ColorPopup hot-region
   if (!pinned) {
     gfx::Rect rc = bounds().createUnion(m_window->bounds());
     rc.enlarge(8);
