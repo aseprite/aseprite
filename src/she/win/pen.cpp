@@ -107,12 +107,13 @@ HCTX PenAPI::open(HWND hwnd)
     return nullptr;
   }
 
-  LOG("PEN: Pen attached to display\n");
+  LOG("PEN: Pen attached to display, new context %p\n", ctx);
   return ctx;
 }
 
 void PenAPI::close(HCTX ctx)
 {
+  LOG("PEN: Closing context %p\n", ctx);
   if (ctx) {
     ASSERT(m_wintabLib);
     LOG("PEN: Pen detached from window\n");

@@ -37,7 +37,8 @@ namespace she {
   class WinWindow {
   public:
     WinWindow(int width, int height, int scale)
-      : m_clientSize(1, 1)
+      : m_hwnd(nullptr)
+      , m_clientSize(1, 1)
       , m_restoredSize(0, 0)
       , m_isCreated(false)
       , m_translateDeadKeys(false)
@@ -46,26 +47,30 @@ namespace she {
       , m_hpenctx(nullptr)
       , m_pointerType(PointerType::Unknown)
       , m_pressure(0.0) {
-      registerClass();
-      m_hwnd = createHwnd(this, width, height);
       m_hcursor = nullptr;
       m_customHcursor = false;
       m_scale = scale;
+
+      registerClass();
+
+      // The HWND returned by CreateWindowEx() is different than the
+      // HWND used in WM_CREATE message.
+      m_hwnd = createHwnd(this, width, height);
+      if (!m_hwnd)
+        throw std::runtime_error("Error creating window");
+
+      SetWindowLongPtr(m_hwnd, GWLP_USERDATA,
+                       reinterpret_cast<LONG_PTR>(this));
 
       // This flag is used to avoid calling T::resizeImpl() when we
       // add the scrollbars to the window. (As the T type could not be
       // fully initialized yet.)
       m_isCreated = true;
-
-      // Attach Wacom context
-      m_hpenctx = static_cast<WindowSystem*>(she::instance())
-        ->penApi().open(m_hwnd);
     }
 
     ~WinWindow() {
-      if (m_hpenctx)
-        static_cast<WindowSystem*>(she::instance())
-          ->penApi().close(m_hpenctx);
+      if (m_hwnd)
+        DestroyWindow(m_hwnd);
     }
 
     void queueEvent(Event& ev) {
@@ -354,6 +359,26 @@ namespace she {
 
     LRESULT wndProc(UINT msg, WPARAM wparam, LPARAM lparam) {
       switch (msg) {
+
+        case WM_CREATE:
+          LOG("WIN: Creating window %p\n", m_hwnd);
+
+          // Attach Wacom context
+          m_hpenctx =
+            static_cast<WindowSystem*>(she::instance())
+            ->penApi().open(m_hwnd);
+          break;
+
+        case WM_DESTROY:
+          LOG("WIN: Destroying window %p (pen context %p)\n",
+              m_hwnd, m_hpenctx);
+
+          if (m_hpenctx) {
+            static_cast<WindowSystem*>(she::instance())
+              ->penApi().close(m_hpenctx);
+            m_hpenctx = nullptr;
+          }
+          break;
 
         case WM_SETCURSOR:
           if (LOWORD(lparam) == HTCLIENT) {
@@ -838,11 +863,9 @@ namespace she {
         nullptr,
         nullptr,
         GetModuleHandle(nullptr),
-        LPVOID(self));
+        reinterpret_cast<LPVOID>(self));
       if (!hwnd)
         return nullptr;
-
-      SetWindowLongPtr(hwnd, GWLP_USERDATA, LONG_PTR(self));
 
       // Center the window
       RECT workarea;
@@ -873,17 +896,31 @@ namespace she {
     }
 
     static LRESULT CALLBACK staticWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-      WinWindow* wnd;
+      WinWindow* wnd = nullptr;
 
-      if (msg == WM_CREATE)
-        wnd = (WinWindow*)lparam;
-      else
-        wnd = (WinWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+      if (msg == WM_CREATE) {
+        wnd =
+          reinterpret_cast<WinWindow*>(
+            reinterpret_cast<LPCREATESTRUCT>(lparam)->lpCreateParams);
 
-      if (wnd)
+        if (wnd && wnd->m_hwnd == nullptr)
+          wnd->m_hwnd = hwnd;
+      }
+      else {
+        wnd = reinterpret_cast<WinWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+        // Check that the user data makes sense
+        if (wnd && wnd->m_hwnd != hwnd)
+          wnd = nullptr;
+      }
+
+      if (wnd) {
+        ASSERT(wnd->m_hwnd == hwnd);
         return wnd->wndProc(msg, wparam, lparam);
-      else
+      }
+      else {
         return DefWindowProc(hwnd, msg, wparam, lparam);
+      }
     }
 
     mutable HWND m_hwnd;
