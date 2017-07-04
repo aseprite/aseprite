@@ -25,7 +25,6 @@
 #include "doc/site.h"
 #include "doc/sprite.h"
 #include "gfx/rect_io.h"
-#include "ui/size_hint_event.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -292,6 +291,7 @@ void ColorButton::openPopup(const bool forcePinned)
 
   if (m_window == NULL) {
     m_window = new ColorPopup(m_options);
+    m_window->Close.connect(&ColorButton::onWindowClose, this);
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 
@@ -336,10 +336,13 @@ void ColorButton::openPopup(const bool forcePinned)
 
 void ColorButton::closePopup()
 {
-  if (m_window) {
-    m_hiddenPopupBounds = m_window->bounds();
+  if (m_window)
     m_window->closeWindow(nullptr);
-  }
+}
+
+void ColorButton::onWindowClose(ui::CloseEvent& ev)
+{
+  m_hiddenPopupBounds = m_window->bounds();
 }
 
 void ColorButton::onWindowColorChange(const app::Color& color)

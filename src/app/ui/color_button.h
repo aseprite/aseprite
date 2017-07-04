@@ -17,6 +17,7 @@
 #include "ui/button.h"
 
 namespace ui {
+  class CloseEvent;
   class InitThemeEvent;
 }
 
@@ -60,6 +61,7 @@ namespace app {
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
 
   private:
+    void onWindowClose(ui::CloseEvent& ev);
     void onWindowColorChange(const app::Color& color);
     void onActiveSiteChange(const Site& site) override;
     bool canPin() const { return m_options.canPinSelector; }
