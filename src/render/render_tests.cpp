@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -66,12 +66,12 @@ TYPED_TEST_CASE(RenderAllModes, ImageAllTraits);
 TEST(Render, Basic)
 {
   Context ctx;
-  Document* doc = ctx.documents().add(2, 2, ColorMode::RGB);
+  Document* doc = ctx.documents().add(2, 2, ColorMode::INDEXED);
 
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 2);
 
-  base::UniquePtr<Image> dst(Image::create(IMAGE_RGB, 2, 2));
+  base::UniquePtr<Image> dst(Image::create(IMAGE_INDEXED, 2, 2));
   clear_image(dst, 1);
   EXPECT_2X2_PIXELS(dst, 1, 1, 1, 1);
 
@@ -134,9 +134,9 @@ TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
 TEST(Render, CheckedBackground)
 {
   Context ctx;
-  Document* doc = ctx.documents().add(4, 4, ColorMode::RGB);
+  Document* doc = ctx.documents().add(4, 4, ColorMode::INDEXED);
 
-  base::UniquePtr<Image> dst(Image::create(IMAGE_RGB, 4, 4));
+  base::UniquePtr<Image> dst(Image::create(IMAGE_INDEXED, 4, 4));
   clear_image(dst, 0);
 
   Render render;
@@ -187,12 +187,12 @@ TEST(Render, ZoomAndDstBounds)
   // 0 0 0
   // 0 4 4
   // 0 4 4
-  Document* doc = ctx.documents().add(3, 3, ColorMode::RGB);
+  Document* doc = ctx.documents().add(3, 3, ColorMode::INDEXED);
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);
   fill_rect(src, 1, 1, 2, 2, 4);
 
-  base::UniquePtr<Image> dst(Image::create(IMAGE_RGB, 4, 4));
+  base::UniquePtr<Image> dst(Image::create(IMAGE_INDEXED, 4, 4));
   clear_image(dst, 0);
 
   Render render;
