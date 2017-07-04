@@ -76,17 +76,15 @@ void PaletteEditorCommand::onExecute(Context* context)
     else
       button->openPopup(true);
   }
-  // Switch both
+  // Switch both (the popup visibility is used to switch both states)
   else if (m_edit && m_popup) {
-    if (editMode && button->isPopupVisible()) {
+    if (button->isPopupVisible()) {
       colorBar->setEditMode(false);
       button->closePopup();
     }
     else {
-      if (!editMode)
-        colorBar->setEditMode(true);
-      if (!button->isPopupVisible())
-        button->openPopup(true);
+      colorBar->setEditMode(true);
+      button->openPopup(true);
     }
   }
 }
