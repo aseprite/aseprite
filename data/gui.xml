@@ -95,6 +95,10 @@
       <key command="GotoLastFrame" shortcut="End" />
       <key command="GotoFrame" shortcut="Alt+G" />
       <key command="PlayAnimation" shortcut="Enter" />
+      <!-- Cels -->
+      <key command="ClearCel" />
+      <key command="UnlinkCel" />
+      <key command="LinkCels" />
       <!-- Select -->
       <key command="MaskAll" shortcut="Ctrl+A" mac="Cmd+A" />
       <key command="MaskContent" shortcut="Ctrl+T" mac="Cmd+T" />
