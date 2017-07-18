@@ -169,25 +169,29 @@ color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
     return backdrop;
   }
 
-  int Br, Bg, Bb, Ba;
-  int Sr, Sg, Sb, Sa;
-  int Rr, Rg, Rb, Ra;
+  const int Br = rgba_getr(backdrop);
+  const int Bg = rgba_getg(backdrop);
+  const int Bb = rgba_getb(backdrop);
+  const int Ba = rgba_geta(backdrop);
 
-  Br = rgba_getr(backdrop);
-  Bg = rgba_getg(backdrop);
-  Bb = rgba_getb(backdrop);
-  Ba = rgba_geta(backdrop);
-
-  Sr = rgba_getr(src);
-  Sg = rgba_getg(src);
-  Sb = rgba_getb(src);
-  Sa = rgba_geta(src);
+  const int Sr = rgba_getr(src);
+  const int Sg = rgba_getg(src);
+  const int Sb = rgba_getb(src);
+  int Sa = rgba_geta(src);
   Sa = MUL_UN8(Sa, opacity, t);
 
-  Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
-  Rr = Br + (Sr-Br) * Sa / Ra;
-  Rg = Bg + (Sg-Bg) * Sa / Ra;
-  Rb = Bb + (Sb-Bb) * Sa / Ra;
+  // Ra = Sa + Ba*(1-Sa)
+  //    = Sa + Ba - Ba*Sa
+  //    = Ba + Sa - Ba*Sa
+  // Rc = Sc*Sa/Ra + Bc*(1-Sa/Ra)
+  //    = Sc*Sa/Ra + Bc - Bc*Sa/Ra
+  //    = Bc + Sc*Sa/Ra - Bc*Sa/Ra
+  //    = Bc + (Sc-Bc)*Sa/Ra
+
+  const int Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
+  const int Rr = Br + (Sr-Br) * Sa / Ra;
+  const int Rg = Bg + (Sg-Bg) * Sa / Ra;
+  const int Rb = Bb + (Sb-Bb) * Sa / Ra;
 
   return rgba(Rr, Rg, Rb, Ra);
 }
