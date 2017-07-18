@@ -114,6 +114,7 @@ namespace app {
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
+    void onInvalidateRegion(const gfx::Region& region) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
@@ -352,6 +353,7 @@ namespace app {
     // TODO merge this with the marching ants of the sprite editor (ui::Editor)
     ui::Timer m_clipboard_timer;
     int m_offset_count;
+    bool m_redrawMarchingAntsOnly;
 
     bool m_scroll;   // True if the drag-and-drop operation is a scroll operation.
     bool m_copy;     // True if the drag-and-drop operation is a copy.

@@ -209,6 +209,7 @@ Timeline::Timeline()
   , m_confPopup(NULL)
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
+  , m_redrawMarchingAntsOnly(false)
   , m_scroll(false)
   , m_fromTimeline(false)
 {
@@ -518,18 +519,23 @@ bool Timeline::onProcessMessage(Message* msg)
           &clipboard_document,
           &clipboard_range);
 
-        if (isVisible() && m_document && clipboard_document == m_document) {
+        if (isVisible() &&
+            m_document &&
+            m_document == clipboard_document) {
           // Set offset to make selection-movement effect
           if (m_offset_count < 7)
             m_offset_count++;
           else
             m_offset_count = 0;
+
+          bool redrawOnlyMarchingAnts = getUpdateRegion().isEmpty();
+          invalidateRect(gfx::Rect(getRangeBounds(clipboard_range)).offset(origin()));
+          if (redrawOnlyMarchingAnts)
+            m_redrawMarchingAntsOnly = true;
         }
         else if (m_clipboard_timer.isRunning()) {
           m_clipboard_timer.stop();
         }
-
-        invalidate();
       }
       break;
 
@@ -1236,6 +1242,12 @@ bool Timeline::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Timeline::onInvalidateRegion(const gfx::Region& region)
+{
+  Widget::onInvalidateRegion(region);
+  m_redrawMarchingAntsOnly = false;
+}
+
 void Timeline::onSizeHint(SizeHintEvent& ev)
 {
   // This doesn't matter, the AniEditor'll use the entire screen anyway.
@@ -1269,6 +1281,12 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     // Lock the sprite to read/render it. We wait 1/4 secs in case
     // the background thread is making a backup.
     const DocumentReader documentReader(m_document, 250);
+
+    if (m_redrawMarchingAntsOnly) {
+      drawClipboardRange(g);
+      m_redrawMarchingAntsOnly = false;
+      return;
+    }
 
     layer_t layer, firstLayer, lastLayer;
     frame_t frame, firstFrame, lastFrame;

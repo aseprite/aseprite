@@ -1044,6 +1044,8 @@ void Widget::setTransparent(bool transparent)
 
 void Widget::invalidate()
 {
+  // TODO we should use invalidateRect(bounds()) here.
+
   if (isVisible()) {
     m_updateRegion.clear();
     getDrawableRegion(m_updateRegion, kCutTopWindows);
