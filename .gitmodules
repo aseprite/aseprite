@@ -51,3 +51,6 @@
 [submodule "third_party/json11"]
 	path = third_party/json11
 	url = https://github.com/aseprite/json11.git
+[submodule "third_party/benchmark"]
+	path = third_party/benchmark
+	url = https://github.com/aseprite/benchmark.git

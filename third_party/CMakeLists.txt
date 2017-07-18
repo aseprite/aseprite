@@ -119,3 +119,8 @@ set(ENABLE_CNG OFF CACHE BOOL "Enable the use of CNG(Crypto Next Generation)")
 add_subdirectory(libarchive)
 target_include_directories(archive_static INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)
+
+# benchmark
+if(ENABLE_BENCHMARKS)
+  add_subdirectory(benchmark)
+endif()

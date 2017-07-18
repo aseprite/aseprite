@@ -189,7 +189,6 @@ install(DIRECTORY ../data
 
 if(ENABLE_TESTS)
   include(FindTests)
-
   find_tests(gfx gfx-lib)
   find_tests(doc doc-lib)
   find_tests(render render-lib)
@@ -198,4 +197,9 @@ if(ENABLE_TESTS)
   find_tests(app/file app-lib)
   find_tests(app app-lib)
   find_tests(. app-lib)
+endif()
+
+if(ENABLE_BENCHMARKS)
+  include(FindBenchmarks)
+  find_benchmarks(doc doc-lib)
 endif()
