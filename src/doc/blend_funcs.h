@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,13 +15,11 @@ namespace doc {
 
   typedef color_t (*BlendFunc)(color_t backdrop, color_t src, int opacity);
 
-  color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_normal(color_t backdrop, color_t src);
+  color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity = 255);
   color_t rgba_blender_merge(color_t backdrop, color_t src, int opacity);
   color_t rgba_blender_neg_bw(color_t backdrop, color_t src, int opacity);
 
-  color_t graya_blender_normal(color_t backdrop, color_t src, int opacity);
-  color_t graya_blender_normal(color_t backdrop, color_t src);
+  color_t graya_blender_normal(color_t backdrop, color_t src, int opacity = 255);
   color_t graya_blender_merge(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_neg_bw(color_t backdrop, color_t src, int opacity);
 

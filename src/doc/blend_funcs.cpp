@@ -199,39 +199,6 @@ color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
   return rgba(Rr, Rg, Rb, Ra);
 }
 
-color_t rgba_blender_normal(color_t backdrop, color_t src)
-{
-  int t;
-
-  if ((backdrop & rgba_a_mask) == 0) {
-    return src;
-  }
-  else if ((src & rgba_a_mask) == 0) {
-    return backdrop;
-  }
-
-  int Br, Bg, Bb, Ba;
-  int Sr, Sg, Sb, Sa;
-  int Rr, Rg, Rb, Ra;
-
-  Br = rgba_getr(backdrop);
-  Bg = rgba_getg(backdrop);
-  Bb = rgba_getb(backdrop);
-  Ba = rgba_geta(backdrop);
-
-  Sr = rgba_getr(src);
-  Sg = rgba_getg(src);
-  Sb = rgba_getb(src);
-  Sa = rgba_geta(src);
-
-  Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
-  Rr = Br + (Sr-Br) * Sa / Ra;
-  Rg = Bg + (Sg-Bg) * Sa / Ra;
-  Rb = Bb + (Sb-Bb) * Sa / Ra;
-
-  return rgba(Rr, Rg, Rb, Ra);
-}
-
 color_t rgba_blender_multiply(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -535,32 +502,6 @@ color_t graya_blender_normal(color_t backdrop, color_t src, int opacity)
   Sg = graya_getv(src);
   Sa = graya_geta(src);
   Sa = MUL_UN8(Sa, opacity, t);
-
-  Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
-  Rg = Bg + (Sg-Bg) * Sa / Ra;
-
-  return graya(Rg, Ra);
-}
-
-color_t graya_blender_normal(color_t backdrop, color_t src)
-{
-  int t;
-
-  if ((backdrop & graya_a_mask) == 0) {
-    return src;
-  }
-  else if ((src & graya_a_mask) == 0)
-    return backdrop;
-
-  int Bg, Ba;
-  int Sg, Sa;
-  int Rg, Ra;
-
-  Bg = graya_getv(backdrop);
-  Ba = graya_geta(backdrop);
-
-  Sg = graya_getv(src);
-  Sa = graya_geta(src);
 
   Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
   Rg = Bg + (Sg-Bg) * Sa / Ra;
