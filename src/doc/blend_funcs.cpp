@@ -182,13 +182,16 @@ color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
 
   // Ra = Sa + Ba*(1-Sa)
   //    = Sa + Ba - Ba*Sa
-  //    = Ba + Sa - Ba*Sa
-  // Rc = Sc*Sa/Ra + Bc*(1-Sa/Ra)
-  //    = Sc*Sa/Ra + Bc - Bc*Sa/Ra
-  //    = Bc + Sc*Sa/Ra - Bc*Sa/Ra
-  //    = Bc + (Sc-Bc)*Sa/Ra
+  const int Ra = Sa + Ba - MUL_UN8(Ba, Sa, t);
 
-  const int Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
+  // Ra = Sa + Ba*(1-Sa)
+  // Ba = (Ra-Sa) / (1-Sa)
+  // Rc = (Sc*Sa + Bc*Ba*(1-Sa)) / Ra                Replacing Ba with (Ra-Sa) / (1-Sa)...
+  //    = (Sc*Sa + Bc*(Ra-Sa)/(1-Sa)*(1-Sa)) / Ra
+  //    = (Sc*Sa + Bc*(Ra-Sa)) / Ra
+  //    = Sc*Sa/Ra + Bc*Ra/Ra - Bc*Sa/Ra
+  //    = Sc*Sa/Ra + Bc - Bc*Sa/Ra
+  //    = Bc + (Sc-Bc)*Sa/Ra
   const int Rr = Br + (Sr-Br) * Sa / Ra;
   const int Rg = Bg + (Sg-Bg) * Sa / Ra;
   const int Rb = Bb + (Sb-Bb) * Sa / Ra;
