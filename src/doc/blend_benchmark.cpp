@@ -12,24 +12,6 @@
 
 #include <benchmark/benchmark.h>
 
-namespace doc {
-  color_t rgba_blender_multiply(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_screen(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_overlay(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_darken(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_lighten(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_color_dodge(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_color_burn(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_hard_light(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_soft_light(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_difference(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_exclusion(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_hsl_hue(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_hsl_saturation(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_hsl_color(color_t backdrop, color_t src, int opacity);
-  color_t rgba_blender_hsl_luminosity(color_t backdrop, color_t src, int opacity);
-}
-
 using namespace doc;
 
 static void CustomArguments(benchmark::internal::Benchmark* b) {
