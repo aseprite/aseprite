@@ -68,9 +68,15 @@ Aseprite can be compiled with two different back-ends:
 
 ## Windows dependencies
 
-First of all, you will need an extra little utility: `awk`, used to
-compile the libpng library. You can get this utility from MSYS2
-distributions like [MozillaBuild](https://wiki.mozilla.org/MozillaBuild).
+First of all, you will need:
+
+* Windows 10 (we don't support cross-compiling and don't know if this would be possible)
+* [VS2015 Community Edition](https://www.visualstudio.com/downloads/) (VS2017 should work too)
+* Windows 10 SDK (it's included with VS2015, remember to install it)
+
+Then, you will need an extra little utility: `awk`, used to compile
+the libpng library. You can get this utility from MSYS2 distributions
+like [MozillaBuild](https://wiki.mozilla.org/MozillaBuild).
 
 After that you have to choose the back-end:
 
@@ -82,6 +88,8 @@ After that you have to choose the back-end:
    [Compiling](#compiling) section. Remember to check the
    [Windows details](#windows-details) section to know how to call
    `cmake` correctly.
+
+The official version of Aseprite is compiled with the Skia back-end.
 
 ## macOS dependencies
 
