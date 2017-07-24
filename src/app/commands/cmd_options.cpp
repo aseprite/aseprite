@@ -20,6 +20,7 @@
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
 #include "app/ui/color_button.h"
+#include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
@@ -623,9 +624,8 @@ private:
 
         if (first) {
           first = false;
-          auto sep = new Separator(base::normalize_path(path), HORIZONTAL);
-          sep->setStyle(theme->styles.separatorInView());
-          themeList()->addChild(sep);
+          themeList()->addChild(
+            new SeparatorInView(base::normalize_path(path), HORIZONTAL));
         }
 
         ThemeItem* item = new ThemeItem(fullPath, fn);
@@ -648,9 +648,8 @@ private:
 
       if (first) {
         first = false;
-        auto sep = new Separator("Extension Themes", HORIZONTAL);
-        sep->setStyle(theme->styles.separatorInView());
-        themeList()->addChild(sep);
+        themeList()->addChild(
+          new Separator("Extension Themes", HORIZONTAL));
       }
 
       for (auto it : ext->themes()) {

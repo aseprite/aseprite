@@ -13,8 +13,9 @@
 #include "base/fs.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/separator.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -437,7 +438,11 @@ int ListBox::advanceIndexThroughVisibleItems(
     }
     else {
       Widget* item = getChildByIndex(index);
-      if (item && !item->hasFlags(HIDDEN)) {
+      if (item &&
+          !item->hasFlags(HIDDEN) &&
+          // We can completelly ignore separators from navigation
+          // keys.
+          !dynamic_cast<Separator*>(item)) {
         lastVisibleIndex = index;
         delta -= sgn;
       }

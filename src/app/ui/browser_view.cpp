@@ -13,6 +13,7 @@
 #include "app/resource_finder.h"
 #include "app/ui/browser_view.h"
 #include "app/ui/main_window.h"
+#include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/file_handle.h"
@@ -427,8 +428,7 @@ private:
   }
 
   void addSeparator() {
-    auto sep = new Separator("", HORIZONTAL);
-    sep->setStyle(SkinTheme::instance()->styles.separatorInView());
+    auto sep = new SeparatorInView(std::string(), HORIZONTAL);
     sep->setBorder(gfx::Border(0, font()->height(), 0, font()->height()));
     sep->setExpansive(true);
     addChild(sep);

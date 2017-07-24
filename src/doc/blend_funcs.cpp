@@ -37,6 +37,16 @@ namespace  {
 #define blend_difference(b, s)    (ABS((b) - (s)))
 #define blend_exclusion(b, s, t)  ((t) = MUL_UN8((b), (s), (t)), ((b) + (s) - 2*(t)))
 
+inline uint32_t blend_divide(uint32_t b, uint32_t s)
+{
+  if (b == 0)
+    return 0;
+  else if (b >= s)
+    return 255;
+  else
+    return DIV_UN8(b, s); // return b / s
+}
+
 inline uint32_t blend_color_dodge(uint32_t b, uint32_t s)
 {
   if (b == 0)
@@ -432,6 +442,33 @@ color_t rgba_blender_hsl_luminosity(color_t backdrop, color_t src, int opacity)
   return rgba_blender_normal(backdrop, src, opacity);
 }
 
+color_t rgba_blender_addition(color_t backdrop, color_t src, int opacity)
+{
+  int r = rgba_getr(backdrop) + rgba_getr(src);
+  int g = rgba_getg(backdrop) + rgba_getg(src);
+  int b = rgba_getb(backdrop) + rgba_getb(src);
+  src = rgba(MIN(r, 255), MIN(g, 255), MIN(b, 255), 0) | (src & rgba_a_mask);
+  return rgba_blender_normal(backdrop, src, opacity);
+}
+
+color_t rgba_blender_subtract(color_t backdrop, color_t src, int opacity)
+{
+  int r = rgba_getr(backdrop) - rgba_getr(src);
+  int g = rgba_getg(backdrop) - rgba_getg(src);
+  int b = rgba_getb(backdrop) - rgba_getb(src);
+  src = rgba(MAX(r, 0), MAX(g, 0), MAX(b, 0), 0) | (src & rgba_a_mask);
+  return rgba_blender_normal(backdrop, src, opacity);
+}
+
+color_t rgba_blender_divide(color_t backdrop, color_t src, int opacity)
+{
+  int r = blend_divide(rgba_getr(backdrop), rgba_getr(src));
+  int g = blend_divide(rgba_getg(backdrop), rgba_getg(src));
+  int b = blend_divide(rgba_getb(backdrop), rgba_getb(src));
+  src = rgba(r, g, b, 0) | (src & rgba_a_mask);
+  return rgba_blender_normal(backdrop, src, opacity);
+}
+
 //////////////////////////////////////////////////////////////////////
 // GRAY blenders
 
@@ -591,6 +628,27 @@ color_t graya_blender_exclusion(color_t backdrop, color_t src, int opacity)
   return graya_blender_normal(backdrop, src, opacity);
 }
 
+color_t graya_blender_addition(color_t backdrop, color_t src, int opacity)
+{
+  int v = graya_getv(backdrop) + graya_getv(src);
+  src = graya(MIN(v, 255), 0) | (src & graya_a_mask);
+  return graya_blender_normal(backdrop, src, opacity);
+}
+
+color_t graya_blender_subtract(color_t backdrop, color_t src, int opacity)
+{
+  int v = graya_getv(backdrop) - graya_getv(src);
+  src = graya(MAX(v, 0), 0) | (src & graya_a_mask);
+  return graya_blender_normal(backdrop, src, opacity);
+}
+
+color_t graya_blender_divide(color_t backdrop, color_t src, int opacity)
+{
+  int v = blend_divide(graya_getv(backdrop), graya_getv(src));
+  src = graya(v, 0) | (src & graya_a_mask);
+  return graya_blender_normal(backdrop, src, opacity);
+}
+
 //////////////////////////////////////////////////////////////////////
 // indexed
 
@@ -627,6 +685,9 @@ BlendFunc get_rgba_blender(BlendMode blendmode)
     case BlendMode::HSL_SATURATION: return rgba_blender_hsl_saturation;
     case BlendMode::HSL_COLOR:      return rgba_blender_hsl_color;
     case BlendMode::HSL_LUMINOSITY: return rgba_blender_hsl_luminosity;
+    case BlendMode::ADDITION:       return rgba_blender_addition;
+    case BlendMode::SUBTRACT:       return rgba_blender_subtract;
+    case BlendMode::DIVIDE:         return rgba_blender_divide;
   }
   ASSERT(false);
   return rgba_blender_src;
@@ -657,6 +718,9 @@ BlendFunc get_graya_blender(BlendMode blendmode)
     case BlendMode::HSL_SATURATION: return graya_blender_normal;
     case BlendMode::HSL_COLOR:      return graya_blender_normal;
     case BlendMode::HSL_LUMINOSITY: return graya_blender_normal;
+    case BlendMode::ADDITION:       return graya_blender_addition;
+    case BlendMode::SUBTRACT:       return graya_blender_subtract;
+    case BlendMode::DIVIDE:         return graya_blender_divide;
   }
   ASSERT(false);
   return graya_blender_src;

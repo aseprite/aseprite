@@ -36,6 +36,9 @@ namespace doc {
   color_t rgba_blender_hsl_saturation(color_t backdrop, color_t src, int opacity);
   color_t rgba_blender_hsl_color(color_t backdrop, color_t src, int opacity);
   color_t rgba_blender_hsl_luminosity(color_t backdrop, color_t src, int opacity);
+  color_t rgba_blender_addition(color_t backdrop, color_t src, int opacity);
+  color_t rgba_blender_subtract(color_t backdrop, color_t src, int opacity);
+  color_t rgba_blender_divide(color_t backdrop, color_t src, int opacity);
 
   color_t graya_blender_src(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_merge(color_t backdrop, color_t src, int opacity);

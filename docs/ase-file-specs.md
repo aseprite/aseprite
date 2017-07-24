@@ -171,6 +171,9 @@ Ignore this chunk if you find the new palette chunk (0x2019)
                   Saturation     = 13
                   Color          = 14
                   Luminosity     = 15
+                  Addition       = 16
+                  Subtract       = 17
+                  Divide         = 18
   BYTE          Opacity
                   Note: valid only if file header flags field has bit 1 set
   BYTE[3]       For future (set to zero)

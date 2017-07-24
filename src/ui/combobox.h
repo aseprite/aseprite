@@ -20,7 +20,6 @@ namespace ui {
   class Entry;
   class Event;
   class ListBox;
-  class ListItem;
   class Window;
 
   class ComboBoxEntry;
@@ -31,13 +30,13 @@ namespace ui {
     friend class ComboBoxListBox;
 
   public:
-    typedef std::vector<ListItem*> ListItems;
+    typedef std::vector<Widget*> Items;
 
     ComboBox();
     ~ComboBox();
 
-    ListItems::iterator begin() { return m_items.begin(); }
-    ListItems::iterator end() { return m_items.end(); }
+    Items::iterator begin() { return m_items.begin(); }
+    Items::iterator end() { return m_items.end(); }
 
     void setEditable(bool state);
     void setClickOpen(bool state);
@@ -49,13 +48,13 @@ namespace ui {
     bool isCaseSensitive() const { return m_casesensitive; }
     bool useCustomWidget() const { return m_useCustomWidget; }
 
-    int addItem(ListItem* item);
+    int addItem(Widget* item);
     int addItem(const std::string& text);
-    void insertItem(int itemIndex, ListItem* item);
+    void insertItem(int itemIndex, Widget* item);
     void insertItem(int itemIndex, const std::string& text);
 
     // Removes the given item (you must delete it).
-    void removeItem(ListItem* item);
+    void removeItem(Widget* item);
 
     // Removes and deletes the given item.
     void removeItem(int itemIndex);
@@ -64,14 +63,14 @@ namespace ui {
 
     int getItemCount() const;
 
-    ListItem* getItem(int itemIndex);
+    Widget* getItem(int itemIndex);
     const std::string& getItemText(int itemIndex) const;
     void setItemText(int itemIndex, const std::string& text);
     int findItemIndex(const std::string& text) const;
     int findItemIndexByValue(const std::string& value) const;
 
-    ListItem* getSelectedItem() const;
-    void setSelectedItem(ListItem* item);
+    Widget* getSelectedItem() const;
+    void setSelectedItem(Widget* item);
 
     int getSelectedItemIndex() const;
     void setSelectedItemIndex(int itemIndex);
@@ -110,7 +109,7 @@ namespace ui {
     Button* m_button;
     Window* m_window;
     ComboBoxListBox* m_listbox;
-    ListItems m_items;
+    Items m_items;
     int m_selected;
     bool m_editable;
     bool m_clickopen;

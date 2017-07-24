@@ -21,6 +21,7 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/select_accelerator.h"
+#include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/fs.h"
@@ -502,10 +503,8 @@ private:
             continue;
 
           if (!group) {
-            group = new Separator(
+            group = new SeparatorInView(
               section()->children()[sectionIdx]->text(), HORIZONTAL);
-            group->setStyle(SkinTheme::instance()->styles.separatorInView());
-
             searchList()->addChild(group);
           }
 

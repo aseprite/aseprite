@@ -18,6 +18,7 @@
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
+#include "app/ui/separator_in_view.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
@@ -54,6 +55,18 @@ class LayerPropertiesWindow : public app::gen::LayerProperties
                             , public doc::ContextObserver
                             , public doc::DocumentObserver {
 public:
+  class BlendModeItem : public ListItem {
+  public:
+    BlendModeItem(const std::string& name,
+                  const doc::BlendMode mode)
+      : ListItem(name)
+      , m_mode(mode) {
+    }
+    doc::BlendMode mode() const { return m_mode; }
+  private:
+    doc::BlendMode m_mode;
+  };
+
   LayerPropertiesWindow()
     : m_timer(250, this)
     , m_document(nullptr)
@@ -62,22 +75,30 @@ public:
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
 
-    mode()->addItem("Normal");
-    mode()->addItem("Multiply");
-    mode()->addItem("Screen");
-    mode()->addItem("Overlay");
-    mode()->addItem("Darken");
-    mode()->addItem("Lighten");
-    mode()->addItem("Color Dodge");
-    mode()->addItem("Color Burn");
-    mode()->addItem("Hard Light");
-    mode()->addItem("Soft Light");
-    mode()->addItem("Difference");
-    mode()->addItem("Exclusion");
-    mode()->addItem("Hue");
-    mode()->addItem("Saturation");
-    mode()->addItem("Color");
-    mode()->addItem("Luminosity");
+    mode()->addItem(new BlendModeItem("Normal", doc::BlendMode::NORMAL));
+    mode()->addItem(new SeparatorInView);
+    mode()->addItem(new BlendModeItem("Darken", doc::BlendMode::DARKEN));
+    mode()->addItem(new BlendModeItem("Multiply", doc::BlendMode::MULTIPLY));
+    mode()->addItem(new BlendModeItem("Color Burn", doc::BlendMode::COLOR_BURN));
+    mode()->addItem(new SeparatorInView);
+    mode()->addItem(new BlendModeItem("Lighten", doc::BlendMode::LIGHTEN));
+    mode()->addItem(new BlendModeItem("Screen", doc::BlendMode::SCREEN));
+    mode()->addItem(new BlendModeItem("Color Dodge", doc::BlendMode::COLOR_DODGE));
+    mode()->addItem(new BlendModeItem("Addition", doc::BlendMode::ADDITION));
+    mode()->addItem(new SeparatorInView);
+    mode()->addItem(new BlendModeItem("Overlay", doc::BlendMode::OVERLAY));
+    mode()->addItem(new BlendModeItem("Soft Light", doc::BlendMode::SOFT_LIGHT));
+    mode()->addItem(new BlendModeItem("Hard Light", doc::BlendMode::HARD_LIGHT));
+    mode()->addItem(new SeparatorInView);
+    mode()->addItem(new BlendModeItem("Difference", doc::BlendMode::DIFFERENCE));
+    mode()->addItem(new BlendModeItem("Exclusion", doc::BlendMode::EXCLUSION));
+    mode()->addItem(new BlendModeItem("Subtract", doc::BlendMode::SUBTRACT));
+    mode()->addItem(new BlendModeItem("Divide", doc::BlendMode::DIVIDE));
+    mode()->addItem(new SeparatorInView);
+    mode()->addItem(new BlendModeItem("Hue", doc::BlendMode::HSL_HUE));
+    mode()->addItem(new BlendModeItem("Saturation", doc::BlendMode::HSL_SATURATION));
+    mode()->addItem(new BlendModeItem("Color", doc::BlendMode::HSL_COLOR));
+    mode()->addItem(new BlendModeItem("Luminosity", doc::BlendMode::HSL_LUMINOSITY));
 
     name()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     mode()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
@@ -120,7 +141,11 @@ private:
   }
 
   BlendMode blendModeValue() const {
-    return (BlendMode)mode()->getSelectedItemIndex();
+    BlendModeItem* item = dynamic_cast<BlendModeItem*>(mode()->getSelectedItem());
+    if (item)
+      return item->mode();
+    else
+      return doc::BlendMode::NORMAL;
   }
 
   int opacityValue() const {
@@ -290,7 +315,15 @@ private:
       name()->setEnabled(true);
 
       if (m_layer->isImage()) {
-        mode()->setSelectedItemIndex((int)static_cast<LayerImage*>(m_layer)->blendMode());
+        mode()->setSelectedItem(nullptr);
+        for (auto item : *mode()) {
+          if (auto blendModeItem = dynamic_cast<BlendModeItem*>(item)) {
+            if (blendModeItem->mode() == static_cast<LayerImage*>(m_layer)->blendMode()) {
+              mode()->setSelectedItem(item);
+              break;
+            }
+          }
+        }
         mode()->setEnabled(!m_layer->isBackground());
         opacity()->setValue(static_cast<LayerImage*>(m_layer)->opacity());
         opacity()->setEnabled(!m_layer->isBackground());

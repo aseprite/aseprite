@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -37,7 +37,10 @@ namespace doc {
     HSL_HUE         = 12,
     HSL_SATURATION  = 13,
     HSL_COLOR       = 14,
-    HSL_LUMINOSITY  = 15
+    HSL_LUMINOSITY  = 15,
+    ADDITION        = 16,
+    SUBTRACT        = 17,
+    DIVIDE          = 18
   };
 
   std::string blend_mode_to_string(BlendMode blendMode);

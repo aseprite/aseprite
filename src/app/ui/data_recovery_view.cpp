@@ -15,6 +15,7 @@
 #include "app/crash/session.h"
 #include "app/modules/gui.h"
 #include "app/ui/drop_down_button.h"
+#include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/bind.h"
@@ -114,8 +115,7 @@ void DataRecoveryView::fillList()
     if (session->isEmpty())
       continue;
 
-    auto sep = new Separator(session->name(), HORIZONTAL);
-    sep->setStyle(SkinTheme::instance()->styles.separatorInView());
+    auto sep = new SeparatorInView(session->name(), HORIZONTAL);
     sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
     m_listBox.addChild(sep);
 

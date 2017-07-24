@@ -263,11 +263,12 @@ public:
   std::string extrasLabel() const {
     std::string label = "Resize: " + m_extras->resize()->getSelectedItem()->text();
 
-    auto layerItem = m_extras->layers()->getSelectedItem();
-    if (layerItem && !layerItem->getValue().empty())
+    auto layerItem = dynamic_cast<ListItem*>(m_extras->layers()->getSelectedItem());
+    if (layerItem &&
+        !layerItem->getValue().empty())
       label += ", " + layerItem->text();
 
-    auto frameItem = m_extras->frames()->getSelectedItem();
+    auto frameItem = dynamic_cast<ListItem*>(m_extras->frames()->getSelectedItem());
     if (frameItem && !frameItem->getValue().empty())
       label += ", " + frameItem->text();
 
@@ -871,7 +872,8 @@ void FileSelector::onFileTypeChange()
 
     if (m_type == FileSelectorType::Open ||
         m_type == FileSelectorType::OpenMultiple) {
-      std::string origShowExtensions = fileType()->getItem(0)->getValue();
+      std::string origShowExtensions =
+        dynamic_cast<ListItem*>(fileType()->getItem(0))->getValue();
       preferred_open_extensions[origShowExtensions] = fileType()->getValue();
     }
   }
