@@ -277,19 +277,19 @@
         <part id="timeline_closed_group_active" x="288" y="60" w="12" h="12" />
         <part id="timeline_open_group_normal" x="276" y="72" w="12" h="12" />
         <part id="timeline_open_group_active" x="288" y="72" w="12" h="12" />
-        <part id="timeline_empty_frame_normal" x="240" y="60" w="12" h="12" />
-        <part id="timeline_empty_frame_active" x="252" y="60" w="12" h="12" />
-        <part id="timeline_keyframe_normal" x="240" y="72" w="12" h="12" />
-        <part id="timeline_keyframe_active" x="252" y="72" w="12" h="12" />
-        <part id="timeline_from_left_normal" x="240" y="84" w="12" h="12" />
-        <part id="timeline_from_left_active" x="252" y="84" w="12" h="12" />
-        <part id="timeline_from_right_normal" x="240" y="96" w="12" h="12" />
-        <part id="timeline_from_right_active" x="252" y="96" w="12" h="12" />
-        <part id="timeline_from_both_normal" x="240" y="108" w="12" h="12" />
-        <part id="timeline_from_both_active" x="252" y="108" w="12" h="12" />
-        <part id="timeline_left_link_active" x="264" y="84" w="12" h="12" />
-        <part id="timeline_both_links_active" x="264" y="96" w="12" h="12" />
-        <part id="timeline_right_link_active" x="264" y="108" w="12" h="12" />
+        <part id="timeline_empty_frame_normal" x="240" y="60" w1="5" w2="3" w3="4" h1="5" h2="3" h3="4" />
+        <part id="timeline_empty_frame_active" x="252" y="60" w1="5" w2="3" w3="4" h1="5" h2="3" h3="4" />
+        <part id="timeline_keyframe_normal" x="240" y="72" w1="5" w2="3" w3="4" h1="5" h2="3" h3="4" />
+        <part id="timeline_keyframe_active" x="252" y="72" w1="5" w2="3" w3="4" h1="5" h2="3" h3="4" />
+        <part id="timeline_from_left_normal" x="240" y="84" w1="0" w2="8" w3="4" h1="5" h2="3" h3="4" />
+        <part id="timeline_from_left_active" x="252" y="84" w1="0" w2="8" w3="4" h1="5" h2="3" h3="4" />
+        <part id="timeline_from_right_normal" x="240" y="96" w1="5" w2="7" w3="0" h1="5" h2="3" h3="4" />
+        <part id="timeline_from_right_active" x="252" y="96" w1="5" w2="7" w3="0" h1="5" h2="3" h3="4" />
+        <part id="timeline_from_both_normal" x="240" y="108" w1="0" w2="12" w3="0" h1="5" h2="3" h3="4" />
+        <part id="timeline_from_both_active" x="252" y="108" w1="0" w2="12" w3="0" h1="5" h2="3" h3="4" />
+        <part id="timeline_left_link_active" x="264" y="84" w1="3" w2="9" w3="0" h1="4" h2="1" h3="7" />
+        <part id="timeline_both_links_active" x="264" y="96" w1="0" w2="12" w3="0" h1="4" h2="1" h3="7" />
+        <part id="timeline_right_link_active" x="264" y="108" w1="0" w2="9" w3="3" h1="4" h2="1" h3="7" />
         <part id="timeline_gear" x="264" y="12" w="12" h="12" />
         <part id="timeline_gear_active" x="264" y="24" w="12" h="12" />
         <part id="timeline_onionskin" x="264" y="36" w="12" h="12" />
@@ -805,33 +805,33 @@
             <text color="timeline_clicked_text" />
         </style>
         <style id="timeline_empty_frame">
-            <icon part="timeline_empty_frame_normal" />
-            <icon part="timeline_empty_frame_active" state="focus" />
+            <background part="timeline_empty_frame_normal" />
+            <background part="timeline_empty_frame_active" state="focus" />
         </style>
         <style id="timeline_keyframe">
-            <icon part="timeline_keyframe_normal" />
-            <icon part="timeline_keyframe_active" state="focus" />
+            <background part="timeline_keyframe_normal" />
+            <background part="timeline_keyframe_active" state="focus" />
         </style>
         <style id="timeline_from_left">
-            <icon part="timeline_from_left_normal" />
-            <icon part="timeline_from_left_active" state="focus" />
+            <background part="timeline_from_left_normal" />
+            <background part="timeline_from_left_active" state="focus" />
         </style>
         <style id="timeline_from_right">
-            <icon part="timeline_from_right_normal" />
-            <icon part="timeline_from_right_active" state="focus" />
+            <background part="timeline_from_right_normal" />
+            <background part="timeline_from_right_active" state="focus" />
         </style>
         <style id="timeline_from_both">
-            <icon part="timeline_from_both_normal" />
-            <icon part="timeline_from_both_active" state="focus" />
+            <background part="timeline_from_both_normal" />
+            <background part="timeline_from_both_active" state="focus" />
         </style>
         <style id="timeline_left_link">
-            <icon part="timeline_left_link_active" />
+            <background part="timeline_left_link_active" />
         </style>
         <style id="timeline_right_link">
-            <icon part="timeline_right_link_active" />
+            <background part="timeline_right_link_active" />
         </style>
         <style id="timeline_both_links">
-            <icon part="timeline_both_links_active" />
+            <background part="timeline_both_links_active" />
         </style>
         <style id="timeline_gear" extends="timeline_box">
             <icon part="timeline_gear" />

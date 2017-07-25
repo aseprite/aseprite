@@ -1912,88 +1912,78 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
   if (!clip)
     return;
 
-  if (layer == m_layer && frame == m_frame)
+  // Draw background
+  if (layer == m_layer &&
+      frame == m_frame)
     drawPart(g, bounds, nullptr, styles.timelineSelectedCel(), false, false, true);
   else
     drawPart(g, bounds, nullptr, styles.timelineBox(), is_active, is_hover);
 
+  // Fill with an user-defined custom color.
+  if (cel && cel->data()) {
+    doc::color_t celColor = cel->data()->userData().color();
+    if (doc::rgba_geta(celColor) > 0) {
+      auto b2 = bounds;
+      b2.shrink(1 * guiscale()).inflate(1 * guiscale());
+      g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
+                            doc::rgba_getg(celColor),
+                            doc::rgba_getb(celColor),
+                            doc::rgba_geta(celColor)),
+                  b2);
+    }
+  }
+
+  // Draw keyframe shape
+
+  ui::Style* style = nullptr;
+  bool fromLeft = false;
+  bool fromRight = false;
+  if (is_empty || !data) {
+    style = styles.timelineEmptyFrame();
+  }
+  else {
+    // Calculate which cel is next to this one (in previous and next
+    // frame).
+    Cel* left = (data->prevIt != data->end ? *data->prevIt: nullptr);
+    Cel* right = (data->nextIt != data->end ? *data->nextIt: nullptr);
+    if (left && left->frame() != frame-1) left = nullptr;
+    if (right && right->frame() != frame+1) right = nullptr;
+
+    ObjectId leftImg = (left ? left->image()->id(): 0);
+    ObjectId rightImg = (right ? right->image()->id(): 0);
+    fromLeft = (leftImg == cel->image()->id());
+    fromRight = (rightImg == cel->image()->id());
+
+    if (fromLeft && fromRight)
+      style = styles.timelineFromBoth();
+    else if (fromLeft)
+      style = styles.timelineFromLeft();
+    else if (fromRight)
+      style = styles.timelineFromRight();
+    else
+      style = styles.timelineKeyframe();
+  }
+
+  drawPart(g, bounds, nullptr, style, is_active, is_hover);
+
+  // Draw thumbnail
   if ((docPref().thumbnails.enabled() || m_zoom > 1) && image) {
-    gfx::Rect thumb_bounds = gfx::Rect(bounds).shrink(guiscale()).inflate(guiscale(), guiscale());
-    if(m_zoom > 1)
-      thumb_bounds.inflate(0, -headerBoxHeight()).offset(0, headerBoxHeight());
+    gfx::Rect thumb_bounds =
+      gfx::Rect(bounds).shrink(
+        skinTheme()->calcBorder(this, style));
 
-    if(!thumb_bounds.isEmpty()) {
+    if (!thumb_bounds.isEmpty()) {
       she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds.size());
-
-      g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
-
-      thumb_surf->dispose();
+      if (thumb_surf) {
+        g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
+        thumb_surf->dispose();
+      }
     }
   }
 
-  if (!docPref().thumbnails.enabled() || m_zoom > 1 || !image) {
-    bounds.h = headerBoxHeight();
-
-    // Fill with an user-defined custom color.
-    if (cel && cel->data()) {
-      doc::color_t celColor = cel->data()->userData().color();
-      if (doc::rgba_geta(celColor) > 0) {
-        auto b2 = bounds;
-        b2.shrink(1 * guiscale()).inflate(1 * guiscale());
-        g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
-          doc::rgba_getg(celColor),
-          doc::rgba_getb(celColor),
-          doc::rgba_geta(celColor)),
-          b2);
-      }
-    }
-
-    bounds.w = headerBoxWidth();
-
-    ui::Style* style = nullptr;
-    bool fromLeft = false;
-    bool fromRight = false;
-    if (is_empty || !data) {
-      style = styles.timelineEmptyFrame();
-    }
-    else {
-      // Calculate which cel is next to this one (in previous and next
-      // frame).
-      Cel* left = (data->prevIt != data->end ? *data->prevIt: nullptr);
-      Cel* right = (data->nextIt != data->end ? *data->nextIt: nullptr);
-      if (left && left->frame() != frame-1) left = nullptr;
-      if (right && right->frame() != frame+1) right = nullptr;
-
-      ObjectId leftImg = (left ? left->image()->id(): 0);
-      ObjectId rightImg = (right ? right->image()->id(): 0);
-      fromLeft = (leftImg == cel->image()->id());
-      fromRight = (rightImg == cel->image()->id());
-
-      if (fromLeft && fromRight)
-        style = styles.timelineFromBoth();
-      else if (fromLeft)
-        style = styles.timelineFromLeft();
-      else if (fromRight)
-        style = styles.timelineFromRight();
-      else
-        style = styles.timelineKeyframe();
-    }
-    drawPart(g, bounds, nullptr, style, is_active, is_hover);
-
-    if (m_zoom > 1) {
-      if (style == styles.timelineFromBoth() ||
-          style == styles.timelineFromRight()) {
-        style = styles.timelineFromBoth();
-        while ((bounds.x += bounds.w) < full_bounds.x + full_bounds.w) {
-          drawPart(g, bounds, nullptr, style, is_active, is_hover);
-        }
-      }
-    }
-
-    // Draw decorators to link the activeCel with its links.
-    if (data && data->activeIt != data->end)
-      drawCelLinkDecorators(g, full_bounds, cel, frame, is_active, is_hover, data);
-  }
+  // Draw decorators to link the activeCel with its links.
+  if (data && data->activeIt != data->end)
+    drawCelLinkDecorators(g, full_bounds, cel, frame, is_active, is_hover, data);
 }
 
 void Timeline::updateCelOverlayBounds(const Hit& hit)
@@ -2102,15 +2092,15 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
   overlay_surf->dispose();
 }
 
-void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& full_bounds,
+void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
                                      Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                      DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
   ObjectId imageId = (*data->activeIt)->image()->id();
 
-  gfx::Rect bounds = gfx::Rect(full_bounds).setSize(gfx::Size(headerBoxWidth(), headerBoxHeight()));
-  ui::Style* style = NULL;
+  ui::Style* style1 = nullptr;
+  ui::Style* style2 = nullptr;
 
   // Links at the left or right side
   bool left = (data->firstLink != data->end ? frame > (*data->firstLink)->frame(): false);
@@ -2120,29 +2110,21 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& full_boun
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame()-1);
       if (!prevCel || prevCel->image()->id() != imageId)
-        style = styles.timelineLeftLink();
+        style1 = styles.timelineLeftLink();
     }
     if (right) {
       Cel* nextCel = m_layer->cel(cel->frame()+1);
       if (!nextCel || nextCel->image()->id() != imageId)
-        style = styles.timelineRightLink();
+        style2 = styles.timelineRightLink();
     }
   }
   else {
     if (left && right)
-      style = styles.timelineBothLinks();
+      style1 = styles.timelineBothLinks();
   }
 
-  if (style) {
-    drawPart(g, bounds, nullptr, style, is_active, is_hover);
-
-    if (m_zoom > 1 && (style == styles.timelineBothLinks() || style == styles.timelineRightLink())) {
-      style = styles.timelineBothLinks();
-      while ((bounds.x += bounds.w) < full_bounds.x + full_bounds.w) {
-        drawPart(g, bounds, nullptr, style, is_active, is_hover);
-      }
-    }
-  }
+  if (style1) drawPart(g, bounds, nullptr, style1, is_active, is_hover);
+  if (style2) drawPart(g, bounds, nullptr, style2, is_active, is_hover);
 }
 
 void Timeline::drawFrameTags(ui::Graphics* g)
