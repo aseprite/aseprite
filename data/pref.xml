@@ -104,6 +104,11 @@
       <value id="LEFT" value="1" />
       <value id="RIGHT" value="2" />
     </enum>
+    <enum id="TimelineType">
+      <value id="FIXED_STEP" value="0" />
+      <value id="VARIABLE_STEP" value="1" />
+      <value id="TIME_BASED" value="2" />
+    </enum>
     <enum id="ColorProfileBehavior">
       <value id="DISABLE" value="0" />
       <value id="EMBEDDED" value="1" />
@@ -154,6 +159,7 @@
       <option id="keep_closed_sprite_on_memory_for" type="double" default="15.0" />
       <option id="show_full_path" type="bool" default="true" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
+      <option id="timeline_type" type="TimelineType" default="TimelineType::FIXED_STEP" />
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
       <option id="recent_items" type="int" default="16" />

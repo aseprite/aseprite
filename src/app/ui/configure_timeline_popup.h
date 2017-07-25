@@ -33,8 +33,9 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onChangePosition();
-    void onChangeFirstFrame();
     void onChangeType();
+    void onChangeFirstFrame();
+    void onChangeOnionskinType();
     void onOpacity();
     void onOpacityStep();
     void onResetOnionskin();

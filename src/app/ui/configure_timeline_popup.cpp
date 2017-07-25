@@ -54,6 +54,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   addChild(m_box);
 
   m_box->position()->ItemChange.connect([this]{ onChangePosition(); });
+  m_box->type()->ItemChange.connect([this]{ onChangeType(); });
   m_box->firstFrame()->Change.connect([this]{ onChangeFirstFrame(); });
   m_box->merge()->Click.connect([this]{ onChangeType(); });
   m_box->tint()->Click.connect([this]{ onChangeType(); });
@@ -90,14 +91,27 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   DocumentPreferences& docPref = this->docPref();
   base::ScopedValue lockUpdates(m_lockUpdates, true);
 
-  auto position = Preferences::instance().general.timelinePosition();
-  int selItem = 2;
-  switch (position) {
-    case gen::TimelinePosition::LEFT: selItem = 0; break;
-    case gen::TimelinePosition::RIGHT: selItem = 1; break;
-    case gen::TimelinePosition::BOTTOM: selItem = 2; break;
+  {
+    auto position = Preferences::instance().general.timelinePosition();
+    int selItem = 2;
+    switch (position) {
+      case gen::TimelinePosition::LEFT: selItem = 0; break;
+      case gen::TimelinePosition::RIGHT: selItem = 1; break;
+      case gen::TimelinePosition::BOTTOM: selItem = 2; break;
+    }
+    m_box->position()->setSelectedItem(selItem, false);
   }
-  m_box->position()->setSelectedItem(selItem, false);
+
+  {
+    auto type = Preferences::instance().general.timelineType();
+    int selItem = 0;
+    switch (type) {
+      case gen::TimelineType::FIXED_STEP: selItem = 0; break;
+      case gen::TimelineType::VARIABLE_STEP: selItem = 1; break;
+      case gen::TimelineType::TIME_BASED: selItem = 2; break;
+    }
+    m_box->type()->setSelectedItem(selItem, false);
+  }
 
   m_box->firstFrame()->setTextf(
     "%d", docPref.timeline.firstFrame());
@@ -162,13 +176,27 @@ void ConfigureTimelinePopup::onChangePosition()
   gen::TimelinePosition newTimelinePos =
     gen::TimelinePosition::BOTTOM;
 
-  int selITem = m_box->position()->selectedItem();
-  switch (selITem) {
+  int selItem = m_box->position()->selectedItem();
+  switch (selItem) {
     case 0: newTimelinePos = gen::TimelinePosition::LEFT; break;
     case 1: newTimelinePos = gen::TimelinePosition::RIGHT; break;
     case 2: newTimelinePos = gen::TimelinePosition::BOTTOM; break;
   }
   Preferences::instance().general.timelinePosition(newTimelinePos);
+}
+
+void ConfigureTimelinePopup::onChangeType()
+{
+  gen::TimelineType newTimelineType =
+    gen::TimelineType::FIXED_STEP;
+
+  int selItem = m_box->type()->selectedItem();
+  switch (selItem) {
+    case 0: newTimelineType = gen::TimelineType::FIXED_STEP; break;
+    case 1: newTimelineType = gen::TimelineType::VARIABLE_STEP; break;
+    case 2: newTimelineType = gen::TimelineType::TIME_BASED; break;
+  }
+  Preferences::instance().general.timelineType(newTimelineType);
 }
 
 void ConfigureTimelinePopup::onChangeFirstFrame()
@@ -177,7 +205,7 @@ void ConfigureTimelinePopup::onChangeFirstFrame()
     m_box->firstFrame()->textInt());
 }
 
-void ConfigureTimelinePopup::onChangeType()
+void ConfigureTimelinePopup::onChangeOnionskinType()
 {
   if (m_lockUpdates)
     return;

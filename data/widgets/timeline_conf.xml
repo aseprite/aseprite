@@ -14,6 +14,16 @@
       </hbox>
     </vbox>
     <vbox>
+      <separator cell_hspan="2" text="@.type" left="true" horizontal="true" />
+      <hbox>
+	<buttonset columns="1" id="type">
+	  <item text="@.fixed_step" />
+	  <item text="@.variable_step" />
+	  <item text="@.time_based" />
+	</buttonset>
+      </hbox>
+    </vbox>
+    <vbox>
       <separator text="@.frame_header" left="true" horizontal="true" />
       <hbox>
 	<label text="@.first_frame" />

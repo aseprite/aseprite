@@ -273,6 +273,13 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   m_hbar.setTransparent(true);
   m_vbar.setTransparent(true);
   initTheme();
+
+  Preferences::instance().general.timelineType
+    .AfterChange.connect(
+      [this]{
+        regenerateCols();
+        invalidate();
+      });
 }
 
 Timeline::~Timeline()
@@ -2341,6 +2348,7 @@ void Timeline::drawCel(ui::Graphics* g,
     return;
 
   // Draw background
+#if 0
   if (layer == m_layer && frame == m_frame)
     drawPart(g, bounds, nullptr,
              m_range.enabled() ? styles.timelineFocusedCel():
@@ -2349,6 +2357,18 @@ void Timeline::drawCel(ui::Graphics* g,
     drawPart(g, bounds, nullptr, styles.timelineSelectedCel(), false, is_hover, true);
   else
     drawPart(g, bounds, nullptr, styles.timelineBox(), is_loosely_active, is_hover);
+#else
+  ui::Style* style = nullptr;
+  if (timeBased())
+    style = styles.timelineBoxFace();
+  else
+    style = styles.timelineBox();
+
+  drawPart(g, bounds, nullptr, style,
+           is_active, is_hover,
+           // Clicked
+           (layer == m_layer && frame == m_frame));
+#endif
 
   // Fill with an user-defined custom color.
   if (cel && cel->data()) {
@@ -2366,11 +2386,12 @@ void Timeline::drawCel(ui::Graphics* g,
 
   // Draw keyframe shape
 
-  ui::Style* style = nullptr;
+  style = nullptr;
   bool fromLeft = false;
   bool fromRight = false;
   if (is_empty || !data) {
-    style = styles.timelineEmptyFrame();
+    if (!timeBased())
+      style = styles.timelineEmptyFrame();
   }
   else {
     // Calculate which cel is next to this one (in previous and next
@@ -2395,10 +2416,17 @@ void Timeline::drawCel(ui::Graphics* g,
       style = styles.timelineKeyframe();
   }
 
+#if 0
   drawPart(g, bounds, nullptr, style, is_loosely_active, is_hover);
 
   // Draw thumbnail
-  if ((docPref().thumbnails.enabled() && m_zoom > 1) && image) {
+#else
+  if (style)
+    drawPart(g, bounds, nullptr, style, is_active, is_hover);
+#endif
+
+  // Draw thumbnail
+  if (style && (docPref().thumbnails.enabled() && m_zoom > 1) && image) {
     gfx::Rect thumb_bounds =
       gfx::Rect(bounds).shrink(
         skinTheme()->calcBorder(this, style));
@@ -3203,6 +3231,20 @@ void Timeline::regenerateCols()
   for (; f<m_sprite->totalFrames(); ++f) {
     int duration = m_sprite->frameDuration(f);
     int w = frameBoxWidth();
+
+    switch (Preferences::instance().general.timelineType()) {
+      case gen::TimelineType::FIXED_STEP:
+        // Use fixed frameBoxWidth() for all frames
+        break;
+      case gen::TimelineType::VARIABLE_STEP:
+        w = std::max(w, w*duration/100);
+        break;
+      case gen::TimelineType::TIME_BASED:
+        w = w*duration/100;
+        break;
+    }
+
+    w = std::max(8*guiscale(), w);
     m_cols[f] = Col(duration, x, w);
     x += w;
   }
@@ -4587,6 +4629,12 @@ int Timeline::separatorX() const
 void Timeline::setSeparatorX(int newValue)
 {
   m_separator_x = std::max(0, newValue);
+}
+
+bool Timeline::timeBased() const
+{
+  return Preferences::instance().general.timelineType()
+    == gen::TimelineType::TIME_BASED;
 }
 
 //static

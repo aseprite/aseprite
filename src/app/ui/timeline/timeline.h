@@ -404,6 +404,8 @@ namespace app {
 
     static gfx::Color highlightColor(const gfx::Color color);
 
+    bool timeBased() const;
+
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;

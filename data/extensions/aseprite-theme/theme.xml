@@ -824,7 +824,17 @@
             <background-border part="timeline_hover" state="mouse" />
             <background-border part="timeline_active" state="focus" />
             <background-border part="timeline_active_hover" state="focus mouse" />
-            <background-border part="timeline_clicked" state="selected" />
+            <background-border part="none" state="focus selected" />
+            <background part="timeline_clicked" state="focus selected" />
+            <text color="timeline_clicked_text" state="focus selected" />
+        </style>
+        <style id="timeline_box_face">
+            <background color="timeline_normal" />
+            <background color="timeline_hover" state="mouse" />
+            <background color="timeline_active" state="focus" />
+            <background color="timeline_active_hover" state="focus mouse" />
+            <background color="timeline_clicked" state="focus selected" />
+            <text color="timeline_clicked_text" state="focus selected" />
         </style>
         <style id="timeline_open_eye" extends="timeline_box">
             <icon part="timeline_open_eye_normal" />
@@ -895,14 +905,6 @@
             <text color="timeline_active_text" state="focus" />
             <text color="timeline_active_hover_text" state="focus mouse" />
             <text color="timeline_clicked_text" state="selected" />
-        </style>
-        <style id="timeline_selected_cel">
-            <background part="timeline_clicked" />
-            <background part="timeline_active" state="mouse" />
-            <text color="timeline_clicked_text" />
-        </style>
-        <style id="timeline_focused_cel">
-            <background part="timeline_focused" />
         </style>
         <style id="timeline_empty_frame">
             <background part="timeline_empty_frame_normal" />
