@@ -299,6 +299,9 @@ void Timeline::setZoom(const double zoom)
   m_zoom = std::clamp(zoom, 1.0, 10.0);
   m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
   m_thumbnailsOverlayVisible = false;
+
+  if (m_document)
+    regenerateCols();
 }
 
 void Timeline::setZoomAndUpdate(const double zoom,
@@ -397,6 +400,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_onionskinConn = docPref.onionskin.AfterChange.connect([this]{ invalidate(); });
 
   setFocusStop(true);
+  regenerateCols();
   regenerateRows();
   setViewScroll(view->timelineScroll());
   showCurrentCel();
@@ -556,6 +560,7 @@ void Timeline::prepareToMoveRange()
 
 void Timeline::moveRange(const Range& range)
 {
+  regenerateCols();
   regenerateRows();
 
   // We have to change the range before we generate an
@@ -1887,6 +1892,7 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
   // TODO Improve this: check if the structure of layers/frames has changed
   const doc::ObjectVersion currentVersion = m_document->sprite()->version();
   if (m_savedVersion != currentVersion) {
+    regenerateCols();
     regenerateRows();
     showCurrentCel();
     invalidate();
@@ -1918,6 +1924,7 @@ void Timeline::onAddLayer(DocEvent& ev)
 
   setLayer(ev.layer());
 
+  regenerateCols();
   regenerateRows();
   showCurrentCel();
   clearClipboardRange();
@@ -1945,6 +1952,7 @@ void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 // removed from the sprite.
 void Timeline::onAfterRemoveLayer(DocEvent& ev)
 {
+  regenerateCols();
   regenerateRows();
   showCurrentCel();
   clearClipboardRange();
@@ -1955,6 +1963,7 @@ void Timeline::onAddFrame(DocEvent& ev)
 {
   setFrame(ev.frame(), false);
 
+  regenerateCols();
   showCurrentCel();
   clearClipboardRange();
   invalidate();
@@ -1979,6 +1988,7 @@ void Timeline::onRemoveFrame(DocEvent& ev)
   if (m_range.enabled())
     clearAndInvalidateRange();
 
+  regenerateCols();
   showCurrentCel();
   clearClipboardRange();
   invalidate();
@@ -2003,7 +2013,9 @@ void Timeline::onAddTag(DocEvent& ev)
 {
   if (m_tagFocusBand >= 0) {
     m_tagFocusBand = -1;
-    regenerateRows();
+
+    regenerateTagBands();
+    updateScrollBars();
     layout();
   }
 }
@@ -2052,6 +2064,7 @@ void Timeline::onAfterFrameChanged(Editor* editor)
   if (!hasCapture() && !editor->keepTimelineRange())
     clearAndInvalidateRange();
 
+  regenerateCols();
   showCurrentCel();
 }
 
@@ -2140,9 +2153,10 @@ void Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
 
 void Timeline::getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame)
 {
-  *firstFrame = frame_t(viewScroll().x / frameBoxWidth());
-  *lastFrame = frame_t((viewScroll().x
-      + getCelsBounds().w) / frameBoxWidth());
+  const int availW = (clientBounds().w - m_separator_x);
+
+  *firstFrame = getFrameInXPos(viewScroll().x);
+  *lastFrame = getFrameInXPos(viewScroll().x + availW);
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -2992,11 +3006,13 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       return gfx::Rect(bounds.x + headerBoxWidth()*5, bounds.y + y,
                        separatorX() - headerBoxWidth()*5, headerBoxHeight());
 
-    case PART_HEADER_FRAME:
+    case PART_HEADER_FRAME: {
+      frame_t frame = std::max(firstFrame(), hit.frame);
       return gfx::Rect(
         bounds.x + separatorX() + m_separator_w - 1
-        + frameBoxWidth()*std::max(firstFrame(), hit.frame) - viewScroll().x,
-        bounds.y + y, frameBoxWidth(), headerBoxHeight());
+        + getFrameXPos(frame) - viewScroll().x,
+        bounds.y + y, getFrameWidth(frame), headerBoxHeight());
+    }
 
     case PART_ROW:
       if (validLayer(hit.layer)) {
@@ -3042,9 +3058,11 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
         return gfx::Rect(
-          bounds.x + separatorX() + m_separator_w - 1 + frameBoxWidth()*hit.frame - viewScroll().x,
-          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          bounds.x + separatorX() + m_separator_w - 1
+          + getFrameXPos(hit.frame) - viewScroll().x,
+          bounds.y + y + headerBoxHeight()
+          + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          getFrameWidth(hit.frame), layerBoxHeight());
       }
       break;
 
@@ -3192,6 +3210,24 @@ gfx::Rect Timeline::getRangeClipBounds(const Range& range) const
   return clipBounds;
 }
 
+int Timeline::getFrameXPos(const frame_t frame) const
+{
+  if (frame < 0)
+    return 0;
+  return frame * frameBoxWidth();
+}
+
+int Timeline::getFrameWidth(const frame_t frame) const
+{
+  (void)frame; // TODO receive the frame future different width per frame.
+  return frameBoxWidth();
+}
+
+frame_t Timeline::getFrameInXPos(const int x) const
+{
+  return frame_t(x / frameBoxWidth());
+}
+
 void Timeline::invalidateHit(const Hit& hit)
 {
   if (hit.band >= 0) {
@@ -3235,6 +3271,15 @@ void Timeline::invalidateFrame(const frame_t frame)
   rc |= rcCels;
   rc.offset(origin());
   invalidateRect(rc);
+}
+
+void Timeline::regenerateCols()
+{
+  ASSERT(m_document);
+  ASSERT(m_sprite);
+
+  m_ncols = m_sprite->totalFrames();
+  m_ncols = std::max(1, m_ncols);
 }
 
 void Timeline::regenerateRows()
@@ -3364,10 +3409,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         - headerBoxHeight()
         + scroll.y) / layerBoxHeight());
 
-    hit.frame = frame_t((mousePos.x
-        - separatorX()
-        - m_separator_w
-        + scroll.x) / frameBoxWidth());
+    hit.frame = getFrameInXPos(
+      mousePos.x
+      - separatorX()
+      - m_separator_w
+      + scroll.x);
 
     // Flag which indicates that we are in the are below the Background layer/last layer area
     if (hit.layer < 0)
@@ -3580,10 +3626,11 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
      - headerBoxHeight()
      + scroll.y) / layerBoxHeight());
 
-  hit.frame = frame_t((mousePos.x
-                       - separatorX()
-                       - m_separator_w
-                       + scroll.x) / frameBoxWidth());
+  hit.frame = getFrameInXPos(
+    mousePos.x
+    - separatorX()
+    - m_separator_w
+    + scroll.x);
 
   hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
   hit.frame = std::max(firstFrame(), hit.frame);
@@ -3832,9 +3879,9 @@ void Timeline::showCel(layer_t layer, frame_t frame)
     viewport.h += m_vbar.getBarWidth();
 
   gfx::Rect celBounds(
-    viewport.x + frameBoxWidth()*frame - scroll.x,
+    viewport.x + getFrameXPos(frame) - scroll.x,
     viewport.y + layerBoxHeight()*(lastLayer() - layer) - scroll.y,
-    frameBoxWidth(), layerBoxHeight());
+    getFrameWidth(frame), layerBoxHeight());
 
   const bool isPlaying = m_editor->isPlaying();
 
@@ -3889,7 +3936,7 @@ gfx::Size Timeline::getScrollableSize() const
 {
   if (m_sprite) {
     return gfx::Size(
-      m_sprite->totalFrames() * frameBoxWidth() + getCelsBounds().w/2,
+      getFrameXPos(m_sprite->totalFrames()) + getCelsBounds().w/2,
       (m_rows.size()+1) * layerBoxHeight());
   }
   else
@@ -4319,12 +4366,14 @@ double Timeline::zoom() const
 
 // Returns the last frame where the frame tag (or frame tag label)
 // is visible in the timeline.
-int Timeline::calcTagVisibleToFrame(Tag* tag) const
+frame_t Timeline::calcTagVisibleToFrame(Tag* tag) const
 {
-  return
-    std::max(tag->toFrame(),
-             tag->fromFrame() +
-             font()->textLength(tag->name())/frameBoxWidth());
+  frame_t frame =
+    getFrameInXPos(
+      getFrameXPos(tag->fromFrame()) +
+      font()->textLength(tag->name()));
+
+  return std::max(frame, tag->toFrame());
 }
 
 int Timeline::topHeight() const

@@ -321,10 +321,14 @@ namespace app {
     gfx::Rect getPartBounds(const Hit& hit) const;
     gfx::Rect getRangeBounds(const Range& range) const;
     gfx::Rect getRangeClipBounds(const Range& range) const;
+    int getFrameXPos(const frame_t frame) const;
+    int getFrameWidth(const frame_t frame) const;
+    frame_t getFrameInXPos(const int x) const;
     void invalidateHit(const Hit& hit);
     void invalidateLayer(const Layer* layer);
     void invalidateFrame(const frame_t frame);
     void invalidateRange();
+    void regenerateCols();
     void regenerateRows();
     void regenerateTagBands();
     int visibleTagBands() const;
@@ -376,7 +380,7 @@ namespace app {
     int frameBoxWidth() const;
     int outlineWidth() const;
     int oneTagHeight() const;
-    int calcTagVisibleToFrame(Tag* tag) const;
+    frame_t calcTagVisibleToFrame(Tag* tag) const;
 
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
@@ -420,6 +424,9 @@ namespace app {
     // if the sprite was modified after executing a command to avoid
     // regenerating all rows if it's not necessary.
     doc::ObjectVersion m_savedVersion;
+
+    // Data used to display columns in the timeline
+    frame_t m_ncols;
 
     // Data used to display each row in the timeline
     std::vector<Row> m_rows;
