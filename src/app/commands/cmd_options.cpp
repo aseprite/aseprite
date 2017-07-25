@@ -649,7 +649,7 @@ private:
       if (first) {
         first = false;
         themeList()->addChild(
-          new Separator("Extension Themes", HORIZONTAL));
+          new SeparatorInView("Extension Themes", HORIZONTAL));
       }
 
       for (auto it : ext->themes()) {
