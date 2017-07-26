@@ -171,6 +171,7 @@ Timeline::Hit::Hit(int part,
   : part(part),
     layer(layer),
     frame(frame),
+    timePos(frame),
     tag(tag),
     veryBottom(false),
     band(band)
@@ -183,6 +184,7 @@ bool Timeline::Hit::operator!=(const Hit& other) const
     part != other.part ||
     layer != other.layer ||
     frame != other.frame ||
+    std::fabs(timePos - other.timePos) > 0.001 ||
     tag != other.tag ||
     band != other.band;
 }
@@ -391,6 +393,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_sprite = site.sprite();
   m_layer = site.layer();
   m_frame = site.frame();
+  m_timePos = double(m_frame);
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
@@ -516,6 +519,8 @@ void Timeline::setFrame(frame_t frame, bool byUser)
   gfx::Rect onionRc = getOnionskinFramesBounds();
 
   m_frame = frame;
+  m_timePos = double(m_frame);
+  invalidate();
 
   // Invalidate the onionskin handles area
   onionRc |= getOnionskinFramesBounds();
@@ -789,6 +794,7 @@ bool Timeline::onProcessMessage(Message* msg)
             invalidateRange();
 
             setFrame(m_clk.frame, true);
+            m_timePos = m_clk.timePos;
           }
           break;
         }
@@ -960,6 +966,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 || old_frame != m_clk.frame) {
               setLayer(m_rows[m_clk.layer].layer());
               setFrame(m_clk.frame, true);
+              m_timePos = m_clk.timePos;
               invalidate();
             }
           }
@@ -1190,13 +1197,16 @@ bool Timeline::onProcessMessage(Message* msg)
 
             setFrame(m_clk.frame = hit.frame, true);
 
+            m_timePos = m_clk.timePos = hit.timePos;
             invalidateRange();
             break;
           }
 
           case STATE_SELECTING_CELS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
-            if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
+            if ((m_layer != hitLayer) ||
+                (m_frame != hit.frame) ||
+                (timeBased() && m_clk != hit)) {
               m_clk.layer = hit.layer;
 
               m_range = m_startRange;
@@ -1204,6 +1214,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
               setLayer(hitLayer);
               setFrame(m_clk.frame = hit.frame, true);
+              m_timePos = m_clk.timePos = hit.timePos;
             }
             break;
           }
@@ -2167,9 +2178,9 @@ void Timeline::drawHeader(ui::Graphics* g)
 
 void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
 {
-  bool is_active = isFrameActive(frame);
-  bool is_hover = (m_hot.part == PART_HEADER_FRAME && m_hot.frame == frame);
-  bool is_clicked = (m_clk.part == PART_HEADER_FRAME && m_clk.frame == frame);
+  const bool is_active = (isFrameActive(frame));
+  const bool is_hover = (!timeBased() && m_hot.part == PART_HEADER_FRAME && m_hot.frame == frame);
+  const bool is_clicked = (!timeBased() && m_clk.part == PART_HEADER_FRAME && m_clk.frame == frame);
   gfx::Rect bounds = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frame));
   IntersectClip clip(g, bounds);
   if (!clip)
@@ -2181,9 +2192,20 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
   if (n >= 100 && (n % 100) < 10)
     text.insert(0, 1, '0');
 
-  drawPart(g, bounds, &text,
-           skinTheme()->styles.timelineHeaderFrame(),
+  ui::Style* style;
+  if (timeBased())
+    style = skinTheme()->styles.timelineBoxFace();
+  else
+    style = skinTheme()->styles.timelineHeaderFrame();
+  drawPart(g, bounds, &text, style,
            is_active, is_hover, is_clicked);
+
+  if (timeBased() && frame == m_frame) {
+    bounds.x += int(double(bounds.w) * (m_timePos - std::floor(m_timePos)));
+    bounds.w = guiscale();
+    drawPart(g, bounds, &text, style,
+             true, true, true);
+  }
 }
 
 void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
@@ -2194,10 +2216,10 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     return;
 
   auto& styles = skinTheme()->styles;
-  Layer* layer = m_rows[layerIdx].layer();
-  bool is_active = isLayerActive(layerIdx);
-  bool hotlayer = (m_hot.layer == layerIdx);
-  bool clklayer = (m_clk.layer == layerIdx);
+  const Layer* layer = m_rows[layerIdx].layer();
+  const bool is_active = isLayerActive(layerIdx);
+  const bool hotlayer = (m_hot.layer == layerIdx);
+  const bool clklayer = (m_clk.layer == layerIdx);
   gfx::Rect bounds = getPartBounds(Hit(PART_ROW, layerIdx, firstFrame()));
   IntersectClip clip(g, bounds);
   if (!clip)
@@ -2338,11 +2360,14 @@ void Timeline::drawCel(ui::Graphics* g,
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
     m_hot.frame == frame);
-  const bool is_active = isCelActive(layerIndex, frame);
+  const bool is_active =
+    (!timeBased() && (isCelActive(layerIndex, frame))) ||
+    (timeBased() && isLayerActive(layerIndex));
   const bool is_loosely_active = isCelLooselyActive(layerIndex, frame);
   const bool is_empty = (image == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect full_bounds = bounds;
+  gfx::Rect time_pos_bounds;
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
@@ -2364,10 +2389,30 @@ void Timeline::drawCel(ui::Graphics* g,
   else
     style = styles.timelineBox();
 
-  drawPart(g, bounds, nullptr, style,
-           is_active, is_hover,
-           // Clicked
-           (layer == m_layer && frame == m_frame));
+  if (timeBased()) {
+    drawPart(g, bounds, nullptr,
+             styles.timelineBoxFace(),
+             isLayerActive(layerIndex), is_hover, false);
+
+    if (frame == m_frame) {
+      time_pos_bounds = bounds;
+      time_pos_bounds.x += int(double(bounds.w) * (m_timePos - std::floor(m_timePos)));
+      time_pos_bounds.w = guiscale();
+      drawPart(g, time_pos_bounds, nullptr,
+               styles.timelineBoxFace(),
+               true, is_hover,
+               (isLayerActive(layerIndex) &&
+                frame == m_frame));
+    }
+  }
+  else {
+    drawPart(g, bounds, nullptr,
+             styles.timelineBox(),
+             is_active, is_hover,
+             // Clicked
+             (layer == m_layer &&
+              frame == m_frame));
+  }
 #endif
 
   // Fill with an user-defined custom color.
@@ -2418,11 +2463,12 @@ void Timeline::drawCel(ui::Graphics* g,
 
 #if 0
   drawPart(g, bounds, nullptr, style, is_loosely_active, is_hover);
-
-  // Draw thumbnail
 #else
-  if (style)
+  if (style) {
     drawPart(g, bounds, nullptr, style, is_active, is_hover);
+    if (!is_active && !time_pos_bounds.isEmpty())
+      drawPart(g, time_pos_bounds, nullptr, style, true, is_hover);
+  }
 #endif
 
   // Draw thumbnail
@@ -3357,7 +3403,7 @@ void Timeline::updateScrollBars()
 
 void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
 {
-  Hit hit = hitTest(msg, mousePos);
+  const Hit hit = hitTest(msg, mousePos);
   if (hasMouseOver())
     setCursor(msg, hit);
   setHot(hit);
@@ -3373,8 +3419,8 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     hit.part = PART_SEPARATOR;
   }
   else {
-    gfx::Point scroll = viewScroll();
-    int top = topHeight();
+    const gfx::Point scroll = viewScroll();
+    const int top = topHeight();
 
     hit.layer = lastLayer() -
       ((mousePos.y
@@ -3382,11 +3428,15 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         - headerBoxHeight()
         + scroll.y) / layerBoxHeight());
 
-    hit.frame = getFrameInXPos(
+    const int timelineXPos =
       mousePos.x
       - separatorX()
       - m_separator_w
-      + scroll.x);
+      + scroll.x;
+    hit.frame = getFrameInXPos(timelineXPos);
+    hit.timePos =
+      double(timelineXPos - getFrameXPos(hit.frame))
+      / double(getFrameWidth(hit.frame));
 
     // Flag which indicates that we are in the are below the Background layer/last layer area
     if (hit.layer < 0)
@@ -3405,7 +3455,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     }
 
     // Is the mouse over onionskin handles?
-    gfx::Rect bounds = getOnionskinFramesBounds();
+    const gfx::Rect bounds = getOnionskinFramesBounds();
     if (!bounds.isEmpty() && gfx::Rect(bounds.x, bounds.y, 3, bounds.h).contains(mousePos)) {
       hit.part = PART_HEADER_ONIONSKIN_RANGE_LEFT;
     }
@@ -3562,7 +3612,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.part = PART_NOTHING;
 
     if (!hasCapture()) {
-      gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
+      const gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
       if (outline.contains(mousePos)) {
         auto mouseMsg = dynamic_cast<MouseMessage*>(msg);
 

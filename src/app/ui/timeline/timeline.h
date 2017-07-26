@@ -200,6 +200,7 @@ namespace app {
       int part;
       layer_t layer;
       frame_t frame;
+      double timePos;
       ObjectId tag;
       bool veryBottom;
       int band;
@@ -404,6 +405,7 @@ namespace app {
 
     static gfx::Color highlightColor(const gfx::Color color);
 
+    // Returns true if the user prefer a time-based timeline.
     bool timeBased() const;
 
     ui::ScrollBar m_hbar;
@@ -416,6 +418,7 @@ namespace app {
     Sprite* m_sprite;
     Layer* m_layer;
     frame_t m_frame;
+    double m_timePos; // Exact time position for a time-based timeline.
     int m_rangeLocks;
     Range m_range;
     Range m_startRange;
