@@ -416,6 +416,7 @@ namespace app {
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
     double m_zoom;
+    double m_timeZoom;
     Context* m_context;
     Editor* m_editor;
     Doc* m_document;

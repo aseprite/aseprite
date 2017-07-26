@@ -241,6 +241,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_hbar(HORIZONTAL, this)
   , m_vbar(VERTICAL, this)
   , m_zoom(1.0)
+  , m_timeZoom(0.01)
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -1125,7 +1126,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
             // Resize selected frames
             m_activeRangeScale = 1.0 +
-              double(hit.x - m_clk.x) * (100.0/duration) / frameBoxWidth();
+              double(hit.x - m_clk.x) / frameBoxWidth() / (m_timeZoom*duration);
             m_activeRangeScale = std::max(0.001, m_activeRangeScale);
             regenerateCols();
             invalidate();
@@ -1620,11 +1621,21 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       break;
 
-    case kTouchMagnifyMessage:
-      setZoomAndUpdate(
-        m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification(),
-        true);
+    case kTouchMagnifyMessage: {
+      double z = static_cast<ui::TouchMessage*>(msg)->magnification();
+
+      if (msg->shiftPressed() &&
+          (variableStep() || timeBased())) {
+        m_timeZoom = m_timeZoom + m_timeZoom * z;
+        m_timeZoom = std::clamp(m_timeZoom, 0.001, 1000.0);
+        regenerateCols();
+        invalidate();
+      }
+      else {
+        setZoomAndUpdate(m_zoom + m_zoom * z, true);
+      }
       break;
+    }
   }
 
   return Widget::onProcessMessage(msg);
@@ -3322,10 +3333,10 @@ void Timeline::regenerateCols()
             isFrameActive(f)) {
           duration *= m_activeRangeScale;
         }
-        w = std::max(w, w*duration/100);
+        w = w*duration*m_timeZoom;
         break;
       case gen::TimelineType::TIME_BASED:
-        w = w*duration/100;
+        w = w*duration*m_timeZoom;
         break;
     }
 
