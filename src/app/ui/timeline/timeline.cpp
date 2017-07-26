@@ -82,6 +82,7 @@ enum {
   PART_HEADER_ONIONSKIN_RANGE_RIGHT,
   PART_HEADER_LAYER,
   PART_HEADER_FRAME,
+  PART_HEADER_RESIZE_FRAME,
   PART_ROW,
   PART_ROW_EYE_ICON,
   PART_ROW_PADLOCK_ICON,
@@ -172,6 +173,7 @@ Timeline::Hit::Hit(int part,
     layer(layer),
     frame(frame),
     timePos(frame),
+    x(0),
     tag(tag),
     veryBottom(false),
     band(band)
@@ -243,6 +245,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_editor(NULL)
   , m_document(NULL)
   , m_sprite(NULL)
+  , m_activeRangeScale(1.0)
   , m_rangeLocks(0)
   , m_state(STATE_STANDBY)
   , m_tagBands(0)
@@ -1019,6 +1022,10 @@ bool Timeline::onProcessMessage(Message* msg)
           invalidate();
           break;
 
+        case PART_HEADER_RESIZE_FRAME:
+          m_state = STATE_RESIZING_FRAMES;
+          m_activeRangeScale = 1.0;
+          break;
       }
 
       // Redraw the new clicked part (header, layer or cel).
@@ -1113,6 +1120,17 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
 
+          case STATE_RESIZING_FRAMES: {
+            const int duration = selectedFramesDuration();
+
+            // Resize selected frames
+            m_activeRangeScale = 1.0 +
+              double(hit.x - m_clk.x) * (100.0/duration) / frameBoxWidth();
+            m_activeRangeScale = std::max(0.001, m_activeRangeScale);
+            regenerateCols();
+            invalidate();
+            return true;
+          }
         }
 
         // If the mouse pressed the mouse's button in the separator,
@@ -1257,6 +1275,18 @@ bool Timeline::onProcessMessage(Message* msg)
         if (m_state == STATE_SCROLLING) {
           m_state = STATE_STANDBY;
           releaseMouse();
+          return true;
+        }
+
+        // Scale several frames at once
+        if (m_state == STATE_RESIZING_FRAMES) {
+          m_state = STATE_STANDBY;
+          releaseMouse();
+
+          scaleSelectedFrames(m_activeRangeScale);
+          m_activeRangeScale = 1.0;
+          regenerateCols();
+          invalidate();
           return true;
         }
 
@@ -2024,15 +2054,19 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
     else
       ui::set_mouse_cursor(kMoveCursor);
   }
-  // Normal state.
-  else if (hit.part == PART_HEADER_ONIONSKIN_RANGE_LEFT
-    || m_state == STATE_MOVING_ONIONSKIN_RANGE_LEFT) {
+  else if (
+    hit.part == PART_HEADER_ONIONSKIN_RANGE_LEFT ||
+    m_state == STATE_MOVING_ONIONSKIN_RANGE_LEFT) {
     ui::set_mouse_cursor(kSizeWCursor);
   }
-  else if (hit.part == PART_HEADER_ONIONSKIN_RANGE_RIGHT
-    || m_state == STATE_MOVING_ONIONSKIN_RANGE_RIGHT) {
+  else if (
+    hit.part == PART_HEADER_ONIONSKIN_RANGE_RIGHT ||
+    hit.part == PART_HEADER_RESIZE_FRAME ||
+    m_state == STATE_MOVING_ONIONSKIN_RANGE_RIGHT ||
+    m_state == STATE_RESIZING_FRAMES) {
     ui::set_mouse_cursor(kSizeECursor);
   }
+  // Normal state.
   else if (hit.part == PART_RANGE_OUTLINE) {
     ui::set_mouse_cursor(kMoveCursor);
   }
@@ -3283,6 +3317,11 @@ void Timeline::regenerateCols()
         // Use fixed frameBoxWidth() for all frames
         break;
       case gen::TimelineType::VARIABLE_STEP:
+        if (m_state == STATE_RESIZING_FRAMES &&
+            m_activeRangeScale != 1.0 &&
+            isFrameActive(f)) {
+          duration *= m_activeRangeScale;
+        }
         w = std::max(w, w*duration/100);
         break;
       case gen::TimelineType::TIME_BASED:
@@ -3428,14 +3467,14 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         - headerBoxHeight()
         + scroll.y) / layerBoxHeight());
 
-    const int timelineXPos =
+    hit.x =
       mousePos.x
       - separatorX()
       - m_separator_w
       + scroll.x;
-    hit.frame = getFrameInXPos(timelineXPos);
+    hit.frame = getFrameInXPos(hit.x);
     hit.timePos =
-      double(timelineXPos - getFrameXPos(hit.frame))
+      double(hit.x - getFrameXPos(hit.frame))
       / double(getFrameWidth(hit.frame));
 
     // Flag which indicates that we are in the are below the Background layer/last layer area
@@ -3615,7 +3654,6 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       const gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
       if (outline.contains(mousePos)) {
         auto mouseMsg = dynamic_cast<MouseMessage*>(msg);
-
         if (// With Ctrl and Alt key we can drag the range from any place (not necessary from the outline.
             is_copy_key_pressed(msg) ||
             // Drag with right-click
@@ -3624,7 +3662,17 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
              mouseMsg->right()) ||
             // Drag with left-click only if we are inside the range edges
             !gfx::Rect(outline).shrink(2*outlineWidth()).contains(mousePos)) {
-          hit.part = PART_RANGE_OUTLINE;
+          if (variableStep() &&
+              hit.part == PART_HEADER_FRAME &&
+              gfx::Rect(outline.x2()-4*outlineWidth(),
+                        outline.y,
+                        4*outlineWidth(),
+                        outline.h).contains(mousePos)) {
+            hit.part = PART_HEADER_RESIZE_FRAME;
+          }
+          else {
+            hit.part = PART_RANGE_OUTLINE;
+          }
         }
       }
     }
@@ -4679,6 +4727,35 @@ int Timeline::separatorX() const
 void Timeline::setSeparatorX(int newValue)
 {
   m_separator_x = std::max(0, newValue);
+}
+
+void Timeline::scaleSelectedFrames(double scale)
+{
+  // Scale selected frames
+  try {
+    ContextWriter writer(UIContext::instance(), 1000);
+    Tx tx(writer.context(), "Frame Duration");
+    DocApi api = writer.document()->getApi(tx);
+    for (frame_t f=0; f<m_sprite->totalFrames(); ++f) {
+      if (isFrameActive(f)) {
+        int duration = m_sprite->frameDuration(f);
+        duration = int(double(duration) * m_activeRangeScale);
+        duration = std::max(1, duration);
+        if (duration != m_sprite->frameDuration(f))
+          api.setFrameDuration(m_sprite, f, duration);
+      }
+    }
+    tx.commit();
+  }
+  catch (const std::exception& ex) {
+    Console::showException(ex);
+  }
+}
+
+bool Timeline::variableStep() const
+{
+  return Preferences::instance().general.timelineType()
+    == gen::TimelineType::VARIABLE_STEP;
 }
 
 bool Timeline::timeBased() const

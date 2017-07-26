@@ -87,6 +87,7 @@ namespace app {
       STATE_MOVING_TAG,
       STATE_RESIZING_TAG_LEFT,
       STATE_RESIZING_TAG_RIGHT,
+      STATE_RESIZING_FRAMES,
       // Changing layers flags states
       STATE_SHOWING_LAYERS,
       STATE_HIDING_LAYERS,
@@ -201,6 +202,7 @@ namespace app {
       layer_t layer;
       frame_t frame;
       double timePos;
+      int x;
       ObjectId tag;
       bool veryBottom;
       int band;
@@ -405,8 +407,10 @@ namespace app {
 
     static gfx::Color highlightColor(const gfx::Color color);
 
-    // Returns true if the user prefer a time-based timeline.
-    bool timeBased() const;
+    void scaleSelectedFrames(double scale);
+
+    bool variableStep() const;
+    bool timeBased() const; // Returns true if the user prefer a time-based timeline.
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
@@ -419,6 +423,7 @@ namespace app {
     Layer* m_layer;
     frame_t m_frame;
     double m_timePos; // Exact time position for a time-based timeline.
+    double m_activeRangeScale;  // Used to resize frames on variable-step timeline.
     int m_rangeLocks;
     Range m_range;
     Range m_startRange;
@@ -443,8 +448,8 @@ namespace app {
 
     int m_separator_x;
     int m_separator_w;
-    int m_origFrames;
-    Hit m_hot;       // The 'hot' part is where the mouse is on top of
+    int m_origFrames; // Used to move onion skin range
+    Hit m_hot;        // The 'hot' part is where the mouse is on top of
     DropTarget m_dropTarget;
     Hit m_clk; // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
     // Absolute mouse positions for scrolling.
