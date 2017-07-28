@@ -396,7 +396,7 @@ namespace app {
     int totalAnimationDuration() const;
     int tagFramesDuration(const Tag* tag) const;
     // Calculate the duration of the selected range of frames
-    int selectedFramesDuration() const;
+    int selectedFramesDuration(const bool originalDuration) const;
 
     void setLayerVisibleFlag(const layer_t layer, const bool state);
     void setLayerEditableFlag(const layer_t layer, const bool state);
@@ -408,7 +408,7 @@ namespace app {
 
     static gfx::Color highlightColor(const gfx::Color color);
 
-    void scaleSelectedFrames(double scale);
+    void scaleSelectedFrames(const double scale);
 
     bool variableStep() const;
     bool timeBased() const; // Returns true if the user prefer a time-based timeline.
