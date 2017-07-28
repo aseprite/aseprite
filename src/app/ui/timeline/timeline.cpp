@@ -1128,7 +1128,9 @@ bool Timeline::onProcessMessage(Message* msg)
             m_activeRangeScale = 1.0 +
               double(hit.x - m_clk.x) / frameBoxWidth() / (m_timeZoom*duration);
             m_activeRangeScale = std::max(0.001, m_activeRangeScale);
+
             regenerateCols();
+            updateStatusBarForFrame(m_frame, nullptr, nullptr);
             invalidate();
             return true;
           }
@@ -3926,7 +3928,9 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
 
   std::sprintf(
     buf+std::strlen(buf), " :clock: %s",
-    human_readable_time(m_sprite->frameDuration(frame)).c_str());
+    human_readable_time(
+      (frame >= 0 && frame < int(m_cols.size()) ?
+       m_cols[frame].duration(): 0)).c_str());
   if (firstFrame != lastFrame) {
     std::sprintf(
       buf+std::strlen(buf), " [%s]",
@@ -3937,7 +3941,7 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
   if (m_sprite->totalFrames() > 1)
     std::sprintf(
       buf+std::strlen(buf), "/%s",
-      human_readable_time(m_sprite->totalAnimationDuration()).c_str());
+      human_readable_time(totalAnimationDuration()).c_str());
 
   if (cel) {
     std::sprintf(
@@ -4594,6 +4598,14 @@ void Timeline::onCancel(Context* ctx)
   invalidate();
 }
 
+int Timeline::totalAnimationDuration() const
+{
+  int duration = 0;
+  for (frame_t f=0; f<frame_t(m_cols.size()); ++f)
+    duration += m_cols[f].duration();
+  return duration;
+}
+
 int Timeline::tagFramesDuration(const Tag* tag) const
 {
   ASSERT(m_sprite);
@@ -4601,8 +4613,8 @@ int Timeline::tagFramesDuration(const Tag* tag) const
 
   int duration = 0;
   for (frame_t f=tag->fromFrame();
-       f<tag->toFrame(); ++f) {
-    duration += m_sprite->frameDuration(f);
+       f<tag->toFrame() && f<frame_t(m_cols.size()); ++f) {
+    duration += m_cols[f].duration();
   }
   return duration;
 }
@@ -4612,9 +4624,9 @@ int Timeline::selectedFramesDuration() const
   ASSERT(m_sprite);
 
   int duration = 0;
-  for (frame_t f=0; f<m_sprite->totalFrames(); ++f) {
+  for (frame_t f=0; f<frame_t(m_cols.size()); ++f) {
     if (isFrameActive(f))
-      duration += m_sprite->frameDuration(f);
+      duration += m_cols[f].duration();
   }
   return duration; // TODO cache this value
 }

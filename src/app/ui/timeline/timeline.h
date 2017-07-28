@@ -393,6 +393,7 @@ namespace app {
                           const bool updatePref);
 
     double zoom() const;
+    int totalAnimationDuration() const;
     int tagFramesDuration(const Tag* tag) const;
     // Calculate the duration of the selected range of frames
     int selectedFramesDuration() const;
