@@ -54,6 +54,7 @@ namespace app {
 
   class Timeline : public ui::Widget
                  , public ui::ScrollableViewDelegate
+                 , public doc::ContextObserver
                  , public doc::DocumentsObserver
                  , public doc::DocumentObserver
                  , public app::EditorObserver
@@ -137,6 +138,9 @@ namespace app {
 
     // app::Context slots.
     void onAfterCommandExecution(CommandExecutionEvent& ev);
+
+    // ContextObserver impl
+    void onActiveSiteChange(const doc::Site& site) override;
 
     // DocumentsObserver impl.
     void onRemoveDocument(doc::Document* document) override;
@@ -288,6 +292,9 @@ namespace app {
     bool isCelActive(const layer_t layerIdx, const frame_t frame) const;
     bool isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const;
     void updateStatusBar(ui::Message* msg);
+    void updateStatusBarForFrame(const frame_t frame,
+                                 const FrameTag* frameTag,
+                                 const Cel* cel);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
     void clearAndInvalidateRange();
@@ -326,6 +333,9 @@ namespace app {
                           const bool updatePref);
 
     double zoom() const;
+    int tagFramesDuration(const FrameTag* frameTag) const;
+    // Calculate the duration of the selected range of frames
+    int selectedFramesDuration() const;
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;

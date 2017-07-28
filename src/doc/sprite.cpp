@@ -376,6 +376,14 @@ int Sprite::frameDuration(frame_t frame) const
     return 0;
 }
 
+int Sprite::totalAnimationDuration() const
+{
+  int duration = 0;
+  for (frame_t frame=0; frame<m_frames; ++frame)
+    duration += frameDuration(frame);
+  return duration; // TODO cache this value
+}
+
 void Sprite::setFrameDuration(frame_t frame, int msecs)
 {
   if (frame >= 0 && frame < m_frames)

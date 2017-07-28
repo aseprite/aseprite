@@ -39,6 +39,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_boundaries.h"
+#include "app/util/readable_time.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
@@ -245,6 +246,7 @@ Timeline::Timeline()
   m_ctxConn = m_context->AfterCommandExecution.connect(
     &Timeline::onAfterCommandExecution, this);
   m_context->documents().add_observer(this);
+  m_context->add_observer(this);
 
   setDoubleBuffered(true);
   addChild(&m_aniControls);
@@ -262,6 +264,7 @@ Timeline::~Timeline()
 
   detachDocument();
   m_context->documents().remove_observer(this);
+  m_context->remove_observer(this);
   delete m_confPopup;
 }
 
@@ -1567,6 +1570,13 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
   regenerateRows();
   showCurrentCel();
   invalidate();
+}
+
+void Timeline::onActiveSiteChange(const doc::Site& site)
+{
+  if (hasMouse()) {
+    updateStatusBarForFrame(site.frame(), nullptr, site.cel());
+  }
 }
 
 void Timeline::onRemoveDocument(doc::Document* document)
@@ -3118,7 +3128,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
   StatusBar* sb = StatusBar::instance();
 
-  if (m_state == STATE_MOVING_RANGE) {
+  if (m_state == STATE_MOVING_RANGE && msg) {
     const char* verb = is_copy_key_pressed(msg) ? "Copy": "Move";
 
     switch (m_range.type()) {
@@ -3234,37 +3244,86 @@ void Timeline::updateStatusBar(ui::Message* msg)
         break;
 
       case PART_HEADER_FRAME:
-        if (validFrame(m_hot.frame)) {
-          sb->setStatusText(
-            0,
-            ":frame: %d :clock: %d",
-            (int)m_hot.frame+docPref().timeline.firstFrame(),
-            m_sprite->frameDuration(m_hot.frame));
-          return;
-        }
-        break;
-
       case PART_CEL:
-        if (layer) {
-          Cel* cel = (layer->isImage() ? layer->cel(m_hot.frame): NULL);
-          StatusBar::instance()->setStatusText(0,
-            "%s at frame %d"
-#ifdef _DEBUG
-            " (Image %d)"
-#endif
-            , cel ? "Cel": "Empty cel"
-            , (int)m_hot.frame+1
-#ifdef _DEBUG
-            , (cel ? cel->image()->id(): 0)
-#endif
-            );
-          return;
-        }
-        break;
+      case PART_FRAME_TAG: {
+        frame_t frame = m_frame;
+        if (validFrame(m_hot.frame))
+          frame = m_hot.frame;
+
+        updateStatusBarForFrame(
+          frame,
+          m_hot.getFrameTag(),
+          (layer ? layer->cel(frame) : nullptr));
+        return;
+      }
     }
   }
 
   sb->clearText();
+}
+
+void Timeline::updateStatusBarForFrame(const frame_t frame,
+                                       const FrameTag* frameTag,
+                                       const Cel* cel)
+{
+  if (!m_sprite)
+    return;
+
+  char buf[256] = { 0 };
+  frame_t base = docPref().timeline.firstFrame();
+  frame_t firstFrame = frame;
+  frame_t lastFrame = frame;
+
+  if (frameTag) {
+    firstFrame = frameTag->fromFrame();
+    lastFrame = frameTag->toFrame();
+  }
+  else if (m_range.enabled() &&
+           m_range.frames() > 1) {
+    firstFrame = m_range.firstFrame();
+    lastFrame = m_range.lastFrame();
+  }
+
+  std::sprintf(
+    buf+std::strlen(buf), ":frame: %d",
+    base+frame);
+  if (firstFrame != lastFrame) {
+    std::sprintf(
+      buf+std::strlen(buf), " [%d...%d]",
+      int(base+firstFrame),
+      int(base+lastFrame));
+  }
+
+  std::sprintf(
+    buf+std::strlen(buf), " :clock: %s",
+    human_readable_time(m_sprite->frameDuration(frame)).c_str());
+  if (firstFrame != lastFrame) {
+    std::sprintf(
+      buf+std::strlen(buf), " [%s]",
+      frameTag ?
+      human_readable_time(tagFramesDuration(frameTag)).c_str():
+      human_readable_time(selectedFramesDuration()).c_str());
+  }
+  if (m_sprite->totalFrames() > 1)
+    std::sprintf(
+      buf+std::strlen(buf), "/%s",
+      human_readable_time(m_sprite->totalAnimationDuration()).c_str());
+
+  if (cel) {
+    std::sprintf(
+      buf+std::strlen(buf), " Cel :pos: %d %d :size: %d %d",
+      cel->bounds().x, cel->bounds().y,
+      cel->bounds().w, cel->bounds().h);
+
+    if (cel->links() > 0) {
+      std::sprintf(
+        buf+std::strlen(buf), " Links %d",
+        int(cel->links()));
+    }
+  }
+
+  StatusBar::instance()
+    ->setStatusText(0, buf);
 }
 
 void Timeline::showCel(layer_t layer, frame_t frame)
@@ -3839,6 +3898,31 @@ void Timeline::onCancel(Context* ctx)
 
   clearClipboardRange();
   invalidate();
+}
+
+int Timeline::tagFramesDuration(const FrameTag* frameTag) const
+{
+  ASSERT(m_sprite);
+  ASSERT(frameTag);
+
+  int duration = 0;
+  for (frame_t f=frameTag->fromFrame();
+       f<frameTag->toFrame(); ++f) {
+    duration += m_sprite->frameDuration(f);
+  }
+  return duration;
+}
+
+int Timeline::selectedFramesDuration() const
+{
+  ASSERT(m_sprite);
+
+  int duration = 0;
+  for (frame_t f=0; f<m_sprite->totalFrames(); ++f) {
+    if (isFrameActive(f))
+      duration += m_sprite->frameDuration(f);
+  }
+  return duration; // TODO cache this value
 }
 
 } // namespace app

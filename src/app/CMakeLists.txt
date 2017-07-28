@@ -551,6 +551,7 @@ add_library(app-lib
   util/pic_file.cpp
   util/pixel_ratio.cpp
   util/range_utils.cpp
+  util/readable_time.cpp
   util/wrap_point.cpp
   webserver.cpp
   xml_document.cpp

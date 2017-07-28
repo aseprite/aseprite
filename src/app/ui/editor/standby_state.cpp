@@ -47,6 +47,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
+#include "app/util/readable_time.h"
 #include "base/bind.h"
 #include "base/pi.h"
 #include "doc/layer.h"
@@ -554,9 +555,10 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     if (sprite->totalFrames() > 1) {
       sprintf(
-        buf+std::strlen(buf), " :frame: %d :clock: %d",
+        buf+std::strlen(buf), " :frame: %d :clock: %s/%s",
         editor->frame()+editor->docPref().timeline.firstFrame(),
-        sprite->frameDuration(editor->frame()));
+        human_readable_time(sprite->frameDuration(editor->frame())).c_str(),
+        human_readable_time(sprite->totalAnimationDuration()).c_str());
     }
 
     if (editor->docPref().show.grid()) {
