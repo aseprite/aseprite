@@ -104,7 +104,7 @@ public:
                const app::Color& bgColor)
     : m_editor(editor)
     , m_tool(tool)
-    , m_brush(App::instance()->contextBar()->activeBrush(m_tool))
+    , m_brush(App::instance()->contextBar()->activeBrush(m_tool, ink))
     , m_document(document)
     , m_sprite(editor->sprite())
     , m_layer(layer)

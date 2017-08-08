@@ -31,10 +31,6 @@ namespace render {
   class DitheringMatrix;
 }
 
-namespace tools {
-  class Tool;
-}
-
 namespace ui {
   class Box;
   class Button;
@@ -43,6 +39,11 @@ namespace ui {
 }
 
 namespace app {
+
+  namespace tools {
+    class Ink;
+    class Tool;
+  }
 
   class BrushSlot;
   class DitheringSelector;
@@ -58,13 +59,14 @@ namespace app {
     void updateForTool(tools::Tool* tool);
     void updateForMovingPixels();
     void updateForSelectingBox(const std::string& text);
-    void updateToolLoopModifiersIndicators(app::tools::ToolLoopModifiers modifiers);
+    void updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modifiers);
     void updateAutoSelectLayer(bool state);
     bool isAutoSelectLayer() const;
 
     void setActiveBrush(const doc::BrushRef& brush);
     void setActiveBrushBySlot(tools::Tool* tool, int slot);
-    doc::BrushRef activeBrush(tools::Tool* tool = nullptr) const;
+    doc::BrushRef activeBrush(tools::Tool* tool = nullptr,
+                              tools::Ink* ink = nullptr) const;
     void discardActiveBrush();
 
     BrushSlot createBrushSlotFromPreferences();

@@ -1879,11 +1879,22 @@ void ContextBar::setActiveBrush(const doc::BrushRef& brush)
   updateForActiveTool();
 }
 
-doc::BrushRef ContextBar::activeBrush(tools::Tool* tool) const
+doc::BrushRef ContextBar::activeBrush(tools::Tool* tool,
+                                      tools::Ink* ink) const
 {
-  if ((!tool) ||
+  if (ink == nullptr)
+    ink = (tool ? tool->getInk(0): nullptr);
+
+  // Selection tools use a brush with size = 1 (always)
+  if (ink && ink->isSelection()) {
+    doc::BrushRef brush;
+    brush.reset(new Brush(kCircleBrushType, 1, 0));
+    return brush;
+  }
+
+  if ((tool == nullptr) ||
       (tool == App::instance()->activeTool()) ||
-      (tool->getInk(0)->isPaint() &&
+      (ink && ink->isPaint() &&
        m_activeBrush->type() == kImageBrushType)) {
     m_activeBrush->setPattern(Preferences::instance().brush.pattern());
     return m_activeBrush;
