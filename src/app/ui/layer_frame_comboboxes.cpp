@@ -58,10 +58,10 @@ FrameListItem::FrameListItem(doc::FrameTag* tag)
 void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer)
 {
   int i = layers->addItem("Visible layers");
-  dynamic_cast<LayerListItem*>(layers->getItem(i))->setValue(kAllLayers);
+  dynamic_cast<ui::ListItem*>(layers->getItem(i))->setValue(kAllLayers);
 
   i = layers->addItem("Selected layers");
-  dynamic_cast<LayerListItem*>(layers->getItem(i))->setValue(kSelectedLayers);
+  dynamic_cast<ui::ListItem*>(layers->getItem(i))->setValue(kSelectedLayers);
   if (defLayer == kSelectedLayers)
     layers->setSelectedItemIndex(i);
 
@@ -77,10 +77,10 @@ void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const
 void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const std::string& defFrame)
 {
   int i = frames->addItem("All frames");
-  dynamic_cast<FrameListItem*>(frames->getItem(i))->setValue(kAllFrames);
+  dynamic_cast<ui::ListItem*>(frames->getItem(i))->setValue(kAllFrames);
 
   i = frames->addItem("Selected frames");
-  dynamic_cast<FrameListItem*>(frames->getItem(i))->setValue(kSelectedFrames);
+  dynamic_cast<ui::ListItem*>(frames->getItem(i))->setValue(kSelectedFrames);
   if (defFrame == kSelectedFrames)
     frames->setSelectedItemIndex(i);
 
