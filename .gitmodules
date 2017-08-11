@@ -7,9 +7,6 @@
 [submodule "third_party/gtest"]
 	path = third_party/gtest
 	url = https://github.com/aseprite/gtest.git
-[submodule "third_party/duktape"]
-	path = third_party/duktape
-	url = https://github.com/aseprite/duktape.git
 [submodule "third_party/libwebp"]
 	path = third_party/libwebp
 	url = https://github.com/aseprite/libwebp.git
@@ -54,3 +51,6 @@
 [submodule "third_party/benchmark"]
 	path = third_party/benchmark
 	url = https://github.com/aseprite/benchmark.git
+[submodule "third_party/mujs"]
+	path = third_party/mujs
+	url = https://github.com/aseprite/mujs.git

@@ -132,6 +132,7 @@ bool DevConsoleView::onProcessMessage(Message* msg)
 
 void DevConsoleView::onExecuteCommand(const std::string& cmd)
 {
+  m_engine.printLastResult();
   m_engine.eval(cmd);
 }
 

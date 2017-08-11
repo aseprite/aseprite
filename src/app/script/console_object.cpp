@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -7,8 +7,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#include "app/script/console_object.h"
 
 #include "app/app.h"
 #include "app/console.h"
@@ -31,19 +29,31 @@ void print(const char* str)
   }
 }
 
-script::result_t Console_assert(script::ContextHandle handle)
+void Console_assert(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  if (!ctx.toBool(0))
-    print(ctx.toString(1));
-  return 0;
+  if (!ctx.toBool(1))
+    ctx.error(ctx.toString(1));
+  ctx.pushUndefined();
 }
 
-script::result_t Console_log(script::ContextHandle handle)
+void Console_log(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  print(ctx.toString(0));
-  return 0;
+  std::string output;
+  int top = ctx.top();
+  const char* s;
+  for (int n=1; n<top; ++n) {
+    s = ctx.toString(n);
+    if (s == nullptr)
+      break;
+    if (n > 1)
+      output += " ";
+    output += s;
+  }
+  if (!output.empty())
+    print(output.c_str());
+  ctx.pushUndefined();
 }
 
 const script::FunctionEntry Console_methods[] = {

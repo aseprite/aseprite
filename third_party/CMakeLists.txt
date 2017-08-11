@@ -124,3 +124,33 @@ target_include_directories(archive_static INTERFACE
 if(ENABLE_BENCHMARKS)
   add_subdirectory(benchmark)
 endif()
+
+# mujs
+add_library(mujs
+  mujs/jsarray.c
+  mujs/jsboolean.c
+  mujs/jsbuiltin.c
+  mujs/jscompile.c
+  mujs/jsdate.c
+  mujs/jsdtoa.c
+  mujs/jsdump.c
+  mujs/jserror.c
+  mujs/jsfunction.c
+  mujs/jsgc.c
+  mujs/jsintern.c
+  mujs/jslex.c
+  mujs/jsmath.c
+  mujs/jsnumber.c
+  mujs/jsobject.c
+  mujs/json.c
+  mujs/jsparse.c
+  mujs/jsproperty.c
+  mujs/jsregexp.c
+  mujs/jsrun.c
+  mujs/jsstate.c
+  mujs/jsstring.c
+  mujs/jsvalue.c
+  mujs/regexp.c
+  mujs/utf.c
+  mujs/utftype.c)
+target_include_directories(mujs PUBLIC .)

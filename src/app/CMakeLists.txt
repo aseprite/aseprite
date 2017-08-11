@@ -137,7 +137,11 @@ if(ENABLE_SCRIPTING)
     script/console_object.cpp
     script/image_class.cpp
     script/image_wrap.cpp
+    script/pixel_color_class.cpp
+    script/point_class.cpp
+    script/rectangle_class.cpp
     script/selection_class.cpp
+    script/size_class.cpp
     script/sprite_class.cpp
     script/sprite_wrap.cpp
     shell.cpp
