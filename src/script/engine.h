@@ -1,5 +1,5 @@
 // Aseprite Scripting Library
-// Copyright (c) 2015-2016 David Capello
+// Copyright (c) 2015-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,7 +10,7 @@
 
 #include <string>
 
-struct duk_hthread;
+struct js_State;
 
 namespace script {
   class Context;
@@ -18,10 +18,9 @@ namespace script {
 
   typedef int result_t;
   typedef int index_t;
-  typedef struct duk_hthread* ContextHandle;
-  typedef result_t (*Function)(ContextHandle ctx);
-
-  extern const char* kPtrId;
+  typedef js_State* ContextHandle;
+  typedef void (*Function)(ContextHandle);
+  typedef void (*FinalizeFunction)(ContextHandle, void*);
 
   struct FunctionEntry {
     const char* id;
@@ -53,31 +52,33 @@ namespace script {
 
     ContextHandle handle() { return m_handle; }
 
-    void dump();
+    void setContextUserData(void* userData);
+    void* getContextUserData();
+
+    void error(const char* err);
+
     void pop();
     void pop(index_t count);
     void remove(index_t idx);
     void duplicateTop();
-
-    bool isConstructorCall();
+    index_t top();
 
     bool isUndefined(index_t i);
     bool isNull(index_t i);
     bool isNullOrUndefined(index_t i);
     bool isBool(index_t i);
     bool isNumber(index_t i);
-    bool isNaN(index_t i);
     bool isString(index_t i);
+    bool isObject(index_t i);
+    bool isArray(index_t i);
+    bool isUserData(index_t i, const char* tag);
 
-    bool getBool(index_t i);
     bool toBool(index_t i);
-    double getNumber(index_t i);
-    int getInt(index_t i);
-    unsigned int getUInt(index_t i);
-    const char* getString(index_t i);
+    double toNumber(index_t i);
+    int toInt(index_t i);
+    unsigned int toUInt(index_t i);
     const char* toString(index_t i);
-    void* getPointer(index_t i);
-    void* getThis();
+    void* toUserData(index_t i, const char* tag);
 
     bool hasProp(index_t i, const char* propName);
     void getProp(index_t i, const char* propName);
@@ -88,22 +89,23 @@ namespace script {
     int requireInt(index_t i);
     unsigned int requireUInt(index_t i);
     const char* requireString(index_t i);
-    void* requireObject(index_t i, const char* className);
+    void* requireUserData(index_t i, const char* tag);
 
     void pushUndefined();
     void pushNull();
     void pushBool(bool val);
     void pushNumber(double val);
-    void pushNaN();
     void pushInt(int val);
     void pushUInt(unsigned int val);
     void pushString(const char* str);
-    void pushThis();
-    void pushThis(void* ptr, const char* className);
-    void pushPointer(void* ptr);
-    index_t pushObject();
-    index_t pushObject(void* ptr, const char* className);
     void pushGlobalObject();
+    void newObject();
+    void newObject(const char* className,
+                   void* userData,
+                   FinalizeFunction finalize);
+    void newUserData(const char* tag,
+                     void* userData,
+                     FinalizeFunction finalize);
 
     void registerConstants(index_t idx,
                            const ConstantEntry* consts);
@@ -139,12 +141,11 @@ namespace script {
     ~Engine();
 
     void printLastResult();
-    void eval(const std::string& jsCode);
-    void evalFile(const std::string& file);
+    void eval(const std::string& jsCode,
+              const std::string& filename = std::string());
+    void evalFile(const std::string& filename);
 
     Context& context() { return m_ctx; }
-
-    void registerModule(Module* module);
 
   protected:
     virtual void onBeforeEval() { }

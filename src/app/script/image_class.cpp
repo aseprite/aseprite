@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,74 +8,71 @@
 #include "config.h"
 #endif
 
-#include "app/script/image_class.h"
-
 #include "app/script/image_wrap.h"
 #include "doc/image.h"
+#include "script/engine.h"
 
 namespace app {
 
 namespace {
 
-script::result_t Image_ctor(script::ContextHandle handle)
-{
-  return 0;
-}
+const char* kTag = "Image";
 
-script::result_t Image_putPixel(script::ContextHandle handle)
+void Image_new(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  int x = ctx.requireInt(0);
-  int y = ctx.requireInt(1);
-  doc::color_t color = ctx.requireUInt(2);
+  ctx.pushNull();          // TODO
+}
 
-  auto wrap = (ImageWrap*)ctx.getThis();
+void Image_putPixel(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
+  int x = ctx.requireInt(1);
+  int y = ctx.requireInt(2);
+  doc::color_t color = ctx.requireUInt(3);
+
   if (wrap) {
     wrap->modifyRegion(gfx::Region(gfx::Rect(x, y, 1, 1)));
     wrap->image()->putPixel(x, y, color);
   }
 
-  return 0;
+  ctx.pushUndefined();
 }
 
-script::result_t Image_getPixel(script::ContextHandle handle)
+void Image_getPixel(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  int x = ctx.requireInt(0);
-  int y = ctx.requireInt(1);
+  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
+  int x = ctx.requireInt(1);
+  int y = ctx.requireInt(2);
 
-  auto wrap = (ImageWrap*)ctx.getThis();
   if (wrap) {
     doc::color_t color = wrap->image()->getPixel(x, y);
     ctx.pushUInt(color);
-    return 1;
   }
   else
-    return 0;
+    ctx.pushUndefined();
 }
 
-script::result_t Image_get_width(script::ContextHandle handle)
+void Image_get_width(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (ImageWrap*)ctx.getThis();
-  if (wrap) {
+  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
+  if (wrap)
     ctx.pushInt(wrap->image()->width());
-    return 1;
-  }
   else
-    return 0;
+    ctx.pushUndefined();
 }
 
-script::result_t Image_get_height(script::ContextHandle handle)
+void Image_get_height(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (ImageWrap*)ctx.getThis();
-  if (wrap) {
+  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
+  if (wrap)
     ctx.pushInt(wrap->image()->height());
-    return 1;
-  }
   else
-    return 0;
+    ctx.pushUndefined();
 }
 
 const script::FunctionEntry Image_methods[] = {
@@ -94,7 +91,9 @@ const script::PropertyEntry Image_props[] = {
 
 void register_image_class(script::index_t idx, script::Context& ctx)
 {
-  ctx.registerClass(idx, "Image", Image_ctor, 0, Image_methods, Image_props);
+  ctx.registerClass(idx, kTag,
+                    Image_new, 0,
+                    Image_methods, Image_props);
 }
 
 } // namespace app
