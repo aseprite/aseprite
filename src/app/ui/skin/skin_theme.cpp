@@ -676,16 +676,19 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
   if (sur && (sur->width() != bounds.w ||
               sur->height() != bounds.h)) {
     sur->dispose();
-    sur = NULL;
+    sur = nullptr;
   }
 
-  if (!sur)
-    sur = she::instance()->createRgbaSurface(bounds.w, bounds.h);
+  if (!bounds.isEmpty()) {
+    if (!sur)
+      sur = she::instance()->createRgbaSurface(bounds.w, bounds.h);
 
-  {
     she::SurfaceLock lockSrc(m_sheet);
     she::SurfaceLock lockDst(sur);
     m_sheet->blitTo(sur, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
+  }
+  else {
+    ASSERT(!sur);
   }
 
   return sur;

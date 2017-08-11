@@ -26,19 +26,18 @@ SkinPart::~SkinPart()
 
 void SkinPart::clear()
 {
-  for (Bitmaps::iterator it = m_bitmaps.begin(), end = m_bitmaps.end();
-       it != end; ++it) {
-    ASSERT(*it != NULL);
-
-    (*it)->dispose();
-    *it = NULL;
+  for (auto& bitmap : m_bitmaps) {
+    if (bitmap) {
+      bitmap->dispose();
+      bitmap = nullptr;
+    }
   }
 }
 
 void SkinPart::setBitmap(std::size_t index, she::Surface* bitmap)
 {
   if (index >= m_bitmaps.size())
-    m_bitmaps.resize(index+1, NULL);
+    m_bitmaps.resize(index+1, nullptr);
 
   m_bitmaps[index] = bitmap;
 }

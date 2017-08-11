@@ -39,7 +39,7 @@ namespace app {
       void setSlicesBounds(const gfx::Rect& bounds);
 
       she::Surface* bitmap(std::size_t index) const {
-        return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
+        return (index < m_bitmaps.size() ? m_bitmaps[index]: nullptr);
       }
 
       she::Surface* bitmapNW() const { return bitmap(0); }
