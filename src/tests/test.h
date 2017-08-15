@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     {
       // Do not create a she::System, as we don't need it for testing purposes.
       //she::ScopedHandle<she::System> system(she::create_system());
-      ui::UISystem uiSystem(1);
+      ui::UISystem uiSystem;
       ui::Manager uiManager;
   #endif
 
