@@ -26,7 +26,7 @@
 #include "ui/slider.h"
 #include "ui/theme.h"
 
-#include <climits>
+#include <limits>
 
 namespace app {
 
@@ -376,7 +376,8 @@ void ColorSliders::addSlider(const Channel channel,
   item.relSlider->setExpansive(true);
   item.relSlider->setVisible(false);
 
-  gfx::Size sz(INT_MAX, SkinTheme::instance()->dimensions.colorSliderHeight());
+  gfx::Size sz(std::numeric_limits<int>::max(),
+               SkinTheme::instance()->dimensions.colorSliderHeight());
   item.label->setMaxSize(sz);
   item.box->setMaxSize(sz);
   item.entry->setMaxSize(sz);

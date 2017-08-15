@@ -35,10 +35,10 @@
 #include "ui/window.h"
 
 #include <cctype>
-#include <climits>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 #include <queue>
 #include <sstream>
 
@@ -72,7 +72,8 @@ Widget::Widget(WidgetType type)
   , m_sizeHint(nullptr)
   , m_mnemonic(0)
   , m_minSize(0, 0)
-  , m_maxSize(INT_MAX, INT_MAX)
+  , m_maxSize(std::numeric_limits<int>::max(),
+              std::numeric_limits<int>::max())
   , m_childSpacing(0)
 {
   details::addWidget(this);

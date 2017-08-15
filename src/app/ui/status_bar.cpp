@@ -45,10 +45,10 @@
 #include "ui/ui.h"
 
 #include <algorithm>
-#include <climits>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 #include <vector>
 
 namespace app {
@@ -718,7 +718,8 @@ void StatusBar::onInitTheme(ui::InitThemeEvent& ev)
   setBgColor(theme->colors.statusBarFace());
   setBorder(gfx::Border(6*guiscale(), 0, 6*guiscale(), 0));
   setMinSize(Size(0, textHeight()+8*guiscale()));
-  setMaxSize(Size(INT_MAX, textHeight()+8*guiscale()));
+  setMaxSize(Size(std::numeric_limits<int>::max(),
+                  textHeight()+8*guiscale()));
 
   m_newFrame->setStyle(theme->styles.newFrameButton());
   m_commandsBox->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());

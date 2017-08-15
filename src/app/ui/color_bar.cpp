@@ -71,6 +71,7 @@
 #include "ui/tooltips.h"
 
 #include <cstring>
+#include <limits>
 
 namespace app {
 
@@ -220,7 +221,8 @@ ColorBar::ColorBar(int align)
       m_bgColor.resetSizeHint();
       m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
       m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
-      m_buttons.setMaxSize(gfx::Size(INT_MAX, INT_MAX)); // TODO add resetMaxSize
+      m_buttons.setMaxSize(gfx::Size(std::numeric_limits<int>::max(),
+                                     std::numeric_limits<int>::max())); // TODO add resetMaxSize
       m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
                                      16*ui::guiscale()));
 

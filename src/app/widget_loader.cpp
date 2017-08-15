@@ -32,10 +32,10 @@
 
 #include "tinyxml.h"
 
-#include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 
 namespace app {
 
@@ -593,14 +593,15 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     widget->InitTheme.connect(
       [widget, minw, minh, maxw, maxh]{
         widget->setMinSize(gfx::Size(0, 0));
-        widget->setMaxSize(gfx::Size(INT_MAX, INT_MAX));
+        widget->setMaxSize(gfx::Size(std::numeric_limits<int>::max(),
+                                     std::numeric_limits<int>::max()));
         const gfx::Size reqSize = widget->sizeHint();
         widget->setMinSize(
           gfx::Size((minw > 0 ? guiscale()*minw: reqSize.w),
                     (minh > 0 ? guiscale()*minh: reqSize.h)));
         widget->setMaxSize(
-          gfx::Size((maxw > 0 ? guiscale()*maxw: INT_MAX),
-                    (maxh > 0 ? guiscale()*maxh: INT_MAX)));
+          gfx::Size((maxw > 0 ? guiscale()*maxw: std::numeric_limits<int>::max()),
+                    (maxh > 0 ? guiscale()*maxh: std::numeric_limits<int>::max())));
       });
   }
 
