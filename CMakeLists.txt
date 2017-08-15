@@ -77,6 +77,7 @@ option(ENABLE_TESTS       "Compile unit tests" off)
 option(ENABLE_BENCHMARKS  "Compile benchmarks" off)
 option(ENABLE_TRIAL_MODE  "Compile the trial version" off)
 option(ENABLE_STEAM       "Compile with Steam library" off)
+option(ENABLE_DEVMODE     "Compile vesion for developers" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 

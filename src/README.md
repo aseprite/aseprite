@@ -58,9 +58,12 @@ because they don't depend on any other component.
 
 # Debugging Tricks
 
-* On Windows, you can use F5 to show the amount of used memory.
-* On debug mode (when `_DEBUG` is defined), `Ctrl+Alt+Shift+Q` crashes
-  the application in case that you want to test the anticrash feature
-  or your need a memory dump file.
-* On debug mode, you can use `Ctrl+Alt+Shift+R` to recover the active
-  document from the data recovery store.
+When Aseprite is compiled with `ENABLE_DEVMODE`, you have the
+following extra commands available:
+
+* `F5`: On Windows shows the amount of used memory.
+* `F1`: Switch/test Screen/UI Scaling values.
+* `Ctrl+Alt+Shift+Q`: crashes the application in case that you want to
+  test the anticrash feature or your need a memory dump file.
+* `Ctrl+Alt+Shift+R`: recover the active document from the data
+  recovery store.

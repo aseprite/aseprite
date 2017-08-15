@@ -569,3 +569,7 @@ if(ENABLE_STEAM)
   add_definitions(-DENABLE_STEAM)
   target_link_libraries(app-lib steam-lib)
 endif()
+
+if(ENABLE_DEVMODE)
+  add_definitions(-DENABLE_DEVMODE)
+endif()

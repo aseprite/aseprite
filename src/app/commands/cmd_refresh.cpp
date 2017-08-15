@@ -46,7 +46,7 @@ void RefreshCommand::onExecute(Context* context)
   app_refresh_screen();
 
   // Print memory information
-#if defined _WIN32 && defined _DEBUG
+#if defined _WIN32 && defined ENABLE_DEVMODE
   {
     PROCESS_MEMORY_COUNTERS pmc;
     if (::GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {

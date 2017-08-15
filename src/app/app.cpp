@@ -237,8 +237,8 @@ void App::run()
       she::instance()->activateApp();
 #endif
 
-#if _DEBUG
-    // On OS X, when we compile Aseprite on Debug mode, we're using it
+#if ENABLE_DEVMODE
+    // On OS X, when we compile Aseprite on devmode, we're using it
     // outside an app bundle, so we must active the app explicitly.
     she::instance()->activateApp();
 #endif

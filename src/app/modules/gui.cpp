@@ -15,8 +15,10 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
+#include "app/crash/data_recovery.h"
 #include "app/document.h"
 #include "app/ini_file.h"
+#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -362,7 +364,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage: {
-#ifdef _DEBUG
+#if ENABLE_DEVMODE
       auto keymsg = static_cast<KeyMessage*>(msg);
 
       // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
@@ -371,6 +373,37 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           keymsg->scancode() == kKeyQ) {
         int* p = nullptr;
         *p = 0;
+      }
+
+      // F1 switches screen/UI scaling
+      if (keymsg->scancode() == kKeyF1) {
+        she::Display* display = getDisplay();
+        int screenScale = display->scale();
+        int uiScale = ui::guiscale();
+
+        if (screenScale == 2 &&
+            uiScale == 1) {
+          screenScale = 1;
+          uiScale = 2;
+        }
+        else if (screenScale == 1 &&
+                 uiScale == 2) {
+          screenScale = 1;
+          uiScale = 1;
+        }
+        else if (screenScale == 1 &&
+                 uiScale == 1) {
+          screenScale = 2;
+          uiScale = 1;
+        }
+
+        if (uiScale != ui::guiscale()) {
+          ui::set_theme(ui::get_theme(), uiScale);
+        }
+        if (screenScale != display->scale()) {
+          display->setScale(screenScale);
+          setDisplay(display);
+        }
       }
 
 #ifdef ENABLE_DATA_RECOVERY
