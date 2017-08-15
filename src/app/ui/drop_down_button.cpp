@@ -26,11 +26,6 @@ DropDownButton::DropDownButton(const char* text)
   , m_button(new Button(text))
   , m_dropDown(new Button(""))
 {
-  SkinTheme* theme = SkinTheme::instance();
-
-  m_button->setStyle(theme->styles.dropDownButton());
-  m_dropDown->setStyle(theme->styles.dropDownExpandButton());
-
   m_button->setExpansive(true);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);
   m_dropDown->Click.connect(&DropDownButton::onDropDownButtonClick, this);
@@ -38,7 +33,14 @@ DropDownButton::DropDownButton(const char* text)
   addChild(m_button);
   addChild(m_dropDown);
 
-  setChildSpacing(0);
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = SkinTheme::instance();
+      m_button->setStyle(theme->styles.dropDownButton());
+      m_dropDown->setStyle(theme->styles.dropDownExpandButton());
+      setChildSpacing(0);
+    });
+  initTheme();
 }
 
 void DropDownButton::onButtonClick(Event& ev)

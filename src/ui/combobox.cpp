@@ -94,9 +94,6 @@ ComboBox::ComboBox()
   , m_filtering(false)
   , m_useCustomWidget(false)
 {
-  // TODO this separation should be from the Theme*
-  this->setChildSpacing(0);
-
   m_entry->setExpansive(true);
 
   // When the "m_button" is clicked ("Click" signal) call onButtonClick() method
@@ -395,6 +392,15 @@ bool ComboBox::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void ComboBox::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+  if (m_window) {
+    m_window->initTheme();
+    m_window->noBorderNoChildSpacing();
+  }
+}
+
 void ComboBox::onResize(ResizeEvent& ev)
 {
   gfx::Rect bounds = ev.bounds();
@@ -594,7 +600,6 @@ void ComboBox::openListBox()
   m_listbox = new ComboBoxListBox(this);
   m_window->setOnTop(true);
   m_window->setWantFocus(false);
-  m_window->noBorderNoChildSpacing();
 
   Widget* viewport = view->viewport();
   {
@@ -615,6 +620,7 @@ void ComboBox::openListBox()
 
   m_listbox->selectIndex(m_selected);
 
+  initTheme();
   m_window->remapWindow();
 
   gfx::Rect rc = getListBoxPos();

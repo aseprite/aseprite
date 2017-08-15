@@ -61,6 +61,8 @@ namespace ui {
   class TransparentPopupWindow : public PopupWindow {
   public:
     TransparentPopupWindow(ClickBehavior clickBehavior);
+  protected:
+    void onInitTheme(InitThemeEvent& ev) override;
   };
 
 } // namespace ui

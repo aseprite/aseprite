@@ -70,24 +70,30 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   , m_openButton("Recover Sprite")
   , m_deleteButton("Delete")
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setBgColor(theme->colors.workspace());
-
-  m_openButton.mainButton()->setSizeHint(
-    gfx::Size(std::max(m_openButton.mainButton()->sizeHint().w, 100*guiscale()),
-              m_openButton.mainButton()->sizeHint().h));
-
   m_listBox.setMultiselect(true);
   m_view.setExpansive(true);
   m_view.attachToView(&m_listBox);
-  m_view.setStyle(theme->styles.workspaceView());
 
   HBox* hbox = new HBox;
-  hbox->setBorder(gfx::Border(2, 0, 2, 0)*guiscale());
   hbox->addChild(&m_openButton);
   hbox->addChild(&m_deleteButton);
   addChild(hbox);
   addChild(&m_view);
+
+  InitTheme.connect(
+    [this, hbox]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
+      m_openButton.mainButton()->resetSizeHint();
+      gfx::Size hint = m_openButton.mainButton()->sizeHint();
+      m_openButton.mainButton()->setSizeHint(
+        gfx::Size(std::max(hint.w, 100*guiscale()), hint.h));
+
+      setBgColor(theme->colors.workspace());
+      m_view.setStyle(theme->styles.workspaceView());
+      hbox->setBorder(gfx::Border(2, 0, 2, 0)*guiscale());
+    });
+  initTheme();
 
   fillList();
   onChangeSelection();
@@ -97,10 +103,6 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_deleteButton.Click.connect(base::Bind(&DataRecoveryView::onDelete, this));
   m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
   m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
-}
-
-DataRecoveryView::~DataRecoveryView()
-{
 }
 
 void DataRecoveryView::fillList()
@@ -116,7 +118,11 @@ void DataRecoveryView::fillList()
       continue;
 
     auto sep = new SeparatorInView(session->name(), HORIZONTAL);
-    sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
+    sep->InitTheme.connect(
+      [sep]{
+        sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
+      });
+    sep->initTheme();
     m_listBox.addChild(sep);
 
     for (auto& backup : session->backups()) {

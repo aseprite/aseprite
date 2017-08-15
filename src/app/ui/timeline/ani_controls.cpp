@@ -53,7 +53,6 @@ AniControls::AniControls()
 
   setTriggerOnMouseUp(true);
   setTransparent(true);
-  setBgColor(theme->colors.workspace());
 
   TooltipManager* tooltips = new TooltipManager;
   addChild(tooltips);
@@ -61,6 +60,12 @@ AniControls::AniControls()
     tooltips->addTooltipFor(getItem(i), getTooltipFor(i), BOTTOM);
 
   getItem(ACTION_PLAY)->enableFlags(CTRL_RIGHT_CLICK);
+
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      setBgColor(theme->colors.workspace());
+    });
 }
 
 void AniControls::updateUsingEditor(Editor* editor)

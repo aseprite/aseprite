@@ -875,6 +875,15 @@ bool MenuItem::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void MenuItem::onInitTheme(InitThemeEvent& ev)
+{
+  if (m_submenu)
+    m_submenu->initTheme();
+  if (m_submenu_menubox)
+    m_submenu_menubox->initTheme();
+  Widget::onInitTheme(ev);
+}
+
 void MenuItem::onPaint(PaintEvent& ev)
 {
   theme()->paintMenuItem(ev);

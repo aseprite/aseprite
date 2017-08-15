@@ -108,44 +108,53 @@ class StatusBar::Indicators : public HBox {
 
   class IconIndicator : public Indicator {
   public:
-    IconIndicator(she::Surface* icon, bool colored)
+    IconIndicator(const skin::SkinPartPtr& part, bool colored)
       : Indicator(kIcon)
-      , m_icon(nullptr)
+      , m_part(part)
       , m_colored(colored) {
-      updateIndicator(icon, colored);
+      InitTheme.connect(
+        [this]{
+          updateIndicator();
+        });
+      initTheme();
     }
 
-    void updateIndicator(she::Surface* icon, bool colored) {
-      if (m_icon == icon && m_colored == colored)
+    void updateIndicator(const skin::SkinPartPtr& part, bool colored) {
+      if (m_part.get() == part.get() &&
+          m_colored == colored)
         return;
 
-      ASSERT(icon);
-
-      m_icon = icon;
+      ASSERT(part);
+      m_part = part;
       m_colored = colored;
-      setMinSize(minSize().createUnion(Size(m_icon->width(),
-                                            m_icon->height())));
+      updateIndicator();
     }
 
   private:
+    void updateIndicator() {
+      setMinSize(
+        minSize().createUnion(Size(m_part->bitmap(0)->width(),
+                                   m_part->bitmap(0)->height())));
+    }
+
     void onPaint(ui::PaintEvent& ev) override {
       SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
       gfx::Color textColor = theme->colors.statusBarText();
       Rect rc = clientBounds();
       Graphics* g = ev.graphics();
+      she::Surface* icon = m_part->bitmap(0);
 
       g->fillRect(bgColor(), rc);
       if (m_colored)
         g->drawColoredRgbaSurface(
-          m_icon, textColor,
-          rc.x, rc.y + rc.h/2 - m_icon->height()/2);
+          icon, textColor,
+          rc.x, rc.y + rc.h/2 - icon->height()/2);
       else
         g->drawRgbaSurface(
-          m_icon,
-          rc.x, rc.y + rc.h/2 - m_icon->height()/2);
+          icon, rc.x, rc.y + rc.h/2 - icon->height()/2);
     }
 
-    she::Surface* m_icon;
+    skin::SkinPartPtr m_part;
     bool m_colored;
   };
 
@@ -222,11 +231,11 @@ public:
     m_leftArea.addChild(indicator);
   }
 
-  void addIconIndicator(she::Surface* icon, bool colored) {
+  void addIconIndicator(const skin::SkinPartPtr& part, bool colored) {
     if (m_iterator != m_indicators.end()) {
       if ((*m_iterator)->indicatorType() == Indicator::kIcon) {
         static_cast<IconIndicator*>(*m_iterator)
-          ->updateIndicator(icon, colored);
+          ->updateIndicator(part, colored);
         ++m_iterator;
         return;
       }
@@ -234,7 +243,7 @@ public:
         removeAllNextIndicators();
     }
 
-    auto indicator = new IconIndicator(icon, colored);
+    auto indicator = new IconIndicator(part, colored);
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
     m_leftArea.addChild(indicator);
@@ -261,17 +270,17 @@ public:
   void showBackupIcon(BackupIcon icon) {
     m_backupIcon = icon;
     if (m_backupIcon != BackupIcon::None) {
-      she::Surface* icon =
+      SkinPartPtr part =
         (m_backupIcon == BackupIcon::Normal ?
-         SkinTheme::instance()->parts.iconSave()->bitmap(0):
-         SkinTheme::instance()->parts.iconSaveSmall()->bitmap(0));
+         SkinTheme::instance()->parts.iconSave():
+         SkinTheme::instance()->parts.iconSaveSmall());
 
       m_rightArea.setVisible(true);
       if (m_rightArea.children().empty()) {
-        m_rightArea.addChild(new IconIndicator(icon, true));
+        m_rightArea.addChild(new IconIndicator(part, true));
       }
       else {
-        ((IconIndicator*)m_rightArea.lastChild())->updateIndicator(icon, true);
+        ((IconIndicator*)m_rightArea.lastChild())->updateIndicator(part, true);
       }
     }
     else {
@@ -330,7 +339,7 @@ public:
 
           auto part = theme->getPartById("icon_" + std::string(i+1, j));
           if (part)
-            add(part.get(), true);
+            add(part, true);
 
           text = i = (*(j+1) == ' ' ? j+2: j+1);
         }
@@ -347,21 +356,17 @@ public:
     return *this;
   }
 
-  IndicatorsGeneration& add(she::Surface* icon, bool colored) {
-    if (icon)
-      m_indicators->addIconIndicator(icon, colored);
+  IndicatorsGeneration& add(const skin::SkinPartPtr& part, bool colored) {
+    if (part.get())
+      m_indicators->addIconIndicator(part, colored);
     return *this;
-  }
-
-  IndicatorsGeneration& add(const skin::SkinPart* part, bool colored) {
-    return add(part->bitmap(0), colored);
   }
 
   IndicatorsGeneration& add(const app::Color& color) {
     auto theme = SkinTheme::instance();
 
     // Eyedropper icon
-    add(theme->getToolIcon("eyedropper"), false);
+    add(theme->getToolPart("eyedropper"), false);
 
     // Color
     m_indicators->addColorIndicator(color);
@@ -384,13 +389,13 @@ public:
     auto theme = SkinTheme::instance();
 
     // Tool icon + text
-    add(theme->getToolIcon(tool->getId().c_str()), false);
+    add(theme->getToolPart(tool->getId().c_str()), false);
     m_indicators->addTextIndicator(tool->getText().c_str());
 
     // Tool shortcut
     Key* key = KeyboardShortcuts::instance()->tool(tool);
     if (key && !key->accels().empty()) {
-      add(theme->parts.iconKey()->bitmap(0), true);
+      add(theme->parts.iconKey(), true);
       m_indicators->addTextIndicator(key->accels().front().toString().c_str());
     }
     return *this;
@@ -441,8 +446,12 @@ public:
   SnapToGridWindow()
     : ui::PopupWindow("", ClickBehavior::DoNothingOnClick)
     , m_button("Disable Snap to Grid") {
-    setBorder(gfx::Border(2 * guiscale()));
-    setBgColor(gfx::rgba(255, 255, 200));
+    InitTheme.connect(
+      [this]{
+        setBorder(gfx::Border(2 * guiscale()));
+        setBgColor(gfx::rgba(255, 255, 200));
+      });
+    initTheme();
     makeFloating();
 
     addChild(&m_button);
@@ -525,15 +534,7 @@ StatusBar::StatusBar()
   m_instance = this;
 
   setDoubleBuffered(true);
-
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setBgColor(theme->colors.statusBarFace());
-
   setFocusStop(true);
-  setBorder(gfx::Border(6*guiscale(), 0, 6*guiscale(), 0));
-
-  setMinSize(Size(0, textHeight()+8*guiscale()));
-  setMaxSize(Size(INT_MAX, textHeight()+8*guiscale()));
 
   m_indicators->setExpansive(true);
   m_docControls->setVisible(false);
@@ -549,13 +550,10 @@ StatusBar::StatusBar()
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(base::Bind<void>(&StatusBar::newFrame, this));
-    m_newFrame->setStyle(theme->styles.newFrameButton());
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
     setup_mini_look(m_currentFrame);
-
-    box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
 
     box4->addChild(m_currentFrame);
     box4->addChild(m_newFrame);
@@ -565,6 +563,7 @@ StatusBar::StatusBar()
     box1->addChild(m_zoomEntry);
 
     m_docControls->addChild(box1);
+    m_commandsBox = box1;
   }
 
   // Tooltips manager
@@ -577,6 +576,8 @@ StatusBar::StatusBar()
   UIContext::instance()->add_observer(this);
   UIContext::instance()->documents().add_observer(this);
   App::instance()->activeToolManager()->add_observer(this);
+
+  initTheme();
 }
 
 StatusBar::~StatusBar()
@@ -688,20 +689,13 @@ void StatusBar::showSnapToGridWarning(bool state)
     if (!m_doc)
       return;
 
-    if (!m_snapToGridWindow) {
+    if (!m_snapToGridWindow)
       m_snapToGridWindow = new SnapToGridWindow;
-    }
 
     if (!m_snapToGridWindow->isVisible()) {
       m_snapToGridWindow->openWindow();
       m_snapToGridWindow->remapWindow();
-
-      Rect rc = bounds();
-      int toolBarWidth = ToolBar::instance()->sizeHint().w;
-
-      m_snapToGridWindow->positionWindow(
-        rc.x+rc.w-toolBarWidth-m_snapToGridWindow->bounds().w,
-        rc.y-m_snapToGridWindow->bounds().h);
+      updateSnapToGridWindowPosition();
     }
 
     m_snapToGridWindow->setDocument(
@@ -716,12 +710,36 @@ void StatusBar::showSnapToGridWarning(bool state)
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
 
+void StatusBar::onInitTheme(ui::InitThemeEvent& ev)
+{
+  HBox::onInitTheme(ev);
+
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  setBgColor(theme->colors.statusBarFace());
+  setBorder(gfx::Border(6*guiscale(), 0, 6*guiscale(), 0));
+  setMinSize(Size(0, textHeight()+8*guiscale()));
+  setMaxSize(Size(INT_MAX, textHeight()+8*guiscale()));
+
+  m_newFrame->setStyle(theme->styles.newFrameButton());
+  m_commandsBox->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
+
+  if (m_snapToGridWindow) {
+    m_snapToGridWindow->initTheme();
+    if (m_snapToGridWindow->isVisible())
+      updateSnapToGridWindowPosition();
+  }
+}
+
 void StatusBar::onResize(ResizeEvent& ev)
 {
   Rect rc = ev.bounds();
   m_docControls->setVisible(m_doc && rc.w > 300*ui::guiscale());
 
   HBox::onResize(ev);
+
+  if (m_snapToGridWindow &&
+      m_snapToGridWindow->isVisible())
+    updateSnapToGridWindowPosition();
 }
 
 void StatusBar::onActiveSiteChange(const doc::Site& site)
@@ -782,6 +800,17 @@ void StatusBar::onChangeZoom(const render::Zoom& zoom)
 {
   if (current_editor)
     current_editor->setEditorZoom(zoom);
+}
+
+void StatusBar::updateSnapToGridWindowPosition()
+{
+  ASSERT(m_snapToGridWindow);
+
+  Rect rc = bounds();
+  int toolBarWidth = ToolBar::instance()->sizeHint().w;
+  m_snapToGridWindow->positionWindow(
+    rc.x+rc.w-toolBarWidth-m_snapToGridWindow->bounds().w,
+    rc.y-m_snapToGridWindow->bounds().h);
 }
 
 } // namespace app

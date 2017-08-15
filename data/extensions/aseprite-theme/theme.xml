@@ -511,6 +511,10 @@
             <border part="editor_normal" />
             <border part="editor_selected" state="focus" />
         </style>
+        <style id="top_shade_view" extends="editor_view" />
+        <style id="menu_shade_view" extends="view">
+            <background color="menuitem_hot_face" state="mouse" />
+	</style>
         <style id="button">
             <background-border part="button_normal" />
             <background-border part="button_hot" state="mouse" />

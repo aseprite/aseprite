@@ -224,17 +224,9 @@ Timeline::Timeline()
   addChild(&m_hbar);
   addChild(&m_vbar);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
-  int barsize = theme->dimensions.miniScrollbarSize();
-  m_hbar.setBarWidth(barsize);
-  m_vbar.setBarWidth(barsize);
   m_hbar.setTransparent(true);
   m_vbar.setTransparent(true);
-  m_hbar.setStyle(theme->styles.transparentScrollbar());
-  m_vbar.setStyle(theme->styles.transparentScrollbar());
-  m_hbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
-  m_vbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
+  initTheme();
 }
 
 Timeline::~Timeline()
@@ -1240,6 +1232,20 @@ bool Timeline::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Timeline::onInitTheme(ui::InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  int barsize = theme->dimensions.miniScrollbarSize();
+  m_hbar.setBarWidth(barsize);
+  m_vbar.setBarWidth(barsize);
+  m_hbar.setStyle(theme->styles.transparentScrollbar());
+  m_vbar.setStyle(theme->styles.transparentScrollbar());
+  m_hbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
+  m_vbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
 }
 
 void Timeline::onInvalidateRegion(const gfx::Region& region)

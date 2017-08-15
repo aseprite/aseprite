@@ -176,6 +176,9 @@ void Widget::setTheme(Theme* theme)
 {
   m_theme = theme;
   m_font = nullptr;
+
+  for (auto child : children())
+    child->setTheme(theme);
 }
 
 void Widget::setStyle(Style* style)
@@ -1156,7 +1159,7 @@ void Widget::broadcastMouseMessage(WidgetsList& targets)
 */
 Size Widget::sizeHint()
 {
-  if (m_sizeHint != NULL)
+  if (m_sizeHint)
     return *m_sizeHint;
   else {
     SizeHintEvent ev(this, Size(0, 0));
@@ -1185,7 +1188,7 @@ Size Widget::sizeHint()
 */
 Size Widget::sizeHint(const Size& fitIn)
 {
-  if (m_sizeHint != NULL)
+  if (m_sizeHint)
     return *m_sizeHint;
   else {
     SizeHintEvent ev(this, fitIn);
@@ -1211,6 +1214,14 @@ void Widget::setSizeHint(const Size& fixedSize)
 void Widget::setSizeHint(int fixedWidth, int fixedHeight)
 {
   setSizeHint(Size(fixedWidth, fixedHeight));
+}
+
+void Widget::resetSizeHint()
+{
+  if (m_sizeHint) {
+    delete m_sizeHint;
+    m_sizeHint = nullptr;
+  }
 }
 
 // ===============================================================
@@ -1478,11 +1489,16 @@ void Widget::onBroadcastMouseMessage(WidgetsList& targets)
 
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
+  for (auto child : children())
+    child->initTheme();
+
   if (m_theme) {
     m_theme->initWidget(this);
 
     if (!hasFlags(INITIALIZED))
       enableFlags(INITIALIZED);
+
+    InitTheme();
   }
 }
 

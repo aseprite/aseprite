@@ -46,10 +46,15 @@ public:
   MiniCenterButton() : CheckBox("") {
     setDecorative(true);
     setSelected(true);
-    setStyle(SkinTheme::instance()->styles.windowCenterButton());
+    initTheme();
   }
 
 protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::instance()->styles.windowCenterButton());
+  }
+
   void onSetDecorativeWidgetBounds() override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Widget* window = parent();
@@ -85,8 +90,8 @@ class MiniPlayButton : public Button {
 public:
   MiniPlayButton() : Button(""), m_isPlaying(false) {
     enableFlags(CTRL_RIGHT_CLICK);
-    setupIcons();
     setDecorative(true);
+    initTheme();
   }
 
   bool isPlaying() const { return m_isPlaying; }
@@ -99,6 +104,10 @@ public:
   obs::signal<void()> Popup;
 
 private:
+  void onInitTheme(ui::InitThemeEvent& ev) override {
+    Button::onInitTheme(ev);
+    setupIcons();
+  }
 
   void onClick(Event& ev) override {
     m_isPlaying = !m_isPlaying;
@@ -170,7 +179,6 @@ PreviewEditorWindow::PreviewEditorWindow()
   , m_aniSpeed(1.0)
   , m_relatedEditor(nullptr)
 {
-  setChildSpacing(0);
   setAutoRemap(false);
   setWantFocus(false);
 
@@ -182,6 +190,8 @@ PreviewEditorWindow::PreviewEditorWindow()
 
   addChild(m_centerButton);
   addChild(m_playButton);
+
+  initTheme();
 }
 
 PreviewEditorWindow::~PreviewEditorWindow()
@@ -226,6 +236,12 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
   }
 
   return Window::onProcessMessage(msg);
+}
+
+void PreviewEditorWindow::onInitTheme(ui::InitThemeEvent& ev)
+{
+  Window::onInitTheme(ev);
+  setChildSpacing(0);
 }
 
 void PreviewEditorWindow::onClose(ui::CloseEvent& ev)

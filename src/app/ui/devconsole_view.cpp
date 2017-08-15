@@ -68,20 +68,24 @@ DevConsoleView::DevConsoleView()
   , m_entry(new CommmandEntry)
   , m_engine(this)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
   addChild(&m_view);
   addChild(&m_bottomBox);
 
   m_bottomBox.addChild(&m_label);
   m_bottomBox.addChild(m_entry);
 
-  m_view.setStyle(theme->styles.workspaceView());
   m_view.attachToView(&m_textBox);
   m_view.setExpansive(true);
 
   m_entry->setExpansive(true);
   m_entry->ExecuteCommand.connect(&DevConsoleView::onExecuteCommand, this);
+
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      m_view.setStyle(theme->styles.workspaceView());
+    });
+  initTheme();
 }
 
 DevConsoleView::~DevConsoleView()

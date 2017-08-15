@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -69,6 +69,7 @@ namespace app {
     void showBackupIcon(BackupIcon icon);
 
   protected:
+    void onInitTheme(ui::InitThemeEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
 
     // ContextObserver impl
@@ -87,6 +88,7 @@ namespace app {
     void onCelOpacitySliderChange();
     void newFrame();
     void onChangeZoom(const render::Zoom& zoom);
+    void updateSnapToGridWindowPosition();
 
     base::tick_t m_timeout;
 
@@ -97,6 +99,7 @@ namespace app {
 
     // Box of main commands
     ui::Widget* m_docControls;
+    ui::Box* m_commandsBox;
     ui::Label* m_frameLabel;
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame

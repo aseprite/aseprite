@@ -18,6 +18,7 @@
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/paint_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/style.h"
 #include "ui/system.h"
@@ -32,7 +33,9 @@ namespace ui {
 
 namespace {
 
-Theme* current_theme = nullptr;
+int current_ui_scale = 1;       // Global UI Screen Scaling factor
+int old_ui_scale = 1;           // Add this field in InitThemeEvent
+Theme* current_theme = nullptr; // Global active theme
 
 int compare_layer_flags(int a, int b)
 {
@@ -125,19 +128,13 @@ Theme::Theme()
 Theme::~Theme()
 {
   if (current_theme == this)
-    set_theme(nullptr);
+    set_theme(nullptr, guiscale());
 }
 
-void Theme::regenerate()
+void Theme::regenerateTheme()
 {
   set_mouse_cursor(kNoCursor);
-  onRegenerate();
-
-  // TODO We cannot reinitialize all widgets because this mess all
-  // child spacing, border, etc. But it could be good to change the
-  // uiscale() and get the new look without the need to restart the
-  // whole app.
-  //details::reinitThemeForAllWidgets();
+  onRegenerateTheme();
 }
 
 void Theme::setDecorativeWidgetBounds(Widget* widget)
@@ -651,27 +648,48 @@ void Theme::calcWidgetMetrics(const Widget* widget,
 
 //////////////////////////////////////////////////////////////////////
 
-void set_theme(Theme* theme)
+void set_theme(Theme* theme, const int uiscale)
 {
+  old_ui_scale = current_ui_scale;
+  current_ui_scale = uiscale;
+
   if (theme) {
     // As the regeneration may fail, first we regenerate the theme and
     // then we set is as "the current theme." E.g. In case that we'd
     // like to show some kind of error message with the UI controls,
     // we should be able to use the previous theme to do so (instead
     // of this new unsuccessfully regenerated theme).
-    theme->regenerate();
+    theme->regenerateTheme();
 
     current_theme = theme;
 
+    // Set the theme for all widgets
+    details::reinitThemeForAllWidgets();
+
+    // Reinitialize all widget using the new theme/uiscale
     Manager* manager = Manager::getDefault();
-    if (manager && !manager->theme())
-      manager->setTheme(theme);
+    if (manager)
+      manager->initTheme();
+
+    manager->invalidate();
   }
+
+  old_ui_scale = current_ui_scale;
 }
 
 Theme* get_theme()
 {
   return current_theme;
+}
+
+int guiscale()
+{
+  return current_ui_scale;
+}
+
+int details::old_guiscale()
+{
+  return old_ui_scale;
 }
 
 // static

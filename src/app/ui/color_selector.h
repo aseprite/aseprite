@@ -46,6 +46,7 @@ namespace app {
   private:
     void onSizeHint(ui::SizeHintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
+    void onInitTheme(ui::InitThemeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
     app::Color getAlphaBarColor(const int u, const int umax);

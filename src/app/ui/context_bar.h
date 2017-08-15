@@ -87,6 +87,7 @@ namespace app {
     obs::signal<void()> BrushChange;
 
   protected:
+    void onInitTheme(ui::InitThemeEvent& ev) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onToolSetOpacity(const int& newOpacity);
     void onToolSetFreehandAlgorithm();

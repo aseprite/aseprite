@@ -162,7 +162,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
           throw base::Exception("<button> element found with invalid 'icon' attribute '%s'",
                                 icon_name);
 
-        widget = new IconButton(part->bitmap(0));
+        widget = new IconButton(part);
       }
       else {
         widget = new Button("");
@@ -561,40 +561,65 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   if (magnet)
     widget->setFocusMagnet(true);
 
-  if (noborders)
-    widget->noBorderNoChildSpacing();
-
-  if (border)
-    widget->setBorder(gfx::Border(strtol(border, NULL, 10)*guiscale()));
-
-  if (childspacing)
-    widget->setChildSpacing(strtol(childspacing, NULL, 10)*guiscale());
-
-  gfx::Size reqSize = widget->sizeHint();
-
-  if (minwidth || minheight) {
-    int w = (minwidth ? guiscale()*strtol(minwidth, NULL, 10): reqSize.w);
-    int h = (minheight ? guiscale()*strtol(minheight, NULL, 10): reqSize.h);
-    widget->setMinSize(gfx::Size(w, h));
+  if (noborders) {
+    widget->InitTheme.connect(
+      [widget]{
+        widget->noBorderNoChildSpacing();
+      });
   }
 
-  if (maxwidth || maxheight) {
-    int w = (maxwidth ? guiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
-    int h = (maxheight ? guiscale()*strtol(maxheight, NULL, 10): INT_MAX);
-    widget->setMaxSize(gfx::Size(w, h));
+  if (border) {
+    int v = strtol(border, nullptr, 10);
+    widget->InitTheme.connect(
+      [widget, v]{
+        widget->setBorder(gfx::Border(v*guiscale()));
+      });
+  }
+
+  if (childspacing) {
+    int v = strtol(childspacing, nullptr, 10);
+    widget->InitTheme.connect(
+      [widget, v]{
+        widget->setChildSpacing(v*guiscale());
+      });
+  }
+
+  if (minwidth || minheight ||
+      maxwidth || maxheight) {
+    const int minw = (minwidth ? strtol(minwidth, NULL, 10): 0);
+    const int minh = (minheight ? strtol(minheight, NULL, 10): 0);
+    const int maxw = (maxwidth ? strtol(maxwidth, NULL, 10): 0);
+    const int maxh = (maxheight ? strtol(maxheight, NULL, 10): 0);
+    widget->InitTheme.connect(
+      [widget, minw, minh, maxw, maxh]{
+        widget->setMinSize(gfx::Size(0, 0));
+        widget->setMaxSize(gfx::Size(INT_MAX, INT_MAX));
+        const gfx::Size reqSize = widget->sizeHint();
+        widget->setMinSize(
+          gfx::Size((minw > 0 ? guiscale()*minw: reqSize.w),
+                    (minh > 0 ? guiscale()*minh: reqSize.h)));
+        widget->setMaxSize(
+          gfx::Size((maxw > 0 ? guiscale()*maxw: INT_MAX),
+                    (maxh > 0 ? guiscale()*maxh: INT_MAX)));
+      });
   }
 
   if (styleid) {
-    SkinTheme* theme = static_cast<SkinTheme*>(root->theme());
-    ui::Style* style = theme->getStyleById(styleid);
-    if (style)
-      widget->setStyle(style);
-    else
-      throw base::Exception("Style %s not found", styleid);
+    std::string styleIdStr = styleid;
+    widget->InitTheme.connect(
+      [widget, styleIdStr]{
+        SkinTheme* theme = static_cast<SkinTheme*>(widget->theme());
+        ui::Style* style = theme->getStyleById(styleIdStr);
+        if (style)
+          widget->setStyle(style);
+        else
+          throw base::Exception("Style %s not found", styleIdStr.c_str());
+      });
   }
 
   // Assign widget mnemonic from the character preceded by a '&'
   widget->processMnemonicFromText();
+  widget->initTheme();
 }
 
 void WidgetLoader::fillWidgetWithXmlElementAttributesWithChildren(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget)

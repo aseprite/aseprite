@@ -81,8 +81,7 @@ public:
   obs::signal<void()> FileChange;
 
   CMarkBox() {
-    setBgColor(SkinTheme::instance()->colors.textboxFace());
-    setBorder(gfx::Border(4*guiscale()));
+    initTheme();
   }
 
   const std::string& file() {
@@ -250,6 +249,12 @@ private:
     }
 
     return Widget::onProcessMessage(msg);
+  }
+
+  void onInitTheme(InitThemeEvent& ev) override {
+    Widget::onInitTheme(ev);
+    setBgColor(SkinTheme::instance()->colors.textboxFace());
+    setBorder(gfx::Border(4*guiscale()));
   }
 
   void clear() {
@@ -468,14 +473,22 @@ private:
 
   void addCodeBlock(const std::string& content) {
     auto textBox = new TextBox(content, LEFT);
-    textBox->setBorder(gfx::Border(4*guiscale()));
-    textBox->setBgColor(SkinTheme::instance()->colors.textboxCodeFace());
+    textBox->InitTheme.connect(
+      [textBox]{
+        textBox->setBgColor(SkinTheme::instance()->colors.textboxCodeFace());
+        textBox->setBorder(gfx::Border(4*guiscale()));
+      });
+    textBox->initTheme();
     addChild(textBox);
   }
 
   void addLink(const std::string& url, const std::string& text) {
     auto label = new LinkLabel(url, text);
-    label->setStyle(SkinTheme::instance()->styles.browserLink());
+    label->InitTheme.connect(
+      [label]{
+        label->setStyle(SkinTheme::instance()->styles.browserLink());
+      });
+    label->initTheme();
 
     if (url.find(':') == std::string::npos) {
       label->setUrl("");
@@ -510,13 +523,15 @@ private:
 BrowserView::BrowserView()
   : m_textBox(new CMarkBox)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
   addChild(&m_view);
 
   m_view.attachToView(m_textBox);
   m_view.setExpansive(true);
-  m_view.setStyle(theme->styles.workspaceView());
+  m_view.InitTheme.connect(
+    [this]{
+      m_view.setStyle(SkinTheme::instance()->styles.workspaceView());
+    });
+  m_view.initTheme();
 
   m_textBox->FileChange.connect(
     []{

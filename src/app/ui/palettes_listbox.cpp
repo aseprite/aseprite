@@ -60,12 +60,19 @@ class PalettesListItem : public ResourceListItem {
   class CommentButton : public IconButton {
   public:
     CommentButton(const std::string& comment)
-      : IconButton(SkinTheme::instance()->parts.iconUserData()->bitmap(0))
+      : IconButton(SkinTheme::instance()->parts.iconUserData())
       , m_comment(comment) {
       setFocusStop(false);
+      initTheme();
     }
 
   private:
+    void onInitTheme(InitThemeEvent& ev) override {
+      IconButton::onInitTheme(ev);
+      setBgColor(
+        SkinTheme::instance()->colors.listitemNormalFace());
+    }
+
     void onClick(Event& ev) override {
       IconButton::onClick(ev);
 
@@ -89,7 +96,6 @@ public:
     if (!comment.empty()) {
       addChild(m_comment = new CommentButton(comment));
 
-      m_comment->setBgColor(SkinTheme::instance()->colors.listitemNormalFace());
       tooltips->addTooltipFor(m_comment, comment, LEFT);
     }
   }

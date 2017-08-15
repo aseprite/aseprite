@@ -203,7 +203,7 @@ SkinTheme::~SkinTheme()
     delete kv.second;          // Delete all FontDatas
 }
 
-void SkinTheme::onRegenerate()
+void SkinTheme::onRegenerateTheme()
 {
   Preferences& pref = Preferences::instance();
 
@@ -776,6 +776,7 @@ void SkinTheme::initWidget(Widget* widget)
     case kComboBoxWidget: {
       ComboBox* combobox = static_cast<ComboBox*>(widget);
       Button* button = combobox->getButtonWidget();
+      combobox->setChildSpacing(0);
       button->setStyle(styles.comboboxButton());
       break;
     }
@@ -805,8 +806,10 @@ void SkinTheme::initWidget(Widget* widget)
     case kSeparatorWidget:
       // Horizontal bar
       if (widget->align() & HORIZONTAL) {
-        if (dynamic_cast<MenuSeparator*>(widget))
+        if (dynamic_cast<MenuSeparator*>(widget)) {
           widget->setStyle(styles.menuSeparator());
+          BORDER(2 * scale);
+        }
         else
           widget->setStyle(styles.horizontalSeparator());
       }
@@ -1356,8 +1359,9 @@ gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
   gfx::Color c = widget->bgColor();
   bool decorative = widget->isDecorative();
 
-  if (!is_transparent(c) || widget->type() == kWindowWidget)
-    return c;
+  if (!is_transparent(c) ||
+      widget->type() == kWindowWidget)
+    return (widget->isTransparent() ? gfx::ColorNone: c);
   else if (decorative)
     return colors.selected();
   else
@@ -1449,9 +1453,14 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
     g->drawVLine(color, u, y+textHeight/2-caretSize.h/2, caretSize.h);
 }
 
+SkinPartPtr SkinTheme::getToolPart(const char* toolId) const
+{
+  return getPartById(std::string("tool_") + toolId);
+}
+
 she::Surface* SkinTheme::getToolIcon(const char* toolId) const
 {
-  SkinPartPtr part = getPartById(std::string("tool_") + toolId);
+  SkinPartPtr part = getToolPart(toolId);
   if (part)
     return part->bitmap(0);
   else

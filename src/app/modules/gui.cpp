@@ -9,6 +9,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/commands/cmd_open_file.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -76,6 +77,7 @@ class CustomizedGuiManager : public Manager
 {
 protected:
   bool onProcessMessage(Message* msg) override;
+  void onInitTheme(InitThemeEvent& ev) override;
   LayoutIO* onGetLayoutIO() override { return this; }
   void onNewDisplayConfiguration() override;
 
@@ -155,9 +157,10 @@ static bool create_main_display(bool gpuAccel,
 // Initializes GUI.
 int init_module_gui()
 {
+  auto& pref = Preferences::instance();
   bool maximized = false;
   std::string lastError = "Unknown error";
-  bool gpuAccel = Preferences::instance().general.gpuAcceleration();
+  bool gpuAccel = pref.general.gpuAcceleration();
 
   if (!create_main_display(gpuAccel, maximized, lastError)) {
     // If we've created the display with hardware acceleration,
@@ -167,7 +170,7 @@ int init_module_gui()
          int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
       if (create_main_display(false, maximized, lastError)) {
         // Disable hardware acceleration
-        Preferences::instance().general.gpuAcceleration(false);
+        pref.general.gpuAcceleration(false);
       }
     }
   }
@@ -184,7 +187,7 @@ int init_module_gui()
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme;
-  ui::set_theme(gui_theme);
+  ui::set_theme(gui_theme, pref.general.uiScale());
 
   if (maximized)
     main_display->maximize();
@@ -203,7 +206,7 @@ void exit_module_gui()
   delete manager;
 
   // Now we can destroy theme
-  ui::set_theme(nullptr);
+  ui::set_theme(nullptr, ui::guiscale());
   delete gui_theme;
 
   main_display->dispose();
@@ -277,6 +280,7 @@ void save_window_pos(Widget* window, const char *section)
   set_config_rect(section, "WindowPos", window->bounds());
 }
 
+// TODO Replace this with new theme styles
 Widget* setup_mini_font(Widget* widget)
 {
   SkinPropertyPtr skinProp = get_skin_property(widget);
@@ -284,6 +288,7 @@ Widget* setup_mini_font(Widget* widget)
   return widget;
 }
 
+// TODO Replace this with new theme styles
 Widget* setup_mini_look(Widget* widget)
 {
   SkinPropertyPtr skinProp = get_skin_property(widget);
@@ -487,6 +492,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
   }
 
   return Manager::onProcessMessage(msg);
+}
+
+void CustomizedGuiManager::onInitTheme(InitThemeEvent& ev)
+{
+  Manager::onInitTheme(ev);
+
+  // Update the theme on all menus
+  AppMenus::instance()->initTheme();
 }
 
 void CustomizedGuiManager::onNewDisplayConfiguration()

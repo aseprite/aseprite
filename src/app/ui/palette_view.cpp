@@ -65,10 +65,14 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
   setFocusStop(true);
   setDoubleBuffered(true);
 
-  setBorder(gfx::Border(1 * guiscale()));
-  setChildSpacing(1 * guiscale());
-
   m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
+
+  InitTheme.connect(
+    [this]{
+      setBorder(gfx::Border(1 * guiscale()));
+      setChildSpacing(1 * guiscale());
+    });
+  initTheme();
 }
 
 void PaletteView::setColumns(int columns)
@@ -185,15 +189,15 @@ app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 
 int PaletteView::getBoxSize() const
 {
-  return int(m_boxsize) / guiscale();
+  return int(m_boxsize);
 }
 
 void PaletteView::setBoxSize(double boxsize)
 {
-  m_boxsize = MID(4.0, boxsize, 32.0)*guiscale();
+  m_boxsize = MID(4.0, boxsize, 32.0);
 
   if (m_delegate)
-    m_delegate->onPaletteViewChangeSize(int(m_boxsize) / guiscale());
+    m_delegate->onPaletteViewChangeSize(int(m_boxsize));
 
   View* view = View::getView(this);
   if (view)
@@ -392,7 +396,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         if (static_cast<MouseMessage*>(msg)->preciseWheel())
           scroll += delta;
         else
-          scroll += delta * 3 * int(m_boxsize);
+          scroll += delta * 3 * int(m_boxsize*guiscale());
 
         view->setViewScroll(scroll);
       }
@@ -473,31 +477,32 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
     gfx::Rect box = getPaletteEntryBounds(i + boxOffset);
     gfx::Color gfxColor = drawEntry(g, box, i + idxOffset);
+    const int boxsize = int(m_boxsize * guiscale());
 
     switch (m_style) {
 
       case SelectOneColor:
         if (m_currentEntry == i)
           g->fillRect(color_utils::blackandwhite_neg(gfxColor),
-                      gfx::Rect(box.center(), gfx::Size(1, 1)));
+                      gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
         break;
 
       case FgBgColors:
         if (fgIndex == i) {
           gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
-          for (int i=0; i<int(m_boxsize/2); ++i)
-            g->drawHLine(neg, box.x, box.y+i, int(m_boxsize/2)-i);
+          for (int i=0; i<int(boxsize/2); ++i)
+            g->drawHLine(neg, box.x, box.y+i, int(boxsize/2)-i);
         }
 
         if (bgIndex == i) {
           gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
-          for (int i=0; i<int(m_boxsize/4); ++i)
-            g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-int(m_boxsize/4)+i, i+1);
+          for (int i=0; i<int(boxsize/4); ++i)
+            g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-int(boxsize/4)+i, i+1);
         }
 
         if (transparentIndex == i)
           g->fillRect(color_utils::blackandwhite_neg(gfxColor),
-                      gfx::Rect(box.center(), gfx::Size(1, 1)));
+                      gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
         break;
     }
   }
@@ -595,7 +600,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
     if (view) {
       int columns =
         (view->viewportBounds().w-this->childSpacing()*2)
-        / (int(m_boxsize)+this->childSpacing());
+        / (int(m_boxsize*guiscale())+this->childSpacing());
       setColumns(MAX(1, columns));
     }
     m_isUpdatingColumns = false;
@@ -614,11 +619,11 @@ void PaletteView::onSizeHint(ui::SizeHintEvent& ev)
     ++rows;
   }
 
-  gfx::Size sz;
-  sz.w = border().width() + cols*int(m_boxsize) + (cols-1)*childSpacing();
-  sz.h = border().height() + rows*int(m_boxsize) + (rows-1)*childSpacing();
-
-  ev.setSizeHint(sz);
+  const int boxsize = int(m_boxsize * guiscale());
+  ev.setSizeHint(
+    gfx::Size(
+      border().width() + cols*boxsize + (cols-1)*childSpacing(),
+      border().height() + rows*boxsize + (rows-1)*childSpacing()));
 }
 
 void PaletteView::onDrawMarchingAnts()
@@ -636,24 +641,25 @@ void PaletteView::update_scroll(int color)
   gfx::Point scroll;
   int x, y, cols;
   div_t d;
+  const int boxsize = int(m_boxsize * guiscale());
 
   scroll = view->viewScroll();
 
   d = div(currentPalette()->size(), m_columns);
   cols = m_columns;
 
-  y = (int(m_boxsize)+childSpacing()) * (color / cols);
-  x = (int(m_boxsize)+childSpacing()) * (color % cols);
+  y = (boxsize+childSpacing()) * (color / cols);
+  x = (boxsize+childSpacing()) * (color % cols);
 
   if (scroll.x > x)
     scroll.x = x;
-  else if (scroll.x+vp.w-int(m_boxsize)-2 < x)
-    scroll.x = x-vp.w+int(m_boxsize)+2;
+  else if (scroll.x+vp.w-boxsize-2 < x)
+    scroll.x = x-vp.w+boxsize+2;
 
   if (scroll.y > y)
     scroll.y = y;
-  else if (scroll.y+vp.h-int(m_boxsize)-2 < y)
-    scroll.y = y-vp.h+int(m_boxsize)+2;
+  else if (scroll.y+vp.h-boxsize-2 < y)
+    scroll.y = y-vp.h+boxsize+2;
 
   view->setViewScroll(scroll);
 }
@@ -673,11 +679,12 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
   int cols = m_columns;
   int col = index % cols;
   int row = index / cols;
+  int boxsize = int(m_boxsize * guiscale());
 
   return gfx::Rect(
-    bounds.x + border().left() + col*(int(m_boxsize)+childSpacing()),
-    bounds.y + border().top() + row*(int(m_boxsize)+childSpacing()),
-    int(m_boxsize), int(m_boxsize));
+    bounds.x + border().left() + col*(boxsize+childSpacing()),
+    bounds.y + border().top() + row*(boxsize+childSpacing()),
+    boxsize, boxsize);
 }
 
 PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
@@ -729,8 +736,9 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   }
 
   gfx::Rect box = getPaletteEntryBounds(0);
-  box.w = (int(m_boxsize)+childSpacing());
-  box.h = (int(m_boxsize)+childSpacing());
+  int boxsize = int(m_boxsize * guiscale());
+  box.w = (boxsize+childSpacing());
+  box.h = (boxsize+childSpacing());
 
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)
@@ -998,7 +1006,10 @@ gfx::Color PaletteView::drawEntry(ui::Graphics* g, const gfx::Rect& box, int pal
     rgba_getb(palColor),
     rgba_geta(palColor));
 
-  g->drawRect(gfx::rgba(0, 0, 0), gfx::Rect(box).enlarge(guiscale()));
+  gfx::Rect box2(box);
+  box2.enlarge(1);
+  for (int i=1; i<=guiscale(); ++i, box2.enlarge(1))
+    g->drawRect(gfx::rgba(0, 0, 0), box2);
   draw_color(g, box, appColor, doc::ColorMode::RGB);
   return gfxColor;
 }

@@ -22,6 +22,7 @@ FontData::FontData(she::FontType type)
   , m_antialias(false)
   , m_fallback(nullptr)
   , m_fallbackSize(0)
+  , m_guiscale(0)
 {
 }
 
@@ -43,20 +44,23 @@ she::Font* FontData::getFont(int size, bool useCache)
   if (m_type == she::FontType::kSpriteSheet)
     size = 0;                   // Same size always
 
-  if (useCache) {
+  if (useCache &&
+      // The cache cannot be used if the user has changed the UI scaling
+      m_guiscale == ui::guiscale()) {
     auto it = m_fonts.find(size);
     if (it != m_fonts.end())
       return it->second;
   }
 
   she::Font* font = nullptr;
+  m_guiscale = ui::guiscale();
 
   switch (m_type) {
     case she::FontType::kSpriteSheet:
-      font = she::instance()->loadSpriteSheetFont(m_filename.c_str(), ui::guiscale());
+      font = she::instance()->loadSpriteSheetFont(m_filename.c_str(), m_guiscale);
       break;
     case she::FontType::kTrueType:
-      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size*ui::guiscale());
+      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size*m_guiscale);
       if (font)
         font->setAntialias(m_antialias);
       break;

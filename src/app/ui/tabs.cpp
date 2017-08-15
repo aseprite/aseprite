@@ -61,14 +61,8 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_dropNewIndex(-1)
 {
   enableFlags(CTRL_RIGHT_CLICK);
-
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setStyle(theme->styles.mainTabs());
   setDoubleBuffered(true);
   initTheme();
-
-  m_tabsHeight = theme->dimensions.tabsHeight();
-  m_tabsBottomHeight = theme->dimensions.tabsBottomHeight();
 }
 
 Tabs::~Tabs()
@@ -249,13 +243,8 @@ TabView* Tabs::getSelectedTab()
 
 void Tabs::setDockedStyle()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
   m_docked = true;
-  m_tabsHeight = theme->dimensions.dockedTabsHeight();
-  m_tabsBottomHeight = 0;
-
-  setStyle(theme->styles.workspaceTabs());
+  initTheme();
 }
 
 void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
@@ -454,6 +443,23 @@ bool Tabs::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Tabs::onInitTheme(ui::InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
+  if (m_docked) {
+    m_tabsHeight = theme->dimensions.dockedTabsHeight();
+    m_tabsBottomHeight = 0;
+    setStyle(theme->styles.workspaceTabs());
+  }
+  else {
+    m_tabsHeight = theme->dimensions.tabsHeight();
+    m_tabsBottomHeight = theme->dimensions.tabsBottomHeight();
+    setStyle(theme->styles.mainTabs());
+  }
 }
 
 void Tabs::onPaint(PaintEvent& ev)

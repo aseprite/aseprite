@@ -421,7 +421,9 @@ public:
     int newUIScale = base::convert_to<int>(uiScale()->getValue());
     if (newUIScale != m_pref.general.uiScale()) {
       m_pref.general.uiScale(newUIScale);
-      warnings += "<<- UI Elements Scale";
+      ui::set_theme(ui::get_theme(),
+                    newUIScale);
+      reset_screen = true;
     }
 
     bool newGpuAccel = gpuAcceleration()->isSelected();
@@ -691,9 +693,8 @@ private:
         item->themeName() != m_pref.theme.selected()) {
       m_pref.theme.selected(item->themeName());
 
-      ui::Alert::show(PACKAGE
-                      "<<You must restart the program to see the selected theme"
-                      "||&OK");
+      ui::set_theme(ui::get_theme(),
+                    ui::guiscale());
     }
   }
 

@@ -94,8 +94,12 @@ public:
                             doc::rgba_geta(c));
 
       Item* item = new Item(colorPopup, color);
-      item->setSizeHint(gfx::Size(16, 16)*ui::guiscale());
-      item->setStyle(skin::SkinTheme::instance()->styles.simpleColor());
+      item->InitTheme.connect(
+        [item]{
+          item->setSizeHint(gfx::Size(16, 16)*ui::guiscale());
+          item->setStyle(skin::SkinTheme::instance()->styles.simpleColor());
+        });
+      item->initTheme();
       addChild(item);
 
       tooltips->addTooltipFor(
@@ -260,12 +264,15 @@ ColorPopup::ColorPopup(const ColorButtonOptions& options)
   // Set RGB just for the sizeHint(), and then deselect the color type
   // (the first setColor() call will setup it correctly.)
   selectColorType(app::Color::RgbType);
-  setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
   m_colorType.deselectItems();
 
   m_onPaletteChangeConn =
     App::instance()->PaletteChange.connect(&ColorPopup::onPaletteChange, this);
 
+  InitTheme.connect(
+    [this]{
+      setSizeHint(gfx::Size(300*guiscale(), sizeHint().h));
+    });
   initTheme();
 }
 

@@ -114,6 +114,7 @@ namespace app {
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
+    void onInitTheme(ui::InitThemeEvent& ev) override;
     void onInvalidateRegion(const gfx::Region& region) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;

@@ -18,9 +18,13 @@ public:
   SeparatorInView(const std::string& text = std::string(),
                   int align = ui::HORIZONTAL)
     : Separator(text, align) {
-    setStyle(skin::SkinTheme::instance()->styles.separatorInView());
-    if (text.empty())
-      setBorder(border() + gfx::Border(0, 2, 0, 2)*ui::guiscale());
+    InitTheme.connect(
+      [this]{
+        setStyle(skin::SkinTheme::instance()->styles.separatorInView());
+        if (this->text().empty())
+          setBorder(border() + gfx::Border(0, 2, 0, 2)*ui::guiscale());
+      });
+    initTheme();
   }
 };
 

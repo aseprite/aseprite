@@ -30,6 +30,7 @@ Splitter::Splitter(Type type, int align)
   : Widget(kSplitterWidget)
   , m_type(type)
   , m_pos(50)
+  , m_guiscale(guiscale())
 {
   setAlign(align);
   initTheme();
@@ -178,6 +179,15 @@ bool Splitter::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Splitter::onInitTheme(InitThemeEvent& ev)
+{
+  if (m_type == ByPixel) m_pos /= m_guiscale;
+  m_guiscale = ui::guiscale();
+  if (m_type == ByPixel) m_pos *= m_guiscale;
+
+  Widget::onInitTheme(ev);
+}
+
 void Splitter::onResize(ResizeEvent& ev)
 {
 #define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                     \
@@ -290,12 +300,12 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
   ev.stream() >> m_pos;
   if (m_pos < 0) m_pos = 0;
   if (m_type == ByPixel)
-    m_pos *= guiscale();
+    m_pos *= m_guiscale;
 }
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
-  double pos = (m_type == ByPixel ? m_pos / guiscale(): m_pos);
+  double pos = (m_type == ByPixel ? m_pos / m_guiscale: m_pos);
   ev.stream() << pos;
 }
 

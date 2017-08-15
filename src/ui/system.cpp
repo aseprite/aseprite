@@ -20,14 +20,11 @@
 #include "ui/manager.h"
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
+#include "ui/scale.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
 namespace ui {
-
-// Global UI Screen Scaling factor
-
-static int g_guiscale = 1;
 
 // Current mouse cursor type.
 
@@ -169,9 +166,8 @@ static void update_mouse_cursor()
   }
 }
 
-UISystem::UISystem(int scale)
+UISystem::UISystem()
 {
-  g_guiscale = scale;
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
     ((she::instance() &&
@@ -187,18 +183,13 @@ UISystem::~UISystem()
   OverlayManager::destroyInstance();
 
   // finish theme
-  set_theme(nullptr);
+  set_theme(nullptr, guiscale());
 
   details::exitWidgets();
 
   _internal_set_mouse_display(nullptr);
   if (!update_custom_native_cursor(nullptr))
     update_mouse_overlay(nullptr);
-}
-
-int guiscale()
-{
-  return g_guiscale;
 }
 
 void _internal_set_mouse_display(she::Display* display)

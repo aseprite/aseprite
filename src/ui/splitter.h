@@ -24,6 +24,7 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) override;
+    void onInitTheme(InitThemeEvent& ev) override;
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
     void onLoadLayout(LoadLayoutEvent& ev) override;
@@ -36,6 +37,7 @@ namespace ui {
 
     Type m_type;
     double m_pos;
+    int m_guiscale;
   };
 
 } // namespace ui

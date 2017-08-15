@@ -36,7 +36,7 @@ ColorSelector::ColorSelector()
   , m_capturedInBottom(false)
   , m_capturedInAlpha(false)
 {
-  setBorder(gfx::Border(3*ui::guiscale()));
+  initTheme();
 }
 
 void ColorSelector::selectColor(const app::Color& color)
@@ -169,6 +169,12 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ColorSelector::onInitTheme(ui::InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+  setBorder(gfx::Border(3*ui::guiscale()));
 }
 
 void ColorSelector::onPaint(ui::PaintEvent& ev)

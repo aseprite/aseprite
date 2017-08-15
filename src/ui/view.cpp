@@ -208,6 +208,15 @@ bool View::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void View::onInitTheme(InitThemeEvent& ev)
+{
+  m_viewport.initTheme();
+  m_scrollbar_h.initTheme();
+  m_scrollbar_v.initTheme();
+
+  Widget::onInitTheme(ev);
+}
+
 void View::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.bounds());

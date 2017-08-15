@@ -146,6 +146,8 @@ namespace app {
     class ScrollableView : public ui::View {
     public:
       ScrollableView();
+    protected:
+      void onInitTheme(ui::InitThemeEvent& ev) override;
     };
 
     class WarningIcon;

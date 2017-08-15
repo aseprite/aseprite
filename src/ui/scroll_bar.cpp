@@ -27,7 +27,7 @@ ScrollBar::ScrollBar(int align, ScrollableViewDelegate* delegate)
   : Widget(kViewScrollbarWidget)
   , m_delegate(delegate)
   , m_thumbStyle(nullptr)
-  , m_barWidth(theme()->getScrollbarSize())
+  , m_barWidth(0)
   , m_pos(0)
   , m_size(0)
 {
@@ -176,6 +176,12 @@ bool ScrollBar::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ScrollBar::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+  m_barWidth = theme()->getScrollbarSize();
 }
 
 void ScrollBar::onPaint(PaintEvent& ev)

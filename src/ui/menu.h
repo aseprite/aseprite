@@ -127,9 +127,10 @@ namespace ui {
     obs::signal<void()> Click;
 
   protected:
-    virtual bool onProcessMessage(Message* msg) override;
-    virtual void onPaint(PaintEvent& ev) override;
-    virtual void onSizeHint(SizeHintEvent& ev) override;
+    bool onProcessMessage(Message* msg) override;
+    void onInitTheme(InitThemeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
+    void onSizeHint(SizeHintEvent& ev) override;
     virtual void onClick();
 
     bool inBar();

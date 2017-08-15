@@ -37,6 +37,7 @@ namespace skin {
     std::map<int, she::Font*> m_fonts; // key=font size, value=real font
     FontData* m_fallback;
     int m_fallbackSize;
+    int m_guiscale;
 
     DISABLE_COPYING(FontData);
   };

@@ -88,6 +88,11 @@ using namespace ui;
 class ColorBar::WarningIcon : public ui::Button {
 public:
   WarningIcon() : ui::Button(std::string()) {
+    initTheme();
+  }
+protected:
+  void onInitTheme(ui::InitThemeEvent& ev) {
+    ui::Button::onInitTheme(ev);
     setStyle(skin::SkinTheme::instance()->styles.warningBox());
   }
 };
@@ -96,6 +101,11 @@ public:
 // ColorBar::ScrollableView class
 
 ColorBar::ScrollableView::ScrollableView()
+{
+  initTheme();
+}
+
+void ColorBar::ScrollableView::onInitTheme(InitThemeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   setStyle(theme->styles.colorbarView());
@@ -115,8 +125,7 @@ ColorBar::ColorBar(int align)
   : Box(align)
   , m_buttons(int(PalButton::MAX))
   , m_splitter(Splitter::ByPercentage, VERTICAL)
-  , m_paletteView(true, PaletteView::FgBgColors, this,
-      Preferences::instance().colorBar.boxSize() * guiscale())
+  , m_paletteView(true, PaletteView::FgBgColors, this, 16)
   , m_remapButton("Remap")
   , m_selector(ColorSelector::NONE)
   , m_tintShadeTone(nullptr)
@@ -143,24 +152,13 @@ ColorBar::ColorBar(int align)
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
-  setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
-  setChildSpacing(2*guiscale());
-
   m_buttons.addItem(theme->parts.palEdit());
   m_buttons.addItem(theme->parts.palSort());
   m_buttons.addItem(theme->parts.palPresets());
   m_buttons.addItem(theme->parts.palOptions());
 
   m_paletteView.setColumns(8);
-  m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
-  m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
-  m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
-                                 16*ui::guiscale()));
 
-  // TODO hardcoded scroll bar width should be get from skin.xml file
-  int scrollBarWidth = 6*guiscale();
-  m_scrollableView.horizontalBar()->setBarWidth(scrollBarWidth);
-  m_scrollableView.verticalBar()->setBarWidth(scrollBarWidth);
   setup_mini_look(m_scrollableView.horizontalBar());
   setup_mini_look(m_scrollableView.verticalBar());
 
@@ -174,7 +172,6 @@ ColorBar::ColorBar(int align)
   m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
-  m_splitter.setStyle(theme->styles.workspaceSplitter());
   m_splitter.addChild(&m_palettePlaceholder);
   m_splitter.addChild(&m_selectorPlaceholder);
 
@@ -186,8 +183,6 @@ ColorBar::ColorBar(int align)
 
   HBox* fgBox = new HBox;
   HBox* bgBox = new HBox;
-  fgBox->noBorderNoChildSpacing();
-  bgBox->noBorderNoChildSpacing();
   fgBox->addChild(&m_fgColor);
   fgBox->addChild(m_fgWarningIcon);
   bgBox->addChild(&m_bgColor);
@@ -214,6 +209,44 @@ ColorBar::ColorBar(int align)
   m_tooltips.addTooltipFor(m_fgWarningIcon, "Add foreground color to the palette", LEFT);
   m_tooltips.addTooltipFor(m_bgWarningIcon, "Add background color to the palette", LEFT);
 
+  InitTheme.connect(
+    [this, fgBox, bgBox]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
+      setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
+      setChildSpacing(2*guiscale());
+
+      m_fgColor.resetSizeHint();
+      m_bgColor.resetSizeHint();
+      m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
+      m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
+      m_buttons.setMaxSize(gfx::Size(INT_MAX, INT_MAX)); // TODO add resetMaxSize
+      m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
+                                     16*ui::guiscale()));
+
+      // TODO hardcoded scroll bar width should be get from skin.xml file
+      int scrollBarWidth = 6*guiscale();
+      m_scrollableView.horizontalBar()->setBarWidth(scrollBarWidth);
+      m_scrollableView.verticalBar()->setBarWidth(scrollBarWidth);
+
+      // Change color-bar background color (not ColorBar::setBgColor)
+      this->Widget::setBgColor(theme->colors.tabActiveFace());
+      m_paletteView.setBgColor(theme->colors.tabActiveFace());
+      m_paletteView.setBoxSize(
+        Preferences::instance().colorBar.boxSize());
+      m_paletteView.initTheme();
+
+      // Styles
+      m_splitter.setStyle(theme->styles.workspaceSplitter());
+
+      fgBox->noBorderNoChildSpacing();
+      bgBox->noBorderNoChildSpacing();
+
+      if (m_palettePopup)
+        m_palettePopup->initTheme();
+    });
+  initTheme();
+
   // Set background color reading its value from the configuration.
   setBgColor(Preferences::instance().colorBar.bgColor());
 
@@ -222,10 +255,6 @@ ColorBar::ColorBar(int align)
 
   // Set foreground color reading its value from the configuration.
   setFgColor(Preferences::instance().colorBar.fgColor());
-
-  // Change color-bar background color (not ColorBar::setBgColor)
-  Widget::setBgColor(theme->colors.tabActiveFace());
-  m_paletteView.setBgColor(theme->colors.tabActiveFace());
 
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();

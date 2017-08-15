@@ -70,6 +70,7 @@ namespace app {
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
+      SkinPartPtr getToolPart(const char* toolId) const;
       she::Surface* getToolIcon(const char* toolId) const;
 
       // Helper functions to draw bounds/hlines with sheet parts
@@ -126,7 +127,7 @@ namespace app {
       void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
     protected:
-      void onRegenerate() override;
+      void onRegenerateTheme() override;
 
     private:
       void loadFontData();

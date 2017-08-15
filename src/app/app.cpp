@@ -150,7 +150,7 @@ void App::initialize(const AppOptions& options)
   m_isShell = options.startShell();
   m_coreModules = new CoreModules;
   if (m_isGui)
-    m_uiSystem.reset(new ui::UISystem(preferences().general.uiScale()));
+    m_uiSystem.reset(new ui::UISystem);
 
   bool createLogInDesktop = false;
   switch (options.verboseLevel()) {

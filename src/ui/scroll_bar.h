@@ -42,6 +42,7 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) override;
+    void onInitTheme(InitThemeEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
 
   private:

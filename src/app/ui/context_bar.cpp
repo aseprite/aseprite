@@ -166,6 +166,11 @@ protected:
     ev.setSizeHint(Size(16, 18)*guiscale());
   }
 
+  void onInitTheme(InitThemeEvent& ev) override {
+    ButtonSet::onInitTheme(ev);
+    m_popupWindow.initTheme();
+  }
+
 private:
   // Returns a little rectangle that can be used by the popup as the
   // first brush position.
@@ -217,8 +222,7 @@ private:
   }
 };
 
-class ContextBar::BrushAngleField : public IntEntry
-{
+class ContextBar::BrushAngleField : public IntEntry {
 public:
   BrushAngleField(BrushTypeField* brushType)
     : IntEntry(0, 180)
@@ -244,8 +248,7 @@ private:
   BrushTypeField* m_brushType;
 };
 
-class ContextBar::BrushPatternField : public ComboBox
-{
+class ContextBar::BrushPatternField : public ComboBox {
 public:
   BrushPatternField() : m_lock(false) {
     addItem("Pattern aligned to source");
@@ -288,8 +291,7 @@ protected:
   bool m_lock;
 };
 
-class ContextBar::ToleranceField : public IntEntry
-{
+class ContextBar::ToleranceField : public IntEntry {
 public:
   ToleranceField() : IntEntry(0, 255) {
   }
@@ -306,14 +308,18 @@ protected:
   }
 };
 
-class ContextBar::ContiguousField : public CheckBox
-{
+class ContextBar::ContiguousField : public CheckBox {
 public:
   ContiguousField() : CheckBox("Contiguous") {
-    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+    initTheme();
   }
 
 protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+  }
+
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
@@ -651,31 +657,24 @@ class ContextBar::InkShadesField : public HBox {
       Graphics* g = ev.graphics();
       gfx::Rect bounds = clientBounds();
 
-      gfx::Color bg = bgColor();
-      if (m_click == Select && hasMouseOver())
-        bg = theme->colors.menuitemHighlightFace();
-      g->fillRect(bg, bounds);
-
-      Shade colors = getShade();
-      if (colors.size() >= 2) {
-        int w = (6+m_boxSize*colors.size())*guiscale();
-        if (bounds.w > w)
-          bounds.w = w;
-      }
-
-      theme->paintWidget(g, this, theme->styles.view(), bounds);
+      theme->paintWidget(g, this, style(), bounds);
 
       bounds.shrink(3*guiscale());
 
       gfx::Rect box(bounds.x, bounds.y, m_boxSize*guiscale(), bounds.h);
 
+      Shade colors = getShade();
       if (colors.size() >= 2) {
         gfx::Rect hotBounds;
 
         int j = 0;
-        for (int i=0; i<int(colors.size()); ++i) {
-          if (i == int(colors.size())-1)
-            box.w = bounds.x+bounds.w-box.x;
+        for (int i=0; box.x<bounds.x2(); ++i, box.x += box.w) {
+          // Make the last box a little bigger to just use all
+          // available size
+          if (i == int(colors.size())-1) {
+            if (bounds.x+bounds.w-box.x <= m_boxSize+m_boxSize/2)
+              box.w = bounds.x+bounds.w-box.x;
+          }
 
           app::Color color;
 
@@ -698,8 +697,6 @@ class ContextBar::InkShadesField : public HBox {
 
           if (m_hotIndex == i)
             hotBounds = box;
-
-          box.x += box.w;
         }
 
         if (!hotBounds.isEmpty() && m_click == DragAndDrop) {
@@ -728,19 +725,16 @@ class ContextBar::InkShadesField : public HBox {
 
 public:
   InkShadesField()
-    : m_button(SkinTheme::instance()->parts.iconArrowDown()->bitmap(0))
+    : m_button(SkinTheme::instance()->parts.iconArrowDown())
     , m_shade(Shade(), ShadeWidget::DragAndDrop)
     , m_loaded(false) {
-    SkinTheme* theme = SkinTheme::instance();
-    m_shade.setBgColor(theme->colors.workspace());
-    m_button.setBgColor(theme->colors.workspace());
-
-    noBorderNoChildSpacing();
     addChild(&m_button);
     addChild(&m_shade);
 
     m_button.setFocusStop(false);
     m_button.Click.connect(base::Bind<void>(&InkShadesField::onShowMenu, this));
+
+    initTheme();
   }
 
   ~InkShadesField() {
@@ -768,6 +762,14 @@ public:
   }
 
 private:
+  void onInitTheme(InitThemeEvent& ev) override {
+    HBox::onInitTheme(ev);
+    SkinTheme* theme = SkinTheme::instance();
+    noBorderNoChildSpacing();
+    m_shade.setStyle(theme->styles.topShadeView());
+    m_button.setBgColor(theme->colors.workspace());
+  }
+
   void onShowMenu() {
     loadShades();
     gfx::Rect bounds = m_button.bounds();
@@ -794,14 +796,24 @@ private:
       for (const Shade& shade : m_shades) {
         auto shadeWidget = new ShadeWidget(shade, ShadeWidget::Select);
         shadeWidget->setExpansive(true);
-        shadeWidget->setBgColor(theme->colors.menuitemNormalFace());
+        shadeWidget->InitTheme.connect(
+          [shadeWidget]{
+            shadeWidget->setStyle(
+              SkinTheme::instance()->styles.menuShadeView());
+          });
+        shadeWidget->initTheme();
         shadeWidget->Click.connect(
           [&]{
             m_shade.setShade(shade);
           });
 
-        auto close = new IconButton(theme->parts.iconClose()->bitmap(0));
-        close->setBgColor(theme->colors.menuitemNormalFace());
+        auto close = new IconButton(theme->parts.iconClose());
+        close->InitTheme.connect(
+          [close]{
+            close->setBgColor(
+              SkinTheme::instance()->colors.menuitemNormalFace());
+          });
+        close->initTheme();
         close->Click.connect(
           base::Bind<void>(
             [this, i, close]{
@@ -810,7 +822,11 @@ private:
             }));
 
         auto item = new HBox();
-        item->noBorderNoChildSpacing();
+        item->InitTheme.connect(
+          [item]{
+            item->noBorderNoChildSpacing();
+          });
+        item->initTheme();
         item->addChild(shadeWidget);
         item->addChild(close);
         menu.addChild(item);
@@ -863,8 +879,7 @@ private:
   bool m_loaded;
 };
 
-class ContextBar::InkOpacityField : public IntEntry
-{
+class ContextBar::InkOpacityField : public IntEntry {
 public:
   InkOpacityField() : IntEntry(0, 255) {
   }
@@ -890,8 +905,7 @@ protected:
   }
 };
 
-class ContextBar::SprayWidthField : public IntEntry
-{
+class ContextBar::SprayWidthField : public IntEntry {
 public:
   SprayWidthField() : IntEntry(1, 32) {
   }
@@ -907,8 +921,7 @@ protected:
   }
 };
 
-class ContextBar::SpraySpeedField : public IntEntry
-{
+class ContextBar::SpraySpeedField : public IntEntry {
 public:
   SpraySpeedField() : IntEntry(1, 100) {
   }
@@ -1139,11 +1152,10 @@ private:
   bool m_lockChange;
 };
 
-class ContextBar::FreehandAlgorithmField : public CheckBox
-{
+class ContextBar::FreehandAlgorithmField : public CheckBox {
 public:
   FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
-    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+    initTheme();
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
@@ -1165,6 +1177,11 @@ public:
   }
 
 protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+  }
+
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
@@ -1178,8 +1195,7 @@ protected:
   }
 };
 
-class ContextBar::SelectionModeField : public ButtonSet
-{
+class ContextBar::SelectionModeField : public ButtonSet {
 public:
   SelectionModeField() : ButtonSet(3) {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
@@ -1216,8 +1232,7 @@ protected:
   }
 };
 
-class ContextBar::DropPixelsField : public ButtonSet
-{
+class ContextBar::DropPixelsField : public ButtonSet {
 public:
   DropPixelsField() : ButtonSet(2) {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
@@ -1246,8 +1261,7 @@ protected:
   }
 };
 
-class ContextBar::EyedropperField : public HBox
-{
+class ContextBar::EyedropperField : public HBox {
 public:
   EyedropperField() {
     m_channel.addItem("Color+Alpha");
@@ -1296,14 +1310,18 @@ private:
   ComboBox m_sample;
 };
 
-class ContextBar::AutoSelectLayerField : public CheckBox
-{
+class ContextBar::AutoSelectLayerField : public CheckBox {
 public:
   AutoSelectLayerField() : CheckBox("Auto Select Layer") {
-    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+    initTheme();
   }
 
 protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+  }
+
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
@@ -1317,7 +1335,6 @@ class ContextBar::SymmetryField : public ButtonSet {
 public:
   SymmetryField() : ButtonSet(2) {
     setMultipleSelection(true);
-
     SkinTheme* theme = SkinTheme::instance();
     addItem(theme->parts.horizontalSymmetry());
     addItem(theme->parts.verticalSymmetry());
@@ -1363,13 +1380,6 @@ private:
 ContextBar::ContextBar()
   : Box(HORIZONTAL)
 {
-  gfx::Border border = this->border();
-  border.bottom(2*guiscale());
-  setBorder(border);
-
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setBgColor(theme->colors.workspace());
-
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
   m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
@@ -1410,18 +1420,9 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
   addChild(m_selectBoxHelp = new Label(""));
-
-  m_sprayLabel->setStyle(theme->styles.miniLabel());
-
   addChild(m_freehandBox = new HBox());
-#if 0                           // TODO for v1.1
-  m_freehandBox->addChild(m_freehandLabel = new Label("Freehand:"));
-  m_freehandLabel->setStyle(theme->styles.miniLabel());
-#endif
-  m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
-  m_toleranceLabel->setStyle(theme->styles.miniLabel());
-  m_inkOpacityLabel->setStyle(theme->styles.miniLabel());
+  m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   addChild(m_symmetry = new SymmetryField());
   m_symmetry->setVisible(Preferences::instance().symmetryMode.enabled());
@@ -1447,11 +1448,27 @@ ContextBar::ContextBar()
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
   setActiveBrush(createBrushFromPreferences());
+
+  initTheme();
 }
 
 ContextBar::~ContextBar()
 {
   App::instance()->activeToolManager()->remove_observer(this);
+}
+
+void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
+{
+  Box::onInitTheme(ev);
+
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  gfx::Border border = this->border();
+  border.bottom(2*guiscale());
+  setBorder(border);
+  setBgColor(theme->colors.workspace());
+  m_sprayLabel->setStyle(theme->styles.miniLabel());
+  m_toleranceLabel->setStyle(theme->styles.miniLabel());
+  m_inkOpacityLabel->setStyle(theme->styles.miniLabel());
 }
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)

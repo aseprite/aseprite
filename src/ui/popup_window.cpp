@@ -249,8 +249,16 @@ TransparentPopupWindow::TransparentPopupWindow(ClickBehavior clickBehavior)
   : PopupWindow("", clickBehavior)
 {
   setTransparent(true);
-  setBgColor(gfx::ColorNone);
   initTheme();
+}
+
+void TransparentPopupWindow::onInitTheme(InitThemeEvent& ev)
+{
+  PopupWindow::onInitTheme(ev);
+  // TODO fix this, if we use alpha=0 (gfx::ColorNone), we get
+  // "window_face" color as background the transparent popup window.
+  //setBgColor(gfx::ColorNone);
+  setBgColor(gfx::rgba(0, 0, 0, 1));
 }
 
 } // namespace ui

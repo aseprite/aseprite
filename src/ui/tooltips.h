@@ -31,6 +31,7 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) override;
+    void onInitTheme(InitThemeEvent& ev) override;
 
   private:
     void onTick();

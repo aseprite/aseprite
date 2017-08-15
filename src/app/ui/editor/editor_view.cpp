@@ -40,15 +40,18 @@ EditorView::EditorView(EditorView::Type type)
   : View()
   , m_type(type)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
-  setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
-  setStyle(theme->styles.editorView());
-  setupScrollbars();
-
   m_scrollSettingsConn =
     Preferences::instance().editor.showScrollbars.AfterChange.connect(
       base::Bind(&EditorView::setupScrollbars, this));
+
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
+      setStyle(theme->styles.editorView());
+      setupScrollbars();
+    });
+  initTheme();
 }
 
 void EditorView::onPaint(PaintEvent& ev)

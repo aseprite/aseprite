@@ -100,6 +100,13 @@ bool TooltipManager::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void TooltipManager::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+  if (m_tipWindow)
+    m_tipWindow->initTheme();
+}
+
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {

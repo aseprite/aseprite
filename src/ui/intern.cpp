@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -45,19 +45,9 @@ void removeWidget(Widget* widget)
 void reinitThemeForAllWidgets()
 {
   // Reinitialize the theme of each widget
-  for (auto widget : *widgets) {
-    widget->setTheme(get_theme());
-    widget->initTheme();
-  }
-
-  // Remap the windows
-  for (auto widget : *widgets) {
-    if (widget->type() == kWindowWidget)
-      static_cast<Window*>(widget)->remapWindow();
-  }
-
-  // Redraw the whole screen
-  Manager::getDefault()->invalidate();
+  auto theme = get_theme();
+  for (auto widget : *widgets)
+    widget->setTheme(theme);
 }
 
 } // namespace details

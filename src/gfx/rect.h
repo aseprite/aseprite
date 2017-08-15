@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2016 David Capello
+// Copyright (C) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -277,7 +277,23 @@ public:
     return *this;
   }
 
-  RectT& operator*=(const SizeT<T>& size) const {
+  RectT& operator*=(const int factor) {
+    x *= factor;
+    y *= factor;
+    w *= factor;
+    h *= factor;
+    return *this;
+  }
+
+  RectT& operator/=(const int factor) {
+    x /= factor;
+    y /= factor;
+    w /= factor;
+    h /= factor;
+    return *this;
+  }
+
+  RectT& operator*=(const SizeT<T>& size) {
     x *= size.w;
     y *= size.h;
     w *= size.w;
@@ -285,7 +301,7 @@ public:
     return *this;
   }
 
-  RectT& operator/=(const SizeT<T>& size) const {
+  RectT& operator/=(const SizeT<T>& size) {
     x /= size.w;
     y /= size.h;
     w /= size.w;

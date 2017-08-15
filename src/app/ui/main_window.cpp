@@ -62,32 +62,21 @@ public:
 
     const int newScreenScale = 2;
     const int newUIScale = 1;
-    bool needsRestart = false;
 
     if (pref.general.screenScale() != newScreenScale)
       pref.general.screenScale(newScreenScale);
 
-    if (pref.general.uiScale() != newUIScale) {
+    if (pref.general.uiScale() != newUIScale)
       pref.general.uiScale(newUIScale);
-      needsRestart = true;
-    }
 
     pref.save();
 
-    // If the UI scale is greater than 100%, we would like to avoid
-    // setting the Screen Scale to 200% right now to avoid a worse
-    // effect to the user. E.g. If the UI Scale is 400% and Screen
-    // Scale is 100%, and the user choose to reset the scale, we
-    // cannot change the Screen Scale to 200% (we're going to
-    // increase the problem), so we change the Screen Scale to 100%
-    // just to show the "restart" message.
+    ui::set_theme(ui::get_theme(), newUIScale);
+
     Manager* manager = Manager::getDefault();
     she::Display* display = manager->getDisplay();
-    display->setScale(ui::guiscale() > newUIScale ? 1: newScreenScale);
+    display->setScale(newScreenScale);
     manager->setDisplay(display);
-
-    if (needsRestart)
-      Alert::show("Aseprite<<Restart the program.||&OK");
   }
 };
 

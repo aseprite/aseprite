@@ -40,6 +40,7 @@ IntEntry::IntEntry(int min, int max, SliderDelegate* sliderDelegate)
   m_slider.setFocusStop(false); // In this way the IntEntry doesn't lost the focus
   m_slider.setTransparent(true);
   m_slider.Change.connect(&IntEntry::onChangeSlider, this);
+  initTheme();
 }
 
 IntEntry::~IntEntry()
@@ -130,6 +131,14 @@ bool IntEntry::onProcessMessage(Message* msg)
       break;
   }
   return Entry::onProcessMessage(msg);
+}
+
+void IntEntry::onInitTheme(InitThemeEvent& ev)
+{
+  Entry::onInitTheme(ev);
+  m_slider.initTheme();       // The slider might not be in the popup window
+  if (m_popupWindow)
+    m_popupWindow->initTheme();
 }
 
 void IntEntry::onSizeHint(SizeHintEvent& ev)

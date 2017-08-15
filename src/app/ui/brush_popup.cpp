@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -337,9 +337,7 @@ BrushPopup::BrushPopup()
   auto& brushes = App::instance()->brushes();
 
   setAutoRemap(false);
-  setBorder(gfx::Border(2)*guiscale());
-  setChildSpacing(0);
-  m_box.noBorderNoChildSpacing();
+
   m_standardBrushes.setTriggerOnMouseUp(true);
 
   addChild(&m_box);
@@ -355,11 +353,18 @@ BrushPopup::BrushPopup()
     m_standardBrushes.addItem(
       new SelectBrushItem(
         BrushSlot(BrushSlot::Flags::BrushType, brush)));
-
   m_standardBrushes.setTransparent(true);
-  m_standardBrushes.setBgColor(gfx::ColorNone);
 
   brushes.ItemsChange.connect(&BrushPopup::onBrushChanges, this);
+
+  InitTheme.connect(
+    [this]{
+      setBorder(gfx::Border(2)*guiscale());
+      setChildSpacing(0);
+      m_box.noBorderNoChildSpacing();
+      m_standardBrushes.setBgColor(gfx::ColorNone);
+    });
+  initTheme();
 }
 
 void BrushPopup::setBrush(Brush* brush)

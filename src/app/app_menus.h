@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,6 +33,7 @@ namespace app {
     static AppMenus* instance();
 
     void reload();
+    void initTheme();
 
     // Updates the menu of recent files.
     bool rebuildRecentList();
@@ -58,6 +59,7 @@ namespace app {
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
     Widget* createInvalidVersionMenuitem();
     void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key);
+    void updateMenusList();
 
     base::UniquePtr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;
@@ -72,6 +74,7 @@ namespace app {
     base::UniquePtr<Menu> m_palettePopupMenu;
     base::UniquePtr<Menu> m_inkPopupMenu;
     obs::scoped_connection m_recentFilesConn;
+    std::vector<Menu*> m_menus;
   };
 
 } // namespace app

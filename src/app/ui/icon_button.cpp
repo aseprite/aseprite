@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,18 +22,25 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-IconButton::IconButton(she::Surface* icon)
+IconButton::IconButton(const SkinPartPtr& part)
   : Button("")
-  , m_icon(icon)
+  , m_part(part)
 {
+  initTheme();
+}
+
+void IconButton::onInitTheme(InitThemeEvent& ev)
+{
+  Button::onInitTheme(ev);
   setBgColor(SkinTheme::instance()->colors.menuitemNormalFace());
 }
 
 void IconButton::onSizeHint(SizeHintEvent& ev)
 {
+  she::Surface* icon = m_part->bitmap(0);
   ev.setSizeHint(
-    gfx::Size(m_icon->width(),
-              m_icon->height()) + 4*guiscale());
+    gfx::Size(icon->width(),
+              icon->height()) + 4*guiscale());
 }
 
 void IconButton::onPaint(PaintEvent& ev)
@@ -58,10 +65,11 @@ void IconButton::onPaint(PaintEvent& ev)
   g->fillRect(bg, g->getClipBounds());
 
   gfx::Rect bounds = clientBounds();
+  she::Surface* icon = m_part->bitmap(0);
   g->drawColoredRgbaSurface(
-    m_icon, fg,
-    bounds.x+bounds.w/2-m_icon->width()/2,
-    bounds.y+bounds.h/2-m_icon->height()/2);
+    icon, fg,
+    bounds.x+bounds.w/2-icon->width()/2,
+    bounds.y+bounds.h/2-icon->height()/2);
 }
 
 } // namespace app

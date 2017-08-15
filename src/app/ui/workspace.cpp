@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,10 +41,14 @@ Workspace::Workspace()
   , m_dropPreviewPanel(nullptr)
   , m_dropPreviewTabs(nullptr)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setBgColor(theme->colors.workspace());
-
   addChild(&m_mainPanel);
+
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      setBgColor(theme->colors.workspace());
+    });
+  initTheme();
 }
 
 Workspace::~Workspace()

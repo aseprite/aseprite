@@ -43,10 +43,15 @@ public:
     , m_fullpath(file)
     , m_name(base::get_file_name(file))
     , m_path(base::get_file_path(file)) {
-    setStyle(SkinTheme::instance()->styles.recentItem());
+    initTheme();
   }
 
 protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    LinkLabel::onInitTheme(ev);
+    setStyle(SkinTheme::instance()->styles.recentItem());
+  }
+
   void onSizeHint(SizeHintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     ui::Style* style = theme->styles.recentFile();

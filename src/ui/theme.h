@@ -32,6 +32,10 @@ namespace ui {
   class PaintEvent;
   class SizeHintEvent;
   class Widget;
+  class Theme;
+
+  void set_theme(Theme* theme, const int uiscale);
+  Theme* get_theme();
 
   struct PaintWidgetPartInfo {
     gfx::Color bgColor;
@@ -46,11 +50,10 @@ namespace ui {
   };
 
   class Theme {
+    friend void set_theme(Theme* theme, const int uiscale);
   public:
     Theme();
     virtual ~Theme();
-
-    void regenerate();
 
     virtual she::Font* getDefaultFont() const = 0;
     virtual she::Font* getWidgetFont(const Widget* widget) const = 0;
@@ -121,9 +124,10 @@ namespace ui {
                              int* w, int* h, gfx::Color bg, gfx::Color fg);
 
   protected:
-    virtual void onRegenerate() = 0;
+    virtual void onRegenerateTheme() = 0;
 
   private:
+    void regenerateTheme();
     void paintLayer(Graphics* g,
                     const Style* style,
                     const Style::Layer& layer,
@@ -142,9 +146,6 @@ namespace ui {
                            gfx::Size& sizeHint,
                            gfx::Border& borderHint);
   };
-
-  void set_theme(Theme* theme);
-  Theme* get_theme();
 
 } // namespace ui
 

@@ -300,7 +300,11 @@ ButtonSet::ButtonSet(int columns)
   , m_triggerOnMouseUp(false)
   , m_multipleSelection(false)
 {
-  noBorderNoChildSpacing();
+  InitTheme.connect(
+    [this]{
+      noBorderNoChildSpacing();
+    });
+  initTheme();
 }
 
 ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan)

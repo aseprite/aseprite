@@ -1160,6 +1160,35 @@ void Manager::onBroadcastMouseMessage(WidgetsList& targets)
     widget->broadcastMouseMessage(targets);
 }
 
+void Manager::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+
+  // Remap the windows
+  const int oldScale = ui::details::old_guiscale();
+  const int newScale = ui::guiscale();
+  for (auto widget : children()) {
+    if (widget->type() == kWindowWidget) {
+      auto window = static_cast<Window*>(widget);
+      if (window->isDesktop()) {
+        window->layout();
+      }
+      else {
+        gfx::Size minSize = window->minSize();
+        gfx::Size maxSize = window->maxSize();
+        gfx::Rect bounds = window->bounds();
+        bounds.w = MID(minSize.w, bounds.w, maxSize.w);
+        bounds.h = MID(minSize.h, bounds.h, maxSize.h);
+        if (!window->isMoveable()) {
+          bounds /= oldScale;
+          bounds *= newScale;
+        }
+        window->setBounds(bounds);
+      }
+    }
+  }
+}
+
 LayoutIO* Manager::onGetLayoutIO()
 {
   return NULL;

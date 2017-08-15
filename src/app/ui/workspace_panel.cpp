@@ -47,8 +47,12 @@ WorkspacePanel::WorkspacePanel(PanelType panelType)
   , m_topTime(0)
   , m_bottomTime(0)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setBgColor(theme->colors.workspace());
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      setBgColor(theme->colors.workspace());
+    });
+  initTheme();
 }
 
 WorkspacePanel::~WorkspacePanel()
@@ -261,13 +265,21 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
 
   Widget* self = this;
   VBox* side = new VBox;
-  side->noBorderNoChildSpacing();
+  side->InitTheme.connect(
+    [side]{
+      side->noBorderNoChildSpacing();
+    });
+  side->initTheme();
   side->addChild(newTabs);
   side->addChild(newPanel);
 
   Splitter* splitter = new Splitter(Splitter::ByPercentage, splitterAlign);
   splitter->setExpansive(true);
-  splitter->setStyle(SkinTheme::instance()->styles.workspaceSplitter());
+  splitter->InitTheme.connect(
+    [splitter]{
+      splitter->setStyle(SkinTheme::instance()->styles.workspaceSplitter());
+    });
+  splitter->initTheme();
 
   Widget* parent = this->parent();
   if (parent->type() == kBoxWidget) {

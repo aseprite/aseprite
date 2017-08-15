@@ -36,7 +36,6 @@ PalettePopup::PalettePopup()
   , m_popup(new gen::PalettePopup())
 {
   setAutoRemap(false);
-  setBorder(gfx::Border(4*guiscale()));
   setEnterBehavior(EnterBehavior::DoNothingOnEnter);
 
   addChild(m_popup);
@@ -49,6 +48,12 @@ PalettePopup::PalettePopup()
   m_popup->view()->attachToView(&m_paletteListBox);
 
   m_paletteListBox.PalChange.connect(&PalettePopup::onPalChange, this);
+
+  InitTheme.connect(
+    [this]{
+      setBorder(gfx::Border(4*guiscale()));
+    });
+  initTheme();
 }
 
 void PalettePopup::showPopup(const gfx::Rect& bounds)

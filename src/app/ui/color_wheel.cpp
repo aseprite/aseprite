@@ -54,12 +54,15 @@ ColorWheel::ColorWheel()
   , m_options("")
   , m_harmonyPicked(false)
 {
-  SkinTheme* theme = SkinTheme::instance();
-
   m_options.Click.connect(base::Bind<void>(&ColorWheel::onOptions, this));
-  m_options.setStyle(theme->styles.colorWheelOptions());
-
   addChild(&m_options);
+
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = SkinTheme::instance();
+      m_options.setStyle(theme->styles.colorWheelOptions());
+    });
+  initTheme();
 }
 
 app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,

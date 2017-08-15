@@ -42,10 +42,6 @@ HomeView::HomeView()
   , m_dataRecovery(nullptr)
   , m_dataRecoveryView(nullptr)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  setBgColor(theme->colors.workspace());
-  setChildSpacing(8 * guiscale());
-
   newFile()->Click.connect(base::Bind(&HomeView::onNewFile, this));
   openFile()->Click.connect(base::Bind(&HomeView::onOpenFile, this));
   recoverSprites()->Click.connect(base::Bind(&HomeView::onRecoverSprites, this));
@@ -56,6 +52,14 @@ HomeView::HomeView()
 
   checkUpdate()->setVisible(false);
   recoverSpritesPlaceholder()->setVisible(false);
+
+  InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      setBgColor(theme->colors.workspace());
+      setChildSpacing(8 * guiscale());
+    });
+  initTheme();
 }
 
 HomeView::~HomeView()
@@ -147,12 +151,15 @@ void HomeView::onUpToDate()
 
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-
   checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
   checkUpdate()->setUrl(url);
-  checkUpdate()->setStyle(theme->styles.workspaceUpdateLink());
   checkUpdate()->setVisible(true);
+  checkUpdate()->InitTheme.connect(
+    [this]{
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      checkUpdate()->setStyle(theme->styles.workspaceUpdateLink());
+    });
+  checkUpdate()->initTheme();
 
   layout();
 }

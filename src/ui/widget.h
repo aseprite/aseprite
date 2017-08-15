@@ -14,6 +14,7 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
+#include "obs/signal.h"
 #include "ui/base.h"
 #include "ui/component.h"
 #include "ui/graphics.h"
@@ -328,6 +329,7 @@ namespace ui {
     gfx::Size sizeHint(const gfx::Size& fitIn);
     void setSizeHint(const gfx::Size& fixedSize);
     void setSizeHint(int fixedWidth, int fixedHeight);
+    void resetSizeHint();
 
     // ===============================================================
     // MOUSE, FOCUS & KEYBOARD
@@ -358,6 +360,9 @@ namespace ui {
 
     // Returns true if the mnemonic character is pressed.
     bool isMnemonicPressed(const ui::KeyMessage* keyMsg) const;
+
+    // Signals
+    obs::signal<void()> InitTheme;
 
   protected:
     // ===============================================================
