@@ -75,10 +75,12 @@ static struct {
 //////////////////////////////////////////////////////////////////////
 
 class CustomizedGuiManager : public Manager
-                           , public LayoutIO
-{
+                           , public LayoutIO {
 protected:
   bool onProcessMessage(Message* msg) override;
+#if ENABLE_DEVMODE
+  bool onProcessDevModeKeyDown(KeyMessage* msg);
+#endif
   void onInitTheme(InitThemeEvent& ev) override;
   LayoutIO* onGetLayoutIO() override { return this; }
   void onNewDisplayConfiguration() override;
@@ -363,65 +365,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
       break;
 
-    case kKeyDownMessage: {
+    case kKeyDownMessage:
 #if ENABLE_DEVMODE
-      auto keymsg = static_cast<KeyMessage*>(msg);
-
-      // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
-      if (msg->ctrlPressed() &&
-          msg->shiftPressed() &&
-          keymsg->scancode() == kKeyQ) {
-        int* p = nullptr;
-        *p = 0;
-      }
-
-      // F1 switches screen/UI scaling
-      if (keymsg->scancode() == kKeyF1) {
-        she::Display* display = getDisplay();
-        int screenScale = display->scale();
-        int uiScale = ui::guiscale();
-
-        if (screenScale == 2 &&
-            uiScale == 1) {
-          screenScale = 1;
-          uiScale = 2;
-        }
-        else if (screenScale == 1 &&
-                 uiScale == 2) {
-          screenScale = 1;
-          uiScale = 1;
-        }
-        else if (screenScale == 1 &&
-                 uiScale == 1) {
-          screenScale = 2;
-          uiScale = 1;
-        }
-
-        if (uiScale != ui::guiscale()) {
-          ui::set_theme(ui::get_theme(), uiScale);
-        }
-        if (screenScale != display->scale()) {
-          display->setScale(screenScale);
-          setDisplay(display);
-        }
-      }
-
-#ifdef ENABLE_DATA_RECOVERY
-      // Ctrl+Shift+R recover active sprite from the backup store
-      if (msg->ctrlPressed() &&
-          msg->shiftPressed() &&
-          keymsg->scancode() == kKeyR &&
-          App::instance()->dataRecovery() &&
-          App::instance()->dataRecovery()->activeSession() &&
-          current_editor &&
-          current_editor->document()) {
-        App::instance()
-          ->dataRecovery()
-          ->activeSession()
-          ->restoreBackupById(current_editor->document()->id());
-      }
-#endif  // ENABLE_DATA_RECOVERY
-#endif  // _DEBUG
+      if (onProcessDevModeKeyDown(static_cast<KeyMessage*>(msg)))
+        return true;
+#endif  // ENABLE_DEVMODE
 
       // Call base impl to check if there is a foreground window as
       // top level that needs keys. (In this way we just do not
@@ -512,7 +460,6 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
         }
       }
       break;
-    }
 
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == defered_invalid_timer) {
@@ -526,6 +473,85 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
   return Manager::onProcessMessage(msg);
 }
+
+#if ENABLE_DEVMODE
+bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
+{
+  // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
+  if (msg->ctrlPressed() &&
+      msg->shiftPressed() &&
+      msg->scancode() == kKeyQ) {
+    int* p = nullptr;
+    *p = 0;      // *Crash*
+    return true; // This line should not be executed anyway
+  }
+
+  // F1 switches screen/UI scaling
+  if (msg->scancode() == kKeyF1) {
+    she::Display* display = getDisplay();
+    int screenScale = display->scale();
+    int uiScale = ui::guiscale();
+
+    if (msg->shiftPressed()) {
+      if (screenScale == 2 && uiScale == 1) {
+        screenScale = 1;
+        uiScale = 1;
+      }
+      else if (screenScale == 1 && uiScale == 1) {
+        screenScale = 1;
+        uiScale = 2;
+      }
+      else if (screenScale == 1 && uiScale == 2) {
+        screenScale = 2;
+        uiScale = 1;
+      }
+    }
+    else {
+      if (screenScale == 2 && uiScale == 1) {
+        screenScale = 1;
+        uiScale = 2;
+      }
+      else if (screenScale == 1 && uiScale == 2) {
+        screenScale = 1;
+        uiScale = 1;
+      }
+      else if (screenScale == 1 && uiScale == 1) {
+        screenScale = 2;
+        uiScale = 1;
+      }
+    }
+
+    if (uiScale != ui::guiscale()) {
+      ui::set_theme(ui::get_theme(), uiScale);
+    }
+    if (screenScale != display->scale()) {
+      display->setScale(screenScale);
+      setDisplay(display);
+    }
+
+    return true;
+  }
+
+#ifdef ENABLE_DATA_RECOVERY
+  // Ctrl+Shift+R recover active sprite from the backup store
+  if (msg->ctrlPressed() &&
+      msg->shiftPressed() &&
+      msg->scancode() == kKeyR &&
+      App::instance()->dataRecovery() &&
+      App::instance()->dataRecovery()->activeSession() &&
+      current_editor &&
+      current_editor->document()) {
+    App::instance()
+      ->dataRecovery()
+      ->activeSession()
+      ->restoreBackupById(current_editor->document()->id());
+    return true;
+  }
+#endif  // ENABLE_DATA_RECOVERY
+
+  return false;
+}
+#endif  // ENABLE_DEVMODE
 
 void CustomizedGuiManager::onInitTheme(InitThemeEvent& ev)
 {
