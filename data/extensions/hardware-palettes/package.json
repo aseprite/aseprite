@@ -23,13 +23,14 @@
       { "id": "commodore-vic20", "path": "./commodore-vic20.gpl" },
       { "id": "commodore64", "path": "./commodore64.gpl" },
       { "id": "cpc", "path": "./cpc.gpl" },
-      { "id": "gameboy-color-type1", "path": "./gameboy-color-type1.gpl" },
       { "id": "gameboy", "path": "./gameboy.gpl" },
+      { "id": "gameboy-color-type1", "path": "./gameboy-color-type1.gpl" },
       { "id": "master-system", "path": "./master-system.gpl" },
-      { "id": "nes-ntsc", "path": "./nes-ntsc.gpl" },
       { "id": "nes", "path": "./nes.gpl" },
+      { "id": "nes-ntsc", "path": "./nes-ntsc.gpl" },
       { "id": "teletext", "path": "./teletext.gpl" },
       { "id": "vga-13h", "path": "./vga-13h.gpl" },
+      { "id": "virtualboy", "path": "./virtualboy.gpl" },
       { "id": "zx-spectrum", "path": "./zx-spectrum.gpl" }
     ]
   }
