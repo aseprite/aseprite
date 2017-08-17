@@ -76,6 +76,11 @@ static Widget* capture_widget;  // The widget that captures the mouse
 
 static bool first_time = true;    // true when we don't enter in poll yet
 
+// Don't adjust window positions automatically when it's false. Used
+// when Screen/UI scaling is changed to avoid adjusting windows as
+// when the she::Display is resized by the user.
+static bool auto_window_adjustment = true;
+
 /* keyboard focus movement stuff */
 static int count_widgets_accept_focus(Widget* widget);
 static bool child_accept_focus(Widget* widget, bool first);
@@ -175,6 +180,10 @@ Manager::~Manager()
 
 void Manager::setDisplay(she::Display* display)
 {
+  base::ScopedValue<bool> lock(
+    auto_window_adjustment, false,
+    auto_window_adjustment);
+
   m_display = display;
   m_eventQueue = she::instance()->eventQueue();
 
@@ -1116,10 +1125,10 @@ void Manager::onResize(ResizeEvent& ev)
   // The whole manager area is invalid now.
   m_invalidRegion = gfx::Region(new_pos);
 
-  int dx = new_pos.x - old_pos.x;
-  int dy = new_pos.y - old_pos.y;
-  int dw = new_pos.w - old_pos.w;
-  int dh = new_pos.h - old_pos.h;
+  const int dx = new_pos.x - old_pos.x;
+  const int dy = new_pos.y - old_pos.y;
+  const int dw = new_pos.w - old_pos.w;
+  const int dh = new_pos.h - old_pos.h;
 
   for (auto child : children()) {
     Window* window = static_cast<Window*>(child);
@@ -1128,26 +1137,36 @@ void Manager::onResize(ResizeEvent& ev)
       break;
     }
 
-    gfx::Rect cpos = window->bounds();
-    int cx = cpos.x+cpos.w/2;
-    int cy = cpos.y+cpos.h/2;
+    gfx::Rect bounds = window->bounds();
+    const int cx = bounds.x+bounds.w/2;
+    const int cy = bounds.y+bounds.h/2;
 
-    if (cx > old_pos.x+old_pos.w*3/5) {
-      cpos.x += dw;
-    }
-    else if (cx > old_pos.x+old_pos.w*2/5) {
-      cpos.x += dw / 2;
-    }
+    if (auto_window_adjustment) {
+      if (cx > old_pos.x+old_pos.w*3/5) {
+        bounds.x += dw;
+      }
+      else if (cx > old_pos.x+old_pos.w*2/5) {
+        bounds.x += dw / 2;
+      }
 
-    if (cy > old_pos.y+old_pos.h*3/5) {
-      cpos.y += dh;
-    }
-    else if (cy > old_pos.y+old_pos.h*2/5) {
-      cpos.y += dh / 2;
-    }
+      if (cy > old_pos.y+old_pos.h*3/5) {
+        bounds.y += dh;
+      }
+      else if (cy > old_pos.y+old_pos.h*2/5) {
+        bounds.y += dh / 2;
+      }
 
-    cpos.offset(dx, dy);
-    window->setBounds(cpos);
+      bounds.offset(dx, dy);
+    }
+    else {
+      if (bounds.x2() > new_pos.x2()) {
+        bounds.x = new_pos.x2() - bounds.w;
+      }
+      if (bounds.y2() > new_pos.y2()) {
+        bounds.y = new_pos.y2() - bounds.h;
+      }
+    }
+    window->setBounds(bounds);
   }
 }
 
@@ -1165,8 +1184,8 @@ void Manager::onInitTheme(InitThemeEvent& ev)
   Widget::onInitTheme(ev);
 
   // Remap the windows
-  const int oldScale = ui::details::old_guiscale();
-  const int newScale = ui::guiscale();
+  const int oldUIScale = ui::details::old_guiscale();
+  const int newUIScale = ui::guiscale();
   for (auto widget : children()) {
     if (widget->type() == kWindowWidget) {
       auto window = static_cast<Window*>(widget);
@@ -1174,15 +1193,11 @@ void Manager::onInitTheme(InitThemeEvent& ev)
         window->layout();
       }
       else {
-        gfx::Size minSize = window->minSize();
-        gfx::Size maxSize = window->maxSize();
         gfx::Rect bounds = window->bounds();
-        bounds.w = MID(minSize.w, bounds.w, maxSize.w);
-        bounds.h = MID(minSize.h, bounds.h, maxSize.h);
-        if (!window->isMoveable()) {
-          bounds /= oldScale;
-          bounds *= newScale;
-        }
+        bounds *= newUIScale;
+        bounds /= oldUIScale;
+        bounds.x = MID(0, bounds.x, m_display->width() - bounds.w);
+        bounds.y = MID(0, bounds.y, m_display->height() - bounds.h);
         window->setBounds(bounds);
       }
     }
