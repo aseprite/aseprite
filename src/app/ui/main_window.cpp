@@ -322,6 +322,13 @@ bool MainWindow::onProcessMessage(ui::Message* msg)
   return Window::onProcessMessage(msg);
 }
 
+void MainWindow::onInitTheme(ui::InitThemeEvent& ev)
+{
+  app::gen::MainWindow::onInitTheme(ev);
+  if (m_previewEditor)
+    m_previewEditor->initTheme();
+}
+
 void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 {
   // Invert the timeline splitter position before we save the setting.
