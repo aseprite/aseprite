@@ -239,14 +239,7 @@ public:
       gridScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeGridScope, this));
     }
 
-    // Screen/UI Scale
-    screenScale()->setSelectedItemIndex(
-      screenScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.general.screenScale())));
-
-    uiScale()->setSelectedItemIndex(
-      uiScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.general.uiScale())));
+    selectScalingItems();
 
     if ((int(she::instance()->capabilities()) &
          int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
@@ -444,16 +437,30 @@ public:
         "||&OK", warnings.c_str());
     }
 
-    if (reset_screen) {
-      ui::Manager* manager = ui::Manager::getDefault();
-      she::Display* display = manager->getDisplay();
-      she::instance()->setGpuAcceleration(newGpuAccel);
-      display->setScale(newScreenScale);
-      manager->setDisplay(display);
-    }
+    if (reset_screen)
+      updateScreenScaling();
   }
 
 private:
+  void selectScalingItems() {
+    // Screen/UI Scale
+    screenScale()->setSelectedItemIndex(
+      screenScale()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.screenScale())));
+
+    uiScale()->setSelectedItemIndex(
+      uiScale()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.uiScale())));
+  }
+
+  void updateScreenScaling() {
+    ui::Manager* manager = ui::Manager::getDefault();
+    she::Display* display = manager->getDisplay();
+    she::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
+    display->setScale(m_pref.general.screenScale());
+    manager->setDisplay(display);
+  }
+
   void onNativeCursorChange() {
     bool state =
       // If the platform supports native cursors...
@@ -688,13 +695,34 @@ private:
   }
 
   void onSelectTheme() {
-    ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
-    if (item &&
-        item->themeName() != m_pref.theme.selected()) {
-      m_pref.theme.selected(item->themeName());
+    try {
+      ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
+      if (item &&
+          item->themeName() != m_pref.theme.selected()) {
+        auto theme = static_cast<skin::SkinTheme*>(ui::get_theme());
 
-      ui::set_theme(ui::get_theme(),
-                    ui::guiscale());
+        // Change theme name from preferences
+        m_pref.theme.selected(item->themeName());
+
+        // Preferred UI Scaling factor by the theme
+        if (theme->preferredUIScaling() > 0)
+          m_pref.general.uiScale(theme->preferredUIScaling());
+
+        ui::set_theme(theme, m_pref.general.uiScale());
+
+        // Preferred Screen Scaling by the theme
+        const int newScreenScale = theme->preferredScreenScaling();
+        if (newScreenScale > 0 &&
+            newScreenScale != m_pref.general.screenScale()) {
+          m_pref.general.screenScale(newScreenScale);
+          updateScreenScaling();
+        }
+
+        selectScalingItems();
+      }
+    }
+    catch (const std::exception& ex) {
+      Console::showException(ex);
     }
   }
 
@@ -781,7 +809,7 @@ private:
       extensionsList()->selectChild(item);
       extensionsList()->layout();
     }
-    catch (std::exception& ex) {
+    catch (const std::exception& ex) {
       Console::showException(ex);
     }
   }
@@ -810,7 +838,7 @@ private:
       item->uninstall();
       deleteExtensionItem(item);
     }
-    catch (std::exception& ex) {
+    catch (const std::exception& ex) {
       Console::showException(ex);
     }
   }

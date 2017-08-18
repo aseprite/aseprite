@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<theme name="Default">
+<theme name="Default"
+       screenscaling="2"
+       uiscaling="1">
     <authors>
         <author name="David Capello" url="http://davidcapello.com/" />
         <author name="Ilija Melentijevic" url="http://ilkke.blogspot.com/" />

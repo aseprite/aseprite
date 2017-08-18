@@ -184,6 +184,8 @@ SkinTheme::SkinTheme()
   , m_standardCursors(ui::kCursorTypes, nullptr)
   , m_defaultFont(nullptr)
   , m_miniFont(nullptr)
+  , m_preferredScreenScaling(-1)
+  , m_preferredUIScaling(-1)
 {
 }
 
@@ -309,6 +311,22 @@ void SkinTheme::loadXml()
 
   XmlDocumentRef doc = open_xml(xml_filename);
   TiXmlHandle handle(doc.get());
+
+  // Load Preferred scaling
+  m_preferredScreenScaling = -1;
+  m_preferredUIScaling = -1;
+  {
+    TiXmlElement* xmlTheme = handle
+      .FirstChild("theme").ToElement();
+    if (xmlTheme) {
+      const char* screenScaling = xmlTheme->Attribute("screenscaling");
+      const char* uiScaling = xmlTheme->Attribute("uiscaling");
+      if (screenScaling)
+        m_preferredScreenScaling = std::strtol(screenScaling, nullptr, 10);
+      if (uiScaling)
+        m_preferredUIScaling = std::strtol(uiScaling, nullptr, 10);
+    }
+  }
 
   // Load fonts
   {

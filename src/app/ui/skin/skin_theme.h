@@ -48,6 +48,8 @@ namespace app {
       ~SkinTheme();
 
       const std::string& path() { return m_path; }
+      int preferredScreenScaling() { return m_preferredScreenScaling; }
+      int preferredUIScaling() { return m_preferredUIScaling; }
 
       she::Font* getDefaultFont() const override { return m_defaultFont; }
       she::Font* getWidgetFont(const ui::Widget* widget) const override;
@@ -156,6 +158,8 @@ namespace app {
       std::map<std::string, she::Font*> m_themeFonts;
       she::Font* m_defaultFont;
       she::Font* m_miniFont;
+      int m_preferredScreenScaling;
+      int m_preferredUIScaling;
     };
 
   } // namespace skin
