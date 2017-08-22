@@ -14,6 +14,8 @@
 #include "she/system.h"
 #include "ui/scale.h"
 
+#include <set>
+
 namespace app {
 namespace skin {
 
@@ -22,64 +24,66 @@ FontData::FontData(she::FontType type)
   , m_antialias(false)
   , m_fallback(nullptr)
   , m_fallbackSize(0)
-  , m_guiscale(0)
 {
 }
 
 FontData::~FontData()
 {
+#if _DEBUG
+  static std::set<she::Font*> deletedFonts;
+#endif
+
   // Destroy all fonts
   for (auto& it : m_fonts) {
     she::Font* font = it.second;
     if (font) {
-      if (font->fallback())
-        font->fallback()->dispose();
+#if _DEBUG // Check that there are not double-cached fonts
+      auto it2 = deletedFonts.find(font);
+      ASSERT(it2 == deletedFonts.end());
+      deletedFonts.insert(font);
+#endif
+      // Don't delete font->fallback() as it's already m_fonts
       font->dispose();
     }
   }
+  m_fonts.clear();
 }
 
-she::Font* FontData::getFont(int size, bool useCache)
+she::Font* FontData::getFont(int size)
 {
   if (m_type == she::FontType::kSpriteSheet)
-    size = 0;                   // Same size always
+    size = 1;                   // Same size always
 
-  if (useCache &&
-      // The cache cannot be used if the user has changed the UI scaling
-      m_guiscale == ui::guiscale()) {
-    auto it = m_fonts.find(size);
-    if (it != m_fonts.end())
-      return it->second;
-  }
+  // Use cache
+  size *= ui::guiscale();
+  auto it = m_fonts.find(size);
+  if (it != m_fonts.end())
+    return it->second;
 
   she::Font* font = nullptr;
-  m_guiscale = ui::guiscale();
 
   switch (m_type) {
     case she::FontType::kSpriteSheet:
-      font = she::instance()->loadSpriteSheetFont(m_filename.c_str(), m_guiscale);
+      font = she::instance()->loadSpriteSheetFont(m_filename.c_str(), size);
       break;
-    case she::FontType::kTrueType:
-      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size*m_guiscale);
+    case she::FontType::kTrueType: {
+      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size);
       if (font)
         font->setAntialias(m_antialias);
       break;
+    }
   }
 
   if (m_fallback) {
-    she::Font* fallback = m_fallback->getFont(
-      m_fallbackSize,
-      false); // Do not use cache
-
+    she::Font* fallback = m_fallback->getFont(m_fallbackSize);
     if (font)
       font->setFallback(fallback);
     else
-      font = fallback;
+      return fallback;          // Don't double-cache the fallback font
   }
 
-  if (useCache)
-    m_fonts[size] = font;
-
+  // Cache this font
+  m_fonts[size] = font;
   return font;
 }
 

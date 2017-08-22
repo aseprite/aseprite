@@ -26,6 +26,7 @@
 #include "app/xml_exception.h"
 #include "base/bind.h"
 #include "base/fs.h"
+#include "base/log.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
 #include "gfx/border.h"
@@ -92,6 +93,12 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     throw base::Exception("No \"name\" or \"font\" attributes specified on <font>");
 
   std::string name(nameStr);
+
+  // Use cached font data
+  auto it = fonts.find(name);
+  if (it != fonts.end())
+    return it->second;
+
   LOG(VERBOSE) << "THEME: Loading font '" << name << "'\n";
 
   const char* typeStr = xmlFont->Attribute("type");
@@ -203,6 +210,7 @@ SkinTheme::~SkinTheme()
   // Destroy fonts
   for (auto kv : m_fonts)
     delete kv.second;          // Delete all FontDatas
+  m_fonts.clear();
 }
 
 void SkinTheme::onRegenerateTheme()
@@ -296,9 +304,13 @@ void SkinTheme::loadSheet()
   // Change sprite sheet of all layer styles
   for (auto it : m_styles) {
     for (auto layer : it.second->layers()) {
+      if (layer.icon())
+        layer.setIcon(nullptr);
       if (layer.spriteSheet())
         layer.setSpriteSheet(m_sheet);
     }
+    if (it.second->font())
+      it.second->setFont(nullptr); // Font must be re-assigned
   }
 }
 

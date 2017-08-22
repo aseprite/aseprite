@@ -488,47 +488,51 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
 
   // F1 switches screen/UI scaling
   if (msg->scancode() == kKeyF1) {
-    she::Display* display = getDisplay();
-    int screenScale = display->scale();
-    int uiScale = ui::guiscale();
+    try {
+      she::Display* display = getDisplay();
+      int screenScale = display->scale();
+      int uiScale = ui::guiscale();
 
-    if (msg->shiftPressed()) {
-      if (screenScale == 2 && uiScale == 1) {
-        screenScale = 1;
-        uiScale = 1;
+      if (msg->shiftPressed()) {
+        if (screenScale == 2 && uiScale == 1) {
+          screenScale = 1;
+          uiScale = 1;
+        }
+        else if (screenScale == 1 && uiScale == 1) {
+          screenScale = 1;
+          uiScale = 2;
+        }
+        else if (screenScale == 1 && uiScale == 2) {
+          screenScale = 2;
+          uiScale = 1;
+        }
       }
-      else if (screenScale == 1 && uiScale == 1) {
-        screenScale = 1;
-        uiScale = 2;
+      else {
+        if (screenScale == 2 && uiScale == 1) {
+          screenScale = 1;
+          uiScale = 2;
+        }
+        else if (screenScale == 1 && uiScale == 2) {
+          screenScale = 1;
+          uiScale = 1;
+        }
+        else if (screenScale == 1 && uiScale == 1) {
+          screenScale = 2;
+          uiScale = 1;
+        }
       }
-      else if (screenScale == 1 && uiScale == 2) {
-        screenScale = 2;
-        uiScale = 1;
-      }
-    }
-    else {
-      if (screenScale == 2 && uiScale == 1) {
-        screenScale = 1;
-        uiScale = 2;
-      }
-      else if (screenScale == 1 && uiScale == 2) {
-        screenScale = 1;
-        uiScale = 1;
-      }
-      else if (screenScale == 1 && uiScale == 1) {
-        screenScale = 2;
-        uiScale = 1;
-      }
-    }
 
-    if (uiScale != ui::guiscale()) {
-      ui::set_theme(ui::get_theme(), uiScale);
+      if (uiScale != ui::guiscale()) {
+        ui::set_theme(ui::get_theme(), uiScale);
+      }
+      if (screenScale != display->scale()) {
+        display->setScale(screenScale);
+        setDisplay(display);
+      }
     }
-    if (screenScale != display->scale()) {
-      display->setScale(screenScale);
-      setDisplay(display);
+    catch (const std::exception& ex) {
+      Console::showException(ex);
     }
-
     return true;
   }
 
