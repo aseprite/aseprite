@@ -130,6 +130,9 @@ public:
     , m_docPref(m_pref.document(context->activeDocument()))
     , m_curPref(&m_docPref)
     , m_curSection(curSection)
+    , m_restoreThisTheme(m_pref.theme.selected())
+    , m_restoreScreenScaling(m_pref.general.screenScale())
+    , m_restoreUIScaling(m_pref.general.uiScale())
   {
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
 
@@ -303,6 +306,7 @@ public:
 
     // Theme buttons
     themeList()->Change.connect(base::Bind<void>(&OptionsWindow::onThemeChange, this));
+    themeList()->DoubleClickItem.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
     selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
     openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
@@ -314,7 +318,7 @@ public:
     openExtensionFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenExtensionFolder, this));
 
     // Apply button
-    buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::saveConfig, this));
+    buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::onApply, this));
 
     onChangeBgScope();
     onChangeGridScope();
@@ -441,7 +445,25 @@ public:
       updateScreenScaling();
   }
 
+  void restoreTheme() {
+    if (m_pref.theme.selected() != m_restoreThisTheme) {
+      setUITheme(m_restoreThisTheme, false);
+
+      // Restore UI & Screen Scaling
+      if (m_restoreUIScaling != m_pref.general.uiScale()) {
+        m_pref.general.uiScale(m_restoreUIScaling);
+        ui::set_theme(ui::get_theme(), m_restoreUIScaling);
+      }
+
+      if (m_restoreScreenScaling != m_pref.general.screenScale()) {
+        m_pref.general.screenScale(m_restoreScreenScaling);
+        updateScreenScaling();
+      }
+    }
+  }
+
 private:
+
   void selectScalingItems() {
     // Screen/UI Scale
     screenScale()->setSelectedItemIndex(
@@ -459,6 +481,13 @@ private:
     she::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
     display->setScale(m_pref.general.screenScale());
     manager->setDisplay(display);
+  }
+
+  void onApply() {
+    saveConfig();
+    m_restoreThisTheme = m_pref.theme.selected();
+    m_restoreScreenScaling = m_pref.general.screenScale();
+    m_restoreUIScaling = m_pref.general.uiScale();
   }
 
   void onNativeCursorChange() {
@@ -695,30 +724,37 @@ private:
   }
 
   void onSelectTheme() {
+    ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
+    if (item)
+      setUITheme(item->themeName(), true);
+  }
+
+  void setUITheme(const std::string& themeName,
+                  const bool updateScaling) {
     try {
-      ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
-      if (item &&
-          item->themeName() != m_pref.theme.selected()) {
+      if (themeName != m_pref.theme.selected()) {
         auto theme = static_cast<skin::SkinTheme*>(ui::get_theme());
 
         // Change theme name from preferences
-        m_pref.theme.selected(item->themeName());
+        m_pref.theme.selected(themeName);
 
         // Preferred UI Scaling factor by the theme
-        if (theme->preferredUIScaling() > 0)
+        if (updateScaling && theme->preferredUIScaling() > 0)
           m_pref.general.uiScale(theme->preferredUIScaling());
 
         ui::set_theme(theme, m_pref.general.uiScale());
 
         // Preferred Screen Scaling by the theme
-        const int newScreenScale = theme->preferredScreenScaling();
-        if (newScreenScale > 0 &&
-            newScreenScale != m_pref.general.screenScale()) {
-          m_pref.general.screenScale(newScreenScale);
-          updateScreenScaling();
-        }
+        if (updateScaling) {
+          const int newScreenScale = theme->preferredScreenScaling();
+          if (newScreenScale > 0 &&
+              newScreenScale != m_pref.general.screenScale()) {
+            m_pref.general.screenScale(newScreenScale);
+            updateScreenScaling();
+          }
 
-        selectScalingItems();
+          selectScalingItems();
+        }
       }
     }
     catch (const std::exception& ex) {
@@ -917,6 +953,9 @@ private:
   DocumentPreferences* m_curPref;
   int& m_curSection;
   obs::scoped_connection m_extThemesChanges;
+  std::string m_restoreThisTheme;
+  int m_restoreScreenScaling;
+  int m_restoreUIScaling;
 };
 
 class OptionsCommand : public Command {
@@ -947,6 +986,8 @@ void OptionsCommand::onExecute(Context* context)
   window.openWindowInForeground();
   if (window.ok())
     window.saveConfig();
+  else
+    window.restoreTheme();
 }
 
 Command* CommandFactory::createOptionsCommand()
