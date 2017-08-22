@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,8 @@
   #include "she/native_dialogs.h"
 #endif
 
+#include "base/unique_ptr.h"
+#include "ft/lib.h"
 #include "she/common/freetype_font.h"
 #include "she/common/sprite_sheet_font.h"
 #include "she/system.h"
@@ -75,7 +77,9 @@ public:
   }
 
   Font* loadTrueTypeFont(const char* filename, int height) override {
-    return loadFreeTypeFont(filename, height);
+    if (!m_ft)
+      m_ft.reset(new ft::Lib());
+    return load_free_type_font(*m_ft.get(), filename, height);
   }
 
   KeyModifiers keyModifiers() override {
@@ -99,6 +103,7 @@ public:
 
 private:
   NativeDialogs* m_nativeDialogs;
+  base::UniquePtr<ft::Lib> m_ft;
 };
 
 } // namespace she

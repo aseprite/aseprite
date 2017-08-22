@@ -17,8 +17,10 @@
 
 namespace she {
 
-FreeTypeFont::FreeTypeFont(const char* filename, int height)
-  : m_face(m_ft.open(filename))
+FreeTypeFont::FreeTypeFont(ft::Lib& lib,
+                           const char* filename,
+                           const int height)
+  : m_face(lib.open(filename))
 {
   if (m_face.isValid())
     m_face.setSize(height);
@@ -73,9 +75,11 @@ bool FreeTypeFont::hasCodePoint(int codepoint) const
   return m_face.hasCodePoint(codepoint);
 }
 
-FreeTypeFont* loadFreeTypeFont(const char* filename, int height)
+FreeTypeFont* load_free_type_font(ft::Lib& lib,
+                                  const char* filename,
+                                  const int height)
 {
-  FreeTypeFont* font = new FreeTypeFont(filename, height);
+  FreeTypeFont* font = new FreeTypeFont(lib, filename, height);
   if (!font->isValid()) {
     delete font;
     font = nullptr;

@@ -19,7 +19,9 @@ namespace she {
   public:
     typedef ft::Face Face;
 
-    FreeTypeFont(const char* filename, int height);
+    FreeTypeFont(ft::Lib& lib,
+                 const char* filename,
+                 const int height);
     ~FreeTypeFont();
 
     bool isValid() const;
@@ -35,11 +37,12 @@ namespace she {
     Face& face() { return m_face; }
 
   private:
-    mutable ft::Lib m_ft;
     mutable Face m_face;
   };
 
-  FreeTypeFont* loadFreeTypeFont(const char* filename, int height);
+  FreeTypeFont* load_free_type_font(ft::Lib& lib,
+                                    const char* filename,
+                                    const int height);
 
 } // namespace she
 
