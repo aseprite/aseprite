@@ -524,8 +524,12 @@ static bool ase_file_read_header(FILE* f, ASE_Header* header)
 
   header->size  = fgetl(f);
   header->magic = fgetw(f);
+
+  // Developers can open any .ase file
+#if !defined(ENABLE_DEVMODE)
   if (header->magic != ASE_FILE_MAGIC)
     return false;
+#endif
 
   header->frames     = fgetw(f);
   header->width      = fgetw(f);
@@ -551,6 +555,15 @@ static bool ase_file_read_header(FILE* f, ASE_Header* header)
     header->pixel_width = 1;
     header->pixel_height = 1;
   }
+
+#if defined(ENABLE_DEVMODE)
+  // This is useful to read broken .ase files
+  if (header->magic != ASE_FILE_MAGIC) {
+    header->frames  = 256;  // Frames number might be not enought for some files
+    header->width   = 1024; // Size doesn't matter, the sprite can be crop
+    header->height  = 1024;
+  }
+#endif
 
   fseek(f, header->pos+128, SEEK_SET);
   return true;
