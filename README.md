@@ -37,6 +37,7 @@ If you found a bug or have a new idea/feature for the program,
 You can ask for help in:
 
 * [Aseprite Community](https://community.aseprite.org/)
+* [Aseprite Discord Server](https://discord.gg/Yb2CeX8)
 * Official support: [support@aseprite.org](mailto:support@aseprite.org)
 * Social networks and community-driven places:
   [Twitter](https://twitter.com/aseprite/),
