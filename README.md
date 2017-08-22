@@ -2,7 +2,8 @@
 *Copyright (C) 2001-2017 David Capello*
 
 [![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aseprite/aseprite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Discourse Community](https://img.shields.io/badge/discourse-community-brightgreen.svg?style=flat)](https://community.aseprite.org/)
+[![Discord Server](https://img.shields.io/discord/324979738533822464.svg)](https://discord.gg/Yb2CeX8)
 
 ## Introduction
 
