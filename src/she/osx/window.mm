@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -173,52 +173,53 @@ using namespace she;
   const int w = scale*surface->width();
   const int h = scale*surface->height();
 
-  std::vector<uint32_t> buf(4*w*h);
-  uint32_t* bits = &buf[0];
-
-  for (int y=0; y<h; ++y) {
-    const uint32_t* ptr = (const uint32_t*)surface->getData(0, y/scale);
-    for (int x=0, u=0; x<w; ++x, ++bits) {
-      *bits = *ptr;
-      if (++u == scale) {
-        u = 0;
-        ++ptr;
-      }
-    }
-  }
+  if (4*w*h == 0)
+    return NO;
 
   @autoreleasepool {
-    CGDataProviderRef dataRef =
-      CGDataProviderCreateWithData(nullptr, &buf[0],
-                                   w*h*4, nullptr);
-    if (!dataRef)
+    NSBitmapImageRep* bmp =
+      [[NSBitmapImageRep alloc]
+        initWithBitmapDataPlanes:nil
+                      pixelsWide:w
+                      pixelsHigh:h
+                   bitsPerSample:8
+                 samplesPerPixel:4
+                        hasAlpha:YES
+                        isPlanar:NO
+                  colorSpaceName:NSDeviceRGBColorSpace
+                    bitmapFormat:NSAlphaNonpremultipliedBitmapFormat
+                     bytesPerRow:w*4
+                    bitsPerPixel:32];
+    if (!bmp)
       return NO;
 
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGImageRef img =
-      CGImageCreate(
-        w, h, 8, 32, 4*w,
-        colorSpace, kCGImageAlphaLast, dataRef,
-        nullptr, false, kCGRenderingIntentDefault);
-    CGColorSpaceRelease(colorSpace);
-
-    CGDataProviderRelease(dataRef);
-
-    NSCursor* nsCursor = nullptr;
-    if (img) {
-      NSImage* image =
-        [[NSImage alloc] initWithCGImage:img
-                                    size:NSMakeSize(w, h)];
-      CGImageRelease(img);
-
-      nsCursor =
-        [[NSCursor alloc] initWithImage:image
-                                hotSpot:NSMakePoint(scale*focus.x + scale/2,
-                                                    scale*focus.y + scale/2)];
+    uint32_t* dst = (uint32_t*)[bmp bitmapData];
+    for (int y=0; y<h; ++y) {
+      const uint32_t* src = (const uint32_t*)surface->getData(0, y/scale);
+      for (int x=0, u=0; x<w; ++x, ++dst) {
+        *dst = *src;
+        if (++u == scale) {
+          u = 0;
+          ++src;
+        }
+      }
     }
-    if (nsCursor)
-      [self.contentView setCursor:nsCursor];
-    return (nsCursor ? YES: NO);
+
+    NSImage* img = [[NSImage alloc] initWithSize:NSMakeSize(w, h)];
+    if (!img)
+      return NO;
+
+    [img addRepresentation:bmp];
+
+    NSCursor* nsCursor =
+      [[NSCursor alloc] initWithImage:img
+                              hotSpot:NSMakePoint(scale*focus.x + scale/2,
+                                                  scale*focus.y + scale/2)];
+    if (!nsCursor)
+      return NO;
+
+    [self.contentView setCursor:nsCursor];
+    return YES;
   }
 }
 
