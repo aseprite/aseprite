@@ -9,7 +9,7 @@
     </hbox>
 
     <hbox noborders="true" id="header_placeholder">
-      <image file="icons/ase48.png" align="center" />
+      <link id="aseprite_face" style="aseprite_face" />
       <vbox border="4" childspacing="4">
         <link id="new_file" text="@.new_file" style="workspace_link" />
         <link id="open_file" text="@.open_file" style="workspace_link" />
