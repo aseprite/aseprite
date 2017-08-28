@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -47,6 +47,10 @@ bool LayerVisibilityCommand::onEnabled(Context* context)
 bool LayerVisibilityCommand::onChecked(Context* context)
 {
   const ContextReader reader(context);
+  if (!reader.document() ||
+      !reader.layer())
+    return false;
+
   SelectedLayers selLayers;
   auto range = App::instance()->timeline()->range();
   if (range.enabled()) {
