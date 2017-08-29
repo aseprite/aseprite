@@ -246,7 +246,7 @@ void UndoHistoryCommand::onExecute(Context* ctx)
     g_window = new UndoHistoryWindow(ctx);
 
   if (g_window->isVisible())
-    g_window->setVisible(false);
+    g_window->closeWindow(nullptr);
   else
     g_window->openWindow();
 }
