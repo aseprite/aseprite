@@ -53,8 +53,8 @@
       <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
       <key command="PasteText" shortcut="T" />
-      <key command="Options" shortcut="Ctrl+K" mac="Cmd+," />
-      <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" /> <!-- TODO remove this shortcut in v1.1 -->
+      <key command="Options" shortcut="Ctrl+K" mac="Cmd+K" />
+      <key command="Options" mac="Cmd+," />
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
       <!-- Sprite -->
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
