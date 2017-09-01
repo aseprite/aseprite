@@ -79,13 +79,13 @@ static KeyScancode from_char_to_scancode(int chr)
     kKey7,          // 55 = 37 = 7
     kKey8,          // 56 = 38 = 8
     kKey9,          // 57 = 39 = 9
-    kKeyNil,        // 58 = 3A = :
+    kKeyColon,      // 58 = 3A = :
     kKeySemicolon,  // 59 = 3B = ;
     kKeyNil,        // 60 = 3C = <
     kKeyEquals,     // 61 = 3D = =
     kKeyNil,        // 62 = 3E = >
     kKeyNil,        // 63 = 3F = ?
-    kKeyNil,        // 64 = 40 = @
+    kKeyAt,         // 64 = 40 = @
     kKeyA,          // 65 = 41 = A
     kKeyB,          // 66 = 42 = B
     kKeyC,          // 67 = 43 = C
@@ -115,9 +115,9 @@ static KeyScancode from_char_to_scancode(int chr)
     kKeyOpenbrace,  // 91 = 5B = [
     kKeyBackslash,  // 92 = 5C = backslash
     kKeyClosebrace, // 93 = 5D = ]
-    kKeyNil,        // 94 = 5E = ^
+    kKeyCircumflex, // 94 = 5E = ^
     kKeyNil,        // 95 = 5F = _
-    kKeyNil,        // 96 = 60 = `
+    kKeyBackquote,  // 96 = 60 = `
     kKeyA,          // 97 = 61 = a
     kKeyB,          // 98 = 62 = b
     kKeyC,          // 99 = 63 = c
@@ -147,7 +147,7 @@ static KeyScancode from_char_to_scancode(int chr)
     kKeyOpenbrace,  // 123 = 7B = {
     kKeyBackslash,  // 124 = 7C = |
     kKeyClosebrace, // 125 = 7D = }
-    kKeyNil,        // 126 = 7E = ~
+    kKeyTilde,      // 126 = 7E = ~
     kKeyNil,        // 127 = 7F = DEL
   };
 

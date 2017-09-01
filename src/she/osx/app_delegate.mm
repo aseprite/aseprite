@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,11 +20,18 @@
 #include "she/osx/view.h"
 #include "she/system.h"
 
+@protocol OSXValidateMenuItemProtocol
+- (void)validateMenuItem;
+@end
+
 @implementation OSXAppDelegate
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
 {
-  return NSTerminateNow;
+  she::Event ev;
+  ev.setType(she::Event::CloseDisplay);
+  she::queue_event(ev);
+  return NSTerminateCancel;
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app
@@ -34,9 +41,6 @@
 
 - (void)applicationWillTerminate:(NSNotification*)notification
 {
-  she::Event ev;
-  ev.setType(she::Event::CloseDisplay);
-  she::queue_event(ev);
 }
 
 - (void)applicationWillResignActive:(NSNotification*)notification
@@ -59,6 +63,21 @@
 
   [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
   return YES;
+}
+
+- (void)executeMenuItem:(id)sender
+{
+  [sender executeMenuItem:sender];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem
+{
+  if ([menuItem respondsToSelector:@selector(validateMenuItem)]) {
+    [((id<OSXValidateMenuItemProtocol>)menuItem) validateMenuItem];
+    return menuItem.enabled;
+  }
+  else
+    return [super validateMenuItem:menuItem];
 }
 
 @end

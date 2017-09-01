@@ -10,11 +10,13 @@
 
 #include "app/ui/app_menuitem.h"
 
+#include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/modules/gui.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
+#include "she/menus.h"
 #include "ui/accelerator.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -34,10 +36,28 @@ Params AppMenuItem::s_contextParams;
 
 AppMenuItem::AppMenuItem(const char* text, Command* command, const Params& params)
  : MenuItem(text)
- , m_key(NULL)
+ , m_key(nullptr)
  , m_command(command)
  , m_params(params)
+ , m_nativeMenuItem(nullptr)
 {
+}
+
+void AppMenuItem::setKey(Key* key)
+{
+  m_key = key;
+  syncNativeMenuItemKeyShortcut();
+}
+
+void AppMenuItem::setNativeMenuItem(she::MenuItem* nativeMenuItem)
+{
+  m_nativeMenuItem = nativeMenuItem;
+}
+
+void AppMenuItem::syncNativeMenuItemKeyShortcut()
+{
+  if (m_nativeMenuItem)
+    m_nativeMenuItem->setShortcut(get_os_shortcut_from_key(m_key));
 }
 
 // static
@@ -53,28 +73,6 @@ bool AppMenuItem::onProcessMessage(Message* msg)
     case kCloseMessage:
       // disable the menu (the keyboard shortcuts are processed by "manager_msg_proc")
       setEnabled(false);
-      break;
-
-    default:
-      if (msg->type() == kOpenMessage ||
-          msg->type() == kOpenMenuItemMessage) {
-        // Update the context flags after opening the menuitem's
-        // submenu to update the "enabled" flag of each command
-        // correctly.
-        Context* context = UIContext::instance();
-        context->updateFlags();
-
-        if (m_command) {
-          Params params = m_params;
-          if (!s_contextParams.empty())
-            params |= s_contextParams;
-
-          m_command->loadParams(params);
-
-          setEnabled(m_command->isEnabled(context));
-          setSelected(m_command->isChecked(context));
-        }
-      }
       break;
   }
 
@@ -113,11 +111,34 @@ void AppMenuItem::onClick()
     if (!s_contextParams.empty())
       params |= s_contextParams;
 
+    // Load parameters to call Command::isEnabled, so we can check if
+    // the command is enabled with this parameters.
     m_command->loadParams(params);
 
     UIContext* context = UIContext::instance();
-    if (m_command->isEnabled(context))
+    if (m_command->isEnabled(context)) {
       context->executeCommand(m_command, params);
+    }
+  }
+}
+
+void AppMenuItem::onValidate()
+{
+  // Update the context flags after opening the menuitem's
+  // submenu to update the "enabled" flag of each command
+  // correctly.
+  Context* context = UIContext::instance();
+  context->updateFlags();
+
+  if (m_command) {
+    Params params = m_params;
+    if (!s_contextParams.empty())
+      params |= s_contextParams;
+
+    m_command->loadParams(params);
+
+    setEnabled(m_command->isEnabled(context));
+    setSelected(m_command->isChecked(context));
   }
 }
 

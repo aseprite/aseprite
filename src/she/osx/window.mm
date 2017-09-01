@@ -53,6 +53,10 @@ using namespace she;
   [self center];
   [self makeKeyAndOrderFront:self];
 
+  // Hide the "View > Show Tab Bar" menu item
+  if ([self respondsToSelector:@selector(setTabbingMode:)])
+    [self setTabbingMode:NSWindowTabbingModeDisallowed];
+
   return self;
 }
 

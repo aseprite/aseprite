@@ -227,6 +227,7 @@ endif()
 if(APPLE)
   list(APPEND SHE_SOURCES
     osx/logger.mm
+    osx/menus.mm
     osx/native_dialogs.mm)
 endif()
 

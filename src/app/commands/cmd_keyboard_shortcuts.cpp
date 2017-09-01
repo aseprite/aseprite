@@ -690,6 +690,8 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   else {
     window.restoreKeys();
   }
+
+  AppMenus::instance()->syncNativeMenuItemKeyShortcuts();
 }
 
 Command* CommandFactory::createKeyboardShortcutsCommand()

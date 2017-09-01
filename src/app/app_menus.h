@@ -17,6 +17,11 @@
 class TiXmlElement;
 class TiXmlHandle;
 
+namespace she {
+  class Menu;
+  class Shortcut;
+}
+
 namespace app {
   class Key;
   class Command;
@@ -31,6 +36,8 @@ namespace app {
 
   public:
     static AppMenus* instance();
+
+    ~AppMenus();
 
     void reload();
     void initTheme();
@@ -52,6 +59,7 @@ namespace app {
     Menu* getInkPopupMenu() { return m_inkPopupMenu; }
 
     void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key);
+    void syncNativeMenuItemKeyShortcuts();
 
   private:
     Menu* loadMenuById(TiXmlHandle& handle, const char *id);
@@ -59,10 +67,14 @@ namespace app {
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
     Widget* createInvalidVersionMenuitem();
     void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key);
+    void syncNativeMenuItemKeyShortcuts(Menu* menu);
     void updateMenusList();
+    void createNativeMenus();
+    void createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu);
 
     base::UniquePtr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;
+    MenuItem* m_helpMenuitem;
     base::UniquePtr<Menu> m_tabPopupMenu;
     base::UniquePtr<Menu> m_documentTabPopupMenu;
     base::UniquePtr<Menu> m_layerPopupMenu;
@@ -75,7 +87,10 @@ namespace app {
     base::UniquePtr<Menu> m_inkPopupMenu;
     obs::scoped_connection m_recentFilesConn;
     std::vector<Menu*> m_menus;
+    she::Menu* m_osMenu;
   };
+
+  she::Shortcut get_os_shortcut_from_key(Key* key);
 
 } // namespace app
 

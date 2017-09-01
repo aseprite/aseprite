@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,6 +20,7 @@ namespace she {
   class EventQueue;
   class Font;
   class Logger;
+  class Menus;
   class NativeDialogs;
   class Surface;
 
@@ -37,6 +38,7 @@ namespace she {
     virtual void finishLaunching() = 0;
     virtual Capabilities capabilities() const = 0;
     virtual Logger* logger() = 0;
+    virtual Menus* menus() = 0;
     virtual NativeDialogs* nativeDialogs() = 0;
     virtual EventQueue* eventQueue() = 0;
     virtual bool gpuAcceleration() const = 0;

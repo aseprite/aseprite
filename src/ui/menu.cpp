@@ -721,7 +721,12 @@ bool MenuItem::onProcessMessage(Message* msg)
       break;
 
     default:
-      if (msg->type() == kOpenMenuItemMessage) {
+      if (msg->type() == kOpenMessage) {
+        validateItem();
+      }
+      else if (msg->type() == kOpenMenuItemMessage) {
+        validateItem();
+
         MenuBaseData* base = get_base(this);
         bool select_first = static_cast<OpenMenuItemMessage*>(msg)->select_first();
 
@@ -893,6 +898,12 @@ void MenuItem::onClick()
 {
   // Fire new Click() signal.
   Click();
+}
+
+void MenuItem::onValidate()
+{
+  // Here the user can customize the automatic validation of the menu
+  // item before it's shown.
 }
 
 void MenuItem::onSizeHint(SizeHintEvent& ev)
@@ -1218,6 +1229,11 @@ void MenuItem::executeClick()
   Message* msg = new Message(kExecuteMenuItemMessage);
   msg->addRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
+}
+
+void MenuItem::validateItem()
+{
+  onValidate();
 }
 
 static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg)

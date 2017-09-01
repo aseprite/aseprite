@@ -11,6 +11,7 @@
 #ifdef _WIN32
   #include "she/win/native_dialogs.h"
 #elif defined(__APPLE__)
+  #include "she/osx/menus.h"
   #include "she/osx/native_dialogs.h"
 #elif defined(ASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT) && defined(__linux__)
   #include "she/gtk/native_dialogs.h"
@@ -33,11 +34,13 @@ Logger* getOsxLogger();
 class CommonSystem : public System {
 public:
   CommonSystem()
-    : m_nativeDialogs(nullptr) {
+    : m_nativeDialogs(nullptr)
+    , m_menus(nullptr) {
   }
 
   ~CommonSystem() {
     delete m_nativeDialogs;
+    delete m_menus;
   }
 
   void dispose() override {
@@ -50,6 +53,14 @@ public:
 #else
     return nullptr;
 #endif
+  }
+
+  Menus* menus() override {
+#ifdef __APPLE__
+    if (!m_menus)
+      m_menus = new MenusOSX();
+#endif
+    return m_menus;
   }
 
   NativeDialogs* nativeDialogs() override {
@@ -103,6 +114,7 @@ public:
 
 private:
   NativeDialogs* m_nativeDialogs;
+  Menus* m_menus;
   base::UniquePtr<ft::Lib> m_ft;
 };
 

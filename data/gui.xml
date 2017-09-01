@@ -50,11 +50,11 @@
       <key command="ReplaceColor" shortcut="Shift+R" />
       <key command="HueSaturation" shortcut="Ctrl+U" mac="Cmd+U" />
       <key command="ConvolutionMatrix" shortcut="F9" />
-      <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
+      <key command="ColorCurve" shortcut="Ctrl+M" />
       <key command="ColorCurve" shortcut="F10" />
       <key command="PasteText" shortcut="T" />
-      <key command="Options" shortcut="Ctrl+K" mac="Cmd+K" />
       <key command="Options" mac="Cmd+," />
+      <key command="Options" shortcut="Ctrl+K" mac="Cmd+K" />
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
       <!-- Sprite -->
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
@@ -129,7 +129,7 @@
       <key command="PaletteEditor">
         <param name="popup" value="background" />
       </key>
-      <key command="ShowExtras" shortcut="Ctrl+H" mac="Cmd+H" />
+      <key command="ShowExtras" shortcut="Ctrl+H" />
       <!-- Tabs -->
       <key command="GotoNextTab" shortcut="Ctrl+Tab" />
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
@@ -837,7 +837,7 @@
         <separator />
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>
-      <menu text="&amp;Help">
+      <menu text="&amp;Help" id="help_menu">
         <item command="OpenBrowser" text="Readme">
           <param name="filename" value="README.md" />
         </item>

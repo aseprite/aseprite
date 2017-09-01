@@ -4,6 +4,8 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#define KEY_TRACE(...)
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -19,6 +21,12 @@
 #include "she/system.h"
 
 namespace she {
+
+// Global variable used between View and OSXNSMenu to check if the
+// keyDown: event was used by a key equivalent in the menu.
+//
+// TODO I'm not proud of this, but it does the job
+bool g_keyEquivalentUsed = false;
 
 bool osx_is_key_pressed(KeyScancode scancode);
 
@@ -167,7 +175,13 @@ using namespace she;
 
 - (void)keyDown:(NSEvent*)event
 {
+  g_keyEquivalentUsed = false;
   [super keyDown:event];
+
+  // If a key equivalent used the keyDown event, we don't generate
+  // this she::KeyDown event.
+  if (g_keyEquivalentUsed)
+    return;
 
   KeyScancode scancode = scancode_from_nsevent(event);
   Event ev;
@@ -211,6 +225,10 @@ using namespace she;
       CFRelease(strRef);
     }
   }
+
+  KEY_TRACE("View keyDown: unicode=%d (%c) scancode=%d modifiers=%d\n",
+            ev.unicodeChar(), ev.unicodeChar(),
+            ev.scancode(), ev.modifiers());
 
   if (sendMsg)
     queue_event(ev);

@@ -123,6 +123,9 @@ namespace ui {
       return m_submenu_menubox;
     }
 
+    void executeClick();
+    void validateItem();
+
     // Fired when the menu item is clicked.
     obs::signal<void()> Click;
 
@@ -132,6 +135,7 @@ namespace ui {
     void onPaint(PaintEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
     virtual void onClick();
+    virtual void onValidate();
 
     bool inBar();
 
@@ -140,7 +144,6 @@ namespace ui {
     void closeSubmenu(bool last_of_close_chain);
     void startTimer();
     void stopTimer();
-    void executeClick();
 
     bool m_highlighted;           // Is it highlighted?
     Menu* m_submenu;              // The sub-menu

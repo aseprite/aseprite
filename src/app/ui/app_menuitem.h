@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,10 @@
 
 #include "app/commands/params.h"
 #include "ui/menu.h"
+
+namespace she {
+  class MenuItem;
+}
 
 namespace app {
   class Key;
@@ -25,10 +29,14 @@ namespace app {
     AppMenuItem(const char* text, Command* command = nullptr, const Params& params = Params());
 
     Key* key() { return m_key; }
-    void setKey(Key* key) { m_key = key; }
+    void setKey(Key* key);
 
     Command* getCommand() { return m_command; }
     const Params& getParams() const { return m_params; }
+
+    she::MenuItem* nativeMenuItem() { return m_nativeMenuItem; }
+    void setNativeMenuItem(she::MenuItem* nativeMenuItem);
+    void syncNativeMenuItemKeyShortcut();
 
     static void setContextParams(const Params& params);
 
@@ -36,11 +44,13 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onClick() override;
+    void onValidate() override;
 
   private:
     Key* m_key;
     Command* m_command;
     Params m_params;
+    she::MenuItem* m_nativeMenuItem;
 
     static Params s_contextParams;
   };

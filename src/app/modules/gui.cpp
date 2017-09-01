@@ -429,22 +429,13 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               Command* command = key->command();
 
               // Commands are executed only when the main window is
-              // the current window running at foreground.
-              for (auto childWidget : children()) {
-                Window* child = static_cast<Window*>(childWidget);
-
-                // There are a foreground window executing?
-                if (child->isForeground()) {
-                  break;
-                }
-                // Is it the desktop and the top-window=
-                else if (child->isDesktop() && child == App::instance()->mainWindow()) {
-                  // OK, so we can execute the command represented
-                  // by the pressed-key in the message...
-                  UIContext::instance()->executeCommand(
-                    command, key->params());
-                  return true;
-                }
+              // the current window running.
+              if (getForegroundWindow() == App::instance()->mainWindow()) {
+                // OK, so we can execute the command represented
+                // by the pressed-key in the message...
+                UIContext::instance()->executeCommand(
+                  command, key->params());
+                return true;
               }
               break;
             }
