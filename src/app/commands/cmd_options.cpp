@@ -252,6 +252,13 @@ public:
       gpuAcceleration()->setVisible(false);
     }
 
+    // If the platform does support native menus, we show the option,
+    // in other case, the option doesn't make sense for this platform.
+    if (she::instance()->menus())
+      showMenuBar()->setSelected(m_pref.general.showMenuBar());
+    else
+      showMenuBar()->setVisible(false);
+
     showHome()->setSelected(m_pref.general.showHome());
 
     // Right-click
@@ -427,6 +434,11 @@ public:
     if (newGpuAccel != m_pref.general.gpuAcceleration()) {
       m_pref.general.gpuAcceleration(newGpuAccel);
       reset_screen = true;
+    }
+
+    if (she::instance()->menus() &&
+        m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
+      m_pref.general.showMenuBar(showMenuBar()->isSelected());
     }
 
     bool newShowHome = showHome()->isSelected();

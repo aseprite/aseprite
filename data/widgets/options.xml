@@ -45,6 +45,8 @@
           <check id="gpu_acceleration"
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />
+          <check id="show_menu_bar"
+		 text="@.show_menu_bar" />
           <check id="show_home"
 		 text="@.show_home" />
           <check id="expand_menubar_on_mouseover"

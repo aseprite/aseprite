@@ -38,6 +38,7 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "she/display.h"
+#include "she/system.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -137,7 +138,10 @@ MainWindow::MainWindow()
   timelineSplitter()->setPosition(75);
 
   // Reconfigure workspace when the timeline position is changed.
-  Preferences::instance().general.timelinePosition
+  auto& pref = Preferences::instance();
+  pref.general.timelinePosition
+    .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
+  pref.general.showMenuBar
     .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
 
   // Prepare the window
@@ -477,6 +481,16 @@ void MainWindow::configureWorkspaceLayout()
   const auto& pref = Preferences::instance();
   bool normal = (m_mode == NormalMode);
   bool isDoc = (getDocView() != nullptr);
+
+  if (she::instance()->menus() == nullptr ||
+      pref.general.showMenuBar()) {
+    if (!m_menuBar->parent())
+      menuBarPlaceholder()->insertChild(0, m_menuBar);
+  }
+  else {
+    if (m_menuBar->parent())
+      menuBarPlaceholder()->removeChild(m_menuBar);
+  }
 
   m_menuBar->setVisible(normal);
   m_tabsBar->setVisible(normal);
