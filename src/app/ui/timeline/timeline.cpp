@@ -338,12 +338,14 @@ void Timeline::detachDocument()
   if (m_document) {
     m_thumbnailsPrefConn.disconnect();
     m_document->remove_observer(this);
-    m_document = NULL;
+    m_document = nullptr;
+    m_sprite = nullptr;
+    m_layer = nullptr;
   }
 
   if (m_editor) {
     m_editor->remove_observer(this);
-    m_editor = NULL;
+    m_editor = nullptr;
   }
 
   invalidate();
@@ -480,19 +482,21 @@ void Timeline::activateClipboardRange()
 
 FrameTag* Timeline::getFrameTagByFrame(const frame_t frame)
 {
-  if (m_tagFocusBand < 0) {
-    return get_animation_tag(m_sprite, frame);
-  }
-  else {
-    for (FrameTag* frameTag : m_sprite->frameTags()) {
-      if (frame >= frameTag->fromFrame() &&
-          frame <= frameTag->toFrame() &&
-          m_tagBand[frameTag] == m_tagFocusBand) {
-        return frameTag;
-      }
-    }
+  if (!m_sprite)
     return nullptr;
+
+  if (m_tagFocusBand < 0)
+    return get_animation_tag(m_sprite, frame);
+
+  for (FrameTag* frameTag : m_sprite->frameTags()) {
+    if (frame >= frameTag->fromFrame() &&
+        frame <= frameTag->toFrame() &&
+        m_tagBand[frameTag] == m_tagFocusBand) {
+      return frameTag;
+    }
   }
+
+  return nullptr;
 }
 
 bool Timeline::onProcessMessage(Message* msg)
