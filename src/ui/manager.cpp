@@ -121,6 +121,17 @@ public:
 
 } // anonymous namespace
 
+// static
+bool Manager::widgetAssociatedToManager(Widget* widget)
+{
+  return (focus_widget == widget ||
+          mouse_widget == widget ||
+          capture_widget == widget ||
+          std::find(mouse_widgets_list.begin(),
+                    mouse_widgets_list.end(),
+                    widget) != mouse_widgets_list.end());
+}
+
 Manager::Manager()
   : Widget(kManagerWidget)
   , m_display(NULL)
@@ -812,6 +823,10 @@ void Manager::setMouse(Widget* widget)
 
 void Manager::setCapture(Widget* widget)
 {
+  // To set the capture, we set first the mouse_widget (because
+  // mouse_widget shouldn't be != capture_widget)
+  setMouse(widget);
+
   widget->enableFlags(HAS_CAPTURE);
   capture_widget = widget;
 
@@ -876,6 +891,14 @@ void Manager::freeWidget(Widget* widget)
 
   if (widget->hasMouse() || (widget == mouse_widget))
     freeMouse();
+
+  auto it = std::find(mouse_widgets_list.begin(),
+                      mouse_widgets_list.end(),
+                      widget);
+  if (it != mouse_widgets_list.end())
+    mouse_widgets_list.erase(it);
+
+  ASSERT(!Manager::widgetAssociatedToManager(widget));
 }
 
 void Manager::removeMessage(Message* msg)

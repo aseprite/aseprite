@@ -37,6 +37,8 @@ void addWidget(Widget* widget)
 
 void removeWidget(Widget* widget)
 {
+  ASSERT(!Manager::widgetAssociatedToManager(widget));
+
   auto it = std::find(widgets->begin(), widgets->end(), widget);
   if (it != widgets->end())
     widgets->erase(it);

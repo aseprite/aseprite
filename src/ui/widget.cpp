@@ -82,21 +82,22 @@ Widget::Widget(WidgetType type)
 Widget::~Widget()
 {
   // Break relationship with the manager.
-  if (this->type() != kManagerWidget) {
-    Manager* manager = this->manager();
+  Manager* manager = this->manager();
+  ASSERT(manager);
+  if (manager) {
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
     manager->removeMessageFilterFor(this);
   }
 
-  // Remove from parent
-  if (m_parent)
-    m_parent->removeChild(this);
-
-  // Remove children. The ~Widget dtor modifies the parent's
-  // m_children.
+  // Remove first children (so children's ~Widget() can access to the
+  // manager()).
   while (!m_children.empty())
     delete m_children.front();
+
+  // Remove this widget from parent.
+  if (m_parent)
+    m_parent->removeChild(this);
 
   // Delete fixed size hint if it isn't nullptr
   delete m_sizeHint;

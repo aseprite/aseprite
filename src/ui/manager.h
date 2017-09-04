@@ -28,9 +28,8 @@ namespace ui {
 
   class Manager : public Widget {
   public:
-    static Manager* getDefault() {
-      return m_defaultManager;
-    }
+    static Manager* getDefault() { return m_defaultManager; }
+    static bool widgetAssociatedToManager(Widget* widget);
 
     Manager();
     ~Manager();
