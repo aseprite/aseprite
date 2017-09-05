@@ -143,6 +143,10 @@ void NewLayerCommand::onExecute(Context* context)
       static_cast<UIContext*>(context)
         ->setActiveDocument(oldActiveDocument);
     }
+    // If the user didn't selected a new document, it means that the
+    // file selector dialog was canceled.
+    else
+      return;
   }
 
   // If params specify to ask the user about the name...
