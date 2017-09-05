@@ -289,10 +289,13 @@ public:
 #endif
 
     // Checked background size
+    static_assert(int(app::gen::BgType::CHECKED_16x16) == 0, "");
+    static_assert(int(app::gen::BgType::CHECKED_1x1) == 4, "");
     checkedBgSize()->addItem("16x16");
     checkedBgSize()->addItem("8x8");
     checkedBgSize()->addItem("4x4");
     checkedBgSize()->addItem("2x2");
+    checkedBgSize()->addItem("1x1");
 
     // Reset buttons
     resetBg()->Click.connect(base::Bind<void>(&OptionsWindow::onResetBg, this));

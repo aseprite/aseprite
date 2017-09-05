@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -47,6 +47,10 @@ void AppRender::setupBackground(app::Document* doc, doc::PixelFormat pixelFormat
     case app::gen::BgType::CHECKED_2x2:
       bgType = render::BgType::CHECKED;
       tile = gfx::Size(2, 2);
+      break;
+    case app::gen::BgType::CHECKED_1x1:
+      bgType = render::BgType::CHECKED;
+      tile = gfx::Size(1, 1);
       break;
     default:
       bgType = render::BgType::TRANSPARENT;

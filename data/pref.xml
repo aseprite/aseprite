@@ -32,6 +32,7 @@
       <value id="CHECKED_8x8" value="1" />
       <value id="CHECKED_4x4" value="2" />
       <value id="CHECKED_2x2" value="3" />
+      <value id="CHECKED_1x1" value="4" />
     </enum>
     <enum id="StopAtGrid">
       <value id="NEVER" value="0" />
