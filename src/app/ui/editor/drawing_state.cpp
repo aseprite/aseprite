@@ -141,7 +141,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   // using Shift+click with the Pencil tool. When we release the mouse
   // button, if the Shift key is pressed, the whole ToolLoop starts
   // again.
-  checkStartDrawingStraightLine(editor);
+  if (Preferences::instance().editor.straightLinePreview())
+    checkStartDrawingStraightLine(editor);
   return true;
 }
 
@@ -204,7 +205,7 @@ bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
   // Cancel loop pressing Esc key...
   if (msg->scancode() == ui::kKeyEsc ||
       // Cancel "Shift on freehand" line preview when the Shift key is
-      // released and the user didn't press the mouse button..
+      // released and the user didn't press the mouse button.
       (m_type == DrawingType::LineFreehand &&
        !m_mousePressedReceived &&
        !editor->startStraightLineWithFreehandTool())) {

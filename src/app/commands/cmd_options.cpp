@@ -232,6 +232,9 @@ public:
     if (m_pref.editor.autoScroll())
       autoScroll()->setSelected(true);
 
+    if (m_pref.editor.straightLinePreview())
+      straightLinePreview()->setSelected(true);
+
     // Scope
     bgScope()->addItem("Background for New Documents");
     gridScope()->addItem("Grid for New Documents");
@@ -372,6 +375,7 @@ public:
     m_pref.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
     m_pref.editor.showScrollbars(showScrollbars()->isSelected());
     m_pref.editor.autoScroll(autoScroll()->isSelected());
+    m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());
     m_pref.editor.zoomWithWheel(wheelZoom()->isSelected());
 #if __APPLE__
     m_pref.editor.zoomWithSlide(slideZoom()->isSelected());

@@ -126,6 +126,7 @@
       <option id="auto_scroll" type="bool" default="true" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
+      <option id="straight_line_preview" type="bool" default="true" />
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
     </section>

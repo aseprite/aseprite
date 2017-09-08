@@ -316,6 +316,16 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Start the Tool-Loop
   if (layer && (layer->isImage() || clickedInk->isSelection())) {
+    // Shift+click on Pencil tool starts a line onMouseDown() when the
+    // preview (onKeyDown) is disabled.
+    if (!Preferences::instance().editor.straightLinePreview() &&
+        checkStartDrawingStraightLine(editor)) {
+      // Send first mouse down to draw the straight line and start the
+      // freehand mode.
+      editor->getState()->onMouseDown(editor, msg);
+      return true;
+    }
+
     // Disable layer edges to avoid showing the modified cel
     // information by ExpandCelCanvas (i.e. the cel origin is changed
     // to 0,0 coordinate.)
@@ -490,7 +500,8 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  if (checkStartDrawingStraightLine(editor))
+  if (Preferences::instance().editor.straightLinePreview() &&
+      checkStartDrawingStraightLine(editor))
     return true;
   return false;
 }
