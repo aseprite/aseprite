@@ -96,6 +96,7 @@
           <check text="@.auto_opaque" id="auto_opaque" tooltip="@.auto_opaque_tooltip" />
           <check text="@.keep_selection_after_clear" id="keep_selection_after_clear" tooltip="@.keep_selection_after_clear_tooltip" />
           <check text="@.move_edges" id="move_edges" tooltip="@.move_edges_tooltip" />
+          <check text="@.modifiers_disable_handles" id="modifiers_disable_handles" tooltip="@.modifiers_disable_handles_tooltip" />
         </vbox>
 
         <!-- Timeline -->

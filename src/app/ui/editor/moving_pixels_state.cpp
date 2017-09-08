@@ -254,7 +254,9 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Transform selected pixels
   if (document->isMaskVisible() &&
-      decorator->getTransformHandles(editor)) {
+      decorator->getTransformHandles(editor) &&
+      (!Preferences::instance().selection.modifiersDisableHandles() ||
+       msg->modifiers() == kKeyNoneModifier)) {
     TransformHandles* transfHandles = decorator->getTransformHandles(editor);
 
     // Get the handle covered by the mouse.

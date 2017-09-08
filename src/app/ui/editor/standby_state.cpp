@@ -56,6 +56,7 @@
 #include "fixmath/fixmath.h"
 #include "gfx/rect.h"
 #include "she/surface.h"
+#include "she/system.h"
 #include "ui/alert.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -248,7 +249,9 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Transform selected pixels
     if (editor->isActive() &&
         document->isMaskVisible() &&
-        m_decorator->getTransformHandles(editor)) {
+        m_decorator->getTransformHandles(editor) &&
+        (!Preferences::instance().selection.modifiersDisableHandles() ||
+         msg->modifiers() == kKeyNoneModifier)) {
       TransformHandles* transfHandles = m_decorator->getTransformHandles(editor);
 
       // Get the handle covered by the mouse.
@@ -807,7 +810,11 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
   if (!editor->isActive())
     return false;
 
-  if (ink && ink->isSelection() && editor->document()->isMaskVisible()) {
+  if (ink &&
+      ink->isSelection() &&
+      editor->document()->isMaskVisible() &&
+      (!Preferences::instance().selection.modifiersDisableHandles() ||
+       she::instance()->keyModifiers() == kKeyNoneModifier)) {
     auto theme = skin::SkinTheme::instance();
     const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);

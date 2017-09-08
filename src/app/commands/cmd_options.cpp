@@ -198,6 +198,9 @@ public:
     if (m_pref.selection.moveEdges())
       moveEdges()->setSelected(true);
 
+    if (m_pref.selection.modifiersDisableHandles())
+      modifiersDisableHandles()->setSelected(true);
+
     // If the platform supports native cursors...
     if ((int(she::instance()->capabilities()) &
          int(she::Capabilities::CustomNativeMouseCursor)) != 0) {
@@ -382,6 +385,7 @@ public:
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
     m_pref.selection.moveEdges(moveEdges()->isSelected());
+    m_pref.selection.modifiersDisableHandles(modifiersDisableHandles()->isSelected());
     m_pref.guides.layerEdgesColor(layerEdgesColor()->getColor());
     m_pref.guides.autoGuidesColor(autoGuidesColor()->getColor());
     m_pref.slices.defaultColor(defaultSliceColor()->getColor());
