@@ -172,9 +172,11 @@ bool SaveFileBaseCommand::onEnabled(Context* context)
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
-bool SaveFileBaseCommand::saveAsDialog(Context* context,
-                                       const char* dlgTitle,
-                                       FileSelectorDelegate* delegate)
+bool SaveFileBaseCommand::saveAsDialog(
+  Context* context,
+  const std::string& dlgTitle,
+  const std::string& forbiddenFilename,
+  FileSelectorDelegate* delegate)
 {
   const Document* document = context->activeDocument();
   std::string filename;
@@ -193,6 +195,7 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
     std::string exts = get_writable_extensions();
     filename = document->filename();
 
+  again:;
     FileSelectorFiles newfilename;
     if (!app::show_file_selector(
           dlgTitle, filename, exts,
@@ -201,6 +204,15 @@ bool SaveFileBaseCommand::saveAsDialog(Context* context,
       return false;
 
     filename = newfilename.front();
+    if (base::normalize_path(forbiddenFilename) ==
+        base::normalize_path(filename)) {
+      ui::Alert::show("Overwrite Warning"
+                      "<<You cannot save a copy with the same name (overwrite the original file)."
+                      "<<Use File > Save menu option in that case."
+                      "||&OK");
+      goto again;
+    }
+
     if (delegate &&
         delegate->hasResizeCombobox()) {
       xscale = yscale = delegate->getResizeScale();
@@ -431,7 +443,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       docPref.saveCopy.filename());
   }
 
-  if (saveAsDialog(context, "Save Copy As", delegate)) {
+  if (saveAsDialog(context, "Save Copy As",
+                   oldFilename, delegate)) {
     docPref.saveCopy.filename(document->filename());
     if (delegate) {
       docPref.saveCopy.resizeScale(delegate->getResizeScale());

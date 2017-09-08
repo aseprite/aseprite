@@ -29,7 +29,9 @@ namespace app {
     void onLoadParams(const Params& params) override;
     bool onEnabled(Context* context) override;
 
-    bool saveAsDialog(Context* context, const char* dlgTitle,
+    bool saveAsDialog(Context* context,
+                      const std::string& dlgTitle,
+                      const std::string& forbiddenFilename = std::string(),
                       FileSelectorDelegate* delegate = nullptr);
     void saveDocumentInBackground(const Context* context,
                                   const app::Document* document,
