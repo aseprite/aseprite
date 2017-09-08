@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -41,8 +41,8 @@ Timer::~Timer()
   ASSERT(it != timers.end());
   timers.erase(it);
 
-  // Remove messages of this timer in the queue
-  Manager::getDefault()->removeMessagesForTimer(this);
+  // Stop the timer and remove it from the message queue.
+  stop();
 }
 
 void Timer::start()
@@ -54,6 +54,12 @@ void Timer::start()
 void Timer::stop()
 {
   m_running = false;
+
+  // Remove messages of this timer in the queue. The expected behavior
+  // is that when we stop a timer, we'll not receive more messages
+  // about it (even if there are enqueued messages waiting in the
+  // message queue).
+  Manager::getDefault()->removeMessagesForTimer(this);
 }
 
 void Timer::tick()

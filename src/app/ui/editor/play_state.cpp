@@ -92,13 +92,13 @@ void PlayState::onEnterState(Editor* editor)
 
 EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* newState)
 {
+  // We don't stop the timer if we are going to the ScrollingState
+  // (we keep playing the animation).
   if (!m_toScroll) {
+    m_playTimer.stop();
+
     if (m_playOnce || Preferences::instance().general.rewindOnStop())
       m_editor->setFrame(m_refFrame);
-
-    // We don't stop the timer if we are going to the ScrollingState
-    // (we keep playing the animation).
-    m_playTimer.stop();
   }
   return KeepState;
 }
@@ -169,6 +169,8 @@ bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 
 void PlayState::onPlaybackTick()
 {
+  ASSERT(m_playTimer.isRunning());
+
   if (m_nextFrameTime < 0)
     return;
 
