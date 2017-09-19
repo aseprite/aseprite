@@ -49,9 +49,11 @@ namespace ui {
     int getInternalDeltaX() { return m_dx; }
     int getInternalDeltaY() { return m_dy; }
 
+    int getSaveCount() const;
     gfx::Rect getClipBounds() const;
-    void setClipBounds(const gfx::Rect& rc);
-    bool intersectClipRect(const gfx::Rect& rc);
+    void saveClip();
+    void restoreClip();
+    bool clipRect(const gfx::Rect& rc);
 
     void setDrawMode(DrawMode mode, int param = 0,
                      const gfx::Color a = gfx::ColorNone,
@@ -119,25 +121,29 @@ namespace ui {
     virtual ~ScreenGraphics();
   };
 
-  // Class to temporary set the Graphics' clip region (in the
-  // life-time of the SetClip instance).
+  // Class to temporary set the Graphics' clip region to the full
+  // extend.
   class SetClip {
   public:
-    SetClip(Graphics* g, const gfx::Rect& rc)
+    SetClip(Graphics* g)
       : m_graphics(g)
       , m_oldClip(g->getClipBounds())
-    {
-      m_graphics->setClipBounds(rc);
+      , m_oldCount(g->getSaveCount()) {
+      if (m_oldCount > 1)
+        m_graphics->restoreClip();
     }
 
-    ~SetClip()
-    {
-      m_graphics->setClipBounds(m_oldClip);
+    ~SetClip() {
+      if (m_oldCount > 1) {
+        m_graphics->saveClip();
+        m_graphics->clipRect(m_oldClip);
+      }
     }
 
   private:
     Graphics* m_graphics;
     gfx::Rect m_oldClip;
+    int m_oldCount;
 
     DISABLE_COPYING(SetClip);
   };
@@ -147,22 +153,19 @@ namespace ui {
   class IntersectClip {
   public:
     IntersectClip(Graphics* g, const gfx::Rect& rc)
-      : m_graphics(g)
-      , m_oldClip(g->getClipBounds())
-    {
-      m_notEmpty = m_graphics->intersectClipRect(rc);
+      : m_graphics(g) {
+      m_graphics->saveClip();
+      m_notEmpty = m_graphics->clipRect(rc);
     }
 
-    ~IntersectClip()
-    {
-      m_graphics->setClipBounds(m_oldClip);
+    ~IntersectClip() {
+      m_graphics->restoreClip();
     }
 
     operator bool() const { return m_notEmpty; }
 
   private:
     Graphics* m_graphics;
-    gfx::Rect m_oldClip;
     bool m_notEmpty;
 
     DISABLE_COPYING(IntersectClip);

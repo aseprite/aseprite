@@ -16,6 +16,8 @@
 #include "SkPixelRef.h"
 #include "SkStream.h"
 
+#include <memory>
+
 namespace she {
 
 sk_sp<SkColorSpace> SkiaSurface::m_colorSpace;
@@ -23,11 +25,9 @@ sk_sp<SkColorSpace> SkiaSurface::m_colorSpace;
 // static
 Surface* SkiaSurface::loadSurface(const char* filename)
 {
-  base::FileHandle fp(base::open_file_with_exception(filename, "rb"));
-
-  SkAutoTDelete<SkCodec> codec(
-    SkCodec::NewFromStream(
-      new SkFILEStream(fp.get(), SkFILEStream::kCallerRetains_Ownership)));
+  std::unique_ptr<SkCodec> codec(
+    SkCodec::MakeFromStream(
+      std::unique_ptr<SkFILEStream>(new SkFILEStream(base::open_file_raw(filename, "rb")))));
   if (!codec)
     return nullptr;
 

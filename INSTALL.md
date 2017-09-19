@@ -22,7 +22,7 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + VS2015 Community Edition + Windows 10 SDK
+* Windows 10 + VS2015 or VS2017 Community Edition + Windows 10 SDK
 * macOS 10.12.1 Sierra + Xcode 8.0 + macOS 10.12 SDK + Skia
 * Linux + gcc 4.8 with some C++11 support
 
@@ -71,8 +71,8 @@ Aseprite can be compiled with two different back-ends:
 First of all, you will need:
 
 * Windows 10 (we don't support cross-compiling and don't know if this would be possible)
-* [VS2015 Community Edition](https://www.visualstudio.com/downloads/) (VS2017 should work too)
-* Windows 10 SDK (it's included with VS2015, remember to install it)
+* [Visual Studio Community Edition](https://www.visualstudio.com/downloads/) (VS2015 or VS2017)
+* Windows 10 SDK (it's included with the Visual Studio installer, remember to install it)
 
 Then, you will need an extra little utility: `awk`, used to compile
 the libpng library. You can get this utility from MSYS2 distributions
@@ -234,7 +234,7 @@ Skia.
 
 You can always check the
 [official Skia instructions](https://skia.org/user/quick) and select
-the OS you are building for. Aseprite uses the `aseprite-m55` Skia
+the OS you are building for. Aseprite uses the `aseprite-m62` Skia
 branch from `https://github.com/aseprite/skia`.
 
 ## Skia on Windows
@@ -243,9 +243,15 @@ Download
 [Google depot tools](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
 and uncompress it in some place like `C:\deps\depot_tools`.
 
-Then open a command line follow these steps (for VS2015):
+Then open a command line follow these steps:
 
+For VS2015:
     call "%VS140COMNTOOLS%\vsvars32.bat"
+
+For VS2017:
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
+
+Then:
     set PATH=C:\deps\depot_tools;%PATH%
     cd C:\deps\depot_tools
     gclient sync
@@ -257,16 +263,22 @@ Just ignore it.)
     cd C:\deps
     git clone https://github.com/aseprite/skia.git
     cd skia
-    git checkout aseprite-m55
-    python bin/sync-and-gyp
+    git checkout aseprite-m62
+    python tools/git-sync-deps
 
-(The `bin/sync-and-gyp` will take some minutes because it downloads a
+(The `tools/git-sync-deps` will take some minutes because it downloads a
 lot of packages, please wait and re-run the same command in case it fails.)
 
-    ninja -C out/Release dm
+For VS2015:
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"""
+    ninja -C out/Release
+
+For VS2017:
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"" msvc=2017"
+    ninja -C out/Release
 
 More information about these steps in the
-[official Skia documentation](https://skia.org/user/quick/windows).
+[official Skia documentation](https://skia.org/user/build).
 
 ## Skia on macOS
 
@@ -281,9 +293,10 @@ several minutes to finish:
     git clone https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    git checkout aseprite-m55
-    python bin/sync-and-gyp
-    ninja -C out/Release dm
+    git checkout aseprite-m62
+    python tools/git-sync-deps
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
+    ninja -C out/Release
 
 After this you should have all Skia libraries compiled.  When you
 [compile Aseprite](#compiling), remember to add
@@ -291,4 +304,4 @@ After this you should have all Skia libraries compiled.  When you
 described in the [macOS details](#macos-details) section.
 
 More information about these steps in the
-[official Skia documentation](https://skia.org/user/quick/macos).
+[official Skia documentation](https://skia.org/user/build).

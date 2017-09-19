@@ -25,7 +25,9 @@
 
 #if SK_SUPPORT_GPU
 
+  #include "GrBackendSurface.h"
   #include "GrContext.h"
+  #include "gl/GrGLDefines.h"
   #include "gl/GrGLInterface.h"
   #include "she/gl/gl_context_cgl.h"
   #include "she/skia/skia_surface.h"
@@ -166,14 +168,6 @@ public:
   }
 
   void onDrawRect(const gfx::Rect& rect) override {
-#if SK_SUPPORT_GPU
-    // Flush operations to the SkCanvas
-    if (m_display->isInitialized()) {
-      SkiaSurface* surface = static_cast<SkiaSurface*>(m_display->getSurface());
-      surface->flush();
-    }
-#endif
-
     switch (m_backend) {
 
       case Backend::NONE:
@@ -182,6 +176,7 @@ public:
 
 #if SK_SUPPORT_GPU
       case Backend::GL:
+        // TODO
         if (m_nsGL)
           [m_nsGL flushBuffer];
         break;
@@ -201,7 +196,7 @@ private:
   bool attachGL() {
     if (!m_glCtx) {
       try {
-        SkAutoTDelete<GLContext> ctx(new GLContextCGL);
+        base::UniquePtr<GLContext> ctx(new GLContextCGL);
         if (!ctx->createGLContext())
           throw std::runtime_error("Cannot create CGL context");
 
@@ -212,7 +207,9 @@ private:
           return false;
         }
 
-        m_glCtx.reset(ctx);
+        m_glCtx.reset(ctx.get());
+        ctx.release();
+
         m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
                                         (GrBackendContext)m_glInterfaces.get()));
 
@@ -242,26 +239,35 @@ private:
   }
 
   void createRenderTarget(const gfx::Size& size) {
-    int scale = this->scale();
+    const int scale = this->scale();
     m_lastSize = size;
 
-    GrBackendRenderTargetDesc desc;
-    desc.fWidth = size.w;
-    desc.fHeight = size.h;
-    desc.fConfig = kSkia8888_GrPixelConfig;
-    desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
-    desc.fSampleCnt = m_glCtx->getSampleCount();
-    desc.fStencilBits = m_glCtx->getStencilBits();
-    desc.fRenderTargetHandle = 0; // direct frame buffer
+    GrGLint buffer;
+    m_glInterfaces->fFunctions.fGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
+    GrGLFramebufferInfo info;
+    info.fFBOID = (GrGLuint)buffer;
+
+    GrBackendRenderTarget
+      target(size.w, size.h,
+             m_glCtx->getSampleCount(),
+             m_glCtx->getStencilBits(),
+             kSkia8888_GrPixelConfig,
+             info);
+
+    SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
 
     m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
     m_skSurfaceDirect = SkSurface::MakeFromBackendRenderTarget(
-      m_grCtx.get(), desc, nullptr);
+      m_grCtx.get(), target,
+      kBottomLeft_GrSurfaceOrigin,
+      nullptr, &props);
 
-    if (scale == 1) {
+    if (scale == 1 && m_skSurfaceDirect) {
+      LOG("OS: Using GL direct surface\n");
       m_skSurface = m_skSurfaceDirect;
     }
     else {
+      LOG("OS: Using double buffering\n");
       m_skSurface =
         SkSurface::MakeRenderTarget(
           m_grCtx.get(),
@@ -305,7 +311,6 @@ private:
                                      rect.h/scale)))
       return;
 
-    bitmap.lockPixels();
     @autoreleasepool {
       NSGraphicsContext* gc = [NSGraphicsContext currentContext];
       CGContextRef cg = (CGContextRef)[gc graphicsPort];
@@ -324,7 +329,6 @@ private:
       }
       CGColorSpaceRelease(colorSpace);
     }
-    bitmap.unlockPixels();
   }
 
   SkiaDisplay* m_display;
@@ -333,7 +337,7 @@ private:
   OSXWindow* m_window;
 #if SK_SUPPORT_GPU
   base::UniquePtr<GLContext> m_glCtx;
-  SkAutoTUnref<const GrGLInterface> m_glInterfaces;
+  sk_sp<const GrGLInterface> m_glInterfaces;
   NSOpenGLContext* m_nsGL;
   sk_sp<GrContext> m_grCtx;
   sk_sp<SkSurface> m_skSurfaceDirect;

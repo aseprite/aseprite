@@ -54,19 +54,29 @@ int Graphics::height() const
   return m_surface->height();
 }
 
+int Graphics::getSaveCount() const
+{
+  return m_surface->getSaveCount();
+}
+
 gfx::Rect Graphics::getClipBounds() const
 {
   return m_surface->getClipBounds().offset(-m_dx, -m_dy);
 }
 
-void Graphics::setClipBounds(const gfx::Rect& rc)
+void Graphics::saveClip()
 {
-  m_surface->setClipBounds(gfx::Rect(rc).offset(m_dx, m_dy));
+  m_surface->saveClip();
 }
 
-bool Graphics::intersectClipRect(const gfx::Rect& rc)
+void Graphics::restoreClip()
 {
-  return m_surface->intersectClipRect(gfx::Rect(rc).offset(m_dx, m_dy));
+  m_surface->restoreClip();
+}
+
+bool Graphics::clipRect(const gfx::Rect& rc)
+{
+  return m_surface->clipRect(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
 void Graphics::setDrawMode(DrawMode mode, int param,

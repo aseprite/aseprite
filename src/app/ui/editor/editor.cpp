@@ -635,7 +635,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       if (tmp)
         tmp->dispose();
 
-      tmp = she::instance()->createRgbaSurface(rc.w, rc.h);
+      tmp = she::instance()->createSurface(rc.w, rc.h);
     }
 
     if (tmp->nativeHandle()) {

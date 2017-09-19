@@ -34,9 +34,11 @@ namespace she {
     virtual int height() const = 0;
     virtual bool isDirectToScreen() const = 0;
 
-    virtual gfx::Rect getClipBounds() = 0;
-    virtual void setClipBounds(const gfx::Rect& rc) = 0;
-    virtual bool intersectClipRect(const gfx::Rect& rc) = 0;
+    virtual int getSaveCount() const = 0;
+    virtual gfx::Rect getClipBounds() const = 0;
+    virtual void saveClip() = 0;
+    virtual void restoreClip() = 0;
+    virtual bool clipRect(const gfx::Rect& rc) = 0;
 
     virtual void setDrawMode(DrawMode mode, int param = 0,
                              const gfx::Color a = gfx::ColorNone,

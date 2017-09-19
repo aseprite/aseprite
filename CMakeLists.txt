@@ -32,6 +32,9 @@ endif()
 # Note: This needs to be done before the project command
 set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 
+set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
+
 # Aseprite project
 project(aseprite C CXX)
 
@@ -56,7 +59,6 @@ option(WITH_DEPRECATED_GLIB_SUPPORT "Enable support for older glib versions" off
 option(WITH_DESKTOP_INTEGRATION     "Enable desktop integration modules" off)
 option(WITH_QT_THUMBNAILER          "Enable kde5/qt5 thumnailer" off)
 
-option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
 option(USE_SHARED_CMARK   "Use your installed copy of cmark" off)
 option(USE_SHARED_CURL    "Use your installed copy of curl" off)
 option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
@@ -109,7 +111,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 if(MSVC)
-    set(CMAKE_C_FLAGS_PROFILE "/MD /Zi /Ox /Gd"
+    set(CMAKE_C_FLAGS_PROFILE "/MT /Zi /Ox /Gd"
         CACHE STRING "Profiling C flags")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_C_FLAGS_PROFILE}"
         CACHE STRING "Profiling C++ flags")
@@ -166,18 +168,6 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_definitions(-DDEBUGMODE -D_DEBUG)
 else()
   add_definitions(-DNDEBUG)
-endif()
-
-if(MSVC)
-  if(USE_STATIC_LIBC)
-    if(CMAKE_BUILD_TYPE STREQUAL Debug)
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MTd")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MTd")
-    else()
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MT")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MT")
-    endif()
-  endif()
 endif()
 
 if(NOT WIN32 AND NOT APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -461,10 +451,6 @@ include_directories(src)
 add_definitions(-DHAVE_CONFIG_H)
 if(ENABLE_MEMLEAK)
   add_definitions(-DLAF_MEMLEAK)
-endif()
-
-if(NOT USE_STATIC_LIBC)
-  set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
 endif()
 
 set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")

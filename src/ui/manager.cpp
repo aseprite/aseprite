@@ -1403,9 +1403,9 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
     she::Surface* surface = m_display->getSurface();
-    gfx::Rect oldClip = surface->getClipBounds();
+    surface->saveClip();
 
-    if (surface->intersectClipRect(paintMsg->rect())) {
+    if (surface->clipRect(paintMsg->rect())) {
 #ifdef REPORT_EVENTS
       std::cout << " - clip("
                 << paintMsg->rect().x << ", "
@@ -1432,7 +1432,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
         used = widget->sendMessage(msg);
 
         // Restore clip region for paint messages.
-        surface->setClipBounds(oldClip);
+        surface->restoreClip();
       }
     }
 

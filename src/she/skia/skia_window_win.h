@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -52,7 +52,7 @@ private:
   Backend m_backend;
 #if SK_SUPPORT_GPU
   base::UniquePtr<GLContext> m_glCtx;
-  SkAutoTUnref<const GrGLInterface> m_glInterfaces;
+  sk_sp<const GrGLInterface> m_glInterfaces;
   sk_sp<GrContext> m_grCtx;
   sk_sp<SkSurface> m_skSurfaceDirect;
   sk_sp<SkSurface> m_skSurface;

@@ -23,6 +23,7 @@
 #include "ft/lib.h"
 #include "she/common/freetype_font.h"
 #include "she/common/sprite_sheet_font.h"
+#include "she/menus.h"
 #include "she/system.h"
 
 namespace she {

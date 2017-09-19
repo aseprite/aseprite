@@ -9,7 +9,9 @@
 #pragma once
 
 #include <allegro.h>
+#include <vector>
 
+#include "gfx/rect.h"
 #include "she/surface.h"
 #include "she/common/generic_surface.h"
 
@@ -34,9 +36,11 @@ namespace she {
     int width() const override;
     int height() const override;
     bool isDirectToScreen() const override;
-    gfx::Rect getClipBounds() override;
-    void setClipBounds(const gfx::Rect& rc) override;
-    bool intersectClipRect(const gfx::Rect& rc) override;
+    int getSaveCount() const override;
+    gfx::Rect getClipBounds() const override;
+    void saveClip() override;
+    void restoreClip() override;
+    bool clipRect(const gfx::Rect& rc) override;
     void lock() override;
     void unlock() override;
     void setDrawMode(DrawMode mode, int param,
@@ -64,6 +68,7 @@ namespace she {
     BITMAP* m_bmp;
     DestroyFlag m_destroy;
     int m_lock;
+    std::vector<gfx::Rect> m_clipStack;
   };
 
 } // namespace she

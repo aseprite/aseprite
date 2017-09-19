@@ -113,9 +113,7 @@ void EditorView::onSetViewScroll(const gfx::Point& pt)
 {
   Editor* editor = this->editor();
   if (editor) {
-    // We have to hide the brush preview to scroll (without this,
-    // keyboard shortcuts to scroll when the brush preview is visible
-    // will leave brush previews all over the screen).
+    // Hide the brush preview to avoid leaving a cursor trail.
     HideBrushPreview hide(editor->brushPreview());
     View::onSetViewScroll(pt);
   }

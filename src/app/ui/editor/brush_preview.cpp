@@ -243,12 +243,10 @@ void BrushPreview::show(const gfx::Point& screenPos)
   if (!(m_type & NATIVE_CROSSHAIR) ||
       (m_type & BRUSH_BOUNDARIES)) {
     ui::ScreenGraphics g;
-    ui::SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
+    ui::SetClip clip(&g);
     gfx::Color uiCursorColor = color_utils::color_for_ui(appCursorColor);
-
     forEachBrushPixel(&g, m_screenPosition, spritePos, uiCursorColor, &BrushPreview::savePixelDelegate);
     forEachBrushPixel(&g, m_screenPosition, spritePos, uiCursorColor, &BrushPreview::drawPixelDelegate);
-
     m_withModifiedPixels = true;
   }
 
@@ -287,8 +285,7 @@ void BrushPreview::hide()
   if (m_withModifiedPixels) {
     // Restore pixels
     ui::ScreenGraphics g;
-    ui::SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
-
+    ui::SetClip clip(&g);
     forEachBrushPixel(&g, m_screenPosition, m_editorPosition, gfx::ColorNone,
                       &BrushPreview::clearPixelDelegate);
   }

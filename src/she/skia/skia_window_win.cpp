@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,9 +15,13 @@
 #include "she/skia/skia_display.h"
 #include "she/system.h"
 
+#undef max // To avoid include/private/SkPathRef.h(451): error C2589: '(': illegal token on right side of '::'
+
 #if SK_SUPPORT_GPU
 
+  #include "GrBackendSurface.h"
   #include "GrContext.h"
+  #include "gl/GrGLDefines.h"
   #include "she/gl/gl_context_wgl.h"
   #if SK_ANGLE
     #include "she/gl/gl_context_egl.h"
@@ -26,12 +30,8 @@
 
 #endif
 
-#ifdef _WIN32
-
-  #include <windows.h>
-  #include "she/win/window_dde.h"
-
-#endif
+#include <windows.h>
+#include "she/win/window_dde.h"
 
 #include <iostream>
 
@@ -97,6 +97,7 @@ void SkiaWindow::paintImpl(HDC hdc)
       // If we are drawing inside an off-screen texture, here we have
       // to blit that texture into the main framebuffer.
       if (m_skSurfaceDirect != m_skSurface) {
+#if 0                           // TODO
         GrBackendObject texID = m_skSurface->getTextureHandle(
           SkSurface::kFlushRead_BackendHandleAccess);
 
@@ -119,6 +120,7 @@ void SkiaWindow::paintImpl(HDC hdc)
           SkCanvas::kStrict_SrcRectConstraint);
 
         m_skSurfaceDirect->getCanvas()->flush();
+#endif
       }
 
       // Flush GL context
@@ -146,7 +148,6 @@ void SkiaWindow::paintHDC(HDC hdc)
   bmi.bmiHeader.biSizeImage = 0;
 
   ASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
-  bitmap.lockPixels();
 
   int ret = StretchDIBits(hdc,
     0, 0, bitmap.width()*scale(), bitmap.height()*scale(),
@@ -154,8 +155,6 @@ void SkiaWindow::paintHDC(HDC hdc)
     bitmap.getPixels(),
     &bmi, DIB_RGB_COLORS, SRCCOPY);
   (void)ret;
-
-  bitmap.unlockPixels();
 }
 
 #if SK_SUPPORT_GPU
@@ -281,18 +280,25 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
   int scale = m_display->scale();
   m_lastSize = size;
 
-  GrBackendRenderTargetDesc desc;
-  desc.fWidth = size.w;
-  desc.fHeight = size.h;
-  desc.fConfig = kSkia8888_GrPixelConfig;
-  desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
-  desc.fSampleCnt = m_sampleCount;
-  desc.fStencilBits = m_stencilBits;
-  desc.fRenderTargetHandle = 0; // direct frame buffer
+  GrGLint buffer;
+  m_glInterfaces->fFunctions.fGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
+  GrGLFramebufferInfo info;
+  info.fFBOID = (GrGLuint) buffer;
+
+  GrBackendRenderTarget
+    target(size.w, size.h,
+           m_sampleCount,
+           m_stencilBits,
+           kSkia8888_GrPixelConfig,
+           info);
+
+  SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
 
   m_skSurface.reset(nullptr); // set m_skSurface comparing with the old m_skSurfaceDirect
   m_skSurfaceDirect = SkSurface::MakeFromBackendRenderTarget(
-    m_grCtx.get(), desc, nullptr);
+    m_grCtx.get(), target,
+    kBottomLeft_GrSurfaceOrigin,
+    nullptr, &props);
 
   if (scale == 1) {
     m_skSurface = m_skSurfaceDirect;
