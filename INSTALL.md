@@ -246,12 +246,15 @@ and uncompress it in some place like `C:\deps\depot_tools`.
 Then open a command line follow these steps:
 
 For VS2015:
+
     call "%VS140COMNTOOLS%\vsvars32.bat"
 
 For VS2017:
+
     call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
 
 Then:
+
     set PATH=C:\deps\depot_tools;%PATH%
     cd C:\deps\depot_tools
     gclient sync
@@ -266,14 +269,17 @@ Just ignore it.)
     git checkout aseprite-m62
     python tools/git-sync-deps
 
-(The `tools/git-sync-deps` will take some minutes because it downloads a
-lot of packages, please wait and re-run the same command in case it fails.)
+(The `tools/git-sync-deps` will take some minutes because it downloads
+a lot of packages, please wait and re-run the same command in case it
+fails.)
 
 For VS2015:
+
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"""
     ninja -C out/Release
 
 For VS2017:
+
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"" msvc=2017"
     ninja -C out/Release
 
