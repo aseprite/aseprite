@@ -23,7 +23,7 @@ namespace she {
 class EventQueue;
 class SkiaDisplay;
 
-class SkiaWindow : public WinWindow<SkiaWindow> {
+class SkiaWindow : public WinWindow {
 public:
   enum class Backend { NONE, GL, ANGLE };
 
@@ -31,11 +31,10 @@ public:
              int width, int height, int scale);
   ~SkiaWindow();
 
-  void queueEventImpl(Event& ev);
-  void paintImpl(HDC hdc);
-  void resizeImpl(const gfx::Size& size);
-
 private:
+  void onQueueEvent(Event& ev) override;
+  void onPaint(HDC hdc) override;
+  void onResize(const gfx::Size& sz) override;
   void paintHDC(HDC dc);
 
 #if SK_SUPPORT_GPU

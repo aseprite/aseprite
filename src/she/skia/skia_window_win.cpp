@@ -11,6 +11,7 @@
 #include "she/skia/skia_window_win.h"
 
 #include "base/log.h"
+#include "she/event.h"
 #include "she/event_queue.h"
 #include "she/skia/skia_display.h"
 #include "she/system.h"
@@ -39,7 +40,7 @@ namespace she {
 
 SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display,
                        int width, int height, int scale)
-  : WinWindow<SkiaWindow>(width, height, scale)
+  : WinWindow(width, height, scale)
   , m_queue(queue)
   , m_display(display)
   , m_backend(Backend::NONE)
@@ -70,13 +71,13 @@ SkiaWindow::~SkiaWindow()
   }
 }
 
-void SkiaWindow::queueEventImpl(Event& ev)
+void SkiaWindow::onQueueEvent(Event& ev)
 {
   ev.setDisplay(m_display);
   m_queue->queueEvent(ev);
 }
 
-void SkiaWindow::paintImpl(HDC hdc)
+void SkiaWindow::onPaint(HDC hdc)
 {
   switch (m_backend) {
 
@@ -322,7 +323,7 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
 
 #endif // SK_SUPPORT_GPU
 
-void SkiaWindow::resizeImpl(const gfx::Size& size)
+void SkiaWindow::onResize(const gfx::Size& size)
 {
   bool gpu = instance()->gpuAcceleration();
   (void)gpu;
