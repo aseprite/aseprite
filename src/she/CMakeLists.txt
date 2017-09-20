@@ -54,7 +54,8 @@ if(USE_SKIA_BACKEND)
     -DSK_SUPPORT_OPENCL=0
     -DSK_FORCE_DISTANCE_FIELD_TEXT=0
     -DGR_GL_FUNCTION_TYPE=__stdcall
-    -DSK_SUPPORT_GPU=1)
+    # TODO change this to 1
+    -DSK_SUPPORT_GPU=0)
 
   if(WIN32)
     add_definitions(-DSK_BUILD_FOR_WIN32)
