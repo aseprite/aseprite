@@ -31,8 +31,10 @@ using namespace she;
 
   NSRect rect = NSMakeRect(0, 0, width, height);
   self = [self initWithContentRect:rect
-                         styleMask:(NSTitledWindowMask | NSClosableWindowMask |
-                                    NSMiniaturizableWindowMask | NSResizableWindowMask)
+                         styleMask:(NSWindowStyleMaskTitled |
+                                    NSWindowStyleMaskClosable |
+                                    NSWindowStyleMaskMiniaturizable |
+                                    NSWindowStyleMaskResizable)
                            backing:NSBackingStoreBuffered
                              defer:NO];
   if (!self)

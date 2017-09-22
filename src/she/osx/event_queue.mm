@@ -28,7 +28,7 @@ void OSXEventQueue::getEvent(Event& ev, bool canWait)
     // Pump the whole queue of Cocoa events
     NSEvent* event;
     do {
-      event = [app nextEventMatchingMask:NSAnyEventMask
+      event = [app nextEventMatchingMask:NSEventMaskAny
                                untilDate:[NSDate distantPast]
                                   inMode:NSDefaultRunLoopMode
                                  dequeue:YES];
@@ -37,7 +37,7 @@ void OSXEventQueue::getEvent(Event& ev, bool canWait)
         // combinations, and send them directly to the main
         // NSView. Without this, the NSApplication intercepts the key
         // combination and use it to go to the next key view.
-        if (event.type == NSKeyDown) {
+        if (event.type == NSEventTypeKeyDown) {
           [app.mainWindow.contentView keyDown:event];
         }
         else {
@@ -49,7 +49,7 @@ void OSXEventQueue::getEvent(Event& ev, bool canWait)
     if (!m_events.try_pop(ev)) {
       if (canWait) {
         // Wait until there is a Cocoa event in queue
-        [NSApp nextEventMatchingMask:NSAnyEventMask
+        [NSApp nextEventMatchingMask:NSEventMaskAny
                            untilDate:[NSDate distantFuture]
                               inMode:NSDefaultRunLoopMode
                              dequeue:NO];

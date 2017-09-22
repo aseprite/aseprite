@@ -315,7 +315,7 @@ KeyScancode scancode_from_nsevent(NSEvent* event)
   // For keys that are not in the numpad we try to get the scancode
   // converting the first char in NSEvent.characters to a
   // scancode.
-  if ((event.modifierFlags & NSNumericPadKeyMask) == 0) {
+  if ((event.modifierFlags & NSEventModifierFlagNumericPad) == 0) {
     KeyScancode code;
 
     // It looks like getting the first "event.characters" char is the

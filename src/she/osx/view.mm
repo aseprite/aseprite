@@ -55,13 +55,13 @@ Event::MouseButton get_mouse_buttons(NSEvent* event)
   // Some Wacom drivers on OS X report right-clicks with
   // buttonNumber=0, so we've to check the type event anyway.
   switch (event.type) {
-    case NSLeftMouseDown:
-    case NSLeftMouseUp:
-    case NSLeftMouseDragged:
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeLeftMouseUp:
+    case NSEventTypeLeftMouseDragged:
       return Event::LeftButton;
-    case NSRightMouseDown:
-    case NSRightMouseUp:
-    case NSRightMouseDragged:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeRightMouseDragged:
       return Event::RightButton;
   }
 
@@ -81,10 +81,10 @@ KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
 {
   int modifiers = kKeyNoneModifier;
   NSEventModifierFlags nsFlags = event.modifierFlags;
-  if (nsFlags & NSShiftKeyMask) modifiers |= kKeyShiftModifier;
-  if (nsFlags & NSControlKeyMask) modifiers |= kKeyCtrlModifier;
-  if (nsFlags & NSAlternateKeyMask) modifiers |= kKeyAltModifier;
-  if (nsFlags & NSCommandKeyMask) modifiers |= kKeyCmdModifier;
+  if (nsFlags & NSEventModifierFlagShift) modifiers |= kKeyShiftModifier;
+  if (nsFlags & NSEventModifierFlagControl) modifiers |= kKeyCtrlModifier;
+  if (nsFlags & NSEventModifierFlagOption) modifiers |= kKeyAltModifier;
+  if (nsFlags & NSEventModifierFlagCommand) modifiers |= kKeyCmdModifier;
   if (osx_is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
   return (KeyModifiers)modifiers;
 }
@@ -262,10 +262,10 @@ using namespace she;
 {
   static int lastFlags = 0;
   static int flags[] = {
-    NSShiftKeyMask,
-    NSControlKeyMask,
-    NSAlternateKeyMask,
-    NSCommandKeyMask
+    NSEventModifierFlagShift,
+    NSEventModifierFlagControl,
+    NSEventModifierFlagOption,
+    NSEventModifierFlagCommand
   };
   static KeyScancode scancodes[] = {
     kKeyLShift,
@@ -493,9 +493,9 @@ using namespace she;
 {
   if (event.isEnteringProximity == YES) {
     switch (event.pointingDeviceType) {
-      case NSPenPointingDevice: m_pointerType = she::PointerType::Pen; break;
-      case NSCursorPointingDevice: m_pointerType = she::PointerType::Cursor; break;
-      case NSEraserPointingDevice: m_pointerType = she::PointerType::Eraser; break;
+      case NSPointingDeviceTypePen: m_pointerType = she::PointerType::Pen; break;
+      case NSPointingDeviceTypeCursor: m_pointerType = she::PointerType::Cursor; break;
+      case NSPointingDeviceTypeEraser: m_pointerType = she::PointerType::Eraser; break;
       default:
         m_pointerType = she::PointerType::Unknown;
         break;
