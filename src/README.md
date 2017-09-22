@@ -67,3 +67,19 @@ following extra commands available:
   test the anticrash feature or your need a memory dump file.
 * `Ctrl+Alt+Shift+R`: recover the active document from the data
   recovery store.
+
+# Detect Platform
+
+You can check the platform using the following checks:
+
+    #ifdef _WIN32
+      #ifdef _WIN64
+        // Windows x64
+      #else
+        // Windows x86
+      #endif
+    #elif defined(__APPLE__)
+        // macOS
+    #else
+        // Linux
+    #endif
