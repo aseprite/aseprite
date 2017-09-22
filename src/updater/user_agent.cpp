@@ -19,7 +19,7 @@
 
 #elif __APPLE__ // Mac OS X
 
-  void getMacOSXVersion(int* major, int* minor, int* bugFix);
+  void getMacOSXVersion(int& major, int& minor, int& patch);
 
 #else  // Unix-like system
 
@@ -82,9 +82,9 @@ std::string getUserAgent()
   // ----------------------------------------------------------------------
   // Mac OS X
 
-  int major, minor, bugFix;
-  getMacOSXVersion(&major, &minor, &bugFix);
-  userAgent << "Mac OS X " << major << "." << minor << "." << bugFix;
+  int major, minor, patch;
+  getMacOSXVersion(major, minor, patch);
+  userAgent << "Mac OS X " << major << "." << minor << "." << patch;
 
 #else
 

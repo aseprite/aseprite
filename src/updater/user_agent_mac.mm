@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,28 +10,34 @@
 
 #include <Cocoa/Cocoa.h>
 
-void getMacOSXVersion(int* major, int* minor, int* bugFix)
+void getMacOSXVersion(int& major, int& minor, int& patch)
 {
-  OSErr err;
-  SInt32 systemVersion, versionMajor, versionMinor, versionBugFix;
-  if (Gestalt(gestaltSystemVersion, &systemVersion) != noErr) goto fail;
-  if (systemVersion < 0x1040) {
-    if (major) *major = ((systemVersion & 0xF000) >> 12) * 10 + ((systemVersion & 0x0F00) >> 8);
-    if (minor) *minor = (systemVersion & 0x00F0) >> 4;
-    if (bugFix) *bugFix = (systemVersion & 0x000F);
+  major = 10;
+  minor = 0;
+  patch = 0;
+
+  NSProcessInfo* info = [NSProcessInfo processInfo];
+  if ([info respondsToSelector:@selector(operatingSystemVersion)]) {
+    NSOperatingSystemVersion osVer = [info operatingSystemVersion];
+    major = osVer.majorVersion;
+    minor = osVer.minorVersion;
+    patch = osVer.patchVersion;
   }
   else {
-    if ((err = Gestalt(gestaltSystemVersionMajor, &versionMajor)) != noErr) goto fail;
-    if ((err = Gestalt(gestaltSystemVersionMinor, &versionMinor)) != noErr) goto fail;
-    if ((err = Gestalt(gestaltSystemVersionBugFix, &versionBugFix)) != noErr) goto fail;
-    if (major) *major = versionMajor;
-    if (minor) *minor = versionMinor;
-    if (bugFix) *bugFix = versionBugFix;
+    SInt32 systemVersion, majorVersion, minorVersion, patchVersion;
+    if (Gestalt(gestaltSystemVersion, &systemVersion) != noErr)
+      return;
+    if (systemVersion < 0x1040) {
+      major = ((systemVersion & 0xF000) >> 12) * 10 + ((systemVersion & 0x0F00) >> 8);
+      minor = (systemVersion & 0x00F0) >> 4;
+      patch = (systemVersion & 0x000F);
+    }
+    else if (Gestalt(gestaltSystemVersionMajor, &majorVersion) == noErr &&
+             Gestalt(gestaltSystemVersionMinor, &minorVersion) == noErr &&
+             Gestalt(gestaltSystemVersionBugFix, &patchVersion) == noErr) {
+      major = majorVersion;
+      minor = minorVersion;
+      patch = patchVersion;
+    }
   }
-  return;
-
-fail:
-  if (major) *major = 10;
-  if (minor) *minor = 0;
-  if (bugFix) *bugFix = 0;
 }
