@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -74,7 +74,7 @@ void ChangeBrushCommand::onExecute(Context* context)
 {
   // Change the brush of the selected tool in the toolbar (not the
   // active tool which might be different, e.g. the quick tool)
-  tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
+  tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
   ToolPreferences::Brush& brush =
     Preferences::instance().tool(tool).brush;
 
