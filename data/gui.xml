@@ -561,7 +561,7 @@
         <separator />
         <item command="SaveFile" text="&amp;Save" />
         <item command="SaveFileAs" text="Save &amp;As..." />
-        <item command="SaveFileCopyAs" text="Save Cop&amp;y As..." />
+        <item command="SaveFileCopyAs" text="Expor&amp;t..." />
         <item command="CloseFile" text="&amp;Close" />
         <item command="CloseAllFiles" text="Close All" />
         <separator />

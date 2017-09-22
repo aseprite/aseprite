@@ -181,10 +181,10 @@ bool SaveFileBaseCommand::saveAsDialog(
   const Document* document = context->activeDocument();
   std::string filename;
 
-  // If there is a delegate, we're doing a "Save Copy As", so we don't
+  // If there is a delegate, we're doing a "Save Copy As/Export", so we don't
   // have to mark the file as saved.
-  bool saveCopyAs = (delegate != nullptr);
-  bool markAsSaved = (!saveCopyAs);
+  const bool isExport = (delegate != nullptr);
+  const bool markAsSaved = (!isExport);
   double xscale = 1.0;
   double yscale = 1.0;
 
@@ -413,7 +413,7 @@ protected:
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : SaveFileBaseCommand("SaveFileCopyAs", "Save File Copy As", CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFileCopyAs", "Export", CmdRecordableFlag)
 {
 }
 
@@ -443,7 +443,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       docPref.saveCopy.filename());
   }
 
-  if (saveAsDialog(context, "Save Copy As",
+  if (saveAsDialog(context, "Export",
                    oldFilename, delegate)) {
     docPref.saveCopy.filename(document->filename());
     if (delegate) {
