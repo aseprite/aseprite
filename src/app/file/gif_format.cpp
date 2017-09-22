@@ -64,7 +64,7 @@ class GifFormat : public FileFormat {
 
   const char* onGetName() const override { return "gif"; }
   const char* onGetExtensions() const override { return "gif"; }
-  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::GIF_ANIMATION; }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::GIF_ANIMATION; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

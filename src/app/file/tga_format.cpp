@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,7 +25,7 @@ using namespace base;
 class TgaFormat : public FileFormat {
   const char* onGetName() const override { return "tga"; }
   const char* onGetExtensions() const override { return "tga"; }
-  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::TARGA_IMAGE; }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::TARGA_IMAGE; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

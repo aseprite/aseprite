@@ -27,8 +27,8 @@
 #include "base/scoped_lock.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
+#include "dio/detect_format.h"
 #include "doc/doc.h"
-#include "docio/detect_format.h"
 #include "render/quantization.h"
 #include "render/render.h"
 #include "ui/alert.h"
@@ -128,7 +128,7 @@ bool is_static_image_format(const std::string& filename)
   // Get the format through the extension of the filename
   FileFormat* format =
     FileFormatsManager::instance()
-    ->getFileFormat(docio::detect_format_by_file_extension(filename));
+    ->getFileFormat(dio::detect_format_by_file_extension(filename));
 
   return (format && format->support(FILE_SUPPORT_SEQUENCES));
 }
@@ -188,7 +188,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string&
 
   // Get the format through the extension of the filename
   fop->m_format = FileFormatsManager::instance()->getFileFormat(
-    docio::detect_format(filename));
+    dio::detect_format(filename));
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_LOAD)) {
     fop->setError("%s can't load \"%s\" file (\"%s\")\n", PACKAGE,
@@ -329,7 +329,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   // Get the format through the extension of the filename
   fop->m_format = FileFormatsManager::instance()->getFileFormat(
-    docio::detect_format_by_file_extension(filename));
+    dio::detect_format_by_file_extension(filename));
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_SAVE)) {
     fop->setError("%s can't save \"%s\" file (\"%s\")\n", PACKAGE,

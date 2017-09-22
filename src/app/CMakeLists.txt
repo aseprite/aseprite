@@ -531,7 +531,7 @@ target_link_libraries(app-lib
   cfg-lib
   clip
   doc-lib
-  docio-lib
+  dio-lib
   filters-lib
   fixmath-lib
   flic-lib

@@ -174,7 +174,7 @@ private:
 class AseFormat : public FileFormat {
   const char* onGetName() const override { return "ase"; }
   const char* onGetExtensions() const override { return "ase,aseprite"; }
-  docio::FileFormat onGetDocioFormat() const override { return docio::FileFormat::ASE_ANIMATION; }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::ASE_ANIMATION; }
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

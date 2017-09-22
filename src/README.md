@@ -46,11 +46,11 @@ because they don't depend on any other component.
 
 ## Level 4
 
-  * [docio](docio/) (base, flic): Load/save documents.
+  * [dio](dio/) (base, flic): Load/save documents.
 
 ## Level 5
 
-  * [app](app/) (allegro, base, doc, docio, filters, fixmath, flic, gfx, pen, render, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (allegro, base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, she, ui, undo, updater, webserver)
 
 ## Level 6
 

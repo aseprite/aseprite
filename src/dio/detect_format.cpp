@@ -4,7 +4,7 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include "docio/detect_format.h"
+#include "dio/detect_format.h"
 
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -21,7 +21,7 @@
 #define PNG_MAGIC_DWORD1 0x474E5089
 #define PNG_MAGIC_DWORD2 0x0A1A0A0D
 
-namespace docio {
+namespace dio {
 
 FileFormat detect_format(const std::string& filename)
 {
@@ -135,4 +135,4 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   return FileFormat::UNKNOWN;
 }
 
-} // namespace docio
+} // namespace dio

@@ -13,7 +13,7 @@
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "base/string.h"
-#include "docio/detect_format.h"
+#include "dio/detect_format.h"
 
 #include <algorithm>
 #include <cstring>
@@ -92,10 +92,10 @@ FileFormatsList::iterator FileFormatsManager::end()
   return m_formats.end();
 }
 
-FileFormat* FileFormatsManager::getFileFormat(const docio::FileFormat docioFormat) const
+FileFormat* FileFormatsManager::getFileFormat(const dio::FileFormat dioFormat) const
 {
   for (FileFormat* ff : m_formats)
-    if (ff->docioFormat() == docioFormat)
+    if (ff->dioFormat() == dioFormat)
       return ff;
   return nullptr;
 }

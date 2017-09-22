@@ -4,11 +4,11 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef DOCIO_FILE_FORMAT_H_INCLUDED
-#define DOCIO_FILE_FORMAT_H_INCLUDED
+#ifndef DIO_FILE_FORMAT_H_INCLUDED
+#define DIO_FILE_FORMAT_H_INCLUDED
 #pragma once
 
-namespace docio {
+namespace dio {
 
 enum class FileFormat {
   ERROR = -1,
@@ -31,6 +31,6 @@ enum class FileFormat {
   WEBP_ANIMATION,
 };
 
-} // namespace docio
+} // namespace dio
 
 #endif
