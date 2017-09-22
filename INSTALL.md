@@ -23,7 +23,7 @@ You should be able to compile Aseprite successfully on the following
 platforms:
 
 * Windows 10 + VS2015 or VS2017 Community Edition + Windows 10 SDK
-* macOS 10.12.1 Sierra + Xcode 8.0 + macOS 10.12 SDK + Skia
+* macOS 10.12.6 Sierra + Xcode 9.0 + macOS 10.13 SDK + Skia
 * Linux + gcc 4.8 with some C++11 support
 
 # Get the source code
