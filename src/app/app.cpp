@@ -146,6 +146,11 @@ App::App()
 
 void App::initialize(const AppOptions& options)
 {
+#ifdef _WIN32
+  if (options.disableWintab())
+    she::instance()->useWintabAPI(false);
+#endif
+
   m_isGui = options.startUI() && !options.previewCLI();
   m_isShell = options.startShell();
   m_coreModules = new CoreModules;

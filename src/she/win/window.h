@@ -19,6 +19,7 @@
 namespace she {
   class Event;
   class Surface;
+  class WindowSystem;
 
   class WinWindow {
   public:
@@ -61,6 +62,8 @@ namespace she {
     static void registerClass();
     static HWND createHwnd(WinWindow* self, int width, int height);
     static LRESULT CALLBACK staticWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+    static WindowSystem* system();
 
     mutable HWND m_hwnd;
     HCURSOR m_hcursor;

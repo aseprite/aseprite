@@ -70,6 +70,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_oneFrame(m_po.add("oneframe").description("Load just the first frame"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
+#ifdef _WIN32
+  , m_disableWintab(m_po.add("disable-wintab").description("Don't load wintab32.dll library"))
+#endif
   , m_help(m_po.add("help").mnemonic('?').description("Display this help and exits"))
   , m_version(m_po.add("version").description("Output version information and exit"))
 {
@@ -108,5 +111,12 @@ bool AppOptions::hasExporterParams() const
     m_po.enabled(m_data) ||
     m_po.enabled(m_sheet);
 }
+
+#ifdef _WIN32
+bool AppOptions::disableWintab() const
+{
+  return m_po.enabled(m_disableWintab);
+}
+#endif
 
 }

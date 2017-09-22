@@ -37,6 +37,12 @@ namespace she {
     virtual void activateApp() = 0;
     virtual void finishLaunching() = 0;
     virtual Capabilities capabilities() const = 0;
+
+    // Disables loading wintab32.dll (sometimes a program can be
+    // locked when we load the wintab32.dll, so we need a way to
+    // opt-out loading this library.)
+    virtual void useWintabAPI(bool enable) = 0;
+
     virtual Logger* logger() = 0;
     virtual Menus* menus() = 0;
     virtual NativeDialogs* nativeDialogs() = 0;

@@ -37,6 +37,9 @@ public:
   CommonSystem()
     : m_nativeDialogs(nullptr)
     , m_menus(nullptr) {
+#ifdef _WIN32
+    m_useWintabAPI = true;
+#endif
   }
 
   ~CommonSystem() {
@@ -47,6 +50,18 @@ public:
   void dispose() override {
     delete this;
   }
+
+  void useWintabAPI(bool state) override {
+#ifdef _WIN32
+    m_useWintabAPI = state;
+#endif
+  }
+
+#ifdef _WIN32
+  bool useWintabAPI() const {
+    return m_useWintabAPI;
+  }
+#endif
 
   Logger* logger() override {
 #ifdef __APPLE__
@@ -114,6 +129,9 @@ public:
   }
 
 private:
+#ifdef _WIN32
+  bool m_useWintabAPI;
+#endif
   NativeDialogs* m_nativeDialogs;
   Menus* m_menus;
   base::UniquePtr<ft::Lib> m_ft;

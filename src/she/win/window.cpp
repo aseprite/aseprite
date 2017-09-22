@@ -372,10 +372,10 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_CREATE:
       LOG("WIN: Creating window %p\n", m_hwnd);
 
-      // Attach Wacom context
-      m_hpenctx =
-        static_cast<WindowSystem*>(she::instance())
-        ->penApi().open(m_hwnd);
+      if (system()->useWintabAPI()) {
+        // Attach Wacom context
+        m_hpenctx = system()->penApi().open(m_hwnd);
+      }
       break;
 
     case WM_DESTROY:
@@ -383,8 +383,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
           m_hwnd, m_hpenctx);
 
       if (m_hpenctx) {
-        static_cast<WindowSystem*>(she::instance())
-          ->penApi().close(m_hpenctx);
+        system()->penApi().close(m_hpenctx);
         m_hpenctx = nullptr;
       }
       break;
@@ -781,7 +780,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WT_CSRCHANGE: {    // From Wintab 1.1
-      auto& api = static_cast<WindowSystem*>(she::instance())->penApi();
+      auto& api = system()->penApi();
       UINT serial = wparam;
       HCTX ctx = (HCTX)lparam;
       PACKET packet;
@@ -810,7 +809,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WT_PACKET: {
-      auto& api = static_cast<WindowSystem*>(she::instance())->penApi();
+      auto& api = system()->penApi();
       UINT serial = wparam;
       HCTX ctx = (HCTX)lparam;
       PACKET packet;
@@ -936,6 +935,12 @@ LRESULT CALLBACK WinWindow::staticWndProc(HWND hwnd, UINT msg, WPARAM wparam, LP
   else {
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
+}
+
+// static
+WindowSystem* WinWindow::system()
+{
+  return static_cast<WindowSystem*>(she::instance());
 }
 
 } // namespace she

@@ -84,6 +84,9 @@ public:
   const Option& oneFrame() const { return m_oneFrame; }
 
   bool hasExporterParams() const;
+#ifdef _WIN32
+  bool disableWintab() const;
+#endif
 
 private:
   std::string m_exeName;
@@ -140,6 +143,9 @@ private:
 
   Option& m_verbose;
   Option& m_debug;
+#ifdef _WIN32
+  Option& m_disableWintab;
+#endif
   Option& m_help;
   Option& m_version;
 
