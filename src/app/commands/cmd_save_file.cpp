@@ -204,7 +204,8 @@ bool SaveFileBaseCommand::saveAsDialog(
       return false;
 
     filename = newfilename.front();
-    if (base::normalize_path(forbiddenFilename) ==
+    if (!forbiddenFilename.empty() &&
+        base::normalize_path(forbiddenFilename) ==
         base::normalize_path(filename)) {
       ui::Alert::show("Overwrite Warning"
                       "<<You cannot save a copy with the same name (overwrite the original file)."
@@ -444,7 +445,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   }
 
   if (saveAsDialog(context, "Export",
-                   oldFilename, delegate)) {
+                   (document->isAssociatedToFile() ? oldFilename: std::string()),
+                   delegate)) {
     docPref.saveCopy.filename(document->filename());
     if (delegate) {
       docPref.saveCopy.resizeScale(delegate->getResizeScale());
