@@ -174,7 +174,7 @@ static inline doc::color_t colormap2rgba(ColorMapObject* colormap, int i) {
 // merged with new colormaps.
 class GifDecoder {
 public:
-  GifDecoder(FileOp* fop, GifFileType* gifFile, int fd, int filesize)
+  GifDecoder(FileOp* fop, GifFileType* gifFile, int fd, size_t filesize)
     : m_fop(fop)
     , m_gifFile(gifFile)
     , m_fd(fd)
@@ -767,7 +767,7 @@ private:
   FileOp* m_fop;
   GifFileType* m_gifFile;
   int m_fd;
-  int m_filesize;
+  size_t m_filesize;
   UniquePtr<Sprite> m_sprite;
   gfx::Rect m_spriteBounds;
   LayerImage* m_layer;
@@ -792,7 +792,7 @@ bool GifFormat::onLoad(FileOp* fop)
 {
   // The filesize is used only to report some progress when we decode
   // the GIF file.
-  int filesize = base::file_size(fop->filename());
+  size_t filesize = base::file_size(fop->filename());
 
 #if GIFLIB_MAJOR >= 5
   int errCode = 0;
