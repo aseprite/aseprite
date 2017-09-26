@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,7 +25,7 @@ namespace doc {
     PalettePicks(int n) : m_items(n, false) { }
 
     int size() const { return int(m_items.size()); }
-    int picks() const { return std::count(m_items.begin(), m_items.end(), true); }
+    int picks() const { return (int)std::count(m_items.begin(), m_items.end(), true); }
 
     iterator begin() { return m_items.begin(); }
     iterator end() { return m_items.end(); }
