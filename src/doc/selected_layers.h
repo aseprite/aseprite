@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,7 +28,7 @@ namespace doc {
     const_iterator end() const { return m_set.end(); }
 
     bool empty() const { return m_set.empty(); }
-    layer_t size() const { return m_set.size(); }
+    layer_t size() const { return (layer_t)m_set.size(); }
 
     void clear();
     void insert(Layer* layer);
