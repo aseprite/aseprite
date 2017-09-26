@@ -2669,7 +2669,10 @@ void Timeline::regenerateTagBands()
       m_tagBand[frameTag] = tagsPerFrame[f];
 
     frame_t toFrame = calcTagVisibleToFrame(frameTag);
+    if (toFrame >= tagsPerFrame.size())
+      tagsPerFrame.resize(toFrame+1, 0);
     for (; f<=toFrame; ++f) {
+      ASSERT(f < tagsPerFrame.size());
       if (tagsPerFrame[f] < 255)
         ++tagsPerFrame[f];
     }
