@@ -45,6 +45,24 @@ static void destroy_instance(AppMenus* instance)
   delete instance;
 }
 
+static bool can_call_global_shortcut(const she::Shortcut& shortcut)
+{
+  ui::Manager* manager = ui::Manager::getDefault();
+  ASSERT(manager);
+  ui::Widget* focus = manager->getFocus();
+  return
+    // The foreground window must be the main window to avoid calling
+    // a global command inside a modal dialog.
+    (manager->getForegroundWindow() == App::instance()->mainWindow()) &&
+    // The focused widget cannot be an entry, because entry fields
+    // prefer text input, so we cannot call shortcuts without
+    // modifiers (e.g. F or T keystrokes) to trigger a global command
+    // in a text field.
+    (focus == nullptr ||
+     focus->type() != ui::kEntryWidget ||
+     shortcut.modifiers() != she::KeyModifiers::kKeyNoneModifier);
+}
+
 // TODO this should be on "she" library (or we should use
 // she::Shortcut instead of ui::Accelerators)
 static int from_scancode_to_unicode(KeyScancode scancode)
@@ -184,13 +202,15 @@ static int from_scancode_to_unicode(KeyScancode scancode)
     return 0;
 }
 
-static void fill_menu_item_info_with_key(she::MenuItemInfo& info,
-                                         const char* commandId,
-                                         const Params& params = Params())
+static she::Shortcut get_os_shortcut_for_command(
+  const char* commandId,
+  const Params& params = Params())
 {
   Key* key = KeyboardShortcuts::instance()->command(commandId, params);
   if (key)
-    info.shortcut = get_os_shortcut_from_key(key);
+    return get_os_shortcut_from_key(key);
+  else
+    return she::Shortcut();
 }
 
 she::Shortcut get_os_shortcut_from_key(Key* key)
@@ -547,18 +567,19 @@ void AppMenus::createNativeMenus()
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
     she::MenuItemInfo about("About " PACKAGE);
-    fill_menu_item_info_with_key(about, CommandId::About);
-    about.execute = []{
-      if (Manager::getDefault()->getForegroundWindow() == App::instance()->mainWindow()) {
+    she::Shortcut shortcut;
+    about.shortcut = shortcut = get_os_shortcut_for_command(CommandId::About);
+    about.execute = [shortcut]{
+      if (can_call_global_shortcut(shortcut)) {
         Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::About);
         UIContext::instance()->executeCommand(cmd);
       }
     };
 
     she::MenuItemInfo preferences("Preferences...");
-    fill_menu_item_info_with_key(preferences, CommandId::Options);
-    preferences.execute = []{
-      if (Manager::getDefault()->getForegroundWindow() == App::instance()->mainWindow()) {
+    preferences.shortcut = shortcut = get_os_shortcut_for_command(CommandId::Options);
+    preferences.execute = [shortcut]{
+      if (can_call_global_shortcut(shortcut)) {
         Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::Options);
         UIContext::instance()->executeCommand(cmd);
       }
@@ -633,14 +654,23 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
       info.type = she::MenuItemInfo::Separator;
     }
     else if (child->type() == kMenuItemWidget) {
+      she::Shortcut shortcut;
+      if (appMenuItem &&
+          appMenuItem->getCommand()) {
+        shortcut = get_os_shortcut_for_command(
+          appMenuItem->getCommand()->id().c_str(),
+          appMenuItem->getParams());
+      }
+
       info.type = she::MenuItemInfo::Normal;
       info.text = child->text();
-      info.execute = [child]{
-        if (child->manager()->getForegroundWindow() == App::instance()->mainWindow())
+      info.shortcut = shortcut;
+      info.execute = [child, shortcut]{
+        if (can_call_global_shortcut(shortcut))
           ((ui::MenuItem*)child)->executeClick();
       };
-      info.validate = [child](she::MenuItem* item) {
-        if (child->manager()->getForegroundWindow() == App::instance()->mainWindow()) {
+      info.validate = [child, shortcut](she::MenuItem* item) {
+        if (can_call_global_shortcut(shortcut)) {
           ((ui::MenuItem*)child)->validateItem();
           item->setEnabled(child->isEnabled());
           item->setChecked(child->isSelected());
@@ -650,13 +680,6 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
           item->setEnabled(false);
         }
       };
-
-      if (appMenuItem && appMenuItem->getCommand()) {
-        fill_menu_item_info_with_key(
-          info,
-          appMenuItem->getCommand()->id().c_str(),
-          appMenuItem->getParams());
-      }
     }
     else {
       ASSERT(false);            // Unsupported menu item type
