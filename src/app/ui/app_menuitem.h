@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/commands/params.h"
+#include "she/shortcut.h"
 #include "ui/menu.h"
 
 namespace she {
@@ -35,7 +36,9 @@ namespace app {
     const Params& getParams() const { return m_params; }
 
     she::MenuItem* nativeMenuItem() { return m_nativeMenuItem; }
-    void setNativeMenuItem(she::MenuItem* nativeMenuItem);
+    const she::Shortcut& nativeShortcut() const { return m_nativeShortcut; }
+    void setNativeMenuItem(she::MenuItem* nativeMenuItem,
+                           const she::Shortcut& nativeShortcut);
     void syncNativeMenuItemKeyShortcut();
 
     static void setContextParams(const Params& params);
@@ -51,6 +54,7 @@ namespace app {
     Command* m_command;
     Params m_params;
     she::MenuItem* m_nativeMenuItem;
+    she::Shortcut m_nativeShortcut;
 
     static Params s_contextParams;
   };

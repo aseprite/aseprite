@@ -49,15 +49,19 @@ void AppMenuItem::setKey(Key* key)
   syncNativeMenuItemKeyShortcut();
 }
 
-void AppMenuItem::setNativeMenuItem(she::MenuItem* nativeMenuItem)
+void AppMenuItem::setNativeMenuItem(she::MenuItem* nativeMenuItem,
+                                    const she::Shortcut& nativeShortcut)
 {
   m_nativeMenuItem = nativeMenuItem;
+  m_nativeShortcut = nativeShortcut;
 }
 
 void AppMenuItem::syncNativeMenuItemKeyShortcut()
 {
-  if (m_nativeMenuItem)
-    m_nativeMenuItem->setShortcut(get_os_shortcut_from_key(m_key));
+  if (m_nativeMenuItem) {
+    m_nativeShortcut = get_os_shortcut_from_key(m_key);
+    m_nativeMenuItem->setShortcut(m_nativeShortcut);
+  }
 }
 
 // static

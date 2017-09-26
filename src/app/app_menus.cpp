@@ -33,6 +33,7 @@
 
 #include "tinyxml.h"
 
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 
@@ -40,9 +41,50 @@ namespace app {
 
 using namespace ui;
 
+// TODO Move this to she layer
+static const int kUnicodeEsc      = 27;
+static const int kUnicodeEnter    = '\r'; // 10
+static const int kUnicodeInsert   = 0xF727; // NSInsertFunctionKey
+static const int kUnicodeDel      = 0xF728; // NSDeleteFunctionKey
+static const int kUnicodeHome     = 0xF729; // NSHomeFunctionKey
+static const int kUnicodeEnd      = 0xF72B; // NSEndFunctionKey
+static const int kUnicodePageUp   = 0xF72C; // NSPageUpFunctionKey
+static const int kUnicodePageDown = 0xF72D; // NSPageDownFunctionKey
+static const int kUnicodeLeft     = 0xF702; // NSLeftArrowFunctionKey
+static const int kUnicodeRight    = 0xF703; // NSRightArrowFunctionKey
+static const int kUnicodeUp       = 0xF700; // NSUpArrowFunctionKey
+static const int kUnicodeDown     = 0xF701; // NSDownArrowFunctionKey
+
 static void destroy_instance(AppMenus* instance)
 {
   delete instance;
+}
+
+static bool is_text_entry_shortcut(const she::Shortcut& shortcut)
+{
+  const she::KeyModifiers mod = shortcut.modifiers();
+  const int chr = shortcut.unicode();
+  const int lchr = std::tolower(chr);
+
+  bool result =
+    ((mod == she::KeyModifiers::kKeyNoneModifier ||
+      mod == she::KeyModifiers::kKeyShiftModifier) &&
+     chr >= 32 && chr < 0xF000)
+  ||
+    ((mod == she::KeyModifiers::kKeyCmdModifier ||
+      mod == she::KeyModifiers::kKeyCtrlModifier) &&
+     (lchr == 'a' || lchr == 'c' || lchr == 'v' || lchr == 'x'))
+  ||
+    (chr == kUnicodeInsert ||
+     chr == kUnicodeDel ||
+     chr == kUnicodeHome ||
+     chr == kUnicodeEnd ||
+     chr == kUnicodeLeft ||
+     chr == kUnicodeRight ||
+     chr == kUnicodeEsc ||
+     chr == kUnicodeEnter);
+
+  return result;
 }
 
 static bool can_call_global_shortcut(const she::Shortcut& shortcut)
@@ -60,7 +102,7 @@ static bool can_call_global_shortcut(const she::Shortcut& shortcut)
     // in a text field.
     (focus == nullptr ||
      focus->type() != ui::kEntryWidget ||
-     shortcut.modifiers() != she::KeyModifiers::kKeyNoneModifier);
+     !is_text_entry_shortcut(shortcut));
 }
 
 // TODO this should be on "she" library (or we should use
@@ -127,7 +169,7 @@ static int from_scancode_to_unicode(KeyScancode scancode)
     0xF70D, // kKeyF10
     0xF70E, // kKeyF11
     0xF70F, // kKeyF12
-    27, // kKeyEsc
+    kUnicodeEsc, // kKeyEsc
     '~', // kKeyTilde
     '-', // kKeyMinus
     '=', // kKeyEquals
@@ -135,7 +177,7 @@ static int from_scancode_to_unicode(KeyScancode scancode)
     9, // kKeyTab
     '[', // kKeyOpenbrace
     ']', // kKeyClosebrace
-    '\r', // kKeyEnter // 10, kKeyEnter
+    kUnicodeEnter, // kKeyEnter
     ':', // kKeyColon
     '\'', // kKeyQuote
     '\\', // kKeyBackslash
@@ -144,16 +186,16 @@ static int from_scancode_to_unicode(KeyScancode scancode)
     '.', // kKeyStop
     '/', // kKeySlash
     ' ', // kKeySpace
-    0xF727, // kKeyInsert (NSInsertFunctionKey)
-    0xF728, // kKeyDel (NSDeleteFunctionKey)
-    0xF729, // kKeyHome (NSHomeFunctionKey)
-    0xF72B, // kKeyEnd (NSEndFunctionKey)
-    0xF72C, // kKeyPageUp      (NSPageUpFunctionKey)
-    0xF72D, // kKeyPageDown    (NSPageDownFunctionKey)
-    0xF702, // kKeyLeft   (NSLeftArrowFunctionKey)
-    0xF703, // kKeyRight  (NSRightArrowFunctionKey)
-    0xF700, // kKeyUp     (NSUpArrowFunctionKey)
-    0xF701, // kKeyDown   (NSDownArrowFunctionKey)
+    kUnicodeInsert, // kKeyInsert (NSInsertFunctionKey)
+    kUnicodeDel, // kKeyDel (NSDeleteFunctionKey)
+    kUnicodeHome, // kKeyHome (NSHomeFunctionKey)
+    kUnicodeEnd, // kKeyEnd (NSEndFunctionKey)
+    kUnicodePageUp, // kKeyPageUp (NSPageUpFunctionKey)
+    kUnicodePageDown, // kKeyPageDown (NSPageDownFunctionKey)
+    kUnicodeLeft, // kKeyLeft (NSLeftArrowFunctionKey)
+    kUnicodeRight, // kKeyRight (NSRightArrowFunctionKey)
+    kUnicodeUp, // kKeyUp (NSUpArrowFunctionKey)
+    kUnicodeDown, // kKeyDown (NSDownArrowFunctionKey)
     '/', // kKeySlashPad
     '*', // kKeyAsterisk
     0, // kKeyMinusPad
@@ -665,19 +707,19 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
       info.type = she::MenuItemInfo::Normal;
       info.text = child->text();
       info.shortcut = shortcut;
-      info.execute = [child, shortcut]{
-        if (can_call_global_shortcut(shortcut))
-          ((ui::MenuItem*)child)->executeClick();
+      info.execute = [appMenuItem]{
+        if (can_call_global_shortcut(appMenuItem->nativeShortcut()))
+          appMenuItem->executeClick();
       };
-      info.validate = [child, shortcut](she::MenuItem* item) {
-        if (can_call_global_shortcut(shortcut)) {
-          ((ui::MenuItem*)child)->validateItem();
-          item->setEnabled(child->isEnabled());
-          item->setChecked(child->isSelected());
+      info.validate = [appMenuItem](she::MenuItem* osItem) {
+        if (can_call_global_shortcut(appMenuItem->nativeShortcut())) {
+          appMenuItem->validateItem();
+          osItem->setEnabled(appMenuItem->isEnabled());
+          osItem->setChecked(appMenuItem->isSelected());
         }
         else {
           // Disable item when there are a modal window
-          item->setEnabled(false);
+          osItem->setEnabled(false);
         }
       };
     }
@@ -690,7 +732,7 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
     if (osItem) {
       osMenu->addItem(osItem);
       if (appMenuItem)
-        appMenuItem->setNativeMenuItem(osItem);
+        appMenuItem->setNativeMenuItem(osItem, info.shortcut);
 
       if (child->type() == ui::kMenuItemWidget &&
           ((ui::MenuItem*)child)->hasSubmenu()) {
