@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/launcher.h"
+#include "base/replace_string.h"
 #include "base/version.h"
 
 #include <ctime>
@@ -205,7 +206,11 @@ void CheckUpdateThreadLauncher::showUI()
 
   if (!m_preferences.updater.newVersion().empty()) {
     base::Version serverVersion(m_preferences.updater.newVersion());
-    base::Version localVersion(VERSION);
+
+    std::string localVersionStr = VERSION;
+    base::replace_string(localVersionStr, "-x64", "");
+    base::Version localVersion(localVersionStr);
+
     newVer = (localVersion < serverVersion);
   }
 
