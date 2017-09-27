@@ -283,7 +283,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     }
 
     // Move selected pixels
-    if (layer && editor->isInsideSelection() && msg->left()) {
+    if (layer && editor->canStartMovingSelectionPixels() && msg->left()) {
       if (!layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
@@ -411,7 +411,7 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
       }
 
       // Move pixels
-      if (editor->isInsideSelection()) {
+      if (editor->canStartMovingSelectionPixels()) {
         EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
         if ((customization) &&
             int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection))

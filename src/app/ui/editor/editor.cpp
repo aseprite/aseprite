@@ -1891,6 +1891,16 @@ bool Editor::isInsideSelection()
     m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
 
+bool Editor::canStartMovingSelectionPixels()
+{
+  return
+    (isInsideSelection()) &&
+    // In this way we cannot move the selection when add/subtract
+    // modes are enabled (we prefer to modify the selection on those
+    // modes instead of moving pixels).
+    (int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kReplaceSelection));
+}
+
 EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
 {
   tools::Ink* ink = getCurrentEditorInk();

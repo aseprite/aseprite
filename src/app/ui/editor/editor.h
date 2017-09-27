@@ -199,6 +199,11 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
+    // Returns true if the cursor is inside the selection and the
+    // selection mode is the default one which prioritizes and easy
+    // way to move the selection.
+    bool canStartMovingSelectionPixels();
+
     // Returns the element that will be modified if the mouse is used
     // in the given position.
     EditorHit calcHit(const gfx::Point& mouseScreenPos);
