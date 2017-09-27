@@ -79,7 +79,7 @@ namespace app {
     const doc::SelectedFrames& selectedFrames() const { return m_selFrames; }
 
     doc::frame_t frames() const {
-      return m_selFrames.size();
+      return (doc::frame_t)m_selFrames.size();
     }
 
   private:
