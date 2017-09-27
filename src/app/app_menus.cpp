@@ -93,6 +93,8 @@ static bool can_call_global_shortcut(const she::Shortcut& shortcut)
   ASSERT(manager);
   ui::Widget* focus = manager->getFocus();
   return
+    // The mouse is not capture
+    (manager->getCapture() == nullptr) &&
     // The foreground window must be the main window to avoid calling
     // a global command inside a modal dialog.
     (manager->getForegroundWindow() == App::instance()->mainWindow()) &&
