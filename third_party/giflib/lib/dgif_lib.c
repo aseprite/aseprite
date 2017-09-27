@@ -236,7 +236,7 @@ int
 DGifGetScreenDesc(GifFileType *GifFile)
 {
     int BitsPerPixel;
-    bool SortFlag;
+    GifBool SortFlag;
     GifByteType Buf[3];
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 

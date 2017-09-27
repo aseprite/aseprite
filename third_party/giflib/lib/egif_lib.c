@@ -57,7 +57,7 @@ static int EGifBufferedOutput(GifFileType * GifFile, GifByteType * Buf,
  info record. The Error member is cleared if successful.
 ******************************************************************************/
 GifFileType *
-EGifOpenFileName(const char *FileName, const bool TestExistence, int *Error)
+EGifOpenFileName(const char *FileName, const GifBool TestExistence, int *Error)
 {
 
     int FileHandle;
@@ -237,7 +237,7 @@ EGifGetGifVersion(GifFileType *GifFile)
  is 1 (numerically the same as bool true).  That way we'll even preserve
  object-file compatibility!
 ******************************************************************************/
-void EGifSetGifVersion(GifFileType *GifFile, const bool gif89)
+void EGifSetGifVersion(GifFileType *GifFile, const GifBool gif89)
 {
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
 
@@ -360,7 +360,7 @@ EGifPutImageDesc(GifFileType *GifFile,
                  const int Top,
                  const int Width,
                  const int Height,
-                 const bool Interlace,
+                 const GifBool Interlace,
                  const ColorMapObject *ColorMap)
 {
     GifByteType Buf[3];

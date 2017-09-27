@@ -51,7 +51,7 @@ typedef struct GifFilePrivateType {
     GifByteType Suffix[LZ_MAX_CODE + 1];    /* So we can trace the codes. */
     GifPrefixType Prefix[LZ_MAX_CODE + 1];
     GifHashTableType *HashTable;
-    bool gif89;
+    GifBool gif89;
 } GifFilePrivateType;
 
 #endif /* _GIF_LIB_PRIVATE_H */
