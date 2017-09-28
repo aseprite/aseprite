@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -70,6 +70,8 @@ namespace app {
     bool onPaste(Context* ctx) override;
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
+
+    WorkspacePanel* mainPanel() { return &m_mainPanel; }
 
     obs::signal<void()> ActiveViewChanged;
 

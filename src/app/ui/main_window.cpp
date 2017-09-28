@@ -430,6 +430,34 @@ void MainWindow::onContextMenuTab(Tabs* tabs, TabView* tabView)
     view->onTabPopup(m_workspace);
 }
 
+void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
+{
+  WorkspacePanel* mainPanel = m_workspace->mainPanel();
+  WorkspaceView* oldActiveView = mainPanel->activeView();
+  app::Document* oldDoc = static_cast<app::Document*>(UIContext::instance()->activeDocument());
+
+  Command* command = CommandsModule::instance()->getCommandByName(CommandId::NewFile);
+  UIContext::instance()->executeCommand(command);
+
+  app::Document* newDoc = static_cast<app::Document*>(UIContext::instance()->activeDocument());
+  if (newDoc != oldDoc) {
+    WorkspacePanel* doubleClickedPanel =
+      static_cast<WorkspaceTabs*>(tabs)->panel();
+
+    // TODO move this code to workspace?
+    // Put the new sprite in the double-clicked tabs control
+    if (doubleClickedPanel != mainPanel) {
+      WorkspaceView* newView = m_workspace->activeView();
+      m_workspace->removeView(newView);
+      m_workspace->addViewToPanel(doubleClickedPanel, newView, false, -1);
+
+      // Re-activate the old view in the main panel
+      mainPanel->setActiveView(oldActiveView);
+      doubleClickedPanel->setActiveView(newView);
+    }
+  }
+}
+
 void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL

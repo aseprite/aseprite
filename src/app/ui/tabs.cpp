@@ -440,6 +440,13 @@ bool Tabs::onProcessMessage(Message* msg)
       updateMouseCursor();
       return true;
 
+    case kDoubleClickMessage:
+      // When we double-click outside tabs (!m_hot), we trigger the
+      // double-click in tabs container to show the "New Sprite" dialog.
+      if (!m_hot && m_delegate)
+        m_delegate->onTabsContainerDoubleClicked(this);
+      return true;
+
   }
 
   return Widget::onProcessMessage(msg);

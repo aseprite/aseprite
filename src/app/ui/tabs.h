@@ -89,6 +89,9 @@ namespace app {
     // When the right-click is pressed in the tab.
     virtual void onContextMenuTab(Tabs* tabs, TabView* tabView) = 0;
 
+    // When the tab bar background is double-clicked.
+    virtual void onTabsContainerDoubleClicked(Tabs* tabs) = 0;
+
     // Called when the mouse is over a tab (the data can be null if the
     // mouse just leave all tabs)
     virtual void onMouseOverTab(Tabs* tabs, TabView* tabView) = 0;

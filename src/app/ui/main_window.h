@@ -89,6 +89,7 @@ namespace app {
     void onCloseTab(Tabs* tabs, TabView* tabView) override;
     void onCloneTab(Tabs* tabs, TabView* tabView, int pos) override;
     void onContextMenuTab(Tabs* tabs, TabView* tabView) override;
+    void onTabsContainerDoubleClicked(Tabs* tabs) override;
     void onMouseOverTab(Tabs* tabs, TabView* tabView) override;
     DropViewPreviewResult onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) override;
     void onDockingTab(Tabs* tabs, TabView* tabView) override;
