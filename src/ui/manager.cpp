@@ -1098,6 +1098,14 @@ bool Manager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
+    case kPaintMessage:
+      // Draw nothing (the manager should be invisible). On Windows,
+      // after closing the main window, the manager will not refresh
+      // the she::Display content, so we'll avoid a gray background
+      // (the last main window content is kept until the Display is
+      // finally closed.)
+      return true;
+
     case kResizeDisplayMessage:
       onNewDisplayConfiguration();
       break;
