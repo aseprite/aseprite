@@ -761,22 +761,48 @@ private:
         // Change theme name from preferences
         m_pref.theme.selected(themeName);
 
-        // Preferred UI Scaling factor by the theme
-        if (updateScaling && theme->preferredUIScaling() > 0)
-          m_pref.general.uiScale(theme->preferredUIScaling());
-
+        // Change the UI theme
         ui::set_theme(theme, m_pref.general.uiScale());
 
-        // Preferred Screen Scaling by the theme
-        if (updateScaling) {
-          const int newScreenScale = theme->preferredScreenScaling();
-          if (newScreenScale > 0 &&
-              newScreenScale != m_pref.general.screenScale()) {
-            m_pref.general.screenScale(newScreenScale);
-            updateScreenScaling();
-          }
+        // Ask for new scaling
+        const int newUIScale = theme->preferredUIScaling();
+        const int newScreenScale = theme->preferredScreenScaling();
 
-          selectScalingItems();
+        if (updateScaling &&
+            ((newUIScale > 0 && m_pref.general.uiScale() != newUIScale) ||
+             (newScreenScale > 0 && m_pref.general.screenScale() != newScreenScale))) {
+          // Ask if the user want to adjust the Screen/UI Scaling
+          const int result =
+            ui::Alert::show(
+              "Update Screen/UI Scaling"
+              "<<The new theme '%s' wants to adjust some values for you:"
+              "<<  Screen Scaling: %d%% -> %d%%"
+              "<<  UI Scaling: %d%% -> %d%%"
+              "<<Allow these changes?"
+              "||&Adjust Scaling||&Don't Adjust Scaling",
+              themeName.c_str(),
+              100 * m_pref.general.screenScale(),
+              100 * (newScreenScale > 0 ? newScreenScale: m_pref.general.screenScale()),
+              100 * m_pref.general.uiScale(),
+              100 * (newUIScale > 0 ? newUIScale: m_pref.general.uiScale()));
+
+          if (result == 1) {
+            // Preferred UI Scaling factor
+            if (newUIScale > 0 &&
+                newUIScale != m_pref.general.uiScale()) {
+              m_pref.general.uiScale(newUIScale);
+              ui::set_theme(theme, m_pref.general.uiScale());
+            }
+
+            // Preferred Screen Scaling
+            if (newScreenScale > 0 &&
+                newScreenScale != m_pref.general.screenScale()) {
+              m_pref.general.screenScale(newScreenScale);
+              updateScreenScaling();
+            }
+
+            selectScalingItems();
+          }
         }
       }
     }
