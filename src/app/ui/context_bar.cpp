@@ -453,6 +453,7 @@ class ContextBar::InkShadesField : public HBox {
       , m_dragIndex(-1)
       , m_boxSize(12) {
       setText("Select colors in the palette");
+      initTheme();
     }
 
     void reverseShadeColors() {
@@ -528,6 +529,11 @@ class ContextBar::InkShadesField : public HBox {
     }
 
   private:
+
+    void onInitTheme(InitThemeEvent& ev) override {
+      Widget::onInitTheme(ev);
+      setStyle(SkinTheme::instance()->styles.menuShadeView());
+    }
 
     void onChangeColorBarSelection() {
       if (!isVisible())
@@ -796,12 +802,6 @@ private:
       for (const Shade& shade : m_shades) {
         auto shadeWidget = new ShadeWidget(shade, ShadeWidget::Select);
         shadeWidget->setExpansive(true);
-        shadeWidget->InitTheme.connect(
-          [shadeWidget]{
-            shadeWidget->setStyle(
-              SkinTheme::instance()->styles.menuShadeView());
-          });
-        shadeWidget->initTheme();
         shadeWidget->Click.connect(
           [&]{
             m_shade.setShade(shade);
