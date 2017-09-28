@@ -1894,11 +1894,14 @@ bool Editor::isInsideSelection()
 bool Editor::canStartMovingSelectionPixels()
 {
   return
-    (isInsideSelection()) &&
-    // In this way we cannot move the selection when add/subtract
-    // modes are enabled (we prefer to modify the selection on those
-    // modes instead of moving pixels).
-    (int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kReplaceSelection));
+    isInsideSelection() &&
+    // We cannot move the selection when add/subtract modes are
+    // enabled (we prefer to modify the selection on those modes
+    // instead of moving pixels).
+    ((int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kReplaceSelection)) ||
+     // We can move the selection when the Copy selection key (Ctrl) is pressed.
+     (m_customizationDelegate &&
+      int(m_customizationDelegate->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection)));
 }
 
 EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
