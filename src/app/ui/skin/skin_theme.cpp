@@ -199,7 +199,7 @@ SkinTheme::SkinTheme()
 SkinTheme::~SkinTheme()
 {
   // Delete all cursors.
-  for (auto it : m_cursors)
+  for (auto& it : m_cursors)
     delete it.second;           // Delete cursor
 
   if (m_sheet)
@@ -208,7 +208,7 @@ SkinTheme::~SkinTheme()
   m_parts_by_id.clear();
 
   // Destroy fonts
-  for (auto kv : m_fonts)
+  for (auto& kv : m_fonts)
     delete kv.second;          // Delete all FontDatas
   m_fonts.clear();
 }
@@ -301,16 +301,14 @@ void SkinTheme::loadSheet()
   if (m_sheet)
     m_sheet->applyScale(guiscale());
 
-  // Change sprite sheet of all layer styles
-  for (auto it : m_styles) {
-    for (auto layer : it.second->layers()) {
-      if (layer.icon())
-        layer.setIcon(nullptr);
-      if (layer.spriteSheet())
-        layer.setSpriteSheet(m_sheet);
+  // Reset sprite sheet and font of all layer styles (to avoid
+  // dangling pointers to she::Surface or she::Font).
+  for (auto& it : m_styles) {
+    for (auto& layer : it.second->layers()) {
+      layer.setIcon(nullptr);
+      layer.setSpriteSheet(nullptr);
     }
-    if (it.second->font())
-      it.second->setFont(nullptr); // Font must be re-assigned
+    it.second->setFont(nullptr);
   }
 }
 
@@ -517,11 +515,11 @@ void SkinTheme::loadXml()
       ui::Style* style = m_styles[style_id];
       if (!style) {
         m_styles[style_id] = style = new ui::Style(base);
-        style->setId(style_id);
       }
       else {
         *style = ui::Style(base);
       }
+      style->setId(style_id);
 
       // Margin
       {

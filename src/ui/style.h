@@ -102,6 +102,7 @@ namespace ui {
     const gfx::Border& padding() const { return m_padding; }
     she::Font* font() const { return m_font; }
     const Layers& layers() const { return m_layers; }
+    Layers& layers() { return m_layers; }
 
     void setId(const std::string& id) { m_id = id; }
     void setMargin(const gfx::Border& value) { m_margin = value; }
