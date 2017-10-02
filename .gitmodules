@@ -54,3 +54,6 @@
 [submodule "third_party/mujs"]
 	path = third_party/mujs
 	url = https://github.com/aseprite/mujs.git
+[submodule "third_party/giflib"]
+	path = third_party/giflib
+	url = https://github.com/aseprite/giflib.git

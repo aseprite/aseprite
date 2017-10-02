@@ -39,6 +39,7 @@ if(WITH_WEBP_SUPPORT)
 endif()
 
 if(NOT USE_SHARED_GIFLIB)
+  set(GIFLIB_UTILS OFF CACHE BOOL "Build giflib utils")
   add_subdirectory(giflib)
 endif()
 
