@@ -130,63 +130,57 @@ public:
   }
 
   bool show(Display* display) override {
-    NSSavePanel* panel = nil;
+    bool retValue = false;
+    @autoreleasepool {
+      NSSavePanel* panel = nil;
 
-    if (m_save) {
-      panel = [NSSavePanel savePanel];
-    }
-    else {
-      panel = [NSOpenPanel openPanel];
-      [(NSOpenPanel*)panel setAllowsMultipleSelection:(m_multipleSelection ? YES: NO)];
-      [(NSOpenPanel*)panel setCanChooseDirectories:NO];
-    }
+      if (m_save) {
+        panel = [NSSavePanel new];
+      }
+      else {
+        panel = [NSOpenPanel new];
+        [(NSOpenPanel*)panel setAllowsMultipleSelection:(m_multipleSelection ? YES: NO)];
+        [(NSOpenPanel*)panel setCanChooseDirectories:NO];
+      }
 
-    [panel setTitle:[NSString stringWithUTF8String:m_title.c_str()]];
-    [panel setCanCreateDirectories:YES];
+      [panel setTitle:[NSString stringWithUTF8String:m_title.c_str()]];
+      [panel setCanCreateDirectories:YES];
 
-    std::string defPath = base::get_file_path(m_filename);
-    std::string defName = base::get_file_name(m_filename);
-    if (!defPath.empty())
-      [panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:defPath.c_str()]]];
-    if (!defName.empty())
-      [panel setNameFieldStringValue:[NSString stringWithUTF8String:defName.c_str()]];
+      std::string defPath = base::get_file_path(m_filename);
+      std::string defName = base::get_file_name(m_filename);
+      if (!defPath.empty())
+        [panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:defPath.c_str()]]];
+      if (!defName.empty())
+        [panel setNameFieldStringValue:[NSString stringWithUTF8String:defName.c_str()]];
 
-    NSMutableArray* types = [[NSMutableArray alloc] init];
-    // The first extension in the array is used as the default one.
-    if (!m_defExtension.empty())
-      [types addObject:[NSString stringWithUTF8String:m_defExtension.c_str()]];
-    for (const auto& filter : m_filters)
-      [types addObject:[NSString stringWithUTF8String:filter.second.c_str()]];
-    [panel setAllowedFileTypes:types];
+      NSMutableArray* types = [[NSMutableArray alloc] init];
+      // The first extension in the array is used as the default one.
+      if (!m_defExtension.empty())
+        [types addObject:[NSString stringWithUTF8String:m_defExtension.c_str()]];
+      for (const auto& filter : m_filters)
+        [types addObject:[NSString stringWithUTF8String:filter.second.c_str()]];
+      [panel setAllowedFileTypes:types];
 
-    OpenSaveHelper* helper = [[OpenSaveHelper alloc] init];
-    [helper setPanel:panel];
-    [helper setDisplay:display];
-    [helper performSelectorOnMainThread:@selector(runModal) withObject:nil waitUntilDone:YES];
+      OpenSaveHelper* helper = [OpenSaveHelper new];
+      [helper setPanel:panel];
+      [helper setDisplay:display];
+      [helper performSelectorOnMainThread:@selector(runModal) withObject:nil waitUntilDone:YES];
 
-    bool retValue;
-    if ([helper result] == NSFileHandlingPanelOKButton) {
-      if (m_multipleSelection) {
-        for (NSURL* url in [(NSOpenPanel*)panel URLs]) {
+      if ([helper result] == NSFileHandlingPanelOKButton) {
+        if (m_multipleSelection) {
+          for (NSURL* url in [(NSOpenPanel*)panel URLs]) {
+            m_filename = [[url path] UTF8String];
+            m_filenames.push_back(m_filename);
+          }
+        }
+        else {
+          NSURL* url = [panel URL];
           m_filename = [[url path] UTF8String];
           m_filenames.push_back(m_filename);
         }
+        retValue = true;
       }
-      else {
-        NSURL* url = [panel URL];
-        m_filename = [[url path] UTF8String];
-        m_filenames.push_back(m_filename);
-      }
-      retValue = true;
     }
-    else {
-      retValue = false;
-    }
-
-#if !__has_feature(objc_arc)
-    [helper release];
-    [types release];
-#endif
     return retValue;
   }
 
