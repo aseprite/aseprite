@@ -708,6 +708,7 @@
       <menu text="&amp;Layer">
         <item command="LayerProperties" text="&amp;Properties..." />
         <item command="LayerVisibility" text="&amp;Visible" />
+        <item command="LayerLock" text="Loc&amp;k Layers" />
         <item command="OpenGroup" text="&amp;Open Group" />
         <separator />
         <item command="NewLayer" text="&amp;New Layer" />
