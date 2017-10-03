@@ -195,6 +195,7 @@
       <option id="mode" type="SelectionMode" default="SelectionMode::DEFAULT" />
       <option id="move_edges" type="bool" default="true" />
       <option id="modifiers_disable_handles" type="bool" default="true" />
+      <option id="move_on_add_mode" type="bool" default="true" />
       <option id="pivot_visibility" type="bool" default="false" />
       <option id="pivot_position" type="PivotPosition" default="PivotPosition::CENTER" />
       <option id="opaque" type="bool" default="false" />

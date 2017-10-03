@@ -1899,6 +1899,9 @@ bool Editor::canStartMovingSelectionPixels()
     // enabled (we prefer to modify the selection on those modes
     // instead of moving pixels).
     ((int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kReplaceSelection)) ||
+     // We can move the selection on add mode if the preferences says so.
+     ((int(m_toolLoopModifiers) & int(tools::ToolLoopModifiers::kAddSelection)) &&
+      Preferences::instance().selection.moveOnAddMode()) ||
      // We can move the selection when the Copy selection key (Ctrl) is pressed.
      (m_customizationDelegate &&
       int(m_customizationDelegate->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection)));
