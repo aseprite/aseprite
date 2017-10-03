@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/commands/params.h"
+#include "app/ui/key_context.h"
 #include "base/convert_to.h"
 #include "base/disable_copying.h"
 #include "obs/signal.h"
@@ -30,18 +31,6 @@ namespace app {
   namespace tools {
     class Tool;
   }
-
-  enum class KeyContext {
-    Any,
-    Normal,
-    SelectionTool,
-    TranslatingSelection,
-    ScalingSelection,
-    RotatingSelection,
-    MoveTool,
-    FreehandTool,
-    ShapeTool,
-  };
 
   enum class KeySource {
     Original,

@@ -39,8 +39,13 @@ AppMenuItem::AppMenuItem(const char* text, Command* command, const Params& param
  , m_key(nullptr)
  , m_command(command)
  , m_params(params)
- , m_nativeMenuItem(nullptr)
+ , m_native(nullptr)
 {
+}
+
+AppMenuItem::~AppMenuItem()
+{
+  delete m_native;
 }
 
 void AppMenuItem::setKey(Key* key)
@@ -49,18 +54,22 @@ void AppMenuItem::setKey(Key* key)
   syncNativeMenuItemKeyShortcut();
 }
 
-void AppMenuItem::setNativeMenuItem(she::MenuItem* nativeMenuItem,
-                                    const she::Shortcut& nativeShortcut)
+void AppMenuItem::setNative(const Native& native)
 {
-  m_nativeMenuItem = nativeMenuItem;
-  m_nativeShortcut = nativeShortcut;
+  if (!m_native)
+    m_native = new Native(native);
+  else
+    *m_native = native;
 }
 
 void AppMenuItem::syncNativeMenuItemKeyShortcut()
 {
-  if (m_nativeMenuItem) {
-    m_nativeShortcut = get_os_shortcut_from_key(m_key);
-    m_nativeMenuItem->setShortcut(m_nativeShortcut);
+  if (m_native) {
+    she::Shortcut shortcut = get_os_shortcut_from_key(m_key);
+
+    m_native->shortcut = shortcut;
+    m_native->menuItem->setShortcut(shortcut);
+    m_native->keyContext = (m_key ? m_key->keycontext(): KeyContext::Any);
   }
 }
 
