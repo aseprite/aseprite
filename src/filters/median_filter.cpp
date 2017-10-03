@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -90,8 +90,8 @@ namespace {
 
 MedianFilter::MedianFilter()
   : m_tiledMode(TiledMode::NONE)
-  , m_width(0)
-  , m_height(0)
+  , m_width(1)
+  , m_height(1)
   , m_ncolors(0)
   , m_channel(4)
 {
@@ -104,8 +104,11 @@ void MedianFilter::setTiledMode(TiledMode tiled)
 
 void MedianFilter::setSize(int width, int height)
 {
-  m_width = width;
-  m_height = height;
+  ASSERT(width >= 1);
+  ASSERT(height >= 1);
+
+  m_width = MAX(1, width);
+  m_height = MAX(1, height);
   m_ncolors = width*height;
 
   for (int c = 0; c < 4; ++c)

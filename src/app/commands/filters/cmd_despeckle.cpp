@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -60,8 +60,14 @@ public:
 private:
   void onSizeChange()
   {
-    m_filter.setSize(m_widthEntry->textInt(),
-                     m_heightEntry->textInt());
+    gfx::Size newSize(m_widthEntry->textInt(),
+                      m_heightEntry->textInt());
+
+    // Avoid negative numbers
+    newSize.w = MAX(1, newSize.w);
+    newSize.h = MAX(1, newSize.h);
+
+    m_filter.setSize(newSize.w, newSize.h);
     restartPreview();
   }
 
