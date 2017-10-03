@@ -559,6 +559,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
         text.insert(m_boxes[m_caret].from,
                     base::to_utf8(unicodeStr));
+        recalcCharBoxes(text);
         ++m_caret;
       }
 
@@ -626,7 +627,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       else
         m_select = -1;
 
-      m_caret = text.size();
+      m_caret = lastCaretPos();
       break;
 
     case EntryCmd::DeleteForward:
