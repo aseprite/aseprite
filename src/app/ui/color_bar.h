@@ -208,6 +208,23 @@ namespace app {
     bool m_selfPalChange;
   };
 
+  class DisableColorBarEditMode {
+  public:
+    DisableColorBarEditMode()
+      : m_colorBar(ColorBar::instance())
+      , m_oldMode(m_colorBar->inEditMode()) {
+      if (m_oldMode)
+        m_colorBar->setEditMode(false);
+    }
+    ~DisableColorBarEditMode() {
+      if (m_oldMode)
+        m_colorBar->setEditMode(true);
+    }
+  private:
+    ColorBar* m_colorBar;
+    bool m_oldMode;
+  };
+
 } // namespace app
 
 #endif

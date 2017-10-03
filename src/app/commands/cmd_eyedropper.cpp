@@ -204,6 +204,7 @@ void EyedropperCommand::onExecute(Context* context)
   gfx::PointF pixelPos = editor->screenToEditorF(ui::get_mouse_position());
 
   // Start with fg/bg color
+  DisableColorBarEditMode disable;
   Preferences& pref = Preferences::instance();
   app::Color color =
     m_background ? pref.colorBar.bgColor():
