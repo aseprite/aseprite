@@ -202,15 +202,13 @@ void CheckUpdateThreadLauncher::checkForUpdates()
 
 void CheckUpdateThreadLauncher::showUI()
 {
+  std::string localVersionStr = VERSION;
+  base::replace_string(localVersionStr, "-x64", "");
   bool newVer = false;
 
   if (!m_preferences.updater.newVersion().empty()) {
     base::Version serverVersion(m_preferences.updater.newVersion());
-
-    std::string localVersionStr = VERSION;
-    base::replace_string(localVersionStr, "-x64", "");
     base::Version localVersion(localVersionStr);
-
     newVer = (localVersion < serverVersion);
   }
 
@@ -219,6 +217,12 @@ void CheckUpdateThreadLauncher::showUI()
                             m_preferences.updater.newVersion());
   }
   else {
+    // If the program was updated, reset the "exits" counter
+    if (m_preferences.updater.currentVersion() != localVersionStr) {
+      m_preferences.updater.currentVersion(localVersionStr);
+      m_exits = m_inits;
+    }
+
     m_delegate->onUpToDate();
   }
 }

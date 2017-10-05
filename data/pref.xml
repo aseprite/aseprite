@@ -173,6 +173,7 @@
       <option id="wait_days" type="double" default="0.0" migrate="Updater.WaitDays" />
       <option id="last_check" type="int" default="0" migrate="Updater.LastCheck" />
       <option id="uuid" type="std::string" migrate="Updater.Uuid" />
+      <option id="current_version" type="std::string" />
       <option id="new_version" type="std::string" />
       <option id="new_url" type="std::string" />
     </section>
