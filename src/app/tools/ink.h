@@ -91,11 +91,13 @@ namespace app {
       // to a shape (e.g. pen shape)  with various scanlines.
       virtual void inkHline(int x1, int y, int x2, ToolLoop* loop) = 0;
 
-      // Returns true in case that the ink needs to update something
-      // depending on the specific stroke points (e.g. for color
-      // gradients)
-      virtual bool dependsOnStroke() const { return false; }
-      virtual void updateInk(ToolLoop* loop, Strokes& strokes) { }
+      // Called when we have to start using the ink for a new set of
+      // strokes (e.g. color gradients is adjusted depending on the
+      // first/last stroke points).
+      virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
+
+      // Called for each point shape.
+      virtual void prepareForPointShape(ToolLoop* loop, int x, int y) { }
 
     };
 

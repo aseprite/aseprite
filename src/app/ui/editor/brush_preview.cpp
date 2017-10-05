@@ -223,6 +223,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
           brushBounds.origin()));
       if (loop) {
         loop->getInk()->prepareInk(loop);
+        loop->getController()->prepareController(loop);
         loop->getIntertwine()->prepareIntertwine();
         loop->getPointShape()->preparePointShape(loop);
         loop->getPointShape()->transformPoint(

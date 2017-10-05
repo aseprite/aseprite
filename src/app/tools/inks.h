@@ -26,7 +26,12 @@ public:
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     ASSERT(m_proc);
-    m_proc->hline(x1, y, x2, loop);
+    m_proc->processScanline(x1, y, x2, loop);
+  }
+
+  void prepareForPointShape(ToolLoop* loop, int x, int y) override {
+    ASSERT(m_proc);
+    m_proc->prepareForPointShape(loop, x, y);
   }
 
 protected:
@@ -143,15 +148,14 @@ public:
 
   bool isPaint() const override { return true; }
   bool isEffect() const override { return true; }
-  bool dependsOnStroke() const override { return true; }
   bool withDitheringOptions() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
     setProc(get_ink_proc<GradientInkProcessing>(loop));
   }
 
-  void updateInk(ToolLoop* loop, Strokes& strokes) override {
-    proc()->updateInk(loop, strokes);
+  void prepareForStrokes(ToolLoop* loop, Strokes& strokes) override {
+    proc()->prepareForStrokes(loop, strokes);
   }
 
 };

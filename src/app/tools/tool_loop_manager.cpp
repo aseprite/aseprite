@@ -175,8 +175,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
     m_toolLoop->validateSrcImage(m_dirtyArea);
   }
 
-  if (m_toolLoop->getInk()->dependsOnStroke())
-    m_toolLoop->getInk()->updateInk(m_toolLoop, strokes);
+  m_toolLoop->getInk()->prepareForStrokes(m_toolLoop, strokes);
 
   // Invalidate destionation image areas.
   if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {

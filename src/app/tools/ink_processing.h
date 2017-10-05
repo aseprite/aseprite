@@ -34,14 +34,15 @@ namespace {
 class BaseInkProcessing {
 public:
   virtual ~BaseInkProcessing() { }
-  virtual void hline(int x1, int y, int x2, ToolLoop* loop) = 0;
-  virtual void updateInk(ToolLoop* loop, Strokes& strokes) { }
+  virtual void processScanline(int x1, int y, int x2, ToolLoop* loop) = 0;
+  virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
+  virtual void prepareForPointShape(ToolLoop* loop, int x, int y) { }
 };
 
 template<typename Derived>
 class InkProcessing : public BaseInkProcessing {
 public:
-  void hline(int x1, int y, int x2, ToolLoop* loop) override {
+  void processScanline(int x1, int y, int x2, ToolLoop* loop) override {
     int x;
 
     // Use mask
@@ -926,12 +927,12 @@ public:
   {
   }
 
-  void hline(int x1, int y, int x2, ToolLoop* loop) override {
+  void processScanline(int x1, int y, int x2, ToolLoop* loop) override {
     m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
-    base::hline(x1, y, x2, loop);
+    base::processScanline(x1, y, x2, loop);
   }
 
-  void updateInk(ToolLoop* loop, Strokes& strokes) override {
+  void prepareForStrokes(ToolLoop* loop, Strokes& strokes) override {
     // Do nothing
   }
 
@@ -948,7 +949,7 @@ private:
 };
 
 template<>
-void GradientInkProcessing<RgbTraits>::updateInk(ToolLoop* loop, Strokes& strokes)
+void GradientInkProcessing<RgbTraits>::prepareForStrokes(ToolLoop* loop, Strokes& strokes)
 {
   color_t c0 = loop->getPrimaryColor();
   color_t c1 = loop->getSecondaryColor();
@@ -966,7 +967,7 @@ void GradientInkProcessing<RgbTraits>::processPixel(int x, int y)
 }
 
 template<>
-void GradientInkProcessing<GrayscaleTraits>::updateInk(ToolLoop* loop, Strokes& strokes)
+void GradientInkProcessing<GrayscaleTraits>::prepareForStrokes(ToolLoop* loop, Strokes& strokes)
 {
   color_t c0 = loop->getPrimaryColor();
   color_t c1 = loop->getSecondaryColor();
@@ -994,7 +995,7 @@ void GradientInkProcessing<GrayscaleTraits>::processPixel(int x, int y)
 }
 
 template<>
-void GradientInkProcessing<IndexedTraits>::updateInk(ToolLoop* loop, Strokes& strokes)
+void GradientInkProcessing<IndexedTraits>::prepareForStrokes(ToolLoop* loop, Strokes& strokes)
 {
   color_t c0 = m_palette->getEntry(loop->getPrimaryColor());
   color_t c1 = m_palette->getEntry(loop->getSecondaryColor());
@@ -1092,6 +1093,13 @@ public:
     m_height = m_brush->bounds().h;
     m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
     m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
+  }
+
+  void prepareForPointShape(ToolLoop* loop, int x, int y) override {
+    if (m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+      m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
+    }
   }
 
   void processPixel(int x, int y) {
