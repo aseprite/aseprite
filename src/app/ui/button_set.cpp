@@ -102,18 +102,18 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 
   if (isSelected() || hasMouseOver()) {
     if (hasCapture()) {
-      nw = theme->parts.toolbuttonPushed();
+      nw = theme->parts.buttonsetItemPushed();
       fg = theme->colors.buttonSelectedText();
     }
     else {
-      nw = (hasFocus() ? theme->parts.toolbuttonHotFocused():
-                         theme->parts.toolbuttonHot());
+      nw = (hasFocus() ? theme->parts.buttonsetItemHotFocused():
+                         theme->parts.buttonsetItemHot());
       fg = theme->colors.buttonHotText();
     }
   }
   else {
-    nw = (hasFocus() ? theme->parts.toolbuttonFocused():
-                       theme->parts.toolbuttonLast());
+    nw = (hasFocus() ? theme->parts.buttonsetItemFocused():
+                       theme->parts.buttonsetItemNormal());
     fg = theme->colors.buttonNormalText();
   }
 
@@ -121,7 +121,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     rc.w += 1*guiscale();
 
   if (!isLastRow) {
-    if (nw == theme->parts.toolbuttonHotFocused())
+    if (nw == theme->parts.buttonsetItemHotFocused())
       rc.h += 2*guiscale();
     else
       rc.h += 3*guiscale();

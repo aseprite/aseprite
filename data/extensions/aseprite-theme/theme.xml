@@ -190,8 +190,11 @@
         <part id="toolbutton_hot" x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
         <part id="toolbutton_last" x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
         <part id="toolbutton_pushed" x="112" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
-        <part id="toolbutton_hot_focused" x="128" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
-        <part id="toolbutton_focused" x="128" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+        <part id="buttonset_item_normal" x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+        <part id="buttonset_item_hot" x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+        <part id="buttonset_item_hot_focused" x="128" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+        <part id="buttonset_item_focused" x="128" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+        <part id="buttonset_item_pushed" x="112" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
         <part id="tab_normal" x="2" y="112" w1="4" w2="5" w3="5" h1="4" h2="6" h3="2" />
         <part id="tab_active" x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
         <part id="tab_bottom_active" x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
@@ -555,10 +558,10 @@
             <icon part="radio_disabled" align="left middle" x="2" state="disabled" />
         </style>
         <style id="mini_button">
-            <background-border part="toolbutton_last" />
-            <background-border part="toolbutton_hot" state="mouse" />
-            <background-border part="toolbutton_hot" state="focus" />
-            <background-border part="toolbutton_pushed" state="selected" />
+            <background-border part="buttonset_item_normal" />
+            <background-border part="buttonset_item_hot" state="mouse" />
+            <background-border part="buttonset_item_hot" state="focus" />
+            <background-border part="buttonset_item_pushed" state="selected" />
             <text color="button_normal_text" />
             <text color="button_hot_text" state="mouse" />
             <text color="button_selected_text" state="selected" />
