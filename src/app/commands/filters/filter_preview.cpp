@@ -60,6 +60,8 @@ void FilterPreview::stop()
 
 void FilterPreview::restartPreview()
 {
+  stop();
+
   base::scoped_lock lock(m_filterMgrMutex);
 
   m_filterMgr->beginForPreview();
