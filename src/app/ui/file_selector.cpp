@@ -610,6 +610,34 @@ again:
     }
     // else file-name specified in the entry is really a file to open...
 
+    // check if the filename doesn't contain slashes or other ilegal characters...
+    bool has_invalid_char = (fn.find('/') != std::string::npos);
+#ifdef _WIN32
+    has_invalid_char =
+      has_invalid_char ||
+      (fn.find('\\') != std::string::npos ||
+       fn.find(':') != std::string::npos ||
+       fn.find('*') != std::string::npos ||
+       fn.find('?') != std::string::npos ||
+       fn.find('\"') != std::string::npos ||
+       fn.find('<') != std::string::npos ||
+       fn.find('>') != std::string::npos ||
+       fn.find('|') != std::string::npos);
+#endif
+    if (has_invalid_char) {
+      Alert::show("Error"
+                  "<<The file name cannot contain the following character(s):"
+                  "<< /"
+#ifdef _WIN32
+                  " \\ : * ? \" < > |"
+#endif
+                  "||&OK");
+
+      // show the window again
+      setVisible(true);
+      goto again;
+    }
+
     // does it not have extension? ...we should add the extension
     // selected in the filetype combo-box
     if (!buf.empty() && base::get_file_extension(buf).empty()) {
