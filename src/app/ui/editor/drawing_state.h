@@ -10,6 +10,7 @@
 
 #include "app/ui/editor/standby_state.h"
 #include "obs/connection.h"
+#include <memory>
 
 namespace app {
   namespace tools {
@@ -58,10 +59,10 @@ namespace app {
     DrawingType m_type;
 
     // The tool-loop.
-    tools::ToolLoop* m_toolLoop;
+    std::unique_ptr<tools::ToolLoop> m_toolLoop;
 
     // Tool-loop manager
-    tools::ToolLoopManager* m_toolLoopManager;
+    std::unique_ptr<tools::ToolLoopManager> m_toolLoopManager;
 
     // True if at least we've received a onMouseMove(). It's used to
     // cancel selection tool (deselect) when the user click (press and

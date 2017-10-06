@@ -97,7 +97,7 @@ namespace app {
       virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
 
       // Called for each point shape.
-      virtual void prepareForPointShape(ToolLoop* loop, int x, int y) { }
+      virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) { }
 
     };
 

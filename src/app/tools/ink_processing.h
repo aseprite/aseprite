@@ -36,7 +36,7 @@ public:
   virtual ~BaseInkProcessing() { }
   virtual void processScanline(int x1, int y, int x2, ToolLoop* loop) = 0;
   virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
-  virtual void prepareForPointShape(ToolLoop* loop, int x, int y) { }
+  virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) { }
 };
 
 template<typename Derived>
@@ -1095,8 +1095,9 @@ public:
     m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
   }
 
-  void prepareForPointShape(ToolLoop* loop, int x, int y) override {
-    if (m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+    if ((m_brush->pattern() == BrushPattern::ALIGNED_TO_DST && firstPoint) ||
+        (m_brush->pattern() == BrushPattern::PAINT_BRUSH)) {
       m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
       m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
     }

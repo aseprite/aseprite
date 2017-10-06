@@ -29,9 +29,9 @@ public:
     m_proc->processScanline(x1, y, x2, loop);
   }
 
-  void prepareForPointShape(ToolLoop* loop, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
     ASSERT(m_proc);
-    m_proc->prepareForPointShape(loop, x, y);
+    m_proc->prepareForPointShape(loop, firstPoint, x, y);
   }
 
 protected:

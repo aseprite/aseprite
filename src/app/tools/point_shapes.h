@@ -51,12 +51,10 @@ public:
     y += m_brush->bounds().y;
 
     if (m_firstPoint) {
-      m_firstPoint = false;
-      if (m_brush->type() == kImageBrushType) {
-        if (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
-            m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
-          m_brush->setPatternOrigin(gfx::Point(x, y));
-        }
+      if ((m_brush->type() == kImageBrushType) &&
+          (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
+           m_brush->pattern() == BrushPattern::PAINT_BRUSH)) {
+        m_brush->setPatternOrigin(gfx::Point(x, y));
       }
     }
     else {
@@ -66,12 +64,14 @@ public:
       }
     }
 
-    loop->getInk()->prepareForPointShape(loop, x, y);
+    loop->getInk()->prepareForPointShape(loop, m_firstPoint, x, y);
 
     for (auto scanline : *m_compressedImage) {
       int u = x+scanline.x;
       doInkHline(u, y+scanline.y, u+scanline.w-1, loop);
     }
+
+    m_firstPoint = false;
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {

@@ -65,6 +65,7 @@ protected:
   Editor* m_editor;
   tools::Tool* m_tool;
   BrushRef m_brush;
+  gfx::Point m_oldPatternOrigin;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
@@ -105,6 +106,7 @@ public:
     : m_editor(editor)
     , m_tool(tool)
     , m_brush(App::instance()->contextBar()->activeBrush(m_tool, ink))
+    , m_oldPatternOrigin(m_brush->patternOrigin())
     , m_document(document)
     , m_sprite(editor->sprite())
     , m_layer(layer)
@@ -188,6 +190,10 @@ public:
         App::instance()->contextBar()->createShadeRemap(
           button == tools::ToolLoop::Left));
     }
+  }
+
+  ~ToolLoopBase() {
+    m_brush->setPatternOrigin(m_oldPatternOrigin);
   }
 
   // IToolLoop interface

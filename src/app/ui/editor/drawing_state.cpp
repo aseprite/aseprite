@@ -269,10 +269,8 @@ void DrawingState::destroyLoop(Editor* editor)
   if (m_toolLoop)
     m_toolLoop->commitOrRollback();
 
-  delete m_toolLoopManager;
-  delete m_toolLoop;
-  m_toolLoopManager = nullptr;
-  m_toolLoop = nullptr;
+  m_toolLoopManager.reset(nullptr);
+  m_toolLoop.reset(nullptr);
 
   app_rebuild_documents_tabs();
 }
