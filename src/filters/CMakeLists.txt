@@ -2,6 +2,7 @@
 # Copyright (C) 2001-2017  David Capello
 
 add_library(filters-lib
+  brightness_contrast_filter.cpp
   color_curve.cpp
   color_curve_filter.cpp
   convolution_matrix.cpp

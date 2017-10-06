@@ -641,12 +641,14 @@
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
         <item command="InvertColor" text="&amp;Invert..." />
-        <item command="HueSaturation" text="Ad&amp;just Hue/Saturation..." />
+        <menu text="Adjustments">
+          <item command="BrightnessContrast" text="&amp;Brightness/Contrast..." />
+          <item command="HueSaturation" text="&amp;Hue/Saturation..." />
+          <item command="ColorCurve" text="&amp;Color Curve..." />
+	</menu>
         <menu text="F&amp;X" id="fx_popup">
-          <item command="ConvolutionMatrix" text="Convolution &amp;Matrix" />
-          <item command="ColorCurve" text="&amp;Color Curve" />
-          <separator />
-          <item command="Despeckle" text="&amp;Despeckle (median filter)" />
+          <item command="ConvolutionMatrix" text="Convolution &amp;Matrix..." />
+          <item command="Despeckle" text="&amp;Despeckle (Median Filter)..." />
         </menu>
         <item command="PasteText" text="Insert Text" />
         <!--menu text="Scripts">

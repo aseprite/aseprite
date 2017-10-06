@@ -350,6 +350,7 @@ add_library(app-lib
   commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
+  commands/filters/cmd_brightness_contrast.cpp
   commands/filters/cmd_color_curve.cpp
   commands/filters/cmd_convolution_matrix.cpp
   commands/filters/cmd_despeckle.cpp
@@ -494,6 +495,7 @@ add_library(app-lib
   ui/skin/skin_slider_property.cpp
   ui/skin/skin_theme.cpp
   ui/slice_window.cpp
+  ui/slider2.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
   ui/timeline/ani_controls.cpp
