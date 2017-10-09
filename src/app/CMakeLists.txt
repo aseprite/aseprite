@@ -554,7 +554,8 @@ target_link_libraries(app-lib
   ${FREETYPE_LIBRARIES}
   ${HARFBUZZ_LIBRARIES}
   json11
-  archive_static)
+  archive_static
+  fmt)
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

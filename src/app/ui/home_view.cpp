@@ -24,6 +24,7 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/exception.h"
+#include "fmt/format.h"
 #include "ui/label.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
@@ -143,7 +144,7 @@ void HomeView::onCheckingUpdates()
 
 void HomeView::onUpToDate()
 {
-  checkUpdate()->setText(PACKAGE " is up to date");
+  checkUpdate()->setText(fmt::format("{0} is up to date", PACKAGE));
   checkUpdate()->setVisible(true);
 
   layout();
@@ -151,7 +152,8 @@ void HomeView::onUpToDate()
 
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
-  checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
+  checkUpdate()->setText(fmt::format("New {0} v{1} available!",
+                                       PACKAGE, version));
   checkUpdate()->setUrl(url);
   checkUpdate()->setVisible(true);
   checkUpdate()->InitTheme.connect(

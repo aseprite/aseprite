@@ -57,3 +57,6 @@
 [submodule "third_party/giflib"]
 	path = third_party/giflib
 	url = https://github.com/aseprite/giflib.git
+[submodule "third_party/fmt"]
+	path = third_party/fmt
+	url = https://github.com/aseprite/fmt.git
