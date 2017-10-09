@@ -14,7 +14,8 @@
 namespace app {
 
   void get_font_dirs(std::vector<std::string>& fontDirs);
-  std::string find_font(const std::string& filename);
+  std::string find_font(const std::string& firstDir,
+                        const std::string& filename);
 
 } // namespace app
 

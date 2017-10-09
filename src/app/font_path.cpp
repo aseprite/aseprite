@@ -14,12 +14,16 @@
 
 namespace app {
 
-std::string find_font(const std::string& filename)
+std::string find_font(const std::string& firstDir,
+                      const std::string& filename)
 {
+  std::string fn = base::join_path(firstDir, filename);
+  if (base::is_file(fn))
+    return fn;
+
   std::vector<std::string> fontDirs;
   get_font_dirs(fontDirs);
 
-  std::string fn;
   for (const std::string& dir : fontDirs) {
     fn = base::join_path(dir, filename);
     if (base::is_file(fn))

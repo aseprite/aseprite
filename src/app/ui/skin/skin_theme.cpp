@@ -107,16 +107,14 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
                           xmlFilename.c_str());
 
   std::string type(typeStr);
+  std::string xmlDir(base::get_file_path(xmlFilename));
   base::UniquePtr<FontData> font(nullptr);
 
   if (type == "spritesheet") {
     const char* fileStr = xmlFont->Attribute("file");
     if (fileStr) {
       font.reset(new FontData(she::FontType::kSpriteSheet));
-      font->setFilename(
-        base::join_path(
-          base::get_file_path(xmlFilename),
-          fileStr));
+      font->setFilename(base::join_path(xmlDir, fileStr));
     }
   }
   else if (type == "truetype") {
@@ -138,9 +136,9 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
 
     std::string fontFilename;
     if (platformFileStr)
-      fontFilename = app::find_font(platformFileStr);
+      fontFilename = app::find_font(xmlDir, platformFileStr);
     if (fileStr && fontFilename.empty())
-      fontFilename = app::find_font(fileStr);
+      fontFilename = app::find_font(xmlDir, fileStr);
 
     // The filename can be empty if the font was not found, anyway we
     // want to keep the font information (e.g. to use the fallback
