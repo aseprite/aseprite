@@ -16,6 +16,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/gui_xml.h"
+#include "app/i18n/strings.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/tools/tool_box.h"
@@ -327,16 +328,16 @@ void AppMenus::reload()
 
   LOG("MENU: Main menu loaded.\n");
 
-  m_tabPopupMenu.reset(loadMenuById(handle, "tab_popup"));
-  m_documentTabPopupMenu.reset(loadMenuById(handle, "document_tab_popup"));
-  m_layerPopupMenu.reset(loadMenuById(handle, "layer_popup"));
-  m_framePopupMenu.reset(loadMenuById(handle, "frame_popup"));
-  m_celPopupMenu.reset(loadMenuById(handle, "cel_popup"));
-  m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
-  m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup"));
-  m_slicePopupMenu.reset(loadMenuById(handle, "slice_popup"));
-  m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup"));
-  m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup"));
+  m_tabPopupMenu.reset(loadMenuById(handle, "tab_popup_menu"));
+  m_documentTabPopupMenu.reset(loadMenuById(handle, "document_tab_popup_menu"));
+  m_layerPopupMenu.reset(loadMenuById(handle, "layer_popup_menu"));
+  m_framePopupMenu.reset(loadMenuById(handle, "frame_popup_menu"));
+  m_celPopupMenu.reset(loadMenuById(handle, "cel_popup_menu"));
+  m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup_menu"));
+  m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup_menu"));
+  m_slicePopupMenu.reset(loadMenuById(handle, "slice_popup_menu"));
+  m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup_menu"));
+  m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup_menu"));
 
   createNativeMenus();
 
@@ -439,10 +440,12 @@ Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
     .FirstChild("menus")
     .FirstChild("menu").ToElement();
   while (xmlMenu) {
-    const char* menu_id = xmlMenu->Attribute("id");
+    const char* menuId = xmlMenu->Attribute("id");
 
-    if (menu_id && strcmp(menu_id, id) == 0)
+    if (menuId && strcmp(menuId, id) == 0) {
+      m_xmlTranslator.setStringIdPrefix(menuId);
       return convertXmlelemToMenu(xmlMenu);
+    }
 
     xmlMenu = xmlMenu->NextSiblingElement();
   }
@@ -496,7 +499,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   }
 
   // Create the item
-  AppMenuItem* menuitem = new AppMenuItem(elem->Attribute("text"), command, params);
+  AppMenuItem* menuitem = new AppMenuItem(m_xmlTranslator(elem, "text"),
+                                          command, params);
   if (!menuitem)
     return nullptr;
 

@@ -34,7 +34,9 @@ namespace app {
       app::KeyContext keyContext = app::KeyContext::Any;
     };
 
-    AppMenuItem(const char* text, Command* command = nullptr, const Params& params = Params());
+    AppMenuItem(const std::string& text,
+                Command* command = nullptr,
+                const Params& params = Params());
     ~AppMenuItem();
 
     Key* key() { return m_key; }

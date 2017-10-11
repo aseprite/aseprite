@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -41,15 +41,15 @@ static std::string find_first_id(TiXmlElement* elem)
   return "";
 }
 
-static void collect_widgets_with_strings(TiXmlElement* elem, XmlElements& widgets)
+static void collect_elements_with_strings(TiXmlElement* elem, XmlElements& elems)
 {
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {
     const char* text = child->Attribute("text");
     const char* tooltip = child->Attribute("tooltip");
     if (text || tooltip)
-      widgets.push_back(child);
-    collect_widgets_with_strings(child, widgets);
+      elems.push_back(child);
+    collect_elements_with_strings(child, elems);
     child = child->NextSiblingElement();
   }
 }
@@ -117,11 +117,61 @@ public:
 
       m_prefixId = find_first_id(doc->RootElement());
 
-      collect_widgets_with_strings(doc->RootElement(), widgets);
+      collect_elements_with_strings(doc->RootElement(), widgets);
       for (TiXmlElement* elem : widgets) {
         checkString(elem, elem->Attribute("text"));
         checkString(elem, elem->Attribute("tooltip"));
       }
+    }
+  }
+
+  void checkStringsOnGuiFile(const std::string& fullFn) {
+    base::FileHandle inputFile(base::open_file(fullFn, "rb"));
+    base::UniquePtr<TiXmlDocument> doc(new TiXmlDocument());
+    doc->SetValue(fullFn.c_str());
+    if (!doc->LoadFile(inputFile.get())) {
+      std::cerr << doc->Value() << ":"
+                << doc->ErrorRow() << ":"
+                << doc->ErrorCol() << ": "
+                << "error " << doc->ErrorId() << ": "
+                << doc->ErrorDesc() << "\n";
+
+      throw std::runtime_error("invalid input file");
+    }
+
+    TiXmlHandle handle(doc);
+
+    // For each menu
+    TiXmlElement* xmlMenu = handle
+      .FirstChild("gui")
+      .FirstChild("menus")
+      .FirstChild("menu").ToElement();
+    while (xmlMenu) {
+      const char* menuId = xmlMenu->Attribute("id");
+      if (menuId) {
+        m_prefixId = menuId;
+        XmlElements menus;
+        collect_elements_with_strings(xmlMenu, menus);
+        for (TiXmlElement* elem : menus)
+          checkString(elem, elem->Attribute("text"));
+      }
+      xmlMenu = xmlMenu->NextSiblingElement();
+    }
+
+    // For each tool
+    m_prefixId = "tools";
+    TiXmlElement* xmlGroup = handle
+      .FirstChild("gui")
+      .FirstChild("tools")
+      .FirstChild("group").ToElement();
+    while (xmlGroup) {
+      XmlElements tools;
+      collect_elements_with_strings(xmlGroup, tools);
+      for (TiXmlElement* elem : tools) {
+        checkString(elem, elem->Attribute("text"));
+        checkString(elem, elem->Attribute("tooltip"));
+      }
+      xmlGroup = xmlGroup->NextSiblingElement();
     }
   }
 
@@ -172,9 +222,11 @@ private:
 };
 
 void check_strings(const std::string& widgetsDir,
-                   const std::string& stringsDir)
+                   const std::string& stringsDir,
+                   const std::string& guiFile)
 {
   CheckStrings cs;
   cs.loadStrings(stringsDir);
   cs.checkStringsOnWidgets(widgetsDir);
+  cs.checkStringsOnGuiFile(guiFile);
 }

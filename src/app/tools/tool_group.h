@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,16 +16,12 @@ namespace app {
     // A group of tools.
     class ToolGroup {
     public:
-      ToolGroup(const char* name,
-                const char* label) : m_name(name)
-                                   , m_label(label) { }
+      ToolGroup(const char* id) : m_id(id) { }
 
-      const std::string& getName() const { return m_name; }
-      const std::string& getLabel() const { return m_label; }
+      const std::string& id() const { return m_id; }
 
     private:
-      std::string m_name;
-      std::string m_label;
+      std::string m_id;
     };
 
   } // namespace tools

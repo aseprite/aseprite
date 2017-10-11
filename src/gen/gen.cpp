@@ -31,6 +31,7 @@ static void run(int argc, const char* argv[])
   PO::Option& strings = po.add("strings");
   PO::Option& widgetsDir = po.add("widgets-dir").requiresValue("<dir>");
   PO::Option& stringsDir = po.add("strings-dir").requiresValue("<dir>");
+  PO::Option& guiFile = po.add("gui-file").requiresValue("<filename>");
   po.parse(argc, argv);
 
   // Try to load the XML file
@@ -75,7 +76,8 @@ static void run(int argc, const char* argv[])
   else if (po.enabled(widgetsDir) &&
            po.enabled(stringsDir)) {
     check_strings(po.value_of(widgetsDir),
-                  po.value_of(stringsDir));
+                  po.value_of(stringsDir),
+                  po.value_of(guiFile));
   }
 }
 
