@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 #include <string>
 
 void check_strings(const std::string& widgetsDir,
-                   const std::string& stringsDir);
+                   const std::string& stringsDir,
+                   const std::string& guiFile);
 
 #endif

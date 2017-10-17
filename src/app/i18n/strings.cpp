@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016, 2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -61,7 +61,7 @@ Strings::Strings()
   }
 }
 
-const std::string& Strings::translate(const char* id)
+const std::string& Strings::translate(const char* id) const
 {
   auto it = m_strings.find(id);
   if (it != m_strings.end())

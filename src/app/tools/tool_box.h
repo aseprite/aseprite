@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 
+#include "app/i18n/xml_translator.h"
 #include "app/tools/tool.h"
 #include "base/unique_ptr.h"
 
@@ -117,6 +118,7 @@ namespace app {
 
       ToolGroupList m_groups;
       ToolList m_tools;
+      XmlTranslator m_xmlTranslator;
     };
 
   } // namespace tools

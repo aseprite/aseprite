@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,20 +16,18 @@
 
 namespace app {
 
-  // Singleton class to load and access "strings/english.txt" file.
-  class Strings {
+  // Singleton class to load and access "strings/en.ini" file.
+  class Strings : public app::gen::Strings<app::Strings> {
   public:
     static Strings* instance();
 
-    const std::string& translate(const char* id);
+    const std::string& translate(const char* id) const;
 
   private:
     Strings();
 
-    std::unordered_map<std::string, std::string> m_strings;
+    mutable std::unordered_map<std::string, std::string> m_strings;
   };
-
-  #define tr(id) (Strings::instance()->translate(id))
 
 } // namespace app
 

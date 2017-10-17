@@ -20,6 +20,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/document_undo.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -48,6 +49,7 @@
 #include "doc/remap.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "render/dithering.h"
 #include "render/render.h"
 #include "ui/ui.h"
@@ -591,10 +593,7 @@ tools::ToolLoop* create_tool_loop(
   app::Color bg = colorbar->getBgColor();
 
   if (!fg.isValid() || !bg.isValid()) {
-    Alert::show(PACKAGE
-                "<<The current selected foreground and/or background color"
-                "<<is out of range. Select a valid color in the color-bar."
-                "||&Close");
+    Alert::show(Strings::alerts_invalid_fg_or_bg_colors());
     return NULL;
   }
 
@@ -626,11 +625,7 @@ tools::ToolLoop* create_tool_loop(
       saveLastPoint);
   }
   catch (const std::exception& ex) {
-    Alert::show(PACKAGE
-                "<<Error drawing ink:"
-                "<<%s"
-                "||&Close",
-                ex.what());
+    Console::showException(ex);
     return NULL;
   }
 }

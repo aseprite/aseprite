@@ -34,7 +34,8 @@ using namespace ui;
 // static
 Params AppMenuItem::s_contextParams;
 
-AppMenuItem::AppMenuItem(const char* text, Command* command, const Params& params)
+AppMenuItem::AppMenuItem(const std::string& text,
+                         Command* command, const Params& params)
  : MenuItem(text)
  , m_key(nullptr)
  , m_command(command)

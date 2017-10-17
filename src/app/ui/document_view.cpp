@@ -19,6 +19,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -37,6 +38,7 @@
 #include "doc/document_event.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/accelerator.h"
 #include "ui/alert.h"
 #include "ui/menu.h"
@@ -278,12 +280,12 @@ bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
       // see if the sprite has changes
       while (m_document->isModified()) {
         // ask what want to do the user with the changes in the sprite
-        int ret = Alert::show("Warning"
-                              "<<Saving changes to the sprite"
-                              "<<\"%s\" before %s?"
-                              "||&Save||Do&n't Save||&Cancel",
-                              m_document->name().c_str(),
-                              quitting ? "quitting": "closing");
+        int ret = Alert::show(
+          fmt::format(
+            Strings::alerts_save_sprite_changes(),
+            m_document->name(),
+            (quitting ? Strings::alerts_save_sprite_changes_quitting():
+                        Strings::alerts_save_sprite_changes_closing())));
 
         if (ret == 1) {
           // "save": save the changes

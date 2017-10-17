@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,9 +12,11 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -43,7 +45,8 @@ Job::Job(const char* jobName)
   m_mutex = new base::mutex();
 
   if (App::instance()->isGui()) {
-    m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", jobName);
+    m_alert_window = ui::Alert::create(
+      fmt::format(Strings::alerts_job_working(), jobName));
     m_alert_window->addProgress();
 
     m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window.get()));

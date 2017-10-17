@@ -89,7 +89,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(
   ui::Widget* widget)
 {
   m_tooltipManager = NULL;
-  m_stringIdPrefix = widgetId;
+  m_xmlTranslator.setStringIdPrefix(widgetId.c_str());
 
   XmlDocumentRef doc(open_xml(xmlFilename));
   TiXmlHandle handle(doc.get());
@@ -362,7 +362,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       (middle ? MIDDLE: (bottom ? BOTTOM: TOP));
 
     if (!widget) {
-      widget = new Separator(textAttr(elem, "text"), align);
+      widget = new Separator(m_xmlTranslator(elem, "text"), align);
     }
     else
       widget->setAlign(widget->align() | align);
@@ -397,7 +397,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       if (desktop)
         widget = new Window(Window::DesktopWindow);
       else if (elem->Attribute("text"))
-        widget = new Window(Window::WithTitleBar, textAttr(elem, "text"));
+        widget = new Window(Window::WithTitleBar, m_xmlTranslator(elem, "text"));
       else
         widget = new Window(Window::WithoutTitleBar);
     }
@@ -419,7 +419,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   else if (elem_name == "dropdownbutton")  {
     if (!widget) {
-      widget = new DropDownButton(textAttr(elem, "text").c_str());
+      widget = new DropDownButton(m_xmlTranslator(elem, "text").c_str());
     }
   }
   else if (elem_name == "buttonset") {
@@ -453,7 +453,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       }
 
       if (text)
-        item->setText(textAttr(elem, "text"));
+        item->setText(m_xmlTranslator(elem, "text"));
 
       buttonset->addItem(item, hspan, vspan);
       fillWidgetWithXmlElementAttributes(elem, root, item);
@@ -527,7 +527,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     widget->setId(id);
 
   if (elem->Attribute("text"))
-    widget->setText(textAttr(elem, "text"));
+    widget->setText(m_xmlTranslator(elem, "text"));
 
   if (elem->Attribute("tooltip") && root) {
     if (!m_tooltipManager) {
@@ -543,7 +543,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
       else if (strcmp(tooltip_dir, "right") == 0) dir = RIGHT;
     }
 
-    m_tooltipManager->addTooltipFor(widget, textAttr(elem, "tooltip"), dir);
+    m_tooltipManager->addTooltipFor(widget, m_xmlTranslator(elem, "tooltip"), dir);
   }
 
   if (selected)
@@ -721,21 +721,6 @@ static int int_attr(const TiXmlElement* elem, const char* attribute_name, int de
   const char* value = elem->Attribute(attribute_name);
 
   return (value ? strtol(value, NULL, 10): default_value);
-}
-
-std::string WidgetLoader::textAttr(const TiXmlElement* elem, const char* attrName)
-{
-  const char* value = elem->Attribute(attrName);
-  if (!value)
-    return std::string();
-  else if (value[0] == '@') {
-    if (value[1] == '.')
-      return Strings::instance()->translate((m_stringIdPrefix + (value+1)).c_str());
-    else
-      return Strings::instance()->translate(value+1);
-  }
-  else
-    return std::string(value);
 }
 
 } // namespace app

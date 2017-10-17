@@ -11,10 +11,12 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/util/msk_file.h"
 #include "base/fs.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -55,7 +57,7 @@ void SaveMaskCommand::onExecute(Context* context)
   std::string filename = selFilename.front();
 
   if (save_msk_file(document->mask(), filename.c_str()) != 0)
-    ui::Alert::show("Error<<Error saving .msk file<<%s||&Close", filename.c_str());
+    ui::Alert::show(fmt::format(Strings::alerts_error_saving_file(), filename));
 }
 
 Command* CommandFactory::createSaveMaskCommand()

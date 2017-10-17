@@ -12,9 +12,10 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/ui/status_bar.h"
 #include "app/transaction.h"
+#include "app/ui/status_bar.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/alert.h"
@@ -69,7 +70,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
 
       if (deletedTopLevelLayers == sprite->root()->layersCount()) {
-        ui::Alert::show("Error<<You cannot delete all layers.||&OK");
+        ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
         return;
       }
 
@@ -79,7 +80,7 @@ void RemoveLayerCommand::onExecute(Context* context)
     }
     else {
       if (sprite->allLayersCount() == 1) {
-        ui::Alert::show("Error<<You cannot delete the last layer.||&OK");
+        ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
         return;
       }
 

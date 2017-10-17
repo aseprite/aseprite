@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -77,8 +78,7 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_cancelled = false;
   m_abort = false;
 
-  m_alertWindow = ui::Alert::create(PACKAGE
-    "<<Applying effect...||&Cancel");
+  m_alertWindow = ui::Alert::create(Strings::alerts_applying_filter());
   m_alertWindow->addProgress();
 
   m_timer.Tick.connect(&FilterWorker::onMonitoringTick, this);

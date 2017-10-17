@@ -11,6 +11,7 @@
 #include "app/tools/tool_box.h"
 
 #include "app/gui_xml.h"
+#include "app/i18n/strings.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
@@ -92,6 +93,8 @@ const char* WellKnownPointShapes::Spray = "spray";
 
 ToolBox::ToolBox()
 {
+  m_xmlTranslator.setStringIdPrefix("tools");
+
   m_inks[WellKnownInks::Selection]       = new SelectionInk();
   m_inks[WellKnownInks::Paint]           = new PaintInk(PaintInk::Simple);
   m_inks[WellKnownInks::PaintFg]         = new PaintInk(PaintInk::WithFg);
@@ -194,29 +197,27 @@ void ToolBox::loadTools()
   // For each group
   TiXmlElement* xmlGroup = handle.FirstChild("gui").FirstChild("tools").FirstChild("group").ToElement();
   while (xmlGroup) {
-    const char* group_id = xmlGroup->Attribute("id");
-    const char* group_text = xmlGroup->Attribute("text");
-
-    if (!group_id || !group_text)
+    const char* groupId = xmlGroup->Attribute("id");
+    if (!groupId)
       throw base::Exception("The configuration file has a <group> without 'id' or 'text' attributes.");
 
-    LOG(VERBOSE) << "TOOL: Group " << group_id << "\n";
+    LOG(VERBOSE) << "TOOL: Group " << groupId << "\n";
 
-    ToolGroup* tool_group = new ToolGroup(group_id, group_text);
+    ToolGroup* toolGroup = new ToolGroup(groupId);
 
     // For each tool
     TiXmlNode* xmlToolNode = xmlGroup->FirstChild("tool");
     TiXmlElement* xmlTool = xmlToolNode ? xmlToolNode->ToElement(): NULL;
     while (xmlTool) {
-      const char* tool_id = xmlTool->Attribute("id");
-      const char* tool_text = xmlTool->Attribute("text");
-      const char* tool_tips = xmlTool->FirstChild("tooltip") ? ((TiXmlElement*)xmlTool->FirstChild("tooltip"))->GetText(): "";
-      const char* default_brush_size = xmlTool->Attribute("default_brush_size");
+      const char* toolId = xmlTool->Attribute("id");
+      std::string toolText = m_xmlTranslator(xmlTool, "text");
+      std::string toolTips = m_xmlTranslator(xmlTool, "tooltip");
+      const char* defaultBrushSize = xmlTool->Attribute("default_brush_size");
 
-      Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
-        default_brush_size ? strtol(default_brush_size, NULL, 10): 1);
+      Tool* tool = new Tool(toolGroup, toolId, toolText, toolTips,
+        defaultBrushSize ? strtol(defaultBrushSize, NULL, 10): 1);
 
-      LOG(VERBOSE) << "TOOL: Tool " << tool_id << " in group " << group_id << " found\n";
+      LOG(VERBOSE) << "TOOL: Tool " << toolId << " in group " << groupId << " found\n";
 
       loadToolProperties(xmlTool, tool, 0, "left");
       loadToolProperties(xmlTool, tool, 1, "right");
@@ -226,7 +227,7 @@ void ToolBox::loadTools()
       xmlTool = xmlTool->NextSiblingElement();
     }
 
-    m_groups.push_back(tool_group);
+    m_groups.push_back(toolGroup);
     xmlGroup = xmlGroup->NextSiblingElement();
   }
 

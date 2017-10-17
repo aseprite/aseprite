@@ -14,6 +14,7 @@
 #include "app/context.h"
 #include "app/extensions.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
 #include "app/pref/preferences.h"
@@ -28,6 +29,7 @@
 #include "base/string.h"
 #include "base/version.h"
 #include "doc/image.h"
+#include "fmt/format.h"
 #include "render/render.h"
 #include "she/display.h"
 #include "she/system.h"
@@ -371,7 +373,7 @@ public:
       m_pref.general.dataRecovery(enableDataRecovery()->isSelected());
       m_pref.general.dataRecoveryPeriod(newPeriod);
 
-      warnings += "<<- Automatically save recovery data every";
+      warnings += "<<- " + Strings::alerts_restart_by_preferences_save_recovery_data_period();
     }
 
     m_pref.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
@@ -463,9 +465,9 @@ public:
     m_pref.save();
 
     if (!warnings.empty()) {
-      ui::Alert::show(PACKAGE
-        "<<You must restart the program to see your changes to:%s"
-        "||&OK", warnings.c_str());
+      ui::Alert::show(
+        fmt::format(Strings::alerts_restart_by_preferences(),
+                    warnings));
     }
 
     if (reset_screen)
@@ -778,17 +780,13 @@ private:
           // Ask if the user want to adjust the Screen/UI Scaling
           const int result =
             ui::Alert::show(
-              "Update Screen/UI Scaling"
-              "<<The new theme '%s' wants to adjust some values for you:"
-              "<<  Screen Scaling: %d%% -> %d%%"
-              "<<  UI Scaling: %d%% -> %d%%"
-              "<<Allow these changes?"
-              "||&Adjust Scaling||&Don't Adjust Scaling",
-              themeName.c_str(),
-              100 * m_pref.general.screenScale(),
-              100 * (newScreenScale > 0 ? newScreenScale: m_pref.general.screenScale()),
-              100 * m_pref.general.uiScale(),
-              100 * (newUIScale > 0 ? newUIScale: m_pref.general.uiScale()));
+              fmt::format(
+                Strings::alerts_update_screen_ui_scaling_with_theme_values(),
+                themeName,
+                100 * m_pref.general.screenScale(),
+                100 * (newScreenScale > 0 ? newScreenScale: m_pref.general.screenScale()),
+                100 * m_pref.general.uiScale(),
+                100 * (newUIScale > 0 ? newUIScale: m_pref.general.uiScale())));
 
           if (result == 1) {
             // Preferred UI Scaling factor
@@ -865,14 +863,13 @@ private:
 
         // Uninstall?
         if (ui::Alert::show(
-              "Update Extension"
-              "<<The extension '%s' already exists."
-              "<<Do you want to %s from v%s to v%s?"
-              "||&Yes||&No",
-              ext->name().c_str(),
-              (isDowngrade ? "downgrade": "upgrade"),
-              ext->version().c_str(),
-              info.version.c_str()) != 1)
+              fmt::format(
+                Strings::alerts_update_extension(),
+                ext->name(),
+                (isDowngrade ? Strings::alerts_update_extension_downgrade():
+                               Strings::alerts_update_extension_upgrade()),
+                ext->version(),
+                info.version)) != 1)
           return;
 
         // Uninstall old version
@@ -917,10 +914,9 @@ private:
       return;
 
     if (ui::Alert::show(
-          "Warning"
-          "<<Do you really want to uninstall '%s' extension?"
-          "||&Yes||&No",
-          item->text().c_str()) != 1)
+          fmt::format(
+            Strings::alerts_uninstall_extension_warning(),
+            item->text())) != 1)
       return;
 
     try {

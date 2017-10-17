@@ -20,6 +20,7 @@
 #include "base/fs.h"
 #include "doc/doc.h"
 #include "fixmath/fixmath.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 #include "zlib.h"
 
@@ -403,14 +404,17 @@ bool AseFormat::onPostLoad(FileOp* fop)
   if (flat && ase_has_groups(group)) {
     if (fop->context() &&
         fop->context()->isUIAvailable() &&
-        ui::Alert::show("Warning"
-                        "<<The selected file \"%s\" has layer groups."
-                        "<<Do you want to open it with \"%s %s\" anyway?"
-                        "<<"
-                        "<<Note: Layers inside groups will be converted to top level layers."
-                        "||&Yes||&No",
-                        base::get_file_name(fop->filename()).c_str(),
-                        PACKAGE, ver.c_str()) != 1) {
+        ui::Alert::show(
+          fmt::format(
+            // This message is not translated because is used only in the old v1.1 only
+            "Warning"
+            "<<The selected file \"{0}\" has layer groups."
+            "<<Do you want to open it with \"{1} {2}\" anyway?"
+            "<<"
+            "<<Note: Layers inside groups will be converted to top level layers."
+            "||&Yes||&No",
+            base::get_file_name(fop->filename()),
+            PACKAGE, ver)) != 1) {
       return false;
     }
     ase_ungroup_all(group);

@@ -70,9 +70,9 @@ file(GLOB string_files ${CMAKE_SOURCE_DIR}/data/strings/*.ini)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/check-translations.txt)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --widgets-dir "${CMAKE_SOURCE_DIR}/data/widgets/" --strings-dir "${CMAKE_SOURCE_DIR}/data/strings/" >${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --widgets-dir "${CMAKE_SOURCE_DIR}/data/widgets/" --strings-dir "${CMAKE_SOURCE_DIR}/data/strings/" --gui-file "${CMAKE_SOURCE_DIR}/data/gui.xml" >${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS gen ${widget_files} ${string_files})
+  DEPENDS gen ${widget_files} ${string_files} "${CMAKE_SOURCE_DIR}/data/gui.xml")
 list(APPEND generated_files ${output_fn})
 
 # Directory where generated files by "gen" utility will stay.
@@ -389,6 +389,7 @@ add_library(app-lib
   font_path.cpp
   gui_xml.cpp
   i18n/strings.cpp
+  i18n/xml_translator.cpp
   ini_file.cpp
   job.cpp
   launcher.cpp
@@ -554,7 +555,8 @@ target_link_libraries(app-lib
   ${FREETYPE_LIBRARIES}
   ${HARFBUZZ_LIBRARIES}
   json11
-  archive_static)
+  archive_static
+  fmt)
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

@@ -18,6 +18,7 @@
 #include "app/context_access.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/job.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -207,10 +208,7 @@ bool SaveFileBaseCommand::saveAsDialog(
     if (!forbiddenFilename.empty() &&
         base::normalize_path(forbiddenFilename) ==
         base::normalize_path(filename)) {
-      ui::Alert::show("Overwrite Warning"
-                      "<<You cannot save a copy with the same name (overwrite the original file)."
-                      "<<Use File > Save menu option in that case."
-                      "||&OK");
+      ui::Alert::show(Strings::alerts_cannot_file_overwrite_on_export());
       goto again;
     }
 

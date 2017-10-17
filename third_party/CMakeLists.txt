@@ -88,6 +88,7 @@ endif()
 
 add_subdirectory(harfbuzz-cmake)
 add_subdirectory(simpleini)
+add_subdirectory(fmt)
 
 # Add cmark without tests
 if(NOT USE_SHARED_CMARK)

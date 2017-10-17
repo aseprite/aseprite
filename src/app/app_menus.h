@@ -8,6 +8,8 @@
 #define APP_APP_MENUS_H_INCLUDED
 #pragma once
 
+#include "app/i18n/xml_translator.h"
+#include "app/widget_type_mismatch.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "obs/connection.h"
@@ -88,6 +90,7 @@ namespace app {
     obs::scoped_connection m_recentFilesConn;
     std::vector<Menu*> m_menus;
     she::Menu* m_osMenu;
+    XmlTranslator m_xmlTranslator;
   };
 
   she::Shortcut get_os_shortcut_from_key(Key* key);
