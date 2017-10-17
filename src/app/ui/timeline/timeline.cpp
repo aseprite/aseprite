@@ -3318,8 +3318,8 @@ void Timeline::dropRange(DropOp op)
 
     moveRange(newFromRange);
   }
-  catch (const std::exception& e) {
-    ui::Alert::show("Problem<<%s||&OK", e.what());
+  catch (const std::exception& ex) {
+    Console::showException(ex);
   }
 }
 

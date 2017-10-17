@@ -13,11 +13,13 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/util/msk_file.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -68,9 +70,10 @@ void LoadMaskCommand::onExecute(Context* context)
   }
 
   base::UniquePtr<Mask> mask(load_msk_file(m_filename.c_str()));
-  if (!mask)
-    throw base::Exception("Error loading .msk file: %s",
-                          static_cast<const char*>(m_filename.c_str()));
+  if (!mask) {
+    ui::Alert::show(fmt::format(Strings::alerts_error_loading_file(), m_filename));
+    return;
+  }
 
   {
     ContextWriter writer(reader);

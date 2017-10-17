@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -54,7 +54,7 @@ void gen_strings_class(const std::string& inputFn)
     for (auto key : keys) {
       textId.append(key);
 
-      std::cout << "    const std::string& " << to_cpp(textId) << "() const { return static_cast<T*>(this)->translate(\"" << textId << "\"); }\n";
+      std::cout << "    static const std::string& " << to_cpp(textId) << "() { return T::instance()->translate(\"" << textId << "\"); }\n";
 
       textId.erase(section.size()+1);
     }

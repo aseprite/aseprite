@@ -14,9 +14,11 @@
 #include "app/context.h"
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "base/fs.h"
 #include "doc/palette.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -68,7 +70,7 @@ void SavePaletteCommand::onExecute(Context* context)
   }
 
   if (!save_palette(filename.c_str(), palette, 16)) // TODO 16 should be configurable
-    Alert::show("Error<<Saving palette file||&Close");
+    ui::Alert::show(fmt::format(Strings::alerts_error_saving_file(), filename));
 
   if (m_preset == get_default_palette_preset_name()) {
     set_default_palette(palette);

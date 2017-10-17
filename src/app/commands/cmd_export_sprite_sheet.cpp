@@ -16,6 +16,7 @@
 #include "app/document_exporter.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
@@ -29,6 +30,7 @@
 #include "base/string.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
+#include "fmt/format.h"
 
 #include "export_sprite_sheet.xml.h"
 
@@ -138,7 +140,6 @@ namespace {
          !dataname.empty() &&
          base::is_file(dataname))) {
       std::stringstream text;
-      text << "Export Sprite Sheet Warning<<Do you want to overwrite the following file(s)?";
 
       if (base::is_file(filename))
         text << "<<" << base::get_file_name(filename).c_str();
@@ -146,8 +147,9 @@ namespace {
       if (base::is_file(dataname))
         text << "<<" << base::get_file_name(dataname).c_str();
 
-      text << "||&Yes||&No";
-      if (Alert::show(text.str().c_str()) != 1)
+      if (ui::Alert::show(
+            fmt::format(Strings::alerts_overwrite_files_on_export_sprite_sheet(),
+                        text.str())) != 1)
         return false;
     }
     return true;

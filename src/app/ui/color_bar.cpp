@@ -28,6 +28,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_undo.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -599,11 +600,7 @@ void ColorBar::onRemapButtonClick()
 
   // Check the remap
   if (!remap.isFor8bit() &&
-      Alert::show(
-        "Automatic Remap"
-        "<<The remap operation cannot be perfectly done for more than 256 colors."
-        "<<Do you want to continue anyway?"
-        "||&OK||&Cancel") != 1) {
+      Alert::show(Strings::alerts_auto_remap()) != 1) {
     return;
   }
 

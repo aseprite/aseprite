@@ -195,9 +195,7 @@ void PasteTextCommand::onExecute(Context* ctx)
     }
   }
   catch (const std::exception& ex) {
-    ui::Alert::show(PACKAGE
-                    "<<%s"
-                    "||&OK", ex.what());
+    Console::showException(ex);
   }
 }
 

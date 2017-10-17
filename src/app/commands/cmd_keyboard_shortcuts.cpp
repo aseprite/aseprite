@@ -13,6 +13,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/resource_finder.h"
 #include "app/tools/tool.h"
@@ -28,6 +29,7 @@
 #include "base/scoped_value.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "fmt/format.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
@@ -144,11 +146,10 @@ private:
     // Key::disableAccel() will modify the accels() collection itself.
     ui::Accelerator accel = m_key->accels()[index];
 
-    if (Alert::show(
-          "Warning"
-          "<<Do you really want to delete '%s' keyboard shortcut?"
-          "||&Yes||&No",
-          accel.toString().c_str()) != 1)
+    if (ui::Alert::show(
+          fmt::format(
+            Strings::alerts_delete_shortcut(),
+            accel.toString())) != 1)
       return;
 
     m_key->disableAccel(accel);
@@ -586,10 +587,7 @@ private:
   }
 
   void onReset() {
-    if (Alert::show("Warning"
-        "<<Do you want to restore all keyboard shortcuts"
-        "<<to their original default settings?"
-        "||&Yes||&No") == 1) {
+    if (ui::Alert::show(Strings::alerts_restore_all_shortcuts()) == 1) {
       app::KeyboardShortcuts::instance()->reset();
       layout();
     }

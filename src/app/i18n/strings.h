@@ -16,17 +16,17 @@
 
 namespace app {
 
-  // Singleton class to load and access "strings/english.txt" file.
-  class Strings {
+  // Singleton class to load and access "strings/en.ini" file.
+  class Strings : public app::gen::Strings<app::Strings> {
   public:
     static Strings* instance();
 
-    const std::string& translate(const char* id);
+    const std::string& translate(const char* id) const;
 
   private:
     Strings();
 
-    std::unordered_map<std::string, std::string> m_strings;
+    mutable std::unordered_map<std::string, std::string> m_strings;
   };
 
 } // namespace app

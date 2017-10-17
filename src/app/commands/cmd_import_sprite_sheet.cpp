@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,7 @@
 #include "app/context_access.h"
 #include "app/document_access.h"
 #include "app/document_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -379,10 +380,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     }
 
     if (animation.size() == 0) {
-      Alert::show("Import Sprite Sheet"
-        "<<The specified rectangle does not create any tile."
-        "<<Select a rectangle inside the sprite region."
-        "||&OK");
+      Alert::show(Strings::alerts_empty_rect_importing_sprite_sheet());
       return;
     }
 

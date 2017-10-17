@@ -45,7 +45,6 @@
 #include "ui/slider.h"
 #include "ui/theme.h"
 
-#include <cstdarg>
 #include <cstdio>
 
 namespace ui {
@@ -73,13 +72,10 @@ void Alert::setProgress(double progress)
   m_progress->setValue(int(MID(0.0, progress * 100.0, 100.0)));
 }
 
-AlertPtr Alert::create(const char* format, ...)
+// static
+AlertPtr Alert::create(const std::string& _msg)
 {
-  // Process arguments
-  std::va_list ap;
-  va_start(ap, format);
-  std::string msg = base::string_vprintf(format, ap);
-  va_end(ap);
+  std::string msg(_msg);
 
   // Create the alert window
   AlertPtr window(new Alert());
@@ -88,13 +84,9 @@ AlertPtr Alert::create(const char* format, ...)
 }
 
 // static
-int Alert::show(const char* format, ...)
+int Alert::show(const std::string& _msg)
 {
-  // Process arguments
-  std::va_list ap;
-  va_start(ap, format);
-  std::string msg = base::string_vprintf(format, ap);
-  va_end(ap);
+  std::string msg(_msg);
 
   // Create the alert window
   AlertPtr window(new Alert());
@@ -134,7 +126,14 @@ void Alert::processString(std::string& buf)
   // Process buffer
   c = 0;
   beg = 0;
-  for (; ; c++) {
+  for (;;) {
+    // Ignore characters
+    if (buf[c] == '\n' ||
+        buf[c] == '\r') {
+      buf.erase(c, 1);
+      continue;
+    }
+
     if ((!buf[c]) ||
         ((buf[c] == buf[c+1]) &&
          ((buf[c] == '<') ||
@@ -185,9 +184,10 @@ void Alert::processString(std::string& buf)
           case '-': separator=true; break;
           case '|': button=true; break;
         }
-        c++;
+        ++c;
       }
     }
+    ++c;
   }
 
   auto box1 = new Box(VERTICAL);

@@ -10,11 +10,10 @@
 
 #include "app/ui/file_selector.h"
 
-#include "base/bind.h"
-#include "base/string.h"
 #include "app/app.h"
 #include "app/console.h"
 #include "app/file/file.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -24,10 +23,13 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
+#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/split_string.h"
+#include "base/string.h"
 #include "base/unique_ptr.h"
+#include "fmt/format.h"
 #include "ui/ui.h"
 
 #include "new_folder_window.xml.h"
@@ -625,13 +627,17 @@ again:
        fn.find('|') != std::string::npos);
 #endif
     if (has_invalid_char) {
-      Alert::show("Error"
-                  "<<The file name cannot contain the following character(s):"
-                  "<< /"
+      const char* invalid_chars =
+        "/"
 #ifdef _WIN32
-                  " \\ : * ? \" < > |"
+        " \\ : * ? \" < > |"
 #endif
-                  "||&OK");
+        ;
+
+      ui::Alert::show(
+        fmt::format(
+          Strings::alerts_invalid_chars_in_filename(),
+          invalid_chars));
 
       // show the window again
       setVisible(true);
@@ -646,8 +652,10 @@ again:
     }
 
     if (m_type == FileSelectorType::Save && base::is_file(buf)) {
-      int ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                            base::get_file_name(buf).c_str());
+      int ret = Alert::show(
+        fmt::format(
+          Strings::alerts_overwrite_existent_file(),
+          base::get_file_name(buf)));
       if (ret == 2) {
         setVisible(true);
         goto again;
@@ -655,8 +663,7 @@ again:
       else if (ret == 1) {
         // Check for read-only attribute
         if (base::has_readonly_attr(buf)) {
-          ui::Alert::show(
-            "Problem<<The selected file is read-only. Try with other file.||&Go back");
+          ui::Alert::show(Strings::alerts_cannot_save_in_read_only_file());
 
           setVisible(true);
           goto again;

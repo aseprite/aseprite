@@ -13,12 +13,14 @@
 #include "app/app_menus.h"
 #include "app/crash/data_recovery.h"
 #include "app/crash/session.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/bind.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/button.h"
 #include "ui/entry.h"
@@ -224,10 +226,9 @@ void DataRecoveryView::onDelete()
     return;
 
   // Delete one backup
-  if (Alert::show(PACKAGE
-                  "<<Do you really want to delete the selected %d backup(s)?"
-                  "||&Yes||&No",
-                  int(items.size())) != 1)
+  if (Alert::show(
+        fmt::format(Strings::alerts_delete_selected_backups(),
+                    int(items.size()))) != 1)
     return;                     // Cancel
 
   for (auto item : items) {
