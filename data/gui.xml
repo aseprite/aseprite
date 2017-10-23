@@ -1019,7 +1019,7 @@
     <group id="selection_tools">
       <tool id="rectangular_marquee"
             text="@.rectangular_marquee"
-            tooltip="@.rectangular_marquee_tooltip"
+            tooltip="@.selection_tooltip"
             fill="always"
             ink="selection"
             controller="two_points"
@@ -1028,7 +1028,7 @@
             tracepolicy="last" />
       <tool id="elliptical_marquee"
             text="@.elliptical_marquee"
-            tooltip="@.elliptical_marquee_tooltip"
+            tooltip="@.selection_tooltip"
             fill="always"
             ink="selection"
             controller="two_points"
@@ -1037,7 +1037,7 @@
             tracepolicy="last" />
       <tool id="lasso"
             text="@.lasso_tool"
-            tooltip="@.lasso_tool_tooltip"
+            tooltip="@.selection_tooltip"
             fill="always"
             ink="selection"
             controller="freehand"
@@ -1046,7 +1046,7 @@
             tracepolicy="accumulate" />
       <tool id="polygonal_lasso"
             text="@.polygonal_lasso"
-            tooltip="@.polygonal_lasso_tooltip"
+            tooltip="@.selection_tooltip"
             fill="always"
             ink="selection"
             controller="point_by_point"
@@ -1055,7 +1055,7 @@
             tracepolicy="last" />
       <tool id="magic_wand"
             text="@.magic_wand"
-            tooltip="@.magic_wand_tooltip"
+            tooltip="@.selection_tooltip"
             fill="always"
             ink="selection"
             controller="one_point"
