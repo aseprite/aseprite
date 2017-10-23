@@ -514,42 +514,11 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
   switch (key->type()) {
 
     case KeyType::Command: {
-      const char* keycontextStr = NULL;
-
       elem.SetAttribute("command", key->command()->id().c_str());
 
-      switch (key->keycontext()) {
-        case KeyContext::Any:
-          // Without "context" attribute
-          break;
-        case KeyContext::Normal:
-          keycontextStr = "Normal";
-          break;
-        case KeyContext::SelectionTool:
-          keycontextStr = "Selection";
-          break;
-        case KeyContext::TranslatingSelection:
-          keycontextStr = "TranslatingSelection";
-          break;
-        case KeyContext::ScalingSelection:
-          keycontextStr = "ScalingSelection";
-          break;
-        case KeyContext::RotatingSelection:
-          keycontextStr = "RotatingSelection";
-          break;
-        case KeyContext::MoveTool:
-          keycontextStr = "MoveTool";
-          break;
-        case KeyContext::FreehandTool:
-          keycontextStr = "FreehandTool";
-          break;
-        case KeyContext::ShapeTool:
-          keycontextStr = "ShapeTool";
-          break;
-      }
-
-      if (keycontextStr)
-        elem.SetAttribute("context", keycontextStr);
+      if (key->keycontext() != KeyContext::Any)
+        elem.SetAttribute(
+          "context", convertKeyContextToString(key->keycontext()).c_str());
 
       for (const auto& param : key->params()) {
         if (param.second.empty())
@@ -731,6 +700,56 @@ std::string key_tooltip(const char* str, app::Key* key)
     res += ")";
   }
   return res;
+}
+
+std::string convertKeyContextToString(KeyContext keyContext)
+{
+  switch (keyContext) {
+    case KeyContext::Any:
+      return std::string();
+    case KeyContext::Normal:
+      return "Normal";
+    case KeyContext::SelectionTool:
+      return "Selection";
+    case KeyContext::TranslatingSelection:
+      return "TranslatingSelection";
+    case KeyContext::ScalingSelection:
+      return "ScalingSelection";
+    case KeyContext::RotatingSelection:
+      return "RotatingSelection";
+    case KeyContext::MoveTool:
+      return "MoveTool";
+    case KeyContext::FreehandTool:
+      return "FreehandTool";
+    case KeyContext::ShapeTool:
+      return "ShapeTool";
+  }
+  return std::string();
+}
+
+std::string convertKeyContextToUserFriendlyString(KeyContext keyContext)
+{
+  switch (keyContext) {
+    case KeyContext::Any:
+      return std::string();
+    case KeyContext::Normal:
+      return "Normal";
+    case KeyContext::SelectionTool:
+      return "Selection";
+    case KeyContext::TranslatingSelection:
+      return "Translating Selection";
+    case KeyContext::ScalingSelection:
+      return "Scaling Selection";
+    case KeyContext::RotatingSelection:
+      return "Rotating Selection";
+    case KeyContext::MoveTool:
+      return "Move Tool";
+    case KeyContext::FreehandTool:
+      return "Freehand Tool";
+    case KeyContext::ShapeTool:
+      return "Shape Tool";
+  }
+  return std::string();
 }
 
 } // namespace app

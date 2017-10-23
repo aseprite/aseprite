@@ -186,6 +186,9 @@ namespace app {
       str, KeyboardShortcuts::instance()->action(keyAction));
   }
 
+  std::string convertKeyContextToString(KeyContext keyContext);
+  std::string convertKeyContextToUserFriendlyString(KeyContext keyContext);
+
 } // namespace app
 
 namespace base {

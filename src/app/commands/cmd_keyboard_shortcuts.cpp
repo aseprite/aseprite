@@ -226,7 +226,12 @@ private:
 
       for (const Accelerator& accel : m_key->accels()) {
         if (i != m_hotAccel || !m_changeButton) {
-          g->drawText(accel.toString(), fg, bg,
+          std::string s = accel.toString();
+          if (m_key->keycontext() != KeyContext::Any) {
+            s += fmt::format(
+              " (Context: {0})", convertKeyContextToUserFriendlyString(m_key->keycontext()));
+          }
+          g->drawText(s, fg, bg,
             gfx::Point(bounds.x + g_sep, y + 2*guiscale()));
         }
 
@@ -426,25 +431,15 @@ private:
       std::string text = key->triggerString();
       switch (key->keycontext()) {
         case KeyContext::SelectionTool:
-          text = "Selection Tool: " + text;
-          break;
         case KeyContext::TranslatingSelection:
-          text = "Translating Selection: " + text;
-          break;
         case KeyContext::ScalingSelection:
-          text = "Scaling Selection: " + text;
-          break;
         case KeyContext::RotatingSelection:
-          text = "Rotating Selection: " + text;
-          break;
         case KeyContext::MoveTool:
-          text = "Move Tool: " + text;
-          break;
         case KeyContext::FreehandTool:
-          text = "Freehand Tools: " + text;
-          break;
         case KeyContext::ShapeTool:
-          text = "Shape Tools: " + text;
+          text =
+            convertKeyContextToUserFriendlyString(key->keycontext())
+            + ": " + text;
           break;
       }
       KeyItem* keyItem = new KeyItem(text, key, NULL, 0);
