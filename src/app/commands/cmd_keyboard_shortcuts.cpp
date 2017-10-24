@@ -47,7 +47,60 @@ using namespace skin;
 using namespace tools;
 using namespace ui;
 
-static int g_sep = 0;
+namespace {
+
+class HeaderSplitter : public Splitter {
+public:
+  HeaderSplitter() : Splitter(Splitter::ByPixel, HORIZONTAL) {
+  }
+  void onPositionChange() override {
+    Splitter::onPositionChange();
+
+    Widget* p = parent();
+    while (p && p->type() != kViewWidget)
+      p = p->parent();
+    if (p)
+      p->layout();
+  }
+};
+
+class HeaderItem : public ListItem {
+public:
+  HeaderItem()
+    : m_actionLabel("Action")
+    , m_keyLabel("Key")
+    , m_contextLabel("Context") {
+    setBorder(gfx::Border(0));
+
+    auto theme = SkinTheme::instance();
+    m_actionLabel.setStyle(theme->styles.listHeaderLabel());
+    m_keyLabel.setStyle(theme->styles.listHeaderLabel());
+    m_contextLabel.setStyle(theme->styles.listHeaderLabel());
+
+    m_splitter1.setPosition(ui::display_w()*3/4 * 4/10);
+    m_splitter2.setPosition(ui::display_w()*3/4 * 2/10);
+
+    addChild(&m_splitter1);
+    m_splitter1.addChild(&m_actionLabel);
+    m_splitter1.addChild(&m_splitter2);
+    m_splitter2.addChild(&m_keyLabel);
+    m_splitter2.addChild(&m_contextLabel);
+  }
+
+  int keyXPos() const {
+    return m_keyLabel.bounds().x - bounds().x;
+  }
+
+  int contextXPos() const {
+    return m_contextLabel.bounds().x - bounds().x;
+  }
+
+private:
+  HeaderSplitter m_splitter1, m_splitter2;
+  Label m_actionLabel;
+  Label m_keyLabel;
+  Label m_contextLabel;
+};
 
 class KeyItem : public ListItem {
 
@@ -65,14 +118,19 @@ class KeyItem : public ListItem {
   };
 
 public:
-  KeyItem(const std::string& text, Key* key, AppMenuItem* menuitem, int level)
+  KeyItem(const std::string& text,
+          Key* key,
+          AppMenuItem* menuitem,
+          const int level,
+          HeaderItem* headerItem)
     : ListItem(text)
     , m_key(key)
     , m_keyOrig(key ? new Key(*key): nullptr)
     , m_menuitem(menuitem)
     , m_level(level)
     , m_hotAccel(-1)
-    , m_lockButtons(false) {
+    , m_lockButtons(false)
+    , m_headerItem(headerItem) {
     gfx::Border border = this->border();
     border.top(0);
     border.bottom(0);
@@ -186,6 +244,14 @@ private:
     size.w = size.w + border().width();
     size.h = size.h + border().height() + 4*guiscale();
 
+    if (m_key && m_key->keycontext() != KeyContext::Any) {
+      int w =
+        m_headerItem->contextXPos() +
+        Graphics::measureUITextLength(
+          convertKeyContextToUserFriendlyString(m_key->keycontext()), font());
+      size.w = MAX(size.w, w);
+    }
+
     if (m_key && !m_key->accels().empty()) {
       size_t combos = m_key->accels().size();
       if (combos > 1)
@@ -212,31 +278,40 @@ private:
 
     g->fillRect(bg, bounds);
 
+    int y = bounds.y + 2*guiscale();
+    const int th = textSize().h;
+    // Position of the second and third columns
+    const int keyXPos = bounds.x + m_headerItem->keyXPos();
+    const int contextXPos = bounds.x + m_headerItem->contextXPos();
+
     bounds.shrink(border());
-    g->drawUIText(text(), fg, bg,
-      gfx::Point(
-        bounds.x + m_level*16 * guiscale(),
-        bounds.y + 2*guiscale()), 0);
+    {
+      int x = bounds.x + m_level*16 * guiscale();
+      IntersectClip clip(g, gfx::Rect(x, y, keyXPos - x, th));
+      if (clip)
+        g->drawUIText(text(), fg, bg, gfx::Point(x, y), 0);
+    }
 
     if (m_key && !m_key->accels().empty()) {
-      std::string buf;
-      int y = bounds.y;
-      int dh = textSize().h + 4*guiscale();
-      int i = 0;
+      if (m_key->keycontext() != KeyContext::Any) {
+        g->drawText(
+          convertKeyContextToUserFriendlyString(m_key->keycontext()), fg, bg,
+          gfx::Point(contextXPos, y));
+      }
 
-      for (const Accelerator& accel : m_key->accels()) {
-        if (i != m_hotAccel || !m_changeButton) {
-          std::string s = accel.toString();
-          if (m_key->keycontext() != KeyContext::Any) {
-            s += fmt::format(
-              " (Context: {0})", convertKeyContextToUserFriendlyString(m_key->keycontext()));
+      IntersectClip clip(g, gfx::Rect(keyXPos, y, contextXPos - keyXPos, th));
+      if (clip) {
+        int dh = th + 4*guiscale();
+        int i = 0;
+        for (const Accelerator& accel : m_key->accels()) {
+          if (i != m_hotAccel || !m_changeButton) {
+            g->drawText(
+              accel.toString(), fg, bg,
+              gfx::Point(keyXPos, y));
           }
-          g->drawText(s, fg, bg,
-            gfx::Point(bounds.x + g_sep, y + 2*guiscale()));
+          y += dh;
+          ++i;
         }
-
-        y += dh;
-        ++i;
       }
     }
   }
@@ -268,7 +343,7 @@ private:
           int w = Graphics::measureUITextLength(
             (accels && i < (int)accels->size() ? (*accels)[i].toString().c_str(): ""),
             font());
-          gfx::Rect itemBounds(bounds.x + g_sep, y, w, dh);
+          gfx::Rect itemBounds(bounds.x + m_headerItem->keyXPos(), y, w, dh);
           itemBounds = itemBounds.enlarge(
             gfx::Border(
               4*guiscale(), 0,
@@ -369,6 +444,7 @@ private:
   obs::scoped_connection m_addConn;
   int m_hotAccel;
   bool m_lockButtons;
+  HeaderItem* m_headerItem;
 };
 
 class KeyboardShortcutsWindow : public app::gen::KeyboardShortcuts {
@@ -381,6 +457,11 @@ public:
     section()->addChild(new ListItem("Commands"));
     section()->addChild(new ListItem("Tools"));
     section()->addChild(new ListItem("Action Modifiers"));
+
+    m_listBoxes.push_back(menus());
+    m_listBoxes.push_back(commands());
+    m_listBoxes.push_back(tools());
+    m_listBoxes.push_back(actions());
 
     search()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSearchChange, this));
     section()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
@@ -420,8 +501,8 @@ private:
     deleteAllKeyItems();
 
     // Load keyboard shortcuts
-    fillList(this->menus(), AppMenus::instance()->getRootMenu(), 0);
-    fillList(this->tools(), App::instance()->toolBox());
+    fillList(menus(), AppMenus::instance()->getRootMenu(), 0);
+    fillList(tools(), App::instance()->toolBox());
     for (Key* key : *app::KeyboardShortcuts::instance()) {
       if (key->type() == KeyType::Tool ||
           key->type() == KeyType::Quicktool) {
@@ -442,7 +523,7 @@ private:
             + ": " + text;
           break;
       }
-      KeyItem* keyItem = new KeyItem(text, key, NULL, 0);
+      KeyItem* keyItem = new KeyItem(text, key, nullptr, 0, &m_headerItem);
 
       ListBox* listBox = nullptr;
       switch (key->type()) {
@@ -461,15 +542,18 @@ private:
       }
     }
 
-    this->commands()->sortItems();
-    this->tools()->sortItems();
-    this->actions()->sortItems();
+    commands()->sortItems();
+    tools()->sortItems();
+    actions()->sortItems();
 
     section()->selectIndex(0);
     updateViews();
   }
 
   void deleteList(Widget* listbox) {
+    if (m_headerItem.parent() == listbox)
+      listbox->removeChild(&m_headerItem);
+
     while (listbox->lastChild()) {
       Widget* item = listbox->lastChild();
       listbox->removeChild(item);
@@ -487,9 +571,8 @@ private:
 
     MatchWords match(search);
 
-    ListBox* listBoxes[] = { menus(), commands(), tools(), actions() };
     int sectionIdx = 0;         // index 0 is menus
-    for (auto listBox : listBoxes) {
+    for (auto listBox : m_listBoxes) {
       Separator* group = nullptr;
 
       for (auto item : listBox->children()) {
@@ -507,7 +590,8 @@ private:
           KeyItem* copyItem =
             new KeyItem(itemText,
                         keyItem->key(),
-                        keyItem->menuitem(), 0);
+                        keyItem->menuitem(), 0,
+                        &m_headerItem);
 
           m_allKeyItems.push_back(copyItem);
           searchList()->addChild(copyItem);
@@ -541,12 +625,20 @@ private:
   }
 
   void updateViews() {
-    int section = this->section()->getSelectedIndex();
-    searchView()->setVisible(section < 0);
-    menusView()->setVisible(section == 0);
-    commandsView()->setVisible(section == 1);
-    toolsView()->setVisible(section == 2);
-    actionsView()->setVisible(section == 3);
+    int s = section()->getSelectedIndex();
+    searchView()->setVisible(s < 0);
+    menusView()->setVisible(s == 0);
+    commandsView()->setVisible(s == 1);
+    toolsView()->setVisible(s == 2);
+    actionsView()->setVisible(s == 3);
+
+    if (m_headerItem.parent())
+      m_headerItem.parent()->removeChild(&m_headerItem);
+    if (s < 0)
+      searchList()->insertChild(0, &m_headerItem);
+    else
+      m_listBoxes[s]->insertChild(0, &m_headerItem);
+
     layout();
   }
 
@@ -596,7 +688,8 @@ private:
 
         KeyItem* keyItem = new KeyItem(
           menuItem->text().c_str(),
-          menuItem->key(), menuItem, level);
+          menuItem->key(), menuItem, level,
+          &m_headerItem);
 
         m_allKeyItems.push_back(keyItem);
         listbox->addChild(keyItem);
@@ -612,21 +705,27 @@ private:
       std::string text = tool->getText();
 
       Key* key = app::KeyboardShortcuts::instance()->tool(tool);
-      KeyItem* keyItem = new KeyItem(text, key, nullptr, 0);
+      KeyItem* keyItem = new KeyItem(text, key, nullptr, 0,
+                                     &m_headerItem);
       m_allKeyItems.push_back(keyItem);
       listbox->addChild(keyItem);
 
       text += " (quick)";
       key = app::KeyboardShortcuts::instance()->quicktool(tool);
-      keyItem = new KeyItem(text, key, nullptr, 0);
+      keyItem = new KeyItem(text, key, nullptr, 0,
+                            &m_headerItem);
       m_allKeyItems.push_back(keyItem);
       listbox->addChild(keyItem);
     }
   }
 
+  std::vector<ListBox*> m_listBoxes;
   std::vector<KeyItem*> m_allKeyItems;
   bool m_searchChange;
+  HeaderItem m_headerItem;
 };
+
+} // anonymous namespace
 
 class KeyboardShortcutsCommand : public Command {
 public:
@@ -663,7 +762,6 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   KeyboardShortcutsWindow window(neededSearchCopy);
 
   window.setBounds(gfx::Rect(0, 0, ui::display_w()*3/4, ui::display_h()*3/4));
-  g_sep = window.bounds().w / 2;
 
   window.centerWindow();
   window.setVisible(true);

@@ -14,7 +14,7 @@ namespace ui {
 
   class ListItem : public Widget {
   public:
-    ListItem(const std::string& text = "");
+    ListItem(const std::string& text = std::string());
 
     const std::string& getValue() const { return m_value; }
 

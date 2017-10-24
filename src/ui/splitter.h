@@ -30,6 +30,8 @@ namespace ui {
     void onLoadLayout(LoadLayoutEvent& ev) override;
     void onSaveLayout(SaveLayoutEvent& ev) override;
 
+    virtual void onPositionChange();
+
   private:
     Widget* panel1() const;
     Widget* panel2() const;

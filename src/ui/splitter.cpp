@@ -40,6 +40,7 @@ void Splitter::setPosition(double pos)
 {
   m_pos = pos;
   limitPos();
+  onPositionChange();
 
   invalidate();
 }
@@ -119,7 +120,7 @@ bool Splitter::onProcessMessage(Message* msg)
         }
 
         limitPos();
-        layout();
+        onPositionChange();
         return true;
       }
       break;
@@ -307,6 +308,11 @@ void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
   double pos = (m_type == ByPixel ? m_pos / m_guiscale: m_pos);
   ev.stream() << pos;
+}
+
+void Splitter::onPositionChange()
+{
+  layout();
 }
 
 Widget* Splitter::panel1() const
