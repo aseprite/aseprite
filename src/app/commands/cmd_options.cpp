@@ -44,6 +44,8 @@ static const char* kSectionGridId = "section_grid";
 static const char* kSectionThemeId = "section_theme";
 static const char* kSectionExtensionsId = "section_extensions";
 
+static const char* kInfiniteSymbol = "\xE2\x88\x9E"; // Infinite symbol (UTF-8)
+
 using namespace ui;
 
 class OptionsWindow : public app::gen::Options {
@@ -321,7 +323,10 @@ public:
 #endif
 
     // Undo preferences
-    undoSizeLimit()->setTextf("%d", m_pref.undo.sizeLimit());
+    limitUndo()->Click.connect(base::Bind<void>(&OptionsWindow::onLimitUndoCheck, this));
+    limitUndo()->setSelected(m_pref.undo.sizeLimit() != 0);
+    onLimitUndoCheck();
+
     undoGotoModified()->setSelected(m_pref.undo.gotoModified());
     undoAllowNonlinearHistory()->setSelected(m_pref.undo.allowNonlinearHistory());
 
@@ -418,7 +423,7 @@ public:
 
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->textInt();
-    undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
+    undo_size_limit_value = MID(0, undo_size_limit_value, 999999);
 
     m_pref.undo.sizeLimit(undo_size_limit_value);
     m_pref.undo.gotoModified(undoGotoModified()->isSelected());
@@ -653,6 +658,17 @@ private:
 
   void onLocateConfigFile() {
     app::launcher::open_folder(app::main_config_filename());
+  }
+
+  void onLimitUndoCheck() {
+    if (limitUndo()->isSelected()) {
+      undoSizeLimit()->setEnabled(true);
+      undoSizeLimit()->setTextf("%d", m_pref.undo.sizeLimit());
+    }
+    else {
+      undoSizeLimit()->setEnabled(false);
+      undoSizeLimit()->setText(kInfiniteSymbol);
+    }
   }
 
   void reloadThemes() {

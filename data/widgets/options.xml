@@ -249,8 +249,8 @@
         <vbox id="section_undo">
           <separator text="@.section_undo" horizontal="true" />
           <hbox>
-            <label text="@.undo_size_limit" />
-            <entry id="undo_size_limit" maxsize="4" tooltip="@.undo_size_limit_tooltip" />
+            <check id="limit_undo" text="@.undo_size_limit" />
+            <entry id="undo_size_limit" maxsize="6" tooltip="@.undo_size_limit_tooltip" />
             <label text="@.undo_mb" />
           </hbox>
 

@@ -113,7 +113,7 @@
       <option id="show_menu_bar" type="bool" default="true" />
     </section>
     <section id="undo" text="Undo">
-      <option id="size_limit" type="int" default="64" />
+      <option id="size_limit" type="int" default="0" />
       <option id="goto_modified" type="bool" default="true" />
       <option id="allow_nonlinear_history" type="bool" default="false" />
     </section>
