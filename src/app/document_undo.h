@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,7 +27,8 @@ namespace app {
   class CmdTransaction;
   class DocumentUndoObserver;
 
-  class DocumentUndo : public obs::observable<DocumentUndoObserver> {
+  class DocumentUndo : public obs::observable<DocumentUndoObserver>,
+                       public undo::UndoHistoryDelegate {
   public:
     DocumentUndo();
 
@@ -65,8 +66,12 @@ namespace app {
     const undo::UndoState* nextUndo() const;
     const undo::UndoState* nextRedo() const;
 
+    // undo::UndoHistoryDelegate impl
+    void onDeleteUndoState(undo::UndoState* state) override;
+
     undo::UndoHistory m_undoHistory;
     doc::Context* m_ctx;
+    size_t m_totalUndoSize;
 
     // This counter is equal to 0 if we are in the "saved state", i.e.
     // the document on memory is equal to the document on disk. This

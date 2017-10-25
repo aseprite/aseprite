@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,7 @@
 #include "app/cmd_transaction.h"
 #include "app/document_undo_observer.h"
 #include "app/pref/preferences.h"
+#include "base/mem_utils.h"
 #include "doc/context.h"
 #include "undo/undo_history.h"
 #include "undo/undo_state.h"
@@ -22,10 +23,14 @@
 #include <cassert>
 #include <stdexcept>
 
+#define UNDO_TRACE(...)
+
 namespace app {
 
 DocumentUndo::DocumentUndo()
-  : m_ctx(NULL)
+  : m_undoHistory(this)
+  , m_ctx(nullptr)
+  , m_totalUndoSize(0)
   , m_savedCounter(0)
   , m_savedStateIsLost(false)
 {
@@ -39,6 +44,10 @@ void DocumentUndo::setContext(doc::Context* ctx)
 void DocumentUndo::add(CmdTransaction* cmd)
 {
   ASSERT(cmd);
+  UNDO_TRACE("UNDO: Add state <%s> of %s to %s\n",
+             cmd->label().c_str(),
+             base::get_pretty_memory_size(cmd->memSize()).c_str(),
+             base::get_pretty_memory_size(m_totalUndoSize).c_str());
 
   // A linear undo history is the default behavior
   if (!App::instance() ||
@@ -47,7 +56,33 @@ void DocumentUndo::add(CmdTransaction* cmd)
   }
 
   m_undoHistory.add(cmd);
+  m_totalUndoSize += cmd->memSize();
+
   notify_observers(&DocumentUndoObserver::onAddUndoState, this);
+
+  if (App::instance()) {
+    const size_t undoLimitSize =
+      int(App::instance()->preferences().undo.sizeLimit())
+      * 1024 * 1024;
+
+    // If undo limit is 0, it means "no limit", so we ignore the
+    // complete logic to discard undo states.
+    if (undoLimitSize > 0 &&
+        m_totalUndoSize > undoLimitSize) {
+      UNDO_TRACE("UNDO: Reducing undo history from %s to %s\n",
+                 base::get_pretty_memory_size(m_totalUndoSize).c_str(),
+                 base::get_pretty_memory_size(undoLimitSize).c_str());
+
+      while (m_undoHistory.firstState() &&
+             m_totalUndoSize > undoLimitSize) {
+        if (!m_undoHistory.deleteFirstState())
+          break;
+      }
+    }
+  }
+
+  UNDO_TRACE("UNDO: New undo size %s\n",
+             base::get_pretty_memory_size(m_totalUndoSize).c_str());
 }
 
 bool DocumentUndo::canUndo() const
@@ -158,6 +193,19 @@ const undo::UndoState* DocumentUndo::nextRedo() const
     return state->next();
   else
     return m_undoHistory.firstState();
+}
+
+void DocumentUndo::onDeleteUndoState(undo::UndoState* state)
+{
+  Cmd* cmd = static_cast<Cmd*>(state->cmd());
+
+  UNDO_TRACE("UNDO: Deleting undo state <%s> of %s from %s\n",
+             cmd->label().c_str(),
+             base::get_pretty_memory_size(cmd->memSize()).c_str(),
+             base::get_pretty_memory_size(m_totalUndoSize).c_str());
+
+  m_totalUndoSize -= cmd->memSize();
+  notify_observers(&DocumentUndoObserver::onDeleteUndoState, this, state);
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,8 @@ class DocumentUndo;
   public:
     virtual ~DocumentUndoObserver() { }
     virtual void onAddUndoState(DocumentUndo* history) = 0;
+    virtual void onDeleteUndoState(DocumentUndo* history,
+                                   undo::UndoState* state) = 0;
     virtual void onAfterUndo(DocumentUndo* history) = 0;
     virtual void onAfterRedo(DocumentUndo* history) = 0;
     virtual void onClearRedo(DocumentUndo* history) = 0;

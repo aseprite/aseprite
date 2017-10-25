@@ -1769,8 +1769,10 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
     return;
 
   // Draw the header for the layers.
-  std::string text = base::convert_to<std::string, int>(
-    (docPref().timeline.firstFrame()+frame) % 100);
+  const int n = (docPref().timeline.firstFrame()+frame);
+  std::string text = base::convert_to<std::string, int>(n % 100);
+  if (n >= 100 && (n % 100) < 10)
+    text.insert(0, 1, '0');
 
   drawPart(g, bounds, &text,
            skinTheme()->styles.timelineHeaderFrame(),

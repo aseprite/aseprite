@@ -141,6 +141,21 @@ private:
     actions()->selectChild(item);
   }
 
+  void onDeleteUndoState(DocumentUndo* history,
+                         undo::UndoState* state) override {
+    for (auto child : actions()->children()) {
+      Item* item = static_cast<Item*>(child);
+      if (item->state() == state) {
+        actions()->removeChild(item);
+        item->deferDelete();
+        break;
+      }
+    }
+
+    actions()->layout();
+    view()->updateView();
+  }
+
   void onAfterUndo(DocumentUndo* history) override {
     selectState(history->currentState());
   }
