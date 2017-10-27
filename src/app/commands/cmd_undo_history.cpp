@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -52,8 +52,9 @@ public:
   };
 
   UndoHistoryWindow(Context* ctx)
-    : m_ctx(ctx),
-      m_document(nullptr) {
+    : m_ctx(ctx)
+    , m_document(nullptr) {
+    m_title = text();
     actions()->Change.connect(&UndoHistoryWindow::onChangeAction, this);
   }
 
@@ -168,6 +169,10 @@ private:
     refillList(history);
   }
 
+  void onTotalUndoSizeChange(DocumentUndo* history) override {
+    updateTitle();
+  }
+
   void attachDocument(app::Document* document) {
     detachDocument();
 
@@ -179,6 +184,7 @@ private:
     history->add_observer(this);
 
     refillList(history);
+    updateTitle();
   }
 
   void detachDocument() {
@@ -188,6 +194,7 @@ private:
     clearList();
     m_document->undoHistory()->remove_observer(this);
     m_document = nullptr;
+    updateTitle();
   }
 
   void clearList() {
@@ -232,9 +239,19 @@ private:
     }
   }
 
+  void updateTitle() {
+    if (!m_document)
+      setText(m_title);
+    else
+      setTextf("%s (%s)",
+               m_title.c_str(),
+               base::get_pretty_memory_size(m_document->undoHistory()->totalUndoSize()).c_str());
+  }
+
   Context* m_ctx;
   app::Document* m_document;
   doc::frame_t m_frame;
+  std::string m_title;
 };
 
 class UndoHistoryCommand : public Command {

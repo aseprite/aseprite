@@ -32,6 +32,8 @@ namespace app {
   public:
     DocumentUndo();
 
+    size_t totalUndoSize() const { return m_totalUndoSize; }
+
     void setContext(doc::Context* ctx);
 
     void add(CmdTransaction* cmd);

@@ -25,6 +25,7 @@ class DocumentUndo;
     virtual void onAfterUndo(DocumentUndo* history) = 0;
     virtual void onAfterRedo(DocumentUndo* history) = 0;
     virtual void onClearRedo(DocumentUndo* history) = 0;
+    virtual void onTotalUndoSizeChange(DocumentUndo* history) = 0;
   };
 
 } // namespace app
