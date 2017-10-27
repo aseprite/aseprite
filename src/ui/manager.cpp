@@ -8,6 +8,7 @@
 // #define REPORT_FOCUS_MOVEMENT
 // #define DEBUG_PAINT_EVENTS
 // #define LIMIT_DISPATCH_TIME
+// #define DEBUG_UI_THREADS
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -25,7 +26,7 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-#ifdef DEBUG_PAINT_EVENTS
+#if defined(DEBUG_PAINT_EVENTS) || defined(DEBUG_UI_THREADS)
 #include "base/thread.h"
 #endif
 
@@ -64,6 +65,10 @@ typedef std::list<Filter*> Filters;
 
 Manager* Manager::m_defaultManager = NULL;
 gfx::Region Manager::m_dirtyRegion;
+
+#ifdef DEBUG_UI_THREADS
+static base::thread::native_handle_type manager_thread = 0;
+#endif
 
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
@@ -139,6 +144,11 @@ Manager::Manager()
   , m_lockedWindow(NULL)
   , m_mouseButtons(kButtonNone)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(!manager_thread);
+  manager_thread = base::this_thread::native_handle();
+#endif
+
   if (!m_defaultManager) {
     // Empty lists
     ASSERT(msg_queue.empty());
@@ -162,6 +172,10 @@ Manager::Manager()
 
 Manager::~Manager()
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   // There are some messages in queue? Dispatch everything.
   dispatchMessages();
   collectGarbage();
@@ -876,6 +890,10 @@ void Manager::freeCapture()
 
 void Manager::freeWidget(Widget* widget)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   if (widget->hasFocus() || (widget == focus_widget))
     freeFocus();
 
@@ -903,6 +921,10 @@ void Manager::freeWidget(Widget* widget)
 
 void Manager::removeMessage(Message* msg)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   auto it = std::find(msg_queue.begin(), msg_queue.end(), msg);
   ASSERT(it != msg_queue.end());
   msg_queue.erase(it);
@@ -910,12 +932,20 @@ void Manager::removeMessage(Message* msg)
 
 void Manager::removeMessagesFor(Widget* widget)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   for (Message* msg : msg_queue)
     removeWidgetFromRecipients(widget, msg);
 }
 
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   for (Message* msg : msg_queue)
     if (msg->type() == type)
       removeWidgetFromRecipients(widget, msg);
@@ -923,6 +953,10 @@ void Manager::removeMessagesFor(Widget* widget, MessageType type)
 
 void Manager::removeMessagesForTimer(Timer* timer)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* msg = *it;
 
@@ -939,6 +973,10 @@ void Manager::removeMessagesForTimer(Timer* timer)
 
 void Manager::addMessageFilter(int message, Widget* widget)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   LockFilters lock;
   int c = message;
   if (c >= kFirstRegisteredMessage)
@@ -949,6 +987,10 @@ void Manager::addMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilter(int message, Widget* widget)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   LockFilters lock;
   int c = message;
   if (c >= kFirstRegisteredMessage)
@@ -963,6 +1005,10 @@ void Manager::removeMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilterFor(Widget* widget)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   LockFilters lock;
   for (Filters& msg_filter : msg_filters) {
     for (Filter* filter : msg_filter) {
@@ -1358,6 +1404,10 @@ int Manager::pumpQueue()
 
 bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_handle());
+#endif
+
   if (!widget)
     return false;
 
