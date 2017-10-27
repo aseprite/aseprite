@@ -17,7 +17,7 @@
 #include "app/job.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/render_task_job.h"
+#include "app/sprite_job.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui_context.h"
@@ -114,12 +114,14 @@ void ColorQuantizationCommand::onExecute(Context* context)
 
     Palette tmpPalette(frame, entries.picks());
 
-    RenderTaskJob job("Creating Palette");
-    job.startJob(
+    ContextReader reader(context);
+    SpriteJob job(reader, "Color Quantization");
+    job.startJobWithCallback(
       [sprite, withAlpha, &tmpPalette, &job]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
-          withAlpha, &tmpPalette, &job);
+          withAlpha, &tmpPalette,
+          &job);              // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
     if (job.isCanceled())
@@ -141,17 +143,13 @@ void ColorQuantizationCommand::onExecute(Context* context)
       ++i;
     }
 
-    if (*curPalette != *newPalette) {
-      ContextWriter writer(UIContext::instance(), 500);
-      Transaction transaction(writer.context(), "Color Quantization", ModifyDocument);
-      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette.get()));
-      transaction.commit();
+    if (*curPalette != *newPalette)
+      job.transaction().execute(new cmd::SetPalette(sprite, frame, newPalette.get()));
 
-      set_current_palette(newPalette.get(), false);
-      ui::Manager::getDefault()->invalidate();
-    }
+    set_current_palette(newPalette.get(), false);
+    ui::Manager::getDefault()->invalidate();
   }
-  catch (base::Exception& e) {
+  catch (const base::Exception& e) {
     Console::showException(e);
   }
 }

@@ -19,7 +19,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/render_task_job.h"
+#include "app/sprite_job.h"
 #include "app/transaction.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
@@ -462,23 +462,21 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     return;
 
   {
-    RenderTaskJob job("Converting Color Mode");
-    job.startJob(
-      [this, &job, context, flatten]{
-        ContextWriter writer(context);
-        Transaction transaction(writer.context(), "Color Mode Change");
-        Sprite* sprite(writer.sprite());
+    const ContextReader reader(context);
+    SpriteJob job(reader, "Color Mode Change");
+    job.startJobWithCallback(
+      [this, &job, flatten] {
+        Sprite* sprite(job.sprite());
 
         if (flatten)
-          transaction.execute(new cmd::FlattenLayers(sprite));
+          job.transaction().execute(new cmd::FlattenLayers(sprite));
 
-        transaction.execute(
+        job.transaction().execute(
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_ditheringAlgorithm,
-            m_ditheringMatrix, &job));
-        if (!job.isCanceled())
-          transaction.commit();
+            m_ditheringMatrix,
+            &job));             // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
   }

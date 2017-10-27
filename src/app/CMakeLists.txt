@@ -404,7 +404,6 @@ add_library(app-lib
   pref/preferences.cpp
   project.cpp
   recent_files.cpp
-  render_task_job.cpp
   res/http_loader.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
@@ -414,7 +413,9 @@ add_library(app-lib
   send_crash.cpp
   shade.cpp
   snap_to_grid.cpp
+  sprite_job.cpp
   thumbnail_generator.cpp
+  thumbnails.cpp
   tools/active_tool.cpp
   tools/ink_type.cpp
   tools/intertwine.cpp
@@ -508,7 +509,6 @@ add_library(app-lib
   ui/workspace_tabs.cpp
   ui/zoom_entry.cpp
   ui_context.cpp
-  thumbnails.cpp
   util/autocrop.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp

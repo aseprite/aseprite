@@ -13,14 +13,11 @@
 #include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
-#include "app/context.h"
-#include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/ini_file.h"
-#include "app/job.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/transaction.h"
+#include "app/sprite_job.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/resize_image.h"
@@ -43,19 +40,16 @@ namespace app {
 using namespace ui;
 using doc::algorithm::ResizeMethod;
 
-class SpriteSizeJob : public Job {
-  ContextWriter m_writer;
-  Document* m_document;
-  Sprite* m_sprite;
+class SpriteSizeJob : public SpriteJob {
   int m_new_width;
   int m_new_height;
   ResizeMethod m_resize_method;
 
   template<typename T>
-  T scale_x(T x) const { return x * T(m_new_width) / T(m_sprite->width()); }
+  T scale_x(T x) const { return x * T(m_new_width) / T(sprite()->width()); }
 
   template<typename T>
-  T scale_y(T y) const { return y * T(m_new_height) / T(m_sprite->height()); }
+  T scale_y(T y) const { return y * T(m_new_height) / T(sprite()->height()); }
 
   template<typename T>
   gfx::RectT<T> scale_rect(const gfx::RectT<T>& rc) const {
@@ -69,11 +63,7 @@ class SpriteSizeJob : public Job {
 public:
 
   SpriteSizeJob(const ContextReader& reader, int new_width, int new_height, ResizeMethod resize_method)
-    : Job("Sprite Size")
-    , m_writer(reader)
-    , m_document(m_writer.document())
-    , m_sprite(m_writer.sprite())
-  {
+    : SpriteJob(reader, "Sprite Size") {
     m_new_width = new_width;
     m_new_height = new_height;
     m_resize_method = resize_method;
@@ -81,34 +71,30 @@ public:
 
 protected:
 
-  /**
-   * [working thread]
-   */
-  virtual void onJob()
-  {
-    Transaction transaction(m_writer.context(), "Sprite Size");
-    DocumentApi api = m_writer.document()->getApi(transaction);
+  // [working thread]
+  void onJob() override {
+    DocumentApi api = writer().document()->getApi(transaction());
 
     int cels_count = 0;
-    for (Cel* cel : m_sprite->uniqueCels()) { // TODO add size() member function to CelsRange
+    for (Cel* cel : sprite()->uniqueCels()) { // TODO add size() member function to CelsRange
       (void)cel;
       ++cels_count;
     }
 
     // For each cel...
     int progress = 0;
-    for (Cel* cel : m_sprite->uniqueCels()) {
+    for (Cel* cel : sprite()->uniqueCels()) {
       // Get cel's image
       Image* image = cel->image();
       if (image && !cel->link()) {
         // Resize the cel bounds only if it's from a reference layer
         if (cel->layer()->isReference()) {
           gfx::RectF newBounds = scale_rect<double>(cel->boundsF());
-          transaction.execute(new cmd::SetCelBoundsF(cel, newBounds));
+          transaction().execute(new cmd::SetCelBoundsF(cel, newBounds));
         }
         else {
           // Change its location
-          api.setCelPosition(m_sprite, cel, scale_x(cel->x()), scale_y(cel->y()));
+          api.setCelPosition(sprite(), cel, scale_x(cel->x()), scale_y(cel->y()));
 
           // Resize the image
           int w = scale_x(image->width());
@@ -120,11 +106,11 @@ protected:
           doc::algorithm::resize_image(
             image, new_image.get(),
             m_resize_method,
-            m_sprite->palette(cel->frame()),
-            m_sprite->rgbMap(cel->frame()),
-            (cel->layer()->isBackground() ? -1: m_sprite->transparentColor()));
+            sprite()->palette(cel->frame()),
+            sprite()->rgbMap(cel->frame()),
+            (cel->layer()->isBackground() ? -1: sprite()->transparentColor()));
 
-          api.replaceImage(m_sprite, cel->imageRef(), new_image);
+          api.replaceImage(sprite(), cel->imageRef(), new_image);
         }
       }
 
@@ -137,24 +123,24 @@ protected:
     }
 
     // Resize mask
-    if (m_document->isMaskVisible()) {
+    if (document()->isMaskVisible()) {
       ImageRef old_bitmap
-        (crop_image(m_document->mask()->bitmap(), -1, -1,
-                    m_document->mask()->bitmap()->width()+2,
-                    m_document->mask()->bitmap()->height()+2, 0));
+        (crop_image(document()->mask()->bitmap(), -1, -1,
+                    document()->mask()->bitmap()->width()+2,
+                    document()->mask()->bitmap()->height()+2, 0));
 
       int w = scale_x(old_bitmap->width());
       int h = scale_y(old_bitmap->height());
       base::UniquePtr<Mask> new_mask(new Mask);
       new_mask->replace(
         gfx::Rect(
-          scale_x(m_document->mask()->bounds().x-1),
-          scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
+          scale_x(document()->mask()->bounds().x-1),
+          scale_y(document()->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
       algorithm::resize_image(
         old_bitmap.get(), new_mask->bitmap(),
         m_resize_method,
-        m_sprite->palette(0), // Ignored
-        m_sprite->rgbMap(0),  // Ignored
+        sprite()->palette(0), // Ignored
+        sprite()->rgbMap(0),  // Ignored
         -1);                  // Ignored
 
       // Reshrink
@@ -164,12 +150,12 @@ protected:
       api.copyToCurrentMask(new_mask);
 
       // Regenerate mask
-      m_document->resetTransformation();
-      m_document->generateMaskBoundaries();
+      document()->resetTransformation();
+      document()->generateMaskBoundaries();
     }
 
     // Resize slices
-    for (auto& slice : m_document->sprite()->slices()) {
+    for (auto& slice : sprite()->slices()) {
       for (auto& k : *slice) {
         const SliceKey& key = *k.value();
         if (key.isEmpty())
@@ -185,16 +171,13 @@ protected:
           newKey.setPivot(gfx::Point(scale_x(newKey.pivot().x),
                                      scale_y(newKey.pivot().y)));
 
-        transaction.execute(
+        transaction().execute(
           new cmd::SetSliceKey(slice, k.frame(), newKey));
       }
     }
 
     // Resize Sprite
-    api.setSpriteSize(m_sprite, m_new_width, m_new_height);
-
-    // Commit changes
-    transaction.commit();
+    api.setSpriteSize(sprite(), m_new_width, m_new_height);
   }
 
 };
