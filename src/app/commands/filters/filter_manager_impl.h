@@ -19,6 +19,7 @@
 #include "gfx/rect.h"
 
 #include <cstring>
+#include <memory>
 
 namespace doc {
   class Cel;
@@ -82,6 +83,7 @@ namespace app {
     void end();
     bool applyStep();
     void applyToTarget();
+    void commitTransaction();
 
     app::Document* document();
     doc::Sprite* sprite() { return m_site.sprite(); }
@@ -114,8 +116,8 @@ namespace app {
 
   private:
     void init(doc::Cel* cel);
-    void apply(Transaction& transaction);
-    void applyToCel(Transaction& transaction, doc::Cel* cel);
+    void apply();
+    void applyToCel(doc::Cel* cel);
     bool updateBounds(doc::Mask* mask);
     bool paletteHasChanged();
     void restoreSpritePalette();
@@ -136,6 +138,7 @@ namespace app {
     Target m_targetOrig;          // Original targets
     Target m_target;              // Filtered targets
     base::UniquePtr<doc::Palette> m_oldPalette;
+    std::unique_ptr<Transaction> m_transaction;
 
     // Hooks
     float m_progressBase;

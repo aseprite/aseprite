@@ -183,7 +183,7 @@ bool FilterManagerImpl::applyStep()
   return true;
 }
 
-void FilterManagerImpl::apply(Transaction& transaction)
+void FilterManagerImpl::apply()
 {
   bool cancelled = false;
 
@@ -203,7 +203,7 @@ void FilterManagerImpl::apply(Transaction& transaction)
     if (algorithm::shrink_bounds2(m_src.get(), m_dst.get(),
                                   m_bounds, output)) {
       if (m_cel->layer()->isBackground()) {
-        transaction.execute(
+        m_transaction->execute(
           new cmd::CopyRegion(
             m_cel->image(),
             m_dst.get(),
@@ -212,7 +212,7 @@ void FilterManagerImpl::apply(Transaction& transaction)
       }
       else {
         // Patch "m_cel"
-        transaction.execute(
+        m_transaction->execute(
           new cmd::PatchCel(
             m_cel, m_dst.get(),
             gfx::Region(output),
@@ -239,7 +239,7 @@ void FilterManagerImpl::applyToTarget()
   // Initialize writting operation
   ContextReader reader(m_context);
   ContextWriter writer(reader);
-  Transaction transaction(writer.context(), m_filter->getName(), ModifyDocument);
+  m_transaction.reset(new Transaction(writer.context(), m_filter->getName(), ModifyDocument));
 
   m_progressBase = 0.0f;
   m_progressWidth = 1.0f / images.size();
@@ -250,7 +250,7 @@ void FilterManagerImpl::applyToTarget()
   if (paletteChange) {
     Palette newPalette = *getNewPalette();
     restoreSpritePalette();
-    transaction.execute(
+    m_transaction->execute(
       new cmd::SetPalette(m_site.sprite(),
                           m_site.frame(), &newPalette));
   }
@@ -264,7 +264,7 @@ void FilterManagerImpl::applyToTarget()
     // Avoid applying the filter two times to the same image
     if (visited.find(image->id()) == visited.end()) {
       visited.insert(image->id());
-      applyToCel(transaction, it->cel());
+      applyToCel(it->cel());
     }
 
     // Is there a delegate to know if the process was cancelled by the user?
@@ -275,10 +275,15 @@ void FilterManagerImpl::applyToTarget()
     m_progressBase += m_progressWidth;
   }
 
-  transaction.commit();
-
   // Reset m_oldPalette to avoid restoring the color palette
   m_oldPalette.reset(nullptr);
+}
+
+void FilterManagerImpl::commitTransaction()
+{
+  // This must be executed in the main UI thread.
+  // Check Transaction::commit() comments.
+  m_transaction->commit();
 }
 
 void FilterManagerImpl::flush()
@@ -395,10 +400,10 @@ void FilterManagerImpl::init(Cel* cel)
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 
-void FilterManagerImpl::applyToCel(Transaction& transaction, Cel* cel)
+void FilterManagerImpl::applyToCel(Cel* cel)
 {
   init(cel);
-  apply(transaction);
+  apply();
 }
 
 bool FilterManagerImpl::updateBounds(doc::Mask* mask)

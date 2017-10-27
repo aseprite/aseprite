@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,6 +51,11 @@ namespace app {
     // If you don't use this routine, all the changes will be discarded
     // (if the sprite's undo was enabled when the Transaction was
     // created).
+    //
+    // WARNING: This must be called from the main UI thread, because
+    // it will generate a DocumentUndo::add() which triggers a
+    // DocumentUndoObserver::onAddUndoState() notification, which
+    // updates the Undo History window UI.
     void commit();
 
     void execute(Cmd* cmd);

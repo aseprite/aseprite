@@ -104,7 +104,9 @@ void FilterWorker::run()
 
   {
     scoped_lock lock(m_mutex);
-    if (!m_done)
+    if (m_done)
+      m_filterMgr->commitTransaction();
+    else
       m_cancelled = true;
   }
 
