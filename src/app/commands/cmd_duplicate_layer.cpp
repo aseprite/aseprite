@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -44,8 +44,7 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 bool DuplicateLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveLayer |
-                             ContextFlags::ActiveLayerIsImage);
+                             ContextFlags::HasActiveLayer);
 }
 
 void DuplicateLayerCommand::onExecute(Context* context)
