@@ -555,8 +555,12 @@ void Window::onBuildTitleLabel()
       m_titleLabel = new WindowTitleLabel(text());
       addChild(m_titleLabel);
     }
-    else
+    else {
       m_titleLabel->setText(text());
+      m_titleLabel->setBounds(
+        gfx::Rect(m_titleLabel->bounds()).setSize(
+          m_titleLabel->sizeHint()));
+    }
   }
 }
 
