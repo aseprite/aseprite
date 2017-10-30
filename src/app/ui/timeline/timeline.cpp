@@ -1208,8 +1208,8 @@ bool Timeline::onProcessMessage(Message* msg)
           delta.x *= frameBoxWidth();
           delta.y *= layerBoxHeight();
 
-          if (msg->shiftPressed()) {
-            // On macOS shift already changes the wheel axis
+          if (delta.x == 0 && // On macOS shift already changes the wheel axis
+              msg->shiftPressed()) {
             if (std::fabs(delta.y) > delta.x)
               std::swap(delta.x, delta.y);
           }
