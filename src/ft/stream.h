@@ -14,8 +14,7 @@
 
 namespace ft {
 
-FT_Stream open_stream(FT_Library lib,
-                      const std::string& utf8Filename);
+FT_Stream open_stream(const std::string& utf8Filename);
 
 } // namespace ft
 

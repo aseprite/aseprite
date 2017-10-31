@@ -8,9 +8,7 @@
 
 #include "base/file_handle.h"
 
-#include <freetype/internal/internal.h>
-#include <freetype/internal/ftstream.h>
-#include <freetype/internal/ftmemory.h>
+#include <ft2build.h>
 
 #define STREAM_FILE(stream) ((FILE*)stream->descriptor.pointer)
 
@@ -19,10 +17,7 @@ namespace ft {
 static void ft_stream_close(FT_Stream stream)
 {
   fclose(STREAM_FILE(stream));
-
-  stream->descriptor.pointer = nullptr;
-  stream->size = 0;
-  stream->base = nullptr;
+  free(stream);
 }
 
 static unsigned long ft_stream_io(FT_Stream stream,
@@ -40,29 +35,20 @@ static unsigned long ft_stream_io(FT_Stream stream,
   return (unsigned long)fread(buffer, 1, count, file);
 }
 
-FT_Stream open_stream(FT_Library lib,
-                      const std::string& utf8Filename)
+FT_Stream open_stream(const std::string& utf8Filename)
 {
-  FT_Error error;
-  FT_Memory memory = lib->memory;
 
   FT_Stream stream = nullptr;
-  if (FT_NEW(stream))
+  stream = (FT_Stream)malloc(sizeof(*stream));
+  memset(stream, 0, sizeof(*stream));
+  if(stream == NULL)
     return nullptr;
-
-  stream->memory = lib->memory;
-  stream->descriptor.pointer = nullptr;
-  stream->pathname.pointer = nullptr;
-  stream->base = nullptr;
-  stream->pos = 0;
-  stream->read = nullptr;
-  stream->close = nullptr;
 
   TRACE("FT: Loading font %s... ", utf8Filename.c_str());
 
   FILE* file = base::open_file_raw(utf8Filename, "rb");
   if (!file) {
-    FT_FREE(stream);
+    free(stream);
     TRACE("FAIL\n");
     return nullptr;
   }
@@ -71,13 +57,15 @@ FT_Stream open_stream(FT_Library lib,
   stream->size = (unsigned long)ftell(file);
   if (!stream->size) {
     fclose(file);
-    FT_FREE(stream);
+    free(stream);
     TRACE("FAIL\n");
     return nullptr;
   }
   fseek(file, 0, SEEK_SET);
 
   stream->descriptor.pointer = file;
+  stream->base = nullptr;
+  stream->pos = 0;
   stream->read = ft_stream_io;
   stream->close = ft_stream_close;
 
