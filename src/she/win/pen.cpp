@@ -19,17 +19,21 @@
 
 #include <iostream>
 
+namespace she {
+
+namespace {
+
 typedef UINT (API* WTInfoW_Func)(UINT, UINT, LPVOID);
 typedef HCTX (API* WTOpenW_Func)(HWND, LPLOGCONTEXTW, BOOL);
 typedef BOOL (API* WTClose_Func)(HCTX);
 typedef BOOL (API* WTPacket_Func)(HCTX, UINT, LPVOID);
 
-namespace she {
+WTInfoW_Func WTInfo;
+WTOpenW_Func WTOpen;
+WTClose_Func WTClose;
+WTPacket_Func WTPacket;
 
-static WTInfoW_Func WTInfo;
-static WTOpenW_Func WTOpen;
-static WTClose_Func WTClose;
-static WTPacket_Func WTPacket;
+} // anonymous namespace
 
 PenAPI::PenAPI()
   : m_wintabLib(nullptr)
