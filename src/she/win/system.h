@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "she/common/system.h"
 #include "she/win/pen.h"
+#include "she/win/winapi.h"
 
 namespace she {
 
@@ -21,9 +22,8 @@ public:
   WindowSystem() { }
   ~WindowSystem() { }
 
-  PenAPI& penApi() {
-    return m_penApi;
-  }
+  WinAPI& winApi() { return m_winApi; }
+  PenAPI& penApi() { return m_penApi; }
 
   bool isKeyPressed(KeyScancode scancode) override {
     return win_is_key_pressed(scancode);
@@ -34,6 +34,7 @@ public:
   }
 
 private:
+  WinAPI m_winApi;
   PenAPI m_penApi;
 };
 

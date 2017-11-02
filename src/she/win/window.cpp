@@ -25,29 +25,57 @@
 #include "she/win/vk.h"
 #include "she/win/window_dde.h"
 
-#ifndef WM_MOUSEHWHEEL
-  #define WM_MOUSEHWHEEL 0x020E
-#endif
-
 #define SHE_WND_CLASS_NAME L"Aseprite.Window"
+
+#define MOUSE_TRACE(...)
+
+// Gets the window client are in absolute/screen coordinates
+#define ABS_CLIENT_RC(rc)                               \
+  RECT rc;                                              \
+  GetClientRect(m_hwnd, &rc);                           \
+  MapWindowPoints(m_hwnd, NULL, (POINT*)&rc, 2)
+
+// Not yet ready because if we start receiving WM_POINTERDOWN messages
+// instead of WM_LBUTTONDBLCLK we lost the automatic double-click
+// messages.
+#define USE_EnableMouseInPointer 0
 
 namespace she {
 
 WinWindow::WinWindow(int width, int height, int scale)
   : m_hwnd(nullptr)
+  , m_hcursor(nullptr)
   , m_clientSize(1, 1)
   , m_restoredSize(0, 0)
+  , m_scale(scale)
   , m_isCreated(false)
   , m_translateDeadKeys(false)
   , m_hasMouse(false)
   , m_captureMouse(false)
+  , m_customHcursor(false)
+  , m_usePointerApi(false)
+  , m_ignoreMouseMessages(false)
+  , m_lastPointerId(0)
+  , m_capturePointerId(0)
   , m_hpenctx(nullptr)
   , m_pointerType(PointerType::Unknown)
   , m_pressure(0.0)
 {
-  m_hcursor = nullptr;
-  m_customHcursor = false;
-  m_scale = scale;
+  auto& winApi = system()->winApi();
+  if (winApi.EnableMouseInPointer &&
+      winApi.IsMouseInPointerEnabled &&
+      winApi.GetPointerInfo &&
+      winApi.GetPointerPenInfo) {
+#if USE_EnableMouseInPointer == 1
+    if (!winApi.IsMouseInPointerEnabled()) {
+      // Prefer pointer messages (WM_POINTER*) since Windows 8 instead
+      // of mouse messages (WM_MOUSE*)
+      winApi.EnableMouseInPointer(TRUE);
+      m_ignoreMouseMessages = (winApi.IsMouseInPointerEnabled() ? true: false);
+    }
+#endif
+    m_usePointerApi = true;
+  }
 
   registerClass();
 
@@ -127,11 +155,23 @@ void WinWindow::setTitle(const std::string& title)
 void WinWindow::captureMouse()
 {
   m_captureMouse = true;
+  m_capturePointerId = m_lastPointerId;
+
+  if (GetCapture() != m_hwnd) {
+    MOUSE_TRACE("SetCapture\n");
+    SetCapture(m_hwnd);
+  }
 }
 
 void WinWindow::releaseMouse()
 {
   m_captureMouse = false;
+  m_capturePointerId = 0;
+
+  if (GetCapture() == m_hwnd) {
+    MOUSE_TRACE("ReleaseCapture\n");
+    ReleaseCapture();
+  }
 }
 
 void WinWindow::setMousePosition(const gfx::Point& position)
@@ -436,28 +476,31 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       }
       break;
 
+    // Mouse and Trackpad Messages
+
     case WM_MOUSEMOVE: {
-      // Adjust capture
-      if (m_captureMouse) {
-        if (GetCapture() != m_hwnd)
-          SetCapture(m_hwnd);
-      }
-      else {
-        if (GetCapture() == m_hwnd)
-          ReleaseCapture();
-      }
+      // If the pointer API is enable, we use WM_POINTERUPDATE instead
+      // of WM_MOUSEMOVE.  This check is here because Windows keeps
+      // sending us WM_MOUSEMOVE messages even when we call
+      // EnableMouseInPointer() (mainly when we use Alt+stylus we
+      // receive WM_MOUSEMOVE with the position of the mouse/trackpad
+      // + WM_POINTERUPDATE with the position of the pen)
+      if (m_ignoreMouseMessages)
+        break;
 
       Event ev;
-      ev.setModifiers(get_modifiers_from_last_win32_message());
-      ev.setPosition(gfx::Point(
-                       GET_X_LPARAM(lparam) / m_scale,
-                       GET_Y_LPARAM(lparam) / m_scale));
+      mouseEvent(lparam, ev);
+
+      MOUSE_TRACE("MOUSEMOVE xy=%d,%d\n",
+                  ev.position().x, ev.position().y);
 
       if (!m_hasMouse) {
         m_hasMouse = true;
 
         ev.setType(Event::MouseEnter);
         queueEvent(ev);
+
+        MOUSE_TRACE("-> Event::MouseEnter\n");
 
         // Track mouse to receive WM_MOUSELEAVE message.
         TRACKMOUSEEVENT tme;
@@ -486,6 +529,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         ev.setType(Event::MouseLeave);
         ev.setModifiers(get_modifiers_from_last_win32_message());
         queueEvent(ev);
+
+        MOUSE_TRACE("-> Event::MouseLeave\n");
       }
       break;
 
@@ -494,11 +539,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_MBUTTONDOWN:
     case WM_XBUTTONDOWN: {
       Event ev;
+      mouseEvent(lparam, ev);
       ev.setType(Event::MouseDown);
-      ev.setModifiers(get_modifiers_from_last_win32_message());
-      ev.setPosition(gfx::Point(
-                       GET_X_LPARAM(lparam) / m_scale,
-                       GET_Y_LPARAM(lparam) / m_scale));
       ev.setButton(
         msg == WM_LBUTTONDOWN ? Event::LeftButton:
         msg == WM_RBUTTONDOWN ? Event::RightButton:
@@ -511,8 +553,11 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         ev.setPointerType(m_pointerType);
         ev.setPressure(m_pressure);
       }
-
       queueEvent(ev);
+
+      MOUSE_TRACE("BUTTONDOWN xy=%d,%d button=%d\n",
+                  ev.position().x, ev.position().y,
+                  ev.button());
       break;
     }
 
@@ -521,11 +566,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_MBUTTONUP:
     case WM_XBUTTONUP: {
       Event ev;
+      mouseEvent(lparam, ev);
       ev.setType(Event::MouseUp);
-      ev.setModifiers(get_modifiers_from_last_win32_message());
-      ev.setPosition(gfx::Point(
-                       GET_X_LPARAM(lparam) / m_scale,
-                       GET_Y_LPARAM(lparam) / m_scale));
       ev.setButton(
         msg == WM_LBUTTONUP ? Event::LeftButton:
         msg == WM_RBUTTONUP ? Event::RightButton:
@@ -538,8 +580,11 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         ev.setPointerType(m_pointerType);
         ev.setPressure(m_pressure);
       }
-
       queueEvent(ev);
+
+      MOUSE_TRACE("BUTTONUP xy=%d,%d button=%d\n",
+                  ev.position().x, ev.position().y,
+                  ev.button());
 
       // Avoid popup menu for scrollbars
       if (msg == WM_RBUTTONUP)
@@ -553,11 +598,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_RBUTTONDBLCLK:
     case WM_XBUTTONDBLCLK: {
       Event ev;
+      mouseEvent(lparam, ev);
       ev.setType(Event::MouseDoubleClick);
-      ev.setModifiers(get_modifiers_from_last_win32_message());
-      ev.setPosition(gfx::Point(
-                       GET_X_LPARAM(lparam) / m_scale,
-                       GET_Y_LPARAM(lparam) / m_scale));
       ev.setButton(
         msg == WM_LBUTTONDBLCLK ? Event::LeftButton:
         msg == WM_RBUTTONDBLCLK ? Event::RightButton:
@@ -570,8 +612,11 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         ev.setPointerType(m_pointerType);
         ev.setPressure(m_pressure);
       }
-
       queueEvent(ev);
+
+      MOUSE_TRACE("BUTTONDBLCLK xy=%d,%d button=%d\n",
+                  ev.position().x, ev.position().y,
+                  ev.button());
       break;
     }
 
@@ -599,8 +644,11 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         (msg == WM_MOUSEHWHEEL ? z: 0),
         (msg == WM_MOUSEWHEEL ? -z: 0));
       ev.setWheelDelta(delta);
-
       queueEvent(ev);
+
+      MOUSE_TRACE("MOUSEWHEEL xy=%d,%d delta=%d,%d\n",
+                  ev.position().x, ev.position().y,
+                  ev.wheelDelta().x, ev.wheelDelta().y);
       break;
     }
 
@@ -646,10 +694,207 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       ev.setWheelDelta(delta);
 
       SetScrollPos(m_hwnd, bar, 50, FALSE);
-
       queueEvent(ev);
+
+      MOUSE_TRACE("HVSCROLL xy=%d,%d delta=%d,%d\n",
+                  ev.position().x, ev.position().y,
+                  ev.wheelDelta().x, ev.wheelDelta().y);
       break;
     }
+
+    // Pointer API (since Windows 8.0)
+
+    case WM_POINTERCAPTURECHANGED: {
+      MOUSE_TRACE("POINTERCAPTURECHANGED\n");
+      m_capturePointerId = 0;
+      break;
+    }
+
+    case WM_POINTERENTER: {
+      POINTER_INFO pi;
+      Event ev;
+      if (!pointerEvent(wparam, lparam, ev, pi))
+        break;
+
+      // Ignore this message because we have captured other pointerId.
+      if (m_capturePointerId &&
+          m_capturePointerId != pi.pointerId) {
+        return 0;
+      }
+
+      MOUSE_TRACE("POINTERENTER id=%d xy=%d,%d\n",
+                  pi.pointerId, ev.position().x, ev.position().y);
+
+#if USE_EnableMouseInPointer == 0
+      // This is necessary to avoid receiving random WM_MOUSEMOVE from
+      // the mouse position when we use Alt+pen tip.
+      // TODO Remove this line when we enable EnableMouseInPointer(TRUE);
+      m_ignoreMouseMessages = true;
+#endif
+
+      if (!m_hasMouse) {
+        m_hasMouse = true;
+
+        ev.setType(Event::MouseEnter);
+        queueEvent(ev);
+
+        MOUSE_TRACE("-> Event::MouseEnter\n");
+      }
+      return 0;
+    }
+
+    case WM_POINTERLEAVE: {
+      UINT32 pointerId = GET_POINTERID_WPARAM(wparam);
+
+      // Ignore this message because we have captured other pointerId.
+      if (m_capturePointerId &&
+          m_capturePointerId != pointerId) {
+        return 0;
+      }
+
+      MOUSE_TRACE("POINTERLEAVE id=%d\n", pointerId);
+
+#if USE_EnableMouseInPointer == 0
+      m_ignoreMouseMessages = false;
+#endif
+
+      if (m_hasMouse) {
+        m_hasMouse = false;
+
+        Event ev;
+        ev.setType(Event::MouseLeave);
+        ev.setModifiers(get_modifiers_from_last_win32_message());
+        queueEvent(ev);
+
+        MOUSE_TRACE("-> Event::MouseLeave\n");
+        return 0;
+      }
+      break;
+    }
+
+    case WM_POINTERDOWN: {
+      POINTER_INFO pi;
+      Event ev;
+      if (!pointerEvent(wparam, lparam, ev, pi))
+        break;
+
+      // Ignore this message because we have captured other pointerId.
+      if (m_capturePointerId &&
+          m_capturePointerId != pi.pointerId) {
+        return 0;
+      }
+
+      ev.setType(Event::MouseDown);
+      ev.setButton(
+        pi.ButtonChangeType == POINTER_CHANGE_FIRSTBUTTON_DOWN ? Event::LeftButton:
+        pi.ButtonChangeType == POINTER_CHANGE_SECONDBUTTON_DOWN ? Event::RightButton:
+        pi.ButtonChangeType == POINTER_CHANGE_THIRDBUTTON_DOWN ? Event::MiddleButton:
+        pi.ButtonChangeType == POINTER_CHANGE_FOURTHBUTTON_DOWN ? Event::X1Button:
+        pi.ButtonChangeType == POINTER_CHANGE_FIFTHBUTTON_DOWN ? Event::X2Button:
+        Event::NoneButton);
+      queueEvent(ev);
+
+      MOUSE_TRACE("POINTERDOWN id=%d xy=%d,%d button=%d\n",
+                  pi.pointerId, ev.position().x, ev.position().y,
+                  ev.button());
+      return 0;
+    }
+
+    case WM_POINTERUP: {
+      POINTER_INFO pi;
+      Event ev;
+      if (!pointerEvent(wparam, lparam, ev, pi))
+        break;
+
+      // Ignore this message because we have captured other pointerId.
+      if (m_capturePointerId &&
+          m_capturePointerId != pi.pointerId) {
+        return 0;
+      }
+
+      ev.setType(Event::MouseUp);
+      ev.setButton(
+        pi.ButtonChangeType == POINTER_CHANGE_FIRSTBUTTON_UP ? Event::LeftButton:
+        pi.ButtonChangeType == POINTER_CHANGE_SECONDBUTTON_UP ? Event::RightButton:
+        pi.ButtonChangeType == POINTER_CHANGE_THIRDBUTTON_UP ? Event::MiddleButton:
+        pi.ButtonChangeType == POINTER_CHANGE_FOURTHBUTTON_UP ? Event::X1Button:
+        pi.ButtonChangeType == POINTER_CHANGE_FIFTHBUTTON_UP ? Event::X2Button:
+        Event::NoneButton);
+      queueEvent(ev);
+
+      MOUSE_TRACE("POINTERUP id=%d xy=%d,%d button=%d\n",
+                  pi.pointerId, ev.position().x, ev.position().y,
+                  ev.button());
+      return 0;
+    }
+
+    case WM_POINTERUPDATE: {
+      POINTER_INFO pi;
+      Event ev;
+      if (!pointerEvent(wparam, lparam, ev, pi))
+        break;
+
+      // Ignore this message because we have captured other pointerId.
+      if (m_capturePointerId &&
+          m_capturePointerId != pi.pointerId) {
+        return 0;
+      }
+
+      if (!m_hasMouse) {
+        m_hasMouse = true;
+
+        ev.setType(Event::MouseEnter);
+        queueEvent(ev);
+
+        MOUSE_TRACE("-> Event::MouseEnter\n");
+      }
+
+      ev.setType(Event::MouseMove);
+      queueEvent(ev);
+
+      MOUSE_TRACE("POINTERUPDATE id=%d xy=%d,%d\n",
+                  pi.pointerId, ev.position().x, ev.position().y);
+      return 0;
+    }
+
+    case WM_POINTERWHEEL:
+    case WM_POINTERHWHEEL: {
+      POINTER_INFO pi;
+      Event ev;
+      if (!pointerEvent(wparam, lparam, ev, pi))
+        break;
+
+      // Ignore this message because we have captured other pointerId.
+      if (m_capturePointerId &&
+          m_capturePointerId != pi.pointerId) {
+        return 0;
+      }
+
+      ev.setType(Event::MouseWheel);
+
+      int z = GET_WHEEL_DELTA_WPARAM(wparam);
+      if (ABS(z) >= WHEEL_DELTA)
+        z /= WHEEL_DELTA;
+      else {
+        // TODO use floating point numbers or something similar
+        //      (so we could use: z /= double(WHEEL_DELTA))
+        z = SGN(z);
+      }
+
+      gfx::Point delta(
+        (msg == WM_POINTERHWHEEL ? z: 0),
+        (msg == WM_POINTERWHEEL ? -z: 0));
+      ev.setWheelDelta(delta);
+      queueEvent(ev);
+
+      MOUSE_TRACE("POINTERWHEEL xy=%d,%d delta=%d,%d\n",
+                  ev.position().x, ev.position().y,
+                  ev.wheelDelta().x, ev.wheelDelta().y);
+
+      return 0;
+    }
+
+    // Keyboard Messages
 
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN: {
@@ -749,11 +994,10 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_NCHITTEST: {
       LRESULT result = CallWindowProc(DefWindowProc, m_hwnd, msg, wparam, lparam);
-      gfx::Point pt(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+      gfx::Point pt(GET_X_LPARAM(lparam),
+                    GET_Y_LPARAM(lparam));
 
-      RECT rc;
-      GetClientRect(m_hwnd, &rc);
-      MapWindowPoints(m_hwnd, NULL, (POINT*)&rc, 2);
+      ABS_CLIENT_RC(rc);
       gfx::Rect area(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
 
       //LOG("NCHITTEST: %d %d - %d %d %d %d - %s\n", pt.x, pt.y, area.x, area.y, area.w, area.h, area.contains(pt) ? "true": "false");
@@ -771,6 +1015,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
       return result;
     }
+
+    // Wintab API Messages
 
     case WT_PROXIMITY: {
       bool entering_ctx = (LOWORD(lparam) ? true: false);
@@ -834,6 +1080,56 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return result;
 
   return DefWindowProc(m_hwnd, msg, wparam, lparam);
+}
+
+void WinWindow::mouseEvent(LPARAM lparam, Event& ev)
+{
+  ev.setModifiers(get_modifiers_from_last_win32_message());
+  ev.setPosition(gfx::Point(
+                   GET_X_LPARAM(lparam) / m_scale,
+                   GET_Y_LPARAM(lparam) / m_scale));
+}
+
+bool WinWindow::pointerEvent(WPARAM wparam, LPARAM lparam,
+                             Event& ev, POINTER_INFO& pi)
+{
+  if (!m_usePointerApi)
+    return false;
+
+  auto& winApi = system()->winApi();
+  if (!winApi.GetPointerInfo(GET_POINTERID_WPARAM(wparam), &pi))
+    return false;
+
+  ABS_CLIENT_RC(rc);
+
+  ev.setModifiers(get_modifiers_from_last_win32_message());
+  ev.setPosition(gfx::Point((pi.ptPixelLocation.x - rc.left) / m_scale,
+                            (pi.ptPixelLocation.y - rc.top) / m_scale));
+
+  switch (pi.pointerType) {
+    case PT_MOUSE: {
+      ev.setPointerType(PointerType::Mouse);
+      break;
+    }
+    case PT_TOUCH:
+    case PT_TOUCHPAD: {
+      ev.setPointerType(PointerType::Multitouch);
+      break;
+    }
+    case PT_PEN: {
+      ev.setPointerType(PointerType::Pen);
+
+      POINTER_PEN_INFO ppi;
+      if (winApi.GetPointerPenInfo(pi.pointerId, &ppi)) {
+        if (ppi.penFlags & PEN_FLAG_ERASER)
+          ev.setPointerType(PointerType::Eraser);
+      }
+      break;
+    }
+  }
+
+  m_lastPointerId = pi.pointerId;
+  return true;
 }
 
 //static

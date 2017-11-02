@@ -54,6 +54,9 @@ namespace she {
   private:
     bool setCursor(HCURSOR hcursor, bool custom);
     LRESULT wndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    void mouseEvent(LPARAM lparam, Event& ev);
+    bool pointerEvent(WPARAM wparam, LPARAM lparam,
+                      Event& ev, POINTER_INFO& pi);
 
     virtual void onQueueEvent(Event& ev) { }
     virtual void onResize(const gfx::Size& sz) { }
@@ -75,6 +78,12 @@ namespace she {
     bool m_hasMouse;
     bool m_captureMouse;
     bool m_customHcursor;
+
+    // Windows 8 pointer API
+    bool m_usePointerApi;
+    bool m_ignoreMouseMessages;
+    UINT32 m_lastPointerId;
+    UINT32 m_capturePointerId;
 
     // Wintab API data
     HCTX m_hpenctx;

@@ -7,3 +7,4 @@ back-ends:
 * Previous version were using Allegro 4 (it still uses Allegro 4 on Linux)
 * Now we use our own implementation on Windows and macOS to handle
   events, and [Skia](https://skia.org/) to render graphics.
+* Minimum Windows platform: Windows Vista
