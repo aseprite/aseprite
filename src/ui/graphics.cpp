@@ -464,6 +464,14 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
   return calculatedSize;
 }
 
+void Graphics::dirty(const gfx::Rect& bounds)
+{
+  gfx::Rect rc = m_surface->getClipBounds();
+  rc = rc.createIntersection(bounds);
+  if (!rc.isEmpty())
+    m_dirtyBounds |= rc;
+}
+
 //////////////////////////////////////////////////////////////////////
 // ScreenGraphics
 
