@@ -79,9 +79,9 @@ class StatusBar::Indicators : public HBox {
       updateIndicator(text);
     }
 
-    void updateIndicator(const char* text) {
+    bool updateIndicator(const char* text) {
       if (this->text() == text)
-        return;
+        return false;
 
       setText(text);
 
@@ -89,6 +89,7 @@ class StatusBar::Indicators : public HBox {
         setMinSize(textSize());
       else
         setMinSize(minSize().createUnion(textSize()));
+      return true;
     }
 
   private:
@@ -119,15 +120,16 @@ class StatusBar::Indicators : public HBox {
       initTheme();
     }
 
-    void updateIndicator(const skin::SkinPartPtr& part, bool colored) {
+    bool updateIndicator(const skin::SkinPartPtr& part, bool colored) {
       if (m_part.get() == part.get() &&
           m_colored == colored)
-        return;
+        return false;
 
       ASSERT(part);
       m_part = part;
       m_colored = colored;
       updateIndicator();
+      return true;
     }
 
   private:
@@ -166,12 +168,13 @@ class StatusBar::Indicators : public HBox {
       updateIndicator(color, true);
     }
 
-    void updateIndicator(const app::Color& color, bool first = false) {
+    bool updateIndicator(const app::Color& color, bool first = false) {
       if (m_color == color && !first)
-        return;
+        return false;
 
       m_color = color;
       setMinSize(minSize().createUnion(Size(32*guiscale(), 1)));
+      return true;
     }
 
   private:
@@ -191,7 +194,9 @@ class StatusBar::Indicators : public HBox {
 
 public:
 
-  Indicators() : m_backupIcon(BackupIcon::None) {
+  Indicators()
+    : m_backupIcon(BackupIcon::None)
+    , m_redraw(true) {
     m_leftArea.setBorder(gfx::Border(0));
     m_leftArea.setVisible(true);
     m_leftArea.setExpansive(true);
@@ -209,20 +214,24 @@ public:
 
   void endIndicators() {
     removeAllNextIndicators();
-    layout();
+    if (m_redraw) {
+      m_redraw = false;
+      layout();
+    }
   }
 
   void addTextIndicator(const char* text) {
     // Re-use indicator
     if (m_iterator != m_indicators.end()) {
       if ((*m_iterator)->indicatorType() == Indicator::kText) {
-        static_cast<TextIndicator*>(*m_iterator)
+        m_redraw |= static_cast<TextIndicator*>(*m_iterator)
           ->updateIndicator(text);
         ++m_iterator;
         return;
       }
-      else
+      else {
         removeAllNextIndicators();
+      }
     }
 
     auto indicator = new TextIndicator(text);
@@ -234,7 +243,7 @@ public:
   void addIconIndicator(const skin::SkinPartPtr& part, bool colored) {
     if (m_iterator != m_indicators.end()) {
       if ((*m_iterator)->indicatorType() == Indicator::kIcon) {
-        static_cast<IconIndicator*>(*m_iterator)
+        m_redraw |= static_cast<IconIndicator*>(*m_iterator)
           ->updateIndicator(part, colored);
         ++m_iterator;
         return;
@@ -252,7 +261,7 @@ public:
   void addColorIndicator(const app::Color& color) {
     if (m_iterator != m_indicators.end()) {
       if ((*m_iterator)->indicatorType() == Indicator::kColor) {
-        static_cast<ColorIndicator*>(*m_iterator)
+        m_redraw |= static_cast<ColorIndicator*>(*m_iterator)
           ->updateIndicator(color);
         ++m_iterator;
         return;
@@ -293,12 +302,15 @@ private:
   void removeAllNextIndicators() {
     auto it = m_iterator;
     auto end = m_indicators.end();
-    for (; it != end; ++it) {
-      auto indicator = *it;
-      m_leftArea.removeChild(indicator);
-      delete indicator;
+    if (m_iterator != end) {
+      for (; it != end; ++it) {
+        auto indicator = *it;
+        m_leftArea.removeChild(indicator);
+        delete indicator;
+      }
+      m_indicators.erase(m_iterator, end);
+      m_redraw = true;
     }
-    m_indicators.erase(m_iterator, end);
   }
 
   std::vector<Indicator*> m_indicators;
@@ -306,6 +318,7 @@ private:
   BackupIcon m_backupIcon;
   HBox m_leftArea;
   HBox m_rightArea;
+  bool m_redraw;
 };
 
 class StatusBar::IndicatorsGeneration {
