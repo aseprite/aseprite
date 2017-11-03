@@ -11,16 +11,14 @@
 #include "ui/timer.h"
 
 #include "base/time.h"
+#include "obs/safe_list.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/widget.h"
 
-#include <algorithm>
-#include <list>
-
 namespace ui {
 
-typedef std::list<Timer*> Timers;
+typedef obs::safe_list<Timer> Timers;
 
 static Timers timers; // Registered timers
 
@@ -37,9 +35,7 @@ Timer::Timer(int interval, Widget* owner)
 
 Timer::~Timer()
 {
-  Timers::iterator it = std::find(timers.begin(), timers.end(), this);
-  ASSERT(it != timers.end());
-  timers.erase(it);
+  timers.erase(this);
 
   // Stop the timer and remove it from the message queue.
   stop();
@@ -84,8 +80,7 @@ void Timer::pollTimers()
   if (!timers.empty()) {
     base::tick_t t = base::current_tick();
 
-    for (Timers::iterator it=timers.begin(), end=timers.end(); it != end; ++it) {
-      Timer* timer = *it;
+    for (auto timer : timers) {
       if (timer && timer->isRunning()) {
         int64_t count = ((t - timer->m_lastTick) / timer->m_interval);
         if (count > 0) {
