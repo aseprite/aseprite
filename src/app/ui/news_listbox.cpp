@@ -130,7 +130,7 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     ui::Style* style = theme->styles.newsItem();
 
-    setText(m_title);
+    setTextQuiet(m_title);
     gfx::Size sz = theme->calcSizeHint(this, style);
 
     if (!m_desc.empty())
@@ -146,7 +146,7 @@ protected:
     ui::Style* style = theme->styles.newsItem();
     ui::Style* styleDetail = theme->styles.newsItemDetail();
 
-    setText(m_title);
+    setTextQuiet(m_title);
     gfx::Size textSize = theme->calcSizeHint(this, style);
     gfx::Rect textBounds(bounds.x, bounds.y, bounds.w, textSize.h);
     gfx::Rect detailsBounds(
@@ -155,7 +155,7 @@ protected:
 
     theme->paintWidget(g, this, style, textBounds);
 
-    setText(m_desc);
+    setTextQuiet(m_desc);
     theme->paintWidget(g, this, styleDetail, detailsBounds);
   }
 

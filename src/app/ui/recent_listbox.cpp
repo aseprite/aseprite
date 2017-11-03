@@ -57,10 +57,10 @@ protected:
     ui::Style* style = theme->styles.recentFile();
     ui::Style* styleDetail = theme->styles.recentFileDetail();
 
-    setText(m_name);
+    setTextQuiet(m_name);
     gfx::Size sz1 = theme->calcSizeHint(this, style);
 
-    setText(m_path);
+    setTextQuiet(m_path);
     gfx::Size sz2 = theme->calcSizeHint(this, styleDetail);
 
     ev.setSizeHint(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
@@ -73,7 +73,7 @@ protected:
     ui::Style* style = theme->styles.recentFile();
     ui::Style* styleDetail = theme->styles.recentFileDetail();
 
-    setText(m_name.c_str());
+    setTextQuiet(m_name.c_str());
     theme->paintWidget(g, this, style, bounds);
 
     if (Preferences::instance().general.showFullPath()) {
@@ -81,7 +81,7 @@ protected:
       gfx::Rect detailsBounds(
         bounds.x+textSize.w, bounds.y,
         bounds.w-textSize.w, bounds.h);
-      setText(m_path.c_str());
+      setTextQuiet(m_path.c_str());
       theme->paintWidget(g, this, styleDetail, detailsBounds);
     }
   }
