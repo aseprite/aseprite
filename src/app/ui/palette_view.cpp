@@ -413,8 +413,13 @@ bool PaletteView::onProcessMessage(Message* msg)
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       Hit hit = hitTest(mouseMsg->position() - bounds().origin());
       if (hit != m_hot) {
+        // Redraw only when we put the mouse in other part of the
+        // widget (e.g. if we move from color to color, we don't want
+        // to redraw the whole widget).
+        if (hit.part != m_hot.part)
+          invalidate();
+
         m_hot = hit;
-        invalidate();
       }
       setCursor();
       return true;
