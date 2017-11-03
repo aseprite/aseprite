@@ -641,6 +641,9 @@ void Widget::setBoundsQuietly(const gfx::Rect& rc)
       manager->removeMessagesFor(this, kPaintMessage);
   }
 
+  // TODO Test moving this inside the if (m_bounds != rc) { ... }
+  // block, so the widget is invalidted only when the bounds are
+  // really changed.
   invalidate();
 }
 
