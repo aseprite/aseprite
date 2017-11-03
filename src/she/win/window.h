@@ -15,6 +15,7 @@
 
 #include <string>
 #include <windows.h>
+#include <interactioncontext.h>
 
 namespace she {
   class Event;
@@ -54,6 +55,10 @@ namespace she {
   private:
     bool setCursor(HCURSOR hcursor, bool custom);
     LRESULT wndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    void mouseEvent(LPARAM lparam, Event& ev);
+    bool pointerEvent(WPARAM wparam, Event& ev, POINTER_INFO& pi);
+    void handleInteractionContextOutput(
+      const INTERACTION_CONTEXT_OUTPUT* output);
 
     virtual void onQueueEvent(Event& ev) { }
     virtual void onResize(const gfx::Size& sz) { }
@@ -61,7 +66,11 @@ namespace she {
 
     static void registerClass();
     static HWND createHwnd(WinWindow* self, int width, int height);
-    static LRESULT CALLBACK staticWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    static LRESULT CALLBACK staticWndProc(
+      HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    static void CALLBACK staticInteractionContextCallback(
+      void* clientData,
+      const INTERACTION_CONTEXT_OUTPUT* output);
 
     static WindowSystem* system();
 
@@ -75,6 +84,13 @@ namespace she {
     bool m_hasMouse;
     bool m_captureMouse;
     bool m_customHcursor;
+
+    // Windows 8 pointer API
+    bool m_usePointerApi;
+    bool m_ignoreMouseMessages;
+    UINT32 m_lastPointerId;
+    UINT32 m_capturePointerId;
+    HINTERACTIONCONTEXT m_ictx;
 
     // Wintab API data
     HCTX m_hpenctx;

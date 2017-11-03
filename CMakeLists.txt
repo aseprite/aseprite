@@ -405,8 +405,9 @@ if(WIN32)
     kernel32 user32 gdi32 comdlg32 ole32 winmm
     shlwapi psapi wininet comctl32 dbghelp)
 
-  # Windows XP is the minimum supported platform.
-  add_definitions(-D_WIN32_WINNT=0x0501 -DWINVER=0x0501)
+  # Windows Vista is the minimum supported platform but we're defining
+  # Windows 10 to get the all constant/structure definitions.
+  add_definitions(-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00)
 
   # We need Unicode support
   add_definitions(-DUNICODE -D_UNICODE)
