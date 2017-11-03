@@ -4,6 +4,8 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+//#define DEBUG_UPDATE_RECTS
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -324,6 +326,17 @@ private:
         CGContextSaveGState(cg);
         CGContextSetInterpolationQuality(cg, kCGInterpolationNone);
         CGContextDrawImage(cg, r, img);
+#ifdef DEBUG_UPDATE_RECTS
+        {
+          static int i = 0;
+          i = (i+1) % 8;
+          CGContextSetRGBStrokeColor(cg,
+                                     (i & 1 ? 1.0f: 0.0f),
+                                     (i & 2 ? 1.0f: 0.0f),
+                                     (i & 4 ? 1.0f: 0.0f), 1.0f);
+          CGContextStrokeRectWithWidth(cg, r, 2.0f);
+        }
+#endif
         CGContextRestoreGState(cg);
         CGImageRelease(img);
       }
