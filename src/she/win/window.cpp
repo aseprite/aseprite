@@ -40,6 +40,10 @@
 // messages.
 #define USE_EnableMouseInPointer 0
 
+#ifndef INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN
+#define INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN 1
+#endif
+
 namespace she {
 
 WinWindow::WinWindow(int width, int height, int scale)
@@ -56,7 +60,7 @@ WinWindow::WinWindow(int width, int height, int scale)
   , m_usePointerApi(false)
   , m_ignoreMouseMessages(false)
   , m_lastPointerId(0)
-  , m_capturePointerId(0)
+  , m_ictx(nullptr)
   , m_hpenctx(nullptr)
   , m_pointerType(PointerType::Unknown)
   , m_pressure(0.0)
@@ -74,6 +78,49 @@ WinWindow::WinWindow(int width, int height, int scale)
       m_ignoreMouseMessages = (winApi.IsMouseInPointerEnabled() ? true: false);
     }
 #endif
+
+    // Initialize a Interaction Context to convert WM_POINTER messages
+    // into gestures processed by handleInteractionContextOutput().
+    if (winApi.CreateInteractionContext &&
+        winApi.RegisterOutputCallbackInteractionContext &&
+        winApi.SetInteractionConfigurationInteractionContext) {
+      HRESULT hr = winApi.CreateInteractionContext(&m_ictx);
+      if (SUCCEEDED(hr)) {
+        hr = winApi.RegisterOutputCallbackInteractionContext(
+          m_ictx, &WinWindow::staticInteractionContextCallback, this);
+      }
+      if (SUCCEEDED(hr)) {
+        INTERACTION_CONTEXT_CONFIGURATION cfg[] = {
+          { INTERACTION_ID_MANIPULATION,
+            INTERACTION_CONFIGURATION_FLAG_MANIPULATION |
+            INTERACTION_CONFIGURATION_FLAG_MANIPULATION_TRANSLATION_X |
+            INTERACTION_CONFIGURATION_FLAG_MANIPULATION_TRANSLATION_Y |
+            INTERACTION_CONFIGURATION_FLAG_MANIPULATION_SCALING |
+            INTERACTION_CONFIGURATION_FLAG_MANIPULATION_TRANSLATION_INERTIA |
+            INTERACTION_CONFIGURATION_FLAG_MANIPULATION_SCALING_INERTIA },
+          { INTERACTION_ID_TAP,
+            INTERACTION_CONFIGURATION_FLAG_TAP |
+            INTERACTION_CONFIGURATION_FLAG_TAP_DOUBLE },
+          { INTERACTION_ID_SECONDARY_TAP,
+            INTERACTION_CONFIGURATION_FLAG_SECONDARY_TAP },
+          { INTERACTION_ID_HOLD,
+            INTERACTION_CONFIGURATION_FLAG_NONE },
+          { INTERACTION_ID_DRAG,
+            INTERACTION_CONFIGURATION_FLAG_NONE },
+          { INTERACTION_ID_CROSS_SLIDE,
+            INTERACTION_CONFIGURATION_FLAG_NONE }
+        };
+        hr = winApi.SetInteractionConfigurationInteractionContext(
+          m_ictx, sizeof(cfg) / sizeof(INTERACTION_CONTEXT_CONFIGURATION), cfg);
+      }
+      if (SUCCEEDED(hr)) {
+        hr = winApi.SetPropertyInteractionContext(
+          m_ictx,
+          INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS,
+          INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN);
+      }
+    }
+
     m_usePointerApi = true;
   }
 
@@ -96,6 +143,10 @@ WinWindow::WinWindow(int width, int height, int scale)
 
 WinWindow::~WinWindow()
 {
+  auto& winApi = system()->winApi();
+  if (m_ictx && winApi.DestroyInteractionContext)
+    winApi.DestroyInteractionContext(m_ictx);
+
   if (m_hwnd)
     DestroyWindow(m_hwnd);
 }
@@ -155,7 +206,6 @@ void WinWindow::setTitle(const std::string& title)
 void WinWindow::captureMouse()
 {
   m_captureMouse = true;
-  m_capturePointerId = m_lastPointerId;
 
   if (GetCapture() != m_hwnd) {
     MOUSE_TRACE("SetCapture\n");
@@ -166,7 +216,6 @@ void WinWindow::captureMouse()
 void WinWindow::releaseMouse()
 {
   m_captureMouse = false;
-  m_capturePointerId = 0;
 
   if (GetCapture() == m_hwnd) {
     MOUSE_TRACE("ReleaseCapture\n");
@@ -706,21 +755,15 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_POINTERCAPTURECHANGED: {
       MOUSE_TRACE("POINTERCAPTURECHANGED\n");
-      m_capturePointerId = 0;
+      releaseMouse();
       break;
     }
 
     case WM_POINTERENTER: {
       POINTER_INFO pi;
       Event ev;
-      if (!pointerEvent(wparam, lparam, ev, pi))
+      if (!pointerEvent(wparam, ev, pi))
         break;
-
-      // Ignore this message because we have captured other pointerId.
-      if (m_capturePointerId &&
-          m_capturePointerId != pi.pointerId) {
-        return 0;
-      }
 
       MOUSE_TRACE("POINTERENTER id=%d xy=%d,%d\n",
                   pi.pointerId, ev.position().x, ev.position().y);
@@ -731,6 +774,12 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       // TODO Remove this line when we enable EnableMouseInPointer(TRUE);
       m_ignoreMouseMessages = true;
 #endif
+
+      if (pi.pointerType == PT_TOUCH) {
+        auto& winApi = system()->winApi();
+        if (m_ictx && winApi.AddPointerInteractionContext)
+          winApi.AddPointerInteractionContext(m_ictx, pi.pointerId);
+      }
 
       if (!m_hasMouse) {
         m_hasMouse = true;
@@ -744,44 +793,51 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
     case WM_POINTERLEAVE: {
-      UINT32 pointerId = GET_POINTERID_WPARAM(wparam);
+      POINTER_INFO pi;
+      Event ev;
+      if (!pointerEvent(wparam, ev, pi))
+        break;
 
-      // Ignore this message because we have captured other pointerId.
-      if (m_capturePointerId &&
-          m_capturePointerId != pointerId) {
-        return 0;
-      }
-
-      MOUSE_TRACE("POINTERLEAVE id=%d\n", pointerId);
+      MOUSE_TRACE("POINTERLEAVE id=%d\n", pi.pointerId);
 
 #if USE_EnableMouseInPointer == 0
       m_ignoreMouseMessages = false;
 #endif
 
+      if (pi.pointerType == PT_TOUCH) {
+        auto& winApi = system()->winApi();
+        if (m_ictx && winApi.RemovePointerInteractionContext)
+          winApi.RemovePointerInteractionContext(m_ictx, pi.pointerId);
+      }
+
+#if 0 // Don't generate MouseLeave from pen/touch messages
+      // TODO we should generate this message, but after this touch
+      //      messages don't work anymore, so we have to fix that problem.
       if (m_hasMouse) {
         m_hasMouse = false;
 
-        Event ev;
         ev.setType(Event::MouseLeave);
-        ev.setModifiers(get_modifiers_from_last_win32_message());
         queueEvent(ev);
 
         MOUSE_TRACE("-> Event::MouseLeave\n");
         return 0;
       }
+#endif
       break;
     }
 
     case WM_POINTERDOWN: {
       POINTER_INFO pi;
       Event ev;
-      if (!pointerEvent(wparam, lparam, ev, pi))
+      if (!pointerEvent(wparam, ev, pi))
         break;
 
-      // Ignore this message because we have captured other pointerId.
-      if (m_capturePointerId &&
-          m_capturePointerId != pi.pointerId) {
-        return 0;
+      if (pi.pointerType == PT_TOUCH) {
+        auto& winApi = system()->winApi();
+        if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
+          winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
+          return 0;
+        }
       }
 
       ev.setType(Event::MouseDown);
@@ -803,13 +859,15 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_POINTERUP: {
       POINTER_INFO pi;
       Event ev;
-      if (!pointerEvent(wparam, lparam, ev, pi))
+      if (!pointerEvent(wparam, ev, pi))
         break;
 
-      // Ignore this message because we have captured other pointerId.
-      if (m_capturePointerId &&
-          m_capturePointerId != pi.pointerId) {
-        return 0;
+      if (pi.pointerType == PT_TOUCH) {
+        auto& winApi = system()->winApi();
+        if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
+          winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
+          return 0;
+        }
       }
 
       ev.setType(Event::MouseUp);
@@ -831,13 +889,15 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_POINTERUPDATE: {
       POINTER_INFO pi;
       Event ev;
-      if (!pointerEvent(wparam, lparam, ev, pi))
+      if (!pointerEvent(wparam, ev, pi))
         break;
 
-      // Ignore this message because we have captured other pointerId.
-      if (m_capturePointerId &&
-          m_capturePointerId != pi.pointerId) {
-        return 0;
+      if (pi.pointerType == PT_TOUCH) {
+        auto& winApi = system()->winApi();
+        if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
+          winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
+          return 0;
+        }
       }
 
       if (!m_hasMouse) {
@@ -861,14 +921,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_POINTERHWHEEL: {
       POINTER_INFO pi;
       Event ev;
-      if (!pointerEvent(wparam, lparam, ev, pi))
+      if (!pointerEvent(wparam, ev, pi))
         break;
-
-      // Ignore this message because we have captured other pointerId.
-      if (m_capturePointerId &&
-          m_capturePointerId != pi.pointerId) {
-        return 0;
-      }
 
       ev.setType(Event::MouseWheel);
 
@@ -1090,8 +1144,7 @@ void WinWindow::mouseEvent(LPARAM lparam, Event& ev)
                    GET_Y_LPARAM(lparam) / m_scale));
 }
 
-bool WinWindow::pointerEvent(WPARAM wparam, LPARAM lparam,
-                             Event& ev, POINTER_INFO& pi)
+bool WinWindow::pointerEvent(WPARAM wparam, Event& ev, POINTER_INFO& pi)
 {
   if (!m_usePointerApi)
     return false;
@@ -1111,9 +1164,12 @@ bool WinWindow::pointerEvent(WPARAM wparam, LPARAM lparam,
       ev.setPointerType(PointerType::Mouse);
       break;
     }
-    case PT_TOUCH:
+    case PT_TOUCH: {
+      ev.setPointerType(PointerType::Touch);
+      break;
+    }
     case PT_TOUCHPAD: {
-      ev.setPointerType(PointerType::Multitouch);
+      ev.setPointerType(PointerType::Touchpad);
       break;
     }
     case PT_PEN: {
@@ -1130,6 +1186,75 @@ bool WinWindow::pointerEvent(WPARAM wparam, LPARAM lparam,
 
   m_lastPointerId = pi.pointerId;
   return true;
+}
+
+void WinWindow::handleInteractionContextOutput(
+  const INTERACTION_CONTEXT_OUTPUT* output)
+{
+  MOUSE_TRACE("%s (%d) xy=%.16g %.16g flags=%d type=%d\n",
+              output->interactionId == INTERACTION_ID_MANIPULATION ? "INTERACTION_ID_MANIPULATION":
+              output->interactionId == INTERACTION_ID_TAP ? "INTERACTION_ID_TAP":
+              output->interactionId == INTERACTION_ID_SECONDARY_TAP ? "INTERACTION_ID_SECONDARY_TAP":
+              output->interactionId == INTERACTION_ID_HOLD ? "INTERACTION_ID_HOLD": "INTERACTION_ID_???",
+              output->interactionId,
+              output->x, output->y,
+              output->interactionFlags,
+              output->inputType);
+
+  // We use the InteractionContext to interpret touch gestures only.
+  if (output->inputType == PT_TOUCH) {
+    ABS_CLIENT_RC(rc);
+
+    gfx::Point pos(int((output->x - rc.left) / m_scale),
+                   int((output->y - rc.top) / m_scale));
+
+    Event ev;
+    ev.setModifiers(get_modifiers_from_last_win32_message());
+    ev.setPosition(pos);
+
+    switch (output->interactionId) {
+      case INTERACTION_ID_MANIPULATION: {
+        MOUSE_TRACE(" - delta xy=%.16g %.16g scale=%.16g expansion=%.16g rotation=%.16g\n",
+                    output->arguments.manipulation.delta.translationX,
+                    output->arguments.manipulation.delta.translationY,
+                    output->arguments.manipulation.delta.scale,
+                    output->arguments.manipulation.delta.expansion,
+                    output->arguments.manipulation.delta.rotation);
+
+        gfx::Point delta(-int(output->arguments.manipulation.delta.translationX) / m_scale,
+                         -int(output->arguments.manipulation.delta.translationY) / m_scale);
+
+        ev.setType(Event::MouseWheel);
+        ev.setWheelDelta(delta);
+        ev.setPreciseWheel(true);
+        queueEvent(ev);
+
+        ev.setType(Event::TouchMagnify);
+        ev.setMagnification(output->arguments.manipulation.delta.scale - 1.0);
+        queueEvent(ev);
+        break;
+      }
+
+      case INTERACTION_ID_TAP:
+        MOUSE_TRACE(" - count=%d\n", output->arguments.tap.count);
+        ev.setButton(Event::LeftButton);
+        if (output->arguments.tap.count == 2) {
+          ev.setType(Event::MouseDoubleClick); queueEvent(ev);
+        }
+        else {
+          ev.setType(Event::MouseDown); queueEvent(ev);
+          ev.setType(Event::MouseUp); queueEvent(ev);
+        }
+        break;
+
+      case INTERACTION_ID_SECONDARY_TAP:
+      case INTERACTION_ID_HOLD:
+        ev.setButton(Event::RightButton);
+        ev.setType(Event::MouseDown); queueEvent(ev);
+        ev.setType(Event::MouseUp); queueEvent(ev);
+        break;
+    }
+  }
 }
 
 //static
@@ -1231,6 +1356,15 @@ LRESULT CALLBACK WinWindow::staticWndProc(HWND hwnd, UINT msg, WPARAM wparam, LP
   else {
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
+}
+
+//static
+void CALLBACK WinWindow::staticInteractionContextCallback(
+  void* clientData,
+  const INTERACTION_CONTEXT_OUTPUT* output)
+{
+  WinWindow* self = reinterpret_cast<WinWindow*>(clientData);
+  self->handleInteractionContextOutput(output);
 }
 
 // static

@@ -454,7 +454,7 @@ using namespace she;
     scale = [(OSXWindow*)self.window scale];
 
   if (event.hasPreciseScrollingDeltas) {
-    ev.setPointerType(she::PointerType::Multitouch);
+    ev.setPointerType(she::PointerType::Touchpad);
     ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX / scale,
                                 -event.scrollingDeltaY / scale));
     ev.setPreciseWheel(true);
@@ -485,7 +485,7 @@ using namespace she;
   ev.setMagnification(event.magnification);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setModifiers(get_modifiers_from_nsevent(event));
-  ev.setPointerType(she::PointerType::Multitouch);
+  ev.setPointerType(she::PointerType::Touchpad);
   queue_event(ev);
 }
 

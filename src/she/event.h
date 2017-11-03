@@ -86,7 +86,6 @@ namespace she {
     // We suppose that if we are receiving precise scrolling deltas,
     // it means that the user is using a touch-like surface (trackpad,
     // magic mouse scrolling, touch wacom tablet, etc.)
-    // TODO change this with the new PointerType::Multitouch
     bool preciseWheel() const { return m_preciseWheel; }
 
     PointerType pointerType() const { return m_pointerType; }
