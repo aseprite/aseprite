@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -31,6 +31,9 @@ std::string blend_mode_to_string(BlendMode blendMode)
     case BlendMode::HSL_SATURATION: return "hsl_saturation";
     case BlendMode::HSL_COLOR: return "hsl_color";
     case BlendMode::HSL_LUMINOSITY: return "hsl_luminosity";
+    case BlendMode::ADDITION: return "addition";
+    case BlendMode::SUBTRACT: return "subtract";
+    case BlendMode::DIVIDE: return "divide";
     default: return "unknown";
   }
 }
