@@ -207,7 +207,7 @@ Editor::Editor(Document* document, EditorFlags flags)
       setLayer(layers[layerIndex]);
   }
 
-  m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
+  m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::onTiledModeChange, this));
   m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_bgConn = m_docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
@@ -414,31 +414,33 @@ void Editor::setDefaultScroll()
 {
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
+  gfx::Size canvas = canvasSize();
 
   setEditorScroll(
     gfx::Point(
-      m_padding.x - vp.w/2 + m_proj.applyX(m_sprite->width())/2,
-      m_padding.y - vp.h/2 + m_proj.applyY(m_sprite->height())/2));
+      m_padding.x - vp.w/2 + m_proj.applyX(canvas.w)/2,
+      m_padding.y - vp.h/2 + m_proj.applyY(canvas.h)/2));
 }
 
 void Editor::setScrollAndZoomToFitScreen()
 {
   View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Size canvas = canvasSize();
   Zoom zoom = m_proj.zoom();
 
-  if (float(vp.w) / float(m_sprite->width()) <
-      float(vp.h) / float(m_sprite->height())) {
-    if (vp.w < m_proj.applyX(m_sprite->width())) {
-      while (vp.w < m_proj.applyX(m_sprite->width())) {
+  if (float(vp.w) / float(canvas.w) <
+      float(vp.h) / float(canvas.h)) {
+    if (vp.w < m_proj.applyX(canvas.w)) {
+      while (vp.w < m_proj.applyX(canvas.w)) {
         if (!zoom.out())
           break;
         m_proj.setZoom(zoom);
       }
     }
-    else if (vp.w > m_proj.applyX(m_sprite->width())) {
+    else if (vp.w > m_proj.applyX(canvas.w)) {
       bool out = true;
-      while (vp.w > m_proj.applyX(m_sprite->width())) {
+      while (vp.w > m_proj.applyX(canvas.w)) {
         if (!zoom.in()) {
           out = false;
           break;
@@ -452,16 +454,16 @@ void Editor::setScrollAndZoomToFitScreen()
     }
   }
   else {
-    if (vp.h < m_proj.applyY(m_sprite->height())) {
-      while (vp.h < m_proj.applyY(m_sprite->height())) {
+    if (vp.h < m_proj.applyY(canvas.h)) {
+      while (vp.h < m_proj.applyY(canvas.h)) {
         if (!zoom.out())
           break;
         m_proj.setZoom(zoom);
       }
     }
-    else if (vp.h > m_proj.applyY(m_sprite->height())) {
+    else if (vp.h > m_proj.applyY(canvas.h)) {
       bool out = true;
-      while (vp.h > m_proj.applyY(m_sprite->height())) {
+      while (vp.h > m_proj.applyY(canvas.h)) {
         if (!zoom.in()) {
           out = false;
           break;
@@ -478,8 +480,8 @@ void Editor::setScrollAndZoomToFitScreen()
   updateEditor();
   setEditorScroll(
     gfx::Point(
-      m_padding.x - vp.w/2 + m_proj.applyX(m_sprite->width())/2,
-      m_padding.y - vp.h/2 + m_proj.applyY(m_sprite->height())/2));
+      m_padding.x - vp.w/2 + m_proj.applyX(canvas.w)/2,
+      m_padding.y - vp.h/2 + m_proj.applyY(canvas.h)/2));
 }
 
 // Sets the scroll position of the editor
@@ -675,30 +677,30 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 
   // Document preferences
   if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
-    drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
-    drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, 0);
+    drawOneSpriteUnclippedRect(g, rc, spriteRect.w, 0);
+    drawOneSpriteUnclippedRect(g, rc, spriteRect.w*2, 0);
 
-    enclosingRect = gfx::Rect(spriteRect.x-spriteRect.w, spriteRect.y, spriteRect.w*3, spriteRect.h);
+    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w*3, spriteRect.h);
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
   if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
-    drawOneSpriteUnclippedRect(g, rc, 0, -spriteRect.h);
-    drawOneSpriteUnclippedRect(g, rc, 0, +spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, 0, spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, 0, spriteRect.h*2);
 
-    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y-spriteRect.h, spriteRect.w, spriteRect.h*3);
+    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w, spriteRect.h*3);
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
   if (m_docPref.tiled.mode() == filters::TiledMode::BOTH) {
-    drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, -spriteRect.h);
-    drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, -spriteRect.h);
-    drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, +spriteRect.h);
-    drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, +spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, spriteRect.w,   spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, spriteRect.w*2, spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, spriteRect.w,   spriteRect.h*2);
+    drawOneSpriteUnclippedRect(g, rc, spriteRect.w*2, spriteRect.h*2);
 
     enclosingRect = gfx::Rect(
-      spriteRect.x-spriteRect.w,
-      spriteRect.y-spriteRect.h, spriteRect.w*3, spriteRect.h*3);
+      spriteRect.x, spriteRect.y,
+      spriteRect.w*3, spriteRect.h*3);
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
@@ -1731,11 +1733,11 @@ bool Editor::onProcessMessage(Message* msg)
 void Editor::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Size sz(0, 0);
-
   if (m_sprite) {
     gfx::Point padding = calcExtraPadding(m_proj);
-    sz.w = m_proj.applyX(m_sprite->width()) + padding.x*2;
-    sz.h = m_proj.applyY(m_sprite->height()) + padding.y*2;
+    gfx::Size canvas = canvasSize();
+    sz.w = m_proj.applyX(canvas.w) + padding.x*2;
+    sz.h = m_proj.applyY(canvas.h) + padding.y*2;
   }
   else {
     sz.w = 4;
@@ -1825,6 +1827,13 @@ void Editor::onFgColorChange()
 void Editor::onContextBarBrushChange()
 {
   m_brushPreview.redraw();
+}
+
+void Editor::onTiledModeChange()
+{
+  m_padding = calcExtraPadding(m_proj);
+  updateEditor();
+  invalidate();
 }
 
 void Editor::onShowExtrasChange()
@@ -2316,18 +2325,31 @@ ImageBufferPtr Editor::getRenderImageBuffer()
   return m_renderBuffer;
 }
 
-// static
 gfx::Point Editor::calcExtraPadding(const Projection& proj)
 {
   View* view = View::getView(this);
   if (view) {
     Rect vp = view->viewportBounds();
+    gfx::Size canvas = canvasSize();
     return gfx::Point(
-      std::max<int>(vp.w/2, vp.w - proj.applyX(m_sprite->width())),
-      std::max<int>(vp.h/2, vp.h - proj.applyY(m_sprite->height())));
+      std::max<int>(vp.w/2, vp.w - proj.applyX(canvas.w)),
+      std::max<int>(vp.h/2, vp.h - proj.applyY(canvas.h)));
   }
   else
     return gfx::Point(0, 0);
+}
+
+gfx::Size Editor::canvasSize() const
+{
+  gfx::Size sz(m_sprite->width(),
+               m_sprite->height());
+  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
+    sz.w += sz.w*2;
+  }
+  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
+    sz.h += sz.h*2;
+  }
+  return sz;
 }
 
 bool Editor::isMovingPixels() const

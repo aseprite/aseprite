@@ -274,6 +274,7 @@ namespace app {
     void onInvalidateRegion(const gfx::Region& region) override;
     void onFgColorChange();
     void onContextBarBrushChange();
+    void onTiledModeChange();
     void onShowExtrasChange();
 
     // DocumentObserver impl
@@ -320,6 +321,7 @@ namespace app {
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
     gfx::Point calcExtraPadding(const render::Projection& proj);
+    gfx::Size canvasSize() const;
 
     void invalidateIfActive();
     bool showAutoCelGuides();
