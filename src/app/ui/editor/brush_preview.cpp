@@ -182,6 +182,31 @@ void BrushPreview::show(const gfx::Point& screenPos)
     gfx::Rect origBrushBounds = (isFloodfill ? gfx::Rect(0, 0, 1, 1): brush->bounds());
     gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);
+    gfx::Rect extraCelBounds = brushBounds;
+
+    // Tiled mode might require a bigger extra cel (to show the tiled)
+    if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
+      if (brushBounds.x < 0)
+        brushBounds.x = (sprite->width() - (-brushBounds.x % sprite->width()));
+      brushBounds.x %= sprite->width();
+      extraCelBounds.x = brushBounds.x;
+      if ((extraCelBounds.x < 0 && extraCelBounds.x2() > 0) ||
+          (extraCelBounds.x < sprite->width() && extraCelBounds.x2() > sprite->width())) {
+        extraCelBounds.x = 0;
+        extraCelBounds.w = sprite->width();
+      }
+    }
+    if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
+      if (brushBounds.y < 0)
+        brushBounds.y = (sprite->height() - (-brushBounds.y % sprite->height()));
+      brushBounds.y %= sprite->height();
+      extraCelBounds.y = brushBounds.y;
+      if ((extraCelBounds.y < 0 && extraCelBounds.y2() > 0) ||
+          (extraCelBounds.y < sprite->height() && extraCelBounds.y2() > sprite->height())) {
+        extraCelBounds.y = 0;
+        extraCelBounds.h = sprite->height();
+      }
+    }
 
     // Create the extra cel to show the brush preview
     Site site = m_editor->getSite();
@@ -193,7 +218,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
     if (!m_extraCel)
       m_extraCel.reset(new ExtraCel);
-    m_extraCel->create(document->sprite(), brushBounds, site.frame(), opacity);
+    m_extraCel->create(document->sprite(), extraCelBounds, site.frame(), opacity);
     m_extraCel->setType(render::ExtraType::NONE);
     m_extraCel->setBlendMode(
       (layer ? static_cast<LayerImage*>(layer)->blendMode():
@@ -209,7 +234,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     if (layer) {
       render::Render().renderLayer(
         extraImage, layer, site.frame(),
-        gfx::Clip(0, 0, brushBounds),
+        gfx::Clip(0, 0, extraCelBounds),
         BlendMode::SRC);
 
       // This extra cel is a patch for the current layer/frame
@@ -220,7 +245,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       base::UniquePtr<tools::ToolLoop> loop(
         create_tool_loop_preview(
           m_editor, extraImage,
-          brushBounds.origin()));
+          extraCelBounds.origin()));
       if (loop) {
         loop->getInk()->prepareInk(loop);
         loop->getController()->prepareController(loop);
@@ -234,7 +259,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     }
 
     document->notifySpritePixelsModified(
-      sprite, gfx::Region(m_lastBounds = brushBounds),
+      sprite, gfx::Region(m_lastBounds = extraCelBounds),
       m_lastFrame = site.frame());
 
     m_withRealPreview = true;
