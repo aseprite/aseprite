@@ -653,6 +653,30 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   }
 }
 
+void Editor::drawBackground(ui::Graphics* g)
+{
+  if (!(m_flags & kShowOutside))
+    return;
+
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
+  gfx::Size canvas = canvasSize();
+  gfx::Rect rc(0, 0, canvas.w, canvas.h);
+  rc = editorToScreen(rc);
+  rc.offset(-bounds().origin());
+
+  // Fill the outside (parts of the editor that aren't covered by the
+  // sprite).
+  gfx::Region outside(clientBounds());
+  outside.createSubtraction(outside, gfx::Region(rc));
+  g->fillRegion(theme->colors.editorFace(), outside);
+
+  // Draw the borders that enclose the sprite.
+  rc.enlarge(1);
+  g->drawRect(theme->colors.editorSpriteBorder(), rc);
+  g->drawHLine(theme->colors.editorSpriteBottomBorder(), rc.x, rc.y2(), rc.w);
+}
+
 void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 {
   gfx::Rect rc = _rc;
@@ -672,16 +696,12 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   // Draw the main sprite at the center.
   drawOneSpriteUnclippedRect(g, rc, 0, 0);
 
-  gfx::Region outside(client);
-  outside.createSubtraction(outside, gfx::Region(spriteRect));
-
   // Document preferences
   if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w, 0);
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w*2, 0);
 
     enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w*3, spriteRect.h);
-    outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
   if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
@@ -689,7 +709,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     drawOneSpriteUnclippedRect(g, rc, 0, spriteRect.h*2);
 
     enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w, spriteRect.h*3);
-    outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
   if (m_docPref.tiled.mode() == filters::TiledMode::BOTH) {
@@ -701,14 +720,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     enclosingRect = gfx::Rect(
       spriteRect.x, spriteRect.y,
       spriteRect.w*3, spriteRect.h*3);
-    outside.createSubtraction(outside, gfx::Region(enclosingRect));
-  }
-
-  // Fill the outside (parts of the editor that aren't covered by the
-  // sprite).
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  if (m_flags & kShowOutside) {
-    g->fillRegion(theme->colors.editorFace(), outside);
   }
 
   // Grids & slices
@@ -785,15 +796,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     }
   }
 
-  if (m_flags & kShowOutside) {
-    // Draw the borders that enclose the sprite.
-    enclosingRect.enlarge(1);
-    g->drawRect(theme->colors.editorSpriteBorder(), enclosingRect);
-    g->drawHLine(
-      theme->colors.editorSpriteBottomBorder(),
-      enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
-  }
-
   // Draw active layer/cel edges
   bool showGuidesThisCel = this->showAutoCelGuides();
   if ((m_docPref.show.layerEdges() || showGuidesThisCel) &&
@@ -833,11 +835,8 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
 
   for (const Rect& updateRect : updateRegion) {
-    Rect spriteRectOnScreen = editorToScreen(updateRect);
-
     for (const Rect& screenRect : screenRegion) {
-      IntersectClip clip(&screenGraphics,
-                         screenRect & spriteRectOnScreen);
+      IntersectClip clip(&screenGraphics, screenRect);
       if (clip)
         drawSpriteUnclippedRect(editorGraphics.get(), updateRect);
     }
@@ -1772,6 +1771,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the sprite in the editor
       renderChrono.reset();
+      drawBackground(g);
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
       renderElapsed = renderChrono.elapsed();
 

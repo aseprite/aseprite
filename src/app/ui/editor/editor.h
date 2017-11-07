@@ -151,7 +151,6 @@ namespace app {
 
     // Draws the sprite taking care of the whole clipping region.
     void drawSpriteClipped(const gfx::Region& updateRegion);
-    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
 
     void flashCurrentLayer();
 
@@ -294,6 +293,8 @@ namespace app {
     void updateToolByTipProximity(ui::PointerType pointerType);
     void updateToolLoopModifiersIndicators();
 
+    void drawBackground(ui::Graphics* g);
+    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
     void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
