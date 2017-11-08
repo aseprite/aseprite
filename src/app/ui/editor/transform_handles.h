@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,6 +12,8 @@
 #include "app/ui/editor/handle_type.h"
 #include "fixmath/fixmath.h"
 #include "gfx/point.h"
+
+#include <vector>
 
 namespace ui {
   class Graphics;
@@ -40,6 +42,10 @@ namespace app {
     void drawHandle(ui::Graphics* g, int x, int y, fixmath::fixed angle);
     void adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle);
     bool visiblePivot(fixmath::fixed angle) const;
+    void getScreenPoints(
+      Editor* editor,
+      const Transformation::Corners& corners,
+      std::vector<gfx::Point>& screenPoints) const;
   };
 
 } // namespace app

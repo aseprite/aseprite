@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -60,10 +60,8 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   Transformation::Corners corners;
   transform.transformBox(corners);
 
-  std::vector<gfx::Point> screenPoints(corners.size());
-  for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(
-      gfx::Point((int)corners[c].x, (int)corners[c].y));
+  std::vector<gfx::Point> screenPoints;
+  getScreenPoints(editor, corners, screenPoints);
 
   int handle_rs[2] = { gfx->width()*2, gfx->width()*3 };
   for (int i=0; i<2; ++i) {
@@ -94,10 +92,8 @@ void TransformHandles::drawHandles(Editor* editor, const Transformation& transfo
   Transformation::Corners corners;
   transform.transformBox(corners);
 
-  std::vector<gfx::Point> screenPoints(corners.size());
-  for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(
-      gfx::Point((int)corners[c].x, (int)corners[c].y));
+  std::vector<gfx::Point> screenPoints;
+  getScreenPoints(editor, corners, screenPoints);
 
   // TODO DO NOT COMMIT
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
@@ -143,10 +139,8 @@ void TransformHandles::invalidateHandles(Editor* editor, const Transformation& t
   Transformation::Corners corners;
   transform.transformBox(corners);
 
-  std::vector<gfx::Point> screenPoints(corners.size());
-  for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(
-      gfx::Point((int)corners[c].x, (int)corners[c].y));
+  std::vector<gfx::Point> screenPoints;
+  getScreenPoints(editor, corners, screenPoints);
 
   // Invalidate each corner handle.
   for (size_t c=0; c<HANDLES; ++c) {
@@ -256,6 +250,20 @@ void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, 
 bool TransformHandles::visiblePivot(fixmath::fixed angle) const
 {
   return (Preferences::instance().selection.pivotVisibility() || angle != 0);
+}
+
+void TransformHandles::getScreenPoints(
+  Editor* editor,
+  const Transformation::Corners& corners,
+  std::vector<gfx::Point>& screenPoints) const
+{
+  gfx::Point main = editor->mainTilePosition();
+
+  screenPoints.resize(corners.size());
+  for (size_t c=0; c<corners.size(); ++c)
+    screenPoints[c] = editor->editorToScreen(
+      gfx::Point((int)corners[c].x+main.x,
+                 (int)corners[c].y+main.y));
 }
 
 } // namespace app

@@ -177,6 +177,8 @@ namespace app {
     // Returns the visible area of the active sprite.
     gfx::Rect getVisibleSpriteBounds();
 
+    gfx::Point mainTilePosition() const;
+
     // Changes the scroll to see the given point as the center of the editor.
     void centerInSpritePoint(const gfx::Point& spritePos);
 

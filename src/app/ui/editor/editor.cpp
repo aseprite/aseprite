@@ -793,7 +793,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
         g->drawVLine(color,
                      spriteRect.x + int(m_proj.applyX<double>(x)),
-                     enclosingRect.y,
+                     enclosingRect.y + mainTilePosition().y,
                      enclosingRect.h);
       }
     }
@@ -802,7 +802,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       if (y > 0) {
         gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
         g->drawHLine(color,
-                     enclosingRect.x,
+                     enclosingRect.x + mainTilePosition().x,
                      spriteRect.y + int(m_proj.applyY<double>(y)),
                      enclosingRect.w);
       }
@@ -871,8 +871,9 @@ void Editor::drawMask(Graphics* g)
 
   ASSERT(m_document->getMaskBoundaries());
 
-  int x = m_padding.x;
-  int y = m_padding.y;
+  gfx::Point pt = mainTilePosition();
+  pt.x = m_padding.x + m_proj.applyX(pt.x);
+  pt.y = m_padding.y + m_proj.applyY(pt.y);
 
   for (const auto& seg : *m_document->getMaskBoundaries()) {
     CheckedDrawMode checked(g, m_antsOffset,
@@ -892,9 +893,9 @@ void Editor::drawMask(Graphics* g)
 
     // The color doesn't matter, we are using CheckedDrawMode
     if (seg.vertical())
-      g->drawVLine(gfx::rgba(0, 0, 0), x+bounds.x, y+bounds.y, bounds.h);
+      g->drawVLine(gfx::rgba(0, 0, 0), pt.x+bounds.x, pt.y+bounds.y, bounds.h);
     else
-      g->drawHLine(gfx::rgba(0, 0, 0), x+bounds.x, y+bounds.y, bounds.w);
+      g->drawHLine(gfx::rgba(0, 0, 0), pt.x+bounds.x, pt.y+bounds.y, bounds.w);
   }
 }
 
@@ -1908,6 +1909,8 @@ bool Editor::canDraw()
 bool Editor::isInsideSelection()
 {
   gfx::Point spritePos = screenToEditor(ui::get_mouse_position());
+  spritePos -= mainTilePosition();
+
   KeyAction action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
   return
     (action == KeyAction::None) &&
@@ -2363,6 +2366,18 @@ gfx::Size Editor::canvasSize() const
     sz.h += sz.h*2;
   }
   return sz;
+}
+
+gfx::Point Editor::mainTilePosition() const
+{
+  gfx::Point pt(0, 0);
+  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
+    pt.x += m_sprite->width();
+  }
+  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
+    pt.y += m_sprite->height();
+  }
+  return pt;
 }
 
 bool Editor::isMovingPixels() const
