@@ -87,12 +87,31 @@ public:
   bool isFloodFill() override { return true; }
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
+    const doc::Image* srcImage = loop->getFloodFillSrcImage();
+    filters::TiledMode tiledMode = loop->getTiledMode();
+    const bool xTiled = ((int(tiledMode) & int(filters::TiledMode::X_AXIS)) ? true: false);
+    const bool yTiled = ((int(tiledMode) & int(filters::TiledMode::Y_AXIS)) ? true: false);
+    const int w = srcImage->width();
+    const int h = srcImage->height();
+
+    if (xTiled) {
+      if (x < 0)
+        x = (w - (-x % w));
+      x %= w;
+    }
+
+    if (yTiled) {
+      if (y < 0)
+        y = (h - (-y % h));
+      y %= h;
+    }
+
     doc::algorithm::floodfill(
-      loop->getFloodFillSrcImage(),
+      srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),
       x, y,
       floodfillBounds(loop, x, y),
-      get_pixel(loop->getFloodFillSrcImage(), x, y),
+      get_pixel(srcImage, x, y),
       loop->getTolerance(),
       loop->getContiguous(),
       loop, (AlgoHLine)doInkHline);
