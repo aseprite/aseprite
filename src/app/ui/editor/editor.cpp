@@ -651,6 +651,51 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
           gfx::Rect(dest_x, dest_y, rc.w, rc.h)));
     }
   }
+
+  // Draw grids
+  {
+    gfx::Rect enclosingRect(
+      m_padding.x + dx,
+      m_padding.y + dy,
+      m_proj.applyX(m_sprite->width()),
+      m_proj.applyY(m_sprite->height()));
+
+    IntersectClip clip(g, gfx::Rect(dest_x, dest_y, rc.w, rc.h));
+    if (clip) {
+      // Draw the pixel grid
+      if ((m_proj.zoom().scale() > 2.0) && m_docPref.show.pixelGrid()) {
+        int alpha = m_docPref.pixelGrid.opacity();
+
+        if (m_docPref.pixelGrid.autoOpacity()) {
+          alpha = int(alpha * (m_proj.zoom().scale()-2.) / (16.-2.));
+          alpha = MID(0, alpha, 255);
+        }
+
+        drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
+                 m_docPref.pixelGrid.color(), alpha);
+      }
+
+      // Draw the grid
+      if (m_docPref.show.grid()) {
+        gfx::Rect gridrc = m_docPref.grid.bounds();
+        if (m_proj.applyX(gridrc.w) > 2 &&
+            m_proj.applyY(gridrc.h) > 2) {
+          int alpha = m_docPref.grid.opacity();
+
+          if (m_docPref.grid.autoOpacity()) {
+            double len = (m_proj.applyX(gridrc.w) +
+                          m_proj.applyY(gridrc.h)) / 2.;
+            alpha = int(alpha * len / 32.);
+            alpha = MID(0, alpha, 255);
+          }
+
+          if (alpha > 8)
+            drawGrid(g, enclosingRect, m_docPref.grid.bounds(),
+                     m_docPref.grid.color(), alpha);
+        }
+      }
+    }
+  }
 }
 
 void Editor::drawBackground(ui::Graphics* g)
@@ -722,50 +767,18 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       spriteRect.w*3, spriteRect.h*3);
   }
 
-  // Grids & slices
+  // Draw slices
   {
     // Clipping
     gfx::Rect cliprc = editorToScreen(rc).offset(-bounds().origin());
     cliprc = cliprc.createIntersection(spriteRect);
     if (!cliprc.isEmpty()) {
       IntersectClip clip(g, cliprc);
-
-      // Draw the pixel grid
-      if ((m_proj.zoom().scale() > 2.0) && m_docPref.show.pixelGrid()) {
-        int alpha = m_docPref.pixelGrid.opacity();
-
-        if (m_docPref.pixelGrid.autoOpacity()) {
-          alpha = int(alpha * (m_proj.zoom().scale()-2.) / (16.-2.));
-          alpha = MID(0, alpha, 255);
-        }
-
-        drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
-          m_docPref.pixelGrid.color(), alpha);
+      if (clip) {
+        // Draw slices
+        if (m_docPref.show.slices())
+          drawSlices(g);
       }
-
-      // Draw the grid
-      if (m_docPref.show.grid()) {
-        gfx::Rect gridrc = m_docPref.grid.bounds();
-        if (m_proj.applyX(gridrc.w) > 2 &&
-            m_proj.applyY(gridrc.h) > 2) {
-          int alpha = m_docPref.grid.opacity();
-
-          if (m_docPref.grid.autoOpacity()) {
-            double len = (m_proj.applyX(gridrc.w) +
-                          m_proj.applyY(gridrc.h)) / 2.;
-            alpha = int(alpha * len / 32.);
-            alpha = MID(0, alpha, 255);
-          }
-
-          if (alpha > 8)
-            drawGrid(g, enclosingRect, m_docPref.grid.bounds(),
-              m_docPref.grid.color(), alpha);
-        }
-      }
-
-      // Draw slices
-      if (m_docPref.show.slices())
-        drawSlices(g);
     }
   }
 
