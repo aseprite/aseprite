@@ -1051,7 +1051,10 @@ void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
   // Use whole canvas
   else {
     sprCmpBounds = m_sprite->bounds();
-    scrCmpBounds = editorToScreen(sprCmpBounds).offset(gfx::Point(-bounds().origin()));
+    scrCmpBounds =
+      editorToScreen(
+        gfx::Rect(sprCmpBounds).offset(mainTilePosition()))
+      .offset(gfx::Point(-bounds().origin()));
   }
 
   const int midX = scrCelBounds.x+scrCelBounds.w/2;
@@ -1169,12 +1172,20 @@ void Editor::drawCelVGuide(ui::Graphics* g,
 
 gfx::Rect Editor::getCelScreenBounds(const Cel* cel)
 {
+  gfx::Point mainOffset(mainTilePosition());
   gfx::Rect layerEdges;
   if (m_layer->isReference()) {
-    layerEdges = editorToScreenF(cel->boundsF()).offset(gfx::PointF(-bounds().origin()));
+    layerEdges =
+      editorToScreenF(
+        gfx::RectF(cel->boundsF()).offset(mainOffset.x,
+                                          mainOffset.y))
+      .offset(gfx::PointF(-bounds().origin()));
   }
   else {
-    layerEdges = editorToScreen(cel->bounds()).offset(-bounds().origin());
+    layerEdges =
+      editorToScreen(
+        gfx::Rect(cel->bounds()).offset(mainOffset))
+      .offset(-bounds().origin());
   }
   return layerEdges;
 }
