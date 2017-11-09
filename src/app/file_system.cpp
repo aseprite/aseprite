@@ -37,6 +37,7 @@
   #define MYPC_CSLID  "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
 #else
   #include <dirent.h>
+  #include <sys/stat.h>
 #endif
 
 //////////////////////////////////////////////////////////////////////
@@ -458,11 +459,15 @@ const FileItemList& FileItem::children()
             child = new FileItem(this);
 
             bool is_folder;
-            if (entry->d_type == DT_LNK) {
+            struct stat fileStat;
+
+            stat(fullfn.c_str(), &fileStat);
+
+            if ((fileStat.st_mode & S_IFMT) == S_IFLNK) {
               is_folder = base::is_directory(fullfn);
             }
             else {
-              is_folder = (entry->d_type == DT_DIR);
+              is_folder = ((fileStat.st_mode & S_IFMT) == S_IFDIR);
             }
 
             child->m_filename = fullfn;
