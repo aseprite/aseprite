@@ -768,19 +768,8 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   }
 
   // Draw slices
-  {
-    // Clipping
-    gfx::Rect cliprc = editorToScreen(rc).offset(-bounds().origin());
-    cliprc = cliprc.createIntersection(spriteRect);
-    if (!cliprc.isEmpty()) {
-      IntersectClip clip(g, cliprc);
-      if (clip) {
-        // Draw slices
-        if (m_docPref.show.slices())
-          drawSlices(g);
-      }
-    }
-  }
+  if (m_docPref.show.slices())
+    drawSlices(g);
 
   // Symmetry mode
   if (isActive() &&
@@ -986,6 +975,8 @@ void Editor::drawSlices(ui::Graphics* g)
   if (!isVisible() || !m_document)
     return;
 
+  gfx::Point mainOffset(mainTilePosition());
+
   for (auto slice : m_sprite->slices()) {
     auto key = slice->getByFrame(m_frame);
     if (!key)
@@ -996,9 +987,10 @@ void Editor::drawSlices(ui::Graphics* g)
                                  doc::rgba_getg(docColor),
                                  doc::rgba_getb(docColor),
                                  doc::rgba_geta(docColor));
-    gfx::Rect out =
-      editorToScreen(key->bounds())
-               .offset(-bounds().origin());
+    gfx::Rect out = key->bounds();
+    out.offset(mainOffset);
+    out = editorToScreen(out);
+    out.offset(-bounds().origin());
 
     // Center slices
     if (key->hasCenter()) {
@@ -1943,10 +1935,15 @@ EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
     // Check if we can transform slices
     if (ink->isSlice()) {
       if (m_docPref.show.slices()) {
+        gfx::Point mainOffset(mainTilePosition());
+
         for (auto slice : m_sprite->slices()) {
           auto key = slice->getByFrame(m_frame);
           if (key) {
-            gfx::Rect bounds = editorToScreen(key->bounds());
+            gfx::Rect bounds = key->bounds();
+            bounds.offset(mainOffset);
+            bounds = editorToScreen(bounds);
+
             gfx::Rect center = key->center();
 
             // Move bounds
