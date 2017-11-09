@@ -177,6 +177,7 @@ namespace app {
     // Returns the visible area of the active sprite.
     gfx::Rect getVisibleSpriteBounds();
 
+    gfx::Size canvasSize() const;
     gfx::Point mainTilePosition() const;
 
     // Changes the scroll to see the given point as the center of the editor.
@@ -324,7 +325,6 @@ namespace app {
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
     gfx::Point calcExtraPadding(const render::Projection& proj);
-    gfx::Size canvasSize() const;
 
     void invalidateIfActive();
     bool showAutoCelGuides();
