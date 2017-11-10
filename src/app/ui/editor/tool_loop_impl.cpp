@@ -279,6 +279,10 @@ public:
     StatusBar::instance()->setStatusText(0, text);
   }
 
+  gfx::Point statusBarPositionOffset() override {
+    return -m_editor->mainTilePosition();
+  }
+
   render::DitheringMatrix getDitheringMatrix() override {
     return App::instance()->contextBar()->ditheringMatrix();
   }

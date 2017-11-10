@@ -515,7 +515,9 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
-  gfx::PointF spritePos = editor->screenToEditorF(ui::get_mouse_position());
+  gfx::PointF spritePos =
+    editor->screenToEditorF(ui::get_mouse_position())
+    - gfx::PointF(editor->mainTilePosition());
 
   if (!sprite) {
     StatusBar::instance()->clearText();

@@ -228,6 +228,7 @@ namespace app {
       virtual void updateDirtyArea() = 0;
 
       virtual void updateStatusBar(const char* text) = 0;
+      virtual gfx::Point statusBarPositionOffset() = 0;
 
       // For gradients
       virtual render::DitheringMatrix getDitheringMatrix() = 0;

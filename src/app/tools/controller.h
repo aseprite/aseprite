@@ -46,7 +46,7 @@ namespace app {
 
       // The input and output strokes are relative to sprite coordinates.
       virtual void getStrokeToInterwine(const Stroke& input, Stroke& output) = 0;
-      virtual void getStatusBarText(const Stroke& stroke, std::string& text) = 0;
+      virtual void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) = 0;
 
       // Last point used by this controller, useful to save the last
       // point of a freehand tool.

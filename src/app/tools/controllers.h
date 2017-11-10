@@ -78,17 +78,18 @@ public:
     }
   }
 
-  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+  void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) override {
     ASSERT(!stroke.empty());
     if (stroke.empty())
       return;
 
+    gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
     sprintf(buf, ":start: %3d %3d :end: %3d %3d",
-            stroke.firstPoint().x,
-            stroke.firstPoint().y,
-            stroke.lastPoint().x,
-            stroke.lastPoint().y);
+            stroke.firstPoint().x+offset.x,
+            stroke.firstPoint().y+offset.y,
+            stroke.lastPoint().x+offset.x,
+            stroke.lastPoint().y+offset.y);
     text = buf;
   }
 
@@ -204,7 +205,7 @@ public:
     output.addPoint(input[1]);
   }
 
-  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+  void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) override {
     ASSERT(stroke.size() >= 2);
     if (stroke.size() < 2)
       return;
@@ -212,10 +213,11 @@ public:
     int w = ABS(stroke[1].x-stroke[0].x)+1;
     int h = ABS(stroke[1].y-stroke[0].y)+1;
 
+    gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
     sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :distance: %.1f :angle: %.1f",
-            stroke[0].x, stroke[0].y,
-            stroke[1].x, stroke[1].y,
+            stroke[0].x+offset.x, stroke[0].y+offset.y,
+            stroke[1].x+offset.x, stroke[1].y+offset.y,
             w, h,
             std::sqrt(w*w + h*h),
             180.0 * std::atan2(static_cast<double>(stroke[0].y-stroke[1].y),
@@ -269,17 +271,18 @@ public:
     output = input;
   }
 
-  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+  void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) override {
     ASSERT(!stroke.empty());
     if (stroke.empty())
       return;
 
+    gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
     sprintf(buf, ":start: %3d %3d :end: %3d %3d",
-            stroke.firstPoint().x,
-            stroke.firstPoint().y,
-            stroke.lastPoint().x,
-            stroke.lastPoint().y);
+            stroke.firstPoint().x+offset.x,
+            stroke.firstPoint().y+offset.y,
+            stroke.lastPoint().x+offset.x,
+            stroke.lastPoint().y+offset.y);
     text = buf;
   }
 
@@ -308,13 +311,16 @@ public:
     output = input;
   }
 
-  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+  void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) override {
     ASSERT(!stroke.empty());
     if (stroke.empty())
       return;
 
+    gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
-    sprintf(buf, ":pos: %3d %3d", stroke[0].x, stroke[0].y);
+    sprintf(buf, ":pos: %3d %3d",
+            stroke[0].x+offset.x,
+            stroke[0].y+offset.y);
     text = buf;
   }
 
@@ -363,17 +369,18 @@ public:
     output = input;
   }
 
-  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+  void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) override {
     ASSERT(stroke.size() >= 4);
     if (stroke.size() < 4)
       return;
 
+    gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
     sprintf(buf, ":start: %3d %3d :end: %3d %3d (%3d %3d - %3d %3d)",
-            stroke[0].x, stroke[0].y,
-            stroke[3].x, stroke[3].y,
-            stroke[1].x, stroke[1].y,
-            stroke[2].x, stroke[2].y);
+            stroke[0].x+offset.x, stroke[0].y+offset.y,
+            stroke[3].x+offset.x, stroke[3].y+offset.y,
+            stroke[1].x+offset.x, stroke[1].y+offset.y,
+            stroke[2].x+offset.x, stroke[2].y+offset.y);
 
     text = buf;
   }
@@ -422,8 +429,8 @@ public:
     m_controller->getStrokeToInterwine(input, output);
   }
 
-  void getStatusBarText(const Stroke& stroke, std::string& text) override {
-    m_controller->getStatusBarText(stroke, text);
+  void getStatusBarText(ToolLoop* loop, const Stroke& stroke, std::string& text) override {
+    m_controller->getStatusBarText(loop, stroke, text);
   }
 
   bool handleTracePolicy() const override {

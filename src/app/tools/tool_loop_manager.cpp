@@ -93,7 +93,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   m_toolLoop->getController()->pressButton(m_stroke, spritePoint);
 
   std::string statusText;
-  m_toolLoop->getController()->getStatusBarText(m_stroke, statusText);
+  m_toolLoop->getController()->getStatusBarText(m_toolLoop, m_stroke, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
 
   doLoopStep(false);
@@ -139,7 +139,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
   m_toolLoop->getController()->movement(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
-  m_toolLoop->getController()->getStatusBarText(m_stroke, statusText);
+  m_toolLoop->getController()->getStatusBarText(m_toolLoop, m_stroke, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
 
   doLoopStep(false);
