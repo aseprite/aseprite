@@ -1204,22 +1204,39 @@ bool Timeline::onProcessMessage(Message* msg)
     case kMouseWheelMessage:
       if (m_document) {
         gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
-        if (!static_cast<MouseMessage*>(msg)->preciseWheel()) {
-          delta.x *= frameBoxWidth();
-          delta.y *= layerBoxHeight();
+        const bool precise = static_cast<MouseMessage*>(msg)->preciseWheel();
 
-          if (delta.x == 0 && // On macOS shift already changes the wheel axis
-              msg->shiftPressed()) {
-            if (std::fabs(delta.y) > delta.x)
-              std::swap(delta.x, delta.y);
+        // Zoom timeline
+        if (msg->ctrlPressed() || // TODO configurable
+            msg->cmdPressed()) {
+          double dz = delta.x + delta.y;
+
+          if (precise) {
+            dz /= 1.5;
+            if (dz < -1.0) dz = -1.0;
+            else if (dz > 1.0) dz = 1.0;
           }
 
-          if (msg->altPressed()) {
-            delta.x *= 3;
-            delta.y *= 3;
-          }
+          setZoomAndUpdate(m_zoom - dz);
         }
-        setViewScroll(viewScroll() + delta);
+        else {
+          if (!precise) {
+            delta.x *= frameBoxWidth();
+            delta.y *= layerBoxHeight();
+
+            if (delta.x == 0 && // On macOS shift already changes the wheel axis
+                msg->shiftPressed()) {
+              if (std::fabs(delta.y) > delta.x)
+                std::swap(delta.x, delta.y);
+            }
+
+            if (msg->altPressed()) {
+              delta.x *= 3;
+              delta.y *= 3;
+            }
+          }
+          setViewScroll(viewScroll() + delta);
+        }
       }
       break;
 
