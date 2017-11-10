@@ -24,6 +24,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui_context.h"
+#include "app/util/wrap_value.h"
 #include "doc/algo.h"
 #include "doc/blend_internals.h"
 #include "doc/brush.h"
@@ -186,9 +187,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
     // Tiled mode might require a bigger extra cel (to show the tiled)
     if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
-      if (brushBounds.x < 0)
-        brushBounds.x = (sprite->width() - (-brushBounds.x % sprite->width()));
-      brushBounds.x %= sprite->width();
+      brushBounds.x = wrap_value(brushBounds.x, sprite->width());
       extraCelBounds.x = brushBounds.x;
       if ((extraCelBounds.x < 0 && extraCelBounds.x2() > 0) ||
           (extraCelBounds.x < sprite->width() && extraCelBounds.x2() > sprite->width())) {
@@ -197,9 +196,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       }
     }
     if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
-      if (brushBounds.y < 0)
-        brushBounds.y = (sprite->height() - (-brushBounds.y % sprite->height()));
-      brushBounds.y %= sprite->height();
+      brushBounds.y = wrap_value(brushBounds.y, sprite->height());
       extraCelBounds.y = brushBounds.y;
       if ((extraCelBounds.y < 0 && extraCelBounds.y2() > 0) ||
           (extraCelBounds.y < sprite->height() && extraCelBounds.y2() > sprite->height())) {

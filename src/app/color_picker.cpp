@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 
 #include "app/document.h"
 #include "app/pref/preferences.h"
-#include "app/util/wrap_value.h"
+#include "app/util/wrap_point.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -76,11 +76,8 @@ void ColorPicker::pickColor(const doc::Site& site,
     const app::Document* doc = static_cast<const app::Document*>(site.document());
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
-    if (int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS))
-      pos.x = wrap_value<double>(pos.x, site.sprite()->width());
-
-    if (int(docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS))
-      pos.y = wrap_value<double>(pos.y, site.sprite()->height());
+    pos = wrap_pointF(docPref.tiled.mode(),
+                      site.sprite()->size(), pos);
   }
 
   // Get the color from the image

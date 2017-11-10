@@ -86,6 +86,7 @@ private:
     render_rgba_linear_gradient(
       image1.get(),
       gfx::Point(0, 0),
+      gfx::Point(0, 0),
       gfx::Point(w-1, 0),
       doc::rgba(0, 0, 0, 255),
       doc::rgba(255, 255, 255, 255),

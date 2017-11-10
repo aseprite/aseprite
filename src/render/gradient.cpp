@@ -19,6 +19,7 @@ namespace render {
 
 void render_rgba_linear_gradient(
   doc::Image* img,
+  const gfx::Point imgPos,
   const gfx::Point p0,
   const gfx::Point p1,
   doc::color_t c0,
@@ -75,7 +76,8 @@ void render_rgba_linear_gradient(
   if (matrix.rows() == 1 && matrix.cols() == 1) {
     for (int y=0; y<height; ++y) {
       for (int x=0; x<width; ++x, ++it) {
-        base::Vector2d<double> q(x, y);
+        base::Vector2d<double> q(imgPos.x+x,
+                                 imgPos.y+y);
         q -= u;
         double f = (q * w) / wmag;
 

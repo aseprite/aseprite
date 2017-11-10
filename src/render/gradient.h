@@ -21,6 +21,7 @@ class DitheringMatrix;
 
 void render_rgba_linear_gradient(
   doc::Image* img,
+  const gfx::Point imgPos,
   const gfx::Point p0,
   const gfx::Point p1,
   doc::color_t c0,

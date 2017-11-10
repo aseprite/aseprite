@@ -68,6 +68,7 @@ namespace doc {
 
     PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
     const PixelRatio& pixelRatio() const { return m_pixelRatio; }
+    gfx::Size size() const { return m_spec.size(); }
     gfx::Rect bounds() const { return m_spec.bounds(); }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }

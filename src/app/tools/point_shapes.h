@@ -4,6 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/util/wrap_point.h"
+
 namespace app {
 namespace tools {
 
@@ -88,30 +90,17 @@ public:
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
     const doc::Image* srcImage = loop->getFloodFillSrcImage();
-    filters::TiledMode tiledMode = loop->getTiledMode();
-    const bool xTiled = ((int(tiledMode) & int(filters::TiledMode::X_AXIS)) ? true: false);
-    const bool yTiled = ((int(tiledMode) & int(filters::TiledMode::Y_AXIS)) ? true: false);
-    const int w = srcImage->width();
-    const int h = srcImage->height();
-
-    if (xTiled) {
-      if (x < 0)
-        x = (w - (-x % w));
-      x %= w;
-    }
-
-    if (yTiled) {
-      if (y < 0)
-        y = (h - (-y % h));
-      y %= h;
-    }
+    gfx::Point pt = wrap_point(loop->getTiledMode(),
+                               gfx::Size(srcImage->width(),
+                                         srcImage->height()),
+                               gfx::Point(x, y));
 
     doc::algorithm::floodfill(
       srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),
-      x, y,
-      floodfillBounds(loop, x, y),
-      get_pixel(srcImage, x, y),
+      pt.x, pt.y,
+      floodfillBounds(loop, pt.x, pt.y),
+      get_pixel(srcImage, pt.x, pt.y),
       loop->getTolerance(),
       loop->getContiguous(),
       loop, (AlgoHLine)doInkHline);
