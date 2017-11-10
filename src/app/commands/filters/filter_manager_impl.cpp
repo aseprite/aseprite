@@ -126,8 +126,9 @@ void FilterManagerImpl::beginForPreview()
   m_row = m_nextRowToFlush = 0;
   m_mask = m_previewMask;
 
-  {
-    Editor* editor = current_editor;
+  Editor* editor = current_editor;
+  // If we have a tiled mode enabled, we'll apply the filter to the whole areaes
+  if (editor->docPref().tiled.mode() == filters::TiledMode::NONE) {
     Sprite* sprite = m_site.sprite();
     gfx::Rect vp = View::getView(editor)->viewportBounds();
     vp = editor->screenToEditor(vp);
@@ -314,6 +315,8 @@ void FilterManagerImpl::flush()
                                               editor->projection().removeY(h+2))));
 
     gfx::Region reg1(rect);
+    editor->expandRegionByTiledMode(reg1, true);
+
     gfx::Region reg2;
     editor->getDrawableRegion(reg2, Widget::kCutTopWindows);
     reg1.createIntersection(reg1, reg2);

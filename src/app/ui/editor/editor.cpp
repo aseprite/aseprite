@@ -2388,6 +2388,36 @@ gfx::Point Editor::mainTilePosition() const
   return pt;
 }
 
+void Editor::expandRegionByTiledMode(gfx::Region& rgn,
+                                     const bool withProj) const
+{
+  gfx::Region tile = rgn;
+  const bool xTiled = (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS));
+  const bool yTiled = (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS));
+  int w = m_sprite->width();
+  int h = m_sprite->height();
+  if (withProj) {
+    w = m_proj.applyX(w);
+    h = m_proj.applyY(h);
+  }
+  if (xTiled) {
+    tile.offset(w, 0); rgn |= tile;
+    tile.offset(w, 0); rgn |= tile;
+    tile.offset(-2*w, 0);
+  }
+  if (yTiled) {
+    tile.offset(0, h); rgn |= tile;
+    tile.offset(0, h); rgn |= tile;
+    tile.offset(0, -2*h);
+  }
+  if (xTiled && yTiled) {
+    tile.offset(w, h); rgn |= tile;
+    tile.offset(w, 0); rgn |= tile;
+    tile.offset(-w, h); rgn |= tile;
+    tile.offset(w, 0); rgn |= tile;
+  }
+}
+
 bool Editor::isMovingPixels() const
 {
   return (dynamic_cast<MovingPixelsState*>(m_state.get()) != nullptr);
