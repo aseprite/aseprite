@@ -79,6 +79,7 @@ private:
   Pointer m_lastPointer;
   gfx::Point m_oldPoint;
   gfx::Region& m_dirtyArea;
+  gfx::Region m_nextDirtyArea;
 };
 
 } // namespace tools

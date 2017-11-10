@@ -227,7 +227,7 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   // Save the current dirty area if it's needed
   Region prevDirtyArea;
   if (m_toolLoop->getTracePolicy() == TracePolicy::Last)
-    prevDirtyArea = m_dirtyArea;
+    prevDirtyArea = m_nextDirtyArea;
 
   // Start with a fresh dirty area
   m_dirtyArea.clear();
@@ -256,8 +256,10 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   // Merge new dirty area with the previous one (for tools like line
   // or rectangle it's needed to redraw the previous position and
   // the new one)
-  if (m_toolLoop->getTracePolicy() == TracePolicy::Last)
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {
+    m_nextDirtyArea = m_dirtyArea;
     m_dirtyArea.createUnion(m_dirtyArea, prevDirtyArea);
+  }
 
   // Apply tiled mode
   TiledMode tiledMode = m_toolLoop->getTiledMode();
