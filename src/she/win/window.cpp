@@ -1224,6 +1224,11 @@ void WinWindow::handleInteractionContextOutput(
         gfx::Point delta(-int(output->arguments.manipulation.delta.translationX) / m_scale,
                          -int(output->arguments.manipulation.delta.translationY) / m_scale);
 
+        if (output->interactionFlags & INTERACTION_FLAG_BEGIN) {
+          ev.setType(Event::MouseMove);
+          queueEvent(ev);
+        }
+
         ev.setType(Event::MouseWheel);
         ev.setWheelDelta(delta);
         ev.setPreciseWheel(true);
@@ -1237,7 +1242,9 @@ void WinWindow::handleInteractionContextOutput(
 
       case INTERACTION_ID_TAP:
         MOUSE_TRACE(" - count=%d\n", output->arguments.tap.count);
+
         ev.setButton(Event::LeftButton);
+        ev.setType(Event::MouseMove); queueEvent(ev);
         if (output->arguments.tap.count == 2) {
           ev.setType(Event::MouseDoubleClick); queueEvent(ev);
         }
@@ -1250,6 +1257,7 @@ void WinWindow::handleInteractionContextOutput(
       case INTERACTION_ID_SECONDARY_TAP:
       case INTERACTION_ID_HOLD:
         ev.setButton(Event::RightButton);
+        ev.setType(Event::MouseMove); queueEvent(ev);
         ev.setType(Event::MouseDown); queueEvent(ev);
         ev.setType(Event::MouseUp); queueEvent(ev);
         break;
