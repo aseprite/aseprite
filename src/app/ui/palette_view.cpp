@@ -415,10 +415,11 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (hit != m_hot) {
         // Redraw only when we put the mouse in other part of the
         // widget (e.g. if we move from color to color, we don't want
-        // to redraw the whole widget).
-        if (hit.part != m_hot.part)
+        // to redraw the whole widget if we're on WAITING state).
+        if ((m_state == State::WAITING && hit.part != m_hot.part) ||
+            (m_state != State::WAITING && hit != m_hot)) {
           invalidate();
-
+        }
         m_hot = hit;
       }
       setCursor();
