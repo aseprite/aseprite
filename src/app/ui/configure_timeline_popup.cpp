@@ -64,14 +64,13 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
 
   m_box->zoom()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onZoomChange, this));
-  m_box->thumbCheck()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbBoxChange, this));
   m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
   m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
   m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
 
-  bool visibleThumbBox = Preferences::instance().thumbnails.visibleOptions();
-  m_box->thumbHSeparator()->setVisible(visibleThumbBox);
-  m_box->thumbBox()->setVisible(visibleThumbBox);
+  const bool visibleThumb = docPref().thumbnails.enabled();
+  m_box->thumbHSeparator()->setVisible(visibleThumb);
+  m_box->thumbBox()->setVisible(visibleThumb);
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -132,13 +131,12 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
-  bool visibleThumbBox = Preferences::instance().thumbnails.visibleOptions();
+  const bool visibleThumb = docPref.thumbnails.enabled();
 
   m_box->zoom()->setValue(int(docPref.thumbnails.zoom())); // TODO add a slider for floating points
-  m_box->thumbCheck()->setSelected(visibleThumbBox);
-  m_box->thumbHSeparator()->setVisible(visibleThumbBox);
-  m_box->thumbBox()->setVisible(visibleThumbBox);
-  m_box->thumbEnabled()->setSelected(docPref.thumbnails.enabled());
+  m_box->thumbEnabled()->setSelected(visibleThumb);
+  m_box->thumbHSeparator()->setVisible(visibleThumb);
+  m_box->thumbBox()->setVisible(visibleThumb);
   m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
   m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
 
@@ -242,17 +240,10 @@ void ConfigureTimelinePopup::onZoomChange()
   docPref().thumbnails.zoom(m_box->zoom()->getValue());
 }
 
-void ConfigureTimelinePopup::onThumbBoxChange()
-{
-  auto& option = Preferences::instance().thumbnails.visibleOptions;
-  option(!option());
-
-  updateWidgetsFromCurrentSettings();
-}
-
 void ConfigureTimelinePopup::onThumbEnabledChange()
 {
   docPref().thumbnails.enabled(m_box->thumbEnabled()->isSelected());
+  updateWidgetsFromCurrentSettings();
 }
 
 void ConfigureTimelinePopup::onThumbOverlayEnabledChange()

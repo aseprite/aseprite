@@ -311,8 +311,11 @@ namespace app {
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
     void onThumbnailsPrefChange();
-    void setZoom(double zoom);
-    void setZoomAndUpdate(double zoom);
+    void setZoom(const double zoom);
+    void setZoomAndUpdate(const double zoom,
+                          const bool updatePref);
+
+    double zoom() const;
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;

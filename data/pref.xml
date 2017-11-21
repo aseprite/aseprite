@@ -234,9 +234,6 @@
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
     </section>
-    <section id="thumbnails">
-      <option id="visible_options" type="bool" default="false" />
-    </section>
     <section id="perf">
       <option id="show_render_time" type="bool" default="false" />
     </section>

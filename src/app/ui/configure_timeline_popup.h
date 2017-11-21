@@ -43,7 +43,6 @@ namespace app {
     void onPositionChange();
 
     void onZoomChange();
-    void onThumbBoxChange();
     void onThumbEnabledChange();
     void onThumbOverlayEnabledChange();
     void onThumbOverlaySizeChange();

@@ -21,16 +21,14 @@
       </hbox>
 
       <hbox>
-	<check id="thumb_check" text="@.thumbnails" horizontal="true" />
+	<check id="thumb_enabled" text="@.thumbnails" horizontal="true" />
 	<separator id="thumb_h_separator" horizontal="true" expansive="true" />
       </hbox>
-      <grid columns="3" id="thumb_box">
-	<check id="thumb_enabled" text="@.force" />
-	<label text="@.zoom" />
+      <grid columns="2" id="thumb_box">
+	<label text="@.thumbnail_size" />
 	<slider min="1" max="10" id="zoom" cell_align="horizontal" width="128" />
 
-	<check id="thumb_overlay_enabled" text="@.overlay"/>
-	<label text="@.size" />
+	<check id="thumb_overlay_enabled" text="@.overlay_size"/>
 	<slider min="2" max="10" id="thumb_overlay_size" cell_align="horizontal" width="128" />
       </grid>
     </vbox>

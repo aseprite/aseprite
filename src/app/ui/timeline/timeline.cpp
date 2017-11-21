@@ -238,29 +238,35 @@ Timeline::~Timeline()
   delete m_confPopup;
 }
 
-void Timeline::setZoom(double zoom)
+void Timeline::setZoom(const double zoom)
 {
   m_zoom = MID(1.0, zoom, 10.0);
   m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
   m_thumbnailsOverlayVisible = false;
 }
 
-void Timeline::setZoomAndUpdate(double zoom)
+void Timeline::setZoomAndUpdate(const double zoom,
+                                const bool updatePref)
 {
   if (zoom != m_zoom) {
     setZoom(zoom);
+    regenerateTagBands();
     updateScrollBars();
     setViewScroll(viewScroll());
     invalidate();
   }
-  if (zoom != docPref().thumbnails.zoom()) {
+  if (updatePref && zoom != docPref().thumbnails.zoom()) {
     docPref().thumbnails.zoom(zoom);
+    docPref().thumbnails.enabled(zoom > 1);
   }
 }
 
 void Timeline::onThumbnailsPrefChange()
 {
-  setZoomAndUpdate(docPref().thumbnails.zoom());
+  setZoomAndUpdate(
+    docPref().thumbnails.enabled() ?
+    docPref().thumbnails.zoom(): 1.0,
+    false);
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -304,7 +310,9 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
     base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
 
-  setZoom(docPref.thumbnails.zoom());
+  setZoom(
+    docPref.thumbnails.enabled() ?
+    docPref.thumbnails.zoom(): 1.0);
 
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
@@ -1217,7 +1225,7 @@ bool Timeline::onProcessMessage(Message* msg)
             else if (dz > 1.0) dz = 1.0;
           }
 
-          setZoomAndUpdate(m_zoom - dz);
+          setZoomAndUpdate(m_zoom - dz, true);
         }
         else {
           if (!precise) {
@@ -1248,7 +1256,9 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kTouchMagnifyMessage:
-      setZoomAndUpdate(m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification());
+      setZoomAndUpdate(
+        m_zoom + m_zoom * static_cast<ui::TouchMessage*>(msg)->magnification(),
+        true);
       break;
   }
 
@@ -1996,7 +2006,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
   drawPart(g, bounds, nullptr, style, is_active, is_hover);
 
   // Draw thumbnail
-  if ((docPref().thumbnails.enabled() || m_zoom > 1) && image) {
+  if ((docPref().thumbnails.enabled() && m_zoom > 1) && image) {
     gfx::Rect thumb_bounds =
       gfx::Rect(bounds).shrink(
         skinTheme()->calcBorder(this, style));
@@ -3473,12 +3483,12 @@ int Timeline::headerBoxHeight() const
 
 int Timeline::layerBoxHeight() const
 {
-  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize() + int(m_zoom > 1) * headerBoxHeight());
+  return int(zoom()*skinTheme()->dimensions.timelineBaseSize());
 }
 
 int Timeline::frameBoxWidth() const
 {
-  return int(m_zoom*skinTheme()->dimensions.timelineBaseSize());
+  return int(zoom()*skinTheme()->dimensions.timelineBaseSize());
 }
 
 int Timeline::outlineWidth() const
@@ -3492,6 +3502,14 @@ int Timeline::oneTagHeight() const
     font()->height() +
     2*ui::guiscale() +
     skinTheme()->dimensions.timelineTagsAreaHeight();
+}
+
+double Timeline::zoom() const
+{
+  if (docPref().thumbnails.enabled())
+    return m_zoom;
+  else
+    return 1.0;
 }
 
 // Returns the last frame where the frame tag (or frame tag label)
