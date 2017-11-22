@@ -234,8 +234,11 @@ void FilterManagerImpl::applyToTarget()
                          m_site.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
                          true); // we will write in each image
-  if (images.empty() && !paletteChange)
+  if (images.empty() && !paletteChange) {
+    // We don't have images/palette changes to do (there will not be a
+    // transaction).
     return;
+  }
 
   // Initialize writting operation
   ContextReader reader(m_context);
@@ -280,10 +283,16 @@ void FilterManagerImpl::applyToTarget()
   m_oldPalette.reset(nullptr);
 }
 
+bool FilterManagerImpl::isTransaction() const
+{
+  return m_transaction != nullptr;
+}
+
+// This must be executed in the main UI thread.
+// Check Transaction::commit() comments.
 void FilterManagerImpl::commitTransaction()
 {
-  // This must be executed in the main UI thread.
-  // Check Transaction::commit() comments.
+  ASSERT(m_transaction);
   m_transaction->commit();
 }
 

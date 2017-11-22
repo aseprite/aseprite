@@ -83,6 +83,7 @@ namespace app {
     void end();
     bool applyStep();
     void applyToTarget();
+    bool isTransaction() const;
     void commitTransaction();
 
     app::Document* document();

@@ -16,6 +16,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/status_bar.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -104,7 +105,7 @@ void FilterWorker::run()
 
   {
     scoped_lock lock(m_mutex);
-    if (m_done)
+    if (m_done && m_filterMgr->isTransaction())
       m_filterMgr->commitTransaction();
     else
       m_cancelled = true;
@@ -116,6 +117,10 @@ void FilterWorker::run()
   if (!m_error.empty()) {
     Console console;
     console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
+  }
+  else if (m_cancelled && !m_filterMgr->isTransaction()) {
+    StatusBar::instance()
+      ->showTip(2500, "No unlocked layers to apply filter");
   }
 }
 

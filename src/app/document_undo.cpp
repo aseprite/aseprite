@@ -228,6 +228,7 @@ const undo::UndoState* DocumentUndo::nextRedo() const
 
 void DocumentUndo::onDeleteUndoState(undo::UndoState* state)
 {
+  ASSERT(state);
   Cmd* cmd = STATE_CMD(state);
 
   UNDO_TRACE("UNDO: Deleting undo state <%s> of %s from %s\n",
