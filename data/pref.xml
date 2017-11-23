@@ -213,6 +213,7 @@
     <section id="eyedropper" text="Editor">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />
       <option id="sample" type="EyedropperSample" default="EyedropperSample::ALL_LAYERS" />
+      <option id="discard_brush" type="bool" default="false" />
     </section>
     <section id="shared">
       <option id="share_ink" type="bool" default="false" />

@@ -106,6 +106,7 @@ namespace app {
     void setupTooltips(ui::TooltipManager* tooltipManager);
 
     class ZoomButtons;
+    class BrushBackField;
     class BrushTypeField;
     class BrushAngleField;
     class BrushSizeField;
@@ -129,6 +130,7 @@ namespace app {
     class SymmetryField;
 
     ZoomButtons* m_zoomButtons;
+    BrushBackField* m_brushBack;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
     BrushSizeField* m_brushSize;

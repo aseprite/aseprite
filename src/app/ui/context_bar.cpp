@@ -118,6 +118,23 @@ private:
   }
 };
 
+class ContextBar::BrushBackField : public ButtonSet {
+public:
+  BrushBackField()
+    : ButtonSet(1) {
+    addItem("Back");
+  }
+
+protected:
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+
+    Command* discardBrush = CommandsModule::instance()
+      ->getCommandByName(CommandId::DiscardBrush);
+    UIContext::instance()->executeCommand(discardBrush);
+  }
+};
+
 class ContextBar::BrushTypeField : public ButtonSet {
 public:
   BrushTypeField(ContextBar* owner)
@@ -1389,6 +1406,7 @@ ContextBar::ContextBar()
 
   addChild(m_zoomButtons = new ZoomButtons);
 
+  addChild(m_brushBack = new BrushBackField);
   addChild(m_brushType = new BrushTypeField(this));
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
@@ -1709,6 +1727,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
 
   // Show/Hide fields
   m_zoomButtons->setVisible(needZoomButtons);
+  m_brushBack->setVisible(supportOpacity && hasImageBrush && !withDithering);
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush && !withDithering)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
@@ -2019,6 +2038,7 @@ render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
 
 void ContextBar::setupTooltips(TooltipManager* tooltipManager)
 {
+  tooltipManager->addTooltipFor(m_brushBack, "Discard Brush (Esc)", BOTTOM);
   tooltipManager->addTooltipFor(m_brushType, "Brush Type", BOTTOM);
   tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", BOTTOM);
   tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
