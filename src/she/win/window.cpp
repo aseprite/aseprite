@@ -775,7 +775,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       m_ignoreMouseMessages = true;
 #endif
 
-      if (pi.pointerType == PT_TOUCH) {
+      if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.AddPointerInteractionContext)
           winApi.AddPointerInteractionContext(m_ictx, pi.pointerId);
@@ -804,7 +804,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       m_ignoreMouseMessages = false;
 #endif
 
-      if (pi.pointerType == PT_TOUCH) {
+      if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.RemovePointerInteractionContext)
           winApi.RemovePointerInteractionContext(m_ictx, pi.pointerId);
@@ -832,11 +832,12 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if (!pointerEvent(wparam, ev, pi))
         break;
 
-      if (pi.pointerType == PT_TOUCH) {
+      if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
           winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
-          return 0;
+          if (pi.pointerType == PT_TOUCH)
+            return 0;
         }
       }
 
@@ -862,11 +863,12 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if (!pointerEvent(wparam, ev, pi))
         break;
 
-      if (pi.pointerType == PT_TOUCH) {
+      if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
           winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
-          return 0;
+          if (pi.pointerType == PT_TOUCH)
+            return 0;
         }
       }
 
@@ -892,11 +894,12 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       if (!pointerEvent(wparam, ev, pi))
         break;
 
-      if (pi.pointerType == PT_TOUCH) {
+      if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
           winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
-          return 0;
+          if (pi.pointerType == PT_TOUCH)
+            return 0;
         }
       }
 
@@ -1201,8 +1204,11 @@ void WinWindow::handleInteractionContextOutput(
               output->interactionFlags,
               output->inputType);
 
-  // We use the InteractionContext to interpret touch gestures only.
-  if (output->inputType == PT_TOUCH) {
+  // We use the InteractionContext to interpret touch gestures only and double tap with pen.
+  if ((output->inputType == PT_TOUCH) ||
+      (output->inputType == PT_PEN &&
+       output->interactionId == INTERACTION_ID_TAP &&
+       output->arguments.tap.count == 2)) {
     ABS_CLIENT_RC(rc);
 
     gfx::Point pos(int((output->x - rc.left) / m_scale),
@@ -1211,6 +1217,13 @@ void WinWindow::handleInteractionContextOutput(
     Event ev;
     ev.setModifiers(get_modifiers_from_last_win32_message());
     ev.setPosition(pos);
+
+    bool hadMouse = m_hasMouse;
+    if (!m_hasMouse) {
+      m_hasMouse = true;
+      ev.setType(Event::MouseEnter);
+      queueEvent(ev);
+    }
 
     switch (output->interactionId) {
       case INTERACTION_ID_MANIPULATION: {

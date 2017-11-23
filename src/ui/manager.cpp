@@ -1444,7 +1444,8 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
                                             "Unknown";
 
     std::cout << "Event " << msg->type() << " (" << string << ") "
-              << "for " << typeid(*widget).name();
+              << "for " << ((void*)widget) << std::flush;
+    std::cout << " (" << typeid(*widget).name() << ")";
     if (!widget->id().empty())
       std::cout << " (" << widget->id() << ")";
     std::cout << std::endl;

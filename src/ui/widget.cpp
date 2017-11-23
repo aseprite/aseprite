@@ -81,7 +81,15 @@ Widget::Widget(WidgetType type)
 
 Widget::~Widget()
 {
-  // Break relationship with the manager.
+  // First, we remove children (so children's ~Widget() can access to
+  // the manager()).
+  while (!m_children.empty())
+    delete m_children.front();
+
+  // Break relationship with the manager. This cannot be before
+  // deleting children, if we delete children after releasing the
+  // parent, a children deletion could generate a kMouseLeaveMessage
+  // for the parent that will be deleted too.
   Manager* manager = this->manager();
   ASSERT(manager);
   if (manager) {
@@ -89,11 +97,6 @@ Widget::~Widget()
     manager->removeMessagesFor(this);
     manager->removeMessageFilterFor(this);
   }
-
-  // Remove first children (so children's ~Widget() can access to the
-  // manager()).
-  while (!m_children.empty())
-    delete m_children.front();
 
   // Remove this widget from parent.
   if (m_parent)
