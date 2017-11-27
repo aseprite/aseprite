@@ -195,7 +195,6 @@ namespace app {
 
     tools::ToolLoopModifiers getToolLoopModifiers() const { return m_toolLoopModifiers; }
     bool isAutoSelectLayer() const;
-    bool isSecondaryButton() const { return m_secondaryButton; }
 
     // Returns true if we are able to draw in the current doc/sprite/layer/cel.
     bool canDraw();
@@ -268,7 +267,7 @@ namespace app {
 
     // Returns true if the Shift key to draw straight lines with a
     // freehand tool is pressed.
-    bool startStraightLineWithFreehandTool();
+    bool startStraightLineWithFreehandTool(const ui::MouseMessage* msg);
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

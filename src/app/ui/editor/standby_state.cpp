@@ -319,7 +319,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Shift+click on Pencil tool starts a line onMouseDown() when the
     // preview (onKeyDown) is disabled.
     if (!Preferences::instance().editor.straightLinePreview() &&
-        checkStartDrawingStraightLine(editor)) {
+        checkStartDrawingStraightLine(editor, msg)) {
       // Send first mouse down to draw the straight line and start the
       // freehand mode.
       editor->getState()->onMouseDown(editor, msg);
@@ -501,7 +501,7 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   if (Preferences::instance().editor.straightLinePreview() &&
-      checkStartDrawingStraightLine(editor))
+      checkStartDrawingStraightLine(editor, nullptr))
     return true;
   return false;
 }
@@ -607,6 +607,7 @@ DrawingState* StandbyState::startDrawingState(Editor* editor,
   tools::ToolLoop* toolLoop = create_tool_loop(
     editor,
     UIContext::instance(),
+    pointer.button(),
     (drawingType == DrawingType::LineFreehand));
   if (!toolLoop)
     return nullptr;
@@ -624,21 +625,26 @@ DrawingState* StandbyState::startDrawingState(Editor* editor,
   return static_cast<DrawingState*>(newState.get());
 }
 
-bool StandbyState::checkStartDrawingStraightLine(Editor* editor)
+bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
+                                                 const ui::MouseMessage* msg)
 {
   // Start line preview with shift key
-  if (editor->startStraightLineWithFreehandTool()) {
+  if (editor->startStraightLineWithFreehandTool(msg)) {
+    tools::Pointer::Button pointerButton =
+      (msg ? button_from_msg(msg): tools::Pointer::Left);
+
     DrawingState* drawingState =
       startDrawingState(editor,
                         DrawingType::LineFreehand,
                         tools::Pointer(
                           editor->document()->lastDrawingPoint(),
-                          tools::Pointer::Left));
+                          pointerButton));
     if (drawingState) {
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
-          editor->screenToEditor(ui::get_mouse_position()),
-          tools::Pointer::Left));
+          editor->screenToEditor(msg ? msg->position():
+                                       ui::get_mouse_position()),
+          pointerButton));
       return true;
     }
   }

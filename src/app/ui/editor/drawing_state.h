@@ -8,13 +8,13 @@
 #define APP_UI_EDITOR_DRAWING_STATE_H_INCLUDED
 #pragma once
 
+#include "app/tools/pointer.h"
 #include "app/ui/editor/standby_state.h"
 #include "obs/connection.h"
 #include <memory>
 
 namespace app {
   namespace tools {
-    class Pointer;
     class ToolLoop;
     class ToolLoopManager;
   }

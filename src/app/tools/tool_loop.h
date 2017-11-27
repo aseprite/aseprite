@@ -14,6 +14,7 @@
 #include "doc/frame.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
+#include "gfx/rect.h"
 
 namespace gfx {
   class Region;

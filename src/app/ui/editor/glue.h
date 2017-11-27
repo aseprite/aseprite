@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,14 +16,15 @@ namespace app {
 
 // Code to convert "ui" messages to "tools" mouse pointers
 
-inline tools::Pointer::Button button_from_msg(ui::MouseMessage* msg) {
+inline tools::Pointer::Button button_from_msg(const ui::MouseMessage* msg) {
   return
     (msg->right() ? tools::Pointer::Right:
      (msg->middle() ? tools::Pointer::Middle:
                       tools::Pointer::Left));
 }
 
-inline tools::Pointer pointer_from_msg(Editor* editor, ui::MouseMessage* msg) {
+inline tools::Pointer pointer_from_msg(Editor* editor,
+                                       const ui::MouseMessage* msg) {
   return
     tools::Pointer(editor->screenToEditor(msg->position()),
                    button_from_msg(msg));

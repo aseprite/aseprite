@@ -1556,15 +1556,17 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
     return app::Color::fromMask();
 }
 
-bool Editor::startStraightLineWithFreehandTool()
+bool Editor::startStraightLineWithFreehandTool(const ui::MouseMessage* msg)
 {
   tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
+  // TODO add support for more buttons (X1, X2, etc.)
+  int i = (msg && msg->right() ? 1: 0);
   return
     (isActive() &&
      (hasMouse() || hasCapture()) &&
      tool &&
-     tool->getController(0)->isFreehand() &&
-     tool->getInk(0)->isPaint() &&
+     tool->getController(i)->isFreehand() &&
+     tool->getInk(i)->isPaint() &&
      (getCustomizationDelegate()
       ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
      document()->lastDrawingPoint() != app::Document::NoLastDrawingPoint());

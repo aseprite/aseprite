@@ -74,8 +74,12 @@ void DrawingState::initToolLoop(Editor* editor,
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
      BlendMode::NEG_BW));
 
+  ASSERT(!m_toolLoopManager->isCanceled());
+
   m_toolLoopManager->prepareLoop(pointer);
   m_toolLoopManager->pressButton(pointer);
+
+  ASSERT(!m_toolLoopManager->isCanceled());
 
   editor->captureMouse();
 }
@@ -100,14 +104,40 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (!editor->hasCapture())
     editor->captureMouse();
 
+  tools::Pointer pointer = pointer_from_msg(editor, msg);
+
+  // Check if this drawing state was started with a Shift+Pencil tool
+  // and now the user pressed the right button to draw the straight
+  // line with the background color.
+  bool recreateLoop = false;
+  if (m_type == DrawingType::LineFreehand &&
+      !m_mousePressedReceived) {
+    recreateLoop = true;
+  }
+
   m_mousePressedReceived = true;
 
   // Notify the mouse button down to the tool loop manager.
-  m_toolLoopManager->pressButton(pointer_from_msg(editor, msg));
+  m_toolLoopManager->pressButton(pointer);
+
+  // Store the isCanceled flag, because destroyLoopIfCanceled might
+  // destroy the tool loop manager.
+  ASSERT(m_toolLoopManager);
+  const bool isCanceled = m_toolLoopManager->isCanceled();
 
   // The user might have canceled by the tool loop clicking with the
   // secondary mouse button.
   destroyLoopIfCanceled(editor);
+
+  // In this case, the user canceled the straight line preview
+  // (Shift+Pencil) pressing the right-click (other mouse button). Now
+  // we have to restart the loop calling
+  // checkStartDrawingStraightLine() with the right-button.
+  if (recreateLoop && isCanceled) {
+    ASSERT(!m_toolLoopManager);
+    checkStartDrawingStraightLine(editor, msg);
+  }
+
   return true;
 }
 
@@ -142,7 +172,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   // button, if the Shift key is pressed, the whole ToolLoop starts
   // again.
   if (Preferences::instance().editor.straightLinePreview())
-    checkStartDrawingStraightLine(editor);
+    checkStartDrawingStraightLine(editor, msg);
+
   return true;
 }
 
@@ -208,7 +239,7 @@ bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
       // released and the user didn't press the mouse button.
       (m_type == DrawingType::LineFreehand &&
        !m_mousePressedReceived &&
-       !editor->startStraightLineWithFreehandTool())) {
+       !editor->startStraightLineWithFreehandTool(nullptr))) {
     m_toolLoop->cancel();
   }
 

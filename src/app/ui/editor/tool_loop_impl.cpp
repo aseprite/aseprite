@@ -543,6 +543,7 @@ public:
 tools::ToolLoop* create_tool_loop(
   Editor* editor,
   Context* context,
+  const tools::Pointer::Button button,
   const bool convertLineToFreehand)
 {
   tools::Tool* tool = editor->getCurrentEditorTool();
@@ -562,7 +563,7 @@ tools::ToolLoop* create_tool_loop(
   // isFloodFill) because we need the original layer source
   // image/pixels to stop the flood-fill algorithm.
   if (ink->isSelection() &&
-      !tool->getPointShape(editor->isSecondaryButton() ? 1: 0)->isFloodFill()) {
+      !tool->getPointShape(button != tools::Pointer::Left ? 1: 0)->isFloodFill()) {
     layer = nullptr;
   }
   else {
@@ -603,15 +604,15 @@ tools::ToolLoop* create_tool_loop(
 
   // Create the new tool loop
   try {
-    tools::ToolLoop::Button button =
-      (!editor->isSecondaryButton() ? tools::ToolLoop::Left:
-                                      tools::ToolLoop::Right);
+    tools::ToolLoop::Button toolLoopButton =
+      (button == tools::Pointer::Left ? tools::ToolLoop::Left:
+                                        tools::ToolLoop::Right);
 
     tools::Controller* controller =
       (convertLineToFreehand ?
        App::instance()->toolBox()->getControllerById(
          tools::WellKnownControllers::LineFreehand):
-       tool->getController(button));
+       tool->getController(toolLoopButton));
 
     const bool saveLastPoint =
       (ink->isPaint() &&
@@ -624,7 +625,7 @@ tools::ToolLoop* create_tool_loop(
       ink,
       controller,
       editor->document(),
-      button,
+      toolLoopButton,
       fg, bg,
       saveLastPoint);
   }
