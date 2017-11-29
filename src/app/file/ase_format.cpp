@@ -551,7 +551,8 @@ static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_LAYER);
 
   // Flags
-  fputw(static_cast<int>(layer->flags()), f);
+  fputw(static_cast<int>(layer->flags()) &
+        static_cast<int>(doc::LayerFlags::PersistentFlagsMask), f);
 
   // Layer type
   fputw((layer->isImage() ? ASE_FILE_LAYER_IMAGE:

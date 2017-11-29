@@ -39,6 +39,10 @@ namespace doc {
     Collapsed  = 32,            // Prefer to show this group layer collapsed
     Reference  = 64,            // Is a reference layer
 
+    PersistentFlagsMask = 0xffff,
+
+    Internal_WasVisible = 0x10000, // Was visible in the alternative state (Alt+click)
+
     BackgroundLayerFlags = LockMove | Background,
   };
 

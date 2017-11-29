@@ -769,8 +769,48 @@ bool Timeline::onProcessMessage(Message* msg)
           if (validLayer(m_clk.layer)) {
             Row& row = m_rows[m_clk.layer];
             Layer* layer = row.layer();
-            ASSERT(layer);
-            if (layer->isVisible())
+            ASSERT(layer)
+
+            // Hide everything or restore alternative state
+            bool oneWithInternalState = false;
+            if (msg->altPressed()) {
+              for (const Row& row : m_rows) {
+                const Layer* l = row.layer();
+                if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
+                  oneWithInternalState = true;
+                  break;
+                }
+              }
+
+              // If there is one layer with the internal state, restore the previous visible state
+              if (oneWithInternalState) {
+                for (Row& row : m_rows) {
+                  Layer* l = row.layer();
+                  if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
+                    l->setVisible(true);
+                    l->switchFlags(LayerFlags::Internal_WasVisible, false);
+                  }
+                  else {
+                    l->setVisible(false);
+                  }
+                }
+              }
+              // In other case, hide everything
+              else {
+                for (Row& row : m_rows) {
+                  Layer* l = row.layer();
+                  l->switchFlags(LayerFlags::Internal_WasVisible, l->isVisible());
+                  l->setVisible(false);
+                }
+              }
+
+              regenerateRows();
+              invalidate();
+
+              m_document->notifyGeneralUpdate();
+            }
+
+            if (layer->isVisible() && !oneWithInternalState)
               m_state = STATE_HIDING_LAYERS;
             else
               m_state = STATE_SHOWING_LAYERS;

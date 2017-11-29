@@ -417,7 +417,9 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
 
   if (layer) {
     // flags
-    layer->setFlags(static_cast<doc::LayerFlags>(flags));
+    layer->setFlags(static_cast<doc::LayerFlags>(
+                      flags &
+                      static_cast<int>(doc::LayerFlags::PersistentFlagsMask)));
 
     // name
     layer->setName(name.c_str());
