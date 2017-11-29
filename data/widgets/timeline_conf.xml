@@ -19,7 +19,7 @@
 	<buttonset columns="1" id="type">
 	  <item text="@.fixed_step" />
 	  <item text="@.variable_step" />
-	  <item text="@.time_based" />
+	  <!-- <item text="@.time_based" /> -->
 	</buttonset>
       </hbox>
     </vbox>
