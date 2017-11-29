@@ -299,9 +299,11 @@ private:
           gfx::Point(contextXPos, y));
       }
 
-      IntersectClip clip(g, gfx::Rect(keyXPos, y, contextXPos - keyXPos, th));
+      const int dh = th + 4*guiscale();
+      IntersectClip clip(g, gfx::Rect(keyXPos, y,
+                                      contextXPos - keyXPos,
+                                      dh * m_key->accels().size()));
       if (clip) {
-        int dh = th + 4*guiscale();
         int i = 0;
         for (const Accelerator& accel : m_key->accels()) {
           if (i != m_hotAccel || !m_changeButton) {
