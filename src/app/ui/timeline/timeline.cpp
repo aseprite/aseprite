@@ -642,9 +642,72 @@ bool Timeline::onProcessMessage(Message* msg)
       captureMouse();
 
       switch (m_hot.part) {
+
         case PART_SEPARATOR:
           m_state = STATE_MOVING_SEPARATOR;
           break;
+
+        case PART_HEADER_EYE: {
+          ASSERT(m_sprite);
+          if (!m_sprite)
+            break;
+
+          bool regenRows = false;
+          bool newVisibleState = !allLayersVisible();
+          for (Layer* topLayer : m_sprite->root()->layers()) {
+            if (topLayer->isVisible() != newVisibleState) {
+              topLayer->setVisible(newVisibleState);
+              if (topLayer->isGroup())
+                regenRows = true;
+            }
+          }
+
+          if (regenRows) {
+            regenerateRows();
+            invalidate();
+          }
+
+          // Redraw all views.
+          m_document->notifyGeneralUpdate();
+          break;
+        }
+
+        case PART_HEADER_PADLOCK: {
+          ASSERT(m_sprite);
+          if (!m_sprite)
+            break;
+
+          bool regenRows = false;
+          bool newEditableState = !allLayersUnlocked();
+          for (Layer* topLayer : m_sprite->root()->layers()) {
+            if (topLayer->isEditable() != newEditableState) {
+              topLayer->setEditable(newEditableState);
+              if (topLayer->isGroup()) {
+                regenRows = true;
+              }
+            }
+          }
+
+          if (regenRows) {
+            regenerateRows();
+            invalidate();
+          }
+          break;
+        }
+
+        case PART_HEADER_CONTINUOUS: {
+          bool newContinuousState = !allLayersContinuous();
+          for (size_t i=0; i<m_rows.size(); i++)
+            m_rows[i].layer()->setContinuous(newContinuousState);
+          invalidate();
+          break;
+        }
+
+        case PART_HEADER_ONIONSKIN: {
+          docPref().onionskin.active(!docPref().onionskin.active());
+          invalidate();
+          break;
+        }
         case PART_HEADER_ONIONSKIN_RANGE_LEFT: {
           m_state = STATE_MOVING_ONIONSKIN_RANGE_LEFT;
           m_origFrames = docPref().onionskin.prevFrames();
@@ -701,12 +764,61 @@ bool Timeline::onProcessMessage(Message* msg)
           showCel(m_clk.layer, m_frame);
           break;
         }
+
         case PART_ROW_EYE_ICON:
+          if (validLayer(m_clk.layer)) {
+            Row& row = m_rows[m_clk.layer];
+            Layer* layer = row.layer();
+            ASSERT(layer);
+            if (layer->isVisible())
+              m_state = STATE_HIDING_LAYERS;
+            else
+              m_state = STATE_SHOWING_LAYERS;
+
+            setLayerVisibleFlag(m_clk.layer, m_state == STATE_SHOWING_LAYERS);
+          }
           break;
+
         case PART_ROW_PADLOCK_ICON:
+          if (validLayer(m_hot.layer)) {
+            Row& row = m_rows[m_clk.layer];
+            Layer* layer = row.layer();
+            ASSERT(layer);
+            if (layer->isEditable())
+              m_state = STATE_LOCKING_LAYERS;
+            else
+              m_state = STATE_UNLOCKING_LAYERS;
+
+            setLayerEditableFlag(m_clk.layer, m_state == STATE_UNLOCKING_LAYERS);
+          }
           break;
+
         case PART_ROW_CONTINUOUS_ICON:
+          if (validLayer(m_hot.layer)) {
+            Row& row = m_rows[m_clk.layer];
+            Layer* layer = row.layer();
+            ASSERT(layer);
+
+            if (layer->isImage()) {
+              if (layer->isContinuous())
+                m_state = STATE_DISABLING_CONTINUOUS_LAYERS;
+              else
+                m_state = STATE_ENABLING_CONTINUOUS_LAYERS;
+
+              setLayerContinuousFlag(m_clk.layer, m_state == STATE_ENABLING_CONTINUOUS_LAYERS);
+            }
+            else if (layer->isGroup()) {
+              if (layer->isCollapsed())
+                m_state = STATE_EXPANDING_LAYERS;
+              else
+                m_state = STATE_COLLAPSING_LAYERS;
+
+              setLayerCollapsedFlag(m_clk.layer, m_state == STATE_COLLAPSING_LAYERS);
+              updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+            }
+          }
           break;
+
         case PART_CEL: {
           base::ScopedValue<bool> lock(m_fromTimeline, true, false);
           const layer_t old_layer = getLayerIndex(m_layer);
@@ -833,6 +945,40 @@ bool Timeline::onProcessMessage(Message* msg)
             invalidateRect(onionRc.offset(origin()));
             return true;
           }
+
+          case STATE_SHOWING_LAYERS:
+          case STATE_HIDING_LAYERS:
+            m_clk = hit;
+            if (hit.part == PART_ROW_EYE_ICON) {
+              setLayerVisibleFlag(hit.layer, m_state == STATE_SHOWING_LAYERS);
+            }
+            break;
+
+          case STATE_LOCKING_LAYERS:
+          case STATE_UNLOCKING_LAYERS:
+            m_clk = hit;
+            if (hit.part == PART_ROW_PADLOCK_ICON) {
+              setLayerEditableFlag(hit.layer, m_state == STATE_UNLOCKING_LAYERS);
+            }
+            break;
+
+          case STATE_ENABLING_CONTINUOUS_LAYERS:
+          case STATE_DISABLING_CONTINUOUS_LAYERS:
+            m_clk = hit;
+            if (hit.part == PART_ROW_CONTINUOUS_ICON) {
+              setLayerContinuousFlag(hit.layer, m_state == STATE_ENABLING_CONTINUOUS_LAYERS);
+            }
+            break;
+
+          case STATE_EXPANDING_LAYERS:
+          case STATE_COLLAPSING_LAYERS:
+            m_clk = hit;
+            if (hit.part == PART_ROW_CONTINUOUS_ICON) {
+              setLayerCollapsedFlag(hit.layer, m_state == STATE_COLLAPSING_LAYERS);
+              updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+            }
+            break;
+
         }
 
         // If the mouse pressed the mouse's button in the separator,
@@ -916,54 +1062,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
         switch (m_hot.part) {
 
-          case PART_NOTHING:
-          case PART_SEPARATOR:
-          case PART_HEADER_LAYER:
-            // Do nothing.
-            break;
-
-          case PART_HEADER_EYE: {
-            ASSERT(m_sprite);
-            if (!m_sprite)
-              break;
-
-            bool newVisibleState = !allLayersVisible();
-            for (Layer* topLayer : m_sprite->root()->layers()) {
-              if (topLayer->isVisible() != newVisibleState) {
-                topLayer->setVisible(newVisibleState);
-                if (topLayer->isGroup())
-                  regenRows = true;
-              }
-            }
-
-            // Redraw all views.
-            m_document->notifyGeneralUpdate();
-            break;
-          }
-
-          case PART_HEADER_PADLOCK: {
-            ASSERT(m_sprite);
-            if (!m_sprite)
-              break;
-
-            bool newEditableState = !allLayersUnlocked();
-            for (Layer* topLayer : m_sprite->root()->layers()) {
-              if (topLayer->isEditable() != newEditableState) {
-                topLayer->setEditable(newEditableState);
-                if (topLayer->isGroup())
-                  regenRows = true;
-              }
-            }
-            break;
-          }
-
-          case PART_HEADER_CONTINUOUS: {
-            bool newContinuousState = !allLayersContinuous();
-            for (size_t i=0; i<m_rows.size(); i++)
-              m_rows[i].layer()->setContinuous(newContinuousState);
-            break;
-          }
-
           case PART_HEADER_GEAR: {
             gfx::Rect gearBounds =
               getPartBounds(Hit(PART_HEADER_GEAR)).offset(bounds().origin());
@@ -985,11 +1083,6 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             else
               m_confPopup->closeWindow(NULL);
-            break;
-          }
-
-          case PART_HEADER_ONIONSKIN: {
-            docPref().onionskin.active(!docPref().onionskin.active());
             break;
           }
 
@@ -1018,83 +1111,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
                   m_state = STATE_STANDBY;
                   invalidate();
-                }
-              }
-            }
-            break;
-
-          case PART_ROW_EYE_ICON:
-            // Hide/show layer.
-            if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Row& row = m_rows[m_clk.layer];
-              Layer* layer = row.layer();
-              ASSERT(layer);
-
-              // Show parents
-              if (!row.parentVisible()) {
-                regenRows = true;
-
-                layer->setVisible(true);
-                layer = layer->parent();
-                while (layer) {
-                  if (!layer->isVisible())
-                    layer->setVisible(true);
-                  layer = layer->parent();
-                }
-              }
-              else {
-                layer->setVisible(!layer->isVisible());
-                if (layer->isGroup() && layer->isExpanded())
-                  regenRows = true;
-              }
-
-              // Redraw all views.
-              m_document->notifyGeneralUpdate();
-            }
-            break;
-
-          case PART_ROW_PADLOCK_ICON:
-            // Lock/unlock layer.
-            if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Row& row = m_rows[m_clk.layer];
-              Layer* layer = row.layer();
-              ASSERT(layer);
-
-              // Unlock parents
-              if (!row.parentEditable()) {
-                regenRows = true;
-
-                layer->setEditable(true);
-                layer = layer->parent();
-                while (layer) {
-                  if (!layer->isEditable())
-                    layer->setEditable(true);
-                  layer = layer->parent();
-                }
-              }
-              else {
-                layer->setEditable(!layer->isEditable());
-                if (layer->isGroup() && layer->isExpanded())
-                  regenRows = true;
-              }
-            }
-            break;
-
-          case PART_ROW_CONTINUOUS_ICON:
-            if (m_hot.layer == m_clk.layer && validLayer(m_hot.layer)) {
-              Layer* layer = m_rows[m_clk.layer].layer();
-              ASSERT(layer);
-              if (layer) {
-                if (layer->isImage())
-                  layer->setContinuous(!layer->isContinuous());
-                else if (layer->isGroup()) {
-                  layer->setCollapsed(!layer->isCollapsed());
-
-                  regenerateRows();
-                  invalidate();
-
-                  updateByMousePos(
-                    msg, ui::get_mouse_position() - bounds().origin());
                 }
               }
             }
@@ -1273,9 +1289,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      updateByMousePos(msg,
-        ui::get_mouse_position() - bounds().origin());
-
+      updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
       if (used)
         return true;
 
@@ -1297,9 +1311,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      updateByMousePos(msg,
-        ui::get_mouse_position() - bounds().origin());
-
+      updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
       if (used)
         return true;
 
@@ -1872,13 +1884,13 @@ void Timeline::drawHeader(ui::Graphics* g)
   drawPart(g, getPartBounds(Hit(PART_HEADER_GEAR)),
     nullptr,
     styles.timelineGear(),
-    false,
+    m_clk.part == PART_HEADER_GEAR,
     m_hot.part == PART_HEADER_GEAR,
     m_clk.part == PART_HEADER_GEAR);
 
   drawPart(g, getPartBounds(Hit(PART_HEADER_ONIONSKIN)),
     NULL, styles.timelineOnionskin(),
-    docPref().onionskin.active(),
+    docPref().onionskin.active() || (m_clk.part == PART_HEADER_ONIONSKIN),
     m_hot.part == PART_HEADER_ONIONSKIN,
     m_clk.part == PART_HEADER_ONIONSKIN);
 
@@ -1926,7 +1938,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     g, bounds, nullptr,
     (layer->isVisible() ? styles.timelineOpenEye():
                           styles.timelineClosedEye()),
-    is_active,
+    is_active || (clklayer && m_clk.part == PART_ROW_EYE_ICON),
     (hotlayer && m_hot.part == PART_ROW_EYE_ICON),
     (clklayer && m_clk.part == PART_ROW_EYE_ICON),
     !m_rows[layerIdx].parentVisible());
@@ -1937,7 +1949,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     g, bounds, nullptr,
     (layer->isEditable() ? styles.timelineOpenPadlock():
                            styles.timelineClosedPadlock()),
-    is_active,
+    is_active || (clklayer && m_clk.part == PART_ROW_PADLOCK_ICON),
     (hotlayer && m_hot.part == PART_ROW_PADLOCK_ICON),
     (clklayer && m_clk.part == PART_ROW_PADLOCK_ICON),
     !m_rows[layerIdx].parentEditable());
@@ -1948,7 +1960,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     drawPart(g, bounds, nullptr,
              layer->isContinuous() ? styles.timelineContinuous():
                                      styles.timelineDiscontinuous(),
-             is_active,
+             is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
              (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
              (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
   }
@@ -1956,7 +1968,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     drawPart(g, bounds, nullptr,
              layer->isCollapsed() ? styles.timelineClosedGroup():
                                     styles.timelineOpenGroup(),
-             is_active,
+             is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
              (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
              (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
   }
@@ -1974,7 +1986,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   }
 
   drawPart(g, bounds, nullptr, styles.timelineLayer(),
-           is_active,
+           is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
            (hotlayer && m_hot.part == PART_ROW_TEXT),
            (clklayer && m_clk.part == PART_ROW_TEXT));
 
@@ -3923,6 +3935,116 @@ int Timeline::selectedFramesDuration() const
       duration += m_sprite->frameDuration(f);
   }
   return duration; // TODO cache this value
+}
+
+void Timeline::setLayerVisibleFlag(const layer_t l, const bool state)
+{
+  if (!validLayer(l))
+    return;
+
+  Row& row = m_rows[l];
+  Layer* layer = row.layer();
+  ASSERT(layer);
+  if (!layer)
+    return;
+
+  bool redrawEditors = false;
+  bool regenRows = false;
+
+  if (layer->isVisible() != state) {
+    layer->setVisible(state);
+    redrawEditors = true;
+
+    // Regenerate rows because might change the flag of the children
+    // (the flag is propagated to the children in m_inheritedFlags).
+    if (layer->isGroup() && layer->isExpanded()) {
+      regenRows = true;
+    }
+
+    // Show parents too
+    if (!row.parentVisible() && state) {
+      layer = layer->parent();
+      while (layer) {
+        if (!layer->isVisible()) {
+          layer->setVisible(true);
+          regenRows = true;
+          redrawEditors = true;
+        }
+        layer = layer->parent();
+      }
+    }
+  }
+
+  if (regenRows) {
+    regenerateRows();
+    invalidate();
+  }
+
+  if (redrawEditors)
+    m_document->notifyGeneralUpdate();
+}
+
+void Timeline::setLayerEditableFlag(const layer_t l, const bool state)
+{
+  Row& row = m_rows[l];
+  Layer* layer = row.layer();
+  ASSERT(layer);
+  if (!layer)
+    return;
+
+  bool regenRows = false;
+
+  if (layer->isEditable() != state) {
+    layer->setEditable(state);
+
+    if (layer->isGroup() && layer->isExpanded())
+      regenRows = true;
+
+    // Make parents editable too
+    if (!row.parentEditable() && state) {
+      layer = layer->parent();
+      while (layer) {
+        if (!layer->isEditable()) {
+          layer->setEditable(true);
+          regenRows = true;
+        }
+        layer = layer->parent();
+      }
+    }
+  }
+
+  if (regenRows) {
+    regenerateRows();
+    invalidate();
+  }
+}
+
+void Timeline::setLayerContinuousFlag(const layer_t l, const bool state)
+{
+  Layer* layer = m_rows[l].layer();
+  ASSERT(layer);
+  if (!layer)
+    return;
+
+  if (layer->isImage() && layer->isContinuous() != state) {
+    layer->setContinuous(state);
+    invalidate();
+  }
+}
+
+void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
+{
+  Layer* layer = m_rows[l].layer();
+  ASSERT(layer);
+  if (!layer)
+    return;
+
+  if (layer->isGroup() && layer->isCollapsed() != state) {
+    layer->setCollapsed(state);
+
+    regenerateRows();
+    invalidate();
+  }
 }
 
 } // namespace app

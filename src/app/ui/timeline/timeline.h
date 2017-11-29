@@ -72,7 +72,16 @@ namespace app {
       STATE_MOVING_SEPARATOR,
       STATE_MOVING_RANGE,
       STATE_MOVING_ONIONSKIN_RANGE_LEFT,
-      STATE_MOVING_ONIONSKIN_RANGE_RIGHT
+      STATE_MOVING_ONIONSKIN_RANGE_RIGHT,
+      // Changing layers flags states
+      STATE_SHOWING_LAYERS,
+      STATE_HIDING_LAYERS,
+      STATE_LOCKING_LAYERS,
+      STATE_UNLOCKING_LAYERS,
+      STATE_ENABLING_CONTINUOUS_LAYERS,
+      STATE_DISABLING_CONTINUOUS_LAYERS,
+      STATE_EXPANDING_LAYERS,
+      STATE_COLLAPSING_LAYERS,
     };
 
     enum DropOp { kMove, kCopy };
@@ -336,6 +345,11 @@ namespace app {
     int tagFramesDuration(const FrameTag* frameTag) const;
     // Calculate the duration of the selected range of frames
     int selectedFramesDuration() const;
+
+    void setLayerVisibleFlag(const layer_t layer, const bool state);
+    void setLayerEditableFlag(const layer_t layer, const bool state);
+    void setLayerContinuousFlag(const layer_t layer, const bool state);
+    void setLayerCollapsedFlag(const layer_t layer, const bool state);
 
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
