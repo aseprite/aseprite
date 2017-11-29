@@ -17,6 +17,7 @@
     <hbox />
     <vbox>
       <check id="padding_enabled" text="@.padding" />
+      <check id="trim_enabled" text="@.trim" />
     </vbox>
     <grid columns="2" id="padding_container" cell_hspan="2">
       <label text="@.border" />

@@ -342,6 +342,7 @@
       <option id="border_padding" type="int" default="0" />
       <option id="shape_padding" type="int" default="0" />
       <option id="inner_padding" type="int" default="0" />
+      <option id="trim" type="bool" default="false" />
       <option id="open_generated" type="bool" default="false" />
       <option id="layer" type="std::string" />
       <option id="frame_tag" type="std::string" />

@@ -188,6 +188,7 @@ public:
       m_sprite, frames(), m_docPref.spriteSheet.frameTag());
 
     openGenerated()->setSelected(m_docPref.spriteSheet.openGenerated());
+    trimEnabled()->setSelected(m_docPref.spriteSheet.trim());
 
     borderPadding()->setTextf("%d", m_docPref.spriteSheet.borderPadding());
     shapePadding()->setTextf("%d", m_docPref.spriteSheet.shapePadding());
@@ -354,6 +355,10 @@ public:
     }
     else
       return 0;
+  }
+
+  bool trimValue() const {
+    return trimEnabled()->isSelected();
   }
 
   bool openGeneratedValue() const {
@@ -641,6 +646,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.borderPadding(window.borderPaddingValue());
     docPref.spriteSheet.shapePadding(window.shapePaddingValue());
     docPref.spriteSheet.innerPadding(window.innerPaddingValue());
+    docPref.spriteSheet.trim(window.trimValue());
     docPref.spriteSheet.openGenerated(window.openGeneratedValue());
     docPref.spriteSheet.layer(window.layerValue());
     docPref.spriteSheet.frameTag(window.frameTagValue());
@@ -678,9 +684,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   borderPadding = MID(0, borderPadding, 100);
   shapePadding = MID(0, shapePadding, 100);
   innerPadding = MID(0, innerPadding, 100);
-  bool listLayers = docPref.spriteSheet.listLayers();
-  bool listFrameTags = docPref.spriteSheet.listFrameTags();
-  bool listSlices = docPref.spriteSheet.listSlices();
+  const bool trimCels = docPref.spriteSheet.trim();
+  const bool listLayers = docPref.spriteSheet.listLayers();
+  const bool listFrameTags = docPref.spriteSheet.listFrameTags();
+  const bool listSlices = docPref.spriteSheet.listSlices();
 
   if (context->isUIAvailable() && askOverwrite) {
     if (!ask_overwrite(true, filename,
@@ -758,6 +765,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setBorderPadding(borderPadding);
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);
+  exporter.setTrimCels(trimCels);
   if (listLayers) exporter.setListLayers(true);
   if (listFrameTags) exporter.setListFrameTags(true);
   if (listSlices) exporter.setListSlices(true);
