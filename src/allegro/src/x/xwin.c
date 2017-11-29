@@ -2353,6 +2353,9 @@ static void _xwin_private_process_event(XEvent *event)
       case FocusOut:
          _switch_out();
          _xwin_keyboard_focus_handler(&event->xfocus);
+         /* Remove Alt key flag (so if we switch to another window
+            with Alt+tab the Alt flag isn't kept pressed) */
+         _key_shifts &= ~KB_ALT_FLAG;
          break;
       case ButtonPress:
          /* Mouse button pressed.  */

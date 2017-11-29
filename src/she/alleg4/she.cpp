@@ -204,7 +204,7 @@ public:
   bool isKeyPressed(KeyScancode scancode) override {
 #ifdef ALLEGRO_UNIX
     if ((scancode == kKeyAlt) &&
-        (key_shifts & KB_ALT_FLAG)) {
+        (_key_shifts & KB_ALT_FLAG)) {
       return true;
     }
 #endif
