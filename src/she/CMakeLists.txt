@@ -31,12 +31,6 @@ if(USE_ALLEG4_BACKEND)
     alleg4/mouse_poller.cpp
     alleg4/scancode.cpp
     alleg4/she.cpp)
-
-  if(APPLE)
-    if(NOT USE_SHARED_ALLEGRO4)
-      list(APPEND SHE_SOURCES alleg4/app.mm)
-    endif()
-  endif()
 endif()
 
 ######################################################################
