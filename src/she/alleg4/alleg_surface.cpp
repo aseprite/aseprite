@@ -408,6 +408,9 @@ void Alleg4Surface::drawRgbaSurface(const Surface* src, int dstx, int dsty)
 
 void Alleg4Surface::drawRgbaSurface(const Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
+  if (w < 1 || h < 1)
+    return;
+
   set_alpha_blender();
 
   BITMAP* tmp = create_sub_bitmap(
