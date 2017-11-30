@@ -90,9 +90,6 @@ MainWindow::MainWindow()
   , m_devConsoleView(nullptr)
 #endif
 {
-  // Load all menus by first time.
-  AppMenus::instance()->reload();
-
   m_menuBar = new MainMenuBar();
   m_notifications = new Notifications();
   m_contextBar = new ContextBar();
@@ -118,6 +115,9 @@ MainWindow::MainWindow()
   m_timeline->setExpansive(true);
   m_workspace->setExpansive(true);
   m_notifications->setVisible(false);
+
+  // Load all menus by first time.
+  AppMenus::instance()->reload();
 
   // Setup the menus
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
