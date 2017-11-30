@@ -238,8 +238,8 @@ void Sprite_get_colorMode(script::ContextHandle handle)
 void Sprite_set_colorMode(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
   // TODO
+  // auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
   ctx.pushUndefined();
 }
 
