@@ -35,7 +35,7 @@ Commands::Commands()
 
   #undef FOR_EACH_COMMAND
   #define FOR_EACH_COMMAND(Name) \
-    m_commands.push_back(CommandFactory::create##Name##Command());
+    add(CommandFactory::create##Name##Command());
 
   #include "app/commands/commands_list.h"
   #undef FOR_EACH_COMMAND
@@ -45,8 +45,10 @@ Commands::~Commands()
 {
   ASSERT(m_instance == this);
 
-  for (Command* cmd : m_commands)
-    delete cmd;
+  for (auto& it : m_commands) {
+    Command* command = it.second;
+    delete command;
+  }
 
   m_commands.clear();
   m_instance = NULL;
@@ -63,13 +65,15 @@ Command* Commands::byId(const char* id)
   if (!id)
     return nullptr;
 
-  std::string lid = base::string_to_lower(id);
-  for (Command* cmd : m_commands) {
-    if (base::utf8_icmp(cmd->id(), lid) == 0)
-      return cmd;
-  }
+  auto lid = base::string_to_lower(id);
+  auto it = m_commands.find(lid);
+  return (it != m_commands.end() ? it->second: nullptr);
+}
 
-  return nullptr;
+void Commands::add(Command* command)
+{
+  auto lid = base::string_to_lower(command->id());
+  m_commands[lid] = command;
 }
 
 } // namespace app

@@ -10,7 +10,8 @@
 
 #include "ui/base.h"
 
-#include <vector>
+#include <map>
+#include <string>
 
 namespace app {
 
@@ -23,11 +24,9 @@ namespace app {
   };
 
   class Command;
-  typedef std::vector<Command*> CommandsList;
 
   class Commands {
     static Commands* m_instance;
-    CommandsList m_commands;
 
   public:
     Commands();
@@ -36,6 +35,10 @@ namespace app {
     static Commands* instance();
 
     Command* byId(const char* id);
+    void add(Command* command);
+
+  private:
+    std::map<std::string, Command*> m_commands;
   };
 
 } // namespace app
