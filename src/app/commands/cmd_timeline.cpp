@@ -25,6 +25,7 @@ public:
   Command* clone() const override { return new TimelineCommand(*this); }
 
 protected:
+  bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
   bool onChecked(Context* ctx) override;

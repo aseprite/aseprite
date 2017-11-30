@@ -334,6 +334,7 @@ public:
   Command* clone() const override { return new ChangePixelFormatCommand(*this); }
 
 protected:
+  bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   bool onChecked(Context* context) override;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015, 2017  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,6 +12,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace app {
 
@@ -35,7 +36,9 @@ namespace app {
     static Commands* instance();
 
     Command* byId(const char* id);
-    void add(Command* command);
+    Commands* add(Command* command);
+
+    void getAllIds(std::vector<std::string>& ids);
 
   private:
     std::map<std::string, Command*> m_commands;

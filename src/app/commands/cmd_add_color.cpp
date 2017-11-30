@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,6 +32,7 @@ public:
   AddColorCommand();
 
 protected:
+  bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;

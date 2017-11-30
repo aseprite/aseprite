@@ -64,6 +64,8 @@ void Context::executeCommand(Command* command, const Params& params)
   try {
     m_flags.update(this);
 
+    ASSERT(!command->needsParams() || !params.empty());
+
     command->loadParams(params);
 
     CommandExecutionEvent ev(command);

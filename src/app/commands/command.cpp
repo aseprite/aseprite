@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,6 +28,11 @@ Command::~Command()
 std::string Command::friendlyName() const
 {
   return onGetFriendlyName();
+}
+
+bool Command::needsParams() const
+{
+  return onNeedsParams();
 }
 
 void Command::loadParams(const Params& params)
@@ -62,33 +67,31 @@ void Command::execute(Context* context)
   onExecute(context);
 }
 
-/**
- * Converts specified parameters to class members.
- */
+bool Command::onNeedsParams() const
+{
+  // By default a command can be called without params
+  return false;
+}
+
+// Converts specified parameters to class members.
 void Command::onLoadParams(const Params& params)
 {
   // do nothing
 }
 
-/**
- * Preconditions to execute the command
- */
+// Preconditions to execute the command
 bool Command::onEnabled(Context* context)
 {
   return true;
 }
 
-/**
- * Should the menu-item be checked?
- */
+// Should the menu-item be checked?
 bool Command::onChecked(Context* context)
 {
   return false;
 }
 
-/**
- * Execute the command (after checking the preconditions).
- */
+// Execute the command (after checking the preconditions).
 void Command::onExecute(Context* context)
 {
   // Do nothing

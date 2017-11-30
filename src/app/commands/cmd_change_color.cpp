@@ -38,6 +38,7 @@ public:
   ChangeColorCommand();
 
 protected:
+  bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;

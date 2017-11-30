@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -38,6 +39,8 @@
 #include "ui/size_hint_event.h"
 
 #include "keyboard_shortcuts.xml.h"
+
+#include <set>
 
 #define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
 
@@ -503,8 +506,9 @@ private:
     deleteAllKeyItems();
 
     // Load keyboard shortcuts
-    fillList(menus(), AppMenus::instance()->getRootMenu(), 0);
-    fillList(tools(), App::instance()->toolBox());
+    fillMenusList(menus(), AppMenus::instance()->getRootMenu(), 0);
+    fillToolsList(tools(), App::instance()->toolBox());
+
     for (Key* key : *app::KeyboardShortcuts::instance()) {
       if (key->type() == KeyType::Tool ||
           key->type() == KeyType::Quicktool) {
@@ -682,7 +686,7 @@ private:
     }
   }
 
-  void fillList(ListBox* listbox, Menu* menu, int level) {
+  void fillMenusList(ListBox* listbox, Menu* menu, int level) {
     for (auto child : menu->children()) {
       if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
         if (menuItem == AppMenus::instance()->getRecentListMenuitem())
@@ -697,12 +701,12 @@ private:
         listbox->addChild(keyItem);
 
         if (menuItem->hasSubmenu())
-          fillList(listbox, menuItem->getSubmenu(), level+1);
+          fillMenusList(listbox, menuItem->getSubmenu(), level+1);
       }
     }
   }
 
-  void fillList(ListBox* listbox, ToolBox* toolbox) {
+  void fillToolsList(ListBox* listbox, ToolBox* toolbox) {
     for (Tool* tool : *toolbox) {
       std::string text = tool->getText();
 
@@ -739,6 +743,8 @@ protected:
   void onExecute(Context* context) override;
 
 private:
+  void addMissingKeyboardShortcutsForCommands();
+
   std::string m_search;
 };
 
@@ -756,6 +762,8 @@ void KeyboardShortcutsCommand::onLoadParams(const Params& params)
 
 void KeyboardShortcutsCommand::onExecute(Context* context)
 {
+  addMissingKeyboardShortcutsForCommands();
+
   // Here we copy the m_search field because
   // KeyboardShortcutsWindow::fillAllLists() modifies this same
   // KeyboardShortcutsCommand instance (so m_search will be "")
@@ -785,6 +793,40 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   }
 
   AppMenus::instance()->syncNativeMenuItemKeyShortcuts();
+}
+
+void KeyboardShortcutsCommand::addMissingKeyboardShortcutsForCommands()
+{
+  std::set<std::string> commandsAlreadyAdded;
+  auto keys = app::KeyboardShortcuts::instance();
+  for (Key* key : *keys) {
+    if (key->type() != KeyType::Command)
+      continue;
+
+    if (key->params().empty())
+      commandsAlreadyAdded.insert(key->command()->id());
+  }
+
+  std::vector<std::string> ids;
+  Commands* commands = Commands::instance();
+  commands->getAllIds(ids);
+
+  for (const std::string& id : ids) {
+    Command* command = commands->byId(id.c_str());
+
+    // Don't add commands that need params (they will be added to
+    // the list using the list of keyboard shortcuts from gui.xml).
+    if (command->needsParams())
+      continue;
+
+    auto it = commandsAlreadyAdded.find(command->id());
+    if (it != commandsAlreadyAdded.end())
+      continue;
+
+    // Create the new Key element in KeyboardShortcuts for this
+    // command without params.
+    keys->command(command->id().c_str());
+  }
 }
 
 Command* CommandFactory::createKeyboardShortcutsCommand()

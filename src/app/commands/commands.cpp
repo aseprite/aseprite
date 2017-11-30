@@ -70,10 +70,17 @@ Command* Commands::byId(const char* id)
   return (it != m_commands.end() ? it->second: nullptr);
 }
 
-void Commands::add(Command* command)
+Commands* Commands::add(Command* command)
 {
   auto lid = base::string_to_lower(command->id());
   m_commands[lid] = command;
+  return this;
+}
+
+void Commands::getAllIds(std::vector<std::string>& ids)
+{
+  for (auto& it : m_commands)
+    ids.push_back(it.second->id());
 }
 
 } // namespace app

@@ -39,7 +39,7 @@ protected:
 
 LoadMaskCommand::LoadMaskCommand()
   : Command("LoadMask",
-            "LoadMask",
+            "Load Mask",
             CmdRecordableFlag)
 {
   m_filename = "";

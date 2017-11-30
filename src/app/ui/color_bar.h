@@ -141,6 +141,10 @@ namespace app {
     int setPaletteEntry(const app::Color& color);
     void updateCurrentSpritePalette(const char* operationName);
     void setupTooltips(ui::TooltipManager* tooltipManager);
+    void registerCommands();
+    void showPaletteSortOptions();
+    void showPalettePresets();
+    void showPaletteOptions();
     static void fixColorIndex(ColorButton& color);
 
     class ScrollableView : public ui::View {

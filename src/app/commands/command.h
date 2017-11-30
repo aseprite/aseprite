@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,12 +30,14 @@ namespace app {
     const std::string& id() const { return m_id; }
     std::string friendlyName() const;
 
+    bool needsParams() const;
     void loadParams(const Params& params);
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
     void execute(Context* context);
 
   protected:
+    virtual bool onNeedsParams() const;
     virtual void onLoadParams(const Params& params);
     virtual bool onEnabled(Context* context);
     virtual bool onChecked(Context* context);

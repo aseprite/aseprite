@@ -24,6 +24,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/commands/quick_command.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -277,6 +278,7 @@ ColorBar::ColorBar(int align)
     base::Bind<void>(&ColorBar::setupTooltips, this, tooltipManager));
 
   setEditMode(false);
+  registerCommands();
 }
 
 ColorBar::~ColorBar()
@@ -487,92 +489,17 @@ void ColorBar::onPaletteButtonClick()
       setEditMode(!inEditMode());
       break;
 
-    case PalButton::SORT: {
-      gfx::Rect bounds = m_buttons.getItem(item)->bounds();
-
-      Menu menu;
-      MenuItem
-        rev("Reverse Colors"),
-        grd("Gradient"),
-        hue("Sort by Hue"),
-        sat("Sort by Saturation"),
-        bri("Sort by Brightness"),
-        lum("Sort by Luminance"),
-        red("Sort by Red"),
-        grn("Sort by Green"),
-        blu("Sort by Blue"),
-        alp("Sort by Alpha"),
-        asc("Ascending"),
-        des("Descending");
-      menu.addChild(&rev);
-      menu.addChild(&grd);
-      menu.addChild(new ui::MenuSeparator);
-      menu.addChild(&hue);
-      menu.addChild(&sat);
-      menu.addChild(&bri);
-      menu.addChild(&lum);
-      menu.addChild(new ui::MenuSeparator);
-      menu.addChild(&red);
-      menu.addChild(&grn);
-      menu.addChild(&blu);
-      menu.addChild(&alp);
-      menu.addChild(new ui::MenuSeparator);
-      menu.addChild(&asc);
-      menu.addChild(&des);
-
-      if (m_ascending) asc.setSelected(true);
-      else des.setSelected(true);
-
-      rev.Click.connect(base::Bind<void>(&ColorBar::onReverseColors, this));
-      grd.Click.connect(base::Bind<void>(&ColorBar::onGradient, this));
-      hue.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
-      sat.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
-      bri.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
-      lum.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
-      red.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::RED));
-      grn.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::GREEN));
-      blu.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::BLUE));
-      alp.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::ALPHA));
-      asc.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, true));
-      des.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, false));
-
-      menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    case PalButton::SORT:
+      showPaletteSortOptions();
       break;
-    }
 
-    case PalButton::PRESETS: {
-      if (!m_palettePopup) {
-        try {
-          m_palettePopup.reset(new PalettePopup());
-        }
-        catch (const std::exception& ex) {
-          Console::showException(ex);
-          return;
-        }
-      }
-
-      if (!m_palettePopup->isVisible()) {
-        gfx::Rect bounds = m_buttons.getItem(item)->bounds();
-
-        m_palettePopup->showPopup(
-          gfx::Rect(bounds.x, bounds.y+bounds.h,
-                    ui::display_w()/2, ui::display_h()*3/4));
-      }
-      else {
-        m_palettePopup->closeWindow(NULL);
-      }
+    case PalButton::PRESETS:
+      showPalettePresets();
       break;
-    }
 
-    case PalButton::OPTIONS: {
-      Menu* menu = AppMenus::instance()->getPalettePopupMenu();
-      if (menu) {
-        gfx::Rect bounds = m_buttons.getItem(item)->bounds();
-
-        menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
-      }
+    case PalButton::OPTIONS:
+      showPaletteOptions();
       break;
-    }
 
   }
 }
@@ -1303,6 +1230,113 @@ void ColorBar::fixColorIndex(ColorButton& colorButton)
       color = Color::fromIndex(newIndex);
       colorButton.setColor(color);
     }
+  }
+}
+
+void ColorBar::registerCommands()
+{
+  Commands::instance()
+    ->add(
+      new QuickCommand(
+        "ShowPaletteSortOptions",
+        [this]{ this->showPaletteSortOptions(); }))
+    ->add(
+      new QuickCommand(
+        "ShowPalettePresets",
+        [this]{ this->showPalettePresets(); }))
+    ->add(
+      new QuickCommand(
+        "ShowPaletteOptions",
+        [this]{ this->showPaletteOptions(); }));
+}
+
+void ColorBar::showPaletteSortOptions()
+{
+  gfx::Rect bounds = m_buttons.getItem(
+    static_cast<int>(PalButton::SORT))->bounds();
+
+  Menu menu;
+  MenuItem
+    rev("Reverse Colors"),
+    grd("Gradient"),
+    hue("Sort by Hue"),
+    sat("Sort by Saturation"),
+    bri("Sort by Brightness"),
+    lum("Sort by Luminance"),
+    red("Sort by Red"),
+    grn("Sort by Green"),
+    blu("Sort by Blue"),
+    alp("Sort by Alpha"),
+    asc("Ascending"),
+    des("Descending");
+  menu.addChild(&rev);
+  menu.addChild(&grd);
+  menu.addChild(new ui::MenuSeparator);
+  menu.addChild(&hue);
+  menu.addChild(&sat);
+  menu.addChild(&bri);
+  menu.addChild(&lum);
+  menu.addChild(new ui::MenuSeparator);
+  menu.addChild(&red);
+  menu.addChild(&grn);
+  menu.addChild(&blu);
+  menu.addChild(&alp);
+  menu.addChild(new ui::MenuSeparator);
+  menu.addChild(&asc);
+  menu.addChild(&des);
+
+  if (m_ascending) asc.setSelected(true);
+  else des.setSelected(true);
+
+  rev.Click.connect(base::Bind<void>(&ColorBar::onReverseColors, this));
+  grd.Click.connect(base::Bind<void>(&ColorBar::onGradient, this));
+  hue.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
+  sat.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
+  bri.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
+  lum.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
+  red.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::RED));
+  grn.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::GREEN));
+  blu.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::BLUE));
+  alp.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::ALPHA));
+  asc.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, true));
+  des.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, false));
+
+  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+}
+
+void ColorBar::showPalettePresets()
+{
+  if (!m_palettePopup) {
+    try {
+      m_palettePopup.reset(new PalettePopup());
+    }
+    catch (const std::exception& ex) {
+      Console::showException(ex);
+      return;
+    }
+  }
+
+  if (!m_palettePopup->isVisible()) {
+    gfx::Rect bounds = m_buttons.getItem(
+      static_cast<int>(PalButton::PRESETS))->bounds();
+
+    m_palettePopup->showPopup(
+      gfx::Rect(bounds.x, bounds.y+bounds.h,
+                ui::display_w()/2, ui::display_h()*3/4));
+  }
+  else {
+    m_palettePopup->closeWindow(NULL);
+  }
+}
+
+void ColorBar::showPaletteOptions()
+{
+  Menu* menu = AppMenus::instance()->getPalettePopupMenu();
+  if (menu) {
+    gfx::Rect bounds = m_buttons.getItem(
+      static_cast<int>(PalButton::OPTIONS))->bounds();
+
+    menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
 }
 

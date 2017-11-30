@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,6 +30,7 @@ public:
   Command* clone() const override { return new ZoomCommand(*this); }
 
 protected:
+  bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;

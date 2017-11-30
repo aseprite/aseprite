@@ -364,6 +364,7 @@ add_library(app-lib
   commands/filters/filter_target_buttons.cpp
   commands/filters/filter_window.cpp
   commands/filters/filter_worker.cpp
+  commands/quick_command.cpp
   console.cpp
   context.cpp
   context_flags.cpp

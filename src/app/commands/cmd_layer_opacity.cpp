@@ -29,6 +29,7 @@ public:
   LayerOpacityCommand();
 
 protected:
+  bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
