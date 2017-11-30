@@ -29,7 +29,8 @@ void App_open(script::ContextHandle handle)
 
   app::Document* oldDoc = UIContext::instance()->activeDocument();
 
-  Command* openCommand = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+  Command* openCommand =
+    Commands::instance()->byId(CommandId::OpenFile);
   Params params;
   params.set("filename", filename);
   UIContext::instance()->executeCommand(openCommand, params);
@@ -46,7 +47,8 @@ void App_exit(script::ContextHandle handle)
   script::Context ctx(handle);
   UIContext* appCtx = UIContext::instance();
   if (appCtx && appCtx->isUIAvailable()) {
-    Command* exitCommand = CommandsModule::instance()->getCommandByName(CommandId::Exit);
+    Command* exitCommand =
+      Commands::instance()->byId(CommandId::Exit);
     appCtx->executeCommand(exitCommand);
   }
   ctx.pushUndefined();

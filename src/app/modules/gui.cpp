@@ -322,7 +322,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
     case kCloseDisplayMessage:
       {
         // Execute the "Exit" command.
-        Command* command = CommandsModule::instance()->getCommandByName(CommandId::Exit);
+        Command* command = Commands::instance()->byId(CommandId::Exit);
         UIContext::instance()->executeCommand(command);
       }
       break;

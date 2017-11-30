@@ -92,7 +92,7 @@ public:
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
-  CommandsModule m_commands_modules;
+  Commands m_commands;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
   InputChain m_inputChain;

@@ -82,7 +82,7 @@ void AniControls::onClickButton()
   int item = selectedItem();
   deselectItems();
 
-  Command* cmd = CommandsModule::instance()->getCommandByName(getCommandId(item));
+  Command* cmd = Commands::instance()->byId(getCommandId(item));
   if (cmd) {
     UIContext::instance()->executeCommand(cmd);
     updateUsingEditor(current_editor);
@@ -116,7 +116,7 @@ std::string AniControls::getTooltipFor(int index) const
 {
   std::string tooltip;
 
-  Command* cmd = CommandsModule::instance()->getCommandByName(getCommandId(index));
+  Command* cmd = Commands::instance()->byId(getCommandId(index));
   if (cmd) {
     tooltip = cmd->friendlyName();
 

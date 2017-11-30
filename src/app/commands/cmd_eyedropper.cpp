@@ -196,7 +196,7 @@ void EyedropperCommand::onExecute(Context* context)
 
   // Discard current image brush
   if (Preferences::instance().eyedropper.discardBrush()) {
-    Command* discardBrush = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
+    Command* discardBrush = Commands::instance()->byId(CommandId::DiscardBrush);
     context->executeCommand(discardBrush);
   }
 

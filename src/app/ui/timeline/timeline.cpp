@@ -1049,8 +1049,8 @@ bool Timeline::onProcessMessage(Message* msg)
                 }
               }
               else if (mouseMsg->left()) {
-                Command* command = CommandsModule::instance()
-                  ->getCommandByName(CommandId::FrameTagProperties);
+                Command* command = Commands::instance()
+                  ->byId(CommandId::FrameTagProperties);
                 UIContext::instance()->executeCommand(command, params);
               }
             }
@@ -1103,16 +1103,16 @@ bool Timeline::onProcessMessage(Message* msg)
       switch (m_hot.part) {
 
         case PART_ROW_TEXT: {
-          Command* command = CommandsModule::instance()
-            ->getCommandByName(CommandId::LayerProperties);
+          Command* command = Commands::instance()
+            ->byId(CommandId::LayerProperties);
 
           UIContext::instance()->executeCommand(command);
           return true;
         }
 
         case PART_HEADER_FRAME: {
-          Command* command = CommandsModule::instance()
-            ->getCommandByName(CommandId::FrameProperties);
+          Command* command = Commands::instance()
+            ->byId(CommandId::FrameProperties);
           Params params;
           params.set("frame", "current");
 
@@ -1121,8 +1121,8 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         case PART_CEL: {
-          Command* command = CommandsModule::instance()
-            ->getCommandByName(CommandId::CelProperties);
+          Command* command = Commands::instance()
+            ->byId(CommandId::CelProperties);
 
           UIContext::instance()->executeCommand(command);
           return true;
@@ -3609,13 +3609,13 @@ bool Timeline::onClear(Context* ctx)
 
   switch (m_range.type()) {
     case DocumentRange::kCels:
-      cmd = CommandsModule::instance()->getCommandByName(CommandId::ClearCel);
+      cmd = Commands::instance()->byId(CommandId::ClearCel);
       break;
     case DocumentRange::kFrames:
-      cmd = CommandsModule::instance()->getCommandByName(CommandId::RemoveFrame);
+      cmd = Commands::instance()->byId(CommandId::RemoveFrame);
       break;
     case DocumentRange::kLayers:
-      cmd = CommandsModule::instance()->getCommandByName(CommandId::RemoveLayer);
+      cmd = Commands::instance()->byId(CommandId::RemoveLayer);
       break;
   }
 

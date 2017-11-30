@@ -335,7 +335,7 @@ void CliProcessor::process()
         }
         // --scale <factor>
         else if (opt == &m_options.scale()) {
-          Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+          Command* command = Commands::instance()->byId(CommandId::SpriteSize);
           double scale = strtod(value.value().c_str(), NULL);
           static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
 
@@ -364,7 +364,7 @@ void CliProcessor::process()
         }
         // --color-mode <mode>
         else if (opt == &m_options.colorMode()) {
-          Command* command = CommandsModule::instance()->getCommandByName(CommandId::ChangePixelFormat);
+          Command* command = Commands::instance()->byId(CommandId::ChangePixelFormat);
           Params params;
           if (value.value() == "rgb") {
             params.set("format", "rgb");
@@ -422,7 +422,7 @@ void CliProcessor::process()
             scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
             if (scaleWidth < 1.0 || scaleHeight < 1.0) {
               scale = MIN(scaleWidth, scaleHeight);
-              Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+              Command* command = Commands::instance()->byId(CommandId::SpriteSize);
               static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
               ctx->executeCommand(command);
             }
@@ -494,7 +494,7 @@ bool CliProcessor::openFile(CliOpenFile& cof)
 
   Context* ctx = UIContext::instance();
   app::Document* oldDoc = ctx->activeDocument();
-  Command* openCommand = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+  Command* openCommand = Commands::instance()->byId(CommandId::OpenFile);
   Params params;
   params.set("filename", cof.filename.c_str());
   if (cof.oneFrame)
@@ -581,8 +581,8 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   UIContext* ctx = UIContext::instance();
   ctx->setActiveDocument(cof.document);
 
-  Command* trimCommand = CommandsModule::instance()->getCommandByName(CommandId::AutocropSprite);
-  Command* undoCommand = CommandsModule::instance()->getCommandByName(CommandId::Undo);
+  Command* trimCommand = Commands::instance()->byId(CommandId::AutocropSprite);
+  Command* undoCommand = Commands::instance()->byId(CommandId::Undo);
   app::Document* doc = cof.document;
   bool clearUndo = false;
 
@@ -593,7 +593,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
     cropParams.set("width", base::convert_to<std::string>(cof.crop.w).c_str());
     cropParams.set("height", base::convert_to<std::string>(cof.crop.h).c_str());
     ctx->executeCommand(
-      CommandsModule::instance()->getCommandByName(CommandId::CropSprite),
+      Commands::instance()->byId(CommandId::CropSprite),
       cropParams);
   }
 

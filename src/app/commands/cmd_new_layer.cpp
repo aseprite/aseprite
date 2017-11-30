@@ -132,7 +132,7 @@ void NewLayerCommand::onExecute(Context* context)
   // Select a file to copy its content
   if (m_fromFile) {
     Document* oldActiveDocument = context->activeDocument();
-    Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+    Command* openFile = Commands::instance()->byId(CommandId::OpenFile);
     Params params;
     params.set("filename", "");
     context->executeCommand(openFile, params);

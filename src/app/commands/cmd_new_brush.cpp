@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -98,7 +98,7 @@ void NewBrushCommand::onExecute(Context* context)
 
     // Deselect mask
     Command* cmd =
-      CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+      Commands::instance()->byId(CommandId::DeselectMask);
     UIContext::instance()->executeCommand(cmd);
   }
 }

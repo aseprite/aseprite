@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2015, 2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,20 +25,17 @@ namespace app {
   class Command;
   typedef std::vector<Command*> CommandsList;
 
-  class CommandsModule {
-    static CommandsModule* m_instance;
+  class Commands {
+    static Commands* m_instance;
     CommandsList m_commands;
 
   public:
-    CommandsModule();
-    ~CommandsModule();
+    Commands();
+    ~Commands();
 
-    static CommandsModule* instance();
+    static Commands* instance();
 
-    Command* getCommandByName(const char* name);
-
-    CommandsList::iterator begin() { return m_commands.begin(); }
-    CommandsList::iterator end() { return m_commands.end(); }
+    Command* byId(const char* id);
   };
 
 } // namespace app

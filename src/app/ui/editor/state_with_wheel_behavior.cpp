@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -117,9 +117,9 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       Command* command = nullptr;
 
       if (dz < 0.0)
-        command = CommandsModule::instance()->getCommandByName(CommandId::GotoNextFrame);
+        command = Commands::instance()->byId(CommandId::GotoNextFrame);
       else if (dz > 0.0)
-        command = CommandsModule::instance()->getCommandByName(CommandId::GotoPreviousFrame);
+        command = Commands::instance()->byId(CommandId::GotoPreviousFrame);
 
       if (command)
         UIContext::instance()->executeCommand(command);

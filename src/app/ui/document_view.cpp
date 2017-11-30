@@ -309,7 +309,7 @@ bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
       ctx->updateFlags();
 
       Command* save_command =
-        CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
+        Commands::instance()->byId(CommandId::SaveFile);
       ctx->executeCommand(save_command);
 
       try_again = true;
@@ -579,7 +579,7 @@ void DocumentView::onCancel(Context* ctx)
   // Deselect mask
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::HasVisibleMask)) {
-    Command* deselectMask = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+    Command* deselectMask = Commands::instance()->byId(CommandId::DeselectMask);
     ctx->executeCommand(deselectMask);
   }
 }

@@ -240,7 +240,7 @@ bool SaveFileBaseCommand::saveAsDialog(
   // Apply scale
   bool undoResize = false;
   if (xscale != 1.0 || yscale != 1.0) {
-    Command* resizeCmd = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+    Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize);
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = document->sprite()->width();
@@ -287,7 +287,7 @@ bool SaveFileBaseCommand::saveAsDialog(
 
   // Undo resize
   if (undoResize) {
-    Command* undoCmd = CommandsModule::instance()->getCommandByName(CommandId::Undo);
+    Command* undoCmd = Commands::instance()->byId(CommandId::Undo);
     if (undoCmd)
       context->executeCommand(undoCmd);
   }

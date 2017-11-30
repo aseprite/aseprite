@@ -120,7 +120,7 @@ protected:
 
   void onSelectFile() {
     Document* oldActiveDocument = m_context->activeDocument();
-    Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+    Command* openFile = Commands::instance()->byId(CommandId::OpenFile);
     Params params;
     params.set("filename", "");
     openFile->loadParams(params);

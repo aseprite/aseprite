@@ -381,7 +381,8 @@ bool AppMenus::rebuildRecentList()
     if (list_menuitem->hasSubmenuOpened())
       return false;
 
-    Command* cmd_open_file = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+    Command* cmd_open_file =
+      Commands::instance()->byId(CommandId::OpenFile);
 
     Menu* submenu = list_menuitem->getSubmenu();
     if (submenu) {
@@ -478,10 +479,10 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   if (strcmp(elem->Value(), "separator") == 0)
     return new MenuSeparator;
 
-  const char* command_name = elem->Attribute("command");
+  const char* command_id = elem->Attribute("command");
   Command* command =
-    command_name ? CommandsModule::instance()->getCommandByName(command_name):
-                   NULL;
+    command_id ? Commands::instance()->byId(command_id):
+                 nullptr;
 
   // load params
   Params params;
@@ -630,7 +631,7 @@ void AppMenus::createNativeMenus()
     about.shortcut = native.shortcut;
     about.execute = [native]{
       if (can_call_global_shortcut(&native)) {
-        Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::About);
+        Command* cmd = Commands::instance()->byId(CommandId::About);
         UIContext::instance()->executeCommand(cmd);
       }
     };
@@ -640,7 +641,7 @@ void AppMenus::createNativeMenus()
     preferences.shortcut = native.shortcut;
     preferences.execute = [native]{
       if (can_call_global_shortcut(&native)) {
-        Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::Options);
+        Command* cmd = Commands::instance()->byId(CommandId::Options);
         UIContext::instance()->executeCommand(cmd);
       }
     };

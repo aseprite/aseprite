@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -47,7 +47,7 @@ bool Context::hasModifiedDocuments() const
 
 void Context::executeCommand(const char* commandName)
 {
-  Command* cmd = CommandsModule::instance()->getCommandByName(commandName);
+  Command* cmd = Commands::instance()->byId(commandName);
   if (cmd)
     executeCommand(cmd);
   else

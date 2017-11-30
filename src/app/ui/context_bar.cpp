@@ -91,7 +91,7 @@ private:
     switch (selectedItem()) {
 
       case 0: {
-        cmd = CommandsModule::instance()->getCommandByName(CommandId::Zoom);
+        cmd = Commands::instance()->byId(CommandId::Zoom);
         params.set("action", "set");
         params.set("percentage", "100");
         params.set("focus", "center");
@@ -100,12 +100,12 @@ private:
       }
 
       case 1: {
-        cmd = CommandsModule::instance()->getCommandByName(CommandId::ScrollCenter);
+        cmd = Commands::instance()->byId(CommandId::ScrollCenter);
         break;
       }
 
       case 2: {
-        cmd = CommandsModule::instance()->getCommandByName(CommandId::FitScreen);
+        cmd = Commands::instance()->byId(CommandId::FitScreen);
         break;
       }
     }
@@ -129,8 +129,8 @@ protected:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
 
-    Command* discardBrush = CommandsModule::instance()
-      ->getCommandByName(CommandId::DiscardBrush);
+    Command* discardBrush = Commands::instance()
+      ->byId(CommandId::DiscardBrush);
     UIContext::instance()->executeCommand(discardBrush);
   }
 };

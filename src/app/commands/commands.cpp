@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,9 +26,9 @@ namespace app {
   #include "app/commands/commands_list.h"
 #undef FOR_EACH_COMMAND
 
-CommandsModule* CommandsModule::m_instance = NULL;
+Commands* Commands::m_instance = NULL;
 
-CommandsModule::CommandsModule()
+Commands::Commands()
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -41,7 +41,7 @@ CommandsModule::CommandsModule()
   #undef FOR_EACH_COMMAND
 }
 
-CommandsModule::~CommandsModule()
+Commands::~Commands()
 {
   ASSERT(m_instance == this);
 
@@ -52,24 +52,24 @@ CommandsModule::~CommandsModule()
   m_instance = NULL;
 }
 
-CommandsModule* CommandsModule::instance()
+Commands* Commands::instance()
 {
   ASSERT(m_instance != NULL);
   return m_instance;
 }
 
-Command* CommandsModule::getCommandByName(const char* name)
+Command* Commands::byId(const char* id)
 {
-  if (!name)
-    return NULL;
+  if (!id)
+    return nullptr;
 
-  std::string lname = base::string_to_lower(name);
+  std::string lid = base::string_to_lower(id);
   for (Command* cmd : m_commands) {
-    if (base::utf8_icmp(cmd->id(), lname) == 0)
+    if (base::utf8_icmp(cmd->id(), lid) == 0)
       return cmd;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 } // namespace app

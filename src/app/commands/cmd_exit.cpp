@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -43,7 +43,7 @@ void ExitCommand::onExecute(Context* ctx)
     return;
 
   if (ctx->hasModifiedDocuments()) {
-    Command* closeAll = CommandsModule::instance()->getCommandByName(CommandId::CloseAllFiles);
+    Command* closeAll = Commands::instance()->byId(CommandId::CloseAllFiles);
     Params params;
     params.set("quitting", "1");
     ctx->executeCommand(closeAll, params);

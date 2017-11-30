@@ -1116,7 +1116,7 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
   Palette* palette = get_current_palette();
   const int oldEntries = palette->size();
 
-  Command* command = CommandsModule::instance()->getCommandByName(CommandId::AddColor);
+  Command* command = Commands::instance()->byId(CommandId::AddColor);
   Params params;
   params.set("source", "color");
   params.set("color", colorButton->getColor().toString().c_str());

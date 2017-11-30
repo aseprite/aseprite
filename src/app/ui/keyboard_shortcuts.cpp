@@ -318,7 +318,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (command_name) {
-      Command* command = CommandsModule::instance()->getCommandByName(command_name);
+      Command* command = Commands::instance()->byId(command_name);
       if (command) {
         // Read context
         KeyContext keycontext = KeyContext::Any;
@@ -559,7 +559,7 @@ void KeyboardShortcuts::reset()
 
 Key* KeyboardShortcuts::command(const char* commandName, const Params& params, KeyContext keyContext)
 {
-  Command* command = CommandsModule::instance()->getCommandByName(commandName);
+  Command* command = Commands::instance()->byId(commandName);
   if (!command)
     return NULL;
 

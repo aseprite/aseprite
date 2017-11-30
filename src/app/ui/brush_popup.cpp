@@ -126,13 +126,13 @@ private:
     Params params;
     params.set("change", "custom");
     params.set("slot", base::convert_to<std::string>(m_slot).c_str());
-    Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::ChangeBrush);
+    Command* cmd = Commands::instance()->byId(CommandId::ChangeBrush);
     cmd->loadParams(params);
     std::string search = cmd->friendlyName();
     if (!search.empty()) {
       params.clear();
       params.set("search", search.c_str());
-      cmd = CommandsModule::instance()->getCommandByName(CommandId::KeyboardShortcuts);
+      cmd = Commands::instance()->byId(CommandId::KeyboardShortcuts);
       ASSERT(cmd);
       if (cmd)
         UIContext::instance()->executeCommand(cmd, params);

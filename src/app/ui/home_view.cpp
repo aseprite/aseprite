@@ -113,13 +113,13 @@ void HomeView::onWorkspaceViewSelected()
 
 void HomeView::onNewFile()
 {
-  Command* command = CommandsModule::instance()->getCommandByName(CommandId::NewFile);
+  Command* command = Commands::instance()->byId(CommandId::NewFile);
   UIContext::instance()->executeCommand(command);
 }
 
 void HomeView::onOpenFile()
 {
-  Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+  Command* command = Commands::instance()->byId(CommandId::OpenFile);
   UIContext::instance()->executeCommand(command);
 }
 

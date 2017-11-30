@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2015, 2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,7 +58,7 @@ void InvertMaskCommand::onExecute(Context* context)
   if (!hasMask) {
     // so we select all
     Command* mask_all_cmd =
-      CommandsModule::instance()->getCommandByName(CommandId::MaskAll);
+      Commands::instance()->byId(CommandId::MaskAll);
     context->executeCommand(mask_all_cmd);
   }
   // invert the current mask

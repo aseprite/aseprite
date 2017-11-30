@@ -107,7 +107,8 @@ void Sprite_save(script::ContextHandle handle)
     auto doc = wrap->document();
     auto uiCtx = UIContext::instance();
     uiCtx->setActiveDocument(doc);
-    Command* saveCommand = CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
+    Command* saveCommand =
+      Commands::instance()->byId(CommandId::SaveFile);
     uiCtx->executeCommand(saveCommand);
   }
 
@@ -128,8 +129,7 @@ void Sprite_saveAs(script::ContextHandle handle)
     uiCtx->setActiveDocument(doc);
 
     Command* saveCommand =
-      CommandsModule::instance()->getCommandByName(
-        CommandId::SaveFile);
+      Commands::instance()->byId(CommandId::SaveFile);
 
     Params params;
     doc->setFilename(fn);
@@ -153,8 +153,7 @@ void Sprite_saveCopyAs(script::ContextHandle handle)
     uiCtx->setActiveDocument(doc);
 
     Command* saveCommand =
-      CommandsModule::instance()->getCommandByName(
-        CommandId::SaveFileCopyAs);
+      Commands::instance()->byId(CommandId::SaveFileCopyAs);
 
     Params params;
     params.set("filename", fn);
