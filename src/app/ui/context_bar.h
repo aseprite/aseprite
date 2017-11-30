@@ -104,6 +104,8 @@ namespace app {
     void onActiveToolChange(tools::Tool* tool) override;
 
     void setupTooltips(ui::TooltipManager* tooltipManager);
+    void registerCommands();
+    void showBrushes();
 
     class ZoomButtons;
     class BrushBackField;

@@ -15,6 +15,7 @@
 #include "app/app_menus.h"
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
+#include "app/commands/quick_command.h"
 #include "app/document.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
@@ -165,7 +166,12 @@ public:
     m_popupWindow.setupTooltips(tooltipManager);
   }
 
+  void showPopup() {
+    openPopup();
+  }
+
   void showPopupAndHighlightSlot(int slot) {
+    // TODO use slot?
     openPopup();
   }
 
@@ -1468,6 +1474,7 @@ ContextBar::ContextBar()
   setActiveBrush(createBrushFromPreferences());
 
   initTheme();
+  registerCommands();
 }
 
 ContextBar::~ContextBar()
@@ -2064,6 +2071,20 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   m_dropPixels->setupTooltips(tooltipManager);
   m_freehandAlgo->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
+}
+
+void ContextBar::registerCommands()
+{
+  Commands::instance()
+    ->add(
+      new QuickCommand(
+        "ShowBrushes",
+        [this]{ this->showBrushes(); }));
+}
+
+void ContextBar::showBrushes()
+{
+  m_brushType->showPopup();
 }
 
 } // namespace app
