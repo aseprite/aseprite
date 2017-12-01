@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,7 +21,7 @@ namespace app {
 
   class DocumentRange;
 
-  doc::CelList get_unique_cels(doc::Sprite* sprite, const DocumentRange& range);
+  doc::CelList get_unlocked_unique_cels(doc::Sprite* sprite, const DocumentRange& range);
 
 } // namespace app
 

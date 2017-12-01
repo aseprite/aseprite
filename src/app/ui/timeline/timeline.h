@@ -112,6 +112,9 @@ namespace app {
     gfx::Point viewScroll() const override;
     void setViewScroll(const gfx::Point& pt) override;
 
+    void lockRange();
+    void unlockRange();
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onInitTheme(ui::InitThemeEvent& ev) override;
@@ -327,6 +330,7 @@ namespace app {
     Sprite* m_sprite;
     Layer* m_layer;
     frame_t m_frame;
+    int m_rangeLocks;
     Range m_range;
     Range m_startRange;
     Range m_dropRange;
@@ -378,6 +382,19 @@ namespace app {
       layer_t activeRelativeLayer;
       frame_t activeRelativeFrame;
     } m_moveRangeData;
+  };
+
+  class LockTimelineRange {
+  public:
+    LockTimelineRange(Timeline* timeline)
+      : m_timeline(timeline) {
+      m_timeline->lockRange();
+    }
+    ~LockTimelineRange() {
+      m_timeline->unlockRange();
+    }
+  private:
+    Timeline* m_timeline;
   };
 
 } // namespace app

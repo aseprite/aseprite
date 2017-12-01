@@ -201,6 +201,7 @@ Timeline::Timeline()
   , m_editor(NULL)
   , m_document(NULL)
   , m_sprite(NULL)
+  , m_rangeLocks(0)
   , m_state(STATE_STANDBY)
   , m_tagBands(0)
   , m_tagFocusBand(-1)
@@ -284,7 +285,8 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   detachDocument();
 
-  if (m_range.enabled()) {
+  if (m_range.enabled() &&
+      m_rangeLocks == 0) {
     m_range.clearRange();
     invalidate();
   }
@@ -1560,7 +1562,8 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
 
 void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
 {
-  m_range.clearRange();
+  if (m_rangeLocks == 0)
+    m_range.clearRange();
   invalidate();
 }
 
@@ -3378,6 +3381,17 @@ void Timeline::setViewScroll(const gfx::Point& pt)
   invalidate();
 }
 
+
+void Timeline::lockRange()
+{
+  ++m_rangeLocks;
+}
+
+void Timeline::unlockRange()
+{
+  --m_rangeLocks;
+}
+
 void Timeline::updateDropRange(const gfx::Point& pt)
 {
   DropTarget::HHit oldHHit = m_dropTarget.hhit;
@@ -3544,7 +3558,9 @@ void Timeline::onNewInputPriority(InputChainElement* element)
   // That is why we don't disable the range in this case.
   Workspace* workspace = dynamic_cast<Workspace*>(element);
   if (!workspace) {
-    m_range.clearRange();
+    if (m_rangeLocks == 0)
+      m_range.clearRange();
+
     invalidate();
   }
 }
@@ -3629,7 +3645,9 @@ bool Timeline::onClear(Context* ctx)
 
 void Timeline::onCancel(Context* ctx)
 {
-  m_range.clearRange();
+  if (m_rangeLocks == 0)
+    m_range.clearRange();
+
   clearClipboardRange();
   invalidate();
 }

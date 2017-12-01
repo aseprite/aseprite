@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,7 +24,7 @@ namespace app {
 using namespace doc;
 
 // TODO the DocumentRange should be "iteratable" to replace this function
-CelList get_unique_cels(Sprite* sprite, const DocumentRange& inrange)
+CelList get_unlocked_unique_cels(Sprite* sprite, const DocumentRange& inrange)
 {
   DocumentRange range = inrange;
   CelList cels;
@@ -34,7 +34,9 @@ CelList get_unique_cels(Sprite* sprite, const DocumentRange& inrange)
   std::set<ObjectId> visited;
 
   for (Layer* layer : range.selectedLayers()) {
-    if (!layer || !layer->isImage())
+    if (!layer ||
+        !layer->isImage() ||
+        !layer->isEditable())
       continue;
 
     LayerImage* layerImage = static_cast<LayerImage*>(layer);

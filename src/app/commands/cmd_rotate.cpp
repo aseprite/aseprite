@@ -23,6 +23,7 @@
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/util/range_utils.h"
@@ -196,12 +197,17 @@ void RotateCommand::onExecute(Context* context)
     CelList cels;
     bool rotateSprite = false;
 
+    Timeline* timeline = App::instance()->timeline();
+    LockTimelineRange lockRange(timeline);
+
     // Flip the mask or current cel
     if (m_flipMask) {
       auto range = App::instance()->timeline()->range();
       if (range.enabled())
-        cels = get_unique_cels(site.sprite(), range);
-      else if (site.cel()) {
+        cels = get_unlocked_unique_cels(site.sprite(), range);
+      else if (site.cel() &&
+               site.layer() &&
+               site.layer()->isEditable()) {
         // If we want to rotate the visible mask for the current cel,
         // we can go to MovingPixelsState.
         if (static_cast<app::Document*>(site.document())->isMaskVisible()) {
@@ -216,8 +222,14 @@ void RotateCommand::onExecute(Context* context)
 
         cels.push_back(site.cel());
       }
+
+      if (cels.empty()) {
+        StatusBar::instance()->showTip(
+          1000, Strings::statusbar_tips_all_layers_are_locked().c_str());
+        return;
+      }
     }
-    // Flip the whole sprite
+    // Flip the whole sprite (even locked layers)
     else if (site.sprite()) {
       for (Cel* cel : site.sprite()->uniqueCels())
         cels.push_back(cel);
