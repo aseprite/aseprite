@@ -62,7 +62,8 @@ bool MoveMaskCommand::onEnabled(Context* context)
       if (m_wrap)
         return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                                    ContextFlags::HasVisibleMask |
-                                   ContextFlags::HasActiveImage);
+                                   ContextFlags::HasActiveImage |
+                                   ContextFlags::ActiveLayerIsEditable);
       else
         return (current_editor ? true: false);
 
