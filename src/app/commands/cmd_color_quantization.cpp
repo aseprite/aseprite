@@ -43,7 +43,7 @@ protected:
 };
 
 ColorQuantizationCommand::ColorQuantizationCommand()
-  : Command("ColorQuantization", CmdRecordableFlag)
+  : Command(CommandId::ColorQuantization(), CmdRecordableFlag)
 {
 }
 

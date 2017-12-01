@@ -8,9 +8,8 @@
 #include "config.h"
 #endif
 
-#include "app/commands/command.h"
-
 #include "app/app.h"
+#include "app/commands/command.h"
 #include "app/ui/workspace.h"
 
 #include <cstdio>
@@ -30,7 +29,7 @@ protected:
 };
 
 DuplicateViewCommand::DuplicateViewCommand()
-  : Command("DuplicateView", CmdUIOnlyFlag)
+  : Command(CommandId::DuplicateView(), CmdUIOnlyFlag)
 {
 }
 

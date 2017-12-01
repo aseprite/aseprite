@@ -32,7 +32,7 @@ protected:
 };
 
 SaveMaskCommand::SaveMaskCommand()
-  : Command("SaveMask", CmdUIOnlyFlag)
+  : Command(CommandId::SaveMask(), CmdUIOnlyFlag)
 {
 }
 

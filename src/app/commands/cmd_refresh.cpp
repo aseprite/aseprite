@@ -33,7 +33,7 @@ protected:
 };
 
 RefreshCommand::RefreshCommand()
-  : Command("Refresh", CmdUIOnlyFlag)
+  : Command(CommandId::Refresh(), CmdUIOnlyFlag)
 {
 }
 

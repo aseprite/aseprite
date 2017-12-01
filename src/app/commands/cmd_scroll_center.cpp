@@ -27,7 +27,7 @@ protected:
 };
 
 ScrollCenterCommand::ScrollCenterCommand()
-  : Command("ScrollCenter", CmdUIOnlyFlag)
+  : Command(CommandId::ScrollCenter(), CmdUIOnlyFlag)
 {
 }
 

@@ -34,7 +34,7 @@ private:
 };
 
 PaletteEditorCommand::PaletteEditorCommand()
-  : Command("PaletteEditor", CmdRecordableFlag)
+  : Command(CommandId::PaletteEditor(), CmdRecordableFlag)
 {
   m_edit = true;
   m_popup = false;

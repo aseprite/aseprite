@@ -41,7 +41,7 @@ private:
 };
 
 RemoveSliceCommand::RemoveSliceCommand()
-  : Command("RemoveSlice", CmdRecordableFlag)
+  : Command(CommandId::RemoveSlice(), CmdRecordableFlag)
 {
 }
 

@@ -30,7 +30,7 @@ private:
 };
 
 OpenBrowserCommand::OpenBrowserCommand()
-  : Command("OpenBrowser", CmdUIOnlyFlag)
+  : Command(CommandId::OpenBrowser(), CmdUIOnlyFlag)
 {
 }
 

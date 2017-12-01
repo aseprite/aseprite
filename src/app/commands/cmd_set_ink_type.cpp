@@ -36,7 +36,7 @@ private:
 };
 
 SetInkTypeCommand::SetInkTypeCommand()
-  : Command("SetInkType", CmdUIOnlyFlag)
+  : Command(CommandId::SetInkType(), CmdUIOnlyFlag)
   , m_type(tools::InkType::DEFAULT)
 {
 }

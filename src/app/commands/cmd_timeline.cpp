@@ -36,7 +36,7 @@ protected:
 };
 
 TimelineCommand::TimelineCommand()
-  : Command("Timeline", CmdUIOnlyFlag)
+  : Command(CommandId::Timeline(), CmdUIOnlyFlag)
 {
   m_open = true;
   m_close = false;

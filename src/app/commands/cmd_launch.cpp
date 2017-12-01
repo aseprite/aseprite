@@ -32,7 +32,7 @@ private:
 };
 
 LaunchCommand::LaunchCommand()
-  : Command("Launch", CmdUIOnlyFlag)
+  : Command(CommandId::Launch(), CmdUIOnlyFlag)
   , m_type(Url)
   , m_path("")
 {

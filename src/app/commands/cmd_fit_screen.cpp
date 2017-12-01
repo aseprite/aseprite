@@ -27,7 +27,7 @@ protected:
 };
 
 FitScreenCommand::FitScreenCommand()
-  : Command("FitScreen", CmdUIOnlyFlag)
+  : Command(CommandId::FitScreen(), CmdUIOnlyFlag)
 {
 }
 

@@ -120,7 +120,7 @@ protected:
 
   void onSelectFile() {
     Document* oldActiveDocument = m_context->activeDocument();
-    Command* openFile = Commands::instance()->byId(CommandId::OpenFile);
+    Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
     Params params;
     params.set("filename", "");
     openFile->loadParams(params);
@@ -297,7 +297,7 @@ protected:
 };
 
 ImportSpriteSheetCommand::ImportSpriteSheetCommand()
-  : Command("ImportSpriteSheet", CmdRecordableFlag)
+  : Command(CommandId::ImportSpriteSheet(), CmdRecordableFlag)
 {
 }
 

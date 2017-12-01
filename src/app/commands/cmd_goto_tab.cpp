@@ -8,9 +8,8 @@
 #include "config.h"
 #endif
 
-#include "app/commands/command.h"
-
 #include "app/app.h"
+#include "app/commands/command.h"
 #include "app/ui/workspace.h"
 
 namespace app {
@@ -26,7 +25,7 @@ protected:
 };
 
 GotoNextTabCommand::GotoNextTabCommand()
-  : Command("GotoNextTab", CmdUIOnlyFlag)
+  : Command(CommandId::GotoNextTab(), CmdUIOnlyFlag)
 {
 }
 
@@ -51,7 +50,7 @@ protected:
 };
 
 GotoPreviousTabCommand::GotoPreviousTabCommand()
-  : Command("GotoPreviousTab", CmdRecordableFlag)
+  : Command(CommandId::GotoPreviousTab(), CmdRecordableFlag)
 {
 }
 

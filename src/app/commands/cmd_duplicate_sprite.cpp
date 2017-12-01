@@ -37,7 +37,7 @@ protected:
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
-  : Command("DuplicateSprite", CmdUIOnlyFlag)
+  : Command(CommandId::DuplicateSprite(), CmdUIOnlyFlag)
 {
 }
 

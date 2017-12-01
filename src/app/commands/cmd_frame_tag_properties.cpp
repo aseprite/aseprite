@@ -44,7 +44,7 @@ private:
 };
 
 FrameTagPropertiesCommand::FrameTagPropertiesCommand()
-  : Command("FrameTagProperties", CmdUIOnlyFlag)
+  : Command(CommandId::FrameTagProperties(), CmdUIOnlyFlag)
   , m_tagId(NullId)
 {
 }

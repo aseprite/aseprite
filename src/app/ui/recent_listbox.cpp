@@ -146,7 +146,7 @@ void RecentFilesListBox::onRebuildList()
 
 void RecentFilesListBox::onClick(const std::string& path)
 {
-  Command* command = Commands::instance()->byId(CommandId::OpenFile);
+  Command* command = Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("filename", path.c_str());
   UIContext::instance()->executeCommand(command, params);
@@ -171,7 +171,7 @@ void RecentFoldersListBox::onRebuildList()
 
 void RecentFoldersListBox::onClick(const std::string& path)
 {
-  Command* command = Commands::instance()->byId(CommandId::OpenFile);
+  Command* command = Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("folder", path.c_str());
   UIContext::instance()->executeCommand(command, params);

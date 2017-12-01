@@ -151,7 +151,7 @@ protected:
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
-  : Command("ConvolutionMatrix", CmdRecordableFlag)
+  : Command(CommandId::ConvolutionMatrix(), CmdRecordableFlag)
 {
 }
 

@@ -47,7 +47,7 @@ protected:
 };
 
 ChangeColorCommand::ChangeColorCommand()
-  : Command("ChangeColor", CmdUIOnlyFlag)
+  : Command(CommandId::ChangeColor(), CmdUIOnlyFlag)
 {
   m_background = false;
   m_change = None;

@@ -42,7 +42,7 @@ protected:
 };
 
 MergeDownLayerCommand::MergeDownLayerCommand()
-  : Command("MergeDownLayer", CmdRecordableFlag)
+  : Command(CommandId::MergeDownLayer(), CmdRecordableFlag)
 {
 }
 

@@ -25,7 +25,7 @@ protected:
 };
 
 PasteCommand::PasteCommand()
-  : Command("Paste", CmdUIOnlyFlag)
+  : Command(CommandId::Paste(), CmdUIOnlyFlag)
 {
 }
 

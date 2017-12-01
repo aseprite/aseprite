@@ -30,7 +30,7 @@ protected:
 };
 
 BackgroundFromLayerCommand::BackgroundFromLayerCommand()
-  : Command("BackgroundFromLayer", CmdRecordableFlag)
+  : Command(CommandId::BackgroundFromLayer(), CmdRecordableFlag)
 {
 }
 

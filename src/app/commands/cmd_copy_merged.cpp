@@ -25,7 +25,7 @@ protected:
 };
 
 CopyMergedCommand::CopyMergedCommand()
-  : Command("CopyMerged", CmdUIOnlyFlag)
+  : Command(CommandId::CopyMerged(), CmdUIOnlyFlag)
 {
 }
 

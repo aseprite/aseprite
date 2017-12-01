@@ -76,7 +76,7 @@ void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
 void DefaultCliDelegate::saveFile(const CliOpenFile& cof)
 {
   Context* ctx = UIContext::instance();
-  Command* saveAsCommand = Commands::instance()->byId(CommandId::SaveFileCopyAs);
+  Command* saveAsCommand = Commands::instance()->byId(CommandId::SaveFileCopyAs());
   Params params;
   params.set("filename", cof.filename.c_str());
   params.set("filename-format", cof.filenameFormat.c_str());
@@ -101,7 +101,7 @@ void DefaultCliDelegate::loadPalette(const CliOpenFile& cof,
   base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));
   if (palette) {
     Context* ctx = UIContext::instance();
-    Command* loadPalCommand = Commands::instance()->byId(CommandId::LoadPalette);
+    Command* loadPalCommand = Commands::instance()->byId(CommandId::LoadPalette());
     Params params;
     params.set("filename", filename.c_str());
 

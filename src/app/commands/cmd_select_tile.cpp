@@ -43,7 +43,7 @@ private:
 };
 
 SelectTileCommand::SelectTileCommand()
-  : Command("SelectTile", CmdRecordableFlag)
+  : Command(CommandId::SelectTile(), CmdRecordableFlag)
   , m_mode(gen::SelectionMode::DEFAULT)
 {
 }

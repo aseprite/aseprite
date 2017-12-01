@@ -29,7 +29,7 @@ protected:
 };
 
 ExitCommand::ExitCommand()
-  : Command("Exit", CmdUIOnlyFlag)
+  : Command(CommandId::Exit(), CmdUIOnlyFlag)
 {
 }
 
@@ -41,7 +41,7 @@ void ExitCommand::onExecute(Context* ctx)
     return;
 
   if (ctx->hasModifiedDocuments()) {
-    Command* closeAll = Commands::instance()->byId(CommandId::CloseAllFiles);
+    Command* closeAll = Commands::instance()->byId(CommandId::CloseAllFiles());
     Params params;
     params.set("quitting", "1");
     ctx->executeCommand(closeAll, params);

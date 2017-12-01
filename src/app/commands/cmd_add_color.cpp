@@ -45,7 +45,7 @@ protected:
 };
 
 AddColorCommand::AddColorCommand()
-  : Command("AddColor", CmdUIOnlyFlag)
+  : Command(CommandId::AddColor(), CmdUIOnlyFlag)
   , m_source(Source::Fg)
 {
 }

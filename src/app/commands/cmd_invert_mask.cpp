@@ -33,7 +33,7 @@ protected:
 };
 
 InvertMaskCommand::InvertMaskCommand()
-  : Command("InvertMask", CmdRecordableFlag)
+  : Command(CommandId::InvertMask(), CmdRecordableFlag)
 {
 }
 
@@ -56,7 +56,7 @@ void InvertMaskCommand::onExecute(Context* context)
   if (!hasMask) {
     // so we select all
     Command* mask_all_cmd =
-      Commands::instance()->byId(CommandId::MaskAll);
+      Commands::instance()->byId(CommandId::MaskAll());
     context->executeCommand(mask_all_cmd);
   }
   // invert the current mask

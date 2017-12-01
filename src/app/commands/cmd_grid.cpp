@@ -31,7 +31,7 @@ using namespace gfx;
 class SnapToGridCommand : public Command {
 public:
   SnapToGridCommand()
-    : Command("SnapToGrid", CmdUIOnlyFlag) {
+    : Command(CommandId::SnapToGrid(), CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new SnapToGridCommand(*this); }
@@ -54,7 +54,7 @@ protected:
 class SelectionAsGridCommand : public Command {
 public:
   SelectionAsGridCommand()
-    : Command("SelectionAsGrid", CmdUIOnlyFlag) {
+    : Command(CommandId::SelectionAsGrid(), CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new SelectionAsGridCommand(*this); }
@@ -91,7 +91,7 @@ protected:
 };
 
 GridSettingsCommand::GridSettingsCommand()
-  : Command("GridSettings", CmdUIOnlyFlag)
+  : Command(CommandId::GridSettings(), CmdUIOnlyFlag)
 {
 }
 

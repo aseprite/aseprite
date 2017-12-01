@@ -30,7 +30,7 @@ protected:
 };
 
 RemoveFrameCommand::RemoveFrameCommand()
-  : Command("RemoveFrame", CmdRecordableFlag)
+  : Command(CommandId::RemoveFrame(), CmdRecordableFlag)
 {
 }
 

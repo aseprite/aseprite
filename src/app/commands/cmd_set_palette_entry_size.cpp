@@ -30,7 +30,7 @@ private:
 };
 
 SetPaletteEntrySizeCommand::SetPaletteEntrySizeCommand()
-  : Command("SetPaletteEntrySize", CmdUIOnlyFlag)
+  : Command(CommandId::SetPaletteEntrySize(), CmdUIOnlyFlag)
   , m_size(7)
 {
 }

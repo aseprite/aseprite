@@ -27,7 +27,7 @@ protected:
 };
 
 HomeCommand::HomeCommand()
-  : Command("Home", CmdUIOnlyFlag)
+  : Command(CommandId::Home(), CmdUIOnlyFlag)
 {
 }
 

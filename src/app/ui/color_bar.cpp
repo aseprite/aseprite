@@ -452,16 +452,16 @@ void ColorBar::onFocusPaletteView()
 
 void ColorBar::onBeforeExecuteCommand(CommandExecutionEvent& ev)
 {
-  if (ev.command()->id() == CommandId::SetPalette ||
-      ev.command()->id() == CommandId::LoadPalette ||
-      ev.command()->id() == CommandId::ColorQuantization)
+  if (ev.command()->id() == CommandId::SetPalette() ||
+      ev.command()->id() == CommandId::LoadPalette() ||
+      ev.command()->id() == CommandId::ColorQuantization())
     showRemap();
 }
 
 void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
 {
-  if (ev.command()->id() == CommandId::Undo ||
-      ev.command()->id() == CommandId::Redo)
+  if (ev.command()->id() == CommandId::Undo() ||
+      ev.command()->id() == CommandId::Redo())
     invalidate();
 
   // If the sprite isn't Indexed anymore (e.g. because we've just
@@ -1024,7 +1024,7 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
   Palette* palette = get_current_palette();
   const int oldEntries = palette->size();
 
-  Command* command = Commands::instance()->byId(CommandId::AddColor);
+  Command* command = Commands::instance()->byId(CommandId::AddColor());
   Params params;
   params.set("source", "color");
   params.set("color", colorButton->getColor().toString().c_str());
@@ -1191,7 +1191,7 @@ void ColorBar::setupTooltips(TooltipManager* tooltipManager)
 {
   tooltipManager->addTooltipFor(
     m_buttons.getItem((int)PalButton::EDIT),
-    key_tooltip("Edit Color", CommandId::PaletteEditor), BOTTOM);
+    key_tooltip("Edit Color", CommandId::PaletteEditor()), BOTTOM);
 
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);
@@ -1219,15 +1219,15 @@ void ColorBar::registerCommands()
   Commands::instance()
     ->add(
       new QuickCommand(
-        "ShowPaletteSortOptions",
+        CommandId::ShowPaletteSortOptions(),
         [this]{ this->showPaletteSortOptions(); }))
     ->add(
       new QuickCommand(
-        "ShowPalettePresets",
+        CommandId::ShowPalettePresets(),
         [this]{ this->showPalettePresets(); }))
     ->add(
       new QuickCommand(
-        "ShowPaletteOptions",
+        CommandId::ShowPaletteOptions(),
         [this]{ this->showPaletteOptions(); }));
 }
 

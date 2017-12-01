@@ -52,7 +52,7 @@ protected:
 };
 
 InvertColorCommand::InvertColorCommand()
-  : Command("InvertColor", CmdRecordableFlag)
+  : Command(CommandId::InvertColor(), CmdRecordableFlag)
 {
 }
 

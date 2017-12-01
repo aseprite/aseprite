@@ -1037,7 +1037,7 @@ protected:
 };
 
 OptionsCommand::OptionsCommand()
-  : Command("Options", CmdUIOnlyFlag)
+  : Command(CommandId::Options(), CmdUIOnlyFlag)
 {
   Preferences& preferences = Preferences::instance();
 

@@ -50,7 +50,7 @@ private:
 };
 
 ChangeBrushCommand::ChangeBrushCommand()
-  : Command("ChangeBrush", CmdUIOnlyFlag)
+  : Command(CommandId::ChangeBrush(), CmdUIOnlyFlag)
 {
   m_change = None;
   m_slot = 0;

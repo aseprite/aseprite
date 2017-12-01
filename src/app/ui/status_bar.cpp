@@ -510,7 +510,7 @@ public:
         if (hasFocus() &&
             (scancode == kKeyEnter || // TODO customizable keys
              scancode == kKeyEnterPad)) {
-          Command* cmd = Commands::instance()->byId(CommandId::GotoFrame);
+          Command* cmd = Commands::instance()->byId(CommandId::GotoFrame());
           Params params;
           params.set("frame", text().c_str());
           UIContext::instance()->executeCommand(cmd, params);
@@ -806,7 +806,7 @@ void StatusBar::onPixelFormatChanged(DocumentEvent& ev)
 
 void StatusBar::newFrame()
 {
-  Command* cmd = Commands::instance()->byId(CommandId::NewFrame);
+  Command* cmd = Commands::instance()->byId(CommandId::NewFrame());
   UIContext::instance()->executeCommand(cmd);
 }
 

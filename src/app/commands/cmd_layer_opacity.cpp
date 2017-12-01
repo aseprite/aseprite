@@ -41,7 +41,7 @@ private:
 };
 
 LayerOpacityCommand::LayerOpacityCommand()
-  : Command("LayerOpacity", CmdUIOnlyFlag)
+  : Command(CommandId::LayerOpacity(), CmdUIOnlyFlag)
 {
   m_opacity = 255;
 }

@@ -30,7 +30,7 @@ protected:
 };
 
 PixelPerfectModeCommand::PixelPerfectModeCommand()
-  : Command("PixelPerfectMode", CmdUIOnlyFlag)
+  : Command(CommandId::PixelPerfectMode(), CmdUIOnlyFlag)
 {
 }
 

@@ -29,7 +29,7 @@ protected:
 };
 
 MaskAllCommand::MaskAllCommand()
-  : Command("MaskAll", CmdRecordableFlag)
+  : Command(CommandId::MaskAll(), CmdRecordableFlag)
 {
 }
 

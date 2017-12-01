@@ -29,7 +29,7 @@ protected:
 };
 
 SetSameInkCommand::SetSameInkCommand()
-  : Command("SetSameInk", CmdUIOnlyFlag)
+  : Command(CommandId::SetSameInk(), CmdUIOnlyFlag)
 {
 }
 

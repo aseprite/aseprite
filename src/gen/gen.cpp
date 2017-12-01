@@ -29,6 +29,7 @@ static void run(int argc, const char* argv[])
   PO::Option& prefCpp = po.add("pref-cpp");
   PO::Option& theme = po.add("theme");
   PO::Option& strings = po.add("strings");
+  PO::Option& commandIds = po.add("command-ids");
   PO::Option& widgetsDir = po.add("widgets-dir").requiresValue("<dir>");
   PO::Option& stringsDir = po.add("strings-dir").requiresValue("<dir>");
   PO::Option& guiFile = po.add("gui-file").requiresValue("<filename>");
@@ -71,6 +72,10 @@ static void run(int argc, const char* argv[])
   // Generate strings.ini.h file
   else if (po.enabled(strings)) {
     gen_strings_class(inputFilename);
+  }
+  // Generate command_ids.ini.h file
+  else if (po.enabled(commandIds)) {
+    gen_command_ids(inputFilename);
   }
   // Check all translation files (en.ini, es.ini, etc.)
   else if (po.enabled(widgetsDir) &&

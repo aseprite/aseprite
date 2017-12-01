@@ -39,7 +39,7 @@ private:
 };
 
 ScrollCommand::ScrollCommand()
-  : Command("Scroll", CmdUIOnlyFlag)
+  : Command(CommandId::Scroll(), CmdUIOnlyFlag)
 {
 }
 

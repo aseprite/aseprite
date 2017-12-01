@@ -92,7 +92,7 @@ private:
     switch (selectedItem()) {
 
       case 0: {
-        cmd = Commands::instance()->byId(CommandId::Zoom);
+        cmd = Commands::instance()->byId(CommandId::Zoom());
         params.set("action", "set");
         params.set("percentage", "100");
         params.set("focus", "center");
@@ -101,12 +101,12 @@ private:
       }
 
       case 1: {
-        cmd = Commands::instance()->byId(CommandId::ScrollCenter);
+        cmd = Commands::instance()->byId(CommandId::ScrollCenter());
         break;
       }
 
       case 2: {
-        cmd = Commands::instance()->byId(CommandId::FitScreen);
+        cmd = Commands::instance()->byId(CommandId::FitScreen());
         break;
       }
     }
@@ -131,7 +131,7 @@ protected:
     ButtonSet::onItemChange(item);
 
     Command* discardBrush = Commands::instance()
-      ->byId(CommandId::DiscardBrush);
+      ->byId(CommandId::DiscardBrush());
     UIContext::instance()->executeCommand(discardBrush);
   }
 };
@@ -2059,10 +2059,10 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo,
                                 key_tooltip("Freehand trace algorithm",
-                                            CommandId::PixelPerfectMode), BOTTOM);
+                                            CommandId::PixelPerfectMode()), BOTTOM);
   tooltipManager->addTooltipFor(m_contiguous,
                                 key_tooltip("Fill contiguous areas color",
-                                            CommandId::ContiguousFill), BOTTOM);
+                                            CommandId::ContiguousFill()), BOTTOM);
   tooltipManager->addTooltipFor(m_paintBucketSettings,
                                 "Extra paint bucket options", BOTTOM);
 
@@ -2078,7 +2078,7 @@ void ContextBar::registerCommands()
   Commands::instance()
     ->add(
       new QuickCommand(
-        "ShowBrushes",
+        CommandId::ShowBrushes(),
         [this]{ this->showBrushes(); }));
 }
 

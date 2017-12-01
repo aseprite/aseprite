@@ -106,7 +106,7 @@ private:
     switch (msg->type()) {
       case ui::kKeyDownMessage: {
         const Key* key =
-          KeyboardShortcuts::instance()->command(CommandId::SwitchColors);
+          KeyboardShortcuts::instance()->command(CommandId::SwitchColors());
         if (key && key->isPressed(msg)) {
           // Switch colors
           app::Color from = m_fromButton->getColor();
@@ -138,7 +138,7 @@ protected:
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
-  : Command("ReplaceColor", CmdRecordableFlag)
+  : Command(CommandId::ReplaceColor(), CmdRecordableFlag)
 {
 }
 

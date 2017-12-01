@@ -37,7 +37,7 @@ private:
 };
 
 PaletteSizeCommand::PaletteSizeCommand()
-  : Command("PaletteSize", CmdRecordableFlag)
+  : Command(CommandId::PaletteSize(), CmdRecordableFlag)
 {
   m_size = 0;
 }

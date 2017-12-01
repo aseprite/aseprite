@@ -51,7 +51,7 @@ protected:
 static int _sprite_counter = 0;
 
 NewFileCommand::NewFileCommand()
-  : Command("NewFile", CmdRecordableFlag)
+  : Command(CommandId::NewFile(), CmdRecordableFlag)
 {
 }
 

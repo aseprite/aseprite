@@ -75,7 +75,7 @@ protected:
 };
 
 BrightnessContrastCommand::BrightnessContrastCommand()
-  : Command("BrightnessContrast", CmdRecordableFlag)
+  : Command(CommandId::BrightnessContrast(), CmdRecordableFlag)
 {
 }
 

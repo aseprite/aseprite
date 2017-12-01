@@ -220,7 +220,7 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
   if (KeyboardShortcuts::instance()
         ->getCommandFromKeyMessage(msg, &command, &params)) {
     // We accept zoom commands.
-    if (command->id() == CommandId::Zoom) {
+    if (command->id() == CommandId::Zoom()) {
       UIContext::instance()->executeCommand(command, params);
       return true;
     }

@@ -79,7 +79,7 @@ protected:
 };
 
 ColorCurveCommand::ColorCurveCommand()
-  : Command("ColorCurve", CmdRecordableFlag)
+  : Command(CommandId::ColorCurve(), CmdRecordableFlag)
 {
 }
 

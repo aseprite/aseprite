@@ -32,7 +32,7 @@ protected:
 };
 
 UnlinkCelCommand::UnlinkCelCommand()
-  : Command("UnlinkCel", CmdRecordableFlag)
+  : Command(CommandId::UnlinkCel(), CmdRecordableFlag)
 {
 }
 

@@ -353,7 +353,7 @@ private:
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()
-  : Command("LayerProperties", CmdRecordableFlag)
+  : Command(CommandId::LayerProperties(), CmdRecordableFlag)
 {
 }
 

@@ -8,6 +8,7 @@
 #define APP_COMMANDS_COMMANDS_H_INCLUDED
 #pragma once
 
+#include "app/commands/command_ids.h"
 #include "ui/base.h"
 
 #include <map>
@@ -15,15 +16,6 @@
 #include <vector>
 
 namespace app {
-
-  struct CommandId {
-#undef FOR_EACH_COMMAND
-#define FOR_EACH_COMMAND(Name)                  \
-    static const char* Name;
-#include "app/commands/commands_list.h"
-#undef FOR_EACH_COMMAND
-  };
-
   class Command;
 
   class Commands {

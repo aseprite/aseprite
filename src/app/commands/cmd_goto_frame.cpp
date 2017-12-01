@@ -49,7 +49,7 @@ protected:
 class GotoFirstFrameCommand : public GotoCommand {
 public:
   GotoFirstFrameCommand()
-    : GotoCommand("GotoFirstFrame") { }
+    : GotoCommand(CommandId::GotoFirstFrame()) { }
   Command* clone() const override { return new GotoFirstFrameCommand(*this); }
 
 protected:
@@ -61,7 +61,7 @@ protected:
 class GotoPreviousFrameCommand : public GotoCommand {
 public:
   GotoPreviousFrameCommand()
-    : GotoCommand("GotoPreviousFrame") { }
+    : GotoCommand(CommandId::GotoPreviousFrame()) { }
   Command* clone() const override { return new GotoPreviousFrameCommand(*this); }
 
 protected:
@@ -75,7 +75,7 @@ protected:
 
 class GotoNextFrameCommand : public GotoCommand {
 public:
-  GotoNextFrameCommand() : GotoCommand("GotoNextFrame") { }
+  GotoNextFrameCommand() : GotoCommand(CommandId::GotoNextFrame()) { }
   Command* clone() const override { return new GotoNextFrameCommand(*this); }
 
 protected:
@@ -89,7 +89,7 @@ protected:
 
 class GotoNextFrameWithSameTagCommand : public GotoCommand {
 public:
-  GotoNextFrameWithSameTagCommand() : GotoCommand("GotoNextFrameWithSameTag") { }
+  GotoNextFrameWithSameTagCommand() : GotoCommand(CommandId::GotoNextFrameWithSameTag()) { }
   Command* clone() const override { return new GotoNextFrameWithSameTagCommand(*this); }
 
 protected:
@@ -108,7 +108,7 @@ protected:
 
 class GotoPreviousFrameWithSameTagCommand : public GotoCommand {
 public:
-  GotoPreviousFrameWithSameTagCommand() : GotoCommand("GotoPreviousFrameWithSameTag") { }
+  GotoPreviousFrameWithSameTagCommand() : GotoCommand(CommandId::GotoPreviousFrameWithSameTag()) { }
   Command* clone() const override { return new GotoPreviousFrameWithSameTagCommand(*this); }
 
 protected:
@@ -127,7 +127,7 @@ protected:
 
 class GotoLastFrameCommand : public GotoCommand {
 public:
-  GotoLastFrameCommand() : GotoCommand("GotoLastFrame") { }
+  GotoLastFrameCommand() : GotoCommand(CommandId::GotoLastFrame()) { }
   Command* clone() const override { return new GotoLastFrameCommand(*this); }
 
 protected:
@@ -138,7 +138,7 @@ protected:
 
 class GotoFrameCommand : public GotoCommand {
 public:
-  GotoFrameCommand() : GotoCommand("GotoFrame")
+  GotoFrameCommand() : GotoCommand(CommandId::GotoFrame())
                      , m_showUI(true) { }
   Command* clone() const override { return new GotoFrameCommand(*this); }
 

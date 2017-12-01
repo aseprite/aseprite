@@ -25,7 +25,7 @@ protected:
 };
 
 CopyCommand::CopyCommand()
-  : Command("Copy", CmdUIOnlyFlag)
+  : Command(CommandId::Copy(), CmdUIOnlyFlag)
 {
 }
 

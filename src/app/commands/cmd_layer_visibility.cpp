@@ -32,7 +32,7 @@ protected:
 };
 
 LayerVisibilityCommand::LayerVisibilityCommand()
-  : Command("LayerVisibility", CmdRecordableFlag)
+  : Command(CommandId::LayerVisibility(), CmdRecordableFlag)
 {
 }
 

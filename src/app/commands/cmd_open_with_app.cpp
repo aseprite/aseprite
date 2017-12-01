@@ -27,7 +27,7 @@ protected:
 };
 
 OpenWithAppCommand::OpenWithAppCommand()
-  : Command("OpenWithApp", CmdUIOnlyFlag)
+  : Command(CommandId::OpenWithApp(), CmdUIOnlyFlag)
 {
 }
 

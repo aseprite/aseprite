@@ -30,7 +30,7 @@ protected:
 };
 
 DiscardBrushCommand::DiscardBrushCommand()
-  : Command("DiscardBrush", CmdUIOnlyFlag)
+  : Command(CommandId::DiscardBrush(), CmdUIOnlyFlag)
 {
 }
 

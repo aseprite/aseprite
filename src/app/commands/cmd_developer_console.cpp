@@ -30,7 +30,7 @@ protected:
 };
 
 DeveloperConsoleCommand::DeveloperConsoleCommand()
-  : Command("DeveloperConsole", CmdUIOnlyFlag)
+  : Command(CommandId::DeveloperConsole(), CmdUIOnlyFlag)
 {
 }
 

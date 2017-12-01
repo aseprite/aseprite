@@ -27,7 +27,7 @@ protected:
 };
 
 OpenInFolderCommand::OpenInFolderCommand()
-  : Command("OpenInFolder", CmdUIOnlyFlag)
+  : Command(CommandId::OpenInFolder(), CmdUIOnlyFlag)
 {
 }
 

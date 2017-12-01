@@ -51,7 +51,7 @@ private:
 };
 
 FramePropertiesCommand::FramePropertiesCommand()
-  : Command("FrameProperties", CmdUIOnlyFlag)
+  : Command(CommandId::FrameProperties(), CmdUIOnlyFlag)
 {
 }
 

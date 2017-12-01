@@ -29,7 +29,7 @@ protected:
 };
 
 AboutCommand::AboutCommand()
-  : Command("About", CmdUIOnlyFlag)
+  : Command(CommandId::About(), CmdUIOnlyFlag)
 {
 }
 

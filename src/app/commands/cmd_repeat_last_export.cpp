@@ -29,7 +29,7 @@ protected:
 };
 
 RepeatLastExportCommand::RepeatLastExportCommand()
-  : Command("RepeatLastExport", CmdRecordableFlag)
+  : Command(CommandId::RepeatLastExport(), CmdRecordableFlag)
 {
 }
 
@@ -40,7 +40,7 @@ bool RepeatLastExportCommand::onEnabled(Context* context)
 
 void RepeatLastExportCommand::onExecute(Context* context)
 {
-  Command* cmd = Commands::instance()->byId(CommandId::ExportSpriteSheet);
+  Command* cmd = Commands::instance()->byId(CommandId::ExportSpriteSheet());
   Params params;
 
   {

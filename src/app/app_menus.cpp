@@ -382,7 +382,7 @@ bool AppMenus::rebuildRecentList()
       return false;
 
     Command* cmd_open_file =
-      Commands::instance()->byId(CommandId::OpenFile);
+      Commands::instance()->byId(CommandId::OpenFile());
 
     Menu* submenu = list_menuitem->getSubmenu();
     if (submenu) {
@@ -627,21 +627,21 @@ void AppMenus::createNativeMenus()
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
     she::MenuItemInfo about("About " PACKAGE);
-    auto native = get_native_shortcut_for_command(CommandId::About);
+    auto native = get_native_shortcut_for_command(CommandId::About());
     about.shortcut = native.shortcut;
     about.execute = [native]{
       if (can_call_global_shortcut(&native)) {
-        Command* cmd = Commands::instance()->byId(CommandId::About);
+        Command* cmd = Commands::instance()->byId(CommandId::About());
         UIContext::instance()->executeCommand(cmd);
       }
     };
 
     she::MenuItemInfo preferences("Preferences...");
-    native = get_native_shortcut_for_command(CommandId::Options);
+    native = get_native_shortcut_for_command(CommandId::Options());
     preferences.shortcut = native.shortcut;
     preferences.execute = [native]{
       if (can_call_global_shortcut(&native)) {
-        Command* cmd = Commands::instance()->byId(CommandId::Options);
+        Command* cmd = Commands::instance()->byId(CommandId::Options());
         UIContext::instance()->executeCommand(cmd);
       }
     };

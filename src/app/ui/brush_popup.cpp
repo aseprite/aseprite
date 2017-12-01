@@ -126,13 +126,13 @@ private:
     Params params;
     params.set("change", "custom");
     params.set("slot", base::convert_to<std::string>(m_slot).c_str());
-    Command* cmd = Commands::instance()->byId(CommandId::ChangeBrush);
+    Command* cmd = Commands::instance()->byId(CommandId::ChangeBrush());
     cmd->loadParams(params);
     std::string search = cmd->friendlyName();
     if (!search.empty()) {
       params.clear();
       params.set("search", search.c_str());
-      cmd = Commands::instance()->byId(CommandId::KeyboardShortcuts);
+      cmd = Commands::instance()->byId(CommandId::KeyboardShortcuts());
       ASSERT(cmd);
       if (cmd)
         UIContext::instance()->executeCommand(cmd, params);
@@ -409,7 +409,7 @@ void BrushPopup::regenerate(const gfx::Rect& box)
       params.set("change", "custom");
       params.set("slot", base::convert_to<std::string>(slot).c_str());
       Key* key = KeyboardShortcuts::instance()->command(
-        CommandId::ChangeBrush, params);
+        CommandId::ChangeBrush(), params);
       if (key && !key->accels().empty())
         shortcut = key->accels().front().toString();
     }

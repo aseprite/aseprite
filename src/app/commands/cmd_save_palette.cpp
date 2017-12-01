@@ -39,7 +39,7 @@ private:
 };
 
 SavePaletteCommand::SavePaletteCommand()
-  : Command("SavePalette", CmdRecordableFlag)
+  : Command(CommandId::SavePalette(), CmdRecordableFlag)
 {
 }
 

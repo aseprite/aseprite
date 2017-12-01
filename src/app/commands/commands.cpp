@@ -20,12 +20,6 @@
 
 namespace app {
 
-#undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(Name) \
-    const char* CommandId::Name = #Name;
-  #include "app/commands/commands_list.h"
-#undef FOR_EACH_COMMAND
-
 Commands* Commands::m_instance = NULL;
 
 Commands::Commands()

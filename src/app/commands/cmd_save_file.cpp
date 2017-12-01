@@ -240,7 +240,7 @@ bool SaveFileBaseCommand::saveAsDialog(
   // Apply scale
   bool undoResize = false;
   if (xscale != 1.0 || yscale != 1.0) {
-    Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize);
+    Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize());
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = document->sprite()->width();
@@ -287,7 +287,7 @@ bool SaveFileBaseCommand::saveAsDialog(
 
   // Undo resize
   if (undoResize) {
-    Command* undoCmd = Commands::instance()->byId(CommandId::Undo);
+    Command* undoCmd = Commands::instance()->byId(CommandId::Undo());
     if (undoCmd)
       context->executeCommand(undoCmd);
   }
@@ -357,7 +357,7 @@ protected:
 };
 
 SaveFileCommand::SaveFileCommand()
-  : SaveFileBaseCommand("SaveFile", CmdRecordableFlag)
+  : SaveFileBaseCommand(CommandId::SaveFile(), CmdRecordableFlag)
 {
 }
 
@@ -393,7 +393,7 @@ protected:
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
-  : SaveFileBaseCommand("SaveFileAs", CmdRecordableFlag)
+  : SaveFileBaseCommand(CommandId::SaveFileAs(), CmdRecordableFlag)
 {
 }
 
@@ -412,7 +412,7 @@ protected:
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : SaveFileBaseCommand("SaveFileCopyAs", CmdRecordableFlag)
+  : SaveFileBaseCommand(CommandId::SaveFileCopyAs(), CmdRecordableFlag)
 {
 }
 

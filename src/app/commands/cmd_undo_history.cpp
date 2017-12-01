@@ -266,7 +266,7 @@ protected:
 static UndoHistoryWindow* g_window = NULL;
 
 UndoHistoryCommand::UndoHistoryCommand()
-  : Command("UndoHistory", CmdUIOnlyFlag)
+  : Command(CommandId::UndoHistory(), CmdUIOnlyFlag)
 {
 }
 

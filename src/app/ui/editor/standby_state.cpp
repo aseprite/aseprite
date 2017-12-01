@@ -378,7 +378,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
   // Select a tile with double-click
   if (ink->isSelection()) {
     Command* selectTileCmd =
-      Commands::instance()->byId(CommandId::SelectTile);
+      Commands::instance()->byId(CommandId::SelectTile());
 
     Params params;
     if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kAddSelection))
@@ -740,7 +740,7 @@ void StandbyState::callEyedropper(Editor* editor)
     return;
 
   Command* eyedropper_cmd =
-    Commands::instance()->byId(CommandId::Eyedropper);
+    Commands::instance()->byId(CommandId::Eyedropper());
   bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
 
   Params params;

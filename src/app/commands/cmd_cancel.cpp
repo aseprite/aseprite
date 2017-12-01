@@ -38,7 +38,7 @@ private:
 };
 
 CancelCommand::CancelCommand()
-  : Command("Cancel", CmdUIOnlyFlag)
+  : Command(CommandId::Cancel(), CmdUIOnlyFlag)
   , m_type(NoOp)
 {
 }
@@ -62,7 +62,8 @@ void CancelCommand::onExecute(Context* context)
       // TODO should the ContextBar be a InputChainElement to intercept onCancel()?
       // Discard brush
       {
-        Command* discardBrush = Commands::instance()->byId(CommandId::DiscardBrush);
+        Command* discardBrush = Commands::instance()->byId(
+          CommandId::DiscardBrush());
         context->executeCommand(discardBrush);
       }
 

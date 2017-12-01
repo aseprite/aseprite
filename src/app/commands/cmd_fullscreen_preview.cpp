@@ -122,10 +122,10 @@ protected:
 
         // Change frame
         if (command != NULL &&
-            (command->id() == CommandId::GotoFirstFrame ||
-             command->id() == CommandId::GotoPreviousFrame ||
-             command->id() == CommandId::GotoNextFrame ||
-             command->id() == CommandId::GotoLastFrame)) {
+            (command->id() == CommandId::GotoFirstFrame() ||
+             command->id() == CommandId::GotoPreviousFrame() ||
+             command->id() == CommandId::GotoNextFrame() ||
+             command->id() == CommandId::GotoLastFrame())) {
           m_context->executeCommand(command, params);
           invalidate();
           m_render.reset(NULL); // Re-render
@@ -133,7 +133,7 @@ protected:
 #if 0
         // Play the animation
         else if (command != NULL &&
-                 std::strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
+                 std::strcmp(command->short_name(), CommandId::PlayAnimation()) == 0) {
           // TODO
         }
 #endif
@@ -264,7 +264,7 @@ protected:
 };
 
 FullscreenPreviewCommand::FullscreenPreviewCommand()
-  : Command("FullscreenPreview", CmdUIOnlyFlag)
+  : Command(CommandId::FullscreenPreview(), CmdUIOnlyFlag)
 {
 }
 

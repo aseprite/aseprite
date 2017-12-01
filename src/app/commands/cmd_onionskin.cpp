@@ -21,7 +21,7 @@ using namespace gfx;
 class ShowOnionSkinCommand : public Command {
 public:
   ShowOnionSkinCommand()
-    : Command("ShowOnionSkin", CmdUIOnlyFlag)
+    : Command(CommandId::ShowOnionSkin(), CmdUIOnlyFlag)
   {
   }
 

@@ -29,7 +29,7 @@ protected:
 };
 
 DeselectMaskCommand::DeselectMaskCommand()
-  : Command("DeselectMask", CmdRecordableFlag)
+  : Command(CommandId::DeselectMask(), CmdRecordableFlag)
 {
 }
 

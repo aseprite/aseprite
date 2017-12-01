@@ -28,7 +28,7 @@ protected:
 };
 
 ReverseFramesCommand::ReverseFramesCommand()
-  : Command("ReverseFrames", CmdUIOnlyFlag)
+  : Command(CommandId::ReverseFrames(), CmdUIOnlyFlag)
 {
 }
 

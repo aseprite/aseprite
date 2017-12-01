@@ -25,7 +25,7 @@ protected:
 };
 
 CutCommand::CutCommand()
-  : Command("Cut", CmdUIOnlyFlag)
+  : Command(CommandId::Cut(), CmdUIOnlyFlag)
 {
 }
 

@@ -25,7 +25,7 @@ protected:
 };
 
 ClearCommand::ClearCommand()
-  : Command("Clear", CmdUIOnlyFlag)
+  : Command(CommandId::Clear(), CmdUIOnlyFlag)
 {
 }
 

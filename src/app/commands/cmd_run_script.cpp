@@ -49,7 +49,7 @@ private:
 };
 
 RunScriptCommand::RunScriptCommand()
-  : Command("RunScript", CmdRecordableFlag)
+  : Command(CommandId::RunScript(), CmdRecordableFlag)
 {
 }
 

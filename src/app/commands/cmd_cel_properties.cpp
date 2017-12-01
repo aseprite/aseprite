@@ -282,7 +282,7 @@ protected:
 };
 
 CelPropertiesCommand::CelPropertiesCommand()
-  : Command("CelProperties", CmdUIOnlyFlag)
+  : Command(CommandId::CelProperties(), CmdUIOnlyFlag)
 {
 }
 

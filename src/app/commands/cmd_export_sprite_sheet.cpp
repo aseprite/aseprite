@@ -593,7 +593,7 @@ private:
 };
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
-  : Command("ExportSpriteSheet", CmdRecordableFlag)
+  : Command(CommandId::ExportSpriteSheet(), CmdRecordableFlag)
   , m_useUI(true)
   , m_askOverwrite(true)
 {

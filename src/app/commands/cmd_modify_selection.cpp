@@ -59,7 +59,7 @@ private:
 };
 
 ModifySelectionCommand::ModifySelectionCommand()
-  : Command("ModifySelection", CmdRecordableFlag)
+  : Command(CommandId::ModifySelection(), CmdRecordableFlag)
   , m_modifier(Expand)
   , m_quantity(0)
   , m_brushType(doc::kCircleBrushType)

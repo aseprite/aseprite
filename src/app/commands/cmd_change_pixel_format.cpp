@@ -351,7 +351,7 @@ private:
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
-  : Command("ChangePixelFormat", CmdUIOnlyFlag)
+  : Command(CommandId::ChangePixelFormat(), CmdUIOnlyFlag)
 {
   m_useUI = true;
   m_format = IMAGE_RGB;

@@ -22,7 +22,7 @@ using namespace gfx;
 class ToggleTimelineThumbnailsCommand : public Command {
 public:
   ToggleTimelineThumbnailsCommand()
-    : Command("ToggleTimelineThumbnails", CmdUIOnlyFlag) {
+    : Command(CommandId::ToggleTimelineThumbnails(), CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ToggleTimelineThumbnailsCommand(*this); }

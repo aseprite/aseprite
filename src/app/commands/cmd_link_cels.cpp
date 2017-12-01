@@ -32,7 +32,7 @@ protected:
 };
 
 LinkCelsCommand::LinkCelsCommand()
-  : Command("LinkCels", CmdRecordableFlag)
+  : Command(CommandId::LinkCels(), CmdRecordableFlag)
 {
 }
 

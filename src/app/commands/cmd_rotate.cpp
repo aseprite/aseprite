@@ -167,7 +167,7 @@ protected:
 };
 
 RotateCommand::RotateCommand()
-  : Command("Rotate", CmdRecordableFlag)
+  : Command(CommandId::Rotate(), CmdRecordableFlag)
 {
   m_flipMask = false;
   m_angle = 0;

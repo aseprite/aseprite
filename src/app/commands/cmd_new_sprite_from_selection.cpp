@@ -14,12 +14,12 @@
 #include "app/util/new_image_from_mask.h"
 #include "base/fs.h"
 #include "doc/cel.h"
+#include "doc/document.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
-#include "doc/layer.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
-#include "doc/document.h"
 
 #include <cstdio>
 
@@ -38,7 +38,7 @@ protected:
 };
 
 NewSpriteFromSelectionCommand::NewSpriteFromSelectionCommand()
-  : Command("NewSpriteFromSelection", CmdUIOnlyFlag)
+  : Command(CommandId::NewSpriteFromSelection(), CmdUIOnlyFlag)
 {
 }
 

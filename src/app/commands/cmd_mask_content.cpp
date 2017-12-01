@@ -40,7 +40,7 @@ protected:
 };
 
 MaskContentCommand::MaskContentCommand()
-  : Command("MaskContent", CmdRecordableFlag)
+  : Command(CommandId::MaskContent(), CmdRecordableFlag)
 {
 }
 

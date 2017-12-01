@@ -32,7 +32,7 @@ namespace app {
 using namespace ui;
 
 EyedropperCommand::EyedropperCommand()
-  : Command("Eyedropper", CmdUIOnlyFlag)
+  : Command(CommandId::Eyedropper(), CmdUIOnlyFlag)
 {
   m_background = false;
 }
@@ -194,7 +194,7 @@ void EyedropperCommand::onExecute(Context* context)
 
   // Discard current image brush
   if (Preferences::instance().eyedropper.discardBrush()) {
-    Command* discardBrush = Commands::instance()->byId(CommandId::DiscardBrush);
+    Command* discardBrush = Commands::instance()->byId(CommandId::DiscardBrush());
     context->executeCommand(discardBrush);
   }
 

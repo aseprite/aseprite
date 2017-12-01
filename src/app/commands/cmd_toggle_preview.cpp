@@ -28,7 +28,7 @@ protected:
 };
 
 TogglePreviewCommand::TogglePreviewCommand()
-  : Command("TogglePreview", CmdUIOnlyFlag)
+  : Command(CommandId::TogglePreview(), CmdUIOnlyFlag)
 {
 }
 

@@ -45,7 +45,7 @@ private:
 };
 
 ZoomCommand::ZoomCommand()
-  : Command("Zoom", CmdUIOnlyFlag)
+  : Command(CommandId::Zoom(), CmdUIOnlyFlag)
   , m_action(Action::In)
   , m_zoom(1, 1)
   , m_focus(Focus::Default)

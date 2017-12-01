@@ -436,7 +436,7 @@ void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
   WorkspaceView* oldActiveView = mainPanel->activeView();
   app::Document* oldDoc = static_cast<app::Document*>(UIContext::instance()->activeDocument());
 
-  Command* command = Commands::instance()->byId(CommandId::NewFile);
+  Command* command = Commands::instance()->byId(CommandId::NewFile());
   UIContext::instance()->executeCommand(command);
 
   app::Document* newDoc = static_cast<app::Document*>(UIContext::instance()->activeDocument());

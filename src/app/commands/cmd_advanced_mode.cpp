@@ -33,7 +33,7 @@ protected:
 };
 
 AdvancedModeCommand::AdvancedModeCommand()
-  : Command("AdvancedMode", CmdUIOnlyFlag)
+  : Command(CommandId::AdvancedMode(), CmdUIOnlyFlag)
 {
 }
 

@@ -271,7 +271,7 @@ private:
 };
 
 SpriteSizeCommand::SpriteSizeCommand()
-  : Command("SpriteSize", CmdRecordableFlag)
+  : Command(CommandId::SpriteSize(), CmdRecordableFlag)
 {
   m_useUI = true;
   m_width = 0;

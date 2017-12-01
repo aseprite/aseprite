@@ -80,7 +80,7 @@ protected:
 };
 
 HueSaturationCommand::HueSaturationCommand()
-  : Command("HueSaturation", CmdRecordableFlag)
+  : Command(CommandId::HueSaturation(), CmdRecordableFlag)
 {
 }
 

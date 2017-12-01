@@ -749,7 +749,7 @@ private:
 };
 
 KeyboardShortcutsCommand::KeyboardShortcutsCommand()
-  : Command("KeyboardShortcuts", CmdUIOnlyFlag)
+  : Command(CommandId::KeyboardShortcuts(), CmdUIOnlyFlag)
 {
 }
 

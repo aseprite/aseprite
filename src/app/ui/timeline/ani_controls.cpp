@@ -102,11 +102,11 @@ void AniControls::onRightClick(Item* item)
 const char* AniControls::getCommandId(int index) const
 {
   switch (index) {
-    case ACTION_FIRST: return CommandId::GotoFirstFrame;
-    case ACTION_PREV: return CommandId::GotoPreviousFrame;
-    case ACTION_PLAY: return CommandId::PlayAnimation;
-    case ACTION_NEXT: return CommandId::GotoNextFrame;
-    case ACTION_LAST: return CommandId::GotoLastFrame;
+    case ACTION_FIRST: return CommandId::GotoFirstFrame();
+    case ACTION_PREV: return CommandId::GotoPreviousFrame();
+    case ACTION_PLAY: return CommandId::PlayAnimation();
+    case ACTION_NEXT: return CommandId::GotoNextFrame();
+    case ACTION_LAST: return CommandId::GotoLastFrame();
   }
   ASSERT(false);
   return nullptr;

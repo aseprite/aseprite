@@ -25,7 +25,7 @@ namespace app {
 using namespace ui;
 
 SetPaletteCommand::SetPaletteCommand()
-  : Command("SetPalette", CmdRecordableFlag)
+  : Command(CommandId::SetPalette(), CmdRecordableFlag)
   , m_palette(NULL)
 {
 }

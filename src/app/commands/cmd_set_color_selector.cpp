@@ -34,7 +34,7 @@ private:
 };
 
 SetColorSelectorCommand::SetColorSelectorCommand()
-  : Command("SetColorSelector", CmdUIOnlyFlag)
+  : Command(CommandId::SetColorSelector(), CmdUIOnlyFlag)
   , m_type(ColorBar::ColorSelector::SPECTRUM)
 {
 }

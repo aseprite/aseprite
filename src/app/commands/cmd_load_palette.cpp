@@ -41,7 +41,7 @@ private:
 };
 
 LoadPaletteCommand::LoadPaletteCommand()
-  : Command("LoadPalette", CmdRecordableFlag)
+  : Command(CommandId::LoadPalette(), CmdRecordableFlag)
 {
 }
 
@@ -85,7 +85,7 @@ void LoadPaletteCommand::onExecute(Context* context)
   }
 
   SetPaletteCommand* cmd = static_cast<SetPaletteCommand*>(
-    Commands::instance()->byId(CommandId::SetPalette));
+    Commands::instance()->byId(CommandId::SetPalette()));
   cmd->setPalette(palette);
   context->executeCommand(cmd);
 }

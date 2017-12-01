@@ -30,7 +30,7 @@ using namespace ui;
 class CloseFileCommand : public Command {
 public:
   CloseFileCommand()
-    : Command("CloseFile", CmdUIOnlyFlag) {
+    : Command(CommandId::CloseFile(), CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new CloseFileCommand(*this); }
@@ -54,7 +54,7 @@ protected:
 class CloseAllFilesCommand : public Command {
 public:
   CloseAllFilesCommand()
-    : Command("CloseAllFiles", CmdRecordableFlag) {
+    : Command(CommandId::CloseAllFiles(), CmdRecordableFlag) {
     m_quitting = false;
   }
 

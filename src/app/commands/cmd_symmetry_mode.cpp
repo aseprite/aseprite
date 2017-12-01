@@ -28,7 +28,7 @@ protected:
 };
 
 SymmetryModeCommand::SymmetryModeCommand()
-  : Command("SymmetryMode", CmdUIOnlyFlag)
+  : Command(CommandId::SymmetryMode(), CmdUIOnlyFlag)
 {
 }
 

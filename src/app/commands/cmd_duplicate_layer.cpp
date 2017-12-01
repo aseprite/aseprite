@@ -16,8 +16,8 @@
 #include "app/document_undo.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/ui/editor/editor.h"
 #include "app/transaction.h"
+#include "app/ui/editor/editor.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -35,7 +35,7 @@ protected:
 };
 
 DuplicateLayerCommand::DuplicateLayerCommand()
-  : Command("DuplicateLayer", CmdRecordableFlag)
+  : Command(CommandId::DuplicateLayer(), CmdRecordableFlag)
 {
 }
 

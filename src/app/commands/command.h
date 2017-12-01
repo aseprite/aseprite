@@ -9,6 +9,8 @@
 #pragma once
 
 #include "app/commands/command_factory.h"
+#include "app/commands/command_ids.h"
+
 #include <string>
 
 namespace app {

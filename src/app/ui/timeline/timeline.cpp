@@ -1050,7 +1050,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
               else if (mouseMsg->left()) {
                 Command* command = Commands::instance()
-                  ->byId(CommandId::FrameTagProperties);
+                  ->byId(CommandId::FrameTagProperties());
                 UIContext::instance()->executeCommand(command, params);
               }
             }
@@ -1104,7 +1104,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         case PART_ROW_TEXT: {
           Command* command = Commands::instance()
-            ->byId(CommandId::LayerProperties);
+            ->byId(CommandId::LayerProperties());
 
           UIContext::instance()->executeCommand(command);
           return true;
@@ -1112,7 +1112,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         case PART_HEADER_FRAME: {
           Command* command = Commands::instance()
-            ->byId(CommandId::FrameProperties);
+            ->byId(CommandId::FrameProperties());
           Params params;
           params.set("frame", "current");
 
@@ -1122,7 +1122,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         case PART_CEL: {
           Command* command = Commands::instance()
-            ->byId(CommandId::CelProperties);
+            ->byId(CommandId::CelProperties());
 
           UIContext::instance()->executeCommand(command);
           return true;
@@ -3609,13 +3609,13 @@ bool Timeline::onClear(Context* ctx)
 
   switch (m_range.type()) {
     case DocumentRange::kCels:
-      cmd = Commands::instance()->byId(CommandId::ClearCel);
+      cmd = Commands::instance()->byId(CommandId::ClearCel());
       break;
     case DocumentRange::kFrames:
-      cmd = Commands::instance()->byId(CommandId::RemoveFrame);
+      cmd = Commands::instance()->byId(CommandId::RemoveFrame());
       break;
     case DocumentRange::kLayers:
-      cmd = Commands::instance()->byId(CommandId::RemoveLayer);
+      cmd = Commands::instance()->byId(CommandId::RemoveLayer());
       break;
   }
 

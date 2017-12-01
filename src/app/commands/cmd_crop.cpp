@@ -12,8 +12,8 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/color_bar.h"
 #include "app/transaction.h"
+#include "app/ui/color_bar.h"
 #include "app/util/autocrop.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -37,7 +37,7 @@ private:
 };
 
 CropSpriteCommand::CropSpriteCommand()
-  : Command("CropSprite", CmdRecordableFlag)
+  : Command(CommandId::CropSprite(), CmdRecordableFlag)
 {
 }
 
@@ -90,7 +90,7 @@ protected:
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()
-  : Command("AutocropSprite", CmdRecordableFlag)
+  : Command(CommandId::AutocropSprite(), CmdRecordableFlag)
 {
 }
 

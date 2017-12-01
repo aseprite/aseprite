@@ -32,7 +32,7 @@ protected:
 };
 
 ClearCelCommand::ClearCelCommand()
-  : Command("ClearCel", CmdRecordableFlag)
+  : Command(CommandId::ClearCel(), CmdRecordableFlag)
 {
 }
 

@@ -30,7 +30,7 @@ protected:
 };
 
 PlayAnimationCommand::PlayAnimationCommand()
-  : Command("PlayAnimation", CmdUIOnlyFlag)
+  : Command(CommandId::PlayAnimation(), CmdUIOnlyFlag)
 {
 }
 

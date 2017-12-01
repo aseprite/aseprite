@@ -65,7 +65,7 @@ private:
 };
 
 NewLayerCommand::NewLayerCommand()
-  : Command("NewLayer", CmdRecordableFlag)
+  : Command(CommandId::NewLayer(), CmdRecordableFlag)
 {
   m_name = "";
   m_type = Type::Layer;
@@ -130,7 +130,7 @@ void NewLayerCommand::onExecute(Context* context)
   // Select a file to copy its content
   if (m_fromFile) {
     Document* oldActiveDocument = context->activeDocument();
-    Command* openFile = Commands::instance()->byId(CommandId::OpenFile);
+    Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
     Params params;
     params.set("filename", "");
     context->executeCommand(openFile, params);
