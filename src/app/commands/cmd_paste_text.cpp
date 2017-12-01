@@ -51,7 +51,8 @@ PasteTextCommand::PasteTextCommand()
 
 bool PasteTextCommand::onEnabled(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                         ContextFlags::ActiveLayerIsEditable);
 }
 
 class PasteTextWindow : public app::gen::PasteText {
