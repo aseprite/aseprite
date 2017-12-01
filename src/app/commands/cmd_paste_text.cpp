@@ -45,9 +45,7 @@ protected:
 };
 
 PasteTextCommand::PasteTextCommand()
-  : Command("PasteText",
-            "Insert Text",
-            CmdUIOnlyFlag)
+  : Command("PasteText", CmdUIOnlyFlag)
 {
 }
 

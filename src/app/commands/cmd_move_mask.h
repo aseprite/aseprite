@@ -9,23 +9,13 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "app/commands/move_thing.h"
 
 namespace app {
 
   class MoveMaskCommand : public Command {
   public:
     enum Target { Boundaries, Content };
-    enum Direction { Left, Up, Right, Down, }; // TODO join this enum with scroll command
-    enum Units {
-      Pixel,
-      TileWidth,
-      TileHeight,
-      ZoomedPixel,
-      ZoomedTileWidth,
-      ZoomedTileHeight,
-      ViewportWidth,
-      ViewportHeight
-    };
 
     MoveMaskCommand();
     Command* clone() const override { return new MoveMaskCommand(*this); }
@@ -42,9 +32,7 @@ namespace app {
 
   private:
     Target m_target;
-    Direction m_direction;
-    Units m_units;
-    int m_quantity;
+    MoveThing m_moveThing;
     bool m_wrap;
   };
 

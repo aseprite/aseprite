@@ -15,12 +15,14 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "doc/palette.h"
+#include "fmt/format.h"
 #include "ui/manager.h"
 
 namespace app {
@@ -43,9 +45,7 @@ protected:
 };
 
 AddColorCommand::AddColorCommand()
-  : Command("AddColor",
-            "Add Color",
-            CmdUIOnlyFlag)
+  : Command("AddColor", CmdUIOnlyFlag)
   , m_source(Source::Fg)
 {
 }
@@ -121,7 +121,7 @@ void AddColorCommand::onExecute(Context* ctx)
     if (document) {
       frame_t frame = writer.frame();
 
-      Transaction transaction(writer.context(), "Add Color", ModifyDocument);
+      Transaction transaction(writer.context(), friendlyName(), ModifyDocument);
       transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
       transaction.commit();
     }
@@ -136,16 +136,13 @@ void AddColorCommand::onExecute(Context* ctx)
 
 std::string AddColorCommand::onGetFriendlyName() const
 {
-  std::string text = "Add ";
-
+  std::string source;
   switch (m_source) {
-    case Source::Fg: text += "Foreground"; break;
-    case Source::Bg: text += "Background"; break;
-    case Source::Color: text += "Specific"; break;
+    case Source::Fg: source = Strings::commands_AddColor_Foreground(); break;
+    case Source::Bg: source = Strings::commands_AddColor_Background(); break;
+    case Source::Color: source = Strings::commands_AddColor_Specific(); break;
   }
-
-  text += " Color to Palette";
-  return text;
+  return fmt::format(getBaseFriendlyName(), source);
 }
 
 Command* CommandFactory::createAddColorCommand()

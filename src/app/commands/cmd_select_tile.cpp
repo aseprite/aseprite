@@ -12,6 +12,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -19,6 +20,7 @@
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "doc/mask.h"
+#include "fmt/format.h"
 #include "ui/system.h"
 
 namespace app {
@@ -41,9 +43,7 @@ private:
 };
 
 SelectTileCommand::SelectTileCommand()
-  : Command("SelectTile",
-            "Select Tile",
-            CmdRecordableFlag)
+  : Command("SelectTile", CmdRecordableFlag)
   , m_mode(gen::SelectionMode::DEFAULT)
 {
 }
@@ -94,7 +94,7 @@ void SelectTileCommand::onExecute(Context* ctx)
 
   // Set the new mask
   Transaction transaction(writer.context(),
-                          "Select Tile",
+                          friendlyName(),
                           DoesntModifyDocument);
   transaction.execute(new cmd::SetMask(doc, mask));
   transaction.commit();
@@ -105,13 +105,18 @@ void SelectTileCommand::onExecute(Context* ctx)
 
 std::string SelectTileCommand::onGetFriendlyName() const
 {
-  std::string text = "Select Tile";
-
+  std::string text;
   switch (m_mode) {
-    case gen::SelectionMode::ADD: text += " (Add)"; break;
-    case gen::SelectionMode::SUBTRACT: text += " (Subtract)"; break;
+    case gen::SelectionMode::ADD:
+      text = Strings::commands_SelectTile_Add();
+      break;
+    case gen::SelectionMode::SUBTRACT:
+      text = Strings::commands_SelectTile_Subtract();
+      break;
+    default:
+      text = getBaseFriendlyName();;
+      break;
   }
-
   return text;
 }
 

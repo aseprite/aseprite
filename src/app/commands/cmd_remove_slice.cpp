@@ -41,9 +41,7 @@ private:
 };
 
 RemoveSliceCommand::RemoveSliceCommand()
-  : Command("RemoveSlice",
-            "Remove Slice",
-            CmdRecordableFlag)
+  : Command("RemoveSlice", CmdRecordableFlag)
 {
 }
 
@@ -88,7 +86,7 @@ void RemoveSliceCommand::onExecute(Context* context)
     Sprite* sprite(writer.sprite());
     Transaction transaction(writer.context(), "Remove Slice");
     Slice* slice = const_cast<Slice*>(foundSlice);
-    
+
     if (slice->size() > 1) {
       transaction.execute(new cmd::SetSliceKey(slice, frame, SliceKey()));
     }

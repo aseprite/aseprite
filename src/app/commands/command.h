@@ -22,7 +22,7 @@ namespace app {
 
   class Command {
   public:
-    Command(const char* id, const char* friendlyName, CommandFlags flags);
+    Command(const char* id, CommandFlags flags);
     virtual ~Command();
 
     virtual Command* clone() const { return new Command(*this); }
@@ -43,6 +43,10 @@ namespace app {
     virtual bool onChecked(Context* context);
     virtual void onExecute(Context* context);
     virtual std::string onGetFriendlyName() const;
+
+    const std::string& getBaseFriendlyName() const {
+      return m_friendlyName;
+    }
 
   private:
     std::string m_id;

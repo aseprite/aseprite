@@ -15,6 +15,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/sprite_job.h"
@@ -31,6 +32,7 @@
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -165,9 +167,7 @@ protected:
 };
 
 RotateCommand::RotateCommand()
-  : Command("Rotate",
-            "Rotate Canvas",
-            CmdRecordableFlag)
+  : Command("Rotate", CmdRecordableFlag)
 {
   m_flipMask = false;
   m_angle = 0;
@@ -241,16 +241,13 @@ void RotateCommand::onExecute(Context* context)
 
 std::string RotateCommand::onGetFriendlyName() const
 {
-  std::string text = "Rotate";
-
+  std::string content;
   if (m_flipMask)
-    text += " Selection";
+    content = Strings::commands_Rotate_Selection();
   else
-    text += " Sprite";
-
-  text += " " + base::convert_to<std::string>(m_angle) + "\xc2\xb0";
-
-  return text;
+    content = Strings::commands_Rotate_Sprite();
+  return fmt::format(getBaseFriendlyName(),
+                     content, base::convert_to<std::string>(m_angle));
 }
 
 Command* CommandFactory::createRotateCommand()

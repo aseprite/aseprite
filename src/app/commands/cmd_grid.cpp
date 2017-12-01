@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,9 +31,7 @@ using namespace gfx;
 class SnapToGridCommand : public Command {
 public:
   SnapToGridCommand()
-    : Command("SnapToGrid",
-              "Snap to Grid",
-              CmdUIOnlyFlag) {
+    : Command("SnapToGrid", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new SnapToGridCommand(*this); }
@@ -56,9 +54,7 @@ protected:
 class SelectionAsGridCommand : public Command {
 public:
   SelectionAsGridCommand()
-    : Command("SelectionAsGrid",
-              "Selection as Grid",
-              CmdUIOnlyFlag) {
+    : Command("SelectionAsGrid", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new SelectionAsGridCommand(*this); }
@@ -95,9 +91,7 @@ protected:
 };
 
 GridSettingsCommand::GridSettingsCommand()
-  : Command("GridSettings",
-            "Grid Settings",
-            CmdUIOnlyFlag)
+  : Command("GridSettings", CmdUIOnlyFlag)
 {
 }
 

@@ -593,9 +593,7 @@ private:
 };
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
-  : Command("ExportSpriteSheet",
-            "Export Sprite Sheet",
-            CmdRecordableFlag)
+  : Command("ExportSpriteSheet", CmdRecordableFlag)
   , m_useUI(true)
   , m_askOverwrite(true)
 {

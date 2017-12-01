@@ -297,9 +297,7 @@ protected:
 };
 
 ImportSpriteSheetCommand::ImportSpriteSheetCommand()
-  : Command("ImportSpriteSheet",
-            "Import Sprite Sheet",
-            CmdRecordableFlag)
+  : Command("ImportSpriteSheet", CmdRecordableFlag)
 {
 }
 

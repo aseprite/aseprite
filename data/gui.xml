@@ -454,6 +454,12 @@
         <param name="format" value="indexed" />
         <param name="dithering" value="old-ordered" />
       </key>
+      <key command="ChangeBrush">
+        <param name="change" value="increment-angle" />
+      </key>
+      <key command="ChangeBrush">
+        <param name="change" value="decrement-angle" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
@@ -992,19 +998,19 @@
     </menu>
 
     <menu id="ink_popup_menu">
-      <item command="SetInkType" text="@.simple_ink">
+      <item command="SetInkType" text="@inks.simple_ink">
         <param name="type" value="simple" />
       </item>
-      <item command="SetInkType" text="@.alpha_compositing">
+      <item command="SetInkType" text="@inks.alpha_compositing">
         <param name="type" value="alpha-compositing" />
       </item>
-      <item command="SetInkType" text="@.copy_color">
+      <item command="SetInkType" text="@inks.copy_color">
         <param name="type" value="copy-color" />
       </item>
-      <item command="SetInkType" text="@.lock_alpha">
+      <item command="SetInkType" text="@inks.lock_alpha">
         <param name="type" value="lock-alpha" />
       </item>
-      <item command="SetInkType" text="@.shading">
+      <item command="SetInkType" text="@inks.shading">
         <param name="type" value="shading" />
       </item>
       <separator />

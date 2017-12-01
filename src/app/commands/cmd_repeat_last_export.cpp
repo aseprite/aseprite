@@ -29,9 +29,7 @@ protected:
 };
 
 RepeatLastExportCommand::RepeatLastExportCommand()
-  : Command("RepeatLastExport",
-            "Repeat Last Export",
-            CmdRecordableFlag)
+  : Command("RepeatLastExport", CmdRecordableFlag)
 {
 }
 

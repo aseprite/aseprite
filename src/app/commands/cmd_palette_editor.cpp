@@ -10,7 +10,9 @@
 
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/ui/color_bar.h"
+#include "fmt/format.h"
 
 namespace app {
 
@@ -32,9 +34,7 @@ private:
 };
 
 PaletteEditorCommand::PaletteEditorCommand()
-  : Command("PaletteEditor",
-            "Edit Palette",
-            CmdRecordableFlag)
+  : Command("PaletteEditor", CmdRecordableFlag)
 {
   m_edit = true;
   m_popup = false;
@@ -91,21 +91,20 @@ void PaletteEditorCommand::onExecute(Context* context)
 
 std::string PaletteEditorCommand::onGetFriendlyName() const
 {
-  std::string text = "Switch";
+  std::string edit, plus, popup;
   if (m_edit) {
-    text += " Edit Palette Mode";
+    edit = Strings::commands_PaletteEditor_Edit();
   }
   if (m_edit && m_popup) {
-    text += " and";
+    plus = Strings::commands_PaletteEditor_And();
   }
   if (m_popup) {
     if (m_background)
-      text += " Background";
+      popup = Strings::commands_PaletteEditor_BgPopup();
     else
-      text += " Foreground";
-    text += " Color Popup";
+      popup = Strings::commands_PaletteEditor_FgPopup();
   }
-  return text;
+  return fmt::format(getBaseFriendlyName(), edit, plus, popup);
 }
 
 Command* CommandFactory::createPaletteEditorCommand()

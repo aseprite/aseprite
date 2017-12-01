@@ -23,7 +23,6 @@ namespace app {
 
   protected:
     void onExecute(Context* context) override;
-    std::string onGetFriendlyName() const override;
 
     std::function<void()> m_execute;
   };

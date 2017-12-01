@@ -41,9 +41,7 @@ private:
 };
 
 LoadPaletteCommand::LoadPaletteCommand()
-  : Command("LoadPalette",
-            "Load Palette",
-            CmdRecordableFlag)
+  : Command("LoadPalette", CmdRecordableFlag)
 {
 }
 

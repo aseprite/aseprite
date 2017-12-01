@@ -24,10 +24,9 @@ namespace app {
 class GotoLayerCommand : public Command {
 public:
   GotoLayerCommand(int offset,
-                   const char* shortName,
-                   const char* friendlyName,
+                   const char* id,
                    CommandFlags flags)
-    : Command(shortName, friendlyName, flags),
+    : Command(id, flags),
       m_offset(offset) {
   }
 
@@ -87,7 +86,6 @@ class GotoPreviousLayerCommand : public GotoLayerCommand {
 public:
   GotoPreviousLayerCommand()
     : GotoLayerCommand(-1, "GotoPreviousLayer",
-                       "Go to Previous Layer",
                        CmdUIOnlyFlag) {
   }
   Command* clone() const override {
@@ -99,7 +97,6 @@ class GotoNextLayerCommand : public GotoLayerCommand {
 public:
   GotoNextLayerCommand()
     : GotoLayerCommand(+1, "GotoNextLayer",
-                       "Go to Next Layer",
                        CmdUIOnlyFlag) {
   }
   Command* clone() const override {

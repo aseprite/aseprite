@@ -27,9 +27,7 @@ protected:
 };
 
 MoveCelCommand::MoveCelCommand()
-  : Command("MoveCel",
-            "Move Cel",
-            CmdUIOnlyFlag)
+  : Command("MoveCel", CmdUIOnlyFlag)
 {
 }
 

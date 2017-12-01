@@ -33,9 +33,7 @@ protected:
 };
 
 OpenGroupCommand::OpenGroupCommand()
-  : Command("OpenGroup",
-            "Open/Close Group",
-            CmdRecordableFlag)
+  : Command("OpenGroup", CmdRecordableFlag)
 {
 }
 

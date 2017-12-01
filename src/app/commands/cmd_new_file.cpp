@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/document.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -50,9 +51,7 @@ protected:
 static int _sprite_counter = 0;
 
 NewFileCommand::NewFileCommand()
-  : Command("NewFile",
-            "New File",
-            CmdRecordableFlag)
+  : Command("NewFile", CmdRecordableFlag)
 {
 }
 

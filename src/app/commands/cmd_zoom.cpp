@@ -11,10 +11,12 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
+#include "fmt/format.h"
 #include "render/zoom.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -43,9 +45,7 @@ private:
 };
 
 ZoomCommand::ZoomCommand()
-  : Command("Zoom",
-            "Zoom",
-            CmdUIOnlyFlag)
+  : Command("Zoom", CmdUIOnlyFlag)
   , m_action(Action::In)
   , m_zoom(1, 1)
   , m_focus(Focus::Default)
@@ -120,17 +120,18 @@ void ZoomCommand::onExecute(Context* context)
 
 std::string ZoomCommand::onGetFriendlyName() const
 {
-  std::string text = "Zoom";
+  std::string text;
 
   switch (m_action) {
     case Action::In:
-      text += " in";
+      text = Strings::commands_Zoom_In();
       break;
     case Action::Out:
-      text += " out";
+      text = Strings::commands_Zoom_Out();
       break;
     case Action::Set:
-      text += " " + base::convert_to<std::string>(int(100.0*m_zoom.scale())) + "%";
+      text = fmt::format(Strings::commands_Zoom_Set(),
+                         int(100.0*m_zoom.scale()));
       break;
   }
 

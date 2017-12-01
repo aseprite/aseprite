@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,9 +30,7 @@ using namespace ui;
 class CloseFileCommand : public Command {
 public:
   CloseFileCommand()
-    : Command("CloseFile",
-              "Close File",
-              CmdUIOnlyFlag) {
+    : Command("CloseFile", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new CloseFileCommand(*this); }
@@ -56,9 +54,7 @@ protected:
 class CloseAllFilesCommand : public Command {
 public:
   CloseAllFilesCommand()
-    : Command("CloseAllFiles",
-              "Close All Files",
-              CmdRecordableFlag) {
+    : Command("CloseAllFiles", CmdRecordableFlag) {
     m_quitting = false;
   }
 

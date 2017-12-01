@@ -43,9 +43,7 @@ protected:
 };
 
 ColorQuantizationCommand::ColorQuantizationCommand()
-  : Command("ColorQuantization",
-            "Create Palette from Current Sprite (Color Quantization)",
-            CmdRecordableFlag)
+  : Command("ColorQuantization", CmdRecordableFlag)
 {
 }
 

@@ -27,9 +27,7 @@ protected:
 };
 
 CopyCelCommand::CopyCelCommand()
-  : Command("CopyCel",
-            "Copy Cel",
-            CmdUIOnlyFlag)
+  : Command("CopyCel", CmdUIOnlyFlag)
 {
 }
 

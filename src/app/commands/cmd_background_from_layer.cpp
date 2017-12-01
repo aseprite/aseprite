@@ -12,8 +12,8 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/color_bar.h"
 #include "app/transaction.h"
+#include "app/ui/color_bar.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -30,9 +30,7 @@ protected:
 };
 
 BackgroundFromLayerCommand::BackgroundFromLayerCommand()
-  : Command("BackgroundFromLayer",
-            "Background From Layer",
-            CmdRecordableFlag)
+  : Command("BackgroundFromLayer", CmdRecordableFlag)
 {
 }
 

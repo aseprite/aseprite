@@ -12,8 +12,10 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/tools/ink_type.h"
 #include "app/ui/context_bar.h"
+#include "fmt/format.h"
 
 namespace app {
 
@@ -34,9 +36,7 @@ private:
 };
 
 SetInkTypeCommand::SetInkTypeCommand()
-  : Command("SetInkType",
-            "Set Ink Type",
-            CmdUIOnlyFlag)
+  : Command("SetInkType", CmdUIOnlyFlag)
   , m_type(tools::InkType::DEFAULT)
 {
 }
@@ -73,7 +73,25 @@ void SetInkTypeCommand::onExecute(Context* context)
 
 std::string SetInkTypeCommand::onGetFriendlyName() const
 {
-  return "Set Ink Type: " + tools::ink_type_to_string(m_type);
+  std::string ink;
+  switch (m_type) {
+    case tools::InkType::SIMPLE:
+      ink = Strings::inks_simple_ink();
+      break;
+    case tools::InkType::ALPHA_COMPOSITING:
+      ink = Strings::inks_alpha_compositing();
+      break;
+    case tools::InkType::COPY_COLOR:
+      ink = Strings::inks_copy_color();
+      break;
+    case tools::InkType::LOCK_ALPHA:
+      ink = Strings::inks_lock_alpha();
+      break;
+    case tools::InkType::SHADING:
+      ink = Strings::inks_shading();
+      break;
+  }
+  return fmt::format(getBaseFriendlyName(), ink);
 }
 
 Command* CommandFactory::createSetInkTypeCommand()

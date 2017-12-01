@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,9 +30,7 @@ private:
 };
 
 SetPaletteEntrySizeCommand::SetPaletteEntrySizeCommand()
-  : Command("SetPaletteEntrySize",
-            "Set Palette Entry Size",
-            CmdUIOnlyFlag)
+  : Command("SetPaletteEntrySize", CmdUIOnlyFlag)
   , m_size(7)
 {
 }

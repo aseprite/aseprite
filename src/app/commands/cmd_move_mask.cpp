@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,7 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -25,14 +26,13 @@
 #include "base/convert_to.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/view.h"
 
 namespace app {
 
 MoveMaskCommand::MoveMaskCommand()
-  : Command("MoveMask",
-            "Move Mask",
-            CmdRecordableFlag)
+  : Command("MoveMask", CmdRecordableFlag)
 {
 }
 
@@ -42,29 +42,12 @@ void MoveMaskCommand::onLoadParams(const Params& params)
   if (target == "boundaries") m_target = Boundaries;
   else if (target == "content") m_target = Content;
 
-  std::string direction = params.get("direction");
-  if (direction == "left") m_direction = Left;
-  else if (direction == "right") m_direction = Right;
-  else if (direction == "up") m_direction = Up;
-  else if (direction == "down") m_direction = Down;
-
-  std::string units = params.get("units");
-  if (units == "pixel") m_units = Pixel;
-  else if (units == "tile-width") m_units = TileWidth;
-  else if (units == "tile-height") m_units = TileHeight;
-  else if (units == "zoomed-pixel") m_units = ZoomedPixel;
-  else if (units == "zoomed-tile-width") m_units = ZoomedTileWidth;
-  else if (units == "zoomed-tile-height") m_units = ZoomedTileHeight;
-  else if (units == "viewport-width") m_units = ViewportWidth;
-  else if (units == "viewport-height") m_units = ViewportHeight;
-
-  int quantity = params.get_as<int>("quantity");
-  m_quantity = std::max<int>(1, quantity);
-
   if (params.has_param("wrap"))
     m_wrap = params.get_as<bool>("wrap");
   else
     m_wrap = false;
+
+  m_moveThing.onLoadParams(params);
 }
 
 bool MoveMaskCommand::onEnabled(Context* context)
@@ -90,7 +73,7 @@ bool MoveMaskCommand::onEnabled(Context* context)
 
 void MoveMaskCommand::onExecute(Context* context)
 {
-  gfx::Point delta = getDelta(context);
+  gfx::Point delta = m_moveThing.getDelta(context);
 
   switch (m_target) {
 
@@ -128,114 +111,15 @@ void MoveMaskCommand::onExecute(Context* context)
   }
 }
 
-gfx::Point MoveMaskCommand::getDelta(Context* context) const
-{
-  DocumentView* view = static_cast<UIContext*>(context)->activeView();
-  if (!view)
-    return gfx::Point(0, 0);
-
-  DocumentPreferences& docPref = Preferences::instance().document(view->document());
-  Editor* editor = view->editor();
-  gfx::Rect vp = view->viewWidget()->viewportBounds();
-  gfx::Rect gridBounds = docPref.grid.bounds();
-  int dx = 0;
-  int dy = 0;
-  int pixels = 0;
-
-  switch (m_units) {
-    case Pixel:
-      pixels = 1;
-      break;
-    case TileWidth:
-      pixels = gridBounds.w;
-      break;
-    case TileHeight:
-      pixels = gridBounds.h;
-      break;
-    case ZoomedPixel:
-      pixels = editor->zoom().apply(1);
-      break;
-    case ZoomedTileWidth:
-      pixels = editor->zoom().apply(gridBounds.w);
-      break;
-    case ZoomedTileHeight:
-      pixels = editor->zoom().apply(gridBounds.h);
-      break;
-    case ViewportWidth:
-      pixels = vp.h;
-      break;
-    case ViewportHeight:
-      pixels = vp.w;
-      break;
-  }
-
-  switch (m_direction) {
-    case Left:  dx = -m_quantity * pixels; break;
-    case Right: dx = +m_quantity * pixels; break;
-    case Up:    dy = -m_quantity * pixels; break;
-    case Down:  dy = +m_quantity * pixels; break;
-  }
-
-  return gfx::Point(dx, dy);
-}
-
 std::string MoveMaskCommand::onGetFriendlyName() const
 {
-  std::string text = "Move";
-
+  std::string content;
   switch (m_target) {
-
-    case Boundaries: {
-      text += " Selection Boundaries";
-      break;
-    }
-
-    case Content: {
-      text += " Selection Content";
-      break;
-    }
-
+    case Boundaries: content = Strings::commands_MoveMask_Boundaries(); break;
+    case Content: content = Strings::commands_MoveMask_Content(); break;
   }
-
-  text += " " + base::convert_to<std::string>(m_quantity);
-
-  switch (m_units) {
-    case Pixel:
-      text += " pixel";
-      break;
-    case TileWidth:
-      text += " horizontal tile";
-      break;
-    case TileHeight:
-      text += " vertical tile";
-      break;
-    case ZoomedPixel:
-      text += " zoomed pixel";
-      break;
-    case ZoomedTileWidth:
-      text += " zoomed horizontal tile";
-      break;
-    case ZoomedTileHeight:
-      text += " zoomed vertical tile";
-      break;
-    case ViewportWidth:
-      text += " viewport width";
-      break;
-    case ViewportHeight:
-      text += " viewport height";
-      break;
-  }
-  if (m_quantity != 1)
-    text += "s";
-
-  switch (m_direction) {
-    case Left:  text += " left"; break;
-    case Right: text += " right"; break;
-    case Up:    text += " up"; break;
-    case Down:  text += " down"; break;
-  }
-
-  return text;
+  return fmt::format(getBaseFriendlyName(),
+                     content, m_moveThing.getFriendlyString());
 }
 
 Command* CommandFactory::createMoveMaskCommand()

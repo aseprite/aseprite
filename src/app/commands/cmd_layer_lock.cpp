@@ -32,9 +32,7 @@ protected:
 };
 
 LayerLockCommand::LayerLockCommand()
-  : Command("LayerLock",
-            "Lock Layers",
-            CmdRecordableFlag)
+  : Command("LayerLock", CmdRecordableFlag)
 {
 }
 

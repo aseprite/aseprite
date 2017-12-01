@@ -63,9 +63,7 @@ private:
 };
 
 MaskByColorCommand::MaskByColorCommand()
-  : Command("MaskByColor",
-            "Mask By Color",
-            CmdUIOnlyFlag)
+  : Command("MaskByColor", CmdUIOnlyFlag)
 {
 }
 

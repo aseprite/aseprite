@@ -75,9 +75,7 @@ private:
 };
 
 OpenFileCommand::OpenFileCommand()
-  : Command("OpenFile",
-            "Open Sprite",
-            CmdRecordableFlag)
+  : Command("OpenFile", CmdRecordableFlag)
   , m_repeatCheckbox(false)
   , m_oneFrame(false)
   , m_seqDecision(SequenceDecision::Ask)

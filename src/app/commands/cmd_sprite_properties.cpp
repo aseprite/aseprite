@@ -43,9 +43,7 @@ protected:
 };
 
 SpritePropertiesCommand::SpritePropertiesCommand()
-  : Command("SpriteProperties",
-            "Sprite Properties",
-            CmdUIOnlyFlag)
+  : Command("SpriteProperties", CmdUIOnlyFlag)
 {
 }
 

@@ -65,9 +65,7 @@ private:
 };
 
 NewLayerCommand::NewLayerCommand()
-  : Command("NewLayer",
-            "New Layer",
-            CmdRecordableFlag)
+  : Command("NewLayer", CmdRecordableFlag)
 {
   m_name = "";
   m_type = Type::Layer;

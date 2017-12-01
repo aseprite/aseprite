@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,9 +25,7 @@ protected:
 };
 
 CopyMergedCommand::CopyMergedCommand()
-  : Command("CopyMerged",
-            "Copy Merged",
-            CmdUIOnlyFlag)
+  : Command("CopyMerged", CmdUIOnlyFlag)
 {
 }
 

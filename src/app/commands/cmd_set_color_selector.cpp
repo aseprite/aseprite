@@ -11,7 +11,9 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/ui/color_bar.h"
+#include "fmt/format.h"
 
 namespace app {
 
@@ -32,9 +34,7 @@ private:
 };
 
 SetColorSelectorCommand::SetColorSelectorCommand()
-  : Command("SetColorSelector",
-            "Set Color Selector",
-            CmdUIOnlyFlag)
+  : Command("SetColorSelector", CmdUIOnlyFlag)
   , m_type(ColorBar::ColorSelector::SPECTRUM)
 {
 }
@@ -70,27 +70,22 @@ void SetColorSelectorCommand::onExecute(Context* context)
 
 std::string SetColorSelectorCommand::onGetFriendlyName() const
 {
-  std::string result = "Set Color Selector: ";
-
+  std::string type;
   switch (m_type) {
     case ColorBar::ColorSelector::SPECTRUM:
-      result += "Color Spectrum";
+      type = Strings::commands_SetColorSelector_Spectrum();
       break;
     case ColorBar::ColorSelector::TINT_SHADE_TONE:
-      result += "Color Tint/Shade/Tone";
+      type = Strings::commands_SetColorSelector_TintShadeTone();
       break;
     case ColorBar::ColorSelector::RGB_WHEEL:
-      result += "RGB Color Wheel";
+      type = Strings::commands_SetColorSelector_RGBWheel();
       break;
     case ColorBar::ColorSelector::RYB_WHEEL:
-      result += "RYB Color Wheel";
-      break;
-    default:
-      result += "Unknown";
+      type = Strings::commands_SetColorSelector_RYBWheel();
       break;
   }
-
-  return result;
+  return fmt::format(getBaseFriendlyName(), type);
 }
 
 Command* CommandFactory::createSetColorSelectorCommand()

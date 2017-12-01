@@ -15,6 +15,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/document_view.h"
@@ -27,6 +28,7 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/ui.h"
 
 #include <stdexcept>
@@ -56,9 +58,7 @@ private:
 };
 
 NewFrameCommand::NewFrameCommand()
-  : Command("NewFrame",
-            "New Frame",
-            CmdRecordableFlag)
+  : Command("NewFrame", CmdRecordableFlag)
 {
 }
 
@@ -191,20 +191,20 @@ void NewFrameCommand::onExecute(Context* context)
 
 std::string NewFrameCommand::onGetFriendlyName() const
 {
-  std::string text = "New Frame";
+  std::string text;
 
   switch (m_content) {
     case Content::DUPLICATE_FRAME:
-      text = "New Frame";
+      text = Strings::commands_NewFrame();
       break;
     case Content::NEW_EMPTY_FRAME:
-      text = "New Empty Frame";
+      text = Strings::commands_NewFrame_NewEmptyFrame();
       break;
     case Content::DUPLICATE_CELS:
-      text = "Duplicate Linked Cels";
+      text = Strings::commands_NewFrame_DuplicateCels();
       break;
     case Content::DUPLICATE_CELS_BLOCK:
-      text = "Duplicate Cels";
+      text = Strings::commands_NewFrame_DuplicateCelsBlock();
       break;
   }
 

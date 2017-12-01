@@ -14,11 +14,12 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/timeline/timeline.h"
-#include "base/convert_to.h"
 #include "doc/layer.h"
+#include "fmt/format.h"
 
 #include <string>
 
@@ -40,9 +41,7 @@ private:
 };
 
 LayerOpacityCommand::LayerOpacityCommand()
-  : Command("LayerOpacity",
-            "Layer Opacity",
-            CmdUIOnlyFlag)
+  : Command("LayerOpacity", CmdUIOnlyFlag)
 {
   m_opacity = 255;
 }
@@ -95,12 +94,9 @@ void LayerOpacityCommand::onExecute(Context* context)
 
 std::string LayerOpacityCommand::onGetFriendlyName() const
 {
-  std::string text = "Set Layer Opacity to ";
-  text += base::convert_to<std::string>(m_opacity);
-  text += " (";
-  text += base::convert_to<std::string>(int(100.0 * m_opacity / 255.0));
-  text += "%)";
-  return text;
+  return fmt::format(getBaseFriendlyName(),
+                     m_opacity,
+                     int(100.0 * m_opacity / 255.0));
 }
 
 Command* CommandFactory::createLayerOpacityCommand()

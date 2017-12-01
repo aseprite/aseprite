@@ -20,6 +20,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/timeline/timeline.h"
@@ -32,14 +33,13 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "gfx/size.h"
 
 namespace app {
 
 FlipCommand::FlipCommand()
-  : Command("Flip",
-            "Flip",
-            CmdRecordableFlag)
+  : Command("Flip", CmdRecordableFlag)
 {
   m_flipMask = false;
   m_flipType = doc::algorithm::FlipHorizontal;
@@ -210,19 +210,20 @@ void FlipCommand::onExecute(Context* context)
 
 std::string FlipCommand::onGetFriendlyName() const
 {
-  std::string text = "Flip";
+  std::string content;
+  std::string orientation;
 
   if (m_flipMask)
-    text += " Selection";
+    content = Strings::commands_Flip_Selection();
   else
-    text += " Canvas";
+    content = Strings::commands_Flip_Canvas();
 
   if (m_flipType == doc::algorithm::FlipHorizontal)
-    text += " Horizontal";
+    content = Strings::commands_Flip_Horizontally();
   else
-    text += " Vertical";
+    content = Strings::commands_Flip_Vertically();
 
-  return text;
+  return fmt::format(getBaseFriendlyName(), content, orientation);
 }
 
 Command* CommandFactory::createFlipCommand()

@@ -35,9 +35,7 @@ protected:
 };
 
 DuplicateLayerCommand::DuplicateLayerCommand()
-  : Command("DuplicateLayer",
-            "Duplicate Layer",
-            CmdRecordableFlag)
+  : Command("DuplicateLayer", CmdRecordableFlag)
 {
 }
 

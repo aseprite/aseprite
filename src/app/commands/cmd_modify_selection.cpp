@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015, 2016  David Capello
+// Copyright (C) 2015-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
@@ -20,6 +21,7 @@
 #include "doc/brush_type.h"
 #include "doc/mask.h"
 #include "filters/neighboring_pixels.h"
+#include "fmt/format.h"
 
 #include "modify_selection.xml.h"
 
@@ -57,9 +59,7 @@ private:
 };
 
 ModifySelectionCommand::ModifySelectionCommand()
-  : Command("ModifySelection",
-            "Modify Selection",
-            CmdRecordableFlag)
+  : Command("ModifySelection", CmdRecordableFlag)
   , m_modifier(Expand)
   , m_quantity(0)
   , m_brushType(doc::kCircleBrushType)
@@ -141,7 +141,7 @@ void ModifySelectionCommand::onExecute(Context* context)
 
   // Set the new mask
   Transaction transaction(writer.context(),
-                          getActionName() + " Selection",
+                          friendlyName(),
                           DoesntModifyDocument);
   transaction.execute(new cmd::SetMask(document, mask));
   transaction.commit();
@@ -152,29 +152,22 @@ void ModifySelectionCommand::onExecute(Context* context)
 
 std::string ModifySelectionCommand::onGetFriendlyName() const
 {
-  std::string text;
+  std::string quantity;
+  if (m_quantity > 0)
+    quantity = fmt::format(Strings::commands_ModifySelection_Quantity(), m_quantity);
 
-  text += getActionName();
-  text += " Selection";
-
-  if (m_quantity > 0) {
-    text += " by ";
-    text += base::convert_to<std::string>(m_quantity);
-    text += " pixel";
-    if (m_quantity > 1)
-      text += "s";
-  }
-
-  return text;
+  return fmt::format(getBaseFriendlyName(),
+                     getActionName(),
+                     quantity);
 }
 
 std::string ModifySelectionCommand::getActionName() const
 {
   switch (m_modifier) {
-    case Border: return "Border";
-    case Expand: return "Expand";
-    case Contract: return "Contract";
-    default: return "Modify";
+    case Border: return Strings::commands_ModifySelection_Border();
+    case Expand: return Strings::commands_ModifySelection_Expand();
+    case Contract: return Strings::commands_ModifySelection_Contract();
+    default: return Strings::commands_ModifySelection_Modify();
   }
 }
 

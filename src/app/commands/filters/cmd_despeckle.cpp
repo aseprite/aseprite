@@ -97,9 +97,7 @@ protected:
 };
 
 DespeckleCommand::DespeckleCommand()
-  : Command("Despeckle",
-            "Despeckle",
-            CmdRecordableFlag)
+  : Command("Despeckle", CmdRecordableFlag)
 {
 }
 

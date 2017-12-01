@@ -19,7 +19,7 @@ namespace app {
 
   class SaveFileBaseCommand : public Command {
   public:
-    SaveFileBaseCommand(const char* shortName, const char* friendlyName, CommandFlags flags);
+    SaveFileBaseCommand(const char* id, CommandFlags flags);
 
     std::string selectedFilename() const {
       return m_selectedFilename;

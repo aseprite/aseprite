@@ -141,8 +141,8 @@ private:
 
 //////////////////////////////////////////////////////////////////////
 
-SaveFileBaseCommand::SaveFileBaseCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
-  : Command(short_name, friendly_name, flags)
+SaveFileBaseCommand::SaveFileBaseCommand(const char* id, CommandFlags flags)
+  : Command(id, flags)
 {
 }
 
@@ -357,7 +357,7 @@ protected:
 };
 
 SaveFileCommand::SaveFileCommand()
-  : SaveFileBaseCommand("SaveFile", "Save File", CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFile", CmdRecordableFlag)
 {
 }
 
@@ -393,7 +393,7 @@ protected:
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
-  : SaveFileBaseCommand("SaveFileAs", "Save File As", CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFileAs", CmdRecordableFlag)
 {
 }
 
@@ -412,7 +412,7 @@ protected:
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : SaveFileBaseCommand("SaveFileCopyAs", "Export", CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFileCopyAs", CmdRecordableFlag)
 {
 }
 

@@ -55,9 +55,7 @@ private:
 };
 
 NewBrushCommand::NewBrushCommand()
-  : Command("NewBrush",
-            "New Brush",
-            CmdUIOnlyFlag)
+  : Command("NewBrush", CmdUIOnlyFlag)
 {
 }
 

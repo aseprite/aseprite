@@ -138,9 +138,7 @@ protected:
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
-  : Command("ReplaceColor",
-            "Replace Color",
-            CmdRecordableFlag)
+  : Command("ReplaceColor", CmdRecordableFlag)
 {
 }
 

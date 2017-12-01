@@ -40,9 +40,7 @@ protected:
 };
 
 SetLoopSectionCommand::SetLoopSectionCommand()
-  : Command("SetLoopSection",
-            "Set Loop Section",
-            CmdRecordableFlag)
+  : Command("SetLoopSection", CmdRecordableFlag)
   , m_action(Action::Auto)
   , m_begin(0)
   , m_end(0)

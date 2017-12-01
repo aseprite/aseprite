@@ -26,9 +26,7 @@ protected:
 };
 
 ContiguousFillCommand::ContiguousFillCommand()
-  : Command("ContiguousFill",
-            "Switch Contiguous Fill",
-            CmdUIOnlyFlag)
+  : Command("ContiguousFill", CmdUIOnlyFlag)
 {
 }
 

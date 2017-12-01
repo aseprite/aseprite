@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2017  David Capello
 // Copyright (C) 2016  Carlo Caputo
 //
 // This program is distributed under the terms of
@@ -21,10 +22,7 @@ using namespace gfx;
 class ToggleTimelineThumbnailsCommand : public Command {
 public:
   ToggleTimelineThumbnailsCommand()
-    : Command("ToggleTimelineThumbnails",
-              "Toggle Timeline Thumbnails",
-              CmdUIOnlyFlag)
-  {
+    : Command("ToggleTimelineThumbnails", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ToggleTimelineThumbnailsCommand(*this); }

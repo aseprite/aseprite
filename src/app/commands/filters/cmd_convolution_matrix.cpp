@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -151,9 +151,7 @@ protected:
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
-  : Command("ConvolutionMatrix",
-            "Convolution Matrix",
-            CmdRecordableFlag)
+  : Command("ConvolutionMatrix", CmdRecordableFlag)
 {
 }
 

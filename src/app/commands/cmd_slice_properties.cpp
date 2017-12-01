@@ -39,9 +39,7 @@ private:
 };
 
 SlicePropertiesCommand::SlicePropertiesCommand()
-  : Command("SliceProperties",
-            "Slice Properties",
-            CmdUIOnlyFlag)
+  : Command("SliceProperties", CmdUIOnlyFlag)
   , m_sliceId(NullId)
 {
 }

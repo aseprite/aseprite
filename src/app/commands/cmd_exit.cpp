@@ -29,9 +29,7 @@ protected:
 };
 
 ExitCommand::ExitCommand()
-  : Command("Exit",
-            "Exit",
-            CmdUIOnlyFlag)
+  : Command("Exit", CmdUIOnlyFlag)
 {
 }
 

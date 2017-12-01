@@ -10,12 +10,10 @@
 
 #include "app/commands/quick_command.h"
 
-#include "app/i18n/strings.h"
-
 namespace app {
 
 QuickCommand::QuickCommand(const char* id, std::function<void()> execute)
-  : Command(id, id, CmdUIOnlyFlag)
+  : Command(id, CmdUIOnlyFlag)
   , m_execute(execute)
 {
 }
@@ -32,13 +30,6 @@ QuickCommand* QuickCommand::clone() const
 void QuickCommand::onExecute(Context* context)
 {
   m_execute();
-}
-
-std::string QuickCommand::onGetFriendlyName() const
-{
-  std::string id = "commands.";
-  id += this->id();
-  return Strings::instance()->translate(id.c_str());
 }
 
 } // namespace app

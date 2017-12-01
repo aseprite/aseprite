@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,9 +13,11 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "app/ui/color_bar.h"
 #include "doc/palette.h"
+#include "fmt/format.h"
 
 namespace app {
 
@@ -45,9 +47,7 @@ protected:
 };
 
 ChangeColorCommand::ChangeColorCommand()
-  : Command("ChangeColor",
-            "Change Color",
-            CmdUIOnlyFlag)
+  : Command("ChangeColor", CmdUIOnlyFlag)
 {
   m_background = false;
   m_change = None;
@@ -96,25 +96,26 @@ void ChangeColorCommand::onExecute(Context* context)
 
 std::string ChangeColorCommand::onGetFriendlyName() const
 {
-  std::string text = "Color";
+  std::string action;
 
   switch (m_change) {
     case None:
-      return text;
+      break;
     case IncrementIndex:
-      text += ": Increment";
+      if (m_background)
+        action = Strings::commands_ChangeColor_IncrementBgIndex();
+      else
+        action = Strings::commands_ChangeColor_IncrementFgIndex();
       break;
     case DecrementIndex:
-      text += ": Decrement";
+      if (m_background)
+        action = Strings::commands_ChangeColor_DecrementBgIndex();
+      else
+        action = Strings::commands_ChangeColor_DecrementFgIndex();
       break;
   }
 
-  if (m_background)
-    text += " Background Index";
-  else
-    text += " Foreground Index";
-
-  return text;
+  return fmt::format(getBaseFriendlyName(), action);
 }
 
 Command* CommandFactory::createChangeColorCommand()

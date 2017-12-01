@@ -35,9 +35,7 @@ protected:
 };
 
 NewFrameTagCommand::NewFrameTagCommand()
-  : Command("NewFrameTag",
-            "New Frame Tag",
-            CmdRecordableFlag)
+  : Command("NewFrameTag", CmdRecordableFlag)
 {
 }
 

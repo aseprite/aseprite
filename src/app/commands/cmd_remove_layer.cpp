@@ -34,9 +34,7 @@ protected:
 };
 
 RemoveLayerCommand::RemoveLayerCommand()
-  : Command("RemoveLayer",
-            "Remove Layer",
-            CmdRecordableFlag)
+  : Command("RemoveLayer", CmdRecordableFlag)
 {
 }
 

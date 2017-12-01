@@ -18,9 +18,7 @@ namespace app {
 class ShowExtrasCommand : public Command {
 public:
   ShowExtrasCommand()
-    : Command("ShowExtras",
-              "Show Extras",
-              CmdUIOnlyFlag) {
+    : Command("ShowExtras", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowExtrasCommand(*this); }
@@ -59,9 +57,7 @@ protected:
 class ShowLayerEdgesCommand : public Command {
 public:
   ShowLayerEdgesCommand()
-    : Command("ShowLayerEdges",
-              "Show Layer Edges",
-              CmdUIOnlyFlag) {
+    : Command("ShowLayerEdges", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowLayerEdgesCommand(*this); }
@@ -81,9 +77,7 @@ protected:
 class ShowGridCommand : public Command {
 public:
   ShowGridCommand()
-    : Command("ShowGrid",
-              "Show Grid",
-              CmdUIOnlyFlag) {
+    : Command("ShowGrid", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowGridCommand(*this); }
@@ -103,9 +97,7 @@ protected:
 class ShowPixelGridCommand : public Command {
 public:
   ShowPixelGridCommand()
-    : Command("ShowPixelGrid",
-              "Show Pixel Grid",
-              CmdUIOnlyFlag) {
+    : Command("ShowPixelGrid", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowPixelGridCommand(*this); }
@@ -125,9 +117,7 @@ protected:
 class ShowSelectionEdgesCommand : public Command {
 public:
   ShowSelectionEdgesCommand()
-    : Command("ShowSelectionEdges",
-              "Show Selection Edges",
-              CmdUIOnlyFlag) {
+    : Command("ShowSelectionEdges", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowSelectionEdgesCommand(*this); }
@@ -147,9 +137,7 @@ protected:
 class ShowBrushPreviewCommand : public Command {
 public:
   ShowBrushPreviewCommand()
-    : Command("ShowBrushPreview",
-              "Show Brush Preview",
-              CmdUIOnlyFlag) {
+    : Command("ShowBrushPreview", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowBrushPreviewCommand(*this); }
@@ -174,9 +162,7 @@ protected:
 class ShowAutoGuidesCommand : public Command {
 public:
   ShowAutoGuidesCommand()
-    : Command("ShowAutoGuides",
-              "Show Auto Guides",
-              CmdUIOnlyFlag) {
+    : Command("ShowAutoGuides", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowAutoGuidesCommand(*this); }
@@ -196,9 +182,7 @@ protected:
 class ShowSlicesCommand : public Command {
 public:
   ShowSlicesCommand()
-    : Command("ShowSlices",
-              "Show Slices",
-              CmdUIOnlyFlag) {
+    : Command("ShowSlices", CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowSlicesCommand(*this); }
