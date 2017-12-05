@@ -392,8 +392,11 @@ namespace ui {
 
   private:
     void removeChild(WidgetsList::iterator& it);
-    void paint(Graphics* graphics, const gfx::Region& drawRegion);
-    bool paintEvent(Graphics* graphics);
+    void paint(Graphics* graphics,
+               const gfx::Region& drawRegion,
+               const bool isBg);
+    bool paintEvent(Graphics* graphics,
+                    const bool isBg);
 
     WidgetType m_type;           // Widget's type
     std::string m_id;            // Widget's id

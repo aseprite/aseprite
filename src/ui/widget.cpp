@@ -959,7 +959,9 @@ void Widget::flushRedraw()
   }
 }
 
-void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
+void Widget::paint(Graphics* graphics,
+                   const gfx::Region& drawRegion,
+                   const bool isBg)
 {
   if (drawRegion.isEmpty())
     return;
@@ -997,12 +999,13 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
       IntersectClip clip(&graphics2, Rect(*it).offset(
           -widget->bounds().x,
           -widget->bounds().y));
-      widget->paintEvent(&graphics2);
+      widget->paintEvent(&graphics2, isBg);
     }
   }
 }
 
-bool Widget::paintEvent(Graphics* graphics)
+bool Widget::paintEvent(Graphics* graphics,
+                        const bool isBg)
 {
   // For transparent widgets we have to draw the parent first.
   if (isTransparent()) {
@@ -1022,13 +1025,14 @@ bool Widget::paintEvent(Graphics* graphics)
           graphics->getClipBounds().offset(
             graphics->getInternalDeltaX(),
             graphics->getInternalDeltaY())));
-      parent()->paint(graphics, rgn);
+      parent()->paint(graphics, rgn, true);
     }
 
     disableFlags(HIDDEN);
   }
 
   PaintEvent ev(this, graphics);
+  ev.setTransparentBg(isBg);
   onPaint(ev); // Fire onPaint event
   return ev.isPainted();
 }
@@ -1372,7 +1376,7 @@ bool Widget::onProcessMessage(Message* msg)
       ASSERT(ptmsg->rect().h > 0);
 
       GraphicsPtr graphics = getGraphics(toClient(ptmsg->rect()));
-      return paintEvent(graphics.get());
+      return paintEvent(graphics.get(), false);
     }
 
     case kKeyDownMessage:

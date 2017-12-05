@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,6 +17,7 @@ PaintEvent::PaintEvent(Widget* source, Graphics* graphics)
   : Event(source)
   , m_graphics(graphics)
   , m_painted(false)
+  , m_transparentBg(false)
 {
 }
 
@@ -30,11 +31,6 @@ Graphics* PaintEvent::graphics()
   // "someone" has painted the widget.
   m_painted = true;
   return m_graphics;
-}
-
-bool PaintEvent::isPainted() const
-{
-  return m_painted;
 }
 
 } // namespace ui

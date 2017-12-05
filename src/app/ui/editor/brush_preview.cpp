@@ -294,10 +294,6 @@ void BrushPreview::hide()
   if (!m_onScreen)
     return;
 
-  app::Document* document = m_editor->document();
-  Sprite* sprite = m_editor->sprite();
-  ASSERT(sprite);
-
   // Get drawable region
   m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
 
@@ -315,9 +311,17 @@ void BrushPreview::hide()
 
   // Clean pixel/brush preview
   if (m_withRealPreview) {
-    document->setExtraCel(ExtraCelRef(nullptr));
-    document->notifySpritePixelsModified(
-      sprite, gfx::Region(m_lastBounds), m_lastFrame);
+    app::Document* document = m_editor->document();
+    doc::Sprite* sprite = m_editor->sprite();
+
+    ASSERT(document);
+    ASSERT(sprite);
+
+    if (document && sprite) {
+      document->setExtraCel(ExtraCelRef(nullptr));
+      document->notifySpritePixelsModified(
+        sprite, gfx::Region(m_lastBounds), m_lastFrame);
+    }
 
     m_withRealPreview = false;
   }
@@ -325,6 +329,16 @@ void BrushPreview::hide()
   m_onScreen = false;
   m_clippingRegion.clear();
   m_oldClippingRegion.clear();
+}
+
+void BrushPreview::discardBrushPreview()
+{
+  app::Document* document = m_editor->document();
+  ASSERT(document);
+
+  if (document && m_onScreen && m_withRealPreview) {
+    document->setExtraCel(ExtraCelRef(nullptr));
+  }
 }
 
 void BrushPreview::redraw()

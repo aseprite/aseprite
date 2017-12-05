@@ -61,6 +61,7 @@
 #include <cmath>
 #include <cstdio>
 #include <limits>
+#include <memory>
 
 namespace app {
 
@@ -1601,6 +1602,7 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kMouseEnterMessage:
+      m_brushPreview.hide();
       updateToolLoopModifiersIndicators();
       updateQuicktool();
       break;
@@ -1772,7 +1774,18 @@ void Editor::onResize(ui::ResizeEvent& ev)
 
 void Editor::onPaint(ui::PaintEvent& ev)
 {
-  HideBrushPreview hide(m_brushPreview);
+  std::unique_ptr<HideBrushPreview> hide;
+  // If we are drawing the editor for a tooltip background or any
+  // other semi-transparent widget (e.g. popups), we destroy the brush
+  // preview/extra cel to avoid drawing a part of the brush in the
+  // transparent widget background.
+  if (ev.isTransparentBg()) {
+    m_brushPreview.discardBrushPreview();
+  }
+  else {
+    hide.reset(new HideBrushPreview(m_brushPreview));
+  }
+
   Graphics* g = ev.graphics();
   gfx::Rect rc = clientBounds();
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());

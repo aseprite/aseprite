@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,11 +22,17 @@ namespace ui {
 
     Graphics* graphics();
 
-    bool isPainted() const;
+    bool isPainted() const { return m_painted; }
+    bool isTransparentBg() const { return m_transparentBg; }
+
+    void setTransparentBg(bool state) {
+      m_transparentBg = state;
+    }
 
   private:
     Graphics* m_graphics;
     bool m_painted;
+    bool m_transparentBg;
   };
 
 } // namespace ui
