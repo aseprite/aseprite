@@ -27,6 +27,7 @@
 
 #define SHE_WND_CLASS_NAME L"Aseprite.Window"
 
+#define KEY_TRACE TRACE
 #define MOUSE_TRACE(...)
 
 // Gets the window client are in absolute/screen coordinates
@@ -966,6 +967,9 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       ev.setUnicodeChar(0);
       ev.setRepeat(MAX(0, (lparam & 0xffff)-1));
 
+      KEY_TRACE("KEYDOWN vk=%d scancode=%d->%d modifiers=%d\n",
+                vk, scancode, ev.scancode(), ev.modifiers());
+
       {
         VkToUnicode tu;
         if (tu) {
@@ -981,13 +985,21 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             for (int chr : tu) {
               ev.setUnicodeChar(chr);
               queueEvent(ev);
+
+              KEY_TRACE(" -> queued unicode char=%d <%c>\n",
+                        ev.unicodeChar(),
+                        ev.unicodeChar() ? ev.unicodeChar(): ' ');
             }
           }
         }
       }
 
-      if (sendMsg)
+      if (sendMsg) {
         queueEvent(ev);
+        KEY_TRACE(" -> queued unicode char=%d <%c>\n",
+                  ev.unicodeChar(),
+                  ev.unicodeChar() ? ev.unicodeChar(): ' ');
+      }
 
       return 0;
     }

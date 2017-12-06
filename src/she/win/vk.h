@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -30,6 +30,18 @@ namespace she {
       m_size =
         ToUnicode(vk, scancode, m_keystate, m_buffer,
                   sizeof(m_buffer)/sizeof(m_buffer[0]), 0);
+
+      // If there is a control key pressed, we'll try to get the
+      // unicode character turning control/shift off.
+      if (m_size == 0 ||
+          (m_size == 1 && m_buffer[0] == 0 &&
+           m_keystate[VK_CONTROL] | m_keystate[VK_LCONTROL] | m_keystate[VK_RCONTROL])) {
+        m_keystate[VK_SHIFT] = m_keystate[VK_LSHIFT] = m_keystate[VK_RSHIFT] = 0;
+        m_keystate[VK_CONTROL] = m_keystate[VK_LCONTROL] = m_keystate[VK_RCONTROL] = 0;
+        m_size =
+          ToUnicode(vk, scancode, m_keystate, m_buffer,
+                    sizeof(m_buffer)/sizeof(m_buffer[0]), 0);
+      }
     }
 
     operator bool() { return m_ok; }
