@@ -109,8 +109,8 @@
       <key command="Refresh" shortcut="F5" />
       <key command="TogglePreview" shortcut="F7" />
       <key command="FullscreenPreview" shortcut="F8" />
-      <key command="ShowGrid" shortcut="Shift+G" />
-      <key command="ShowPixelGrid" shortcut="Alt+Shift+G" />
+      <key command="ShowGrid" shortcut="Ctrl+'" mac="Cmd+'" />
+      <key command="ShowPixelGrid" shortcut="Ctrl+Shift+'" mac="Cmd+Shift+'" />
       <key command="SnapToGrid" shortcut="Shift+S" />
       <key command="SetLoopSection" shortcut="F2" />
       <key command="ShowOnionSkin" shortcut="F3" />
@@ -481,7 +481,7 @@
       <key tool="zoom" shortcut="Z" />
 
       <key tool="paint_bucket" shortcut="G" />
-      <key tool="gradient" shortcut="G" />
+      <key tool="gradient" shortcut="Shift+G" />
 
       <key tool="line" shortcut="L" />
       <key tool="curve" shortcut="Shift+L" />
