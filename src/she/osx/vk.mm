@@ -55,7 +55,7 @@ static KeyScancode from_char_to_scancode(int chr)
     kKeyNil,        // 31 =1F = US
     kKeySpace,      // 32 =20 = Space
     kKeyNil,        // 33 =21 = !
-    kKeyQuote,      // 34 =22 = "
+    kKeyNil,        // 34 =22 = "
     kKeyNil,        // 35 =23 = #
     kKeyNil,        // 36 =24 = $
     kKeyNil,        // 37 =25 = %
