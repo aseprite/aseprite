@@ -161,14 +161,9 @@ if(WIN32)
     main/settings.manifest)
 endif()
 
-if(UNIX AND NOT APPLE AND USE_ALLEG4_BACKEND)
-  set(x11_resources main/xpm_icon.c)
-endif()
-
 add_executable(aseprite WIN32
   main/main.cpp
-  ${win32_resources}
-  ${x11_resources})
+  ${win32_resources})
 target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
 add_dependencies(aseprite copy_data)
 

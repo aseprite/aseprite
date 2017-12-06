@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -33,6 +33,7 @@ namespace she {
     bool isMaximized() const override;
     bool isMinimized() const override;
     void setTitleBar(const std::string& title) override;
+    void setIcons(const SurfaceList& icons) override;
     NativeCursor nativeMouseCursor() override;
     bool setNativeMouseCursor(NativeCursor cursor) override;
     bool setNativeMouseCursor(const she::Surface* surface,

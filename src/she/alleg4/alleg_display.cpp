@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -40,6 +40,7 @@
 #elif defined ALLEGRO_UNIX
 
   #include <xalleg.h>
+  #include <X11/Xatom.h>
   #ifdef None
   #undef None
   #define X11_None 0L
@@ -530,6 +531,49 @@ bool Alleg4Display::isMinimized() const
 void Alleg4Display::setTitleBar(const std::string& title)
 {
   set_window_title(title.c_str());
+}
+
+void Alleg4Display::setIcons(const SurfaceList& icons)
+{
+#ifdef ALLEGRO_UNIX
+
+  bool first = true;
+  for (Surface* icon : icons) {
+    auto display = _xwin.display;
+    auto window = _xwin.wm_window;
+    const int w = icon->width();
+    const int h = icon->height();
+
+    SurfaceFormatData format;
+    icon->getFormat(&format);
+
+    std::vector<unsigned long> data(w*h+2);
+    int i = 0;
+    data[i++] = w;
+    data[i++] = h;
+    for (int y=0; y<h; ++y) {
+      const uint32_t* p = (const uint32_t*)icon->getData(0, y);
+      for (int x=0; x<w; ++x, ++p) {
+        uint32_t c = *p;
+        data[i++] =
+          (((c & format.blueMask ) >> format.blueShift )      ) |
+          (((c & format.greenMask) >> format.greenShift) <<  8) |
+          (((c & format.redMask  ) >> format.redShift  ) << 16) |
+          (((c & format.alphaMask) >> format.alphaShift) << 24);
+      }
+    }
+
+    Atom _NET_WM_ICON = XInternAtom(display, "_NET_WM_ICON", False);
+    XChangeProperty(
+      display, window, _NET_WM_ICON, XA_CARDINAL, 32,
+      first ? PropModeReplace:
+              PropModeAppend,
+      (const unsigned char*)&data[0], data.size());
+
+    first = false;
+  }
+
+#endif
 }
 
 NativeCursor Alleg4Display::nativeMouseCursor()

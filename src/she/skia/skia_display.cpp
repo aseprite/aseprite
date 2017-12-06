@@ -137,6 +137,11 @@ void SkiaDisplay::setTitleBar(const std::string& title)
   m_window.setTitle(title);
 }
 
+void SkiaDisplay::setIcons(const SurfaceList& icons)
+{
+  // TODO copy the Allegro impl
+}
+
 NativeCursor SkiaDisplay::nativeMouseCursor()
 {
   return m_nativeCursor;

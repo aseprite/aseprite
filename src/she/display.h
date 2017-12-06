@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 #include "gfx/point.h"
 #include "she/display_handle.h"
 #include "she/native_cursor.h"
+#include "she/surface_list.h"
 
 #include <string>
 
@@ -55,6 +56,7 @@ namespace she {
     virtual bool isMinimized() const = 0;
 
     virtual void setTitleBar(const std::string& title) = 0;
+    virtual void setIcons(const SurfaceList& icons) = 0;
 
     virtual NativeCursor nativeMouseCursor() = 0;
     virtual bool setNativeMouseCursor(NativeCursor cursor) = 0;

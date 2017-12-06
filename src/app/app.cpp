@@ -57,9 +57,11 @@
 #include "base/unique_ptr.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "render/render.h"
 #include "she/display.h"
 #include "she/error.h"
+#include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
@@ -229,6 +231,32 @@ void App::initialize(const AppOptions& options)
   }
 
   she::instance()->finishLaunching();
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+  try {
+    she::Display* display = she::instance()->defaultDisplay();
+    she::SurfaceList icons;
+
+    for (const int size : { 32, 64, 128 }) {
+      ResourceFinder rf;
+      rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
+      if (rf.findFirst()) {
+        she::Surface* surf = she::instance()->loadRgbaSurface(rf.filename().c_str());
+        if (surf)
+          icons.push_back(surf);
+      }
+    }
+
+    display->setIcons(icons);
+
+    for (auto surf : icons)
+      surf->dispose();
+  }
+  catch (const std::exception&) {
+    // Just ignore the exception, we couldn't change the app icon, no
+    // big deal.
+  }
+#endif
 }
 
 void App::run()
