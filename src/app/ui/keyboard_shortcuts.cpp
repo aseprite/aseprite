@@ -190,7 +190,7 @@ void Key::add(const ui::Accelerator& accel, KeySource source)
 
   // Remove the accelerator from other commands
   if (source == KeySource::UserDefined) {
-    KeyboardShortcuts::instance()->disableAccel(accel, m_keycontext);
+    KeyboardShortcuts::instance()->disableAccel(accel, m_keycontext, this);
     m_userRemoved.remove(accel);
   }
 
@@ -619,11 +619,19 @@ Key* KeyboardShortcuts::action(KeyAction action)
   return key;
 }
 
-void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel, KeyContext keyContext)
+void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
+                                     const KeyContext keyContext,
+                                     const Key* newKey)
 {
   for (Key* key : m_keys) {
-    if (key->keycontext() == keyContext && key->hasAccel(accel))
+    if (key->keycontext() == keyContext &&
+        key->hasAccel(accel) &&
+        // Tools can contain the same keyboard shortcut
+        (key->type() != KeyType::Tool ||
+         newKey == nullptr ||
+         newKey->type() != KeyType::Tool)) {
       key->disableAccel(accel);
+    }
   }
 }
 

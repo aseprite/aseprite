@@ -148,7 +148,9 @@ namespace app {
     Key* quicktool(tools::Tool* tool);
     Key* action(KeyAction action);
 
-    void disableAccel(const ui::Accelerator& accel, KeyContext keyContext);
+    void disableAccel(const ui::Accelerator& accel,
+                      const KeyContext keyContext,
+                      const Key* newKey);
 
     KeyContext getCurrentKeyContext();
     bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params* params);
