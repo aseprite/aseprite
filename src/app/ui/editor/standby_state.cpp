@@ -502,7 +502,7 @@ bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   if (Preferences::instance().editor.straightLinePreview() &&
       checkStartDrawingStraightLine(editor, nullptr))
-    return true;
+    return false;
   return false;
 }
 
