@@ -27,7 +27,7 @@
 
 #define SHE_WND_CLASS_NAME L"Aseprite.Window"
 
-#define KEY_TRACE TRACE
+#define KEY_TRACE(...)
 #define MOUSE_TRACE(...)
 
 // Gets the window client are in absolute/screen coordinates
