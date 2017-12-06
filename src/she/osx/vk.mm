@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 // Uncomment this to log how scancodes are generated
-//#define REPORT_KEYS
+#define KEY_TRACE(...)
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -332,10 +332,8 @@ KeyScancode scancode_from_nsevent(NSEvent* event)
       if (chr != 32) {
         code = from_char_to_scancode(chr);
         if (code != kKeyNil) {
-#ifdef REPORT_KEYS
-          TRACE("scancode_from_nsevent %d -> %d (characters)\n",
-                (int)chr, (int)code);
-#endif
+          KEY_TRACE("scancode_from_nsevent %d -> %d (characters)\n",
+                    (int)chr, (int)code);
           return code;
         }
       }
@@ -346,10 +344,8 @@ KeyScancode scancode_from_nsevent(NSEvent* event)
       int chr = [chars characterAtIndex:chars.length-1];
       code = from_char_to_scancode(chr);
       if (code != kKeyNil) {
-#ifdef REPORT_KEYS
-        TRACE("scancode_from_nsevent %d -> %d (charactersIgnoringModifiers)\n",
-              (int)chr, (int)code);
-#endif
+        KEY_TRACE("scancode_from_nsevent %d -> %d (charactersIgnoringModifiers)\n",
+                  (int)chr, (int)code);
         return code;
       }
     }
@@ -370,10 +366,8 @@ KeyScancode scancode_from_nsevent(NSEvent* event)
         UInt16 chr = CFStringGetCharacterAtIndex(strRef, length-1);
         code = from_char_to_scancode(chr);
         if (code != kKeyNil) {
-#ifdef REPORT_KEYS
-          TRACE("scancode_from_nsevent %d -> %d (get_unicode_from_key_code)\n",
-                (int)chr, (int)code);
-#endif
+          KEY_TRACE("scancode_from_nsevent %d -> %d (get_unicode_from_key_code)\n",
+                    (int)chr, (int)code);
         }
       }
 
@@ -386,10 +380,8 @@ KeyScancode scancode_from_nsevent(NSEvent* event)
 #endif
 
   KeyScancode code = from_keycode_to_scancode(event.keyCode);
-#ifdef REPORT_KEYS
-  TRACE("scancode_from_nsevent %d -> %d (keyCode)\n",
-        (int)event.keyCode, (int)code);
-#endif
+  KEY_TRACE("scancode_from_nsevent %d -> %d (keyCode)\n",
+            (int)event.keyCode, (int)code);
   return code;
 }
 
