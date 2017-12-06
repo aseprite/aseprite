@@ -269,6 +269,8 @@ namespace app {
     // freehand tool is pressed.
     bool startStraightLineWithFreehandTool(const ui::MouseMessage* msg);
 
+    static void registerCommands();
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;

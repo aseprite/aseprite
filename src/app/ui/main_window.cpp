@@ -101,6 +101,8 @@ MainWindow::MainWindow()
   m_previewEditor = new PreviewEditorWindow();
   m_timeline = new Timeline();
 
+  Editor::registerCommands();
+
   m_workspace->setTabsBar(m_tabsBar);
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
 

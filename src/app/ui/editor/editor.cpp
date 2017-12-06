@@ -16,7 +16,9 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/commands/quick_command.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -2483,6 +2485,32 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
 
   if (m_showGuidesThisCel != oldShowGuidesThisCel)
     invalidate();
+}
+
+// static
+void Editor::registerCommands()
+{
+  Commands::instance()
+    ->add(
+      new QuickCommand(
+        CommandId::SwitchNonactiveLayersOpacity(),
+        []{
+          static int oldValue = -1;
+          auto& option = Preferences::instance().experimental.nonactiveLayersOpacity;
+          if (oldValue == -1) {
+            oldValue = option();
+            if (option() == 255)
+              option(128);
+            else
+              option(255);
+          }
+          else {
+            const int newValue = oldValue;
+            oldValue = option();
+            option(newValue);
+          }
+          app_refresh_screen();
+        }));
 }
 
 } // namespace app
