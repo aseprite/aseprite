@@ -537,6 +537,9 @@ void Alleg4Display::setIcons(const SurfaceList& icons)
 {
 #ifdef ALLEGRO_UNIX
 
+  if (!_xwin.display || !_xwin.wm_window)
+    return;
+
   bool first = true;
   for (Surface* icon : icons) {
     auto display = _xwin.display;
