@@ -18,7 +18,6 @@
 namespace she {
 
   class Surface;
-  class Font;
 
   // A display or window to show graphics.
   class Display {

@@ -17,7 +17,6 @@
 
 namespace she {
 
-  class Font;
   class SurfaceLock;
 
   enum class DrawMode {
