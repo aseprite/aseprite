@@ -52,6 +52,13 @@ namespace ui {
   const gfx::Point& get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);
 
+  bool is_ui_thread();
+#ifdef _DEBUG
+  void assert_ui_thread();
+#else
+  static inline void assert_ui_thread() { }
+#endif
+
 } // namespace ui
 
 #endif

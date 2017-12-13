@@ -801,6 +801,13 @@ void StatusBar::onRemoveDocument(doc::Document* doc)
 
 void StatusBar::onPixelFormatChanged(DocumentEvent& ev)
 {
+  // If this is called from the non-UI thread it means that the pixel
+  // format change was made in the background,
+  // i.e. ChangePixelFormatCommand uses a background thread to change
+  // the sprite format.
+  if (!ui::is_ui_thread())
+    return;
+
   onActiveSiteChange(UIContext::instance()->activeSite());
 }
 

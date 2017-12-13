@@ -10,6 +10,7 @@
 
 #include "ui/system.h"
 
+#include "base/thread.h"
 #include "gfx/point.h"
 #include "she/display.h"
 #include "she/surface.h"
@@ -25,6 +26,10 @@
 #include "ui/widget.h"
 
 namespace ui {
+
+// This is used to check if calls to UI layer are made from the non-UI
+// thread. (Which might be catastrofic.)
+base::thread::native_handle_type main_gui_thread;
 
 // Current mouse cursor type.
 
@@ -168,6 +173,7 @@ static void update_mouse_cursor()
 
 UISystem::UISystem()
 {
+  main_gui_thread = base::this_thread::native_handle();
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
     ((she::instance() &&
@@ -305,5 +311,17 @@ void set_mouse_position(const gfx::Point& newPos)
 
   _internal_set_mouse_position(newPos);
 }
+
+bool is_ui_thread()
+{
+  return (main_gui_thread == base::this_thread::native_handle());
+}
+
+#ifdef _DEBUG
+void assert_ui_thread()
+{
+  ASSERT(is_ui_thread());
+}
+#endif
 
 } // namespace ui

@@ -156,6 +156,8 @@ void Widget::setTextf(const char *format, ...)
 
 void Widget::setTextQuiet(const std::string& text)
 {
+  assert_ui_thread();
+
   m_text = text;
   enableFlags(HAS_TEXT);
 }
@@ -169,6 +171,8 @@ she::Font* Widget::font() const
 
 void Widget::setBgColor(gfx::Color color)
 {
+  assert_ui_thread();
+
   m_bgColor = color;
   onSetBgColor();
 
@@ -179,6 +183,8 @@ void Widget::setBgColor(gfx::Color color)
 
 void Widget::setTheme(Theme* theme)
 {
+  assert_ui_thread();
+
   m_theme = theme;
   m_font = nullptr;
 
@@ -188,6 +194,8 @@ void Widget::setTheme(Theme* theme)
 
 void Widget::setStyle(Style* style)
 {
+  assert_ui_thread();
+
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
   m_bgColor = m_theme->calcBgColor(this, style);
@@ -201,6 +209,8 @@ void Widget::setStyle(Style* style)
 
 void Widget::setVisible(bool state)
 {
+  assert_ui_thread();
+
   if (state) {
     if (hasFlags(HIDDEN)) {
       disableFlags(HIDDEN);
@@ -221,6 +231,8 @@ void Widget::setVisible(bool state)
 
 void Widget::setEnabled(bool state)
 {
+  assert_ui_thread();
+
   if (state) {
     if (hasFlags(DISABLED)) {
       disableFlags(DISABLED);
@@ -243,6 +255,8 @@ void Widget::setEnabled(bool state)
 
 void Widget::setSelected(bool state)
 {
+  assert_ui_thread();
+
   if (state) {
     if (!hasFlags(SELECTED)) {
       enableFlags(SELECTED);
@@ -263,6 +277,8 @@ void Widget::setSelected(bool state)
 
 void Widget::setExpansive(bool state)
 {
+  assert_ui_thread();
+
   if (state)
     enableFlags(EXPANSIVE);
   else
@@ -271,6 +287,8 @@ void Widget::setExpansive(bool state)
 
 void Widget::setDecorative(bool state)
 {
+  assert_ui_thread();
+
   if (state)
     enableFlags(DECORATIVE);
   else
@@ -279,6 +297,8 @@ void Widget::setDecorative(bool state)
 
 void Widget::setFocusStop(bool state)
 {
+  assert_ui_thread();
+
   if (state)
     enableFlags(FOCUS_STOP);
   else
@@ -287,6 +307,8 @@ void Widget::setFocusStop(bool state)
 
 void Widget::setFocusMagnet(bool state)
 {
+  assert_ui_thread();
+
   if (state)
     enableFlags(FOCUS_MAGNET);
   else
@@ -295,6 +317,8 @@ void Widget::setFocusMagnet(bool state)
 
 bool Widget::isVisible() const
 {
+  assert_ui_thread();
+
   const Widget* widget = this;
   const Widget* lastWidget = nullptr;
 
@@ -312,6 +336,8 @@ bool Widget::isVisible() const
 
 bool Widget::isEnabled() const
 {
+  assert_ui_thread();
+
   const Widget* widget = this;
 
   do {
@@ -326,26 +352,31 @@ bool Widget::isEnabled() const
 
 bool Widget::isSelected() const
 {
+  assert_ui_thread();
   return hasFlags(SELECTED);
 }
 
 bool Widget::isExpansive() const
 {
+  assert_ui_thread();
   return hasFlags(EXPANSIVE);
 }
 
 bool Widget::isDecorative() const
 {
+  assert_ui_thread();
   return hasFlags(DECORATIVE);
 }
 
 bool Widget::isFocusStop() const
 {
+  assert_ui_thread();
   return hasFlags(FOCUS_STOP);
 }
 
 bool Widget::isFocusMagnet() const
 {
+  assert_ui_thread();
   return hasFlags(FOCUS_MAGNET);
 }
 
@@ -355,6 +386,8 @@ bool Widget::isFocusMagnet() const
 
 Window* Widget::window() const
 {
+  assert_ui_thread();
+
   const Widget* widget = this;
 
   while (widget) {
@@ -369,6 +402,8 @@ Window* Widget::window() const
 
 Manager* Widget::manager() const
 {
+  assert_ui_thread();
+
   const Widget* widget = this;
 
   while (widget) {
@@ -383,6 +418,8 @@ Manager* Widget::manager() const
 
 void Widget::getParents(bool ascendant, WidgetsList& parents)
 {
+  assert_ui_thread();
+
   for (Widget* widget=this; widget; widget=widget->m_parent) {
     // append parents in tail
     if (ascendant)
@@ -395,6 +432,8 @@ void Widget::getParents(bool ascendant, WidgetsList& parents)
 
 Widget* Widget::nextSibling()
 {
+  assert_ui_thread();
+
   if (!m_parent)
     return NULL;
 
@@ -413,6 +452,8 @@ Widget* Widget::nextSibling()
 
 Widget* Widget::previousSibling()
 {
+  assert_ui_thread();
+
   if (!m_parent)
     return NULL;
 
@@ -429,6 +470,8 @@ Widget* Widget::previousSibling()
 Widget* Widget::pick(const gfx::Point& pt,
                      const bool checkParentsVisibility) const
 {
+  assert_ui_thread();
+
   const Widget* inside, *picked = nullptr;
 
   // isVisible() checks visibility of widget's parent.
@@ -452,6 +495,7 @@ Widget* Widget::pick(const gfx::Point& pt,
 bool Widget::hasChild(Widget* child)
 {
   ASSERT_VALID_WIDGET(child);
+  assert_ui_thread();
 
   return std::find(m_children.begin(), m_children.end(), child) != m_children.end();
 }
