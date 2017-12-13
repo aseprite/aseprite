@@ -512,6 +512,8 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
         break;
     }
   }
+  else
+    conversion = Strings::commands_ChangePixelFormat_MoreOptions();
 
   return fmt::format(getBaseFriendlyName(), conversion);
 }
