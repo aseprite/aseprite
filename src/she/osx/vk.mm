@@ -85,7 +85,7 @@ static KeyScancode from_char_to_scancode(int chr)
     kKeyEquals,     // 61 = 3D = =
     kKeyNil,        // 62 = 3E = >
     kKeyNil,        // 63 = 3F = ?
-    kKeyAt,         // 64 = 40 = @
+    kKeyNil,        // 64 = 40 = @
     kKeyA,          // 65 = 41 = A
     kKeyB,          // 66 = 42 = B
     kKeyC,          // 67 = 43 = C
