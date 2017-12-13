@@ -117,7 +117,8 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
         m_seq.add(new cmd::RemovePalette(sprite, pal));
 
     base::UniquePtr<Palette> graypal(Palette::createGrayscale());
-    m_seq.add(new cmd::SetPalette(sprite, 0, graypal));
+    if (*graypal != *sprite->palette(0))
+      m_seq.add(new cmd::SetPalette(sprite, 0, graypal));
   }
 }
 
