@@ -210,6 +210,7 @@ Editor::Editor(Document* document, EditorFlags flags)
       setLayer(layers[layerIndex]);
   }
 
+  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect(base::Bind<void>(&Editor::onTiledModeBeforeChange, this));
   m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::onTiledModeChange, this));
   m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
   m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
@@ -1863,11 +1864,31 @@ void Editor::onContextBarBrushChange()
   m_brushPreview.redraw();
 }
 
+void Editor::onTiledModeBeforeChange()
+{
+  m_oldMainTilePos = mainTilePosition();
+}
+
 void Editor::onTiledModeChange()
 {
+  ASSERT(m_sprite);
+
+  // Get the sprite point in the middle of the editor, so we can
+  // restore this with the new tiled mode in the main tile.
+  View* view = View::getView(this);
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Point screenPos(vp.x + vp.w/2,
+                       vp.y + vp.h/2);
+  gfx::Point spritePos(screenToEditor(screenPos));
+  spritePos -= m_oldMainTilePos;
+
+  // Update padding
   m_padding = calcExtraPadding(m_proj);
-  updateEditor();
-  invalidate();
+
+  spritePos += mainTilePosition();
+  screenPos = editorToScreen(spritePos);
+
+  centerInSpritePoint(spritePos);
 }
 
 void Editor::onShowExtrasChange()

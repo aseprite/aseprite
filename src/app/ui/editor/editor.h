@@ -279,6 +279,7 @@ namespace app {
     void onInvalidateRegion(const gfx::Region& region) override;
     void onFgColorChange();
     void onContextBarBrushChange();
+    void onTiledModeBeforeChange();
     void onTiledModeChange();
     void onShowExtrasChange();
 
@@ -368,6 +369,7 @@ namespace app {
     obs::scoped_connection m_showExtrasConn;
 
     // Slots listeing document preferences.
+    obs::scoped_connection m_tiledConnBefore;
     obs::scoped_connection m_tiledConn;
     obs::scoped_connection m_gridConn;
     obs::scoped_connection m_pixelGridConn;
@@ -401,6 +403,10 @@ namespace app {
     // Focused tag band. Used by the Timeline to save/restore the
     // focused tag band for each sprite/editor.
     int m_tagFocusBand;
+
+    // Used to restore scroll when the tiled mode is changed.
+    // TODO could we avoid one extra field just to do this?
+    gfx::Point m_oldMainTilePos;
 
     static doc::ImageBufferPtr m_renderBuffer;
 
