@@ -86,7 +86,10 @@ if(NOT USE_SHARED_FREETYPE)
   endif()
 endif()
 
-add_subdirectory(harfbuzz-cmake)
+if(NOT USE_SHARED_HARFBUZZ)
+  add_subdirectory(harfbuzz-cmake)
+endif()
+
 add_subdirectory(simpleini)
 add_subdirectory(fmt)
 
