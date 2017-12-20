@@ -27,7 +27,7 @@ Lib::~Lib()
 
 FT_Face Lib::open(const std::string& filename)
 {
-  FT_Stream stream = ft::open_stream(m_ft, filename);
+  FT_Stream stream = ft::open_stream(filename);
   FT_Open_Args args;
   memset(&args, 0, sizeof(args));
   args.flags = FT_OPEN_STREAM;
