@@ -33,7 +33,11 @@ namespace ft {
       hb_buffer_reset(buf);
       for (auto it=begin; it!=end; ++it)
         hb_buffer_add(buf, *it, it - begin);
+
+      // Just in case we're compiling with an old harfbuzz version
+#ifdef HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS
       hb_buffer_set_cluster_level(buf, HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
+#endif
       hb_buffer_set_content_type(buf, HB_BUFFER_CONTENT_TYPE_UNICODE);
       hb_buffer_set_direction(buf, HB_DIRECTION_LTR);
       hb_buffer_guess_segment_properties(buf);
