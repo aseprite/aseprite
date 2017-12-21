@@ -153,9 +153,12 @@ if(APPLE)
 endif()
 
 if(WITH_GTK_FILE_DIALOG_SUPPORT AND UNIX AND NOT APPLE AND NOT BEOS)
-  if(WITH_DEPRECATED_GLIB_SUPPORT)
-    add_definitions(-DASEPRITE_DEPRECATED_GLIB_SUPPORT)
-  endif()
+  # Find gtkmm library
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(GTK gtk+-3.0)
+  include_directories(${GTK_INCLUDE_DIRS})
+  link_directories(${GTK_LIBRARY_DIRS})
+
   add_definitions(-DASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT)
   list(APPEND SHE_SOURCES
     gtk/native_dialogs.cpp)

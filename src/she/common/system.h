@@ -88,7 +88,7 @@ public:
       m_nativeDialogs = new NativeDialogsOSX();
 #elif defined(ASEPRITE_WITH_GTK_FILE_DIALOG_SUPPORT) && defined(__linux__)
     if (!m_nativeDialogs)
-      m_nativeDialogs = new NativeDialogsGTK3();
+      m_nativeDialogs = new NativeDialogsGTK();
 #endif
     return m_nativeDialogs;
   }

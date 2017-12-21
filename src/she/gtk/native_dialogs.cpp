@@ -1,194 +1,258 @@
-// GTK Component of SHE library
+// SHE library - GTK dialogs
+// Copyright (C) 2017  David Capello
 // Copyright (C) 2016  Gabriel Rauter
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-//disable EMPTY_STRING macro already set in allegro, enabling it at the end of file
-#pragma push_macro("EMPTY_STRING")
-#undef EMPTY_STRING
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "she/gtk/native_dialogs.h"
 
+#include "base/fs.h"
 #include "base/string.h"
+#include "she/common/file_dialog.h"
 #include "she/display.h"
 #include "she/error.h"
 
-#include <gtkmm/application.h>
-#include <gtkmm/filechooserdialog.h>
-#include <gtkmm/button.h>
-#include <gtkmm/filefilter.h>
-#include <gtkmm/image.h>
-#include <gdkmm/pixbuf.h>
-#include <glibmm/refptr.h>
-#include <glibmm/miscutils.h>
-#include <glibmm/fileutils.h>
-
-#include <string>
-#include <map>
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 namespace she {
 
-class FileDialogGTK3 : public FileDialog, public Gtk::FileChooserDialog {
+class FileDialogGTK : public CommonFileDialog {
 public:
-  FileDialogGTK3(Glib::RefPtr<Gtk::Application> app) :
-  Gtk::FileChooserDialog(""), m_app(app), m_cancel(true) {
-    this->add_button("_Cancel", Gtk::RESPONSE_CANCEL);
-    m_ok_button = this->add_button("_Open", Gtk::RESPONSE_OK);
-    this->set_default_response(Gtk::RESPONSE_OK);
-    m_filter_all = Gtk::FileFilter::create();
-    m_filter_all->set_name("All formats");
-    this->set_do_overwrite_confirmation();
-    if (FileDialogGTK3::lastUsedDir().empty()) {
-    #ifdef ASEPRITE_DEPRECATED_GLIB_SUPPORT
-      FileDialogGTK3::lastUsedDir() = Glib::get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS);
-    #else
-       FileDialogGTK3::lastUsedDir() = Glib::get_user_special_dir(Glib::USER_DIRECTORY_DOCUMENTS);
-    #endif
-    }
-    this->set_use_preview_label(false);
-    this->set_preview_widget(m_preview);
-    this->signal_update_preview().connect(sigc::mem_fun(this, &FileDialogGTK3::updatePreview));
-  }
-
-  void on_show() override {
-    //setting the filename only works properly when the dialog is shown
-    if (!m_file_name.empty()) {
-      if (this->get_action() == Gtk::FILE_CHOOSER_ACTION_OPEN) {
-        this->set_current_folder(m_file_name);
-      } else {
-        if (Glib::file_test(m_file_name, Glib::FILE_TEST_EXISTS)) {
-          this->set_filename(m_file_name);
-        } else {
-          this->set_current_folder(FileDialogGTK3::lastUsedDir());
-          this->set_current_name(m_file_name);
-        }
-      }
-    } else {
-      this->set_current_folder(FileDialogGTK3::lastUsedDir());
-    }
-    //TODO set position centered to parent window, need she::screen to provide info
-    this->set_position(Gtk::WIN_POS_CENTER);
-    Gtk::FileChooserDialog::on_show();
-    this->raise();
-  }
-
-  void on_response(int response_id) override {
-    switch(response_id) {
-      case(Gtk::RESPONSE_OK): {
-        m_cancel = false;
-        m_file_name = this->get_filename();
-        FileDialogGTK3::lastUsedDir() = this->get_current_folder();
-        break;
-      }
-    }
-    this->hide();
-  }
-
-  void dispose() override {
-    for (auto& window  : m_app->get_windows()) {
-      window->close();
-    }
-    m_app->quit();
-    delete this;
-  }
-
-  void toOpenFile() override {
-    this->set_action(Gtk::FILE_CHOOSER_ACTION_OPEN);
-    m_ok_button->set_label("_Open");
-  }
-
-  void toSaveFile() override {
-    this->set_action(Gtk::FILE_CHOOSER_ACTION_SAVE);
-    m_ok_button->set_label("_Save");
-  }
-
-  void setTitle(const std::string& title) override {
-    this->set_title(title);
-  }
-
-  void setDefaultExtension(const std::string& extension) override {
-    m_default_extension = extension;
-  }
-
-  void addFilter(const std::string& extension, const std::string& description) override {
-    auto filter = Gtk::FileFilter::create();
-    filter->set_name(description);
-    filter->add_pattern("*." + extension);
-    m_filter_all->add_pattern("*." + extension);
-    m_filters[extension] = filter;
+  FileDialogGTK() {
   }
 
   std::string fileName() override {
-    return m_file_name;
+    return m_filename;
+  }
+
+  void getMultipleFileNames(std::vector<std::string>& output) override {
+    output = m_filenames;
   }
 
   void setFileName(const std::string& filename) override {
-    m_file_name = filename;
-  }
-
-  void updatePreview() {
-    this->set_preview_widget_active(false);
-    std::string fileName = this->get_filename();
-    try {
-      if (!Glib::file_test(fileName, Glib::FILE_TEST_IS_DIR)) {
-          auto previewPixbuf = Gdk::Pixbuf::create_from_file(fileName, 256, 256, true);
-          m_preview.set(previewPixbuf);
-          this->set_preview_widget_active();
-      }
-    } catch(Glib::Error e) {}
+    m_filename = base::get_file_name(filename);
+    m_initialDir = base::get_file_path(filename);
   }
 
   bool show(Display* parent) override {
-    //keep pointer on parent display to get information later
-    m_display = parent;
+    static std::string s_lastUsedDir;
+    if (s_lastUsedDir.empty())
+      s_lastUsedDir = g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP);
 
-    //add filters in order they will appear
-    this->add_filter(m_filter_all);
+    const char* okLabel;
+    GtkFileChooserAction action;
 
-    for (const auto& filter : m_filters) {
-      this->add_filter(filter.second)	;
-      if (filter.first.compare(m_default_extension) == 0) {
-        this->set_filter(filter.second);
+    switch (m_type) {
+      case Type::OpenFile:
+      case Type::OpenFiles:
+        action = GTK_FILE_CHOOSER_ACTION_OPEN;
+        okLabel = "_Open";
+        break;
+      case Type::OpenFolder:
+        action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+        okLabel = "_Open Folder";
+        break;
+      case Type::SaveFile:
+        action = GTK_FILE_CHOOSER_ACTION_SAVE;
+        okLabel = "_Save";
+        break;
+    }
+
+    // GtkWindow* gtkParent = nullptr;
+    GtkWidget* dialog = gtk_file_chooser_dialog_new(
+      m_title.c_str(),
+      nullptr,
+      action,
+      "_Cancel", GTK_RESPONSE_CANCEL,
+      okLabel, GTK_RESPONSE_ACCEPT,
+      nullptr);
+
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+
+    GtkFileChooser* chooser = GTK_FILE_CHOOSER(dialog);
+    m_chooser = chooser;
+
+    if (m_type == Type::SaveFile)
+      gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
+    else if (m_type == Type::OpenFiles)
+      gtk_file_chooser_set_select_multiple(chooser, true);
+
+    if (m_type != Type::OpenFolder) {
+      setupFilters(base::get_file_extension(m_filename));
+      setupPreview();
+    }
+
+    if (m_initialDir.empty())
+      gtk_file_chooser_set_current_folder(chooser, s_lastUsedDir.c_str());
+    else
+      gtk_file_chooser_set_current_folder(chooser, m_initialDir.c_str());
+
+    if (!m_filename.empty()) {
+      std::string fn = m_filename;
+      // Add default extension
+      if (m_type == Type::SaveFile && base::get_file_extension(fn).empty()) {
+        fn.push_back('.');
+        fn += m_defExtension;
+      }
+      gtk_file_chooser_set_current_name(chooser, fn.c_str());
+    }
+
+    // Setup the "parent" display as the parent of the dialog (we've
+    // to convert a X11 Window into a GdkWindow to do this).
+    GdkWindow* gdkParentWindow = nullptr;
+    if (parent) {
+      GdkWindow* gdkWindow = gtk_widget_get_root_window(dialog);
+
+      gdkParentWindow =
+        gdk_x11_window_foreign_new_for_display(
+          gdk_window_get_display(gdkWindow),
+          (::Window)parent->nativeHandle());
+
+      gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+      gdk_window_set_transient_for(gdkWindow, gdkParentWindow);
+    }
+    else {
+      gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    }
+
+    // Show the dialog
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (res == GTK_RESPONSE_ACCEPT) {
+      s_lastUsedDir = gtk_file_chooser_get_current_folder(chooser);
+      m_filename = gtk_file_chooser_get_filename(chooser);
+
+      if (m_type == Type::OpenFiles) {
+        GSList* list = gtk_file_chooser_get_filenames(chooser);
+        g_slist_foreach(
+          list,
+          [](void* fn, void* userdata){
+            auto self = (FileDialogGTK*)userdata;
+            self->m_filenames.push_back((char*)fn);
+            g_free(fn);
+          }, this);
+        g_slist_free(list);
       }
     }
 
-    auto filter_any = Gtk::FileFilter::create();
-    filter_any->set_name("Any files");
-    filter_any->add_pattern("*");
-    this->add_filter(filter_any);
+    gtk_widget_destroy(dialog);
+    if (gdkParentWindow)
+      g_object_unref(gdkParentWindow);
 
-    //Run dialog in context of a gtk application so it can be destroys properly
-    m_app->run(*this);
-    return !m_cancel;
+    // Pump gtk+ events to finally hide the dialog from the screen
+    while (gtk_events_pending())
+      gtk_main_iteration();
+
+    return (res == GTK_RESPONSE_ACCEPT);
   }
 
 private:
-  std::string m_file_name;
-  std::string m_default_extension;
-  Glib::RefPtr<Gtk::FileFilter> m_filter_all;
-  std::map<std::string, Glib::RefPtr<Gtk::FileFilter>> m_filters;
-  Gtk::Button* m_ok_button;
-  Glib::RefPtr<Gtk::Application> m_app;
-  Gtk::Image m_preview;
-  Display* m_display;
-  bool m_cancel;
-  static std::string& lastUsedDir() { static std::string lastUsedDir; return lastUsedDir; }
+  void setupFilters(const std::string& fnExtension) {
+    // Filter for all known formats
+    GtkFileFilter* gtkFilter = gtk_file_filter_new();
+    gtk_file_filter_set_name(gtkFilter, "All formats");
+    for (const auto& filter : m_filters) {
+      const std::string& ext = filter.first;
+      std::string pat = "*." + ext;
+      gtk_file_filter_add_pattern(gtkFilter, pat.c_str());
+    }
+    gtk_file_chooser_add_filter(m_chooser, gtkFilter);
+
+    // One filter for each format
+    for (const auto& filter : m_filters) {
+      const std::string& ext = filter.first;
+      const std::string& desc = filter.second;
+      std::string pat = "*." + ext;
+
+      gtkFilter = gtk_file_filter_new();
+      gtk_file_filter_set_name(gtkFilter, desc.c_str());
+      gtk_file_filter_add_pattern(gtkFilter, pat.c_str());
+      gtk_file_chooser_add_filter(m_chooser, gtkFilter);
+
+      if (base::utf8_icmp(ext, fnExtension) == 0)
+        gtk_file_chooser_set_filter(m_chooser, gtkFilter);
+    }
+
+    // One filter for all files
+    gtkFilter = gtk_file_filter_new();
+    gtk_file_filter_set_name(gtkFilter, "All files");
+    gtk_file_filter_add_pattern(gtkFilter, "*");
+    gtk_file_chooser_add_filter(m_chooser, gtkFilter);
+  }
+
+  void setupPreview() {
+    m_preview = gtk_image_new();
+
+    gtk_file_chooser_set_use_preview_label(m_chooser, false);
+    gtk_file_chooser_set_preview_widget(m_chooser, m_preview);
+
+    g_signal_connect(
+      m_chooser, "update-preview",
+      G_CALLBACK(&FileDialogGTK::s_onUpdatePreview), this);
+  }
+
+  static void s_onUpdatePreview(GtkFileChooser* chooser, gpointer userData) {
+    ((FileDialogGTK*)userData)->onUpdatePreview();
+  }
+  void onUpdatePreview() {
+    // Disable preview because we don't know if we will be able to
+    // load/generate the preview successfully.
+    gtk_file_chooser_set_preview_widget_active(m_chooser, false);
+
+    const char* fn = gtk_file_chooser_get_filename(m_chooser);
+    if (fn && base::is_file(fn)) {
+      GError* err = nullptr;
+      GdkPixbuf* previewPixbuf =
+        gdk_pixbuf_new_from_file_at_scale(fn, 256, 256, true, &err);
+      if (previewPixbuf) {
+        gtk_image_set_from_pixbuf(GTK_IMAGE(m_preview), previewPixbuf);
+        g_object_unref(previewPixbuf);
+
+        // Now we can enable the preview panel as the preview was
+        // generated.
+        gtk_file_chooser_set_preview_widget_active(m_chooser, true);
+      }
+      if (err)
+        g_error_free(err);
+    }
+  }
+
+  std::string m_filename;
+  std::string m_initialDir;
+  std::vector<std::string> m_filenames;
+  GtkFileChooser* m_chooser;
+  GtkWidget* m_preview;
 };
 
-NativeDialogsGTK3::NativeDialogsGTK3()
+NativeDialogsGTK::NativeDialogsGTK()
+  : m_gtkApp(nullptr)
 {
 }
 
-FileDialog* NativeDialogsGTK3::createFileDialog()
+NativeDialogsGTK::~NativeDialogsGTK()
 {
-  m_app = Gtk::Application::create();
-  FileDialog* dialog = new FileDialogGTK3(m_app);
-  return dialog;
+  if (m_gtkApp) {
+    g_object_unref(m_gtkApp);
+    m_gtkApp = nullptr;
+  }
+}
+
+FileDialog* NativeDialogsGTK::createFileDialog()
+{
+  if (!m_gtkApp) {
+    int argc = 0;
+    char** argv = nullptr;
+    gtk_init(&argc, &argv);
+
+    m_gtkApp = gtk_application_new(nullptr, G_APPLICATION_FLAGS_NONE);
+  }
+  return new FileDialogGTK;
 }
 
 } // namespace she
-#pragma pop_macro("EMPTY_STRING")

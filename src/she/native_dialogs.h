@@ -16,13 +16,18 @@ namespace she {
 
   class FileDialog {
   public:
+    enum class Type {
+      OpenFile,
+      OpenFiles,
+      OpenFolder,
+      SaveFile,
+    };
+
     virtual ~FileDialog() { }
     virtual void dispose() = 0;
-    virtual void toOpenFile() = 0; // Configure the dialog to open a file
-    virtual void toSaveFile() = 0; // Configure the dialog to save a file
+    virtual void setType(const Type type) = 0;
     virtual void setTitle(const std::string& title) = 0;
     virtual void setDefaultExtension(const std::string& extension) = 0;
-    virtual void setMultipleSelection(bool multiple) = 0;
     virtual void addFilter(const std::string& extension, const std::string& description) = 0;
     virtual std::string fileName() = 0;
     virtual void getMultipleFileNames(std::vector<std::string>& output) = 0;

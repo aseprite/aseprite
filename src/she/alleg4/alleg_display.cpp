@@ -736,7 +736,7 @@ void* Alleg4Display::nativeHandle()
 #elif defined __APPLE__
   return get_osx_window();
 #else
-  return nullptr;
+  return (void*)_xwin.window;
 #endif
 }
 

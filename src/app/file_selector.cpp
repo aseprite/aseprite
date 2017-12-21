@@ -37,17 +37,19 @@ bool show_file_selector(
       dlg->setTitle(title);
       dlg->setFileName(initialPath);
 
+      she::FileDialog::Type nativeType = she::FileDialog::Type::OpenFile;
       switch (type) {
         case FileSelectorType::Open:
+          nativeType = she::FileDialog::Type::OpenFile;
+          break;
         case FileSelectorType::OpenMultiple:
-          dlg->toOpenFile();
-          if (type == FileSelectorType::OpenMultiple)
-            dlg->setMultipleSelection(true);
+          nativeType = she::FileDialog::Type::OpenFiles;
           break;
         case FileSelectorType::Save:
-          dlg->toSaveFile();
+          nativeType = she::FileDialog::Type::SaveFile;
           break;
       }
+      dlg->setType(nativeType);
 
       std::vector<std::string> tokens;
       base::split_string(showExtensions, tokens, ",");
