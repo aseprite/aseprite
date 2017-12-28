@@ -298,9 +298,9 @@ if(USE_SHARED_CMARK)
   find_library(CMARK_LIBRARIES NAMES cmark)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
 else()
-  add_definitions(-DCMARK_STATIC_DEFINE)
-  set(CMARK_LIBRARIES ${PROJECT_BINARY_DIR}/lib/libcmark.a)
-  include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
+  set(CMARK_LIBRARIES
+    ${PROJECT_BINARY_DIR}/lib/libcmark${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(CMARK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/include)
 endif()
 
 if(USE_SHARED_CURL)
