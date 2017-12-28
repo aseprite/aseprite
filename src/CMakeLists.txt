@@ -165,7 +165,9 @@ add_executable(aseprite WIN32
   main/main.cpp
   ${win32_resources})
 target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
-add_dependencies(aseprite copy_data)
+add_dependencies(aseprite
+	cmark_project
+	copy_data)
 
 if(MSVC AND USE_SKIA_BACKEND)
   # Add support to expand filename wildcards in argc/argv

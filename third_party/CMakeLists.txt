@@ -1,6 +1,7 @@
 # ASEPRITE
 # Copyright (C) 2001-2017  David Capello
 
+include(ExternalProject)
 include_directories(.)
 
 if(MSVC)
@@ -95,22 +96,16 @@ add_subdirectory(fmt)
 
 # Add cmark without tests
 if(NOT USE_SHARED_CMARK)
-  set(CMARK_TESTS OFF CACHE BOOL "Build cmark tests and enable testing")
-  add_subdirectory(cmark)
-  set(cmark_headers
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmark/src/cmark.h
-    ${CMAKE_CURRENT_BINARY_DIR}/cmark/src/cmark_export.h
-    ${CMAKE_CURRENT_BINARY_DIR}/cmark/src/cmark_version.h)
-  foreach(fn ${cmark_headers})
-    get_filename_component(fn_name "${fn}" NAME)
-    add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name}
-      COMMAND ${CMAKE_COMMAND} -E copy ${fn} ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name}
-      MAIN_DEPENDENCY ${fn})
-    list(APPEND copy_cmark_headers ${CMAKE_CURRENT_BINARY_DIR}/cmark/${fn_name})
-  endforeach()
-  add_custom_target(copy_cmark_headers DEPENDS ${copy_cmark_headers})
-  add_dependencies(libcmark_static copy_cmark_headers)
+
+  ExternalProject_Add(
+    cmark_project
+    SOURCE_DIR ${CMARK_DIR}
+    INSTALL_DIR ${CMAKE_BINARY_DIR}
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMARK_TESTS=OFF
+    BUILD_BYPRODUCTS ${PROJECT_BINARY_DIR}/lib/libcmark.a
+  )
+  set(CMARK_LIBRARIES ${PROJECT_BINARY_DIR}/lib/libcmark.a)
+  set(CMARK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/include)
 endif()
 
 # JSON

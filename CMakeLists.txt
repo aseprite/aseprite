@@ -299,7 +299,7 @@ if(USE_SHARED_CMARK)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
 else()
   add_definitions(-DCMARK_STATIC_DEFINE)
-  set(CMARK_LIBRARIES libcmark_static)
+  set(CMARK_LIBRARIES ${PROJECT_BINARY_DIR}/lib/libcmark.a)
   include_directories(${CMAKE_BINARY_DIR}/third_party/cmark)
 endif()
 
