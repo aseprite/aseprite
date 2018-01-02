@@ -46,11 +46,11 @@ because they don't depend on any other component.
 
 ## Level 4
 
-  * [dio](dio/) (base, flic): Load/save documents.
+  * [dio](dio/) (base, doc, fixmath, flic): Load/save sprites/documents.
 
 ## Level 5
 
-  * [app](app/) (allegro, base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, she, ui, undo, updater, webserver)
 
 ## Level 6
 

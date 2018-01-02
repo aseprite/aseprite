@@ -31,7 +31,8 @@ FileFormat detect_format(const std::string& filename)
   return ff;
 }
 
-FileFormat detect_format_by_file_content(const std::string& filename)
+FileFormat detect_format_by_file_content_bytes(const uint8_t* buf,
+                                               const int n)
 {
 #define IS_MAGIC_WORD(offset, word)             \
   ((buf[offset+0] == (word & 0xff)) &&          \
@@ -43,22 +44,14 @@ FileFormat detect_format_by_file_content(const std::string& filename)
    (buf[offset+2] == ((dword & 0xff0000) >> 16)) &&       \
    (buf[offset+3] == ((dword & 0xff000000) >> 24)))
 
-  base::FileHandle handle(base::open_file(filename.c_str(), "rb"));
-  if (!handle)
-    return FileFormat::ERROR;
-
-  FILE* f = handle.get();
-  unsigned char buf[8];
-  int count = fread(buf, 1, 8, f);
-
-  if (count >= 2) {
+  if (n >= 2) {
     if (IS_MAGIC_WORD(0, BMP_MAGIC_NUMBER))
       return FileFormat::BMP_IMAGE;
 
     if (IS_MAGIC_WORD(0, JPG_MAGIC_NUMBER))
       return FileFormat::JPEG_IMAGE;
 
-    if (count >= 6) {
+    if (n >= 6) {
       if (std::strncmp((const char*)buf, GIF_87_STAMP, 6) == 0 ||
           std::strncmp((const char*)buf, GIF_89_STAMP, 6) == 0)
         return FileFormat::GIF_ANIMATION;
@@ -70,7 +63,7 @@ FileFormat detect_format_by_file_content(const std::string& filename)
           IS_MAGIC_WORD(4, FLC_MAGIC_NUMBER))
         return FileFormat::FLIC_ANIMATION;
 
-      if (count >= 8) {
+      if (n >= 8) {
         if (IS_MAGIC_DWORD(0, PNG_MAGIC_DWORD1) &&
             IS_MAGIC_DWORD(4, PNG_MAGIC_DWORD2))
           return FileFormat::PNG_IMAGE;
@@ -79,6 +72,19 @@ FileFormat detect_format_by_file_content(const std::string& filename)
   }
 
   return FileFormat::UNKNOWN;
+}
+
+FileFormat detect_format_by_file_content(const std::string& filename)
+{
+  base::FileHandle handle(base::open_file(filename.c_str(), "rb"));
+  if (!handle)
+    return FileFormat::ERROR;
+
+  FILE* f = handle.get();
+  uint8_t buf[8];
+  int n = (int)fread(buf, 1, 8, f);
+
+  return detect_format_by_file_content_bytes(buf, n);
 }
 
 FileFormat detect_format_by_file_extension(const std::string& filename)
