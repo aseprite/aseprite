@@ -1,5 +1,5 @@
 # Aseprite
-*Copyright (C) 2001-2017 David Capello*
+*Copyright (C) 2001-2018 David Capello*
 
 [![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
 [![Discourse Community](https://img.shields.io/badge/discourse-community-brightgreen.svg?style=flat)](https://community.aseprite.org/)
