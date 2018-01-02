@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2017 David Capello
+// Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,8 @@
 #pragma once
 
 #include "dio/file_interface.h"
+
+#include <cstring>
 
 namespace dio {
 
@@ -107,11 +109,11 @@ public:
   }
   void read_scanline(doc::IndexedTraits::address_t address,
                      int w, uint8_t* buffer) {
-    memcpy(address, buffer, w);
+    std::memcpy(address, buffer, w);
   }
   void write_scanline(doc::IndexedTraits::address_t address,
                       int w, uint8_t* buffer) {
-    memcpy(buffer, address, w);
+    std::memcpy(buffer, address, w);
   }
 };
 
