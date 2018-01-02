@@ -21,7 +21,6 @@
 #include "doc/doc.h"
 #include "fixmath/fixmath.h"
 #include "fmt/format.h"
-#include "ui/alert.h"
 #include "zlib.h"
 
 #include <cstdio>
