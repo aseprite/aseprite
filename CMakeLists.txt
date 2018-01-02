@@ -448,10 +448,6 @@ if(APPLE)
     endif(COMPILER_GCC)
 endif(APPLE)
 
-if(WITH_DESKTOP_INTEGRATION)
-  add_subdirectory(desktop)
-endif()
-
 # Third parties
 add_subdirectory(third_party)
 

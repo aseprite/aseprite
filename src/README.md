@@ -55,6 +55,7 @@ because they don't depend on any other component.
 ## Level 6
 
   * [main](main/) (app, base, she, ui)
+  * [desktop](desktop/) (base, doc, dio, render): Integration with the desktop (Windows Explorer, Finder, GNOME, KDE, etc.)
 
 # Debugging Tricks
 

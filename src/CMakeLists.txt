@@ -117,6 +117,10 @@ if(ENABLE_STEAM)
   add_subdirectory(steam)
 endif()
 
+if(WITH_DESKTOP_INTEGRATION)
+  add_subdirectory(desktop)
+endif()
+
 add_subdirectory(app)
 
 ######################################################################
