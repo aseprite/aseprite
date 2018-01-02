@@ -12,10 +12,10 @@
 
 #include "base/fs.h"
 #include "base/string.h"
+#include "base/win/comptr.h"
 #include "she/common/file_dialog.h"
 #include "she/display.h"
 #include "she/error.h"
-#include "she/win/comptr.h"
 
 #include <windows.h>
 #include <shobjidl.h>
@@ -65,7 +65,7 @@ public:
 private:
 
   HRESULT showWithNewAPI(Display* parent, bool& result, bool& shown) {
-    ComPtr<IFileDialog> dlg;
+    base::ComPtr<IFileDialog> dlg;
     HRESULT hr = CoCreateInstance(
       (m_type == Type::SaveFile ? CLSID_FileSaveDialog:
                                   CLSID_FileOpenDialog),
@@ -141,9 +141,9 @@ private:
     shown = true;
 
     if (m_type == Type::OpenFiles) {
-      ComPtr<IFileOpenDialog> odlg;
+      base::ComPtr<IFileOpenDialog> odlg;
       hr = dlg->QueryInterface(IID_IFileOpenDialog, (void**)&odlg);
-      ComPtr<IShellItemArray> items;
+      base::ComPtr<IShellItemArray> items;
       hr = odlg->GetResults(&items);
       if (FAILED(hr))
         return hr;
@@ -154,7 +154,7 @@ private:
         return hr;
 
       for (DWORD i=0; i<nitems; ++i) {
-        ComPtr<IShellItem> item;
+        base::ComPtr<IShellItem> item;
         hr = items->GetItemAt(i, &item);
         if (FAILED(hr))
           return hr;
@@ -168,7 +168,7 @@ private:
       }
     }
     else {
-      ComPtr<IShellItem> item;
+      base::ComPtr<IShellItem> item;
       hr = dlg->GetResult(&item);
       if (FAILED(hr))
         return hr;
