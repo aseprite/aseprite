@@ -233,7 +233,7 @@ the following sections you will find straightforward steps to compile
 Skia.
 
 You can always check the
-[official Skia instructions](https://skia.org/user/quick) and select
+[official Skia instructions](https://skia.org/user/build) and select
 the OS you are building for. Aseprite uses the `aseprite-m62` Skia
 branch from `https://github.com/aseprite/skia`.
 
