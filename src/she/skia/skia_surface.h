@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,10 +16,30 @@
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkColorFilter.h"
-#include "SkColorPriv.h"
 #include "SkImageInfo.h"
 #include "SkRegion.h"
 #include "SkSurface.h"
+
+#ifndef SK_BGRA_B32_SHIFT
+  #ifdef SK_CPU_BENDIAN
+    #define SK_BGRA_B32_SHIFT   24
+    #define SK_BGRA_G32_SHIFT   16
+    #define SK_BGRA_R32_SHIFT   8
+    #define SK_BGRA_A32_SHIFT   0
+  #else
+    #define SK_BGRA_B32_SHIFT   0
+    #define SK_BGRA_G32_SHIFT   8
+    #define SK_BGRA_R32_SHIFT   16
+    #define SK_BGRA_A32_SHIFT   24
+  #endif
+#endif
+
+#ifndef SK_A4444_SHIFT
+  #define SK_R4444_SHIFT    12
+  #define SK_G4444_SHIFT    8
+  #define SK_B4444_SHIFT    4
+  #define SK_A4444_SHIFT    0
+#endif
 
 namespace she {
 
