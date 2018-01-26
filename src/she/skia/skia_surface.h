@@ -167,8 +167,10 @@ public:
         m_paint.setBlendMode(SkBlendMode::kSrcOver);
         {
           SkBitmap bitmap;
-          if (!bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(8, 8, colorSpace())))
+          if (!bitmap.tryAllocPixels(
+                SkImageInfo::MakeN32(8, 8, kOpaque_SkAlphaType, colorSpace()))) {
             throw base::Exception("Cannot create temporary Skia surface");
+          }
 
           {
             SkPMColor A = SkPreMultiplyARGB(gfx::geta(a), gfx::getr(a), gfx::getg(a), gfx::getb(a));
