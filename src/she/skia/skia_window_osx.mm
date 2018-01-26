@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -304,14 +304,34 @@ private:
     SkiaSurface* surface = static_cast<SkiaSurface*>(m_display->getSurface());
     const SkBitmap& origBitmap = surface->bitmap();
 
-    // Create a subset to draw on the view
     SkBitmap bitmap;
-    if (!origBitmap.extractSubset(
-          &bitmap, SkIRect::MakeXYWH(rect.x/scale,
-                                     (viewBounds.size.height-(rect.y+rect.h))/scale,
-                                     rect.w/scale,
-                                     rect.h/scale)))
-      return;
+    if (scale == 1) {
+      // Create a subset to draw on the view
+      if (!origBitmap.extractSubset(
+            &bitmap, SkIRect::MakeXYWH(rect.x,
+                                       (viewBounds.size.height-(rect.y+rect.h)),
+                                       rect.w,
+                                       rect.h)))
+        return;
+    }
+    else {
+      // Create a bitmap to draw the original one scaled. This is
+      // faster than doing the scaling directly in
+      // CGContextDrawImage(). This avoid a slow path where the
+      // internal macOS argb32_image_mark_RGB32() function is called
+      // (which is a performance hit).
+      if (!bitmap.tryAllocN32Pixels(rect.w, rect.h, true))
+        return;
+
+      SkCanvas canvas(bitmap);
+      canvas.drawBitmapRect(origBitmap,
+                            SkIRect::MakeXYWH(rect.x/scale,
+                                              (viewBounds.size.height-(rect.y+rect.h))/scale,
+                                              rect.w/scale,
+                                              rect.h/scale),
+                            SkRect::MakeXYWH(0, 0, rect.w, rect.h),
+                            nullptr);
+    }
 
     @autoreleasepool {
       NSGraphicsContext* gc = [NSGraphicsContext currentContext];
