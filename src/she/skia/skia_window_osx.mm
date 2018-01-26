@@ -274,8 +274,9 @@ private:
         SkSurface::MakeRenderTarget(
           m_grCtx.get(),
           SkBudgeted::kYes,
-          SkImageInfo::MakeN32Premul(MAX(1, size.w / scale),
-                                     MAX(1, size.h / scale)),
+          SkImageInfo::Make(MAX(1, size.w / scale),
+                            MAX(1, size.h / scale),
+                            kN32_SkColorType, kOpaque_SkAlphaType);
           m_glCtx->getSampleCount(),
           nullptr);
     }
