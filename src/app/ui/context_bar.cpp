@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -143,9 +143,7 @@ public:
     , m_owner(owner)
     , m_brushes(App::instance()->brushes()) {
     SkinPartPtr part(new SkinPart);
-    part->setBitmap(
-      0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
-
+    part->setBitmap(0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
     addItem(part);
   }
 
@@ -154,12 +152,12 @@ public:
   }
 
   void updateBrush(tools::Tool* tool = nullptr) {
+    BrushRef brush = m_owner->activeBrush(tool);
     SkinPartPtr part(new SkinPart);
-    part->setBitmap(
-      0, BrushPopup::createSurfaceForBrush(
-        m_owner->activeBrush(tool)));
+    part->setBitmap(0, BrushPopup::createSurfaceForBrush(brush));
 
-    getItem(0)->setIcon(part);
+    const bool mono = (brush->type() != kImageBrushType);
+    getItem(0)->setIcon(part, mono);
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {

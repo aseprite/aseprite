@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -349,10 +349,12 @@ BrushPopup::BrushPopup()
   m_box.addChild(top);
   m_box.addChild(new Separator("", HORIZONTAL));
 
-  for (const auto& brush : brushes.getStandardBrushes())
+  for (const auto& brush : brushes.getStandardBrushes()) {
     m_standardBrushes.addItem(
       new SelectBrushItem(
-        BrushSlot(BrushSlot::Flags::BrushType, brush)));
+        BrushSlot(BrushSlot::Flags::BrushType, brush)))
+      ->setMono(true);
+  }
   m_standardBrushes.setTransparent(true);
 
   brushes.ItemsChange.connect(&BrushPopup::onBrushChanges, this);

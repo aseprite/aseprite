@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,6 +23,7 @@ namespace app {
       Item();
       void setHotColor(gfx::Color color);
       void setIcon(const skin::SkinPartPtr& icon, bool mono = false);
+      void setMono(const bool mono) { m_mono = mono; }
       skin::SkinPartPtr icon() const { return m_icon; }
       ButtonSet* buttonSet();
     protected:
