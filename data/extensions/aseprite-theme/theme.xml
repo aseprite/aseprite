@@ -31,6 +31,7 @@
         <color id="face" value="#d3cbbe" />
         <color id="hot_face" value="#faf0e6" />
         <color id="selected" value="#ff5555" />
+        <color id="selected_text" value="#ffffff" />
         <color id="separator_label" value="#2c4c91" />
         <color id="background" value="#ffffff" />
         <color id="textbox_text" value="#000000" />
