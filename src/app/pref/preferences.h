@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -53,6 +53,10 @@ namespace app {
 
     void load();
     void save();
+
+    // Returns true if the given option was set by the user or false
+    // if it contains the default value.
+    bool isSet(OptionBase& opt) const;
 
     ToolPreferences& tool(tools::Tool* tool);
     DocumentPreferences& document(const app::Document* doc);

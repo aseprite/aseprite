@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,8 +15,8 @@
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "app/file/gif_options.h"
-#include "app/ini_file.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/util/autocrop.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -25,7 +25,6 @@
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
 #include "render/render.h"
-#include "ui/alert.h"
 #include "ui/button.h"
 
 #include "gif_options.xml.h"
@@ -897,6 +896,10 @@ public:
       m_clearColor = rgba(0, 0, 0, 0);
 
     const base::SharedPtr<GifOptions> gifOptions = fop->formatOptions();
+
+    LOG("GIF: Saving with options: interlaced=%d loop=%d\n",
+        gifOptions->interlaced(), gifOptions->loop());
+
     m_interlaced = gifOptions->interlaced();
     m_loop = (gifOptions->loop() ? 0: -1);
 
@@ -1361,34 +1364,38 @@ base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     return gif_options;
 
   try {
-    // Configuration parameters
-    gif_options->setInterlaced(get_config_bool("GIF", "Interlaced", gif_options->interlaced()));
-    gif_options->setLoop(get_config_bool("GIF", "Loop", gif_options->loop()));
+    auto& pref = Preferences::instance();
 
-    // Load the window to ask to the user the GIF options he wants.
+    if (pref.isSet(pref.gif.interlaced))
+      gif_options->setInterlaced(pref.gif.interlaced());
+    if (pref.isSet(pref.gif.loop))
+      gif_options->setLoop(pref.gif.loop());
 
-    app::gen::GifOptions win;
-    win.interlaced()->setSelected(gif_options->interlaced());
-    win.loop()->setSelected(gif_options->loop());
+    if (pref.gif.showAlert()) {
+      app::gen::GifOptions win;
+      win.interlaced()->setSelected(gif_options->interlaced());
+      win.loop()->setSelected(gif_options->loop());
 
-    win.openWindowInForeground();
+      win.openWindowInForeground();
 
-    if (win.closer() == win.ok()) {
-      gif_options->setInterlaced(win.interlaced()->isSelected());
-      gif_options->setLoop(win.loop()->isSelected());
+      if (win.closer() == win.ok()) {
+        pref.gif.interlaced(win.interlaced()->isSelected());
+        pref.gif.loop(win.loop()->isSelected());
+        pref.gif.showAlert(!win.dontShow()->isSelected());
 
-      set_config_bool("GIF", "Interlaced", gif_options->interlaced());
-      set_config_bool("GIF", "Loop", gif_options->loop());
-    }
-    else {
-      gif_options.reset(NULL);
+        gif_options->setInterlaced(pref.gif.interlaced());
+        gif_options->setLoop(pref.gif.loop());
+      }
+      else {
+        gif_options.reset(nullptr);
+      }
     }
 
     return gif_options;
   }
   catch (std::exception& e) {
     Console::showException(e);
-    return base::SharedPtr<GifOptions>(0);
+    return base::SharedPtr<GifOptions>(nullptr);
   }
 }
 

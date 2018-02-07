@@ -1,11 +1,11 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
 <window text="@.title" id="advanced_mode">
   <grid columns="1">
     <label text="@.description" />
     <label text="" id="warning_label" />
-    <check text="@.dont_show_again" id="donot_show" />
+    <check text="@general.dont_show" id="donot_show" tooltip="@general.dont_show_tooltip" />
     <separator horizontal="true" />
     <button text="@general.ok" closewindow="true" magnet="true" minwidth="60" cell_align="center" />
   </grid>

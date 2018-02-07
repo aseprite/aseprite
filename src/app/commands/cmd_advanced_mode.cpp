@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/ini_file.h"
+#include "app/pref/preferences.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "ui/ui.h"
@@ -58,8 +58,10 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   mainWindow->setMode(newMode);
 
+  auto& pref = Preferences::instance();
+
   if (oldMode == MainWindow::NormalMode &&
-      get_config_bool("AdvancedMode", "Warning", true)) {
+      pref.advancedMode.showAlert()) {
     Key* key = KeyboardShortcuts::instance()->command(this->id().c_str());
     if (!key->accels().empty()) {
       app::gen::AdvancedMode window;
@@ -69,7 +71,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 
       window.openWindowInForeground();
 
-      set_config_bool("AdvancedMode", "Warning", !window.donotShow()->isSelected());
+      pref.advancedMode.showAlert(!window.donotShow()->isSelected());
     }
   }
 }

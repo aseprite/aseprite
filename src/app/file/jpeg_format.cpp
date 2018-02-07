@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,16 +16,17 @@
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "app/find_widget.h"
-#include "app/ini_file.h"
 #include "app/load_widget.h"
+#include "app/pref/preferences.h"
 #include "base/file_handle.h"
 #include "base/memory.h"
 #include "doc/doc.h"
-#include "ui/ui.h"
 
 #include <csetjmp>
 #include <cstdio>
 #include <cstdlib>
+
+#include "jpeg_options.xml.h"
 
 #include "jpeglib.h"
 
@@ -37,7 +38,8 @@ class JpegFormat : public FileFormat {
   // Data for JPEG files
   class JpegOptions : public FormatOptions {
   public:
-    float quality;              // 1.0 maximum quality.
+    JpegOptions() : quality(1.0f) { }    // 1.0 maximum quality.
+    float quality;
   };
 
   const char* onGetName() const override { return "jpeg"; }
@@ -238,7 +240,10 @@ bool JpegFormat::onSave(FileOp* fop)
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   const base::SharedPtr<JpegOptions> jpeg_options = fop->formatOptions();
+  const int qualityValue = (int)MID(0, 100.0f * jpeg_options->quality, 100);
   int c;
+
+  LOG("JPEG: Saving with options: quality=%d\n", qualityValue);
 
   // Open the file for write in it.
   FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
@@ -266,7 +271,7 @@ bool JpegFormat::onSave(FileOp* fop)
   }
 
   jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, (int)MID(0, 100.0f * jpeg_options->quality, 100), true);
+  jpeg_set_quality(&cinfo, qualityValue, true);
   cinfo.dct_method = JDCT_ISLOW;
   cinfo.smoothing_factor = 0;
 
@@ -363,24 +368,25 @@ base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
     return jpeg_options;
 
   try {
-    // Configuration parameters
-    jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
+    auto& pref = Preferences::instance();
 
-    // Load the window to ask to the user the JPEG options he wants.
-    UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));
-    ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
-    ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
+    if (pref.isSet(pref.jpeg.quality))
+      jpeg_options->quality = pref.jpeg.quality();
 
-    slider_quality->setValue(int(jpeg_options->quality * 10.0f));
+    if (pref.jpeg.showAlert()) {
+      app::gen::JpegOptions win;
+      win.quality()->setValue(int(jpeg_options->quality * 10.0f));
+      win.openWindowInForeground();
 
-    window->openWindowInForeground();
+      if (win.closer() == win.ok()) {
+        pref.jpeg.quality(float(win.quality()->getValue()) / 10.0f);
+        pref.jpeg.showAlert(!win.dontShow()->isSelected());
 
-    if (window->closer() == ok) {
-      jpeg_options->quality = slider_quality->getValue() / 10.0f;
-      set_config_float("JPEG", "Quality", jpeg_options->quality);
-    }
-    else {
-      jpeg_options.reset(NULL);
+        jpeg_options->quality = pref.jpeg.quality();
+      }
+      else {
+        jpeg_options.reset(nullptr);
+      }
     }
 
     return jpeg_options;

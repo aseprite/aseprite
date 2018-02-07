@@ -1,15 +1,16 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2016 by David Capello -->
+<!-- Copyright (C) 2014-2018 by David Capello -->
 <gui>
-<window id="gif_options" text="@gif_options.title">
+<window id="gif_options" text="@.title">
   <vbox>
-    <separator text="@gif_options.general_options" left="true" horizontal="true" />
-    <check text="@gif_options.interlaced" id="interlaced" />
-    <check text="@gif_options.animation_loop" id="loop" />
+    <separator text="@.general_options" left="true" horizontal="true" />
+    <check text="@.interlaced" id="interlaced" />
+    <check text="@.animation_loop" id="loop" />
 
     <separator horizontal="true" />
 
     <hbox>
+      <check text="@general.dont_show" id="dont_show" tooltip="@general.dont_show_tooltip" />
       <boxfiller />
       <hbox homogeneous="true">
         <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />

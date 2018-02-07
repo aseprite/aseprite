@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
   <window id="options" text="@.title">
   <vbox>
@@ -7,6 +7,7 @@
       <view maxsize="true">
         <listbox id="section_listbox">
           <listitem text="@.section_general" value="section_general" />
+          <listitem text="@.section_alerts" value="section_alerts" />
           <listitem text="@.section_editor" value="section_editor" />
           <listitem text="@.section_selection" value="section_selection" />
           <listitem text="@.section_timeline" value="section_timeline" />
@@ -22,6 +23,8 @@
       </view>
 
       <panel id="panel" expansive="true">
+
+	<!-- General -->
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
           <hbox>
@@ -262,6 +265,19 @@
             <check id="undo_allow_nonlinear_history"
                    text="@.undo_allow_nonlinear_history" />
           </vbox>
+        </vbox>
+
+        <!-- Alerts -->
+        <vbox id="section_alerts">
+          <separator text="@.section_alerts" horizontal="true" />
+          <check id="gif_options_alert" text="@.gif_options_alert" />
+          <check id="jpeg_options_alert" text="@.jpeg_options_alert" />
+          <check id="advanced_mode_alert" text="@.advanced_mode_alert" />
+          <separator horizontal="true" />
+	  <hbox>
+	    <hbox expansive="true" />
+            <button id="reset_alerts" text="@.reset_alerts" />
+	  </hbox>
         </vbox>
 
         <!-- Theme -->

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2017 by David Capello -->
+<!-- Copyright (C) 2014-2018 by David Capello -->
 <preferences>
 
   <types>
@@ -244,6 +244,18 @@
     </section>
     <section id="slices">
       <option id="default_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+    </section>
+    <section id="advanced_mode">
+      <option id="show_alert" type="bool" default="true" migrate="AdvancedMode.Warning" />
+    </section>
+    <section id="gif">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="interlaced" type="bool" default="false" migrate="GIF.Interlaced" />
+      <option id="loop" type="bool" default="true" migrate="GIF.Loop" />
+    </section>
+    <section id="jpeg">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="quality" type="double" default="1.0" migrate="JPEG.Quality" />
     </section>
   </global>
 
