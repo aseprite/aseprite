@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -64,6 +64,14 @@ void Alert::addProgress()
   m_progress->setReadOnly(true);
   m_progressPlaceholder->addChild(m_progress);
   m_progressPlaceholder->setVisible(true);
+}
+
+CheckBox* Alert::addCheckBox(const std::string& text)
+{
+  auto checkBox = new CheckBox(text);
+  m_progressPlaceholder->addChild(checkBox);
+  m_progressPlaceholder->setVisible(true);
+  return checkBox;
 }
 
 void Alert::setProgress(double progress)

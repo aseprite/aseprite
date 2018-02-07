@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2017  David Capello
+# Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
@@ -495,6 +495,7 @@ add_library(app-lib
   ui/main_window.cpp
   ui/news_listbox.cpp
   ui/notifications.cpp
+  ui/optional_alert.cpp
   ui/palette_popup.cpp
   ui/palette_view.cpp
   ui/palettes_listbox.cpp

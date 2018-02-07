@@ -270,6 +270,8 @@
         <!-- Alerts -->
         <vbox id="section_alerts">
           <separator text="@.section_alerts" horizontal="true" />
+          <check id="file_format_doesnt_support_alert" text="@.file_format_doesnt_support_alert" />
+          <check id="export_animation_in_sequence_alert" text="@.export_animation_in_sequence_alert" />
           <check id="gif_options_alert" text="@.gif_options_alert" />
           <check id="jpeg_options_alert" text="@.jpeg_options_alert" />
           <check id="advanced_mode_alert" text="@.advanced_mode_alert" />

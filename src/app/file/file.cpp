@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,6 +22,8 @@
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
+#include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "base/fs.h"
 #include "base/mutex.h"
@@ -33,7 +35,6 @@
 #include "fmt/format.h"
 #include "render/quantization.h"
 #include "render/render.h"
-#include "ui/alert.h"
 
 #include "open_sequence.xml.h"
 
@@ -447,7 +448,9 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   if (!warnings.empty()) {
     // Interative
     if (context && context->isUIAvailable()) {
-      int ret = ui::Alert::show(
+      int ret = OptionalAlert::show(
+        Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
+        1, // Yes is the default option when the alert dialog is disabled
         fmt::format(
           (fatal ? Strings::alerts_file_format_doesnt_support_error():
                    Strings::alerts_file_format_doesnt_support_warning()),
@@ -505,7 +508,9 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
     if (context && context->isUIAvailable() &&
         fop->m_seq.filename_list.size() > 1 &&
-        ui::Alert::show(
+        OptionalAlert::show(
+          Preferences::instance().saveFile.showExportAnimationInSequenceAlert,
+          1,
           fmt::format(
             Strings::alerts_export_animation_in_sequence(),
             int(fop->m_seq.filename_list.size()),
