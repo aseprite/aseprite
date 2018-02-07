@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -370,10 +370,10 @@ void SaveFileCommand::onExecute(Context* context)
   // If the document is associated to a file in the file-system, we can
   // save it directly without user interaction.
   if (document->isAssociatedToFile()) {
-    ContextWriter writer(context);
-    Document* documentWriter = writer.document();
+    const ContextReader reader(context);
+    const Document* documentReader = reader.document();
 
-    saveDocumentInBackground(context, documentWriter, true);
+    saveDocumentInBackground(context, documentReader, true);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
