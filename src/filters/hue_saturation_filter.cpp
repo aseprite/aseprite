@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,7 +33,7 @@ HueSaturationFilter::HueSaturationFilter()
   : m_h(0.0)
   , m_s(0.0)
   , m_l(0.0)
-  , m_a(0)
+  , m_a(0.0)
 {
 }
 
@@ -52,7 +52,7 @@ void HueSaturationFilter::setLightness(double l)
   m_l = l;
 }
 
-void HueSaturationFilter::setAlpha(int a)
+void HueSaturationFilter::setAlpha(double a)
 {
   m_a = a;
 }
@@ -121,7 +121,7 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
     {
       gfx::Hsl hsl(gfx::Rgb(k, k, k));
 
-      double l = hsl.lightness() + m_l;
+      double l = hsl.lightness()*(1.0+m_l);
       l = MID(0.0, l, 1.0);
 
       hsl.lightness(l);
@@ -129,8 +129,10 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
 
       if (target & TARGET_GRAY_CHANNEL) k = rgb.red();
 
-      if (a && (target & TARGET_ALPHA_CHANNEL))
-        a = MID(0, a+m_a, 255);
+      if (a && (target & TARGET_ALPHA_CHANNEL)) {
+        a = a*(1.0+m_a);
+        a = MID(0, a, 255);
+      }
     }
 
     *(dst_address++) = graya(k, a);
@@ -213,10 +215,10 @@ void HueSaturationFilter::applyHslFilterToRgb(
   while (h < 0.0) h += 360.0;
   h = std::fmod(h, 360.0);
 
-  double s = hsl.saturation() + m_s;
+  double s = hsl.saturation()*(1.0+m_s);
   s = MID(0.0, s, 1.0);
 
-  double l = hsl.lightness() + m_l;
+  double l = hsl.lightness()*(1.0+m_l);
   l = MID(0.0, l, 1.0);
 
   hsl.hue(h);
@@ -227,8 +229,10 @@ void HueSaturationFilter::applyHslFilterToRgb(
   if (target & TARGET_RED_CHANNEL  ) r = rgb.red();
   if (target & TARGET_GREEN_CHANNEL) g = rgb.green();
   if (target & TARGET_BLUE_CHANNEL ) b = rgb.blue();
-  if (a && (target & TARGET_ALPHA_CHANNEL))
-    a = MID(0, a+m_a, 255);
+  if (a && (target & TARGET_ALPHA_CHANNEL)) {
+    a = a*(1.0+m_a);
+    a = MID(0, a, 255);
+  }
 
   c = rgba(r, g, b, a);
 }

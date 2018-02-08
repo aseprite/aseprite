@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -239,17 +239,17 @@ ColorSliders::ColorSliders()
   // Same order as in Channel enum
   static_assert(Channel::Red == (Channel)0, "");
   static_assert(Channel::Alpha == (Channel)10, "");
-  addSlider(Channel::Red,           "R", 0, 255, -255, 255);
-  addSlider(Channel::Green,         "G", 0, 255, -255, 255);
-  addSlider(Channel::Blue,          "B", 0, 255, -255, 255);
+  addSlider(Channel::Red,           "R", 0, 255, -100, 100);
+  addSlider(Channel::Green,         "G", 0, 255, -100, 100);
+  addSlider(Channel::Blue,          "B", 0, 255, -100, 100);
   addSlider(Channel::HsvHue,        "H", 0, 360, -180, 180);
   addSlider(Channel::HsvSaturation, "S", 0, 100, -100, 100);
   addSlider(Channel::HsvValue,      "V", 0, 100, -100, 100);
   addSlider(Channel::HslHue,        "H", 0, 360, -180, 180);
   addSlider(Channel::HslSaturation, "S", 0, 100, -100, 100);
   addSlider(Channel::HslLightness,  "L", 0, 100, -100, 100);
-  addSlider(Channel::Gray,          "V", 0, 255, -255, 255);
-  addSlider(Channel::Alpha,         "A", 0, 255, -255, 255);
+  addSlider(Channel::Gray,          "V", 0, 255, -100, 100);
+  addSlider(Channel::Alpha,         "A", 0, 255, -100, 100);
 }
 
 void ColorSliders::setColor(const app::Color& color)
