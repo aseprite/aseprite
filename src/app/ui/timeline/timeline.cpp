@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -2761,11 +2761,14 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     gfx::Point scroll = viewScroll();
     int top = topHeight();
 
-    hit.layer = lastLayer() -
-      ((mousePos.y
-        - top
-        - headerBoxHeight()
-        + scroll.y) / layerBoxHeight());
+    // The selected layer must be after the header (AniControls and tags).
+    if (mousePos.y >= top+headerBoxHeight()) {
+      hit.layer = lastLayer() -
+        ((mousePos.y
+          - top
+          - headerBoxHeight()
+          + scroll.y) / layerBoxHeight());
+    }
 
     hit.frame = frame_t((mousePos.x
         - m_separator_x
@@ -2777,7 +2780,9 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.veryBottom = true;
 
     if (hasCapture()) {
-      hit.layer = MID(firstLayer(), hit.layer, lastLayer());
+      if (hit.layer > -1)
+        hit.layer = MID(firstLayer(), hit.layer, lastLayer());
+
       if (isMovingCel())
         hit.frame = MAX(firstFrame(), hit.frame);
       else
