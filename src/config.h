@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,7 +38,7 @@
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
 #define WEBSITE_NEWS_RSS        "http://blog.aseprite.org/rss"
 #define UPDATE_URL              WEBSITE "update/?xml=1"
-#define COPYRIGHT               "Copyright (C) 2001-2017 David Capello"
+#define COPYRIGHT               "Copyright (C) 2001-2018 David Capello"
 
 #include "base/base.h"
 #include "base/debug.h"
