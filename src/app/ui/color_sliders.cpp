@@ -393,6 +393,12 @@ void ColorSliders::setAbsSliderValue(const Channel i, int value)
   updateEntryText(i);
 }
 
+void ColorSliders::setRelSliderValue(const Channel i, int value)
+{
+  m_items[i].relSlider->setValue(value);
+  updateEntryText(i);
+}
+
 int ColorSliders::getAbsSliderValue(const Channel i) const
 {
   return m_items[i].absSlider->getValue();
@@ -401,6 +407,22 @@ int ColorSliders::getAbsSliderValue(const Channel i) const
 int ColorSliders::getRelSliderValue(const Channel i) const
 {
   return m_items[i].relSlider->getValue();
+}
+
+void ColorSliders::syncRelHsvHslSliders()
+{
+  // From HSV -> HSL
+  if (m_items[Channel::HsvHue].show) {
+    setRelSliderValue(Channel::HslHue,        getRelSliderValue(Channel::HsvHue));
+    setRelSliderValue(Channel::HslSaturation, getRelSliderValue(Channel::HsvSaturation));
+    setRelSliderValue(Channel::HslLightness,  getRelSliderValue(Channel::HsvValue));
+  }
+  // From HSL -> HSV
+  else if (m_items[Channel::HslHue].show) {
+    setRelSliderValue(Channel::HsvHue,        getRelSliderValue(Channel::HslHue));
+    setRelSliderValue(Channel::HsvSaturation, getRelSliderValue(Channel::HslSaturation));
+    setRelSliderValue(Channel::HsvValue,      getRelSliderValue(Channel::HslLightness));
+  }
 }
 
 void ColorSliders::onSliderChange(const Channel i)

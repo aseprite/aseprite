@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -46,6 +46,7 @@ namespace app {
 
     int getAbsSliderValue(const Channel i) const;
     int getRelSliderValue(const Channel i) const;
+    void syncRelHsvHslSliders();
 
     // Signals
     obs::signal<void(ColorSlidersChangeEvent&)> ColorChange;
@@ -59,6 +60,7 @@ namespace app {
                    const int absMin, const int absMax,
                    const int relMin, const int relMax);
     void setAbsSliderValue(const Channel i, int value);
+    void setRelSliderValue(const Channel i, int value);
 
     void updateSlidersVisibility();
     void onSetColor(const app::Color& color);

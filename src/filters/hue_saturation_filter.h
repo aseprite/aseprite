@@ -17,8 +17,11 @@ namespace filters {
 
   class HueSaturationFilter : public Filter {
   public:
+    enum class Mode { HSL, HSV };
+
     HueSaturationFilter();
 
+    void setMode(Mode mode);
     void setHue(double h);
     void setSaturation(double s);
     void setLightness(double v);
@@ -32,8 +35,13 @@ namespace filters {
 
   private:
     void applyToPalette(FilterManager* filterMgr);
-    void applyHslFilterToRgb(const Target target, doc::color_t& color);
+    template<class T,
+             double (T::*get_lightness)() const,
+             void (T::*set_lightness)(double)>
+    void applyFilterToRgbT(const Target target, doc::color_t& color);
+    void applyFilterToRgb(const Target target, doc::color_t& color);
 
+    Mode m_mode;
     double m_h, m_s, m_l, m_a;
     doc::PalettePicks m_picks;
     bool m_usePalette;

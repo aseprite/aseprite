@@ -15,6 +15,8 @@
 #include "app/context.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
+#include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_sliders.h"
 #include "base/bind.h"
@@ -40,25 +42,70 @@ public:
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_filter(filter)
+    , m_colorType(2)
   {
+    getContainer()->addChild(&m_colorType);
     getContainer()->addChild(&m_sliders);
+
+    auto mode = Preferences::instance().hueSaturation.mode();
+    m_colorType.addItem("HSV")->setFocusStop(false);
+    m_colorType.addItem("HSL")->setFocusStop(false);
+    if (mode == gen::HueSaturationMode::HSV)
+      m_colorType.setSelectedItem(0);
+    else
+      m_colorType.setSelectedItem(1);
+    m_colorType.ItemChange.connect(base::Bind<void>(&HueSaturationWindow::onChangeMode, this));
+
     m_sliders.setColorType(app::Color::HslType);
     m_sliders.setMode(ColorSliders::Mode::Relative);
     m_sliders.ColorChange.connect(base::Bind<void>(&HueSaturationWindow::onChangeControls, this));
+
+    onChangeMode();
   }
 
 private:
 
+  bool isHsl() const {
+    return (m_colorType.selectedItem() == 1);
+  }
+
+  void onChangeMode() {
+    const int isHsl = this->isHsl();
+
+    Preferences::instance().hueSaturation.mode
+      (isHsl ? gen::HueSaturationMode::HSL:
+               gen::HueSaturationMode::HSV);
+
+    m_filter.setMode(isHsl ?
+                     HueSaturationFilter::Mode::HSL:
+                     HueSaturationFilter::Mode::HSV);
+
+    m_sliders.setColorType(isHsl ?
+                           app::Color::HslType:
+                           app::Color::HsvType);
+
+    onChangeControls();
+  }
+
   void onChangeControls() {
-    m_filter.setHue(
-      double(m_sliders.getRelSliderValue(ColorSliders::Channel::HslHue)));
+    m_sliders.syncRelHsvHslSliders();
 
-    m_filter.setSaturation(
-      m_sliders.getRelSliderValue(ColorSliders::Channel::HslSaturation) / 100.0);
-
-    m_filter.setLightness(
-      m_sliders.getRelSliderValue(ColorSliders::Channel::HslLightness) / 100.0);
-
+    if (isHsl()) {
+      m_filter.setHue(
+        double(m_sliders.getRelSliderValue(ColorSliders::Channel::HslHue)));
+      m_filter.setSaturation(
+        m_sliders.getRelSliderValue(ColorSliders::Channel::HslSaturation) / 100.0);
+      m_filter.setLightness(
+        m_sliders.getRelSliderValue(ColorSliders::Channel::HslLightness) / 100.0);
+    }
+    else {
+      m_filter.setHue(
+        double(m_sliders.getRelSliderValue(ColorSliders::Channel::HsvHue)));
+      m_filter.setSaturation(
+        m_sliders.getRelSliderValue(ColorSliders::Channel::HsvSaturation) / 100.0);
+      m_filter.setLightness(
+        m_sliders.getRelSliderValue(ColorSliders::Channel::HsvValue) / 100.0);
+    }
     m_filter.setAlpha(
       m_sliders.getRelSliderValue(ColorSliders::Channel::Alpha) / 100.0);
 
@@ -66,6 +113,7 @@ private:
   }
 
   HueSaturationFilter& m_filter;
+  ButtonSet m_colorType;
   ColorSliders m_sliders;
 };
 

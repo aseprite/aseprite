@@ -93,6 +93,10 @@
       <value id="LEFT" value="1" />
       <value id="RIGHT" value="2" />
     </enum>
+    <enum id="HueSaturationMode">
+      <value id="HSV" value="0" />
+      <value id="HSL" value="1" />
+    </enum>
   </types>
 
   <global>
@@ -260,6 +264,9 @@
     <section id="jpeg">
       <option id="show_alert" type="bool" default="true" />
       <option id="quality" type="double" default="1.0" migrate="JPEG.Quality" />
+    </section>
+    <section id="hue_saturation">
+      <option id="mode" type="HueSaturationMode" default="HueSaturationMode::HSL" />
     </section>
   </global>
 
