@@ -1368,7 +1368,7 @@ void Widget::processMnemonicFromText(int escapeChar)
   if (!hasText())
     return;
 
-  std::string newText;
+  std::wstring newText; // for utf8 support during push_back()
   if (!m_text.empty())
     newText.reserve(m_text.size());
 
@@ -1387,7 +1387,7 @@ void Widget::processMnemonicFromText(int escapeChar)
     newText.push_back(*it);
   }
 
-  setText(newText);
+  setText(base::to_utf8(newText));
 }
 
 bool Widget::isMnemonicPressed(const KeyMessage* keyMsg) const
