@@ -2761,14 +2761,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     gfx::Point scroll = viewScroll();
     int top = topHeight();
 
-    // The selected layer must be after the header (AniControls and tags).
-    if (mousePos.y >= top+headerBoxHeight()) {
-      hit.layer = lastLayer() -
-        ((mousePos.y
-          - top
-          - headerBoxHeight()
-          + scroll.y) / layerBoxHeight());
-    }
+    hit.layer = lastLayer() -
+      ((mousePos.y
+        - top
+        - headerBoxHeight()
+        + scroll.y) / layerBoxHeight());
 
     hit.frame = frame_t((mousePos.x
         - m_separator_x
@@ -2780,9 +2777,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.veryBottom = true;
 
     if (hasCapture()) {
-      if (hit.layer > -1)
-        hit.layer = MID(firstLayer(), hit.layer, lastLayer());
-
+      hit.layer = MID(firstLayer(), hit.layer, lastLayer());
       if (isMovingCel())
         hit.frame = MAX(firstFrame(), hit.frame);
       else
@@ -2896,26 +2891,27 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         hit.part = PART_HEADER_FRAME;
       }
     }
-    else {
-      // Is the mouse on a layer's label?
-      if (mousePos.x < m_separator_x) {
-        if (getPartBounds(Hit(PART_ROW_EYE_ICON, hit.layer)).contains(mousePos))
-          hit.part = PART_ROW_EYE_ICON;
-        else if (getPartBounds(Hit(PART_ROW_PADLOCK_ICON, hit.layer)).contains(mousePos))
-          hit.part = PART_ROW_PADLOCK_ICON;
-        else if (getPartBounds(Hit(PART_ROW_CONTINUOUS_ICON, hit.layer)).contains(mousePos))
-          hit.part = PART_ROW_CONTINUOUS_ICON;
-        else if (getPartBounds(Hit(PART_ROW_TEXT, hit.layer)).contains(mousePos))
-          hit.part = PART_ROW_TEXT;
-        else
-          hit.part = PART_ROW;
-      }
-      else if (validLayer(hit.layer) && validFrame(hit.frame)) {
-        hit.part = PART_CEL;
-      }
+    // Activate a flag in case that the hit is in the header area (AniControls and tags).
+    else if (mousePos.y < top+headerBoxHeight())
+      hit.part = PART_TOP;
+    // Is the mouse on a layer's label?
+    else if (mousePos.x < m_separator_x) {
+      if (getPartBounds(Hit(PART_ROW_EYE_ICON, hit.layer)).contains(mousePos))
+        hit.part = PART_ROW_EYE_ICON;
+      else if (getPartBounds(Hit(PART_ROW_PADLOCK_ICON, hit.layer)).contains(mousePos))
+        hit.part = PART_ROW_PADLOCK_ICON;
+      else if (getPartBounds(Hit(PART_ROW_CONTINUOUS_ICON, hit.layer)).contains(mousePos))
+        hit.part = PART_ROW_CONTINUOUS_ICON;
+      else if (getPartBounds(Hit(PART_ROW_TEXT, hit.layer)).contains(mousePos))
+        hit.part = PART_ROW_TEXT;
       else
-        hit.part = PART_NOTHING;
+        hit.part = PART_ROW;
     }
+    else if (validLayer(hit.layer) && validFrame(hit.frame)) {
+      hit.part = PART_CEL;
+    }
+    else
+      hit.part = PART_NOTHING;
 
     if (!hasCapture()) {
       gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
