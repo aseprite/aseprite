@@ -1,6 +1,6 @@
 # Aseprite File Format (.ase/.aseprite) Specifications
 
-> Copyright (C) 2001-2017 by David Capello
+> Copyright (C) 2001-2018 by David Capello
 
 1. [References](#references)
 2. [Introduction](#introduction)
@@ -17,6 +17,7 @@ ASE files use Intel (little-endian) byte order.
 * `WORD`: A 16-bit unsigned integer value
 * `SHORT`: A 16-bit signed integer value
 * `DWORD`: A 32-bit unsigned integer value
+* `LONG`: A 32-bit signed integer value
 * `FIXED`: A 32-bit fixed point (16.16) value
 * `BYTE[n]`: "n" bytes.
 * `STRING`:
@@ -283,19 +284,19 @@ belongs to that cel, etc.
     + For each slice key
       DWORD     Frame number (this slice is valid from
                 this frame to the end of the animation)
-      SHORT     Slice X origin coordinate in the sprite
-      SHORT     Slice Y origin coordinate in the sprite
-      WORD      Slice width (can be 0 if this slice hidden in the
+      LONG      Slice X origin coordinate in the sprite
+      LONG      Slice Y origin coordinate in the sprite
+      DWORD     Slice width (can be 0 if this slice hidden in the
                 animation from the given frame)
-      WORD      Slice height
+      DWORD     Slice height
       + If flags have bit 1
-        SHORT   Center X position (relative to slice bounds)
-        SHORT   Center Y position
-        WORD    Center width
-        WORD    Center height
+        LONG    Center X position (relative to slice bounds)
+        LONG    Center Y position
+        DWORD   Center width
+        DWORD   Center height
       + If flags have bit 2
-        WORD    Pivot X position (relative to the slice origin)
-        WORD    Pivot Y position (relative to the slice origin)
+        LONG    Pivot X position (relative to the slice origin)
+        LONG    Pivot Y position (relative to the slice origin)
 
 ### Notes
 

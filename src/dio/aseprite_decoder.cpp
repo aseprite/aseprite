@@ -836,21 +836,21 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
     gfx::Rect bounds, center;
     gfx::Point pivot = doc::SliceKey::NoPivot;
     doc::frame_t frame = read32();
-    bounds.x = read32();
-    bounds.y = read32();
+    bounds.x = ((int32_t)read32());
+    bounds.y = ((int32_t)read32());
     bounds.w = read32();
     bounds.h = read32();
 
     if (flags & ASE_SLICE_FLAG_HAS_CENTER_BOUNDS) {
-      center.x = read32();
-      center.y = read32();
+      center.x = ((int32_t)read32());
+      center.y = ((int32_t)read32());
       center.w = read32();
       center.h = read32();
     }
 
     if (flags & ASE_SLICE_FLAG_HAS_PIVOT_POINT) {
-      pivot.x = read32();
-      pivot.y = read32();
+      pivot.x = ((int32_t)read32());
+      pivot.y = ((int32_t)read32());
     }
 
     slice->insert(frame, doc::SliceKey(bounds, center, pivot));
