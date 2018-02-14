@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -927,14 +927,31 @@ void Render::renderLayer(
   if (m_selectedLayerForOpacity == layer)
     isSelected = true;
 
+  const Cel* cel = nullptr;
   gfx::Rect extraArea;
-  bool drawExtra = (m_extraCel &&
-                    m_extraCel->frame() == frame &&
-                    m_extraImage &&
-                    layer == m_currentLayer &&
-                    frame == m_currentFrame &&
-                    ((layer->isBackground() && render_background) ||
-                     (!layer->isBackground() && render_transparent)));
+  bool drawExtra = false;
+
+  if (m_extraCel &&
+      m_extraImage &&
+      layer == m_currentLayer &&
+      ((layer->isBackground() && render_background) ||
+       (!layer->isBackground() && render_transparent))) {
+    if (frame == m_extraCel->frame() &&
+        frame == m_currentFrame) { // TODO this double check is not necessary
+      drawExtra = true;
+    }
+    else {
+      // Check if we can draw the extra cel when we render a linked
+      // frame.
+      cel = layer->cel(frame);
+      Cel* cel2 = layer->cel(m_extraCel->frame());
+      if (cel && cel2 &&
+          cel->data() == cel2->data()) {
+        drawExtra = true;
+      }
+    }
+  }
+
   if (drawExtra) {
     extraArea = gfx::Rect(
       m_extraCel->x(),
@@ -960,16 +977,33 @@ void Render::renderLayer(
           layer->isReference())
         break;
 
-      const Cel* cel = layer->cel(frame);
+      if (!cel)
+        cel = layer->cel(frame);
+
       if (cel) {
         Palette* pal = m_sprite->palette(frame);
-        const Image* celImage;
+        const Image* celImage = nullptr;
         gfx::RectF celBounds;
 
         // Is the 'm_previewImage' set to be used with this layer?
+        bool usePreview = false;
         if ((m_previewImage) &&
-            (m_selectedLayer == layer) &&
-            (m_selectedFrame == frame)) {
+            (m_selectedLayer == layer)) {
+          if (m_selectedFrame == frame) {
+            usePreview = true;
+          }
+          else {
+            // This preview might be useful if we are rendering a
+            // linked frame to the preview.
+            Cel* cel2 = layer->cel(m_selectedFrame);
+            if (cel2->data() == cel->data()) {
+              usePreview = true;
+            }
+          }
+        }
+
+        // If not, we use the original cel-image from the images' stock
+        if (usePreview) {
           celImage = m_previewImage;
           celBounds = gfx::RectF(m_previewPos.x,
                                  m_previewPos.y,
@@ -978,7 +1012,6 @@ void Render::renderLayer(
 
           ASSERT(celImage->pixelFormat() == cel->image()->pixelFormat());
         }
-        // If not, we use the original cel-image from the images' stock
         else {
           celImage = cel->image();
           if (cel->layer()->isReference())
