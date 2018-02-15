@@ -1368,7 +1368,7 @@ void Widget::processMnemonicFromText(int escapeChar)
   if (!hasText())
     return;
 
-  std::wstring newText; // for utf8 support during push_back()
+  std::wstring newText; // wstring is used to properly push_back() multibyte chars
   if (!m_text.empty())
     newText.reserve(m_text.size());
 
