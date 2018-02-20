@@ -385,7 +385,7 @@ void ColorPopup::onColorHexEntryChange(const app::Color& color)
   // is writting in the text field.
   m_disableHexUpdate = true;
 
-  setColorWithSignal(color, ChangeType);
+  setColor(color, ChangeType);
   findBestfitIndex(color);
 
   // If we are in edit mode, the "m_disableHexUpdate" will be changed
