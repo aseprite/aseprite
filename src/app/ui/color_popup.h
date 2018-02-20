@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -62,6 +62,7 @@ namespace app {
     void setColorWithSignal(const app::Color& color,
                             const SetColorOptions options);
     void findBestfitIndex(const app::Color& color);
+    bool inEditMode();
 
     class SimpleColors;
     class CustomButtonSet : public ButtonSet {

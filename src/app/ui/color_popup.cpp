@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,6 +23,7 @@
 #include "app/modules/palettes.h"
 #include "app/resource_finder.h"
 #include "app/transaction.h"
+#include "app/ui/color_bar.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
@@ -387,7 +388,12 @@ void ColorPopup::onColorHexEntryChange(const app::Color& color)
   setColorWithSignal(color, ChangeType);
   findBestfitIndex(color);
 
-  m_disableHexUpdate = false;
+  // If we are in edit mode, the "m_disableHexUpdate" will be changed
+  // to false in onPaletteChange() after the color bar timer is
+  // triggered. In this way we don't modify the hex field when the
+  // user is editing it and the palette "edit mode" is enabled.
+  if (!inEditMode())
+    m_disableHexUpdate = false;
 }
 
 void ColorPopup::onSimpleColorClick()
@@ -462,6 +468,9 @@ void ColorPopup::onPaletteChange()
 {
   setColor(getColor(), DontChangeType);
   invalidate();
+
+  if (inEditMode())
+    m_disableHexUpdate = false;
 }
 
 void ColorPopup::findBestfitIndex(const app::Color& color)
@@ -537,6 +546,16 @@ void ColorPopup::selectColorType(app::Color::Type type)
 
   m_vbox.layout();
   m_vbox.invalidate();
+}
+
+bool ColorPopup::inEditMode()
+{
+  return
+    // TODO use other flag instead of m_canPin, here we want to ask if
+    // this ColorPopup is related to the main ColorBar (instead of
+    // other ColorButtons like the one in "Replace Color", etc.)
+    (m_canPin) &&
+    (ColorBar::instance()->inEditMode());
 }
 
 } // namespace app
