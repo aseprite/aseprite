@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -63,7 +63,7 @@ FileList::~FileList()
   ThumbnailGenerator::instance()->stopAllWorkers();
 }
 
-void FileList::setExtensions(const char* extensions)
+void FileList::setExtensions(const base::paths& extensions)
 {
   m_exts = extensions;
 
@@ -591,7 +591,7 @@ void FileList::regenerateList()
       if (fileitem->isHidden())
         it = m_list.erase(it);
       else if (!fileitem->isFolder() &&
-               !fileitem->hasExtension(m_exts.c_str())) {
+               !fileitem->hasExtension(m_exts)) {
         it = m_list.erase(it);
       }
       else

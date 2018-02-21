@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/file_system.h"
+#include "base/paths.h"
 #include "base/time.h"
 #include "obs/signal.h"
 #include "ui/timer.h"
@@ -28,8 +29,8 @@ namespace app {
     FileList();
     virtual ~FileList();
 
-    const std::string& extensions() const { return m_exts; }
-    void setExtensions(const char* extensions);
+    const base::paths& extensions() const { return m_exts; }
+    void setExtensions(const base::paths& extensions);
 
     IFileItem* currentFolder() const { return m_currentFolder; }
     void setCurrentFolder(IFileItem* folder);
@@ -76,7 +77,7 @@ namespace app {
     int m_req_w, m_req_h;
     IFileItem* m_selected;
     std::vector<bool> m_selectedItems;
-    std::string m_exts;
+    base::paths m_exts;
 
     // Incremental-search
     std::string m_isearch;

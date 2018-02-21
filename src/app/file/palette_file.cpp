@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,18 +32,22 @@ namespace app {
 
 using namespace doc;
 
-std::string get_readable_palette_extensions()
+static const char* palExts[] = { "col", "gpl", "hex", "pal" };
+
+base::paths get_readable_palette_extensions()
 {
-  std::string buf = get_readable_extensions();
-  buf += ",col,gpl,hex,pal";
-  return buf;
+  base::paths paths = get_readable_extensions();
+  for (const char* s : palExts)
+    paths.push_back(s);
+  return paths;
 }
 
-std::string get_writable_palette_extensions()
+base::paths get_writable_palette_extensions()
 {
-  std::string buf = get_writable_extensions();
-  buf += ",col,gpl,hex,pal";
-  return buf;
+  base::paths paths = get_writable_extensions();
+  for (const char* s : palExts)
+    paths.push_back(s);
+  return paths;
 }
 
 Palette* load_palette(const char* filename)

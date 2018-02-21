@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,9 +24,19 @@ namespace app {
 using namespace base;
 
 class IcoFormat : public FileFormat {
-  const char* onGetName() const override { return "ico"; }
-  const char* onGetExtensions() const override { return "ico"; }
-  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::ICO_IMAGES; }
+
+  const char* onGetName() const override {
+    return "ico";
+  }
+
+  void onGetExtensions(base::paths& exts) const override {
+    exts.push_back("ico");
+  }
+
+  dio::FileFormat onGetDioFormat() const override {
+    return dio::FileFormat::ICO_IMAGES;
+  }
+
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,9 +9,9 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "base/paths.h"
 
 #include <string>
-#include <vector>
 
 namespace app {
 
@@ -24,7 +24,7 @@ namespace app {
     OpenFileCommand();
     Command* clone() const override { return new OpenFileCommand(*this); }
 
-    const std::vector<std::string>& usedFiles() const {
+    const base::paths& usedFiles() const {
       return m_usedFiles;
     }
 
@@ -37,7 +37,7 @@ namespace app {
     std::string m_folder;
     bool m_repeatCheckbox;
     bool m_oneFrame;
-    std::vector<std::string> m_usedFiles;
+    base::paths m_usedFiles;
     SequenceDecision m_seqDecision;
   };
 

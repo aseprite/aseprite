@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -92,7 +92,7 @@ public:
   const FileItemList& children();
   void createDirectory(const std::string& dirname);
 
-  bool hasExtension(const std::string& csv_extensions);
+  bool hasExtension(const base::paths& extensions);
 
   she::Surface* getThumbnail();
   void setThumbnail(she::Surface* thumbnail);
@@ -511,11 +511,11 @@ void FileItem::createDirectory(const std::string& dirname)
   m_version = 0;
 }
 
-bool FileItem::hasExtension(const std::string& csv_extensions)
+bool FileItem::hasExtension(const base::paths& extensions)
 {
   ASSERT(m_filename != NOTINITIALIZED);
 
-  return base::has_file_extension(m_filename, csv_extensions);
+  return base::has_file_extension(m_filename, extensions);
 }
 
 she::Surface* FileItem::getThumbnail()

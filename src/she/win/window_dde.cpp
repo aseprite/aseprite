@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "she/win/window_dde.h"
 
+#include "base/paths.h"
 #include "base/string.h"
 #include "she/event.h"
 #include "she/event_queue.h"
@@ -57,7 +58,7 @@ bool parse_dde_command(const std::string& cmd)
       }
 
       std::string cmdName = cmd.substr(i, j-i);
-      std::vector<std::string> cmdParams;
+      base::paths cmdParams;
 
       for (i=j+1; i<cmd.size(); ) {
         if (cmd[i] == ')') {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,10 +23,9 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
-#include "base/split_string.h"
+#include "base/paths.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
 #include "fmt/format.h"
@@ -84,11 +83,23 @@ static FileItemList* navigation_history = NULL; // Set of FileItems navigated
 static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
 
 // This map acts like a temporal customization by the user when he/she
-// wants to open files.  The key (first) is the real "showExtensions"
-// parameter given to the FileSelector::show() function. The value
-// (second) is the selected extension by the user. It's used only in
-// FileSelector::Open type of dialogs.
-static std::map<std::string, std::string> preferred_open_extensions;
+// wants to open files.  The key (first) is the real "allExtensions"
+// parameter given to the FileSelector::show() function where each
+// extension is concatenated with each other in one string separated
+// by ','.  The value (second) is the selected/preferred extension by
+// the user. It's used only in FileSelector::Open type of dialogs.
+static std::map<std::string, base::paths> preferred_open_extensions;
+
+static std::string merge_paths(const base::paths& paths)
+{
+  std::string k;
+  for (const auto& p : paths) {
+    if (!k.empty())
+      k.push_back(',');
+    k += p;
+  }
+  return k;
+}
 
 // Slot for App::Exit signal
 static void on_exit_delete_navigation_history()
@@ -168,6 +179,19 @@ public:
     : ListItem(text)
   {
   }
+};
+
+class FileSelector::CustomFileExtensionItem : public ListItem {
+public:
+  CustomFileExtensionItem(const std::string& text,
+                          const base::paths& exts)
+    : ListItem(text)
+    , m_exts(exts)
+  {
+  }
+  const base::paths& extensions() const { return m_exts; }
+private:
+  base::paths m_exts;
 };
 
 // We have this dummy/hidden widget only to handle special navigation
@@ -393,8 +417,8 @@ void FileSelector::goInsideFolder()
 bool FileSelector::show(
   const std::string& title,
   const std::string& initialPath,
-  const std::string& showExtensions,
-  FileSelectorFiles& output)
+  const base::paths& allExtensions,
+  base::paths& output)
 {
   FileSystemModule* fs = FileSystemModule::instance();
   LockFS lock(fs);
@@ -437,22 +461,25 @@ bool FileSelector::show(
 
   // Change the file formats/extensions to be shown
   std::string initialExtension = base::get_file_extension(initialPath);
-  std::string exts = showExtensions;
+  base::paths exts;
   if (m_type == FileSelectorType::Open ||
       m_type == FileSelectorType::OpenMultiple) {
-    auto it = preferred_open_extensions.find(exts);
+    std::string k = merge_paths(allExtensions);
+    auto it = preferred_open_extensions.find(k);
     if (it == preferred_open_extensions.end())
-      exts = showExtensions;
+      exts = allExtensions;
     else
-      exts = preferred_open_extensions[exts];
+      exts = preferred_open_extensions[k];
   }
   else {
     ASSERT(m_type == FileSelectorType::Save);
     if (!initialExtension.empty())
-      exts = initialExtension;
+      exts = base::paths{ initialExtension };
+    else
+      exts = allExtensions;
   }
   m_fileList->setMultipleSelection(m_type == FileSelectorType::OpenMultiple);
-  m_fileList->setExtensions(exts.c_str());
+  m_fileList->setExtensions(exts);
   if (start_folder)
     m_fileList->setCurrentFolder(start_folder);
 
@@ -471,34 +498,36 @@ bool FileSelector::show(
   m_defExtension = initialExtension;
 
   // File type for all formats
-  {
-    ListItem* item = new ListItem("All formats");
-    item->setValue(showExtensions);
-    fileType()->addItem(item);
-  }
+  fileType()->addItem(
+    new CustomFileExtensionItem("All formats", allExtensions));
+
   // One file type for each supported image format
-  std::vector<std::string> tokens;
-  base::split_string(showExtensions, tokens, ",");
-  for (const auto& tok : tokens) {
+  for (const auto& e : allExtensions) {
     // If the default extension is empty, use the first filter
     if (m_defExtension.empty())
-      m_defExtension = tok;
+      m_defExtension = e;
 
-    ListItem* item = new ListItem(tok + " files");
-    item->setValue(tok);
-    fileType()->addItem(item);
+    fileType()->addItem(
+      new CustomFileExtensionItem(e + " files",
+                                  base::paths{ e }));
   }
   // All files
-  {
-    ListItem* item = new ListItem("All files");
-    item->setValue("");         // Empty extensions means "*.*"
-    fileType()->addItem(item);
-  }
+  fileType()->addItem(
+    new CustomFileExtensionItem("All files",
+                                base::paths())); // Empty extensions means "*.*"
 
   // file name entry field
   m_fileName->setValue(base::get_file_name(initialPath).c_str());
   m_fileName->getEntryWidget()->selectText(0, -1);
-  fileType()->setValue(exts);
+
+  for (Widget* wItem : *fileType()) {
+    auto item = dynamic_cast<CustomFileExtensionItem*>(wItem);
+    ASSERT(item);
+    if (item && item->extensions() == exts) {
+      fileType()->setSelectedItem(item);
+      break;
+    }
+  }
 
   // setup the title of the window
   setText(title.c_str());
@@ -899,17 +928,22 @@ void FileSelector::onLocationCloseListBox()
 // change the file-extension in the 'filename' entry widget
 void FileSelector::onFileTypeChange()
 {
-  std::string exts = fileType()->getValue();
+  base::paths exts;
+  auto* selExtItem = dynamic_cast<CustomFileExtensionItem*>(fileType()->getSelectedItem());
+  if (selExtItem)
+    exts = selExtItem->extensions();
+
   if (exts != m_fileList->extensions()) {
     m_navigationLocked = true;
-    m_fileList->setExtensions(exts.c_str());
+    m_fileList->setExtensions(exts);
     m_navigationLocked = false;
 
     if (m_type == FileSelectorType::Open ||
         m_type == FileSelectorType::OpenMultiple) {
-      std::string origShowExtensions =
-        dynamic_cast<ListItem*>(fileType()->getItem(0))->getValue();
-      preferred_open_extensions[origShowExtensions] = fileType()->getValue();
+      const base::paths& allExtensions =
+        dynamic_cast<CustomFileExtensionItem*>(fileType()->getItem(0))->extensions();
+      std::string k = merge_paths(allExtensions);
+      preferred_open_extensions[k] = exts;
     }
   }
 
@@ -969,10 +1003,11 @@ void FileSelector::onExtraOptions()
 
 std::string FileSelector::getSelectedExtension() const
 {
-  std::string ext = fileType()->getValue();
-  if (ext.empty() || ext.find(',') != std::string::npos)
-    ext = m_defExtension;
-  return ext;
+  auto selExtItem = dynamic_cast<CustomFileExtensionItem*>(fileType()->getSelectedItem());
+  if (selExtItem && selExtItem->extensions().size() == 1)
+    return selExtItem->extensions().front();
+  else
+    return m_defExtension;
 }
 
 void FileSelector::updateExtraLabel()

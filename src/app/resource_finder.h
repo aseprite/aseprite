@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,9 +9,9 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "base/paths.h"
 
 #include <string>
-#include <vector>
 
 namespace app {
 
@@ -58,7 +58,7 @@ namespace app {
 
   private:
     bool m_log;
-    std::vector<std::string> m_paths;
+    base::paths m_paths;
     int m_current;
     std::string m_default;
 

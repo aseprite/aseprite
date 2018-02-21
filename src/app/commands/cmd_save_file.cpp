@@ -193,11 +193,11 @@ bool SaveFileBaseCommand::saveAsDialog(
     filename = m_filename;
   }
   else {
-    std::string exts = get_writable_extensions();
+    base::paths exts = get_writable_extensions();
     filename = document->filename();
 
   again:;
-    FileSelectorFiles newfilename;
+    base::paths newfilename;
     if (!app::show_file_selector(
           dlgTitle, filename, exts,
           FileSelectorType::Save, newfilename,

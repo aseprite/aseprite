@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,9 +16,9 @@
 
 namespace app {
 
-std::vector<std::string> g_cache;
+base::paths g_cache;
 
-void get_font_dirs(std::vector<std::string>& fontDirs)
+void get_font_dirs(base::paths& fontDirs)
 {
   if (!g_cache.empty()) {
     fontDirs = g_cache;

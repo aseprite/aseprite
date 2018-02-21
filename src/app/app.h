@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/app_brushes.h"
 #include "base/mutex.h"
+#include "base/paths.h"
 #include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
 #include "obs/signal.h"
@@ -102,7 +103,6 @@ namespace app {
     obs::signal<void()> PaletteChange;
 
   private:
-    typedef std::vector<std::string> FileList;
     class CoreModules;
     class Modules;
 
@@ -115,7 +115,7 @@ namespace app {
     bool m_isGui;
     bool m_isShell;
     base::UniquePtr<MainWindow> m_mainWindow;
-    FileList m_files;
+    base::paths m_files;
     base::UniquePtr<AppBrushes> m_brushes;
     BackupIndicator* m_backupIndicator;
     base::mutex m_backupIndicatorMutex;

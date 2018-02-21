@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define UI_MESSAGE_H_INCLUDED
 #pragma once
 
+#include "base/paths.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
@@ -16,9 +17,6 @@
 #include "ui/mouse_buttons.h"
 #include "ui/pointer_type.h"
 #include "ui/widgets_list.h"
-
-#include <string>
-#include <vector>
 
 namespace ui {
 
@@ -177,16 +175,15 @@ namespace ui {
 
   class DropFilesMessage : public Message {
   public:
-    typedef std::vector<std::string> Files;
-
-    DropFilesMessage(const Files& files)
-      : Message(kDropFilesMessage), m_files(files) {
+    DropFilesMessage(const base::paths& files)
+      : Message(kDropFilesMessage)
+      , m_files(files) {
     }
 
-    const Files& files() const { return m_files; }
+    const base::paths& files() const { return m_files; }
 
   private:
-    Files m_files;
+    base::paths m_files;
   };
 
 } // namespace ui

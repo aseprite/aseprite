@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -90,11 +90,11 @@ private:
   }
 
   void onSelectFontFile() {
-    FileSelectorFiles face;
+    base::paths exts = { "ttf", "ttc", "otf", "dfont" };
+    base::paths face;
     if (!show_file_selector(
           "Select a TrueType Font",
-          m_face,
-          "ttf,ttc,otf,dfont",
+          m_face, exts,
           FileSelectorType::Open, face))
       return;
 

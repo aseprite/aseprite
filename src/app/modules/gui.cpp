@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -329,7 +329,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
     case kDropFilesMessage:
       {
-        DropFilesMessage::Files files = static_cast<DropFilesMessage*>(msg)->files();
+        base::paths files = static_cast<DropFilesMessage*>(msg)->files();
         UIContext* ctx = UIContext::instance();
         OpenFileCommand cmd;
 

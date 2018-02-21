@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -139,7 +139,7 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
       cof.filenameFormat));
 
   if (fop) {
-    std::vector<std::string> files;
+    base::paths files;
     fop->getFilenameList(files);
     for (const auto& file : files) {
       if (base::is_file(file))

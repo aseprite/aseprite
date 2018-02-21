@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -39,7 +39,7 @@ public:
     return base::to_utf8(&m_filename[0]);
   }
 
-  void getMultipleFileNames(std::vector<std::string>& output) override {
+  void getMultipleFileNames(base::paths& output) override {
     output = m_filenames;
   }
 
@@ -337,7 +337,7 @@ private:
 
   int m_defFilter;
   std::vector<WCHAR> m_filename;
-  std::vector<std::string> m_filenames;
+  base::paths m_filenames;
   std::wstring m_initialDir;
 };
 

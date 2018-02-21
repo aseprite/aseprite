@@ -45,34 +45,24 @@ namespace app {
 
 using namespace base;
 
-std::string get_readable_extensions()
+base::paths get_readable_extensions()
 {
-  std::string buf;
-
+  base::paths paths;
   for (const FileFormat* format : *FileFormatsManager::instance()) {
-    if (format->support(FILE_SUPPORT_LOAD)) {
-      if (!buf.empty())
-        buf.push_back(',');
-      buf += format->extensions();
-    }
+    if (format->support(FILE_SUPPORT_LOAD))
+      format->getExtensions(paths);
   }
-
-  return buf;
+  return paths;
 }
 
-std::string get_writable_extensions()
+base::paths get_writable_extensions()
 {
-  std::string buf;
-
+  base::paths paths;
   for (const FileFormat* format : *FileFormatsManager::instance()) {
-    if (format->support(FILE_SUPPORT_SAVE)) {
-      if (!buf.empty())
-        buf.push_back(',');
-      buf += format->extensions();
-    }
+    if (format->support(FILE_SUPPORT_SAVE))
+      format->getExtensions(paths);
   }
-
-  return buf;
+  return paths;
 }
 
 Document* load_document(Context* context, const std::string& filename)
@@ -268,7 +258,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string&
 
         if (window.closer() == window.agree()) {
           // If the user replies "Agree", we load the selected files.
-          std::vector<std::string> list;
+          base::paths list;
 
           auto it = window.files()->children().begin();
           auto end = window.files()->children().end();
@@ -991,7 +981,7 @@ void FileOp::setProgress(double progress)
     m_progressInterface->ackFileOpProgress(progress);
 }
 
-void FileOp::getFilenameList(std::vector<std::string>& output) const
+void FileOp::getFilenameList(base::paths& output) const
 {
   if (isSequence()) {
     output = m_seq.filename_list;

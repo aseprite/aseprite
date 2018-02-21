@@ -26,9 +26,18 @@ namespace app {
 using namespace base;
 
 class PngFormat : public FileFormat {
-  const char* onGetName() const override { return "png"; }
-  const char* onGetExtensions() const override { return "png"; }
-  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::PNG_IMAGE; }
+  const char* onGetName() const override {
+    return "png";
+  }
+
+  void onGetExtensions(base::paths& exts) const override {
+    exts.push_back("png");
+  }
+
+  dio::FileFormat onGetDioFormat() const override {
+    return dio::FileFormat::PNG_IMAGE;
+  }
+
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

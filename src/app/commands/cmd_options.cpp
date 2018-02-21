@@ -878,9 +878,10 @@ private:
   }
 
   void onAddExtension() {
-    FileSelectorFiles filename;
+    base::paths exts = { "zip" };
+    base::paths filename;
     if (!app::show_file_selector(
-          "Add Extension", "", "zip",
+          "Add Extension", "", exts,
           FileSelectorType::Open, filename))
       return;
 
@@ -1028,11 +1029,11 @@ private:
     return base::normalize_path(rf.defaultFilename());
   }
 
-  static std::vector<std::string> themeFolders() {
+  static base::paths themeFolders() {
     ResourceFinder rf;
     rf.includeDataDir(skin::SkinTheme::kThemesFolderName);
 
-    std::vector<std::string> paths;
+    base::paths paths;
     while (rf.next())
       paths.push_back(base::normalize_path(rf.filename()));
     return paths;

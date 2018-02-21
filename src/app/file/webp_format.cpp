@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017 David Capello
+// Copyright (C) 2015-2018 David Capello
 // Copyright (C) 2015 Gabriel Rauter
 //
 // This program is distributed under the terms of
@@ -39,9 +39,18 @@ using namespace base;
 
 class WebPFormat : public FileFormat {
 
-  const char* onGetName() const override { return "webp"; }
-  const char* onGetExtensions() const override { return "webp"; }
-  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::WEBP_ANIMATION; }
+  const char* onGetName() const override {
+    return "webp";
+  }
+
+  void onGetExtensions(base::paths& exts) const override {
+    exts.push_back("webp");
+  }
+
+  dio::FileFormat onGetDioFormat() const override {
+    return dio::FileFormat::WEBP_ANIMATION;
+  }
+
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

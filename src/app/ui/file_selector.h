@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -40,8 +40,8 @@ namespace app {
     // Shows the dialog to select a file in the program.
     bool show(const std::string& title,
               const std::string& initialPath,
-              const std::string& showExtensions,
-              FileSelectorFiles& output);
+              const base::paths& extensions,
+              base::paths& output);
 
   private:
     void updateLocation();
@@ -64,6 +64,7 @@ namespace app {
     class CustomFileNameItem;
     class CustomFolderNameItem;
     class CustomFileNameEntry;
+    class CustomFileExtensionItem;
     class ExtrasWindow;
 
     FileSelectorType m_type;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 
 namespace app {
 
-void get_font_dirs(std::vector<std::string>& fontDirs)
+void get_font_dirs(base::paths& fontDirs)
 {
   // TODO use a Cocoa API to get the list of paths
   fontDirs.push_back("~/Library/Fonts");

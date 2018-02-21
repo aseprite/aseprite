@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,9 +58,10 @@ void LoadMaskCommand::onExecute(Context* context)
   const ContextReader reader(context);
 
   if (context->isUIAvailable()) {
-    FileSelectorFiles selectedFilename;
+    base::paths exts = { "msk" };
+    base::paths selectedFilename;
     if (!app::show_file_selector(
-          "Load .msk File", m_filename, "msk",
+          "Load .msk File", m_filename, exts,
           FileSelectorType::Open, selectedFilename))
       return;
 

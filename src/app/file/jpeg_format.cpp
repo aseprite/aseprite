@@ -42,9 +42,19 @@ class JpegFormat : public FileFormat {
     float quality;
   };
 
-  const char* onGetName() const override { return "jpeg"; }
-  const char* onGetExtensions() const override { return "jpeg,jpg"; }
-  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::JPEG_IMAGE; }
+  const char* onGetName() const override {
+    return "jpeg";
+  }
+
+  void onGetExtensions(base::paths& exts) const override {
+    exts.push_back("jpeg");
+    exts.push_back("jpg");
+  }
+
+  dio::FileFormat onGetDioFormat() const override {
+    return dio::FileFormat::JPEG_IMAGE;
+  }
+
   int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |

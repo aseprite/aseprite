@@ -1,5 +1,5 @@
 // SHE library - GTK dialogs
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 // Copyright (C) 2016  Gabriel Rauter
 //
 // This file is released under the terms of the MIT license.
@@ -32,7 +32,7 @@ public:
     return m_filename;
   }
 
-  void getMultipleFileNames(std::vector<std::string>& output) override {
+  void getMultipleFileNames(base::paths& output) override {
     output = m_filenames;
   }
 
@@ -225,7 +225,7 @@ private:
 
   std::string m_filename;
   std::string m_initialDir;
-  std::vector<std::string> m_filenames;
+  base::paths m_filenames;
   GtkFileChooser* m_chooser;
   GtkWidget* m_preview;
 };

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,7 +48,7 @@ using namespace doc;
 namespace {
 
 static std::map<ObjectId, ObjVersionsMap> g_docVersions;
-static std::map<ObjectId, std::vector<std::string> > g_deleteFiles;
+static std::map<ObjectId, base::paths> g_deleteFiles;
 
 class Writer {
 public:
@@ -302,7 +302,7 @@ private:
   std::string m_dir;
   app::Document* m_doc;
   ObjVersionsMap& m_objVersions;
-  std::vector<std::string>& m_deleteFiles;
+  base::paths& m_deleteFiles;
   doc::CancelIO* m_cancel;
 };
 

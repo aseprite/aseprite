@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/mutex.h"
+#include "base/paths.h"
 #include "base/shared_ptr.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
@@ -17,7 +18,6 @@
 
 #include <cstdio>
 #include <string>
-#include <vector>
 
 // Flags for FileOp::createLoadDocumentOperation()
 #define FILE_LOAD_SEQUENCE_NONE         0x00000001
@@ -112,7 +112,7 @@ namespace app {
     bool isOneFrame() const { return m_oneframe; }
 
     const std::string& filename() const { return m_filename; }
-    const std::vector<std::string>& filenames() const { return m_seq.filename_list; }
+    const base::paths& filenames() const { return m_seq.filename_list; }
     Context* context() const { return m_context; }
     Document* document() const { return m_document; }
     Document* releaseDocument() {
@@ -165,7 +165,7 @@ namespace app {
     double progress() const;
     void setProgress(double progress);
 
-    void getFilenameList(std::vector<std::string>& output) const;
+    void getFilenameList(base::paths& output) const;
 
   private:
     FileOp();                   // Undefined
@@ -196,7 +196,7 @@ namespace app {
 
     // Data for sequences.
     struct {
-      std::vector<std::string> filename_list; // All file names to load/save.
+      base::paths filename_list;  // All file names to load/save.
       Palette* palette;           // Palette of the sequence.
       ImageRef image;             // Image to be saved/loaded.
       // For the progress bar.
@@ -215,8 +215,8 @@ namespace app {
   };
 
   // Available extensions for each load/save operation.
-  std::string get_readable_extensions();
-  std::string get_writable_extensions();
+  base::paths get_readable_extensions();
+  base::paths get_writable_extensions();
 
   // High-level routines to load/save documents.
   app::Document* load_document(Context* context, const std::string& filename);

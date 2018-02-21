@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -147,12 +147,12 @@ FontPopup::FontPopup()
 
   m_popup->view()->attachToView(&m_listBox);
 
-  std::vector<std::string> fontDirs;
+  base::paths fontDirs;
   get_font_dirs(fontDirs);
 
   // Create a list of fullpaths to every font found in all font
   // directories (fontDirs)
-  std::vector<std::string> files;
+  base::paths files;
   for (const auto& fontDir : fontDirs) {
     for (const auto& file : base::list_files(fontDir)) {
       std::string fullpath = base::join_path(fontDir, file);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/mutex.h"
+#include "base/paths.h"
 
 #include <string>
 #include <vector>
@@ -77,7 +78,7 @@ namespace app {
     virtual const FileItemList& children() = 0;
     virtual void createDirectory(const std::string& dirname) = 0;
 
-    virtual bool hasExtension(const std::string& csv_extensions) = 0;
+    virtual bool hasExtension(const base::paths& extensions) = 0;
 
     virtual she::Surface* getThumbnail() = 0;
     virtual void setThumbnail(she::Surface* thumbnail) = 0;

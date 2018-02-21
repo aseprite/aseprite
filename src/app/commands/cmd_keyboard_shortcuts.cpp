@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -649,10 +649,10 @@ private:
   }
 
   void onImport() {
-    FileSelectorFiles filename;
+    base::paths exts = { KEYBOARD_FILENAME_EXTENSION };
+    base::paths filename;
     if (!app::show_file_selector(
-          "Import Keyboard Shortcuts", "",
-          KEYBOARD_FILENAME_EXTENSION,
+          "Import Keyboard Shortcuts", "", exts,
           FileSelectorType::Open, filename))
       return;
 
@@ -666,11 +666,11 @@ private:
   }
 
   void onExport() {
-    FileSelectorFiles filename;
+    base::paths exts = { KEYBOARD_FILENAME_EXTENSION };
+    base::paths filename;
 
     if (!app::show_file_selector(
-          "Export Keyboard Shortcuts", "",
-          KEYBOARD_FILENAME_EXTENSION,
+          "Export Keyboard Shortcuts", "", exts,
           FileSelectorType::Save, filename))
       return;
 

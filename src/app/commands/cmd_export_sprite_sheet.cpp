@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -453,11 +453,10 @@ private:
   }
 
   void onImageFilename() {
-    std::string exts = get_writable_extensions();
-
-    FileSelectorFiles newFilename;
+    base::paths newFilename;
     if (!app::show_file_selector(
-          "Save Sprite Sheet", m_filename, exts,
+          "Save Sprite Sheet", m_filename,
+          get_writable_extensions(),
           FileSelectorType::Save, newFilename))
       return;
 
@@ -478,9 +477,10 @@ private:
 
   void onDataFilename() {
     // TODO hardcoded "json" extension
-    FileSelectorFiles newFilename;
+    base::paths exts = { "json" };
+    base::paths newFilename;
     if (!app::show_file_selector(
-          "Save JSON Data", m_dataFilename, "json",
+          "Save JSON Data", m_dataFilename, exts,
           FileSelectorType::Save, newFilename))
       return;
 

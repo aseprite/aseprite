@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -46,9 +46,10 @@ void SaveMaskCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Document* document(reader.document());
 
-  FileSelectorFiles selFilename;
+  base::paths exts = { "msk" };
+  base::paths selFilename;
   if (!app::show_file_selector(
-        "Save .msk File", "default.msk", "msk",
+        "Save .msk File", "default.msk", exts,
         FileSelectorType::Save, selFilename))
     return;
 

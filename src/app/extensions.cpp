@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -297,7 +297,7 @@ void Extension::uninstallFiles(const std::string& path)
   json11::Json json;
   read_json_file(infoFn, json);
 
-  std::vector<std::string> installedDirs;
+  base::paths installedDirs;
 
   for (const auto& value : json["installedFiles"].array_items()) {
     std::string fn = base::join_path(path, value.string_value());
@@ -545,7 +545,7 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
 Extension* Extensions::installCompressedExtension(const std::string& zipFn,
                                                   const ExtensionInfo& info)
 {
-  std::vector<std::string> installedFiles;
+  base::paths installedFiles;
 
   // Uncompress zipFn in info.dstPath
   {

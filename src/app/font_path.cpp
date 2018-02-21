@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,7 +21,7 @@ std::string find_font(const std::string& firstDir,
   if (base::is_file(fn))
     return fn;
 
-  std::vector<std::string> fontDirs;
+  base::paths fontDirs;
   get_font_dirs(fontDirs);
 
   for (const std::string& dir : fontDirs) {

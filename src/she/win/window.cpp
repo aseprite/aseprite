@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -1025,7 +1025,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_DROPFILES: {
       HDROP hdrop = (HDROP)(wparam);
-      Event::Files files;
+      base::paths files;
 
       int count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
       for (int index=0; index<count; ++index) {
