@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -63,23 +63,25 @@ void algo_line(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
 /* Additional helper functions for the ellipse-drawing helper function
    below corresponding to routines in Bresenham's algorithm. */
 namespace {
-  int bresenham_ellipse_error(int rx, int ry, int x, int y)
-  {
+  int bresenham_ellipse_error(int rx, int ry, int x, int y) {
     return x*x*ry*ry + y*y*rx*rx - rx*rx*ry*ry;
   }
 
   // Initialize positions x and y for Bresenham's algorithm
-  void bresenham_ellipse_init(int rx, int ry, int *px, int *py)
-  {
+  void bresenham_ellipse_init(int rx, int ry, int& x, int& y) {
     // Start at the fatter pole
-    if (rx > ry) { *px = 0; *py = ry; }
-    else { *px = rx; *py = 0; }
+    if (rx > ry) {
+      x = 0;
+      y = ry;
+    }
+    else {
+      x = rx;
+      y = 0;
+    }
   }
 
   // Move to next pixel to draw, according to Bresenham's algorithm
-  void bresenham_ellipse_step(int rx, int ry, int *px, int *py)
-  {
-    int &x = *px, &y = *py;
+  void bresenham_ellipse_step(int rx, int ry, int& x, int& y) {
     // Move towards the skinnier pole. Having 2 cases isn't needed, but it ensures
     // swapping rx and ry is the same as rotating 90 degrees.
     if (rx > ry) {
@@ -153,11 +155,11 @@ void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
   }
 
   /* Initialize drawing position at a pole. */
-  bresenham_ellipse_init(rx, ry, &x, &y);
+  bresenham_ellipse_init(rx, ry, x, y);
 
   for (;;) {
     /* Step to the next pixel to draw. */
-    bresenham_ellipse_step(rx, ry, &x, &y);
+    bresenham_ellipse_step(rx, ry, x, y);
 
     /* Edge conditions */
     if (y == 0 && x < rx) ++y; // don't move to horizontal radius except at pole
@@ -206,11 +208,11 @@ void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc
   if (my != my2) proc(mx - rx, my2, mx2 + rx, data);
 
   /* Initialize drawing position at a pole. */
-  bresenham_ellipse_init(rx, ry, &x, &y);
+  bresenham_ellipse_init(rx, ry, x, y);
 
   for (;;) {
     /* Step to the next pixel to draw. */
-    bresenham_ellipse_step(rx, ry, &x, &y);
+    bresenham_ellipse_step(rx, ry, x, y);
 
     /* Edge conditions */
     if (y == 0 && x < rx) ++y; // don't move to horizontal radius except at pole
