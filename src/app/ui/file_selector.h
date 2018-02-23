@@ -32,6 +32,8 @@ namespace app {
     FileSelector(FileSelectorType type, FileSelectorDelegate* delegate);
     ~FileSelector();
 
+    void setDefaultExtension(const std::string& extension);
+
     void goBack();
     void goForward();
     void goUp();

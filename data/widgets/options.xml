@@ -73,6 +73,10 @@
           <check id="show_full_path"
 		 text="@.show_full_path"
 		 tooltip="@.show_full_path_tooltip" />
+          <hbox>
+            <label text="@.default_extension" />
+            <combobox id="default_extension" />
+          </hbox>
           <separator horizontal="true" />
           <link id="locate_file" text="@.locate_file" />
           <link id="locate_crash_folder" text="@.locate_crash_folder" />

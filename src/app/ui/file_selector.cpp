@@ -385,6 +385,11 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
   updateExtraLabel();
 }
 
+void FileSelector::setDefaultExtension(const std::string& extension)
+{
+  m_defExtension = extension;
+}
+
 FileSelector::~FileSelector()
 {
   delete m_extras;
@@ -495,7 +500,8 @@ bool FileSelector::show(
   fileType()->removeAllItems();
 
   // Get the default extension from the given initial file name
-  m_defExtension = initialExtension;
+  if (m_defExtension.empty())
+    m_defExtension = initialExtension;
 
   // File type for all formats
   fileType()->addItem(

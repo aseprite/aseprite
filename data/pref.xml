@@ -255,6 +255,7 @@
     <section id="save_file">
       <option id="show_file_format_doesnt_support_alert" type="bool" default="true" />
       <option id="show_export_animation_in_sequence_alert" type="bool" default="true" />
+      <option id="default_extension" type="std::string" default="&quot;aseprite&quot;" />
     </section>
     <section id="gif">
       <option id="show_alert" type="bool" default="true" />

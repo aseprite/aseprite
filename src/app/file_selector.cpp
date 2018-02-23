@@ -27,6 +27,9 @@ bool show_file_selector(
   base::paths& output,
   FileSelectorDelegate* delegate)
 {
+  const std::string defExtension =
+    Preferences::instance().saveFile.defaultExtension();
+
   if (Preferences::instance().experimental.useNativeFileDialog() &&
       she::instance()->nativeDialogs()) {
     she::FileDialog* dlg =
@@ -53,6 +56,9 @@ bool show_file_selector(
       for (const auto& ext : extensions)
         dlg->addFilter(ext, ext + " files (*." + ext + ")");
 
+      if (!defExtension.empty())
+        dlg->setDefaultExtension(defExtension);
+
       bool res = dlg->show(she::instance()->defaultDisplay());
       if (res) {
         if (type == FileSelectorType::OpenMultiple)
@@ -66,6 +72,10 @@ bool show_file_selector(
   }
 
   FileSelector fileSelector(type, delegate);
+
+  if (!defExtension.empty())
+    fileSelector.setDefaultExtension(defExtension);
+
   return fileSelector.show(title, initialPath, extensions, output);
 }
 
