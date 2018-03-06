@@ -285,6 +285,10 @@ public:
       bounds.w = 2*a+3;
       bounds.h = 2*b+3;
     }
+    else {
+      ++bounds.w;
+      ++bounds.h;
+    }
 
     return bounds;
   }
