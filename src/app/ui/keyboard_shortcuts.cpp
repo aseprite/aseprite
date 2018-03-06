@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,16 +38,17 @@ namespace {
     { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid },
     { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap },
     { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio },
-    { "ScaleFromCenter"     , "Scale From Center"   , app::KeyAction::ScaleFromCenter },
+    { "ScaleFromCenter"     , "Scale From Center"  , app::KeyAction::ScaleFromCenter },
     { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
     { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
     { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
     { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer },
     { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint },
     { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint },
-    { "MoveOrigin"          , "Move Origin"      , app::KeyAction::MoveOrigin },
+    { "MoveOrigin"          , "Move Origin"        , app::KeyAction::MoveOrigin },
     { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect },
     { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter },
+    { "RotateShape"         , "Rotate Shape"       , app::KeyAction::RotateShape },
     { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton },
     { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton },
     { NULL                  , NULL                 , app::KeyAction::None }
@@ -165,6 +166,7 @@ Key::Key(KeyAction action)
     case KeyAction::MoveOrigin:
     case KeyAction::SquareAspect:
     case KeyAction::DrawFromCenter:
+    case KeyAction::RotateShape:
       m_keycontext = KeyContext::ShapeTool;
       break;
     case KeyAction::LeftMouseButton:

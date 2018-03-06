@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,6 +21,9 @@ namespace doc {
   void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
   void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
   void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc);
+
+  void draw_rotated_ellipse(int cx, int cy, int a, int b, double angle, void* data, AlgoPixel proc);
+  void fill_rotated_ellipse(int cx, int cy, int a, int b, double angle, void* data, AlgoHLine proc);
 
   void algo_spline(double x0, double y0, double x1, double y1,
                    double x2, double y2, double x3, double y3,

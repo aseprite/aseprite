@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -1488,6 +1488,8 @@ void Editor::updateToolLoopModifiersIndicators()
           modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
         if (int(action & KeyAction::DrawFromCenter))
           modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
+        if (int(action & KeyAction::RotateShape))
+          modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
       }
 
       // Freehand modifiers

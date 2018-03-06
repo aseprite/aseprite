@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui version="1.3-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
@@ -546,9 +546,9 @@
       <!-- Modifiers for two-points tool controller -->
       <key action="SquareAspect" shortcut="Shift" />
       <key action="DrawFromCenter" shortcut="Ctrl" />
-
       <!-- Modifiers for two-or-more-points tools -->
       <key action="MoveOrigin" shortcut="Space" />
+      <key action="RotateShape" shortcut="Alt" />
 
       <!-- Without default shortcuts -->
       <key action="LeftMouseButton" />

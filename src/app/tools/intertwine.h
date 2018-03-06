@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,8 +9,7 @@
 #pragma once
 
 #include "gfx/point.h"
-
-#include <vector>
+#include "gfx/rect.h"
 
 namespace app {
   namespace tools {
@@ -23,8 +22,6 @@ namespace app {
     // user-defined points.
     class Intertwine {
     public:
-      typedef std::vector<gfx::Point> Points;
-
       virtual ~Intertwine() { }
       virtual bool snapByAngle() { return false; }
       virtual void prepareIntertwine() { }
@@ -32,6 +29,8 @@ namespace app {
       // The given stroke must be relative to the cel origin.
       virtual void joinStroke(ToolLoop* loop, const Stroke& stroke) = 0;
       virtual void fillStroke(ToolLoop* loop, const Stroke& stroke) = 0;
+
+      virtual gfx::Rect getStrokeBounds(ToolLoop* loop, const Stroke& stroke);
 
     protected:
       // The given point must be relative to the cel origin.

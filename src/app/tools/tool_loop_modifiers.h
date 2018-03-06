@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,6 +19,7 @@ namespace tools {
     kMoveOrigin         = 0x00000008,
     kSquareAspect       = 0x00000010,
     kFromCenter         = 0x00000020,
+    kRotateShape        = 0x00000040,
   };
 
 } // namespace tools

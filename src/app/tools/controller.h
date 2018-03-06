@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,6 +58,10 @@ namespace app {
       // and then a TracePolicy::Accumulate for freehand (Pencil tool).
       virtual bool handleTracePolicy() const { return false; }
       virtual TracePolicy getTracePolicy() const { return TracePolicy::Accumulate; }
+
+      // Returns the angle for a shape-like intertwiner (rectangles,
+      // ellipses, etc.).
+      virtual double getShapeAngle() const { return 0.0; }
     };
 
   } // namespace tools

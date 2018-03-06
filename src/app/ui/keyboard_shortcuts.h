@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -63,6 +63,7 @@ namespace app {
     DrawFromCenter            = 0x00002000,
     ScaleFromCenter           = 0x00004000,
     AngleSnapFromLastPoint    = 0x00008000,
+    RotateShape               = 0x00010000,
   };
 
   inline KeyAction operator&(KeyAction a, KeyAction b) {
