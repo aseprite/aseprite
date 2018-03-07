@@ -201,7 +201,7 @@ bool FliFormat::onSave(FileOp* fop)
   const Sprite* sprite = fop->document()->sprite();
 
   // Open the file to write in binary mode
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
   flic::StdioFileInterface finterface(f);
   flic::Encoder encoder(&finterface);

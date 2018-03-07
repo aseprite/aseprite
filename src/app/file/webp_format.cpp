@@ -246,7 +246,7 @@ static int FileWriter(const uint8_t* data, size_t data_size, const WebPPicture* 
 
 bool WebPFormat::onSave(FileOp* fop)
 {
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
   WriterData wd = { fp, fop };

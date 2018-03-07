@@ -397,7 +397,7 @@ bool TgaFormat::onSave(FileOp* fop)
   int depth = (image->pixelFormat() == IMAGE_RGB) ? 32 : 8;
   bool need_pal = (image->pixelFormat() == IMAGE_INDEXED)? true: false;
 
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   fputc(0, f);                          /* id length (no id saved) */

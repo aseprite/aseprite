@@ -237,7 +237,7 @@ bool AseFormat::onPostLoad(FileOp* fop)
 bool AseFormat::onSave(FileOp* fop)
 {
   const Sprite* sprite = fop->document()->sprite();
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   // Write the header

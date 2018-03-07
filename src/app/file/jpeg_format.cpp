@@ -256,7 +256,7 @@ bool JpegFormat::onSave(FileOp* fop)
   LOG("JPEG: Saving with options: quality=%d\n", qualityValue);
 
   // Open the file for write in it.
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* file = handle.get();
 
   // Allocate and initialize JPEG compression object.

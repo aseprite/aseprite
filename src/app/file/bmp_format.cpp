@@ -739,7 +739,7 @@ bool BmpFormat::onSave(FileOp *fop)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   /* file_header */

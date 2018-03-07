@@ -244,7 +244,7 @@ bool IcoFormat::onSave(FileOp* fop)
   int c, x, y, b, m, v;
   frame_t n, num = sprite->totalFrames();
 
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs

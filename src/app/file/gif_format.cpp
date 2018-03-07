@@ -1343,7 +1343,8 @@ bool GifFormat::onSave(FileOp* fop)
 #if GIFLIB_MAJOR >= 5
   int errCode = 0;
 #endif
-  GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename(), "wb")
+  int fd = base::open_file_descriptor_with_exception(fop->filename(), "wb");
+  GifFilePtr gif_file(EGifOpenFileHandle(fd
 #if GIFLIB_MAJOR >= 5
                                          , &errCode
 #endif
@@ -1353,7 +1354,10 @@ bool GifFormat::onSave(FileOp* fop)
     throw Exception("Error creating GIF file.\n");
 
   GifEncoder encoder(fop, gif_file);
-  return encoder.encode();
+  bool result = encoder.encode();
+  if (result)
+    base::sync_file_descriptor(fd);
+  return result;
 }
 
 #endif  // ENABLE_SAVE

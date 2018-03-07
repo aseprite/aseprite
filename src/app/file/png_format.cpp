@@ -362,7 +362,7 @@ bool PngFormat::onSave(FileOp* fop)
   int pass, number_passes;
 
   /* open the file */
-  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
+  FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
   /* Create and initialize the png_struct with the desired error handler
