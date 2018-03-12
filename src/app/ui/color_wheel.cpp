@@ -75,15 +75,28 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
   double d = std::sqrt(u*u + v*v);
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
-    float x = float(u) / float(m_wheelBounds.w / 2);
-    float y = -float(v) / float(m_wheelBounds.h / 2);
-    float z = std::sqrt(1 - x*x - y*y);
-    if (z <= 1.f) {
+    double a = std::atan2(-v, u);
+    int di = int(128.0 * d / m_wheelRadius);
+
+    if (m_discrete) {
+      int ai = (int(180.0 * a / PI) + 360);
+      ai += 15;
+      ai /= 30;
+      ai *= 30;
+      a = PI * ai / 180.0;
+
+      di /= 32;
+      di *= 32;
+    }
+
+    int r = 128 + di*std::cos(a);
+    int g = 128 + di*std::sin(a);
+    int b = 255 - di;
+    if (d < m_wheelRadius+2*guiscale()) {
       return app::Color::fromRgb(
-        int(std::round((x + 1) * 127.5)),
-        int(std::round((y + 1) * 127.5)),
-        int(std::round((z + 1) * 127.5))
-      );
+        MID(0, r, 255),
+        MID(0, g, 255),
+        MID(128, b, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
@@ -311,32 +324,23 @@ void ColorWheel::onOptions()
   MenuItem tetradic("Tetradic");
   MenuItem square("Square");
   menu.addChild(&discrete);
-  menu.addChild(new MenuSeparator);
-  menu.addChild(&none);
-  menu.addChild(&complementary);
-  menu.addChild(&monochromatic);
-  menu.addChild(&analogous);
-  menu.addChild(&split);
-  menu.addChild(&triadic);
-  menu.addChild(&tetradic);
-  menu.addChild(&square);
-
-  if (m_colorModel == ColorModel::NORMAL_MAP) {
-    discrete.setSelected(false);
-    discrete.setEnabled(false);
-
-    none.setSelected(true);
-    none.setEnabled(false);
-    complementary.setEnabled(false);
-    monochromatic.setEnabled(false);
-    analogous.setEnabled(false);
-    split.setEnabled(false);
-    triadic.setEnabled(false);
-    tetradic.setEnabled(false);
-    square.setEnabled(false);
+  if (m_colorModel != ColorModel::NORMAL_MAP) {
+    menu.addChild(new MenuSeparator);
+    menu.addChild(&none);
+    menu.addChild(&complementary);
+    menu.addChild(&monochromatic);
+    menu.addChild(&analogous);
+    menu.addChild(&split);
+    menu.addChild(&triadic);
+    menu.addChild(&tetradic);
+    menu.addChild(&square);
   }
-  else {
-    if (isDiscrete()) discrete.setSelected(true);
+
+  if (isDiscrete())
+    discrete.setSelected(true);
+  discrete.Click.connect(base::Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));
+
+  if (m_colorModel != ColorModel::NORMAL_MAP) {
     switch (m_harmony) {
       case Harmony::NONE: none.setSelected(true); break;
       case Harmony::COMPLEMENTARY: complementary.setSelected(true); break;
@@ -347,17 +351,15 @@ void ColorWheel::onOptions()
       case Harmony::TETRADIC: tetradic.setSelected(true); break;
       case Harmony::SQUARE: square.setSelected(true); break;
     }
+    none.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::NONE));
+    complementary.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::COMPLEMENTARY));
+    monochromatic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::MONOCHROMATIC));
+    analogous.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::ANALOGOUS));
+    split.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SPLIT));
+    triadic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TRIADIC));
+    tetradic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
+    square.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
   }
-
-  discrete.Click.connect(base::Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));
-  none.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::NONE));
-  complementary.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::COMPLEMENTARY));
-  monochromatic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::MONOCHROMATIC));
-  analogous.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::ANALOGOUS));
-  split.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SPLIT));
-  triadic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TRIADIC));
-  tetradic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
-  square.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
 
   gfx::Rect rc = m_options.bounds();
   menu.showPopup(gfx::Point(rc.x+rc.w, rc.y));
