@@ -22,6 +22,7 @@
 #include "app/restore_visible_layers.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "base/bind.h"
@@ -147,9 +148,12 @@ namespace {
       if (base::is_file(dataname))
         text << "<<" << base::get_file_name(dataname).c_str();
 
-      if (ui::Alert::show(
-            fmt::format(Strings::alerts_overwrite_files_on_export_sprite_sheet(),
-                        text.str())) != 1)
+      int ret = OptionalAlert::show(
+        Preferences::instance().spriteSheet.showOverwriteFilesAlert,
+        1, // Yes is the default option when the alert dialog is disabled
+        fmt::format(Strings::alerts_overwrite_files_on_export_sprite_sheet(),
+                    text.str()));
+      if (ret != 1)
         return false;
     }
     return true;

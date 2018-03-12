@@ -155,6 +155,7 @@ public:
     // Alerts
     fileFormatDoesntSupportAlert()->setSelected(m_pref.saveFile.showFileFormatDoesntSupportAlert());
     exportAnimationInSequenceAlert()->setSelected(m_pref.saveFile.showExportAnimationInSequenceAlert());
+    overwriteFilesOnExportSpriteSheetAlert()->setSelected(m_pref.spriteSheet.showOverwriteFilesAlert());
     gifOptionsAlert()->setSelected(m_pref.gif.showAlert());
     jpegOptionsAlert()->setSelected(m_pref.jpeg.showAlert());
     advancedModeAlert()->setSelected(m_pref.advancedMode.showAlert());
@@ -410,6 +411,7 @@ public:
 
     m_pref.saveFile.showFileFormatDoesntSupportAlert(fileFormatDoesntSupportAlert()->isSelected());
     m_pref.saveFile.showExportAnimationInSequenceAlert(exportAnimationInSequenceAlert()->isSelected());
+    m_pref.spriteSheet.showOverwriteFilesAlert(overwriteFilesOnExportSpriteSheetAlert()->isSelected());
     m_pref.gif.showAlert(gifOptionsAlert()->isSelected());
     m_pref.jpeg.showAlert(jpegOptionsAlert()->isSelected());
     m_pref.advancedMode.showAlert(advancedModeAlert()->isSelected());
@@ -593,6 +595,7 @@ private:
   void onResetAlerts() {
     fileFormatDoesntSupportAlert()->setSelected(m_pref.saveFile.showFileFormatDoesntSupportAlert.defaultValue());
     exportAnimationInSequenceAlert()->setSelected(m_pref.saveFile.showExportAnimationInSequenceAlert.defaultValue());
+    overwriteFilesOnExportSpriteSheetAlert()->setSelected(m_pref.spriteSheet.showOverwriteFilesAlert.defaultValue());
     gifOptionsAlert()->setSelected(m_pref.gif.showAlert.defaultValue());
     jpegOptionsAlert()->setSelected(m_pref.jpeg.showAlert.defaultValue());
     advancedModeAlert()->setSelected(m_pref.advancedMode.showAlert.defaultValue());

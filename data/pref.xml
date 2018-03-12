@@ -257,6 +257,9 @@
       <option id="show_export_animation_in_sequence_alert" type="bool" default="true" />
       <option id="default_extension" type="std::string" default="&quot;aseprite&quot;" />
     </section>
+    <section id="sprite_sheet">
+      <option id="show_overwrite_files_alert" type="bool" default="true" />
+    </section>
     <section id="gif">
       <option id="show_alert" type="bool" default="true" />
       <option id="interlaced" type="bool" default="false" migrate="GIF.Interlaced" />
