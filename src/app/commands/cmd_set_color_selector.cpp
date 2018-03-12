@@ -91,7 +91,7 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
       type = Strings::commands_SetColorSelector_NormalMapWheel();
       break;
   }
-  return fmt::format(getBaseFriendlyName(), type);
+  return fmt::format(getBaseFriendlyName() + ": {0}", type);
 }
 
 Command* CommandFactory::createSetColorSelectorCommand()
