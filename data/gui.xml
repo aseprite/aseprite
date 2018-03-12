@@ -424,6 +424,9 @@
       <key command="SetColorSelector">
         <param name="type" value="ryb-wheel" />
       </key>
+      <key command="SetColorSelector">
+        <param name="type" value="normal-map-wheel" />
+      </key>
       <key command="LoadPalette" />
       <key command="SavePalette" />
       <key command="ColorQuantization" />
