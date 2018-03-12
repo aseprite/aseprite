@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -55,6 +55,7 @@ namespace app {
       RGB_WHEEL,
       RYB_WHEEL,
       TINT_SHADE_TONE,
+      NORMAL_MAP_WHEEL,
     };
 
     static ColorBar* instance() { return m_instance; }
