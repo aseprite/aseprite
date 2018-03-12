@@ -54,6 +54,7 @@ namespace app {
       SPECTRUM,
       RGB_WHEEL,
       RYB_WHEEL,
+      NORMAL_MAP_WHEEL,
       TINT_SHADE_TONE,
     };
 
