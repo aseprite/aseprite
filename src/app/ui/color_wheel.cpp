@@ -205,32 +205,46 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
     }
   }
 
-  if (m_color.getAlpha() > 0 && m_colorModel != ColorModel::NORMAL_MAP) {
-    int n = getHarmonies();
-    int boxsize = MIN(rc.w/10, rc.h/10);
-
-    for (int i=0; i<n; ++i) {
-      app::Color color = getColorInHarmony(i);
-      double angle = color.getHsvHue()-30.0;
-      double dist = color.getHsvSaturation();
-
-      color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
-                                  color.getHsvSaturation(),
-                                  color.getHsvValue());
+  if (m_color.getAlpha() > 0) {
+    if (m_colorModel == ColorModel::NORMAL_MAP) {
+      double angle = std::atan2(m_color.getGreen()-128,
+                                m_color.getRed()-128);
+      double dist = (255-m_color.getBlue()) / 128.0;
+      dist = MID(0.0, dist, 1.0);
 
       gfx::Point pos =
         m_wheelBounds.center() +
-        gfx::Point(int(+std::cos(PI*angle/180.0)*double(m_wheelRadius)*dist),
-                   int(-std::sin(PI*angle/180.0)*double(m_wheelRadius)*dist));
+        gfx::Point(int(+std::cos(angle)*double(m_wheelRadius)*dist),
+                   int(-std::sin(angle)*double(m_wheelRadius)*dist));
+      paintColorIndicator(g, pos, true);
+    }
+    else {
+      int n = getHarmonies();
+      int boxsize = MIN(rc.w/10, rc.h/10);
 
-      paintColorIndicator(g, pos, color.getHsvValue() < 0.5);
+      for (int i=0; i<n; ++i) {
+        app::Color color = getColorInHarmony(i);
+        double angle = color.getHsvHue()-30.0;
+        double dist = color.getHsvSaturation();
 
-      g->fillRect(gfx::rgba(color.getRed(),
-                            color.getGreen(),
-                            color.getBlue(), 255),
-                  gfx::Rect(rc.x+rc.w-(n-i)*boxsize,
-                            rc.y+rc.h-boxsize,
-                            boxsize, boxsize));
+        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
+                                    color.getHsvSaturation(),
+                                    color.getHsvValue());
+
+        gfx::Point pos =
+          m_wheelBounds.center() +
+          gfx::Point(int(+std::cos(PI*angle/180.0)*double(m_wheelRadius)*dist),
+                     int(-std::sin(PI*angle/180.0)*double(m_wheelRadius)*dist));
+
+        paintColorIndicator(g, pos, color.getHsvValue() < 0.5);
+
+        g->fillRect(gfx::rgba(color.getRed(),
+                              color.getGreen(),
+                              color.getBlue(), 255),
+                    gfx::Rect(rc.x+rc.w-(n-i)*boxsize,
+                              rc.y+rc.h-boxsize,
+                              boxsize, boxsize));
+      }
     }
   }
 
