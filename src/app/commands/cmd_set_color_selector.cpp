@@ -88,7 +88,7 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
       type = Strings::commands_SetColorSelector_RYBWheel();
       break;
     case ColorBar::ColorSelector::NORMAL_MAP_WHEEL:
-      type = "Normal Map Color Wheel";
+      type = Strings::commands_SetColorSelector_NormalMapWheel();
       break;
   }
   return fmt::format(getBaseFriendlyName(), type);
