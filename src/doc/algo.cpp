@@ -396,7 +396,7 @@ void fill_rotated_ellipse(int cx, int cy, int a, int b, double angle, void* data
   draw_rotated_ellipse_rect(
     cx-a, cy-b, cx+a, cy+b, zd,
     &rows,
-    (AlgoPixel)[](int x, int y, void* data){
+    [](int x, int y, void* data){
       Rows* rows = (Rows*)data;
       rows->update(x, y);
     });
