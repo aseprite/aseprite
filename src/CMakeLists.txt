@@ -75,6 +75,13 @@ else()
 endif()
 
 ######################################################################
+# Special developer mode
+
+if(ENABLE_DEVMODE)
+  add_definitions(-DENABLE_DEVMODE)
+endif()
+
+######################################################################
 # Aseprite Libraries (in preferred order to be built)
 
 # Disable observable tests
