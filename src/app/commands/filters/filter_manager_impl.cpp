@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/commands/filters/filter_manager_impl.h"
 
+#include "app/app.h"
 #include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
 #include "app/cmd/set_palette.h"
@@ -23,10 +24,12 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
+#include "app/ui/timeline/timeline.h"
+#include "app/util/range_utils.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
+#include "doc/cel.h"
 #include "doc/image.h"
-#include "doc/images_collector.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/site.h"
@@ -228,13 +231,17 @@ void FilterManagerImpl::applyToTarget()
   const bool paletteChange = paletteHasChanged();
   bool cancelled = false;
 
-  ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
-                          m_site.sprite()->root():
-                          m_site.layer()),
-                         m_site.frame(),
-                         (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
-                         true); // we will write in each image
-  if (images.empty() && !paletteChange) {
+  CelList cels;
+  auto range = App::instance()->timeline()->range();
+  if (range.enabled())
+    cels = get_unlocked_unique_cels(m_site.sprite(), range);
+  else if (m_site.cel() &&
+           m_site.layer() &&
+           m_site.layer()->isEditable()) {
+    cels.push_back(m_site.cel());
+  }
+
+  if (cels.empty() && !paletteChange) {
     // We don't have images/palette changes to do (there will not be a
     // transaction).
     return;
@@ -246,7 +253,7 @@ void FilterManagerImpl::applyToTarget()
   m_transaction.reset(new Transaction(writer.context(), m_filter->getName(), ModifyDocument));
 
   m_progressBase = 0.0f;
-  m_progressWidth = 1.0f / images.size();
+  m_progressWidth = (cels.size() > 0 ? 1.0f / cels.size(): 1.0f);
 
   std::set<ObjectId> visited;
 
@@ -260,15 +267,15 @@ void FilterManagerImpl::applyToTarget()
   }
 
   // For each target image
-  for (auto it = images.begin();
-       it != images.end() && !cancelled;
+  for (auto it = cels.begin();
+       it != cels.end() && !cancelled;
        ++it) {
-    Image* image = it->image();
+    Image* image = (*it)->image();
 
     // Avoid applying the filter two times to the same image
     if (visited.find(image->id()) == visited.end()) {
       visited.insert(image->id());
-      applyToCel(it->cel());
+      applyToCel(*it);
     }
 
     // Is there a delegate to know if the process was cancelled by the user?

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,8 +14,6 @@
 #define TARGET_ALPHA_CHANNEL            8
 #define TARGET_GRAY_CHANNEL             16
 #define TARGET_INDEX_CHANNEL            32
-#define TARGET_ALL_FRAMES               64
-#define TARGET_ALL_LAYERS               128
 
 #define TARGET_ALL_CHANNELS             \
   (TARGET_RED_CHANNEL           |       \

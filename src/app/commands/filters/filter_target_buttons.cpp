@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -37,7 +37,6 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   , m_alpha(nullptr)
   , m_gray(nullptr)
   , m_index(nullptr)
-  , m_cels(nullptr)
 {
   setMultipleSelection(true);
   addChild(&m_tooltips);
@@ -62,17 +61,10 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         break;
     }
   }
-
-  // Create the button to select which cels will be modified by the
-  // filter.
-  m_cels = addItem(getCelsIcon(), 4, 1);
 }
 
 void FilterTargetButtons::setTarget(int target)
 {
-  m_target &= (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS);
-  m_target |= (target & ~(TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
-
   selectTargetButton(m_red,   TARGET_RED_CHANNEL);
   selectTargetButton(m_green, TARGET_GREEN_CHANNEL);
   selectTargetButton(m_blue,  TARGET_BLUE_CHANNEL);
@@ -91,32 +83,12 @@ void FilterTargetButtons::selectTargetButton(Item* item, Target specificTarget)
 
 void FilterTargetButtons::updateFromTarget()
 {
-  m_cels->setIcon(getCelsIcon());
-
   updateComponentTooltip(m_red, "Red", BOTTOM);
   updateComponentTooltip(m_green, "Green", BOTTOM);
   updateComponentTooltip(m_blue, "Blue", BOTTOM);
   updateComponentTooltip(m_gray, "Gray", BOTTOM);
   updateComponentTooltip(m_alpha, "Alpha", BOTTOM);
   updateComponentTooltip(m_index, "Index", LEFT);
-
-  const char* celsTooltip = "";
-  switch (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS)) {
-    case 0:
-      celsTooltip = "Apply to the active frame/layer (the active cel)";
-      break;
-    case TARGET_ALL_FRAMES:
-      celsTooltip = "Apply to all frames in the active layer";
-      break;
-    case TARGET_ALL_LAYERS:
-      celsTooltip = "Apply to all layers in the active frame";
-      break;
-    case TARGET_ALL_FRAMES | TARGET_ALL_LAYERS:
-      celsTooltip = "Apply to all cels in the sprite";
-      break;
-  }
-
-  m_tooltips.addTooltipFor(m_cels, celsTooltip, LEFT);
 }
 
 void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channelName, int align)
@@ -133,7 +105,7 @@ void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channel
 void FilterTargetButtons::onItemChange(Item* item)
 {
   ButtonSet::onItemChange(item);
-  Target flags = (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
+  Target flags = m_target;
 
   if (m_index && item && item->isSelected()) {
     if (item == m_index) {
@@ -157,43 +129,10 @@ void FilterTargetButtons::onItemChange(Item* item)
   if (m_index && m_index->isSelected()) flags |= TARGET_INDEX_CHANNEL;
   if (m_alpha && m_alpha->isSelected()) flags |= TARGET_ALPHA_CHANNEL;
 
-  if (m_cels->isSelected()) {
-    m_cels->setSelected(false);
-
-    // Rotate cels target
-    if (flags & TARGET_ALL_FRAMES) {
-      flags &= ~TARGET_ALL_FRAMES;
-
-      if (flags & TARGET_ALL_LAYERS)
-        flags &= ~TARGET_ALL_LAYERS;
-      else
-        flags |= TARGET_ALL_LAYERS;
-    }
-    else {
-      flags |= TARGET_ALL_FRAMES;
-    }
-  }
-
   if (m_target != flags) {
     m_target = flags;
     updateFromTarget();
     TargetChange();
-  }
-}
-
-SkinPartPtr FilterTargetButtons::getCelsIcon() const
-{
-  SkinTheme* theme = SkinTheme::instance();
-
-  if (m_target & TARGET_ALL_FRAMES) {
-    return (m_target & TARGET_ALL_LAYERS) ?
-      theme->parts.targetFramesLayers():
-      theme->parts.targetFrames();
-  }
-  else {
-    return (m_target & TARGET_ALL_LAYERS) ?
-      theme->parts.targetLayers():
-      theme->parts.targetOne();
   }
 }
 

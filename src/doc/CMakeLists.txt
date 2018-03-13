@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2001-2017 David Capello
+# Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -41,7 +41,6 @@ add_library(doc-lib
   image.cpp
   image_impl.cpp
   image_io.cpp
-  images_collector.cpp
   layer.cpp
   layer_io.cpp
   layer_list.cpp

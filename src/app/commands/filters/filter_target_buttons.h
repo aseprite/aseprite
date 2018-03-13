@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2016, 2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,7 +41,6 @@ namespace app {
     void selectTargetButton(Item* item, Target specificTarget);
     void updateFromTarget();
     void updateComponentTooltip(Item* item, const char* channelName, int align);
-    skin::SkinPartPtr getCelsIcon() const;
 
     Target m_target;
     Item* m_red;
@@ -50,7 +49,6 @@ namespace app {
     Item* m_alpha;
     Item* m_gray;
     Item* m_index;
-    Item* m_cels;
     ui::TooltipManager m_tooltips;
   };
 

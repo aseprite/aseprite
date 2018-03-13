@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,7 +12,6 @@
 
 #include "base/unique_ptr.h"
 #include "doc/image_impl.h"
-#include "doc/images_collector.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
