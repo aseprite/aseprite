@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2017  David Capello
+# Copyright (C) 2001-2018  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
@@ -180,12 +180,15 @@ else()
   add_definitions(-DNDEBUG)
 endif()
 
-if(NOT WIN32 AND NOT APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu89")
-endif()
-
-if(APPLE AND USE_SKIA_BACKEND)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  elseif(UNIX)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu89")
+  endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif()
 
 if(NOT USE_SHARED_CURL)

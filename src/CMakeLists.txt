@@ -4,6 +4,11 @@
 ######################################################################
 # Compiler-specific flags
 
+if(UNIX)
+  # All warnings except for switch cases with missing enum items
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch")
+endif()
+
 if(MSVC)
   # As Skia is compiled with /GL flag (whole program optimization),
   # the linker prefer a /LTCG parameter to improve link times.
@@ -31,17 +36,6 @@ endif()
 # Use patched version of Allegro 4 (with window resize support).
 if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_ALLEGRO4)
   add_subdirectory(allegro)
-endif()
-
-######################################################################
-# Add C++11 support only for our code (avoid Allegro)
-
-if(UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch")
-endif()
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif()
 
 ######################################################################
