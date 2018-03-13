@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2016-2017 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -45,13 +45,13 @@ FileFormat detect_format_by_file_content_bytes(const uint8_t* buf,
    (buf[offset+3] == ((dword & 0xff000000) >> 24)))
 
   if (n >= 2) {
-    if (IS_MAGIC_WORD(0, BMP_MAGIC_NUMBER))
-      return FileFormat::BMP_IMAGE;
-
-    if (IS_MAGIC_WORD(0, JPG_MAGIC_NUMBER))
-      return FileFormat::JPEG_IMAGE;
-
     if (n >= 6) {
+      if (n >= 8) {
+        if (IS_MAGIC_DWORD(0, PNG_MAGIC_DWORD1) &&
+            IS_MAGIC_DWORD(4, PNG_MAGIC_DWORD2))
+          return FileFormat::PNG_IMAGE;
+      }
+
       if (std::strncmp((const char*)buf, GIF_87_STAMP, 6) == 0 ||
           std::strncmp((const char*)buf, GIF_89_STAMP, 6) == 0)
         return FileFormat::GIF_ANIMATION;
@@ -62,13 +62,13 @@ FileFormat detect_format_by_file_content_bytes(const uint8_t* buf,
       if (IS_MAGIC_WORD(4, FLI_MAGIC_NUMBER) ||
           IS_MAGIC_WORD(4, FLC_MAGIC_NUMBER))
         return FileFormat::FLIC_ANIMATION;
-
-      if (n >= 8) {
-        if (IS_MAGIC_DWORD(0, PNG_MAGIC_DWORD1) &&
-            IS_MAGIC_DWORD(4, PNG_MAGIC_DWORD2))
-          return FileFormat::PNG_IMAGE;
-      }
     }
+
+    if (IS_MAGIC_WORD(0, BMP_MAGIC_NUMBER))
+      return FileFormat::BMP_IMAGE;
+
+    if (IS_MAGIC_WORD(0, JPG_MAGIC_NUMBER))
+      return FileFormat::JPEG_IMAGE;
   }
 
   return FileFormat::UNKNOWN;
