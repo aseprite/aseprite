@@ -39,7 +39,7 @@
 // Not yet ready because if we start receiving WM_POINTERDOWN messages
 // instead of WM_LBUTTONDBLCLK we lost the automatic double-click
 // messages.
-#define USE_EnableMouseInPointer 0
+#define USE_EnableMouseInPointer 1
 
 #ifndef INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN
 #define INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN 1
@@ -530,11 +530,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_MOUSEMOVE: {
       // If the pointer API is enable, we use WM_POINTERUPDATE instead
-      // of WM_MOUSEMOVE.  This check is here because Windows keeps
-      // sending us WM_MOUSEMOVE messages even when we call
-      // EnableMouseInPointer() (mainly when we use Alt+stylus we
-      // receive WM_MOUSEMOVE with the position of the mouse/trackpad
-      // + WM_POINTERUPDATE with the position of the pen)
+      // of WM_MOUSEMOVE.
       if (m_ignoreMouseMessages)
         break;
 
@@ -769,13 +765,6 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       MOUSE_TRACE("POINTERENTER id=%d xy=%d,%d\n",
                   pi.pointerId, ev.position().x, ev.position().y);
 
-#if USE_EnableMouseInPointer == 0
-      // This is necessary to avoid receiving random WM_MOUSEMOVE from
-      // the mouse position when we use Alt+pen tip.
-      // TODO Remove this line when we enable EnableMouseInPointer(TRUE);
-      m_ignoreMouseMessages = true;
-#endif
-
       if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.AddPointerInteractionContext)
@@ -800,10 +789,6 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         break;
 
       MOUSE_TRACE("POINTERLEAVE id=%d\n", pi.pointerId);
-
-#if USE_EnableMouseInPointer == 0
-      m_ignoreMouseMessages = false;
-#endif
 
       if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
