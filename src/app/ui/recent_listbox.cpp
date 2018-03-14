@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,6 +19,7 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/fs.h"
+#include "ui/alert.h"
 #include "ui/graphics.h"
 #include "ui/link_label.h"
 #include "ui/listitem.h"
@@ -146,6 +147,12 @@ void RecentFilesListBox::onRebuildList()
 
 void RecentFilesListBox::onClick(const std::string& path)
 {
+  if (!base::is_file(path)) {
+    ui::Alert::show("Problem<<The selected file doesn't exist||&OK");
+    App::instance()->recentFiles()->removeRecentFile(path);
+    return;
+  }
+
   Command* command = Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("filename", path.c_str());
@@ -171,6 +178,12 @@ void RecentFoldersListBox::onRebuildList()
 
 void RecentFoldersListBox::onClick(const std::string& path)
 {
+  if (!base::is_directory(path)) {
+    ui::Alert::show("Problem<<The selected folder doesn't exist||&OK");
+    App::instance()->recentFiles()->removeRecentFolder(path);
+    return;
+  }
+
   Command* command = Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("folder", path.c_str());

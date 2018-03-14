@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,13 +32,14 @@ namespace app {
     RecentFiles();
     ~RecentFiles();
 
-    void addRecentFile(const char* filename);
-    void removeRecentFile(const char* filename);
+    void addRecentFile(const std::string& filename);
+    void removeRecentFile(const std::string& filename);
+    void removeRecentFolder(const std::string& dir);
 
     obs::signal<void()> Changed;
 
   private:
-    std::string normalizePath(std::string fn);
+    std::string normalizePath(const std::string& filename);
 
     List m_files;
     List m_paths;

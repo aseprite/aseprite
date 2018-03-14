@@ -203,7 +203,7 @@ void OpenFileCommand::onExecute(Context* context)
     // so we can remove it from the recent-file list
     if (unrecent) {
       if (context->isUIAvailable())
-        App::instance()->recentFiles()->removeRecentFile(m_filename.c_str());
+        App::instance()->recentFiles()->removeRecentFile(m_filename);
     }
   }
 }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,12 +12,16 @@
 
 #include "app/ini_file.h"
 #include "base/fs.h"
+#include "fmt/format.h"
 
 #include <cstdio>
 #include <cstring>
 #include <set>
 
 namespace {
+
+const char* kRecentFilesSection = "RecentFiles";
+const char* kRecentFoldersSection = "RecentPaths";
 
 struct compare_path {
   std::string a;
@@ -27,6 +31,14 @@ struct compare_path {
   }
 };
 
+std::string format_filename_var(const int i) {
+  return fmt::format("Filename{0:02d}", i);
+}
+
+std::string format_folder_var(const int i) {
+  return fmt::format("Path{0:02d}", i);
+}
+
 }
 
 namespace app {
@@ -35,12 +47,10 @@ RecentFiles::RecentFiles()
   : m_files(16)
   , m_paths(16)
 {
-  char buf[512];
-
   for (int c=m_files.limit()-1; c>=0; c--) {
-    sprintf(buf, "Filename%02d", c);
-
-    const char* filename = get_config_string("RecentFiles", buf, NULL);
+    const char* filename = get_config_string(kRecentFilesSection,
+                                             format_filename_var(c).c_str(),
+                                             nullptr);
     if (filename && *filename && base::is_file(filename)) {
       std::string fn = normalizePath(filename);
       m_files.addItem(fn, compare_path(fn));
@@ -48,9 +58,9 @@ RecentFiles::RecentFiles()
   }
 
   for (int c=m_paths.limit()-1; c>=0; c--) {
-    sprintf(buf, "Path%02d", c);
-
-    const char* path = get_config_string("RecentPaths", buf, NULL);
+    const char* path = get_config_string(kRecentFoldersSection,
+                                         format_folder_var(c).c_str(),
+                                         nullptr);
     if (path && *path) {
       std::string p = normalizePath(path);
       m_paths.addItem(p, compare_path(p));
@@ -60,24 +70,36 @@ RecentFiles::RecentFiles()
 
 RecentFiles::~RecentFiles()
 {
-  char buf[512];
+  // Save recent files
 
   int c = 0;
   for (auto const& filename : m_files) {
-    sprintf(buf, "Filename%02d", c);
-    set_config_string("RecentFiles", buf, filename.c_str());
-    c++;
+    set_config_string(kRecentFilesSection,
+                      format_filename_var(c).c_str(),
+                      filename.c_str());
+    ++c;
   }
+  for (; c<m_files.limit(); ++c) {
+    del_config_value(kRecentFilesSection,
+                     format_filename_var(c).c_str());
+  }
+
+  // Save recent folders
 
   c = 0;
   for (auto const& path : m_paths) {
-    sprintf(buf, "Path%02d", c);
-    set_config_string("RecentPaths", buf, path.c_str());
-    c++;
+    set_config_string(kRecentFoldersSection,
+                      format_folder_var(c).c_str(),
+                      path.c_str());
+    ++c;
+  }
+  for (; c<m_files.limit(); ++c) {
+    del_config_value(kRecentFoldersSection,
+                     format_folder_var(c).c_str());
   }
 }
 
-void RecentFiles::addRecentFile(const char* filename)
+void RecentFiles::addRecentFile(const std::string& filename)
 {
   std::string fn = normalizePath(filename);
   m_files.addItem(fn, compare_path(fn));
@@ -88,20 +110,29 @@ void RecentFiles::addRecentFile(const char* filename)
   Changed();
 }
 
-void RecentFiles::removeRecentFile(const char* filename)
+void RecentFiles::removeRecentFile(const std::string& filename)
 {
   std::string fn = normalizePath(filename);
   m_files.removeItem(fn, compare_path(fn));
 
-  std::string path = base::get_file_path(filename);
-  m_paths.removeItem(path, compare_path(path));
+  std::string dir = base::get_file_path(fn);
+  if (!base::is_directory(dir))
+    removeRecentFolder(dir);
 
   Changed();
 }
 
-std::string RecentFiles::normalizePath(std::string fn)
+void RecentFiles::removeRecentFolder(const std::string& dir)
 {
-  return base::normalize_path(fn);
+  std::string fn = normalizePath(dir);
+  m_paths.removeItem(fn, compare_path(fn));
+
+  Changed();
+}
+
+std::string RecentFiles::normalizePath(const std::string& filename)
+{
+  return base::normalize_path(filename);
 }
 
 } // namespace app
