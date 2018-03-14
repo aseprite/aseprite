@@ -13,6 +13,7 @@
 #include "app/app.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/skin/skin_theme.h"
@@ -148,7 +149,7 @@ void RecentFilesListBox::onRebuildList()
 void RecentFilesListBox::onClick(const std::string& path)
 {
   if (!base::is_file(path)) {
-    ui::Alert::show("Problem<<The selected file doesn't exist||&OK");
+    ui::Alert::show(Strings::alerts_recent_file_doesnt_exist());
     App::instance()->recentFiles()->removeRecentFile(path);
     return;
   }
@@ -179,7 +180,7 @@ void RecentFoldersListBox::onRebuildList()
 void RecentFoldersListBox::onClick(const std::string& path)
 {
   if (!base::is_directory(path)) {
-    ui::Alert::show("Problem<<The selected folder doesn't exist||&OK");
+    ui::Alert::show(Strings::alerts_recent_folder_doesnt_exist());
     App::instance()->recentFiles()->removeRecentFolder(path);
     return;
   }
