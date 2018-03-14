@@ -311,10 +311,8 @@ void FilterManagerImpl::flush()
     Editor* editor = current_editor;
 
     // Redraw the color palette
-    if (m_nextRowToFlush == 0 && paletteHasChanged()) {
-      set_current_palette(getNewPalette(), false);
-      ColorBar::instance()->invalidate();
-    }
+    if (m_nextRowToFlush == 0 && paletteHasChanged())
+      redrawColorPalette();
 
     // We expand the region one pixel at the top and bottom of the
     // region [m_row,m_nextRowToFlush) to be updated on the screen to
@@ -339,6 +337,17 @@ void FilterManagerImpl::flush()
 
     editor->invalidateRegion(reg1);
     m_nextRowToFlush = m_row+1;
+  }
+}
+
+void FilterManagerImpl::disablePreview()
+{
+  current_editor->invalidate();
+
+  // Redraw the color bar in case the filter modified the palette.
+  if (paletteHasChanged()) {
+    restoreSpritePalette();
+    redrawColorPalette();
   }
 }
 
@@ -451,6 +460,12 @@ void FilterManagerImpl::restoreSpritePalette()
   // Restore the original palette to save the undoable "cmd"
   if (m_oldPalette)
     m_site.sprite()->setPalette(m_oldPalette.get(), false);
+}
+
+void FilterManagerImpl::redrawColorPalette()
+{
+  set_current_palette(getNewPalette(), false);
+  ColorBar::instance()->invalidate();
 }
 
 bool FilterManagerImpl::isMaskActive() const

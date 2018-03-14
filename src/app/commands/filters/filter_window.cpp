@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,11 +10,13 @@
 
 #include "app/commands/filters/filter_window.h"
 
-#include "base/bind.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_worker.h"
 #include "app/ini_file.h"
+#include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/ui/editor/editor.h"
+#include "base/bind.h"
 
 namespace app {
 
@@ -106,7 +108,7 @@ bool FilterWindow::doModal()
 
   // Did the user press OK?
   if (closer() == &m_okButton) {
-    m_preview.stop();
+    stopPreview();
 
     // Apply the filter in background
     start_filter_worker(m_filterMgr);
@@ -121,8 +123,13 @@ bool FilterWindow::doModal()
 
 void FilterWindow::restartPreview()
 {
-  if (m_showPreview.isSelected())
+  bool state = m_showPreview.isSelected();
+  m_preview.setEnablePreview(state);
+
+  if (state)
     m_preview.restartPreview();
+  else
+    stopPreview();
 }
 
 void FilterWindow::setNewTarget(Target target)
@@ -146,6 +153,11 @@ void FilterWindow::onCancel(Event& ev)
 void FilterWindow::onShowPreview(Event& ev)
 {
   restartPreview();
+
+  // If the preview was disabled just redraw the current editor in its
+  // original state.
+  if (!m_showPreview.isSelected())
+    m_filterMgr->disablePreview();
 }
 
 // Called when the user changes the target-buttons.

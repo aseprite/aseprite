@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -96,6 +96,8 @@ namespace app {
     // Updates the current editor to show the progress of the preview.
     void flush();
 
+    void disablePreview();
+
     // FilterManager implementation
     const void* getSourceAddress() override;
     void* getDestinationAddress() override;
@@ -120,8 +122,12 @@ namespace app {
     void apply();
     void applyToCel(doc::Cel* cel);
     bool updateBounds(doc::Mask* mask);
+
+    // Returns true if the palette was changed (true when the filter
+    // modifies the palette).
     bool paletteHasChanged();
     void restoreSpritePalette();
+    void redrawColorPalette();
 
     Context* m_context;
     doc::Site m_site;
