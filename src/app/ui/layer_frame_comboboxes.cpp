@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -85,6 +85,10 @@ void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const
     frames->setSelectedItemIndex(i);
 
   for (auto tag : sprite->frameTags()) {
+    // Don't allow to select empty frame tags
+    if (tag->name().empty())
+      continue;
+
     i = frames->addItem(new FrameListItem(tag));
     if (defFrame == tag->name())
       frames->setSelectedItemIndex(i);

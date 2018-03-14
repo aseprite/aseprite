@@ -147,7 +147,10 @@ FileOpROI::FileOpROI(const app::Document* doc,
     if (!sliceName.empty())
       m_slice = doc->sprite()->slices().getByName(sliceName);
 
-    m_frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+    // Don't allow exporting frame tags with empty names
+    if (!frameTagName.empty())
+      m_frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+
     if (m_frameTag) {
       if (m_selFrames.empty())
         m_selFrames.insert(m_frameTag->fromFrame(), m_frameTag->toFrame());
