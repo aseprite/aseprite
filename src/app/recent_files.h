@@ -29,12 +29,14 @@ namespace app {
     const_iterator paths_begin() { return m_paths.begin(); }
     const_iterator paths_end() { return m_paths.end(); }
 
-    RecentFiles();
+    RecentFiles(const int limit);
     ~RecentFiles();
 
     void addRecentFile(const std::string& filename);
     void removeRecentFile(const std::string& filename);
     void removeRecentFolder(const std::string& dir);
+    void setLimit(const int n);
+    void clear();
 
     obs::signal<void()> Changed;
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -103,9 +103,10 @@ public:
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
 
-  Modules(bool createLogInDesktop)
+  Modules(bool createLogInDesktop, Preferences& pref)
     : m_loggerModule(createLogInDesktop)
     , m_activeToolManager(&m_toolbox)
+    , m_recent_files(pref.general.recentItems())
     , m_recovery(nullptr) {
   }
 
@@ -173,7 +174,7 @@ void App::initialize(const AppOptions& options)
       break;
   }
 
-  m_modules = new Modules(createLogInDesktop);
+  m_modules = new Modules(createLogInDesktop, preferences());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
   m_brushes.reset(new AppBrushes);
 

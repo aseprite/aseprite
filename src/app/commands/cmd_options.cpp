@@ -19,6 +19,7 @@
 #include "app/ini_file.h"
 #include "app/launcher.h"
 #include "app/pref/preferences.h"
+#include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
 #include "app/ui/color_button.h"
@@ -151,6 +152,10 @@ public:
           defaultExtension()->setSelectedItemIndex(index);
       }
     }
+
+    // Number of recent items
+    recentFiles()->setValue(m_pref.general.recentItems());
+    clearRecentFiles()->Click.connect(base::Bind<void>(&OptionsWindow::onClearRecentFiles, this));
 
     // Alerts
     fileFormatDoesntSupportAlert()->setSelected(m_pref.saveFile.showFileFormatDoesntSupportAlert());
@@ -393,6 +398,11 @@ public:
       Widget* defExt = defaultExtension()->getSelectedItem();
       m_pref.saveFile.defaultExtension(defExt ? defExt->text(): std::string());
     }
+    {
+      const int limit = recentFiles()->getValue();
+      m_pref.general.recentItems(limit);
+      App::instance()->recentFiles()->setLimit(limit);
+    }
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
     m_pref.general.expandMenubarOnMouseover(expandOnMouseover);
@@ -590,6 +600,10 @@ private:
     // Load extension
     else if (item->getValue() == kSectionExtensionsId)
       loadExtensions();
+  }
+
+  void onClearRecentFiles() {
+    App::instance()->recentFiles()->clear();
   }
 
   void onResetAlerts() {

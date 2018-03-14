@@ -7,6 +7,7 @@
       <view maxsize="true">
         <listbox id="section_listbox">
           <listitem text="@.section_general" value="section_general" />
+          <listitem text="@.section_files" value="section_files" />
           <listitem text="@.section_alerts" value="section_alerts" />
           <listitem text="@.section_editor" value="section_editor" />
           <listitem text="@.section_selection" value="section_selection" />
@@ -70,16 +71,30 @@
               <listitem text="@.30_minutes" value="30" />
             </combobox>
           </hbox>
-          <check id="show_full_path"
-		 text="@.show_full_path"
-		 tooltip="@.show_full_path_tooltip" />
+          <separator horizontal="true" />
+          <link id="locate_file" text="@.locate_file" />
+          <link id="locate_crash_folder" text="@.locate_crash_folder" />
+        </vbox>
+
+        <!-- Files -->
+        <vbox id="section_files">
+          <separator text="@.section_files" horizontal="true" />
           <hbox>
             <label text="@.default_extension" />
             <combobox id="default_extension" />
           </hbox>
-          <separator horizontal="true" />
-          <link id="locate_file" text="@.locate_file" />
-          <link id="locate_crash_folder" text="@.locate_crash_folder" />
+          <grid columns="2">
+            <label text="@.recent_files" />
+            <hbox>
+              <slider min="0" max="100" id="recent_files" width="128" tooltip="@.recent_files_tooltip" />
+              <button id="clear_recent_files" text="@.clear_recent_files" tooltip="@.clear_recent_files_tooltip" width="60" />
+            </hbox>
+
+            <boxfiller />
+            <check id="show_full_path"
+                   text="@.show_full_path"
+                   tooltip="@.show_full_path_tooltip" />
+          </grid>
         </vbox>
 
         <!-- Editor -->

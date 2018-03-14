@@ -115,6 +115,7 @@
       <option id="show_full_path" type="bool" default="true" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
       <option id="show_menu_bar" type="bool" default="true" />
+      <option id="recent_items" type="int" default="16" />
     </section>
     <section id="undo" text="Undo">
       <option id="size_limit" type="int" default="0" />

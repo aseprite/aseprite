@@ -43,9 +43,9 @@ std::string format_folder_var(const int i) {
 
 namespace app {
 
-RecentFiles::RecentFiles()
-  : m_files(16)
-  , m_paths(16)
+RecentFiles::RecentFiles(const int limit)
+  : m_files(limit)
+  , m_paths(limit)
 {
   for (int c=m_files.limit()-1; c>=0; c--) {
     const char* filename = get_config_string(kRecentFilesSection,
@@ -126,6 +126,22 @@ void RecentFiles::removeRecentFolder(const std::string& dir)
 {
   std::string fn = normalizePath(dir);
   m_paths.removeItem(fn, compare_path(fn));
+
+  Changed();
+}
+
+void RecentFiles::setLimit(const int n)
+{
+  m_files.setLimit(n);
+  m_paths.setLimit(n);
+
+  Changed();
+}
+
+void RecentFiles::clear()
+{
+  m_files.clear();
+  m_paths.clear();
 
   Changed();
 }
