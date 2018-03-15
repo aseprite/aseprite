@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
   <window id="file_selector" text="">
   <vbox id="main">
@@ -20,11 +20,6 @@
       <label text="@.file_type" />
       <hbox cell_align="horizontal">
         <combobox id="file_type" minwidth="70" />
-	<vbox>
-	  <boxfiller />
-          <link id="extra_options" text="" />
-          <boxfiller />
-        </vbox>
         <boxfiller />
         <box horizontal="true" homogeneous="true">
           <button text="@general.ok" closewindow="true" id="ok" magnet="true" width="60" />

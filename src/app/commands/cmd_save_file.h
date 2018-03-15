@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,31 +15,30 @@
 
 namespace app {
   class Document;
-  class FileSelectorDelegate;
 
   class SaveFileBaseCommand : public Command {
   public:
     SaveFileBaseCommand(const char* id, CommandFlags flags);
 
-    std::string selectedFilename() const {
-      return m_selectedFilename;
-    }
-
   protected:
     void onLoadParams(const Params& params) override;
     bool onEnabled(Context* context) override;
 
-    bool saveAsDialog(Context* context,
-                      const std::string& dlgTitle,
-                      const std::string& forbiddenFilename = std::string(),
-                      FileSelectorDelegate* delegate = nullptr);
-    void saveDocumentInBackground(const Context* context,
-                                  const app::Document* document,
-                                  bool markAsSaved) const;
+    std::string saveAsDialog(
+      Context* context,
+      const std::string& dlgTitle,
+      const std::string& filename,
+      const bool markAsSaved,
+      const bool saveInBackground = true,
+      const std::string& forbiddenFilename = std::string());
+    void saveDocumentInBackground(
+      const Context* context,
+      app::Document* document,
+      const std::string& filename,
+      const bool markAsSaved) const;
 
     std::string m_filename;
     std::string m_filenameFormat;
-    std::string m_selectedFilename;
     std::string m_frameTag;
     std::string m_slice;
     doc::SelectedFrames m_selFrames;

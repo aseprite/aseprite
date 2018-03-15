@@ -480,6 +480,7 @@ add_library(app-lib
   ui/editor/tool_loop_impl.cpp
   ui/editor/transform_handles.cpp
   ui/editor/zooming_state.cpp
+  ui/export_file_window.cpp
   ui/file_list.cpp
   ui/file_list_view.cpp
   ui/file_selector.cpp

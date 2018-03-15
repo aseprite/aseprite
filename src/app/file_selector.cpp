@@ -24,8 +24,7 @@ bool show_file_selector(
   const std::string& initialPath,
   const base::paths& extensions,
   FileSelectorType type,
-  base::paths& output,
-  FileSelectorDelegate* delegate)
+  base::paths& output)
 {
   const std::string defExtension =
     Preferences::instance().saveFile.defaultExtension();
@@ -71,7 +70,7 @@ bool show_file_selector(
     }
   }
 
-  FileSelector fileSelector(type, delegate);
+  FileSelector fileSelector(type);
 
   if (!defExtension.empty())
     fileSelector.setDefaultExtension(defExtension);

@@ -29,7 +29,7 @@ namespace app {
 
   class FileSelector : public app::gen::FileSelector {
   public:
-    FileSelector(FileSelectorType type, FileSelectorDelegate* delegate);
+    FileSelector(FileSelectorType type);
     ~FileSelector();
 
     void setDefaultExtension(const std::string& extension);
@@ -58,24 +58,19 @@ namespace app {
     void onFileListFileSelected();
     void onFileListFileAccepted();
     void onFileListCurrentFolderChanged();
-    void onExtraOptions();
     std::string getSelectedExtension() const;
-    void updateExtraLabel();
 
     class ArrowNavigator;
     class CustomFileNameItem;
     class CustomFolderNameItem;
     class CustomFileNameEntry;
     class CustomFileExtensionItem;
-    class ExtrasWindow;
 
     FileSelectorType m_type;
-    FileSelectorDelegate* m_delegate;
     std::string m_defExtension;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
     FileListView* m_fileView;
-    ExtrasWindow* m_extras;
 
     // If true the navigation_history isn't
     // modified if the current folder changes
