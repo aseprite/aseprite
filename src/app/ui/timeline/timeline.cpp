@@ -38,6 +38,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/layer_boundaries.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
@@ -127,6 +128,31 @@ namespace {
 
       pred(child, level, flags);
     }
+  }
+
+  bool is_copy_key_pressed(ui::Message* msg) {
+    return
+      msg->ctrlPressed() ||  // Ctrl is common on Windows
+      msg->altPressed();    // Alt is common on Mac OS X
+  }
+
+  bool is_select_layer_in_canvas_key_pressed(ui::Message* msg) {
+#ifdef __APPLE__
+    return msg->cmdPressed();
+#else
+    return msg->ctrlPressed();
+#endif
+  }
+
+  SelectLayerBoundariesOp get_select_layer_in_canvas_op(ui::Message* msg) {
+    if (msg->altPressed() && msg->shiftPressed())
+      return SelectLayerBoundariesOp::INTERSECT;
+    else if (msg->shiftPressed())
+      return SelectLayerBoundariesOp::ADD;
+    else if (msg->altPressed())
+      return SelectLayerBoundariesOp::SUBTRACT;
+    else
+      return SelectLayerBoundariesOp::REPLACE;
   }
 
 } // anonymous namespace
@@ -607,10 +633,18 @@ bool Timeline::onProcessMessage(Message* msg)
         }
         case PART_ROW_TEXT: {
           base::ScopedValue<bool> lock(m_fromTimeline, true, false);
-          layer_t old_layer = getLayerIndex(m_layer);
-          bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk.layer));
+          const layer_t old_layer = getLayerIndex(m_layer);
+          const bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk.layer));
+          const bool selectLayerInCanvas =
+            (m_clk.layer != -1 &&
+             mouseMsg->left() &&
+             is_select_layer_in_canvas_key_pressed(mouseMsg));
 
-          if (selectLayer) {
+          if (selectLayerInCanvas) {
+            select_layer_boundaries(m_rows[m_clk.layer].layer(), m_frame,
+                                    get_select_layer_in_canvas_op(mouseMsg));
+          }
+          else if (selectLayer) {
             m_state = STATE_SELECTING_LAYERS;
             if (clearRange)
               m_range.clearRange();
@@ -637,26 +671,37 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         case PART_CEL: {
           base::ScopedValue<bool> lock(m_fromTimeline, true, false);
-          layer_t old_layer = getLayerIndex(m_layer);
-          bool selectCel = (mouseMsg->left()
+          const layer_t old_layer = getLayerIndex(m_layer);
+          const bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk.layer)
             || !isFrameActive(m_clk.frame));
-          frame_t old_frame = m_frame;
+          const bool selectCelInCanvas =
+            (m_clk.layer != -1 &&
+             mouseMsg->left() &&
+             is_select_layer_in_canvas_key_pressed(mouseMsg));
+          const frame_t old_frame = m_frame;
 
-          if (selectCel) {
-            m_state = STATE_SELECTING_CELS;
-            m_range.clearRange();
-            m_range.startRange(m_rows[m_clk.layer].layer(),
-                               m_clk.frame, Range::kCels);
-            m_startRange = m_range;
+          if (selectCelInCanvas) {
+            select_layer_boundaries(m_rows[m_clk.layer].layer(),
+                                    m_clk.frame,
+                                    get_select_layer_in_canvas_op(mouseMsg));
           }
+          else {
+            if (selectCel) {
+              m_state = STATE_SELECTING_CELS;
+              m_range.clearRange();
+              m_range.startRange(m_rows[m_clk.layer].layer(),
+                                 m_clk.frame, Range::kCels);
+              m_startRange = m_range;
+            }
 
-          // Select the new clicked-part.
-          if (old_layer != m_clk.layer
-            || old_frame != m_clk.frame) {
-            setLayer(m_rows[m_clk.layer].layer());
-            setFrame(m_clk.frame, true);
-            invalidate();
+            // Select the new clicked-part.
+            if (old_layer != m_clk.layer
+                || old_frame != m_clk.frame) {
+              setLayer(m_rows[m_clk.layer].layer());
+              setFrame(m_clk.frame, true);
+              invalidate();
+            }
           }
 
           // Change the scroll to show the new selected cel.
@@ -1078,7 +1123,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         if (m_state == STATE_MOVING_RANGE &&
             m_dropRange.type() != Range::kNone) {
-          dropRange(isCopyKeyPressed(mouseMsg) ?
+          dropRange(is_copy_key_pressed(mouseMsg) ?
             Timeline::kCopy:
             Timeline::kMove);
         }
@@ -1636,7 +1681,7 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   }
   // Moving.
   else if (m_state == STATE_MOVING_RANGE) {
-    if (isCopyKeyPressed(msg))
+    if (is_copy_key_pressed(msg))
       ui::set_mouse_cursor(kArrowPlusCursor);
     else
       ui::set_mouse_cursor(kMoveCursor);
@@ -2919,7 +2964,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         auto mouseMsg = dynamic_cast<MouseMessage*>(msg);
 
         if (// With Ctrl and Alt key we can drag the range from any place (not necessary from the outline.
-            isCopyKeyPressed(msg) ||
+            is_copy_key_pressed(msg) ||
             // Drag with right-click
             (m_state == STATE_STANDBY &&
              mouseMsg &&
@@ -2990,7 +3035,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
   StatusBar* sb = StatusBar::instance();
 
   if (m_state == STATE_MOVING_RANGE) {
-    const char* verb = isCopyKeyPressed(msg) ? "Copy": "Move";
+    const char* verb = is_copy_key_pressed(msg) ? "Copy": "Move";
 
     switch (m_range.type()) {
 
@@ -3463,12 +3508,6 @@ void Timeline::clearClipboardRange()
 
   clipboard::clear_content();
   m_clipboard_timer.stop();
-}
-
-bool Timeline::isCopyKeyPressed(ui::Message* msg)
-{
-  return msg->ctrlPressed() ||  // Ctrl is common on Windows
-         msg->altPressed();    // Alt is common on Mac OS X
 }
 
 DocumentPreferences& Timeline::docPref() const

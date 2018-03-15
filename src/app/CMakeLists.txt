@@ -530,6 +530,7 @@ add_library(app-lib
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
   util/freetype_utils.cpp
+  util/layer_boundaries.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/pic_file.cpp

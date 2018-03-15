@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,32 @@
 #include <cstring>
 
 namespace doc {
+
+namespace {
+
+  template<typename Func>
+  void for_each_mask_pixel(Mask& a, const Mask& b, Func f) {
+    a.reserve(b.bounds());
+
+    {
+      LockImageBits<BitmapTraits> aBits(a.bitmap());
+      auto aIt = aBits.begin();
+
+      auto bounds = a.bounds();
+      for (int y=0; y<bounds.h; ++y) {
+        for (int x=0; x<bounds.w; ++x, ++aIt) {
+          color_t aColor = *aIt;
+          color_t bColor = (b.containsPoint(bounds.x+x,
+                                            bounds.y+y) ? 1: 0);
+          *aIt = f(aColor, bColor);
+        }
+      }
+    }
+
+    a.shrink();
+  }
+
+} // namespace namespace
 
 Mask::Mask()
   : Object(ObjectType::Mask)
@@ -130,6 +156,36 @@ void Mask::replace(const gfx::Rect& bounds)
 
   m_bitmap.reset(Image::create(IMAGE_BITMAP, bounds.w, bounds.h, m_buffer));
   clear_image(m_bitmap.get(), 1);
+}
+
+void Mask::add(const doc::Mask& mask)
+{
+  for_each_mask_pixel(
+    *this, mask,
+    [](color_t a, color_t b) -> color_t {
+      return a | b;
+    });
+}
+
+void Mask::subtract(const doc::Mask& mask)
+{
+  for_each_mask_pixel(
+    *this, mask,
+    [](color_t a, color_t b) -> color_t {
+      if (a)
+        return a - b;
+      else
+        return 0;
+    });
+}
+
+void Mask::intersect(const doc::Mask& mask)
+{
+  for_each_mask_pixel(
+    *this, mask,
+    [](color_t a, color_t b) -> color_t {
+      return a & b;
+    });
 }
 
 void Mask::add(const gfx::Rect& bounds)

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -79,10 +79,14 @@ namespace doc {
     // Inverts the mask.
     void invert();
 
-    // Adds the specified rectangle in the mask/selection
+    void add(const doc::Mask& mask);
+    void subtract(const doc::Mask& mask);
+    void intersect(const doc::Mask& mask);
+
     void add(const gfx::Rect& bounds);
     void subtract(const gfx::Rect& bounds);
     void intersect(const gfx::Rect& bounds);
+
     void byColor(const Image* image, int color, int fuzziness);
     void crop(const Image* image);
 

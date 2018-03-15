@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -282,8 +282,6 @@ namespace app {
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
-
-    bool isCopyKeyPressed(ui::Message* msg);
 
     // The layer of the bottom (e.g. Background layer)
     layer_t firstLayer() const { return 0; }
