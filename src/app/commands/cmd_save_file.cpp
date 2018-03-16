@@ -26,6 +26,7 @@
 #include "app/restore_visible_layers.h"
 #include "app/ui/export_file_window.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
@@ -34,6 +35,7 @@
 #include "base/unique_ptr.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -278,18 +280,35 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   Document* doc = context->activeDocument();
   ExportFileWindow win(doc);
+  bool askOverwrite = true;
 
   win.SelectOutputFile.connect(
-    [this, &win, context, doc]{
-      return saveAsDialog(
-        context, "Export",
-        win.outputFilenameValue(), false, false,
-        (doc->isAssociatedToFile() ? doc->filename():
-                                     std::string()));
+    [this, &win, &askOverwrite, context, doc]() -> std::string {
+      std::string result =
+        saveAsDialog(
+          context, "Export",
+          win.outputFilenameValue(), false, false,
+          (doc->isAssociatedToFile() ? doc->filename():
+                                       std::string()));
+      if (!result.empty())
+        askOverwrite = false; // Already asked in the file selector dialog
+
+      return result;
     });
 
+again:;
   if (!win.show())
     return;
+
+  if (askOverwrite) {
+    int ret = OptionalAlert::show(
+      Preferences::instance().exportFile.showOverwriteFilesAlert,
+      1, // Yes is the default option when the alert dialog is disabled
+      fmt::format(Strings::alerts_overwrite_files_on_export(),
+                  win.outputFilenameValue()));
+    if (ret != 1)
+      goto again;
+  }
 
   // Save the preferences used to export the file, so if we open the
   // window again, we will have the same options.
