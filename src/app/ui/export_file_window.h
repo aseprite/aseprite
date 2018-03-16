@@ -29,12 +29,14 @@ namespace app {
     double resizeValue() const;
     std::string layersValue() const;
     std::string framesValue() const;
+    doc::AniDir aniDirValue() const;
     bool applyPixelRatio() const;
 
     obs::signal<std::string()> SelectOutputFile;
 
   private:
     void updateOutputFilenameButton();
+    void updateAniDir();
 
     const Document* m_doc;
     DocumentPreferences& m_docPref;

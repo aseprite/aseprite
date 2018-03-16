@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,7 +18,7 @@ std::size_t SelectedFrames::size() const
 {
   std::size_t size = 0;
   for (auto& range : m_ranges)
-    size += (range.toFrame - range.fromFrame + 1);
+    size += ABS(range.toFrame - range.fromFrame) + 1;
   return size;
 }
 
@@ -27,6 +27,7 @@ void SelectedFrames::clear()
   m_ranges.clear();
 }
 
+// TODO this works only for forward ranges
 void SelectedFrames::insert(frame_t frame)
 {
   ASSERT(frame >= 0);
@@ -76,19 +77,35 @@ void SelectedFrames::insert(frame_t fromFrame, frame_t toFrame)
   }
 }
 
-void SelectedFrames::filter(frame_t fromFrame, frame_t toFrame)
+SelectedFrames SelectedFrames::filter(frame_t fromFrame, frame_t toFrame) const
 {
+  SelectedFrames f;
+
   if (fromFrame > toFrame)
     std::swap(fromFrame, toFrame);
 
-  // TODO improve this, avoid copying
-  SelectedFrames original = *this;
-  for (frame_t frame : original) {
-    if (frame >= fromFrame && frame <= toFrame)
-      insert(frame);
+  for (const auto& range : m_ranges) {
+    FrameRange r(range);
+    const bool isForward = (r.fromFrame <= r.toFrame);
+
+    if (isForward) {
+      if (r.fromFrame < fromFrame) r.fromFrame = fromFrame;
+      if (r.toFrame > toFrame) r.toFrame = toFrame;
+    }
+    else {
+      if (r.fromFrame > toFrame) r.fromFrame = toFrame;
+      if (r.toFrame < fromFrame) r.toFrame = fromFrame;
+    }
+
+    if (( isForward && r.fromFrame <= r.toFrame) ||
+        (!isForward && r.fromFrame >= r.toFrame))
+      f.m_ranges.push_back(r);
   }
+
+  return f;
 }
 
+// TODO this works only for forward ranges
 bool SelectedFrames::contains(frame_t frame) const
 {
   return std::binary_search(
@@ -114,6 +131,42 @@ void SelectedFrames::displace(frame_t frameDelta)
     ASSERT(range.fromFrame >= 0);
     ASSERT(range.toFrame >= 0);
   }
+}
+
+SelectedFrames SelectedFrames::makeReverse() const
+{
+  SelectedFrames newFrames;
+  for (const FrameRange& range : m_ranges)
+    newFrames.m_ranges.insert(
+      newFrames.m_ranges.begin(),
+      FrameRange(range.toFrame, range.fromFrame));
+  return newFrames;
+}
+
+SelectedFrames SelectedFrames::makePingPong() const
+{
+  SelectedFrames newFrames = *this;
+  const int n = m_ranges.size();
+  int i = 0;
+  int j = m_ranges.size()-1;
+
+  for (const FrameRange& range : m_ranges) {
+    FrameRange reversedRange(range.toFrame,
+                             range.fromFrame);
+
+    if (i == 0) reversedRange.toFrame++;
+    if (j == 0) reversedRange.fromFrame--;
+
+    if (reversedRange.fromFrame >= reversedRange.toFrame)
+      newFrames.m_ranges.insert(
+        newFrames.m_ranges.begin() + n,
+        reversedRange);
+
+    ++i;
+    --j;
+  }
+
+  return newFrames;
 }
 
 } // namespace doc

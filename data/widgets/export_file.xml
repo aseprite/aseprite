@@ -28,6 +28,9 @@
       <label id="frames_label" text="@.frames" />
       <combobox id="frames" text="" cell_align="horizontal" />
 
+      <label id="anidir_label" text="@.anidir" />
+      <combobox id="anidir" text="" cell_align="horizontal" />
+
       <check id="pixel_ratio" text="@.pixel_ratio" cell_hspan="2" />
 
       <hbox cell_hspan="2">

@@ -11,6 +11,7 @@
 #include "app/ui/layer_frame_comboboxes.h"
 
 #include "app/restore_visible_layers.h"
+#include "doc/anidir.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
@@ -93,6 +94,19 @@ void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const
     if (defFrame == tag->name())
       frames->setSelectedItemIndex(i);
   }
+}
+
+void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir)
+{
+  static_assert(
+    int(doc::AniDir::FORWARD) == 0 &&
+    int(doc::AniDir::REVERSE) == 1 &&
+    int(doc::AniDir::PING_PONG) == 2, "doc::AniDir has changed");
+
+  anidir->addItem("Forward");
+  anidir->addItem("Reverse");
+  anidir->addItem("Ping-pong");
+  anidir->setSelectedItemIndex(int(defAnidir));
 }
 
 void calculate_visible_layers(doc::Site& site,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,6 +8,7 @@
 #define APP_UI_LAYER_FRAME_COMBOBOXES_H_INCLUDED
 #pragma once
 
+#include "doc/anidir.h"
 #include "ui/listitem.h"
 
 #include <string>
@@ -53,6 +54,7 @@ namespace app {
 
   void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer);
   void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const std::string& defFrame);
+  void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir);
 
   void calculate_visible_layers(doc::Site& site,
                                 const std::string& layersValue,

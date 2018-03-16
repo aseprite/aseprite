@@ -90,6 +90,7 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
   m_filename = params.get("filename");
   m_filenameFormat = params.get("filename-format");
   m_frameTag = params.get("frame-tag");
+  m_aniDir = params.get("ani-dir");
   m_slice = params.get("slice");
 
   if (params.has_param("from-frame") ||
@@ -160,13 +161,22 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const Context* context,
   app::Document* document,
   const std::string& filename,
-  const bool markAsSaved) const
+  const bool markAsSaved)
 {
+  if (!m_aniDir.empty()) {
+    if (m_aniDir == "reverse")
+      m_selFrames = m_selFrames.makeReverse();
+    else if (m_aniDir == "ping-pong")
+      m_selFrames = m_selFrames.makePingPong();
+  }
+
+  FileOpROI roi(document, m_slice, m_frameTag,
+                m_selFrames, m_adjustFramesByFrameTag);
+
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(document, m_slice, m_frameTag,
-                m_selFrames, m_adjustFramesByFrameTag),
+      roi,
       filename,
       m_filenameFormat));
   if (!fop)
@@ -366,8 +376,17 @@ again:;
     m_selFrames = selFrames;
     m_adjustFramesByFrameTag = false;
 
+    m_aniDir.clear();
+    switch (win.aniDirValue()) {
+      case doc::AniDir::FORWARD: m_aniDir = "forward"; break;
+      case doc::AniDir::REVERSE: m_aniDir = "reverse"; break;
+      case doc::AniDir::PING_PONG: m_aniDir = "ping-pong"; break;
+    }
+
     saveDocumentInBackground(
       context, doc, win.outputFilenameValue(), false);
+
+    m_aniDir.clear();
   }
 
   // Undo resize

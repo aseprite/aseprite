@@ -157,8 +157,9 @@ FileOpROI::FileOpROI(const app::Document* doc,
       else if (adjustByFrameTag)
         m_selFrames.displace(m_frameTag->fromFrame());
 
-      m_selFrames.filter(MAX(0, m_frameTag->fromFrame()),
-                         MIN(m_frameTag->toFrame(), doc->sprite()->lastFrame()));
+      m_selFrames =
+        m_selFrames.filter(MAX(0, m_frameTag->fromFrame()),
+                           MIN(m_frameTag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
     else if (m_selFrames.empty())
@@ -743,7 +744,6 @@ void FileOp::operate(IFileOpProgress* progress)
       }
 
       m_filename = *m_seq.filename_list.begin();
-      m_document->setFilename(m_filename);
 
       // Destroy the image
       m_seq.image.reset(NULL);

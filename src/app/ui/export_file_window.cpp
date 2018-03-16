@@ -12,9 +12,13 @@
 
 #include "app/document.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "doc/frame_tag.h"
+#include "doc/selected_frames.h"
+#include "doc/site.h"
 
 namespace app {
 
@@ -44,7 +48,10 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
     base::convert_to<std::string>(m_docPref.saveCopy.resizeScale()));
   fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer());
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
+  fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
   pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
+
+  updateAniDir();
 
   outputFilename()->Click.connect(base::Bind<void>(
     [this]{
@@ -54,6 +61,8 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
         updateOutputFilenameButton();
       }
     }));
+
+  frames()->Change.connect(base::Bind<void>(&ExportFileWindow::updateAniDir, this));
 }
 
 bool ExportFileWindow::show()
@@ -86,6 +95,11 @@ std::string ExportFileWindow::framesValue() const
   return frames()->getValue();
 }
 
+doc::AniDir ExportFileWindow::aniDirValue() const
+{
+  return (doc::AniDir)anidir()->getSelectedItemIndex();
+}
+
 bool ExportFileWindow::applyPixelRatio() const
 {
   return pixelRatio()->isSelected();
@@ -94,6 +108,22 @@ bool ExportFileWindow::applyPixelRatio() const
 void ExportFileWindow::updateOutputFilenameButton()
 {
   outputFilename()->setText(base::get_file_name(m_outputFilename));
+}
+
+void ExportFileWindow::updateAniDir()
+{
+  std::string framesValue = this->framesValue();
+  if (!framesValue.empty() &&
+      framesValue != kAllFrames &&
+      framesValue != kSelectedFrames) {
+    SelectedFrames selFrames;
+    FrameTag* frameTag = calculate_selected_frames(
+      UIContext::instance()->activeSite(), framesValue, selFrames);
+    if (frameTag)
+      anidir()->setSelectedItemIndex(int(frameTag->aniDir()));
+  }
+  else
+    anidir()->setSelectedItemIndex(int(doc::AniDir::FORWARD));
 }
 
 } // namespace app

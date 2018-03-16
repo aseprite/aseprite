@@ -12,6 +12,7 @@
 
 #include "app/document.h"
 #include "app/pref/preferences.h"
+#include "app/ui/layer_frame_comboboxes.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
 
@@ -30,14 +31,7 @@ FrameTagWindow::FrameTagWindow(const doc::Sprite* sprite, const doc::FrameTag* f
       doc::rgba_getg(frameTag->color()),
       doc::rgba_getb(frameTag->color())));
 
-  static_assert(
-    int(doc::AniDir::FORWARD) == 0 &&
-    int(doc::AniDir::REVERSE) == 1 &&
-    int(doc::AniDir::PING_PONG) == 2, "doc::AniDir has changed");
-  anidir()->addItem("Forward");
-  anidir()->addItem("Reverse");
-  anidir()->addItem("Ping-pong");
-  anidir()->setSelectedItemIndex(int(frameTag->aniDir()));
+  fill_anidir_combobox(anidir(), frameTag->aniDir());
 }
 
 bool FrameTagWindow::show()

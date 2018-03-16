@@ -35,11 +35,12 @@ namespace app {
       const Context* context,
       app::Document* document,
       const std::string& filename,
-      const bool markAsSaved) const;
+      const bool markAsSaved);
 
     std::string m_filename;
     std::string m_filenameFormat;
     std::string m_frameTag;
+    std::string m_aniDir;
     std::string m_slice;
     doc::SelectedFrames m_selFrames;
     bool m_adjustFramesByFrameTag;

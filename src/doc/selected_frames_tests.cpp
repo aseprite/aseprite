@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,6 +17,13 @@
 
 using namespace doc;
 
+static std::vector<frame_t> to_vector(const SelectedFrames& f)
+{
+  std::vector<frame_t> v;
+  std::copy(f.begin(), f.end(), std::back_inserter(v));
+  return v;
+}
+
 TEST(SelectedFrames, BasicOneRange)
 {
   SelectedFrames f;
@@ -28,9 +35,7 @@ TEST(SelectedFrames, BasicOneRange)
   EXPECT_EQ(3, f.size());
   EXPECT_EQ(1, f.ranges());
 
-  std::vector<frame_t> res;
-  std::copy(f.begin(), f.end(), std::back_inserter(res));
-
+  auto res = to_vector(f);
   ASSERT_EQ(3, res.size());
   EXPECT_EQ(1, res[0]);
   EXPECT_EQ(2, res[1]);
@@ -46,9 +51,7 @@ TEST(SelectedFrames, BasicThreeRanges)
   EXPECT_EQ(3, f.size());
   EXPECT_EQ(3, f.ranges());
 
-  std::vector<frame_t> res;
-  std::copy(f.begin(), f.end(), std::back_inserter(res));
-
+  auto res = to_vector(f);
   ASSERT_EQ(3, res.size());
   EXPECT_EQ(1, res[0]);
   EXPECT_EQ(3, res[1]);
@@ -66,9 +69,7 @@ TEST(SelectedFrames, InsertSelectedFrameInsideSelectedRange)
   EXPECT_EQ(3, f.firstFrame());
   EXPECT_EQ(8, f.lastFrame());
 
-  std::vector<frame_t> res;
-  std::copy(f.begin(), f.end(), std::back_inserter(res));
-
+  auto res = to_vector(f);
   ASSERT_EQ(5, res.size());
   EXPECT_EQ(3, res[0]);
   EXPECT_EQ(5, res[1]);
@@ -121,6 +122,93 @@ TEST(SelectedFrames, ReverseIterators)
     res2.push_back(frame);
 
   EXPECT_EQ(res, res2);
+}
+
+TEST(SelectedFrames, MakeReverseSimple)
+{
+  SelectedFrames f;
+  f.insert(4, 9);
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(1, f.ranges());
+
+  f = f.makeReverse();
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(1, f.ranges());
+
+  auto res = to_vector(f);
+  ASSERT_EQ(6, res.size());
+  EXPECT_EQ(9, res[0]);
+  EXPECT_EQ(8, res[1]);
+  EXPECT_EQ(7, res[2]);
+  EXPECT_EQ(6, res[3]);
+  EXPECT_EQ(5, res[4]);
+  EXPECT_EQ(4, res[5]);
+}
+
+TEST(SelectedFrames, MakeReverse)
+{
+  SelectedFrames f;
+  f.insert(1);
+  f.insert(4, 5);
+  f.insert(7, 9);
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(3, f.ranges());
+
+  f = f.makeReverse();
+  EXPECT_EQ(3, f.ranges());
+
+  auto res = to_vector(f);
+  ASSERT_EQ(6, res.size());
+  EXPECT_EQ(9, res[0]);
+  EXPECT_EQ(8, res[1]);
+  EXPECT_EQ(7, res[2]);
+  EXPECT_EQ(5, res[3]);
+  EXPECT_EQ(4, res[4]);
+  EXPECT_EQ(1, res[5]);
+}
+
+TEST(SelectedFrames, MakePingPongAndFilter)
+{
+  SelectedFrames f;
+  f.insert(1);
+  f.insert(4, 5);
+  f.insert(7, 9);
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(3, f.ranges());
+
+  f = f.makePingPong();
+  EXPECT_EQ(5, f.ranges());
+
+  auto res = to_vector(f);
+  ASSERT_EQ(10, res.size());
+  EXPECT_EQ(1, res[0]);
+  EXPECT_EQ(4, res[1]);
+  EXPECT_EQ(5, res[2]);
+  EXPECT_EQ(7, res[3]);
+  EXPECT_EQ(8, res[4]);
+  EXPECT_EQ(9, res[5]);
+  EXPECT_EQ(8, res[6]);
+  EXPECT_EQ(7, res[7]);
+  EXPECT_EQ(5, res[8]);
+  EXPECT_EQ(4, res[9]);
+
+  f = f.filter(5, 8);
+  EXPECT_EQ(4, f.ranges());
+  res = to_vector(f);
+  EXPECT_EQ(6, res.size());
+  EXPECT_EQ(5, res[0]);
+  EXPECT_EQ(7, res[1]);
+  EXPECT_EQ(8, res[2]);
+  EXPECT_EQ(8, res[3]);
+  EXPECT_EQ(7, res[4]);
+  EXPECT_EQ(5, res[5]);
+
+  f = f.filter(7, 7);
+  EXPECT_EQ(2, f.ranges());
+  res = to_vector(f);
+  EXPECT_EQ(2, res.size());
+  EXPECT_EQ(7, res[0]);
+  EXPECT_EQ(7, res[1]);
 }
 
 int main(int argc, char** argv)

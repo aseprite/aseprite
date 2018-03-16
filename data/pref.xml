@@ -357,6 +357,7 @@
       <option id="resize_scale" type="double" default="1" />
       <option id="layer" type="std::string" />
       <option id="frame_tag" type="std::string" />
+      <option id="ani_dir" type="doc::AniDir" default="doc::AniDir::FORWARD" />
       <option id="apply_pixel_ratio" type="bool" default="false" />
     </section>
     <section id="sprite_sheet">
