@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -209,7 +209,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Call the eyedropper command
   if (clickedInk->isEyedropper()) {
     editor->captureMouse();
-    callEyedropper(editor);
+    callEyedropper(editor, msg);
     return true;
   }
 
@@ -360,7 +360,7 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
     tools::Ink* clickedInk = editor->getCurrentEditorInk();
     if (clickedInk->isEyedropper() &&
         editor->hasCapture()) {
-      callEyedropper(editor);
+      callEyedropper(editor, msg);
     }
   }
 
@@ -733,20 +733,18 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   }
 }
 
-void StandbyState::callEyedropper(Editor* editor)
+void StandbyState::callEyedropper(Editor* editor, const ui::MouseMessage* msg)
 {
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
   if (!clickedInk->isEyedropper())
     return;
 
-  Command* eyedropper_cmd =
-    Commands::instance()->byId(CommandId::Eyedropper());
+  EyedropperCommand* eyedropper =
+    (EyedropperCommand*)Commands::instance()->byId(CommandId::Eyedropper());
   bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
 
-  Params params;
-  params.set("target", fg ? "foreground": "background");
-
-  UIContext::instance()->executeCommand(eyedropper_cmd, params);
+  eyedropper->executeOnMousePos(UIContext::instance(), editor,
+                                msg->position(), fg);
 }
 
 void StandbyState::onPivotChange(Editor* editor)

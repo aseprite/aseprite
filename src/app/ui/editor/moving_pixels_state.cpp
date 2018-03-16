@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -245,7 +245,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Call the eyedropper command
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
   if (clickedInk->isEyedropper()) {
-    callEyedropper(editor);
+    callEyedropper(editor, msg);
     return true;
   }
 
