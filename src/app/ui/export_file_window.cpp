@@ -108,6 +108,7 @@ bool ExportFileWindow::applyPixelRatio() const
 void ExportFileWindow::updateOutputFilenameButton()
 {
   outputFilename()->setText(base::get_file_name(m_outputFilename));
+  ok()->setEnabled(!m_outputFilename.empty());
 }
 
 void ExportFileWindow::updateAniDir()
