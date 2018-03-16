@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -112,7 +112,8 @@ void ListBox::selectChild(Widget* item, Message* msg)
     bool newState;
 
     if (m_multiselect) {
-      newState = m_states[i];
+      ASSERT(i >= 0 && i < m_states.size());
+      newState = (i >= 0 && i < m_states.size() ? m_states[i]: false);
 
       if (i >= MIN(itemIndex, m_firstSelectedIndex) &&
           i <= MAX(itemIndex, m_firstSelectedIndex)) {
