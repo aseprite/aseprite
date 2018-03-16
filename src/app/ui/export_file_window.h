@@ -40,11 +40,14 @@ namespace app {
     void updateOutputFilenameEntry();
     void onOutputFilenameEntryChange();
     void updateAniDir();
+    void updateAdjustResizeButton();
+    void onAdjustResize();
 
     const Document* m_doc;
     DocumentPreferences& m_docPref;
     std::string m_outputPath;
     std::string m_outputFilename;
+    int m_preferredResize;
   };
 
 }

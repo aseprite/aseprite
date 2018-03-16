@@ -11,6 +11,7 @@
 #include "app/ui/export_file_window.h"
 
 #include "app/document.h"
+#include "app/i18n/strings.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -19,12 +20,14 @@
 #include "doc/frame_tag.h"
 #include "doc/selected_frames.h"
 #include "doc/site.h"
+#include "fmt/format.h"
 
 namespace app {
 
 ExportFileWindow::ExportFileWindow(const Document* doc)
   : m_doc(doc)
   , m_docPref(Preferences::instance().document(doc))
+  , m_preferredResize(1)
 {
   // Is a default output filename in the preferences?
   if (!m_docPref.saveCopy.filename().empty()) {
@@ -50,8 +53,10 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
   pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
+  adjustResize()->setVisible(false);
 
   updateAniDir();
+  updateAdjustResizeButton();
 
   outputFilename()->Change.connect(
     base::Bind<void>(
@@ -68,7 +73,10 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
         }
       }));
 
+  resize()->Change.connect(base::Bind<void>(&ExportFileWindow::updateAdjustResizeButton, this));
   frames()->Change.connect(base::Bind<void>(&ExportFileWindow::updateAniDir, this));
+  forTwitter()->Click.connect(base::Bind<void>(&ExportFileWindow::updateAdjustResizeButton, this));
+  adjustResize()->Click.connect(base::Bind<void>(&ExportFileWindow::onAdjustResize, this));
 }
 
 bool ExportFileWindow::show()
@@ -156,6 +164,37 @@ void ExportFileWindow::updateAniDir()
   }
   else
     anidir()->setSelectedItemIndex(int(doc::AniDir::FORWARD));
+}
+
+void ExportFileWindow::updateAdjustResizeButton()
+{
+  // Calculate a better size for Twitter
+  m_preferredResize = 1;
+  while (m_preferredResize < 10 &&
+         (m_doc->width()*m_preferredResize < 240 ||
+          m_doc->height()*m_preferredResize < 240)) {
+    ++m_preferredResize;
+  }
+
+  const bool newState =
+    forTwitter()->isSelected() &&
+    ((int)resizeValue() < m_preferredResize);
+
+  if (adjustResize()->isVisible() != newState) {
+    adjustResize()->setVisible(newState);
+    if (newState)
+      adjustResize()->setText(fmt::format(Strings::export_file_adjust_resize(),
+                                          100 * m_preferredResize));
+    adjustResize()->parent()->layout();
+  }
+}
+
+void ExportFileWindow::onAdjustResize()
+{
+  resize()->setValue(base::convert_to<std::string>(m_preferredResize));
+
+  adjustResize()->setVisible(false);
+  adjustResize()->parent()->layout();
 }
 
 } // namespace app
