@@ -310,12 +310,15 @@ again:;
   if (!win.show())
     return;
 
-  if (askOverwrite) {
+  std::string outputFilename = win.outputFilenameValue();
+
+  if (askOverwrite &&
+      base::is_file(outputFilename)) {
     int ret = OptionalAlert::show(
       Preferences::instance().exportFile.showOverwriteFilesAlert,
       1, // Yes is the default option when the alert dialog is disabled
       fmt::format(Strings::alerts_overwrite_files_on_export(),
-                  win.outputFilenameValue()));
+                  outputFilename));
     if (ret != 1)
       goto again;
   }
@@ -384,7 +387,7 @@ again:;
     }
 
     saveDocumentInBackground(
-      context, doc, win.outputFilenameValue(), false);
+      context, doc, outputFilename, false);
 
     m_aniDir.clear();
   }

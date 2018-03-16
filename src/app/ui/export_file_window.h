@@ -25,7 +25,7 @@ namespace app {
     bool show();
     void savePref();
 
-    const std::string& outputFilenameValue() const { return m_outputFilename; }
+    std::string outputFilenameValue() const;
     double resizeValue() const;
     std::string layersValue() const;
     std::string framesValue() const;
@@ -35,11 +35,14 @@ namespace app {
     obs::signal<std::string()> SelectOutputFile;
 
   private:
-    void updateOutputFilenameButton();
+    void setOutputFilename(const std::string& pathAndFilename);
+    void updateOutputFilenameEntry();
+    void onOutputFilenameEntryChange();
     void updateAniDir();
 
     const Document* m_doc;
     DocumentPreferences& m_docPref;
+    std::string m_outputPath;
     std::string m_outputFilename;
   };
 

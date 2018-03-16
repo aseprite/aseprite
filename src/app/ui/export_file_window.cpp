@@ -28,7 +28,7 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
 {
   // Is a default output filename in the preferences?
   if (!m_docPref.saveCopy.filename().empty()) {
-    m_outputFilename = m_docPref.saveCopy.filename();
+    setOutputFilename(m_docPref.saveCopy.filename());
   }
   else {
     std::string newFn = base::replace_extension(
@@ -39,9 +39,8 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
         base::get_file_path(newFn),
         base::get_file_title(newFn) + "-export." + base::get_file_extension(newFn));
     }
-    m_outputFilename = newFn;
+    setOutputFilename(newFn);
   }
-  updateOutputFilenameButton();
 
   // Default export configuration
   resize()->setValue(
@@ -53,14 +52,20 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
 
   updateAniDir();
 
-  outputFilename()->Click.connect(base::Bind<void>(
-    [this]{
-      std::string fn = SelectOutputFile();
-      if (!fn.empty()) {
-        m_outputFilename = fn;
-        updateOutputFilenameButton();
-      }
-    }));
+  outputFilename()->Change.connect(
+    base::Bind<void>(
+      [this]{
+        m_outputFilename = outputFilename()->text();
+        onOutputFilenameEntryChange();
+      }));
+  outputFilenameBrowse()->Click.connect(
+    base::Bind<void>(
+      [this]{
+        std::string fn = SelectOutputFile();
+        if (!fn.empty()) {
+          setOutputFilename(fn);
+        }
+      }));
 
   frames()->Change.connect(base::Bind<void>(&ExportFileWindow::updateAniDir, this));
 }
@@ -78,6 +83,12 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.layer(layersValue());
   m_docPref.saveCopy.frameTag(framesValue());
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
+}
+
+std::string ExportFileWindow::outputFilenameValue() const
+{
+  return base::join_path(m_outputPath,
+                         m_outputFilename);
 }
 
 double ExportFileWindow::resizeValue() const
@@ -105,9 +116,22 @@ bool ExportFileWindow::applyPixelRatio() const
   return pixelRatio()->isSelected();
 }
 
-void ExportFileWindow::updateOutputFilenameButton()
+void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
 {
-  outputFilename()->setText(base::get_file_name(m_outputFilename));
+  m_outputPath = base::get_file_path(pathAndFilename);
+  m_outputFilename = base::get_file_name(pathAndFilename);
+
+  updateOutputFilenameEntry();
+}
+
+void ExportFileWindow::updateOutputFilenameEntry()
+{
+  outputFilename()->setText(m_outputFilename);
+  onOutputFilenameEntryChange();
+}
+
+void ExportFileWindow::onOutputFilenameEntryChange()
+{
   ok()->setEnabled(!m_outputFilename.empty());
 }
 
