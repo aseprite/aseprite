@@ -32,7 +32,6 @@
 #include "ui/ui.h"
 
 #include "new_folder_window.xml.h"
-#include "file_selector_extras.xml.h"
 
 #include <algorithm>
 #include <cctype>
