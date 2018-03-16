@@ -34,6 +34,8 @@
 
       <check id="pixel_ratio" text="@.pixel_ratio" cell_hspan="3" />
 
+      <check id="for_twitter" text="@.for_twitter" tooltip="@.for_twitter_tooltip" cell_hspan="3" />
+
       <hbox cell_hspan="3">
         <boxfiller />
         <hbox homogeneous="true">

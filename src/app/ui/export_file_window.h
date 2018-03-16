@@ -31,6 +31,7 @@ namespace app {
     std::string framesValue() const;
     doc::AniDir aniDirValue() const;
     bool applyPixelRatio() const;
+    bool isForTwitter() const;
 
     obs::signal<std::string()> SelectOutputFile;
 

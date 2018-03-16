@@ -14,6 +14,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "app/file/gif_format.h"
 #include "app/file/gif_options.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -101,6 +102,21 @@ FileFormat* CreateGifFormat()
 
 static int interlaced_offset[] = { 0, 4, 2, 1 };
 static int interlaced_jumps[] = { 8, 8, 4, 2 };
+
+// True if the GifEncoder should save the animation for Twitter:
+// * Frames duration >= 2, and
+// * Last frame 1/4 of its duration
+static bool fix_last_frame_duration = false;
+
+GifEncoderDurationFix::GifEncoderDurationFix(bool state)
+{
+  fix_last_frame_duration = state;
+}
+
+GifEncoderDurationFix::~GifEncoderDurationFix()
+{
+  fix_last_frame_duration = false;
+}
 
 struct GifFilePtr {
 public:
@@ -967,7 +983,9 @@ public:
       if (frameBounds.isEmpty())
         frameBounds = gfx::Rect(0, 0, 1, 1);
 
-      writeImage(gifFrame, frame, frameBounds, disposal);
+      writeImage(gifFrame, frame, frameBounds, disposal,
+                 // Only the last frame in the animation needs the fix
+                 (fix_last_frame_duration && gifFrame == nframes-1));
 
       // Dispose/clear frame content
       process_disposal_method(m_previousImage,
@@ -1035,9 +1053,21 @@ private:
 
   // Writes graphics extension record (to save the duration of the
   // frame and maybe the transparency index).
-  void writeExtension(gifframe_t gifFrame, frame_t frame, int transparentIndex, DisposalMethod disposalMethod) {
+  void writeExtension(const gifframe_t gifFrame,
+                      const frame_t frame,
+                      const int transparentIndex,
+                      const DisposalMethod disposalMethod,
+                      const bool fixDuration) {
     unsigned char extension_bytes[5];
     int frameDelay = m_sprite->frameDuration(frame) / 10;
+
+    // Fix duration for Twitter. It looks like the last frame must be
+    // 1/4 of its duration for some strange reason in the Twitter
+    // conversion from GIF to video.
+    if (fixDuration)
+      frameDelay = MAX(2, frameDelay/4);
+    if (fix_last_frame_duration)
+      frameDelay = MAX(2, frameDelay);
 
     extension_bytes[0] = (((int(disposalMethod) & 7) << 2) |
                           (transparentIndex >= 0 ? 1: 0));
@@ -1106,7 +1136,11 @@ private:
     }
   }
 
-  void writeImage(gifframe_t gifFrame, frame_t frame, const gfx::Rect& frameBounds, DisposalMethod disposal) {
+  void writeImage(const gifframe_t gifFrame,
+                  const frame_t frame,
+                  const gfx::Rect& frameBounds,
+                  const DisposalMethod disposal,
+                  const bool fixDuration) {
     UniquePtr<Palette> framePaletteRef;
     UniquePtr<RgbMap> rgbmapRef;
     Palette* framePalette = m_sprite->palette(frame);
@@ -1227,7 +1261,8 @@ private:
       remap.map(m_transparentIndex, localTransparent);
 
     // Write extension record.
-    writeExtension(gifFrame, frame, localTransparent, disposal);
+    writeExtension(gifFrame, frame, localTransparent,
+                   disposal, fixDuration);
 
     // Write the image record.
     if (EGifPutImageDesc(m_gifFile,

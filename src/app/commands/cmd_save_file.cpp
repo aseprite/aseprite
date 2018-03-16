@@ -17,6 +17,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/file/file.h"
+#include "app/file/gif_format.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
 #include "app/job.h"
@@ -385,6 +386,8 @@ again:;
       case doc::AniDir::REVERSE: m_aniDir = "reverse"; break;
       case doc::AniDir::PING_PONG: m_aniDir = "ping-pong"; break;
     }
+
+    GifEncoderDurationFix fix(win.isForTwitter());
 
     saveDocumentInBackground(
       context, doc, outputFilename, false);

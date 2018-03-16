@@ -49,6 +49,7 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
   pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
+  forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
 
   updateAniDir();
 
@@ -83,6 +84,7 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.layer(layersValue());
   m_docPref.saveCopy.frameTag(framesValue());
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
+  m_docPref.saveCopy.forTwitter(isForTwitter());
 }
 
 std::string ExportFileWindow::outputFilenameValue() const
@@ -114,6 +116,11 @@ doc::AniDir ExportFileWindow::aniDirValue() const
 bool ExportFileWindow::applyPixelRatio() const
 {
   return pixelRatio()->isSelected();
+}
+
+bool ExportFileWindow::isForTwitter() const
+{
+  return forTwitter()->isSelected();
 }
 
 void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
