@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -316,7 +316,8 @@ static DocumentRange drop_range_op(
 
         LayerList srcLayers = from.selectedLayers().toLayerList();
         LayerList dstLayers = to.selectedLayers().toLayerList();
-        if (srcLayers.empty())
+        if (srcLayers.empty() ||
+            dstLayers.empty())
           throw std::invalid_argument("You need to specify a non-empty cels range");
 
         if (find_layer_index(allLayers, srcLayers.front()) <
