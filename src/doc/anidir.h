@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,7 +18,8 @@ namespace doc {
     PING_PONG = 2,
   };
 
-  std::string convert_to_string(AniDir anidir);
+  std::string convert_anidir_to_string(AniDir anidir);
+  doc::AniDir convert_string_to_anidir(const std::string& s);
 
 } // namespace doc
 

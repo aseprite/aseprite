@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,7 +12,7 @@
 
 namespace doc {
 
-std::string convert_to_string(AniDir anidir)
+std::string convert_anidir_to_string(AniDir anidir)
 {
   switch (anidir) {
     case AniDir::FORWARD: return "forward";
@@ -20,6 +20,14 @@ std::string convert_to_string(AniDir anidir)
     case AniDir::PING_PONG: return "pingpong";
   }
   return "";
+}
+
+doc::AniDir convert_string_to_anidir(const std::string& s)
+{
+  if (s == "forward") return AniDir::FORWARD;
+  if (s == "reverse") return AniDir::REVERSE;
+  if (s == "pingpong") return AniDir::PING_PONG;
+  return AniDir::FORWARD;
 }
 
 } // namespace doc

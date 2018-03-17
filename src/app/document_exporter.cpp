@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -821,7 +821,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
         os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
            << " \"from\": " << (tag->fromFrame()+delta.first) << ","
            << " \"to\": " << (tag->toFrame()+delta.second) << ","
-           << " \"direction\": \"" << escape_for_json(convert_to_string(tag->aniDir())) << "\" }";
+           << " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\" }";
       }
     }
     os << "\n  ]";

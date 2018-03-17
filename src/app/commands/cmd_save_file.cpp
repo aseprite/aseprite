@@ -32,6 +32,7 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "base/scoped_value.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "doc/frame_tag.h"
@@ -165,10 +166,14 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const bool markAsSaved)
 {
   if (!m_aniDir.empty()) {
-    if (m_aniDir == "reverse")
-      m_selFrames = m_selFrames.makeReverse();
-    else if (m_aniDir == "ping-pong")
-      m_selFrames = m_selFrames.makePingPong();
+    switch (convert_string_to_anidir(m_aniDir)) {
+      case AniDir::REVERSE:
+        m_selFrames = m_selFrames.makeReverse();
+        break;
+      case AniDir::PING_PONG:
+        m_selFrames = m_selFrames.makePingPong();
+        break;
+    }
   }
 
   FileOpROI roi(document, m_slice, m_frameTag,
@@ -290,49 +295,64 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   Document* doc = context->activeDocument();
-  ExportFileWindow win(doc);
-  bool askOverwrite = true;
+  std::string outputFilename = m_filename;
+  std::string layers = kAllLayers;
+  std::string frames = kAllFrames;
+  double xscale = 1.0;
+  double yscale = 1.0;
+  bool applyPixelRatio = false;
+  doc::AniDir aniDirValue = convert_string_to_anidir(m_aniDir);
+  bool isForTwitter = false;
 
-  win.SelectOutputFile.connect(
-    [this, &win, &askOverwrite, context, doc]() -> std::string {
-      std::string result =
-        saveAsDialog(
-          context, "Export",
-          win.outputFilenameValue(), false, false,
-          (doc->isAssociatedToFile() ? doc->filename():
-                                       std::string()));
-      if (!result.empty())
-        askOverwrite = false; // Already asked in the file selector dialog
+  if (context->isUIAvailable()) {
+    ExportFileWindow win(doc);
+    bool askOverwrite = true;
 
-      return result;
-    });
+    win.SelectOutputFile.connect(
+      [this, &win, &askOverwrite, context, doc]() -> std::string {
+        std::string result =
+          saveAsDialog(
+            context, "Export",
+            win.outputFilenameValue(), false, false,
+            (doc->isAssociatedToFile() ? doc->filename():
+                                         std::string()));
+        if (!result.empty())
+          askOverwrite = false; // Already asked in the file selector dialog
 
-again:;
-  if (!win.show())
-    return;
+        return result;
+      });
 
-  std::string outputFilename = win.outputFilenameValue();
+  again:;
+    if (!win.show())
+      return;
 
-  if (askOverwrite &&
-      base::is_file(outputFilename)) {
-    int ret = OptionalAlert::show(
-      Preferences::instance().exportFile.showOverwriteFilesAlert,
-      1, // Yes is the default option when the alert dialog is disabled
-      fmt::format(Strings::alerts_overwrite_files_on_export(),
-                  outputFilename));
-    if (ret != 1)
-      goto again;
+    outputFilename = win.outputFilenameValue();
+
+    if (askOverwrite &&
+        base::is_file(outputFilename)) {
+      int ret = OptionalAlert::show(
+        Preferences::instance().exportFile.showOverwriteFilesAlert,
+        1, // Yes is the default option when the alert dialog is disabled
+        fmt::format(Strings::alerts_overwrite_files_on_export(),
+                    outputFilename));
+      if (ret != 1)
+        goto again;
+    }
+
+    // Save the preferences used to export the file, so if we open the
+    // window again, we will have the same options.
+    win.savePref();
+
+    layers = win.layersValue();
+    frames = win.framesValue();
+    xscale = yscale = win.resizeValue();
+    applyPixelRatio = win.applyPixelRatio();
+    aniDirValue = win.aniDirValue();
+    isForTwitter = win.isForTwitter();
   }
 
-  // Save the preferences used to export the file, so if we open the
-  // window again, we will have the same options.
-  win.savePref();
-
-  double xscale, yscale;
-  xscale = yscale = win.resizeValue();
-
   // Pixel ratio
-  if (win.applyPixelRatio()) {
+  if (applyPixelRatio) {
     doc::PixelRatio pr = doc->sprite()->pixelRatio();
     xscale *= pr.w;
     yscale *= pr.h;
@@ -364,35 +384,33 @@ again:;
 
   {
     RestoreVisibleLayers layersVisibility;
-    Site site = context->activeSite();
+    if (context->isUIAvailable()) {
+      Site site = context->activeSite();
 
-    // Selected layers to export
-    calculate_visible_layers(site,
-                             win.layersValue(),
-                             layersVisibility);
+      // Selected layers to export
+      calculate_visible_layers(site,
+                               layers,
+                               layersVisibility);
 
-    // Selected frames to export
-    SelectedFrames selFrames;
-    FrameTag* frameTag = calculate_selected_frames(
-      site, win.framesValue(), selFrames);
-    if (frameTag)
-      m_frameTag = frameTag->name();
-    m_selFrames = selFrames;
-    m_adjustFramesByFrameTag = false;
-
-    m_aniDir.clear();
-    switch (win.aniDirValue()) {
-      case doc::AniDir::FORWARD: m_aniDir = "forward"; break;
-      case doc::AniDir::REVERSE: m_aniDir = "reverse"; break;
-      case doc::AniDir::PING_PONG: m_aniDir = "ping-pong"; break;
+      // Selected frames to export
+      SelectedFrames selFrames;
+      FrameTag* frameTag = calculate_selected_frames(
+        site, frames, selFrames);
+      if (frameTag)
+        m_frameTag = frameTag->name();
+      m_selFrames = selFrames;
+      m_adjustFramesByFrameTag = false;
     }
 
-    GifEncoderDurationFix fix(win.isForTwitter());
+    base::ScopedValue<std::string> restoreAniDir(
+      m_aniDir,
+      convert_anidir_to_string(aniDirValue), // New value
+      m_aniDir);                             // Restore old value
+
+    GifEncoderDurationFix fix(isForTwitter);
 
     saveDocumentInBackground(
       context, doc, outputFilename, false);
-
-    m_aniDir.clear();
   }
 
   // Undo resize
