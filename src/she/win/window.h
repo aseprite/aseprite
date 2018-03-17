@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,7 +8,9 @@
 #define SHE_WIN_WINDOW_H_INCLUDED
 #pragma once
 
+#include "base/time.h"
 #include "gfx/size.h"
+#include "she/event.h"
 #include "she/native_cursor.h"
 #include "she/pointer_type.h"
 #include "she/win/pen.h"
@@ -18,7 +20,6 @@
 #include <interactioncontext.h>
 
 namespace she {
-  class Event;
   class Surface;
   class WindowSystem;
 
@@ -57,6 +58,7 @@ namespace she {
     LRESULT wndProc(UINT msg, WPARAM wparam, LPARAM lparam);
     void mouseEvent(LPARAM lparam, Event& ev);
     bool pointerEvent(WPARAM wparam, Event& ev, POINTER_INFO& pi);
+    void handlePointerButtonChange(Event& ev, POINTER_INFO& pi);
     void handleInteractionContextOutput(
       const INTERACTION_CONTEXT_OUTPUT* output);
 
@@ -91,6 +93,18 @@ namespace she {
     UINT32 m_lastPointerId;
     UINT32 m_capturePointerId;
     HINTERACTIONCONTEXT m_ictx;
+
+    // Emulate double-click with pointer API. I guess that this should
+    // be done by the Interaction Context API but it looks like
+    // messages with pointerType != PT_TOUCH or PT_PEN are just
+    // ignored by the ProcessPointerFramesInteractionContext()
+    // function even when we call AddPointerInteractionContext() with
+    // the given PT_MOUSE pointer.
+    bool m_emulateDoubleClick;
+    base::tick_t m_doubleClickMsecs;
+    base::tick_t m_lastPointerDownTime;
+    Event::MouseButton m_lastPointerDownButton;
+    int m_pointerDownCount;
 
     // Wintab API data
     HCTX m_hpenctx;

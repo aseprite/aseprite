@@ -36,11 +36,6 @@
   GetClientRect(m_hwnd, &rc);                           \
   MapWindowPoints(m_hwnd, NULL, (POINT*)&rc, 2)
 
-// Not yet ready because if we start receiving WM_POINTERDOWN messages
-// instead of WM_LBUTTONDBLCLK we lost the automatic double-click
-// messages.
-#define USE_EnableMouseInPointer 1
-
 #ifndef INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN
 #define INTERACTION_CONTEXT_PROPERTY_MEASUREMENT_UNITS_SCREEN 1
 #endif
@@ -62,6 +57,11 @@ WinWindow::WinWindow(int width, int height, int scale)
   , m_ignoreMouseMessages(false)
   , m_lastPointerId(0)
   , m_ictx(nullptr)
+  , m_emulateDoubleClick(false)
+  , m_doubleClickMsecs(GetDoubleClickTime())
+  , m_lastPointerDownTime(0)
+  , m_lastPointerDownButton(Event::NoneButton)
+  , m_pointerDownCount(0)
   , m_hpenctx(nullptr)
   , m_pointerType(PointerType::Unknown)
   , m_pressure(0.0)
@@ -71,14 +71,14 @@ WinWindow::WinWindow(int width, int height, int scale)
       winApi.IsMouseInPointerEnabled &&
       winApi.GetPointerInfo &&
       winApi.GetPointerPenInfo) {
-#if USE_EnableMouseInPointer == 1
     if (!winApi.IsMouseInPointerEnabled()) {
       // Prefer pointer messages (WM_POINTER*) since Windows 8 instead
       // of mouse messages (WM_MOUSE*)
       winApi.EnableMouseInPointer(TRUE);
-      m_ignoreMouseMessages = (winApi.IsMouseInPointerEnabled() ? true: false);
+      m_ignoreMouseMessages =
+      m_emulateDoubleClick =
+        (winApi.IsMouseInPointerEnabled() ? true: false);
     }
-#endif
 
     // Initialize a Interaction Context to convert WM_POINTER messages
     // into gestures processed by handleInteractionContextOutput().
@@ -827,15 +827,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         }
       }
 
-      ev.setType(Event::MouseDown);
-      ev.setButton(
-        pi.ButtonChangeType == POINTER_CHANGE_FIRSTBUTTON_DOWN ? Event::LeftButton:
-        pi.ButtonChangeType == POINTER_CHANGE_SECONDBUTTON_DOWN ? Event::RightButton:
-        pi.ButtonChangeType == POINTER_CHANGE_THIRDBUTTON_DOWN ? Event::MiddleButton:
-        pi.ButtonChangeType == POINTER_CHANGE_FOURTHBUTTON_DOWN ? Event::X1Button:
-        pi.ButtonChangeType == POINTER_CHANGE_FIFTHBUTTON_DOWN ? Event::X2Button:
-        Event::NoneButton);
-      queueEvent(ev);
+      handlePointerButtonChange(ev, pi);
 
       MOUSE_TRACE("POINTERDOWN id=%d xy=%d,%d button=%d\n",
                   pi.pointerId, ev.position().x, ev.position().y,
@@ -858,15 +850,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         }
       }
 
-      ev.setType(Event::MouseUp);
-      ev.setButton(
-        pi.ButtonChangeType == POINTER_CHANGE_FIRSTBUTTON_UP ? Event::LeftButton:
-        pi.ButtonChangeType == POINTER_CHANGE_SECONDBUTTON_UP ? Event::RightButton:
-        pi.ButtonChangeType == POINTER_CHANGE_THIRDBUTTON_UP ? Event::MiddleButton:
-        pi.ButtonChangeType == POINTER_CHANGE_FOURTHBUTTON_UP ? Event::X1Button:
-        pi.ButtonChangeType == POINTER_CHANGE_FIFTHBUTTON_UP ? Event::X2Button:
-        Event::NoneButton);
-      queueEvent(ev);
+      handlePointerButtonChange(ev, pi);
 
       MOUSE_TRACE("POINTERUP id=%d xy=%d,%d button=%d\n",
                   pi.pointerId, ev.position().x, ev.position().y,
@@ -900,6 +884,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
       ev.setType(Event::MouseMove);
       queueEvent(ev);
+
+      handlePointerButtonChange(ev, pi);
 
       MOUSE_TRACE("POINTERUPDATE id=%d xy=%d,%d\n",
                   pi.pointerId, ev.position().x, ev.position().y);
@@ -1186,6 +1172,72 @@ bool WinWindow::pointerEvent(WPARAM wparam, Event& ev, POINTER_INFO& pi)
 
   m_lastPointerId = pi.pointerId;
   return true;
+}
+
+void WinWindow::handlePointerButtonChange(Event& ev, POINTER_INFO& pi)
+{
+  if (pi.ButtonChangeType == POINTER_CHANGE_NONE) {
+    // Reset the counter of pointer down for the emulated double-click
+    if (m_emulateDoubleClick)
+      m_pointerDownCount = 0;
+    return;
+  }
+
+  Event::MouseButton button = Event::NoneButton;
+  bool down = false;
+
+  switch (pi.ButtonChangeType) {
+    case POINTER_CHANGE_FIRSTBUTTON_DOWN:
+      down = true;
+    case POINTER_CHANGE_FIRSTBUTTON_UP:
+      button = Event::LeftButton;
+      break;
+    case  POINTER_CHANGE_SECONDBUTTON_DOWN:
+      down = true;
+    case POINTER_CHANGE_SECONDBUTTON_UP:
+      button = Event::RightButton;
+      break;
+    case POINTER_CHANGE_THIRDBUTTON_DOWN:
+      down = true;
+    case POINTER_CHANGE_THIRDBUTTON_UP:
+      button = Event::MiddleButton;
+      break;
+    case POINTER_CHANGE_FOURTHBUTTON_DOWN:
+      down = true;
+    case POINTER_CHANGE_FOURTHBUTTON_UP:
+      button = Event::X1Button;
+      break;
+    case POINTER_CHANGE_FIFTHBUTTON_DOWN:
+      down = true;
+    case POINTER_CHANGE_FIFTHBUTTON_UP:
+      button = Event::X2Button;
+      break;
+  }
+
+  if (button == Event::NoneButton)
+    return;
+
+  ev.setType(down ? Event::MouseDown: Event::MouseUp);
+  ev.setButton(button);
+
+  if (down && m_emulateDoubleClick) {
+    if (button != m_lastPointerDownButton)
+      m_pointerDownCount = 0;
+
+    ++m_pointerDownCount;
+
+    base::tick_t curTime = base::current_tick();
+    if ((m_pointerDownCount == 2) &&
+        (curTime - m_lastPointerDownTime) <= m_doubleClickMsecs) {
+      ev.setType(Event::MouseDoubleClick);
+      m_pointerDownCount = 0;
+    }
+
+    m_lastPointerDownTime = curTime;
+    m_lastPointerDownButton = button;
+  }
+
+  queueEvent(ev);
 }
 
 void WinWindow::handleInteractionContextOutput(
