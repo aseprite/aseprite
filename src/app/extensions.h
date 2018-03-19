@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -67,9 +67,11 @@ namespace app {
     const std::string& version() const { return m_version; }
     const std::string& displayName() const { return m_displayName; }
 
+    const ExtensionItems& languages() const { return m_languages; }
     const ExtensionItems& themes() const { return m_themes; }
     const ExtensionItems& palettes() const { return m_palettes; }
 
+    void addLanguage(const std::string& id, const std::string& path);
     void addTheme(const std::string& id, const std::string& path);
     void addPalette(const std::string& id, const std::string& path);
     void addDitheringMatrix(const std::string& id,
@@ -81,6 +83,7 @@ namespace app {
     bool canBeDisabled() const;
     bool canBeUninstalled() const;
 
+    bool hasLanguages() const { return !m_languages.empty(); }
     bool hasThemes() const { return !m_themes.empty(); }
     bool hasPalettes() const { return !m_palettes.empty(); }
     bool hasDitheringMatrices() const { return !m_ditheringMatrices.empty(); }
@@ -92,6 +95,7 @@ namespace app {
     bool isCurrentTheme() const;
     bool isDefaultTheme() const;
 
+    ExtensionItems m_languages;
     ExtensionItems m_themes;
     ExtensionItems m_palettes;
     std::map<std::string, DitheringMatrixInfo> m_ditheringMatrices;
@@ -121,6 +125,7 @@ namespace app {
     Extension* installCompressedExtension(const std::string& zipFn,
                                           const ExtensionInfo& info);
 
+    std::string languagePath(const std::string& langId);
     std::string themePath(const std::string& themeId);
     std::string palettePath(const std::string& palId);
     ExtensionItems palettes() const;
@@ -128,6 +133,7 @@ namespace app {
     std::vector<Extension::DitheringMatrixInfo> ditheringMatrices();
 
     obs::signal<void(Extension*)> NewExtension;
+    obs::signal<void(Extension*)> LanguagesChange;
     obs::signal<void(Extension*)> ThemesChange;
     obs::signal<void(Extension*)> PalettesChange;
     obs::signal<void(Extension*)> DitheringMatricesChange;

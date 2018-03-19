@@ -24,6 +24,7 @@
 #include "app/file/file_formats_manager.h"
 #include "app/file_system.h"
 #include "app/gui_xml.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/log.h"
 #include "app/modules.h"
@@ -193,8 +194,10 @@ void App::initialize(const AppOptions& options)
   if (isGui()) {
     LOG("APP: GUI mode\n");
 
-    // Setup the GUI cursor and redraw screen
+    // Load main language (which might be in an extension)
+    Strings::instance()->loadCurrentLanguage();
 
+    // Setup the GUI cursor and redraw screen
     ui::set_use_native_cursors(preferences().cursor.useNativeCursor());
     ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());
     ui::set_mouse_cursor(kArrowCursor);

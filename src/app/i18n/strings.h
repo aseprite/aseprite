@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,9 +8,9 @@
 #define APP_I18N_STRINGS_INCLUDED
 #pragma once
 
+#include <set>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "strings.ini.h"
 
@@ -23,8 +23,18 @@ namespace app {
 
     const std::string& translate(const char* id) const;
 
+    void loadCurrentLanguage();
+    std::set<std::string> availableLanguages() const;
+    std::string currentLanguage() const;
+    void setCurrentLanguage(const std::string& langId);
+
   private:
     Strings();
+
+    void loadLanguage(const std::string& langId);
+    void loadStringsFromDataDir(const std::string& langId);
+    void loadStringsFromExtension(const std::string& langId);
+    void loadStringsFromFile(const std::string& fn);
 
     mutable std::unordered_map<std::string, std::string> m_strings;
   };

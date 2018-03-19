@@ -28,24 +28,25 @@
 	<!-- General -->
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
-          <hbox>
-            <grid columns="2">
-              <label text="@.screen_scaling" />
-              <combobox id="screen_scale">
-                <listitem text="100%" value="1" />
-                <listitem text="200%" value="2" />
-                <listitem text="300%" value="3" />
-                <listitem text="400%" value="4" />
-              </combobox>
-              <label text="@.ui_scaling" />
-              <combobox id="ui_scale">
-                <listitem text="100%" value="1" />
-                <listitem text="200%" value="2" />
-                <listitem text="300%" value="3" />
-                <listitem text="400%" value="4" />
-              </combobox>
-            </grid>
-          </hbox>
+          <grid columns="2">
+            <label text="@.screen_scaling" />
+            <combobox id="screen_scale">
+              <listitem text="100%" value="1" />
+              <listitem text="200%" value="2" />
+              <listitem text="300%" value="3" />
+              <listitem text="400%" value="4" />
+            </combobox>
+            <label text="@.ui_scaling" />
+            <combobox id="ui_scale">
+              <listitem text="100%" value="1" />
+              <listitem text="200%" value="2" />
+              <listitem text="300%" value="3" />
+              <listitem text="400%" value="4" />
+            </combobox>
+
+            <label text="@.language" />
+            <combobox id="language" />
+	  </grid>
           <check id="gpu_acceleration"
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />

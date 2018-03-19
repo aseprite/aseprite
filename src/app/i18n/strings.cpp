@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016, 2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,14 +10,19 @@
 
 #include "app/i18n/strings.h"
 
+#include "app/app.h"
+#include "app/extensions.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
+#include "app/ui/main_window.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/fs.h"
 #include "cfg/cfg.h"
 
 namespace app {
+
+static const char* kDefLanguage = "en";
 
 // static
 Strings* Strings::instance()
@@ -30,16 +35,101 @@ Strings* Strings::instance()
 
 Strings::Strings()
 {
-  const std::string lang = Preferences::instance().general.language();
-  LOG("I18N: Loading strings/%s.ini file\n", lang.c_str());
+  loadLanguage(kDefLanguage);
+}
 
+std::set<std::string> Strings::availableLanguages() const
+{
+  std::set<std::string> result;
+
+  // Add languages in data/strings/
   ResourceFinder rf;
-  rf.includeDataDir(("strings/" + lang + ".ini").c_str());
-  if (!rf.findFirst())
-    throw base::Exception("strings/" + lang + ".txt was not found");
+  rf.includeDataDir("strings");
+  while (rf.next()) {
+    if (!base::is_directory(rf.filename()))
+      continue;
 
+    for (const auto& fn : base::list_files(rf.filename())) {
+      const std::string langId = base::get_file_title(fn);
+      result.insert(langId);
+    }
+  }
+
+  // Add languages in extensions
+  for (const auto& ext : App::instance()->extensions()) {
+    if (ext->isEnabled() &&
+        ext->hasLanguages()) {
+      for (const auto& langId : ext->languages())
+        result.insert(langId.first);
+    }
+  }
+
+  ASSERT(result.find(kDefLanguage) != result.end);
+  return result;
+}
+
+std::string Strings::currentLanguage() const
+{
+  return Preferences::instance().general.language();
+}
+
+void Strings::setCurrentLanguage(const std::string& langId)
+{
+  // Do nothing (same language)
+  if (currentLanguage() == langId)
+    return;
+
+  Preferences::instance().general.language(langId);
+  loadLanguage(langId);
+
+  // Reload menus
+  App::instance()->mainWindow()->reloadMenus();
+}
+
+// Called when extensions are available
+void Strings::loadCurrentLanguage()
+{
+  std::string langId = currentLanguage();
+  if (langId != kDefLanguage)
+    loadLanguage(langId);
+}
+
+void Strings::loadLanguage(const std::string& langId)
+{
+  m_strings.clear();
+  loadStringsFromDataDir(kDefLanguage);
+  if (langId != kDefLanguage) {
+    loadStringsFromDataDir(langId);
+    loadStringsFromExtension(langId);
+  }
+}
+
+void Strings::loadStringsFromDataDir(const std::string& langId)
+{
+  // Load the English language file from the Aseprite data directory (so we have the most update list of strings)
+  LOG("I18N: Loading strings/%s.ini file\n", langId.c_str());
+  ResourceFinder rf;
+  rf.includeDataDir(("strings/" + langId + ".ini").c_str());
+  if (!rf.findFirst()) {
+    LOG("strings/%s.ini was not found", langId.c_str());
+    return;
+  }
+
+  loadStringsFromFile(rf.filename());
+}
+
+void Strings::loadStringsFromExtension(const std::string& langId)
+{
+  Extensions& exts = App::instance()->extensions();
+  std::string fn = exts.languagePath(langId);
+  if (!fn.empty() && base::is_file(fn))
+    loadStringsFromFile(fn);
+}
+
+void Strings::loadStringsFromFile(const std::string& fn)
+{
   cfg::CfgFile cfg;
-  cfg.load(rf.filename());
+  cfg.load(fn);
 
   std::vector<std::string> sections;
   std::vector<std::string> keys;

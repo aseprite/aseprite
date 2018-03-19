@@ -41,6 +41,7 @@
 
 namespace app {
 
+static const char* kSectionGeneralId = "section_general";
 static const char* kSectionBgId = "section_bg";
 static const char* kSectionGridId = "section_grid";
 static const char* kSectionThemeId = "section_theme";
@@ -375,6 +376,11 @@ public:
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
 
+    // Refill languages combobox when extensions are enabled/disabled
+    m_extLanguagesChanges =
+      App::instance()->extensions().LanguagesChange.connect(
+        base::Bind<void>(&OptionsWindow::refillLanguages, this));
+
     // Reload themes when extensions are enabled/disabled
     m_extThemesChanges =
       App::instance()->extensions().ThemesChange.connect(
@@ -386,6 +392,10 @@ public:
   }
 
   void saveConfig() {
+    // Update language
+    Strings::instance()->setCurrentLanguage(
+      language()->getItemText(language()->getSelectedItemIndex()));
+
     m_pref.general.autoshowTimeline(autotimeline()->isSelected());
     m_pref.general.rewindOnStop(rewindOnStop()->isSelected());
     m_globPref.timeline.firstFrame(firstFrame()->textInt());
@@ -603,8 +613,13 @@ private:
     panel()->showChild(findChild(item->getValue().c_str()));
     m_curSection = sectionListbox()->getSelectedIndex();
 
-    if (item->getValue() == kSectionBgId)
+    // General section
+    if (item->getValue() == kSectionGeneralId)
+      loadLanguages();
+    // Background section
+    else if (item->getValue() == kSectionBgId)
       onChangeBgScope();
+    // Grid section
     else if (item->getValue() == kSectionGridId)
       onChangeGridScope();
     // Load themes
@@ -741,6 +756,25 @@ private:
     else {
       undoSizeLimit()->setEnabled(false);
       undoSizeLimit()->setText(kInfiniteSymbol);
+    }
+  }
+
+  void refillLanguages() {
+    language()->removeAllItems();
+    loadLanguages();
+  }
+
+  void loadLanguages() {
+    // Languages already loaded
+    if (language()->getItemCount() > 0)
+      return;
+
+    Strings* strings = Strings::instance();
+    std::string curLang = strings->currentLanguage();
+    for (const std::string& lang : strings->availableLanguages()) {
+      int i = language()->addItem(lang);
+      if (lang == curLang)
+        language()->setSelectedItemIndex(i);
     }
   }
 
@@ -1091,6 +1125,7 @@ private:
   DocumentPreferences& m_docPref;
   DocumentPreferences* m_curPref;
   int& m_curSection;
+  obs::scoped_connection m_extLanguagesChanges;
   obs::scoped_connection m_extThemesChanges;
   std::string m_restoreThisTheme;
   int m_restoreScreenScaling;
