@@ -260,9 +260,12 @@
     </section>
     <section id="export_file">
       <option id="show_overwrite_files_alert" type="bool" default="true" />
+      <option id="image_default_extension" type="std::string" default="&quot;png&quot;" />
+      <option id="animation_default_extension" type="std::string" default="&quot;gif&quot;" />
     </section>
     <section id="sprite_sheet">
       <option id="show_overwrite_files_alert" type="bool" default="true" />
+      <option id="default_extension" type="std::string" default="&quot;png&quot;" />
     </section>
     <section id="gif">
       <option id="show_alert" type="bool" default="true" />

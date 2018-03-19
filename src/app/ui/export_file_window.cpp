@@ -29,6 +29,8 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   , m_docPref(Preferences::instance().document(doc))
   , m_preferredResize(1)
 {
+  auto& pref = Preferences::instance();
+
   // Is a default output filename in the preferences?
   if (!m_docPref.saveCopy.filename().empty()) {
     setOutputFilename(m_docPref.saveCopy.filename());
@@ -36,7 +38,8 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   else {
     std::string newFn = base::replace_extension(
       doc->filename(),
-      doc->sprite()->totalFrames() > 1 ? "gif": "png");
+      (doc->sprite()->totalFrames() > 1 ? pref.exportFile.animationDefaultExtension():
+                                          pref.exportFile.imageDefaultExtension()));
     if (newFn == doc->filename()) {
       newFn = base::join_path(
         base::get_file_path(newFn),

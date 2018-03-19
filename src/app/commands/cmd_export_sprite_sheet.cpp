@@ -246,10 +246,12 @@ public:
 
     if (m_filename.empty() ||
         m_filename == kSpecifiedFilename) {
-      if (base::utf8_icmp(base::get_file_extension(site.document()->filename()), "png") == 0)
-        m_filename = base + "-sheet.png";
+      std::string defExt = Preferences::instance().spriteSheet.defaultExtension();
+
+      if (base::utf8_icmp(base::get_file_extension(site.document()->filename()), defExt) == 0)
+        m_filename = base + "-sheet." + defExt;
       else
-        m_filename = base + ".png";
+        m_filename = base + "." + defExt;
     }
 
     if (m_dataFilename.empty() ||

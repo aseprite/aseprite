@@ -79,10 +79,22 @@
         <!-- Files -->
         <vbox id="section_files">
           <separator text="@.section_files" horizontal="true" />
-          <hbox>
-            <label text="@.default_extension" />
+
+          <label text="@.default_extension_for" />
+          <grid columns="2">
+            <label text="@.save_default_extension" />
             <combobox id="default_extension" />
-          </hbox>
+
+            <label text="@.export_image_default_extension" />
+            <combobox id="export_image_default_extension" />
+
+            <label text="@.export_animation_default_extension" />
+            <combobox id="export_animation_default_extension" />
+
+            <label text="@.export_sprite_sheet_default_extension" />
+            <combobox id="export_sprite_sheet_default_extension" />
+          </grid>
+
           <grid columns="2">
             <label text="@.recent_files" />
             <hbox>

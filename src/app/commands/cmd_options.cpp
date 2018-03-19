@@ -143,15 +143,10 @@ public:
     sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
 
     // Default extension to save files
-    {
-      std::string defExt = m_pref.saveFile.defaultExtension();
-      base::paths exts = get_writable_extensions();
-      for (const auto& e : exts) {
-        int index = defaultExtension()->addItem(e);
-        if (base::utf8_icmp(e, defExt) == 0)
-          defaultExtension()->setSelectedItemIndex(index);
-      }
-    }
+    fillExtensionsCombobox(defaultExtension(), m_pref.saveFile.defaultExtension());
+    fillExtensionsCombobox(exportImageDefaultExtension(), m_pref.exportFile.imageDefaultExtension());
+    fillExtensionsCombobox(exportAnimationDefaultExtension(), m_pref.exportFile.animationDefaultExtension());
+    fillExtensionsCombobox(exportSpriteSheetDefaultExtension(), m_pref.spriteSheet.defaultExtension());
 
     // Number of recent items
     recentFiles()->setValue(m_pref.general.recentItems());
@@ -395,10 +390,10 @@ public:
     m_pref.general.rewindOnStop(rewindOnStop()->isSelected());
     m_globPref.timeline.firstFrame(firstFrame()->textInt());
     m_pref.general.showFullPath(showFullPath()->isSelected());
-    {
-      Widget* defExt = defaultExtension()->getSelectedItem();
-      m_pref.saveFile.defaultExtension(defExt ? defExt->text(): std::string());
-    }
+    m_pref.saveFile.defaultExtension(getExtension(defaultExtension()));
+    m_pref.exportFile.imageDefaultExtension(getExtension(exportImageDefaultExtension()));
+    m_pref.exportFile.animationDefaultExtension(getExtension(exportAnimationDefaultExtension()));
+    m_pref.spriteSheet.defaultExtension(getExtension(exportSpriteSheetDefaultExtension()));
     {
       const int limit = recentFiles()->getValue();
       m_pref.general.recentItems(limit);
@@ -545,6 +540,22 @@ public:
   }
 
 private:
+
+  void fillExtensionsCombobox(ui::ComboBox* combobox,
+                              const std::string& defExt) {
+    base::paths exts = get_writable_extensions();
+    for (const auto& e : exts) {
+      int index = combobox->addItem(e);
+      if (base::utf8_icmp(e, defExt) == 0)
+        combobox->setSelectedItemIndex(index);
+    }
+  }
+
+  std::string getExtension(ui::ComboBox* combobox) {
+    Widget* defExt = combobox->getSelectedItem();
+    ASSERT(defExt);
+    return (defExt ? defExt->text(): std::string());
+  }
 
   void selectScalingItems() {
     // Screen/UI Scale
