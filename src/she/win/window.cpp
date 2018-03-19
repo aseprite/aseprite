@@ -73,6 +73,7 @@ WinWindow::WinWindow(int width, int height, int scale)
   , m_usePointerApi(false)
   , m_lastPointerId(0)
   , m_ictx(nullptr)
+  , m_ignoreRandomMouseEvents(0)
 #if SHE_USE_POINTER_API_FOR_MOUSE
   , m_emulateDoubleClick(false)
   , m_doubleClickMsecs(GetDoubleClickTime())
@@ -561,6 +562,12 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       MOUSE_TRACE("MOUSEMOVE xy=%d,%d\n",
                   ev.position().x, ev.position().y);
 
+      if (m_ignoreRandomMouseEvents > 0) {
+        MOUSE_TRACE(" - IGNORED\n");
+        --m_ignoreRandomMouseEvents;
+        break;
+      }
+
       if (!m_hasMouse) {
         m_hasMouse = true;
 
@@ -810,6 +817,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         break;
 
       MOUSE_TRACE("POINTERLEAVE id=%d\n", pi.pointerId);
+      m_ignoreRandomMouseEvents = 0;
 
       if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
@@ -884,6 +892,10 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       Event ev;
       if (!pointerEvent(wparam, ev, pi))
         break;
+
+      // See the comment for m_ignoreRandomMouseEvents variable, and
+      // why here is = 2.
+      m_ignoreRandomMouseEvents = 2;
 
       if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
