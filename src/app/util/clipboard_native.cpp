@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -234,9 +234,8 @@ bool get_native_clipboard_bitmap(doc::Image** image,
         for (unsigned long x=0; x<spec.width; ++x, ++it, ++src) {
           const uint32_t c = *((const uint32_t*)src);
 
-          // On Windows, 32bpp images are used for performance only,
-          // the alpha mask is always zero (which means that the image
-          // is only RGB, without alpha information).
+          // The alpha mask can be zero (which means that the image is
+          // just RGB).
           int alpha =
             (spec.alpha_mask ?
              uint8_t((c & spec.alpha_mask) >> spec.alpha_shift): 255);
