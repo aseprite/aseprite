@@ -73,11 +73,13 @@ WinWindow::WinWindow(int width, int height, int scale)
   , m_usePointerApi(false)
   , m_lastPointerId(0)
   , m_ictx(nullptr)
+#if SHE_USE_POINTER_API_FOR_MOUSE
   , m_emulateDoubleClick(false)
   , m_doubleClickMsecs(GetDoubleClickTime())
   , m_lastPointerDownTime(0)
   , m_lastPointerDownButton(Event::NoneButton)
   , m_pointerDownCount(0)
+#endif
   , m_hpenctx(nullptr)
   , m_pointerType(PointerType::Unknown)
   , m_pressure(0.0)
@@ -94,7 +96,7 @@ WinWindow::WinWindow(int width, int height, int scale)
     // - We have to emulate the double-click for the regular mouse
     //   (search for m_emulateDoubleClick).
     // - Double click with Wacom stylus doesn't work.
-#if 0
+#if SHE_USE_POINTER_API_FOR_MOUSE
     if (!winApi.IsMouseInPointerEnabled()) {
       // Prefer pointer messages (WM_POINTER*) since Windows 8 instead
       // of mouse messages (WM_MOUSE*)
@@ -1194,9 +1196,11 @@ bool WinWindow::pointerEvent(WPARAM wparam, Event& ev, POINTER_INFO& pi)
 void WinWindow::handlePointerButtonChange(Event& ev, POINTER_INFO& pi)
 {
   if (pi.ButtonChangeType == POINTER_CHANGE_NONE) {
+#if SHE_USE_POINTER_API_FOR_MOUSE
     // Reset the counter of pointer down for the emulated double-click
     if (m_emulateDoubleClick)
       m_pointerDownCount = 0;
+#endif
     return;
   }
 
@@ -1237,6 +1241,7 @@ void WinWindow::handlePointerButtonChange(Event& ev, POINTER_INFO& pi)
   ev.setType(down ? Event::MouseDown: Event::MouseUp);
   ev.setButton(button);
 
+#if SHE_USE_POINTER_API_FOR_MOUSE
   if (down && m_emulateDoubleClick) {
     if (button != m_lastPointerDownButton)
       m_pointerDownCount = 0;
@@ -1253,6 +1258,7 @@ void WinWindow::handlePointerButtonChange(Event& ev, POINTER_INFO& pi)
     m_lastPointerDownTime = curTime;
     m_lastPointerDownButton = button;
   }
+#endif
 
   queueEvent(ev);
 }

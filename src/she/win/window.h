@@ -19,6 +19,8 @@
 #include <windows.h>
 #include <interactioncontext.h>
 
+#define SHE_USE_POINTER_API_FOR_MOUSE 0
+
 namespace she {
   class Surface;
   class WindowSystem;
@@ -93,6 +95,7 @@ namespace she {
     UINT32 m_capturePointerId;
     HINTERACTIONCONTEXT m_ictx;
 
+#if SHE_USE_POINTER_API_FOR_MOUSE
     // Emulate double-click with pointer API. I guess that this should
     // be done by the Interaction Context API but it looks like
     // messages with pointerType != PT_TOUCH or PT_PEN are just
@@ -104,6 +107,7 @@ namespace she {
     base::tick_t m_lastPointerDownTime;
     Event::MouseButton m_lastPointerDownButton;
     int m_pointerDownCount;
+#endif
 
     // Wintab API data
     HCTX m_hpenctx;
