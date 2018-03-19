@@ -42,6 +42,23 @@
 
 namespace she {
 
+static PointerType wt_packet_pkcursor_to_pointer_type(int pkCursor)
+{
+  switch (pkCursor) {
+    case 0:
+    case 3:
+      return PointerType::Cursor;
+    case 1:
+    case 4:
+      return PointerType::Pen;
+    case 2:
+    case 5:
+    case 6: // Undocumented: Inverted stylus when EnableMouseInPointer() is on
+      return PointerType::Eraser;
+  }
+  return PointerType::Unknown;
+}
+
 WinWindow::WinWindow(int width, int height, int scale)
   : m_hwnd(nullptr)
   , m_hcursor(nullptr)
@@ -54,7 +71,6 @@ WinWindow::WinWindow(int width, int height, int scale)
   , m_captureMouse(false)
   , m_customHcursor(false)
   , m_usePointerApi(false)
-  , m_ignoreMouseMessages(false)
   , m_lastPointerId(0)
   , m_ictx(nullptr)
   , m_emulateDoubleClick(false)
@@ -71,14 +87,22 @@ WinWindow::WinWindow(int width, int height, int scale)
       winApi.IsMouseInPointerEnabled &&
       winApi.GetPointerInfo &&
       winApi.GetPointerPenInfo) {
+    // Do not enable pointer API for mouse events because:
+    // - Wacom driver doesn't inform their messages in a correct
+    //   pointer API format (events from pen are reported as mouse
+    //   events and without eraser tip information).
+    // - We have to emulate the double-click for the regular mouse
+    //   (search for m_emulateDoubleClick).
+    // - Double click with Wacom stylus doesn't work.
+#if 0
     if (!winApi.IsMouseInPointerEnabled()) {
       // Prefer pointer messages (WM_POINTER*) since Windows 8 instead
       // of mouse messages (WM_MOUSE*)
       winApi.EnableMouseInPointer(TRUE);
-      m_ignoreMouseMessages =
       m_emulateDoubleClick =
         (winApi.IsMouseInPointerEnabled() ? true: false);
     }
+#endif
 
     // Initialize a Interaction Context to convert WM_POINTER messages
     // into gestures processed by handleInteractionContextOutput().
@@ -529,11 +553,6 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     // Mouse and Trackpad Messages
 
     case WM_MOUSEMOVE: {
-      // If the pointer API is enable, we use WM_POINTERUPDATE instead
-      // of WM_MOUSEMOVE.
-      if (m_ignoreMouseMessages)
-        break;
-
       Event ev;
       mouseEvent(lparam, ev);
 
@@ -1059,6 +1078,8 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     // Wintab API Messages
 
     case WT_PROXIMITY: {
+      MOUSE_TRACE("WT_PROXIMITY\n");
+
       bool entering_ctx = (LOWORD(lparam) ? true: false);
       if (!entering_ctx)
         m_pointerType = PointerType::Unknown;
@@ -1071,27 +1092,13 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       HCTX ctx = (HCTX)lparam;
       PACKET packet;
 
-      if (api.packet(ctx, serial, &packet)) {
-        switch (packet.pkCursor) {
-          case 0:
-          case 3:
-            m_pointerType = PointerType::Cursor;
-            break;
-          case 1:
-          case 4:
-            m_pointerType = PointerType::Pen;
-            break;
-          case 2:
-          case 5:
-            m_pointerType = PointerType::Eraser;
-            break;
-          default:
-            m_pointerType = PointerType::Unknown;
-            break;
-        }
-      }
+      if (api.packet(ctx, serial, &packet))
+        m_pointerType = wt_packet_pkcursor_to_pointer_type(packet.pkCursor);
       else
         m_pointerType = PointerType::Unknown;
+
+      MOUSE_TRACE("WT_CSRCHANGE pointer=%d\n", m_pointerType);
+      break;
     }
 
     case WT_PACKET: {
@@ -1102,14 +1109,13 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
       if (api.packet(ctx, serial, &packet)) {
         m_pressure = packet.pkNormalPressure / 1000.0; // TODO get the maximum value
-
-        if (packet.pkCursor == 2 || packet.pkCursor == 5)
-          m_pointerType = PointerType::Eraser;
-        else
-          m_pointerType = PointerType::Pen;
+        m_pointerType = wt_packet_pkcursor_to_pointer_type(packet.pkCursor);
       }
       else
         m_pointerType = PointerType::Unknown;
+
+      MOUSE_TRACE("WT_PACKET pointer=%d m_pressure=%.16g\n",
+                  m_pointerType, m_pressure);
       break;
     }
 
@@ -1147,22 +1153,33 @@ bool WinWindow::pointerEvent(WPARAM wparam, Event& ev, POINTER_INFO& pi)
 
   switch (pi.pointerType) {
     case PT_MOUSE: {
+      MOUSE_TRACE("pi.pointerType PT_MOUSE\n");
       ev.setPointerType(PointerType::Mouse);
+
+      // If we use EnableMouseInPointer(true), events from Wacom
+      // stylus came as PT_MOUSE instead of PT_PEN with eraser
+      // flag. This is just insane, EnableMouseInPointer(true) is not
+      // an option at the moment if we want proper support for Wacom
+      // events.
       break;
     }
     case PT_TOUCH: {
+      MOUSE_TRACE("pi.pointerType PT_TOUCH\n");
       ev.setPointerType(PointerType::Touch);
       break;
     }
     case PT_TOUCHPAD: {
+      MOUSE_TRACE("pi.pointerType PT_TOUCHPAD\n");
       ev.setPointerType(PointerType::Touchpad);
       break;
     }
     case PT_PEN: {
+      MOUSE_TRACE("pi.pointerType PT_PEN\n");
       ev.setPointerType(PointerType::Pen);
 
       POINTER_PEN_INFO ppi;
       if (winApi.GetPointerPenInfo(pi.pointerId, &ppi)) {
+        MOUSE_TRACE(" - ppi.penFlags = %d\n", ppi.penFlags);
         if (ppi.penFlags & PEN_FLAG_ERASER)
           ev.setPointerType(PointerType::Eraser);
       }

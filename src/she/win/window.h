@@ -89,7 +89,6 @@ namespace she {
 
     // Windows 8 pointer API
     bool m_usePointerApi;
-    bool m_ignoreMouseMessages;
     UINT32 m_lastPointerId;
     UINT32 m_capturePointerId;
     HINTERACTIONCONTEXT m_ictx;
