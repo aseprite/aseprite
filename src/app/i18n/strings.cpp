@@ -64,7 +64,7 @@ std::set<std::string> Strings::availableLanguages() const
     }
   }
 
-  ASSERT(result.find(kDefLanguage) != result.end);
+  ASSERT(result.find(kDefLanguage) != result.end());
   return result;
 }
 
