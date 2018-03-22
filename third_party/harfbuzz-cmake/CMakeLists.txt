@@ -1,4 +1,4 @@
-# Copyright (C) 2017 by David Capello
+# Copyright (C) 2017-2018 by David Capello
 
 set(USE_UCDN 1)
 set(USE_ICU 0)
@@ -34,6 +34,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 add_library(harfbuzz
+  ../harfbuzz/src/hb-aat-layout.cc
   ../harfbuzz/src/hb-blob.cc
   ../harfbuzz/src/hb-buffer-serialize.cc
   ../harfbuzz/src/hb-buffer.cc
@@ -41,6 +42,7 @@ add_library(harfbuzz
   ../harfbuzz/src/hb-face.cc
   ../harfbuzz/src/hb-font.cc
   ../harfbuzz/src/hb-ft.cc
+  ../harfbuzz/src/hb-ot-color.cc
   ../harfbuzz/src/hb-ot-font.cc
   ../harfbuzz/src/hb-ot-layout.cc
   ../harfbuzz/src/hb-ot-map.cc
@@ -51,6 +53,7 @@ add_library(harfbuzz
   ../harfbuzz/src/hb-ot-shape-complex-hebrew.cc
   ../harfbuzz/src/hb-ot-shape-complex-indic-table.cc
   ../harfbuzz/src/hb-ot-shape-complex-indic.cc
+  ../harfbuzz/src/hb-ot-shape-complex-khmer.cc
   ../harfbuzz/src/hb-ot-shape-complex-myanmar.cc
   ../harfbuzz/src/hb-ot-shape-complex-thai.cc
   ../harfbuzz/src/hb-ot-shape-complex-tibetan.cc
@@ -65,6 +68,10 @@ add_library(harfbuzz
   ../harfbuzz/src/hb-shape-plan.cc
   ../harfbuzz/src/hb-shape.cc
   ../harfbuzz/src/hb-shaper.cc
+  ../harfbuzz/src/hb-subset-glyf.cc
+  ../harfbuzz/src/hb-subset-input.cc
+  ../harfbuzz/src/hb-subset-plan.cc
+  ../harfbuzz/src/hb-subset.cc
   ../harfbuzz/src/hb-unicode.cc
   ../harfbuzz/src/hb-warning.cc
   ${HARFBUZZ_EXTRA_SOURCES})
