@@ -590,7 +590,11 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
       installedFiles.push_back(fn);
 
       const std::string fullFn = base::join_path(info.dstPath, fn);
+#if _WIN32
+      archive_entry_copy_pathname_w(entry, base::from_utf8(fullFn).c_str());
+#else
       archive_entry_set_pathname(entry, fullFn.c_str());
+#endif
 
       LOG("EXT: Uncompressing file <%s> to <%s>\n",
           fn.c_str(), fullFn.c_str());
