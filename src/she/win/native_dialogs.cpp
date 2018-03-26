@@ -111,6 +111,23 @@ private:
         return hr;
     }
 
+    if (std::wcslen(&m_initialDir[0]) > 0) {
+      base::ComPtr<IShellItem> item;
+
+      // The SHCreateItemFromParsingName() function is available since
+      // Windows Vista in shell32.dll
+      hr = ::SHCreateItemFromParsingName(&m_initialDir[0], nullptr,
+                                         IID_PPV_ARGS(&item));
+      if (FAILED(hr))
+        return hr;
+
+      if (item.get()) {
+        hr = dlg->SetFolder(item.get());
+        if (FAILED(hr))
+          return hr;
+      }
+    }
+
     if (!m_defExtension.empty()) {
       std::wstring defExt = base::from_utf8(m_defExtension);
       hr = dlg->SetDefaultExtension(defExt.c_str());
