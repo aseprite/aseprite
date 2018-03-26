@@ -328,6 +328,7 @@
 	  </view>
           <hbox>
 	    <button id="select_theme" text="@.select_theme" width="60" />
+            <link text="@.download_themes" url="https://github.com/aseprite/themes#readme" />
 	    <boxfiller />
 	    <button id="open_theme_folder" text="@.open_theme_folder" width="100" />
           </hbox>
