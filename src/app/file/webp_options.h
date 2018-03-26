@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  David Capello
 // Copyright (C) 2015  Gabriel Rauter
 //
 // This program is distributed under the terms of
@@ -14,32 +15,71 @@
 #include <webp/encode.h>
 
 namespace app {
+
   // Data for WebP files
   class WebPOptions : public FormatOptions {
   public:
-    WebPOptions(): m_lossless(1), m_quality(75), m_method(6), m_image_hint(WEBP_HINT_DEFAULT), m_image_preset(WEBP_PRESET_DEFAULT) {};
+    enum Type { Simple, Lossless, Lossy };
 
-    bool lossless() { return m_lossless; }
-    int getQuality() { return m_quality; }
-    int getMethod() { return m_method; }
-    WebPImageHint getImageHint() { return m_image_hint; }
-    WebPPreset getImagePreset() { return m_image_preset; }
+    // By default we use 6, because 9 is too slow
+    const int kDefaultCompression = 6;
 
-    void setLossless(int lossless) { m_lossless = (lossless != 0); }
-    void setLossless(bool lossless) { m_lossless = lossless; }
-    void setQuality(int quality) { m_quality = quality; }
-    void setMethod(int method) { m_method = method; }
-    void setImageHint(int imageHint) { m_image_hint = static_cast<WebPImageHint>(imageHint); }
-    void setImageHint(WebPImageHint imageHint) { m_image_hint = imageHint; }
-    void setImagePreset(int imagePreset) { m_image_preset = static_cast<WebPPreset>(imagePreset); };
-    void setImagePreset(WebPPreset imagePreset) { m_image_preset = imagePreset ; }
+    WebPOptions() : m_loop(true),
+                    m_type(Type::Simple),
+                    m_compression(kDefaultCompression),
+                    m_imageHint(WEBP_HINT_DEFAULT),
+                    m_quality(100),
+                    m_imagePreset(WEBP_PRESET_DEFAULT) { }
+
+    bool loop() const { return m_loop; }
+    Type type() const { return m_type; }
+    int compression() const { return m_compression; }
+    WebPImageHint imageHint() const { return m_imageHint; }
+    int quality() const { return m_quality; }
+    WebPPreset imagePreset() const { return m_imagePreset; }
+
+    void setLoop(const bool loop) {
+      m_loop = loop;
+    }
+
+    void setType(const Type type) {
+      m_type = type;
+
+      if (m_type == Type::Simple) {
+        m_compression = kDefaultCompression;
+        m_imageHint = WEBP_HINT_DEFAULT;
+      }
+    }
+
+    void setCompression(const int compression) {
+      ASSERT(m_type == Type::Lossless);
+      m_compression = compression;
+    }
+
+    void setImageHint(const WebPImageHint imageHint) {
+      ASSERT(m_type == Type::Lossless);
+      m_imageHint = imageHint;
+    }
+
+    void setQuality(const int quality) {
+      ASSERT(m_type == Type::Lossy);
+      m_quality = quality;
+    }
+
+    void setImagePreset(const WebPPreset imagePreset) {
+      ASSERT(m_type == Type::Lossy);
+      m_imagePreset = imagePreset;
+    }
 
   private:
-    bool m_lossless;           // Lossless encoding (0=lossy(default), 1=lossless).
-    int m_quality;          // between 0 (smallest file) and 100 (biggest)
-    int m_method;             // quality/speed trade-off (0=fast, 9=slower-better)
-    WebPImageHint m_image_hint;  // Hint for image type (lossless only for now).
-    WebPPreset m_image_preset;  // Image Preset for lossy webp.
+    bool m_loop;
+    Type m_type;
+    // Lossless options
+    int m_compression;  // Quality/speed trade-off (0=fast, 9=slower-better)
+    WebPImageHint m_imageHint; // Hint for image type (lossless only for now).
+    // Lossy options
+    int m_quality;      // Between 0 (smallest file) and 100 (biggest)
+    WebPPreset m_imagePreset;  // Image Preset for lossy webp.
   };
 
 } // namespace app

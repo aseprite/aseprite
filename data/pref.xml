@@ -276,6 +276,15 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="quality" type="double" default="1.0" migrate="JPEG.Quality" />
     </section>
+    <section id="webp">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="loop" type="bool" default="true" />
+      <option id="type" type="int" default="0" />
+      <option id="quality" type="int" default="100" migrate="WEBP.Quality" />
+      <option id="compression" type="int" default="6" migrate="WEBP.Compression" />
+      <option id="image_hint" type="int" default="0" migrate="WEBP.ImageHint" />
+      <option id="image_preset" type="int" default="0" migrate="WEBP.ImagePreset" />
+    </section>
     <section id="hue_saturation">
       <option id="mode" type="HueSaturationMode" default="HueSaturationMode::HSL" />
     </section>

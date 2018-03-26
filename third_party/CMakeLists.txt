@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2017  David Capello
+# Copyright (C) 2001-2018  David Capello
 
 include_directories(.)
 
@@ -29,18 +29,15 @@ if(NOT USE_SHARED_LIBPNG)
   add_subdirectory(libpng)
 endif()
 
-if(WITH_WEBP_SUPPORT)
-  if(NOT USE_SHARED_LIBWEBP)
-    # Skia already includes webp library
-    if(NOT USE_SKIA_BACKEND)
-      add_subdirectory(libwebp-cmake)
-    endif()
-  endif()
-endif()
-
 if(NOT USE_SHARED_GIFLIB)
   set(GIFLIB_UTILS OFF CACHE BOOL "Build giflib utils")
   add_subdirectory(giflib)
+endif()
+
+if(WITH_WEBP_SUPPORT)
+  # Enable img2webp so "webpmux" library is built
+  set(WEBP_BUILD_IMG2WEBP ON CACHE BOOL "Build the img2webp animation tool.")
+  add_subdirectory(libwebp)
 endif()
 
 if(NOT USE_SHARED_TINYXML)

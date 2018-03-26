@@ -18,9 +18,12 @@
 #include "app/file/format_options.h"
 #include "app/file/webp_options.h"
 #include "app/ini_file.h"
-#include "base/file_handle.h"
+#include "app/pref/preferences.h"
+#include "base/bind.h"
 #include "base/convert_to.h"
+#include "base/file_handle.h"
 #include "doc/doc.h"
+#include "render/render.h"
 
 #include "webp_options.xml.h"
 
@@ -29,9 +32,8 @@
 #include <algorithm>
 #include <map>
 
-// Include webp libraries
-#include <webp/decode.h>
-#include <webp/encode.h>
+#include <webp/demux.h>
+#include <webp/mux.h>
 
 namespace app {
 
@@ -57,7 +59,7 @@ class WebPFormat : public FileFormat {
       FILE_SUPPORT_SAVE |
       FILE_SUPPORT_RGB |
       FILE_SUPPORT_RGBA |
-      FILE_SUPPORT_SEQUENCES |
+      FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
@@ -65,8 +67,7 @@ class WebPFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-
-base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateWebPFormat()
@@ -106,71 +107,118 @@ bool WebPFormat::onLoad(FileOp* fop)
   }
 
   std::vector<uint8_t> buf(len);
-  uint8_t* data = &buf.front();
-
-  if (!fread(data, sizeof(uint8_t), len, fp)) {
+  if (fread(&buf[0], 1, buf.size(), fp) != buf.size()) {
     fop->setError("Error moving the whole WebP file to memory\n");
     return false;
   }
 
+  WebPData webp_data;
+  WebPDataInit(&webp_data);
+  webp_data.bytes = &buf[0];
+  webp_data.size = buf.size();
+
+  WebPAnimDecoderOptions dec_options;
+  WebPAnimDecoderOptionsInit(&dec_options);
+  dec_options.color_mode = MODE_RGBA;
+
+  WebPAnimDecoder* dec = WebPAnimDecoderNew(&webp_data, &dec_options);
+  if (dec == nullptr) {
+    fop->setError("Error parsing WebP image\n");
+    return false;
+  }
+
+  WebPAnimInfo anim_info;
+  if (!WebPAnimDecoderGetInfo(dec, &anim_info)) {
+    fop->setError("Error getting global info about the WebP animation\n");
+    return false;
+  }
+
   WebPDecoderConfig config;
-  if (!WebPInitDecoderConfig(&config)) {
-    fop->setError("WebP decoder cannot load this webp file version\n");
-    return false;
-  }
-
-  if (WebPGetFeatures(data, len, &config.input) != VP8_STATUS_OK) {
-    fop->setError("Bad bitstream in WebP file\n");
-    return false;
-  }
-
-  fop->sequenceSetHasAlpha(config.input.has_alpha != 0);
-
-  Image* image = fop->sequenceImage(IMAGE_RGB, config.input.width, config.input.height);
-
-  config.output.colorspace = MODE_RGBA;
-  config.output.u.RGBA.rgba = (uint8_t*)image->getPixelAddress(0, 0);
-  config.output.u.RGBA.stride = config.input.width * sizeof(uint32_t);
-  config.output.u.RGBA.size = config.input.width * config.input.height * sizeof(uint32_t);
-  config.output.is_external_memory = 1;
-
-  WebPIDecoder* idec = WebPIDecode(NULL, 0, &config);
-  if (idec == NULL) {
-    fop->setError("Error creating WebP decoder\n");
-    return false;
-  }
-
-  long bytes_remaining = len;
-  long bytes_read = std::max(4l, len/100l);
-
-  while (bytes_remaining > 0) {
-    VP8StatusCode status = WebPIAppend(idec, data, bytes_read);
-    if (status == VP8_STATUS_OK ||
-        status == VP8_STATUS_SUSPENDED) {
-      bytes_remaining -= bytes_read;
-      data += bytes_read;
-      if (bytes_remaining < bytes_read)
-        bytes_read = bytes_remaining;
-      fop->setProgress(1.0f - ((float)std::max(bytes_remaining, 0l)/(float)len));
+  WebPInitDecoderConfig(&config);
+  if (WebPGetFeatures(webp_data.bytes, webp_data.size, &config.input)) {
+    if (!fop->formatOptions()) {
+      base::SharedPtr<WebPOptions> opts(new WebPOptions());
+      WebPOptions::Type type = WebPOptions::Simple;
+      switch (config.input.format) {
+        case 0: type = WebPOptions::Simple; break;
+        case 1: type = WebPOptions::Lossy; break;
+        case 2: type = WebPOptions::Lossless; break;
+      }
+      opts->setType(type);
+      fop->setFormatOptions(opts);
     }
-    else {
-      fop->setError("Error decoding WebP data: %s\n", getDecoderErrorMessage(status));
-      WebPIDelete(idec);
-      WebPFreeDecBuffer(&config.output);
+  }
+  else {
+    config.input.has_alpha = false;
+  }
+
+  const int w = anim_info.canvas_width;
+  const int h = anim_info.canvas_height;
+
+  Sprite* sprite = new Sprite(IMAGE_RGB, w, h, 256);
+  LayerImage* layer = new LayerImage(sprite);
+  sprite->root()->addLayer(layer);
+  sprite->setTotalFrames(anim_info.frame_count);
+
+  for (frame_t f=0; f<anim_info.frame_count; ++f) {
+    ImageRef image(Image::create(IMAGE_RGB, w, h));
+    Cel* cel = new Cel(f, image);
+    layer->addCel(cel);
+  }
+
+  bool has_alpha = config.input.has_alpha;
+  frame_t f = 0;
+  int prev_timestamp = 0;
+  while (WebPAnimDecoderHasMoreFrames(dec)) {
+    uint8_t* frame_rgba;
+    int frame_timestamp = 0;
+    if (!WebPAnimDecoderGetNext(dec, &frame_rgba, &frame_timestamp)) {
+      fop->setError("Error loading WebP frame\n");
       return false;
     }
+
+    Cel* cel = layer->cel(f);
+    if (cel) {
+      memcpy(cel->image()->getPixelAddress(0, 0),
+             frame_rgba, h*w*sizeof(uint32_t));
+
+      if (!has_alpha) {
+        const uint32_t* src = (const uint32_t*)frame_rgba;
+        const uint32_t* src_end = src + w*h;
+        while (src < src_end) {
+          const uint8_t alpha = (*src >> 24) & 0xff;
+          if (alpha < 255) {
+            has_alpha = true;
+            break;
+          }
+          ++src;
+        }
+      }
+    }
+
+    sprite->setFrameDuration(f, frame_timestamp - prev_timestamp);
+
+    prev_timestamp = frame_timestamp;
+    fop->setProgress(double(f) / double(anim_info.frame_count));
     if (fop->isStop())
       break;
-  }
 
-  if (!fop->formatOptions()) {
-    base::SharedPtr<WebPOptions> webPOptions(new WebPOptions());
-    webPOptions->setLossless(std::min(config.input.format - 1, 1));
-    fop->setFormatOptions(webPOptions);
+    ++f;
   }
+  WebPAnimDecoderReset(dec);
 
-  WebPIDelete(idec);
-  WebPFreeDecBuffer(&config.output);
+  if (!has_alpha)
+    layer->configureAsBackground();
+
+  WebPAnimDecoderDelete(dec);
+
+  // Don't use WebPDataClear because webp_data use a std::vector<> data.
+  //WebPDataClear(&webp_data);
+
+  if (fop->isStop())
+    return false;
+
+  fop->createDocument(sprite);
   return true;
 }
 
@@ -179,69 +227,27 @@ bool WebPFormat::onLoad(FileOp* fop)
 struct WriterData {
   FILE* fp;
   FileOp* fop;
+  frame_t f, n;
+  double progress;
+
+  WriterData(FILE* fp, FileOp* fop, frame_t f, frame_t n, double progress)
+    : fp(fp), fop(fop), f(f), n(n), progress(progress) { }
 };
 
-class ScopedWebPPicture {
-public:
-  ScopedWebPPicture(WebPPicture& pic) : m_pic(pic) {
-  }
-  ~ScopedWebPPicture() {
-    WebPPictureFree(&m_pic);
-  }
-private:
-  WebPPicture& m_pic;
-};
-
-const char* getEncoderErrorMessage(WebPEncodingError errorCode) {
-  switch (errorCode) {
-  case VP8_ENC_OK: return ""; break;
-  case VP8_ENC_ERROR_OUT_OF_MEMORY: return "memory error allocating objects"; break;
-  case VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY: return "memory error while flushing bits"; break;
-  case VP8_ENC_ERROR_NULL_PARAMETER: return "a pointer parameter is NULL"; break;
-  case VP8_ENC_ERROR_INVALID_CONFIGURATION: return "configuration is invalid"; break;
-  case VP8_ENC_ERROR_BAD_DIMENSION: return "picture has invalid width/height"; break;
-  case VP8_ENC_ERROR_PARTITION0_OVERFLOW: return "partition is bigger than 512k"; break;
-  case VP8_ENC_ERROR_PARTITION_OVERFLOW: return "partition is bigger than 16M"; break;
-  case VP8_ENC_ERROR_BAD_WRITE: return "error while flushing bytes"; break;
-  case VP8_ENC_ERROR_FILE_TOO_BIG: return "file is bigger than 4G"; break;
-  case VP8_ENC_ERROR_USER_ABORT: return "abort request by user"; break;
-  case VP8_ENC_ERROR_LAST: return "abort request by user"; break;
-  default: return ""; break;
-  }
-}
-
-#if WEBP_ENCODER_ABI_VERSION < 0x0203
-#define MAX_LEVEL 9
-// Mapping between -z level and -m / -q parameter settings.
-static const struct {
-  uint8_t method_;
-  uint8_t quality_;
-} kLosslessPresets[MAX_LEVEL + 1] = {
-  { 0,  0 }, { 1, 20 }, { 2, 25 }, { 3, 30 }, { 3, 50 },
-  { 4, 50 }, { 4, 75 }, { 4, 90 }, { 5, 90 }, { 6, 100 }
-};
-int WebPConfigLosslessPreset(WebPConfig* config, int level) {
-  if (config == NULL || level < 0 || level > MAX_LEVEL) return 0;
-  config->lossless = 1;
-  config->method = kLosslessPresets[level].method_;
-  config->quality = kLosslessPresets[level].quality_;
-  return 1;
-}
-#endif
-
-static int ProgressReport(int percent, const WebPPicture* const pic)
+static int progress_report(int percent, const WebPPicture* pic)
 {
-  FileOp* fop = ((WriterData*)pic->custom_ptr)->fop;
-  fop->setProgress((double)percent/(double)100);
+  auto wd = (WriterData*)pic->user_data;
+  FileOp* fop = wd->fop;
+
+  double newProgress = (double(wd->f) + double(percent)/100.0) / double(wd->n);
+  wd->progress = MAX(wd->progress, newProgress);
+  wd->progress = MID(0.0, wd->progress, 1.0);
+
+  fop->setProgress(wd->progress);
   if (fop->isStop())
     return false;
   else
     return true;
-}
-
-static int FileWriter(const uint8_t* data, size_t data_size, const WebPPicture* const pic)
-{
-  return (data_size ? (fwrite(data, data_size, 1, ((WriterData*)pic->custom_ptr)->fp) == 1) : 1);
 }
 
 bool WebPFormat::onSave(FileOp* fop)
@@ -249,75 +255,110 @@ bool WebPFormat::onSave(FileOp* fop)
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
-  WriterData wd = { fp, fop };
+  const Sprite* sprite = fop->document()->sprite();
+  const int w = sprite->width();
+  const int h = sprite->height();
 
-  const Image* image = fop->sequenceImage();
-  if (image->width() > WEBP_MAX_DIMENSION ||
-      image->height() > WEBP_MAX_DIMENSION) {
+  if (w > WEBP_MAX_DIMENSION ||
+      h > WEBP_MAX_DIMENSION) {
     fop->setError("WebP format cannot store %dx%d images. The maximum allowed size is %dx%d\n",
-                  image->width(), image->height(),
-                  WEBP_MAX_DIMENSION, WEBP_MAX_DIMENSION);
+                  w, h, WEBP_MAX_DIMENSION, WEBP_MAX_DIMENSION);
     return false;
   }
 
-  base::SharedPtr<WebPOptions> webp_options = fop->formatOptions();
-
+  base::SharedPtr<WebPOptions> opts = fop->formatOptions();
   WebPConfig config;
+  WebPConfigInit(&config);
 
-  if (webp_options->lossless()) {
-    if (!(WebPConfigInit(&config) &&
-          WebPConfigLosslessPreset(&config, webp_options->getMethod()))) {
-      fop->setError("Error in WebP configuration\n");
-      return false;
-    }
-    config.image_hint = webp_options->getImageHint();
-  }
-  else {
-    if (!WebPConfigPreset(&config, webp_options->getImagePreset(), static_cast<float>(webp_options->getQuality()))) {
-      fop->setError("Error in WebP configuration preset\n");
-      return false;
-    }
+  switch (opts->type()) {
+
+    case WebPOptions::Simple:
+    case WebPOptions::Lossless:
+      if (!WebPConfigLosslessPreset(&config,
+                                    opts->compression())) {
+        fop->setError("Error in WebP configuration\n");
+        return false;
+      }
+      config.image_hint = opts->imageHint();
+      break;
+
+    case WebPOptions::Lossy:
+      if (!WebPConfigPreset(&config,
+                            opts->imagePreset(),
+                            static_cast<float>(opts->quality()))) {
+        fop->setError("Error in WebP configuration preset\n");
+        return false;
+      }
+      break;
   }
 
-  if (!WebPValidateConfig(&config)) {
-    fop->setError("Error validating WebP encoder configuration\n");
-    return false;
-  }
+  WebPAnimEncoderOptions enc_options;
+  WebPAnimEncoderOptionsInit(&enc_options);
+  enc_options.anim_params.loop_count =
+    (opts->loop() ? 0:  // 0 = infinite
+                    1); // 1 = loop once
 
+  ImageRef image(Image::create(IMAGE_RGB, w, h));
+  render::Render render;
+
+  WriterData wd(fp, fop, 0, sprite->totalFrames(), 0.0);
   WebPPicture pic;
-  if (!WebPPictureInit(&pic)) {
-    fop->setError("Error encoding WebP picture, version mismatch\n");
+  WebPPictureInit(&pic);
+  pic.width = w;
+  pic.height = h;
+  pic.use_argb = true;
+  pic.argb = (uint32_t*)image->getPixelAddress(0, 0);
+  pic.argb_stride = w;
+  pic.user_data = &wd;
+  pic.progress_hook = progress_report;
+
+  WebPAnimEncoder* enc = WebPAnimEncoderNew(sprite->width(),
+                                            sprite->height(),
+                                            &enc_options);
+  int timestamp_ms = 0;
+  for (frame_t f=0; f<sprite->totalFrames(); ++f) {
+    // Render the frame in the bitmap
+    render.renderSprite(image.get(), sprite, f);
+
+    // Switch R <-> B channels because WebPAnimEncoderAssemble()
+    // expects MODE_BGRA pictures.
+    {
+      LockImageBits<RgbTraits> bits(image.get(), Image::ReadWriteLock);
+      auto it = bits.begin(), end = bits.end();
+      for (; it != end; ++it) {
+        auto c = *it;
+        *it = rgba(rgba_getb(c), // Use blue in red channel
+                   rgba_getg(c),
+                   rgba_getr(c), // Use red in blue channel
+                   rgba_geta(c));
+      }
+    }
+
+    if (!WebPAnimEncoderAdd(enc, &pic, timestamp_ms, &config)) {
+      if (!fop->isStop()) {
+        fop->setError("Error saving frame %d info\n", f);
+        return false;
+      }
+      else
+        return true;
+    }
+    timestamp_ms += sprite->frameDuration(f);
+
+    wd.f = f;
+  }
+  WebPAnimEncoderAdd(enc, nullptr, timestamp_ms, nullptr);
+
+  WebPData webp_data;
+  WebPDataInit(&webp_data);
+  WebPAnimEncoderAssemble(enc, &webp_data);
+  WebPAnimEncoderDelete(enc);
+
+  if (fwrite(webp_data.bytes, 1, webp_data.size, fp) != webp_data.size) {
+    fop->setError("Error saving content into file\n");
     return false;
   }
 
-  pic.width = image->width();
-  pic.height = image->height();
-  if (webp_options->lossless()) {
-    pic.use_argb = true;
-  }
-
-  if (!WebPPictureAlloc(&pic)) {
-    fop->setError("Not enough memory to allocate a WebP picture\n");
-    return false;
-  }
-
-  ScopedWebPPicture scopedPic(pic); // Calls WebPPictureFree automatically
-
-  if (!WebPPictureImportRGBA(&pic, (uint8_t*)image->getPixelAddress(0, 0), image->width() * sizeof(uint32_t))) {
-    fop->setError("Error converting RGBA data into a WebP picture\n");
-    return false;
-  }
-
-  pic.writer = FileWriter;
-  pic.custom_ptr = &wd;
-  pic.progress_hook = ProgressReport;
-
-  if (!WebPEncode(&config, &pic)) {
-    fop->setError("Error encoding image into WebP: %s\n",
-                  getEncoderErrorMessage(pic.error_code));
-    return false;
-  }
-
+  WebPDataClear(&webp_data);
   return true;
 }
 
@@ -326,58 +367,101 @@ bool WebPFormat::onSave(FileOp* fop)
 // Shows the WebP configuration dialog.
 base::SharedPtr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
 {
-  base::SharedPtr<WebPOptions> webp_options;
+  base::SharedPtr<WebPOptions> opts;
   if (fop->document()->getFormatOptions())
-    webp_options = base::SharedPtr<WebPOptions>(fop->document()->getFormatOptions());
+    opts = base::SharedPtr<WebPOptions>(fop->document()->getFormatOptions());
 
-  if (!webp_options)
-    webp_options.reset(new WebPOptions);
+  if (!opts)
+    opts.reset(new WebPOptions);
 
   // Non-interactive mode
   if (!fop->context() ||
       !fop->context()->isUIAvailable())
-    return webp_options;
+    return opts;
 
   try {
-    // Configuration parameters
-    webp_options->setQuality(get_config_int("WEBP", "Quality", webp_options->getQuality()));
-    webp_options->setMethod(get_config_int("WEBP", "Compression", webp_options->getMethod()));
-    webp_options->setImageHint(get_config_int("WEBP", "ImageHint", webp_options->getImageHint()));
-    webp_options->setImagePreset(get_config_int("WEBP", "ImagePreset", webp_options->getImagePreset()));
+    auto& pref = Preferences::instance();
 
-    // Load the window to ask to the user the WebP options he wants.
+    if (pref.isSet(pref.webp.loop))
+      opts->setLoop(pref.webp.loop());
 
-    app::gen::WebpOptions win;
-    win.lossless()->setSelected(webp_options->lossless());
-    win.lossy()->setSelected(!webp_options->lossless());
-    win.quality()->setValue(static_cast<int>(webp_options->getQuality()));
-    win.compression()->setValue(webp_options->getMethod());
-    win.imageHint()->setSelectedItemIndex(webp_options->getImageHint());
-    win.imagePreset()->setSelectedItemIndex(webp_options->getImagePreset());
+    if (pref.isSet(pref.webp.type))
+      opts->setType(WebPOptions::Type(pref.webp.type()));
 
-    win.openWindowInForeground();
-
-    if (win.closer() == win.ok()) {
-      webp_options->setQuality(win.quality()->getValue());
-      webp_options->setMethod(win.compression()->getValue());
-      webp_options->setLossless(win.lossless()->isSelected());
-      webp_options->setImageHint(base::convert_to<int>(win.imageHint()->getValue()));
-      webp_options->setImagePreset(base::convert_to<int>(win.imagePreset()->getValue()));
-
-      set_config_int("WEBP", "Quality", webp_options->getQuality());
-      set_config_int("WEBP", "Compression", webp_options->getMethod());
-      set_config_int("WEBP", "ImageHint", webp_options->getImageHint());
-      set_config_int("WEBP", "ImagePreset", webp_options->getImagePreset());
-    }
-    else {
-      webp_options.reset(NULL);
+    switch (opts->type()) {
+      case WebPOptions::Lossless:
+        if (pref.isSet(pref.webp.compression)) opts->setCompression(pref.webp.compression());
+        if (pref.isSet(pref.webp.imageHint))   opts->setImageHint(WebPImageHint(pref.webp.imageHint()));
+        break;
+      case WebPOptions::Lossy:
+        if (pref.isSet(pref.webp.quality))     opts->setQuality(pref.webp.quality());
+        if (pref.isSet(pref.webp.imagePreset)) opts->setImagePreset(WebPPreset(pref.webp.imagePreset()));
+        break;
     }
 
-    return webp_options;
+    if (pref.webp.showAlert()) {
+      app::gen::WebpOptions win;
+
+      auto updatePanels = [&win, &opts]{
+        int o = base::convert_to<int>(win.type()->getValue());
+        opts->setType(WebPOptions::Type(o));
+        win.losslessOptions()->setVisible(o == int(WebPOptions::Lossless));
+        win.lossyOptions()->setVisible(o == int(WebPOptions::Lossy));
+
+        auto rc = win.bounds();
+        win.setBounds(
+          gfx::Rect(rc.origin(),
+                    win.sizeHint()));
+
+        auto manager = win.manager();
+        if (manager)
+          manager->invalidateRect(rc); // TODO this should be automatic
+                                       // when a window bounds is modified
+      };
+
+      win.loop()->setSelected(opts->loop());
+      win.type()->setSelectedItemIndex(int(opts->type()));
+      win.compression()->setValue(opts->compression());
+      win.imageHint()->setSelectedItemIndex(opts->imageHint());
+      win.quality()->setValue(static_cast<int>(opts->quality()));
+      win.imagePreset()->setSelectedItemIndex(opts->imagePreset());
+
+      updatePanels();
+      win.type()->Change.connect(base::Bind<void>(updatePanels));
+
+      win.openWindowInForeground();
+
+      if (win.closer() == win.ok()) {
+        pref.webp.loop(win.loop()->isSelected());
+        pref.webp.type(base::convert_to<int>(win.type()->getValue()));
+        pref.webp.compression(win.compression()->getValue());
+        pref.webp.imageHint(base::convert_to<int>(win.imageHint()->getValue()));
+        pref.webp.quality(win.quality()->getValue());
+        pref.webp.imagePreset(base::convert_to<int>(win.imagePreset()->getValue()));
+
+        opts->setLoop(pref.webp.loop());
+        opts->setType(WebPOptions::Type(pref.webp.type()));
+        switch (opts->type()) {
+          case WebPOptions::Lossless:
+            opts->setCompression(pref.webp.compression());
+            opts->setImageHint(WebPImageHint(pref.webp.imageHint()));
+            break;
+          case WebPOptions::Lossy:
+            opts->setQuality(pref.webp.quality());
+            opts->setImagePreset(WebPPreset(pref.webp.imagePreset()));
+            break;
+        }
+      }
+      else {
+        opts.reset(nullptr);
+      }
+    }
+
+    return opts;
   }
-  catch (std::exception& e) {
+  catch (const std::exception& e) {
     Console::showException(e);
-    return base::SharedPtr<WebPOptions>(0);
+    return base::SharedPtr<WebPOptions>(nullptr);
   }
 }
 

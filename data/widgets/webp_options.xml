@@ -1,41 +1,52 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2016-2018 by David Capello -->
 <!-- Copyright (C) 2015 by Gabriel Rauter -->
-<!-- Copyright (C) 2016 by David Capello -->
 <gui>
 <window id="webp_options" text="@.title">
   <vbox>
     <label text="@.save_as" />
-    <radio group="1" text="@.lossless_webp" id="lossless" tooltip="@.lossless_webp_tooltip" />
+    <check text="@.animation_loop" id="loop" />
     <hbox>
-      <label width="55" text="@.compression" />
-      <slider min="0" max="9" id="compression" cell_align="horizontal" width="128" />
-    </hbox>
-    <hbox>
-      <label width="55" text="@.image_hint" />
-      <combobox width="128" id="image_hint">
-        <listitem text="@.image_hint_default" value="0" />
-        <listitem text="@.image_hint_picture" value="1" />
-        <listitem text="@.image_hint_photo" value="2" />
-        <listitem text="@.image_hint_graph" value="3" />
+      <label text="@.type" />
+      <combobox id="type" cell_align="horizontal" cell_hspan="2">
+        <listitem text="@.simple_webp" value="0" />
+        <listitem text="@.lossless_webp" value="1" />
+        <listitem text="@.lossy_webp" value="2" />
       </combobox>
     </hbox>
+    <vbox id="lossless_options">
+      <hbox>
+        <label width="55" text="@.compression" />
+        <slider min="0" max="9" id="compression" cell_align="horizontal" width="128" />
+      </hbox>
+      <hbox>
+        <label width="55" text="@.image_hint" />
+        <combobox width="128" id="image_hint">
+          <listitem text="@.image_hint_default" value="0" />
+          <listitem text="@.image_hint_picture" value="1" />
+          <listitem text="@.image_hint_photo" value="2" />
+          <listitem text="@.image_hint_graph" value="3" />
+        </combobox>
+      </hbox>
+    </vbox>
+    <vbox id="lossy_options">
+      <hbox>
+        <label width="55" text="@.quality" />
+        <slider min="0" max="100" id="quality" cell_align="horizontal" width="128" />
+      </hbox>
+      <hbox>
+        <label width="55" text="@.image_preset" />
+        <combobox width="128" id="image_preset">
+          <listitem text="@.image_preset_default" value="0" />
+          <listitem text="@.image_preset_picture" value="1" />
+          <listitem text="@.image_preset_photo" value="2" />
+          <listitem text="@.image_preset_drawing" value="3" />
+          <listitem text="@.image_preset_icon" value="4" />
+          <listitem text="@.image_preset_text" value="5" />
+        </combobox>
+      </hbox>
+    </vbox>
     <separator horizontal="true" />
-    <radio group="1" text="@.lossy_webp" id="lossy" tooltip="@.lossy_webp_tooltip" />
-    <hbox>
-      <label width="55" text="@.quality" />
-      <slider min="0" max="100" id="quality" cell_align="horizontal" width="128" />
-    </hbox>
-    <hbox>
-      <label width="55" text="@.image_preset" />
-      <combobox width="128" id="image_preset">
-        <listitem text="@.image_preset_default" value="0" />
-        <listitem text="@.image_preset_picture" value="1" />
-        <listitem text="@.image_preset_photo" value="2" />
-        <listitem text="@.image_preset_drawing" value="3" />
-        <listitem text="@.image_preset_icon" value="4" />
-        <listitem text="@.image_preset_text" value="5" />
-      </combobox>
-    </hbox>
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
