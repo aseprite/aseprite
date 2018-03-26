@@ -14,7 +14,7 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DENABLE_TESTS=ON
+  - cmake .. -DENABLE_TESTS=ON -DWITH_WEBP_SUPPORT=ON
 
 script:
   - "make"
