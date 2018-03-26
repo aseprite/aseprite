@@ -49,7 +49,7 @@
 
             <label text="@.language" />
             <combobox id="language" />
-            <link text="@.download_translations" url="https://github.com/aseprite/languages#readme" />
+            <link text="@.download_translations" url="https://www.aseprite.org/languages/" />
           </grid>
           <check id="gpu_acceleration"
                  text="@.gpu_acceleration"
@@ -328,7 +328,7 @@
 	  </view>
           <hbox>
 	    <button id="select_theme" text="@.select_theme" width="60" />
-            <link text="@.download_themes" url="https://github.com/aseprite/themes#readme" />
+            <link text="@.download_themes" url="https://www.aseprite.org/themes/" />
 	    <boxfiller />
 	    <button id="open_theme_folder" text="@.open_theme_folder" width="100" />
           </hbox>
