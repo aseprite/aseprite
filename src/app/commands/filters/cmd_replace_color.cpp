@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -158,12 +158,14 @@ void ReplaceColorCommand::onExecute(Context* context)
   filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
 
   FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(TARGET_RED_CHANNEL |
-                      TARGET_GREEN_CHANNEL |
-                      TARGET_BLUE_CHANNEL |
-                      TARGET_GRAY_CHANNEL |
-                      TARGET_ALPHA_CHANNEL |
-                      TARGET_INDEX_CHANNEL);
+  filterMgr.setTarget(
+    site.sprite()->pixelFormat() == IMAGE_INDEXED ?
+    TARGET_INDEX_CHANNEL:
+    TARGET_RED_CHANNEL |
+    TARGET_GREEN_CHANNEL |
+    TARGET_BLUE_CHANNEL |
+    TARGET_GRAY_CHANNEL |
+    TARGET_ALPHA_CHANNEL);
 
   ReplaceColorWindow window(filter, filterMgr);
   if (window.doModal()) {
