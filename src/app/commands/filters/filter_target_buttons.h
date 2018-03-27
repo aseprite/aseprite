@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016, 2018  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,6 +8,7 @@
 #define APP_COMMANDS_FILTERS_FILTER_TARGET_BUTTONS_H_INCLUDED
 #pragma once
 
+#include "app/commands/filters/cels_target.h"
 #include "app/ui/button_set.h"
 #include "app/ui/skin/skin_part.h"
 #include "filters/target.h"
@@ -27,8 +28,11 @@ namespace app {
     // the a sprite.
     FilterTargetButtons(int imgtype, bool withChannels);
 
-    Target getTarget() const { return m_target; }
-    void setTarget(Target target);
+    Target target() const { return m_target; }
+    CelsTarget celsTarget() const { return m_celsTarget; }
+
+    void setTarget(const Target target);
+    void setCelsTarget(const CelsTarget celsTarget);
 
     obs::signal<void()> TargetChange;
 
@@ -40,15 +44,20 @@ namespace app {
   private:
     void selectTargetButton(Item* item, Target specificTarget);
     void updateFromTarget();
+    void updateFromCelsTarget();
     void updateComponentTooltip(Item* item, const char* channelName, int align);
+    std::string getCelsTargetText() const;
+    std::string getCelsTargetTooltip() const;
 
     Target m_target;
+    CelsTarget m_celsTarget;
     Item* m_red;
     Item* m_green;
     Item* m_blue;
     Item* m_alpha;
     Item* m_gray;
     Item* m_index;
+    Item* m_cels;
     ui::TooltipManager m_tooltips;
   };
 

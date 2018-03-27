@@ -15,6 +15,7 @@
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "base/bind.h"
 
@@ -47,7 +48,11 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   if (m_tiledCheck)
     m_tiledCheck->processMnemonicFromText();
 
+  CelsTarget celsTarget = Preferences::instance().filters.celsTarget();
+  filterMgr->setCelsTarget(celsTarget);
+
   m_targetButton.setTarget(filterMgr->getTarget());
+  m_targetButton.setCelsTarget(celsTarget);
   m_targetButton.TargetChange.connect(&FilterWindow::onTargetButtonChange, this);
   m_okButton.Click.connect(&FilterWindow::onOk, this);
   m_cancelButton.Click.connect(&FilterWindow::onCancel, this);
@@ -87,6 +92,9 @@ FilterWindow::~FilterWindow()
 
   // Save "Preview" check status.
   set_config_bool(m_cfgSection, "Preview", m_showPreview.isSelected());
+
+  // Save cels target button
+  Preferences::instance().filters.celsTarget(m_targetButton.celsTarget());
 }
 
 bool FilterWindow::doModal()
@@ -166,7 +174,8 @@ void FilterWindow::onTargetButtonChange()
   stopPreview();
 
   // Change the targets in the filter manager and restart the filter preview.
-  m_filterMgr->setTarget(m_targetButton.getTarget());
+  m_filterMgr->setTarget(m_targetButton.target());
+  m_filterMgr->setCelsTarget(m_targetButton.celsTarget());
   restartPreview();
 }
 

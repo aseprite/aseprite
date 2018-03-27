@@ -8,6 +8,7 @@
 #define APP_COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
 #pragma once
 
+#include "app/commands/filters/cels_target.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
 #include "doc/image_impl.h"
@@ -77,6 +78,7 @@ namespace app {
     doc::PixelFormat pixelFormat() const;
 
     void setTarget(Target target);
+    void setCelsTarget(CelsTarget celsTarget);
 
     void begin();
     void beginForPreview();
@@ -144,6 +146,7 @@ namespace app {
     doc::ImageBits<doc::BitmapTraits>::iterator m_maskIterator;
     Target m_targetOrig;          // Original targets
     Target m_target;              // Filtered targets
+    CelsTarget m_celsTarget;
     base::UniquePtr<doc::Palette> m_oldPalette;
     std::unique_ptr<Transaction> m_transaction;
 

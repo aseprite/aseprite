@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/commands/filters/cels_target.h"
 #include "app/document_exporter.h"
 #include "app/pref/option.h"
 #include "app/sprite_sheet_type.h"

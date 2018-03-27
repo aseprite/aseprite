@@ -10,6 +10,7 @@
 
 #include "app/commands/filters/filter_target_buttons.h"
 
+#include "app/i18n/strings.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
@@ -31,12 +32,14 @@ using namespace ui;
 FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   : ButtonSet(4)
   , m_target(0)
+  , m_celsTarget(CelsTarget::Selected)
   , m_red(nullptr)
   , m_green(nullptr)
   , m_blue(nullptr)
   , m_alpha(nullptr)
   , m_gray(nullptr)
   , m_index(nullptr)
+  , m_cels(nullptr)
 {
   setMultipleSelection(true);
   addChild(&m_tooltips);
@@ -61,9 +64,13 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         break;
     }
   }
+
+  // Create the button to select which cels will be modified by the
+  // filter.
+  m_cels = addItem(getCelsTargetText(), 4, 1);
 }
 
-void FilterTargetButtons::setTarget(int target)
+void FilterTargetButtons::setTarget(const int target)
 {
   selectTargetButton(m_red,   TARGET_RED_CHANNEL);
   selectTargetButton(m_green, TARGET_GREEN_CHANNEL);
@@ -71,8 +78,13 @@ void FilterTargetButtons::setTarget(int target)
   selectTargetButton(m_alpha, TARGET_ALPHA_CHANNEL);
   selectTargetButton(m_gray,  TARGET_GRAY_CHANNEL);
   selectTargetButton(m_index, TARGET_INDEX_CHANNEL);
-
   updateFromTarget();
+}
+
+void FilterTargetButtons::setCelsTarget(const CelsTarget celsTarget)
+{
+  m_celsTarget = celsTarget;
+  updateFromCelsTarget();
 }
 
 void FilterTargetButtons::selectTargetButton(Item* item, Target specificTarget)
@@ -91,6 +103,12 @@ void FilterTargetButtons::updateFromTarget()
   updateComponentTooltip(m_index, "Index", LEFT);
 }
 
+void FilterTargetButtons::updateFromCelsTarget()
+{
+  m_cels->setText(getCelsTargetText());
+  m_tooltips.addTooltipFor(m_cels, getCelsTargetTooltip(), LEFT);
+}
+
 void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channelName, int align)
 {
   if (item) {
@@ -105,7 +123,8 @@ void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channel
 void FilterTargetButtons::onItemChange(Item* item)
 {
   ButtonSet::onItemChange(item);
-  Target flags = m_target;
+  Target target = m_target;
+  CelsTarget celsTarget = m_celsTarget;
 
   if (m_index && item && item->isSelected()) {
     if (item == m_index) {
@@ -122,18 +141,51 @@ void FilterTargetButtons::onItemChange(Item* item)
     }
   }
 
-  if (m_red && m_red->isSelected()) flags |= TARGET_RED_CHANNEL;
-  if (m_green && m_green->isSelected()) flags |= TARGET_GREEN_CHANNEL;
-  if (m_blue && m_blue->isSelected()) flags |= TARGET_BLUE_CHANNEL;
-  if (m_gray && m_gray->isSelected()) flags |= TARGET_GRAY_CHANNEL;
-  if (m_index && m_index->isSelected()) flags |= TARGET_INDEX_CHANNEL;
-  if (m_alpha && m_alpha->isSelected()) flags |= TARGET_ALPHA_CHANNEL;
+  if (m_red && m_red->isSelected()) target |= TARGET_RED_CHANNEL;
+  if (m_green && m_green->isSelected()) target |= TARGET_GREEN_CHANNEL;
+  if (m_blue && m_blue->isSelected()) target |= TARGET_BLUE_CHANNEL;
+  if (m_gray && m_gray->isSelected()) target |= TARGET_GRAY_CHANNEL;
+  if (m_index && m_index->isSelected()) target |= TARGET_INDEX_CHANNEL;
+  if (m_alpha && m_alpha->isSelected()) target |= TARGET_ALPHA_CHANNEL;
 
-  if (m_target != flags) {
-    m_target = flags;
-    updateFromTarget();
+  if (m_cels->isSelected()) {
+    m_cels->setSelected(false);
+    celsTarget =              // Switch cels target
+      (m_celsTarget == CelsTarget::Selected ?
+       CelsTarget::All:
+       CelsTarget::Selected);
+  }
+
+  if (m_target != target ||
+      m_celsTarget != celsTarget) {
+    if (m_target != target) {
+      m_target = target;
+      updateFromTarget();
+    }
+    if (m_celsTarget != celsTarget) {
+      m_celsTarget = celsTarget;
+      updateFromCelsTarget();
+    }
     TargetChange();
   }
+}
+
+std::string FilterTargetButtons::getCelsTargetText() const
+{
+  switch (m_celsTarget) {
+    case CelsTarget::Selected: return Strings::filters_selected_cels();
+    case CelsTarget::All: return Strings::filters_all_cels();
+  }
+  return std::string();
+}
+
+std::string FilterTargetButtons::getCelsTargetTooltip() const
+{
+  switch (m_celsTarget) {
+    case CelsTarget::Selected: return Strings::filters_selected_cels_tooltip();
+    case CelsTarget::All: return Strings::filters_all_cels_tooltip();
+  }
+  return std::string();
 }
 
 } // namespace app

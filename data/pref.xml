@@ -288,6 +288,9 @@
     <section id="hue_saturation">
       <option id="mode" type="HueSaturationMode" default="HueSaturationMode::HSL" />
     </section>
+    <section id="filters">
+      <option id="cels_target" type="CelsTarget" default="CelsTarget::Selected" />
+    </section>
   </global>
 
   <tool>

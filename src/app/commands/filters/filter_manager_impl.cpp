@@ -28,7 +28,7 @@
 #include "app/util/range_utils.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
-#include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
@@ -55,15 +55,15 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   , m_cel(nullptr)
   , m_src(nullptr)
   , m_dst(nullptr)
+  , m_row(0)
   , m_mask(nullptr)
   , m_previewMask(nullptr)
+  , m_targetOrig(TARGET_ALL_CHANNELS)
+  , m_target(TARGET_ALL_CHANNELS)
+  , m_celsTarget(CelsTarget::Selected)
   , m_oldPalette(nullptr)
   , m_progressDelegate(NULL)
 {
-  m_row = 0;
-  m_targetOrig = TARGET_ALL_CHANNELS;
-  m_target = TARGET_ALL_CHANNELS;
-
   int x, y;
   Image* image = m_site.image(&x, &y);
   if (!image)
@@ -104,6 +104,11 @@ void FilterManagerImpl::setTarget(int target)
   if (m_site.layer() &&
       m_site.layer()->isBackground())
     m_target &= ~TARGET_ALPHA_CHANNEL;
+}
+
+void FilterManagerImpl::setCelsTarget(CelsTarget celsTarget)
+{
+  m_celsTarget = celsTarget;
 }
 
 void FilterManagerImpl::begin()
@@ -232,13 +237,28 @@ void FilterManagerImpl::applyToTarget()
   bool cancelled = false;
 
   CelList cels;
-  auto range = App::instance()->timeline()->range();
-  if (range.enabled())
-    cels = get_unlocked_unique_cels(m_site.sprite(), range);
-  else if (m_site.cel() &&
-           m_site.layer() &&
-           m_site.layer()->isEditable()) {
-    cels.push_back(m_site.cel());
+
+  switch (m_celsTarget) {
+
+    case CelsTarget::Selected: {
+      auto range = App::instance()->timeline()->range();
+      if (range.enabled())
+        cels = get_unlocked_unique_cels(m_site.sprite(), range);
+      else if (m_site.cel() &&
+               m_site.layer() &&
+               m_site.layer()->isEditable()) {
+        cels.push_back(m_site.cel());
+      }
+      break;
+    }
+
+    case CelsTarget::All: {
+      for (Cel* cel : m_site.sprite()->uniqueCels()) {
+        if (cel->layer()->isEditable())
+          cels.push_back(cel);
+      }
+      break;
+    }
   }
 
   if (cels.empty() && !paletteChange) {
