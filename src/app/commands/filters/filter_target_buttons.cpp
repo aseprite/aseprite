@@ -72,6 +72,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 
 void FilterTargetButtons::setTarget(const int target)
 {
+  m_target = target;
   selectTargetButton(m_red,   TARGET_RED_CHANNEL);
   selectTargetButton(m_green, TARGET_GREEN_CHANNEL);
   selectTargetButton(m_blue,  TARGET_BLUE_CHANNEL);
