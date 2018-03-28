@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -171,6 +171,11 @@ Color Color::fromString(const std::string& str)
   }
 
   return color;
+}
+
+Color Color::toRgb() const
+{
+  return Color::fromRgb(getRed(), getGreen(), getBlue(), getAlpha());
 }
 
 std::string Color::toString() const

@@ -9,8 +9,10 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/shade.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button_options.h"
+#include "app/ui/color_shades.h"
 #include "app/ui/color_sliders.h"
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/palette_view.h"
@@ -50,6 +52,7 @@ namespace app {
     void onMakeFixed() override;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
+    void onSelectOldColor();
     void onSimpleColorClick();
     void onColorTypeClick();
     void onPaletteChange();
@@ -83,10 +86,12 @@ namespace app {
     SimpleColors* m_simpleColors;
     CustomButtonSet m_colorType;
     HexColorEntry m_hexColorEntry;
+    ColorShades m_oldAndNew;
     ColorSliders m_sliders;
     ui::Label m_maskLabel;
     obs::scoped_connection m_onPaletteChangeConn;
     bool m_canPin;
+    bool m_insideChange;
 
     // This variable is used to avoid updating the m_hexColorEntry text
     // when the color change is generated from a

@@ -81,7 +81,7 @@ int ColorShades::size() const
   for (const auto& color : m_shade) {
     if ((color.getIndex() >= 0 &&
          color.getIndex() < get_current_palette()->size()) ||
-        (m_click == Select)) {
+        (m_click == ClickWholeShade)) {
       ++colors;
     }
   }
@@ -94,9 +94,11 @@ Shade ColorShades::getShade() const
   for (const auto& color : m_shade) {
     if ((color.getIndex() >= 0 &&
          color.getIndex() < get_current_palette()->size()) ||
-        (m_click == Select)) {
+        (m_click == ClickWholeShade)) {
       colors.push_back(color);
     }
+    else if (m_click == ClickEntries)
+      colors.push_back(color);
   }
   return colors;
 }
@@ -123,7 +125,18 @@ void ColorShades::updateShadeFromColorBarPicks()
 void ColorShades::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
-  setStyle(skin::SkinTheme::instance()->styles.menuShadeView());
+
+  auto theme = skin::SkinTheme::instance();
+
+  switch (m_click) {
+    case ClickEntries:
+    case DragAndDropEntries:
+      setStyle(theme->styles.normalShadeView());
+      break;
+    case ClickWholeShade:
+      setStyle(theme->styles.menuShadeView());
+      break;
+  }
 }
 
 bool ColorShades::onProcessMessage(ui::Message* msg)
@@ -131,7 +144,8 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
   switch (msg->type()) {
 
     case ui::kOpenMessage:
-      if (m_click == DragAndDrop) {
+      if (m_click == DragAndDropEntries) {
+        // TODO This connection should be in the ContextBar
         m_conn = ColorBar::instance()->ChangeSelection.connect(
           base::Bind<void>(&ColorShades::onChangeColorBarSelection, this));
       }
@@ -142,27 +156,42 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
         ui::set_mouse_cursor(ui::kMoveCursor);
         return true;
       }
+      else if (m_click == ClickEntries &&
+               m_hotIndex >= 0 &&
+               m_hotIndex < int(m_shade.size())) {
+        ui::set_mouse_cursor(ui::kHandCursor);
+        return true;
+      }
       break;
 
     case ui::kMouseEnterMessage:
     case ui::kMouseLeaveMessage:
+      if (!hasCapture())
+        m_hotIndex = -1;
+
       invalidate();
       break;
 
-    case ui::kMouseDownMessage: {
-      if (m_click == DragAndDrop) {
-        if (m_hotIndex >= 0 &&
-            m_hotIndex < int(m_shade.size())) {
-          m_dragIndex = m_hotIndex;
-          m_dropBefore = false;
-          captureMouse();
+    case ui::kMouseDownMessage:
+      if (m_hotIndex >= 0 &&
+          m_hotIndex < int(m_shade.size())) {
+        switch (m_click) {
+          case ClickEntries:
+            Click();
+            m_hotIndex = -1;
+            invalidate();
+            break;
+          case DragAndDropEntries:
+            m_dragIndex = m_hotIndex;
+            m_dropBefore = false;
+            captureMouse();
+            break;
         }
       }
       break;
-    }
 
     case ui::kMouseUpMessage: {
-      if (m_click == Select) {
+      if (m_click == ClickWholeShade) {
         setSelected(true);
         Click();
         closeWindow();
@@ -226,7 +255,7 @@ void ColorShades::onSizeHint(ui::SizeHintEvent& ev)
   if (size < 2)
     ev.setSizeHint(gfx::Size((16+m_boxSize)*ui::guiscale()+textWidth(), 18*ui::guiscale()));
   else {
-    if (m_click == Select && size > 16)
+    if (m_click == ClickWholeShade && size > 16)
       size = 16;
     ev.setSizeHint(gfx::Size(6+m_boxSize*size, 18)*ui::guiscale());
   }
@@ -280,7 +309,8 @@ void ColorShades::onPaint(ui::PaintEvent& ev)
         hotBounds = box;
     }
 
-    if (!hotBounds.isEmpty() && m_click == DragAndDrop) {
+    if (!hotBounds.isEmpty() &&
+        isHotEntryVisible()) {
       hotBounds.enlarge(3*ui::guiscale());
 
       ui::PaintWidgetPartInfo info;

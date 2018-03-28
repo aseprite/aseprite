@@ -20,7 +20,11 @@ namespace app {
 
   class ColorShades : public ui::Widget {
   public:
-    enum ClickType { DragAndDrop, Select };
+    enum ClickType {
+      ClickEntries,
+      DragAndDropEntries,
+      ClickWholeShade
+    };
 
     ColorShades(const Shade& colors, ClickType click);
 
@@ -33,6 +37,8 @@ namespace app {
 
     void updateShadeFromColorBarPicks();
 
+    int getHotEntry() const { return m_hotIndex; }
+
     obs::signal<void()> Click;
 
   private:
@@ -41,6 +47,9 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onChangeColorBarSelection();
+    bool isHotEntryVisible() const {
+      return m_click != ClickWholeShade;
+    }
 
     ClickType m_click;
     Shade m_shade;

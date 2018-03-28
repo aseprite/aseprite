@@ -462,7 +462,7 @@ class ContextBar::InkShadesField : public HBox {
 public:
   InkShadesField()
     : m_button(SkinTheme::instance()->parts.iconArrowDown())
-    , m_shade(Shade(), ColorShades::DragAndDrop)
+    , m_shade(Shade(), ColorShades::DragAndDropEntries)
     , m_loaded(false) {
     addChild(&m_button);
     addChild(&m_shade);
@@ -530,7 +530,7 @@ private:
 
       int i = 0;
       for (const Shade& shade : m_shades) {
-        auto shadeWidget = new ColorShades(shade, ColorShades::Select);
+        auto shadeWidget = new ColorShades(shade, ColorShades::ClickWholeShade);
         shadeWidget->setExpansive(true);
         shadeWidget->Click.connect(
           [&]{
