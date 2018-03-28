@@ -449,6 +449,7 @@ add_library(app-lib
   ui/color_button.cpp
   ui/color_popup.cpp
   ui/color_selector.cpp
+  ui/color_shades.cpp
   ui/color_sliders.cpp
   ui/color_spectrum.cpp
   ui/color_tint_shade_tone.cpp
