@@ -104,6 +104,7 @@ namespace app {
 
   private:
     class CoreModules;
+    class LoadLanguage;
     class Modules;
 
     static App* m_instance;

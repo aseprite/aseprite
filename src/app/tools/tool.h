@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,16 +26,10 @@ namespace app {
     class Tool {
     public:
 
-      Tool(ToolGroup* group,
-           const std::string& id,
-           const std::string& text,
-           const std::string& tips,
-           int default_brush_size)
+      Tool(ToolGroup* group, const std::string& id)
         : m_group(group)
         , m_id(id)
-        , m_text(text)
-        , m_tips(tips)
-        , m_default_brush_size(default_brush_size)
+        , m_default_brush_size(1)
       { }
 
       virtual ~Tool()
@@ -46,6 +40,12 @@ namespace app {
       const std::string& getText() const { return m_text; }
       const std::string& getTips() const { return m_tips; }
       int getDefaultBrushSize() const { return m_default_brush_size; }
+
+      void setText(const std::string& text) { m_text = text; }
+      void setTips(const std::string& tips) { m_tips = tips; }
+      void setDefaultBrushSize(const int default_brush_size) {
+        m_default_brush_size = default_brush_size;
+      }
 
       Fill getFill(int button) { return m_button[button].m_fill; }
       Ink* getInk(int button) { return m_button[button].m_ink; }

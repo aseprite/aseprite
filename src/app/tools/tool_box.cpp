@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,6 +31,7 @@
 #include "fixmath/fixmath.h"
 
 #include <algorithm>
+#include <cstdlib>
 
 #include "app/tools/controllers.h"
 #include "app/tools/inks.h"
@@ -91,6 +92,18 @@ const char* WellKnownPointShapes::Brush = "brush";
 const char* WellKnownPointShapes::FloodFill = "floodfill";
 const char* WellKnownPointShapes::Spray = "spray";
 
+namespace {
+
+struct deleter {
+  template<typename T>
+  void operator()(T* p) { delete p; }
+
+  template<typename A, typename B>
+  void operator()(std::pair<A,B>& p) { delete p.second; }
+};
+
+} // anonymous namespace
+
 ToolBox::ToolBox()
 {
   m_xmlTranslator.setStringIdPrefix("tools");
@@ -137,15 +150,11 @@ ToolBox::ToolBox()
   m_intertwiners[WellKnownIntertwiners::AsPixelPerfect] = new IntertwineAsPixelPerfect();
 
   loadTools();
+
+  // When the language is change, we reload the toolbox stirngs/tooltips.
+  Strings::instance()->LanguageChange.connect(
+    [this]{ loadTools(); });
 }
-
-struct deleter {
-  template<typename T>
-  void operator()(T* p) { delete p; }
-
-  template<typename A, typename B>
-  void operator()(std::pair<A,B>& p) { delete p.second; }
-};
 
 ToolBox::~ToolBox()
 {
@@ -203,7 +212,19 @@ void ToolBox::loadTools()
 
     LOG(VERBOSE) << "TOOL: Group " << groupId << "\n";
 
-    ToolGroup* toolGroup = new ToolGroup(groupId);
+    // Find an existent ToolGroup (this is useful in case we are
+    // reloading tool text/tooltips).
+    ToolGroup* toolGroup = nullptr;
+    for (auto g : m_groups) {
+      if (g->id() == groupId) {
+        toolGroup = g;
+        break;
+      }
+    }
+    if (toolGroup == nullptr) {
+      toolGroup = new ToolGroup(groupId);
+      m_groups.push_back(toolGroup);
+    }
 
     // For each tool
     TiXmlNode* xmlToolNode = xmlGroup->FirstChild("tool");
@@ -214,20 +235,31 @@ void ToolBox::loadTools()
       std::string toolTips = m_xmlTranslator(xmlTool, "tooltip");
       const char* defaultBrushSize = xmlTool->Attribute("default_brush_size");
 
-      Tool* tool = new Tool(toolGroup, toolId, toolText, toolTips,
-        defaultBrushSize ? strtol(defaultBrushSize, NULL, 10): 1);
+      Tool* tool = nullptr;
+      for (auto t : m_tools) {
+        if (t->getId() == toolId) {
+          tool = t;
+          break;
+        }
+      }
+      if (tool == nullptr) {
+        tool = new Tool(toolGroup, toolId);
+        m_tools.push_back(tool);
+      }
+
+      tool->setText(toolText);
+      tool->setTips(toolTips);
+      tool->setDefaultBrushSize(
+        defaultBrushSize ? std::strtol(defaultBrushSize, nullptr, 10): 1);
 
       LOG(VERBOSE) << "TOOL: Tool " << toolId << " in group " << groupId << " found\n";
 
       loadToolProperties(xmlTool, tool, 0, "left");
       loadToolProperties(xmlTool, tool, 1, "right");
 
-      m_tools.push_back(tool);
-
       xmlTool = xmlTool->NextSiblingElement();
     }
 
-    m_groups.push_back(toolGroup);
     xmlGroup = xmlGroup->NextSiblingElement();
   }
 

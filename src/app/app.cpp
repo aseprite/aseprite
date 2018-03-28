@@ -89,10 +89,21 @@ public:
   Preferences m_preferences;
 };
 
+class App::LoadLanguage {
+public:
+  LoadLanguage(Preferences& pref,
+               Extensions& exts) {
+    Strings::createInstance(pref, exts);
+  }
+};
+
 class App::Modules {
 public:
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
+  Extensions m_extensions;
+  // Load main language (after loading the extensions)
+  LoadLanguage m_loadLanguage;
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
   Commands m_commands;
@@ -100,12 +111,13 @@ public:
   RecentFiles m_recent_files;
   InputChain m_inputChain;
   clipboard::ClipboardManager m_clipboardManager;
-  Extensions m_extensions;
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
 
-  Modules(bool createLogInDesktop, Preferences& pref)
+  Modules(const bool createLogInDesktop,
+          Preferences& pref)
     : m_loggerModule(createLogInDesktop)
+    , m_loadLanguage(pref, m_extensions)
     , m_activeToolManager(&m_toolbox)
     , m_recent_files(pref.general.recentItems())
     , m_recovery(nullptr) {
@@ -175,6 +187,7 @@ void App::initialize(const AppOptions& options)
       break;
   }
 
+  // Load modules
   m_modules = new Modules(createLogInDesktop, preferences());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
   m_brushes.reset(new AppBrushes);
@@ -193,9 +206,6 @@ void App::initialize(const AppOptions& options)
   // Initialize GUI interface
   if (isGui()) {
     LOG("APP: GUI mode\n");
-
-    // Load main language (which might be in an extension)
-    Strings::instance()->loadCurrentLanguage();
 
     // Setup the GUI cursor and redraw screen
     ui::set_use_native_cursors(preferences().cursor.useNativeCursor());

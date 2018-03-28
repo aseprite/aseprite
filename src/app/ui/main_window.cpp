@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/notification_delegate.h"
@@ -150,6 +151,15 @@ MainWindow::MainWindow()
   remapWindow();
 
   AppMenus::instance()->rebuildRecentList();
+
+  // When the language is change, we reload the menu bar strings and
+  // relayout the whole main window.
+  Strings::instance()->LanguageChange.connect(
+    [this]{
+      m_menuBar->reload();
+      layout();
+      invalidate();
+    });
 }
 
 MainWindow::~MainWindow()
@@ -206,14 +216,6 @@ CheckUpdateDelegate* MainWindow::getCheckUpdateDelegate()
   return getHomeView();
 }
 #endif
-
-void MainWindow::reloadMenus()
-{
-  m_menuBar->reload();
-
-  layout();
-  invalidate();
-}
 
 void MainWindow::showNotification(INotificationDelegate* del)
 {

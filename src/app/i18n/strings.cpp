@@ -14,7 +14,6 @@
 #include "app/extensions.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
-#include "app/ui/main_window.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/fs.h"
@@ -22,20 +21,29 @@
 
 namespace app {
 
+static Strings* singleton = nullptr;
 static const char* kDefLanguage = "en";
+
+// static
+void Strings::createInstance(Preferences& pref,
+                             Extensions& exts)
+{
+  ASSERT(!singleton);
+  singleton = new Strings(pref, exts);
+}
 
 // static
 Strings* Strings::instance()
 {
-  static Strings* singleton = nullptr;
-  if (!singleton)
-    singleton = new Strings();
   return singleton;
 }
 
-Strings::Strings()
+Strings::Strings(Preferences& pref,
+                 Extensions& exts)
+  : m_pref(pref)
+  , m_exts(exts)
 {
-  loadLanguage(kDefLanguage);
+  loadLanguage(currentLanguage());
 }
 
 std::set<std::string> Strings::availableLanguages() const
@@ -56,7 +64,7 @@ std::set<std::string> Strings::availableLanguages() const
   }
 
   // Add languages in extensions
-  for (const auto& ext : App::instance()->extensions()) {
+  for (const auto& ext : m_exts) {
     if (ext->isEnabled() &&
         ext->hasLanguages()) {
       for (const auto& langId : ext->languages())
@@ -70,7 +78,7 @@ std::set<std::string> Strings::availableLanguages() const
 
 std::string Strings::currentLanguage() const
 {
-  return Preferences::instance().general.language();
+  return m_pref.general.language();
 }
 
 void Strings::setCurrentLanguage(const std::string& langId)
@@ -79,19 +87,10 @@ void Strings::setCurrentLanguage(const std::string& langId)
   if (currentLanguage() == langId)
     return;
 
-  Preferences::instance().general.language(langId);
+  m_pref.general.language(langId);
   loadLanguage(langId);
 
-  // Reload menus
-  App::instance()->mainWindow()->reloadMenus();
-}
-
-// Called when extensions are available
-void Strings::loadCurrentLanguage()
-{
-  std::string langId = currentLanguage();
-  if (langId != kDefLanguage)
-    loadLanguage(langId);
+  LanguageChange();
 }
 
 void Strings::loadLanguage(const std::string& langId)
@@ -120,8 +119,7 @@ void Strings::loadStringsFromDataDir(const std::string& langId)
 
 void Strings::loadStringsFromExtension(const std::string& langId)
 {
-  Extensions& exts = App::instance()->extensions();
-  std::string fn = exts.languagePath(langId);
+  std::string fn = m_exts.languagePath(langId);
   if (!fn.empty() && base::is_file(fn))
     loadStringsFromFile(fn);
 }
