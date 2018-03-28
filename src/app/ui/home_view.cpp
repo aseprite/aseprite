@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/ui/data_recovery_view.h"
 #include "app/ui/main_window.h"
 #include "app/ui/news_listbox.h"
@@ -84,7 +85,7 @@ void HomeView::showDataRecovery(crash::DataRecovery* dataRecovery)
 
 std::string HomeView::getTabText()
 {
-  return "Home";
+  return Strings::home_view_title();
 }
 
 TabIcon HomeView::getTabIcon()
@@ -136,7 +137,7 @@ void HomeView::onResize(ui::ResizeEvent& ev)
 
 void HomeView::onCheckingUpdates()
 {
-  checkUpdate()->setText("Checking Updates...");
+  checkUpdate()->setText(Strings::home_view_checking_updates());
   checkUpdate()->setVisible(true);
 
   layout();
@@ -144,7 +145,8 @@ void HomeView::onCheckingUpdates()
 
 void HomeView::onUpToDate()
 {
-  checkUpdate()->setText(fmt::format("{0} is up to date", PACKAGE));
+  checkUpdate()->setText(
+    fmt::format(Strings::home_view_is_up_to_date(), PACKAGE));
   checkUpdate()->setVisible(true);
 
   layout();
@@ -152,8 +154,8 @@ void HomeView::onUpToDate()
 
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
-  checkUpdate()->setText(fmt::format("New {0} v{1} available!",
-                                       PACKAGE, version));
+  checkUpdate()->setText(
+    fmt::format(Strings::home_view_new_version_available(), PACKAGE, version));
   checkUpdate()->setUrl(url);
   checkUpdate()->setVisible(true);
   checkUpdate()->InitTheme.connect(
