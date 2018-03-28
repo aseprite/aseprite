@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/tools/active_tool.h"
@@ -24,6 +25,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "fmt/format.h"
 #include "gfx/size.h"
 #include "obs/signal.h"
 #include "she/surface.h"
@@ -506,15 +508,16 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     // Tool shortcut
     Key* key = KeyboardShortcuts::instance()->tool(tool);
     if (key && !key->accels().empty()) {
-      tooltip += "\n\nShortcut: ";
-      tooltip += key->accels().front().toString();
+      tooltip += "\n\n";
+      tooltip += fmt::format(Strings::tools_shortcut(),
+                             key->accels().front().toString());
     }
   }
   else if (group_index == PreviewVisibilityIndex) {
     if (App::instance()->mainWindow()->getPreviewEditor()->isPreviewEnabled())
-      tooltip = "Hide Preview";
+      tooltip = Strings::tools_preview_hide();
     else
-      tooltip = "Show Preview";
+      tooltip = Strings::tools_preview_show();
   }
   else
     return;
