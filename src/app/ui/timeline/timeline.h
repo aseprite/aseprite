@@ -261,6 +261,7 @@ namespace app {
     gfx::Rect getCelsBounds() const;
     gfx::Rect getPartBounds(const Hit& hit) const;
     gfx::Rect getRangeBounds(const Range& range) const;
+    gfx::Rect getRangeClipBounds(const Range& range) const;
     void invalidateHit(const Hit& hit);
     void invalidateLayer(const Layer* layer);
     void invalidateFrame(const frame_t frame);

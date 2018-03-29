@@ -1791,7 +1791,7 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
   if (!m_clipboard_timer.isRunning())
     m_clipboard_timer.start();
 
-  IntersectClip clip(g, getCelsBounds());
+  IntersectClip clip(g, getRangeClipBounds(clipboard_range));
   if (clip) {
     CheckedDrawMode checked(g, m_offset_count,
                             gfx::rgba(0, 0, 0, 255),
@@ -2346,13 +2346,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 {
   auto& styles = skinTheme()->styles;
 
-  gfx::Rect clipBounds;
-  switch (m_range.type()) {
-    case Range::kCels: clipBounds = getCelsBounds(); break;
-    case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
-    case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
-  }
-  IntersectClip clip(g, clipBounds.enlarge(outlineWidth()));
+  IntersectClip clip(g, getRangeClipBounds(m_range).enlarge(outlineWidth()));
   if (!clip)
     return;
 
@@ -2701,6 +2695,17 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
       break;
   }
   return rc;
+}
+
+gfx::Rect Timeline::getRangeClipBounds(const Range& range) const
+{
+  gfx::Rect clipBounds;
+  switch (range.type()) {
+    case Range::kCels: clipBounds = getCelsBounds(); break;
+    case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
+    case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
+  }
+  return clipBounds;
 }
 
 void Timeline::invalidateHit(const Hit& hit)
