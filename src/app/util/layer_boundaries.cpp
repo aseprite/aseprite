@@ -11,6 +11,7 @@
 #include "app/util/layer_boundaries.h"
 
 #include "app/cmd/set_mask.h"
+#include "app/console.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
@@ -94,38 +95,43 @@ void select_layer_boundaries(Layer* layer,
     }
   }
 
-  ContextWriter writer(UIContext::instance());
-  app::Document* doc = writer.document();
-  Sprite* spr = layer->sprite();
-  ASSERT(doc == spr->document());
+  try {
+    ContextWriter writer(UIContext::instance(), 500);
+    app::Document* doc = writer.document();
+    Sprite* spr = layer->sprite();
+    ASSERT(doc == spr->document());
 
-  if (doc->isMaskVisible()) {
-    switch (op) {
-      case SelectLayerBoundariesOp::REPLACE:
-        // newMask is the new mask
-        break;
-      case SelectLayerBoundariesOp::ADD:
-        newMask.add(*doc->mask());
-        break;
-      case SelectLayerBoundariesOp::SUBTRACT: {
-        Mask oldMask(*doc->mask());
-        oldMask.subtract(newMask);
-        newMask.copyFrom(&oldMask); // TODO use something like std::swap()
-        break;
+    if (doc->isMaskVisible()) {
+      switch (op) {
+        case SelectLayerBoundariesOp::REPLACE:
+          // newMask is the new mask
+          break;
+        case SelectLayerBoundariesOp::ADD:
+          newMask.add(*doc->mask());
+          break;
+        case SelectLayerBoundariesOp::SUBTRACT: {
+          Mask oldMask(*doc->mask());
+          oldMask.subtract(newMask);
+          newMask.copyFrom(&oldMask); // TODO use something like std::swap()
+          break;
+        }
+        case SelectLayerBoundariesOp::INTERSECT:
+          newMask.intersect(*doc->mask());
+          break;
       }
-      case SelectLayerBoundariesOp::INTERSECT:
-        newMask.intersect(*doc->mask());
-        break;
     }
+
+    Transaction transaction(writer.context(), "Select Layer Boundaries", DoesntModifyDocument);
+    transaction.execute(new cmd::SetMask(doc, &newMask));
+    transaction.commit();
+
+    doc->resetTransformation();
+    doc->generateMaskBoundaries();
+    update_screen_for_document(doc);
   }
-
-  Transaction transaction(writer.context(), "Select Layer Boundaries", DoesntModifyDocument);
-  transaction.execute(new cmd::SetMask(doc, &newMask));
-  transaction.commit();
-
-  doc->resetTransformation();
-  doc->generateMaskBoundaries();
-  update_screen_for_document(doc);
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
 }
 
 } // namespace app
