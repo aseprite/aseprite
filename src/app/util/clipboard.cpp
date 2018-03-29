@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -383,10 +383,13 @@ void paste()
           while (dstFrameFirst+srcRange.frames() > dstSpr->totalFrames())
             api.addFrame(dstSpr, dstSpr->totalFrames());
 
-          auto srcIt = srcRange.selectedLayers().begin();
-          auto dstIt = dstRange.selectedLayers().begin();
-          auto srcEnd = srcRange.selectedLayers().end();
-          auto dstEnd = dstRange.selectedLayers().end();
+          auto srcLayers = srcRange.selectedLayers().toLayerList();
+          auto dstLayers = dstRange.selectedLayers().toLayerList();
+
+          auto srcIt = srcLayers.begin();
+          auto dstIt = dstLayers.begin();
+          auto srcEnd = srcLayers.end();
+          auto dstEnd = dstLayers.end();
 
           for (; srcIt != srcEnd && dstIt != dstEnd; ++srcIt, ++dstIt) {
             auto srcLayer = *srcIt;
