@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -212,7 +212,6 @@ void PlayState::onPlaybackTick()
 
     m_editor->setFrame(frame);
     m_nextFrameTime += getNextFrameTime();
-    m_editor->invalidate();
   }
 
   m_curFrameTick = base::current_tick();

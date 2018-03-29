@@ -262,6 +262,8 @@ namespace app {
     gfx::Rect getPartBounds(const Hit& hit) const;
     gfx::Rect getRangeBounds(const Range& range) const;
     void invalidateHit(const Hit& hit);
+    void invalidateLayer(const Layer* layer);
+    void invalidateFrame(const frame_t frame);
     void regenerateRows();
     void regenerateTagBands();
     int visibleTagBands() const;
@@ -282,6 +284,7 @@ namespace app {
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
+    void clearAndInvalidateRange();
 
     // The layer of the bottom (e.g. Background layer)
     layer_t firstLayer() const { return 0; }

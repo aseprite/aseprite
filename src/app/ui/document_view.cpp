@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -85,7 +85,7 @@ public:
     m_previewDelegate->onPreviewOtherEditor(this);
 
     if (isActive())
-      set_current_palette(editor->sprite()->palette(editor->frame()), true);
+      set_current_palette(editor->sprite()->palette(editor->frame()), false);
   }
 
   void onAfterLayerChanged(Editor* editor) override {
