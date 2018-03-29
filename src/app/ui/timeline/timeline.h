@@ -265,6 +265,7 @@ namespace app {
     void invalidateHit(const Hit& hit);
     void invalidateLayer(const Layer* layer);
     void invalidateFrame(const frame_t frame);
+    void invalidateRange();
     void regenerateRows();
     void regenerateTagBands();
     int visibleTagBands() const;

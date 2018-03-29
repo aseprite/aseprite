@@ -839,15 +839,14 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_SELECTING_FRAMES: {
-            if (m_range.enabled())
-              invalidateHit(Hit(PART_RANGE_OUTLINE));
+            invalidateRange();
 
             m_range = m_startRange;
             m_range.endRange(m_layer, hit.frame);
 
             setFrame(m_clk.frame = hit.frame, true);
 
-            invalidateHit(Hit(PART_RANGE_OUTLINE));
+            invalidateRange();
             break;
           }
 
@@ -3587,7 +3586,7 @@ void Timeline::clearClipboardRange()
   m_clipboard_timer.stop();
 }
 
-void Timeline::clearAndInvalidateRange()
+void Timeline::invalidateRange()
 {
   if (m_range.enabled()) {
     for (const Layer* layer : m_range.selectedLayers())
@@ -3596,6 +3595,13 @@ void Timeline::clearAndInvalidateRange()
       invalidateFrame(frame);
 
     invalidateHit(Hit(PART_RANGE_OUTLINE));
+  }
+}
+
+void Timeline::clearAndInvalidateRange()
+{
+  if (m_range.enabled()) {
+    invalidateRange();
     m_range.clearRange();
   }
 }
