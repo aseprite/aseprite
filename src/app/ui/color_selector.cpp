@@ -46,10 +46,7 @@ using namespace ui;
 //    painting and start another onPaintSurfaceInBgThread()
 class ColorSelector::Painter {
 public:
-  Painter()
-    : m_canvas(nullptr)
-    , m_paintingThread([this]{ paintingProc(); })
-  {
+  Painter() : m_canvas(nullptr) {
   }
 
   ~Painter() {
@@ -58,10 +55,17 @@ public:
   }
 
   void addRef() {
+    assert_ui_thread();
+
+    if (m_ref == 0)
+      m_paintingThread = std::thread([this]{ paintingProc(); });
+
     ++m_ref;
   }
 
   void releaseRef() {
+    assert_ui_thread();
+
     --m_ref;
     if (m_ref == 0) {
       {
@@ -77,6 +81,8 @@ public:
   }
 
   she::Surface* getCanvas(int w, int h, gfx::Color bgColor) {
+    assert_ui_thread();
+
     if (!m_canvas ||
         m_canvas->width() != w ||
         m_canvas->height() != h) {
@@ -98,6 +104,7 @@ public:
                        const gfx::Rect& mainBounds,
                        const gfx::Rect& bottomBarBounds,
                        const gfx::Rect& alphaBarBounds) {
+    assert_ui_thread();
     COLSEL_TRACE("COLSEL: startBgPainting for %p\n", colorSelector);
 
     std::unique_lock<std::mutex> lock(m_mutex);
