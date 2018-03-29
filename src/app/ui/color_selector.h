@@ -16,6 +16,7 @@
 #include "ui/timer.h"
 #include "ui/widget.h"
 
+#include <atomic>
 #include <cmath>
 
 // TODO move this to laf::base
@@ -79,8 +80,9 @@ namespace app {
 
     // These flags indicate which areas must be redrawed in the
     // background thread. Equal to DoneFlag when the surface is
-    // already painted in the background thread surface.
-    int m_paintFlags;
+    // already painted in the background thread surface. This must be
+    // atomic because we need atomic bitwise operations.
+    std::atomic<int> m_paintFlags;
 
   private:
     app::Color getAlphaBarColor(const int u, const int umax);
