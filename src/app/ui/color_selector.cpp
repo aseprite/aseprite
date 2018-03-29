@@ -44,6 +44,19 @@ using namespace ui;
 // 2. When the painting is done, we flip the buffer onto the screen
 // 3. If we receive another onPaint() we can cancel the background
 //    painting and start another onPaintSurfaceInBgThread()
+//
+// An alternative (better) way:
+// 1. Create an alternative ui::Graphics implementation that generates
+//    a list commands for the render thread
+// 2. Widgets can still use the same onPaint()
+// 3. The background threads consume the list of commands and render
+//    the screen.
+//
+// The bad side is that is harder to invalidate the commands that will
+// render an old state of the widget. So the render thread should
+// start caring about invalidating old commands (outdated regions) or
+// cleaning the queue if it gets too big.
+//
 class ColorSelector::Painter {
 public:
   Painter() : m_canvas(nullptr) {
