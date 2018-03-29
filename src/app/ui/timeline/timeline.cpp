@@ -518,6 +518,10 @@ void Timeline::moveRange(Range& range)
     }
     ++j;
   }
+
+  // Select the range again (it might be lost between all the
+  // setLayer()/setFrame() calls).
+  m_range = range;
 }
 
 void Timeline::activateClipboardRange()
