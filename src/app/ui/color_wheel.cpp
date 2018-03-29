@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -61,6 +61,7 @@ ColorWheel::ColorWheel()
     [this]{
       SkinTheme* theme = SkinTheme::instance();
       m_options.setStyle(theme->styles.colorWheelOptions());
+      m_bgColor = theme->colors.editorFace();
     });
   initTheme();
 }
@@ -175,35 +176,12 @@ app::Color ColorWheel::getBottomBarColor(const int u, const int umax)
 void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   bool oldHarmonyPicked = m_harmonyPicked;
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
   int r = MIN(rc.w/2, rc.h/2);
   m_wheelRadius = r;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
                             r*2, r*2);
-
-  int umax = MAX(1, rc.w-1);
-  int vmax = MAX(1, rc.h-1);
-
-  for (int y=0; y<rc.h; ++y) {
-    for (int x=0; x<rc.w; ++x) {
-      app::Color appColor =
-        getMainAreaColor(x, umax,
-                         y, vmax);
-
-      gfx::Color color;
-      if (appColor.getType() != app::Color::MaskType) {
-        appColor.setAlpha(255);
-        color = color_utils::color_for_ui(appColor);
-      }
-      else {
-        color = theme->colors.editorFace();
-      }
-
-      g->putPixel(color, rc.x+x, rc.y+y);
-    }
-  }
 
   if (m_color.getAlpha() > 0) {
     if (m_colorModel == ColorModel::NORMAL_MAP) {
@@ -253,16 +231,6 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 
 void ColorWheel::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 {
-  double hue = m_color.getHsvHue();
-  double sat = m_color.getHsvSaturation();
-
-  for (int x=0; x<rc.w; ++x) {
-    gfx::Color color = color_utils::color_for_ui(
-      app::Color::fromHsv(hue, sat, double(x) / double(rc.w)));
-
-    g->drawVLine(color, rc.x+x, rc.y, rc.h);
-  }
-
   if (m_color.getType() != app::Color::MaskType) {
     double val = m_color.getHsvValue();
     gfx::Point pos(rc.x + int(double(rc.w) * val),
@@ -271,8 +239,74 @@ void ColorWheel::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
   }
 }
 
+void ColorWheel::onPaintSurfaceInBgThread(she::Surface* s,
+                                          const gfx::Rect& main,
+                                          const gfx::Rect& bottom,
+                                          const gfx::Rect& alpha,
+                                          bool& stop)
+{
+  if (m_paintFlags & MainAreaFlag) {
+    int umax = MAX(1, main.w-1);
+    int vmax = MAX(1, main.h-1);
+
+    for (int y=0; y<main.h && !stop; ++y) {
+      for (int x=0; x<main.w && !stop; ++x) {
+        app::Color appColor =
+          getMainAreaColor(x, umax,
+                           y, vmax);
+
+        gfx::Color color;
+        if (appColor.getType() != app::Color::MaskType) {
+          appColor.setAlpha(255);
+          color = color_utils::color_for_ui(appColor);
+        }
+        else {
+          color = m_bgColor;
+        }
+
+        s->putPixel(color, main.x+x, main.y+y);
+      }
+    }
+    if (stop)
+      return;
+    m_paintFlags ^= MainAreaFlag;
+  }
+
+  if (m_paintFlags & BottomBarFlag) {
+    double hue = m_color.getHsvHue();
+    double sat = m_color.getHsvSaturation();
+
+    for (int x=0; x<bottom.w && !stop; ++x) {
+      gfx::Color color = color_utils::color_for_ui(
+        app::Color::fromHsv(hue, sat, double(x) / double(bottom.w)));
+
+      s->drawVLine(color, bottom.x+x, bottom.y, bottom.h);
+    }
+    if (stop)
+      return;
+    m_paintFlags ^= BottomBarFlag;
+  }
+
+  // Paint alpha bar
+  ColorSelector::onPaintSurfaceInBgThread(s, main, bottom, alpha, stop);
+}
+
+int ColorWheel::onNeedsSurfaceRepaint(const app::Color& newColor)
+{
+  return
+    // Only if the saturation changes we have to redraw the main surface.
+    (m_colorModel != ColorModel::NORMAL_MAP &&
+     cs_double_diff(m_color.getHsvValue(), newColor.getHsvValue()) ? MainAreaFlag: 0) |
+    (cs_double_diff(m_color.getHsvHue(), newColor.getHsvHue()) ||
+     cs_double_diff(m_color.getHsvSaturation(), newColor.getHsvSaturation()) ? BottomBarFlag: 0) |
+    ColorSelector::onNeedsSurfaceRepaint(newColor);
+}
+
 void ColorWheel::setDiscrete(bool state)
 {
+  if (m_discrete != state)
+    m_paintFlags = AllAreasFlag;
+
   m_discrete = state;
   Preferences::instance().colorBar.discreteWheel(m_discrete);
 

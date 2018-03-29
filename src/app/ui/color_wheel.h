@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -47,6 +47,12 @@ namespace app {
     app::Color getBottomBarColor(const int u, const int umax) override;
     void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
+    void onPaintSurfaceInBgThread(she::Surface* s,
+                                  const gfx::Rect& main,
+                                  const gfx::Rect& bottom,
+                                  const gfx::Rect& alpha,
+                                  bool& stop) override;
+    int onNeedsSurfaceRepaint(const app::Color& newColor) override;
     bool subColorPicked() override { return m_harmonyPicked; }
 
   private:
@@ -61,6 +67,7 @@ namespace app {
     int convertHueAngle(int angle, int dir) const;
 
     gfx::Rect m_wheelBounds;
+    gfx::Color m_bgColor;
     int m_wheelRadius;
     bool m_discrete;
     ColorModel m_colorModel;

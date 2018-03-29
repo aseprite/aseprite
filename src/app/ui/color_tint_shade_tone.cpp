@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,25 +48,6 @@ app::Color ColorTintShadeTone::getBottomBarColor(const int u, const int umax)
 
 void ColorTintShadeTone::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
-  double hue = m_color.getHsvHue();
-  int umax = MAX(1, rc.w-1);
-  int vmax = MAX(1, rc.h-1);
-
-  for (int y=0; y<rc.h; ++y) {
-    for (int x=0; x<rc.w; ++x) {
-      double sat = double(x) / double(umax);
-      double val = 1.0 - double(y) / double(vmax);
-
-      gfx::Color color = color_utils::color_for_ui(
-        app::Color::fromHsv(
-          hue,
-          MID(0.0, sat, 1.0),
-          MID(0.0, val, 1.0)));
-
-      g->putPixel(color, rc.x+x, rc.y+y);
-    }
-  }
-
   if (m_color.getType() != app::Color::MaskType) {
     double sat = m_color.getHsvSaturation();
     double val = m_color.getHsvValue();
@@ -79,20 +60,68 @@ void ColorTintShadeTone::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 
 void ColorTintShadeTone::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 {
-  for (int x=0; x<rc.w; ++x) {
-    gfx::Color color = color_utils::color_for_ui(
-      app::Color::fromHsv(
-        (360.0 * x / rc.w), 1.0, 1.0));
-
-    g->drawVLine(color, rc.x+x, rc.y, rc.h);
-  }
-
   if (m_color.getType() != app::Color::MaskType) {
     double hue = m_color.getHsvHue();
     gfx::Point pos(rc.x + int(rc.w * hue / 360.0),
                    rc.y + rc.h/2);
     paintColorIndicator(g, pos, false);
   }
+}
+
+void ColorTintShadeTone::onPaintSurfaceInBgThread(
+  she::Surface* s,
+  const gfx::Rect& main,
+  const gfx::Rect& bottom,
+  const gfx::Rect& alpha,
+  bool& stop)
+{
+  double hue = m_color.getHsvHue();
+  int umax = MAX(1, main.w-1);
+  int vmax = MAX(1, main.h-1);
+
+  if (m_paintFlags & MainAreaFlag) {
+    for (int y=0; y<main.h && !stop; ++y) {
+      for (int x=0; x<main.w && !stop; ++x) {
+        double sat = double(x) / double(umax);
+        double val = 1.0 - double(y) / double(vmax);
+
+        gfx::Color color = color_utils::color_for_ui(
+          app::Color::fromHsv(
+            hue,
+            MID(0.0, sat, 1.0),
+            MID(0.0, val, 1.0)));
+
+        s->putPixel(color, main.x+x, main.y+y);
+      }
+    }
+    if (stop)
+      return;
+    m_paintFlags ^= MainAreaFlag;
+  }
+
+  if (m_paintFlags & BottomBarFlag) {
+    for (int x=0; x<bottom.w && !stop; ++x) {
+      gfx::Color color = color_utils::color_for_ui(
+        app::Color::fromHsv(
+          (360.0 * x / bottom.w), 1.0, 1.0));
+
+      s->drawVLine(color, bottom.x+x, bottom.y, bottom.h);
+    }
+    if (stop)
+      return;
+    m_paintFlags ^= BottomBarFlag;
+  }
+
+  // Paint alpha bar
+  ColorSelector::onPaintSurfaceInBgThread(s, main, bottom, alpha, stop);
+}
+
+int ColorTintShadeTone::onNeedsSurfaceRepaint(const app::Color& newColor)
+{
+  return
+    // Only if the hue changes we have to redraw the main surface.
+    (cs_double_diff(m_color.getHsvHue(), newColor.getHsvHue()) ? MainAreaFlag: 0) |
+    ColorSelector::onNeedsSurfaceRepaint(newColor);
 }
 
 } // namespace app

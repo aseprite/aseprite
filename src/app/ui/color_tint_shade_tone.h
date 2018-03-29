@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/ui/color_selector.h"
 
 namespace app {
+  class Color;
 
   class ColorTintShadeTone : public ColorSelector {
   public:
@@ -22,6 +23,12 @@ namespace app {
     app::Color getBottomBarColor(const int u, const int umax) override;
     void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
+    void onPaintSurfaceInBgThread(she::Surface* s,
+                                  const gfx::Rect& main,
+                                  const gfx::Rect& bottom,
+                                  const gfx::Rect& alpha,
+                                  bool& stop) override;
+    int onNeedsSurfaceRepaint(const app::Color& newColor) override;
   };
 
 } // namespace app

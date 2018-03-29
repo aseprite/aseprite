@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,15 +8,11 @@
 #include "config.h"
 #endif
 
-#include "gfx/color.h"
-#include "ui/intern.h"
-#include "ui/system.h"
-#include "ui/theme.h"
+#include "app/modules/gfx.h"
 
 #include "app/app.h"
 #include "app/color_utils.h"
 #include "app/console.h"
-#include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
@@ -24,8 +20,13 @@
 #include "doc/blend_funcs.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "gfx/color.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "she/surface.h"
+#include "ui/intern.h"
+#include "ui/system.h"
+#include "ui/theme.h"
 
 namespace app {
 
@@ -176,6 +177,33 @@ void draw_alpha_slider(ui::Graphics* g,
       app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c2: c1)),
       rc.x+x, rc.y, mid);
     g->drawVLine(
+      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c1: c2)),
+      rc.x+x, rc.y+mid, rc.h-mid);
+  }
+}
+
+// TODO this code is exactly the same as draw_alpha_slider() with a ui::Graphics
+void draw_alpha_slider(she::Surface* s,
+                       const gfx::Rect& rc,
+                       const app::Color& color)
+{
+  const int xmax = MAX(1, rc.w-1);
+  const doc::color_t c =
+    (color.getType() != app::Color::MaskType ?
+     doc::rgba(color.getRed(),
+               color.getGreen(),
+               color.getBlue(), 255): 0);
+
+  for (int x=0; x<rc.w; ++x) {
+    const int a = (255 * x / xmax);
+    const doc::color_t c1 = doc::rgba_blender_normal(gridColor1, c, a);
+    const doc::color_t c2 = doc::rgba_blender_normal(gridColor2, c, a);
+    const int mid = rc.h/2;
+    const int odd = (x / rc.h) & 1;
+    s->drawVLine(
+      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c2: c1)),
+      rc.x+x, rc.y, mid);
+    s->drawVLine(
       app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c1: c2)),
       rc.x+x, rc.y+mid, rc.h-mid);
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,15 +11,27 @@
 #include "app/color.h"
 #include "app/ui/color_source.h"
 #include "obs/signal.h"
+#include "she/surface.h"
 #include "ui/mouse_buttons.h"
+#include "ui/timer.h"
 #include "ui/widget.h"
+
+#include <cmath>
+
+// TODO move this to laf::base
+inline bool cs_double_diff(double a, double b) {
+  return std::fabs((a)-(b)) > 0.001;
+}
 
 namespace app {
 
   class ColorSelector : public ui::Widget
                       , public IColorSource {
   public:
+    class Painter;
+
     ColorSelector();
+    ~ColorSelector();
 
     void selectColor(const app::Color& color);
 
@@ -30,11 +42,33 @@ namespace app {
     obs::signal<void(const app::Color&, ui::MouseButtons)> ColorChange;
 
   protected:
+    // paintFlags for onPaintSurfaceInBgThread and return value of
+    // onNeedsSurfaceRepaint().
+    enum {
+      MainAreaFlag  = 1,
+      BottomBarFlag = 2,
+      AlphaBarFlag  = 4,
+      AllAreasFlag  = MainAreaFlag | BottomBarFlag | AlphaBarFlag,
+      DoneFlag      = 8,
+    };
+
+    void onSizeHint(ui::SizeHintEvent& ev) override;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onInitTheme(ui::InitThemeEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
+
     virtual app::Color getMainAreaColor(const int u, const int umax,
                                         const int v, const int vmax) = 0;
     virtual app::Color getBottomBarColor(const int u, const int umax) = 0;
     virtual void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) = 0;
     virtual void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) = 0;
+    virtual void onPaintSurfaceInBgThread(she::Surface* s,
+                                          const gfx::Rect& main,
+                                          const gfx::Rect& bottom,
+                                          const gfx::Rect& alpha,
+                                          bool& stop);
+    virtual int onNeedsSurfaceRepaint(const app::Color& newColor);
     virtual bool subColorPicked() { return false; }
 
     void paintColorIndicator(ui::Graphics* g,
@@ -43,12 +77,12 @@ namespace app {
 
     app::Color m_color;
 
-  private:
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
+    // These flags indicate which areas must be redrawed in the
+    // background thread. Equal to DoneFlag when the surface is
+    // already painted in the background thread surface.
+    int m_paintFlags;
 
+  private:
     app::Color getAlphaBarColor(const int u, const int umax);
     void onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc);
 
@@ -66,6 +100,8 @@ namespace app {
     // widget.
     bool m_capturedInBottom;
     bool m_capturedInAlpha;
+
+    ui::Timer m_timer;
   };
 
 } // namespace app

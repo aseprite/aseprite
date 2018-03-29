@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,14 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
-#include "ui/graphics.h"
+
+namespace she {
+  class Surface;
+}
+
+namespace ui {
+  class Graphics;
+}
 
 namespace app {
   using namespace doc;
@@ -31,6 +38,10 @@ namespace app {
                          const bool drag);
 
   void draw_alpha_slider(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const app::Color& color);
+
+  void draw_alpha_slider(she::Surface* s,
                          const gfx::Rect& rc,
                          const app::Color& color);
 
