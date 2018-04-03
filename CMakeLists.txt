@@ -53,7 +53,7 @@ enable_testing()
 # Options (these can be specified in cmake command line or modifying
 # CMakeCache.txt)
 
-option(WITH_WEBP_SUPPORT            "Enable support to load/save .webp files" off)
+option(WITH_WEBP_SUPPORT            "Enable support to load/save .webp files" on)
 option(WITH_GTK_FILE_DIALOG_SUPPORT "Enable support for the experimental native GTK File Dialog" off)
 option(WITH_DESKTOP_INTEGRATION     "Enable desktop integration modules" off)
 option(WITH_QT_THUMBNAILER          "Enable kde5/qt5 thumnailer" off)
