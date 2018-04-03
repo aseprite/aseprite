@@ -124,8 +124,6 @@ void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channel
 void FilterTargetButtons::onItemChange(Item* item)
 {
   ButtonSet::onItemChange(item);
-  Target target = m_target;
-  CelsTarget celsTarget = m_celsTarget;
 
   if (m_index && item && item->isSelected()) {
     if (item == m_index) {
@@ -142,6 +140,7 @@ void FilterTargetButtons::onItemChange(Item* item)
     }
   }
 
+  Target target = 0;
   if (m_red && m_red->isSelected()) target |= TARGET_RED_CHANNEL;
   if (m_green && m_green->isSelected()) target |= TARGET_GREEN_CHANNEL;
   if (m_blue && m_blue->isSelected()) target |= TARGET_BLUE_CHANNEL;
@@ -149,6 +148,7 @@ void FilterTargetButtons::onItemChange(Item* item)
   if (m_index && m_index->isSelected()) target |= TARGET_INDEX_CHANNEL;
   if (m_alpha && m_alpha->isSelected()) target |= TARGET_ALPHA_CHANNEL;
 
+  CelsTarget celsTarget = m_celsTarget;
   if (m_cels->isSelected()) {
     m_cels->setSelected(false);
     celsTarget =              // Switch cels target
