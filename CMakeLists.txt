@@ -216,11 +216,11 @@ else()
   set(PNG_FOUND ON)
   set(PNG_LIBRARY png_static)
   set(PNG_LIBRARIES ${PNG_LIBRARY})
-  set(PNG_PNG_INCLUDE_DIR ${LIBPNG_DIR})
   set(PNG_INCLUDE_DIRS
     ${LIBPNG_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/third_party/libpng) # Libpng generated pnglibconf.h file
-  set(PNG_INCLUDE_DIR ${PNG_INCLUDE_DIRS})
+  set(PNG_INCLUDE_DIR ${PNG_INCLUDE_DIRS} CACHE PATH "")
+  set(PNG_PNG_INCLUDE_DIR ${PNG_INCLUDE_DIRS} CACHE PATH "")
 endif()
 include_directories(${PNG_INCLUDE_DIRS})
 add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
