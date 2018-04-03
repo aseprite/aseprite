@@ -864,6 +864,7 @@ private:
       ExtensionItem* item = new ExtensionItem(extension);
       extensionsList()->addChild(item);
     }
+    extensionsList()->sortItems();
 
     onExtensionChange();
     extensionsList()->layout();
