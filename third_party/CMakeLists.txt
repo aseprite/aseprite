@@ -145,6 +145,7 @@ target_include_directories(archive_static INTERFACE
 
 # benchmark
 if(ENABLE_BENCHMARKS)
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library.")
   add_subdirectory(benchmark)
 endif()
 
