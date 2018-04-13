@@ -178,8 +178,9 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
         //      m_celOffset=(0.5,0.5)) will not move the final
         //      position of the mask (so the ref layer is moved and
         //      the mask isn't).
-        api.setMaskPosition(document->mask()->bounds().x + int(m_celOffset.x),
-                            document->mask()->bounds().y + int(m_celOffset.y));
+        
+        api.setMaskPosition(document->mask()->bounds().x + intOffset.x,
+                            document->mask()->bounds().y + intOffset.y);
       }
 
       transaction.commit();
