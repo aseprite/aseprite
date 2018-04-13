@@ -15,6 +15,7 @@
 #include "app/transaction.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "app/pref/preferences.h"
 
 namespace app {
 
@@ -54,6 +55,10 @@ void MaskAllCommand::onExecute(Context* context)
 
   document->resetTransformation();
   document->generateMaskBoundaries();
+
+  DocumentPreferences& docPref = Preferences::instance().document(document);
+  docPref.show.selectionEdges(true);
+
   update_screen_for_document(document);
 }
 
