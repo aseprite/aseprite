@@ -10,6 +10,9 @@
 
 #include "doc/selected_frames.h"
 
+#include "base/base.h"
+#include "base/debug.h"
+
 #include <algorithm>
 
 namespace doc {

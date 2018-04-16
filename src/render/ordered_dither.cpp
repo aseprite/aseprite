@@ -10,6 +10,8 @@
 
 #include "render/ordered_dither.h"
 
+#include "base/base.h"
+
 #include <algorithm>
 #include <limits>
 #include <vector>

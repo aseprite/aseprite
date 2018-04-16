@@ -10,6 +10,8 @@
 
 #include "doc/selected_layers.h"
 
+#include "base/base.h"
+#include "base/debug.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
