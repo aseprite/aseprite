@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include <pixman.h>
+#include "pixman.h"
 
 #include "gfx/point.h"
 #include "gfx/region.h"
