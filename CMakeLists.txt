@@ -65,6 +65,7 @@ option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
 option(USE_SHARED_LIBLOADPNG "Use your installed copy of libloadpng" off)
+option(USE_SHARED_LIBWEBP "Use your installed copy of libwebp" off)
 option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_FREETYPE "Use shared FreeType library" off)
@@ -227,9 +228,29 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # libwebp
 if(WITH_WEBP_SUPPORT)
-  set(WEBP_LIBRARIES webp webpdemux webpmux)
-  set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
-  include_directories(${WEBP_INCLUDE_DIR})
+  if(USE_SHARED_LIBWEBP)
+    find_library(WEBP_LIBRARY NAMES webp)
+    find_library(WEBPMUX_LIBRARY NAMES webpmux)
+    find_library(WEBPDEMUX_LIBRARY NAMES webpdemux)
+
+    find_path(WEBP_INCLUDE_DIR NAMES webp/decode.h)
+    find_path(WEBPMUX_INCLUDE_DIR NAMES webp/mux.h)
+    find_path(WEBPDEMUX_INCLUDE_DIR NAMES webp/demux.h)
+
+    set(WEBP_LIBRARIES
+      ${WEBP_LIBRARY}
+      ${WEBPMUX_LIBRARY}
+      ${WEBPDEMUX_LIBRARY})
+
+    include_directories(
+      ${WEBP_INCLUDE_DIR}
+      ${WEBPMUX_INCLUDE_DIR}
+      ${WEBPDEMUX_INCLUDE_DIR})
+  else()
+    set(WEBP_LIBRARIES webp webpdemux webpmux)
+    set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
+    include_directories(${WEBP_INCLUDE_DIR})
+  endif()
 endif()
 
 # tinyxml
