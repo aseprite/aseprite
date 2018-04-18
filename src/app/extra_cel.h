@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,7 +29,6 @@ namespace app {
     ExtraCel();
 
     void create(doc::Sprite* sprite, const gfx::Rect& bounds, doc::frame_t frame, int opacity);
-    void destroy();
 
     render::ExtraType type() const { return m_type; }
     void setType(render::ExtraType type) { m_type = type; }
