@@ -1,5 +1,5 @@
 // Aseprite FreeType Wrapper
-// Copyright (c) 2016-2017 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -71,7 +71,7 @@ namespace ft {
       : m_face(face)
       , m_shaper(face)
       , m_glyph(nullptr)
-      , m_useKerning(FT_HAS_KERNING((FT_Face)face) ? true: false)
+      , m_useKerning(FT_HAS_KERNING(((FT_Face)face)) ? true: false)
       , m_prevGlyph(0)
       , m_x(0.0), m_y(0.0) {
     }
