@@ -21,6 +21,7 @@ before_install:
                               libjpeg-dev \
                               libz-dev \
                               libpng-dev \
+                              libwebp-dev \
                               libtinyxml-dev \
                               libpixman-1-dev \
                               liballegro4.2-dev
@@ -42,6 +43,7 @@ before_script:
              -DUSE_SHARED_JPEGLIB=$SHARED \
              -DUSE_SHARED_ZLIB=$SHARED \
              -DUSE_SHARED_LIBPNG=$SHARED \
+             -DUSE_SHARED_LIBWEBP=$SHARED \
              -DUSE_SHARED_TINYXML=$SHARED \
              -DUSE_SHARED_PIXMAN=$SHARED \
              -DUSE_SHARED_ALLEGRO4=$SHARED
