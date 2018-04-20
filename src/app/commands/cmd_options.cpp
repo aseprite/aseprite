@@ -222,6 +222,9 @@ public:
     if (m_pref.selection.keepSelectionAfterClear())
       keepSelectionAfterClear()->setSelected(true);
 
+    if (m_pref.selection.autoShowSelectionEdges())
+      autoShowSelectionEdges()->setSelected(true);
+
     if (m_pref.selection.moveEdges())
       moveEdges()->setSelected(true);
 
@@ -451,6 +454,7 @@ public:
     m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.selection.autoOpaque(autoOpaque()->isSelected());
     m_pref.selection.keepSelectionAfterClear(keepSelectionAfterClear()->isSelected());
+    m_pref.selection.autoShowSelectionEdges(autoShowSelectionEdges()->isSelected());
     m_pref.selection.moveEdges(moveEdges()->isSelected());
     m_pref.selection.modifiersDisableHandles(modifiersDisableHandles()->isSelected());
     m_pref.selection.moveOnAddMode(moveOnAddMode()->isSelected());

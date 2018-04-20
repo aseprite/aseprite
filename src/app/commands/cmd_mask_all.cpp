@@ -56,8 +56,10 @@ void MaskAllCommand::onExecute(Context* context)
   document->resetTransformation();
   document->generateMaskBoundaries();
 
-  DocumentPreferences& docPref = Preferences::instance().document(document);
-  docPref.show.selectionEdges(true);
+  if (Preferences::instance().selection.autoShowSelectionEdges()) {
+    DocumentPreferences& docPref = Preferences::instance().document(document);
+    docPref.show.selectionEdges(true);
+  }
 
   update_screen_for_document(document);
 }
