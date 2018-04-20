@@ -16,6 +16,7 @@
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkColorFilter.h"
+#include "SkColorPriv.h"
 #include "SkImageInfo.h"
 #include "SkRegion.h"
 #include "SkSurface.h"

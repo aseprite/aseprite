@@ -234,7 +234,7 @@ Skia.
 
 You can always check the
 [official Skia instructions](https://skia.org/user/build) and select
-the OS you are building for. Aseprite uses the `aseprite-m62` Skia
+the OS you are building for. Aseprite uses the `aseprite-m67` Skia
 branch from `https://github.com/aseprite/skia`.
 
 ## Skia on Windows
@@ -266,7 +266,7 @@ Just ignore it.)
     cd C:\deps
     git clone https://github.com/aseprite/skia.git
     cd skia
-    git checkout aseprite-m62
+    git checkout aseprite-m67
     python tools/git-sync-deps
 
 (The `tools/git-sync-deps` will take some minutes because it downloads
@@ -299,7 +299,7 @@ several minutes to finish:
     git clone https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    git checkout aseprite-m62
+    git checkout aseprite-m67
     python tools/git-sync-deps
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
     ninja -C out/Release
