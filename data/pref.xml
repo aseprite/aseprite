@@ -207,6 +207,7 @@
       <option id="opaque" type="bool" default="false" />
       <option id="auto_opaque" type="bool" default="true" />
       <option id="keep_selection_after_clear" type="bool" default="false" />
+      <option id="auto_show_selection_edges" type="bool" default="true" />
       <option id="transparent_color" type="app::Color" />
       <option id="rotation_algorithm" type="app::tools::RotationAlgorithm" default="app::tools::RotationAlgorithm::DEFAULT" />
       <option id="modify_selection_quantity" type="int" default="1" />

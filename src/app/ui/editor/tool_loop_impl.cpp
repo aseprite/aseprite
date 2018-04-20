@@ -466,7 +466,8 @@ public:
         redraw = true;
 
         // Show selection edges
-        m_docPref.show.selectionEdges(true);
+        if (Preferences::instance().selection.autoShowSelectionEdges())
+          m_docPref.show.selectionEdges(true);
       }
       // Slice ink
       else if (getInk()->isSlice()) {
