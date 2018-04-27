@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -1148,11 +1148,9 @@ TEST_F(DocRangeOps, ReverseCels) {
   // TODO
 }
 
-// TODO this should be a TEST(), but Google Test doesn't allow to mix
-// a TEST() and TEST_F() in the same file.
-TEST_F(DocRangeOps, DropInsideBugs) {
-  doc->close();
-  doc.reset(static_cast<app::Document*>(ctx.documents().add(4, 4)));
+TEST(DocRangeOps2, DropInsideBugs) {
+  TestContextT<app::Context> ctx;
+  DocumentPtr doc(static_cast<app::Document*>(ctx.documents().add(4, 4)));
   auto sprite = doc->sprite();
   auto layer1 = dynamic_cast<LayerImage*>(sprite->root()->firstLayer());
   auto layer2 = new LayerGroup(sprite);
@@ -1283,4 +1281,6 @@ TEST_F(DocRangeOps, DropInsideBugs) {
   EXPECT_EQ(layer2, sprite->root()->layers()[1]);
   EXPECT_EQ(layer3, sprite->root()->layers()[2]);
   EXPECT_EQ(layer4, sprite->root()->layers()[3]);
+
+  doc->close();
 }
