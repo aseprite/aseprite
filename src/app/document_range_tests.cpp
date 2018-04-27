@@ -635,11 +635,11 @@ TEST_F(DocRangeOps, MoveLayers) {
 
   // Try with a background
   layer1->setBackground(true);
-  EXPECT_ANY_THROW({
+  EXPECT_THROW({
       move_range(doc,
         layers_range(layer1),
         layers_range(layer2), kDocumentRangeAfter);
-    });
+    }, std::exception);
   EXPECT_LAYER_ORDER(layer1, layer2, layer3, layer4);
   layer1->setBackground(false);
 
@@ -684,11 +684,11 @@ TEST_F(DocRangeOps, MoveLayers) {
 
   // Move three layers at the bottom (but we cannot because the bottom is a background layer)
   layer1->setBackground(true);
-  EXPECT_ANY_THROW({
+  EXPECT_THROW({
       move_range(doc,
         layers_range(layer2, layer4),
         layers_range(layer1), kDocumentRangeBefore);
-    });
+    }, std::exception);
   EXPECT_LAYER_ORDER(layer1, layer2, layer3, layer4);
   layer1->setBackground(false);
 
