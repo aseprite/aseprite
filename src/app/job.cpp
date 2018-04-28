@@ -94,13 +94,6 @@ void Job::startJob()
       catch (const std::exception& ex) {
         Console::showException(ex);
       }
-      // TODO This is required by Clang to show the
-      // std::runtime_error() from base/file_handle.cpp library. I
-      // don't get this, it looks like a Clang bug, because this
-      // should be caught by the std::exception case.
-      catch (const std::runtime_error& ex) {
-        Console::showException(ex);
-      }
       catch (...) {
         Console console;
         console.printf("Unknown error performing the task");
