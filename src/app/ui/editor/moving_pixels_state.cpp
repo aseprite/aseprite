@@ -657,7 +657,12 @@ void MovingPixelsState::dropPixels()
 
 Transformation MovingPixelsState::getTransformation(Editor* editor)
 {
-  return m_pixelsMovement->getTransformation();
+  // m_pixelsMovement can be null in the final onMouseDown(), after we
+  // called dropPixels() and we're just going to the previous state.
+  if (m_pixelsMovement)
+    return m_pixelsMovement->getTransformation();
+  else
+    return StandbyState::getTransformation(editor);
 }
 
 bool MovingPixelsState::isActiveDocument() const
