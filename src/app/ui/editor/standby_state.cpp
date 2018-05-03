@@ -257,7 +257,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       // Get the handle covered by the mouse.
       HandleType handle = transfHandles->getHandleAtPoint(editor,
         msg->position(),
-        document->getTransformation());
+        getTransformation(editor));
 
       if (handle != NoHandle) {
         int x, y, opacity;
