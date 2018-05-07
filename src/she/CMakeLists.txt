@@ -1,5 +1,12 @@
 # SHE
-# Copyright (C) 2012-2017  David Capello
+# Copyright (C) 2012-2018  David Capello
+
+# TODO the following variables should be available through options
+#      in this file instead of the main Aseprite CMakeLists.txt:
+#      - USE_ALLEG4_BACKEND
+#      - USE_NONE_BACKEND
+#      - USE_SKIA_BACKEND
+#      - WITH_GTK_FILE_DIALOG_SUPPORT
 
 set(SHE_SOURCES
   common/freetype_font.cpp
@@ -136,6 +143,14 @@ if(USE_SKIA_BACKEND)
       x11/window.cpp
       x11/x11.cpp)
   endif()
+endif()
+
+######################################################################
+# None backend
+
+if(USE_NONE_BACKEND)
+  list(APPEND SHE_SOURCES
+    none/she.cpp)
 endif()
 
 ######################################################################

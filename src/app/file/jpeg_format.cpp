@@ -372,39 +372,38 @@ base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
   if (!jpeg_options)
     jpeg_options.reset(new JpegOptions);
 
-  // Non-interactive mode
-  if (!fop->context() ||
-      !fop->context()->isUIAvailable())
-    return jpeg_options;
+#ifdef ENABLE_UI
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
+      auto& pref = Preferences::instance();
 
-  try {
-    auto& pref = Preferences::instance();
-
-    if (pref.isSet(pref.jpeg.quality))
-      jpeg_options->quality = pref.jpeg.quality();
-
-    if (pref.jpeg.showAlert()) {
-      app::gen::JpegOptions win;
-      win.quality()->setValue(int(jpeg_options->quality * 10.0f));
-      win.openWindowInForeground();
-
-      if (win.closer() == win.ok()) {
-        pref.jpeg.quality(float(win.quality()->getValue()) / 10.0f);
-        pref.jpeg.showAlert(!win.dontShow()->isSelected());
-
+      if (pref.isSet(pref.jpeg.quality))
         jpeg_options->quality = pref.jpeg.quality();
-      }
-      else {
-        jpeg_options.reset(nullptr);
+
+      if (pref.jpeg.showAlert()) {
+        app::gen::JpegOptions win;
+        win.quality()->setValue(int(jpeg_options->quality * 10.0f));
+        win.openWindowInForeground();
+
+        if (win.closer() == win.ok()) {
+          pref.jpeg.quality(float(win.quality()->getValue()) / 10.0f);
+          pref.jpeg.showAlert(!win.dontShow()->isSelected());
+
+          jpeg_options->quality = pref.jpeg.quality();
+        }
+        else {
+          jpeg_options.reset(nullptr);
+        }
       }
     }
+    catch (std::exception& e) {
+      Console::showException(e);
+      return base::SharedPtr<JpegOptions>(0);
+    }
+  }
+#endif // ENABLE_UI
 
-    return jpeg_options;
-  }
-  catch (std::exception& e) {
-    Console::showException(e);
-    return base::SharedPtr<JpegOptions>(0);
-  }
+  return jpeg_options;
 }
 
 } // namespace app

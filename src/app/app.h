@@ -8,7 +8,10 @@
 #define APP_APP_H_INCLUDED
 #pragma once
 
+#ifdef ENABLE_UI
 #include "app/app_brushes.h"
+#endif
+
 #include "base/mutex.h"
 #include "base/paths.h"
 #include "base/unique_ptr.h"
@@ -30,6 +33,7 @@ namespace app {
 
   class AppOptions;
   class BackupIndicator;
+  class Context;
   class ContextBar;
   class Document;
   class Extensions;
@@ -62,6 +66,8 @@ namespace app {
 
     static App* instance() { return m_instance; }
 
+    Context* context();
+
     // Returns true if Aseprite is running with GUI available.
     bool isGui() const { return m_isGui; }
 
@@ -86,6 +92,7 @@ namespace app {
     Extensions& extensions() const;
     crash::DataRecovery* dataRecovery() const;
 
+#ifdef ENABLE_UI
     AppBrushes& brushes() {
       ASSERT(m_brushes.get());
       return *m_brushes;
@@ -97,6 +104,7 @@ namespace app {
     void updateDisplayTitleBar();
 
     InputChain& inputChain();
+#endif
 
     // App Signals
     obs::signal<void()> Exit;
@@ -117,9 +125,11 @@ namespace app {
     bool m_isShell;
     base::UniquePtr<MainWindow> m_mainWindow;
     base::paths m_files;
+#ifdef ENABLE_UI
     base::UniquePtr<AppBrushes> m_brushes;
     BackupIndicator* m_backupIndicator;
     base::mutex m_backupIndicatorMutex;
+#endif // ENABLE_UI
   };
 
   void app_refresh_screen();
@@ -127,6 +137,7 @@ namespace app {
   PixelFormat app_get_current_pixel_format();
   void app_default_statusbar_message();
   int app_get_color_to_clear_layer(doc::Layer* layer);
+  std::string memory_dump_filename();
 
 } // namespace app
 

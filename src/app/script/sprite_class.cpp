@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,9 +8,11 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/file/palette_file.h"
@@ -18,7 +20,6 @@
 #include "app/script/sprite_wrap.h"
 #include "app/transaction.h"
 #include "app/ui/document_view.h"
-#include "app/ui_context.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/site.h"
@@ -43,7 +44,8 @@ void Sprite_new(script::ContextHandle handle)
   base::UniquePtr<Document> doc(new Document(sprite));
   sprite.release();
 
-  doc->setContext(UIContext::instance());
+  app::Context* appCtx = App::instance()->context();
+  doc->setContext(appCtx);
 
   ctx.newObject(kTag, unwrap_engine(ctx)->wrapSprite(doc.release()), nullptr);
 }
@@ -105,11 +107,11 @@ void Sprite_save(script::ContextHandle handle)
     wrap->commit();
 
     auto doc = wrap->document();
-    auto uiCtx = UIContext::instance();
-    uiCtx->setActiveDocument(doc);
+    app::Context* appCtx = App::instance()->context();
+    appCtx->setActiveDocument(doc);
     Command* saveCommand =
       Commands::instance()->byId(CommandId::SaveFile());
-    uiCtx->executeCommand(saveCommand);
+    appCtx->executeCommand(saveCommand);
   }
 
   ctx.pushUndefined();
@@ -125,15 +127,15 @@ void Sprite_saveAs(script::ContextHandle handle)
     wrap->commit();
 
     auto doc = wrap->document();
-    auto uiCtx = UIContext::instance();
-    uiCtx->setActiveDocument(doc);
+    app::Context* appCtx = App::instance()->context();
+    appCtx->setActiveDocument(doc);
 
     Command* saveCommand =
       Commands::instance()->byId(CommandId::SaveFile());
 
     Params params;
     doc->setFilename(fn);
-    uiCtx->executeCommand(saveCommand, params);
+    appCtx->executeCommand(saveCommand, params);
   }
 
   ctx.pushUndefined();
@@ -149,15 +151,15 @@ void Sprite_saveCopyAs(script::ContextHandle handle)
     wrap->commit();
 
     auto doc = wrap->document();
-    auto uiCtx = UIContext::instance();
-    uiCtx->setActiveDocument(doc);
+    app::Context* appCtx = App::instance()->context();
+    appCtx->setActiveDocument(doc);
 
     Command* saveCommand =
       Commands::instance()->byId(CommandId::SaveFileCopyAs());
 
     Params params;
     params.set("filename", fn);
-    uiCtx->executeCommand(saveCommand, params);
+    appCtx->executeCommand(saveCommand, params);
   }
 
   ctx.pushUndefined();

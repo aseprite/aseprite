@@ -99,18 +99,28 @@ public:
 
 class App::Modules {
 public:
+#ifdef ENABLE_UI
+  typedef app::UIContext ContextT;
+#else
+  typedef app::Context ContextT;
+#endif
+
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   Extensions m_extensions;
   // Load main language (after loading the extensions)
   LoadLanguage m_loadLanguage;
+#ifdef ENABLE_UI
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
+#endif
   Commands m_commands;
-  UIContext m_ui_context;
+  ContextT m_context;
+#ifdef ENABLE_UI
   RecentFiles m_recent_files;
   InputChain m_inputChain;
   clipboard::ClipboardManager m_clipboardManager;
+#endif
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
 
@@ -118,8 +128,10 @@ public:
           Preferences& pref)
     : m_loggerModule(createLogInDesktop)
     , m_loadLanguage(pref, m_extensions)
+#ifdef ENABLE_UI
     , m_activeToolManager(&m_toolbox)
     , m_recent_files(pref.general.recentItems())
+#endif
     , m_recovery(nullptr) {
   }
 
@@ -133,7 +145,7 @@ public:
 
   void createDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
-    m_recovery = new app::crash::DataRecovery(&m_ui_context);
+    m_recovery = new app::crash::DataRecovery(&m_context);
 #endif
   }
 
@@ -154,7 +166,9 @@ App::App()
   , m_legacy(NULL)
   , m_isGui(false)
   , m_isShell(false)
+#ifdef ENABLE_UI
   , m_backupIndicator(nullptr)
+#endif
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -167,7 +181,11 @@ void App::initialize(const AppOptions& options)
     she::instance()->useWintabAPI(false);
 #endif
 
+#ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
+#else
+  m_isGui = false;
+#endif
   m_isShell = options.startShell();
   m_coreModules = new CoreModules;
   if (m_isGui)
@@ -190,7 +208,9 @@ void App::initialize(const AppOptions& options)
   // Load modules
   m_modules = new Modules(createLogInDesktop, preferences());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
+#ifdef ENABLE_UI
   m_brushes.reset(new AppBrushes);
+#endif
 
   // Data recovery is enabled only in GUI mode
   if (isGui() && preferences().general.dataRecovery())
@@ -203,6 +223,7 @@ void App::initialize(const AppOptions& options)
   // palette from an old format palette to the new one, etc.
   load_default_palette();
 
+#ifdef ENABLE_UI
   // Initialize GUI interface
   if (isGui()) {
     LOG("APP: GUI mode\n");
@@ -230,6 +251,7 @@ void App::initialize(const AppOptions& options)
     // Redraw the whole screen.
     ui::Manager::getDefault()->invalidate();
   }
+#endif  // ENABLE_UI
 
   // Process options
   LOG("APP: Processing options...\n");
@@ -241,7 +263,7 @@ void App::initialize(const AppOptions& options)
       delegate.reset(new DefaultCliDelegate);
 
     CliProcessor cli(delegate.get(), options);
-    cli.process();
+    cli.process(&m_modules->m_context);
   }
 
   she::instance()->finishLaunching();
@@ -249,6 +271,7 @@ void App::initialize(const AppOptions& options)
 
 void App::run()
 {
+#ifdef ENABLE_UI
   // Run the GUI
   if (isGui()) {
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -310,6 +333,7 @@ void App::run()
     // Run the GUI main message loop
     ui::Manager::getDefault()->run();
   }
+#endif  // ENABLE_UI
 
 #ifdef ENABLE_SCRIPTING
   // Start shell to execute scripts.
@@ -320,10 +344,10 @@ void App::run()
     Shell shell;
     shell.run(engine);
   }
-#endif
+#endif  // ENABLE_SCRIPTING
 
   // Destroy all documents in the UIContext.
-  const doc::Documents& docs = m_modules->m_ui_context.documents();
+  const doc::Documents& docs = m_modules->m_context.documents();
   while (!docs.empty()) {
     doc::Document* doc = docs.back();
 
@@ -342,10 +366,12 @@ void App::run()
     delete doc;
   }
 
+#ifdef ENABLE_UI
   if (isGui()) {
     // Destroy the window.
     m_mainWindow.reset(NULL);
   }
+#endif
 
   // Delete backups (this is a normal shutdown, we are not handling
   // exceptions, and we are not in a destructor).
@@ -365,24 +391,28 @@ App::~App()
     // Fire App Exit signal.
     App::instance()->Exit();
 
+#ifdef ENABLE_UI
     // Finalize modules, configuration and core.
     Editor::destroyEditorSharedInternals();
-
-    // Save brushes
-    m_brushes.reset(nullptr);
 
     if (m_backupIndicator) {
       delete m_backupIndicator;
       m_backupIndicator = nullptr;
     }
 
+    // Save brushes
+    m_brushes.reset(nullptr);
+#endif
+
     delete m_legacy;
     delete m_modules;
     delete m_coreModules;
 
+#ifdef ENABLE_UI
     // Destroy the loaded gui.xml data.
     delete KeyboardShortcuts::instance();
     delete GuiXml::instance();
+#endif
 
     m_instance = NULL;
   }
@@ -397,6 +427,11 @@ App::~App()
 
     // no re-throw
   }
+}
+
+Context* App::context()
+{
+  return &m_modules->m_context;
 }
 
 bool App::isPortable()
@@ -415,23 +450,39 @@ bool App::isPortable()
 tools::ToolBox* App::toolBox() const
 {
   ASSERT(m_modules != NULL);
+#ifdef ENABLE_UI
   return &m_modules->m_toolbox;
+#else
+  return nullptr;
+#endif
 }
 
 tools::Tool* App::activeTool() const
 {
+#ifdef ENABLE_UI
   return m_modules->m_activeToolManager.activeTool();
+#else
+  return nullptr;
+#endif
 }
 
 tools::ActiveToolManager* App::activeToolManager() const
 {
+#ifdef ENABLE_UI
   return &m_modules->m_activeToolManager;
+#else
+  return nullptr;
+#endif
 }
 
 RecentFiles* App::recentFiles() const
 {
+#ifdef ENABLE_UI
   ASSERT(m_modules != NULL);
   return &m_modules->m_recent_files;
+#else
+  return nullptr;
+#endif
 }
 
 Workspace* App::workspace() const
@@ -473,6 +524,7 @@ crash::DataRecovery* App::dataRecovery() const
   return m_modules->recovery();
 }
 
+#ifdef ENABLE_UI
 void App::showNotification(INotificationDelegate* del)
 {
   m_mainWindow->showNotification(del);
@@ -512,10 +564,12 @@ InputChain& App::inputChain()
 {
   return m_modules->m_inputChain;
 }
+#endif
 
 // Updates palette and redraw the screen.
 void app_refresh_screen()
 {
+#ifdef ENABLE_UI
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
@@ -528,6 +582,7 @@ void app_refresh_screen()
 
   // Invalidate the whole screen.
   ui::Manager::getDefault()->invalidate();
+#endif // ENABLE_UI
 }
 
 // TODO remove app_rebuild_documents_tabs() and replace it by
@@ -535,14 +590,17 @@ void app_refresh_screen()
 // document is modified).
 void app_rebuild_documents_tabs()
 {
+#ifdef ENABLE_UI
   if (App::instance()->isGui()) {
     App::instance()->workspace()->updateTabs();
     App::instance()->updateDisplayTitleBar();
   }
+#endif // ENABLE_UI
 }
 
 PixelFormat app_get_current_pixel_format()
 {
+#ifdef ENABLE_UI
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
@@ -551,12 +609,17 @@ PixelFormat app_get_current_pixel_format()
     return document->sprite()->pixelFormat();
   else
     return IMAGE_RGB;
+#else // ENABLE_UI
+  return IMAGE_RGB;
+#endif
 }
 
 void app_default_statusbar_message()
 {
+#ifdef ENABLE_UI
   StatusBar::instance()
     ->setStatusText(250, "%s %s | %s", PACKAGE, VERSION, COPYRIGHT);
+#endif
 }
 
 int app_get_color_to_clear_layer(Layer* layer)
@@ -567,15 +630,31 @@ int app_get_color_to_clear_layer(Layer* layer)
 
   // The `Background' is erased with the `Background Color'
   if (layer->isBackground()) {
+#ifdef ENABLE_UI
     if (ColorBar::instance())
       color = ColorBar::instance()->getBgColor();
     else
+#endif
       color = app::Color::fromRgb(0, 0, 0); // TODO get background color color from doc::Settings
   }
   else // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();
 
   return color_utils::color_for_layer(color, layer);
+}
+
+std::string memory_dump_filename()
+{
+#ifdef _WIN32
+  static const char* kDefaultCrashName = PACKAGE "-crash-" VERSION ".dmp";
+
+  app::ResourceFinder rf;
+  rf.includeUserDir(kDefaultCrashName);
+  return rf.getFirstOrCreateDefault();
+
+#else
+  return "";
+#endif
 }
 
 } // namespace app

@@ -53,26 +53,34 @@ if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
 endif()
 
 ######################################################################
-# Full-version or trial-mode?
+# With static libcurl
 
 if(NOT USE_SHARED_CURL AND CURL_STATICLIB)
   add_definitions(-DCURL_STATICLIB)
 endif()
 
 ######################################################################
-# Full-version or trial-mode?
+# Special versions (full/trial, devmode, UI/CLI, etc.)
 
 if(NOT ENABLE_TRIAL_MODE)
-  add_definitions(-DENABLE_SAVE -DENABLE_DATA_RECOVERY)
+  add_definitions(-DENABLE_SAVE)
 else()
   add_definitions(-DENABLE_TRIAL_MODE)
 endif()
 
-######################################################################
-# Special developer mode
-
 if(ENABLE_DEVMODE)
   add_definitions(-DENABLE_DEVMODE)
+endif()
+
+if(ENABLE_UI)
+  add_definitions(-DENABLE_UI)
+endif()
+
+if(ENABLE_UI AND NOT ENABLE_TRIAL_MODE)
+  set(ENABLE_DATA_RECOVERY on)
+  add_definitions(-DENABLE_DATA_RECOVERY)
+else()
+  set(ENABLE_DATA_RECOVERY off)
 endif()
 
 ######################################################################
@@ -170,16 +178,23 @@ if(WIN32)
     main/settings.manifest)
 endif()
 
-add_executable(aseprite WIN32
-  main/main.cpp
-  ${win32_resources})
+add_executable(aseprite main/main.cpp ${win32_resources})
+if(WIN32 AND ENABLE_UI)
+  set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
+endif()
 target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
 add_dependencies(aseprite copy_data)
 
-if(MSVC AND USE_SKIA_BACKEND)
-  # Add support to expand filename wildcards in argc/argv
-  set_target_properties(aseprite
-    PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wWinMainCRTStartup\"")
+if(MSVC)
+  if(USE_SKIA_BACKEND)
+    # Linking with "wsetargv.obj" to add support to expand filename
+    # wildcards in argc/argv.
+    set_target_properties(aseprite
+      PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wWinMainCRTStartup\"")
+  else()
+    set_target_properties(aseprite
+      PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wmainCRTStartup\"")
+  endif()
 endif()
 
 install(TARGETS aseprite

@@ -79,16 +79,26 @@ option(ENABLE_BENCHMARKS  "Compile benchmarks" off)
 option(ENABLE_TRIAL_MODE  "Compile the trial version" off)
 option(ENABLE_STEAM       "Compile with Steam library" off)
 option(ENABLE_DEVMODE     "Compile vesion for developers" off)
+option(ENABLE_UI          "Compile UI (turn off to compile CLI-only version)" on)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 
-if(APPLE)
-  # On OS X Allegro isn't supported anymore
+if(NOT ENABLE_UI)
+  # Without UI, don't use back-ends
   set(USE_ALLEG4_BACKEND off)
-  set(USE_SKIA_BACKEND on)
+  set(USE_SKIA_BACKEND off)
+  set(USE_NONE_BACKEND on)
 else()
-  option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
-  option(USE_SKIA_BACKEND   "Use Skia backend" off)
+  if(APPLE)
+    # On OS X Allegro isn't supported anymore
+    set(USE_ALLEG4_BACKEND off)
+    set(USE_SKIA_BACKEND on)
+    set(USE_NONE_BACKEND off)
+  else()
+    option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
+    option(USE_SKIA_BACKEND   "Use Skia backend" off)
+    set(USE_NONE_BACKEND off)
+  endif()
 endif()
 
 # Check valid gtk + libpng combination

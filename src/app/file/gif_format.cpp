@@ -1406,45 +1406,44 @@ base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
   if (!gif_options)
     gif_options.reset(new GifOptions);
 
-  // Non-interactive mode
-  if (!fop->context() ||
-      !fop->context()->isUIAvailable())
-    return gif_options;
+#ifdef ENABLE_UI
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
+      auto& pref = Preferences::instance();
 
-  try {
-    auto& pref = Preferences::instance();
-
-    if (pref.isSet(pref.gif.interlaced))
-      gif_options->setInterlaced(pref.gif.interlaced());
-    if (pref.isSet(pref.gif.loop))
-      gif_options->setLoop(pref.gif.loop());
-
-    if (pref.gif.showAlert()) {
-      app::gen::GifOptions win;
-      win.interlaced()->setSelected(gif_options->interlaced());
-      win.loop()->setSelected(gif_options->loop());
-
-      win.openWindowInForeground();
-
-      if (win.closer() == win.ok()) {
-        pref.gif.interlaced(win.interlaced()->isSelected());
-        pref.gif.loop(win.loop()->isSelected());
-        pref.gif.showAlert(!win.dontShow()->isSelected());
-
+      if (pref.isSet(pref.gif.interlaced))
         gif_options->setInterlaced(pref.gif.interlaced());
+      if (pref.isSet(pref.gif.loop))
         gif_options->setLoop(pref.gif.loop());
-      }
-      else {
-        gif_options.reset(nullptr);
+
+      if (pref.gif.showAlert()) {
+        app::gen::GifOptions win;
+        win.interlaced()->setSelected(gif_options->interlaced());
+        win.loop()->setSelected(gif_options->loop());
+
+        win.openWindowInForeground();
+
+        if (win.closer() == win.ok()) {
+          pref.gif.interlaced(win.interlaced()->isSelected());
+          pref.gif.loop(win.loop()->isSelected());
+          pref.gif.showAlert(!win.dontShow()->isSelected());
+
+          gif_options->setInterlaced(pref.gif.interlaced());
+          gif_options->setLoop(pref.gif.loop());
+        }
+        else {
+          gif_options.reset(nullptr);
+        }
       }
     }
+    catch (std::exception& e) {
+      Console::showException(e);
+      return base::SharedPtr<GifOptions>(nullptr);
+    }
+  }
+#endif // ENABLE_UI
 
-    return gif_options;
-  }
-  catch (std::exception& e) {
-    Console::showException(e);
-    return base::SharedPtr<GifOptions>(nullptr);
-  }
+  return gif_options;
 }
 
 } // namespace app

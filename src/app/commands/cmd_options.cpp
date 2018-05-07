@@ -21,7 +21,6 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
-#include "app/send_crash.h"
 #include "app/ui/color_button.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"

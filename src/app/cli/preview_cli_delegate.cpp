@@ -11,10 +11,10 @@
 #include "app/cli/preview_cli_delegate.h"
 
 #include "app/cli/cli_open_file.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/document_exporter.h"
 #include "app/file/file.h"
-#include "app/ui_context.h"
 #include "base/fs.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite.h"
@@ -78,7 +78,7 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   showLayersFilter(cof);
 }
 
-void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
+void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
 {
   ASSERT(cof.document);
   ASSERT(cof.document->sprite());
@@ -133,7 +133,7 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
 
   base::UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
-      UIContext::instance(),
+      ctx,
       cof.roi(),
       cof.filename,
       cof.filenameFormat));
@@ -152,7 +152,8 @@ void PreviewCliDelegate::saveFile(const CliOpenFile& cof)
     std::cout << "  - No output\n";
 }
 
-void PreviewCliDelegate::loadPalette(const CliOpenFile& cof,
+void PreviewCliDelegate::loadPalette(Context* ctx,
+                                     const CliOpenFile& cof,
                                      const std::string& filename)
 {
   ASSERT(cof.document);
@@ -163,7 +164,7 @@ void PreviewCliDelegate::loadPalette(const CliOpenFile& cof,
             << "  - Palette: '" << filename << "'\n";
 }
 
-void PreviewCliDelegate::exportFiles(DocumentExporter& exporter)
+void PreviewCliDelegate::exportFiles(Context* ctx, DocumentExporter& exporter)
 {
   std::string type = "None";
   switch (exporter.spriteSheetType()) {

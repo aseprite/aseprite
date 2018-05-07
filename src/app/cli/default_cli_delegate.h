@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,9 +17,9 @@ namespace app {
     void showHelp(const AppOptions& programOptions) override;
     void showVersion() override;
     void afterOpenFile(const CliOpenFile& cof) override;
-    void saveFile(const CliOpenFile& cof) override;
-    void loadPalette(const CliOpenFile& cof, const std::string& filename) override;
-    void exportFiles(DocumentExporter& exporter) override;
+    void saveFile(Context* ctx, const CliOpenFile& cof) override;
+    void loadPalette(Context* ctx, const CliOpenFile& cof, const std::string& filename) override;
+    void exportFiles(Context* ctx, DocumentExporter& exporter) override;
     void execScript(const std::string& filename) override;
   };
 

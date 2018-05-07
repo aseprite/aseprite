@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,8 +31,8 @@ public:
   void batchMode() override { m_batchMode = true; }
   void beforeOpenFile(const CliOpenFile& cof) override { }
   void afterOpenFile(const CliOpenFile& cof) override { }
-  void saveFile(const CliOpenFile& cof) override { }
-  void exportFiles(DocumentExporter& exporter) override { }
+  void saveFile(Context* ctx, const CliOpenFile& cof) override { }
+  void exportFiles(Context* ctx, DocumentExporter& exporter) override { }
   void execScript(const std::string& filename) override { }
 
   bool helpWasShown() const { return m_helpWasShown; }
@@ -64,7 +64,7 @@ TEST(Cli, None)
 {
   CliTestDelegate d;
   CliProcessor p(&d, args({ }));
-  p.process();
+  p.process(nullptr);
   EXPECT_TRUE(!d.helpWasShown());
   EXPECT_TRUE(!d.versionWasShown());
 }
@@ -73,7 +73,7 @@ TEST(Cli, Help)
 {
   CliTestDelegate d;
   CliProcessor p(&d, args({ "--help" }));
-  p.process();
+  p.process(nullptr);
   EXPECT_TRUE(d.helpWasShown());
 }
 
@@ -81,6 +81,6 @@ TEST(Cli, Version)
 {
   CliTestDelegate d;
   CliProcessor p(&d, args({ "--version" }));
-  p.process();
+  p.process(nullptr);
   EXPECT_TRUE(d.versionWasShown());
 }

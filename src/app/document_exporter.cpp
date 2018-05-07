@@ -12,11 +12,11 @@
 
 #include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
-#include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -409,14 +409,14 @@ DocumentExporter::DocumentExporter()
 {
 }
 
-Document* DocumentExporter::exportSheet()
+Document* DocumentExporter::exportSheet(Context* ctx)
 {
   // We output the metadata to std::cout if the user didn't specify a file.
   std::ofstream fos;
   std::streambuf* osbuf = nullptr;
   if (m_dataFilename.empty()) {
     // Redirect to stdout if we are running in batch mode
-    if (!UIContext::instance()->isUIAvailable())
+    if (!ctx->isUIAvailable())
       osbuf = std::cout.rdbuf();
   }
   else {
@@ -446,7 +446,7 @@ Document* DocumentExporter::exportSheet()
   Image* textureImage = texture->root()->firstLayer()
     ->cel(frame_t(0))->image();
 
-  renderTexture(samples, textureImage);
+  renderTexture(ctx, samples, textureImage);
 
   // Save the metadata.
   if (osbuf)
@@ -455,7 +455,7 @@ Document* DocumentExporter::exportSheet()
   // Save the image files.
   if (!m_textureFilename.empty()) {
     textureDocument->setFilename(m_textureFilename.c_str());
-    int ret = save_document(UIContext::instance(), textureDocument.get());
+    int ret = save_document(ctx, textureDocument.get());
     if (ret == 0)
       textureDocument->markAsSaved();
   }
@@ -693,7 +693,7 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples) const
   return document.release();
 }
 
-void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage) const
+void DocumentExporter::renderTexture(Context* ctx, const Samples& samples, Image* textureImage) const
 {
   textureImage->clear(0);
 
@@ -711,7 +711,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
         render::DitheringAlgorithm::None,
         render::DitheringMatrix(),
         nullptr)                // TODO add a delegate to show progress
-        .execute(UIContext::instance());
+        .execute(ctx);
     }
 
     renderSample(sample, textureImage,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -332,6 +332,7 @@ void SpriteSizeCommand::onExecute(Context* context)
   int new_height = (m_height ? m_height: int(sprite->height()*m_scaleY));
   ResizeMethod resize_method = m_resizeMethod;
 
+#ifdef ENABLE_UI
   if (m_useUI && context->isUIAvailable()) {
     SpriteSizeWindow window(context, new_width, new_height);
     window.remapWindow();
@@ -351,6 +352,7 @@ void SpriteSizeCommand::onExecute(Context* context)
 
     set_config_int("SpriteSize", "Method", resize_method);
   }
+#endif // ENABLE_UI
 
   {
     SpriteSizeJob job(reader, new_width, new_height, resize_method);
@@ -358,7 +360,9 @@ void SpriteSizeCommand::onExecute(Context* context)
     job.waitJob();
   }
 
+#ifdef ENABLE_UI
   update_screen_for_document(reader.document());
+#endif
 }
 
 Command* CommandFactory::createSpriteSizeCommand()

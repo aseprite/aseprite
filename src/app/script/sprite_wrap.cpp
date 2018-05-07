@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,13 +10,14 @@
 
 #include "app/script/sprite_wrap.h"
 
+#include "app/app.h"
 #include "app/cmd/set_sprite_size.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/script/image_wrap.h"
 #include "app/transaction.h"
 #include "app/ui/document_view.h"
-#include "app/ui_context.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
 
@@ -24,7 +25,7 @@ namespace app {
 
 SpriteWrap::SpriteWrap(app::Document* doc)
   : m_doc(doc)
-  , m_view(UIContext::instance()->getFirstDocumentView(m_doc))
+  , m_view(App::instance()->context()->getFirstDocumentView(m_doc))
   , m_transaction(nullptr)
 {
 }
@@ -41,7 +42,7 @@ SpriteWrap::~SpriteWrap()
 Transaction& SpriteWrap::transaction()
 {
   if (!m_transaction) {
-    m_transaction = new Transaction(UIContext::instance(),
+    m_transaction = new Transaction(App::instance()->context(),
                                     "Script Execution",
                                     ModifyDocument);
   }
@@ -78,14 +79,18 @@ doc::Sprite* SpriteWrap::sprite()
 ImageWrap* SpriteWrap::activeImage()
 {
   if (!m_view) {
-    m_view = UIContext::instance()->getFirstDocumentView(m_doc);
+    m_view = App::instance()->context()->getFirstDocumentView(m_doc);
     if (!m_view)
       return nullptr;
   }
 
+#ifdef ENABLE_UI
   doc::Site site;
   m_view->getSite(&site);
   return wrapImage(site.image());
+#else
+  return nullptr;
+#endif
 }
 
 ImageWrap* SpriteWrap::wrapImage(doc::Image* img)

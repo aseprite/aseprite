@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -73,9 +73,8 @@ void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
   }
 }
 
-void DefaultCliDelegate::saveFile(const CliOpenFile& cof)
+void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
 {
-  Context* ctx = UIContext::instance();
   Command* saveAsCommand = Commands::instance()->byId(CommandId::SaveFileCopyAs());
   Params params;
   params.set("filename", cof.filename.c_str());
@@ -95,12 +94,12 @@ void DefaultCliDelegate::saveFile(const CliOpenFile& cof)
   ctx->executeCommand(saveAsCommand, params);
 }
 
-void DefaultCliDelegate::loadPalette(const CliOpenFile& cof,
+void DefaultCliDelegate::loadPalette(Context* ctx,
+                                     const CliOpenFile& cof,
                                      const std::string& filename)
 {
   base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));
   if (palette) {
-    Context* ctx = UIContext::instance();
     Command* loadPalCommand = Commands::instance()->byId(CommandId::LoadPalette());
     Params params;
     params.set("filename", filename.c_str());
@@ -113,11 +112,11 @@ void DefaultCliDelegate::loadPalette(const CliOpenFile& cof,
   }
 }
 
-void DefaultCliDelegate::exportFiles(DocumentExporter& exporter)
+void DefaultCliDelegate::exportFiles(Context* ctx, DocumentExporter& exporter)
 {
   LOG("APP: Exporting sheet...\n");
 
-  base::UniquePtr<app::Document> spriteSheet(exporter.exportSheet());
+  base::UniquePtr<app::Document> spriteSheet(exporter.exportSheet(ctx));
 
   // Sprite sheet isn't used, we just delete it.
 

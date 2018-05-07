@@ -374,95 +374,94 @@ base::SharedPtr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
   if (!opts)
     opts.reset(new WebPOptions);
 
-  // Non-interactive mode
-  if (!fop->context() ||
-      !fop->context()->isUIAvailable())
-    return opts;
+#ifdef ENABLE_UI
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
+      auto& pref = Preferences::instance();
 
-  try {
-    auto& pref = Preferences::instance();
-
-    if (pref.isSet(pref.webp.loop))
-      opts->setLoop(pref.webp.loop());
-
-    if (pref.isSet(pref.webp.type))
-      opts->setType(WebPOptions::Type(pref.webp.type()));
-
-    switch (opts->type()) {
-      case WebPOptions::Lossless:
-        if (pref.isSet(pref.webp.compression)) opts->setCompression(pref.webp.compression());
-        if (pref.isSet(pref.webp.imageHint))   opts->setImageHint(WebPImageHint(pref.webp.imageHint()));
-        break;
-      case WebPOptions::Lossy:
-        if (pref.isSet(pref.webp.quality))     opts->setQuality(pref.webp.quality());
-        if (pref.isSet(pref.webp.imagePreset)) opts->setImagePreset(WebPPreset(pref.webp.imagePreset()));
-        break;
-    }
-
-    if (pref.webp.showAlert()) {
-      app::gen::WebpOptions win;
-
-      auto updatePanels = [&win, &opts]{
-        int o = base::convert_to<int>(win.type()->getValue());
-        opts->setType(WebPOptions::Type(o));
-        win.losslessOptions()->setVisible(o == int(WebPOptions::Lossless));
-        win.lossyOptions()->setVisible(o == int(WebPOptions::Lossy));
-
-        auto rc = win.bounds();
-        win.setBounds(
-          gfx::Rect(rc.origin(),
-                    win.sizeHint()));
-
-        auto manager = win.manager();
-        if (manager)
-          manager->invalidateRect(rc); // TODO this should be automatic
-                                       // when a window bounds is modified
-      };
-
-      win.loop()->setSelected(opts->loop());
-      win.type()->setSelectedItemIndex(int(opts->type()));
-      win.compression()->setValue(opts->compression());
-      win.imageHint()->setSelectedItemIndex(opts->imageHint());
-      win.quality()->setValue(static_cast<int>(opts->quality()));
-      win.imagePreset()->setSelectedItemIndex(opts->imagePreset());
-
-      updatePanels();
-      win.type()->Change.connect(base::Bind<void>(updatePanels));
-
-      win.openWindowInForeground();
-
-      if (win.closer() == win.ok()) {
-        pref.webp.loop(win.loop()->isSelected());
-        pref.webp.type(base::convert_to<int>(win.type()->getValue()));
-        pref.webp.compression(win.compression()->getValue());
-        pref.webp.imageHint(base::convert_to<int>(win.imageHint()->getValue()));
-        pref.webp.quality(win.quality()->getValue());
-        pref.webp.imagePreset(base::convert_to<int>(win.imagePreset()->getValue()));
-
+      if (pref.isSet(pref.webp.loop))
         opts->setLoop(pref.webp.loop());
+
+      if (pref.isSet(pref.webp.type))
         opts->setType(WebPOptions::Type(pref.webp.type()));
-        switch (opts->type()) {
-          case WebPOptions::Lossless:
-            opts->setCompression(pref.webp.compression());
-            opts->setImageHint(WebPImageHint(pref.webp.imageHint()));
-            break;
-          case WebPOptions::Lossy:
-            opts->setQuality(pref.webp.quality());
-            opts->setImagePreset(WebPPreset(pref.webp.imagePreset()));
-            break;
+
+      switch (opts->type()) {
+        case WebPOptions::Lossless:
+          if (pref.isSet(pref.webp.compression)) opts->setCompression(pref.webp.compression());
+          if (pref.isSet(pref.webp.imageHint))   opts->setImageHint(WebPImageHint(pref.webp.imageHint()));
+          break;
+        case WebPOptions::Lossy:
+          if (pref.isSet(pref.webp.quality))     opts->setQuality(pref.webp.quality());
+          if (pref.isSet(pref.webp.imagePreset)) opts->setImagePreset(WebPPreset(pref.webp.imagePreset()));
+          break;
+      }
+
+      if (pref.webp.showAlert()) {
+        app::gen::WebpOptions win;
+
+        auto updatePanels = [&win, &opts]{
+          int o = base::convert_to<int>(win.type()->getValue());
+          opts->setType(WebPOptions::Type(o));
+          win.losslessOptions()->setVisible(o == int(WebPOptions::Lossless));
+          win.lossyOptions()->setVisible(o == int(WebPOptions::Lossy));
+
+          auto rc = win.bounds();
+          win.setBounds(
+            gfx::Rect(rc.origin(),
+                      win.sizeHint()));
+
+          auto manager = win.manager();
+          if (manager)
+            manager->invalidateRect(rc); // TODO this should be automatic
+          // when a window bounds is modified
+        };
+
+        win.loop()->setSelected(opts->loop());
+        win.type()->setSelectedItemIndex(int(opts->type()));
+        win.compression()->setValue(opts->compression());
+        win.imageHint()->setSelectedItemIndex(opts->imageHint());
+        win.quality()->setValue(static_cast<int>(opts->quality()));
+        win.imagePreset()->setSelectedItemIndex(opts->imagePreset());
+
+        updatePanels();
+        win.type()->Change.connect(base::Bind<void>(updatePanels));
+
+        win.openWindowInForeground();
+
+        if (win.closer() == win.ok()) {
+          pref.webp.loop(win.loop()->isSelected());
+          pref.webp.type(base::convert_to<int>(win.type()->getValue()));
+          pref.webp.compression(win.compression()->getValue());
+          pref.webp.imageHint(base::convert_to<int>(win.imageHint()->getValue()));
+          pref.webp.quality(win.quality()->getValue());
+          pref.webp.imagePreset(base::convert_to<int>(win.imagePreset()->getValue()));
+
+          opts->setLoop(pref.webp.loop());
+          opts->setType(WebPOptions::Type(pref.webp.type()));
+          switch (opts->type()) {
+            case WebPOptions::Lossless:
+              opts->setCompression(pref.webp.compression());
+              opts->setImageHint(WebPImageHint(pref.webp.imageHint()));
+              break;
+            case WebPOptions::Lossy:
+              opts->setQuality(pref.webp.quality());
+              opts->setImagePreset(WebPPreset(pref.webp.imagePreset()));
+              break;
+          }
+        }
+        else {
+          opts.reset(nullptr);
         }
       }
-      else {
-        opts.reset(nullptr);
-      }
     }
+    catch (const std::exception& e) {
+      Console::showException(e);
+      return base::SharedPtr<WebPOptions>(nullptr);
+    }
+  }
+#endif // ENABLE_UI
 
-    return opts;
-  }
-  catch (const std::exception& e) {
-    Console::showException(e);
-    return base::SharedPtr<WebPOptions>(nullptr);
-  }
+  return opts;
 }
 
 } // namespace app

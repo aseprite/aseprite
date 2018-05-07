@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -438,6 +438,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 {
   bool flatten = false;
 
+#ifdef ENABLE_UI
   if (m_useUI) {
     ColorModeWindow window(current_editor);
 
@@ -456,6 +457,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     m_ditheringMatrix = window.ditheringMatrix();
     flatten = window.flattenEnabled();
   }
+#endif // ENABLE_UI
 
   // No conversion needed
   if (context->activeDocument()->sprite()->pixelFormat() == m_format)

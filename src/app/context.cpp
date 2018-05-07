@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/document.h"
+#include "doc/site.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -22,6 +23,7 @@
 namespace app {
 
 Context::Context()
+  : m_lastSelectedDoc(nullptr)
 {
 }
 
@@ -30,6 +32,11 @@ void Context::sendDocumentToTop(doc::Document* document)
   ASSERT(document != NULL);
 
   documents().move(document, 0);
+}
+
+void Context::setActiveDocument(doc::Document* document)
+{
+  onSetActiveDocument(document);
 }
 
 app::Document* Context::activeDocument() const
@@ -59,6 +66,8 @@ void Context::executeCommand(Command* command, const Params& params)
   Console console;
 
   ASSERT(command != NULL);
+  if (command == NULL)
+    return;
 
   LOG(VERBOSE) << "CTXT: Executing command " << command->id() << "\n";
   try {
@@ -116,6 +125,33 @@ void Context::executeCommand(Command* command, const Params& params)
 void Context::onCreateDocument(doc::CreateDocumentArgs* args)
 {
   args->setDocument(new app::Document(NULL));
+}
+
+void Context::onAddDocument(doc::Document* doc)
+{
+  m_lastSelectedDoc = static_cast<app::Document*>(doc);
+}
+
+void Context::onRemoveDocument(doc::Document* doc)
+{
+  if (doc == m_lastSelectedDoc)
+    m_lastSelectedDoc = nullptr;
+}
+
+void Context::onGetActiveSite(doc::Site* site) const
+{
+  // Default/dummy site (maybe for batch/command line mode)
+  if (Document* doc = m_lastSelectedDoc) {
+    site->document(doc);
+    site->sprite(doc->sprite());
+    site->layer(doc->sprite()->root()->firstLayer());
+    site->frame(0);
+  }
+}
+
+void Context::onSetActiveDocument(doc::Document* doc)
+{
+  m_lastSelectedDoc = static_cast<app::Document*>(doc);
 }
 
 } // namespace app

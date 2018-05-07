@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,8 +27,6 @@ namespace app {
 
     std::string m_dumpFilename;
   };
-
-  std::string memory_dump_filename();
 
 } // namespace app
 

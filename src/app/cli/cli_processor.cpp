@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -113,7 +113,7 @@ void filter_layers(const LayerList& layers,
 } // anonymous namespace
 
 CliProcessor::CliProcessor(CliDelegate* delegate,
-                             const AppOptions& options)
+                           const AppOptions& options)
   : m_delegate(delegate)
   , m_options(options)
   , m_exporter(nullptr)
@@ -122,7 +122,7 @@ CliProcessor::CliProcessor(CliDelegate* delegate,
     m_exporter.reset(new DocumentExporter);
 }
 
-void CliProcessor::process()
+void CliProcessor::process(Context* ctx)
 {
   // --help
   if (m_options.showHelp()) {
@@ -135,7 +135,6 @@ void CliProcessor::process()
   // Process other options and file names
   else if (!m_options.values().empty()) {
     Console console;
-    UIContext* ctx = UIContext::instance();
     CliOpenFile cof;
     SpriteSheetType sheetType = SpriteSheetType::None;
     app::Document* lastDoc = nullptr;
@@ -316,7 +315,7 @@ void CliProcessor::process()
 
             cof.document = lastDoc;
             cof.filename = fn;
-            saveFile(cof);
+            saveFile(ctx, cof);
           }
           else
             console.printf("A document is needed before --save-as argument\n");
@@ -327,7 +326,7 @@ void CliProcessor::process()
             ASSERT(cof.document == lastDoc);
 
             std::string filename = value.value();
-            m_delegate->loadPalette(cof, filename);
+            m_delegate->loadPalette(ctx, cof, filename);
           }
           else {
             console.printf("You need to load a document to change its palette with --palette\n");
@@ -462,7 +461,7 @@ void CliProcessor::process()
       else {
         cof.document = nullptr;
         cof.filename = base::normalize_path(value.value());
-        if (openFile(cof))
+        if (openFile(ctx, cof))
           lastDoc = cof.document;
       }
     }
@@ -471,7 +470,7 @@ void CliProcessor::process()
       if (sheetType != SpriteSheetType::None)
         m_exporter->setSpriteSheetType(sheetType);
 
-      m_delegate->exportFiles(*m_exporter.get());
+      m_delegate->exportFiles(ctx, *m_exporter.get());
       m_exporter.reset(nullptr);
     }
   }
@@ -488,11 +487,10 @@ void CliProcessor::process()
   }
 }
 
-bool CliProcessor::openFile(CliOpenFile& cof)
+bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
 {
   m_delegate->beforeOpenFile(cof);
 
-  Context* ctx = UIContext::instance();
   app::Document* oldDoc = ctx->activeDocument();
   Command* openCommand = Commands::instance()->byId(CommandId::OpenFile());
   Params params;
@@ -576,9 +574,8 @@ bool CliProcessor::openFile(CliOpenFile& cof)
   return (doc ? true: false);
 }
 
-void CliProcessor::saveFile(const CliOpenFile& cof)
+void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
 {
-  UIContext* ctx = UIContext::instance();
   ctx->setActiveDocument(cof.document);
 
   Command* trimCommand = Commands::instance()->byId(CommandId::AutocropSprite());
@@ -727,7 +724,7 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
         itemCof.filenameFormat = filename_formatter(filenameFormat, fnInfo, false);
 
         // Call delegate
-        m_delegate->saveFile(itemCof);
+        m_delegate->saveFile(ctx, itemCof);
 
         if (cof.trim) {
           ctx->executeCommand(undoCommand);

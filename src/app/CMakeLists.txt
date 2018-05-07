@@ -114,7 +114,7 @@ else()
 endif()
 
 set(data_recovery_files)
-if(NOT ENABLE_TRIAL_MODE)
+if(ENABLE_DATA_RECOVERY)
   set(data_recovery_files
     crash/backup_observer.cpp
     crash/data_recovery.cpp
@@ -140,8 +140,13 @@ endif()
 
 set(scripting_files)
 if(ENABLE_SCRIPTING)
+  set(scripting_files_ui)
+  if(ENABLE_UI)
+    set(scripting_files_ui
+      commands/cmd_developer_console.cpp
+      ui/devconsole_view.cpp)
+  endif()
   set(scripting_files
-    commands/cmd_developer_console.cpp
     commands/cmd_run_script.cpp
     script/app_object.cpp
     script/app_scripting.cpp
@@ -156,18 +161,245 @@ if(ENABLE_SCRIPTING)
     script/sprite_class.cpp
     script/sprite_wrap.cpp
     shell.cpp
-    ui/devconsole_view.cpp)
+    ${scripting_files_ui})
+endif()
+
+set(ui_app_files)
+if(ENABLE_UI)
+  set(ui_app_files
+    app_brushes.cpp
+    app_menus.cpp
+    app_render.cpp
+    commands/cmd_about.cpp
+    commands/cmd_add_color.cpp
+    commands/cmd_advanced_mode.cpp
+    commands/cmd_background_from_layer.cpp
+    commands/cmd_cancel.cpp
+    commands/cmd_canvas_size.cpp
+    commands/cmd_cel_properties.cpp
+    commands/cmd_change_brush.cpp
+    commands/cmd_change_color.cpp
+    commands/cmd_clear.cpp
+    commands/cmd_clear_cel.cpp
+    commands/cmd_close_file.cpp
+    commands/cmd_color_quantization.cpp
+    commands/cmd_contiguous_fill.cpp
+    commands/cmd_copy.cpp
+    commands/cmd_copy_cel.cpp
+    commands/cmd_copy_merged.cpp
+    commands/cmd_cut.cpp
+    commands/cmd_deselect_mask.cpp
+    commands/cmd_discard_brush.cpp
+    commands/cmd_duplicate_layer.cpp
+    commands/cmd_duplicate_sprite.cpp
+    commands/cmd_duplicate_view.cpp
+    commands/cmd_exit.cpp
+    commands/cmd_export_sprite_sheet.cpp
+    commands/cmd_eyedropper.cpp
+    commands/cmd_fit_screen.cpp
+    commands/cmd_flatten_layers.cpp
+    commands/cmd_flip.cpp
+    commands/cmd_frame_properties.cpp
+    commands/cmd_frame_tag_properties.cpp
+    commands/cmd_fullscreen_preview.cpp
+    commands/cmd_goto_frame.cpp
+    commands/cmd_goto_layer.cpp
+    commands/cmd_goto_tab.cpp
+    commands/cmd_grid.cpp
+    commands/cmd_home.cpp
+    commands/cmd_import_sprite_sheet.cpp
+    commands/cmd_invert_mask.cpp
+    commands/cmd_keyboard_shortcuts.cpp
+    commands/cmd_launch.cpp
+    commands/cmd_layer_from_background.cpp
+    commands/cmd_layer_lock.cpp
+    commands/cmd_layer_opacity.cpp
+    commands/cmd_layer_properties.cpp
+    commands/cmd_layer_visibility.cpp
+    commands/cmd_link_cels.cpp
+    commands/cmd_load_mask.cpp
+    commands/cmd_mask_all.cpp
+    commands/cmd_mask_by_color.cpp
+    commands/cmd_mask_content.cpp
+    commands/cmd_merge_down_layer.cpp
+    commands/cmd_modify_selection.cpp
+    commands/cmd_move_cel.cpp
+    commands/cmd_move_mask.cpp
+    commands/cmd_new_brush.cpp
+    commands/cmd_new_file.cpp
+    commands/cmd_new_frame.cpp
+    commands/cmd_new_frame_tag.cpp
+    commands/cmd_new_layer.cpp
+    commands/cmd_new_sprite_from_selection.cpp
+    commands/cmd_onionskin.cpp
+    commands/cmd_open_browser.cpp
+    commands/cmd_open_group.cpp
+    commands/cmd_open_in_folder.cpp
+    commands/cmd_open_with_app.cpp
+    commands/cmd_options.cpp
+    commands/cmd_palette_editor.cpp
+    commands/cmd_palette_size.cpp
+    commands/cmd_paste.cpp
+    commands/cmd_paste_text.cpp
+    commands/cmd_pixel_perfect_mode.cpp
+    commands/cmd_play_animation.cpp
+    commands/cmd_refresh.cpp
+    commands/cmd_remove_frame.cpp
+    commands/cmd_remove_frame_tag.cpp
+    commands/cmd_remove_layer.cpp
+    commands/cmd_remove_slice.cpp
+    commands/cmd_repeat_last_export.cpp
+    commands/cmd_reselect_mask.cpp
+    commands/cmd_reverse_frames.cpp
+    commands/cmd_rotate.cpp
+    commands/cmd_save_mask.cpp
+    commands/cmd_save_palette.cpp
+    commands/cmd_scroll.cpp
+    commands/cmd_scroll_center.cpp
+    commands/cmd_select_tile.cpp
+    commands/cmd_set_color_selector.cpp
+    commands/cmd_set_ink_type.cpp
+    commands/cmd_set_loop_section.cpp
+    commands/cmd_set_palette.cpp
+    commands/cmd_set_palette_entry_size.cpp
+    commands/cmd_set_same_ink.cpp
+    commands/cmd_show.cpp
+    commands/cmd_slice_properties.cpp
+    commands/cmd_sprite_properties.cpp
+    commands/cmd_switch_colors.cpp
+    commands/cmd_symmetry_mode.cpp
+    commands/cmd_tiled_mode.cpp
+    commands/cmd_timeline.cpp
+    commands/cmd_toggle_preview.cpp
+    commands/cmd_toggle_timeline_thumbnails.cpp
+    commands/cmd_undo_history.cpp
+    commands/cmd_unlink_cel.cpp
+    commands/cmd_zoom.cpp
+    commands/filters/cmd_brightness_contrast.cpp
+    commands/filters/cmd_color_curve.cpp
+    commands/filters/cmd_convolution_matrix.cpp
+    commands/filters/cmd_despeckle.cpp
+    commands/filters/cmd_hue_saturation.cpp
+    commands/filters/cmd_invert_color.cpp
+    commands/filters/cmd_replace_color.cpp
+    commands/filters/color_curve_editor.cpp
+    commands/filters/convolution_matrix_stock.cpp
+    commands/filters/filter_manager_impl.cpp
+    commands/filters/filter_preview.cpp
+    commands/filters/filter_target_buttons.cpp
+    commands/filters/filter_window.cpp
+    commands/filters/filter_worker.cpp
+    file_selector.cpp
+    gui_xml.cpp
+    modules/editors.cpp
+    modules/gfx.cpp
+    modules/gui.cpp
+    send_crash.cpp
+    tools/active_tool.cpp
+    tools/ink_type.cpp
+    tools/intertwine.cpp
+    tools/pick_ink.cpp
+    tools/point_shape.cpp
+    tools/stroke.cpp
+    tools/symmetries.cpp
+    tools/tool_box.cpp
+    tools/tool_loop_manager.cpp
+    ui/app_menuitem.cpp
+    ui/backup_indicator.cpp
+    ui/browser_view.cpp
+    ui/brush_popup.cpp
+    ui/button_set.cpp
+    ui/color_bar.cpp
+    ui/color_button.cpp
+    ui/color_popup.cpp
+    ui/color_selector.cpp
+    ui/color_shades.cpp
+    ui/color_sliders.cpp
+    ui/color_spectrum.cpp
+    ui/color_tint_shade_tone.cpp
+    ui/color_wheel.cpp
+    ui/configure_timeline_popup.cpp
+    ui/context_bar.cpp
+    ui/dithering_selector.cpp
+    ui/document_view.cpp
+    ui/drop_down_button.cpp
+    ui/editor/brush_preview.cpp
+    ui/editor/drawing_state.cpp
+    ui/editor/editor.cpp
+    ui/editor/editor_observers.cpp
+    ui/editor/editor_states_history.cpp
+    ui/editor/editor_view.cpp
+    ui/editor/moving_cel_state.cpp
+    ui/editor/moving_pixels_state.cpp
+    ui/editor/moving_selection_state.cpp
+    ui/editor/moving_slice_state.cpp
+    ui/editor/moving_symmetry_state.cpp
+    ui/editor/navigate_state.cpp
+    ui/editor/pivot_helpers.cpp
+    ui/editor/pixels_movement.cpp
+    ui/editor/play_state.cpp
+    ui/editor/scrolling_state.cpp
+    ui/editor/select_box_state.cpp
+    ui/editor/standby_state.cpp
+    ui/editor/state_with_wheel_behavior.cpp
+    ui/editor/tool_loop_impl.cpp
+    ui/editor/transform_handles.cpp
+    ui/editor/zooming_state.cpp
+    ui/export_file_window.cpp
+    ui/file_list.cpp
+    ui/file_list_view.cpp
+    ui/file_selector.cpp
+    ui/font_popup.cpp
+    ui/frame_tag_window.cpp
+    ui/hex_color_entry.cpp
+    ui/home_view.cpp
+    ui/icon_button.cpp
+    ui/input_chain.cpp
+    ui/keyboard_shortcuts.cpp
+    ui/main_menu_bar.cpp
+    ui/main_window.cpp
+    ui/news_listbox.cpp
+    ui/notifications.cpp
+    ui/optional_alert.cpp
+    ui/palette_popup.cpp
+    ui/palette_view.cpp
+    ui/palettes_listbox.cpp
+    ui/popup_window_pin.cpp
+    ui/preview_editor.cpp
+    ui/recent_listbox.cpp
+    ui/resources_listbox.cpp
+    ui/search_entry.cpp
+    ui/select_accelerator.cpp
+    ui/skin/font_data.cpp
+    ui/skin/skin_part.cpp
+    ui/skin/skin_property.cpp
+    ui/skin/skin_slider_property.cpp
+    ui/skin/skin_theme.cpp
+    ui/slice_window.cpp
+    ui/slider2.cpp
+    ui/status_bar.cpp
+    ui/tabs.cpp
+    ui/timeline/ani_controls.cpp
+    ui/timeline/timeline.cpp
+    ui/toolbar.cpp
+    ui/user_data_popup.cpp
+    ui/workspace.cpp
+    ui/workspace_panel.cpp
+    ui/workspace_tabs.cpp
+    ui/zoom_entry.cpp
+    ui_context.cpp
+    util/clipboard.cpp
+    util/clipboard_native.cpp
+    widget_loader.cpp)
 endif()
 
 add_library(app-lib
   app.cpp
-  app_brushes.cpp
-  app_menus.cpp
-  app_render.cpp
   check_update.cpp
   cli/app_options.cpp
   cli/cli_open_file.cpp
   cli/cli_processor.cpp
+  ${file_formats}
   cli/default_cli_delegate.cpp
   cli/preview_cli_delegate.cpp
   cmd.cpp
@@ -247,134 +479,15 @@ add_library(app-lib
   color.cpp
   color_picker.cpp
   color_utils.cpp
-  commands/cmd_about.cpp
-  commands/cmd_add_color.cpp
-  commands/cmd_advanced_mode.cpp
-  commands/cmd_background_from_layer.cpp
-  commands/cmd_cancel.cpp
-  commands/cmd_canvas_size.cpp
-  commands/cmd_cel_properties.cpp
-  commands/cmd_change_brush.cpp
-  commands/cmd_change_color.cpp
   commands/cmd_change_pixel_format.cpp
-  commands/cmd_clear.cpp
-  commands/cmd_clear_cel.cpp
-  commands/cmd_close_file.cpp
-  commands/cmd_color_quantization.cpp
-  commands/cmd_contiguous_fill.cpp
-  commands/cmd_copy.cpp
-  commands/cmd_copy_cel.cpp
-  commands/cmd_copy_merged.cpp
   commands/cmd_crop.cpp
-  commands/cmd_cut.cpp
-  commands/cmd_deselect_mask.cpp
-  commands/cmd_discard_brush.cpp
-  commands/cmd_duplicate_layer.cpp
-  commands/cmd_duplicate_sprite.cpp
-  commands/cmd_duplicate_view.cpp
-  commands/cmd_exit.cpp
-  commands/cmd_export_sprite_sheet.cpp
-  commands/cmd_eyedropper.cpp
-  commands/cmd_fit_screen.cpp
-  commands/cmd_flatten_layers.cpp
-  commands/cmd_flip.cpp
-  commands/cmd_frame_properties.cpp
-  commands/cmd_frame_tag_properties.cpp
-  commands/cmd_fullscreen_preview.cpp
-  commands/cmd_goto_frame.cpp
-  commands/cmd_goto_layer.cpp
-  commands/cmd_goto_tab.cpp
-  commands/cmd_grid.cpp
-  commands/cmd_home.cpp
-  commands/cmd_import_sprite_sheet.cpp
-  commands/cmd_invert_mask.cpp
-  commands/cmd_keyboard_shortcuts.cpp
-  commands/cmd_launch.cpp
-  commands/cmd_layer_from_background.cpp
-  commands/cmd_layer_lock.cpp
-  commands/cmd_layer_opacity.cpp
-  commands/cmd_layer_properties.cpp
-  commands/cmd_layer_visibility.cpp
-  commands/cmd_link_cels.cpp
-  commands/cmd_load_mask.cpp
   commands/cmd_load_palette.cpp
-  commands/cmd_mask_all.cpp
-  commands/cmd_mask_by_color.cpp
-  commands/cmd_mask_content.cpp
-  commands/cmd_merge_down_layer.cpp
-  commands/cmd_modify_selection.cpp
-  commands/cmd_move_cel.cpp
-  commands/cmd_move_mask.cpp
-  commands/cmd_new_brush.cpp
-  commands/cmd_new_file.cpp
-  commands/cmd_new_frame.cpp
-  commands/cmd_new_frame_tag.cpp
-  commands/cmd_new_layer.cpp
-  commands/cmd_new_sprite_from_selection.cpp
-  commands/cmd_onionskin.cpp
-  commands/cmd_open_browser.cpp
   commands/cmd_open_file.cpp
-  commands/cmd_open_group.cpp
-  commands/cmd_open_in_folder.cpp
-  commands/cmd_open_with_app.cpp
-  commands/cmd_options.cpp
-  commands/cmd_palette_editor.cpp
-  commands/cmd_palette_size.cpp
-  commands/cmd_paste.cpp
-  commands/cmd_paste_text.cpp
-  commands/cmd_pixel_perfect_mode.cpp
-  commands/cmd_play_animation.cpp
-  commands/cmd_refresh.cpp
-  commands/cmd_remove_frame.cpp
-  commands/cmd_remove_frame_tag.cpp
-  commands/cmd_remove_layer.cpp
-  commands/cmd_remove_slice.cpp
-  commands/cmd_repeat_last_export.cpp
-  commands/cmd_reselect_mask.cpp
-  commands/cmd_reverse_frames.cpp
-  commands/cmd_rotate.cpp
   commands/cmd_save_file.cpp
-  commands/cmd_save_mask.cpp
-  commands/cmd_save_palette.cpp
-  commands/cmd_scroll.cpp
-  commands/cmd_scroll_center.cpp
-  commands/cmd_select_tile.cpp
-  commands/cmd_set_color_selector.cpp
-  commands/cmd_set_ink_type.cpp
-  commands/cmd_set_loop_section.cpp
-  commands/cmd_set_palette.cpp
-  commands/cmd_set_palette_entry_size.cpp
-  commands/cmd_set_same_ink.cpp
-  commands/cmd_show.cpp
-  commands/cmd_slice_properties.cpp
-  commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
-  commands/cmd_switch_colors.cpp
-  commands/cmd_symmetry_mode.cpp
-  commands/cmd_tiled_mode.cpp
-  commands/cmd_timeline.cpp
-  commands/cmd_toggle_preview.cpp
-  commands/cmd_toggle_timeline_thumbnails.cpp
   commands/cmd_undo.cpp
-  commands/cmd_undo_history.cpp
-  commands/cmd_unlink_cel.cpp
-  commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
-  commands/filters/cmd_brightness_contrast.cpp
-  commands/filters/cmd_color_curve.cpp
-  commands/filters/cmd_convolution_matrix.cpp
-  commands/filters/cmd_despeckle.cpp
-  commands/filters/cmd_hue_saturation.cpp
-  commands/filters/cmd_invert_color.cpp
-  commands/filters/cmd_replace_color.cpp
-  commands/filters/color_curve_editor.cpp
-  commands/filters/convolution_matrix_stock.cpp
-  commands/filters/filter_manager_impl.cpp
-  commands/filters/filter_preview.cpp
-  commands/filters/filter_target_buttons.cpp
-  commands/filters/filter_window.cpp
-  commands/filters/filter_worker.cpp
   commands/move_thing.cpp
   commands/quick_command.cpp
   console.cpp
@@ -394,13 +507,10 @@ add_library(app-lib
   file/file_formats_manager.cpp
   file/palette_file.cpp
   file/split_filename.cpp
-  ${file_formats}
-  file_selector.cpp
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
   font_path.cpp
-  gui_xml.cpp
   i18n/strings.cpp
   i18n/xml_translator.cpp
   ini_file.cpp
@@ -410,9 +520,6 @@ add_library(app-lib
   log.cpp
   loop_tag.cpp
   modules.cpp
-  modules/editors.cpp
-  modules/gfx.cpp
-  modules/gui.cpp
   modules/palettes.cpp
   pref/preferences.cpp
   project.cpp
@@ -423,111 +530,15 @@ add_library(app-lib
   resource_finder.cpp
   restore_visible_layers.cpp
   rw_lock.cpp
-  send_crash.cpp
   shade.cpp
   snap_to_grid.cpp
   sprite_job.cpp
   thumbnail_generator.cpp
   thumbnails.cpp
-  tools/active_tool.cpp
-  tools/ink_type.cpp
-  tools/intertwine.cpp
-  tools/pick_ink.cpp
-  tools/point_shape.cpp
-  tools/stroke.cpp
-  tools/symmetries.cpp
-  tools/tool_box.cpp
-  tools/tool_loop_manager.cpp
   transaction.cpp
   transformation.cpp
-  ui/app_menuitem.cpp
-  ui/backup_indicator.cpp
-  ui/browser_view.cpp
-  ui/brush_popup.cpp
-  ui/button_set.cpp
-  ui/color_bar.cpp
-  ui/color_button.cpp
-  ui/color_popup.cpp
-  ui/color_selector.cpp
-  ui/color_shades.cpp
-  ui/color_sliders.cpp
-  ui/color_spectrum.cpp
-  ui/color_tint_shade_tone.cpp
-  ui/color_wheel.cpp
-  ui/configure_timeline_popup.cpp
-  ui/context_bar.cpp
-  ui/dithering_selector.cpp
-  ui/document_view.cpp
-  ui/drop_down_button.cpp
-  ui/editor/brush_preview.cpp
-  ui/editor/drawing_state.cpp
-  ui/editor/editor.cpp
-  ui/editor/editor_observers.cpp
-  ui/editor/editor_states_history.cpp
-  ui/editor/editor_view.cpp
-  ui/editor/moving_cel_state.cpp
-  ui/editor/moving_pixels_state.cpp
-  ui/editor/moving_selection_state.cpp
-  ui/editor/moving_slice_state.cpp
-  ui/editor/moving_symmetry_state.cpp
-  ui/editor/navigate_state.cpp
-  ui/editor/pivot_helpers.cpp
-  ui/editor/pixels_movement.cpp
-  ui/editor/play_state.cpp
-  ui/editor/scrolling_state.cpp
-  ui/editor/select_box_state.cpp
-  ui/editor/standby_state.cpp
-  ui/editor/state_with_wheel_behavior.cpp
-  ui/editor/tool_loop_impl.cpp
-  ui/editor/transform_handles.cpp
-  ui/editor/zooming_state.cpp
-  ui/export_file_window.cpp
-  ui/file_list.cpp
-  ui/file_list_view.cpp
-  ui/file_selector.cpp
-  ui/font_popup.cpp
-  ui/frame_tag_window.cpp
-  ui/hex_color_entry.cpp
-  ui/home_view.cpp
-  ui/icon_button.cpp
-  ui/input_chain.cpp
-  ui/keyboard_shortcuts.cpp
   ui/layer_frame_comboboxes.cpp
-  ui/main_menu_bar.cpp
-  ui/main_window.cpp
-  ui/news_listbox.cpp
-  ui/notifications.cpp
-  ui/optional_alert.cpp
-  ui/palette_popup.cpp
-  ui/palette_view.cpp
-  ui/palettes_listbox.cpp
-  ui/popup_window_pin.cpp
-  ui/preview_editor.cpp
-  ui/recent_listbox.cpp
-  ui/resources_listbox.cpp
-  ui/search_entry.cpp
-  ui/select_accelerator.cpp
-  ui/skin/font_data.cpp
-  ui/skin/skin_part.cpp
-  ui/skin/skin_property.cpp
-  ui/skin/skin_slider_property.cpp
-  ui/skin/skin_theme.cpp
-  ui/slice_window.cpp
-  ui/slider2.cpp
-  ui/status_bar.cpp
-  ui/tabs.cpp
-  ui/timeline/ani_controls.cpp
-  ui/timeline/timeline.cpp
-  ui/toolbar.cpp
-  ui/user_data_popup.cpp
-  ui/workspace.cpp
-  ui/workspace_panel.cpp
-  ui/workspace_tabs.cpp
-  ui/zoom_entry.cpp
-  ui_context.cpp
   util/autocrop.cpp
-  util/clipboard.cpp
-  util/clipboard_native.cpp
   util/create_cel_copy.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
@@ -540,9 +551,9 @@ add_library(app-lib
   util/range_utils.cpp
   util/wrap_point.cpp
   webserver.cpp
-  widget_loader.cpp
   xml_document.cpp
   xml_exception.cpp
+  ${ui_app_files}
   ${app_platform_files}
   ${data_recovery_files}
   ${scripting_files}

@@ -228,6 +228,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string&
         }
       }
 
+#ifdef ENABLE_UI
       // TODO add a better dialog to edit file-names
       if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
           context &&
@@ -287,6 +288,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string&
           }
         }
       }
+#endif // ENABLE_UI
     }
   }
   else {
@@ -440,6 +442,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   // Show the confirmation alert
   if (!warnings.empty()) {
+#ifdef ENABLE_UI
     // Interative
     if (context && context->isUIAvailable()) {
       int ret = OptionalAlert::show(
@@ -457,7 +460,9 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
         return nullptr;
     }
     // No interactive & fatal error?
-    else if (fatal) {
+    else
+#endif // ENABLE_UI
+    if (fatal) {
       fop->setError(warnings.c_str());
       return fop.release();
     }
@@ -500,6 +505,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       ++outputFrame;
     }
 
+#ifdef ENABLE_UI
     if (context && context->isUIAvailable() &&
         fop->m_seq.filename_list.size() > 1 &&
         OptionalAlert::show(
@@ -512,6 +518,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
             base::get_file_name(fop->m_seq.filename_list[1]))) != 1) {
       return nullptr;
     }
+#endif // ENABLE_UI
   }
   else
     fop->m_filename = filename;

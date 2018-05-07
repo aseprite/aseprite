@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,12 +8,13 @@
 #include "config.h"
 #endif
 
-#include "app/document.h"
+#include "app/app.h"
+#include "app/context.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/document.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
-#include "app/ui_context.h"
 #include "script/engine.h"
 
 #include <iostream>
@@ -27,15 +28,16 @@ void App_open(script::ContextHandle handle)
   script::Context ctx(handle);
   const char* filename = ctx.requireString(1);
 
-  app::Document* oldDoc = UIContext::instance()->activeDocument();
+  app::Context* appCtx = App::instance()->context();
+  app::Document* oldDoc = appCtx->activeDocument();
 
   Command* openCommand =
     Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("filename", filename);
-  UIContext::instance()->executeCommand(openCommand, params);
+  appCtx->executeCommand(openCommand, params);
 
-  app::Document* newDoc = UIContext::instance()->activeDocument();
+  app::Document* newDoc = appCtx->activeDocument();
   if (newDoc != oldDoc)
     ctx.newObject("Sprite", unwrap_engine(ctx)->wrapSprite(newDoc), nullptr);
   else
@@ -45,7 +47,7 @@ void App_open(script::ContextHandle handle)
 void App_exit(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  UIContext* appCtx = UIContext::instance();
+  app::Context* appCtx = App::instance()->context();
   if (appCtx && appCtx->isUIAvailable()) {
     Command* exitCommand =
       Commands::instance()->byId(CommandId::Exit());
@@ -57,7 +59,8 @@ void App_exit(script::ContextHandle handle)
 void App_get_activeSprite(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  app::Document* doc = UIContext::instance()->activeDocument();
+  app::Context* appCtx = App::instance()->context();
+  app::Document* doc = appCtx->activeDocument();
   if (doc)
     ctx.newObject("Sprite", unwrap_engine(ctx)->wrapSprite(doc), nullptr);
   else
@@ -67,7 +70,8 @@ void App_get_activeSprite(script::ContextHandle handle)
 void App_get_activeImage(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  app::Document* doc = UIContext::instance()->activeDocument();
+  app::Context* appCtx = App::instance()->context();
+  app::Document* doc = appCtx->activeDocument();
   if (doc) {
     SpriteWrap* sprWrap = unwrap_engine(ctx)->wrapSprite(doc);
     ASSERT(sprWrap);

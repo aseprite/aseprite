@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2015, 2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,9 +28,8 @@ namespace app {
 
     DocumentView* activeView() const;
     void setActiveView(DocumentView* documentView);
-    void setActiveDocument(Document* document);
 
-    DocumentView* getFirstDocumentView(doc::Document* document) const;
+    DocumentView* getFirstDocumentView(doc::Document* document) const override;
     DocumentViews getAllDocumentViews(doc::Document* document) const;
 
     // Returns the current editor. It can be null.
@@ -44,9 +43,9 @@ namespace app {
     void onAddDocument(doc::Document* doc) override;
     void onRemoveDocument(doc::Document* doc) override;
     void onGetActiveSite(doc::Site* site) const override;
+    void onSetActiveDocument(doc::Document* doc) override;
 
   private:
-    Document* m_lastSelectedDoc;
     DocumentView* m_lastSelectedView;
     static UIContext* m_instance;
   };

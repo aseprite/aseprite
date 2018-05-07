@@ -107,6 +107,7 @@ void OpenFileCommand::onExecute(Context* context)
   base::paths filenames;
 
   // interactive
+#ifdef ENABLE_UI
   if (context->isUIAvailable() && m_filename.empty()) {
     base::paths exts = get_readable_extensions();
 
@@ -122,7 +123,9 @@ void OpenFileCommand::onExecute(Context* context)
       return;
     }
   }
-  else if (!m_filename.empty()) {
+  else
+#endif // ENABLE_UI
+  if (!m_filename.empty()) {
     filenames.push_back(m_filename);
   }
 

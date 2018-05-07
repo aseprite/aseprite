@@ -777,7 +777,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
                        (!selLayers.empty() ? &selLayers: nullptr),
                        (!selFrames.empty() ? &selFrames: nullptr));
 
-  base::UniquePtr<Document> newDocument(exporter.exportSheet());
+  base::UniquePtr<Document> newDocument(exporter.exportSheet(context));
   if (!newDocument)
     return;
 

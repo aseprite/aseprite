@@ -133,6 +133,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
     base::paths exts = get_writable_extensions();
     filename = initialFilename;
 
+#ifdef ENABLE_UI
   again:;
     base::paths newfilename;
     if (!app::show_file_selector(
@@ -148,6 +149,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
       ui::Alert::show(Strings::alerts_cannot_file_overwrite_on_export());
       goto again;
     }
+#endif // ENABLE_UI
   }
 
   if (saveInBackground) {
@@ -210,9 +212,11 @@ void SaveFileBaseCommand::saveDocumentInBackground(
       document->setFilename(filename);
       document->incrementVersion();
     }
+#ifdef ENABLE_UI
     StatusBar::instance()
       ->setStatusText(2000, "File <%s> saved.",
         base::get_file_name(filename).c_str());
+#endif
   }
 }
 
@@ -304,6 +308,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   doc::AniDir aniDirValue = convert_string_to_anidir(m_aniDir);
   bool isForTwitter = false;
 
+#if ENABLE_UI
   if (context->isUIAvailable()) {
     ExportFileWindow win(doc);
     bool askOverwrite = true;
@@ -350,6 +355,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
   }
+#endif
 
   // Pixel ratio
   if (applyPixelRatio) {

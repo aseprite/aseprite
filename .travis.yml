@@ -5,6 +5,11 @@ compiler:
   - clang
   - gcc
 
+env:
+  matrix:
+    - ENABLE_UI=OFF
+    - ENABLE_UI=ON
+
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
@@ -14,7 +19,7 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DENABLE_TESTS=ON
+  - cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
 
 script:
   - "make"

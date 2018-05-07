@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,17 +18,18 @@
 namespace app {
 
   class AppOptions;
+  class Context;
   class DocumentExporter;
 
   class CliProcessor {
   public:
     CliProcessor(CliDelegate* delegate,
                  const AppOptions& options);
-    void process();
+    void process(Context* ctx);
 
   private:
-    bool openFile(CliOpenFile& cof);
-    void saveFile(const CliOpenFile& cof);
+    bool openFile(Context* ctx, CliOpenFile& cof);
+    void saveFile(Context* ctx, const CliOpenFile& cof);
 
     CliDelegate* m_delegate;
     const AppOptions& m_options;

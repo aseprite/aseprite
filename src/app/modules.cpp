@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,7 +32,9 @@ static Module module[] =
   // first ones.
 
   DEF_MODULE(palette,           0),
+#ifdef ENABLE_UI
   DEF_MODULE(gui,               REQUIRE_INTERFACE),
+#endif
 };
 
 static int modules = sizeof(module) / sizeof(Module);

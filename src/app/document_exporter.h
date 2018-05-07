@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,6 +29,7 @@ namespace doc {
 }
 
 namespace app {
+  class Context;
   class Document;
 
   class DocumentExporter {
@@ -79,7 +80,7 @@ namespace app {
       m_documents.push_back(Item(document, tag, selLayers, selFrames));
     }
 
-    Document* exportSheet();
+    Document* exportSheet(Context* ctx);
     gfx::Size calculateSheetSize();
 
   private:
@@ -93,7 +94,7 @@ namespace app {
     void layoutSamples(Samples& samples);
     gfx::Size calculateSheetSize(const Samples& samples) const;
     Document* createEmptyTexture(const Samples& samples) const;
-    void renderTexture(const Samples& samples, doc::Image* textureImage) const;
+    void renderTexture(Context* ctx, const Samples& samples, doc::Image* textureImage) const;
     void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
     void renderSample(const Sample& sample, doc::Image* dst, int x, int y) const;
 

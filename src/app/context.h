@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 namespace app {
   class Command;
   class Document;
+  class DocumentView;
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -61,21 +62,33 @@ namespace app {
 
     void sendDocumentToTop(doc::Document* document);
 
+    void setActiveDocument(doc::Document* document);
     app::Document* activeDocument() const;
     bool hasModifiedDocuments() const;
 
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
 
+    virtual DocumentView* getFirstDocumentView(doc::Document* document) const {
+      return nullptr;
+    }
+
     obs::signal<void (CommandExecutionEvent&)> BeforeCommandExecution;
     obs::signal<void (CommandExecutionEvent&)> AfterCommandExecution;
 
   protected:
-    virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;
+    void onCreateDocument(doc::CreateDocumentArgs* args) override;
+    void onAddDocument(doc::Document* doc) override;
+    void onRemoveDocument(doc::Document* doc) override;
+    void onGetActiveSite(doc::Site* site) const override;
+    virtual void onSetActiveDocument(doc::Document* doc);
+
+    Document* lastSelectedDoc() { return m_lastSelectedDoc; }
 
   private:
     // Last updated flags.
     ContextFlags m_flags;
+    Document* m_lastSelectedDoc;
 
     DISABLE_COPYING(Context);
   };

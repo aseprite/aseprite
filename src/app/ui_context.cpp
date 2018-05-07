@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,8 +32,7 @@ namespace app {
 UIContext* UIContext::m_instance = nullptr;
 
 UIContext::UIContext()
-  : m_lastSelectedDoc(nullptr)
-  , m_lastSelectedView(nullptr)
+  : m_lastSelectedView(nullptr)
 {
   documents().add_observer(&Preferences::instance());
 
@@ -121,10 +120,10 @@ void UIContext::setActiveView(DocumentView* docView)
   notifyActiveSiteChanged();
 }
 
-void UIContext::setActiveDocument(Document* document)
+void UIContext::onSetActiveDocument(doc::Document* document)
 {
-  bool notify = (m_lastSelectedDoc != document);
-  m_lastSelectedDoc = document;
+  bool notify = (lastSelectedDoc() != document);
+  app::Context::onSetActiveDocument(document);
 
   DocumentView* docView = getFirstDocumentView(document);
   if (docView) {     // The view can be null if we are in --batch mode
@@ -180,7 +179,7 @@ Editor* UIContext::activeEditor()
 
 void UIContext::onAddDocument(doc::Document* doc)
 {
-  m_lastSelectedDoc = static_cast<app::Document*>(doc);
+  app::Context::onAddDocument(doc);
 
   // We don't create views in batch mode.
   if (!App::instance()->isGui())
@@ -188,7 +187,7 @@ void UIContext::onAddDocument(doc::Document* doc)
 
   // Add a new view for this document
   DocumentView* view = new DocumentView(
-    m_lastSelectedDoc,
+    lastSelectedDoc(),
     DocumentView::Normal,
     App::instance()->mainWindow()->getPreviewEditor());
 
@@ -201,8 +200,7 @@ void UIContext::onAddDocument(doc::Document* doc)
 
 void UIContext::onRemoveDocument(doc::Document* doc)
 {
-  if (doc == m_lastSelectedDoc)
-    m_lastSelectedDoc = nullptr;
+  app::Context::onRemoveDocument(doc);
 
   // We don't destroy views in batch mode.
   if (isUIAvailable()) {
@@ -246,14 +244,8 @@ void UIContext::onGetActiveSite(Site* site) const
       }
     }
   }
-  // Default/dummy site (maybe for batch/command line mode)
   else if (!isUIAvailable()) {
-    if (Document* doc = m_lastSelectedDoc) {
-      site->document(doc);
-      site->sprite(doc->sprite());
-      site->layer(doc->sprite()->root()->firstLayer());
-      site->frame(0);
-    }
+    return app::Context::onGetActiveSite(site);
   }
 }
 
