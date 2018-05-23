@@ -93,6 +93,7 @@ include_directories(observable)
 
 # Disable clip examples
 set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
+set(CLIP_X11_PNG_LIBRARY "${PNG_LIBRARY}")
 add_subdirectory(clip)
 
 # Disable undo tests
