@@ -186,11 +186,13 @@ target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
 add_dependencies(aseprite copy_data)
 
 if(MSVC)
-  if(USE_SKIA_BACKEND)
-    # Linking with "wsetargv.obj" to add support to expand filename
-    # wildcards in argc/argv.
-    set_target_properties(aseprite
-      PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wWinMainCRTStartup\"")
+  if(ENABLE_UI)
+    if(USE_SKIA_BACKEND)
+      # Linking with "wsetargv.obj" to add support to expand filename
+      # wildcards in argc/argv.
+      set_target_properties(aseprite
+        PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wWinMainCRTStartup\"")
+    endif()
   else()
     set_target_properties(aseprite
       PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wmainCRTStartup\"")
