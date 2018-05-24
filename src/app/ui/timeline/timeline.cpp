@@ -444,6 +444,17 @@ void Timeline::setFrame(frame_t frame, bool byUser)
   else if (frame >= m_sprite->totalFrames())
     frame = frame_t(m_sprite->totalFrames()-1);
 
+  if (m_layer) {
+    Cel* oldCel = m_layer->cel(m_frame);
+    Cel* newCel = m_layer->cel(frame);
+    std::size_t oldLinks = oldCel ? oldCel->links(): 0;
+    std::size_t newLinks = newCel ? newCel->links(): 0;
+    if ((oldLinks && !newCel) ||
+       ( newLinks && !oldCel) ||
+       ((oldLinks>0 || newLinks>0) && (oldCel->data() != newCel->data())))
+      invalidateLayer(m_layer);
+  }
+
   invalidateFrame(m_frame);
   invalidateFrame(frame);
 
