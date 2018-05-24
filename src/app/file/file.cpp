@@ -193,16 +193,15 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string&
     goto done;
   }
 
-  /* use the "sequence" interface */
+  // Use the "sequence" interface
   if (fop->m_format->support(FILE_SUPPORT_SEQUENCES)) {
-    /* prepare to load a sequence */
     fop->prepareForSequence();
     fop->m_seq.flags = flags;
 
-    /* per now, we want load just one file */
+    // At the moment we want load just one file (the one specified in filename)
     fop->m_seq.filename_list.push_back(filename);
 
-    /* don't load the sequence (just the one file/one frame) */
+    // If the user wants to load the whole sequence
     if (!(flags & FILE_LOAD_SEQUENCE_NONE)) {
       std::string left, right;
       int c, width, start_from;
@@ -572,9 +571,12 @@ void FileOp::operate(IFileOpProgress* progress)
       frame_t frames(m_seq.filename_list.size());
       frame_t frame(0);
       Image* old_image = nullptr;
+      gfx::Size canvasSize(0, 0);
 
       // TODO setPalette for each frame???
       auto add_image = [&]() {
+        canvasSize |= m_seq.image->size();
+
         m_seq.last_cel->data()->setImage(m_seq.image);
         m_seq.layer->addCel(m_seq.last_cel);
 
@@ -657,10 +659,15 @@ void FileOp::operate(IFileOpProgress* progress)
       m_filename = *m_seq.filename_list.begin();
 
       // Final setup
-      if (m_document != NULL) {
+      if (m_document) {
         // Configure the layer as the 'Background'
         if (!m_seq.has_alpha)
           m_seq.layer->configureAsBackground();
+
+        // Set the final canvas size (as the bigger loaded
+        // frame/image).
+        m_document->sprite()->setSize(canvasSize.w,
+                                      canvasSize.h);
 
         // Set the frames range
         m_document->sprite()->setTotalFrames(frame);

@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2016 David Capello
+// Copyright (C) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -89,6 +89,14 @@ public:
     w /= value;
     h /= value;
     return *this;
+  }
+
+  const SizeT& operator|=(const SizeT& sz) {
+    return *this = createUnion(sz);
+  }
+
+  const SizeT& operator&=(const SizeT& sz) {
+    return *this = createIntersection(sz);
   }
 
   SizeT operator+(const SizeT& sz) const {
