@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 #include "ui/base.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/clipboard_delegate.h"
 #include "ui/combobox.h"
 #include "ui/component.h"
 #include "ui/cursor.h"

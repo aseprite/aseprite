@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,6 +15,7 @@
 #include "she/display.h"
 #include "she/surface.h"
 #include "she/system.h"
+#include "ui/clipboard_delegate.h"
 #include "ui/cursor.h"
 #include "ui/intern.h"
 #include "ui/intern.h"
@@ -171,8 +172,20 @@ static void update_mouse_cursor()
   }
 }
 
-UISystem::UISystem()
+// static
+static UISystem* g_instance = nullptr;
+
+UISystem* UISystem::instance()
 {
+  return g_instance;
+}
+
+UISystem::UISystem()
+  : m_clipboardDelegate(nullptr)
+{
+  ASSERT(!g_instance);
+  g_instance = this;
+
   main_gui_thread = base::this_thread::native_handle();
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
@@ -196,6 +209,9 @@ UISystem::~UISystem()
   _internal_set_mouse_display(nullptr);
   if (!update_custom_native_cursor(nullptr))
     update_mouse_overlay(nullptr);
+
+  ASSERT(g_instance == this);
+  g_instance = nullptr;
 }
 
 void _internal_set_mouse_display(she::Display* display)
@@ -221,6 +237,24 @@ int display_h()
     return mouse_display->height() / mouse_display->scale();
   else
     return 1;
+}
+
+void set_clipboard_text(const std::string& text)
+{
+  ASSERT(g_instance);
+  ClipboardDelegate* delegate = g_instance->clipboardDelegate();
+  if (delegate)
+    delegate->setClipboardText(text);
+}
+
+bool get_clipboard_text(std::string& text)
+{
+  ASSERT(g_instance);
+  ClipboardDelegate* delegate = g_instance->clipboardDelegate();
+  if (delegate)
+    return delegate->getClipboardText(text);
+  else
+    return false;
 }
 
 void update_cursor_overlay()

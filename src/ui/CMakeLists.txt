@@ -1,5 +1,5 @@
 # Aseprite UI Library
-# Copyright (C) 2001-2017  David Capello
+# Copyright (C) 2001-2018  David Capello
 
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -57,7 +57,6 @@ add_library(ui-lib
 
 target_link_libraries(ui-lib
   she
-  clip
   gfx-lib
   laf-base
   obs

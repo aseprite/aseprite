@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/string.h"
-#include "clip/clip.h"
 #include "she/draw_text.h"
 #include "she/font.h"
 #include "she/system.h"
@@ -636,7 +635,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       if (selbeg >= 0) {
         // *cut* text!
         if (cmd == EntryCmd::Cut)
-          clip::set_text(selectedText());
+          set_clipboard_text(selectedText());
 
         // remove text
         text.erase(m_boxes[selbeg].from,
@@ -656,7 +655,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
     case EntryCmd::Paste: {
       std::string clipboard;
-      if (clip::get_text(clipboard)) {
+      if (get_clipboard_text(clipboard)) {
         // delete the entire selection
         if (selbeg >= 0) {
           text.erase(m_boxes[selbeg].from,
@@ -688,7 +687,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
     case EntryCmd::Copy:
       if (selbeg >= 0)
-        clip::set_text(selectedText());
+        set_clipboard_text(selectedText());
       break;
 
     case EntryCmd::DeleteBackward:

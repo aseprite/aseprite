@@ -352,6 +352,7 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="@.user_interface" horizontal="true" />
+          <check id="native_clipboard" text="@.native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog" />
           <check id="flash_layer" text="@.flash_selected_layer" />
 	  <hbox>

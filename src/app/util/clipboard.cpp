@@ -21,6 +21,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
@@ -31,6 +32,7 @@
 #include "app/util/clipboard_native.h"
 #include "app/util/new_image_from_mask.h"
 #include "base/shared_ptr.h"
+#include "clip/clip.h"
 #include "doc/doc.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
@@ -99,6 +101,16 @@ static ClipboardRange clipboard_range;
 
 static ClipboardManager* g_instance = nullptr;
 
+static bool use_native_clipboard()
+{
+  return Preferences::instance().experimental.useNativeClipboard();
+}
+
+ClipboardManager* ClipboardManager::instance()
+{
+  return g_instance;
+}
+
 ClipboardManager::ClipboardManager()
 {
   ASSERT(!g_instance);
@@ -123,9 +135,25 @@ ClipboardManager::~ClipboardManager()
   g_instance = nullptr;
 }
 
-ClipboardManager* ClipboardManager::instance()
+void ClipboardManager::setClipboardText(const std::string& text)
 {
-  return g_instance;
+  if (use_native_clipboard()) {
+    clip::set_text(text);
+  }
+  else {
+    m_text = text;
+  }
+}
+
+bool ClipboardManager::getClipboardText(std::string& text)
+{
+  if (use_native_clipboard()) {
+    return clip::get_text(text);
+  }
+  else {
+    text = m_text;
+    return true;
+  }
 }
 
 static void set_clipboard_image(Image* image,
@@ -148,7 +176,8 @@ static void set_clipboard_image(Image* image,
         image->setMaskColor(-1);
     }
 
-    set_native_clipboard_bitmap(image, mask, palette);
+    if (use_native_clipboard())
+      set_native_clipboard_bitmap(image, mask, palette);
 
     if (image && !image_source_is_transparent)
       image->setMaskColor(oldMask);
@@ -181,7 +210,8 @@ static bool copy_from_document(const Site& site, bool merged = false)
 ClipboardFormat get_current_format()
 {
   // Check if the native clipboard has an image
-  if (has_native_clipboard_bitmap())
+  if (use_native_clipboard() &&
+      has_native_clipboard_bitmap())
     return ClipboardImage;
   else if (clipboard_image)
     return ClipboardImage;
@@ -302,8 +332,8 @@ void paste()
   switch (get_current_format()) {
 
     case clipboard::ClipboardImage: {
-      // Get the image from the clipboard.
-      {
+      // Get the image from the native clipboard.
+      if (use_native_clipboard()) {
         Image* native_image = nullptr;
         Mask* native_mask = nullptr;
         Palette* native_palette = nullptr;
@@ -567,15 +597,16 @@ void paste()
 bool get_image_size(gfx::Size& size)
 {
 #if defined(_WIN32) || defined(__APPLE__)
-  if (get_native_clipboard_bitmap_size(&size))
+  if (use_native_clipboard() &&
+      get_native_clipboard_bitmap_size(&size))
     return true;
-#else
+#endif
+
   if (clipboard_image) {
     size.w = clipboard_image->width();
     size.h = clipboard_image->height();
     return true;
   }
-#endif
 
   return false;
 }

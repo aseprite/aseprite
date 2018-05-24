@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,21 +13,38 @@
 #include "ui/cursor_type.h"
 #include "ui/mouse_buttons.h"
 
+#include <string>
+
 namespace she { class Display; }
 
 namespace ui {
 
+  class ClipboardDelegate;
   class Cursor;
   class Widget;
 
   class UISystem {
   public:
+    static UISystem* instance();
+
     UISystem();
     ~UISystem();
+
+    void setClipboardDelegate(ClipboardDelegate* delegate) {
+      m_clipboardDelegate = delegate;
+    }
+    ClipboardDelegate* clipboardDelegate() {
+      return m_clipboardDelegate;
+    }
+  private:
+    ClipboardDelegate* m_clipboardDelegate;
   };
 
   int display_w();
   int display_h();
+
+  void set_clipboard_text(const std::string& text);
+  bool get_clipboard_text(std::string& text);
 
   // Mouse related
 

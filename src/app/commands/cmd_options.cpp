@@ -250,6 +250,9 @@ public:
 
     onNativeCursorChange();
 
+    if (m_pref.experimental.useNativeClipboard())
+      nativeClipboard()->setSelected(true);
+
     if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
 
@@ -486,6 +489,7 @@ public:
     m_pref.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
     // Experimental features
+    m_pref.experimental.useNativeClipboard(nativeClipboard()->isSelected());
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());

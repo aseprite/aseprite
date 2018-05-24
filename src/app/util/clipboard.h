@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/base.h"
+#include "ui/clipboard_delegate.h"
 
 namespace doc {
   class Image;
@@ -37,12 +38,17 @@ namespace app {
 
     // TODO Horrible API: refactor it (maybe a merge with she::clipboard).
 
-    class ClipboardManager {
+    class ClipboardManager : public ui::ClipboardDelegate {
     public:
+      static ClipboardManager* instance();
+
       ClipboardManager();
       ~ClipboardManager();
 
-      static ClipboardManager* instance();
+      void setClipboardText(const std::string& text) override;
+      bool getClipboardText(std::string& text) override;
+    private:
+      std::string m_text; // Text used when the native clipboard is disabled
     };
 
     ClipboardFormat get_current_format();

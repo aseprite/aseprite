@@ -228,6 +228,10 @@ void App::initialize(const AppOptions& options)
   if (isGui()) {
     LOG("APP: GUI mode\n");
 
+    // Set the ClipboardDelegate impl to copy/paste text in the native
+    // clipboard from the ui::Entry control.
+    m_uiSystem->setClipboardDelegate(&m_modules->m_clipboardManager);
+
     // Setup the GUI cursor and redraw screen
     ui::set_use_native_cursors(preferences().cursor.useNativeCursor());
     ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());

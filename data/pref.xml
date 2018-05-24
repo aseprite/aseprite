@@ -152,6 +152,7 @@
       <option id="mini_font" type="std::string" migrate="Options.UserMiniFont" />
     </section>
     <section id="experimental" text="Experimental">
+      <option id="use_native_clipboard" type="bool" default="true" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
