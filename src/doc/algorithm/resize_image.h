@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -33,7 +33,7 @@ namespace doc {
                       color_t maskColor);
 
     // It does not modify the image to the human eye, but internally
-    // tries to fixup all colors that are completelly transparent
+    // tries to fixup all colors that are completely transparent
     // (alpha = 0) with the average of its 4-neighbors.  Useful if you
     // want to use resize_image() with images that contains
     // transparent pixels.

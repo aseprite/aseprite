@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -81,7 +81,7 @@ namespace doc {
       return !operator==(other);
     }
 
-    // Returns true if the palette is completelly black.
+    // Returns true if the palette is completely black.
     bool isBlack() const;
     void makeBlack();
 

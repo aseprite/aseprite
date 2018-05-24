@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -561,7 +561,7 @@ void ReplaceInkProcessing<RgbTraits>::processPixel(int x, int y) {
   color_t src = (*m_srcAddress);
 
   // Colors (m_srcAddress and m_color1) match if:
-  // * They are both completelly transparent (alpha == 0)
+  // * They are both completely transparent (alpha == 0)
   // * Or they are not transparent and the RGB values are the same
   if ((rgba_geta(src) == 0 && rgba_geta(m_color1) == 0) ||
       (rgba_geta(src) > 0 && rgba_geta(m_color1) > 0 &&

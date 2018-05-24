@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -60,7 +60,7 @@ private:
   FilterManagerImpl* m_filterMgr; // Effect to be applied.
   base::mutex m_mutex;          // Mutex to access to 'pos', 'done' and 'cancelled' fields in different threads.
   float m_pos;                  // Current progress position
-  bool m_done;                  // Was the effect completelly applied?
+  bool m_done;                  // Was the effect completely applied?
   bool m_cancelled;             // Was the effect cancelled by the user?
   bool m_abort;                 // An exception was thrown
   ui::Timer m_timer;            // Monitoring timer to update the progress-bar

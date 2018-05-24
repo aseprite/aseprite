@@ -441,7 +441,7 @@ int ListBox::advanceIndexThroughVisibleItems(
       Widget* item = getChildByIndex(index);
       if (item &&
           !item->hasFlags(HIDDEN) &&
-          // We can completelly ignore separators from navigation
+          // We can completely ignore separators from navigation
           // keys.
           !dynamic_cast<Separator*>(item)) {
         lastVisibleIndex = index;

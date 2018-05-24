@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -184,7 +184,7 @@ void fixup_image_transparent_colors(Image* image)
         for (x=0; x<image->width(); ++x, ++it) {
           uint32_t c = *it;
 
-          // if this is a completelly-transparent pixel...
+          // if this is a completely-transparent pixel...
           if (rgba_geta(c) == 0) {
             count = 0;
             r = g = b = 0;
@@ -224,7 +224,7 @@ void fixup_image_transparent_colors(Image* image)
         for (x=0; x<image->width(); ++x, ++it) {
           uint16_t c = *it;
 
-          // If this is a completelly-transparent pixel...
+          // If this is a completely-transparent pixel...
           if (graya_geta(c) == 0) {
             count = 0;
             k = 0;
