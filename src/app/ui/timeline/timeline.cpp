@@ -447,11 +447,11 @@ void Timeline::setFrame(frame_t frame, bool byUser)
   if (m_layer) {
     Cel* oldCel = m_layer->cel(m_frame);
     Cel* newCel = m_layer->cel(frame);
-    std::size_t oldLinks = oldCel ? oldCel->links(): 0;
-    std::size_t newLinks = newCel ? newCel->links(): 0;
+    std::size_t oldLinks = (oldCel ? oldCel->links(): 0);
+    std::size_t newLinks = (newCel ? newCel->links(): 0);
     if ((oldLinks && !newCel) ||
-       ( newLinks && !oldCel) ||
-       ((oldLinks>0 || newLinks>0) && (oldCel->data() != newCel->data())))
+        (newLinks && !oldCel) ||
+        ((oldLinks || newLinks) && (oldCel->data() != newCel->data())))
       invalidateLayer(m_layer);
   }
 
