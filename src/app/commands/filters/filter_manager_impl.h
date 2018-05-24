@@ -44,7 +44,7 @@ namespace app {
   class InvalidAreaException : public base::Exception {
   public:
     InvalidAreaException() throw()
-    : base::Exception("The current mask/area to apply the effect is completely invalid.") { }
+    : base::Exception("The active selection to apply the effect is out of the canvas.") { }
   };
 
   class NoImageException : public base::Exception {

@@ -427,7 +427,9 @@ doc::PalettePicks FilterManagerImpl::getPalettePicks()
 void FilterManagerImpl::init(Cel* cel)
 {
   ASSERT(cel);
-  if (!updateBounds(static_cast<app::Document*>(m_site.document())->mask()))
+
+  Document* doc = static_cast<app::Document*>(m_site.document());
+  if (!updateBounds(doc->isMaskVisible() ? doc->mask(): nullptr))
     throw InvalidAreaException();
 
   m_cel = cel;
