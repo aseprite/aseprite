@@ -172,9 +172,9 @@ static void update_mouse_cursor()
   }
 }
 
-// static
 static UISystem* g_instance = nullptr;
 
+// static
 UISystem* UISystem::instance()
 {
   return g_instance;
