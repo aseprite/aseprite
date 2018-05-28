@@ -91,8 +91,9 @@ set(OBSERVABLE_TESTS OFF CACHE BOOL "Compile observable tests")
 add_subdirectory(observable)
 include_directories(observable)
 
-# Disable clip examples
+# Disable clip examples and tests
 set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
+set(CLIP_TESTS OFF CACHE BOOL "Compile clip tests")
 set(CLIP_X11_PNG_LIBRARY "${PNG_LIBRARY}")
 add_subdirectory(clip)
 
