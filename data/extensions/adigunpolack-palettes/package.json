@@ -1,0 +1,19 @@
+{
+  "name": "adigunpolack-palettes",
+  "displayName": "Adigun A. Polack Palettes",
+  "description": "Palettes created by Adigun A. Polack",
+  "version": "1.0",
+  "author": { "name": "Adigun A. Polack", "url": "https://twitter.com/AdigunPolack" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "AAP-64",          "path": "./aap-64.gpl" },
+      { "id": "AAP-Micro12",     "path": "./aap-micro12.gpl" },
+      { "id": "AAP-Splendor128", "path": "./aap-splendor128.gpl" },
+      { "id": "SimpleJPC-16",    "path": "./simplejpc-16.gpl" }
+    ]
+  }
+}
