@@ -10,8 +10,8 @@
   ],
   "contributes": {
     "palettes": [
-      { "id": "db16", "path": "./db16.gpl" },
-      { "id": "db32", "path": "./db32.gpl" }
+      { "id": "DB16", "path": "./db16.gpl" },
+      { "id": "DB32", "path": "./db32.gpl" }
     ]
   }
 }

@@ -10,7 +10,7 @@
   ],
   "contributes": {
     "palettes": [
-      { "id": "matriax8c", "path": "./matriax8c.gpl" }
+      { "id": "Matriax8c", "path": "./matriax8c.gpl" }
     ]
   }
 }

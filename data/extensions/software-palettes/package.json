@@ -9,13 +9,13 @@
   ],
   "contributes": {
     "palettes": [
-      { "id": "google-ui", "path": "./google-ui.gpl" },
-      { "id": "monokai", "path": "./monokai.gpl" },
-      { "id": "smile-basic", "path": "./smile-basic.gpl" },
-      { "id": "solarized", "path": "./solarized.gpl" },
-      { "id": "web-safe-colors", "path": "./web-safe-colors.gpl" },
-      { "id": "win16", "path": "./win16.gpl" },
-      { "id": "x11", "path": "./x11.gpl" }
+      { "id": "Google UI",       "path": "./google-ui.gpl" },
+      { "id": "Monokai",         "path": "./monokai.gpl" },
+      { "id": "SmileBASIC",      "path": "./smile-basic.gpl" },
+      { "id": "Solarized",       "path": "./solarized.gpl" },
+      { "id": "Web Safe Colors", "path": "./web-safe-colors.gpl" },
+      { "id": "Win16",           "path": "./win16.gpl" },
+      { "id": "X11",             "path": "./x11.gpl" }
     ]
   }
 }

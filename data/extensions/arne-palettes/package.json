@@ -9,16 +9,15 @@
   ],
   "contributes": {
     "palettes": [
-      { "id": "a64", "path": "./a64.gpl" },
-      { "id": "arne-paldac", "path": "./arne-paldac.gpl" },
-      { "id": "arne16", "path": "./arne16.gpl" },
-      { "id": "arne32", "path": "./arne32.gpl" },
-      { "id": "cg-arne", "path": "./cg-arne.gpl" },
-      { "id": "copper-tech", "path": "./copper-tech.gpl" },
-      { "id": "cpc-boy", "path": "./cpc-boy.gpl" },
-      { "id": "eroge-copper", "path": "./eroge-copper.gpl" },
-      { "id": "jmp", "path": "./jmp.gpl" },
-      { "id": "psygnork", "path": "./psygnork.gpl" }
+      { "id": "A64",          "path": "./a64.gpl" },
+      { "id": "ARNE16",       "path": "./arne16.gpl" },
+      { "id": "ARNE32",       "path": "./arne32.gpl" },
+      { "id": "CGArne",       "path": "./cg-arne.gpl" },
+      { "id": "Copper Tech",  "path": "./copper-tech.gpl" },
+      { "id": "CPC Boy",      "path": "./cpc-boy.gpl" },
+      { "id": "Eroge Copper", "path": "./eroge-copper.gpl" },
+      { "id": "JMP",          "path": "./jmp.gpl" },
+      { "id": "Psygnosia",    "path": "./psygnosia.gpl" }
     ]
   }
 }

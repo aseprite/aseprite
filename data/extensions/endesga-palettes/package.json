@@ -10,12 +10,13 @@
   ],
   "contributes": {
     "palettes": [
-      { "id": "arq4", "path": "./arq4.gpl" },
-      { "id": "edg16", "path": "./edg16.gpl" },
-      { "id": "edg32", "path": "./edg32.gpl" },
-      { "id": "edg8", "path": "./edg8.gpl" },
-      { "id": "en4", "path": "./en4.gpl" },
-      { "id": "enos16", "path": "./enos16.gpl" }
+      { "id": "ARQ4",   "path": "./arq4.gpl" },
+      { "id": "ARQ16",  "path": "./arq16.gpl" },
+      { "id": "EDG16",  "path": "./edg16.gpl" },
+      { "id": "EDG32",  "path": "./edg32.gpl" },
+      { "id": "EDG8",   "path": "./edg8.gpl" },
+      { "id": "EN4",    "path": "./en4.gpl" },
+      { "id": "ENOS16", "path": "./enos16.gpl" }
     ]
   }
 }
