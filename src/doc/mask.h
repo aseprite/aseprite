@@ -20,6 +20,8 @@
 namespace doc {
 
   // Represents the selection (selected pixels, 0/1, 0=non-selected, 1=selected)
+  //
+  // TODO rename Mask -> Selection
   class Mask : public Object {
   public:
     Mask();

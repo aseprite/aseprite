@@ -1,30 +1,30 @@
-// Aseprite
-// Copyright (C) 2018  David Capello
+// Aseprite Document Library
+// Copyright (c) 2018 David Capello
 //
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "app/util/fill_selection.h"
+#include "doc/algorithm/fill_selection.h"
 
 #include "doc/image_impl.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 
-namespace app {
-
-using namespace doc;
+namespace doc {
+namespace algorithm {
 
 void fill_selection(Image* image,
                     const gfx::Point& offset,
                     const Mask* mask,
                     const color_t color)
 {
+  ASSERT(mask);
   ASSERT(mask->bitmap());
-  if (!mask->bitmap())
+  if (!mask || !mask->bitmap())
     return;
 
   const LockImageBits<BitmapTraits> maskBits(mask->bitmap());
@@ -45,4 +45,5 @@ void fill_selection(Image* image,
   ASSERT(it == maskBits.end());
 }
 
-} // namespace app
+} // namespace algorithm
+} // namespace doc

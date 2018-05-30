@@ -19,23 +19,28 @@
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "app/util/expand_cel_canvas.h"
-#include "app/util/fill_selection.h"
+#include "doc/algorithm/fill_selection.h"
+#include "doc/algorithm/stroke_selection.h"
 #include "doc/mask.h"
 
 namespace app {
 
 class FillCommand : public Command {
 public:
-  FillCommand();
+  enum Type { Fill, Stroke };
+  FillCommand(Type type);
   Command* clone() const override { return new FillCommand(*this); }
-
 protected:
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
+private:
+  Type m_type;
 };
 
-FillCommand::FillCommand()
-  : Command(CommandId::Fill(), CmdUIOnlyFlag)
+FillCommand::FillCommand(Type type)
+  : Command(type == Stroke ? CommandId::Stroke():
+                             CommandId::Fill(), CmdUIOnlyFlag)
+  , m_type(type)
 {
 }
 
@@ -61,10 +66,11 @@ void FillCommand::onExecute(Context* ctx)
   Site site = *writer.site();
   Document* doc = (app::Document*)site.document();
   Sprite* sprite = site.sprite();
-  Cel* cel = site.cel();
+  Layer* layer = site.layer();
   Mask* mask = doc->mask();
-  if (!doc || !sprite || !cel || !mask ||
-      !doc->isMaskVisible())
+  if (!doc || !sprite ||
+      !layer || !layer->isImage() ||
+      !mask || !doc->isMaskVisible())
     return;
 
   Preferences& pref = Preferences::instance();
@@ -74,7 +80,7 @@ void FillCommand::onExecute(Context* ctx)
     Transaction transaction(writer.context(), "Fill Selection with Foreground Color");
     {
       ExpandCelCanvas expand(
-        site, cel->layer(),
+        site, layer,
         TiledMode::NONE, transaction,
         ExpandCelCanvas::None);
 
@@ -84,19 +90,31 @@ void FillCommand::onExecute(Context* ctx)
 
       const gfx::Point offset = (mask->bounds().origin()
                                  - expand.getCel()->position());
+      const doc::color_t docColor =
+        color_utils::color_for_layer(
+          color, layer);
 
-      fill_selection(expand.getDestCanvas(),
-                     offset,
-                     mask,
-                     color_utils::color_for_layer(color,
-                                                  cel->layer()));
+      if (m_type == Stroke) {
+        doc::algorithm::stroke_selection(
+          expand.getDestCanvas(),
+          offset,
+          mask,
+          docColor);
+      }
+      else {
+        doc::algorithm::fill_selection(
+          expand.getDestCanvas(),
+          offset,
+          mask,
+          docColor);
+      }
 
       expand.commit();
     }
 
     // If the cel wasn't deleted by cmd::ClearMask, we trim it.
-    cel = ctx->activeSite().cel();
-    if (cel && cel->layer()->isTransparent())
+    Cel* cel = ctx->activeSite().cel();
+    if (cel && layer->isTransparent())
       transaction.execute(new cmd::TrimCel(cel));
 
     transaction.commit();
@@ -107,7 +125,12 @@ void FillCommand::onExecute(Context* ctx)
 
 Command* CommandFactory::createFillCommand()
 {
-  return new FillCommand;
+  return new FillCommand(FillCommand::Fill);
+}
+
+Command* CommandFactory::createStrokeCommand()
+{
+  return new FillCommand(FillCommand::Stroke);
 }
 
 } // namespace app

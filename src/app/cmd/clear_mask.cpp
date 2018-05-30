@@ -12,7 +12,7 @@
 
 #include "app/cmd/clear_cel.h"
 #include "app/document.h"
-#include "app/util/fill_selection.h"
+#include "doc/algorithm/fill_selection.h"
 #include "doc/cel.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
@@ -89,7 +89,7 @@ void ClearMask::clear()
   app::Document* doc = static_cast<app::Document*>(cel->document());
   Mask* mask = doc->mask();
 
-  fill_selection(image, m_offset, mask, m_bgcolor);
+  doc::algorithm::fill_selection(image, m_offset, mask, m_bgcolor);
 }
 
 void ClearMask::restore()

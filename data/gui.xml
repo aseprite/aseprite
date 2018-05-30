@@ -40,6 +40,7 @@
       <key command="Clear" shortcut="Del" />
       <key command="Clear" shortcut="Backspace" />
       <key command="Fill" shortcut="F" />
+      <key command="Stroke" shortcut="S" />
       <key command="Flip" shortcut="Shift+H">
         <param name="target" value="mask" />
         <param name="orientation" value="horizontal" />
@@ -593,6 +594,7 @@
         <item command="Clear" text="@.edit_clear" />
         <separator />
         <item command="Fill" text="@.edit_fill" />
+        <item command="Stroke" text="@.edit_stroke" />
         <separator />
         <menu text="@.edit_rotate">
           <item command="Rotate" text="@.edit_rotate_180">

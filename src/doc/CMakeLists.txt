@@ -7,14 +7,17 @@ endif()
 
 add_library(doc-lib
   algo.cpp
+  algorithm/fill_selection.cpp
   algorithm/flip_image.cpp
   algorithm/floodfill.cpp
+  algorithm/modify_selection.cpp
   algorithm/polygon.cpp
   algorithm/resize_image.cpp
   algorithm/rotate.cpp
   algorithm/rotsprite.cpp
   algorithm/shift_image.cpp
   algorithm/shrink_bounds.cpp
+  algorithm/stroke_selection.cpp
   anidir.cpp
   blend_funcs.cpp
   blend_mode.cpp
