@@ -63,8 +63,7 @@ public:
   }
 
   ~Painter() {
-    if (m_canvas)
-      m_canvas->dispose();
+    ASSERT(!m_canvas);
   }
 
   void addRef() {
@@ -90,6 +89,10 @@ public:
       }
 
       m_paintingThread.join();
+      if (m_canvas) {
+        m_canvas->dispose();
+        m_canvas = nullptr;
+      }
     }
   }
 
