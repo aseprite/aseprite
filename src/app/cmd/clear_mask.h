@@ -40,7 +40,7 @@ namespace cmd {
     CmdSequence m_seq;
     base::UniquePtr<WithImage> m_dstImage;
     ImageRef m_copy;
-    int m_offsetX, m_offsetY;
+    gfx::Point m_offset;
     int m_boundsX, m_boundsY;
     color_t m_bgcolor;
   };

@@ -196,6 +196,7 @@ if(ENABLE_UI)
     commands/cmd_exit.cpp
     commands/cmd_export_sprite_sheet.cpp
     commands/cmd_eyedropper.cpp
+    commands/cmd_fill.cpp
     commands/cmd_fit_screen.cpp
     commands/cmd_flatten_layers.cpp
     commands/cmd_flip.cpp
@@ -390,6 +391,7 @@ if(ENABLE_UI)
     ui_context.cpp
     util/clipboard.cpp
     util/clipboard_native.cpp
+    util/fill_selection.cpp
     widget_loader.cpp)
 endif()
 

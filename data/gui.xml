@@ -18,7 +18,7 @@
       <key command="ImportSpriteSheet" shortcut="Ctrl+I" mac="Cmd+I" />
       <key command="ExportSpriteSheet" shortcut="Ctrl+E" mac="Cmd+E" />
       <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
-      <key command="AdvancedMode" shortcut="F" />
+      <key command="AdvancedMode" shortcut="Ctrl+F" />
       <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" win="Ctrl+Q" linux="Ctrl+Q" mac="Cmd+Q" />
       <key command="Exit" win="Alt+F4" />
@@ -39,6 +39,7 @@
       <key command="Paste" shortcut="Shift+Ins" />
       <key command="Clear" shortcut="Del" />
       <key command="Clear" shortcut="Backspace" />
+      <key command="Fill" shortcut="F" />
       <key command="Flip" shortcut="Shift+H">
         <param name="target" value="mask" />
         <param name="orientation" value="horizontal" />
@@ -590,6 +591,8 @@
         <item command="CopyMerged" text="@.edit_copy_merged" />
         <item command="Paste" text="@.edit_paste" />
         <item command="Clear" text="@.edit_clear" />
+        <separator />
+        <item command="Fill" text="@.edit_fill" />
         <separator />
         <menu text="@.edit_rotate">
           <item command="Rotate" text="@.edit_rotate_180">

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,6 +12,7 @@
 
 #include "app/cmd/clear_cel.h"
 #include "app/document.h"
+#include "app/util/fill_selection.h"
 #include "doc/cel.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
@@ -35,18 +36,18 @@ ClearMask::ClearMask(Cel* cel)
     return;
   }
 
-  Image* image = (cel ? cel->image(): NULL);
+  Image* image = cel->image();
+  assert(image);
   if (!image)
     return;
 
   Mask* mask = doc->mask();
-  m_offsetX = mask->bounds().x - cel->x();
-  m_offsetY = mask->bounds().y - cel->y();
+  m_offset = mask->bounds().origin() - cel->position();
 
   gfx::Rect bounds =
     image->bounds().createIntersection(
       gfx::Rect(
-        m_offsetX, m_offsetY,
+        m_offset.x, m_offset.y,
         mask->bounds().w, mask->bounds().h));
   if (bounds.isEmpty())
     return;
@@ -88,27 +89,7 @@ void ClearMask::clear()
   app::Document* doc = static_cast<app::Document*>(cel->document());
   Mask* mask = doc->mask();
 
-  ASSERT(mask->bitmap());
-  if (!mask->bitmap())
-    return;
-
-  const LockImageBits<BitmapTraits> maskBits(mask->bitmap());
-  LockImageBits<BitmapTraits>::const_iterator it = maskBits.begin();
-
-  // Clear the masked zones
-  int u, v;
-  for (v=0; v<mask->bounds().h; ++v) {
-    for (u=0; u<mask->bounds().w; ++u, ++it) {
-      ASSERT(it != maskBits.end());
-      if (*it) {
-        put_pixel(image,
-          u + m_offsetX,
-          v + m_offsetY, m_bgcolor);
-      }
-    }
-  }
-
-  ASSERT(it == maskBits.end());
+  fill_selection(image, m_offset, mask, m_bgcolor);
 }
 
 void ClearMask::restore()
