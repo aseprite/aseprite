@@ -77,15 +77,15 @@ BITMAP *screen = NULL;
 
 
 /* info about the current graphics drawing mode */
-int _drawing_mode = DRAW_MODE_SOLID;
+ALLEGRO_TLS int _drawing_mode = DRAW_MODE_SOLID;
 
-BITMAP *_drawing_pattern = NULL;
+ALLEGRO_TLS BITMAP *_drawing_pattern = NULL;
 
-int _drawing_x_anchor = 0;
-int _drawing_y_anchor = 0;
+ALLEGRO_TLS int _drawing_x_anchor = 0;
+ALLEGRO_TLS int _drawing_y_anchor = 0;
 
-unsigned int _drawing_x_mask = 0;
-unsigned int _drawing_y_mask = 0;
+ALLEGRO_TLS unsigned int _drawing_x_mask = 0;
+ALLEGRO_TLS unsigned int _drawing_y_mask = 0;
 
 
 /* default palette structures */

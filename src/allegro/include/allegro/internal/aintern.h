@@ -362,12 +362,12 @@ AL_VAR(int, _dispsw_status);
 
 
 /* current drawing mode */
-AL_VAR(int, _drawing_mode);
-AL_VAR(BITMAP *, _drawing_pattern);
-AL_VAR(int, _drawing_x_anchor);
-AL_VAR(int, _drawing_y_anchor);
-AL_VAR(unsigned int, _drawing_x_mask);
-AL_VAR(unsigned int, _drawing_y_mask);
+AL_VAR(ALLEGRO_TLS int, _drawing_mode);
+AL_VAR(ALLEGRO_TLS BITMAP *, _drawing_pattern);
+AL_VAR(ALLEGRO_TLS int, _drawing_x_anchor);
+AL_VAR(ALLEGRO_TLS int, _drawing_y_anchor);
+AL_VAR(ALLEGRO_TLS unsigned int, _drawing_x_mask);
+AL_VAR(ALLEGRO_TLS unsigned int, _drawing_y_mask);
 
 AL_FUNCPTR(int *, _palette_expansion_table, (int bpp));
 

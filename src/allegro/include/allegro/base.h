@@ -100,6 +100,14 @@ typedef struct _DRIVER_INFO         /* info about a hardware driver */
    int autodetect;                  /* set to allow autodetection */
 } _DRIVER_INFO;
 
+#ifdef _MSC_VER
+  #define ALLEGRO_TLS __declspec(thread)
+#elif __GNUC__
+  #define ALLEGRO_TLS __thread
+#else
+  #define ALLEGRO_TLS
+#endif
+
 #ifdef __cplusplus
    }
 #endif
