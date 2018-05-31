@@ -239,7 +239,8 @@ void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   // (zoom, scroll, etc.)
   if (ev.command()->id() == CommandId::PlayAnimation() ||
       ev.command()->id() == CommandId::Zoom() ||
-      ev.command()->id() == CommandId::Scroll()) {
+      ev.command()->id() == CommandId::Scroll() ||
+      ev.command()->id() == CommandId::Timeline()) {
     return;
   }
 
