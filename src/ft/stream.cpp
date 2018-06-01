@@ -37,11 +37,9 @@ static unsigned long ft_stream_io(FT_Stream stream,
 
 FT_Stream open_stream(const std::string& utf8Filename)
 {
-
   FT_Stream stream = nullptr;
-  stream = (FT_Stream)malloc(sizeof(*stream));
-  memset(stream, 0, sizeof(*stream));
-  if(stream == NULL)
+  stream = (FT_Stream)calloc(1, sizeof(*stream));
+  if (stream == NULL)
     return nullptr;
 
   TRACE("FT: Loading font %s... ", utf8Filename.c_str());
