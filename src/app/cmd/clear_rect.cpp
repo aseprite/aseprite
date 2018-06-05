@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,9 +23,9 @@ using namespace doc;
 
 ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
 {
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  ASSERT(cel);
 
-  Image* image = (cel ? cel->image(): NULL);
+  Image* image = cel->image();
   if (!image)
     return;
 
@@ -41,6 +41,8 @@ ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
     return;
 
   m_dstImage.reset(new WithImage(image));
+
+  app::Document* doc = static_cast<app::Document*>(cel->document());
   m_bgcolor = doc->bgColor(cel->layer());
 
   m_copy.reset(crop_image(image,
