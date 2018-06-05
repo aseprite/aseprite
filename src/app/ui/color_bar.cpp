@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -45,6 +45,7 @@
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -271,7 +272,7 @@ ColorBar::ColorBar(int align)
   m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
   m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
-  m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
+  m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
   KeyboardShortcuts::instance()->UserChange.connect(
     base::Bind<void>(&ColorBar::setupTooltips, this, tooltipManager));
@@ -451,9 +452,9 @@ void ColorBar::onAppPaletteChange()
   updateWarningIcon(m_bgColor.getColor(), m_bgWarningIcon);
 }
 
-void ColorBar::onFocusPaletteView()
+void ColorBar::onFocusPaletteView(ui::Message* msg)
 {
-  App::instance()->inputChain().prioritize(this);
+  App::instance()->inputChain().prioritize(this, msg);
 }
 
 void ColorBar::onBeforeExecuteCommand(CommandExecutionEvent& ev)
@@ -967,9 +968,15 @@ void ColorBar::hideRemap()
   layout();
 }
 
-void ColorBar::onNewInputPriority(InputChainElement* element)
+void ColorBar::onNewInputPriority(InputChainElement* element,
+                                  const ui::Message* msg)
 {
-  m_paletteView.deselect();
+  if (dynamic_cast<Timeline*>(element) &&
+      msg && (msg->ctrlPressed() || msg->shiftPressed()))
+    return;
+
+  if (element != this)
+    m_paletteView.deselect();
 }
 
 bool ColorBar::onCanCut(Context* ctx)

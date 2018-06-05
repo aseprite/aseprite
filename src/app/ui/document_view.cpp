@@ -455,7 +455,8 @@ void DocumentView::onLayerRestacked(doc::DocumentEvent& ev)
   m_editor->invalidate();
 }
 
-void DocumentView::onNewInputPriority(InputChainElement* element)
+void DocumentView::onNewInputPriority(InputChainElement* element,
+                                      const ui::Message* msg)
 {
   // Do nothing
 }

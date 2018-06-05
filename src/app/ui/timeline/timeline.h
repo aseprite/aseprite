@@ -147,7 +147,8 @@ namespace app {
     void onDestroyEditor(Editor* editor) override;
 
     // InputChainElement impl
-    void onNewInputPriority(InputChainElement* element) override;
+    void onNewInputPriority(InputChainElement* element,
+                            const ui::Message* msg) override;
     bool onCanCut(Context* ctx) override;
     bool onCanCopy(Context* ctx) override;
     bool onCanPaste(Context* ctx) override;
@@ -283,6 +284,7 @@ namespace app {
     layer_t getLayerIndex(const Layer* layer) const;
     bool isLayerActive(const layer_t layerIdx) const;
     bool isFrameActive(const frame_t frame) const;
+    bool isCelActive(const layer_t layerIdx, const frame_t frame) const;
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();

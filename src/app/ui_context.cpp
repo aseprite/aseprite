@@ -79,7 +79,7 @@ void UIContext::setActiveView(DocumentView* docView)
   MainWindow* mainWin = App::instance()->mainWindow();
 
   // Prioritize workspace for user input.
-  App::instance()->inputChain().prioritize(mainWin->getWorkspace());
+  App::instance()->inputChain().prioritize(mainWin->getWorkspace(), nullptr);
 
   // Do nothing cases: 1) the view is already selected, or 2) the view
   // is the a preview.

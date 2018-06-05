@@ -90,7 +90,8 @@ namespace app {
     void onGeneralUpdate(doc::DocumentEvent& ev) override;
 
     // InputChainElement impl
-    void onNewInputPriority(InputChainElement* element) override;
+    void onNewInputPriority(InputChainElement* element,
+                            const ui::Message* msg) override;
     bool onCanCut(Context* ctx) override;
     bool onCanCopy(Context* ctx) override;
     bool onCanPaste(Context* ctx) override;
@@ -105,7 +106,7 @@ namespace app {
 
   protected:
     void onAppPaletteChange();
-    void onFocusPaletteView();
+    void onFocusPaletteView(ui::Message* msg);
     void onBeforeExecuteCommand(CommandExecutionEvent& ev);
     void onAfterExecuteCommand(CommandExecutionEvent& ev);
     void onPaletteButtonClick();

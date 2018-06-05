@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -276,7 +276,7 @@ bool PaletteView::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kFocusEnterMessage:
-      FocusEnter();
+      FocusOrClick(msg);
       break;
 
     case kKeyDownMessage:
@@ -291,6 +291,10 @@ bool PaletteView::onProcessMessage(Message* msg)
 
         case Hit::COLOR:
           m_state = State::SELECTING_COLOR;
+
+          // As we can ctrl+click color bar + timeline, now we have to
+          // re-prioritize the color bar on each click.
+          FocusOrClick(msg);
           break;
 
         case Hit::OUTLINE:
@@ -322,7 +326,7 @@ bool PaletteView::onProcessMessage(Message* msg)
                              (msg->type() == kMouseDownMessage) ||
                              ((buttons & kButtonMiddle) == kButtonMiddle))) {
           if ((buttons & kButtonMiddle) == 0) {
-            if (!msg->ctrlPressed())
+            if (!msg->ctrlPressed() && !msg->shiftPressed())
               deselect();
 
             if (msg->type() == kMouseMoveMessage)

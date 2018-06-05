@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,7 +22,10 @@ namespace app {
 
   class DocumentRange {
   public:
-    enum Type { kNone, kCels, kFrames, kLayers };
+    enum Type { kNone = 0,
+                kCels = 1,
+                kFrames = 2,
+                kLayers = 4 };
 
     DocumentRange();
     DocumentRange(Cel* cel);
@@ -36,13 +39,12 @@ namespace app {
 
     void displace(layer_t layerDelta, frame_t frameDelta);
 
-    bool contains(Layer* layer) const;
-    bool contains(frame_t frame) const {
+    bool contains(const Layer* layer) const;
+    bool contains(const frame_t frame) const {
       return m_selectedFrames.contains(frame);
     }
-    bool contains(Layer* layer, frame_t frame) const {
-      return contains(layer) && contains(frame);
-    }
+    bool contains(const Layer* layer,
+                  const frame_t frame) const;
 
     void clearRange();
     void startRange(Layer* fromLayer, frame_t fromFrame, Type type);
@@ -66,7 +68,8 @@ namespace app {
     void selectLayerRange(Layer* fromLayer, Layer* toLayer);
     void selectFrameRange(frame_t fromFrame, frame_t toFrame);
 
-    Type m_type;
+    Type m_type;                // Last used type of the range
+    int m_flags;                // All used types in startRange()
     SelectedLayers m_selectedLayers;
     SelectedFrames m_selectedFrames;
     Layer* m_selectingFromLayer;

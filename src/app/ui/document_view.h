@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -84,7 +84,8 @@ namespace app {
     void onLayerRestacked(doc::DocumentEvent& ev) override;
 
     // InputChainElement impl
-    void onNewInputPriority(InputChainElement* element) override;
+    void onNewInputPriority(InputChainElement* element,
+                            const ui::Message* msg) override;
     bool onCanCut(Context* ctx) override;
     bool onCanCopy(Context* ctx) override;
     bool onCanPaste(Context* ctx) override;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -303,12 +303,13 @@ WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& pos)
   return nullptr;
 }
 
-void Workspace::onNewInputPriority(InputChainElement* newElement)
+void Workspace::onNewInputPriority(InputChainElement* newElement,
+                                   const ui::Message* msg)
 {
   WorkspaceView* view = activeView();
   InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
   if (activeElement)
-    activeElement->onNewInputPriority(newElement);
+    activeElement->onNewInputPriority(newElement, msg);
 }
 
 bool Workspace::onCanCut(Context* ctx)

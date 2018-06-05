@@ -565,7 +565,7 @@ bool Timeline::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kFocusEnterMessage:
-      App::instance()->inputChain().prioritize(this);
+      App::instance()->inputChain().prioritize(this, msg);
       break;
 
     case kTimerMessage:
@@ -609,6 +609,10 @@ bool Timeline::onProcessMessage(Message* msg)
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
         return true;
       }
+
+      // As we can ctrl+click color bar + timeline, now we have to
+      // re-prioritize timeline on each click.
+      App::instance()->inputChain().prioritize(this, msg);
 
       // Update hot part (as the user might have left clicked with
       // Ctrl on OS X, which it's converted to a right-click and it's
@@ -2024,8 +2028,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
     m_hot.frame == frame);
-  const bool is_active = (isLayerActive(layerIndex) ||
-                          isFrameActive(frame));
+  const bool is_active = isCelActive(layerIndex, frame);
   const bool is_empty = (image == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect full_bounds = bounds;
@@ -3423,6 +3426,15 @@ bool Timeline::isFrameActive(const frame_t frame) const
     return m_range.contains(frame);
 }
 
+bool Timeline::isCelActive(const layer_t layerIdx, const frame_t frame) const
+{
+  if (m_range.enabled())
+    return m_range.contains(m_rows[layerIdx].layer(), frame);
+  else
+    return (layerIdx == getLayerIndex(m_layer) &&
+            frame == m_frame);
+}
+
 void Timeline::dropRange(DropOp op)
 {
   bool copy = (op == Timeline::kCopy);
@@ -3697,7 +3709,8 @@ int Timeline::topHeight() const
   return h;
 }
 
-void Timeline::onNewInputPriority(InputChainElement* element)
+void Timeline::onNewInputPriority(InputChainElement* element,
+                                  const ui::Message* msg)
 {
   // It looks like the user wants to execute commands targetting the
   // ColorBar instead of the Timeline. Here we disable the selected
@@ -3709,10 +3722,15 @@ void Timeline::onNewInputPriority(InputChainElement* element)
   // That is why we don't disable the range in this case.
   Workspace* workspace = dynamic_cast<Workspace*>(element);
   if (!workspace) {
-    if (m_rangeLocks == 0)
-      m_range.clearRange();
+    // With Ctrl or Shift we can combine ColorBar selection + Timeline
+    // selection.
+    if (msg && (msg->ctrlPressed() || msg->shiftPressed()))
+      return;
 
-    invalidate();
+    if (element != this && m_rangeLocks == 0) {
+      m_range.clearRange();
+      invalidate();
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,19 +16,23 @@
 
 namespace app {
 
-void InputChain::prioritize(InputChainElement* element)
+void InputChain::prioritize(InputChainElement* element,
+                            const ui::Message* msg)
 {
-  if (!m_elements.empty() && m_elements.front() == element)
-    return;
+  const bool alreadyInFront =
+    (!m_elements.empty() && m_elements.front() == element);
 
-  auto it = std::find(m_elements.begin(), m_elements.end(), element);
-  if (it != m_elements.end())
-    m_elements.erase(it);
+  if (!alreadyInFront) {
+    auto it = std::find(m_elements.begin(), m_elements.end(), element);
+    if (it != m_elements.end())
+      m_elements.erase(it);
+  }
 
   for (auto e : m_elements)
-    e->onNewInputPriority(element);
+    e->onNewInputPriority(element, msg);
 
-  m_elements.insert(m_elements.begin(), element);
+  if (!alreadyInFront)
+    m_elements.insert(m_elements.begin(), element);
 }
 
 bool InputChain::canCut(Context* ctx)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,6 +21,7 @@ using namespace doc;
 
 DocumentRange::DocumentRange()
   : m_type(kNone)
+  , m_flags(m_type)
   , m_selectingFromLayer(nullptr)
   , m_selectingFromFrame(-1)
 {
@@ -28,6 +29,7 @@ DocumentRange::DocumentRange()
 
 DocumentRange::DocumentRange(Cel* cel)
   : m_type(kCels)
+  , m_flags(m_type)
   , m_selectingFromLayer(nullptr)
   , m_selectingFromFrame(-1)
 {
@@ -38,6 +40,7 @@ DocumentRange::DocumentRange(Cel* cel)
 void DocumentRange::clearRange()
 {
   m_type = kNone;
+  m_flags = kNone;
   m_selectedLayers.clear();
   m_selectedFrames.clear();
 }
@@ -45,6 +48,7 @@ void DocumentRange::clearRange()
 void DocumentRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
 {
   m_type = type;
+  m_flags |= type;
   m_selectingFromLayer = fromLayer;
   m_selectingFromFrame = fromFrame;
 
@@ -69,6 +73,7 @@ void DocumentRange::selectLayer(Layer* layer)
 {
   if (m_type == kNone)
     m_type = kLayers;
+  m_flags |= kLayers;
 
   m_selectedLayers.insert(layer);
 }
@@ -77,17 +82,46 @@ void DocumentRange::selectLayers(const SelectedLayers& selLayers)
 {
   if (m_type == kNone)
     m_type = kLayers;
+  m_flags |= kLayers;
 
   for (auto layer : selLayers)
     m_selectedLayers.insert(layer);
 }
 
-bool DocumentRange::contains(Layer* layer) const
+bool DocumentRange::contains(const Layer* layer) const
 {
   if (enabled())
-    return m_selectedLayers.contains(layer);
+    return m_selectedLayers.contains(const_cast<Layer*>(layer));
   else
     return false;
+}
+
+bool DocumentRange::contains(const Layer* layer,
+                             const frame_t frame) const
+{
+  switch (m_type) {
+    case DocumentRange::kNone:
+      return false;
+    case DocumentRange::kCels:
+      return contains(layer) && contains(frame);
+    case DocumentRange::kFrames:
+      if (contains(frame)) {
+        if ((m_flags & (kCels | kLayers)) != 0)
+          return contains(layer);
+        else
+          return true;
+      }
+      break;
+    case DocumentRange::kLayers:
+      if (contains(layer)) {
+        if ((m_flags & (kCels | kFrames)) != 0)
+          return contains(frame);
+        else
+          return true;
+      }
+      break;
+  }
+  return false;
 }
 
 void DocumentRange::displace(layer_t layerDelta, frame_t frameDelta)
@@ -104,18 +138,16 @@ bool DocumentRange::convertToCels(const Sprite* sprite)
     case DocumentRange::kCels:
       break;
     case DocumentRange::kFrames: {
-      LayerList layers = sprite->allBrowsableLayers();
-      ASSERT(layers.empty());
-      if (!layers.empty()) {
-        selectLayerRange(layers.front(), layers.back());
-        m_type = DocumentRange::kCels;
+      if ((m_flags & (kCels | kLayers)) == 0) {
+        for (auto layer : sprite->allBrowsableLayers())
+          m_selectedLayers.insert(layer);
       }
-      else
-        return false;
+      m_type = DocumentRange::kCels;
       break;
     }
     case DocumentRange::kLayers:
-      selectFrameRange(0, sprite->lastFrame());
+      if ((m_flags & (kCels | kFrames)) == 0)
+        selectFrameRange(0, sprite->lastFrame());
       m_type = DocumentRange::kCels;
       break;
   }

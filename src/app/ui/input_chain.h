@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,10 @@
 #pragma once
 
 #include <vector>
+
+namespace ui {
+  class Message;
+}
 
 namespace app {
 
@@ -21,7 +25,8 @@ namespace app {
   // user focus, they call InputChain::prioritize().
   class InputChain {
   public:
-    void prioritize(InputChainElement* element);
+    void prioritize(InputChainElement* element,
+                    const ui::Message* msg);
 
     bool canCut(Context* ctx);
     bool canCopy(Context* ctx);
