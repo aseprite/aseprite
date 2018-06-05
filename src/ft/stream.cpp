@@ -1,5 +1,5 @@
 // Aseprite FreeType Wrapper
-// Copyright (c) 2016-2017 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -37,12 +37,11 @@ static unsigned long ft_stream_io(FT_Stream stream,
 
 FT_Stream open_stream(const std::string& utf8Filename)
 {
-
   FT_Stream stream = nullptr;
   stream = (FT_Stream)malloc(sizeof(*stream));
-  memset(stream, 0, sizeof(*stream));
-  if(stream == NULL)
+  if(!stream)
     return nullptr;
+  memset(stream, 0, sizeof(*stream));
 
   TRACE("FT: Loading font %s... ", utf8Filename.c_str());
 
