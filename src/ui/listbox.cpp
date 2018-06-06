@@ -112,8 +112,8 @@ void ListBox::selectChild(Widget* item, Message* msg)
     bool newState;
 
     if (m_multiselect) {
-      ASSERT(i >= 0 && i < m_states.size());
-      newState = (i >= 0 && i < m_states.size() ? m_states[i]: false);
+      ASSERT(i >= 0 && i < int(m_states.size()));
+      newState = (i >= 0 && i < int(m_states.size()) ? m_states[i]: false);
 
       if (i >= MIN(itemIndex, m_firstSelectedIndex) &&
           i <= MAX(itemIndex, m_firstSelectedIndex)) {
