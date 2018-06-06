@@ -145,8 +145,10 @@
         <!-- Timeline -->
         <vbox id="section_timeline">
           <separator text="@.section_timeline" horizontal="true" />
-          <check text="@.autotimeline" id="autotimeline" tooltip="@.autotimeline_tooltip" />
-          <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip" />
+          <check text="@.autotimeline" id="autotimeline" tooltip="@.autotimeline_tooltip"
+		 pref="general.autoshow_timeline" />
+          <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip"
+		 pref="general.rewind_on_stop" />
 	  <hbox>
 	    <label text="@.default_first_frame" />
 	    <entry id="first_frame" maxsize="3" />

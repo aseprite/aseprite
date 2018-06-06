@@ -366,6 +366,7 @@ if(ENABLE_UI)
     ui/palette_view.cpp
     ui/palettes_listbox.cpp
     ui/popup_window_pin.cpp
+    ui/pref_widget.cpp
     ui/preview_editor.cpp
     ui/recent_listbox.cpp
     ui/resources_listbox.cpp

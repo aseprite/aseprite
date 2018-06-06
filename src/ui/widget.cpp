@@ -1423,23 +1423,6 @@ bool Widget::onProcessMessage(Message* msg)
       return paintEvent(graphics.get(), false);
     }
 
-    case kKeyDownMessage:
-    case kKeyUpMessage:
-      if (static_cast<KeyMessage*>(msg)->propagateToChildren()) {
-        // Broadcast the message to the children.
-        for (auto child : m_children)
-          if (child->sendMessage(msg))
-            return true;
-      }
-
-      // Propagate the message to the parent.
-      if (static_cast<KeyMessage*>(msg)->propagateToParent() &&
-          parent()) {
-        return parent()->sendMessage(msg);
-      }
-      else
-        break;
-
     case kDoubleClickMessage: {
       // Convert double clicks into mouse down
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
@@ -1474,6 +1457,17 @@ bool Widget::onProcessMessage(Message* msg)
       }
 
   }
+
+  // Broadcast the message to the children.
+  if (msg->propagateToChildren()) {
+    for (auto child : m_children)
+      if (child->sendMessage(msg))
+        return true;
+  }
+
+  // Propagate the message to the parent.
+  if (msg->propagateToParent() && parent())
+    return parent()->sendMessage(msg);
 
   return false;
 }

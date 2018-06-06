@@ -13,10 +13,16 @@
 
 namespace app {
 
+  class OptionBase;
+
   class Section {
   public:
     Section(const std::string& name) : m_name(name) { }
+    virtual ~Section() { }
     const char* name() const { return m_name.c_str(); }
+
+    virtual Section* section(const char* id) = 0;
+    virtual OptionBase* option(const char* id) = 0;
 
     obs::signal<void()> BeforeChange;
     obs::signal<void()> AfterChange;
@@ -31,6 +37,7 @@ namespace app {
       : m_section(section)
       , m_id(id) {
     }
+    virtual ~OptionBase() { }
     const char* section() const { return m_section->name(); }
     const char* id() const { return m_id; }
   protected:

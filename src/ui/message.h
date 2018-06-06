@@ -24,6 +24,12 @@ namespace ui {
   class Widget;
 
   class Message {
+    enum Flags {
+      Used = 1,               // Message already used/processed by one widget
+      FromFilter = 2,         // Sent from pre-filter
+      PropagateToChildren = 4,
+      PropagateToParent = 8,
+    };
   public:
     typedef WidgetsList::iterator& recipients_iterator;
 
@@ -34,10 +40,10 @@ namespace ui {
     MessageType type() const { return m_type; }
     const WidgetsList& recipients() const { return m_recipients; }
     bool hasRecipients() const { return !m_recipients.empty(); }
-    bool isUsed() const { return m_used; }
-    bool fromFilter() const { return m_fromFilter; }
-    void setFromFilter(bool state) { m_fromFilter = state; }
-    void markAsUsed() { m_used = true; }
+    bool isUsed() const { return hasFlag(Used); }
+    bool fromFilter() const { return hasFlag(FromFilter); }
+    void setFromFilter(const bool state) { setFlag(FromFilter, state); }
+    void markAsUsed() { setFlag(Used, true); }
     KeyModifiers modifiers() const { return m_modifiers; }
     bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
     bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
@@ -56,11 +62,23 @@ namespace ui {
 
     void broadcastToChildren(Widget* widget);
 
+    bool propagateToChildren() const { return hasFlag(PropagateToChildren); }
+    bool propagateToParent() const { return hasFlag(PropagateToParent); }
+    void setPropagateToChildren(const bool state) { setFlag(PropagateToChildren, state); }
+    void setPropagateToParent(const bool state) { setFlag(PropagateToParent, state); }
+
   private:
+    bool hasFlag(const Flags flag) const {
+      return (m_flags & flag) == flag;
+    }
+    void setFlag(const Flags flag, const bool state) {
+      m_flags = (state ? (m_flags | flag):
+                         (m_flags & ~flag));
+    }
+
     MessageType m_type;       // Type of message
     WidgetsList m_recipients; // List of recipients of the message
-    bool m_used;              // Was used
-    bool m_fromFilter;        // Sent from pre-filter
+    int m_flags;              // Was used
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
   };
 
@@ -77,18 +95,12 @@ namespace ui {
     int repeat() const { return m_repeat; }
     bool isDeadKey() const { return m_isDead; }
     void setDeadKey(bool state) { m_isDead = state; }
-    bool propagateToChildren() const { return m_propagate_to_children; }
-    bool propagateToParent() const { return m_propagate_to_parent; }
-    void setPropagateToChildren(bool flag) { m_propagate_to_children = flag; }
-    void setPropagateToParent(bool flag) { m_propagate_to_parent = flag; }
 
   private:
     KeyScancode m_scancode;
     int m_unicodeChar;
     int m_repeat; // repeat=0 means the first time the key is pressed
     bool m_isDead;
-    bool m_propagate_to_children;
-    bool m_propagate_to_parent;
   };
 
   class PaintMessage : public Message {

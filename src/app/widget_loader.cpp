@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -7,6 +7,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include "app/ui/pref_widget.h"
 
 #include "app/widget_loader.h"
 
@@ -184,15 +186,29 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   else if (elem_name == "check") {
-    const char *looklike = elem->Attribute("looklike");
+    const char* looklike = elem->Attribute("looklike");
+    const char* pref = elem->Attribute("pref");
+
+    ASSERT(!widget || !pref);   // widget && pref is not supported
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
+      ASSERT(!pref);             // not supported yet
+
       if (!widget)
         widget = new CheckBox("", kButtonWidget);
     }
     else {
-      if (!widget)
-        widget = new CheckBox("");
+      if (!widget) {
+        // Automatic bind <check> widget with bool preference option
+        if (pref) {
+          auto prefWidget = new BoolPrefWidget<CheckBox>("");
+          prefWidget->setPref(pref);
+          widget = prefWidget;
+        }
+        else {
+          widget = new CheckBox("");
+        }
+      }
     }
 
     bool center = bool_attr_is_true(elem, "center");

@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014-2016 David Capello
+// Copyright (c) 2014-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +29,9 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
 
   std::cout
     << indent << "  void load();\n"
-    << indent << "  void save();\n";
+    << indent << "  void save();\n"
+    << indent << "  Section* section(const char* id) override;\n"
+    << indent << "  OptionBase* option(const char* id) override;\n";
 
   TiXmlElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
   while (child) {
@@ -100,6 +102,8 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
     << "{\n"
     << "}\n";
 
+  // Section::load()
+
   std::cout
     << "\n"
     << "void " << prefix << className << "::load()\n"
@@ -136,7 +140,11 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
 
   std::cout
     << "}\n"
-    << "\n"
+    << "\n";
+
+  // Section::save()
+
+  std::cout
     << "void " << prefix << className << "::save()\n"
     << "{\n";
 
@@ -157,7 +165,57 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
   }
 
   std::cout
+    << "}\n"
+    << "\n";
+
+  // Section::section(id)
+
+  std::cout
+    << "Section* " << prefix << className << "::section(const char* id)\n"
+    << "{\n";
+
+  child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
+  while (child) {
+    if (child->Value()) {
+      std::string name = child->Value();
+      const char* childId = child->Attribute("id");
+      if (name == "section") {
+        std::string memberName = convert_xmlid_to_cppid(childId, false);
+        std::cout << "  if (std::strcmp(id, " << memberName << ".name()) == 0) return &" << memberName << ";\n";
+      }
+    }
+    child = child->NextSiblingElement();
+  }
+
+  std::cout
+    << "  return nullptr;\n"
+    << "}\n"
+    << "\n";
+
+  // Section::option(id)
+
+  std::cout
+    << "OptionBase* " << prefix << className << "::option(const char* id)\n"
+    << "{\n";
+
+  child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
+  while (child) {
+    if (child->Value()) {
+      std::string name = child->Value();
+      const char* childId = child->Attribute("id");
+      if (name == "option") {
+        std::string memberName = convert_xmlid_to_cppid(childId, false);
+        std::cout << "  if (std::strcmp(id, " << memberName << ".id()) == 0) return &" << memberName << ";\n";
+      }
+    }
+    child = child->NextSiblingElement();
+  }
+
+  std::cout
+    << "  return nullptr;\n"
     << "}\n";
+
+  // Sub-sections
 
   child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
   while (child) {
@@ -252,6 +310,8 @@ void gen_pref_impl(TiXmlDocument* doc, const std::string& inputFn)
     << "\n"
     << "#include \"app/pref/option_io.h\"\n"
     << "#include \"app/pref/preferences.h\"\n"
+    << "\n"
+    << "#include <cstring>\n"
     << "\n"
     << "namespace app {\n"
     << "namespace gen {\n";

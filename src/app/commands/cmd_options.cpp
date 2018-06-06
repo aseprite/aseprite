@@ -22,6 +22,7 @@
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/ui/color_button.h"
+#include "app/ui/pref_widget.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
@@ -188,12 +189,6 @@ public:
     defaultSliceColor()->setColor(m_pref.slices.defaultColor());
 
     // Others
-    if (m_pref.general.autoshowTimeline())
-      autotimeline()->setSelected(true);
-
-    if (m_pref.general.rewindOnStop())
-      rewindOnStop()->setSelected(true);
-
     firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
 
     if (m_pref.general.expandMenubarOnMouseover())
@@ -397,12 +392,17 @@ public:
   }
 
   void saveConfig() {
+    // Save preferences in widgets that are bound to options automatically
+    {
+      Message* msg = new Message(kSavePreferencesMessage);
+      msg->setPropagateToChildren(msg);
+      sendMessage(msg);
+    }
+
     // Update language
     Strings::instance()->setCurrentLanguage(
       language()->getItemText(language()->getSelectedItemIndex()));
 
-    m_pref.general.autoshowTimeline(autotimeline()->isSelected());
-    m_pref.general.rewindOnStop(rewindOnStop()->isSelected());
     m_globPref.timeline.firstFrame(firstFrame()->textInt());
     m_pref.general.showFullPath(showFullPath()->isSelected());
     m_pref.saveFile.defaultExtension(getExtension(defaultExtension()));
