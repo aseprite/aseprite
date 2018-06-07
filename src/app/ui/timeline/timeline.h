@@ -285,6 +285,7 @@ namespace app {
     bool isLayerActive(const layer_t layerIdx) const;
     bool isFrameActive(const frame_t frame) const;
     bool isCelActive(const layer_t layerIdx, const frame_t frame) const;
+    bool isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const;
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();

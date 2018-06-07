@@ -93,6 +93,7 @@
         <color id="timeline_active_hover_text" value="#ffffff" />
         <color id="timeline_clicked" value="#536069" />
         <color id="timeline_clicked_text" value="#ffffff" />
+        <color id="timeline_focused_text" value="#ffffff" />
         <color id="timeline_padding" value="#7d929e" />
         <color id="timeline_band_highlight" value="#93adbb" />
         <color id="timeline_band_bg" value="#76858e" />
@@ -302,6 +303,7 @@
         <part id="timeline_drop_layer_deco" x="252" y="127" w1="3" w2="1" w3="3" h1="2" h2="1" h3="2" />
         <part id="timeline_drop_frame_deco" x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
         <part id="timeline_loop_range" x="240" y="132" w1="4" w2="4" w3="4" h1="3" h2="6" h3="3" />
+        <part id="timeline_focused" x="228" y="12" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
         <part id="flag_normal" x="0" y="240" w="16" h="10" />
         <part id="flag_highlight" x="16" y="240" w="16" h="10" />
         <part id="drop_pixels_ok" x="176" y="176" w="7" h="8" />
@@ -813,7 +815,11 @@
         </style>
         <style id="timeline_selected_cel">
             <background part="timeline_clicked" />
+            <background part="timeline_active" state="mouse" />
             <text color="timeline_clicked_text" />
+        </style>
+        <style id="timeline_focused_cel">
+            <background part="timeline_focused" />
         </style>
         <style id="timeline_empty_frame">
             <background part="timeline_empty_frame_normal" />

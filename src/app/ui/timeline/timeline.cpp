@@ -2029,6 +2029,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
     m_hot.layer == layerIndex &&
     m_hot.frame == frame);
   const bool is_active = isCelActive(layerIndex, frame);
+  const bool is_loosely_active = isCelLooselyActive(layerIndex, frame);
   const bool is_empty = (image == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, frame));
   gfx::Rect full_bounds = bounds;
@@ -2037,11 +2038,14 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
     return;
 
   // Draw background
-  if (layer == m_layer &&
-      frame == m_frame)
-    drawPart(g, bounds, nullptr, styles.timelineSelectedCel(), false, false, true);
+  if (layer == m_layer && frame == m_frame)
+    drawPart(g, bounds, nullptr,
+             m_range.enabled() ? styles.timelineFocusedCel():
+                                 styles.timelineSelectedCel(), false, is_hover, true);
+  else if (m_range.enabled() && is_active)
+    drawPart(g, bounds, nullptr, styles.timelineSelectedCel(), false, is_hover, true);
   else
-    drawPart(g, bounds, nullptr, styles.timelineBox(), is_active, is_hover);
+    drawPart(g, bounds, nullptr, styles.timelineBox(), is_loosely_active, is_hover);
 
   // Fill with an user-defined custom color.
   if (cel && cel->data()) {
@@ -2088,7 +2092,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
       style = styles.timelineKeyframe();
   }
 
-  drawPart(g, bounds, nullptr, style, is_active, is_hover);
+  drawPart(g, bounds, nullptr, style, is_loosely_active, is_hover);
 
   // Draw thumbnail
   if ((docPref().thumbnails.enabled() && m_zoom > 1) && image) {
@@ -2107,7 +2111,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
 
   // Draw decorators to link the activeCel with its links.
   if (data && data->activeIt != data->end)
-    drawCelLinkDecorators(g, full_bounds, cel, frame, is_active, is_hover, data);
+    drawCelLinkDecorators(g, full_bounds, cel, frame, is_loosely_active, is_hover, data);
 }
 
 void Timeline::updateCelOverlayBounds(const Hit& hit)
@@ -3432,6 +3436,16 @@ bool Timeline::isCelActive(const layer_t layerIdx, const frame_t frame) const
     return m_range.contains(m_rows[layerIdx].layer(), frame);
   else
     return (layerIdx == getLayerIndex(m_layer) &&
+            frame == m_frame);
+}
+
+bool Timeline::isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const
+{
+  if (m_range.enabled())
+    return (m_range.contains(m_rows[layerIdx].layer()) ||
+            m_range.contains(frame));
+  else
+    return (layerIdx == getLayerIndex(m_layer) ||
             frame == m_frame);
 }
 
