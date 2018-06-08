@@ -93,7 +93,8 @@ namespace app {
     const SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
 
     void prepareToMoveRange();
-    void moveRange(Range& range);
+    void moveRange(const Range& range);
+    void setRange(const Range& range);
 
     void activateClipboardRange();
 

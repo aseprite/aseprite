@@ -503,7 +503,7 @@ void Timeline::prepareToMoveRange()
   m_moveRangeData.activeRelativeFrame = j;
 }
 
-void Timeline::moveRange(Range& range)
+void Timeline::moveRange(const Range& range)
 {
   regenerateRows();
 
@@ -533,6 +533,12 @@ void Timeline::moveRange(Range& range)
   // Select the range again (it might be lost between all the
   // setLayer()/setFrame() calls).
   m_range = range;
+}
+
+void Timeline::setRange(const Range& range)
+{
+  m_range = range;
+  invalidate();
 }
 
 void Timeline::activateClipboardRange()

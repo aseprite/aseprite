@@ -12,10 +12,15 @@
 
 #include "base/base.h"
 #include "base/debug.h"
+#include "base/serialization.h"
 
 #include <algorithm>
+#include <iostream>
 
 namespace doc {
+
+using namespace base::serialization;
+using namespace base::serialization::little_endian;
 
 std::size_t SelectedFrames::size() const
 {
@@ -170,6 +175,27 @@ SelectedFrames SelectedFrames::makePingPong() const
   }
 
   return newFrames;
+}
+
+bool SelectedFrames::write(std::ostream& os) const
+{
+  write32(os, size());
+  for (const frame_t frame : *this) {
+    write32(os, frame);
+  }
+  return os.good();
+}
+
+bool SelectedFrames::read(std::istream& is)
+{
+  clear();
+
+  int nframes = read32(is);
+  for (int i=0; i<nframes && is; ++i) {
+    frame_t frame = read32(is);
+    insert(frame);
+  }
+  return is.good();
 }
 
 } // namespace doc

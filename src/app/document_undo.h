@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,12 +8,14 @@
 #define APP_DOCUMENT_UNDO_H_INCLUDED
 #pragma once
 
+#include "app/document_range.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite_position.h"
 #include "obs/observable.h"
 #include "undo/undo_history.h"
 
+#include <iosfwd>
 #include <string>
 
 namespace doc {
@@ -54,6 +56,8 @@ namespace app {
 
     SpritePosition nextUndoSpritePosition() const;
     SpritePosition nextRedoSpritePosition() const;
+    std::istream* nextUndoDocumentRange() const;
+    std::istream* nextRedoDocumentRange() const;
 
     Cmd* lastExecutedCmd() const;
 

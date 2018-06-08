@@ -10,13 +10,18 @@
 
 #include "app/document_range.h"
 
+#include "base/serialization.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
+#include <iostream>
+
 namespace app {
 
+using namespace base::serialization;
+using namespace base::serialization::little_endian;
 using namespace doc;
 
 DocumentRange::DocumentRange()
@@ -152,6 +157,35 @@ bool DocumentRange::convertToCels(const Sprite* sprite)
       break;
   }
   return true;
+}
+
+bool DocumentRange::write(std::ostream& os) const
+{
+  write32(os, m_type);
+  write32(os, m_flags);
+
+  if (!m_selectedLayers.write(os)) return false;
+  if (!m_selectedFrames.write(os)) return false;
+
+  write32(os, m_selectingFromLayer ? m_selectingFromLayer->id(): 0);
+  write32(os, m_selectingFromFrame);
+  return os.good();
+}
+
+bool DocumentRange::read(std::istream& is)
+{
+  clearRange();
+
+  m_type = (Type)read32(is);
+  m_flags = read32(is);
+
+  if (!m_selectedLayers.read(is)) return false;
+  if (!m_selectedFrames.read(is)) return false;
+
+  ObjectId id = read32(is);
+  m_selectingFromLayer = doc::get<Layer>(id);
+  m_selectingFromFrame = read32(is);
+  return is.good();
 }
 
 void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)

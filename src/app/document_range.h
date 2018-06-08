@@ -12,6 +12,8 @@
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 
+#include <iosfwd>
+
 namespace doc {
   class Cel;
   class Sprite;
@@ -63,6 +65,9 @@ namespace app {
     }
 
     bool convertToCels(const Sprite* sprite);
+
+    bool write(std::ostream& os) const;
+    bool read(std::istream& is);
 
   private:
     void selectLayerRange(Layer* fromLayer, Layer* toLayer);

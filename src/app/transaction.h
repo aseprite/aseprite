@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,7 @@ namespace app {
   class Cmd;
   class CmdTransaction;
   class Context;
+  class DocumentRange;
   class DocumentUndo;
 
   enum Modification {
@@ -44,6 +45,11 @@ namespace app {
     // grouped in the sprite's undo as an atomic operation.
     Transaction(Context* ctx, const std::string& label, Modification mod = ModifyDocument);
     virtual ~Transaction();
+
+    // Can be used to change the new document range resulting from
+    // executing this transaction. This range can be used then in
+    // undo/redo operations to restore the Timeline selection/range.
+    void setNewDocumentRange(const DocumentRange& range);
 
     // This must be called to commit all the changes, so the undo will
     // be finally added in the sprite.

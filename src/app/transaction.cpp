@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,6 +48,15 @@ Transaction::~Transaction()
 
     // TODO logging error
   }
+}
+
+// Used to set the document range after all the transaction is
+// executed and before the commit. This range is stored in
+// CmdTransaction to recover it on Edit > Redo.
+void Transaction::setNewDocumentRange(const DocumentRange& range)
+{
+  ASSERT(m_cmds);
+  m_cmds->setNewDocumentRange(range);
 }
 
 void Transaction::commit()

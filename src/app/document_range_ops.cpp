@@ -13,10 +13,12 @@
 
 #include "app/document_range_ops.h"
 
+#include "app/app.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/transaction.h"
+#include "app/ui/timeline/timeline.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -30,13 +32,12 @@ namespace app {
 
 enum Op { Move, Copy };
 
-template<typename T>
 static void move_or_copy_cels(
   DocumentApi& api, Op op,
-  LayerList& srcLayers,
-  LayerList& dstLayers,
-  T& srcFrames,
-  T& dstFrames)
+  const LayerList& srcLayers,
+  const LayerList& dstLayers,
+  const SelectedFrames& srcFrames,
+  const SelectedFrames& dstFrames)
 {
   ASSERT(srcLayers.size() == dstLayers.size());
 
@@ -74,13 +75,14 @@ static void move_or_copy_cels(
   }
 }
 
-template<typename T>
 static DocumentRange move_or_copy_frames(
   DocumentApi& api, Op op,
   Sprite* sprite,
-  T& srcFrames,
+  const DocumentRange& srcRange,
   frame_t dstFrame)
 {
+  const SelectedFrames& srcFrames = srcRange.selectedFrames();
+
 #ifdef TRACE_RANGE_OPS
   std::clog << "move_or_copy_frames frames[";
   for (auto srcFrame : srcFrames) {
@@ -161,6 +163,8 @@ static DocumentRange move_or_copy_frames(
   }
 
   DocumentRange result;
+  if (!srcRange.selectedLayers().empty())
+    result.selectLayers(srcRange.selectedLayers());
   result.startRange(nullptr, dstFrame-srcFrames.size(), DocumentRange::kFrames);
   result.endRange(nullptr, dstFrame-1);
   return result;
@@ -327,8 +331,8 @@ static DocumentRange drop_range_op(
         }
 
         if (from.firstFrame() < to.firstFrame()) {
-          auto srcFrames = from.selectedFrames().reversed();
-          auto dstFrames = to.selectedFrames().reversed();
+          auto srcFrames = from.selectedFrames().makeReverse();
+          auto dstFrames = to.selectedFrames().makeReverse();
 
           move_or_copy_cels(api, op, srcLayers, dstLayers, srcFrames, dstFrames);
         }
@@ -350,9 +354,7 @@ static DocumentRange drop_range_op(
         else
           dstFrame = to.lastFrame()+1;
 
-        resultRange =
-          move_or_copy_frames(api, op, sprite,
-                              from.selectedFrames(), dstFrame);
+        resultRange = move_or_copy_frames(api, op, sprite, from, dstFrame);
         break;
       }
 
@@ -422,6 +424,9 @@ static DocumentRange drop_range_op(
         break;
       }
     }
+
+    if (resultRange.type() != DocumentRange::kNone)
+      transaction.setNewDocumentRange(resultRange);
 
     transaction.commit();
   }
@@ -498,6 +503,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
     }
   }
 
+  transaction.setNewDocumentRange(range);
   transaction.commit();
 }
 

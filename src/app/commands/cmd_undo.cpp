@@ -24,6 +24,10 @@
 #include "ui/manager.h"
 #include "ui/system.h"
 
+#ifdef ENABLE_UI
+#include "app/ui/timeline/timeline.h"
+#endif
+
 namespace app {
 
 class UndoCommand : public Command {
@@ -93,13 +97,23 @@ void UndoCommand::onExecute(Context* context)
     }
   }
 
+  // Get the stream to deserialize the document range after executing
+  // the undo/redo action. We cannot yet deserialize the document
+  // range because there could be inexistent layers.
+  std::istream* docRangeStream;
+  if (m_type == Undo)
+    docRangeStream = undo->nextUndoDocumentRange();
+  else
+    docRangeStream = undo->nextRedoDocumentRange();
+
   StatusBar* statusbar = StatusBar::instance();
-  if (statusbar)
+  if (statusbar) {
     statusbar->showTip(1000, "%s %s",
       (m_type == Undo ? "Undid": "Redid"),
       (m_type == Undo ?
         undo->nextUndoLabel().c_str():
         undo->nextRedoLabel().c_str()));
+  }
 #endif // ENABLE_UI
 
   // Effectively undo/redo.
@@ -122,6 +136,18 @@ void UndoCommand::onExecute(Context* context)
       if (selectLayer)
         current_editor->setLayer(selectLayer);
       current_editor->setFrame(spritePosition.frame());
+    }
+  }
+
+  // Update timeline range. We've to deserialize the DocumentRange at
+  // this point when objects (possible layers) are re-created after
+  // the undo and we can deserialize them.
+  if (docRangeStream) {
+    Timeline* timeline = App::instance()->timeline();
+    if (timeline) {
+      DocumentRange docRange;
+      if (docRange.read(*docRangeStream))
+        timeline->setRange(docRange);
     }
   }
 #endif  // ENABLE_UI

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,19 +13,61 @@
 #include "app/context.h"
 #include "doc/site.h"
 
+#ifdef ENABLE_UI
+#include "app/app.h"
+#include "app/ui/timeline/timeline.h"
+#endif
+
 namespace app {
 
 CmdTransaction::CmdTransaction(const std::string& label,
-  bool changeSavedState, int* savedCounter)
-  : m_label(label)
+                               bool changeSavedState,
+                               int* savedCounter)
+  : m_ranges(nullptr)
+  , m_label(label)
   , m_changeSavedState(changeSavedState)
   , m_savedCounter(savedCounter)
 {
 }
 
+void CmdTransaction::setNewDocumentRange(const DocumentRange& range)
+{
+#ifdef ENABLE_UI
+  if (m_ranges)
+    range.write(m_ranges->m_after);
+#endif
+}
+
 void CmdTransaction::commit()
 {
   m_spritePositionAfter = calcSpritePosition();
+
+  // We cannot capture m_ranges->m_after from the Timeline here
+  // because the document range in the Timeline is updated after the
+  // commit/command (on Timeline::onAfterCommandExecution).
+  //
+  // So m_ranges->m_after is captured explicitly in
+  // setNewDocumentRange().
+}
+
+std::istream* CmdTransaction::documentRangeBeforeExecute() const
+{
+  if (m_ranges && m_ranges->m_before.tellp() > 0) {
+    m_ranges->m_before.seekg(0);
+    return &m_ranges->m_before;
+  }
+  else
+    return nullptr;
+}
+
+std::istream* CmdTransaction::documentRangeAfterExecute() const
+{
+  if (m_ranges && m_ranges->m_after.tellp() > 0) {
+    m_ranges->m_after.seekg(0);
+    return &m_ranges->m_after;
+  }
+  else
+    return nullptr;
 }
 
 void CmdTransaction::onExecute()
@@ -35,6 +77,12 @@ void CmdTransaction::onExecute()
   // The execution of CmdTransaction is called by Transaction at the
   // very beginning, just to save the current sprite position.
   m_spritePositionBefore = calcSpritePosition();
+#ifdef ENABLE_UI
+  if (isDocumentRangeEnabled()) {
+    m_ranges.reset(new Ranges);
+    calcDocumentRange().write(m_ranges->m_before);
+  }
+#endif
 
   if (m_changeSavedState)
     ++(*m_savedCounter);
@@ -61,10 +109,47 @@ std::string CmdTransaction::onLabel() const
   return m_label;
 }
 
-doc::SpritePosition CmdTransaction::calcSpritePosition()
+size_t CmdTransaction::onMemSize() const
+{
+  size_t size = CmdSequence::onMemSize();
+  if (m_ranges) {
+    size += (m_ranges->m_before.tellp() +
+             m_ranges->m_after.tellp());
+  }
+  return size;
+}
+
+doc::SpritePosition CmdTransaction::calcSpritePosition() const
 {
   doc::Site site = context()->activeSite();
   return doc::SpritePosition(site.layer(), site.frame());
+}
+
+bool CmdTransaction::isDocumentRangeEnabled() const
+{
+#ifdef ENABLE_UI
+  if (App::instance()) {
+    Timeline* timeline = App::instance()->timeline();
+    if (timeline && timeline->range().enabled())
+      return true;
+  }
+#endif
+  return false;
+}
+
+DocumentRange CmdTransaction::calcDocumentRange() const
+{
+#ifdef ENABLE_UI
+  // TODO We cannot use Context::activeSite() because it losts
+  //      important information about the DocumentRange() (type and
+  //      flags).
+  if (App::instance()) {
+    Timeline* timeline = App::instance()->timeline();
+    if (timeline)
+      return timeline->range();
+  }
+#endif
+  return DocumentRange();
 }
 
 } // namespace app

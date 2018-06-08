@@ -10,6 +10,7 @@
 
 #include "doc/frame_range.h"
 
+#include <iosfwd>
 #include <iterator>
 #include <vector>
 
@@ -155,6 +156,9 @@ namespace doc {
     bool operator!=(const SelectedFrames& o) const {
       return !operator==(o);
     }
+
+    bool write(std::ostream& os) const;
+    bool read(std::istream& is);
 
   private:
     Ranges m_ranges;

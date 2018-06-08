@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -185,6 +185,24 @@ SpritePosition DocumentUndo::nextRedoSpritePosition() const
     return STATE_CMD(state)->spritePositionAfterExecute();
   else
     return SpritePosition();
+}
+
+std::istream* DocumentUndo::nextUndoDocumentRange() const
+{
+  const undo::UndoState* state = nextUndo();
+  if (state)
+    return STATE_CMD(state)->documentRangeBeforeExecute();
+  else
+    return nullptr;
+}
+
+std::istream* DocumentUndo::nextRedoDocumentRange() const
+{
+  const undo::UndoState* state = nextRedo();
+  if (state)
+    return STATE_CMD(state)->documentRangeAfterExecute();
+  else
+    return nullptr;
 }
 
 Cmd* DocumentUndo::lastExecutedCmd() const
