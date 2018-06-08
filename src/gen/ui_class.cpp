@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014-2017 David Capello
+// Copyright (c) 2014-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -47,7 +47,8 @@ static void collect_widgets_with_ids(TiXmlElement* elem, XmlElements& widgets)
   }
 }
 
-static std::string convert_type(const std::string& name)
+static std::string convert_type(const std::string& name,
+                                const bool hasPref)
 {
   static std::string parent;
   if (name != "item")
@@ -56,7 +57,12 @@ static std::string convert_type(const std::string& name)
   if (name == "box") return "ui::Box";
   if (name == "button") return "ui::Button";
   if (name == "buttonset") return "app::ButtonSet";
-  if (name == "check") return "ui::CheckBox";
+  if (name == "check") {
+    if (hasPref)
+      return "BoolPrefWidget<ui::CheckBox>";
+    else
+      return "ui::CheckBox";
+  }
   if (name == "colorpicker") return "app::ColorButton";
   if (name == "combobox") return "ui::ComboBox";
   if (name == "dropdownbutton") return "app::DropDownButton";
@@ -102,7 +108,7 @@ void gen_ui_class(TiXmlDocument* doc,
 
   std::string className = convert_xmlid_to_cppid(widgetId, true);
   std::string fnUpper = base::string_to_upper(base::get_file_title(inputFn));
-  std::string widgetType = convert_type(elem->Value());
+  std::string widgetType = convert_type(elem->Value(), false);
 
   std::cout
     << "#ifndef GENERATED_" << fnUpper << "_H_INCLUDED\n"
@@ -111,6 +117,7 @@ void gen_ui_class(TiXmlDocument* doc,
     << "\n"
     << "#include \"app/find_widget.h\"\n"
     << "#include \"app/load_widget.h\"\n"
+    << "#include \"app/ui/pref_widget.h\"\n"
     << "#include \"ui/ui.h\"\n"
     << "\n"
     << "namespace app {\n"
@@ -149,8 +156,9 @@ void gen_ui_class(TiXmlDocument* doc,
     << "\n";
 
   for (TiXmlElement* elem : widgets) {
-    std::string childType = convert_type(elem->Value());
     const char* id = elem->Attribute("id");
+    const char* pref = elem->Attribute("pref");
+    std::string childType = convert_type(elem->Value(), (pref != nullptr));
     std::string cppid = convert_xmlid_to_cppid(id, false);
     std::cout
       << "    " << childType << "* " << cppid << "() const { return m_" << cppid << "; }\n";
@@ -161,8 +169,9 @@ void gen_ui_class(TiXmlDocument* doc,
     << "  private:\n";
 
   for (TiXmlElement* elem : widgets) {
-    std::string childType = convert_type(elem->Value());
     const char* id = elem->Attribute("id");
+    const char* pref = elem->Attribute("pref");
+    std::string childType = convert_type(elem->Value(), (pref != nullptr));
     std::string cppid = convert_xmlid_to_cppid(id, false);
     std::cout
       << "    " << childType << "* m_" << cppid << ";\n";

@@ -50,6 +50,12 @@ public:
     }
   }
 
+  void resetWithDefaultValue() {
+    // Reset to default value in preferences
+    if (m_option)
+      this->setSelected(m_option->defaultValue());
+  }
+
 protected:
   bool onProcessMessage(ui::Message* msg) override {
     if (msg->type() == kSavePreferencesMessage) {

@@ -309,13 +309,20 @@
         <!-- Alerts -->
         <vbox id="section_alerts">
           <separator text="@.section_alerts" horizontal="true" />
-          <check id="file_format_doesnt_support_alert" text="@.file_format_doesnt_support_alert" />
-          <check id="export_animation_in_sequence_alert" text="@.export_animation_in_sequence_alert" />
-          <check id="overwrite_files_on_export_alert" text="@.overwrite_files_on_export_alert" />
-          <check id="overwrite_files_on_export_sprite_sheet_alert" text="@.overwrite_files_on_export_sprite_sheet_alert" />
-          <check id="gif_options_alert" text="@.gif_options_alert" />
-          <check id="jpeg_options_alert" text="@.jpeg_options_alert" />
-          <check id="advanced_mode_alert" text="@.advanced_mode_alert" />
+          <check id="file_format_doesnt_support_alert" text="@.file_format_doesnt_support_alert"
+                 pref="save_file.show_file_format_doesnt_support_alert" />
+          <check id="export_animation_in_sequence_alert" text="@.export_animation_in_sequence_alert"
+                 pref="save_file.show_export_animation_in_sequence_alert" />
+          <check id="overwrite_files_on_export_alert" text="@.overwrite_files_on_export_alert"
+                 pref="export_file.show_overwrite_files_alert" />
+          <check id="overwrite_files_on_export_sprite_sheet_alert" text="@.overwrite_files_on_export_sprite_sheet_alert"
+                 pref="sprite_sheet.show_overwrite_files_alert" />
+          <check id="gif_options_alert" text="@.gif_options_alert"
+                 pref="gif.show_alert" />
+          <check id="jpeg_options_alert" text="@.jpeg_options_alert"
+                 pref="jpeg.show_alert" />
+          <check id="advanced_mode_alert" text="@.advanced_mode_alert"
+                 pref="advanced_mode.show_alert" />
           <separator horizontal="true" />
 	  <hbox>
 	    <hbox expansive="true" />
