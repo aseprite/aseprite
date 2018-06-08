@@ -27,6 +27,7 @@
 #include "doc/image_ref.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
+#include "ui/system.h"
 
 #include "paste_text.xml.h"
 

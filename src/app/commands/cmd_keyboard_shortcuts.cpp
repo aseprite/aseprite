@@ -31,12 +31,16 @@
 #include "base/split_string.h"
 #include "base/string.h"
 #include "fmt/format.h"
+#include "ui/alert.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
+#include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/separator.h"
 #include "ui/size_hint_event.h"
+#include "ui/splitter.h"
+#include "ui/system.h"
 
 #include "keyboard_shortcuts.xml.h"
 

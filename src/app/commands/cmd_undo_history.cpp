@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,6 +23,8 @@
 #include "doc/context_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/site.h"
+#include "ui/listitem.h"
+#include "ui/message.h"
 #include "undo/undo_state.h"
 
 #include "undo_history.xml.h"

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,6 +19,7 @@
 #include "app/ui/search_entry.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
+#include "ui/combobox.h"
 #include "ui/window.h"
 
 #include "goto_frame.xml.h"

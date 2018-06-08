@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/launcher.h"
+#include "ui/alert.h"
 
 #include "send_crash.xml.h"
 

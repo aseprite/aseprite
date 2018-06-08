@@ -35,6 +35,7 @@
 #include "fmt/format.h"
 #include "render/quantization.h"
 #include "render/render.h"
+#include "ui/listitem.h"
 
 #include "open_sequence.xml.h"
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,7 +26,9 @@
 #include "base/scoped_value.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/scale.h"
 #include "ui/slider.h"
 #include "ui/theme.h"
 

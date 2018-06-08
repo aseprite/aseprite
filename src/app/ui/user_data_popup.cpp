@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/color_utils.h"
 #include "app/ui/color_button.h"
 #include "doc/user_data.h"
+#include "ui/manager.h"
 
 #include "user_data.xml.h"
 
