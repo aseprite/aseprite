@@ -24,6 +24,7 @@
 #include "base/file_handle.h"
 #include "doc/doc.h"
 #include "render/render.h"
+#include "ui/manager.h"
 
 #include "webp_options.xml.h"
 
