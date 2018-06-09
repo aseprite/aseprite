@@ -33,8 +33,15 @@ if(NOT USE_SHARED_GIFLIB)
 endif()
 
 if(WITH_WEBP_SUPPORT)
-  # Enable img2webp so "webpmux" library is built
-  set(WEBP_BUILD_IMG2WEBP ON CACHE BOOL "Build the img2webp animation tool.")
+  set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities.")
+  set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool.")
+  set(WEBP_BUILD_DWEBP OFF CACHE BOOL "Build the dwebp command line tool.")
+  set(WEBP_BUILD_GIF2WEBP OFF CACHE BOOL "Build the gif2webp conversion tool.")
+  set(WEBP_BUILD_IMG2WEBP OFF CACHE BOOL "Build the img2webp animation tool.")
+  set(WEBP_BUILD_VWEBP OFF CACHE BOOL "Build the vwebp viewer tool.")
+  set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "Build the webpinfo command line tool.")
+  set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool.")
+  set(WEBP_BUILD_WEBP_JS OFF CACHE BOOL "Emscripten build of webp.js.")
   add_subdirectory(libwebp)
 endif()
 
