@@ -237,7 +237,7 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # libwebp
 if(WITH_WEBP_SUPPORT)
-  set(WEBP_LIBRARIES webp)
+  set(WEBP_LIBRARIES webp webpdemux webpmux)
   set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
   include_directories(${WEBP_INCLUDE_DIR})
 endif()
