@@ -879,7 +879,8 @@ bool Timeline::onProcessMessage(Message* msg)
           else {
             if (selectCel) {
               m_state = STATE_SELECTING_CELS;
-              clearAndInvalidateRange();
+              if (clearRange)
+                clearAndInvalidateRange();
               m_range.startRange(m_rows[m_clk.layer].layer(),
                                  m_clk.frame, Range::kCels);
               m_startRange = m_range;
