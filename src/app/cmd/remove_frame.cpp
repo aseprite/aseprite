@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,6 +25,7 @@ RemoveFrame::RemoveFrame(Sprite* sprite, frame_t frame)
   : WithSprite(sprite)
   , m_frame(frame)
   , m_firstTime(true)
+  , m_frameRemoved(false)
 {
   m_frameDuration = sprite->frameDuration(frame);
   for (Cel* cel : sprite->cels(m_frame))
@@ -43,8 +44,15 @@ void RemoveFrame::onExecute()
   else
     m_seq.redo();
 
+  int oldTotalFrames = sprite->totalFrames();
+
   sprite->removeFrame(m_frame);
   sprite->incrementVersion();
+
+  // True when the number of total frames changed (e.g. this can be
+  // false only then we try to delete the last frame and only frame in
+  // the sprite).
+  m_frameRemoved = (oldTotalFrames != sprite->totalFrames());
 
   // Notify observers.
   DocumentEvent ev(doc);
@@ -58,7 +66,8 @@ void RemoveFrame::onUndo()
   Sprite* sprite = this->sprite();
   Document* doc = sprite->document();
 
-  sprite->addFrame(m_frame);
+  if (m_frameRemoved)
+    sprite->addFrame(m_frame);
   sprite->setFrameDuration(m_frame, m_frameDuration);
   sprite->incrementVersion();
   m_seq.undo();
