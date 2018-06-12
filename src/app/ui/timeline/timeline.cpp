@@ -191,6 +191,14 @@ Timeline::DropTarget::DropTarget()
 {
   hhit = HNone;
   vhit = VNone;
+  outside = false;
+}
+
+Timeline::DropTarget::DropTarget(const DropTarget& o)
+  : hhit(o.hhit)
+  , vhit(o.vhit)
+  , outside(o.outside)
+{
 }
 
 Timeline::Row::Row()
@@ -2370,6 +2378,35 @@ void Timeline::drawFrameTags(ui::Graphics* g)
       bounds.h = bounds.y2() - frameTagBounds.y2();
       bounds.y = frameTagBounds.y2();
 
+      int dx = 0, dw = 0;
+      if (m_dropTarget.outside &&
+          m_dropTarget.hhit != DropTarget::HNone &&
+          m_dropRange.type() == DocumentRange::kFrames) {
+        switch (m_dropTarget.hhit) {
+          case DropTarget::Before:
+            if (m_dropRange.firstFrame() == frameTag->fromFrame()) {
+              dx = +frameBoxWidth()/4;
+              dw = -frameBoxWidth()/4;
+            }
+            else if (m_dropRange.firstFrame()-1 == frameTag->toFrame()) {
+              dw = -frameBoxWidth()/4;
+            }
+            break;
+          case DropTarget::After:
+            if (m_dropRange.lastFrame() == frameTag->toFrame()) {
+              dw = -frameBoxWidth()/4;
+            }
+            else if (m_dropRange.lastFrame()+1 == frameTag->fromFrame()) {
+              dx = +frameBoxWidth()/4;
+              dw = -frameBoxWidth()/4;
+            }
+            break;
+        }
+      }
+      bounds.x += dx;
+      bounds.w += dw;
+      frameTagBounds.x += dx;
+
       gfx::Color bg =
         (m_tagFocusBand < 0 || pass == 1) ?
         frameTag->color(): theme->colors.timelineBandBg();
@@ -3573,6 +3610,7 @@ void Timeline::dropRange(DropOp op)
   Range newFromRange;
   DocumentRangePlace place = kDocumentRangeAfter;
   Range dropRange = m_dropRange;
+  bool outside = m_dropTarget.outside;
 
   switch (m_range.type()) {
 
@@ -3605,10 +3643,16 @@ void Timeline::dropRange(DropOp op)
   prepareToMoveRange();
 
   try {
+    TagsHandling tagsHandling = (outside ? kFitOutsideTags:
+                                           kFitInsideTags);
+
+    invalidateRange();
     if (copy)
-      newFromRange = copy_range(m_document, m_range, dropRange, place);
+      newFromRange = copy_range(m_document, m_range, dropRange,
+                                place, tagsHandling);
     else
-      newFromRange = move_range(m_document, m_range, dropRange, place);
+      newFromRange = move_range(m_document, m_range, dropRange,
+                                place, tagsHandling);
 
     // If we drop a cel in the same frame (but in another layer),
     // document views are not updated, so we are forcing the updating of
@@ -3616,6 +3660,14 @@ void Timeline::dropRange(DropOp op)
     m_document->notifyGeneralUpdate();
 
     moveRange(newFromRange);
+
+    invalidateRange();
+
+    if (m_range.type() == Range::kFrames &&
+        m_sprite &&
+        !m_sprite->frameTags().empty()) {
+      invalidateRect(getFrameHeadersBounds().offset(origin()));
+    }
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
@@ -3675,10 +3727,10 @@ void Timeline::unlockRange()
 
 void Timeline::updateDropRange(const gfx::Point& pt)
 {
-  DropTarget::HHit oldHHit = m_dropTarget.hhit;
-  DropTarget::VHit oldVHit = m_dropTarget.vhit;
+  const DropTarget oldDropTarget = m_dropTarget;
   m_dropTarget.hhit = DropTarget::HNone;
   m_dropTarget.vhit = DropTarget::VNone;
+  m_dropTarget.outside = false;
 
   if (m_state != STATE_MOVING_RANGE) {
     m_dropRange.clearRange();
@@ -3703,10 +3755,14 @@ void Timeline::updateDropRange(const gfx::Point& pt)
 
   gfx::Rect bounds = getRangeBounds(m_dropRange);
 
-  if (pt.x < bounds.x + bounds.w/2)
+  if (pt.x < bounds.x + bounds.w/2) {
     m_dropTarget.hhit = DropTarget::Before;
-  else
+    m_dropTarget.outside = (pt.x < bounds.x+2);
+  }
+  else {
     m_dropTarget.hhit = DropTarget::After;
+    m_dropTarget.outside = (pt.x >= bounds.x2()-2);
+  }
 
   if (m_hot.veryBottom)
     m_dropTarget.vhit = DropTarget::VeryBottom;
@@ -3724,10 +3780,8 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     m_dropTarget.vhit = DropTarget::Bottom;
   }
 
-  if (oldHHit != m_dropTarget.hhit ||
-      oldVHit != m_dropTarget.vhit) {
+  if (oldDropTarget != m_dropTarget)
     invalidate();
-  }
 }
 
 void Timeline::clearClipboardRange()

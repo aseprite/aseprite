@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,6 +58,8 @@
 #include "render/render.h"
 
 #include <set>
+
+#define TRACE_DOCAPI(...)
 
 namespace app {
 
@@ -181,13 +183,17 @@ void DocumentApi::trimSprite(Sprite* sprite)
 
 void DocumentApi::addFrame(Sprite* sprite, frame_t newFrame)
 {
-  copyFrame(sprite, newFrame-1, newFrame);
+  copyFrame(sprite, newFrame-1, newFrame,
+            kDropBeforeFrame,
+            kDefaultTagsAdjustment);
 }
 
 void DocumentApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
-  adjustFrameTags(sprite, newFrame, +1, false);
+  adjustFrameTags(sprite, newFrame, +1,
+                  kDropBeforeFrame,
+                  kDefaultTagsAdjustment);
 }
 
 void DocumentApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
@@ -196,18 +202,31 @@ void DocumentApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
     addEmptyFrame(sprite, sprite->totalFrames());
 }
 
-void DocumentApi::copyFrame(Sprite* sprite, frame_t fromFrame, frame_t newFrame)
+void DocumentApi::copyFrame(Sprite* sprite,
+                            const frame_t fromFrame,
+                            const frame_t newFrame,
+                            const DropFramePlace dropFramePlace,
+                            const TagsHandling tagsHandling)
 {
   ASSERT(sprite);
-  m_transaction.execute(new cmd::CopyFrame(sprite, fromFrame, newFrame));
-  adjustFrameTags(sprite, newFrame, +1, false);
+  m_transaction.execute(
+    new cmd::CopyFrame(
+      sprite, fromFrame,
+      (dropFramePlace == kDropBeforeFrame ? newFrame:
+                                            newFrame+1)));
+
+  adjustFrameTags(sprite, newFrame, +1,
+                  dropFramePlace,
+                  tagsHandling);
 }
 
 void DocumentApi::removeFrame(Sprite* sprite, frame_t frame)
 {
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
-  adjustFrameTags(sprite, frame, -1, false);
+  adjustFrameTags(sprite, frame, -1,
+                  kDropBeforeFrame,
+                  kDefaultTagsAdjustment);
 }
 
 void DocumentApi::setTotalFrames(Sprite* sprite, frame_t frames)
@@ -231,13 +250,20 @@ void DocumentApi::setFrameRangeDuration(Sprite* sprite, frame_t from, frame_t to
     m_transaction.execute(new cmd::SetFrameDuration(sprite, fr, msecs));
 }
 
-void DocumentApi::moveFrame(Sprite* sprite, frame_t frame, frame_t beforeFrame)
+void DocumentApi::moveFrame(Sprite* sprite,
+                            const frame_t frame,
+                            frame_t targetFrame,
+                            const DropFramePlace dropFramePlace,
+                            const TagsHandling tagsHandling)
 {
-  if (frame != beforeFrame &&
-      frame >= 0 &&
-      frame <= sprite->lastFrame() &&
-      beforeFrame >= 0 &&
-      beforeFrame <= sprite->lastFrame()+1) {
+  const frame_t beforeFrame =
+    (dropFramePlace == kDropBeforeFrame ? targetFrame: targetFrame+1);
+
+  if (frame       >= 0 && frame       <= sprite->lastFrame()   &&
+      beforeFrame >= 0 && beforeFrame <= sprite->lastFrame()+1 &&
+      ((frame != beforeFrame) ||
+       (!sprite->frameTags().empty() &&
+        tagsHandling != kDontAdjustTags))) {
     // Change the frame-lengths.
     int frlen_aux = sprite->frameDuration(frame);
 
@@ -254,11 +280,16 @@ void DocumentApi::moveFrame(Sprite* sprite, frame_t frame, frame_t beforeFrame)
       setFrameDuration(sprite, beforeFrame, frlen_aux);
     }
 
-    adjustFrameTags(sprite, frame, -1, true);
-    adjustFrameTags(sprite, beforeFrame, +1, true);
+    if (tagsHandling != kDontAdjustTags) {
+      adjustFrameTags(sprite, frame, -1, dropFramePlace, tagsHandling);
+      if (targetFrame >= frame)
+        --targetFrame;
+      adjustFrameTags(sprite, targetFrame, +1, dropFramePlace, tagsHandling);
+    }
 
     // Change cel positions.
-    moveFrameLayer(sprite->root(), frame, beforeFrame);
+    if (frame != beforeFrame)
+      moveFrameLayer(sprite->root(), frame, beforeFrame);
   }
 }
 
@@ -567,8 +598,21 @@ void DocumentApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPa
   }
 }
 
-void DocumentApi::adjustFrameTags(Sprite* sprite, frame_t frame, frame_t delta, bool between)
+void DocumentApi::adjustFrameTags(Sprite* sprite,
+                                  const frame_t frame,
+                                  const frame_t delta,
+                                  const DropFramePlace dropFramePlace,
+                                  const TagsHandling tagsHandling)
 {
+  TRACE_DOCAPI(
+    "\n  adjustFrameTags %s frame %d delta=%d tags=%s:\n",
+    (dropFramePlace == kDropBeforeFrame ? "before": "after"),
+    frame, delta,
+    (tagsHandling == kDefaultTagsAdjustment ? "default":
+     tagsHandling == kFitInsideTags ? "fit-inside":
+                                      "fit-outside"));
+  ASSERT(tagsHandling != kDontAdjustTags);
+
   // As FrameTag::setFrameRange() changes m_frameTags, we need to use
   // a copy of this collection
   std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
@@ -577,14 +621,39 @@ void DocumentApi::adjustFrameTags(Sprite* sprite, frame_t frame, frame_t delta, 
     frame_t from = tag->fromFrame();
     frame_t to = tag->toFrame();
 
+    TRACE_DOCAPI(" - [from to]=[%d %d] ->", from, to);
+
+    // When delta = +1, frame = beforeFrame
     if (delta == +1) {
-      if (frame <= from) { ++from; }
-      if (frame <= to+1) { ++to; }
+      switch (tagsHandling) {
+        case kDefaultTagsAdjustment:
+          if (frame <= from) { ++from; }
+          if (frame <= to+1) { ++to; }
+          break;
+        case kFitInsideTags:
+          if (frame < from) { ++from; }
+          if (frame <= to) { ++to; }
+          break;
+        case kFitOutsideTags:
+          if ((frame < from) ||
+              (frame == from &&
+               dropFramePlace == kDropBeforeFrame)) {
+            ++from;
+          }
+          if ((frame < to) ||
+              (frame == to &&
+               dropFramePlace == kDropBeforeFrame)) {
+            ++to;
+          }
+          break;
+      }
     }
     else if (delta == -1) {
       if (frame < from) { --from; }
       if (frame <= to) { --to; }
     }
+
+    TRACE_DOCAPI(" [%d %d]\n", from, to);
 
     if (from != tag->fromFrame() ||
         to != tag->toFrame()) {

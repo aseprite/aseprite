@@ -1284,3 +1284,242 @@ TEST(DocRangeOps2, DropInsideBugs) {
 
   doc->close();
 }
+
+TEST_F(DocRangeOps, MoveRangeWithTags) {
+  FrameTag* a = new FrameTag(0, 2);
+  FrameTag* b = new FrameTag(3, 5);
+  sprite->frameTags().add(a);
+  sprite->frameTags().add(b);
+
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+
+  // Move before tag "a" (outside the tag)
+  EXPECT_EQ(frames_range(0, 1),
+            move_range(doc,
+                       frames_range(1, 2),
+                       frames_range(0),
+                       kDocumentRangeBefore,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(1, 2, 0, 3, 4, 5);
+  EXPECT_EQ(2, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+
+  // Check that undo for frame tags does work.
+  doc->undoHistory()->undo();
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+
+  // Move before tag "a" (inside the tag)
+  EXPECT_EQ(frames_range(0, 1),
+            move_range(doc,
+                       frames_range(1, 2),
+                       frames_range(0),
+                       kDocumentRangeBefore,
+                       kFitInsideTags));
+  EXPECT_FRAME_ORDER6(1, 2, 0, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Move after (and inside) tag "a"
+  EXPECT_EQ(frames_range(1, 2),
+            move_range(doc,
+                       frames_range(0, 1),
+                       frames_range(2),
+                       kDocumentRangeAfter,
+                       kFitInsideTags));
+  EXPECT_FRAME_ORDER6(2, 0, 1, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Move between tag "a" and "b" (outside both tags)
+  EXPECT_EQ(frames_range(1, 2),
+            move_range(doc,
+                       frames_range(0, 1),
+                       frames_range(2),
+                       kDocumentRangeAfter,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(2, 0, 1, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(0, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  EXPECT_EQ(frames_range(1, 2),
+            move_range(doc,
+                       frames_range(0, 1),
+                       frames_range(3),
+                       kDocumentRangeBefore,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(2, 0, 1, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(0, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  EXPECT_EQ(frames_range(2, 3),
+            move_range(doc,
+                       frames_range(2, 3),
+                       frames_range(2),
+                       kDocumentRangeAfter,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(0, 1, 2, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(1, a->toFrame());
+  EXPECT_EQ(4, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  EXPECT_EQ(frames_range(2, 3),
+            move_range(doc,
+                       frames_range(2, 3),
+                       frames_range(3),
+                       kDocumentRangeBefore,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(0, 1, 2, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(1, a->toFrame());
+  EXPECT_EQ(4, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Move after tag "b" (inside tag)
+  EXPECT_EQ(frames_range(4, 5),
+            move_range(doc,
+                       frames_range(0, 1),
+                       frames_range(5),
+                       kDocumentRangeAfter,
+                       kFitInsideTags));
+  EXPECT_FRAME_ORDER6(2, 3, 4, 5, 0, 1);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(0, a->toFrame());
+  EXPECT_EQ(1, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Move after tag "b" (outside tag)
+  EXPECT_EQ(frames_range(4, 5),
+            move_range(doc,
+                       frames_range(0, 1),
+                       frames_range(5),
+                       kDocumentRangeAfter,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(2, 3, 4, 5, 0, 1);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(0, a->toFrame());
+  EXPECT_EQ(1, b->fromFrame());
+  EXPECT_EQ(3, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Put frame 1 and 4 in the middle of both tags (outside)
+  DocumentRange from;
+  from.startRange(nullptr, 1, DocumentRange::kFrames); from.endRange(nullptr, 1);
+  from.startRange(nullptr, 4, DocumentRange::kFrames); from.endRange(nullptr, 4);
+  EXPECT_EQ(frames_range(2, 3),
+            move_range(doc,
+                       from,
+                       frames_range(2),
+                       kDocumentRangeAfter,
+                       kFitOutsideTags));
+  EXPECT_FRAME_ORDER6(0, 2, 1, 4, 3, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(1, a->toFrame());
+  EXPECT_EQ(4, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Put frame 1 and 4 before tag "b" (inside)
+  EXPECT_EQ(frames_range(2, 3),
+            move_range(doc,
+                       from,
+                       frames_range(3),
+                       kDocumentRangeBefore,
+                       kFitInsideTags));
+  EXPECT_FRAME_ORDER6(0, 2, 1, 4, 3, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(1, a->toFrame());
+  EXPECT_EQ(2, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+}
+
+TEST_F(DocRangeOps, CopyRangeWithTags) {
+  FrameTag* a = new FrameTag(0, 2);
+  FrameTag* b = new FrameTag(3, 5);
+  sprite->frameTags().add(a);
+  sprite->frameTags().add(b);
+
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(3, b->fromFrame());
+  EXPECT_EQ(5, b->toFrame());
+
+  // Copy before tag "a" (outside the tag)
+  EXPECT_EQ(frames_range(0),
+            copy_range(doc,
+                       frames_range(1),
+                       frames_range(0),
+                       kDocumentRangeBefore,
+                       kFitOutsideTags));
+  EXPECT_FRAME_COPY3(1, 0, 1, 2, 3, 4, 5);
+  EXPECT_EQ(1, a->fromFrame());
+  EXPECT_EQ(3, a->toFrame());
+  EXPECT_EQ(4, b->fromFrame());
+  EXPECT_EQ(6, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Copy before tag "a" (inside the tag)
+  EXPECT_EQ(frames_range(0),
+            copy_range(doc,
+                       frames_range(1),
+                       frames_range(0),
+                       kDocumentRangeBefore,
+                       kFitInsideTags));
+  EXPECT_FRAME_COPY3(1, 0, 1, 2, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(3, a->toFrame());
+  EXPECT_EQ(4, b->fromFrame());
+  EXPECT_EQ(6, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+
+  // Copy after tag "a" (outside the tag)
+  EXPECT_EQ(frames_range(3),
+            copy_range(doc,
+                       frames_range(1),
+                       frames_range(2),
+                       kDocumentRangeAfter,
+                       kFitOutsideTags));
+  EXPECT_FRAME_COPY3(0, 1, 2, 1, 3, 4, 5);
+  EXPECT_EQ(0, a->fromFrame());
+  EXPECT_EQ(2, a->toFrame());
+  EXPECT_EQ(4, b->fromFrame());
+  EXPECT_EQ(6, b->toFrame());
+  EXPECT_TRUE(doc->undoHistory()->canUndo());
+  doc->undoHistory()->undo();
+}

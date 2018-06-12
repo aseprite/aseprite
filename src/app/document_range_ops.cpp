@@ -79,7 +79,9 @@ static DocumentRange move_or_copy_frames(
   DocumentApi& api, Op op,
   Sprite* sprite,
   const DocumentRange& srcRange,
-  frame_t dstFrame)
+  frame_t dstFrame,
+  const DocumentRangePlace place,
+  const TagsHandling tagsHandling)
 {
   const SelectedFrames& srcFrames = srcRange.selectedFrames();
 
@@ -88,13 +90,20 @@ static DocumentRange move_or_copy_frames(
   for (auto srcFrame : srcFrames) {
     std::clog << srcFrame << ", ";
   }
-  std::clog << "] => " << dstFrame << "\n";
+  std::clog << "] "
+            << (place == kDocumentRangeBefore ? "before":
+                place == kDocumentRangeAfter ? "after":
+                                               "as first child")
+            << " " << dstFrame << "\n";
 #endif
 
   auto srcFrame = srcFrames.begin();
   auto srcFrameEnd = srcFrames.end();
   frame_t srcDelta = 0;
   frame_t firstCopiedBlock = 0;
+  frame_t dstBeforeFrame =
+    (place == kDocumentRangeBefore ? dstFrame:
+                                     dstFrame+1);
 
   for (; srcFrame != srcFrameEnd; ++srcFrame) {
     frame_t fromFrame = (*srcFrame)+srcDelta;
@@ -102,14 +111,14 @@ static DocumentRange move_or_copy_frames(
     switch (op) {
 
       case Move:
-        if ((*srcFrame) >= dstFrame) {
+        if ((*srcFrame) >= dstBeforeFrame) {
           srcDelta = 0;
           fromFrame = *srcFrame;
         }
         break;
 
       case Copy:
-        if (fromFrame >= dstFrame-1 && firstCopiedBlock) {
+        if (fromFrame >= dstBeforeFrame-1 && firstCopiedBlock) {
           srcDelta += firstCopiedBlock;
           fromFrame += firstCopiedBlock;
           firstCopiedBlock = 0;
@@ -124,31 +133,41 @@ static DocumentRange move_or_copy_frames(
     }
     std::clog << "] => "
               << (op == Move ? "Move": "Copy")
-              << " " << (*srcFrame) << "+" << (srcDelta) << " -> " << dstFrame << " => ";
+              << " " << (*srcFrame) << "+" << (srcDelta)
+              << (place == kDocumentRangeBefore ? " before ": " after ")
+              << dstFrame << " => ";
 #endif
 
     switch (op) {
 
       case Move:
-        api.moveFrame(sprite, fromFrame, dstFrame);
+        api.moveFrame(sprite, fromFrame, dstFrame,
+                      (place == kDocumentRangeBefore ? kDropBeforeFrame:
+                                                       kDropAfterFrame),
+                      tagsHandling);
 
-        if (fromFrame < dstFrame-1) {
+        if (fromFrame < dstBeforeFrame-1) {
           --srcDelta;
         }
-        else if (fromFrame > dstFrame-1) {
+        else if (fromFrame > dstBeforeFrame-1) {
+          ++dstBeforeFrame;
           ++dstFrame;
         }
         break;
 
       case Copy:
-        api.copyFrame(sprite, fromFrame, dstFrame);
+        api.copyFrame(sprite, fromFrame, dstFrame,
+                      (place == kDocumentRangeBefore ? kDropBeforeFrame:
+                                                       kDropAfterFrame),
+                      tagsHandling);
 
-        if (fromFrame < dstFrame-1) {
+        if (fromFrame < dstBeforeFrame-1) {
           ++firstCopiedBlock;
         }
-        else if (fromFrame >= dstFrame-1) {
+        else if (fromFrame >= dstBeforeFrame-1) {
           ++srcDelta;
         }
+        ++dstBeforeFrame;
         ++dstFrame;
         break;
     }
@@ -165,8 +184,8 @@ static DocumentRange move_or_copy_frames(
   DocumentRange result;
   if (!srcRange.selectedLayers().empty())
     result.selectLayers(srcRange.selectedLayers());
-  result.startRange(nullptr, dstFrame-srcFrames.size(), DocumentRange::kFrames);
-  result.endRange(nullptr, dstFrame-1);
+  result.startRange(nullptr, dstBeforeFrame-srcFrames.size(), DocumentRange::kFrames);
+  result.endRange(nullptr, dstBeforeFrame-1);
   return result;
 }
 
@@ -183,8 +202,12 @@ static bool has_child(LayerGroup* parent, Layer* child)
 }
 
 static DocumentRange drop_range_op(
-  Document* doc, Op op, const DocumentRange& from,
-  DocumentRangePlace place, DocumentRange to)
+  Document* doc,
+  const Op op,
+  const DocumentRange& from,
+  DocumentRangePlace place,
+  const TagsHandling tagsHandling,
+  DocumentRange to)
 {
   // Convert "first child" operation into a insert after last child.
   LayerGroup* parent = nullptr;
@@ -237,8 +260,12 @@ static DocumentRange drop_range_op(
             ((to.firstFrame() >= from.firstFrame() &&
               to.lastFrame() <= from.lastFrame()) ||
              (place == kDocumentRangeBefore && to.firstFrame() == from.lastFrame()+1) ||
-             (place == kDocumentRangeAfter && to.lastFrame() == from.firstFrame()-1)))
+             (place == kDocumentRangeAfter && to.lastFrame() == from.firstFrame()-1)) &&
+            // If there are tags, this might not be a no-op
+            (sprite->frameTags().empty() ||
+             tagsHandling == kDontAdjustTags)) {
           return from;
+        }
       }
       break;
 
@@ -352,9 +379,11 @@ static DocumentRange drop_range_op(
         if (place == kDocumentRangeBefore)
           dstFrame = to.firstFrame();
         else
-          dstFrame = to.lastFrame()+1;
+          dstFrame = to.lastFrame();
 
-        resultRange = move_or_copy_frames(api, op, sprite, from, dstFrame);
+        resultRange = move_or_copy_frames(api, op, sprite,
+                                          from, dstFrame,
+                                          place, tagsHandling);
         break;
       }
 
@@ -434,14 +463,24 @@ static DocumentRange drop_range_op(
   return resultRange;
 }
 
-DocumentRange move_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place)
+DocumentRange move_range(Document* doc,
+                         const DocumentRange& from,
+                         const DocumentRange& to,
+                         const DocumentRangePlace place,
+                         const TagsHandling tagsHandling)
 {
-  return drop_range_op(doc, Move, from, place, DocumentRange(to));
+  return drop_range_op(doc, Move, from, place,
+                       tagsHandling, DocumentRange(to));
 }
 
-DocumentRange copy_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place)
+DocumentRange copy_range(Document* doc,
+                         const DocumentRange& from,
+                         const DocumentRange& to,
+                         const DocumentRangePlace place,
+                         const TagsHandling tagsHandling)
 {
-  return drop_range_op(doc, Copy, from, place, DocumentRange(to));
+  return drop_range_op(doc, Copy, from, place,
+                       tagsHandling, DocumentRange(to));
 }
 
 void reverse_frames(Document* doc, const DocumentRange& range)
@@ -482,7 +521,9 @@ void reverse_frames(Document* doc, const DocumentRange& range)
     for (frame_t frameRev = frameEnd+1;
          frameRev > frameBegin;
          --frameRev) {
-      api.moveFrame(sprite, frameBegin, frameRev);
+      api.moveFrame(sprite, frameBegin, frameRev,
+                    kDropBeforeFrame,
+                    kDontAdjustTags);
     }
   }
   else if (swapCels) {

@@ -206,15 +206,16 @@ namespace app {
         FirstChild,
         VeryBottom
       };
-
       DropTarget();
-
+      DropTarget(const DropTarget& o);
+      bool operator!=(const DropTarget& o) const {
+        return (hhit != o.hhit ||
+                vhit != o.vhit ||
+                outside != o.outside);
+      }
       HHit hhit;
       VHit vhit;
-      Layer* layer;
-      ObjectId layerId;
-      frame_t frame;
-      int xpos, ypos;
+      bool outside;
     };
 
     struct Row {
