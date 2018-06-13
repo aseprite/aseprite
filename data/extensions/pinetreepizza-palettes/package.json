@@ -1,0 +1,16 @@
+{
+  "name": "pinetreepizza-palettes",
+  "displayName": "PineTreePizza Palettes",
+  "description": "Palettes contributed by PineTreePizza",
+  "version": "1.0",
+  "author": { "name": "PineTreePizza", "url": "https://twitter.com/PineTreePizza" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "Rosy-42", "path": "./rosy-42.gpl" }
+    ]
+  }
+}
