@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -53,6 +53,11 @@ namespace app {
   // opened and being edited by the user (a sprite).
   class Document : public doc::Document,
                    public RWLock {
+    enum Flags {
+      kAssociatedToFile = 1, // This sprite is associated to a file in the file-system
+      kMaskVisible      = 2, // The mask wasn't hidden by the user
+      kInhibitBackup    = 4, // Inhibit the backup process
+    };
   public:
     Document(Sprite* sprite);
     ~Document();
@@ -97,6 +102,12 @@ namespace app {
     // document. For example, it doesn't make sense to create a backup
     // for an unmodified document.
     bool needsBackup() const;
+
+    // Can be used to avoid creating a backup when the file is in a
+    // unusual temporary state (e.g. when the file is resized to be
+    // exported with other size)
+    bool inhibitBackup() const;
+    void setInhibitBackup(const bool inhibitBackup);
 
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
@@ -166,11 +177,10 @@ namespace app {
     virtual void onContextChanged() override;
 
   private:
+    int m_flags;
+
     // Undo and redo information about the document.
     base::UniquePtr<DocumentUndo> m_undo;
-
-    // True if this sprite is associated to a file in the file-system.
-    bool m_associated_to_file;
 
     // Selected mask region boundaries
     base::UniquePtr<doc::MaskBoundaries> m_maskBoundaries;
@@ -183,7 +193,6 @@ namespace app {
 
     // Current mask.
     base::UniquePtr<Mask> m_mask;
-    bool m_maskVisible;
 
     // Current transformation.
     Transformation m_transformation;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -105,7 +105,11 @@ void BackupObserver::backgroundThread()
       for (app::Document* doc : m_documents) {
         try {
           if (doc->needsBackup()) {
-            if (!m_session->saveDocumentChanges(doc)) {
+            if (doc->inhibitBackup()) {
+              TRACE("RECO: Document '%d' backup is temporarily inhibited\n", doc->id());
+              somethingLocked = true;
+            }
+            else if (!m_session->saveDocumentChanges(doc)) {
               TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
               somethingLocked = true;
             }

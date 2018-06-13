@@ -377,6 +377,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       if (newWidth < 1) newWidth = 1;
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
+        doc->setInhibitBackup(true);
+
         Params params;
         params.set("use-ui", "false");
         params.set("width", base::convert_to<std::string>(newWidth).c_str());
@@ -424,6 +426,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     Command* undoCmd = Commands::instance()->byId(CommandId::Undo());
     if (undoCmd)
       context->executeCommand(undoCmd);
+
+    doc->setInhibitBackup(false);
   }
 }
 

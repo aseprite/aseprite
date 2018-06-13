@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -42,13 +42,12 @@ using namespace base;
 using namespace doc;
 
 Document::Document(Sprite* sprite)
-  : m_undo(new DocumentUndo)
-  , m_associated_to_file(false)
-    // Information about the file format used to load/save this document
-  , m_format_options(NULL)
+  : m_flags(kMaskVisible)
+  , m_undo(new DocumentUndo)
+  // Information about the file format used to load/save this document
+  , m_format_options(nullptr)
   // Mask
   , m_mask(new Mask())
-  , m_maskVisible(true)
   , m_lastDrawingPoint(Document::NoLastDrawingPoint())
 {
   setFilename("Sprite");
@@ -164,13 +163,13 @@ bool Document::isModified() const
 
 bool Document::isAssociatedToFile() const
 {
-  return m_associated_to_file;
+  return (m_flags & kAssociatedToFile) == kAssociatedToFile;
 }
 
 void Document::markAsSaved()
 {
   m_undo->markSavedState();
-  m_associated_to_file = true;
+  m_flags |= kAssociatedToFile;
 }
 
 void Document::impossibleToBackToSavedState()
@@ -183,6 +182,19 @@ bool Document::needsBackup() const
   // If the undo history isn't empty, the user has modified the
   // document, so we need to backup those changes.
   return m_undo->canUndo() || m_undo->canRedo();
+}
+
+bool Document::inhibitBackup() const
+{
+  return (m_flags & kInhibitBackup) == kInhibitBackup;
+}
+
+void Document::setInhibitBackup(const bool inhibitBackup)
+{
+  if (inhibitBackup)
+    m_flags |= kInhibitBackup;
+  else
+    m_flags &= ~kInhibitBackup;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -226,7 +238,7 @@ void Document::generateMaskBoundaries(const Mask* mask)
 void Document::setMask(const Mask* mask)
 {
   m_mask.reset(new Mask(*mask));
-  m_maskVisible = true;
+  m_flags |= kMaskVisible;
 
   resetTransformation();
 }
@@ -234,14 +246,17 @@ void Document::setMask(const Mask* mask)
 bool Document::isMaskVisible() const
 {
   return
-    m_maskVisible &&            // The mask was not hidden by the user explicitly
+    (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
     m_mask &&                   // The mask does exist
     !m_mask->isEmpty();         // The mask is not empty
 }
 
 void Document::setMaskVisible(bool visible)
 {
-  m_maskVisible = visible;
+  if (visible)
+    m_flags |= kMaskVisible;
+  else
+    m_flags &= ~kMaskVisible;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -422,8 +437,10 @@ Document* Document::duplicate(DuplicateType type) const
       break;
   }
 
+  // Copy only some flags
+  documentCopy->m_flags = (m_flags & kMaskVisible);
+
   documentCopy->setMask(mask());
-  documentCopy->m_maskVisible = m_maskVisible;
   documentCopy->generateMaskBoundaries();
 
   return documentCopy.release();
