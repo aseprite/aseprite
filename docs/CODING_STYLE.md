@@ -1,4 +1,4 @@
-# Coding Standards
+# Code Style Guidelines
 
 ## Basics
 
