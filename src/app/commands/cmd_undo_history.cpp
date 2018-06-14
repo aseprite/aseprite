@@ -159,11 +159,7 @@ private:
     view()->updateView();
   }
 
-  void onAfterUndo(DocumentUndo* history) override {
-    selectState(history->currentState());
-  }
-
-  void onAfterRedo(DocumentUndo* history) override {
+  void onCurrentUndoStateChange(DocumentUndo* history) override {
     selectState(history->currentState());
   }
 

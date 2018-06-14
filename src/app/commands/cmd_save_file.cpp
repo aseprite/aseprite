@@ -16,6 +16,8 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/document.h"
+#include "app/document_undo.h"
 #include "app/file/file.h"
 #include "app/file/gif_format.h"
 #include "app/file_selector.h"
@@ -39,6 +41,7 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "ui/ui.h"
+#include "undo/undo_state.h"
 
 namespace app {
 
@@ -289,6 +292,10 @@ public:
 
 protected:
   void onExecute(Context* context) override;
+
+private:
+  void moveToUndoState(Document* doc,
+                       const undo::UndoState* state);
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
@@ -365,7 +372,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   }
 
   // Apply scale
-  bool undoResize = false;
+  const undo::UndoState* undoState = nullptr;
   if (xscale != 1.0 || yscale != 1.0) {
     Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize());
     ASSERT(resizeCmd);
@@ -378,6 +385,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
         doc->setInhibitBackup(true);
+        undoState = doc->undoHistory()->currentState();
 
         Params params;
         params.set("use-ui", "false");
@@ -385,7 +393,6 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         params.set("height", base::convert_to<std::string>(newHeight).c_str());
         params.set("resize-method", "nearest-neighbor"); // TODO add algorithm in the UI?
         context->executeCommand(resizeCmd, params);
-        undoResize = true;
       }
     }
   }
@@ -422,12 +429,24 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   }
 
   // Undo resize
-  if (undoResize) {
-    Command* undoCmd = Commands::instance()->byId(CommandId::Undo());
-    if (undoCmd)
-      context->executeCommand(undoCmd);
-
+  if (undoState &&
+      undoState != doc->undoHistory()->currentState()) {
+    moveToUndoState(doc, undoState);
     doc->setInhibitBackup(false);
+  }
+}
+
+void SaveFileCopyAsCommand::moveToUndoState(Document* doc,
+                                            const undo::UndoState* state)
+{
+  try {
+    DocumentWriter writer(doc, 100);
+    doc->undoHistory()->moveToState(state);
+    doc->generateMaskBoundaries();
+    doc->notifyGeneralUpdate();
+  }
+  catch (const std::exception& ex) {
+    Console::showException(ex);
   }
 }
 

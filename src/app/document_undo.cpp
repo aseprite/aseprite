@@ -106,7 +106,7 @@ void DocumentUndo::undo()
   m_totalUndoSize -= cmd->memSize();
   {
     m_undoHistory.undo();
-    notify_observers(&DocumentUndoObserver::onAfterUndo, this);
+    notify_observers(&DocumentUndoObserver::onCurrentUndoStateChange, this);
   }
   m_totalUndoSize += cmd->memSize();
   if (m_totalUndoSize != oldSize)
@@ -122,7 +122,7 @@ void DocumentUndo::redo()
   m_totalUndoSize -= cmd->memSize();
   {
     m_undoHistory.redo();
-    notify_observers(&DocumentUndoObserver::onAfterRedo, this);
+    notify_observers(&DocumentUndoObserver::onCurrentUndoStateChange, this);
   }
   m_totalUndoSize += cmd->memSize();
   if (m_totalUndoSize != oldSize)
@@ -217,6 +217,7 @@ Cmd* DocumentUndo::lastExecutedCmd() const
 void DocumentUndo::moveToState(const undo::UndoState* state)
 {
   m_undoHistory.moveTo(state);
+  notify_observers(&DocumentUndoObserver::onCurrentUndoStateChange, this);
 
   // Recalculate the total undo size
   size_t oldSize = m_totalUndoSize;
