@@ -47,6 +47,8 @@
 
 #define NOTINITIALIZED  "{__not_initialized_path__}"
 
+#define FS_TRACE(...)
+
 namespace app {
 
 // a position in the file-system
@@ -542,7 +544,7 @@ void FileItem::setThumbnail(she::Surface* thumbnail)
 
 FileItem::FileItem(FileItem* parent)
 {
-  //LOG("FS: Creating %p fileitem with parent %p\n", this, parent);
+  FS_TRACE("FS: Creating %p fileitem with parent %p\n", this, parent);
 
   m_keyname = NOTINITIALIZED;
   m_filename = NOTINITIALIZED;
@@ -559,7 +561,7 @@ FileItem::FileItem(FileItem* parent)
 
 FileItem::~FileItem()
 {
-  TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
+  FS_TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
 
 #ifdef _WIN32
   if (m_fullpidl && m_fullpidl != m_pidl) {
