@@ -1,0 +1,33 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2018 by David Capello -->
+<gui>
+<window id="about" text="About Aseprite">
+  <vbox>
+    <label text="" id="title" />
+    <label text="Animated sprite editor &amp;&amp; pixel art tool" />
+    <separator text="Authors:" horizontal="true" />
+    <grid columns="2">
+      <link text="David Capello" url="https://github.com/dacap" />
+      <label text="- Lead developer, graphics &amp;&amp; maintainer" />
+      <link text="Gaspar Capello" url="https://github.com/Gasparoken" />
+      <label text="- Programmer, bug fixing" />
+      <link text="Ilija Melentijevic" url="https://twitter.com/ilkkke" />
+      <label text="- Default skin &amp;&amp; graphics introduced in v0.8" />
+    </grid>
+
+    <hbox>
+      <link text="Contributors" url="https://www.aseprite.org/contributors/" />
+      <label text="&amp;&amp;" />
+      <link text="Open Source Projects" url="" id="licenses" />
+    </hbox>
+    <separator horizontal="true" />
+    <label text="Copyright (C) 2001-2018 David Capello" />
+    <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />
+    <hbox>
+      <boxfiller />
+      <button text="@general.close" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <boxfiller />
+    </hbox>
+  </vbox>
+</window>
+</gui>
