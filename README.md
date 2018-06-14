@@ -11,4 +11,4 @@ on Aseprite project to do several automated tests:
   `.gif`, etc. files [sprites](https://github.com/aseprite/tests/tree/master/sprites)
   folder.
 * Test backward compatibility with [Aseprite CLI](https://www.aseprite.org/docs/cli/) options
-* Future [scripting API](https://github.com/aseprite/api)
+* Future [scripting API](https://github.com/aseprite/api) using [JS scripts](https://github.com/aseprite/tests/tree/master/scripts)
