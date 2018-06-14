@@ -22,5 +22,13 @@ before_script:
   - cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
 
 script:
-  - "make"
-  - "ctest --output-on-failure"
+  - make
+  - |
+    if ctest --output-on-failure ; then
+      if [[ "$ENABLE_UI" == "OFF" ]]; then
+        export ASEPRITE=$PWD/bin/aseprite
+        git clone https://github.com/aseprite/tests.git
+        cd tests
+        bash run-tests.sh
+      fi
+    fi
