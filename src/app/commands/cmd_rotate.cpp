@@ -237,9 +237,6 @@ void RotateCommand::onExecute(Context* context)
       rotateSprite = true;
     }
 
-    if (cels.empty())           // Nothing to do
-      return;
-
     ContextReader reader(context);
     {
       RotateJob job(reader, m_angle, cels, rotateSprite);
