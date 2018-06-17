@@ -2,51 +2,62 @@
 
 We have a [code of conduct](CODE_OF_CONDUCT.md) that we all must
 read. Be polite to everyone. If you are not in your best day, take a
-deep breath and try again. Smile ^_^
+deep breath and try again. Smile :smile:
 
 # New Issues
 
 Before you submit an issue:
 
-* Search in the current [list of issues](https://github.com/aseprite/aseprite/issues).
-* If the issue already exists, add a +1, and you can click the `Subscribe` button to get notifications via email.
+* Search in the current
+  [list of issues](https://github.com/aseprite/aseprite/issues),
+  [bug reports](https://community.aseprite.org/c/bugs), or
+  [feature requests](https://community.aseprite.org/c/features).
+* If the issue already exists, add a :+1: or a :heart:, and you can
+  click the `Subscribe` or `Watching` button to get notifications
+  via email.
 
 # Compilation problem
 
-Before you submit an issue about a **compilation problem**, check
-the following items:
+Before you submit an issue or a post about a **compilation problem**,
+check the following items:
 
 * See how to get the source code correctly in the [INSTALL](INSTALL.md) guide.
 * Check if you are using the latest repository clone.
 * Remember that we use submodules, so you need to initialize and update them.
 * Remember that might be some [pull requests](https://github.com/aseprite/aseprite/pulls)
   being reviewed to fix your same problem.
-* If you are compiling on Mac OS X or on Linux, be patient, we don't
-  compile on those platforms regularly.
+
+If you have a compilation problem, you can ask in the
+[Development category](https://community.aseprite.org/c/development)
+in the [Community site](https://community.aseprite.org/) for help
+or creating a [GitHub issue](https://github.com/aseprite/aseprite/issues/new).
 
 # Contributing
 
-One of the easiest ways to contribute is writting articles, blog posts,
-recording video tutorials,
-[creating pixel art](http://aseprite.deviantart.com/), or showing your love
+One of the easiest ways to contribute is writting articles,
+[Steam reviews](https://steamcommunity.com/app/431730/reviews/),
+blog posts, recording video tutorials,
+[creating pixel art](https://aseprite.deviantart.com/), or showing your love
 to Aseprite e.g. naming Aseprite in your website and linking it to
-http://www.aseprite.org/, following
+https://www.aseprite.org/, following
 [@aseprite](https://twitter.com/aseprite) twitter account, or
-[giving a donation](http://www.aseprite.org/donate/).
+[buying an extra Aseprite copy to your friend](https://www.aseprite.org/download/).
 
 Other ways to contribute require direct contact with us. For example:
 
-* Writting documentation.
+* [Writing documentation](https://github.com/aseprite/docs).
 * Making art with Aseprite and for Aseprite (logos, skins, mockups).
 * Sending patches for features or bug fixes.
 * Reviewing issues in the [issue tracker](https://github.com/aseprite/aseprite/issues) and making comments.
+* Helping other users in the [Community](https://community.aseprite.org/) site.
 
 ## Documentation
 
 You can start seeing the
-[documentation](http://www.aseprite.org/docs/), and
-[contact us](support@aseprite.org) if you want to help
-writting documentation or recording [tutorials](http://www.aseprite.org/tutorial/).
+[documentation](https://www.aseprite.org/docs/), and
+[contact us](mailto:support@aseprite.org) if you want to help
+writting documentation
+or recording [tutorials](https://www.aseprite.org/docs/tutorial/).
 
 If you are going to write documentation, we recommend you to take
 screenshots or record a GIF animations to show steps:
@@ -57,10 +68,11 @@ screenshots or record a GIF animations to show steps:
 
 ## Reviewing Issues
 
-You can review issues, make comments, or create new ones (features,
-bug reports, etc.) in the
-[issue tracker](https://github.com/aseprite/aseprite/issues). You
-are encouraged to create mockups for any issue you see and attach them.
+You can [review issues](https://github.com/aseprite/aseprite/issues),
+make comments, or create
+new [features](https://community.aseprite.org/c/features),
+[bug reports](https://community.aseprite.org/c/bugs), etc. You are
+encouraged to create mockups for any issue you see and attach them.
 
 ## Hacking
 
@@ -98,15 +110,17 @@ want to fix three different issues, create three different branches
 from `master` and then send three different PR. Do not chain all the
 fixes in one single branch. E.g. `fix-issues-3-and-8-and-25`.
 
-## Mailing List
+## Community
 
-Subscribe to
-[aseprite-discuss](http://groups.google.com/group/aseprite-discuss)
-group. If you want to start working in something
-(e.g. [an open issue](https://github.com/aseprite/aseprite/issues)),
-you should send an email to the group describing what you want to do,
-to avoid programming in something that is already done or which
-someone else is working on.
+You can use the [Development category](https://community.aseprite.org/c/development)
+to ask question about the code, how to compile, etc.
+If you want to start working in something
+([issue](https://github.com/aseprite/aseprite/issues),
+[bug](https://community.aseprite.org/c/bugs),
+or [feature](https://community.aseprite.org/c/features)),
+post a comment asking if somebody is already working on that,
+in that way you can avoid start programming in something that is already
+done for the next release or which someone else is working on.
 
 And always remember to take a look at our
 [roadmap](http://www.aseprite.org/roadmap/).
