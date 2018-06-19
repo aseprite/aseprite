@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -296,14 +296,19 @@ void Menu::showPopup(const gfx::Point& pos)
     MID(0, pos.y, ui::display_h() - window->bounds().h));
 
   // Set the focus to the new menubox
-  Manager::getDefault()->setFocus(menubox);
+  Manager* manager = Manager::getDefault();
+  manager->setFocus(menubox);
   menubox->setFocusMagnet(true);
 
   // Open the window
   window->openWindowInForeground();
 
-  // Free the keyboard focus
-  Manager::getDefault()->freeFocus();
+  // Free the keyboard focus if it's in the menu popup, in other case
+  // it means that the user set the focus to other specific widget
+  // before we closed the popup.
+  Widget* focus = manager->getFocus();
+  if (focus && focus->window() == window)
+    focus->releaseFocus();
 
   // Fetch the "menu" so it isn't destroyed
   menubox->setMenu(nullptr);
