@@ -49,14 +49,14 @@ You can ask for help in:
 
 ## Authors
 
-* [David Capello](https://github.com/dacap): Lead developer, bug fixing, new features, designer, and maintainer.
+* [David Capello](https://davidcapello.com/): Lead developer, bug fixing, new features, designer, and maintainer.
 * [Gaspar Capello](https://github.com/Gasparoken): Developer, bug fixing.
 
 ## Credits
 
 The default Aseprite theme was introduced in v0.8, created by:
 
-* [Ilija Melentijevic](https://twitter.com/ilkkke)
+* [Ilija Melentijevic](https://ilkke.net/)
 
 Aseprite includes color palettes created by:
 

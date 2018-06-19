@@ -7,7 +7,7 @@
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
     <separator text="Authors:" horizontal="true" />
     <grid columns="2">
-      <link text="David Capello" url="https://github.com/dacap" />
+      <link text="David Capello" url="https://davidcapello.com/" />
       <label text="- Lead developer, graphics &amp;&amp; maintainer" />
       <link text="Gaspar Capello" url="https://github.com/Gasparoken" />
       <label text="- Programmer, bug fixing" />
