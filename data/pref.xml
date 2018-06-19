@@ -155,6 +155,7 @@
       <option id="use_native_clipboard" type="bool" default="true" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
+      <option id="load_wintab_driver" type="bool" default="true" />
       <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
     </section>

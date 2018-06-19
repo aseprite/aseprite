@@ -367,6 +367,13 @@
                  text="@.one_finger_as_mouse_movement"
                  tooltip="@.one_finger_as_mouse_movement_tooltip"
                  pref="experimental.one_finger_as_mouse_movement" />
+	  <hbox id="load_wintab_driver_box">
+            <check id="load_wintab_driver"
+                   text="@.load_wintab_driver"
+                   tooltip="@.load_wintab_driver_tooltip"
+                   pref="experimental.load_wintab_driver" />
+            <link text="@.wintab_more_info" url="https://www.aseprite.org/docs/wintab/" />
+          </hbox>
           <check id="flash_layer" text="@.flash_selected_layer" />
           <hbox>
             <label text="@.non_active_layer_opacity" />

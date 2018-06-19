@@ -246,6 +246,7 @@ public:
 
 #ifndef _WIN32
     oneFingerAsMouseMovement()->setVisible(false);
+    loadWintabDriverBox()->setVisible(false);
 #endif
 
     if (m_pref.experimental.flashLayer())

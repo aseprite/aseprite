@@ -176,11 +176,6 @@ App::App()
 
 void App::initialize(const AppOptions& options)
 {
-#ifdef _WIN32
-  if (options.disableWintab())
-    she::instance()->useWintabAPI(false);
-#endif
-
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
 #else
@@ -188,6 +183,14 @@ void App::initialize(const AppOptions& options)
 #endif
   m_isShell = options.startShell();
   m_coreModules = new CoreModules;
+
+#ifdef _WIN32
+  if (options.disableWintab() ||
+      !preferences().experimental.loadWintabDriver()) {
+    she::instance()->useWintabAPI(false);
+  }
+#endif
+
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
 
