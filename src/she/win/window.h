@@ -52,6 +52,7 @@ namespace she {
 
     void setLayout(const std::string& layout);
     void setTranslateDeadKeys(bool state);
+    void setInterpretOneFingerGestureAsMouseMovement(bool state);
 
     HWND handle() { return m_hwnd; }
 
@@ -63,6 +64,13 @@ namespace she {
     void handlePointerButtonChange(Event& ev, POINTER_INFO& pi);
     void handleInteractionContextOutput(
       const INTERACTION_CONTEXT_OUTPUT* output);
+
+    void waitTimerToConvertFingerAsMouseMovement();
+    void convertFingerAsMouseMovement();
+    void delegateFingerToInteractionContext();
+    void sendDelayedTouchEvents();
+    void clearDelayedTouchEvents();
+    void killTouchTimer();
 
     virtual void onQueueEvent(Event& ev) { }
     virtual void onResize(const gfx::Size& sz) { }
@@ -126,6 +134,36 @@ namespace she {
     //    so when it backs to 0 we start processing WM_MOUSEMOVE
     //    messages again.
     int m_ignoreRandomMouseEvents;
+
+    // Variables used to convert one finger in mouse-like movement,
+    // and two/more fingers in scroll movement/pan/zoom. The idea
+    // is as follows:
+    // 1) When a PT_TOUCH is received, we count this event in
+    //    m_fingers and setup a timer (m_fingerTimerID) to wait for
+    //    another touch event.
+    // 2) If another touch event is received, we process the messages
+    //    with the interaction context (m_ictx) to handle special
+    //    gestures (pan, magnify, etc.).
+    // 3) If the timeout is reached, and we've received only one
+    //    finger on the windows, we can send all awaiting events
+    //    (m_fingerEvents) like mouse movement messages/button
+    //    presses/releases.
+    struct Touch {
+      int fingers;              // Number of fingers in the window
+      // True when the timeout wasn't reached yet and the finger can be
+      // converted to mouse events yet.
+      bool canBeMouse;
+      // True if we're already processing finger/touch events as mouse
+      // movement events.
+      bool asMouse;
+      // Timeout (WM_TIMER) when the finger is converted to mouse events.
+      UINT_PTR timerID;
+      // Queued events to be sent when the finger is converted to mouse
+      // events (these events are discarded if another finger is
+      // introduced in the gesture e.g. to pan)
+      std::vector<Event> delayedEvents;
+      Touch();
+    } *m_touch;
 
 #if SHE_USE_POINTER_API_FOR_MOUSE
     // Emulate double-click with pointer API. I guess that this should

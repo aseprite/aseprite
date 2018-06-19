@@ -29,6 +29,9 @@
 
 #define KEY_TRACE(...)
 #define MOUSE_TRACE(...)
+#define TOUCH_TRACE(...)
+
+#define kFingerAsMouseTimeout 50
 
 // Gets the window client are in absolute/screen coordinates
 #define ABS_CLIENT_RC(rc)                               \
@@ -59,6 +62,14 @@ static PointerType wt_packet_pkcursor_to_pointer_type(int pkCursor)
   return PointerType::Unknown;
 }
 
+WinWindow::Touch::Touch()
+  : fingers(0)
+  , canBeMouse(false)
+  , asMouse(false)
+  , timerID(0)
+{
+}
+
 WinWindow::WinWindow(int width, int height, int scale)
   : m_hwnd(nullptr)
   , m_hcursor(nullptr)
@@ -74,6 +85,8 @@ WinWindow::WinWindow(int width, int height, int scale)
   , m_lastPointerId(0)
   , m_ictx(nullptr)
   , m_ignoreRandomMouseEvents(0)
+  // True by default, we prefer to interpret one finger as mouse movement
+  , m_touch(new Touch)
 #if SHE_USE_POINTER_API_FOR_MOUSE
   , m_emulateDoubleClick(false)
   , m_doubleClickMsecs(GetDoubleClickTime())
@@ -472,6 +485,19 @@ void WinWindow::setTranslateDeadKeys(bool state)
   }
 }
 
+void WinWindow::setInterpretOneFingerGestureAsMouseMovement(bool state)
+{
+  if (state) {
+    if (!m_touch)
+      m_touch = new Touch;
+  }
+  else if (m_touch) {
+    killTouchTimer();
+    delete m_touch;
+    m_touch = nullptr;
+  }
+}
+
 bool WinWindow::setCursor(HCURSOR hcursor, bool custom)
 {
   SetCursor(hcursor);
@@ -795,8 +821,21 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
       if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
-        if (m_ictx && winApi.AddPointerInteractionContext)
+        if (m_ictx && winApi.AddPointerInteractionContext) {
           winApi.AddPointerInteractionContext(m_ictx, pi.pointerId);
+
+          if (m_touch && pi.pointerType == PT_TOUCH &&
+              !m_touch->asMouse) {
+            ++m_touch->fingers;
+            TOUCH_TRACE("POINTERENTER fingers=%d\n", m_touch->fingers);
+            if (m_touch->fingers == 1) {
+              waitTimerToConvertFingerAsMouseMovement();
+            }
+            else if (m_touch->canBeMouse && m_touch->fingers >= 2) {
+              delegateFingerToInteractionContext();
+            }
+          }
+        }
       }
 
       if (!m_hasMouse) {
@@ -817,12 +856,33 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         break;
 
       MOUSE_TRACE("POINTERLEAVE id=%d\n", pi.pointerId);
-      m_ignoreRandomMouseEvents = 0;
+
+      // After releasing a finger a WM_MOUSEMOVE event in the trackpad
+      // position is generated, we'll ignore that message.
+      if (m_touch)
+        m_ignoreRandomMouseEvents = 1;
+      else
+        m_ignoreRandomMouseEvents = 0;
 
       if (pi.pointerType == PT_TOUCH || pi.pointerType == PT_PEN) {
         auto& winApi = system()->winApi();
-        if (m_ictx && winApi.RemovePointerInteractionContext)
+        if (m_ictx && winApi.RemovePointerInteractionContext) {
           winApi.RemovePointerInteractionContext(m_ictx, pi.pointerId);
+
+          if (m_touch && pi.pointerType == PT_TOUCH) {
+            if (m_touch->fingers > 0)
+              --m_touch->fingers;
+            TOUCH_TRACE("POINTERLEAVE fingers=%d\n", m_touch->fingers);
+            if (m_touch->fingers == 0) {
+              if (m_touch->canBeMouse)
+                sendDelayedTouchEvents();
+              else
+                clearDelayedTouchEvents();
+              killTouchTimer();
+              m_touch->asMouse = false;
+            }
+          }
+        }
       }
 
 #if 0 // Don't generate MouseLeave from pen/touch messages
@@ -851,7 +911,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
           winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
-          if (pi.pointerType == PT_TOUCH)
+          if (!m_touch && pi.pointerType == PT_TOUCH)
             return 0;
         }
       }
@@ -874,7 +934,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
           winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
-          if (pi.pointerType == PT_TOUCH)
+          if (!m_touch && pi.pointerType == PT_TOUCH)
             return 0;
         }
       }
@@ -901,7 +961,7 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         auto& winApi = system()->winApi();
         if (m_ictx && winApi.ProcessPointerFramesInteractionContext) {
           winApi.ProcessPointerFramesInteractionContext(m_ictx, 1, 1, &pi);
-          if (pi.pointerType == PT_TOUCH)
+          if (!m_touch && pi.pointerType == PT_TOUCH)
             return 0;
         }
       }
@@ -916,7 +976,22 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       }
 
       ev.setType(Event::MouseMove);
-      queueEvent(ev);
+
+      if (m_touch && pi.pointerType == PT_TOUCH) {
+        TOUCH_TRACE("POINTERUPDATE canBeMouse=%d asMouse=%d\n",
+                    m_touch->canBeMouse,
+                    m_touch->asMouse);
+        if (!m_touch->asMouse) {
+          if (m_touch->canBeMouse)
+            m_touch->delayedEvents.push_back(ev);
+          else
+            return 0;
+        }
+        else
+          queueEvent(ev);
+      }
+      else
+        queueEvent(ev);
 
       handlePointerButtonChange(ev, pi);
 
@@ -955,6 +1030,25 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
       return 0;
     }
+
+    case WM_TIMER:
+      TOUCH_TRACE("TIMER %d\n", wparam);
+      if (m_touch && m_touch->timerID == wparam) {
+        killTouchTimer();
+
+        if (!m_touch->asMouse &&
+            m_touch->canBeMouse &&
+            m_touch->fingers == 1) {
+          TOUCH_TRACE("-> finger as mouse, sent %d events\n",
+                      m_touch->delayedEvents.size());
+
+          convertFingerAsMouseMovement();
+        }
+        else {
+          delegateFingerToInteractionContext();
+        }
+      }
+      break;
 
     // Keyboard Messages
 
@@ -1272,6 +1366,20 @@ void WinWindow::handlePointerButtonChange(Event& ev, POINTER_INFO& pi)
   }
 #endif
 
+  if (m_touch && pi.pointerType == PT_TOUCH) {
+    if (!m_touch->asMouse) {
+      if (m_touch->canBeMouse) {
+        // TODO Review why the ui layer needs a Event::MouseMove event
+        //      before ButtonDown/Up events.
+        Event evMouseMove = ev;
+        evMouseMove.setType(Event::MouseMove);
+        m_touch->delayedEvents.push_back(evMouseMove);
+        m_touch->delayedEvents.push_back(ev);
+      }
+      return;
+    }
+  }
+
   queueEvent(ev);
 }
 
@@ -1288,11 +1396,15 @@ void WinWindow::handleInteractionContextOutput(
               output->interactionFlags,
               output->inputType);
 
-  // We use the InteractionContext to interpret touch gestures only and double tap with pen.
-  if ((output->inputType == PT_TOUCH) ||
-      (output->inputType == PT_PEN &&
-       output->interactionId == INTERACTION_ID_TAP &&
-       output->arguments.tap.count == 2)) {
+  // We use the InteractionContext to interpret touch gestures only
+  // and double tap with pen.
+  if ((output->inputType == PT_TOUCH
+       && (!m_touch
+           || (!m_touch->asMouse && !m_touch->canBeMouse)
+           || (output->arguments.tap.count == 2)))
+      || (output->inputType == PT_PEN &&
+          output->interactionId == INTERACTION_ID_TAP &&
+          output->arguments.tap.count == 2)) {
     ABS_CLIENT_RC(rc);
 
     gfx::Point pos(int((output->x - rc.left) / m_scale),
@@ -1359,6 +1471,57 @@ void WinWindow::handleInteractionContextOutput(
         ev.setType(Event::MouseUp); queueEvent(ev);
         break;
     }
+  }
+}
+
+void WinWindow::waitTimerToConvertFingerAsMouseMovement()
+{
+  ASSERT(m_touch);
+  m_touch->canBeMouse = true;
+  clearDelayedTouchEvents();
+  SetTimer(m_hwnd, m_touch->timerID = 1,
+           kFingerAsMouseTimeout, nullptr);
+  TOUCH_TRACE(" - Set timer\n");
+}
+
+void WinWindow::convertFingerAsMouseMovement()
+{
+  ASSERT(m_touch);
+  m_touch->asMouse = true;
+  sendDelayedTouchEvents();
+}
+
+void WinWindow::delegateFingerToInteractionContext()
+{
+  ASSERT(m_touch);
+  m_touch->canBeMouse = false;
+  m_touch->asMouse = false;
+  clearDelayedTouchEvents();
+  if (m_touch->timerID > 0)
+    killTouchTimer();
+}
+
+void WinWindow::sendDelayedTouchEvents()
+{
+  ASSERT(m_touch);
+  for (auto& ev : m_touch->delayedEvents)
+    queueEvent(ev);
+  clearDelayedTouchEvents();
+}
+
+void WinWindow::clearDelayedTouchEvents()
+{
+  ASSERT(m_touch);
+  m_touch->delayedEvents.clear();
+}
+
+void WinWindow::killTouchTimer()
+{
+  ASSERT(m_touch);
+  if (m_touch->timerID > 0) {
+    KillTimer(m_hwnd, m_touch->timerID);
+    m_touch->timerID = 0;
+    TOUCH_TRACE(" - Kill timer\n");
   }
 }
 

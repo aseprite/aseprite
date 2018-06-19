@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -183,6 +183,11 @@ std::string SkiaDisplay::getLayout()
 void SkiaDisplay::setLayout(const std::string& layout)
 {
   m_window.setLayout(layout);
+}
+
+void SkiaDisplay::setInterpretOneFingerGestureAsMouseMovement(bool state)
+{
+  m_window.setInterpretOneFingerGestureAsMouseMovement(state);
 }
 
 void SkiaDisplay::setTranslateDeadKeys(bool state)

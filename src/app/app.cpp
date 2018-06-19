@@ -278,6 +278,13 @@ void App::run()
 #ifdef ENABLE_UI
   // Run the GUI
   if (isGui()) {
+#ifdef _WIN32
+    // How to interpret one finger on Windows tablets.
+    ui::Manager::getDefault()->getDisplay()
+      ->setInterpretOneFingerGestureAsMouseMovement(
+        Preferences::instance().experimental.oneFingerAsMouseMovement());
+#endif
+
 #if !defined(_WIN32) && !defined(__APPLE__)
     // Setup app icon for Linux window managers
     try {

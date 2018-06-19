@@ -244,6 +244,10 @@ public:
     if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
 
+#ifndef _WIN32
+    oneFingerAsMouseMovement()->setVisible(false);
+#endif
+
     if (m_pref.experimental.flashLayer())
       flashLayer()->setSelected(true);
 
@@ -478,6 +482,12 @@ public:
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
+
+#ifdef _WIN32
+    manager()->getDisplay()
+      ->setInterpretOneFingerGestureAsMouseMovement(
+        oneFingerAsMouseMovement()->isSelected());
+#endif
 
     ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
     ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());

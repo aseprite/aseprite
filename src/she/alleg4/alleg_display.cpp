@@ -730,6 +730,11 @@ void Alleg4Display::setLayout(const std::string& layout)
 #endif
 }
 
+void Alleg4Display::setInterpretOneFingerGestureAsMouseMovement(bool state)
+{
+  // Do nothing
+}
+
 void* Alleg4Display::nativeHandle()
 {
 #ifdef _WIN32

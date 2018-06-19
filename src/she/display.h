@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -70,6 +70,12 @@ namespace she {
     // window position (e.g. in the same monitor).
     virtual std::string getLayout() = 0;
     virtual void setLayout(const std::string& layout) = 0;
+
+    // For Windows 8/10 only in tablet devices: Set to true if you
+    // want to interpret one finger as the mouse movement and two
+    // fingers as pan/scroll (true by default). If you want to pan
+    // with one finger, call this function with false.
+    virtual void setInterpretOneFingerGestureAsMouseMovement(bool state) = 0;
 
     // Returns the HWND on Windows.
     virtual DisplayHandle nativeHandle() = 0;
