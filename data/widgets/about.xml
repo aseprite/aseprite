@@ -1,6 +1,6 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2018 by David Capello -->
-<gui>
+<gui i18nwarnings="false">
 <window id="about" text="About Aseprite">
   <vbox>
     <label text="" id="title" />

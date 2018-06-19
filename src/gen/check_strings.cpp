@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2016-2017 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -114,6 +114,10 @@ public:
 
       TiXmlHandle handle(doc);
       XmlElements widgets;
+
+      const char* warnings = doc->RootElement()->Attribute("i18nwarnings");
+      if (warnings && strcmp(warnings, "false") == 0)
+        continue;
 
       m_prefixId = find_first_id(doc->RootElement());
 
