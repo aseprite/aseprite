@@ -187,7 +187,9 @@ void SkiaDisplay::setLayout(const std::string& layout)
 
 void SkiaDisplay::setInterpretOneFingerGestureAsMouseMovement(bool state)
 {
+#ifdef _WIN32
   m_window.setInterpretOneFingerGestureAsMouseMovement(state);
+#endif
 }
 
 void SkiaDisplay::setTranslateDeadKeys(bool state)
