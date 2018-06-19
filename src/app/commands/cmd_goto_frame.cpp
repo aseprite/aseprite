@@ -99,7 +99,7 @@ protected:
     FrameTag* tag = editor
       ->getCustomizationDelegate()
       ->getFrameTagProvider()
-      ->getFrameTagByFrame(frame);
+      ->getFrameTagByFrame(frame, false);
     frame_t first = (tag ? tag->fromFrame(): 0);
     frame_t last = (tag ? tag->toFrame(): editor->sprite()->lastFrame());
 
@@ -118,7 +118,7 @@ protected:
     FrameTag* tag = editor
       ->getCustomizationDelegate()
       ->getFrameTagProvider()
-      ->getFrameTagByFrame(frame);
+      ->getFrameTagByFrame(frame, false);
     frame_t first = (tag ? tag->fromFrame(): 0);
     frame_t last = (tag ? tag->toFrame(): editor->sprite()->lastFrame());
 

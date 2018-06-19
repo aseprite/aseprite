@@ -116,7 +116,8 @@ namespace app {
     // Returns the active frame tag depending on the timeline status
     // E.g. if other frame tags are collapsed, the focused band has
     // priority and tags in other bands are ignored.
-    FrameTag* getFrameTagByFrame(const frame_t frame) override;
+    FrameTag* getFrameTagByFrame(const frame_t frame,
+                                 const bool getLoopTagIfNone) override;
 
     // ScrollableViewDelegate impl
     gfx::Size visibleSize() const override;

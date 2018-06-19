@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -384,12 +384,12 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
       doc::FrameTag* tag = editor
         ->getCustomizationDelegate()
         ->getFrameTagProvider()
-        ->getFrameTagByFrame(editor->frame());
+        ->getFrameTagByFrame(editor->frame(), true);
 
       doc::FrameTag* playingTag = editor
         ->getCustomizationDelegate()
         ->getFrameTagProvider()
-        ->getFrameTagByFrame(m_refFrame);
+        ->getFrameTagByFrame(m_refFrame, true);
 
       if (tag == playingTag)
         return;

@@ -64,7 +64,7 @@ void PlayState::onEnterState(Editor* editor)
     m_tag = m_editor
       ->getCustomizationDelegate()
       ->getFrameTagProvider()
-      ->getFrameTagByFrame(m_refFrame);
+      ->getFrameTagByFrame(m_refFrame, true);
 
   // Go to the first frame of the animation or active frame tag
   if (m_playOnce) {

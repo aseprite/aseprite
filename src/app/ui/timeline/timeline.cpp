@@ -558,13 +558,18 @@ void Timeline::activateClipboardRange()
   invalidate();
 }
 
-FrameTag* Timeline::getFrameTagByFrame(const frame_t frame)
+FrameTag* Timeline::getFrameTagByFrame(const frame_t frame,
+                                       const bool getLoopTagIfNone)
 {
   if (!m_sprite)
     return nullptr;
 
-  if (m_tagFocusBand < 0)
-    return get_animation_tag(m_sprite, frame);
+  if (m_tagFocusBand < 0) {
+    FrameTag* tag = get_animation_tag(m_sprite, frame);
+    if (!tag && getLoopTagIfNone)
+      tag = get_loop_tag(m_sprite);
+    return tag;
+  }
 
   for (FrameTag* frameTag : m_sprite->frameTags()) {
     if (frame >= frameTag->fromFrame() &&

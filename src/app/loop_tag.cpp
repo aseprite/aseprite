@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,10 +19,7 @@ const char* kLoopTagName = "Loop";
 
 doc::FrameTag* get_animation_tag(const doc::Sprite* sprite, doc::frame_t frame)
 {
-  doc::FrameTag* tag = sprite->frameTags().innerTag(frame);
-  if (!tag)
-    tag = get_loop_tag(sprite);
-  return tag;
+  return sprite->frameTags().innerTag(frame);
 }
 
 doc::FrameTag* get_loop_tag(const doc::Sprite* sprite)
