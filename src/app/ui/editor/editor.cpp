@@ -35,6 +35,7 @@
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_decorator.h"
+#include "app/ui/editor/editor_render.h"
 #include "app/ui/editor/glue.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
@@ -153,10 +154,7 @@ private:
 };
 
 // static
-doc::ImageBufferPtr Editor::m_renderBuffer;
-
-// static
-AppRender Editor::m_renderEngine;
+EditorRender* Editor::m_renderEngine = nullptr;
 
 Editor::Editor(Document* document, EditorFlags flags)
   : Widget(editor_type())
@@ -181,6 +179,9 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_showGuidesThisCel(nullptr)
   , m_tagFocusBand(-1)
 {
+  if (!m_renderEngine)
+    m_renderEngine = new EditorRender;
+
   m_proj.setPixelRatio(m_sprite->pixelRatio());
 
   // Add the first state into the history.
@@ -247,7 +248,10 @@ Editor::~Editor()
 
 void Editor::destroyEditorSharedInternals()
 {
-  m_renderBuffer.reset();
+  if (m_renderEngine) {
+    delete m_renderEngine;
+    m_renderEngine = nullptr;
+  }
 }
 
 bool Editor::isActive() const
@@ -537,10 +541,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   if (rc.isEmpty())
     return;
 
-  // Generate the rendered image
-  if (!m_renderBuffer)
-    m_renderBuffer.reset(new doc::ImageBuffer());
-
   base::UniquePtr<Image> rendered(NULL);
   try {
     // Generate a "expose sprite pixels" notification. This is used by
@@ -571,17 +571,18 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     // Create a temporary RGB bitmap to draw all to it
-    rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
+    rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h,
+                                 m_renderEngine->getRenderImageBuffer()));
 
-    m_renderEngine.setRefLayersVisiblity(true);
-    m_renderEngine.setSelectedLayer(m_layer);
+    m_renderEngine->setRefLayersVisiblity(true);
+    m_renderEngine->setSelectedLayer(m_layer);
     if (m_flags & Editor::kUseNonactiveLayersOpacityWhenEnabled)
-      m_renderEngine.setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
+      m_renderEngine->setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
     else
-      m_renderEngine.setNonactiveLayersOpacity(255);
-    m_renderEngine.setProjection(m_proj);
-    m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
-    m_renderEngine.disableOnionskin();
+      m_renderEngine->setNonactiveLayersOpacity(255);
+    m_renderEngine->setProjection(m_proj);
+    m_renderEngine->setupBackground(m_document, rendered->pixelFormat());
+    m_renderEngine->disableOnionskin();
 
     if ((m_flags & kShowOnionskin) == kShowOnionskin) {
       if (m_docPref.onionskin.active()) {
@@ -604,13 +605,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
           tag = m_sprite->frameTags().innerTag(m_frame);
         opts.loopTag(tag);
 
-        m_renderEngine.setOnionskin(opts);
+        m_renderEngine->setOnionskin(opts);
       }
     }
 
     ExtraCelRef extraCel = m_document->extraCel();
     if (extraCel && extraCel->type() != render::ExtraType::NONE) {
-      m_renderEngine.setExtraImage(
+      m_renderEngine->setExtraImage(
         extraCel->type(),
         extraCel->cel(),
         extraCel->image(),
@@ -618,10 +619,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         m_layer, m_frame);
     }
 
-    m_renderEngine.renderSprite(
+    m_renderEngine->renderSprite(
       rendered, m_sprite, m_frame, gfx::Clip(0, 0, rc));
 
-    m_renderEngine.removeExtraImage();
+    m_renderEngine->removeExtraImage();
   }
   catch (const std::exception& e) {
     Console::showException(e);
@@ -1204,7 +1205,7 @@ void Editor::flashCurrentLayer()
   int x, y;
   const Image* src_image = site.image(&x, &y);
   if (src_image) {
-    m_renderEngine.removePreviewImage();
+    m_renderEngine->removePreviewImage();
 
     ExtraCelRef extraCel(new ExtraCel);
     extraCel->create(m_sprite, m_sprite->bounds(), m_frame, 255);
@@ -2381,12 +2382,6 @@ void Editor::showBrushPreview(const gfx::Point& screenPos)
     ui::set_mouse_cursor(kNoCursor);
 
   m_brushPreview.show(screenPos);
-}
-
-// static
-ImageBufferPtr Editor::getRenderImageBuffer()
-{
-  return m_renderBuffer;
 }
 
 gfx::Point Editor::calcExtraPadding(const Projection& proj)

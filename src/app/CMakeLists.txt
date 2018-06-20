@@ -169,7 +169,6 @@ if(ENABLE_UI)
   set(ui_app_files
     app_brushes.cpp
     app_menus.cpp
-    app_render.cpp
     commands/cmd_about.cpp
     commands/cmd_add_color.cpp
     commands/cmd_advanced_mode.cpp
@@ -328,6 +327,7 @@ if(ENABLE_UI)
     ui/editor/drawing_state.cpp
     ui/editor/editor.cpp
     ui/editor/editor_observers.cpp
+    ui/editor/editor_render.cpp
     ui/editor/editor_states_history.cpp
     ui/editor/editor_view.cpp
     ui/editor/moving_cel_state.cpp

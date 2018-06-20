@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -35,6 +35,7 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 #include "ui/ui.h"
 
 #include "import_sprite_sheet.xml.h"

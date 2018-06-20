@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
+#include "app/ui/editor/editor_render.h"
 #include "app/ui/editor/glue.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"

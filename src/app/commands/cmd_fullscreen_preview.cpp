@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,7 +11,6 @@
 #include "ui/ui.h"
 
 #include "app/app.h"
-#include "app/app_render.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
@@ -19,6 +18,7 @@
 #include "app/modules/gfx.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_render.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/status_bar.h"
 #include "doc/conversion_she.h"
@@ -172,15 +172,15 @@ protected:
 
   virtual void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.graphics();
-    AppRender& render = m_editor->renderEngine();
+    EditorRender& render = m_editor->renderEngine();
     render.setRefLayersVisiblity(false);
     render.setProjection(render::Projection());
     render.disableOnionskin();
-    render.setBgType(render::BgType::TRANSPARENT);
+    render.setTransparentBackground();
 
     // Render sprite and leave the result in 'm_render' variable
     if (m_render == nullptr) {
-      ImageBufferPtr buf = Editor::getRenderImageBuffer();
+      ImageBufferPtr buf = render.getRenderImageBuffer();
       m_render.reset(Image::create(IMAGE_RGB,
           m_sprite->width(), m_sprite->height(), buf));
 

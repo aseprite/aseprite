@@ -13,6 +13,7 @@
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_render.h"
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "doc/layer.h"

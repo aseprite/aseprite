@@ -24,6 +24,7 @@
 #include "app/transaction.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_render.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/thread.h"

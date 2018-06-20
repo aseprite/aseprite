@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,10 +11,10 @@
 #include "app/thumbnail_generator.h"
 
 #include "app/app.h"
-#include "app/app_render.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
+#include "app/ui/editor/editor_render.h"
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -71,9 +71,8 @@ private:
         base::UniquePtr<Image> image(Image::create(
             IMAGE_RGB, sprite->width(), sprite->height()));
 
-        AppRender render;
+        EditorRender render;
         render.setupBackground(NULL, image->pixelFormat());
-        render.setBgType(render::BgType::CHECKED);
         render.renderSprite(image, sprite, frame_t(0));
 
         // Calculate the thumbnail size

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,6 @@
 #define APP_UI_EDITOR_H_INCLUDED
 #pragma once
 
-#include "app/app_render.h"
 #include "app/color.h"
 #include "app/document.h"
 #include "app/pref/preferences.h"
@@ -26,6 +25,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
 #include "obs/connection.h"
+#include "render/projection.h"
 #include "render/zoom.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
@@ -51,6 +51,7 @@ namespace app {
   class Context;
   class DocumentView;
   class EditorCustomizationDelegate;
+  class EditorRender;
   class PixelsMovement;
 
   namespace tools {
@@ -253,11 +254,7 @@ namespace app {
     // Gets the brush preview controller.
     BrushPreview& brushPreview() { return m_brushPreview; }
 
-    // Returns the buffer used to render editor viewports.
-    // E.g. It can be re-used by PreviewCommand
-    static ImageBufferPtr getRenderImageBuffer();
-
-    AppRender& renderEngine() { return m_renderEngine; }
+    EditorRender& renderEngine() { return *m_renderEngine; }
 
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;
@@ -408,13 +405,11 @@ namespace app {
     // TODO could we avoid one extra field just to do this?
     gfx::Point m_oldMainTilePos;
 
-    static doc::ImageBufferPtr m_renderBuffer;
-
     // The render engine must be shared between all editors so when a
     // DrawingState is being used in one editor, other editors for the
     // same document can show the same preview image/stroke being drawn
     // (search for Render::setPreviewImage()).
-    static AppRender m_renderEngine;
+    static EditorRender* m_renderEngine;
   };
 
   ui::WidgetType editor_type();

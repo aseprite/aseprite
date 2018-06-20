@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,8 +16,9 @@
 #include "gfx/clip.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "render/bg_type.h"
 #include "render/extra_type.h"
-#include "render/onionskin_position.h"
+#include "render/onionskin_options.h"
 #include "render/projection.h"
 
 namespace doc {
@@ -31,60 +32,6 @@ namespace doc {
 
 namespace render {
   using namespace doc;
-
-  enum class BgType {
-    NONE,
-    TRANSPARENT,
-    CHECKED,
-  };
-
-  enum class OnionskinType {
-    NONE,
-    MERGE,
-    RED_BLUE_TINT,
-  };
-
-  class OnionskinOptions {
-  public:
-    OnionskinOptions(OnionskinType type)
-      : m_type(type)
-      , m_position(OnionskinPosition::BEHIND)
-      , m_prevFrames(0)
-      , m_nextFrames(0)
-      , m_opacityBase(0)
-      , m_opacityStep(0)
-      , m_loopTag(nullptr)
-      , m_layer(nullptr) {
-    }
-
-    OnionskinType type() const { return m_type; }
-    OnionskinPosition position() const { return m_position; }
-    int prevFrames() const { return m_prevFrames; }
-    int nextFrames() const { return m_nextFrames; }
-    int opacityBase() const { return m_opacityBase; }
-    int opacityStep() const { return m_opacityStep; }
-    FrameTag* loopTag() const { return m_loopTag; }
-    Layer* layer() const { return m_layer; }
-
-    void type(OnionskinType type) { m_type = type; }
-    void position(OnionskinPosition position) { m_position = position; }
-    void prevFrames(int prevFrames) { m_prevFrames = prevFrames; }
-    void nextFrames(int nextFrames) { m_nextFrames = nextFrames; }
-    void opacityBase(int base) { m_opacityBase = base; }
-    void opacityStep(int step) { m_opacityStep = step; }
-    void loopTag(FrameTag* loopTag) { m_loopTag = loopTag; }
-    void layer(Layer* layer) { m_layer = layer; }
-
-  private:
-    OnionskinType m_type;
-    OnionskinPosition m_position;
-    int m_prevFrames;
-    int m_nextFrames;
-    int m_opacityBase;
-    int m_opacityStep;
-    FrameTag* m_loopTag;
-    Layer* m_layer;
-  };
 
   typedef void (*CompositeImageFunc)(
     Image* dst,

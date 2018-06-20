@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,6 +33,7 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/site.h"
+#include "render/render.h"
 #include "she/display.h"
 #include "ui/manager.h"
 #include "ui/system.h"
