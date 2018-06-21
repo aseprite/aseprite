@@ -41,6 +41,7 @@ namespace doc {
     LayerList toLayerList() const;
 
     void removeChildrenIfParentIsSelected();
+    void expandCollapsedGroups();
     void selectAllLayers(LayerGroup* group);
     void displace(layer_t layerDelta);
 

@@ -106,6 +106,15 @@ void SelectedLayers::selectAllLayers(LayerGroup* group)
   }
 }
 
+void SelectedLayers::expandCollapsedGroups()
+{
+  auto copy = m_set;
+  for (Layer* layer : copy) {
+    if (layer->isGroup() && layer->isCollapsed())
+      selectAllLayers(static_cast<LayerGroup*>(layer));
+  }
+}
+
 void SelectedLayers::displace(layer_t layerDelta)
 {
   // Do nothing case
