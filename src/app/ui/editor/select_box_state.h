@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -84,7 +84,6 @@ namespace app {
     virtual tools::Ink* getStateInk() override;
 
     // EditorDecorator overrides
-    virtual void preRenderDecorator(EditorPreRender* render) override;
     virtual void postRenderDecorator(EditorPostRender* render) override;
     virtual void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override;
 

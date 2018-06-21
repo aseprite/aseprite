@@ -77,42 +77,6 @@ using namespace render;
 static base::Chrono renderChrono;
 static double renderElapsed = 0.0;
 
-class EditorPreRenderImpl : public EditorPreRender {
-public:
-  EditorPreRenderImpl(Editor* editor, Image* image,
-                      const Point& offset,
-                      const Projection& proj)
-    : m_editor(editor)
-    , m_image(image)
-    , m_offset(offset)
-    , m_proj(proj) {
-  }
-
-  Editor* getEditor() override {
-    return m_editor;
-  }
-
-  Image* getImage() override {
-    return m_image;
-  }
-
-  void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) override
-  {
-    blend_rect(
-      m_image,
-      m_offset.x + m_proj.applyX(rect.x),
-      m_offset.y + m_proj.applyY(rect.y),
-      m_offset.x + m_proj.applyX(rect.x+rect.w) - 1,
-      m_offset.y + m_proj.applyY(rect.y+rect.h) - 1, rgbaColor, opacity);
-  }
-
-private:
-  Editor* m_editor;
-  Image* m_image;
-  Point m_offset;
-  Projection m_proj;
-};
-
 class EditorPostRenderImpl : public EditorPostRender {
 public:
   EditorPostRenderImpl(Editor* editor, Graphics* g)
@@ -124,7 +88,7 @@ public:
     return m_editor;
   }
 
-  void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor) override {
+  void drawLine(gfx::Color color, int x1, int y1, int x2, int y2) override {
     gfx::Point a(x1, y1);
     gfx::Point b(x2, y2);
     a = m_editor->editorToScreen(a);
@@ -134,7 +98,7 @@ public:
     a.y -= bounds.y;
     b.x -= bounds.x;
     b.y -= bounds.y;
-    m_g->drawLine(screenColor, a, b);
+    m_g->drawLine(color, a, b);
   }
 
   void drawRectXor(const gfx::Rect& rc) override {
@@ -146,6 +110,14 @@ public:
     m_g->setDrawMode(Graphics::DrawMode::Xor);
     m_g->drawRect(gfx::rgba(255, 255, 255), rc2);
     m_g->setDrawMode(Graphics::DrawMode::Solid);
+  }
+
+  void fillRect(gfx::Color color, const gfx::Rect& rc) override {
+    gfx::Rect rc2 = m_editor->editorToScreen(rc);
+    gfx::Rect bounds = m_editor->bounds();
+    rc2.x -= bounds.x;
+    rc2.y -= bounds.y;
+    m_g->fillRect(color, rc2);
   }
 
 private:
@@ -629,13 +601,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   }
 
   if (rendered) {
-    // Pre-render decorator.
-    if ((m_flags & kShowDecorators) && m_decorator) {
-      EditorPreRenderImpl preRender(this, rendered,
-                                    Point(-rc.x, -rc.y), m_proj);
-      m_decorator->preRenderDecorator(&preRender);
-    }
-
     // Convert the render to a she::Surface
     static she::Surface* tmp;
     if (!tmp || tmp->width() < rc.w || tmp->height() < rc.h) {

@@ -935,11 +935,6 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
   return false;
 }
 
-void StandbyState::Decorator::preRenderDecorator(EditorPreRender* render)
-{
-  // Do nothing
-}
-
 void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
 {
   Editor* editor = render->getEditor();

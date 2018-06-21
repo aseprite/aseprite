@@ -71,7 +71,6 @@ namespace app {
       bool onSetCursor(tools::Ink* ink, Editor* editor, const gfx::Point& mouseScreenPos);
 
       // EditorDecorator overrides
-      void preRenderDecorator(EditorPreRender* render) override;
       void postRenderDecorator(EditorPostRender* render) override;
       void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override;
 
