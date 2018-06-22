@@ -61,6 +61,7 @@
 #include "she/system.h"
 #include "ui/ui.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <limits>
@@ -310,6 +311,14 @@ void Editor::getInvalidDecoratoredRegion(gfx::Region& region)
   // changes (e.g. symmetry handles).
   if ((m_flags & kShowDecorators) && m_decorator)
     m_decorator->getInvalidDecoratoredRegion(this, region);
+
+#if ENABLE_DEVMODE
+  // TODO put this in other widget
+  if (Preferences::instance().perf.showRenderTime()) {
+    if (!m_perfInfoBounds.isEmpty())
+      region |= gfx::Region(m_perfInfoBounds);
+  }
+#endif // ENABLE_DEVMODE
 }
 
 void Editor::setLayer(const Layer* layer)
@@ -488,62 +497,87 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   gfx::Rect rc = m_sprite->bounds().createIntersection(spriteRectToDraw);
   rc = m_proj.apply(rc);
 
-  int dest_x = dx + m_padding.x + rc.x;
-  int dest_y = dy + m_padding.y + rc.y;
+  gfx::Rect dest(dx + m_padding.x + rc.x,
+                 dy + m_padding.y + rc.y, 0, 0);
 
   // Clip from graphics/screen
   const gfx::Rect& clip = g->getClipBounds();
-  if (dest_x < clip.x) {
-    rc.x += clip.x - dest_x;
-    rc.w -= clip.x - dest_x;
-    dest_x = clip.x;
+  if (dest.x < clip.x) {
+    rc.x += clip.x - dest.x;
+    rc.w -= clip.x - dest.x;
+    dest.x = clip.x;
   }
-  if (dest_y < clip.y) {
-    rc.y += clip.y - dest_y;
-    rc.h -= clip.y - dest_y;
-    dest_y = clip.y;
+  if (dest.y < clip.y) {
+    rc.y += clip.y - dest.y;
+    rc.h -= clip.y - dest.y;
+    dest.y = clip.y;
   }
-  if (dest_x+rc.w > clip.x+clip.w) {
-    rc.w = clip.x+clip.w-dest_x;
+  if (dest.x+rc.w > clip.x+clip.w) {
+    rc.w = clip.x+clip.w-dest.x;
   }
-  if (dest_y+rc.h > clip.y+clip.h) {
-    rc.h = clip.y+clip.h-dest_y;
+  if (dest.y+rc.h > clip.y+clip.h) {
+    rc.h = clip.y+clip.h-dest.y;
   }
 
   if (rc.isEmpty())
     return;
 
-  base::UniquePtr<Image> rendered(NULL);
+  // Bounds of pixels from the sprite canvas that will be exposed in
+  // this render cycle.
+  gfx::Rect expose = m_proj.remove(rc);
+
+  // If the zoom level is less than 100%, we add extra pixels to
+  // the exposed area. Those pixels could be shown in the
+  // rendering process depending on each cel position.
+  // E.g. when we are drawing in a cel with position < (0,0)
+  if (m_proj.scaleX() < 1.0)
+    expose.enlargeXW(int(1./m_proj.scaleX()));
+  // If the zoom level is more than %100 we add an extra pixel to
+  // expose just in case the zoom requires to display it.  Note:
+  // this is really necessary to avoid showing invalid destination
+  // areas in ToolLoopImpl.
+  else if (m_proj.scaleX() > 1.0)
+    expose.enlargeXW(1);
+
+  if (m_proj.scaleY() < 1.0)
+    expose.enlargeYH(int(1./m_proj.scaleY()));
+  else if (m_proj.scaleY() > 1.0)
+    expose.enlargeYH(1);
+
+  expose &= m_sprite->bounds();
+
+  const int maxw = std::max(0, m_sprite->width()-expose.x);
+  const int maxh = std::max(0, m_sprite->height()-expose.y);
+  expose.w = MID(0, expose.w, maxw);
+  expose.h = MID(0, expose.h, maxh);
+  if (expose.isEmpty())
+    return;
+
+  // rc2 is the rectangle used to create a temporal rendered image of the sprite
+  const bool newEngine = Preferences::instance().experimental.newRenderEngine();
+  gfx::Rect rc2;
+  if (newEngine) {
+    rc2 = expose;               // New engine, exposed rectangle (without zoom)
+    dest.x = dx + m_padding.x + m_proj.applyX(rc2.x);
+    dest.y = dy + m_padding.y + m_proj.applyY(rc2.y);
+    dest.w = m_proj.applyX(rc2.w);
+    dest.h = m_proj.applyY(rc2.h);
+  }
+  else {
+    rc2 = rc;                   // Old engine, same rectangle with zoom
+    dest.w = rc.w;
+    dest.h = rc.h;
+  }
+
+  base::UniquePtr<Image> rendered(nullptr);
   try {
     // Generate a "expose sprite pixels" notification. This is used by
     // tool managers that need to validate this region (copy pixels from
     // the original cel) before it can be used by the RenderEngine.
-    {
-      gfx::Rect expose = m_proj.remove(rc);
-
-      // If the zoom level is less than 100%, we add extra pixels to
-      // the exposed area. Those pixels could be shown in the
-      // rendering process depending on each cel position.
-      // E.g. when we are drawing in a cel with position < (0,0)
-      if (m_proj.scaleX() < 1.0)
-        expose.enlargeXW(int(1./m_proj.scaleX()));
-      // If the zoom level is more than %100 we add an extra pixel to
-      // expose just in case the zoom requires to display it.  Note:
-      // this is really necessary to avoid showing invalid destination
-      // areas in ToolLoopImpl.
-      else if (m_proj.scaleX() > 1.0)
-        expose.enlargeXW(1);
-
-      if (m_proj.scaleY() < 1.0)
-        expose.enlargeYH(int(1./m_proj.scaleY()));
-      else if (m_proj.scaleY() > 1.0)
-        expose.enlargeYH(1);
-
-      m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
-    }
+    m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
 
     // Create a temporary RGB bitmap to draw all to it
-    rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h,
+    rendered.reset(Image::create(IMAGE_RGB, rc2.w, rc2.h,
                                  m_renderEngine->getRenderImageBuffer()));
 
     m_renderEngine->setRefLayersVisiblity(true);
@@ -552,7 +586,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       m_renderEngine->setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
     else
       m_renderEngine->setNonactiveLayersOpacity(255);
-    m_renderEngine->setProjection(m_proj);
+    m_renderEngine->setProjection(
+      newEngine ? render::Projection(): m_proj);
     m_renderEngine->setupBackground(m_document, rendered->pixelFormat());
     m_renderEngine->disableOnionskin();
 
@@ -592,7 +627,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     m_renderEngine->renderSprite(
-      rendered, m_sprite, m_frame, gfx::Clip(0, 0, rc));
+      rendered, m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
     m_renderEngine->removeExtraImage();
   }
@@ -602,23 +637,27 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   if (rendered) {
     // Convert the render to a she::Surface
-    static she::Surface* tmp;
-    if (!tmp || tmp->width() < rc.w || tmp->height() < rc.h) {
+    static she::Surface* tmp = nullptr; // TODO move this to other centralized place
+    if (!tmp || tmp->width() < rc2.w || tmp->height() < rc2.h) {
+      const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
+      const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
       if (tmp)
         tmp->dispose();
-
-      tmp = she::instance()->createSurface(rc.w, rc.h);
+      tmp = she::instance()->createSurface(maxw, maxh);
     }
-
     if (tmp->nativeHandle()) {
+      if (newEngine)
+        tmp->clear(); // TODO why we need this?
+
       convert_image_to_surface(rendered, m_sprite->palette(m_frame),
-        tmp, 0, 0, 0, 0, rc.w, rc.h);
-
-      g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
-
-      m_brushPreview.invalidateRegion(
-        gfx::Region(
-          gfx::Rect(dest_x, dest_y, rc.w, rc.h)));
+                               tmp, 0, 0, 0, 0, rc2.w, rc2.h);
+      if (newEngine) {
+        g->drawRgbaSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+      }
+      else {
+        g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);
+      }
+      m_brushPreview.invalidateRegion(gfx::Region(dest));
     }
   }
 
@@ -630,7 +669,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       m_proj.applyX(m_sprite->width()),
       m_proj.applyY(m_sprite->height()));
 
-    IntersectClip clip(g, gfx::Rect(dest_x, dest_y, rc.w, rc.h));
+    IntersectClip clip(g, dest);
     if (clip) {
       // Draw the pixel grid
       if ((m_proj.zoom().scale() > 2.0) && m_docPref.show.pixelGrid()) {
@@ -1666,6 +1705,16 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage:
+#if ENABLE_DEVMODE
+      // Switch render mode
+      if (!msg->ctrlPressed() &&
+          static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
+        Preferences::instance().experimental.newRenderEngine(
+          !Preferences::instance().experimental.newRenderEngine());
+        invalidate();
+        return true;
+      }
+#endif
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));
@@ -1778,18 +1827,25 @@ void Editor::onPaint(ui::PaintEvent& ev)
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
       renderElapsed = renderChrono.elapsed();
 
+#if ENABLE_DEVMODE
       // Show performance stats (TODO show performance stats in other widget)
       if (Preferences::instance().perf.showRenderTime()) {
         View* view = View::getView(this);
         gfx::Rect vp = view->viewportBounds();
         char buf[128];
-        sprintf(buf, "%.3f", renderElapsed);
+        sprintf(buf, "%c %.4gs",
+                Preferences::instance().experimental.newRenderEngine() ? 'N': 'O',
+                renderElapsed);
         g->drawText(
           buf,
           gfx::rgba(255, 255, 255, 255),
           gfx::rgba(0, 0, 0, 255),
           vp.origin() - bounds().origin());
+
+        m_perfInfoBounds.setOrigin(vp.origin());
+        m_perfInfoBounds.setSize(g->measureUIText(buf));
       }
+#endif // ENABLE_DEVMODE
 
       // Draw the mask boundaries
       if (m_document->getMaskBoundaries()) {

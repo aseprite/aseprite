@@ -478,7 +478,8 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
   }
 
   // F1 switches screen/UI scaling
-  if (msg->scancode() == kKeyF1) {
+  if (msg->ctrlPressed() &&
+      msg->scancode() == kKeyF1) {
     try {
       she::Display* display = getDisplay();
       int screenScale = display->scale();

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -418,6 +418,18 @@ void Alleg4Surface::drawRgbaSurface(const Surface* src, int srcx, int srcy, int 
     srcx, srcy, w, h);
   draw_trans_sprite(m_bmp, tmp, dstx, dsty);
   destroy_bitmap(tmp);
+}
+
+void Alleg4Surface::drawRgbaSurface(const Surface* src, const gfx::Rect& srcRect, const gfx::Rect& dstRect)
+{
+  ASSERT(src);
+  ASSERT(static_cast<Alleg4Surface*>(src)->m_bmp);
+  ASSERT(static_cast<Alleg4Surface*>(this)->m_bmp);
+
+  stretch_blit(
+    static_cast<const Alleg4Surface*>(src)->m_bmp, m_bmp,
+    srcRect.x, srcRect.y, srcRect.w, srcRect.h,
+    dstRect.x, dstRect.y, dstRect.w, dstRect.h);
 }
 
 } // namespace she

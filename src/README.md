@@ -60,14 +60,17 @@ because they don't depend on any other component.
 # Debugging Tricks
 
 When Aseprite is compiled with `ENABLE_DEVMODE`, you have the
-following extra commands available:
+following extra commands/features available:
 
 * `F5`: On Windows shows the amount of used memory.
-* `F1`: Switch/test Screen/UI Scaling values.
+* `F1`: Switch new/old render engine.
+* `Ctrl+F1`: Switch/test Screen/UI Scaling values.
 * `Ctrl+Alt+Shift+Q`: crashes the application in case that you want to
   test the anticrash feature or your need a memory dump file.
 * `Ctrl+Alt+Shift+R`: recover the active document from the data
   recovery store.
+* `aseprite.ini`: `[perf] show_render_time=true` shows a performance
+  clock in the Editor.
 
 # Detect Platform
 

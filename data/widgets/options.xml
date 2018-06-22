@@ -361,6 +361,11 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="@.user_interface" horizontal="true" />
+          <hbox>
+            <check text="@.new_render_engine"
+                   pref="experimental.new_render_engine" />
+            <link text="(#1671)" url="https://github.com/aseprite/aseprite/issues/1671" />
+          </hbox>
           <check id="native_clipboard" text="@.native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog" />
           <check id="one_finger_as_mouse_movement"

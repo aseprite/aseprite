@@ -405,6 +405,10 @@ namespace app {
     // TODO could we avoid one extra field just to do this?
     gfx::Point m_oldMainTilePos;
 
+#if ENABLE_DEVMODE
+    gfx::Rect m_perfInfoBounds;
+#endif
+
     // The render engine must be shared between all editors so when a
     // DrawingState is being used in one editor, other editors for the
     // same document can show the same preview image/stroke being drawn

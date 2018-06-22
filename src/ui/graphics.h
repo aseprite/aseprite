@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -75,6 +75,9 @@ namespace ui {
     void drawSurface(she::Surface* surface, int x, int y);
     void drawRgbaSurface(she::Surface* surface, int x, int y);
     void drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
+    void drawRgbaSurface(she::Surface* surface,
+                         const gfx::Rect& srcRect,
+                         const gfx::Rect& dstRect);
     void drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y);
     void drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int srcx, int srcy, int dstx, int dsty, int w, int h);
 

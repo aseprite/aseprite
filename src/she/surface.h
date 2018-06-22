@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -66,6 +66,7 @@ namespace she {
     virtual void drawSurface(const Surface* src, int dstx, int dsty) = 0;
     virtual void drawRgbaSurface(const Surface* src, int dstx, int dsty) = 0;
     virtual void drawRgbaSurface(const Surface* src, int srcx, int srcy, int dstx, int dsty, int width, int height) = 0;
+    virtual void drawRgbaSurface(const Surface* surface, const gfx::Rect& srcRect, const gfx::Rect& dstRect) = 0;
     virtual void drawColoredRgbaSurface(const Surface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clip) = 0;
 
     virtual void applyScale(int scaleFactor) = 0;
