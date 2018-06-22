@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,7 @@
 #include "she/surface.h"
 #include "she/surface_format.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace doc {
@@ -162,6 +163,20 @@ void convert_image_to_surface(const Image* image, const Palette* palette,
   switch (image->pixelFormat()) {
 
     case IMAGE_RGB:
+      // Fast path
+      if (gfx::ColorRShift == fd.redShift &&
+          gfx::ColorGShift == fd.greenShift &&
+          gfx::ColorBShift == fd.blueShift &&
+          gfx::ColorAShift == fd.alphaShift) {
+        for (int v=0; v<h; ++v, ++src_y, ++dst_y) {
+          uint8_t* src_address = image->getPixelAddress(src_x, src_y);
+          uint8_t* dst_address = surface->getData(dst_x, dst_y);
+          std::copy(src_address,
+                    src_address + RgbTraits::bytes_per_pixel * w,
+                    dst_address);
+        }
+        return;
+      }
       convert_image_to_surface_selector<RgbTraits>(image, surface, src_x, src_y, dst_x, dst_y, w, h, palette, &fd);
       break;
 
