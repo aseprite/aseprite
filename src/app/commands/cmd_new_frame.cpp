@@ -118,9 +118,11 @@ void NewFrameCommand::onExecute(Context* context)
           SelectedLayers selLayers;
           if (site->inFrames())
             selLayers.selectAllLayers(writer.sprite()->root());
-          else
+          else {
             selLayers = site->selectedLayers();
-
+            selLayers.expandCollapsedGroups();
+          }
+          
           frame_t frameRange =
             (site->selectedFrames().lastFrame() -
              site->selectedFrames().firstFrame() + 1);
