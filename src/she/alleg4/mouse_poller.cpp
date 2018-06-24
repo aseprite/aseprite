@@ -148,7 +148,7 @@ void generate_mouse_event_for_button(Event::MouseButton button, int old_b, int n
       double_click_button = button;
       double_click_ticks = current_ticks;
     } else {
-      double_click_level = DOUBLE_CLICK_NONE;                                                                                                                     
+	  double_click_level = DOUBLE_CLICK_NONE;                                                                                                                     
 	  double_click_ticks = 0;                                                                                                                                     
 	  double_click_button = Event::NoneButton;
 	}
