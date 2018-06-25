@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -654,11 +654,6 @@ void set_theme(Theme* theme, const int uiscale)
   current_ui_scale = uiscale;
 
   if (theme) {
-    // As the regeneration may fail, first we regenerate the theme and
-    // then we set is as "the current theme." E.g. In case that we'd
-    // like to show some kind of error message with the UI controls,
-    // we should be able to use the previous theme to do so (instead
-    // of this new unsuccessfully regenerated theme).
     theme->regenerateTheme();
 
     current_theme = theme;

@@ -287,8 +287,11 @@ void SkinTheme::loadSheet()
     newSheet = she::instance()->loadRgbaSurface(sheet_filename.c_str());
   }
   catch (...) {
-    throw base::Exception("Error loading %s file", sheet_filename.c_str());
+    // Ignore the error, newSheet is nullptr and we will throw our own
+    // exception.
   }
+  if (!newSheet)
+    throw base::Exception("Error loading %s file", sheet_filename.c_str());
 
   // Replace the sprite sheet
   if (m_sheet) {

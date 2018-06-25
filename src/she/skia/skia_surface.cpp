@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,9 +25,13 @@ sk_sp<SkColorSpace> SkiaSurface::m_colorSpace;
 // static
 Surface* SkiaSurface::loadSurface(const char* filename)
 {
+  FILE* f = base::open_file_raw(filename, "rb");
+  if (!f)
+    return nullptr;
+
   std::unique_ptr<SkCodec> codec(
     SkCodec::MakeFromStream(
-      std::unique_ptr<SkFILEStream>(new SkFILEStream(base::open_file_raw(filename, "rb")))));
+      std::unique_ptr<SkFILEStream>(new SkFILEStream(f))));
   if (!codec)
     return nullptr;
 
