@@ -20,6 +20,7 @@
 #include "app/document_undo.h"
 #include "app/file/file.h"
 #include "app/file/gif_format.h"
+#include "app/file/png_format.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
 #include "app/job.h"
@@ -422,7 +423,9 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       convert_anidir_to_string(aniDirValue), // New value
       m_aniDir);                             // Restore old value
 
-    GifEncoderDurationFix fix(isForTwitter);
+    // TODO This should be set as options for the specific encoder
+    GifEncoderDurationFix fixGif(isForTwitter);
+    PngEncoderOneAlphaPixel fixPng(isForTwitter);
 
     saveDocumentInBackground(
       context, doc, outputFilename, false);

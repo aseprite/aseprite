@@ -103,6 +103,7 @@ FileFormat* CreateGifFormat()
 static int interlaced_offset[] = { 0, 4, 2, 1 };
 static int interlaced_jumps[] = { 8, 8, 4, 2 };
 
+// TODO this should be part of a GifEncoder instance
 // True if the GifEncoder should save the animation for Twitter:
 // * Frames duration >= 2, and
 // * Last frame 1/4 of its duration

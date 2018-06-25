@@ -13,6 +13,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "app/file/png_format.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
 
@@ -65,6 +66,19 @@ FileFormat* CreatePngFormat()
 static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
   ((FileOp*)png_get_error_ptr(png_ptr))->setError("libpng: %s\n", error);
+}
+
+// TODO this should be part of an png encoder instance
+static bool fix_one_alpha_pixel = false;
+
+PngEncoderOneAlphaPixel::PngEncoderOneAlphaPixel(bool state)
+{
+  fix_one_alpha_pixel = state;
+}
+
+PngEncoderOneAlphaPixel::~PngEncoderOneAlphaPixel()
+{
+  fix_one_alpha_pixel = false;
 }
 
 bool PngFormat::onLoad(FileOp* fop)
@@ -352,81 +366,66 @@ bool PngFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PngFormat::onSave(FileOp* fop)
 {
-  const Image* image = fop->sequenceImage();
-  png_uint_32 width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
-  png_colorp palette = NULL;
+  png_colorp palette = nullptr;
   png_bytep row_pointer;
   int color_type = 0;
   int pass, number_passes;
 
-  /* open the file */
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
-  /* Create and initialize the png_struct with the desired error handler
-   * functions.  If you want to use the default stderr and longjump method,
-   * you can supply NULL for the last three parameters.  We also check that
-   * the library version is compatible with the one used at compile time,
-   * in case we are using dynamically linked libraries.  REQUIRED.
-   */
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
                                     report_png_error, report_png_error);
   if (png_ptr == NULL) {
     return false;
   }
 
-  /* Allocate/initialize the image information data.  REQUIRED */
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
     png_destroy_write_struct(&png_ptr, NULL);
     return false;
   }
 
-  /* Set error handling.  REQUIRED if you aren't supplying your own
-   * error handling functions in the png_create_write_struct() call.
-   */
   if (setjmp(png_jmpbuf(png_ptr))) {
-    /* If we get here, we had a problem reading the file */
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return false;
   }
 
-  /* set up the output control if you are using standard C streams */
   png_init_io(png_ptr, fp);
 
-  /* Set the image information here.  Width and height are up to 2^31,
-   * bit_depth is one of 1, 2, 4, 8, or 16, but valid values also depend on
-   * the color_type selected. color_type is one of PNG_COLOR_TYPE_GRAY,
-   * PNG_COLOR_TYPE_GRAY_ALPHA, PNG_COLOR_TYPE_PALETTE, PNG_COLOR_TYPE_RGB,
-   * or PNG_COLOR_TYPE_RGB_ALPHA.  interlace is either PNG_INTERLACE_NONE or
-   * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
-   * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
-   */
-  width = image->width();
-  height = image->height();
-
+  const Image* image = fop->sequenceImage();
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
-      color_type = fop->document()->sprite()->needAlpha() ?
-        PNG_COLOR_TYPE_RGB_ALPHA:
-        PNG_COLOR_TYPE_RGB;
+      color_type =
+        (fop->document()->sprite()->needAlpha() ||
+         fix_one_alpha_pixel ?
+         PNG_COLOR_TYPE_RGB_ALPHA:
+         PNG_COLOR_TYPE_RGB);
       break;
     case IMAGE_GRAYSCALE:
-      color_type = fop->document()->sprite()->needAlpha() ?
-        PNG_COLOR_TYPE_GRAY_ALPHA:
-        PNG_COLOR_TYPE_GRAY;
+      color_type =
+        (fop->document()->sprite()->needAlpha() ||
+         fix_one_alpha_pixel ?
+         PNG_COLOR_TYPE_GRAY_ALPHA:
+         PNG_COLOR_TYPE_GRAY);
       break;
     case IMAGE_INDEXED:
-      color_type = PNG_COLOR_TYPE_PALETTE;
+      if (fix_one_alpha_pixel)
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+      else
+        color_type = PNG_COLOR_TYPE_PALETTE;
       break;
   }
+
+  const png_uint_32 width = image->width();
+  const png_uint_32 height = image->height();
 
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-  if (image->pixelFormat() == IMAGE_INDEXED) {
+  if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int c, r, g, b;
     int pal_size = fop->sequenceGetNColors();
     pal_size = MID(1, pal_size, PNG_MAX_PALETTE_LENGTH);
@@ -472,111 +471,129 @@ bool PngFormat::onSave(FileOp* fop)
     png_free(png_ptr, trans);
   }
 
-  /* Write the file header information. */
   png_write_info(png_ptr, info_ptr);
-
-  /* pack pixels into bytes */
   png_set_packing(png_ptr);
-
-  /* non-interlaced */
-  number_passes = 1;
 
   row_pointer = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
 
-  /* The number of passes is either 1 for non-interlaced images,
-   * or 7 for interlaced images.
-   */
-  for (pass = 0; pass < number_passes; pass++) {
-    /* If you are only writing one row at a time, this works */
-    for (y = 0; y < height; y++) {
-      /* RGB_ALPHA */
-      if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
-        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
+  for (png_uint_32 y=0; y<height; ++y) {
+    uint8_t* dst_address = row_pointer;
 
-        for (x=0; x<width; x++) {
+    if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
+      unsigned int x, c, a;
+      bool opaque = true;
+
+      if (image->pixelFormat() == IMAGE_RGB) {
+        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
+
+        for (x=0; x<width; ++x) {
           c = *(src_address++);
+          a = rgba_geta(c);
+
+          if (opaque) {
+            if (a < 255)
+              opaque = false;
+            else if (fix_one_alpha_pixel && x == width-1 && y == height-1)
+              a = 254;
+          }
+
           *(dst_address++) = rgba_getr(c);
           *(dst_address++) = rgba_getg(c);
           *(dst_address++) = rgba_getb(c);
-          *(dst_address++) = rgba_geta(c);
+          *(dst_address++) = a;
         }
       }
-      /* RGB */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
-        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
-
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = rgba_getr(c);
-          *(dst_address++) = rgba_getg(c);
-          *(dst_address++) = rgba_getb(c);
-        }
-      }
-      /* GRAY_ALPHA */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
-
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = graya_getv(c);
-          *(dst_address++) = graya_geta(c);
-        }
-      }
-      /* GRAY */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
-        uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x, c;
-
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-          *(dst_address++) = graya_getv(c);
-        }
-      }
-      /* PALETTE */
-      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
+      // In case that we are converting an indexed image to RGB just
+      // to convert one pixel with alpha=254.
+      else if (image->pixelFormat() == IMAGE_INDEXED) {
         uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
-        uint8_t* dst_address = row_pointer;
-        unsigned int x;
+        unsigned int x, c;
+        int r, g, b, a;
+        bool opaque = true;
 
-        for (x=0; x<width; x++)
-          *(dst_address++) = *(src_address++);
+        for (x=0; x<width; ++x) {
+          c = *(src_address++);
+          fop->sequenceGetColor(c, &r, &g, &b);
+          fop->sequenceGetAlpha(c, &a);
+
+          if (opaque) {
+            if (a < 255)
+              opaque = false;
+            else if (fix_one_alpha_pixel && x == width-1 && y == height-1)
+              a = 254;
+          }
+
+          *(dst_address++) = r;
+          *(dst_address++) = g;
+          *(dst_address++) = b;
+          *(dst_address++) = a;
+        }
       }
-
-      /* write the line */
-      png_write_rows(png_ptr, &row_pointer, 1);
-
-      fop->setProgress(
-        (double)((double)pass + (double)(y+1) / (double)(height))
-        / (double)number_passes);
     }
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
+      uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
+      unsigned int x, c;
+
+      for (x=0; x<width; ++x) {
+        c = *(src_address++);
+        *(dst_address++) = rgba_getr(c);
+        *(dst_address++) = rgba_getg(c);
+        *(dst_address++) = rgba_getb(c);
+      }
+    }
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
+      uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
+      unsigned int x, c, a;
+      bool opaque = true;
+
+      for (x=0; x<width; x++) {
+        c = *(src_address++);
+        a = graya_geta(c);
+
+        if (opaque) {
+          if (a < 255)
+            opaque = false;
+          else if (fix_one_alpha_pixel && x == width-1 && y == height-1)
+            a = 254;
+        }
+
+        *(dst_address++) = graya_getv(c);
+        *(dst_address++) = a;
+      }
+    }
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
+      uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
+      unsigned int x, c;
+
+      for (x=0; x<width; ++x) {
+        c = *(src_address++);
+        *(dst_address++) = graya_getv(c);
+      }
+    }
+    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
+      uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
+      unsigned int x;
+
+      for (x=0; x<width; ++x)
+        *(dst_address++) = *(src_address++);
+    }
+
+    png_write_rows(png_ptr, &row_pointer, 1);
+
+    fop->setProgress(
+      (double)((double)pass + (double)(y+1) / (double)(height))
+      / (double)number_passes);
   }
 
   png_free(png_ptr, row_pointer);
-
-  /* It is REQUIRED to call this to finish writing the rest of the file */
   png_write_end(png_ptr, info_ptr);
 
-  /* If you png_malloced a palette, free it here (don't free info_ptr->palette,
-     as recommended in versions 1.0.5m and earlier of this example; if
-     libpng mallocs info_ptr->palette, libpng will free it).  If you
-     allocated it with malloc() instead of png_malloc(), use free() instead
-     of png_free(). */
   if (image->pixelFormat() == IMAGE_INDEXED) {
     png_free(png_ptr, palette);
-    palette = NULL;
+    palette = nullptr;
   }
 
-  /* clean up after the write, and free any memory allocated */
   png_destroy_write_struct(&png_ptr, &info_ptr);
-
-  /* all right */
   return true;
 }
 #endif
