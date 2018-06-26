@@ -374,6 +374,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   // Apply scale
   const undo::UndoState* undoState = nullptr;
+  bool undoResize = false;
   if (xscale != 1.0 || yscale != 1.0) {
     Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize());
     ASSERT(resizeCmd);
@@ -387,6 +388,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       if (width != newWidth || height != newHeight) {
         doc->setInhibitBackup(true);
         undoState = doc->undoHistory()->currentState();
+        undoResize = true;
 
         Params params;
         params.set("use-ui", "false");
@@ -432,7 +434,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   }
 
   // Undo resize
-  if (undoState &&
+  if (undoResize &&
       undoState != doc->undoHistory()->currentState()) {
     moveToUndoState(doc, undoState);
     doc->setInhibitBackup(false);
