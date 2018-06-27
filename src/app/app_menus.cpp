@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -339,8 +339,6 @@ void AppMenus::reload()
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup_menu"));
   m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup_menu"));
 
-  createNativeMenus();
-
   ////////////////////////////////////////
   // Load keyboard shortcuts for commands
 
@@ -361,6 +359,10 @@ void AppMenus::reload()
     if (base::is_file(fn))
       KeyboardShortcuts::instance()->importFile(fn, KeySource::UserDefined);
   }
+
+  // Create native menus after the default + user defined keyboard
+  // shortcuts are loaded correctly.
+  createNativeMenus();
 }
 
 void AppMenus::initTheme()
