@@ -11,16 +11,21 @@
 #include "app/ui/export_file_window.h"
 
 #include "app/document.h"
+#include "app/file/file.h"
 #include "app/i18n/strings.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "base/string.h"
 #include "doc/frame_tag.h"
 #include "doc/selected_frames.h"
 #include "doc/site.h"
 #include "fmt/format.h"
+#include "ui/alert.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -29,8 +34,6 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   , m_docPref(Preferences::instance().document(doc))
   , m_preferredResize(1)
 {
-  auto& pref = Preferences::instance();
-
   // Is a default output filename in the preferences?
   if (!m_docPref.saveCopy.filename().empty()) {
     setOutputFilename(m_docPref.saveCopy.filename());
@@ -38,8 +41,7 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   else {
     std::string newFn = base::replace_extension(
       doc->filename(),
-      (doc->sprite()->totalFrames() > 1 ? pref.exportFile.animationDefaultExtension():
-                                          pref.exportFile.imageDefaultExtension()));
+      defaultExtension());
     if (newFn == doc->filename()) {
       newFn = base::join_path(
         base::get_file_path(newFn),
@@ -80,6 +82,7 @@ ExportFileWindow::ExportFileWindow(const Document* doc)
   frames()->Change.connect(base::Bind<void>(&ExportFileWindow::updateAniDir, this));
   forTwitter()->Click.connect(base::Bind<void>(&ExportFileWindow::updateAdjustResizeButton, this));
   adjustResize()->Click.connect(base::Bind<void>(&ExportFileWindow::onAdjustResize, this));
+  ok()->Click.connect(base::Bind<void>(&ExportFileWindow::onOK, this));
 }
 
 bool ExportFileWindow::show()
@@ -198,6 +201,38 @@ void ExportFileWindow::onAdjustResize()
 
   adjustResize()->setVisible(false);
   adjustResize()->parent()->layout();
+}
+
+void ExportFileWindow::onOK()
+{
+  base::paths exts = get_writable_extensions();
+  std::string ext = base::string_to_lower(
+    base::get_file_extension(m_outputFilename));
+
+  // Add default extension to output filename
+  if (std::find(exts.begin(), exts.end(), ext) == exts.end()) {
+    if (ext.empty()) {
+      m_outputFilename =
+        base::replace_extension(m_outputFilename,
+                                defaultExtension());
+    }
+    else {
+      ui::Alert::show(
+        fmt::format(Strings::alerts_unknown_output_file_format_error(), ext));
+      return;
+    }
+  }
+
+  closeWindow(ok());
+}
+
+std::string ExportFileWindow::defaultExtension() const
+{
+  auto& pref = Preferences::instance();
+  if (m_doc->sprite()->totalFrames() > 1)
+    return pref.exportFile.animationDefaultExtension();
+  else
+    return pref.exportFile.imageDefaultExtension();
 }
 
 } // namespace app

@@ -42,6 +42,8 @@ namespace app {
     void updateAniDir();
     void updateAdjustResizeButton();
     void onAdjustResize();
+    void onOK();
+    std::string defaultExtension() const;
 
     const Document* m_doc;
     DocumentPreferences& m_docPref;
