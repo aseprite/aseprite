@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -335,7 +335,10 @@ void CanvasSizeCommand::onExecute(Context* context)
     Transaction transaction(writer.context(), "Canvas Size");
     DocumentApi api = document->getApi(transaction);
 
-    api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1));
+    api.cropSprite(sprite,
+                   gfx::Rect(x1, y1,
+                             MID(1, x2-x1, DOC_SPRITE_MAX_WIDTH),
+                             MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)));
     transaction.commit();
 
     document->generateMaskBoundaries();

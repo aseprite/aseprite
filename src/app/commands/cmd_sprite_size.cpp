@@ -354,6 +354,9 @@ void SpriteSizeCommand::onExecute(Context* context)
   }
 #endif // ENABLE_UI
 
+  new_width = MID(1, new_width, DOC_SPRITE_MAX_WIDTH);
+  new_height = MID(1, new_height, DOC_SPRITE_MAX_HEIGHT);
+
   {
     SpriteSizeJob job(reader, new_width, new_height, resize_method);
     job.startJob();

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +24,9 @@
 #include "gfx/rect.h"
 
 #include <vector>
+
+#define DOC_SPRITE_MAX_WIDTH  65535
+#define DOC_SPRITE_MAX_HEIGHT 65535
 
 namespace doc {
 

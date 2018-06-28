@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -138,8 +138,8 @@ void NewFileCommand::onExecute(Context* context)
     static_assert(IMAGE_INDEXED == 2, "Indexed pixel format should be 2");
 
     format = MID(IMAGE_RGB, format, IMAGE_INDEXED);
-    w = MID(1, w, 65535);
-    h = MID(1, h, 65535);
+    w = MID(1, w, DOC_SPRITE_MAX_WIDTH);
+    h = MID(1, h, DOC_SPRITE_MAX_HEIGHT);
     bg = MID(0, bg, 2);
 
     // Select the color
