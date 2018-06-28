@@ -1,10 +1,10 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!-- Copyright (C) 2015-2018 by David Capello -->
 <gui>
 <window id="palette_size" text="@.title">
   <grid columns="3">
     <label text="@.number_of_colors" />
-    <entry expansive="true" maxsize="4" id="colors" magnet="true" />
+    <expr expansive="true" id="colors" magnet="true" />
     <box cell_align="horizontal" />
 
     <separator horizontal="true" cell_hspan="3" />

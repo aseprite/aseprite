@@ -1,12 +1,12 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!-- Copyright (C) 2015-2018 by David Capello -->
 <gui>
 <window id="modify_selection" text="@.title">
   <vbox>
     <grid columns="2">
 
       <label id="by_label" text="" />
-      <entry id="quantity" expansive="true" maxsize="4" magnet="true" suffix="px" />
+      <expr id="quantity" expansive="true" magnet="true" suffix="px" />
 
       <hbox />
       <vbox>

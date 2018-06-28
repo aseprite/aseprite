@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -122,12 +122,12 @@ void Widget::initTheme()
 
 int Widget::textInt() const
 {
-  return strtol(m_text.c_str(), NULL, 10);
+  return onGetTextInt();
 }
 
 double Widget::textDouble() const
 {
-  return strtod(m_text.c_str(), NULL);
+  return onGetTextDouble();
 }
 
 void Widget::setText(const std::string& text)
@@ -1581,6 +1581,16 @@ void Widget::onSetText()
 void Widget::onSetBgColor()
 {
   invalidate();
+}
+
+int Widget::onGetTextInt() const
+{
+  return std::strtol(m_text.c_str(), nullptr, 10);
+}
+
+double Widget::onGetTextDouble() const
+{
+  return std::strtod(m_text.c_str(), nullptr);
 }
 
 void Widget::offsetWidgets(int dx, int dy)

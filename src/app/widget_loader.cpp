@@ -19,6 +19,7 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
+#include "app/ui/expr_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
@@ -229,23 +230,28 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     if (editable)
       ((ComboBox*)widget)->setEditable(true);
   }
-  else if (elem_name == "entry") {
+  else if (elem_name == "entry" ||
+           elem_name == "expr") {
     const char* maxsize = elem->Attribute("maxsize");
-    const char* suffix = elem->Attribute("suffix");
-
-    if (maxsize != NULL) {
-      bool readonly = bool_attr_is_true(elem, "readonly");
-
-      widget = new Entry(strtol(maxsize, NULL, 10), "");
-
-      if (readonly)
-        ((Entry*)widget)->setReadOnly(true);
-
-      if (suffix)
-        ((Entry*)widget)->setSuffix(suffix);
-    }
-    else
+    if (elem_name == "entry" && !maxsize)
       throw std::runtime_error("<entry> element found without 'maxsize' attribute");
+
+    const char* suffix = elem->Attribute("suffix");
+    const char* decimals = elem->Attribute("decimals");
+    const bool readonly = bool_attr_is_true(elem, "readonly");
+
+    widget = (elem_name == "expr" ?
+              new ExprEntry:
+              new Entry(strtol(maxsize, nullptr, 10), ""));
+
+    if (readonly)
+      ((Entry*)widget)->setReadOnly(true);
+
+    if (suffix)
+      ((Entry*)widget)->setSuffix(suffix);
+
+    if (elem_name == "expr" && decimals)
+      ((ExprEntry*)widget)->setDecimals(strtol(decimals, nullptr, 10));
   }
   else if (elem_name == "grid") {
     const char *columns = elem->Attribute("columns");

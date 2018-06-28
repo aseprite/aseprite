@@ -107,6 +107,9 @@ static Item convert_to_item(TiXmlElement* elem)
   if (name == "entry")
     return item.typeIncl("ui::Entry",
                          "ui/entry.h");
+  if (name == "expr")
+    return item.typeIncl("app::ExprEntry",
+                         "app/ui/expr_entry.h");
   if (name == "grid")
     return item.typeIncl("ui::Grid",
                          "ui/grid.h");

@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
   <window id="new_sprite" text="@.title">
     <box vertical="true">
@@ -7,9 +7,9 @@
       <separator text="@.size" left="true" horizontal="true" />
       <grid columns="2">
         <label text="@.width" />
-        <entry id="width" maxsize="8" magnet="true" cell_align="horizontal" suffix="px" />
+        <expr id="width" magnet="true" cell_align="horizontal" suffix="px" />
         <label text="@.height" />
-        <entry id="height" maxsize="8" cell_align="horizontal" suffix="px" />
+        <expr id="height" cell_align="horizontal" suffix="px" />
       </grid>
 
       <separator text="@.color_mode" left="true" horizontal="true" />

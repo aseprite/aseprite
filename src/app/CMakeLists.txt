@@ -347,6 +347,7 @@ if(ENABLE_UI)
     ui/editor/transform_handles.cpp
     ui/editor/zooming_state.cpp
     ui/export_file_window.cpp
+    ui/expr_entry.cpp
     ui/file_list.cpp
     ui/file_list_view.cpp
     ui/file_selector.cpp
@@ -588,7 +589,8 @@ target_link_libraries(app-lib
   ${HARFBUZZ_LIBRARIES}
   json11
   archive_static
-  fmt)
+  fmt
+  tinyexpr)
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib script-lib)

@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!-- Copyright (C) 2015-2018 by David Capello -->
 <gui>
 <window id="paste_text" text="@.title">
   <grid columns="2">
@@ -7,7 +7,7 @@
     <entry expansive="true" maxsize="256" id="user_text" magnet="true" cell_align="horizontal" />
 
     <label text="@.font_size" />
-    <entry id="font_size" maxsize="3" text="32" cell_align="horizontal" />
+    <expr id="font_size" text="32" cell_align="horizontal" />
 
     <label text="@.font" />
     <dropdownbutton minwidth="60" id="font_face" text="@.select_font" cell_align="horizontal" />

@@ -1,10 +1,10 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!-- Copyright (C) 2015-2018 by David Capello -->
 <gui>
 <window id="palette_from_sprite" text="@.title">
   <grid columns="2">
     <radio id="new_palette" text="@.new_palette" group="1" />
-    <entry expansive="true" maxsize="4" id="ncolors" magnet="true" />
+    <expr expansive="true" id="ncolors" magnet="true" />
     <radio id="current_palette" text="@.replace_palette" group="1" cell_hspan="2" />
     <radio id="current_range" text="@.replace_range" group="1" cell_hspan="2" />
     <check id="alpha_channel" text="@.alpha_channel" cell_hspan="2" />

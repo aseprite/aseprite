@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2017 by David Capello -->
+<!-- Copyright (C) 2014-2018 by David Capello -->
 <gui>
 <vbox id="timeline_conf">
   <hbox>
@@ -17,7 +17,7 @@
       <separator text="@.frame_header" left="true" horizontal="true" />
       <hbox>
 	<label text="@.first_frame" />
-	<entry id="first_frame" maxsize="3" />
+	<expr id="first_frame" />
       </hbox>
 
       <hbox>

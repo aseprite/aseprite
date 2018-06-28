@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
 <window id="frame_properties" text="@.title">
   <grid columns="3">
@@ -9,7 +9,7 @@
     <box cell_align="horizontal" />
 
     <label text="@.duration" />
-    <entry maxsize="10" id="frlen" magnet="true" />
+    <expr id="frlen" magnet="true" />
     <box cell_align="horizontal" />
 
     <separator horizontal="true" cell_hspan="3" />

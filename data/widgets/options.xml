@@ -151,7 +151,7 @@
 		 pref="general.rewind_on_stop" />
 	  <hbox>
 	    <label text="@.default_first_frame" />
-	    <entry id="first_frame" maxsize="3" />
+	    <expr id="first_frame" />
 	  </hbox>
 	</vbox>
 
@@ -231,15 +231,15 @@
 
 	  <grid columns="5">
 	    <label text="@.grid_x" />
-	    <entry id="grid_x" text="" maxsize="4" />
+	    <expr id="grid_x" text="" />
 	    <label text="@.grid_y" />
-	    <entry id="grid_y" text="" maxsize="4" />
+	    <expr id="grid_y" text="" />
 	    <hbox />
 
 	    <label text="@.grid_width" />
-	    <entry id="grid_w" text="" maxsize="4" />
+	    <expr id="grid_w" text="" />
 	    <label text="@.grid_height" />
-	    <entry id="grid_h" text="" maxsize="4" />
+	    <expr id="grid_h" text="" />
 	    <hbox />
 
             <label text="@.grid_color" />
@@ -293,7 +293,7 @@
           <separator text="@.section_undo" horizontal="true" />
           <hbox>
             <check id="limit_undo" text="@.undo_size_limit" />
-            <entry id="undo_size_limit" maxsize="6" tooltip="@.undo_size_limit_tooltip" />
+            <expr id="undo_size_limit" tooltip="@.undo_size_limit_tooltip" />
             <label text="@.undo_mb" />
           </hbox>
 

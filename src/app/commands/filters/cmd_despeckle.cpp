@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,6 +28,8 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
+#include "despeckle.xml.h"
+
 #include <stdio.h>
 
 namespace app {
@@ -44,9 +46,9 @@ public:
                    WithTiledCheckBox,
                    filter.getTiledMode())
     , m_filter(filter)
-    , m_controlsWidget(app::load_widget<ui::Widget>("despeckle.xml", "controls"))
-    , m_widthEntry(app::find_widget<ui::Entry>(m_controlsWidget, "width"))
-    , m_heightEntry(app::find_widget<ui::Entry>(m_controlsWidget, "height"))
+    , m_controlsWidget(new gen::Despeckle)
+    , m_widthEntry(m_controlsWidget->width())
+    , m_heightEntry(m_controlsWidget->height())
   {
     getContainer()->addChild(m_controlsWidget);
 
@@ -58,14 +60,13 @@ public:
   }
 
 private:
-  void onSizeChange()
-  {
+  void onSizeChange() {
     gfx::Size newSize(m_widthEntry->textInt(),
                       m_heightEntry->textInt());
 
     // Avoid negative numbers
-    newSize.w = MAX(1, newSize.w);
-    newSize.h = MAX(1, newSize.h);
+    newSize.w = MID(1, newSize.w, 100);
+    newSize.h = MID(1, newSize.h, 100);
 
     m_filter.setSize(newSize.w, newSize.h);
     restartPreview();
@@ -77,9 +78,9 @@ private:
   }
 
   MedianFilter& m_filter;
-  base::UniquePtr<ui::Widget> m_controlsWidget;
-  ui::Entry* m_widthEntry;
-  ui::Entry* m_heightEntry;
+  base::UniquePtr<gen::Despeckle> m_controlsWidget;
+  ExprEntry* m_widthEntry;
+  ExprEntry* m_heightEntry;
 };
 
 //////////////////////////////////////////////////////////////////////

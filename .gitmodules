@@ -60,3 +60,6 @@
 [submodule "third_party/fmt"]
 	path = third_party/fmt
 	url = https://github.com/aseprite/fmt.git
+[submodule "third_party/tinyexpr"]
+	path = third_party/tinyexpr
+	url = https://github.com/aseprite/tinyexpr.git

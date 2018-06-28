@@ -1,20 +1,20 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
 <window id="grid_settings" text="@.title">
   <grid columns="4">
 
     <label text="@.x" />
-    <entry id="grid_x" text="" maxsize="4" magnet="true" />
+    <expr id="grid_x" text="" magnet="true" />
 
     <label text="@.y" />
-    <entry id="grid_y" text="" maxsize="4" />
+    <expr id="grid_y" text="" />
 
     <label text="@.width" />
-    <entry id="grid_w" text="" maxsize="4" />
+    <expr id="grid_w" text="" />
 
     <label text="@.height" />
-    <entry id="grid_h" text="" maxsize="4" />
+    <expr id="grid_h" text="" />
 
     <separator horizontal="true" cell_hspan="4" />
 

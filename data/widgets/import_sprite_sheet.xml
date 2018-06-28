@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
   <window id="import_sprite_sheet" text="@.title">
   <grid columns="4">
@@ -9,16 +9,16 @@
     <combobox id="sheet_type" cell_hspan="3" />
 
     <label text="@.x" />
-    <entry id="x" text="0" maxsize="4" />
+    <expr id="x" text="0" />
 
     <label text="@.y" />
-    <entry id="y" text="0" maxsize="4" />
+    <expr id="y" text="0" />
 
     <label text="@.width" />
-    <entry id="width" text="16" maxsize="4" />
+    <expr id="width" text="16" />
 
     <label text="@.height" />
-    <entry id="height" text="16" maxsize="4" />
+    <expr id="height" text="16" />
 
     <check id="partial_tiles" text="@.partial_tiles" cell_hspan="4" />
 

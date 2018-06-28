@@ -267,8 +267,8 @@ bool ColorCurveEditor::editNodeManually(gfx::Point& viewPt)
   window.openWindowInForeground();
 
   if (window.closer() == window.ok()) {
-    viewPt.x = int(window.x()->textDouble());
-    viewPt.y = int(window.y()->textDouble());
+    viewPt.x = window.x()->textInt();
+    viewPt.y = window.y()->textInt();
     viewPt.x = MID(0, viewPt.x, 255);
     viewPt.y = MID(0, viewPt.y, 255);
     return true;

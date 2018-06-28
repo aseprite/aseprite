@@ -1,15 +1,15 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
 <window id="color_curve_point" text="@.title">
   <vbox>
     <hbox expansive="true">
       <grid columns="2">
         <label text="@.x" />
-        <entry maxsize="32" id="x" magnet="true" />
+        <expr id="x" magnet="true" />
 
         <label text="@.y" />
-        <entry maxsize="32" id="y" />
+        <expr id="y" />
       </grid>
     </hbox>
     <hbox homogeneous="true">

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -389,6 +389,8 @@ namespace ui {
     virtual void onSelect(bool selected);
     virtual void onSetText();
     virtual void onSetBgColor();
+    virtual int onGetTextInt() const;
+    virtual double onGetTextDouble() const;
 
   private:
     void removeChild(WidgetsList::iterator& it);

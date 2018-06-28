@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
 <window id="sprite_size" text="@.title">
   <box vertical="true">
@@ -12,8 +12,8 @@
             <label text="@.height" />
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
-            <entry expansive="true" id="width_px" suffix="px" maxsize="8" magnet="true" tooltip="@.width_px_tooltip" />
-            <entry expansive="true" id="height_px" suffix="px" maxsize="8" tooltip="@.height_px_tooltip" />
+            <expr expansive="true" id="width_px" suffix="px" magnet="true" tooltip="@.width_px_tooltip" />
+            <expr expansive="true" id="height_px" suffix="px" tooltip="@.height_px_tooltip" />
           </box>
           <check text="@.lock_ratio" id="lock_ratio" selected="true" />
         </box>
@@ -26,8 +26,10 @@
             <label text="@.height" />
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
-            <entry expansive="true" text="100" suffix="%" id="width_perc" maxsize="8" magnet="true" tooltip="@.width_perc_tooltip" />
-            <entry expansive="true" text="100" suffix="%" id="height_perc" maxsize="8" tooltip="@.height_perc_tooltip" />
+            <expr expansive="true" text="100" suffix="%" id="width_perc" magnet="true" tooltip="@.width_perc_tooltip"
+		  decimals="4" />
+            <expr expansive="true" text="100" suffix="%" id="height_perc" tooltip="@.height_perc_tooltip"
+		  decimals="4" />
           </box>
           <box horizontal="true" width="64" />
         </box>

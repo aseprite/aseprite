@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
   <window id="export_sprite_sheet" text="@.title">
   <grid columns="4">
@@ -7,11 +7,11 @@
     <combobox id="sheet_type" cell_hspan="3" />
 
     <label id="columns_label" text="@.columns" />
-    <entry id="columns" text="" maxsize="4" />
+    <expr id="columns" text="" />
     <boxfiller cell_hspan="2" />
 
     <label id="rows_label" text="@.rows" />
-    <entry id="rows" text="" maxsize="4" />
+    <expr id="rows" text="" />
     <boxfiller cell_hspan="2" />
 
     <hbox />
@@ -21,11 +21,11 @@
     </vbox>
     <grid columns="2" id="padding_container" cell_hspan="2">
       <label text="@.border" />
-      <entry id="border_padding" text="0" maxsize="4" />
+      <expr id="border_padding" text="0" />
       <label text="@.shape" />
-      <entry id="shape_padding" text="0" maxsize="4" />
+      <expr id="shape_padding" text="0" />
       <label text="@.inner" />
-      <entry id="inner_padding" text="0" maxsize="4" />
+      <expr id="inner_padding" text="0" />
     </grid>
 
     <label id="fit_width_label" text="@.width" />

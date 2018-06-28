@@ -1,10 +1,12 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
-  <grid columns="2" id="controls">
-    <label text="@despeckle.width" />
-    <entry id="width" maxsize="4" cell_align="horizontal" />
-    <label text="@despeckle.height" />
-    <entry id="height" maxsize="4" cell_align="horizontal" />
+<hbox id="despeckle">
+  <grid columns="2">
+    <label text="@.width" />
+    <expr id="width" cell_align="horizontal" />
+    <label text="@.height" />
+    <expr id="height" cell_align="horizontal" />
   </grid>
+</hbox>
 </gui>

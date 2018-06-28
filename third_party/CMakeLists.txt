@@ -169,3 +169,7 @@ add_library(mujs
   mujs/utf.c
   mujs/utftype.c)
 target_include_directories(mujs PUBLIC .)
+
+# tinyexpr
+add_library(tinyexpr tinyexpr/tinyexpr.c)
+target_include_directories(tinyexpr PUBLIC tinyexpr)

@@ -33,7 +33,7 @@
 
 #include "sprite_size.xml.h"
 
-#define PERC_FORMAT     "%.1f"
+#define PERC_FORMAT     "%.4g"
 
 namespace app {
 

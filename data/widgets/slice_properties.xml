@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2017 by David Capello -->
+<!-- Copyright (C) 2017-2018 by David Capello -->
 <gui>
 <window id="slice_properties" text="@.title">
   <grid columns="2">
@@ -22,24 +22,24 @@
 
     <label text="@.bounds" />
     <hbox homogeneous="true">
-      <entry maxsize="8" id="bounds_x" />
-      <entry maxsize="8" id="bounds_y" />
-      <entry maxsize="8" id="bounds_w" />
-      <entry maxsize="8" id="bounds_h" />
+      <expr id="bounds_x" />
+      <expr id="bounds_y" />
+      <expr id="bounds_w" />
+      <expr id="bounds_h" />
     </hbox>
 
     <check text="@.center" id="center" />
     <hbox homogeneous="true">
-      <entry maxsize="8" id="center_x" text="0" />
-      <entry maxsize="8" id="center_y" text="0" />
-      <entry maxsize="8" id="center_w" text="0" />
-      <entry maxsize="8" id="center_h" text="0" />
+      <expr id="center_x" text="0" />
+      <expr id="center_y" text="0" />
+      <expr id="center_w" text="0" />
+      <expr id="center_h" text="0" />
     </hbox>
 
     <check text="@.pivot" id="pivot" />
     <hbox>
-      <entry maxsize="8" id="pivot_x" text="0" />
-      <entry maxsize="8" id="pivot_y" text="0" />
+      <expr id="pivot_x" text="0" />
+      <expr id="pivot_y" text="0" />
     </hbox>
 
     <separator horizontal="true" cell_hspan="2" />
