@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -221,6 +221,11 @@ Layer* Sprite::firstBrowsableLayer() const
 layer_t Sprite::allLayersCount() const
 {
   return root()->allLayersCount();
+}
+
+bool Sprite::hasVisibleReferenceLayers() const
+{
+  return root()->hasVisibleReferenceLayers();
 }
 
 //////////////////////////////////////////////////////////////////////

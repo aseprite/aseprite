@@ -554,7 +554,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     return;
 
   // rc2 is the rectangle used to create a temporal rendered image of the sprite
-  const bool newEngine = Preferences::instance().experimental.newRenderEngine();
+  const bool newEngine =
+    (Preferences::instance().experimental.newRenderEngine()
+     // Reference layers + zoom > 100% need the old render engine for
+     // sub-pixel rendering.
+     && (!m_sprite->hasVisibleReferenceLayers()
+         || (m_proj.scaleX() <= 1.0
+             && m_proj.scaleY() <= 1.0)));
   gfx::Rect rc2;
   if (newEngine) {
     rc2 = expose;               // New engine, exposed rectangle (without zoom)

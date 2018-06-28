@@ -98,6 +98,7 @@ namespace doc {
     LayerImage* backgroundLayer() const;
     Layer* firstBrowsableLayer() const;
     layer_t allLayersCount() const;
+    bool hasVisibleReferenceLayers() const;
 
     ////////////////////////////////////////
     // Palettes
