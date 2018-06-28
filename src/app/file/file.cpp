@@ -747,6 +747,20 @@ void FileOp::operate(IFileOpProgress* progress)
         // Setup the filename to be used.
         m_filename = m_seq.filename_list[outputFrame];
 
+        // Make directories
+        {
+          std::string dir = base::get_file_path(m_filename);
+          try {
+            if (!base::is_directory(dir))
+              base::make_all_directories(dir);
+          }
+          catch (const std::exception& ex) {
+            // Ignore errors and make the delegate fail
+            setError("Error creating directory \"%s\"\n%s",
+                     dir.c_str(), ex.what());
+          }
+        }
+
         // Call the "save" procedure... did it fail?
         if (!m_format->save(this)) {
           setError("Error saving frame %d in the file \"%s\"\n",
