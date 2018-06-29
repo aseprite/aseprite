@@ -103,6 +103,14 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
     // The foreground window must be the main window to avoid calling
     // a global command inside a modal dialog.
     (manager->getForegroundWindow() == App::instance()->mainWindow()) &&
+    // If we are in a menubox window (e.g. we've pressed
+    // Alt+mnemonic), we should disable the native shortcuts
+    // temporarily so we can use mnemonics without modifiers
+    // (e.g. Alt+S opens the Sprite menu, then 'S' key should execute
+    // "Sprite Size" command in that menu, instead of Stroke command
+    // which is in 'Edit > Stroke'). This is necessary in macOS, when
+    // the native menu + Aseprite pixel-art menus are enabled.
+    (dynamic_cast<MenuBoxWindow*>(manager->getTopWindow()) == nullptr) &&
     // The focused widget cannot be an entry, because entry fields
     // prefer text input, so we cannot call shortcuts without
     // modifiers (e.g. F or T keystrokes) to trigger a global command

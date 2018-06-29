@@ -87,32 +87,6 @@ struct MenuBaseData {
 
 };
 
-class CustomizedWindowForMenuBox : public Window
-{
-public:
-  CustomizedWindowForMenuBox(MenuBox* menubox)
-    : Window(WithoutTitleBar, "")
-  {
-    setMoveable(false); // Can't move the window
-    addChild(menubox);
-    remapWindow();
-  }
-
-protected:
-  bool onProcessMessage(Message* msg) override
-  {
-    switch (msg->type()) {
-
-      case kCloseMessage:
-        // Delete this window automatically
-        deferDelete();
-        break;
-
-    }
-    return Window::onProcessMessage(msg);
-  }
-};
-
 static MenuBox* get_base_menubox(Widget* widget);
 static MenuBaseData* get_base(Widget* widget);
 
@@ -747,7 +721,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         menubox->setMenu(m_submenu);
 
         // New window and new menu-box
-        Window* window = new CustomizedWindowForMenuBox(menubox);
+        Window* window = new MenuBoxWindow(menubox);
 
         // Menubox position
         Rect pos = window->bounds();
@@ -847,7 +821,7 @@ bool MenuItem::onProcessMessage(Message* msg)
           manager()->setFocus(this->parent()->parent());
 
         // Do not call "delete window" here, because it
-        // (CustomizedWindowForMenuBox) will be deferDelete()d on
+        // (MenuBoxWindow) will be deferDelete() on
         // kCloseMessage.
 
         if (last_of_close_chain) {
@@ -1304,6 +1278,30 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
     return find_previtem(menu, NULL);
   else
     return NULL;
+}
+
+//////////////////////////////////////////////////////////////////////
+// MenuBoxWindow
+
+MenuBoxWindow::MenuBoxWindow(MenuBox* menubox)
+  : Window(WithoutTitleBar, "")
+{
+  setMoveable(false); // Can't move the window
+  addChild(menubox);
+  remapWindow();
+}
+
+bool MenuBoxWindow::onProcessMessage(Message* msg)
+{
+  switch (msg->type()) {
+
+    case kCloseMessage:
+      // Delete this window automatically
+      deferDelete();
+      break;
+
+  }
+  return Window::onProcessMessage(msg);
 }
 
 } // namespace ui
