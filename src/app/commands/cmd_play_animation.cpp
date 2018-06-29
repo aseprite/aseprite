@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,16 +8,21 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
+#include "app/ui/preview_editor.h"
 
 namespace app {
 
 using namespace ui;
+
+//////////////////////////////////////////////////////////////////////
 
 class PlayAnimationCommand : public Command {
 public:
@@ -61,9 +66,47 @@ void PlayAnimationCommand::onExecute(Context* context)
                          Preferences::instance().editor.playAll());
 }
 
+//////////////////////////////////////////////////////////////////////
+
+class PlayPreviewAnimationCommand : public Command {
+public:
+  PlayPreviewAnimationCommand();
+  Command* clone() const override { return new PlayPreviewAnimationCommand(*this); }
+
+protected:
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+};
+
+PlayPreviewAnimationCommand::PlayPreviewAnimationCommand()
+  : Command(CommandId::PlayPreviewAnimation(), CmdUIOnlyFlag)
+{
+}
+
+bool PlayPreviewAnimationCommand::onEnabled(Context* context)
+{
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                             ContextFlags::HasActiveSprite);
+}
+
+void PlayPreviewAnimationCommand::onExecute(Context* context)
+{
+  PreviewEditorWindow* preview = App::instance()->mainWindow()->getPreviewEditor();
+  if (!preview->isPreviewEnabled())
+    preview->setPreviewEnabled(true);
+  preview->pressPlayButton();
+}
+
+//////////////////////////////////////////////////////////////////////
+
 Command* CommandFactory::createPlayAnimationCommand()
 {
   return new PlayAnimationCommand;
+}
+
+Command* CommandFactory::createPlayPreviewAnimationCommand()
+{
+  return new PlayPreviewAnimationCommand;
 }
 
 } // namespace app

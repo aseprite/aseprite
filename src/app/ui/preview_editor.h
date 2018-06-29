@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,9 +27,9 @@ namespace app {
 
     bool isPreviewEnabled() const { return m_isEnabled; }
     void setPreviewEnabled(bool state);
+    void pressPlayButton();
 
     void updateUsingEditor(Editor* editor);
-
     Editor* relatedEditor() const { return m_relatedEditor; }
 
     // EditorObserver impl
