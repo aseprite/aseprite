@@ -467,7 +467,8 @@ bool DocumentView::onCanCut(Context* ctx)
                       ContextFlags::ActiveLayerIsVisible |
                       ContextFlags::ActiveLayerIsEditable |
                       ContextFlags::HasVisibleMask |
-                      ContextFlags::HasActiveImage))
+                      ContextFlags::HasActiveImage)
+      && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference))
     return true;
   else if (m_editor->isMovingPixels())
     return true;
@@ -480,7 +481,8 @@ bool DocumentView::onCanCopy(Context* ctx)
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::ActiveLayerIsVisible |
                       ContextFlags::HasVisibleMask |
-                      ContextFlags::HasActiveImage))
+                      ContextFlags::HasActiveImage)
+      && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference))
     return true;
   else if (m_editor->isMovingPixels())
     return true;
@@ -491,11 +493,12 @@ bool DocumentView::onCanCopy(Context* ctx)
 bool DocumentView::onCanPaste(Context* ctx)
 {
   return
-    (clipboard::get_current_format() == clipboard::ClipboardImage &&
-     ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                     ContextFlags::ActiveLayerIsVisible |
-                     ContextFlags::ActiveLayerIsEditable |
-                     ContextFlags::ActiveLayerIsImage));
+    (clipboard::get_current_format() == clipboard::ClipboardImage
+     && ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                        ContextFlags::ActiveLayerIsVisible |
+                        ContextFlags::ActiveLayerIsEditable |
+                        ContextFlags::ActiveLayerIsImage)
+     && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference));
 }
 
 bool DocumentView::onCanClear(Context* ctx)
@@ -503,7 +506,8 @@ bool DocumentView::onCanClear(Context* ctx)
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::ActiveLayerIsVisible |
                       ContextFlags::ActiveLayerIsEditable |
-                      ContextFlags::ActiveLayerIsImage)) {
+                      ContextFlags::ActiveLayerIsImage)
+      && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference)) {
     return true;
   }
   else if (m_editor->isMovingPixels()) {
