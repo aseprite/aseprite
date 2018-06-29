@@ -311,8 +311,11 @@ void PreviewEditorWindow::onPlayClicked()
     miniEditor->play(Preferences::instance().preview.playOnce(),
                      Preferences::instance().preview.playAll());
   }
-  else
+  else {
     miniEditor->stop();
+    if (m_relatedEditor)
+      miniEditor->setFrame(m_relatedEditor->frame());
+  }
 }
 
 void PreviewEditorWindow::onPopupSpeed()
