@@ -16,6 +16,8 @@
 #include "app/document_undo.h"
 #include "doc/sprite.h"
 
+#define TX_TRACE(...)
+
 namespace app {
 
 using namespace doc;
@@ -24,6 +26,11 @@ Transaction::Transaction(Context* ctx, const std::string& label, Modification mo
   : m_ctx(ctx)
   , m_cmds(NULL)
 {
+  TX_TRACE("TX: Start <%s> (%s)\n",
+           label.c_str(),
+           modification == ModifyDocument ? "modifies document":
+                                            "doesn't modify document");
+
   m_undo = m_ctx->activeDocument()->undoHistory();
   m_cmds = new CmdTransaction(label,
     modification == Modification::ModifyDocument,
@@ -62,6 +69,7 @@ void Transaction::setNewDocumentRange(const DocumentRange& range)
 void Transaction::commit()
 {
   ASSERT(m_cmds);
+  TX_TRACE("TX: Commit <%s>\n", m_cmds->label().c_str());
 
   m_cmds->commit();
   m_undo->add(m_cmds);
@@ -71,6 +79,7 @@ void Transaction::commit()
 void Transaction::rollback()
 {
   ASSERT(m_cmds);
+  TX_TRACE("TX: Rollback <%s>\n", m_cmds->label().c_str());
 
   m_cmds->undo();
 
