@@ -498,6 +498,7 @@ add_library(app-lib
   context_flags.cpp
   document.cpp
   document_api.cpp
+  document_diff.cpp
   document_exporter.cpp
   document_range.cpp
   document_range_ops.cpp

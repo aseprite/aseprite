@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,6 +16,7 @@
 
 #include "ui/manager.h"
 
+#include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/time.h"
 #include "she/display.h"
@@ -72,6 +73,7 @@ static base::thread::native_handle_type manager_thread = 0;
 
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
+static base::concurrent_queue<Message*> concurrent_msg_queue;
 static Filters msg_filters[NFILTERS]; // Filters for every enqueued message
 static int filter_locks = 0;
 
@@ -264,6 +266,14 @@ bool Manager::generateMessages()
   if (children().empty())
     return false;
 
+  // Generate messages from other threads
+  if (!concurrent_msg_queue.empty()) {
+    Message* msg = nullptr;
+    while (concurrent_msg_queue.try_pop(msg))
+      msg_queue.push_back(msg);
+  }
+
+  // Generate messages from OS input
   generateMessagesFromSheEvents();
 
   // Generate messages for timers
@@ -643,7 +653,11 @@ void Manager::addToGarbage(Widget* widget)
 void Manager::enqueueMessage(Message* msg)
 {
   ASSERT(msg);
-  msg_queue.push_back(msg);
+
+  if (is_ui_thread())
+    msg_queue.push_back(msg);
+  else
+    concurrent_msg_queue.push(msg);
 }
 
 Window* Manager::getTopWindow()
@@ -1414,6 +1428,8 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 #ifdef REPORT_EVENTS
   {
     static const char* msg_name[] = {
+      "kFunctionMessage",
+
       "kOpenMessage",
       "kCloseMessage",
       "kCloseDisplayMessage",

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@ namespace ui {
   // Message types.
   enum MessageType {
     // General messages.
+    kFunctionMessage, // Call a function from the UI thread.
     kOpenMessage,     // Windows is open.
     kCloseMessage,    // Windows is closed.
     kCloseDisplayMessage, // The user wants to close the entire application.

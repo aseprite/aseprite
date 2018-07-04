@@ -20,6 +20,7 @@
 #include "ui/intern.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
+#include "ui/message.h"
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
 #include "ui/scale.h"
@@ -344,6 +345,18 @@ void set_mouse_position(const gfx::Point& newPos)
     mouse_display->setMousePosition(newPos);
 
   _internal_set_mouse_position(newPos);
+}
+
+void execute_from_ui_thread(std::function<void()>&& f)
+{
+  ASSERT(Manager::getDefault());
+
+  Manager* man = Manager::getDefault();
+  ASSERT(man);
+
+  FunctionMessage* msg = new FunctionMessage(std::move(f));
+  msg->addRecipient(man);
+  man->enqueueMessage(msg);
 }
 
 bool is_ui_thread()

@@ -4,6 +4,13 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+// Uncomment if you want to test the backup process each 5 secondsh
+//#define TEST_BACKUPS_WITH_A_SHORT_PERIOD
+
+// Uncomment if you want to check that backups are correctly saved
+// after being saved.
+//#define TEST_BACKUP_INTEGRITY
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -13,12 +20,18 @@
 #include "app/app.h"
 #include "app/crash/session.h"
 #include "app/document.h"
+#include "app/document_access.h"
+#include "app/document_diff.h"
 #include "app/pref/preferences.h"
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
 #include "doc/context.h"
+
+#ifdef TEST_BACKUP_INTEGRITY
+#include "ui/system.h"
+#endif
 
 namespace app {
 namespace crash {
@@ -84,7 +97,7 @@ void BackupObserver::backgroundThread()
 {
   int normalPeriod = int(60.0*Preferences::instance().general.dataRecoveryPeriod());
   int lockedPeriod = 5;
-#if 0                           // Just for testing purposes
+#ifdef TEST_BACKUPS_WITH_A_SHORT_PERIOD
   normalPeriod = 5;
   lockedPeriod = 5;
 #endif
@@ -113,6 +126,33 @@ void BackupObserver::backgroundThread()
               TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
               somethingLocked = true;
             }
+#ifdef TEST_BACKUP_INTEGRITY
+            else {
+              DocumentReader reader(doc, 500);
+              std::unique_ptr<app::Document> copy(
+                m_session->restoreBackupDocById(doc->id()));
+              DocumentDiff diff = compare_docs(doc, copy.get());
+              if (diff.anything) {
+                TRACE("RECO: Differences (%s/%s/%s/%s/%s/%s/%s)\n",
+                      diff.canvas ? "canvas": "",
+                      diff.totalFrames ? "totalFrames": "",
+                      diff.frameDuration ? "frameDuration": "",
+                      diff.frameTags ? "frameTags": "",
+                      diff.palettes ? "palettes": "",
+                      diff.layers ? "layers": "",
+                      diff.cels ? "cels": "");
+
+                app::Document* copyDoc = copy.release();
+                ui::execute_from_ui_thread(
+                  [this, copyDoc] {
+                    m_ctx->documents().add(copyDoc);
+                  });
+              }
+              else {
+                TRACE("RECO: No differences\n");
+              }
+            }
+#endif
           }
         }
         catch (const std::exception&) {

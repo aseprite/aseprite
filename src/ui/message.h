@@ -18,6 +18,8 @@
 #include "ui/pointer_type.h"
 #include "ui/widgets_list.h"
 
+#include <functional>
+
 namespace ui {
 
   class Timer;
@@ -80,6 +82,16 @@ namespace ui {
     WidgetsList m_recipients; // List of recipients of the message
     int m_flags;              // Was used
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
+  };
+
+  class FunctionMessage : public Message {
+  public:
+    FunctionMessage(std::function<void()>&& f)
+      : Message(kFunctionMessage),
+        m_f(std::move(f)) { }
+    void call() { m_f(); }
+  private:
+    std::function<void()> m_f;
   };
 
   class KeyMessage : public Message {

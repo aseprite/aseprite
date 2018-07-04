@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -189,19 +189,27 @@ void Session::removeDocument(app::Document* doc)
   }
 }
 
-void Session::restoreBackup(Backup* backup)
+app::Document* Session::restoreBackupDoc(const std::string& backupDir)
 {
   Console console;
   try {
-    app::Document* doc = read_document(backup->dir());
+    app::Document* doc = read_document(backupDir);
     if (doc) {
       fixFilename(doc);
-      UIContext::instance()->documents().add(doc);
+      return doc;
     }
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
   }
+  return nullptr;
+}
+
+void Session::restoreBackup(Backup* backup)
+{
+  app::Document* doc = restoreBackupDoc(backup->dir());
+  if (doc)
+    UIContext::instance()->documents().add(doc);
 }
 
 void Session::restoreBackupById(const ObjectId id)
@@ -210,9 +218,18 @@ void Session::restoreBackupById(const ObjectId id)
   if (!base::is_directory(docDir))
     return;
 
-  base::UniquePtr<Backup> backup(new Backup(docDir));
-  if (backup)
-    restoreBackup(backup.get());
+  app::Document* doc = restoreBackupDoc(docDir);
+  if (doc)
+    UIContext::instance()->documents().add(doc);
+}
+
+app::Document* Session::restoreBackupDocById(const doc::ObjectId id)
+{
+  std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
+  if (!base::is_directory(docDir))
+    return nullptr;
+
+  return restoreBackupDoc(docDir);
 }
 
 void Session::restoreRawImages(Backup* backup, RawImagesAs as)

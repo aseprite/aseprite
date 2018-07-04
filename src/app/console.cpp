@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,6 +22,7 @@
 #include "app/context.h"
 #include "app/modules/gui.h"
 #include "app/ui/status_bar.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -39,6 +40,9 @@ static bool has_text = false;
 Console::Console(Context* ctx)
   : m_withUI(false)
 {
+  if (!ui::is_ui_thread())
+    return;
+
   if (ctx)
     m_withUI = (ctx->isUIAvailable());
   else

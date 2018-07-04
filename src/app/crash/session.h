@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -55,10 +55,12 @@ namespace crash {
 
     void restoreBackup(Backup* backup);
     void restoreBackupById(const doc::ObjectId id);
+    app::Document* restoreBackupDocById(const doc::ObjectId id);
     void restoreRawImages(Backup* backup, RawImagesAs as);
     void deleteBackup(Backup* backup);
 
   private:
+    app::Document* restoreBackupDoc(const std::string& backupDir);
     void loadPid();
     std::string pidFilename() const;
     std::string verFilename() const;

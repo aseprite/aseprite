@@ -439,7 +439,7 @@ Document* Document::duplicate(DuplicateType type) const
 
   // Copy only some flags
   documentCopy->m_flags = (m_flags & kMaskVisible);
-
+  documentCopy->setFilename(filename());
   documentCopy->setMask(mask());
   documentCopy->generateMaskBoundaries();
 

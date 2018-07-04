@@ -13,6 +13,7 @@
 #include "ui/cursor_type.h"
 #include "ui/mouse_buttons.h"
 
+#include <functional>
 #include <string>
 
 namespace she { class Display; }
@@ -69,6 +70,7 @@ namespace ui {
   const gfx::Point& get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);
 
+  void execute_from_ui_thread(std::function<void()>&& f);
   bool is_ui_thread();
 #ifdef _DEBUG
   void assert_ui_thread();
