@@ -230,6 +230,7 @@ ColorSliders::ColorSliders()
   , m_items(int(Channel::Channels))
   , m_grid(3, false)
   , m_mode(Mode::Absolute)
+  , m_lockSlider(-1)
   , m_lockEntry(-1)
   , m_color(app::Color::fromMask())
 {
@@ -389,12 +390,18 @@ void ColorSliders::addSlider(const Channel channel,
 
 void ColorSliders::setAbsSliderValue(const Channel i, int value)
 {
+  if (m_lockSlider == i)
+    return;
+
   m_items[i].absSlider->setValue(value);
   updateEntryText(i);
 }
 
 void ColorSliders::setRelSliderValue(const Channel i, int value)
 {
+  if (m_lockSlider == i)
+    return;
+
   m_items[i].relSlider->setValue(value);
   updateEntryText(i);
 }
@@ -427,6 +434,8 @@ void ColorSliders::syncRelHsvHslSliders()
 
 void ColorSliders::onSliderChange(const Channel i)
 {
+  base::ScopedValue<int> lock(m_lockSlider, i, m_lockSlider);
+
   updateEntryText(i);
   onControlChange(i);
 }

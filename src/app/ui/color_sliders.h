@@ -85,6 +85,7 @@ namespace app {
     std::vector<Item> m_items;
     ui::Grid m_grid;
     Mode m_mode;
+    int m_lockSlider;
     int m_lockEntry;
     app::Color m_color;
   };
