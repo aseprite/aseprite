@@ -1454,10 +1454,13 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       "kMouseWheelMessage",
       "kTouchMagnifyMessage",
     };
+    static_assert(kFunctionMessage == 0 &&
+                  kTouchMagnifyMessage == sizeof(msg_name)/sizeof(const char*)-1,
+                  "MessageType enum has changed");
     const char* string =
-      (msg->type() >= kOpenMessage &&
-       msg->type() <= kMouseWheelMessage) ? msg_name[msg->type()]:
-                                            "Unknown";
+      (msg->type() >= 0 &&
+       msg->type() < sizeof(msg_name)/sizeof(const char*)) ?
+      msg_name[msg->type()]: "Unknown";
 
     std::cout << "Event " << msg->type() << " (" << string << ") "
               << "for " << ((void*)widget) << std::flush;
