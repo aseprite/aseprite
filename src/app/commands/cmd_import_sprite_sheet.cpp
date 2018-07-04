@@ -124,8 +124,7 @@ protected:
     Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
     Params params;
     params.set("filename", "");
-    openFile->loadParams(params);
-    openFile->execute(m_context);
+    m_context->executeCommand(openFile, params);
 
     // The user have selected another document.
     if (oldActiveDocument != m_context->activeDocument()) {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -36,7 +36,6 @@ namespace app {
     void loadParams(const Params& params);
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
-    void execute(Context* context);
 
   protected:
     virtual bool onNeedsParams() const;
@@ -51,6 +50,9 @@ namespace app {
     }
 
   private:
+    friend class Context;
+    void execute(Context* context);
+
     std::string m_id;
     std::string m_friendlyName;
     CommandFlags m_flags;
