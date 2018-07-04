@@ -326,6 +326,7 @@ void LayerImage::moveCel(Cel* cel, frame_t frame)
 {
   removeCel(cel);
   cel->setFrame(frame);
+  cel->incrementVersion();      // TODO this should be in app::cmd module
   addCel(cel);
 }
 
