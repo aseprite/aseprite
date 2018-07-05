@@ -919,15 +919,10 @@ void PaletteView::setStatusBar()
 
     case State::DRAGGING_OUTLINE:
       if (m_hot.part == Hit::COLOR) {
-        int picks = m_selectedEntries.picks();
-        int firstPick = m_selectedEntries.firstPick();
-
-        int destIndex = MAX(0, m_hot.color);
-        if (!m_copy && destIndex <= firstPick)
-          destIndex -= picks;
-
-        int palSize = currentPalette()->size();
-        int newPalSize =
+        const int picks = m_selectedEntries.picks();
+        const int destIndex = MAX(0, m_hot.color);
+        const int palSize = currentPalette()->size();
+        const int newPalSize =
           (m_copy ? MAX(palSize + picks, destIndex + picks):
                     MAX(palSize,         destIndex + picks));
 
