@@ -931,6 +931,8 @@
       <item command="RemoveFrame" text="@main_menu.frame_delete_frame" />
       <separator />
       <item command="SetLoopSection" text="@main_menu.view_set_loop_section" />
+      <separator />
+      <item command="ReverseFrames" text="@main_menu.frame_reverse_frames" />
     </menu>
 
     <menu id="cel_popup_menu">
