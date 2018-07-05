@@ -904,7 +904,9 @@ void PaletteView::setStatusBar()
 
     case State::WAITING:
     case State::SELECTING_COLOR:
-      if (m_hot.part == Hit::COLOR) {
+      if (m_hot.part == Hit::COLOR ||
+          m_hot.part == Hit::OUTLINE ||
+          m_hot.part == Hit::POSSIBLE_COLOR) {
         int i = MID(0, m_hot.color, currentPalette()->size()-1);
 
         StatusBar::instance()->showColor(
