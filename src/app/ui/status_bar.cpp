@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -238,6 +238,7 @@ public:
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
     m_leftArea.addChild(indicator);
+    m_redraw = true;
   }
 
   void addIconIndicator(const skin::SkinPartPtr& part, bool colored) {
@@ -256,6 +257,7 @@ public:
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
     m_leftArea.addChild(indicator);
+    m_redraw = true;
   }
 
   void addColorIndicator(const app::Color& color) {
@@ -274,6 +276,7 @@ public:
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
     m_leftArea.addChild(indicator);
+    m_redraw = true;
   }
 
   void showBackupIcon(BackupIcon icon) {

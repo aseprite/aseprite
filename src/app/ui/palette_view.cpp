@@ -313,8 +313,6 @@ bool PaletteView::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      setStatusBar();
-
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
@@ -378,6 +376,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         }
 
         m_state = State::WAITING;
+        setStatusBar();
         invalidate();
       }
       return true;
@@ -408,8 +407,8 @@ bool PaletteView::onProcessMessage(Message* msg)
     }
 
     case kMouseLeaveMessage:
-      StatusBar::instance()->clearText();
       m_hot = Hit(Hit::NONE);
+      setStatusBar();
       invalidate();
       break;
 
@@ -425,6 +424,7 @@ bool PaletteView::onProcessMessage(Message* msg)
           invalidate();
         }
         m_hot = hit;
+        setStatusBar();
       }
       setCursor();
       return true;
@@ -900,20 +900,28 @@ void PaletteView::setCursor()
 
 void PaletteView::setStatusBar()
 {
+  StatusBar* statusBar = StatusBar::instance();
+
+  if (m_hot.part == Hit::NONE) {
+    statusBar->clearText();
+    return;
+  }
+
   switch (m_state) {
 
     case State::WAITING:
     case State::SELECTING_COLOR:
-      if (m_hot.part == Hit::COLOR ||
-          m_hot.part == Hit::OUTLINE ||
-          m_hot.part == Hit::POSSIBLE_COLOR) {
-        int i = MID(0, m_hot.color, currentPalette()->size()-1);
+      if ((m_hot.part == Hit::COLOR ||
+           m_hot.part == Hit::OUTLINE ||
+           m_hot.part == Hit::POSSIBLE_COLOR) &&
+          (m_hot.color < currentPalette()->size())) {
+        int i = MAX(0, m_hot.color);
 
-        StatusBar::instance()->showColor(
+        statusBar->showColor(
           0, "", app::Color::fromIndex(i));
       }
       else {
-        StatusBar::instance()->clearText();
+        statusBar->clearText();
       }
       break;
 
@@ -926,13 +934,13 @@ void PaletteView::setStatusBar()
           (m_copy ? MAX(palSize + picks, destIndex + picks):
                     MAX(palSize,         destIndex + picks));
 
-        StatusBar::instance()->setStatusText(
+        statusBar->setStatusText(
           0, "%s to %d - New Palette Size %d",
           (m_copy ? "Copy": "Move"),
           destIndex, newPalSize);
       }
       else {
-        StatusBar::instance()->clearText();
+        statusBar->clearText();
       }
       break;
 
@@ -941,12 +949,12 @@ void PaletteView::setStatusBar()
           m_hot.part == Hit::POSSIBLE_COLOR ||
           m_hot.part == Hit::RESIZE_HANDLE) {
         int newPalSize = MAX(1, m_hot.color);
-        StatusBar::instance()->setStatusText(
+        statusBar->setStatusText(
           0, "New Palette Size %d",
           newPalSize);
       }
       else {
-        StatusBar::instance()->clearText();
+        statusBar->clearText();
       }
       break;
   }
