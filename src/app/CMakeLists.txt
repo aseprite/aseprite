@@ -533,7 +533,6 @@ add_library(app-lib
   res/resources_loader.cpp
   resource_finder.cpp
   restore_visible_layers.cpp
-  rw_lock.cpp
   shade.cpp
   snap_to_grid.cpp
   sprite_job.cpp

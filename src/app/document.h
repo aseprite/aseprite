@@ -10,10 +10,10 @@
 
 #include "app/extra_cel.h"
 #include "app/file/format_options.h"
-#include "app/rw_lock.h"
 #include "app/transformation.h"
 #include "base/disable_copying.h"
 #include "base/mutex.h"
+#include "base/rw_lock.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "doc/blend_mode.h"
@@ -52,7 +52,7 @@ namespace app {
   // An application document. It is the class used to contain one file
   // opened and being edited by the user (a sprite).
   class Document : public doc::Document,
-                   public RWLock {
+                   public base::RWLock {
     enum Flags {
       kAssociatedToFile = 1, // This sprite is associated to a file in the file-system
       kMaskVisible      = 2, // The mask wasn't hidden by the user
