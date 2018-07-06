@@ -12,6 +12,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/state_with_wheel_behavior.h"
+#include "doc/algorithm/flip_type.h"
 #include "obs/connection.h"
 
 namespace app {
@@ -47,7 +48,9 @@ namespace app {
     virtual Transformation getTransformation(Editor* editor);
 
     void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
-
+    
+    void startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType);
+    
   protected:
     void callEyedropper(Editor* editor, const ui::MouseMessage* msg);
     bool checkStartDrawingStraightLine(Editor* editor, const ui::MouseMessage* msg);

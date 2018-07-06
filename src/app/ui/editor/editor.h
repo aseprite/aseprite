@@ -19,6 +19,7 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
+#include "doc/algorithm/flip_type.h"
 #include "doc/document_observer.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
@@ -218,6 +219,8 @@ namespace app {
     void pasteImage(const Image* image, const Mask* mask = nullptr);
 
     void startSelectionTransformation(const gfx::Point& move, double angle);
+    
+    void startFlipTransformation(doc::algorithm::FlipType flipType);
 
     // Used by EditorView to notify changes in the view's scroll
     // position.
