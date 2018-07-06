@@ -673,6 +673,14 @@ void StandbyState::startSelectionTransformation(Editor* editor,
   }
 }
 
+void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType)
+{
+  transformSelection(editor, NULL, NoHandle);
+  
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+    movingPixels->flip(flipType);
+}
+  
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Document* document = editor->document();
