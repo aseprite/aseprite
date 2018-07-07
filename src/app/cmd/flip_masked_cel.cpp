@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,7 +24,7 @@ namespace cmd {
 
 FlipMaskedCel::FlipMaskedCel(Cel* cel, doc::algorithm::FlipType flipType)
 {
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  Document* doc = static_cast<Document*>(cel->document());
   color_t bgcolor = doc->bgColor(cel->layer());
   Image* image = cel->image();
   Mask* mask = doc->mask();

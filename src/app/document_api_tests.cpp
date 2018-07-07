@@ -9,12 +9,12 @@
 #include "app/context.h"
 #include "app/document.h"
 #include "app/document_api.h"
+#include "app/test_context.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
-#include "doc/test_context.h"
 
 using namespace app;
 using namespace doc;

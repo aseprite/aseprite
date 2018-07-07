@@ -11,7 +11,7 @@
 #include "app/cmd_transaction.h"
 
 #include "app/context.h"
-#include "doc/site.h"
+#include "app/site.h"
 
 #ifdef ENABLE_UI
 #include "app/app.h"
@@ -119,10 +119,10 @@ size_t CmdTransaction::onMemSize() const
   return size;
 }
 
-doc::SpritePosition CmdTransaction::calcSpritePosition() const
+SpritePosition CmdTransaction::calcSpritePosition() const
 {
-  doc::Site site = context()->activeSite();
-  return doc::SpritePosition(site.layer(), site.frame());
+  Site site = context()->activeSite();
+  return SpritePosition(site.layer(), site.frame());
 }
 
 bool CmdTransaction::isDocumentRangeEnabled() const

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,9 +10,9 @@
 
 #include "app/cmd/set_cel_position.h"
 
+#include "app/doc_event.h"
 #include "app/document.h"
 #include "doc/cel.h"
-#include "doc/doc_event.h"
 
 namespace app {
 namespace cmd {
@@ -43,10 +43,11 @@ void SetCelPosition::onUndo()
 void SetCelPosition::onFireNotifications()
 {
   Cel* cel = this->cel();
-  DocEvent ev(cel->document());
+  Document* doc = static_cast<Document*>(cel->document());
+  DocEvent ev(doc);
   ev.sprite(cel->sprite());
   ev.cel(cel);
-  cel->document()->notify_observers<DocEvent&>(&DocObserver::onCelPositionChanged, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onCelPositionChanged, ev);
 }
 
 } // namespace cmd

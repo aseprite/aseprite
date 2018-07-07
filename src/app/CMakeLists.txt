@@ -503,6 +503,7 @@ add_library(app-lib
   document_range.cpp
   document_range_ops.cpp
   document_undo.cpp
+  documents.cpp
   extensions.cpp
   extra_cel.cpp
   file/file.cpp
@@ -534,6 +535,7 @@ add_library(app-lib
   resource_finder.cpp
   restore_visible_layers.cpp
   shade.cpp
+  site.cpp
   snap_to_grid.cpp
   sprite_job.cpp
   thumbnail_generator.cpp

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/doc_observer.h"
 #include "app/document.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool_observer.h"
@@ -19,7 +20,6 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
-#include "doc/doc_observer.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "filters/tiled_mode.h"
@@ -35,7 +35,6 @@
 
 namespace doc {
   class Layer;
-  class Site;
   class Sprite;
 }
 namespace gfx {
@@ -53,6 +52,7 @@ namespace app {
   class EditorCustomizationDelegate;
   class EditorRender;
   class PixelsMovement;
+  class Site;
 
   namespace tools {
     class Ink;
@@ -64,10 +64,10 @@ namespace app {
     ScrollDir,
   };
 
-  class Editor : public ui::Widget
-               , public doc::DocObserver
-               , public IColorSource
-               , public tools::ActiveToolObserver {
+  class Editor : public ui::Widget,
+                 public app::DocObserver,
+                 public IColorSource,
+                 public tools::ActiveToolObserver {
   public:
     enum EditorFlags {
       kNoneFlag = 0,
@@ -281,8 +281,8 @@ namespace app {
     void onShowExtrasChange();
 
     // DocObserver impl
-    void onExposeSpritePixels(doc::DocEvent& ev) override;
-    void onSpritePixelRatioChanged(doc::DocEvent& ev) override;
+    void onExposeSpritePixels(DocEvent& ev) override;
+    void onSpritePixelRatioChanged(DocEvent& ev) override;
     void onBeforeRemoveLayer(DocEvent& ev) override;
     void onRemoveCel(DocEvent& ev) override;
     void onAddFrameTag(DocEvent& ev) override;

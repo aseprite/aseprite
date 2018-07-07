@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,8 +10,8 @@
 
 #include "app/cmd/add_layer.h"
 
-#include "doc/doc_event.h"
-#include "doc/document.h"
+#include "app/doc_event.h"
+#include "app/document.h"
 #include "doc/layer.h"
 #include "doc/layer_io.h"
 #include "doc/subobjects_io.h"
@@ -69,7 +69,7 @@ void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
   group->incrementVersion();
   group->sprite()->incrementVersion();
 
-  Document* doc = group->sprite()->document();
+  auto doc = static_cast<Document*>(group->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(group->sprite());
   ev.layer(newLayer);
@@ -78,7 +78,7 @@ void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 
 void AddLayer::removeLayer(Layer* group, Layer* layer)
 {
-  Document* doc = group->sprite()->document();
+  auto doc = static_cast<Document*>(group->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);

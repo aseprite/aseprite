@@ -10,6 +10,7 @@
 
 #include "app/cmd_sequence.h"
 #include "app/document_range.h"
+#include "app/sprite_position.h"
 
 #include <memory>
 #include <sstream>
@@ -26,8 +27,8 @@ namespace app {
     void setNewDocumentRange(const DocumentRange& range);
     void commit();
 
-    doc::SpritePosition spritePositionBeforeExecute() const { return m_spritePositionBefore; }
-    doc::SpritePosition spritePositionAfterExecute() const { return m_spritePositionAfter; }
+    SpritePosition spritePositionBeforeExecute() const { return m_spritePositionBefore; }
+    SpritePosition spritePositionAfterExecute() const { return m_spritePositionAfter; }
 
     std::istream* documentRangeBeforeExecute() const;
     std::istream* documentRangeAfterExecute() const;
@@ -40,7 +41,7 @@ namespace app {
     size_t onMemSize() const override;
 
   private:
-    doc::SpritePosition calcSpritePosition() const;
+    SpritePosition calcSpritePosition() const;
     bool isDocumentRangeEnabled() const;
     DocumentRange calcDocumentRange() const;
 
@@ -49,8 +50,8 @@ namespace app {
       std::stringstream m_after;
     };
 
-    doc::SpritePosition m_spritePositionBefore;
-    doc::SpritePosition m_spritePositionAfter;
+    SpritePosition m_spritePositionBefore;
+    SpritePosition m_spritePositionAfter;
     std::unique_ptr<Ranges> m_ranges;
     std::string m_label;
     bool m_changeSavedState;

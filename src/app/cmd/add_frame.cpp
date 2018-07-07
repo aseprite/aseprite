@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,9 +11,9 @@
 #include "app/cmd/add_frame.h"
 
 #include "app/cmd/add_cel.h"
+#include "app/doc_event.h"
 #include "app/document.h"
 #include "doc/cel.h"
-#include "doc/doc_event.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"

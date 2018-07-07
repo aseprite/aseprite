@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,11 +10,11 @@
 
 #include "app/context_access.h"
 #include "app/extra_cel.h"
+#include "app/site.h"
 #include "app/transaction.h"
 #include "app/ui/editor/handle_type.h"
 #include "base/shared_ptr.h"
 #include "doc/algorithm/flip_type.h"
-#include "doc/site.h"
 #include "gfx/size.h"
 #include "obs/connection.h"
 

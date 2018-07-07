@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_sprite_size.h"
 
+#include "app/doc_event.h"
 #include "app/document.h"
-#include "doc/doc_event.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -45,9 +45,10 @@ void SetSpriteSize::onUndo()
 void SetSpriteSize::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
-  DocEvent ev(sprite->document());
+  auto doc = static_cast<Document*>(sprite->document());
+  DocEvent ev(doc);
   ev.sprite(sprite);
-  sprite->document()->notify_observers<DocEvent&>(&DocObserver::onSpriteSizeChanged, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onSpriteSizeChanged, ev);
 }
 
 } // namespace cmd

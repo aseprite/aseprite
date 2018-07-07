@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,9 +9,9 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/context_observer.h"
 #include "app/ui/color_button_options.h"
 #include "app/ui/color_source.h"
-#include "doc/context_observer.h"
 #include "doc/pixel_format.h"
 #include "obs/signal.h"
 #include "ui/button.h"
@@ -24,9 +24,9 @@ namespace ui {
 namespace app {
   class ColorPopup;
 
-  class ColorButton : public ui::ButtonBase
-                    , public doc::ContextObserver
-                    , public IColorSource {
+  class ColorButton : public ui::ButtonBase,
+                      public ContextObserver,
+                      public IColorSource {
   public:
     ColorButton(const app::Color& color,
                 const PixelFormat pixelFormat,

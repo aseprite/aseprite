@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,6 @@
 
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
-#include "doc/context.h"
 #include "doc/document.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -65,8 +64,8 @@ TYPED_TEST_CASE(RenderAllModes, ImageAllTraits);
 
 TEST(Render, Basic)
 {
-  Context ctx;
-  Document* doc = ctx.documents().add(2, 2, ColorMode::INDEXED);
+  Document* doc = new Document;
+  doc->sprites().add(2, 2, ColorMode::INDEXED);
 
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 2);
@@ -84,9 +83,8 @@ TYPED_TEST(RenderAllModes, CheckDefaultBackgroundMode)
 {
   typedef TypeParam ImageTraits;
 
-  Context ctx;
-  Document* doc = ctx.documents().add(2, 2,
-    ColorMode(ImageTraits::pixel_format));
+  Document* doc = new Document;
+  doc->sprites().add(2, 2, ColorMode(ImageTraits::pixel_format));
 
   EXPECT_TRUE(!doc->sprite()->root()->firstLayer()->isBackground());
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
@@ -105,8 +103,8 @@ TYPED_TEST(RenderAllModes, CheckDefaultBackgroundMode)
 
 TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
 {
-  Context ctx;
-  Document* doc = ctx.documents().add(2, 2, ColorMode::INDEXED);
+  Document* doc = new Document;
+  doc->sprites().add(2, 2, ColorMode::INDEXED);
   doc->sprite()->setTransparentColor(2); // Transparent color is index 2
 
   EXPECT_TRUE(!doc->sprite()->root()->firstLayer()->isBackground());
@@ -133,8 +131,8 @@ TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
 
 TEST(Render, CheckedBackground)
 {
-  Context ctx;
-  Document* doc = ctx.documents().add(4, 4, ColorMode::INDEXED);
+  Document* doc = new Document;
+  doc->sprites().add(4, 4, ColorMode::INDEXED);
 
   base::UniquePtr<Image> dst(Image::create(IMAGE_INDEXED, 4, 4));
   clear_image(dst, 0);
@@ -181,13 +179,12 @@ TEST(Render, CheckedBackground)
 
 TEST(Render, ZoomAndDstBounds)
 {
-  Context ctx;
-
   // Create this image:
   // 0 0 0
   // 0 4 4
   // 0 4 4
-  Document* doc = ctx.documents().add(3, 3, ColorMode::INDEXED);
+  Document* doc = new Document;
+  doc->sprites().add(3, 3, ColorMode::INDEXED);
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);
   fill_rect(src, 1, 1, 2, 2, 4);
@@ -214,8 +211,8 @@ TEST(Render, ZoomAndDstBounds)
 
 TEST(Render, BugWithMultiplesOf3ZoomFactors)
 {
-  Context ctx;
-  Document* doc = ctx.documents().add(4, 4, ColorMode::RGB);
+  Document* doc = new Document;
+  doc->sprites().add(4, 4, ColorMode::RGB);
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);
   draw_line(src, 0, 0, 3, 3, rgba(255, 0, 0, 255));

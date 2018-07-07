@@ -42,7 +42,7 @@ ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
 
   m_dstImage.reset(new WithImage(image));
 
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  Document* doc = static_cast<Document*>(cel->document());
   m_bgcolor = doc->bgColor(cel->layer());
 
   m_copy.reset(crop_image(image,

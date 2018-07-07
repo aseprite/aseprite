@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -70,7 +70,7 @@ void LayerOpacityCommand::onExecute(Context* context)
   {
     Transaction transaction(writer.context(), "Set Layer Opacity");
 
-    // TODO the range of selected frames should be in doc::Site.
+    // TODO the range of selected frames should be in app::Site.
     SelectedLayers selLayers;
     auto range = App::instance()->timeline()->range();
     if (range.enabled()) {

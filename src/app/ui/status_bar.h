@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,11 +9,11 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/context_observer.h"
+#include "app/doc_observer.h"
+#include "app/documents_observer.h"
 #include "app/tools/active_tool_observer.h"
 #include "base/time.h"
-#include "doc/context_observer.h"
-#include "doc/doc_observer.h"
-#include "doc/documents_observer.h"
 #include "ui/base.h"
 #include "ui/box.h"
 
@@ -42,9 +42,9 @@ namespace app {
   }
 
   class StatusBar : public ui::HBox
-                  , public doc::ContextObserver
-                  , public doc::DocumentsObserver
-                  , public doc::DocObserver
+                  , public ContextObserver
+                  , public DocumentsObserver
+                  , public DocObserver
                   , public tools::ActiveToolObserver {
     static StatusBar* m_instance;
   public:
@@ -73,10 +73,10 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
 
     // ContextObserver impl
-    void onActiveSiteChange(const doc::Site& site) override;
+    void onActiveSiteChange(const Site& site) override;
 
     // DocObservers impl
-    void onRemoveDocument(doc::Document* doc) override;
+    void onRemoveDocument(Document* doc) override;
 
     // DocObserver impl
     void onPixelFormatChanged(DocEvent& ev) override;
@@ -104,7 +104,7 @@ namespace app {
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
     ZoomEntry* m_zoomEntry;
-    doc::Document* m_doc;      // Document used to show the cel slider
+    Document* m_doc;           // Document used to show the cel slider
 
     // Tip window
     class CustomizedTipWindow;

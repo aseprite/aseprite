@@ -18,6 +18,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc_event.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/document_range_ops.h"
@@ -46,7 +47,6 @@
 #include "base/scoped_value.h"
 #include "base/unique_ptr.h"
 #include "doc/doc.h"
-#include "doc/doc_event.h"
 #include "doc/frame_tag.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -1638,14 +1638,14 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
   invalidate();
 }
 
-void Timeline::onActiveSiteChange(const doc::Site& site)
+void Timeline::onActiveSiteChange(const Site& site)
 {
   if (hasMouse()) {
     updateStatusBarForFrame(site.frame(), nullptr, site.cel());
   }
 }
 
-void Timeline::onRemoveDocument(doc::Document* document)
+void Timeline::onRemoveDocument(Document* document)
 {
   if (document == m_document) {
     detachDocument();
@@ -1657,7 +1657,7 @@ void Timeline::onGeneralUpdate(DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onAddLayer(doc::DocEvent& ev)
+void Timeline::onAddLayer(DocEvent& ev)
 {
   ASSERT(ev.layer() != NULL);
 
@@ -1669,7 +1669,7 @@ void Timeline::onAddLayer(doc::DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onAfterRemoveLayer(doc::DocEvent& ev)
+void Timeline::onAfterRemoveLayer(DocEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -1697,7 +1697,7 @@ void Timeline::onAfterRemoveLayer(doc::DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onAddFrame(doc::DocEvent& ev)
+void Timeline::onAddFrame(DocEvent& ev)
 {
   setFrame(ev.frame(), false);
 
@@ -1706,7 +1706,7 @@ void Timeline::onAddFrame(doc::DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onRemoveFrame(doc::DocEvent& ev)
+void Timeline::onRemoveFrame(DocEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -1729,13 +1729,13 @@ void Timeline::onRemoveFrame(doc::DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onSelectionChanged(doc::DocEvent& ev)
+void Timeline::onSelectionChanged(DocEvent& ev)
 {
   if (m_rangeLocks == 0)
     clearAndInvalidateRange();
 }
 
-void Timeline::onLayerNameChange(doc::DocEvent& ev)
+void Timeline::onLayerNameChange(DocEvent& ev)
 {
   invalidate();
 }

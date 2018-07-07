@@ -8,15 +8,16 @@
 #define APP_UI_TIMELINE_TIMELINE_H_INCLUDED
 #pragma once
 
+#include "app/doc_observer.h"
 #include "app/document_range.h"
+#include "app/documents_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/timeline/ani_controls.h"
-#include "doc/doc_observer.h"
-#include "doc/documents_observer.h"
 #include "doc/frame.h"
+#include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/sprite.h"
@@ -52,14 +53,14 @@ namespace app {
   class Document;
   class Editor;
 
-  class Timeline : public ui::Widget
-                 , public ui::ScrollableViewDelegate
-                 , public doc::ContextObserver
-                 , public doc::DocumentsObserver
-                 , public doc::DocObserver
-                 , public app::EditorObserver
-                 , public app::InputChainElement
-                 , public app::FrameTagProvider {
+  class Timeline : public ui::Widget,
+                   public ui::ScrollableViewDelegate,
+                   public ContextObserver,
+                   public DocumentsObserver,
+                   public DocObserver,
+                   public EditorObserver,
+                   public InputChainElement,
+                   public FrameTagProvider {
   public:
     typedef DocumentRange Range;
 
@@ -137,12 +138,12 @@ namespace app {
 
     // DocObserver impl.
     void onGeneralUpdate(DocEvent& ev) override;
-    void onAddLayer(doc::DocEvent& ev) override;
-    void onAfterRemoveLayer(doc::DocEvent& ev) override;
-    void onAddFrame(doc::DocEvent& ev) override;
-    void onRemoveFrame(doc::DocEvent& ev) override;
-    void onSelectionChanged(doc::DocEvent& ev) override;
-    void onLayerNameChange(doc::DocEvent& ev) override;
+    void onAddLayer(DocEvent& ev) override;
+    void onAfterRemoveLayer(DocEvent& ev) override;
+    void onAddFrame(DocEvent& ev) override;
+    void onRemoveFrame(DocEvent& ev) override;
+    void onSelectionChanged(DocEvent& ev) override;
+    void onLayerNameChange(DocEvent& ev) override;
     void onAddFrameTag(DocEvent& ev) override;
     void onRemoveFrameTag(DocEvent& ev) override;
 
@@ -150,10 +151,10 @@ namespace app {
     void onAfterCommandExecution(CommandExecutionEvent& ev);
 
     // ContextObserver impl
-    void onActiveSiteChange(const doc::Site& site) override;
+    void onActiveSiteChange(const Site& site) override;
 
     // DocumentsObserver impl.
-    void onRemoveDocument(doc::Document* document) override;
+    void onRemoveDocument(Document* document) override;
 
     // EditorObserver impl.
     void onStateChanged(Editor* editor) override;

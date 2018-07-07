@@ -20,12 +20,12 @@ namespace doc {
   class Cel;
   class Image;
   class Layer;
-  class Site;
   class Sprite;
 }
 
 namespace app {
   class Document;
+  class Site;
   class Transaction;
 
   using namespace filters;

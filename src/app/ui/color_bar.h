@@ -9,14 +9,14 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/context_observer.h"
+#include "app/doc_observer.h"
+#include "app/documents_observer.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
 #include "base/unique_ptr.h"
-#include "doc/context_observer.h"
-#include "doc/doc_observer.h"
-#include "doc/documents_observer.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
 #include "obs/connection.h"
@@ -32,7 +32,6 @@ namespace ui {
 }
 
 namespace app {
-
   class ColorButton;
   class ColorSpectrum;
   class ColorTintShadeTone;
@@ -44,9 +43,9 @@ namespace app {
 
   class ColorBar : public ui::Box
                  , public PaletteViewDelegate
-                 , public doc::ContextObserver
-                 , public doc::DocObserver
-                 , public app::InputChainElement {
+                 , public ContextObserver
+                 , public DocObserver
+                 , public InputChainElement {
     static ColorBar* m_instance;
   public:
     enum class ColorSelector {
@@ -84,10 +83,10 @@ namespace app {
     ColorButton* bgColorButton() { return &m_bgColor; }
 
     // ContextObserver impl
-    void onActiveSiteChange(const doc::Site& site) override;
+    void onActiveSiteChange(const Site& site) override;
 
     // DocObserver impl
-    void onGeneralUpdate(doc::DocEvent& ev) override;
+    void onGeneralUpdate(DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,
@@ -188,7 +187,7 @@ namespace app {
     bool m_fromBgButton;
 
     base::UniquePtr<doc::Palette> m_oldPalette;
-    doc::Document* m_lastDocument;
+    Document* m_lastDocument;
     bool m_ascending;
     obs::scoped_connection m_beforeCmdConn;
     obs::scoped_connection m_afterCmdConn;

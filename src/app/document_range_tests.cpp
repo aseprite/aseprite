@@ -12,10 +12,10 @@
 #include "app/document_range.h"
 #include "app/document_range_ops.h"
 #include "app/document_undo.h"
+#include "app/test_context.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/doc.h"
-#include "doc/test_context.h"
 
 using namespace app;
 using namespace doc;

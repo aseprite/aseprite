@@ -15,7 +15,8 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "doc/site.h"
+#include "app/site.h"
+#include "doc/layer.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -23,25 +24,41 @@
 namespace app {
 
 Context::Context()
-  : m_lastSelectedDoc(nullptr)
+  : m_docs(this)
+  , m_lastSelectedDoc(nullptr)
 {
+  m_docs.add_observer(this);
 }
 
-void Context::sendDocumentToTop(doc::Document* document)
+Context::~Context()
+{
+  m_docs.remove_observer(this);
+}
+
+void Context::sendDocumentToTop(Document* document)
 {
   ASSERT(document != NULL);
 
   documents().move(document, 0);
 }
 
-void Context::setActiveDocument(doc::Document* document)
+Site Context::activeSite() const
 {
-  onSetActiveDocument(document);
+  Site site;
+  onGetActiveSite(&site);
+  return site;
 }
 
-app::Document* Context::activeDocument() const
+Document* Context::activeDocument() const
 {
-  return static_cast<app::Document*>(doc::Context::activeDocument());
+  Site site;
+  onGetActiveSite(&site);
+  return site.document();
+}
+
+void Context::setActiveDocument(Document* document)
+{
+  onSetActiveDocument(document);
 }
 
 bool Context::hasModifiedDocuments() const
@@ -50,6 +67,12 @@ bool Context::hasModifiedDocuments() const
     if (static_cast<app::Document*>(doc)->isModified())
       return true;
   return false;
+}
+
+void Context::notifyActiveSiteChanged()
+{
+  Site site = activeSite();
+  notify_observers<const Site&>(&ContextObserver::onActiveSiteChange, site);
 }
 
 void Context::executeCommand(const char* commandName)
@@ -122,23 +145,23 @@ void Context::executeCommand(Command* command, const Params& params)
 #endif
 }
 
-void Context::onCreateDocument(doc::CreateDocumentArgs* args)
+void Context::onCreateDocument(CreateDocumentArgs* args)
 {
-  args->setDocument(new app::Document(NULL));
+  args->setDocument(new app::Document(nullptr));
 }
 
-void Context::onAddDocument(doc::Document* doc)
+void Context::onAddDocument(Document* doc)
 {
-  m_lastSelectedDoc = static_cast<app::Document*>(doc);
+  m_lastSelectedDoc = doc;
 }
 
-void Context::onRemoveDocument(doc::Document* doc)
+void Context::onRemoveDocument(Document* doc)
 {
   if (doc == m_lastSelectedDoc)
     m_lastSelectedDoc = nullptr;
 }
 
-void Context::onGetActiveSite(doc::Site* site) const
+void Context::onGetActiveSite(Site* site) const
 {
   // Default/dummy site (maybe for batch/command line mode)
   if (Document* doc = m_lastSelectedDoc) {
@@ -149,9 +172,9 @@ void Context::onGetActiveSite(doc::Site* site) const
   }
 }
 
-void Context::onSetActiveDocument(doc::Document* doc)
+void Context::onSetActiveDocument(Document* doc)
 {
-  m_lastSelectedDoc = static_cast<app::Document*>(doc);
+  m_lastSelectedDoc = doc;
 }
 
 } // namespace app

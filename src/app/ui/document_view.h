@@ -8,15 +8,11 @@
 #define APP_UI_DOCUMENT_VIEW_H_INCLUDED
 #pragma once
 
+#include "app/doc_observer.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "doc/doc_observer.h"
 #include "ui/box.h"
-
-namespace doc {
-  class Site;
-}
 
 namespace ui {
   class View;
@@ -25,6 +21,7 @@ namespace ui {
 namespace app {
   class Document;
   class Editor;
+  class Site;
 
   class DocumentViewPreviewDelegate {
   public:
@@ -34,11 +31,11 @@ namespace app {
     virtual void onPreviewOtherEditor(Editor* editor) = 0;
   };
 
-  class DocumentView : public ui::Box
-                     , public TabView
-                     , public doc::DocObserver
-                     , public WorkspaceView
-                     , public app::InputChainElement {
+  class DocumentView : public ui::Box,
+                       public TabView,
+                       public app::DocObserver,
+                       public WorkspaceView,
+                       public app::InputChainElement {
   public:
     enum Type {
       Normal,
@@ -52,7 +49,7 @@ namespace app {
     Document* document() const { return m_document; }
     Editor* editor() { return m_editor; }
     ui::View* viewWidget() const { return m_view; }
-    void getSite(doc::Site* site) const;
+    void getSite(Site* site) const;
 
     bool isPreview() { return m_type == Preview; }
 
@@ -71,17 +68,17 @@ namespace app {
     InputChainElement* onGetInputChainElement() override { return this; }
 
     // DocObserver implementation
-    void onGeneralUpdate(doc::DocEvent& ev) override;
-    void onSpritePixelsModified(doc::DocEvent& ev) override;
-    void onLayerMergedDown(doc::DocEvent& ev) override;
-    void onAddLayer(doc::DocEvent& ev) override;
-    void onBeforeRemoveLayer(doc::DocEvent& ev) override;
-    void onAddFrame(doc::DocEvent& ev) override;
-    void onRemoveFrame(doc::DocEvent& ev) override;
-    void onAddCel(doc::DocEvent& ev) override;
-    void onRemoveCel(doc::DocEvent& ev) override;
-    void onTotalFramesChanged(doc::DocEvent& ev) override;
-    void onLayerRestacked(doc::DocEvent& ev) override;
+    void onGeneralUpdate(DocEvent& ev) override;
+    void onSpritePixelsModified(DocEvent& ev) override;
+    void onLayerMergedDown(DocEvent& ev) override;
+    void onAddLayer(DocEvent& ev) override;
+    void onBeforeRemoveLayer(DocEvent& ev) override;
+    void onAddFrame(DocEvent& ev) override;
+    void onRemoveFrame(DocEvent& ev) override;
+    void onAddCel(DocEvent& ev) override;
+    void onRemoveCel(DocEvent& ev) override;
+    void onTotalFramesChanged(DocEvent& ev) override;
+    void onLayerRestacked(DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,

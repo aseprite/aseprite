@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,7 +24,7 @@ using namespace doc;
 ClearCel::ClearCel(Cel* cel)
   : WithCel(cel)
 {
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  Document* doc = static_cast<Document*>(cel->document());
 
   if (cel->layer()->isBackground()) {
     Image* image = cel->image();

@@ -9,12 +9,12 @@
 #pragma once
 
 #include "app/commands/filters/cels_target.h"
+#include "app/site.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
 #include "doc/image_impl.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
-#include "doc/site.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
 #include "gfx/rect.h"
@@ -35,6 +35,7 @@ namespace filters {
 }
 
 namespace app {
+
   class Context;
   class Document;
   class Transaction;
@@ -132,7 +133,7 @@ namespace app {
     void redrawColorPalette();
 
     Context* m_context;
-    doc::Site m_site;
+    Site m_site;
     Filter* m_filter;
     doc::Cel* m_cel;
     doc::ImageRef m_src;

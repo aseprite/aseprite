@@ -8,6 +8,7 @@
 #define APP_DOCUMENT_H_INCLUDED
 #pragma once
 
+#include "app/doc_observer.h"
 #include "app/extra_cel.h"
 #include "app/file/format_options.h"
 #include "app/transformation.h"
@@ -22,6 +23,7 @@
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
+#include "obs/observable.h"
 
 #include <string>
 
@@ -38,6 +40,8 @@ namespace gfx {
 }
 
 namespace app {
+
+  class Context;
   class DocumentApi;
   class DocumentUndo;
   class Transaction;
@@ -52,7 +56,8 @@ namespace app {
   // An application document. It is the class used to contain one file
   // opened and being edited by the user (a sprite).
   class Document : public doc::Document,
-                   public base::RWLock {
+                   public base::RWLock,
+                   public obs::observable<DocObserver> {
     enum Flags {
       kAssociatedToFile = 1, // This sprite is associated to a file in the file-system
       kMaskVisible      = 2, // The mask wasn't hidden by the user
@@ -61,6 +66,9 @@ namespace app {
   public:
     Document(Sprite* sprite);
     ~Document();
+
+    Context* context() const { return m_ctx; }
+    void setContext(Context* ctx);
 
     // Returns a high-level API: observable and undoable methods.
     DocumentApi getApi(Transaction& transaction);
@@ -173,10 +181,16 @@ namespace app {
     void copyLayerContent(const Layer* sourceLayer, Document* destDoc, Layer* destLayer) const;
     Document* duplicate(DuplicateType type) const;
 
+    void close();
+
   protected:
-    virtual void onContextChanged() override;
+    void onFileNameChange() override;
+    virtual void onContextChanged();
 
   private:
+    void removeFromContext();
+
+    Context* m_ctx;
     int m_flags;
 
     // Undo and redo information about the document.

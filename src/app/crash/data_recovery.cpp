@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,7 +21,7 @@
 namespace app {
 namespace crash {
 
-DataRecovery::DataRecovery(doc::Context* ctx)
+DataRecovery::DataRecovery(Context* ctx)
   : m_inProgress(nullptr)
   , m_backup(nullptr)
 {

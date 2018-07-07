@@ -1,25 +1,27 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Aseprite
+// Copyright (c) 2001-2018 David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "doc/site.h"
+#include "app/site.h"
 
 #include "base/base.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace doc {
+namespace app {
+
+using namespace doc;
 
 Palette* Site::palette()
 {
-  return (m_sprite ? m_sprite->palette(m_frame): NULL);
+  return (m_sprite ? m_sprite->palette(m_frame): nullptr);
 }
 
 const Cel* Site::cel() const
@@ -27,7 +29,7 @@ const Cel* Site::cel() const
   if (m_layer)
     return m_layer->cel(m_frame);
   else
-    return NULL;
+    return nullptr;
 }
 
 Cel* Site::cel()
@@ -35,12 +37,12 @@ Cel* Site::cel()
   if (m_layer)
     return m_layer->cel(m_frame);
   else
-    return NULL;
+    return nullptr;
 }
 
 Image* Site::image(int* x, int* y, int* opacity) const
 {
-  Image* image = NULL;
+  Image* image = nullptr;
 
   if (m_sprite) {
     if (const Cel* cel = this->cel()) {
@@ -56,7 +58,7 @@ Image* Site::image(int* x, int* y, int* opacity) const
 
 Palette* Site::palette() const
 {
-  return (m_sprite ? m_sprite->palette(m_frame): NULL);
+  return (m_sprite ? m_sprite->palette(m_frame): nullptr);
 }
 
-} // namespace doc
+} // namespace app

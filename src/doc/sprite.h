@@ -16,11 +16,11 @@
 #include "doc/frame_tags.h"
 #include "doc/image_ref.h"
 #include "doc/image_spec.h"
+#include "doc/layer_list.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
 #include "doc/slices.h"
-#include "doc/sprite_position.h"
 #include "gfx/rect.h"
 
 #include <vector>

@@ -18,7 +18,6 @@ namespace doc {
   class Layer;
   class SelectedFrames;
   class SelectedLayers;
-  class Site;
   class Sprite;
 }
 
@@ -27,8 +26,8 @@ namespace ui {
 }
 
 namespace app {
-
   class RestoreVisibleLayers;
+  class Site;
 
   extern const char* kAllLayers;
   extern const char* kAllFrames;
@@ -56,11 +55,11 @@ namespace app {
   void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const std::string& defFrame);
   void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir);
 
-  void calculate_visible_layers(doc::Site& site,
+  void calculate_visible_layers(Site& site,
                                 const std::string& layersValue,
                                 RestoreVisibleLayers& layersVisibility);
 
-  doc::FrameTag* calculate_selected_frames(const doc::Site& site,
+  doc::FrameTag* calculate_selected_frames(const Site& site,
                                            const std::string& framesValue,
                                            doc::SelectedFrames& selFrames);
 

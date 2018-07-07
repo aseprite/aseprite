@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,8 @@
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc_event.h"
+#include "app/document.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/separator_in_view.h"
@@ -24,8 +26,6 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
-#include "doc/doc_event.h"
-#include "doc/document.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -51,9 +51,9 @@ protected:
 class LayerPropertiesWindow;
 static LayerPropertiesWindow* g_window = nullptr;
 
-class LayerPropertiesWindow : public app::gen::LayerProperties
-                            , public doc::ContextObserver
-                            , public doc::DocObserver {
+class LayerPropertiesWindow : public app::gen::LayerProperties,
+                              public ContextObserver,
+                              public DocObserver {
 public:
   class BlendModeItem : public ListItem {
   public:

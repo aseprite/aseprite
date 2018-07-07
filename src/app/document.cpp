@@ -14,6 +14,9 @@
 #include "app/color_target.h"
 #include "app/color_utils.h"
 #include "app/context.h"
+#include "app/context.h"
+#include "app/doc_event.h"
+#include "app/doc_observer.h"
 #include "app/document_api.h"
 #include "app/document_undo.h"
 #include "app/file/format_options.h"
@@ -23,9 +26,6 @@
 #include "base/memory.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
-#include "doc/context.h"
-#include "doc/doc_event.h"
-#include "doc/doc_observer.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
@@ -42,7 +42,8 @@ using namespace base;
 using namespace doc;
 
 Document::Document(Sprite* sprite)
-  : m_flags(kMaskVisible)
+  : m_ctx(nullptr)
+  , m_flags(kMaskVisible)
   , m_undo(new DocumentUndo)
   // Information about the file format used to load/save this document
   , m_format_options(nullptr)
@@ -58,12 +59,21 @@ Document::Document(Sprite* sprite)
 
 Document::~Document()
 {
-  // We cannot be in a context at this moment. If we were in a
-  // context, doc::~Document() would remove the document from the
-  // context and it would generate onRemoveDocument() notifications,
-  // which could result in serious problems for observers expecting a
-  // fully created app::Document.
-  ASSERT(context() == NULL);
+  removeFromContext();
+}
+
+void Document::setContext(Context* ctx)
+{
+  if (ctx == m_ctx)
+    return;
+
+  removeFromContext();
+
+  m_ctx = ctx;
+  if (ctx)
+    ctx->documents().add(this);
+
+  onContextChanged();
 }
 
 DocumentApi Document::getApi(Transaction& transaction)
@@ -98,62 +108,62 @@ color_t Document::bgColor(Layer* layer) const
 
 void Document::notifyGeneralUpdate()
 {
-  doc::DocEvent ev(this);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onGeneralUpdate, ev);
+  DocEvent ev(this);
+  notify_observers<DocEvent&>(&DocObserver::onGeneralUpdate, ev);
 }
 
 void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
 {
-  doc::DocEvent ev(this);
+  DocEvent ev(this);
   ev.sprite(sprite);
   ev.region(region);
   ev.frame(frame);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onSpritePixelsModified, ev);
+  notify_observers<DocEvent&>(&DocObserver::onSpritePixelsModified, ev);
 }
 
 void Document::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
 {
-  doc::DocEvent ev(this);
+  DocEvent ev(this);
   ev.sprite(sprite);
   ev.region(region);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onExposeSpritePixels, ev);
+  notify_observers<DocEvent&>(&DocObserver::onExposeSpritePixels, ev);
 }
 
 void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 {
-  doc::DocEvent ev(this);
+  DocEvent ev(this);
   ev.sprite(srcLayer->sprite());
   ev.layer(srcLayer);
   ev.targetLayer(targetLayer);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onLayerMergedDown, ev);
+  notify_observers<DocEvent&>(&DocObserver::onLayerMergedDown, ev);
 }
 
 void Document::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
-  doc::DocEvent ev(this);
+  DocEvent ev(this);
   ev.sprite(fromLayer->sprite());
   ev.layer(fromLayer);
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onCelMoved, ev);
+  notify_observers<DocEvent&>(&DocObserver::onCelMoved, ev);
 }
 
 void Document::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
-  doc::DocEvent ev(this);
+  DocEvent ev(this);
   ev.sprite(fromLayer->sprite());
   ev.layer(fromLayer);
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onCelCopied, ev);
+  notify_observers<DocEvent&>(&DocObserver::onCelCopied, ev);
 }
 
 void Document::notifySelectionChanged()
 {
-  doc::DocEvent ev(this);
-  notify_observers<doc::DocEvent&>(&doc::DocObserver::onSelectionChanged, ev);
+  DocEvent ev(this);
+  notify_observers<DocEvent&>(&DocObserver::onSelectionChanged, ev);
 }
 
 bool Document::isModified() const
@@ -446,9 +456,29 @@ Document* Document::duplicate(DuplicateType type) const
   return documentCopy.release();
 }
 
+void Document::close()
+{
+  removeFromContext();
+}
+
+void Document::onFileNameChange()
+{
+  notify_observers(&DocObserver::onFileNameChanged, this);
+}
+
 void Document::onContextChanged()
 {
   m_undo->setContext(context());
+}
+
+void Document::removeFromContext()
+{
+  if (m_ctx) {
+    m_ctx->documents().remove(this);
+    m_ctx = nullptr;
+
+    onContextChanged();
+  }
 }
 
 // static

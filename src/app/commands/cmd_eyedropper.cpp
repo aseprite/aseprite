@@ -16,13 +16,13 @@
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
+#include "app/site.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
 #include "doc/image.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -37,7 +37,7 @@ EyedropperCommand::EyedropperCommand()
   m_background = false;
 }
 
-void EyedropperCommand::pickSample(const doc::Site& site,
+void EyedropperCommand::pickSample(const Site& site,
                                    const gfx::PointF& pixelPos,
                                    const render::Projection& proj,
                                    app::Color& color)

@@ -12,17 +12,17 @@
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"
+#include "app/context_observer.h"
 #include "app/document.h"
 #include "app/document_access.h"
 #include "app/document_undo.h"
 #include "app/document_undo_observer.h"
+#include "app/documents_observer.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/site.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
-#include "doc/context_observer.h"
-#include "doc/documents_observer.h"
-#include "doc/site.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "undo/undo_state.h"
@@ -32,9 +32,9 @@
 namespace app {
 
 class UndoHistoryWindow : public app::gen::UndoHistory,
-                          public doc::ContextObserver,
-                          public doc::DocumentsObserver,
-                          public app::DocumentUndoObserver {
+                          public ContextObserver,
+                          public DocumentsObserver,
+                          public DocumentUndoObserver {
 public:
   class Item : public ui::ListItem {
   public:
@@ -117,19 +117,17 @@ private:
   }
 
   // ContextObserver
-  void onActiveSiteChange(const doc::Site& site) override {
+  void onActiveSiteChange(const Site& site) override {
     m_frame = site.frame();
 
     if (m_document == site.document())
       return;
 
-    attachDocument(
-      static_cast<app::Document*>(
-        const_cast<doc::Document*>(site.document())));
+    attachDocument(const_cast<Document*>(site.document()));
   }
 
   // DocumentsObserver
-  void onRemoveDocument(doc::Document* doc) override {
+  void onRemoveDocument(Document* doc) override {
     if (m_document && m_document == doc)
       detachDocument();
   }
@@ -171,7 +169,7 @@ private:
     updateTitle();
   }
 
-  void attachDocument(app::Document* document) {
+  void attachDocument(Document* document) {
     detachDocument();
 
     m_document = document;

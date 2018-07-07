@@ -420,13 +420,13 @@ void ColorBar::setEditMode(bool state)
     m_paletteView.deselect();
 }
 
-void ColorBar::onActiveSiteChange(const doc::Site& site)
+void ColorBar::onActiveSiteChange(const Site& site)
 {
   if (m_lastDocument != site.document()) {
     if (m_lastDocument)
       m_lastDocument->remove_observer(this);
 
-    m_lastDocument = const_cast<doc::Document*>(site.document());
+    m_lastDocument = const_cast<Document*>(site.document());
 
     if (m_lastDocument)
       m_lastDocument->add_observer(this);
@@ -435,7 +435,7 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
   }
 }
 
-void ColorBar::onGeneralUpdate(doc::DocEvent& ev)
+void ColorBar::onGeneralUpdate(DocEvent& ev)
 {
   // TODO Observe palette changes only
   invalidate();
@@ -474,7 +474,7 @@ void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
   // If the sprite isn't Indexed anymore (e.g. because we've just
   // undone a "RGB -> Indexed" conversion), we hide the "Remap"
   // button.
-  doc::Site site = UIContext::instance()->activeSite();
+  Site site = UIContext::instance()->activeSite();
   if (site.sprite() &&
       site.sprite()->pixelFormat() != IMAGE_INDEXED) {
     hideRemap();
@@ -947,7 +947,7 @@ void ColorBar::setAscending(bool ascending)
 
 void ColorBar::showRemap()
 {
-  doc::Site site = UIContext::instance()->activeSite();
+  Site site = UIContext::instance()->activeSite();
   if (site.sprite() &&
       site.sprite()->pixelFormat() == IMAGE_INDEXED) {
     if (!m_oldPalette) {

@@ -35,6 +35,7 @@
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
+#include "app/site.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/backup_indicator.h"
@@ -56,7 +57,6 @@
 #include "base/scoped_lock.h"
 #include "base/split_string.h"
 #include "base/unique_ptr.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "render/render.h"
@@ -361,9 +361,9 @@ void App::run()
 #endif  // ENABLE_SCRIPTING
 
   // Destroy all documents in the UIContext.
-  const doc::Documents& docs = m_modules->m_context.documents();
+  const Documents& docs = m_modules->m_context.documents();
   while (!docs.empty()) {
-    doc::Document* doc = docs.back();
+    Document* doc = docs.back();
 
     // First we close the document. In this way we receive recent
     // notifications related to the document as an app::Document. If

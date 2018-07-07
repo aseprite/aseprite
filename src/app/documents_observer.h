@@ -1,14 +1,14 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Aseprite
+// Copyright (c) 2001-2018  David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#ifndef DOC_DOCUMENTS_OBSERVER_H_INCLUDED
-#define DOC_DOCUMENTS_OBSERVER_H_INCLUDED
+#ifndef APP_DOCUMENTS_OBSERVER_H_INCLUDED
+#define APP_DOCUMENTS_OBSERVER_H_INCLUDED
 #pragma once
 
-namespace doc {
+namespace app {
   class Document;
 
   class CreateDocumentArgs {
@@ -28,6 +28,6 @@ namespace doc {
     virtual void onRemoveDocument(Document* doc) { }
   };
 
-} // namespace doc
+} // namespace app
 
 #endif

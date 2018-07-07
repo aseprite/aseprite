@@ -1,22 +1,23 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Aseprite
+// Copyright (c) 2001-2018  David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#ifndef DOC_DOCUMENTS_H_INCLUDED
-#define DOC_DOCUMENTS_H_INCLUDED
+#ifndef APP_DOCUMENTS_H_INCLUDED
+#define APP_DOCUMENTS_H_INCLUDED
 #pragma once
 
+#include "app/documents_observer.h"
 #include "base/disable_copying.h"
 #include "doc/color_mode.h"
-#include "doc/documents_observer.h"
 #include "doc/object_id.h"
 #include "obs/observable.h"
 
 #include <vector>
 
-namespace doc {
+namespace app {
+
   class Context;
   class Document;
 
@@ -41,7 +42,9 @@ namespace doc {
     bool empty() const { return m_docs.empty(); }
 
     // Add a new documents to the list.
-    Document* add(int width, int height, ColorMode mode = ColorMode::RGB, int ncolors = 256);
+    Document* add(int width, int height,
+                  doc::ColorMode mode = doc::ColorMode::RGB,
+                  int ncolors = 256);
     Document* add(Document* doc);
 
     // Removes a document from the list without deleting it. You must
@@ -54,7 +57,7 @@ namespace doc {
     void move(Document* doc, int index);
 
     Document* operator[](int index) const { return m_docs[index]; }
-    Document* getById(ObjectId id) const;
+    Document* getById(doc::ObjectId id) const;
     Document* getByName(const std::string& name) const;
     Document* getByFileName(const std::string& filename) const;
 
@@ -68,6 +71,6 @@ namespace doc {
     DISABLE_COPYING(Documents);
   };
 
-} // namespace doc
+} // namespace app
 
 #endif

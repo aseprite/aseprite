@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,11 +14,11 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_palette.h"
+#include "app/doc_event.h"
 #include "app/document.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
-#include "doc/doc_event.h"
 #include "doc/document.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -148,13 +148,13 @@ void SetPixelFormat::setFormat(PixelFormat format)
   sprite->incrementVersion();
 
   // Regenerate extras
-  static_cast<app::Document*>(sprite->document())
-    ->setExtraCel(ExtraCelRef(nullptr));
+  auto doc = static_cast<Document*>(sprite->document());
+  doc->setExtraCel(ExtraCelRef(nullptr));
 
   // Generate notification
-  DocEvent ev(sprite->document());
+  DocEvent ev(doc);
   ev.sprite(sprite);
-  sprite->document()->notify_observers<DocEvent&>(&DocObserver::onPixelFormatChanged, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onPixelFormatChanged, ev);
 }
 
 } // namespace cmd

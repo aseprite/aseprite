@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,7 +32,7 @@ TEST(File, SeveralSizes)
       std::sprintf(&fn[0], "test.ase");
 
       {
-        base::UniquePtr<doc::Document> doc(ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
+        base::UniquePtr<app::Document> doc(ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
         doc->setFilename(&fn[0]);
 
         // Random pixels

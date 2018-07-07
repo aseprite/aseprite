@@ -140,7 +140,7 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
       app::Context tmpContext;
-      doc::Document* doc = tmpContext.documents().add(
+      Document* doc = tmpContext.documents().add(
         w, h, (pal->size() <= 256 ? doc::ColorMode::INDEXED:
                                     doc::ColorMode::RGB), pal->size());
 

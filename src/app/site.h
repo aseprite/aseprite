@@ -1,11 +1,11 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Aseprite
+// Copyright (c) 2001-2018 David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#ifndef DOC_SITE_H_INCLUDED
-#define DOC_SITE_H_INCLUDED
+#ifndef APP_SITE_H_INCLUDED
+#define APP_SITE_H_INCLUDED
 #pragma once
 
 #include "doc/frame.h"
@@ -13,13 +13,15 @@
 #include "doc/selected_layers.h"
 
 namespace doc {
-
   class Cel;
-  class Document;
   class Image;
   class Layer;
   class Palette;
   class Sprite;
+} // namespace doc
+
+namespace app {
+  class Document;
 
   // Specifies the current location in a context. E.g. the location in
   // the current Editor (current document, sprite, layer, frame,
@@ -54,46 +56,46 @@ namespace doc {
     bool inTimeline() const { return (inLayers() || inFrames() || inCels()); }
 
     const Document* document() const { return m_document; }
-    const Sprite* sprite() const { return m_sprite; }
-    const Layer* layer() const { return m_layer; }
-    frame_t frame() const { return m_frame; }
-    const Cel* cel() const;
+    const doc::Sprite* sprite() const { return m_sprite; }
+    const doc::Layer* layer() const { return m_layer; }
+    doc::frame_t frame() const { return m_frame; }
+    const doc::Cel* cel() const;
 
     Document* document() { return m_document; }
-    Sprite* sprite() { return m_sprite; }
-    Layer* layer() { return m_layer; }
-    Cel* cel();
+    doc::Sprite* sprite() { return m_sprite; }
+    doc::Layer* layer() { return m_layer; }
+    doc::Cel* cel();
 
     void focus(Focus focus) { m_focus = focus; }
     void document(Document* document) { m_document = document; }
-    void sprite(Sprite* sprite) { m_sprite = sprite; }
-    void layer(Layer* layer) { m_layer = layer; }
-    void frame(frame_t frame) { m_frame = frame; }
+    void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
+    void layer(doc::Layer* layer) { m_layer = layer; }
+    void frame(doc::frame_t frame) { m_frame = frame; }
 
-    const SelectedLayers& selectedLayers() const { return m_selectedLayers; }
-    SelectedLayers& selectedLayers() { return m_selectedLayers; }
-    void selectedLayers(const SelectedLayers& selectedLayers) {
+    const doc::SelectedLayers& selectedLayers() const { return m_selectedLayers; }
+    doc::SelectedLayers& selectedLayers() { return m_selectedLayers; }
+    void selectedLayers(const doc::SelectedLayers& selectedLayers) {
       m_selectedLayers = selectedLayers;
     }
 
-    const SelectedFrames& selectedFrames() const { return m_selectedFrames; }
-    SelectedFrames& selectedFrames() { return m_selectedFrames; }
-    void selectedFrames(const SelectedFrames& selectedFrames) {
+    const doc::SelectedFrames& selectedFrames() const { return m_selectedFrames; }
+    doc::SelectedFrames& selectedFrames() { return m_selectedFrames; }
+    void selectedFrames(const doc::SelectedFrames& selectedFrames) {
       m_selectedFrames = selectedFrames;
     }
 
-    Palette* palette();
-    Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
-    Palette* palette() const;
+    doc::Palette* palette();
+    doc::Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
+    doc::Palette* palette() const;
 
   private:
     Focus m_focus;
     Document* m_document;
-    Sprite* m_sprite;
-    Layer* m_layer;
-    frame_t m_frame;
-    SelectedLayers m_selectedLayers;
-    SelectedFrames m_selectedFrames;
+    doc::Sprite* m_sprite;
+    doc::Layer* m_layer;
+    doc::frame_t m_frame;
+    doc::SelectedLayers m_selectedLayers;
+    doc::SelectedFrames m_selectedFrames;
   };
 
 } // namespace app

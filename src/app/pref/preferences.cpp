@@ -138,7 +138,7 @@ DocumentPreferences& Preferences::document(const app::Document* doc)
   }
 }
 
-void Preferences::removeDocument(doc::Document* doc)
+void Preferences::removeDocument(Document* doc)
 {
   ASSERT(dynamic_cast<app::Document*>(doc));
 
@@ -150,12 +150,12 @@ void Preferences::removeDocument(doc::Document* doc)
   }
 }
 
-void Preferences::onRemoveDocument(doc::Document* doc)
+void Preferences::onRemoveDocument(Document* doc)
 {
   removeDocument(doc);
 }
 
-std::string Preferences::docConfigFileName(const app::Document* doc)
+std::string Preferences::docConfigFileName(const Document* doc)
 {
   if (!doc)
     return "";

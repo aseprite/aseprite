@@ -1,8 +1,8 @@
-// Aseprite Gfx Library
-// Copyright (C) 2001-2016 David Capello
+// Aseprite
+// Copyright (C) 2001-2018  David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

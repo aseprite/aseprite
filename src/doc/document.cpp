@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,7 +11,6 @@
 #include "doc/document.h"
 
 #include "base/fs.h"
-#include "doc/context.h"
 #include "doc/sprite.h"
 
 namespace doc {
@@ -19,27 +18,11 @@ namespace doc {
 Document::Document()
   : Object(ObjectType::Document)
   , m_sprites(this)
-  , m_ctx(NULL)
 {
 }
 
 Document::~Document()
 {
-  removeFromContext();
-}
-
-void Document::setContext(Context* ctx)
-{
-  if (ctx == m_ctx)
-    return;
-
-  removeFromContext();
-
-  m_ctx = ctx;
-  if (ctx)
-    ctx->documents().add(this);
-
-  onContextChanged();
 }
 
 int Document::width() const
@@ -70,27 +53,12 @@ void Document::setFilename(const std::string& filename)
   else
     m_filename = filename;
 
-  notify_observers(&DocObserver::onFileNameChanged, this);
+  onFileNameChange();
 }
 
-void Document::close()
-{
-  removeFromContext();
-}
-
-void Document::onContextChanged()
+void Document::onFileNameChange()
 {
   // Do nothing
-}
-
-void Document::removeFromContext()
-{
-  if (m_ctx) {
-    m_ctx->documents().remove(this);
-    m_ctx = NULL;
-
-    onContextChanged();
-  }
 }
 
 } // namespace doc

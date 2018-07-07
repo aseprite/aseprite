@@ -43,6 +43,7 @@ namespace doc {
 }
 
 namespace app {
+
   class Context;
   class Document;
   class FileFormat;

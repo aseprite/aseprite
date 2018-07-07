@@ -1,22 +1,23 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Aseprite
+// Copyright (c) 2001-2018  David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "doc/documents.h"
+#include "app/documents.h"
 
+#include "app/document.h"
 #include "base/fs.h"
 #include "base/mutex.h"
-#include "doc/document.h"
+#include "base/unique_ptr.h"
 
 #include <algorithm>
 
-namespace doc {
+namespace app {
 
 Documents::Documents(Context* ctx)
   : m_ctx(ctx)
@@ -36,7 +37,7 @@ Document* Documents::add(int width, int height, ColorMode mode, int ncolors)
   CreateDocumentArgs args;
   notify_observers(&DocumentsObserver::onCreateDocument, &args);
   if (!args.document())
-    args.setDocument(new Document());
+    args.setDocument(new Document(nullptr));
 
   base::UniquePtr<Document> doc(args.document());
   doc->sprites().add(width, height, mode, ncolors);
@@ -122,4 +123,4 @@ void Documents::deleteAll()
   }
 }
 
-} // namespace doc
+} // namespace app

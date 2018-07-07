@@ -1,20 +1,20 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Aseprite
+// Copyright (c) 2001-2018 David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifndef DOC_TEST_CONTEXT_H_INCLUDED
 #define DOC_TEST_CONTEXT_H_INCLUDED
 #pragma once
 
-#include "doc/context.h"
-#include "doc/document.h"
+#include "app/context.h"
+#include "app/document.h"
+#include "app/site.h"
 #include "doc/layer.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 
-namespace doc {
+namespace app {
 
   template<typename Base>
   class TestContextT : public Base {
@@ -53,6 +53,6 @@ namespace doc {
 
   typedef TestContextT<Context> TestContext;
 
-} // namespace doc
+} // namespace app
 
 #endif

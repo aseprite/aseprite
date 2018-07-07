@@ -27,7 +27,7 @@ using namespace doc;
 ClearMask::ClearMask(Cel* cel)
   : WithCel(cel)
 {
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  Document* doc = static_cast<Document*>(cel->document());
 
   // If the mask is empty or is not visible then we have to clear the
   // entire image in the cel.
@@ -86,7 +86,7 @@ void ClearMask::clear()
 {
   Cel* cel = this->cel();
   Image* image = m_dstImage->image();
-  app::Document* doc = static_cast<app::Document*>(cel->document());
+  Document* doc = static_cast<Document*>(cel->document());
   Mask* mask = doc->mask();
 
   doc::algorithm::fill_selection(image, m_offset, mask, m_bgcolor);

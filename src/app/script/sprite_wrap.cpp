@@ -16,9 +16,9 @@
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/script/image_wrap.h"
+#include "app/site.h"
 #include "app/transaction.h"
 #include "app/ui/document_view.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -85,7 +85,7 @@ ImageWrap* SpriteWrap::activeImage()
   }
 
 #ifdef ENABLE_UI
-  doc::Site site;
+  Site site;
   m_view->getSite(&site);
   return wrapImage(site.image());
 #else

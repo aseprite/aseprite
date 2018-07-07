@@ -18,11 +18,11 @@
 #include "app/file/palette_file.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
+#include "app/site.h"
 #include "app/transaction.h"
 #include "app/ui/document_view.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 #include "script/engine.h"
 

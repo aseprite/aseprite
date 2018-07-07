@@ -1,14 +1,14 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Aseprite
+// Copyright (c) 2001-2018 David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#ifndef DOC_DOC_OBSERVER_H_INCLUDED
-#define DOC_DOC_OBSERVER_H_INCLUDED
+#ifndef APP_DOC_OBSERVER_H_INCLUDED
+#define APP_DOC_OBSERVER_H_INCLUDED
 #pragma once
 
-namespace doc {
+namespace app {
   class Document;
   class DocEvent;
 
@@ -70,6 +70,6 @@ namespace doc {
     virtual void dispose() { }
   };
 
-} // namespace doc
+} // namespace app
 
 #endif

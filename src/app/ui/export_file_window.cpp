@@ -13,6 +13,7 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/i18n/strings.h"
+#include "app/site.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -21,7 +22,6 @@
 #include "base/string.h"
 #include "doc/frame_tag.h"
 #include "doc/selected_frames.h"
-#include "doc/site.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
 

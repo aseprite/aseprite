@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015, 2018  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/context.h"
-#include "doc/documents_observer.h"
+#include "app/documents_observer.h"
 
 namespace app {
   class DocumentView;
@@ -29,8 +29,8 @@ namespace app {
     DocumentView* activeView() const;
     void setActiveView(DocumentView* documentView);
 
-    DocumentView* getFirstDocumentView(doc::Document* document) const override;
-    DocumentViews getAllDocumentViews(doc::Document* document) const;
+    DocumentView* getFirstDocumentView(Document* document) const override;
+    DocumentViews getAllDocumentViews(Document* document) const;
 
     // Returns the current editor. It can be null.
     Editor* activeEditor();
@@ -40,10 +40,10 @@ namespace app {
     Editor* getEditorFor(Document* document);
 
   protected:
-    void onAddDocument(doc::Document* doc) override;
-    void onRemoveDocument(doc::Document* doc) override;
-    void onGetActiveSite(doc::Site* site) const override;
-    void onSetActiveDocument(doc::Document* doc) override;
+    void onAddDocument(Document* doc) override;
+    void onRemoveDocument(Document* doc) override;
+    void onGetActiveSite(Site* site) const override;
+    void onSetActiveDocument(Document* doc) override;
 
   private:
     DocumentView* m_lastSelectedView;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 #include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
+#include "app/site.h"
 #include "app/snap_to_grid.h"
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/status_bar.h"
@@ -36,7 +37,6 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 #include "gfx/region.h"
 #include "render/render.h"

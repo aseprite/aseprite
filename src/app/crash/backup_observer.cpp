@@ -18,6 +18,7 @@
 #include "app/crash/backup_observer.h"
 
 #include "app/app.h"
+#include "app/context.h"
 #include "app/crash/session.h"
 #include "app/document.h"
 #include "app/document_access.h"
@@ -27,7 +28,6 @@
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
-#include "doc/context.h"
 
 #ifdef TEST_BACKUP_INTEGRITY
 #include "ui/system.h"
@@ -54,7 +54,7 @@ public:
 
 }
 
-BackupObserver::BackupObserver(Session* session, doc::Context* ctx)
+BackupObserver::BackupObserver(Session* session, Context* ctx)
   : m_session(session)
   , m_ctx(ctx)
   , m_done(false)
@@ -76,14 +76,14 @@ void BackupObserver::stop()
   m_done = true;
 }
 
-void BackupObserver::onAddDocument(doc::Document* document)
+void BackupObserver::onAddDocument(Document* document)
 {
   TRACE("RECO: Observe document %p\n", document);
   base::scoped_lock hold(m_mutex);
   m_documents.push_back(static_cast<app::Document*>(document));
 }
 
-void BackupObserver::onRemoveDocument(doc::Document* document)
+void BackupObserver::onRemoveDocument(Document* document)
 {
   TRACE("RECO: Remove document %p\n", document);
   {

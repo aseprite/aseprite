@@ -43,7 +43,7 @@ namespace app {
 
 namespace {
 
-  class ClipboardRange : public doc::DocumentsObserver {
+  class ClipboardRange : public DocumentsObserver {
   public:
     ClipboardRange() : m_doc(nullptr) {
     }
@@ -77,7 +77,7 @@ namespace {
     DocumentRange range() const { return m_range; }
 
     // DocumentsObserver impl
-    void onRemoveDocument(doc::Document* doc) override {
+    void onRemoveDocument(Document* doc) override {
       if (doc == m_doc)
         invalidate();
     }

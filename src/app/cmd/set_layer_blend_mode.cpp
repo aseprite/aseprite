@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_layer_blend_mode.h"
 
-#include "doc/doc_event.h"
-#include "doc/document.h"
+#include "app/doc_event.h"
+#include "app/document.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -40,7 +40,7 @@ void SetLayerBlendMode::onUndo()
 void SetLayerBlendMode::onFireNotifications()
 {
   Layer* layer = this->layer();
-  doc::Document* doc = layer->sprite()->document();
+  auto doc = static_cast<Document*>(layer->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);

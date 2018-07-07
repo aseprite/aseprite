@@ -11,12 +11,12 @@
 #include "app/ui/layer_frame_comboboxes.h"
 
 #include "app/restore_visible_layers.h"
+#include "app/site.h"
 #include "doc/anidir.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/combobox.h"
 
@@ -109,7 +109,7 @@ void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir)
   anidir->setSelectedItemIndex(int(defAnidir));
 }
 
-void calculate_visible_layers(doc::Site& site,
+void calculate_visible_layers(Site& site,
                               const std::string& layersValue,
                               RestoreVisibleLayers& layersVisibility)
 {
@@ -134,7 +134,7 @@ void calculate_visible_layers(doc::Site& site,
   }
 }
 
-doc::FrameTag* calculate_selected_frames(const doc::Site& site,
+doc::FrameTag* calculate_selected_frames(const Site& site,
                                          const std::string& framesValue,
                                          doc::SelectedFrames& selFrames)
 {

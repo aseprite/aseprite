@@ -13,10 +13,10 @@
 #include "app/context.h"
 #include "app/document.h"
 #include "app/modules/editors.h"
+#include "app/site.h"
 #include "app/ui/editor/editor.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 
 namespace app {

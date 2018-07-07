@@ -29,10 +29,8 @@ add_library(doc-lib
   cel_io.cpp
   cels_range.cpp
   compressed_image.cpp
-  context.cpp
   conversion_she.cpp
   document.cpp
-  documents.cpp
   file/col_file.cpp
   file/gpl_file.cpp
   file/hex_file.cpp
@@ -59,7 +57,6 @@ add_library(doc-lib
   rgbmap.cpp
   selected_frames.cpp
   selected_layers.cpp
-  site.cpp
   slice.cpp
   slice_io.cpp
   slices.cpp

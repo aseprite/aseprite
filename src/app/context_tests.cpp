@@ -1,18 +1,15 @@
-// Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Aseprite
+// Copyright (c) 2001-2018  David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "tests/test.h"
 
-#include <gtest/gtest.h>
+#include "app/context.h"
+#include "app/document.h"
 
-#include "doc/context.h"
-#include "doc/document.h"
-
+using namespace app;
 using namespace doc;
 
 namespace doc {
@@ -20,13 +17,13 @@ namespace doc {
   std::ostream& operator<<(std::ostream& os, ColorMode mode) {
     return os << (int)mode;
   }
-  
+
 } // namespace doc
 
 TEST(Context, AddDocument)
 {
   Context ctx;
-  Document* doc = ctx.documents().add(32, 28);
+  auto doc = ctx.documents().add(32, 28);
   ASSERT_TRUE(doc != NULL);
 
   EXPECT_EQ(32, doc->width());
@@ -37,8 +34,8 @@ TEST(Context, AddDocument)
 TEST(Context, DeleteDocuments)
 {
   Context ctx;
-  Document* doc1 = ctx.documents().add(2, 2);
-  Document* doc2 = ctx.documents().add(4, 4);
+  auto doc1 = ctx.documents().add(2, 2);
+  auto doc2 = ctx.documents().add(4, 4);
   EXPECT_EQ(2, ctx.documents().size());
 
   delete doc1;
@@ -52,8 +49,8 @@ TEST(Context, CloseAndDeleteDocuments)
   Context ctx;
   EXPECT_EQ(0, ctx.documents().size());
 
-  Document* doc1 = ctx.documents().add(2, 2);
-  Document* doc2 = ctx.documents().add(4, 4);
+  auto doc1 = ctx.documents().add(2, 2);
+  auto doc2 = ctx.documents().add(4, 4);
   EXPECT_EQ(2, ctx.documents().size());
 
   doc1->close();
@@ -67,8 +64,8 @@ TEST(Context, CloseAndDeleteDocuments)
 TEST(Context, SwitchContext)
 {
   Context ctx1, ctx2;
-  Document* doc1 = new Document();
-  Document* doc2 = new Document();
+  auto doc1 = new app::Document(nullptr);
+  auto doc2 = new app::Document(nullptr);
   doc1->setContext(&ctx1);
   doc2->setContext(&ctx2);
   EXPECT_EQ(&ctx1, doc1->context());
@@ -85,10 +82,4 @@ TEST(Context, SwitchContext)
   ctx2.documents().add(doc2);
   EXPECT_EQ(&ctx1, doc1->context());
   EXPECT_EQ(&ctx2, doc2->context());
-}
-
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

@@ -11,9 +11,9 @@
 #include "app/cmd/remove_frame.h"
 
 #include "app/cmd/remove_cel.h"
+#include "app/doc_event.h"
+#include "app/document.h"
 #include "doc/cels_range.h"
-#include "doc/doc_event.h"
-#include "doc/document.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -35,7 +35,7 @@ RemoveFrame::RemoveFrame(Sprite* sprite, frame_t frame)
 void RemoveFrame::onExecute()
 {
   Sprite* sprite = this->sprite();
-  Document* doc = sprite->document();
+  auto doc = static_cast<Document*>(sprite->document());
 
   if (m_firstTime) {
     m_firstTime = false;
@@ -64,7 +64,7 @@ void RemoveFrame::onExecute()
 void RemoveFrame::onUndo()
 {
   Sprite* sprite = this->sprite();
-  Document* doc = sprite->document();
+  Document* doc = static_cast<Document*>(sprite->document());
 
   if (m_frameRemoved)
     sprite->addFrame(m_frame);

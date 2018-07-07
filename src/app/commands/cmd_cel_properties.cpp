@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,6 +14,7 @@
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc_event.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/modules/gui.h"
@@ -26,7 +27,6 @@
 #include "base/scoped_value.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
-#include "doc/doc_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -41,9 +41,9 @@ using namespace ui;
 class CelPropertiesWindow;
 static CelPropertiesWindow* g_window = nullptr;
 
-class CelPropertiesWindow : public app::gen::CelProperties
-                          , public doc::ContextObserver
-                          , public doc::DocObserver {
+class CelPropertiesWindow : public app::gen::CelProperties,
+                            public ContextObserver,
+                            public DocObserver {
 public:
   CelPropertiesWindow()
     : m_timer(250, this)
@@ -224,7 +224,7 @@ private:
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     if (isVisible())
-      setCel(static_cast<app::Document*>(const_cast<doc::Document*>(site.document())),
+      setCel(const_cast<Document*>(site.document()),
              const_cast<Cel*>(site.cel()));
     else if (m_document)
       setCel(nullptr, nullptr);

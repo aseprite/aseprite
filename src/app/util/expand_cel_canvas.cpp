@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,6 +17,7 @@
 #include "app/cmd/patch_cel.h"
 #include "app/context.h"
 #include "app/document.h"
+#include "app/site.h"
 #include "app/transaction.h"
 #include "app/util/range_utils.h"
 #include "base/unique_ptr.h"
@@ -25,7 +26,6 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
-#include "doc/site.h"
 #include "doc/sprite.h"
 
 namespace {

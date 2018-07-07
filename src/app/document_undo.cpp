@@ -13,10 +13,10 @@
 #include "app/app.h"
 #include "app/cmd.h"
 #include "app/cmd_transaction.h"
+#include "app/context.h"
 #include "app/document_undo_observer.h"
 #include "app/pref/preferences.h"
 #include "base/mem_utils.h"
-#include "doc/context.h"
 #include "undo/undo_history.h"
 #include "undo/undo_state.h"
 
@@ -37,7 +37,7 @@ DocumentUndo::DocumentUndo()
 {
 }
 
-void DocumentUndo::setContext(doc::Context* ctx)
+void DocumentUndo::setContext(Context* ctx)
 {
   m_ctx = ctx;
 }

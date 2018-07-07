@@ -9,24 +9,21 @@
 #pragma once
 
 #include "app/document_range.h"
+#include "app/sprite_position.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
-#include "doc/sprite_position.h"
 #include "obs/observable.h"
 #include "undo/undo_history.h"
 
 #include <iosfwd>
 #include <string>
 
-namespace doc {
-  class Context;
-}
-
 namespace app {
   using namespace doc;
 
   class Cmd;
   class CmdTransaction;
+  class Context;
   class DocumentUndoObserver;
 
   class DocumentUndo : public obs::observable<DocumentUndoObserver>,
@@ -36,7 +33,7 @@ namespace app {
 
     size_t totalUndoSize() const { return m_totalUndoSize; }
 
-    void setContext(doc::Context* ctx);
+    void setContext(Context* ctx);
 
     void add(CmdTransaction* cmd);
 
@@ -76,7 +73,7 @@ namespace app {
     void onDeleteUndoState(undo::UndoState* state) override;
 
     undo::UndoHistory m_undoHistory;
-    doc::Context* m_ctx;
+    Context* m_ctx;
     size_t m_totalUndoSize;
 
     // This counter is equal to 0 if we are in the "saved state", i.e.

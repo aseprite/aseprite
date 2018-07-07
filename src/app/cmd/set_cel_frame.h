@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_cel.h"
+#include "doc/frame.h"
 
 namespace app {
 namespace cmd {

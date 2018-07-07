@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,15 +12,12 @@
 #include "doc/layer.h"
 #include "gfx/point.h"
 
-namespace doc {
-  class Site;
-}
-
 namespace render {
   class Projection;
 }
 
 namespace app {
+  class Site;
 
   class ColorPicker {
   public:
@@ -32,7 +29,7 @@ namespace app {
 
     ColorPicker();
 
-    void pickColor(const doc::Site& site,
+    void pickColor(const Site& site,
                    const gfx::PointF& pos,
                    const render::Projection& proj,
                    const Mode mode);

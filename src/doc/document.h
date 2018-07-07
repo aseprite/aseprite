@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,24 +10,15 @@
 
 #include <string>
 
-#include "base/unique_ptr.h"
-#include "doc/doc_observer.h"
 #include "doc/object.h"
 #include "doc/sprites.h"
-#include "obs/observable.h"
 
 namespace doc {
 
-  class Context;
-
-  class Document : public Object
-                 , public obs::observable<DocObserver> {
+  class Document : public Object {
   public:
     Document();
     ~Document();
-
-    Context* context() const { return m_ctx; }
-    void setContext(Context* ctx);
 
     const Sprites& sprites() const { return m_sprites; }
     Sprites& sprites() { return m_sprites; }
@@ -43,19 +34,13 @@ namespace doc {
     const std::string& filename() const { return m_filename; }
     void setFilename(const std::string& filename);
 
-    void close();
-
   protected:
-    virtual void onContextChanged();
+    virtual void onFileNameChange();
 
   private:
-    void removeFromContext();
-
-    // Document's file name. From where it was loaded, where it is
-    // saved.
-    std::string m_filename;
+    std::string m_filename; // Document's file name. From where it was
+                            // loaded, where it is saved.
     Sprites m_sprites;
-    Context* m_ctx;
   };
 
 } // namespace doc

@@ -18,6 +18,7 @@
 #include "app/commands/params.h"
 #include "app/commands/quick_command.h"
 #include "app/console.h"
+#include "app/doc_event.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
@@ -54,7 +55,6 @@
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/doc.h"
-#include "doc/doc_event.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "she/surface.h"
@@ -1926,13 +1926,13 @@ void Editor::onShowExtrasChange()
   invalidate();
 }
 
-void Editor::onExposeSpritePixels(doc::DocEvent& ev)
+void Editor::onExposeSpritePixels(DocEvent& ev)
 {
   if (m_state && ev.sprite() == m_sprite)
     m_state->onExposeSpritePixels(ev.region());
 }
 
-void Editor::onSpritePixelRatioChanged(doc::DocEvent& ev)
+void Editor::onSpritePixelRatioChanged(DocEvent& ev)
 {
   m_proj.setPixelRatio(ev.sprite()->pixelRatio());
   invalidate();

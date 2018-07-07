@@ -12,6 +12,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
+#include "app/doc_event.h"
 #include "app/document_access.h"
 #include "app/document_range.h"
 #include "app/modules/editors.h"
@@ -35,7 +36,6 @@
 #include "app/util/range_utils.h"
 #include "base/bind.h"
 #include "base/string.h"
-#include "doc/doc_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -759,7 +759,7 @@ void StatusBar::onResize(ResizeEvent& ev)
     updateSnapToGridWindowPosition();
 }
 
-void StatusBar::onActiveSiteChange(const doc::Site& site)
+void StatusBar::onActiveSiteChange(const Site& site)
 {
   if (m_doc && site.document() != m_doc) {
     m_doc->remove_observer(this);
@@ -768,7 +768,7 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
 
   if (site.document() && site.sprite()) {
     if (!m_doc) {
-      m_doc = const_cast<doc::Document*>(site.document());
+      m_doc = const_cast<Document*>(site.document());
       m_doc->add_observer(this);
     }
     else {
@@ -793,7 +793,7 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
   layout();
 }
 
-void StatusBar::onRemoveDocument(doc::Document* doc)
+void StatusBar::onRemoveDocument(Document* doc)
 {
   if (m_doc &&
       m_doc == doc) {
