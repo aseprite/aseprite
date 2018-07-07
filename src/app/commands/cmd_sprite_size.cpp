@@ -13,7 +13,7 @@
 #include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -73,7 +73,7 @@ protected:
 
   // [working thread]
   void onJob() override {
-    DocumentApi api = writer().document()->getApi(transaction());
+    DocApi api = writer().document()->getApi(transaction());
 
     int cels_count = 0;
     for (Cel* cel : sprite()->uniqueCels()) { // TODO add size() member function to CelsRange

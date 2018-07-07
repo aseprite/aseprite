@@ -13,7 +13,6 @@
 #include "app/cmd/set_slice_key.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/ui/status_bar.h"
 #include "app/transaction.h"

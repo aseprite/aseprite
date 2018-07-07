@@ -14,7 +14,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"

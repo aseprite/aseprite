@@ -13,7 +13,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "base/convert_to.h"
@@ -129,7 +129,7 @@ void FramePropertiesCommand::onExecute(Context* context)
 
     ContextWriter writer(reader);
     Transaction transaction(writer.context(), "Frame Duration");
-    DocumentApi api = writer.document()->getApi(transaction);
+    DocApi api = writer.document()->getApi(transaction);
 
     for (frame_t frame : selFrames)
       api.setFrameDuration(writer.sprite(), frame, newMsecs);

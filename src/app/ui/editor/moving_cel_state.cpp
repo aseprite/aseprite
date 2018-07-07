@@ -13,7 +13,7 @@
 #include "app/app.h"
 #include "app/cmd/set_cel_bounds.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
@@ -149,7 +149,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
     {
       ContextWriter writer(m_reader, 1000);
       Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
-      DocumentApi api = document->getApi(transaction);
+      DocApi api = document->getApi(transaction);
       gfx::Point intOffset = intCelOffset();
 
       // And now we move the cel (or all selected range) to the new position.
@@ -178,7 +178,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
         //      m_celOffset=(0.5,0.5)) will not move the final
         //      position of the mask (so the ref layer is moved and
         //      the mask isn't).
-        
+
         api.setMaskPosition(document->mask()->bounds().x + intOffset.x,
                             document->mask()->bounds().y + intOffset.y);
       }

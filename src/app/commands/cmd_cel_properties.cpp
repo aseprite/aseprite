@@ -15,7 +15,6 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_event.h"
-#include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"

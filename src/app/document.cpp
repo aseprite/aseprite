@@ -18,7 +18,7 @@
 #include "app/doc_event.h"
 #include "app/doc_observer.h"
 #include "app/doc_undo.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/pref/preferences.h"
@@ -76,9 +76,9 @@ void Document::setContext(Context* ctx)
   onContextChanged();
 }
 
-DocumentApi Document::getApi(Transaction& transaction)
+DocApi Document::getApi(Transaction& transaction)
 {
-  return DocumentApi(this, transaction);
+  return DocApi(this, transaction);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
@@ -91,7 +91,7 @@ void NewFrameCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   {
     Transaction transaction(writer.context(), friendlyName());
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
 
     switch (m_content) {
 

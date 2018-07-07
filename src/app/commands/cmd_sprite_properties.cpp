@@ -12,7 +12,7 @@
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/color_button.h"
@@ -137,7 +137,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     if (index != sprite->transparentColor() ||
         pixelRatio != sprite->pixelRatio()) {
       Transaction transaction(writer.context(), "Change Sprite Properties");
-      DocumentApi api = writer.document()->getApi(transaction);
+      DocApi api = writer.document()->getApi(transaction);
 
       if (index != sprite->transparentColor())
         api.setSpriteTransparentColor(sprite, index);

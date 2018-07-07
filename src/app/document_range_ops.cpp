@@ -15,7 +15,7 @@
 
 #include "app/app.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range.h"
 #include "app/transaction.h"
 #include "app/ui/timeline/timeline.h"
@@ -33,7 +33,7 @@ namespace app {
 enum Op { Move, Copy };
 
 static void move_or_copy_cels(
-  DocumentApi& api, Op op,
+  DocApi& api, Op op,
   const LayerList& srcLayers,
   const LayerList& dstLayers,
   const SelectedFrames& srcFrames,
@@ -76,7 +76,7 @@ static void move_or_copy_cels(
 }
 
 static DocumentRange move_or_copy_frames(
-  DocumentApi& api, Op op,
+  DocApi& api, Op op,
   Sprite* sprite,
   const DocumentRange& srcRange,
   frame_t dstFrame,
@@ -332,11 +332,11 @@ static DocumentRange drop_range_op(
     const ContextReader reader(context);
     ContextWriter writer(reader, 500);
     Transaction transaction(writer.context(), undoLabel, ModifyDocument);
-    DocumentApi api = doc->getApi(transaction);
+    DocApi api = doc->getApi(transaction);
 
-    // TODO Try to add the range with just one call to DocumentApi
+    // TODO Try to add the range with just one call to DocApi
     // methods, to avoid generating a lot of cmd::SetCelFrame (see
-    // DocumentApi::setCelFramePosition() function).
+    // DocApi::setCelFramePosition() function).
 
     switch (from.type()) {
 
@@ -489,7 +489,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
   const ContextReader reader(context);
   ContextWriter writer(reader, 500);
   Transaction transaction(writer.context(), "Reverse Frames");
-  DocumentApi api = doc->getApi(transaction);
+  DocApi api = doc->getApi(transaction);
   Sprite* sprite = doc->sprite();
   LayerList layers;
   frame_t frameBegin, frameEnd;

@@ -27,7 +27,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_undo.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
@@ -648,7 +648,7 @@ void ColorBar::setTransparentIndex(int index)
         int(sprite->transparentColor()) != index) {
       // TODO merge this code with SpritePropertiesCommand
       Transaction transaction(writer.context(), "Set Transparent Color");
-      DocumentApi api = writer.document()->getApi(transaction);
+      DocApi api = writer.document()->getApi(transaction);
       api.setSpriteTransparentColor(sprite, index);
       transaction.commit();
 

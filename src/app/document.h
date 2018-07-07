@@ -42,7 +42,7 @@ namespace gfx {
 namespace app {
 
   class Context;
-  class DocumentApi;
+  class DocApi;
   class DocUndo;
   class Transaction;
 
@@ -71,7 +71,7 @@ namespace app {
     void setContext(Context* ctx);
 
     // Returns a high-level API: observable and undoable methods.
-    DocumentApi getApi(Transaction& transaction);
+    DocApi getApi(Transaction& transaction);
 
     //////////////////////////////////////////////////////////////////////
     // Main properties

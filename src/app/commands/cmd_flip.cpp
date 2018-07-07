@@ -18,7 +18,7 @@
 #include "app/cmd/trim_cel.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
@@ -69,7 +69,7 @@ void FlipCommand::onExecute(Context* context)
 
   {
     Transaction transaction(writer.context(), friendlyName());
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
 
     Timeline* timeline = App::instance()->timeline();
     LockTimelineRange lockRange(timeline);

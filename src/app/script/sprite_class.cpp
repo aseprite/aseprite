@@ -14,7 +14,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/document.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/file/palette_file.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
@@ -60,7 +60,7 @@ void Sprite_resize(script::ContextHandle handle)
     wrap->commitImages();
 
     Document* doc = wrap->document();
-    DocumentApi api(doc, wrap->transaction());
+    DocApi api(doc, wrap->transaction());
     api.setSpriteSize(doc->sprite(), size.w, size.h);
   }
 
@@ -90,7 +90,7 @@ void Sprite_crop(script::ContextHandle handle)
     }
 
     if (!bounds.isEmpty()) {
-      DocumentApi api(doc, wrap->transaction());
+      DocApi api(doc, wrap->transaction());
       api.cropSprite(doc->sprite(), bounds);
     }
   }

@@ -17,7 +17,7 @@
 #include "app/cmd/trim_cel.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"

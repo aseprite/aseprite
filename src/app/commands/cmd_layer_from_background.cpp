@@ -10,7 +10,7 @@
 
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "doc/layer.h"

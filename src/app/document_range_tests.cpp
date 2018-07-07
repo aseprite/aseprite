@@ -9,7 +9,7 @@
 #include "app/context.h"
 #include "app/doc_undo.h"
 #include "app/document.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range.h"
 #include "app/document_range_ops.h"
 #include "app/test_context.h"

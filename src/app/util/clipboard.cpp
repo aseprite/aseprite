@@ -15,7 +15,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range.h"
 #include "app/document_range_ops.h"
 #include "app/modules/editors.h"
@@ -407,7 +407,7 @@ void paste()
           }
 
           Transaction transaction(UIContext::instance(), "Paste Cels");
-          DocumentApi api = dstDoc->getApi(transaction);
+          DocApi api = dstDoc->getApi(transaction);
 
           // Add extra frames if needed
           while (dstFrameFirst+srcRange.frames() > dstSpr->totalFrames())
@@ -499,7 +499,7 @@ void paste()
           }
 
           Transaction transaction(UIContext::instance(), "Paste Frames");
-          DocumentApi api = dstDoc->getApi(transaction);
+          DocApi api = dstDoc->getApi(transaction);
 
           auto srcLayers = srcSpr->allBrowsableLayers();
           auto dstLayers = dstSpr->allBrowsableLayers();
@@ -542,7 +542,7 @@ void paste()
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 
           Transaction transaction(UIContext::instance(), "Paste Layers");
-          DocumentApi api = dstDoc->getApi(transaction);
+          DocApi api = dstDoc->getApi(transaction);
 
           // Remove children if their parent is selected so we only
           // copy the parent.

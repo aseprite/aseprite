@@ -14,7 +14,7 @@
 #include "app/cmd/set_sprite_size.h"
 #include "app/context.h"
 #include "app/document.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/script/image_wrap.h"
 #include "app/site.h"
 #include "app/transaction.h"

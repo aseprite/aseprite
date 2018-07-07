@@ -21,7 +21,7 @@
 #include "app/doc_event.h"
 #include "app/doc_undo.h"
 #include "app/document.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range_ops.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"

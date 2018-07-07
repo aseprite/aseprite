@@ -15,7 +15,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/document_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -386,7 +386,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     // operations in a undo-transaction.
     ContextWriter writer(context);
     Transaction transaction(writer.context(), "Import Sprite Sheet", ModifyDocument);
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
 
     // Add the layer in the sprite.
     LayerImage* resultLayer = api.newLayer(sprite->root(), "Sprite Sheet");

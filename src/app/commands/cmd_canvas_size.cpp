@@ -10,7 +10,7 @@
 
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
@@ -333,7 +333,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     Document* document = writer.document();
     Sprite* sprite = writer.sprite();
     Transaction transaction(writer.context(), "Canvas Size");
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
 
     api.cropSprite(sprite,
                    gfx::Rect(x1, y1,

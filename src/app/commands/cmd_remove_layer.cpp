@@ -11,7 +11,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
@@ -53,7 +53,7 @@ void RemoveLayerCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   {
     Transaction transaction(writer.context(), "Remove Layer");
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
 
     const Site* site = writer.site();
     if (site->inTimeline() &&

@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/document_api.h"
+#include "app/doc_api.h"
 
 #include "app/cmd/add_cel.h"
 #include "app/cmd/add_frame.h"
@@ -63,23 +63,23 @@
 
 namespace app {
 
-DocumentApi::DocumentApi(Document* document, Transaction& transaction)
+DocApi::DocApi(Document* document, Transaction& transaction)
   : m_document(document)
   , m_transaction(transaction)
 {
 }
 
-void DocumentApi::setSpriteSize(Sprite* sprite, int w, int h)
+void DocApi::setSpriteSize(Sprite* sprite, int w, int h)
 {
   m_transaction.execute(new cmd::SetSpriteSize(sprite, w, h));
 }
 
-void DocumentApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
+void DocApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
 {
   m_transaction.execute(new cmd::SetTransparentColor(sprite, maskColor));
 }
 
-void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
+void DocApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
 {
   setSpriteSize(sprite, bounds.w, bounds.h);
 
@@ -157,7 +157,7 @@ void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
   }
 }
 
-void DocumentApi::trimSprite(Sprite* sprite)
+void DocApi::trimSprite(Sprite* sprite)
 {
   gfx::Rect bounds;
 
@@ -181,14 +181,14 @@ void DocumentApi::trimSprite(Sprite* sprite)
     cropSprite(sprite, bounds);
 }
 
-void DocumentApi::addFrame(Sprite* sprite, frame_t newFrame)
+void DocApi::addFrame(Sprite* sprite, frame_t newFrame)
 {
   copyFrame(sprite, newFrame-1, newFrame,
             kDropBeforeFrame,
             kDefaultTagsAdjustment);
 }
 
-void DocumentApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
+void DocApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
   adjustFrameTags(sprite, newFrame, +1,
@@ -196,13 +196,13 @@ void DocumentApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
                   kDefaultTagsAdjustment);
 }
 
-void DocumentApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
+void DocApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
 {
   while (sprite->totalFrames() <= newFrame)
     addEmptyFrame(sprite, sprite->totalFrames());
 }
 
-void DocumentApi::copyFrame(Sprite* sprite,
+void DocApi::copyFrame(Sprite* sprite,
                             const frame_t fromFrame,
                             const frame_t newFrame,
                             const DropFramePlace dropFramePlace,
@@ -220,7 +220,7 @@ void DocumentApi::copyFrame(Sprite* sprite,
                   tagsHandling);
 }
 
-void DocumentApi::removeFrame(Sprite* sprite, frame_t frame)
+void DocApi::removeFrame(Sprite* sprite, frame_t frame)
 {
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
@@ -229,18 +229,18 @@ void DocumentApi::removeFrame(Sprite* sprite, frame_t frame)
                   kDefaultTagsAdjustment);
 }
 
-void DocumentApi::setTotalFrames(Sprite* sprite, frame_t frames)
+void DocApi::setTotalFrames(Sprite* sprite, frame_t frames)
 {
   ASSERT(frames >= 1);
   m_transaction.execute(new cmd::SetTotalFrames(sprite, frames));
 }
 
-void DocumentApi::setFrameDuration(Sprite* sprite, frame_t frame, int msecs)
+void DocApi::setFrameDuration(Sprite* sprite, frame_t frame, int msecs)
 {
   m_transaction.execute(new cmd::SetFrameDuration(sprite, frame, msecs));
 }
 
-void DocumentApi::setFrameRangeDuration(Sprite* sprite, frame_t from, frame_t to, int msecs)
+void DocApi::setFrameRangeDuration(Sprite* sprite, frame_t from, frame_t to, int msecs)
 {
   ASSERT(from >= frame_t(0));
   ASSERT(from < to);
@@ -250,7 +250,7 @@ void DocumentApi::setFrameRangeDuration(Sprite* sprite, frame_t from, frame_t to
     m_transaction.execute(new cmd::SetFrameDuration(sprite, fr, msecs));
 }
 
-void DocumentApi::moveFrame(Sprite* sprite,
+void DocApi::moveFrame(Sprite* sprite,
                             const frame_t frame,
                             frame_t targetFrame,
                             const DropFramePlace dropFramePlace,
@@ -293,7 +293,7 @@ void DocumentApi::moveFrame(Sprite* sprite,
   }
 }
 
-void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
+void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
 {
   ASSERT(layer);
 
@@ -349,7 +349,7 @@ void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFram
   }
 }
 
-void DocumentApi::addCel(LayerImage* layer, Cel* cel)
+void DocApi::addCel(LayerImage* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
@@ -357,7 +357,7 @@ void DocumentApi::addCel(LayerImage* layer, Cel* cel)
   m_transaction.execute(new cmd::AddCel(layer, cel));
 }
 
-void DocumentApi::setCelFramePosition(Cel* cel, frame_t frame)
+void DocApi::setCelFramePosition(Cel* cel, frame_t frame)
 {
   ASSERT(cel);
   ASSERT(frame >= 0);
@@ -365,14 +365,14 @@ void DocumentApi::setCelFramePosition(Cel* cel, frame_t frame)
   m_transaction.execute(new cmd::SetCelFrame(cel, frame));
 }
 
-void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
+void DocApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
 {
   ASSERT(cel);
 
   m_transaction.execute(new cmd::SetCelPosition(cel, x, y));
 }
 
-void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
+void DocApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
 {
   ASSERT(cel);
   ASSERT(sprite->supportAlpha());
@@ -380,19 +380,19 @@ void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
   m_transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
 }
 
-void DocumentApi::clearCel(LayerImage* layer, frame_t frame)
+void DocApi::clearCel(LayerImage* layer, frame_t frame)
 {
   if (Cel* cel = layer->cel(frame))
     clearCel(cel);
 }
 
-void DocumentApi::clearCel(Cel* cel)
+void DocApi::clearCel(Cel* cel)
 {
   ASSERT(cel);
   m_transaction.execute(new cmd::ClearCel(cel));
 }
 
-void DocumentApi::moveCel(
+void DocApi::moveCel(
   LayerImage* srcLayer, frame_t srcFrame,
   LayerImage* dstLayer, frame_t dstFrame)
 {
@@ -402,7 +402,7 @@ void DocumentApi::moveCel(
       dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
-void DocumentApi::copyCel(
+void DocApi::copyCel(
   LayerImage* srcLayer, frame_t srcFrame,
   LayerImage* dstLayer, frame_t dstFrame)
 {
@@ -411,7 +411,7 @@ void DocumentApi::copyCel(
     dstLayer, dstFrame, dstLayer->isContinuous());
 }
 
-void DocumentApi::copyCel(
+void DocApi::copyCel(
   LayerImage* srcLayer, frame_t srcFrame,
   LayerImage* dstLayer, frame_t dstFrame, bool continuous)
 {
@@ -426,7 +426,7 @@ void DocumentApi::copyCel(
       dstLayer, dstFrame, continuous));
 }
 
-void DocumentApi::swapCel(
+void DocApi::swapCel(
   LayerImage* layer, frame_t frame1, frame_t frame2)
 {
   ASSERT(frame1 != frame2);
@@ -444,7 +444,7 @@ void DocumentApi::swapCel(
   if (cel2) setCelFramePosition(cel2, frame1);
 }
 
-LayerImage* DocumentApi::newLayer(LayerGroup* parent, const std::string& name)
+LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
 {
   LayerImage* layer = new LayerImage(parent->sprite());
   layer->setName(name);
@@ -453,7 +453,7 @@ LayerImage* DocumentApi::newLayer(LayerGroup* parent, const std::string& name)
   return layer;
 }
 
-LayerGroup* DocumentApi::newGroup(LayerGroup* parent, const std::string& name)
+LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
 {
   LayerGroup* layer = new LayerGroup(parent->sprite());
   layer->setName(name);
@@ -462,19 +462,19 @@ LayerGroup* DocumentApi::newGroup(LayerGroup* parent, const std::string& name)
   return layer;
 }
 
-void DocumentApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
+void DocApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
 {
   m_transaction.execute(new cmd::AddLayer(parent, newLayer, afterThis));
 }
 
-void DocumentApi::removeLayer(Layer* layer)
+void DocApi::removeLayer(Layer* layer)
 {
   ASSERT(layer);
 
   m_transaction.execute(new cmd::RemoveLayer(layer));
 }
 
-void DocumentApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis)
+void DocApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis)
 {
   ASSERT(parent);
 
@@ -484,7 +484,7 @@ void DocumentApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* aft
   m_transaction.execute(new cmd::MoveLayer(layer, parent, afterThis));
 }
 
-void DocumentApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis)
+void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis)
 {
   ASSERT(parent);
 
@@ -500,17 +500,17 @@ void DocumentApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* be
   restackLayerAfter(layer, parent, afterThis);
 }
 
-void DocumentApi::backgroundFromLayer(Layer* layer)
+void DocApi::backgroundFromLayer(Layer* layer)
 {
   m_transaction.execute(new cmd::BackgroundFromLayer(layer));
 }
 
-void DocumentApi::layerFromBackground(Layer* layer)
+void DocApi::layerFromBackground(Layer* layer)
 {
   m_transaction.execute(new cmd::LayerFromBackground(layer));
 }
 
-Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
+Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
   ASSERT(parent);
   base::UniquePtr<Layer> newLayerPtr;
@@ -532,7 +532,7 @@ Layer* DocumentApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, 
   return newLayerPtr.release();
 }
 
-Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
+Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
 {
   ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable(): nullptr);
@@ -542,7 +542,7 @@ Layer* DocumentApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent,
   return newLayer;
 }
 
-Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image)
+Cel* DocApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image)
 {
   ASSERT(layer->cel(frameNumber) == NULL);
 
@@ -552,7 +552,7 @@ Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef&
   return cel.release();
 }
 
-void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage)
+void DocApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage)
 {
   ASSERT(oldImage);
   ASSERT(newImage);
@@ -562,13 +562,13 @@ void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const I
       sprite, oldImage, newImage));
 }
 
-void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
+void DocApi::flipImage(Image* image, const gfx::Rect& bounds,
   doc::algorithm::FlipType flipType)
 {
   m_transaction.execute(new cmd::FlipImage(image, bounds, flipType));
 }
 
-void DocumentApi::copyToCurrentMask(Mask* mask)
+void DocApi::copyToCurrentMask(Mask* mask)
 {
   ASSERT(m_document->mask());
   ASSERT(mask);
@@ -576,14 +576,14 @@ void DocumentApi::copyToCurrentMask(Mask* mask)
   m_transaction.execute(new cmd::SetMask(m_document, mask));
 }
 
-void DocumentApi::setMaskPosition(int x, int y)
+void DocApi::setMaskPosition(int x, int y)
 {
   ASSERT(m_document->mask());
 
   m_transaction.execute(new cmd::SetMaskPosition(m_document, gfx::Point(x, y)));
 }
 
-void DocumentApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
+void DocApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
 {
   Palette* currentSpritePalette = sprite->palette(frame); // Sprite current pal
   int from, to;
@@ -598,7 +598,7 @@ void DocumentApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPa
   }
 }
 
-void DocumentApi::adjustFrameTags(Sprite* sprite,
+void DocApi::adjustFrameTags(Sprite* sprite,
                                   const frame_t frame,
                                   const frame_t delta,
                                   const DropFramePlace dropFramePlace,

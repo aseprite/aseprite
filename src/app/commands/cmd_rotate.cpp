@@ -13,7 +13,7 @@
 #include "app/commands/cmd_rotate.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/document_range.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
@@ -79,7 +79,7 @@ protected:
 
   // [working thread]
   void onJob() override {
-    DocumentApi api = document()->getApi(transaction());
+    DocApi api = document()->getApi(transaction());
 
     // 1) Rotate cel positions
     for (Cel* cel : m_cels) {

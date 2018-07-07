@@ -496,9 +496,9 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
+  doc_api.cpp
   doc_undo.cpp
   document.cpp
-  document_api.cpp
   document_diff.cpp
   document_exporter.cpp
   document_range.cpp

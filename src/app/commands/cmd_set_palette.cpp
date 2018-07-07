@@ -10,7 +10,7 @@
 
 #include "app/commands/cmd_set_palette.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/file_selector.h"
 #include "app/ini_file.h"
 #include "app/modules/palettes.h"

@@ -14,7 +14,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
@@ -180,7 +180,7 @@ void NewLayerCommand::onExecute(Context* context)
     Transaction transaction(
       writer.context(),
       std::string("New ") + layerPrefix());
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
     bool afterBackground = false;
 
     switch (m_type) {

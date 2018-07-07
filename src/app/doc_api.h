@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_DOCUMENT_API_H_INCLUDED
-#define APP_DOCUMENT_API_H_INCLUDED
+#ifndef APP_DOC_API_H_INCLUDED
+#define APP_DOC_API_H_INCLUDED
 #pragma once
 
 #include "app/drop_frame_place.h"
@@ -37,9 +37,9 @@ namespace app {
   // directly to the transaction.
   //
   // TODO refactor this class in several Cmd, don't make it bigger
-  class DocumentApi {
+  class DocApi {
   public:
-    DocumentApi(Document* document, Transaction& transaction);
+    DocApi(Document* document, Transaction& transaction);
 
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);

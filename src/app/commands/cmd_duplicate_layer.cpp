@@ -13,7 +13,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_undo.h"
-#include "app/document_api.h"
+#include "app/doc_api.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
@@ -53,7 +53,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
   {
     Transaction transaction(writer.context(), "Layer Duplication");
     LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
-    DocumentApi api = document->getApi(transaction);
+    DocApi api = document->getApi(transaction);
     api.duplicateLayerAfter(sourceLayer,
                             sourceLayer->parent(),
                             sourceLayer);
