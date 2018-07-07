@@ -4,11 +4,11 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_DOCUMENTS_H_INCLUDED
-#define APP_DOCUMENTS_H_INCLUDED
+#ifndef APP_DOCS_H_INCLUDED
+#define APP_DOCS_H_INCLUDED
 #pragma once
 
-#include "app/documents_observer.h"
+#include "app/docs_observer.h"
 #include "base/disable_copying.h"
 #include "doc/color_mode.h"
 #include "doc/object_id.h"
@@ -21,13 +21,13 @@ namespace app {
   class Context;
   class Document;
 
-  class Documents : public obs::observable<DocumentsObserver> {
+  class Docs : public obs::observable<DocsObserver> {
   public:
     typedef std::vector<Document*>::iterator iterator;
     typedef std::vector<Document*>::const_iterator const_iterator;
 
-    Documents(Context* ctx);
-    ~Documents();
+    Docs(Context* ctx);
+    ~Docs();
 
     iterator begin() { return m_docs.begin(); }
     iterator end() { return m_docs.end(); }
@@ -68,7 +68,7 @@ namespace app {
     Context* m_ctx;
     std::vector<Document*> m_docs;
 
-    DISABLE_COPYING(Documents);
+    DISABLE_COPYING(Docs);
   };
 
 } // namespace app

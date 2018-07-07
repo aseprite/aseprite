@@ -15,9 +15,9 @@
 #include "app/context_observer.h"
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
+#include "app/docs_observer.h"
 #include "app/document.h"
 #include "app/document_access.h"
-#include "app/documents_observer.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
@@ -33,7 +33,7 @@ namespace app {
 
 class UndoHistoryWindow : public app::gen::UndoHistory,
                           public ContextObserver,
-                          public DocumentsObserver,
+                          public DocsObserver,
                           public DocUndoObserver {
 public:
   class Item : public ui::ListItem {
@@ -126,7 +126,7 @@ private:
     attachDocument(const_cast<Document*>(site.document()));
   }
 
-  // DocumentsObserver
+  // DocsObserver
   void onRemoveDocument(Document* doc) override {
     if (m_document && m_document == doc)
       detachDocument();

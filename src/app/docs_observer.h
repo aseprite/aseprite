@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_DOCUMENTS_OBSERVER_H_INCLUDED
-#define APP_DOCUMENTS_OBSERVER_H_INCLUDED
+#ifndef APP_DOCS_OBSERVER_H_INCLUDED
+#define APP_DOCS_OBSERVER_H_INCLUDED
 #pragma once
 
 namespace app {
@@ -20,9 +20,9 @@ namespace app {
     Document* m_doc;
   };
 
-  class DocumentsObserver {
+  class DocsObserver {
   public:
-    virtual ~DocumentsObserver() { }
+    virtual ~DocsObserver() { }
     virtual void onCreateDocument(CreateDocumentArgs* args) { }
     virtual void onAddDocument(Document* doc) { }
     virtual void onRemoveDocument(Document* doc) { }

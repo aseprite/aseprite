@@ -11,8 +11,8 @@
 #include "app/commands/params.h"
 #include "app/context_flags.h"
 #include "app/context_observer.h"
-#include "app/documents.h"
-#include "app/documents_observer.h"
+#include "app/docs.h"
+#include "app/docs_observer.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
 #include "obs/observable.h"
@@ -52,13 +52,13 @@ namespace app {
   };
 
   class Context : public obs::observable<ContextObserver>,
-                  public DocumentsObserver {
+                  public DocsObserver {
   public:
     Context();
     virtual ~Context();
 
-    const Documents& documents() const { return m_docs; }
-    Documents& documents() { return m_docs; }
+    const Docs& documents() const { return m_docs; }
+    Docs& documents() { return m_docs; }
 
     virtual bool isUIAvailable() const     { return false; }
     virtual bool isRecordingMacro() const  { return false; }
@@ -87,7 +87,7 @@ namespace app {
     obs::signal<void (CommandExecutionEvent&)> AfterCommandExecution;
 
   protected:
-    // DocumentsObserver impl
+    // DocsObserver impl
     void onCreateDocument(CreateDocumentArgs* args) override;
     void onAddDocument(Document* doc) override;
     void onRemoveDocument(Document* doc) override;
@@ -98,7 +98,7 @@ namespace app {
     Document* lastSelectedDoc() { return m_lastSelectedDoc; }
 
   private:
-    Documents m_docs;
+    Docs m_docs;
     ContextFlags m_flags;       // Last updated flags.
     Document* m_lastSelectedDoc;
 

@@ -10,7 +10,7 @@
 
 #include "app/context_observer.h"
 #include "app/doc_observer.h"
-#include "app/documents_observer.h"
+#include "app/docs_observer.h"
 #include "base/mutex.h"
 #include "base/thread.h"
 
@@ -23,7 +23,7 @@ namespace crash {
   class Session;
 
   class BackupObserver : public ContextObserver
-                       , public DocumentsObserver
+                       , public DocsObserver
                        , public DocObserver {
   public:
     BackupObserver(Session* session, Context* ctx);

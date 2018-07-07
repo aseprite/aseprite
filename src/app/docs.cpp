@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/documents.h"
+#include "app/docs.h"
 
 #include "app/document.h"
 #include "base/fs.h"
@@ -19,23 +19,23 @@
 
 namespace app {
 
-Documents::Documents(Context* ctx)
+Docs::Docs(Context* ctx)
   : m_ctx(ctx)
 {
   ASSERT(ctx != NULL);
 }
 
-Documents::~Documents()
+Docs::~Docs()
 {
   deleteAll();
 }
 
-Document* Documents::add(int width, int height, ColorMode mode, int ncolors)
+Document* Docs::add(int width, int height, ColorMode mode, int ncolors)
 {
   // Ask to observers to create the document (maybe a doc::Document or
   // a derived class).
   CreateDocumentArgs args;
-  notify_observers(&DocumentsObserver::onCreateDocument, &args);
+  notify_observers(&DocsObserver::onCreateDocument, &args);
   if (!args.document())
     args.setDocument(new Document(nullptr));
 
@@ -47,7 +47,7 @@ Document* Documents::add(int width, int height, ColorMode mode, int ncolors)
   return doc.release();
 }
 
-Document* Documents::add(Document* doc)
+Document* Docs::add(Document* doc)
 {
   ASSERT(doc != NULL);
   ASSERT(doc->id() != doc::NullId);
@@ -60,11 +60,11 @@ Document* Documents::add(Document* doc)
 
   m_docs.insert(begin(), doc);
 
-  notify_observers(&DocumentsObserver::onAddDocument, doc);
+  notify_observers(&DocsObserver::onAddDocument, doc);
   return doc;
 }
 
-void Documents::remove(Document* doc)
+void Docs::remove(Document* doc)
 {
   iterator it = std::find(begin(), end(), doc);
   if (it == end())              // Already removed.
@@ -72,12 +72,12 @@ void Documents::remove(Document* doc)
 
   m_docs.erase(it);
 
-  notify_observers(&DocumentsObserver::onRemoveDocument, doc);
+  notify_observers(&DocsObserver::onRemoveDocument, doc);
 
   doc->setContext(NULL);
 }
 
-void Documents::move(Document* doc, int index)
+void Docs::move(Document* doc, int index)
 {
   iterator it = std::find(begin(), end(), doc);
   ASSERT(it != end());
@@ -87,7 +87,7 @@ void Documents::move(Document* doc, int index)
   m_docs.insert(begin()+index, doc);
 }
 
-Document* Documents::getById(ObjectId id) const
+Document* Docs::getById(ObjectId id) const
 {
   for (const auto& doc : *this) {
     if (doc->id() == id)
@@ -96,7 +96,7 @@ Document* Documents::getById(ObjectId id) const
   return NULL;
 }
 
-Document* Documents::getByName(const std::string& name) const
+Document* Docs::getByName(const std::string& name) const
 {
   for (const auto& doc : *this) {
     if (doc->name() == name)
@@ -105,7 +105,7 @@ Document* Documents::getByName(const std::string& name) const
   return NULL;
 }
 
-Document* Documents::getByFileName(const std::string& filename) const
+Document* Docs::getByFileName(const std::string& filename) const
 {
   std::string fn = base::normalize_path(filename);
   for (const auto& doc : *this) {
@@ -115,7 +115,7 @@ Document* Documents::getByFileName(const std::string& filename) const
   return NULL;
 }
 
-void Documents::deleteAll()
+void Docs::deleteAll()
 {
   while (!empty()) {
     ASSERT(m_ctx == back()->context());

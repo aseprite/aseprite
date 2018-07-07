@@ -498,12 +498,12 @@ add_library(app-lib
   context_flags.cpp
   doc_api.cpp
   doc_undo.cpp
+  docs.cpp
   document.cpp
   document_diff.cpp
   document_exporter.cpp
   document_range.cpp
   document_range_ops.cpp
-  documents.cpp
   extensions.cpp
   extra_cel.cpp
   file/file.cpp

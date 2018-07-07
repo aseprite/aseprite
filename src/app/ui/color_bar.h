@@ -11,7 +11,7 @@
 #include "app/color.h"
 #include "app/context_observer.h"
 #include "app/doc_observer.h"
-#include "app/documents_observer.h"
+#include "app/docs_observer.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"

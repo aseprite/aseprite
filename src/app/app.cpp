@@ -361,7 +361,7 @@ void App::run()
 #endif  // ENABLE_SCRIPTING
 
   // Destroy all documents in the UIContext.
-  const Documents& docs = m_modules->m_context.documents();
+  const Docs& docs = m_modules->m_context.documents();
   while (!docs.empty()) {
     Document* doc = docs.back();
 
@@ -369,7 +369,7 @@ void App::run()
     // notifications related to the document as an app::Document. If
     // we delete the document directly, we destroy the app::Document
     // too early, and then doc::~Document() call
-    // DocumentsObserver::onRemoveDocument(). In this way, observers
+    // DocsObserver::onRemoveDocument(). In this way, observers
     // could think that they have a fully created app::Document when
     // in reality it's a doc::Document (in the middle of a
     // destruction process).

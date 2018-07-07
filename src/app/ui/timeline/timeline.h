@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/doc_observer.h"
+#include "app/docs_observer.h"
 #include "app/document_range.h"
-#include "app/documents_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
@@ -56,7 +56,7 @@ namespace app {
   class Timeline : public ui::Widget,
                    public ui::ScrollableViewDelegate,
                    public ContextObserver,
-                   public DocumentsObserver,
+                   public DocsObserver,
                    public DocObserver,
                    public EditorObserver,
                    public InputChainElement,
@@ -153,7 +153,7 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const Site& site) override;
 
-    // DocumentsObserver impl.
+    // DocsObserver impl.
     void onRemoveDocument(Document* document) override;
 
     // EditorObserver impl.

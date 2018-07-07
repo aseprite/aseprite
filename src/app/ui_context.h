@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/context.h"
-#include "app/documents_observer.h"
+#include "app/docs_observer.h"
 
 namespace app {
   class DocumentView;

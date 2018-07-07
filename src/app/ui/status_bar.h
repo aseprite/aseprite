@@ -11,7 +11,7 @@
 #include "app/color.h"
 #include "app/context_observer.h"
 #include "app/doc_observer.h"
-#include "app/documents_observer.h"
+#include "app/docs_observer.h"
 #include "app/tools/active_tool_observer.h"
 #include "base/time.h"
 #include "ui/base.h"
@@ -43,7 +43,7 @@ namespace app {
 
   class StatusBar : public ui::HBox
                   , public ContextObserver
-                  , public DocumentsObserver
+                  , public DocsObserver
                   , public DocObserver
                   , public tools::ActiveToolObserver {
     static StatusBar* m_instance;
