@@ -17,8 +17,8 @@
 #include "app/context.h"
 #include "app/doc_event.h"
 #include "app/doc_observer.h"
+#include "app/doc_undo.h"
 #include "app/document_api.h"
-#include "app/document_undo.h"
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/pref/preferences.h"
@@ -44,7 +44,7 @@ using namespace doc;
 Document::Document(Sprite* sprite)
   : m_ctx(nullptr)
   , m_flags(kMaskVisible)
-  , m_undo(new DocumentUndo)
+  , m_undo(new DocUndo)
   // Information about the file format used to load/save this document
   , m_format_options(nullptr)
   // Mask

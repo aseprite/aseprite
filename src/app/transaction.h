@@ -16,7 +16,7 @@ namespace app {
   class CmdTransaction;
   class Context;
   class DocumentRange;
-  class DocumentUndo;
+  class DocUndo;
 
   enum Modification {
     ModifyDocument,      // This item changes the "saved status" of the document.
@@ -59,8 +59,8 @@ namespace app {
     // created).
     //
     // WARNING: This must be called from the main UI thread, because
-    // it will generate a DocumentUndo::add() which triggers a
-    // DocumentUndoObserver::onAddUndoState() notification, which
+    // it will generate a DocUndo::add() which triggers a
+    // DocUndoObserver::onAddUndoState() notification, which
     // updates the Undo History window UI.
     void commit();
 
@@ -70,7 +70,7 @@ namespace app {
     void rollback();
 
     Context* m_ctx;
-    DocumentUndo* m_undo;
+    DocUndo* m_undo;
     CmdTransaction* m_cmds;
   };
 

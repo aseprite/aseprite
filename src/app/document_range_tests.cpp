@@ -7,11 +7,11 @@
 #include "tests/test.h"
 
 #include "app/context.h"
+#include "app/doc_undo.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/document_range_ops.h"
-#include "app/document_undo.h"
 #include "app/test_context.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"

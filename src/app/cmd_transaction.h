@@ -18,7 +18,7 @@
 namespace app {
 
   // Cmds created on each Transaction.
-  // The whole DocumentUndo contains a list of these CmdTransaction.
+  // The whole DocUndo contains a list of these CmdTransaction.
   class CmdTransaction : public CmdSequence {
   public:
     CmdTransaction(const std::string& label,

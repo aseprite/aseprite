@@ -19,7 +19,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document_undo.h"
+#include "app/doc_undo.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"

@@ -24,12 +24,12 @@ namespace app {
   class Cmd;
   class CmdTransaction;
   class Context;
-  class DocumentUndoObserver;
+  class DocUndoObserver;
 
-  class DocumentUndo : public obs::observable<DocumentUndoObserver>,
-                       public undo::UndoHistoryDelegate {
+  class DocUndo : public obs::observable<DocUndoObserver>,
+                  public undo::UndoHistoryDelegate {
   public:
-    DocumentUndo();
+    DocUndo();
 
     size_t totalUndoSize() const { return m_totalUndoSize; }
 
@@ -87,7 +87,7 @@ namespace app {
     // way. E.g. If the save process fails.
     bool m_savedStateIsLost;
 
-    DISABLE_COPYING(DocumentUndo);
+    DISABLE_COPYING(DocUndo);
   };
 
 } // namespace app

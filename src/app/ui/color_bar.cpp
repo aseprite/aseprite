@@ -26,8 +26,8 @@
 #include "app/commands/quick_command.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc_undo.h"
 #include "app/document_api.h"
-#include "app/document_undo.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
@@ -1166,7 +1166,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
       currentSpritePalette->countDiff(newPalette, &from, &to);
 
       if (from >= 0 && to >= from) {
-        DocumentUndo* undo = document->undoHistory();
+        DocUndo* undo = document->undoHistory();
         Cmd* cmd = new cmd::SetPalette(sprite, frame, newPalette);
 
         // Add undo information to save the range of pal entries that will be modified.

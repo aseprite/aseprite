@@ -43,7 +43,7 @@ namespace app {
 
   class Context;
   class DocumentApi;
-  class DocumentUndo;
+  class DocUndo;
   class Transaction;
 
   using namespace doc;
@@ -76,8 +76,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Main properties
 
-    const DocumentUndo* undoHistory() const { return m_undo; }
-    DocumentUndo* undoHistory() { return m_undo; }
+    const DocUndo* undoHistory() const { return m_undo; }
+    DocUndo* undoHistory() { return m_undo; }
 
     color_t bgColor() const;
     color_t bgColor(Layer* layer) const;
@@ -194,7 +194,7 @@ namespace app {
     int m_flags;
 
     // Undo and redo information about the document.
-    base::UniquePtr<DocumentUndo> m_undo;
+    base::UniquePtr<DocUndo> m_undo;
 
     // Selected mask region boundaries
     base::UniquePtr<doc::MaskBoundaries> m_maskBoundaries;

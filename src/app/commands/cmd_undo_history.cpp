@@ -13,10 +13,10 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_observer.h"
+#include "app/doc_undo.h"
+#include "app/doc_undo_observer.h"
 #include "app/document.h"
 #include "app/document_access.h"
-#include "app/document_undo.h"
-#include "app/document_undo_observer.h"
 #include "app/documents_observer.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -34,7 +34,7 @@ namespace app {
 class UndoHistoryWindow : public app::gen::UndoHistory,
                           public ContextObserver,
                           public DocumentsObserver,
-                          public DocumentUndoObserver {
+                          public DocUndoObserver {
 public:
   class Item : public ui::ListItem {
   public:
@@ -132,8 +132,8 @@ private:
       detachDocument();
   }
 
-  // DocumentUndoObserver
-  void onAddUndoState(DocumentUndo* history) override {
+  // DocUndoObserver
+  void onAddUndoState(DocUndo* history) override {
     ASSERT(history->currentState());
     Item* item = new Item(history->currentState());
     actions()->addChild(item);
@@ -142,7 +142,7 @@ private:
     actions()->selectChild(item);
   }
 
-  void onDeleteUndoState(DocumentUndo* history,
+  void onDeleteUndoState(DocUndo* history,
                          undo::UndoState* state) override {
     for (auto child : actions()->children()) {
       Item* item = static_cast<Item*>(child);
@@ -157,15 +157,15 @@ private:
     view()->updateView();
   }
 
-  void onCurrentUndoStateChange(DocumentUndo* history) override {
+  void onCurrentUndoStateChange(DocUndo* history) override {
     selectState(history->currentState());
   }
 
-  void onClearRedo(DocumentUndo* history) override {
+  void onClearRedo(DocUndo* history) override {
     refillList(history);
   }
 
-  void onTotalUndoSizeChange(DocumentUndo* history) override {
+  void onTotalUndoSizeChange(DocUndo* history) override {
     updateTitle();
   }
 
@@ -176,7 +176,7 @@ private:
     if (!document)
       return;
 
-    DocumentUndo* history = m_document->undoHistory();
+    DocUndo* history = m_document->undoHistory();
     history->add_observer(this);
 
     refillList(history);
@@ -202,7 +202,7 @@ private:
     view()->updateView();
   }
 
-  void refillList(DocumentUndo* history) {
+  void refillList(DocUndo* history) {
     clearList();
 
     // Create an item to reference the initial state (undo state == nullptr)

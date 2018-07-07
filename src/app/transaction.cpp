@@ -12,8 +12,8 @@
 
 #include "app/cmd_transaction.h"
 #include "app/context_access.h"
+#include "app/doc_undo.h"
 #include "app/document.h"
-#include "app/document_undo.h"
 #include "doc/sprite.h"
 
 #define TX_TRACE(...)

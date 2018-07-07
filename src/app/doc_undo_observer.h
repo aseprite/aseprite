@@ -14,17 +14,17 @@ namespace undo {
 
 namespace app {
 
-class DocumentUndo;
+  class DocUndo;
 
-  class DocumentUndoObserver {
+  class DocUndoObserver {
   public:
-    virtual ~DocumentUndoObserver() { }
-    virtual void onAddUndoState(DocumentUndo* history) = 0;
-    virtual void onDeleteUndoState(DocumentUndo* history,
+    virtual ~DocUndoObserver() { }
+    virtual void onAddUndoState(DocUndo* history) = 0;
+    virtual void onDeleteUndoState(DocUndo* history,
                                    undo::UndoState* state) = 0;
-    virtual void onCurrentUndoStateChange(DocumentUndo* history) = 0;
-    virtual void onClearRedo(DocumentUndo* history) = 0;
-    virtual void onTotalUndoSizeChange(DocumentUndo* history) = 0;
+    virtual void onCurrentUndoStateChange(DocUndo* history) = 0;
+    virtual void onClearRedo(DocUndo* history) = 0;
+    virtual void onTotalUndoSizeChange(DocUndo* history) = 0;
   };
 
 } // namespace app

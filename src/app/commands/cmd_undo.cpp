@@ -11,7 +11,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_undo.h"
+#include "app/doc_undo.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -66,7 +66,7 @@ void UndoCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
-  DocumentUndo* undo = document->undoHistory();
+  DocUndo* undo = document->undoHistory();
 
 #ifdef ENABLE_UI
   Sprite* sprite = document->sprite();

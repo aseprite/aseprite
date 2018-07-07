@@ -8,13 +8,13 @@
 #include "config.h"
 #endif
 
-#include "app/document_undo.h"
+#include "app/doc_undo.h"
 
 #include "app/app.h"
 #include "app/cmd.h"
 #include "app/cmd_transaction.h"
 #include "app/context.h"
-#include "app/document_undo_observer.h"
+#include "app/doc_undo_observer.h"
 #include "app/pref/preferences.h"
 #include "base/mem_utils.h"
 #include "undo/undo_history.h"
@@ -28,7 +28,7 @@
 
 namespace app {
 
-DocumentUndo::DocumentUndo()
+DocUndo::DocUndo()
   : m_undoHistory(this)
   , m_ctx(nullptr)
   , m_totalUndoSize(0)
@@ -37,12 +37,12 @@ DocumentUndo::DocumentUndo()
 {
 }
 
-void DocumentUndo::setContext(Context* ctx)
+void DocUndo::setContext(Context* ctx)
 {
   m_ctx = ctx;
 }
 
-void DocumentUndo::add(CmdTransaction* cmd)
+void DocUndo::add(CmdTransaction* cmd)
 {
   ASSERT(cmd);
   UNDO_TRACE("UNDO: Add state <%s> of %s to %s\n",
@@ -59,8 +59,8 @@ void DocumentUndo::add(CmdTransaction* cmd)
   m_undoHistory.add(cmd);
   m_totalUndoSize += cmd->memSize();
 
-  notify_observers(&DocumentUndoObserver::onAddUndoState, this);
-  notify_observers(&DocumentUndoObserver::onTotalUndoSizeChange, this);
+  notify_observers(&DocUndoObserver::onAddUndoState, this);
+  notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 
   if (App::instance()) {
     const size_t undoLimitSize =
@@ -87,17 +87,17 @@ void DocumentUndo::add(CmdTransaction* cmd)
              base::get_pretty_memory_size(m_totalUndoSize).c_str());
 }
 
-bool DocumentUndo::canUndo() const
+bool DocUndo::canUndo() const
 {
   return m_undoHistory.canUndo();
 }
 
-bool DocumentUndo::canRedo() const
+bool DocUndo::canRedo() const
 {
   return m_undoHistory.canRedo();
 }
 
-void DocumentUndo::undo()
+void DocUndo::undo()
 {
   const undo::UndoState* state = nextUndo();
   ASSERT(state);
@@ -106,14 +106,14 @@ void DocumentUndo::undo()
   m_totalUndoSize -= cmd->memSize();
   {
     m_undoHistory.undo();
-    notify_observers(&DocumentUndoObserver::onCurrentUndoStateChange, this);
+    notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
   }
   m_totalUndoSize += cmd->memSize();
   if (m_totalUndoSize != oldSize)
-    notify_observers(&DocumentUndoObserver::onTotalUndoSizeChange, this);
+    notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 }
 
-void DocumentUndo::redo()
+void DocUndo::redo()
 {
   const undo::UndoState* state = nextRedo();
   ASSERT(state);
@@ -122,36 +122,36 @@ void DocumentUndo::redo()
   m_totalUndoSize -= cmd->memSize();
   {
     m_undoHistory.redo();
-    notify_observers(&DocumentUndoObserver::onCurrentUndoStateChange, this);
+    notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
   }
   m_totalUndoSize += cmd->memSize();
   if (m_totalUndoSize != oldSize)
-    notify_observers(&DocumentUndoObserver::onTotalUndoSizeChange, this);
+    notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 }
 
-void DocumentUndo::clearRedo()
+void DocUndo::clearRedo()
 {
   m_undoHistory.clearRedo();
-  notify_observers(&DocumentUndoObserver::onClearRedo, this);
+  notify_observers(&DocUndoObserver::onClearRedo, this);
 }
 
-bool DocumentUndo::isSavedState() const
+bool DocUndo::isSavedState() const
 {
   return (!m_savedStateIsLost && m_savedCounter == 0);
 }
 
-void DocumentUndo::markSavedState()
+void DocUndo::markSavedState()
 {
   m_savedCounter = 0;
   m_savedStateIsLost = false;
 }
 
-void DocumentUndo::impossibleToBackToSavedState()
+void DocUndo::impossibleToBackToSavedState()
 {
   m_savedStateIsLost = true;
 }
 
-std::string DocumentUndo::nextUndoLabel() const
+std::string DocUndo::nextUndoLabel() const
 {
   const undo::UndoState* state = nextUndo();
   if (state)
@@ -160,7 +160,7 @@ std::string DocumentUndo::nextUndoLabel() const
     return "";
 }
 
-std::string DocumentUndo::nextRedoLabel() const
+std::string DocUndo::nextRedoLabel() const
 {
   const undo::UndoState* state = nextRedo();
   if (state)
@@ -169,7 +169,7 @@ std::string DocumentUndo::nextRedoLabel() const
     return "";
 }
 
-SpritePosition DocumentUndo::nextUndoSpritePosition() const
+SpritePosition DocUndo::nextUndoSpritePosition() const
 {
   const undo::UndoState* state = nextUndo();
   if (state)
@@ -178,7 +178,7 @@ SpritePosition DocumentUndo::nextUndoSpritePosition() const
     return SpritePosition();
 }
 
-SpritePosition DocumentUndo::nextRedoSpritePosition() const
+SpritePosition DocUndo::nextRedoSpritePosition() const
 {
   const undo::UndoState* state = nextRedo();
   if (state)
@@ -187,7 +187,7 @@ SpritePosition DocumentUndo::nextRedoSpritePosition() const
     return SpritePosition();
 }
 
-std::istream* DocumentUndo::nextUndoDocumentRange() const
+std::istream* DocUndo::nextUndoDocumentRange() const
 {
   const undo::UndoState* state = nextUndo();
   if (state)
@@ -196,7 +196,7 @@ std::istream* DocumentUndo::nextUndoDocumentRange() const
     return nullptr;
 }
 
-std::istream* DocumentUndo::nextRedoDocumentRange() const
+std::istream* DocUndo::nextRedoDocumentRange() const
 {
   const undo::UndoState* state = nextRedo();
   if (state)
@@ -205,7 +205,7 @@ std::istream* DocumentUndo::nextRedoDocumentRange() const
     return nullptr;
 }
 
-Cmd* DocumentUndo::lastExecutedCmd() const
+Cmd* DocUndo::lastExecutedCmd() const
 {
   const undo::UndoState* state = m_undoHistory.currentState();
   if (state)
@@ -214,10 +214,10 @@ Cmd* DocumentUndo::lastExecutedCmd() const
     return NULL;
 }
 
-void DocumentUndo::moveToState(const undo::UndoState* state)
+void DocUndo::moveToState(const undo::UndoState* state)
 {
   m_undoHistory.moveTo(state);
-  notify_observers(&DocumentUndoObserver::onCurrentUndoStateChange, this);
+  notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
 
   // Recalculate the total undo size
   size_t oldSize = m_totalUndoSize;
@@ -228,15 +228,15 @@ void DocumentUndo::moveToState(const undo::UndoState* state)
     s = s->next();
   }
   if (m_totalUndoSize != oldSize)
-    notify_observers(&DocumentUndoObserver::onTotalUndoSizeChange, this);
+    notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 }
 
-const undo::UndoState* DocumentUndo::nextUndo() const
+const undo::UndoState* DocUndo::nextUndo() const
 {
   return m_undoHistory.currentState();
 }
 
-const undo::UndoState* DocumentUndo::nextRedo() const
+const undo::UndoState* DocUndo::nextRedo() const
 {
   const undo::UndoState* state = m_undoHistory.currentState();
   if (state)
@@ -245,7 +245,7 @@ const undo::UndoState* DocumentUndo::nextRedo() const
     return m_undoHistory.firstState();
 }
 
-void DocumentUndo::onDeleteUndoState(undo::UndoState* state)
+void DocUndo::onDeleteUndoState(undo::UndoState* state)
 {
   ASSERT(state);
   Cmd* cmd = STATE_CMD(state);
@@ -256,7 +256,7 @@ void DocumentUndo::onDeleteUndoState(undo::UndoState* state)
              base::get_pretty_memory_size(m_totalUndoSize).c_str());
 
   m_totalUndoSize -= cmd->memSize();
-  notify_observers(&DocumentUndoObserver::onDeleteUndoState, this, state);
+  notify_observers(&DocUndoObserver::onDeleteUndoState, this, state);
 }
 
 } // namespace app
