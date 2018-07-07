@@ -133,6 +133,11 @@ void MovingPixelsState::rotate(double angle)
 {
   m_pixelsMovement->rotate(angle);
 }
+  
+void MovingPixelsState::flip(doc::algorithm::FlipType flipType)
+{
+  m_pixelsMovement->flipImage(flipType);
+}
 
 void MovingPixelsState::onEnterState(Editor* editor)
 {

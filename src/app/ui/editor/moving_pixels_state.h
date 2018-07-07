@@ -34,6 +34,7 @@ namespace app {
 
     void translate(const gfx::Point& delta);
     void rotate(double angle);
+    void flip(doc::algorithm::FlipType flipType);
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;

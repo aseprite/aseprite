@@ -2238,6 +2238,14 @@ void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
   }
 }
 
+void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
+{
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
+    movingPixels->flip(flipType);
+  else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get()))
+    standby->startFlipTransformation(this, flipType);
+}
+
 void Editor::notifyScrollChanged()
 {
   m_observers.notifyScrollChanged(this);
