@@ -65,7 +65,7 @@ public:
     UIContext::instance()->remove_observer(this);
   }
 
-  void setCel(Document* doc, Cel* cel) {
+  void setCel(Doc* doc, Cel* cel) {
     if (m_document) {
       m_document->remove_observer(this);
       m_document = nullptr;
@@ -223,7 +223,7 @@ private:
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     if (isVisible())
-      setCel(const_cast<Document*>(site.document()),
+      setCel(const_cast<Doc*>(site.document()),
              const_cast<Cel*>(site.cel()));
     else if (m_document)
       setCel(nullptr, nullptr);
@@ -262,7 +262,7 @@ private:
   }
 
   Timer m_timer;
-  Document* m_document;
+  Doc* m_document;
   Cel* m_cel;
   DocRange m_range;
   bool m_selfUpdate;

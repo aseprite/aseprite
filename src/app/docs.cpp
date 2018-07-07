@@ -10,7 +10,7 @@
 
 #include "app/docs.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "base/fs.h"
 #include "base/mutex.h"
 #include "base/unique_ptr.h"
@@ -30,16 +30,16 @@ Docs::~Docs()
   deleteAll();
 }
 
-Document* Docs::add(int width, int height, ColorMode mode, int ncolors)
+Doc* Docs::add(int width, int height, ColorMode mode, int ncolors)
 {
   // Ask to observers to create the document (maybe a doc::Document or
   // a derived class).
   CreateDocumentArgs args;
   notify_observers(&DocsObserver::onCreateDocument, &args);
   if (!args.document())
-    args.setDocument(new Document(nullptr));
+    args.setDocument(new Doc(nullptr));
 
-  base::UniquePtr<Document> doc(args.document());
+  base::UniquePtr<Doc> doc(args.document());
   doc->sprites().add(width, height, mode, ncolors);
   doc->setFilename("Sprite");
   doc->setContext(m_ctx); // Change the document context to add the doc in this collection
@@ -47,7 +47,7 @@ Document* Docs::add(int width, int height, ColorMode mode, int ncolors)
   return doc.release();
 }
 
-Document* Docs::add(Document* doc)
+Doc* Docs::add(Doc* doc)
 {
   ASSERT(doc != NULL);
   ASSERT(doc->id() != doc::NullId);
@@ -64,7 +64,7 @@ Document* Docs::add(Document* doc)
   return doc;
 }
 
-void Docs::remove(Document* doc)
+void Docs::remove(Doc* doc)
 {
   iterator it = std::find(begin(), end(), doc);
   if (it == end())              // Already removed.
@@ -77,7 +77,7 @@ void Docs::remove(Document* doc)
   doc->setContext(NULL);
 }
 
-void Docs::move(Document* doc, int index)
+void Docs::move(Doc* doc, int index)
 {
   iterator it = std::find(begin(), end(), doc);
   ASSERT(it != end());
@@ -87,7 +87,7 @@ void Docs::move(Document* doc, int index)
   m_docs.insert(begin()+index, doc);
 }
 
-Document* Docs::getById(ObjectId id) const
+Doc* Docs::getById(ObjectId id) const
 {
   for (const auto& doc : *this) {
     if (doc->id() == id)
@@ -96,7 +96,7 @@ Document* Docs::getById(ObjectId id) const
   return NULL;
 }
 
-Document* Docs::getByName(const std::string& name) const
+Doc* Docs::getByName(const std::string& name) const
 {
   for (const auto& doc : *this) {
     if (doc->name() == name)
@@ -105,7 +105,7 @@ Document* Docs::getByName(const std::string& name) const
   return NULL;
 }
 
-Document* Docs::getByFileName(const std::string& filename) const
+Doc* Docs::getByFileName(const std::string& filename) const
 {
   std::string fn = base::normalize_path(filename);
   for (const auto& doc : *this) {

@@ -10,7 +10,7 @@
 
 #include "app/cmd/clear_image.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 

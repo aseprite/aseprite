@@ -12,7 +12,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
@@ -69,7 +69,7 @@ protected:
 
   void onExecute(Context* ctx) override {
     const ContextReader reader(ctx);
-    const Document* document = reader.document();
+    const Doc* document = reader.document();
     const Mask* mask(document->mask());
     DocumentPreferences& docPref =
       Preferences::instance().document(ctx->activeDocument());

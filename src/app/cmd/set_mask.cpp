@@ -10,13 +10,13 @@
 
 #include "app/cmd/set_mask.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/mask.h"
 
 namespace app {
 namespace cmd {
 
-SetMask::SetMask(Document* doc, Mask* newMask)
+SetMask::SetMask(Doc* doc, Mask* newMask)
   : WithDocument(doc)
   , m_oldMask(doc->isMaskVisible() ? new Mask(*doc->mask()): nullptr)
   , m_newMask(newMask && !newMask->isEmpty() ? new Mask(*newMask): nullptr)
@@ -48,7 +48,7 @@ size_t SetMask::onMemSize() const
 
 void SetMask::setMask(Mask* mask)
 {
-  app::Document* doc = document();
+  Doc* doc = document();
 
   if (mask) {
     doc->setMask(mask);

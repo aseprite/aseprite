@@ -9,18 +9,18 @@
 #pragma once
 
 namespace app {
-  class Document;
+  class Doc;
 
   class ProjectEvent {
   public:
-    ProjectEvent(Document* document)
+    ProjectEvent(Doc* document)
       : m_document(document) {
     }
 
-    Document* document() const { return m_document; }
+    Doc* document() const { return m_document; }
 
   private:
-    Document* m_document;
+    Doc* m_document;
   };
 
 } // namespace app

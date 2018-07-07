@@ -61,7 +61,7 @@ bool CropSpriteCommand::onEnabled(Context* context)
 void CropSpriteCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
 
   gfx::Rect bounds;
@@ -106,7 +106,7 @@ bool AutocropSpriteCommand::onEnabled(Context* context)
 void AutocropSpriteCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
     Transaction transaction(writer.context(), "Trim Sprite");

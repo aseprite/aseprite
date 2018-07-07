@@ -87,7 +87,7 @@ MovingCelState::MovingCelState(Editor* editor,
   , m_handle(handle)
 {
   ContextWriter writer(m_reader, 500);
-  Document* document = editor->document();
+  Doc* document = editor->document();
   ASSERT(!m_celList.empty());
 
   m_cel = collect.mainCel();
@@ -122,7 +122,7 @@ MovingCelState::MovingCelState(Editor* editor,
 
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  Document* document = editor->document();
+  Doc* document = editor->document();
   bool modified = false;
 
   // Here we put back all cels into their original coordinates (so we

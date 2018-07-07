@@ -10,7 +10,7 @@
 
 #include "app/cli/cli_open_file.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "doc/frame_tag.h"
 #include "doc/frame_tags.h"

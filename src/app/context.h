@@ -22,7 +22,7 @@
 
 namespace app {
   class Command;
-  class Document;
+  class Doc;
   class DocumentView;
 
   class CommandPreconditionException : public base::Exception {
@@ -68,18 +68,18 @@ namespace app {
     bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
     void updateFlags() { m_flags.update(this); }
 
-    void sendDocumentToTop(Document* document);
+    void sendDocumentToTop(Doc* document);
 
     Site activeSite() const;
-    Document* activeDocument() const;
-    void setActiveDocument(Document* document);
+    Doc* activeDocument() const;
+    void setActiveDocument(Doc* document);
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
 
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
 
-    virtual DocumentView* getFirstDocumentView(Document* document) const {
+    virtual DocumentView* getFirstDocumentView(Doc* document) const {
       return nullptr;
     }
 
@@ -89,18 +89,18 @@ namespace app {
   protected:
     // DocsObserver impl
     void onCreateDocument(CreateDocumentArgs* args) override;
-    void onAddDocument(Document* doc) override;
-    void onRemoveDocument(Document* doc) override;
+    void onAddDocument(Doc* doc) override;
+    void onRemoveDocument(Doc* doc) override;
 
     virtual void onGetActiveSite(Site* site) const;
-    virtual void onSetActiveDocument(Document* doc);
+    virtual void onSetActiveDocument(Doc* doc);
 
-    Document* lastSelectedDoc() { return m_lastSelectedDoc; }
+    Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
 
   private:
     Docs m_docs;
     ContextFlags m_flags;       // Last updated flags.
-    Document* m_lastSelectedDoc;
+    Doc* m_lastSelectedDoc;
 
     DISABLE_COPYING(Context);
   };

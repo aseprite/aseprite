@@ -68,7 +68,7 @@ protected:
   tools::Tool* m_tool;
   BrushRef m_brush;
   gfx::Point m_oldPatternOrigin;
-  Document* m_document;
+  Doc* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
   frame_t m_frame;
@@ -101,7 +101,7 @@ public:
                tools::Tool* tool,
                tools::Ink* ink,
                tools::Controller* controller,
-               Document* document,
+               Doc* document,
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
                const app::Color& bgColor)
@@ -201,7 +201,7 @@ public:
   // IToolLoop interface
   tools::Tool* getTool() override { return m_tool; }
   Brush* getBrush() override { return m_brush.get(); }
-  Document* getDocument() override { return m_document; }
+  Doc* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
   frame_t getFrame() override { return m_frame; }
@@ -318,7 +318,7 @@ public:
                tools::Tool* tool,
                tools::Ink* ink,
                tools::Controller* controller,
-               Document* document,
+               Doc* document,
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
                const app::Color& bgColor,
@@ -647,7 +647,7 @@ public:
     Editor* editor,
     tools::Tool* tool,
     tools::Ink* ink,
-    Document* document,
+    Doc* document,
     const app::Color& fgColor,
     const app::Color& bgColor,
     Image* image,

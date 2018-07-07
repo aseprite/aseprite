@@ -38,7 +38,7 @@ namespace render {
 
 namespace app {
   class Context;
-  class Document;
+  class Doc;
 
   namespace tools {
     class Controller;
@@ -72,7 +72,7 @@ namespace app {
       virtual Brush* getBrush() = 0;
 
       // Returns the document to which belongs the sprite.
-      virtual Document* getDocument() = 0;
+      virtual Doc* getDocument() = 0;
 
       // Returns the sprite where we will draw on
       virtual Sprite* sprite() = 0;

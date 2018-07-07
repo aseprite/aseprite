@@ -10,7 +10,7 @@
 
 #include "app/color_picker.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/util/wrap_point.h"
@@ -73,7 +73,7 @@ void ColorPicker::pickColor(const Site& site,
 
   // Check tiled mode
   if (sprite && site.document()) {
-    const app::Document* doc = static_cast<const app::Document*>(site.document());
+    auto doc = static_cast<const Doc*>(site.document());
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
     pos = wrap_pointF(docPref.tiled.mode(),

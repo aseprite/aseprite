@@ -16,7 +16,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/crash/data_recovery.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -241,7 +241,7 @@ static void save_gui_config()
   }
 }
 
-void update_screen_for_document(const Document* document)
+void update_screen_for_document(const Doc* document)
 {
   // Without document.
   if (!document) {
@@ -254,7 +254,7 @@ void update_screen_for_document(const Document* document)
   }
   // With a document.
   else {
-    const_cast<Document*>(document)->notifyGeneralUpdate();
+    const_cast<Doc*>(document)->notifyGeneralUpdate();
 
     // Update the tabs (maybe the modified status has been changed).
     app_rebuild_documents_tabs();
@@ -338,7 +338,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           files.erase(files.begin());
 
           // If the document is already open, select it.
-          Document* doc = static_cast<Document*>(ctx->documents().getByFileName(fn));
+          Doc* doc = ctx->documents().getByFileName(fn);
           if (doc) {
             DocumentView* docView = ctx->getFirstDocumentView(doc);
             if (docView)

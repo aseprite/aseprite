@@ -28,7 +28,6 @@
 #define FILE_LOAD_DATA_FILE             0x00000020
 
 namespace doc {
-  class Document;
   class FrameTag;
 }
 
@@ -45,7 +44,7 @@ namespace doc {
 namespace app {
 
   class Context;
-  class Document;
+  class Doc;
   class FileFormat;
   class FormatOptions;
 
@@ -66,13 +65,13 @@ namespace app {
   class FileOpROI {             // Region of interest
   public:
     FileOpROI();
-    FileOpROI(const app::Document* doc,
+    FileOpROI(const Doc* doc,
               const std::string& sliceName,
               const std::string& frameTagName,
               const doc::SelectedFrames& selFrames,
               const bool adjustByFrameTag);
 
-    const app::Document* document() const { return m_document; }
+    const Doc* document() const { return m_document; }
     doc::Slice* slice() const { return m_slice; }
     doc::FrameTag* frameTag() const { return m_frameTag; }
     doc::frame_t fromFrame() const { return m_selFrames.firstFrame(); }
@@ -84,7 +83,7 @@ namespace app {
     }
 
   private:
-    const app::Document* m_document;
+    const Doc* m_document;
     doc::Slice* m_slice;
     doc::FrameTag* m_frameTag;
     doc::SelectedFrames m_selFrames;
@@ -115,9 +114,9 @@ namespace app {
     const std::string& filename() const { return m_filename; }
     const base::paths& filenames() const { return m_seq.filename_list; }
     Context* context() const { return m_context; }
-    Document* document() const { return m_document; }
-    Document* releaseDocument() {
-      Document* doc = m_document;
+    Doc* document() const { return m_document; }
+    Doc* releaseDocument() {
+      Doc* doc = m_document;
       m_document = nullptr;
       return doc;
     }
@@ -177,7 +176,7 @@ namespace app {
     Context* m_context;
     // TODO this should be a shared pointer (and we should remove
     //      releaseDocument() member function)
-    Document* m_document;       // Loaded document, or document to be saved.
+    Doc* m_document;            // Loaded document, or document to be saved.
     std::string m_filename;     // File-name to load/save.
     std::string m_dataFilename; // File-name for a special XML .aseprite-data where extra sprite data can be stored
     FileOpROI m_roi;
@@ -220,8 +219,8 @@ namespace app {
   base::paths get_writable_extensions();
 
   // High-level routines to load/save documents.
-  app::Document* load_document(Context* context, const std::string& filename);
-  int save_document(Context* context, doc::Document* document);
+  Doc* load_document(Context* context, const std::string& filename);
+  int save_document(Context* context, Doc* document);
 
   // Returns true if the given filename contains a file extension that
   // can be used to save only static images (i.e. animations are saved

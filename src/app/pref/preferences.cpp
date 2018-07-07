@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
@@ -106,7 +106,7 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
   }
 }
 
-DocumentPreferences& Preferences::document(const app::Document* doc)
+DocumentPreferences& Preferences::document(const Doc* doc)
 {
   auto it = m_docs.find(doc);
   if (it != m_docs.end()) {
@@ -138,11 +138,11 @@ DocumentPreferences& Preferences::document(const app::Document* doc)
   }
 }
 
-void Preferences::removeDocument(Document* doc)
+void Preferences::removeDocument(Doc* doc)
 {
-  ASSERT(dynamic_cast<app::Document*>(doc));
+  ASSERT(doc);
 
-  auto it = m_docs.find(static_cast<app::Document*>(doc));
+  auto it = m_docs.find(doc);
   if (it != m_docs.end()) {
     serializeDocPref(it->first, it->second, true);
     delete it->second;
@@ -150,12 +150,12 @@ void Preferences::removeDocument(Document* doc)
   }
 }
 
-void Preferences::onRemoveDocument(Document* doc)
+void Preferences::onRemoveDocument(Doc* doc)
 {
   removeDocument(doc);
 }
 
-std::string Preferences::docConfigFileName(const Document* doc)
+std::string Preferences::docConfigFileName(const Doc* doc)
 {
   if (!doc)
     return "";
@@ -171,7 +171,7 @@ std::string Preferences::docConfigFileName(const Document* doc)
   return rf.getFirstOrCreateDefault();
 }
 
-void Preferences::serializeDocPref(const app::Document* doc, app::DocumentPreferences* docPref, bool save)
+void Preferences::serializeDocPref(const Doc* doc, app::DocumentPreferences* docPref, bool save)
 {
   bool flush_config = false;
 

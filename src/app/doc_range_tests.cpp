@@ -7,11 +7,11 @@
 #include "tests/test.h"
 
 #include "app/context.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
-#include "app/document.h"
 #include "app/test_context.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
@@ -73,7 +73,7 @@ std::ostream& operator<<(std::ostream& os, const doc::LayerList& layers) {
 
 } // namespace std
 
-typedef base::UniquePtr<app::Document> DocumentPtr;
+typedef base::UniquePtr<Doc> DocPtr;
 
 #define EXPECT_LAYER_ORDER(a, b, c, d) \
   EXPECT_TRUE(expect_layer(a, 0));     \
@@ -130,7 +130,7 @@ public:
   DocRangeOps() {
     expected_color = rgba(255, 255, 255, 255);
 
-    doc.reset(static_cast<app::Document*>(ctx.documents().add(6, 4)));
+    doc.reset(ctx.documents().add(6, 4));
     sprite = doc->sprite();
     layer1 = dynamic_cast<LayerImage*>(sprite->root()->firstLayer());
     layer2 = new LayerImage(sprite);
@@ -289,7 +289,7 @@ protected:
   }
 
   TestContextT<app::Context> ctx;
-  DocumentPtr doc;
+  DocPtr doc;
   Sprite* sprite;
   LayerImage* layer1;
   LayerImage* layer2;
@@ -1150,7 +1150,7 @@ TEST_F(DocRangeOps, ReverseCels) {
 
 TEST(DocRangeOps2, DropInsideBugs) {
   TestContextT<app::Context> ctx;
-  DocumentPtr doc(static_cast<app::Document*>(ctx.documents().add(4, 4)));
+  DocPtr doc(ctx.documents().add(4, 4));
   auto sprite = doc->sprite();
   auto layer1 = dynamic_cast<LayerImage*>(sprite->root()->firstLayer());
   auto layer2 = new LayerGroup(sprite);

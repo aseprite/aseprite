@@ -21,13 +21,13 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
 
   using namespace doc;
 
   class DocEvent {
   public:
-    DocEvent(Document* document)
+    DocEvent(Doc* document)
       : m_document(document)
       , m_sprite(NULL)
       , m_layer(NULL)
@@ -40,7 +40,7 @@ namespace app {
     }
 
     // Source of the event.
-    Document* document() const { return m_document; }
+    Doc* document() const { return m_document; }
     Sprite* sprite() const { return m_sprite; }
     Layer* layer() const { return m_layer; }
     Cel* cel() const { return m_cel; }
@@ -67,7 +67,7 @@ namespace app {
     void targetFrame(frame_t frame) { m_targetFrame = frame; }
 
   private:
-    Document* m_document;
+    Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     Cel* m_cel;

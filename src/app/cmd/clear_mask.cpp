@@ -11,7 +11,7 @@
 #include "app/cmd/clear_mask.h"
 
 #include "app/cmd/clear_cel.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/algorithm/fill_selection.h"
 #include "doc/cel.h"
 #include "doc/image_impl.h"
@@ -27,7 +27,7 @@ using namespace doc;
 ClearMask::ClearMask(Cel* cel)
   : WithCel(cel)
 {
-  Document* doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
 
   // If the mask is empty or is not visible then we have to clear the
   // entire image in the cel.
@@ -86,7 +86,7 @@ void ClearMask::clear()
 {
   Cel* cel = this->cel();
   Image* image = m_dstImage->image();
-  Document* doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
   Mask* mask = doc->mask();
 
   doc::algorithm::fill_selection(image, m_offset, mask, m_bgcolor);

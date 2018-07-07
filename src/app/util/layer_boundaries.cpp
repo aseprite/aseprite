@@ -97,7 +97,7 @@ void select_layer_boundaries(Layer* layer,
 
   try {
     ContextWriter writer(UIContext::instance(), 500);
-    app::Document* doc = writer.document();
+    Doc* doc = writer.document();
     Sprite* spr = layer->sprite();
     ASSERT(doc == spr->document());
 

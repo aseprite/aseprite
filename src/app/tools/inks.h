@@ -9,8 +9,8 @@
 #include "app/app.h"                // TODO avoid to include this file
 #include "app/color_utils.h"
 #include "app/context.h"
+#include "app/doc.h"
 #include "app/doc_undo.h"
-#include "app/document.h"
 #include "app/tools/pick_ink.h"
 #include "doc/mask.h"
 #include "doc/slice.h"

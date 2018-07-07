@@ -47,7 +47,7 @@ void ReverseFramesCommand::onExecute(Context* context)
   if (!range.enabled())
     return;                     // Nothing to do
 
-  Document* doc = context->activeDocument();
+  Doc* doc = context->activeDocument();
 
   reverse_frames(doc, range);
 

@@ -56,7 +56,7 @@ class AppEditor : public Editor,
                   public EditorObserver,
                   public EditorCustomizationDelegate {
 public:
-  AppEditor(Document* document,
+  AppEditor(Doc* document,
             DocumentViewPreviewDelegate* previewDelegate)
     : Editor(document)
     , m_previewDelegate(previewDelegate) {
@@ -156,7 +156,7 @@ private:
 class PreviewEditor : public Editor,
                       public EditorCustomizationDelegate {
 public:
-  PreviewEditor(Document* document)
+  PreviewEditor(Doc* document)
     : Editor(document, Editor::kShowOutside) { // Don't show grid/mask in preview preview
     setCustomizationDelegate(this);
   }
@@ -188,7 +188,7 @@ public:
   }
 };
 
-DocumentView::DocumentView(Document* document, Type type,
+DocumentView::DocumentView(Doc* document, Type type,
                            DocumentViewPreviewDelegate* previewDelegate)
   : Box(VERTICAL)
   , m_type(type)
@@ -528,7 +528,7 @@ bool DocumentView::onCopy(Context* ctx)
 {
   const ContextReader reader(ctx);
   if (reader.site()->document() &&
-      static_cast<const app::Document*>(reader.site()->document())->isMaskVisible() &&
+      static_cast<const Doc*>(reader.site()->document())->isMaskVisible() &&
       reader.site()->image()) {
     clipboard::copy(reader);
     return true;
@@ -550,7 +550,7 @@ bool DocumentView::onPaste(Context* ctx)
 bool DocumentView::onClear(Context* ctx)
 {
   ContextWriter writer(ctx);
-  Document* document = writer.document();
+  Doc* document = writer.document();
   bool visibleMask = document->isMaskVisible();
 
   if (!writer.cel())

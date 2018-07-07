@@ -250,7 +250,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   }
 
   Decorator* decorator = static_cast<Decorator*>(editor->decorator());
-  Document* document = editor->document();
+  Doc* document = editor->document();
 
   // Transform selected pixels
   if (document->isMaskVisible() &&
@@ -513,7 +513,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
            command->id() == CommandId::Clear()) {
     // Copy the floating image to the clipboard on Cut/Copy.
     if (command->id() != CommandId::Clear()) {
-      Document* document = m_editor->document();
+      Doc* document = m_editor->document();
       base::UniquePtr<Image> floatingImage;
       base::UniquePtr<Mask> floatingMask;
       m_pixelsMovement->getDraggedImageCopy(floatingImage, floatingMask);
@@ -667,7 +667,7 @@ Transformation MovingPixelsState::getTransformation(Editor* editor)
 
 bool MovingPixelsState::isActiveDocument() const
 {
-  Document* doc = UIContext::instance()->activeDocument();
+  Doc* doc = UIContext::instance()->activeDocument();
   return (m_editor->document() == doc);
 }
 

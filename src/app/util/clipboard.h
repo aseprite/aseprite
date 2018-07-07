@@ -21,7 +21,7 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
   class ContextReader;
   class ContextWriter;
   class DocRange;
@@ -52,7 +52,7 @@ namespace app {
     };
 
     ClipboardFormat get_current_format();
-    void get_document_range_info(Document** document, DocRange* range);
+    void get_document_range_info(Doc** document, DocRange* range);
 
     void clear_content();
     void cut(ContextWriter& context);

@@ -10,7 +10,7 @@
 
 #include "app/ui/frame_tag_window.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "doc/frame_tag.h"
@@ -21,7 +21,7 @@ namespace app {
 FrameTagWindow::FrameTagWindow(const doc::Sprite* sprite, const doc::FrameTag* frameTag)
   : m_sprite(sprite)
   , m_base(Preferences::instance().document(
-     static_cast<app::Document*>(sprite->document())).timeline.firstFrame())
+     static_cast<Doc*>(sprite->document())).timeline.firstFrame())
 {
   name()->setText(frameTag->name());
   from()->setTextf("%d", frameTag->fromFrame()+m_base);

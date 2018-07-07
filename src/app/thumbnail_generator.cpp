@@ -11,7 +11,7 @@
 #include "app/thumbnail_generator.h"
 
 #include "app/app.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
 #include "app/ui/editor/editor_render.h"

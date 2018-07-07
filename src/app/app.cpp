@@ -363,19 +363,19 @@ void App::run()
   // Destroy all documents in the UIContext.
   const Docs& docs = m_modules->m_context.documents();
   while (!docs.empty()) {
-    Document* doc = docs.back();
+    Doc* doc = docs.back();
 
     // First we close the document. In this way we receive recent
-    // notifications related to the document as an app::Document. If
-    // we delete the document directly, we destroy the app::Document
+    // notifications related to the document as a app::Doc. If
+    // we delete the document directly, we destroy the app::Doc
     // too early, and then doc::~Document() call
     // DocsObserver::onRemoveDocument(). In this way, observers
-    // could think that they have a fully created app::Document when
+    // could think that they have a fully created app::Doc when
     // in reality it's a doc::Document (in the middle of a
     // destruction process).
     //
     // TODO: This problem is because we're extending doc::Document,
-    // in the future, we should remove app::Document.
+    // in the future, we should remove app::Doc.
     doc->close();
     delete doc;
   }
@@ -618,7 +618,7 @@ PixelFormat app_get_current_pixel_format()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  Document* document = context->activeDocument();
+  Doc* document = context->activeDocument();
   if (document != NULL)
     return document->sprite()->pixelFormat();
   else

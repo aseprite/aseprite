@@ -43,7 +43,7 @@ void MovingSelectionState::onEnterState(Editor* editor)
 
 EditorState::LeaveAction MovingSelectionState::onLeaveState(Editor* editor, EditorState* newState)
 {
-  Document* doc = editor->document();
+  Doc* doc = editor->document();
   Mask* mask = doc->mask();
   gfx::Point newOrigin = mask->bounds().origin();
 

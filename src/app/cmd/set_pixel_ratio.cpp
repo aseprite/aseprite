@@ -10,9 +10,9 @@
 
 #include "app/cmd/set_pixel_ratio.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/doc_observer.h"
-#include "app/document.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -44,7 +44,7 @@ void SetPixelRatio::onUndo()
 void SetPixelRatio::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
-  auto doc = static_cast<Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
   doc->notify_observers<DocEvent&>(&DocObserver::onSpritePixelRatioChanged, ev);

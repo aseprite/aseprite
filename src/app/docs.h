@@ -19,12 +19,12 @@
 namespace app {
 
   class Context;
-  class Document;
+  class Doc;
 
   class Docs : public obs::observable<DocsObserver> {
   public:
-    typedef std::vector<Document*>::iterator iterator;
-    typedef std::vector<Document*>::const_iterator const_iterator;
+    typedef std::vector<Doc*>::iterator iterator;
+    typedef std::vector<Doc*>::const_iterator const_iterator;
 
     Docs(Context* ctx);
     ~Docs();
@@ -34,39 +34,39 @@ namespace app {
     const_iterator begin() const { return m_docs.begin(); }
     const_iterator end() const { return m_docs.end(); }
 
-    Document* front() const { return m_docs.front(); }
-    Document* back() const { return m_docs.back(); }
-    Document* lastAdded() const { return front(); }
+    Doc* front() const { return m_docs.front(); }
+    Doc* back() const { return m_docs.back(); }
+    Doc* lastAdded() const { return front(); }
 
     int size() const { return (int)m_docs.size(); }
     bool empty() const { return m_docs.empty(); }
 
     // Add a new documents to the list.
-    Document* add(int width, int height,
-                  doc::ColorMode mode = doc::ColorMode::RGB,
-                  int ncolors = 256);
-    Document* add(Document* doc);
+    Doc* add(int width, int height,
+             doc::ColorMode mode = doc::ColorMode::RGB,
+             int ncolors = 256);
+    Doc* add(Doc* doc);
 
     // Removes a document from the list without deleting it. You must
     // to delete the document after removing it.
-    void remove(Document* doc);
+    void remove(Doc* doc);
 
     // Moves the document to the given location in the same
     // list. E.g. It is used to reorder documents when they are
     // selected as active.
-    void move(Document* doc, int index);
+    void move(Doc* doc, int index);
 
-    Document* operator[](int index) const { return m_docs[index]; }
-    Document* getById(doc::ObjectId id) const;
-    Document* getByName(const std::string& name) const;
-    Document* getByFileName(const std::string& filename) const;
+    Doc* operator[](int index) const { return m_docs[index]; }
+    Doc* getById(doc::ObjectId id) const;
+    Doc* getByName(const std::string& name) const;
+    Doc* getByFileName(const std::string& filename) const;
 
   private:
     // Deletes all documents in the list (calling "delete" operation).
     void deleteAll();
 
     Context* m_ctx;
-    std::vector<Document*> m_docs;
+    std::vector<Doc*> m_docs;
 
     DISABLE_COPYING(Docs);
   };

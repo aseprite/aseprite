@@ -9,7 +9,7 @@
 #pragma once
 
 namespace app {
-  class Document;
+  class Doc;
 
   struct DocumentDiff {
     bool anything : 1;
@@ -37,8 +37,8 @@ namespace app {
 
   // Useful for testing purposes to detect if two documents (after
   // some kind of operation) are equivalent.
-  DocumentDiff compare_docs(const Document* a,
-                            const Document* b);
+  DocumentDiff compare_docs(const Doc* a,
+                            const Doc* b);
 
 } // namespace app
 

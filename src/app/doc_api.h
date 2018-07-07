@@ -28,7 +28,7 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
   class Transaction;
 
   using namespace doc;
@@ -39,7 +39,7 @@ namespace app {
   // TODO refactor this class in several Cmd, don't make it bigger
   class DocApi {
   public:
-    DocApi(Document* document, Transaction& transaction);
+    DocApi(Doc* document, Transaction& transaction);
 
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);
@@ -120,7 +120,7 @@ namespace app {
                          const DropFramePlace dropFramePlace,
                          const TagsHandling tagsHandling);
 
-    Document* m_document;
+    Doc* m_document;
     Transaction& m_transaction;
   };
 

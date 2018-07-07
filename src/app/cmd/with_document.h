@@ -11,13 +11,13 @@
 #include "doc/object_id.h"
 
 namespace app {
-class Document;
+class Doc;
 namespace cmd {
 
   class WithDocument {
   public:
-    WithDocument(app::Document* doc);
-    app::Document* document();
+    WithDocument(Doc* doc);
+    Doc* document();
 
   private:
     doc::ObjectId m_docId;

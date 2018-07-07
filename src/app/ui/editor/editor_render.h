@@ -32,7 +32,7 @@ namespace render {
 }
 
 namespace app {
-  class Document;
+  class Doc;
 
   class EditorRender {
   public:
@@ -44,7 +44,7 @@ namespace app {
 
     void setProjection(const render::Projection& projection);
 
-    void setupBackground(app::Document* doc, doc::PixelFormat pixelFormat);
+    void setupBackground(Doc* doc, doc::PixelFormat pixelFormat);
     void setTransparentBackground();
 
     void setSelectedLayer(const doc::Layer* layer);

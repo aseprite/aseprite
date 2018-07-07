@@ -202,7 +202,7 @@ static bool has_child(LayerGroup* parent, Layer* child)
 }
 
 static DocRange drop_range_op(
-  Document* doc,
+  Doc* doc,
   const Op op,
   const DocRange& from,
   DocRangePlace place,
@@ -463,27 +463,27 @@ static DocRange drop_range_op(
   return resultRange;
 }
 
-DocRange move_range(Document* doc,
-                         const DocRange& from,
-                         const DocRange& to,
-                         const DocRangePlace place,
-                         const TagsHandling tagsHandling)
+DocRange move_range(Doc* doc,
+                    const DocRange& from,
+                    const DocRange& to,
+                    const DocRangePlace place,
+                    const TagsHandling tagsHandling)
 {
   return drop_range_op(doc, Move, from, place,
                        tagsHandling, DocRange(to));
 }
 
-DocRange copy_range(Document* doc,
-                         const DocRange& from,
-                         const DocRange& to,
-                         const DocRangePlace place,
-                         const TagsHandling tagsHandling)
+DocRange copy_range(Doc* doc,
+                    const DocRange& from,
+                    const DocRange& to,
+                    const DocRangePlace place,
+                    const TagsHandling tagsHandling)
 {
   return drop_range_op(doc, Copy, from, place,
                        tagsHandling, DocRange(to));
 }
 
-void reverse_frames(Document* doc, const DocRange& range)
+void reverse_frames(Doc* doc, const DocRange& range)
 {
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);

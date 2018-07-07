@@ -13,7 +13,7 @@
 #include "app/app.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/script/image_wrap.h"
 #include "app/site.h"
@@ -23,7 +23,7 @@
 
 namespace app {
 
-SpriteWrap::SpriteWrap(app::Document* doc)
+SpriteWrap::SpriteWrap(Doc* doc)
   : m_doc(doc)
   , m_view(App::instance()->context()->getFirstDocumentView(m_doc))
   , m_transaction(nullptr)
@@ -66,7 +66,7 @@ void SpriteWrap::commitImages()
     it.second->commit();
 }
 
-app::Document* SpriteWrap::document()
+Doc* SpriteWrap::document()
 {
   return m_doc;
 }

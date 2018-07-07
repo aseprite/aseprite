@@ -378,7 +378,7 @@ void MainWindow::onActiveViewChange()
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
 {
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
-    Document* document = docView->document();
+    Doc* document = docView->document();
     return document->isModified();
   }
   else {
@@ -438,12 +438,12 @@ void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
 {
   WorkspacePanel* mainPanel = m_workspace->mainPanel();
   WorkspaceView* oldActiveView = mainPanel->activeView();
-  app::Document* oldDoc = static_cast<app::Document*>(UIContext::instance()->activeDocument());
+  Doc* oldDoc = UIContext::instance()->activeDocument();
 
   Command* command = Commands::instance()->byId(CommandId::NewFile());
   UIContext::instance()->executeCommand(command);
 
-  app::Document* newDoc = static_cast<app::Document*>(UIContext::instance()->activeDocument());
+  Doc* newDoc = UIContext::instance()->activeDocument();
   if (newDoc != oldDoc) {
     WorkspacePanel* doubleClickedPanel =
       static_cast<WorkspaceTabs*>(tabs)->panel();
@@ -466,7 +466,7 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
-    Document* document = docView->document();
+    Doc* document = docView->document();
 
     std::string name;
     if (Preferences::instance().general.showFullPath())

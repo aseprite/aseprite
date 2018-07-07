@@ -37,7 +37,7 @@ namespace filters {
 namespace app {
 
   class Context;
-  class Document;
+  class Doc;
   class Transaction;
 
   using namespace filters;
@@ -89,7 +89,7 @@ namespace app {
     bool isTransaction() const;
     void commitTransaction();
 
-    app::Document* document();
+    Doc* document();
     doc::Sprite* sprite() { return m_site.sprite(); }
     doc::Layer* layer() { return m_site.layer(); }
     doc::frame_t frame() { return m_site.frame(); }

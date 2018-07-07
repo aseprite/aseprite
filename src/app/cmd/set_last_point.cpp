@@ -10,12 +10,12 @@
 
 #include "app/cmd/set_last_point.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 
 namespace app {
 namespace cmd {
 
-SetLastPoint::SetLastPoint(Document* doc, const gfx::Point& pos)
+SetLastPoint::SetLastPoint(Doc* doc, const gfx::Point& pos)
   : WithDocument(doc)
   , m_oldPoint(doc->lastDrawingPoint())
   , m_newPoint(pos)
@@ -34,7 +34,7 @@ void SetLastPoint::onUndo()
 
 void SetLastPoint::setLastPoint(const gfx::Point& pos)
 {
-  Document* doc = document();
+  Doc* doc = document();
   doc->setLastDrawingPoint(pos);
 }
 

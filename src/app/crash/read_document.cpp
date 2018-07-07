@@ -12,7 +12,7 @@
 
 #include "app/console.h"
 #include "app/crash/internals.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -86,8 +86,8 @@ public:
     }
   }
 
-  app::Document* loadDocument() {
-    app::Document* doc = loadObject<app::Document*>("doc", m_docId, &Reader::readDocument);
+  Doc* loadDocument() {
+    Doc* doc = loadObject<Doc*>("doc", m_docId, &Reader::readDocument);
     if (doc)
       fixUndetectedDocumentIssues(doc);
     else
@@ -98,8 +98,8 @@ public:
   bool loadDocumentInfo(DocumentInfo& info) {
     m_loadInfo = &info;
     return
-      loadObject<app::Document*>("doc", m_docId, &Reader::readDocument)
-      == (app::Document*)1;
+      loadObject<Doc*>("doc", m_docId, &Reader::readDocument)
+        == (Doc*)1;
   }
 
 private:
@@ -170,19 +170,19 @@ private:
     return nullptr;
   }
 
-  app::Document* readDocument(std::ifstream& s) {
+  Doc* readDocument(std::ifstream& s) {
     ObjectId sprId = read32(s);
     std::string filename = read_string(s);
 
     // Load DocumentInfo only
     if (m_loadInfo) {
       m_loadInfo->filename = filename;
-      return (app::Document*)loadSprite(sprId);
+      return (Doc*)loadSprite(sprId);
     }
 
     Sprite* spr = loadSprite(sprId);
     if (spr) {
-      app::Document* doc = new app::Document(spr);
+      Doc* doc = new Doc(spr);
       doc->setFilename(filename);
       doc->impossibleToBackToSavedState();
       return doc;
@@ -373,7 +373,7 @@ private:
   }
 
   // Fix issues that the restoration process could produce.
-  void fixUndetectedDocumentIssues(app::Document* doc) {
+  void fixUndetectedDocumentIssues(Doc* doc) {
     Sprite* spr = doc->sprite();
     ASSERT(spr);
     if (!spr)
@@ -415,13 +415,13 @@ bool read_document_info(const std::string& dir, DocumentInfo& info)
   return Reader(dir).loadDocumentInfo(info);
 }
 
-app::Document* read_document(const std::string& dir)
+Doc* read_document(const std::string& dir)
 {
   return Reader(dir).loadDocument();
 }
 
-app::Document* read_document_with_raw_images(const std::string& dir,
-                                             RawImagesAs as)
+Doc* read_document_with_raw_images(const std::string& dir,
+                                   RawImagesAs as)
 {
   Reader reader(dir);
 
@@ -472,7 +472,7 @@ app::Document* read_document_with_raw_images(const std::string& dir,
       spr->setTotalFrames(frame);
   }
 
-  app::Document* doc = new app::Document(spr);
+  Doc* doc = new Doc(spr);
   doc->setFilename(info.filename);
   doc->impossibleToBackToSavedState();
   return doc;

@@ -10,7 +10,7 @@
 
 #include "app/cmd/clear_rect.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -42,7 +42,7 @@ ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
 
   m_dstImage.reset(new WithImage(image));
 
-  Document* doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
   m_bgcolor = doc->bgColor(cel->layer());
 
   m_copy.reset(crop_image(image,

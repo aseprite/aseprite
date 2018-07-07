@@ -81,7 +81,7 @@ void RemoveSliceCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader, 500);
-    Document* document(writer.document());
+    Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
     Transaction transaction(writer.context(), "Remove Slice");
     Slice* slice = const_cast<Slice*>(foundSlice);

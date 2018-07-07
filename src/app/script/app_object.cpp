@@ -9,10 +9,10 @@
 #endif
 
 #include "app/app.h"
-#include "app/context.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/document.h"
+#include "app/context.h"
+#include "app/doc.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
 #include "script/engine.h"
@@ -29,7 +29,7 @@ void App_open(script::ContextHandle handle)
   const char* filename = ctx.requireString(1);
 
   app::Context* appCtx = App::instance()->context();
-  app::Document* oldDoc = appCtx->activeDocument();
+  Doc* oldDoc = appCtx->activeDocument();
 
   Command* openCommand =
     Commands::instance()->byId(CommandId::OpenFile());
@@ -37,7 +37,7 @@ void App_open(script::ContextHandle handle)
   params.set("filename", filename);
   appCtx->executeCommand(openCommand, params);
 
-  app::Document* newDoc = appCtx->activeDocument();
+  Doc* newDoc = appCtx->activeDocument();
   if (newDoc != oldDoc)
     ctx.newObject("Sprite", unwrap_engine(ctx)->wrapSprite(newDoc), nullptr);
   else
@@ -60,7 +60,7 @@ void App_get_activeSprite(script::ContextHandle handle)
 {
   script::Context ctx(handle);
   app::Context* appCtx = App::instance()->context();
-  app::Document* doc = appCtx->activeDocument();
+  Doc* doc = appCtx->activeDocument();
   if (doc)
     ctx.newObject("Sprite", unwrap_engine(ctx)->wrapSprite(doc), nullptr);
   else
@@ -71,7 +71,7 @@ void App_get_activeImage(script::ContextHandle handle)
 {
   script::Context ctx(handle);
   app::Context* appCtx = App::instance()->context();
-  app::Document* doc = appCtx->activeDocument();
+  Doc* doc = appCtx->activeDocument();
   if (doc) {
     SpriteWrap* sprWrap = unwrap_engine(ctx)->wrapSprite(doc);
     ASSERT(sprWrap);

@@ -12,7 +12,7 @@
 
 #include "app/cmd/clear_image.h"
 #include "app/cmd/remove_cel.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 
@@ -24,7 +24,7 @@ using namespace doc;
 ClearCel::ClearCel(Cel* cel)
   : WithCel(cel)
 {
-  Document* doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
 
   if (cel->layer()->isBackground()) {
     Image* image = cel->image();

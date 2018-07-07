@@ -129,7 +129,7 @@ private:
 // static
 EditorRender* Editor::m_renderEngine = nullptr;
 
-Editor::Editor(Document* document, EditorFlags flags)
+Editor::Editor(Doc* document, EditorFlags flags)
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
@@ -1586,7 +1586,7 @@ bool Editor::startStraightLineWithFreehandTool(const ui::MouseMessage* msg)
      tool->getInk(i)->isPaint() &&
      (getCustomizationDelegate()
       ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
-     document()->lastDrawingPoint() != app::Document::NoLastDrawingPoint());
+     document()->lastDrawingPoint() != Doc::NoLastDrawingPoint());
 }
 
 //////////////////////////////////////////////////////////////////////

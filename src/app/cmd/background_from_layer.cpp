@@ -16,7 +16,7 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -42,7 +42,7 @@ void BackgroundFromLayer::onExecute()
 {
   Layer* layer = this->layer();
   Sprite* sprite = layer->sprite();
-  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  auto doc = static_cast<Doc*>(sprite->document());
   color_t bgcolor = doc->bgColor();
 
   // create a temporary image to draw each frame of the new

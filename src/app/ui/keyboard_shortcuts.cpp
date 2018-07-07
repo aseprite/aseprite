@@ -15,7 +15,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -639,7 +639,7 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
 
 KeyContext KeyboardShortcuts::getCurrentKeyContext()
 {
-  Document* doc = UIContext::instance()->activeDocument();
+  Doc* doc = UIContext::instance()->activeDocument();
 
   if (doc &&
       doc->isMaskVisible() &&

@@ -24,7 +24,7 @@ namespace app {
     class TimelineConf;
   }
 
-  class Document;
+  class Doc;
 
   class ConfigureTimelinePopup : public ui::PopupWindow {
   public:
@@ -49,7 +49,7 @@ namespace app {
 
   private:
     void updateWidgetsFromCurrentSettings();
-    app::Document* doc();
+    Doc* doc();
     DocumentPreferences& docPref();
 
     app::gen::TimelineConf* m_box;

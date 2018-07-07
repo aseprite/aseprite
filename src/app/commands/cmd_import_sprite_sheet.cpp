@@ -101,7 +101,7 @@ public:
     return closer() == import();
   }
 
-  Document* document() const {
+  Doc* document() const {
     return m_document;
   }
 
@@ -120,7 +120,7 @@ protected:
   }
 
   void onSelectFile() {
-    Document* oldActiveDocument = m_context->activeDocument();
+    Doc* oldActiveDocument = m_context->activeDocument();
     Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
     Params params;
     params.set("filename", "");
@@ -190,7 +190,7 @@ protected:
 
 private:
   void selectActiveDocument() {
-    Document* oldDocument = m_document;
+    Doc* oldDocument = m_document;
     m_document = m_context->activeDocument();
 
     // If the user already have selected a file, we have to destroy
@@ -275,7 +275,7 @@ private:
   }
 
   Context* m_context;
-  Document* m_document;
+  Doc* m_document;
   Editor* m_editor;
   EditorStatePtr m_editorState;
   gfx::Rect m_rect;
@@ -309,7 +309,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
   if (!window.ok())
     return;
 
-  Document* document = window.document();
+  Doc* document = window.document();
   DocumentPreferences* docPref = window.docPref();
   gfx::Rect frameBounds = window.frameBounds();
   bool partialTiles = window.partialTilesValue();

@@ -210,7 +210,7 @@ void RotateCommand::onExecute(Context* context)
                site.layer()->isEditable()) {
         // If we want to rotate the visible mask for the current cel,
         // we can go to MovingPixelsState.
-        if (static_cast<app::Document*>(site.document())->isMaskVisible()) {
+        if (site.document()->isMaskVisible()) {
           // Select marquee tool
           if (tools::Tool* tool = App::instance()->toolBox()
               ->getToolById(tools::WellKnownTools::RectangularMarquee)) {

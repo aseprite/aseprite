@@ -14,7 +14,7 @@
 #include "app/context.h"
 #include "app/crash/read_document.h"
 #include "app/crash/write_document.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/document_access.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
@@ -145,7 +145,7 @@ void Session::removeFromDisk()
 class CustomWeakDocumentReader : public WeakDocumentReader
                                , public doc::CancelIO {
 public:
-  explicit CustomWeakDocumentReader(Document* doc)
+  explicit CustomWeakDocumentReader(Doc* doc)
     : WeakDocumentReader(doc) {
   }
 
@@ -155,7 +155,7 @@ public:
   }
 };
 
-bool Session::saveDocumentChanges(app::Document* doc)
+bool Session::saveDocumentChanges(Doc* doc)
 {
   CustomWeakDocumentReader reader(doc);
   if (!reader.isLocked())
@@ -173,7 +173,7 @@ bool Session::saveDocumentChanges(app::Document* doc)
   return write_document(dir, doc, &reader);
 }
 
-void Session::removeDocument(app::Document* doc)
+void Session::removeDocument(Doc* doc)
 {
   try {
     delete_document_internals(doc);
@@ -189,11 +189,11 @@ void Session::removeDocument(app::Document* doc)
   }
 }
 
-app::Document* Session::restoreBackupDoc(const std::string& backupDir)
+Doc* Session::restoreBackupDoc(const std::string& backupDir)
 {
   Console console;
   try {
-    app::Document* doc = read_document(backupDir);
+    Doc* doc = read_document(backupDir);
     if (doc) {
       fixFilename(doc);
       return doc;
@@ -207,7 +207,7 @@ app::Document* Session::restoreBackupDoc(const std::string& backupDir)
 
 void Session::restoreBackup(Backup* backup)
 {
-  app::Document* doc = restoreBackupDoc(backup->dir());
+  Doc* doc = restoreBackupDoc(backup->dir());
   if (doc)
     UIContext::instance()->documents().add(doc);
 }
@@ -218,12 +218,12 @@ void Session::restoreBackupById(const ObjectId id)
   if (!base::is_directory(docDir))
     return;
 
-  app::Document* doc = restoreBackupDoc(docDir);
+  Doc* doc = restoreBackupDoc(docDir);
   if (doc)
     UIContext::instance()->documents().add(doc);
 }
 
-app::Document* Session::restoreBackupDocById(const doc::ObjectId id)
+Doc* Session::restoreBackupDocById(const doc::ObjectId id)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
   if (!base::is_directory(docDir))
@@ -236,7 +236,7 @@ void Session::restoreRawImages(Backup* backup, RawImagesAs as)
 {
   Console console;
   try {
-    app::Document* doc = read_document_with_raw_images(backup->dir(), as);
+    Doc* doc = read_document_with_raw_images(backup->dir(), as);
     if (doc) {
       fixFilename(doc);
       UIContext::instance()->documents().add(doc);
@@ -302,7 +302,7 @@ void Session::deleteDirectory(const std::string& dir)
   base::remove_directory(dir);
 }
 
-void Session::fixFilename(app::Document* doc)
+void Session::fixFilename(Doc* doc)
 {
   std::string fn = doc->filename();
   if (fn.empty())

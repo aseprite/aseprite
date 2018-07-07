@@ -15,7 +15,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -157,7 +157,7 @@ void MaskByColorCommand::onExecute(Context* context)
   bool apply = (m_window->closer() == button_ok);
 
   ContextWriter writer(reader);
-  Document* document(writer.document());
+  Doc* document(writer.document());
 
   if (apply) {
     Transaction transaction(writer.context(), "Mask by Color", DoesntModifyDocument);

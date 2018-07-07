@@ -43,7 +43,7 @@ void EditorRender::setProjection(const render::Projection& projection)
   m_render->setProjection(projection);
 }
 
-void EditorRender::setupBackground(app::Document* doc, doc::PixelFormat pixelFormat)
+void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
 {
   DocumentPreferences& docPref = Preferences::instance().document(doc);
   render::BgType bgType;

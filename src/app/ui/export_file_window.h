@@ -16,11 +16,11 @@
 #include <string>
 
 namespace app {
-  class Document;
+  class Doc;
 
   class ExportFileWindow : protected app::gen::ExportFile {
   public:
-    ExportFileWindow(const Document* doc);
+    ExportFileWindow(const Doc* doc);
 
     bool show();
     void savePref();
@@ -45,7 +45,7 @@ namespace app {
     void onOK();
     std::string defaultExtension() const;
 
-    const Document* m_doc;
+    const Doc* m_doc;
     DocumentPreferences& m_docPref;
     std::string m_outputPath;
     std::string m_outputFilename;

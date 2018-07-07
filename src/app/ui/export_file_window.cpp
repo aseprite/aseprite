@@ -10,7 +10,7 @@
 
 #include "app/ui/export_file_window.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/i18n/strings.h"
 #include "app/site.h"
@@ -29,7 +29,7 @@
 
 namespace app {
 
-ExportFileWindow::ExportFileWindow(const Document* doc)
+ExportFileWindow::ExportFileWindow(const Doc* doc)
   : m_doc(doc)
   , m_docPref(Preferences::instance().document(doc))
   , m_preferredResize(1)

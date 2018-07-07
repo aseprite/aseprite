@@ -11,7 +11,7 @@
 #include "app/util/range_utils.h"
 
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/doc_range.h"
 #include "doc/cel.h"
 #include "doc/layer.h"

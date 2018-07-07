@@ -108,7 +108,7 @@ void AddColorCommand::onExecute(Context* ctx)
       return;
 
     ContextWriter writer(ctx, 500);
-    Document* document(writer.document());
+    Doc* document(writer.document());
     Sprite* sprite = writer.sprite();
     if (!document || !sprite) {
       ASSERT(false);

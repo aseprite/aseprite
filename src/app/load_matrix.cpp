@@ -11,7 +11,7 @@
 #include "app/load_matrix.h"
 
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -23,7 +23,7 @@ bool load_dithering_matrix_from_sprite(
   const std::string& filename,
   render::DitheringMatrix& matrix)
 {
-  base::UniquePtr<doc::Document> doc(load_document(nullptr, filename));
+  base::UniquePtr<Doc> doc(load_document(nullptr, filename));
   if (!doc)
     return false;
 

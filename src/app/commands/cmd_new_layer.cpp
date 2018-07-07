@@ -108,11 +108,11 @@ private:
 void NewLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   std::string name;
 
-  app::Document* pasteDoc = nullptr;
+  Doc* pasteDoc = nullptr;
   Scoped destroyPasteDoc(
     [&pasteDoc, context]{
       if (pasteDoc) {
@@ -129,7 +129,7 @@ void NewLayerCommand::onExecute(Context* context)
 
   // Select a file to copy its content
   if (m_fromFile) {
-    Document* oldActiveDocument = context->activeDocument();
+    Doc* oldActiveDocument = context->activeDocument();
     Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
     Params params;
     params.set("filename", "");

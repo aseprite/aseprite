@@ -36,7 +36,7 @@ ReselectMaskCommand::ReselectMaskCommand()
 bool ReselectMaskCommand::onEnabled(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   return
      document &&                      // The document does exist
     !document->isMaskVisible() &&     // The mask is hidden
@@ -47,7 +47,7 @@ bool ReselectMaskCommand::onEnabled(Context* context)
 void ReselectMaskCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   {
     Transaction transaction(writer.context(), "Reselect", DoesntModifyDocument);
     transaction.execute(new cmd::ReselectMask(document));

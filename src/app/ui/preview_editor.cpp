@@ -11,7 +11,7 @@
 #include "app/ui/preview_editor.h"
 
 #include "app/app.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
@@ -285,7 +285,7 @@ bool PreviewEditorWindow::hasDocument() const
 
 DocumentPreferences& PreviewEditorWindow::docPref()
 {
-  Document* doc = (m_docView ? m_docView->document(): nullptr);
+  Doc* doc = (m_docView ? m_docView->document(): nullptr);
   return Preferences::instance().document(doc);
 }
 
@@ -346,7 +346,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 
   m_relatedEditor = editor;
 
-  Document* document = editor->document();
+  Doc* document = editor->document();
   Editor* miniEditor = (m_docView ? m_docView->editor(): nullptr);
 
   if (!isVisible())

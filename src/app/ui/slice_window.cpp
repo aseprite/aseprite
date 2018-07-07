@@ -10,7 +10,7 @@
 
 #include "app/ui/slice_window.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ui/user_data_popup.h"
 #include "base/bind.h"
 #include "doc/slice.h"

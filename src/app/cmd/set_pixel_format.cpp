@@ -14,8 +14,8 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_palette.h"
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -148,7 +148,7 @@ void SetPixelFormat::setFormat(PixelFormat format)
   sprite->incrementVersion();
 
   // Regenerate extras
-  auto doc = static_cast<Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   doc->setExtraCel(ExtraCelRef(nullptr));
 
   // Generate notification

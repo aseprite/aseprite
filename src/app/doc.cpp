@@ -8,17 +8,17 @@
 #include "config.h"
 #endif
 
-#include "app/document.h"
+#include "app/doc.h"
 
 #include "app/app.h"
 #include "app/color_target.h"
 #include "app/color_utils.h"
 #include "app/context.h"
 #include "app/context.h"
+#include "app/doc_api.h"
 #include "app/doc_event.h"
 #include "app/doc_observer.h"
 #include "app/doc_undo.h"
-#include "app/doc_api.h"
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/pref/preferences.h"
@@ -41,7 +41,7 @@ namespace app {
 using namespace base;
 using namespace doc;
 
-Document::Document(Sprite* sprite)
+Doc::Doc(Sprite* sprite)
   : m_ctx(nullptr)
   , m_flags(kMaskVisible)
   , m_undo(new DocUndo)
@@ -49,7 +49,7 @@ Document::Document(Sprite* sprite)
   , m_format_options(nullptr)
   // Mask
   , m_mask(new Mask())
-  , m_lastDrawingPoint(Document::NoLastDrawingPoint())
+  , m_lastDrawingPoint(Doc::NoLastDrawingPoint())
 {
   setFilename("Sprite");
 
@@ -57,12 +57,12 @@ Document::Document(Sprite* sprite)
     sprites().add(sprite);
 }
 
-Document::~Document()
+Doc::~Doc()
 {
   removeFromContext();
 }
 
-void Document::setContext(Context* ctx)
+void Doc::setContext(Context* ctx)
 {
   if (ctx == m_ctx)
     return;
@@ -76,7 +76,7 @@ void Document::setContext(Context* ctx)
   onContextChanged();
 }
 
-DocApi Document::getApi(Transaction& transaction)
+DocApi Doc::getApi(Transaction& transaction)
 {
   return DocApi(this, transaction);
 }
@@ -84,7 +84,7 @@ DocApi Document::getApi(Transaction& transaction)
 //////////////////////////////////////////////////////////////////////
 // Main properties
 
-color_t Document::bgColor() const
+color_t Doc::bgColor() const
 {
   return color_utils::color_for_target(
     Preferences::instance().colorBar.bgColor(),
@@ -93,7 +93,7 @@ color_t Document::bgColor() const
                 sprite()->transparentColor()));
 }
 
-color_t Document::bgColor(Layer* layer) const
+color_t Doc::bgColor(Layer* layer) const
 {
   if (layer->isBackground())
     return color_utils::color_for_layer(
@@ -106,13 +106,13 @@ color_t Document::bgColor(Layer* layer) const
 //////////////////////////////////////////////////////////////////////
 // Notifications
 
-void Document::notifyGeneralUpdate()
+void Doc::notifyGeneralUpdate()
 {
   DocEvent ev(this);
   notify_observers<DocEvent&>(&DocObserver::onGeneralUpdate, ev);
 }
 
-void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
+void Doc::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
 {
   DocEvent ev(this);
   ev.sprite(sprite);
@@ -121,7 +121,7 @@ void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& reg
   notify_observers<DocEvent&>(&DocObserver::onSpritePixelsModified, ev);
 }
 
-void Document::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
+void Doc::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
 {
   DocEvent ev(this);
   ev.sprite(sprite);
@@ -129,7 +129,7 @@ void Document::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& regio
   notify_observers<DocEvent&>(&DocObserver::onExposeSpritePixels, ev);
 }
 
-void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
+void Doc::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 {
   DocEvent ev(this);
   ev.sprite(srcLayer->sprite());
@@ -138,7 +138,7 @@ void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
   notify_observers<DocEvent&>(&DocObserver::onLayerMergedDown, ev);
 }
 
-void Document::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
+void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
   ev.sprite(fromLayer->sprite());
@@ -149,7 +149,7 @@ void Document::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLaye
   notify_observers<DocEvent&>(&DocObserver::onCelMoved, ev);
 }
 
-void Document::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
+void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
   ev.sprite(fromLayer->sprite());
@@ -160,46 +160,46 @@ void Document::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLay
   notify_observers<DocEvent&>(&DocObserver::onCelCopied, ev);
 }
 
-void Document::notifySelectionChanged()
+void Doc::notifySelectionChanged()
 {
   DocEvent ev(this);
   notify_observers<DocEvent&>(&DocObserver::onSelectionChanged, ev);
 }
 
-bool Document::isModified() const
+bool Doc::isModified() const
 {
   return !m_undo->isSavedState();
 }
 
-bool Document::isAssociatedToFile() const
+bool Doc::isAssociatedToFile() const
 {
   return (m_flags & kAssociatedToFile) == kAssociatedToFile;
 }
 
-void Document::markAsSaved()
+void Doc::markAsSaved()
 {
   m_undo->markSavedState();
   m_flags |= kAssociatedToFile;
 }
 
-void Document::impossibleToBackToSavedState()
+void Doc::impossibleToBackToSavedState()
 {
   m_undo->impossibleToBackToSavedState();
 }
 
-bool Document::needsBackup() const
+bool Doc::needsBackup() const
 {
   // If the undo history isn't empty, the user has modified the
   // document, so we need to backup those changes.
   return m_undo->canUndo() || m_undo->canRedo();
 }
 
-bool Document::inhibitBackup() const
+bool Doc::inhibitBackup() const
 {
   return (m_flags & kInhibitBackup) == kInhibitBackup;
 }
 
-void Document::setInhibitBackup(const bool inhibitBackup)
+void Doc::setInhibitBackup(const bool inhibitBackup)
 {
   if (inhibitBackup)
     m_flags |= kInhibitBackup;
@@ -210,7 +210,7 @@ void Document::setInhibitBackup(const bool inhibitBackup)
 //////////////////////////////////////////////////////////////////////
 // Loaded options from file
 
-void Document::setFormatOptions(const base::SharedPtr<FormatOptions>& format_options)
+void Doc::setFormatOptions(const base::SharedPtr<FormatOptions>& format_options)
 {
   m_format_options = format_options;
 }
@@ -218,7 +218,7 @@ void Document::setFormatOptions(const base::SharedPtr<FormatOptions>& format_opt
 //////////////////////////////////////////////////////////////////////
 // Boundaries
 
-void Document::generateMaskBoundaries(const Mask* mask)
+void Doc::generateMaskBoundaries(const Mask* mask)
 {
   m_maskBoundaries.reset();
 
@@ -245,7 +245,7 @@ void Document::generateMaskBoundaries(const Mask* mask)
 //////////////////////////////////////////////////////////////////////
 // Mask
 
-void Document::setMask(const Mask* mask)
+void Doc::setMask(const Mask* mask)
 {
   m_mask.reset(new Mask(*mask));
   m_flags |= kMaskVisible;
@@ -253,7 +253,7 @@ void Document::setMask(const Mask* mask)
   resetTransformation();
 }
 
-bool Document::isMaskVisible() const
+bool Doc::isMaskVisible() const
 {
   return
     (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
@@ -261,7 +261,7 @@ bool Document::isMaskVisible() const
     !m_mask->isEmpty();         // The mask is not empty
 }
 
-void Document::setMaskVisible(bool visible)
+void Doc::setMaskVisible(bool visible)
 {
   if (visible)
     m_flags |= kMaskVisible;
@@ -272,17 +272,17 @@ void Document::setMaskVisible(bool visible)
 //////////////////////////////////////////////////////////////////////
 // Transformation
 
-Transformation Document::getTransformation() const
+Transformation Doc::getTransformation() const
 {
   return m_transformation;
 }
 
-void Document::setTransformation(const Transformation& transform)
+void Doc::setTransformation(const Transformation& transform)
 {
   m_transformation = transform;
 }
 
-void Document::resetTransformation()
+void Doc::resetTransformation()
 {
   if (m_mask)
     m_transformation = Transformation(gfx::RectF(m_mask->bounds()));
@@ -293,7 +293,7 @@ void Document::resetTransformation()
 //////////////////////////////////////////////////////////////////////
 // Copying
 
-void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, Layer* destLayer0) const
+void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destLayer0) const
 {
   LayerFlags dstFlags = sourceLayer0->flags();
 
@@ -383,7 +383,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
   }
 }
 
-Document* Document::duplicate(DuplicateType type) const
+Doc* Doc::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = sprite();
   base::UniquePtr<Sprite> spriteCopyPtr(new Sprite(
@@ -392,7 +392,7 @@ Document* Document::duplicate(DuplicateType type) const
       sourceSprite->height(),
       sourceSprite->palette(frame_t(0))->size()));
 
-  base::UniquePtr<Document> documentCopy(new Document(spriteCopyPtr));
+  base::UniquePtr<Doc> documentCopy(new Doc(spriteCopyPtr));
   Sprite* spriteCopy = spriteCopyPtr.release();
 
   spriteCopy->setTotalFrames(sourceSprite->totalFrames());
@@ -456,22 +456,22 @@ Document* Document::duplicate(DuplicateType type) const
   return documentCopy.release();
 }
 
-void Document::close()
+void Doc::close()
 {
   removeFromContext();
 }
 
-void Document::onFileNameChange()
+void Doc::onFileNameChange()
 {
   notify_observers(&DocObserver::onFileNameChanged, this);
 }
 
-void Document::onContextChanged()
+void Doc::onContextChanged()
 {
   m_undo->setContext(context());
 }
 
-void Document::removeFromContext()
+void Doc::removeFromContext()
 {
   if (m_ctx) {
     m_ctx->documents().remove(this);
@@ -482,7 +482,7 @@ void Document::removeFromContext()
 }
 
 // static
-gfx::Point Document::NoLastDrawingPoint()
+gfx::Point Doc::NoLastDrawingPoint()
 {
   return gfx::Point(std::numeric_limits<int>::min(),
                     std::numeric_limits<int>::min());

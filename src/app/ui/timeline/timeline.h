@@ -50,7 +50,7 @@ namespace app {
   class CommandExecutionEvent;
   class ConfigureTimelinePopup;
   class Context;
-  class Document;
+  class Doc;
   class Editor;
 
   class Timeline : public ui::Widget,
@@ -154,7 +154,7 @@ namespace app {
     void onActiveSiteChange(const Site& site) override;
 
     // DocsObserver impl.
-    void onRemoveDocument(Document* document) override;
+    void onRemoveDocument(Doc* document) override;
 
     // EditorObserver impl.
     void onStateChanged(Editor* editor) override;
@@ -360,7 +360,7 @@ namespace app {
     double m_zoom;
     Context* m_context;
     Editor* m_editor;
-    Document* m_document;
+    Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     frame_t m_frame;

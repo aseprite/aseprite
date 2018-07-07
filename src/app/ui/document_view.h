@@ -19,7 +19,7 @@ namespace ui {
 }
 
 namespace app {
-  class Document;
+  class Doc;
   class Editor;
   class Site;
 
@@ -42,11 +42,11 @@ namespace app {
       Preview
     };
 
-    DocumentView(Document* document, Type type,
+    DocumentView(Doc* document, Type type,
                  DocumentViewPreviewDelegate* previewDelegate);
     ~DocumentView();
 
-    Document* document() const { return m_document; }
+    Doc* document() const { return m_document; }
     Editor* editor() { return m_editor; }
     ui::View* viewWidget() const { return m_view; }
     void getSite(Site* site) const;
@@ -98,7 +98,7 @@ namespace app {
 
   private:
     Type m_type;
-    Document* m_document;
+    Doc* m_document;
     ui::View* m_view;
     DocumentViewPreviewDelegate* m_previewDelegate;
     Editor* m_editor;

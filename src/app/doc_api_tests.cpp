@@ -7,7 +7,7 @@
 #include "tests/test.h"
 
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/test_context.h"
 #include "app/transaction.h"
@@ -19,12 +19,12 @@
 using namespace app;
 using namespace doc;
 
-typedef base::UniquePtr<app::Document> DocumentPtr;
+typedef base::UniquePtr<Doc> DocPtr;
 
 class BasicDocApiTest : public ::testing::Test {
 public:
   BasicDocApiTest() :
-    doc((static_cast<app::Document*>(ctx.documents().add(32, 16)))),
+    doc((ctx.documents().add(32, 16))),
     sprite(doc->sprite()),
     root(sprite->root()),
     layer1(dynamic_cast<LayerImage*>(sprite->root()->firstLayer())),
@@ -39,8 +39,8 @@ public:
     doc->close();
   }
 
-  TestContextT<app::Context> ctx;
-  DocumentPtr doc;
+  TestContextT<Context> ctx;
+  DocPtr doc;
   Sprite* sprite;
   LayerGroup* root;
   LayerImage* layer1;

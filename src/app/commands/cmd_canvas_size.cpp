@@ -330,7 +330,7 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader);
-    Document* document = writer.document();
+    Doc* document = writer.document();
     Sprite* sprite = writer.sprite();
     Transaction transaction(writer.context(), "Canvas Size");
     DocApi api = document->getApi(transaction);

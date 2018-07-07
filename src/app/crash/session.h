@@ -19,8 +19,7 @@
 #include <vector>
 
 namespace app {
-  class Document;
-
+class Doc;
 namespace crash {
 
   // A class to record/restore session information.
@@ -50,22 +49,22 @@ namespace crash {
     void create(base::pid pid);
     void removeFromDisk();
 
-    bool saveDocumentChanges(app::Document* doc);
-    void removeDocument(app::Document* doc);
+    bool saveDocumentChanges(Doc* doc);
+    void removeDocument(Doc* doc);
 
     void restoreBackup(Backup* backup);
     void restoreBackupById(const doc::ObjectId id);
-    app::Document* restoreBackupDocById(const doc::ObjectId id);
+    Doc* restoreBackupDocById(const doc::ObjectId id);
     void restoreRawImages(Backup* backup, RawImagesAs as);
     void deleteBackup(Backup* backup);
 
   private:
-    app::Document* restoreBackupDoc(const std::string& backupDir);
+    Doc* restoreBackupDoc(const std::string& backupDir);
     void loadPid();
     std::string pidFilename() const;
     std::string verFilename() const;
     void deleteDirectory(const std::string& dir);
-    void fixFilename(app::Document* doc);
+    void fixFilename(Doc* doc);
 
     base::pid m_pid;
     std::string m_path;

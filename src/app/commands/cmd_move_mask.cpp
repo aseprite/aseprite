@@ -80,7 +80,7 @@ void MoveMaskCommand::onExecute(Context* context)
 
     case Boundaries: {
       ContextWriter writer(context);
-      Document* document(writer.document());
+      Doc* document(writer.document());
       {
         Transaction transaction(writer.context(), "Move Selection", DoesntModifyDocument);
         gfx::Point pt = document->mask()->bounds().origin();

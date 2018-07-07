@@ -76,7 +76,7 @@ void LoadMaskCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader);
-    Document* document = writer.document();
+    Doc* document = writer.document();
     Transaction transaction(writer.context(), "Mask Load", DoesntModifyDocument);
     transaction.execute(new cmd::SetMask(document, mask));
     transaction.commit();

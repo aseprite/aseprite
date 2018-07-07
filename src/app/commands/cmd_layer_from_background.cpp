@@ -50,7 +50,7 @@ bool LayerFromBackgroundCommand::onEnabled(Context* context)
 void LayerFromBackgroundCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   {
     Transaction transaction(writer.context(), "Layer from Background");
     document->getApi(transaction).layerFromBackground(writer.layer());

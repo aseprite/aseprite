@@ -65,7 +65,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
   // Get sprite properties and fill frame fields
   {
     const ContextReader reader(context);
-    const Document* document(reader.document());
+    const Doc* document(reader.document());
     const Sprite* sprite(reader.sprite());
 
     // Update widgets values

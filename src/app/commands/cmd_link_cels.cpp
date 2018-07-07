@@ -50,7 +50,7 @@ bool LinkCelsCommand::onEnabled(Context* context)
 void LinkCelsCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   bool nonEditableLayers = false;
   {
     auto site = context->activeSite();

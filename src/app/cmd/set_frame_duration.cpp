@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_frame_duration.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -40,7 +40,7 @@ void SetFrameDuration::onUndo()
 void SetFrameDuration::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
-  auto doc = static_cast<Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_frame);

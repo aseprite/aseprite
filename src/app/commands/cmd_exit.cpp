@@ -12,7 +12,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/job.h"
 #include "app/ui/main_window.h"
 #include "ui/alert.h"

@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_cel_frame.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -45,7 +45,7 @@ void SetCelFrame::onUndo()
 void SetCelFrame::onFireNotifications()
 {
   Cel* cel = this->cel();
-  auto doc = static_cast<Document*>(cel->sprite()->document());
+  Doc* doc = static_cast<Doc*>(cel->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(cel->layer()->sprite());
   ev.layer(cel->layer());

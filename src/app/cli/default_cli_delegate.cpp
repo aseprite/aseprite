@@ -15,7 +15,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/document_exporter.h"
 #include "app/file/palette_file.h"
 #include "app/ui_context.h"
@@ -116,7 +116,7 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocumentExporter& exporter)
 {
   LOG("APP: Exporting sheet...\n");
 
-  base::UniquePtr<app::Document> spriteSheet(exporter.exportSheet(ctx));
+  base::UniquePtr<Doc> spriteSheet(exporter.exportSheet(ctx));
 
   // Sprite sheet isn't used, we just delete it.
 

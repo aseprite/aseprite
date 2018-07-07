@@ -11,7 +11,7 @@
 #include "app/crash/write_document.h"
 
 #include "app/crash/internals.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -52,7 +52,7 @@ static std::map<ObjectId, base::paths> g_deleteFiles;
 
 class Writer {
 public:
-  Writer(const std::string& dir, app::Document* doc, doc::CancelIO* cancel)
+  Writer(const std::string& dir, Doc* doc, doc::CancelIO* cancel)
     : m_dir(dir)
     , m_doc(doc)
     , m_objVersions(g_docVersions[doc->id()])
@@ -130,7 +130,7 @@ private:
     return (m_cancel && m_cancel->isCanceled());
   }
 
-  bool writeDocumentFile(std::ofstream& s, app::Document* doc) {
+  bool writeDocumentFile(std::ofstream& s, Doc* doc) {
     write32(s, doc->sprite()->id());
     write_string(s, doc->filename());
     return true;
@@ -300,7 +300,7 @@ private:
   }
 
   std::string m_dir;
-  app::Document* m_doc;
+  Doc* m_doc;
   ObjVersionsMap& m_objVersions;
   base::paths& m_deleteFiles;
   doc::CancelIO* m_cancel;
@@ -312,14 +312,14 @@ private:
 // Public API
 
 bool write_document(const std::string& dir,
-                    app::Document* doc,
+                    Doc* doc,
                     doc::CancelIO* cancel)
 {
   Writer writer(dir, doc, cancel);
   return writer.saveDocument();
 }
 
-void delete_document_internals(app::Document* doc)
+void delete_document_internals(Doc* doc)
 {
   ASSERT(doc);
 

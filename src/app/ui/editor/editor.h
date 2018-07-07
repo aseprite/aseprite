@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/doc.h"
 #include "app/doc_observer.h"
-#include "app/document.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool_observer.h"
 #include "app/tools/tool_loop_modifiers.h"
@@ -94,7 +94,7 @@ namespace app {
       MOUSE,                    // Zoom from cursor
     };
 
-    Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);
+    Editor(Doc* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
     static void destroyEditorSharedInternals();
@@ -125,7 +125,7 @@ namespace app {
     EditorFlags editorFlags() const { return m_flags; }
     void setEditorFlags(EditorFlags flags) { m_flags = flags; }
 
-    Document* document() { return m_document; }
+    Doc* document() { return m_document; }
     Sprite* sprite() { return m_sprite; }
     Layer* layer() { return m_layer; }
     frame_t frame() { return m_frame; }
@@ -342,7 +342,7 @@ namespace app {
     // Current decorator (to draw extra UI elements).
     EditorDecorator* m_decorator;
 
-    Document* m_document;         // Active document in the editor
+    Doc* m_document;              // Active document in the editor
     Sprite* m_sprite;             // Active sprite in the editor
     Layer* m_layer;               // Active layer in the editor
     frame_t m_frame;              // Active frame in the editor

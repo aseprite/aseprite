@@ -15,12 +15,12 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
 
   namespace crash {
 
-    bool write_document(const std::string& dir, app::Document* doc, doc::CancelIO* cancel);
-    void delete_document_internals(app::Document* doc);
+    bool write_document(const std::string& dir, Doc* doc, doc::CancelIO* cancel);
+    void delete_document_internals(Doc* doc);
 
   } // namespace crash
 } // namespace app

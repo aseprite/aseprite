@@ -50,7 +50,7 @@ bool BackgroundFromLayerCommand::onEnabled(Context* context)
 void BackgroundFromLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
 
   {
     Transaction transaction(writer.context(), "Background from Layer");

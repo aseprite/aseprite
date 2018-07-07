@@ -14,7 +14,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/console.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/job.h"
@@ -191,7 +191,7 @@ void OpenFileCommand::onExecute(Context* context)
       if (fop->hasError() && !fop->isStop())
         console.printf(fop->error().c_str());
 
-      Document* document = fop->document();
+      Doc* document = fop->document();
       if (document) {
         if (context->isUIAvailable())
           App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());

@@ -474,7 +474,7 @@ public:
     m_button.Click.connect(base::Bind<void>(&SnapToGridWindow::onDisableSnapToGrid, this));
   }
 
-  void setDocument(app::Document* doc) {
+  void setDocument(Doc* doc) {
     m_doc = doc;
   }
 
@@ -484,7 +484,7 @@ private:
     closeWindow(nullptr);
   }
 
-  app::Document* m_doc;
+  Doc* m_doc;
   ui::Button m_button;
 };
 
@@ -714,8 +714,7 @@ void StatusBar::showSnapToGridWarning(bool state)
       updateSnapToGridWindowPosition();
     }
 
-    m_snapToGridWindow->setDocument(
-      static_cast<app::Document*>(m_doc));
+    m_snapToGridWindow->setDocument(m_doc);
   }
   else {
     if (m_snapToGridWindow)
@@ -768,15 +767,14 @@ void StatusBar::onActiveSiteChange(const Site& site)
 
   if (site.document() && site.sprite()) {
     if (!m_doc) {
-      m_doc = const_cast<Document*>(site.document());
+      m_doc = const_cast<Doc*>(site.document());
       m_doc->add_observer(this);
     }
     else {
       ASSERT(m_doc == site.document());
     }
 
-    auto& docPref = Preferences::instance().document(
-      static_cast<app::Document*>(m_doc));
+    auto& docPref = Preferences::instance().document(m_doc);
 
     m_docControls->setVisible(true);
     showSnapToGridWarning(docPref.grid.snap());
@@ -793,7 +791,7 @@ void StatusBar::onActiveSiteChange(const Site& site)
   layout();
 }
 
-void StatusBar::onRemoveDocument(Document* doc)
+void StatusBar::onRemoveDocument(Doc* doc)
 {
   if (m_doc &&
       m_doc == doc) {

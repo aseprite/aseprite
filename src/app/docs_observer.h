@@ -9,23 +9,23 @@
 #pragma once
 
 namespace app {
-  class Document;
+  class Doc;
 
   class CreateDocumentArgs {
   public:
     CreateDocumentArgs() : m_doc(nullptr) { }
-    Document* document() { return m_doc; }
-    void setDocument(Document* doc) { m_doc = doc; }
+    Doc* document() { return m_doc; }
+    void setDocument(Doc* doc) { m_doc = doc; }
   private:
-    Document* m_doc;
+    Doc* m_doc;
   };
 
   class DocsObserver {
   public:
     virtual ~DocsObserver() { }
     virtual void onCreateDocument(CreateDocumentArgs* args) { }
-    virtual void onAddDocument(Document* doc) { }
-    virtual void onRemoveDocument(Document* doc) { }
+    virtual void onAddDocument(Doc* doc) { }
+    virtual void onRemoveDocument(Doc* doc) { }
   };
 
 } // namespace app

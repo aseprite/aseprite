@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #include "app/color_utils.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/thumbnails.h"
 #include "doc/algorithm/resize_image.h"
@@ -26,7 +26,7 @@ she::Surface* get_cel_thumbnail(const doc::Cel* cel,
                                 const gfx::Size& thumb_size,
                                 gfx::Rect cel_image_on_thumb)
 {
-  app::Document* document = static_cast<app::Document*>(cel->sprite()->document());
+  Doc* document = static_cast<Doc*>(cel->sprite()->document());
   doc::frame_t frame = cel->frame();
   doc::Image* image = cel->image();
 

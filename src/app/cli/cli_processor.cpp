@@ -16,8 +16,8 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
+#include "app/doc.h"
 #include "app/doc_undo.h"
-#include "app/document.h"
 #include "app/document_exporter.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
@@ -137,7 +137,7 @@ void CliProcessor::process(Context* ctx)
     Console console;
     CliOpenFile cof;
     SpriteSheetType sheetType = SpriteSheetType::None;
-    app::Document* lastDoc = nullptr;
+    Doc* lastDoc = nullptr;
     render::DitheringAlgorithm ditheringAlgorithm = render::DitheringAlgorithm::None;
     std::string ditheringMatrix;
 
@@ -340,7 +340,7 @@ void CliProcessor::process(Context* ctx)
 
           // Scale all sprites
           for (auto doc : ctx->documents()) {
-            ctx->setActiveDocument(static_cast<app::Document*>(doc));
+            ctx->setActiveDocument(doc);
             ctx->executeCommand(command);
           }
         }
@@ -397,7 +397,7 @@ void CliProcessor::process(Context* ctx)
           }
 
           for (auto doc : ctx->documents()) {
-            ctx->setActiveDocument(static_cast<app::Document*>(doc));
+            ctx->setActiveDocument(doc);
             ctx->executeCommand(command, params);
           }
         }
@@ -416,7 +416,7 @@ void CliProcessor::process(Context* ctx)
 
           // Shrink all sprites if needed
           for (auto doc : ctx->documents()) {
-            ctx->setActiveDocument(static_cast<app::Document*>(doc));
+            ctx->setActiveDocument(doc);
             scaleWidth = (doc->width() > maxWidth ? maxWidth / doc->width() : 1.0);
             scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
             if (scaleWidth < 1.0 || scaleHeight < 1.0) {
@@ -491,7 +491,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
 {
   m_delegate->beforeOpenFile(cof);
 
-  app::Document* oldDoc = ctx->activeDocument();
+  Doc* oldDoc = ctx->activeDocument();
   Command* openCommand = Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("filename", cof.filename.c_str());
@@ -499,7 +499,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
     params.set("oneframe", "true");
   ctx->executeCommand(openCommand, params);
 
-  app::Document* doc = ctx->activeDocument();
+  Doc* doc = ctx->activeDocument();
   // If the active document is equal to the previous one, it
   // means that we couldn't open this specific document.
   if (doc == oldDoc)
@@ -580,7 +580,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
 
   Command* trimCommand = Commands::instance()->byId(CommandId::AutocropSprite());
   Command* undoCommand = Commands::instance()->byId(CommandId::Undo());
-  app::Document* doc = cof.document;
+  Doc* doc = cof.document;
   bool clearUndo = false;
 
   if (!cof.crop.isEmpty()) {

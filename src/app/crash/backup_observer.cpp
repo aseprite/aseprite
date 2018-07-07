@@ -20,7 +20,7 @@
 #include "app/app.h"
 #include "app/context.h"
 #include "app/crash/session.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/document_access.h"
 #include "app/document_diff.h"
 #include "app/pref/preferences.h"
@@ -76,21 +76,21 @@ void BackupObserver::stop()
   m_done = true;
 }
 
-void BackupObserver::onAddDocument(Document* document)
+void BackupObserver::onAddDocument(Doc* document)
 {
   TRACE("RECO: Observe document %p\n", document);
   base::scoped_lock hold(m_mutex);
-  m_documents.push_back(static_cast<app::Document*>(document));
+  m_documents.push_back(document);
 }
 
-void BackupObserver::onRemoveDocument(Document* document)
+void BackupObserver::onRemoveDocument(Doc* document)
 {
   TRACE("RECO: Remove document %p\n", document);
   {
     base::scoped_lock hold(m_mutex);
-    base::remove_from_container(m_documents, static_cast<app::Document*>(document));
+    base::remove_from_container(m_documents, document);
   }
-  m_session->removeDocument(static_cast<app::Document*>(document));
+  m_session->removeDocument(document);
 }
 
 void BackupObserver::backgroundThread()
@@ -115,7 +115,7 @@ void BackupObserver::backgroundThread()
       base::Chrono chrono;
       bool somethingLocked = false;
 
-      for (app::Document* doc : m_documents) {
+      for (Doc* doc : m_documents) {
         try {
           if (doc->needsBackup()) {
             if (doc->inhibitBackup()) {
@@ -129,7 +129,7 @@ void BackupObserver::backgroundThread()
 #ifdef TEST_BACKUP_INTEGRITY
             else {
               DocumentReader reader(doc, 500);
-              std::unique_ptr<app::Document> copy(
+              std::unique_ptr<Doc> copy(
                 m_session->restoreBackupDocById(doc->id()));
               DocumentDiff diff = compare_docs(doc, copy.get());
               if (diff.anything) {
@@ -142,7 +142,7 @@ void BackupObserver::backgroundThread()
                       diff.layers ? "layers": "",
                       diff.cels ? "cels": "");
 
-                app::Document* copyDoc = copy.release();
+                Doc* copyDoc = copy.release();
                 ui::execute_from_ui_thread(
                   [this, copyDoc] {
                     m_ctx->documents().add(copyDoc);

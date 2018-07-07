@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_transparent_color.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -41,7 +41,7 @@ void SetTransparentColor::onUndo()
 void SetTransparentColor::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
-  auto doc = static_cast<Document*>(sprite->document());
+  auto doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
   doc->notify_observers<DocEvent&>(&DocObserver::onSpriteTransparentColorChanged, ev);

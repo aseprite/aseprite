@@ -10,7 +10,7 @@
 
 #include "app/cmd/flip_mask.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/mask.h"
 
@@ -19,7 +19,7 @@ namespace cmd {
 
 using namespace doc;
 
-FlipMask::FlipMask(Document* doc, doc::algorithm::FlipType flipType)
+FlipMask::FlipMask(Doc* doc, doc::algorithm::FlipType flipType)
   : WithDocument(doc)
   , m_flipType(flipType)
 {
@@ -37,7 +37,7 @@ void FlipMask::onUndo()
 
 void FlipMask::swap()
 {
-  Document* document = this->document();
+  Doc* document = this->document();
   Mask* mask = document->mask();
 
   ASSERT(mask->bitmap());

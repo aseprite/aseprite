@@ -9,12 +9,13 @@
 #endif
 
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
 #include "base/fs.h"
 #include "base/string.h"
+#include "dio/detect_format.h"
 #include "doc/cel.h"
 #include "doc/file/col_file.h"
 #include "doc/file/gpl_file.h"
@@ -24,7 +25,6 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "dio/detect_format.h"
 
 #include <cstring>
 
@@ -139,8 +139,8 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
       int w = (columns > 0 ? MID(0, columns, pal->size()): pal->size());
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
-      app::Context tmpContext;
-      Document* doc = tmpContext.documents().add(
+      Context tmpContext;
+      Doc* doc = tmpContext.documents().add(
         w, h, (pal->size() <= 256 ? doc::ColorMode::INDEXED:
                                     doc::ColorMode::RGB), pal->size());
 

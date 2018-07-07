@@ -68,7 +68,7 @@ bool SetLoopSectionCommand::onEnabled(Context* ctx)
 
 void SetLoopSectionCommand::onExecute(Context* ctx)
 {
-  doc::Document* doc = ctx->activeDocument();
+  Doc* doc = ctx->activeDocument();
   if (!doc)
     return;
 

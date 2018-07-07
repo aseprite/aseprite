@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_DOCUMENT_H_INCLUDED
-#define APP_DOCUMENT_H_INCLUDED
+#ifndef APP_DOC_H_INCLUDED
+#define APP_DOC_H_INCLUDED
 #pragma once
 
 #include "app/doc_observer.h"
@@ -55,17 +55,17 @@ namespace app {
 
   // An application document. It is the class used to contain one file
   // opened and being edited by the user (a sprite).
-  class Document : public doc::Document,
-                   public base::RWLock,
-                   public obs::observable<DocObserver> {
+  class Doc : public doc::Document,
+              public base::RWLock,
+              public obs::observable<DocObserver> {
     enum Flags {
       kAssociatedToFile = 1, // This sprite is associated to a file in the file-system
       kMaskVisible      = 2, // The mask wasn't hidden by the user
       kInhibitBackup    = 4, // Inhibit the backup process
     };
   public:
-    Document(Sprite* sprite);
-    ~Document();
+    Doc(Sprite* sprite);
+    ~Doc();
 
     Context* context() const { return m_ctx; }
     void setContext(Context* ctx);
@@ -178,8 +178,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Copying
 
-    void copyLayerContent(const Layer* sourceLayer, Document* destDoc, Layer* destLayer) const;
-    Document* duplicate(DuplicateType type) const;
+    void copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLayer) const;
+    Doc* duplicate(DuplicateType type) const;
 
     void close();
 
@@ -213,7 +213,7 @@ namespace app {
 
     gfx::Point m_lastDrawingPoint;
 
-    DISABLE_COPYING(Document);
+    DISABLE_COPYING(Doc);
   };
 
 } // namespace app

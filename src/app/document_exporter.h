@@ -31,7 +31,7 @@ namespace doc {
 namespace app {
 
   class Context;
-  class Document;
+  class Doc;
 
   class DocumentExporter {
   public:
@@ -74,14 +74,14 @@ namespace app {
     void setListLayers(bool value) { m_listLayers = value; }
     void setListSlices(bool value) { m_listSlices = value; }
 
-    void addDocument(Document* document,
+    void addDocument(Doc* document,
                      doc::FrameTag* tag,
                      doc::SelectedLayers* selLayers,
                      doc::SelectedFrames* selFrames) {
       m_documents.push_back(Item(document, tag, selLayers, selFrames));
     }
 
-    Document* exportSheet(Context* ctx);
+    Doc* exportSheet(Context* ctx);
     gfx::Size calculateSheetSize();
 
   private:
@@ -94,19 +94,19 @@ namespace app {
     void captureSamples(Samples& samples);
     void layoutSamples(Samples& samples);
     gfx::Size calculateSheetSize(const Samples& samples) const;
-    Document* createEmptyTexture(const Samples& samples) const;
+    Doc* createEmptyTexture(const Samples& samples) const;
     void renderTexture(Context* ctx, const Samples& samples, doc::Image* textureImage) const;
     void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
     void renderSample(const Sample& sample, doc::Image* dst, int x, int y) const;
 
     class Item {
     public:
-      Document* doc;
+      Doc* doc;
       doc::FrameTag* frameTag;
       doc::SelectedLayers* selLayers;
       doc::SelectedFrames* selFrames;
 
-      Item(Document* doc,
+      Item(Doc* doc,
            doc::FrameTag* frameTag,
            doc::SelectedLayers* selLayers,
            doc::SelectedFrames* selFrames);

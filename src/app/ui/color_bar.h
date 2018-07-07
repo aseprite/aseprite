@@ -187,7 +187,7 @@ namespace app {
     bool m_fromBgButton;
 
     base::UniquePtr<doc::Palette> m_oldPalette;
-    Document* m_lastDocument;
+    Doc* m_lastDocument;
     bool m_ascending;
     obs::scoped_connection m_beforeCmdConn;
     obs::scoped_connection m_afterCmdConn;

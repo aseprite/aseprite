@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_cel_opacity.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/cel.h"
 
 namespace app {
@@ -41,7 +41,7 @@ void SetCelOpacity::onUndo()
 void SetCelOpacity::onFireNotifications()
 {
   Cel* cel = this->cel();
-  Document* doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(cel->sprite());
   ev.cel(cel);

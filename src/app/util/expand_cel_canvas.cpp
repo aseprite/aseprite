@@ -16,7 +16,7 @@
 #include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/site.h"
 #include "app/transaction.h"
 #include "app/util/range_utils.h"
@@ -60,7 +60,7 @@ namespace app {
 ExpandCelCanvas::ExpandCelCanvas(
   Site site, Layer* layer,
   TiledMode tiledMode, Transaction& transaction, Flags flags)
-  : m_document(static_cast<app::Document*>(site.document()))
+  : m_document(site.document())
   , m_sprite(site.sprite())
   , m_layer(layer)
   , m_frame(site.frame())

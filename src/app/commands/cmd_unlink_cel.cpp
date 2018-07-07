@@ -44,7 +44,7 @@ bool UnlinkCelCommand::onEnabled(Context* context)
 void UnlinkCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   bool nonEditableLayers = false;
   {
     Transaction transaction(writer.context(), "Unlink Cel");

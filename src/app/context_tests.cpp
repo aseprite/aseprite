@@ -7,7 +7,7 @@
 #include "tests/test.h"
 
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 
 using namespace app;
 using namespace doc;
@@ -64,8 +64,8 @@ TEST(Context, CloseAndDeleteDocuments)
 TEST(Context, SwitchContext)
 {
   Context ctx1, ctx2;
-  auto doc1 = new app::Document(nullptr);
-  auto doc2 = new app::Document(nullptr);
+  auto doc1 = new Doc(nullptr);
+  auto doc2 = new Doc(nullptr);
   doc1->setContext(&ctx1);
   doc2->setContext(&ctx2);
   EXPECT_EQ(&ctx1, doc1->context());

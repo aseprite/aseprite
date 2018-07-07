@@ -12,7 +12,7 @@
 
 #include "app/cli/cli_open_file.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/document_exporter.h"
 #include "app/file/file.h"
 #include "base/fs.h"

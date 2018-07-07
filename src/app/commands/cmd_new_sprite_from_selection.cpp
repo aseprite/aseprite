@@ -10,7 +10,7 @@
 
 #include "app/commands/command.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/site.h"
 #include "app/util/new_image_from_mask.h"
 #include "base/fs.h"
@@ -51,7 +51,7 @@ bool NewSpriteFromSelectionCommand::onEnabled(Context* context)
 void NewSpriteFromSelectionCommand::onExecute(Context* context)
 {
   const Site site = context->activeSite();
-  const app::Document* doc = static_cast<const app::Document*>(site.document());
+  const Doc* doc = site.document();
   const Sprite* sprite = site.sprite();
   const Mask* mask = doc->mask();
   ImageRef image(
@@ -75,7 +75,7 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
   dstLayer->setFlags(site.layer()->flags()); // Copy all flags
   copy_image(dstLayer->cel(frame_t(0))->image(), image.get());
 
-  base::UniquePtr<Document> dstDoc(new Document(dstSprite));
+  base::UniquePtr<Doc> dstDoc(new Doc(dstSprite));
   dstSprite.release();
   char buf[1024];
   std::sprintf(buf, "%s-%dx%d-%dx%d",

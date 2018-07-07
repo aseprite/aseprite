@@ -9,7 +9,7 @@
 #endif
 
 #include "app/app.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
@@ -120,7 +120,7 @@ void UIContext::setActiveView(DocumentView* docView)
   notifyActiveSiteChanged();
 }
 
-void UIContext::onSetActiveDocument(Document* document)
+void UIContext::onSetActiveDocument(Doc* document)
 {
   bool notify = (lastSelectedDoc() != document);
   app::Context::onSetActiveDocument(document);
@@ -135,7 +135,7 @@ void UIContext::onSetActiveDocument(Document* document)
     notifyActiveSiteChanged();
 }
 
-DocumentView* UIContext::getFirstDocumentView(Document* document) const
+DocumentView* UIContext::getFirstDocumentView(Doc* document) const
 {
   Workspace* workspace = App::instance()->workspace();
   if (!workspace) // Workspace (main window) can be null if we are in --batch mode
@@ -152,7 +152,7 @@ DocumentView* UIContext::getFirstDocumentView(Document* document) const
   return nullptr;
 }
 
-DocumentViews UIContext::getAllDocumentViews(Document* document) const
+DocumentViews UIContext::getAllDocumentViews(Doc* document) const
 {
   Workspace* workspace = App::instance()->workspace();
   DocumentViews docViews;
@@ -177,7 +177,7 @@ Editor* UIContext::activeEditor()
     return NULL;
 }
 
-void UIContext::onAddDocument(Document* doc)
+void UIContext::onAddDocument(Doc* doc)
 {
   app::Context::onAddDocument(doc);
 
@@ -198,7 +198,7 @@ void UIContext::onAddDocument(Document* doc)
   view->editor()->setDefaultScroll();
 }
 
-void UIContext::onRemoveDocument(Document* doc)
+void UIContext::onRemoveDocument(Doc* doc)
 {
   app::Context::onRemoveDocument(doc);
 

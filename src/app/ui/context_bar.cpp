@@ -16,7 +16,7 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/commands/quick_command.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "app/shade.h"
@@ -1076,7 +1076,7 @@ public:
   }
 
   void updateWithCurrentDocument() {
-    Document* doc = UIContext::instance()->activeDocument();
+    Doc* doc = UIContext::instance()->activeDocument();
     if (!doc)
       return;
 
@@ -1090,7 +1090,7 @@ private:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
 
-    Document* doc = UIContext::instance()->activeDocument();
+    Doc* doc = UIContext::instance()->activeDocument();
     if (!doc)
       return;
 

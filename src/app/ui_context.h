@@ -29,21 +29,21 @@ namespace app {
     DocumentView* activeView() const;
     void setActiveView(DocumentView* documentView);
 
-    DocumentView* getFirstDocumentView(Document* document) const override;
-    DocumentViews getAllDocumentViews(Document* document) const;
+    DocumentView* getFirstDocumentView(Doc* document) const override;
+    DocumentViews getAllDocumentViews(Doc* document) const;
 
     // Returns the current editor. It can be null.
     Editor* activeEditor();
 
     // Returns the active editor for the given document, or creates a
     // new one if it's necessary.
-    Editor* getEditorFor(Document* document);
+    Editor* getEditorFor(Doc* document);
 
   protected:
-    void onAddDocument(Document* doc) override;
-    void onRemoveDocument(Document* doc) override;
+    void onAddDocument(Doc* doc) override;
+    void onRemoveDocument(Doc* doc) override;
     void onGetActiveSite(Site* site) const override;
-    void onSetActiveDocument(Document* doc) override;
+    void onSetActiveDocument(Doc* doc) override;
 
   private:
     DocumentView* m_lastSelectedView;

@@ -16,8 +16,8 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc.h"
 #include "app/doc_undo.h"
-#include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/gif_format.h"
 #include "app/file/png_format.h"
@@ -127,7 +127,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
   const bool saveInBackground,
   const std::string& forbiddenFilename)
 {
-  Document* document = context->activeDocument();
+  Doc* document = context->activeDocument();
   std::string filename;
 
   if (!m_filename.empty()) {
@@ -167,7 +167,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
 
 void SaveFileBaseCommand::saveDocumentInBackground(
   const Context* context,
-  app::Document* document,
+  Doc* document,
   const std::string& filename,
   const bool markAsSaved)
 {
@@ -244,13 +244,13 @@ SaveFileCommand::SaveFileCommand()
 // [main thread]
 void SaveFileCommand::onExecute(Context* context)
 {
-  Document* document = context->activeDocument();
+  Doc* document = context->activeDocument();
 
   // If the document is associated to a file in the file-system, we can
   // save it directly without user interaction.
   if (document->isAssociatedToFile()) {
     const ContextReader reader(context);
-    const Document* documentReader = reader.document();
+    const Doc* documentReader = reader.document();
 
     saveDocumentInBackground(
       context, document,
@@ -281,7 +281,7 @@ SaveFileAsCommand::SaveFileAsCommand()
 
 void SaveFileAsCommand::onExecute(Context* context)
 {
-  Document* document = context->activeDocument();
+  Doc* document = context->activeDocument();
   saveAsDialog(context, "Save As",
                document->filename(), true);
 }
@@ -295,7 +295,7 @@ protected:
   void onExecute(Context* context) override;
 
 private:
-  void moveToUndoState(Document* doc,
+  void moveToUndoState(Doc* doc,
                        const undo::UndoState* state);
 };
 
@@ -306,7 +306,7 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
-  Document* doc = context->activeDocument();
+  Doc* doc = context->activeDocument();
   std::string outputFilename = m_filename;
   std::string layers = kAllLayers;
   std::string frames = kAllFrames;
@@ -441,7 +441,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   }
 }
 
-void SaveFileCopyAsCommand::moveToUndoState(Document* doc,
+void SaveFileCopyAsCommand::moveToUndoState(Doc* doc,
                                             const undo::UndoState* state)
 {
   try {

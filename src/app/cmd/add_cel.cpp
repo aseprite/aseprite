@@ -10,8 +10,8 @@
 
 #include "app/cmd/add_cel.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "base/serialization.h"
 #include "doc/cel.h"
 #include "doc/cel_data_io.h"
@@ -93,7 +93,7 @@ void AddCel::addCel(Layer* layer, Cel* cel)
   static_cast<LayerImage*>(layer)->addCel(cel);
   layer->incrementVersion();
 
-  auto doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
@@ -103,7 +103,7 @@ void AddCel::addCel(Layer* layer, Cel* cel)
 
 void AddCel::removeCel(Layer* layer, Cel* cel)
 {
-  auto doc = static_cast<app::Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);

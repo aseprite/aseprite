@@ -19,7 +19,7 @@ namespace cmd {
   class FlipMask : public Cmd
                  , public WithDocument {
   public:
-    FlipMask(Document* doc, doc::algorithm::FlipType flipType);
+    FlipMask(Doc* doc, doc::algorithm::FlipType flipType);
 
   protected:
     void onExecute() override;

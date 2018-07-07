@@ -15,8 +15,8 @@
 #include "app/cmd/unlink_cel.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
-#include "app/document.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
@@ -67,7 +67,7 @@ bool MergeDownLayerCommand::onEnabled(Context* context)
 void MergeDownLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   Transaction transaction(writer.context(), "Merge Down Layer", ModifyDocument);
   LayerImage* src_layer = static_cast<LayerImage*>(writer.layer());

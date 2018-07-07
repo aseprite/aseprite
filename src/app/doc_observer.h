@@ -9,14 +9,14 @@
 #pragma once
 
 namespace app {
-  class Document;
+  class Doc;
   class DocEvent;
 
   class DocObserver {
   public:
     virtual ~DocObserver() { }
 
-    virtual void onFileNameChanged(Document* doc) { }
+    virtual void onFileNameChanged(Doc* doc) { }
 
     // General update. If an observer receives this event, it's because
     // anything in the document could be changed.

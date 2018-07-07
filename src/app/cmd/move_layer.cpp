@@ -10,8 +10,8 @@
 
 #include "app/cmd/move_layer.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -92,7 +92,7 @@ void MoveLayer::onUndo()
 void MoveLayer::onFireNotifications()
 {
   Layer* layer = m_layer.layer();
-  Document* doc = static_cast<Document*>(layer->sprite()->document());
+  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);

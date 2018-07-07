@@ -13,7 +13,7 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/site.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
@@ -91,7 +91,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
   if (m_onScreen)
     hide();
 
-  app::Document* document = m_editor->document();
+  Doc* document = m_editor->document();
   Sprite* sprite = m_editor->sprite();
   Layer* layer = (m_editor->layer() &&
                   m_editor->layer()->isImage() ? m_editor->layer():
@@ -312,7 +312,7 @@ void BrushPreview::hide()
 
   // Clean pixel/brush preview
   if (m_withRealPreview) {
-    app::Document* document = m_editor->document();
+    Doc* document = m_editor->document();
     doc::Sprite* sprite = m_editor->sprite();
 
     ASSERT(document);
@@ -334,7 +334,7 @@ void BrushPreview::hide()
 
 void BrushPreview::discardBrushPreview()
 {
-  app::Document* document = m_editor->document();
+  Doc* document = m_editor->document();
   ASSERT(document);
 
   if (document && m_onScreen && m_withRealPreview) {

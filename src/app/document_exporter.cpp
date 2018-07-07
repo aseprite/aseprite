@@ -13,7 +13,7 @@
 #include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
@@ -111,7 +111,7 @@ private:
 
 typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
 
-DocumentExporter::Item::Item(Document* doc,
+DocumentExporter::Item::Item(Doc* doc,
                              doc::FrameTag* frameTag,
                              doc::SelectedLayers* selLayers,
                              doc::SelectedFrames* selFrames)
@@ -178,7 +178,7 @@ doc::SelectedFrames DocumentExporter::Item::getSelectedFrames() const
 
 class DocumentExporter::Sample {
 public:
-  Sample(Document* document, Sprite* sprite, SelectedLayers* selLayers,
+  Sample(Doc* document, Sprite* sprite, SelectedLayers* selLayers,
          frame_t frame, const std::string& filename, int innerPadding) :
     m_document(document),
     m_sprite(sprite),
@@ -190,7 +190,7 @@ public:
     m_isDuplicated(false) {
   }
 
-  Document* document() const { return m_document; }
+  Doc* document() const { return m_document; }
   Sprite* sprite() const { return m_sprite; }
   Layer* layer() const {
     return (m_selLayers && m_selLayers->size() == 1 ? *m_selLayers->begin():
@@ -227,7 +227,7 @@ public:
   }
 
 private:
-  Document* m_document;
+  Doc* m_document;
   Sprite* m_sprite;
   SelectedLayers* m_selLayers;
   frame_t m_frame;
@@ -409,7 +409,7 @@ DocumentExporter::DocumentExporter()
 {
 }
 
-Document* DocumentExporter::exportSheet(Context* ctx)
+Doc* DocumentExporter::exportSheet(Context* ctx)
 {
   // We output the metadata to std::cout if the user didn't specify a file.
   std::ofstream fos;
@@ -439,7 +439,7 @@ Document* DocumentExporter::exportSheet(Context* ctx)
   layoutSamples(samples);
 
   // 3) Create and render the texture.
-  base::UniquePtr<Document> textureDocument(
+  base::UniquePtr<Doc> textureDocument(
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
@@ -474,7 +474,7 @@ gfx::Size DocumentExporter::calculateSheetSize()
 void DocumentExporter::captureSamples(Samples& samples)
 {
   for (auto& item : m_documents) {
-    Document* doc = item.doc;
+    Doc* doc = item.doc;
     Sprite* sprite = doc->sprite();
     Layer* layer = (item.selLayers && item.selLayers->size() == 1 ?
                     *item.selLayers->begin(): nullptr);
@@ -648,7 +648,7 @@ gfx::Size DocumentExporter::calculateSheetSize(const Samples& samples) const
                    fullTextureBounds.y+fullTextureBounds.h);
 }
 
-Document* DocumentExporter::createEmptyTexture(const Samples& samples) const
+Doc* DocumentExporter::createEmptyTexture(const Samples& samples) const
 {
   PixelFormat pixelFormat = IMAGE_INDEXED;
   Palette* palette = nullptr;
@@ -687,7 +687,7 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples) const
   if (palette != NULL)
     sprite->setPalette(palette, false);
 
-  base::UniquePtr<Document> document(new Document(sprite));
+  base::UniquePtr<Doc> document(new Doc(sprite));
   sprite.release();
 
   return document.release();
@@ -805,7 +805,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
 
     bool firstTag = true;
     for (auto& item : m_documents) {
-      Document* doc = item.doc;
+      Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
 
       for (FrameTag* tag : sprite->frameTags()) {
@@ -834,7 +834,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
 
     bool firstLayer = true;
     for (auto& item : m_documents) {
-      Document* doc = item.doc;
+      Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
       LayerList layers;
 
@@ -902,7 +902,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
 
     bool firstSlice = true;
     for (auto& item : m_documents) {
-      Document* doc = item.doc;
+      Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
 
       // TODO add possibility to export some slices

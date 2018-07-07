@@ -42,7 +42,7 @@ bool DeselectMaskCommand::onEnabled(Context* context)
 void DeselectMaskCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   {
     Transaction transaction(writer.context(), "Deselect", DoesntModifyDocument);
     transaction.execute(new cmd::DeselectMask(document));

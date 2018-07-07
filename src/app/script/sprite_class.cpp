@@ -13,7 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/file/palette_file.h"
 #include "app/script/app_scripting.h"
@@ -41,7 +41,7 @@ void Sprite_new(script::ContextHandle handle)
 
   base::UniquePtr<Sprite> sprite(
     Sprite::createBasicSprite((doc::PixelFormat)colorMode, w, h, 256));
-  base::UniquePtr<Document> doc(new Document(sprite));
+  base::UniquePtr<Doc> doc(new Doc(sprite));
   sprite.release();
 
   app::Context* appCtx = App::instance()->context();
@@ -59,7 +59,7 @@ void Sprite_resize(script::ContextHandle handle)
   if (wrap) {
     wrap->commitImages();
 
-    Document* doc = wrap->document();
+    Doc* doc = wrap->document();
     DocApi api(doc, wrap->transaction());
     api.setSpriteSize(doc->sprite(), size.w, size.h);
   }
@@ -75,7 +75,7 @@ void Sprite_crop(script::ContextHandle handle)
   if (wrap) {
     wrap->commitImages();
 
-    Document* doc = wrap->document();
+    Doc* doc = wrap->document();
     gfx::Rect bounds;
 
     // Use mask bounds
@@ -106,7 +106,7 @@ void Sprite_save(script::ContextHandle handle)
   if (wrap) {
     wrap->commit();
 
-    auto doc = wrap->document();
+    Doc* doc = wrap->document();
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
     Command* saveCommand =
@@ -126,7 +126,7 @@ void Sprite_saveAs(script::ContextHandle handle)
   if (fn && wrap) {
     wrap->commit();
 
-    auto doc = wrap->document();
+    Doc* doc = wrap->document();
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
 
@@ -150,7 +150,7 @@ void Sprite_saveCopyAs(script::ContextHandle handle)
   if (fn && wrap) {
     wrap->commit();
 
-    auto doc = wrap->document();
+    Doc* doc = wrap->document();
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
 
@@ -172,7 +172,7 @@ void Sprite_loadPalette(script::ContextHandle handle)
   const char* fn = ctx.toString(1);
 
   if (fn && wrap) {
-    auto doc = wrap->document();
+    Doc* doc = wrap->document();
     base::UniquePtr<doc::Palette> palette(load_palette(fn));
     if (palette) {
       // TODO Merge this with the code in LoadPaletteCommand

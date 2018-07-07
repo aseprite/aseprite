@@ -17,7 +17,7 @@
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/set_cel_data.h"
 #include "app/cmd/unlink_cel.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/util/create_cel_copy.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -129,7 +129,7 @@ void CopyCel::onFireNotifications()
   ASSERT(m_srcLayer.layer());
   ASSERT(m_dstLayer.layer());
 
-  static_cast<app::Document*>(m_dstLayer.layer()->sprite()->document())
+  static_cast<Doc*>(m_dstLayer.layer()->sprite()->document())
     ->notifyCelCopied(
       m_srcLayer.layer(), m_srcFrame,
       m_dstLayer.layer(), m_dstFrame);

@@ -45,7 +45,7 @@ void RepeatLastExportCommand::onExecute(Context* context)
 
   {
     const ContextReader reader(context);
-    const Document* document(reader.document());
+    const Doc* document(reader.document());
     DocumentPreferences& docPref =
       Preferences::instance().document(document);
 

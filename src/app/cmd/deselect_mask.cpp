@@ -11,27 +11,27 @@
 #include "app/cmd/deselect_mask.h"
 
 #include "app/cmd/set_mask.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/mask.h"
 
 namespace app {
 namespace cmd {
 
-DeselectMask::DeselectMask(Document* doc)
+DeselectMask::DeselectMask(Doc* doc)
   : WithDocument(doc)
 {
 }
 
 void DeselectMask::onExecute()
 {
-  app::Document* doc = document();
+  Doc* doc = document();
   m_oldMask.reset(doc->isMaskVisible() ? new Mask(*doc->mask()): nullptr);
   doc->setMaskVisible(false);
 }
 
 void DeselectMask::onUndo()
 {
-  app::Document* doc = document();
+  Doc* doc = document();
 
   doc->setMask(m_oldMask);
   doc->setMaskVisible(true);

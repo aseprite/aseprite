@@ -44,7 +44,7 @@ bool ClearCelCommand::onEnabled(Context* context)
 void ClearCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   bool nonEditableLayers = false;
   {
     Transaction transaction(writer.context(), "Clear Cel");

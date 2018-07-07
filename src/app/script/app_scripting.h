@@ -23,7 +23,7 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
   class ImageWrap;
   class SpriteWrap;
 
@@ -33,7 +33,7 @@ namespace app {
   public:
     AppScripting(script::EngineDelegate* delegate);
 
-    SpriteWrap* wrapSprite(app::Document* doc);
+    SpriteWrap* wrapSprite(Doc* doc);
 
   protected:
     void onAfterEval(bool err) override;

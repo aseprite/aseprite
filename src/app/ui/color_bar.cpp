@@ -426,7 +426,7 @@ void ColorBar::onActiveSiteChange(const Site& site)
     if (m_lastDocument)
       m_lastDocument->remove_observer(this);
 
-    m_lastDocument = const_cast<Document*>(site.document());
+    m_lastDocument = const_cast<Doc*>(site.document());
 
     if (m_lastDocument)
       m_lastDocument->add_observer(this);
@@ -1072,7 +1072,7 @@ void ColorBar::onTimerTick()
     // Redraw all editors
     try {
       ContextWriter writer(UIContext::instance(), 500);
-      Document* document(writer.document());
+      Doc* document(writer.document());
       if (document != NULL)
         document->notifyGeneralUpdate();
     }
@@ -1154,7 +1154,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
       UIContext::instance()->activeDocument()->sprite()) {
     try {
       ContextWriter writer(UIContext::instance(), 500);
-      Document* document(writer.document());
+      Doc* document(writer.document());
       Sprite* sprite(writer.sprite());
       Palette* newPalette = get_current_palette(); // System current pal
       frame_t frame = writer.frame();

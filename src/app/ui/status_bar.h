@@ -76,7 +76,7 @@ namespace app {
     void onActiveSiteChange(const Site& site) override;
 
     // DocObservers impl
-    void onRemoveDocument(Document* doc) override;
+    void onRemoveDocument(Doc* doc) override;
 
     // DocObserver impl
     void onPixelFormatChanged(DocEvent& ev) override;
@@ -104,7 +104,7 @@ namespace app {
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
     ZoomEntry* m_zoomEntry;
-    Document* m_doc;           // Document used to show the cel slider
+    Doc* m_doc;                // Document used to show the cel slider
 
     // Tip window
     class CustomizedTipWindow;

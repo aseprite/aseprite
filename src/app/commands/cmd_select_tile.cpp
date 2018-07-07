@@ -11,7 +11,7 @@
 #include "app/cmd/set_mask.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -72,7 +72,7 @@ void SelectTileCommand::onExecute(Context* ctx)
 
   // Lock sprite
   ContextWriter writer(ctx);
-  Document* doc(writer.document());
+  Doc* doc(writer.document());
   auto& docPref = Preferences::instance().document(doc);
 
   base::UniquePtr<Mask> mask(new Mask());

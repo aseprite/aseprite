@@ -11,8 +11,8 @@
 #include "app/cmd/add_frame.h"
 
 #include "app/cmd/add_cel.h"
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -33,7 +33,7 @@ AddFrame::AddFrame(Sprite* sprite, frame_t newFrame)
 void AddFrame::onExecute()
 {
   Sprite* sprite = this->sprite();
-  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  auto doc = static_cast<Doc*>(sprite->document());
 
   sprite->addFrame(m_newFrame);
   sprite->incrementVersion();
@@ -62,7 +62,7 @@ void AddFrame::onExecute()
 void AddFrame::onUndo()
 {
   Sprite* sprite = this->sprite();
-  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  auto doc = static_cast<Doc*>(sprite->document());
 
   if (m_addCel)
     m_addCel->undo();

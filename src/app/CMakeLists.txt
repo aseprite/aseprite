@@ -496,12 +496,12 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
+  doc.cpp
   doc_api.cpp
   doc_range.cpp
   doc_range_ops.cpp
   doc_undo.cpp
   docs.cpp
-  document.cpp
   document_diff.cpp
   document_exporter.cpp
   extensions.cpp

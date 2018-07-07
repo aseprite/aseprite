@@ -43,8 +43,8 @@
 #include "app/color_target.h"
 #include "app/color_utils.h"
 #include "app/context.h"
+#include "app/doc.h"
 #include "app/doc_undo.h"
-#include "app/document.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/flip_image.h"
@@ -63,7 +63,7 @@
 
 namespace app {
 
-DocApi::DocApi(Document* document, Transaction& transaction)
+DocApi::DocApi(Doc* document, Transaction& transaction)
   : m_document(document)
   , m_transaction(transaction)
 {
@@ -83,7 +83,7 @@ void DocApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
 {
   setSpriteSize(sprite, bounds.w, bounds.h);
 
-  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   LayerList layers = sprite->allLayers();
   for (Layer* layer : layers) {
     if (!layer->isImage())

@@ -39,7 +39,7 @@ namespace app {
     class Tool;
   }
 
-  class Document;
+  class Doc;
 
   typedef app::gen::ToolPref ToolPreferences;
   typedef app::gen::DocPref DocumentPreferences;
@@ -60,23 +60,23 @@ namespace app {
     bool isSet(OptionBase& opt) const;
 
     ToolPreferences& tool(tools::Tool* tool);
-    DocumentPreferences& document(const Document* doc);
+    DocumentPreferences& document(const Doc* doc);
 
     // Remove one document explicitly (this can be used if the
     // document used in Preferences::document() function wasn't member
     // of UIContext.
-    void removeDocument(Document* doc);
+    void removeDocument(Doc* doc);
 
   protected:
-    void onRemoveDocument(Document* doc) override;
+    void onRemoveDocument(Doc* doc) override;
 
   private:
-    std::string docConfigFileName(const Document* doc);
+    std::string docConfigFileName(const Doc* doc);
 
-    void serializeDocPref(const Document* doc, app::DocumentPreferences* docPref, bool save);
+    void serializeDocPref(const Doc* doc, app::DocumentPreferences* docPref, bool save);
 
     std::map<std::string, app::ToolPreferences*> m_tools;
-    std::map<const Document*, DocumentPreferences*> m_docs;
+    std::map<const Doc*, DocumentPreferences*> m_docs;
   };
 
 } // namespace app

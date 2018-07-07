@@ -48,7 +48,7 @@ bool DuplicateLayerCommand::onEnabled(Context* context)
 void DuplicateLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document = writer.document();
+  Doc* document = writer.document();
 
   {
     Transaction transaction(writer.context(), "Layer Duplication");

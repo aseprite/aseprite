@@ -11,7 +11,7 @@
 #include "app/ui/palettes_listbox.h"
 
 #include "app/app.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/extensions.h"
 #include "app/modules/palettes.h"
 #include "app/res/palette_resource.h"

@@ -62,7 +62,7 @@ void InvertMaskCommand::onExecute(Context* context)
   // invert the current mask
   else {
     ContextWriter writer(context);
-    Document* document(writer.document());
+    Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
 
     // Select all the sprite area

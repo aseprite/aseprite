@@ -12,7 +12,7 @@
 
 #include "app/console.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file_data.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
@@ -66,7 +66,7 @@ base::paths get_writable_extensions()
   return paths;
 }
 
-Document* load_document(Context* context, const std::string& filename)
+Doc* load_document(Context* context, const std::string& filename)
 {
   /* TODO add a option to configure what to do with the sequence */
   base::UniquePtr<FileOp> fop(FileOp::createLoadDocumentOperation(context, filename, FILE_LOAD_SEQUENCE_NONE));
@@ -83,7 +83,7 @@ Document* load_document(Context* context, const std::string& filename)
     console.printf(fop->error().c_str());
   }
 
-  Document* document = fop->releaseDocument();
+  Doc* document = fop->releaseDocument();
   fop.release();
 
   if (document && context)
@@ -92,15 +92,12 @@ Document* load_document(Context* context, const std::string& filename)
   return document;
 }
 
-int save_document(Context* context, doc::Document* document)
+int save_document(Context* context, Doc* document)
 {
-  ASSERT(dynamic_cast<app::Document*>(document));
-
   UniquePtr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(static_cast<app::Document*>(document),
-                "", "", SelectedFrames(), false),
+      FileOpROI(document, "", "", SelectedFrames(), false),
       document->filename(), ""));
   if (!fop)
     return -1;
@@ -134,7 +131,7 @@ FileOpROI::FileOpROI()
 {
 }
 
-FileOpROI::FileOpROI(const app::Document* doc,
+FileOpROI::FileOpROI(const Doc* doc,
                      const std::string& sliceName,
                      const std::string& frameTagName,
                      const doc::SelectedFrames& selFrames,
@@ -320,7 +317,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     new FileOp(FileOpSave, const_cast<Context*>(context)));
 
   // Document to save
-  fop->m_document = const_cast<Document*>(roi.document());
+  fop->m_document = const_cast<Doc*>(roi.document());
   fop->m_roi = roi;
 
   // Get the extension of the filename (in lower case)
@@ -837,7 +834,7 @@ void FileOp::createDocument(Sprite* spr)
   // spr can be NULL if the sprite is set in onPostLoad() then
 
   ASSERT(m_document == NULL);
-  m_document = new Document(spr);
+  m_document = new Doc(spr);
 }
 
 void FileOp::postLoad()

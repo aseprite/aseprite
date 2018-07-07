@@ -16,8 +16,8 @@
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/separator_in_view.h"
@@ -117,7 +117,7 @@ public:
     UIContext::instance()->remove_observer(this);
   }
 
-  void setLayer(Document* doc, Layer* layer) {
+  void setLayer(Doc* doc, Layer* layer) {
     if (m_layer) {
       m_document->remove_observer(this);
       m_layer = nullptr;
@@ -271,7 +271,7 @@ private:
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     if (isVisible())
-      setLayer(const_cast<Document*>(static_cast<const Document*>(site.document())),
+      setLayer(const_cast<Doc*>(site.document()),
                const_cast<Layer*>(site.layer()));
     else if (m_layer)
       setLayer(nullptr, nullptr);
@@ -345,7 +345,7 @@ private:
   }
 
   Timer m_timer;
-  Document* m_document;
+  Doc* m_document;
   Layer* m_layer;
   DocRange m_range;
   bool m_selfUpdate;
@@ -366,7 +366,7 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 void LayerPropertiesCommand::onExecute(Context* context)
 {
   ContextReader reader(context);
-  Document* doc = static_cast<Document*>(reader.document());
+  Doc* doc = static_cast<Doc*>(reader.document());
   LayerImage* layer = static_cast<LayerImage*>(reader.layer());
 
   if (!g_window)

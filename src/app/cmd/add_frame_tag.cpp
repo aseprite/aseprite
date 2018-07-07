@@ -10,8 +10,8 @@
 
 #include "app/cmd/add_frame_tag.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/frame_tag.h"
 #include "doc/frame_tag_io.h"
 #include "doc/sprite.h"
@@ -37,7 +37,7 @@ void AddFrameTag::onExecute()
   sprite->incrementVersion();
 
   // Notify observers about the new frame.
-  auto doc = static_cast<Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frameTag(frameTag);
@@ -53,7 +53,7 @@ void AddFrameTag::onUndo()
 
   // Notify observers about the new frame.
   {
-    auto doc = static_cast<Document*>(sprite->document());
+    Doc* doc = static_cast<Doc*>(sprite->document());
     DocEvent ev(doc);
     ev.sprite(sprite);
     ev.frameTag(frameTag);
@@ -78,7 +78,7 @@ void AddFrameTag::onRedo()
   m_size = 0;
 
   // Notify observers about the new frame.
-  Document* doc = static_cast<Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frameTag(frameTag);

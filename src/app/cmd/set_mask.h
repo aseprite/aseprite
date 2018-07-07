@@ -25,7 +25,7 @@ namespace cmd {
   class SetMask : public Cmd
                 , public WithDocument {
   public:
-    SetMask(Document* doc, Mask* newMask);
+    SetMask(Doc* doc, Mask* newMask);
 
     // Used to change the new mask used in the onRedo()
     void setNewMask(Mask* newMask);

@@ -239,7 +239,7 @@ protected:
 private:
   Context* m_context;
   Editor* m_editor;
-  Document* m_doc;
+  Doc* m_doc;
   Sprite* m_sprite;
   const Palette* m_pal;
   gfx::Point m_pos;

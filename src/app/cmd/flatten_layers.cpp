@@ -11,14 +11,14 @@
 #include "app/cmd/flatten_layers.h"
 
 #include "app/cmd/add_layer.h"
-#include "app/cmd/set_layer_name.h"
 #include "app/cmd/configure_background.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/set_layer_flags.h"
+#include "app/cmd/set_layer_name.h"
 #include "app/cmd/unlink_cel.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -36,7 +36,7 @@ FlattenLayers::FlattenLayers(Sprite* sprite)
 void FlattenLayers::onExecute()
 {
   Sprite* sprite = this->sprite();
-  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  auto doc = static_cast<Doc*>(sprite->document());
 
   // Create a temporary image.
   ImageRef image(Image::create(sprite->pixelFormat(),

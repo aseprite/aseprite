@@ -13,7 +13,7 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/console.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
@@ -200,7 +200,7 @@ void NewFileCommand::onExecute(Context* context)
       }
 
       // Show the sprite to the user
-      base::UniquePtr<Document> doc(new Document(sprite));
+      base::UniquePtr<Doc> doc(new Doc(sprite));
       sprite.release();
       sprintf(buf, "Sprite-%04d", ++_sprite_counter);
       doc->setFilename(buf);

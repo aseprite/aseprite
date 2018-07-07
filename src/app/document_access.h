@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,9 +8,9 @@
 #define APP_DOCUMENT_ACCESS_H_INCLUDED
 #pragma once
 
-#include "base/exception.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
+#include "base/exception.h"
 
 #include <exception>
 
@@ -46,7 +46,7 @@ namespace app {
   public:
     DocumentAccess() : m_document(NULL) { }
     DocumentAccess(const DocumentAccess& copy) : m_document(copy.m_document) { }
-    explicit DocumentAccess(Document* document) : m_document(document) { }
+    explicit DocumentAccess(Doc* document) : m_document(document) { }
     ~DocumentAccess() { }
 
     DocumentAccess& operator=(const DocumentAccess& copy)
@@ -55,23 +55,23 @@ namespace app {
       return *this;
     }
 
-    operator Document* () { return m_document; }
-    operator const Document* () const { return m_document; }
+    operator Doc* () { return m_document; }
+    operator const Doc* () const { return m_document; }
 
-    Document* operator->()
+    Doc* operator->()
     {
       ASSERT(m_document != NULL);
       return m_document;
     }
 
-    const Document* operator->() const
+    const Doc* operator->() const
     {
       ASSERT(m_document != NULL);
       return m_document;
     }
 
   protected:
-    Document* m_document;
+    Doc* m_document;
   };
 
   // Class to view the document's state. Its constructor request a
@@ -82,15 +82,15 @@ namespace app {
     DocumentReader() {
     }
 
-    explicit DocumentReader(Document* document, int timeout)
+    explicit DocumentReader(Doc* document, int timeout)
       : DocumentAccess(document) {
-      if (m_document && !m_document->lock(Document::ReadLock, timeout))
+      if (m_document && !m_document->lock(Doc::ReadLock, timeout))
         throw CannotReadDocumentException();
     }
 
     explicit DocumentReader(const DocumentReader& copy, int timeout)
       : DocumentAccess(copy) {
-      if (m_document && !m_document->lock(Document::ReadLock, timeout))
+      if (m_document && !m_document->lock(Doc::ReadLock, timeout))
         throw CannotReadDocumentException();
     }
 
@@ -123,12 +123,12 @@ namespace app {
       , m_locked(false) {
     }
 
-    explicit DocumentWriter(Document* document, int timeout)
+    explicit DocumentWriter(Doc* document, int timeout)
       : DocumentAccess(document)
       , m_from_reader(false)
       , m_locked(false) {
       if (m_document) {
-        if (!m_document->lock(Document::WriteLock, timeout))
+        if (!m_document->lock(Doc::WriteLock, timeout))
           throw CannotWriteDocumentException();
 
         m_locked = true;
@@ -179,7 +179,7 @@ namespace app {
   // Used to destroy the active document in the context.
   class DocumentDestroyer : public DocumentWriter {
   public:
-    explicit DocumentDestroyer(Context* context, Document* document, int timeout)
+    explicit DocumentDestroyer(Context* context, Doc* document, int timeout)
       : DocumentWriter(document, timeout) {
     }
 
@@ -187,7 +187,7 @@ namespace app {
       ASSERT(m_document != NULL);
 
       m_document->close();
-      Document* doc = m_document;
+      Doc* doc = m_document;
       unlock();
 
       delete doc;
@@ -201,7 +201,7 @@ namespace app {
     WeakDocumentReader() {
     }
 
-    explicit WeakDocumentReader(Document* doc)
+    explicit WeakDocumentReader(Doc* doc)
       : DocumentAccess(doc)
       , m_weak_lock(base::RWLock::WeakUnlocked) {
       if (m_document)

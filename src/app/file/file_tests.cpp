@@ -8,7 +8,7 @@
 
 #include "app/app.h"
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "base/unique_ptr.h"
@@ -32,7 +32,7 @@ TEST(File, SeveralSizes)
       std::sprintf(&fn[0], "test.ase");
 
       {
-        base::UniquePtr<app::Document> doc(ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
+        base::UniquePtr<Doc> doc(ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
         doc->setFilename(&fn[0]);
 
         // Random pixels
@@ -54,7 +54,7 @@ TEST(File, SeveralSizes)
       }
 
       {
-        base::UniquePtr<app::Document> doc(load_document(&ctx, &fn[0]));
+        base::UniquePtr<Doc> doc(load_document(&ctx, &fn[0]));
         ASSERT_EQ(w, doc->sprite()->width());
         ASSERT_EQ(h, doc->sprite()->height());
 

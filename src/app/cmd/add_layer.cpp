@@ -10,8 +10,8 @@
 
 #include "app/cmd/add_layer.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/layer.h"
 #include "doc/layer_io.h"
 #include "doc/subobjects_io.h"
@@ -69,7 +69,7 @@ void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
   group->incrementVersion();
   group->sprite()->incrementVersion();
 
-  auto doc = static_cast<Document*>(group->sprite()->document());
+  Doc* doc = static_cast<Doc*>(group->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(group->sprite());
   ev.layer(newLayer);
@@ -78,7 +78,7 @@ void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 
 void AddLayer::removeLayer(Layer* group, Layer* layer)
 {
-  auto doc = static_cast<Document*>(group->sprite()->document());
+  Doc* doc = static_cast<Doc*>(group->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);

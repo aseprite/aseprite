@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_layer_blend_mode.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -40,7 +40,7 @@ void SetLayerBlendMode::onUndo()
 void SetLayerBlendMode::onFireNotifications()
 {
   Layer* layer = this->layer();
-  auto doc = static_cast<Document*>(layer->sprite()->document());
+  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);

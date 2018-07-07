@@ -35,7 +35,7 @@ namespace app {
   class BackupIndicator;
   class Context;
   class ContextBar;
-  class Document;
+  class Doc;
   class Extensions;
   class INotificationDelegate;
   class InputChain;

@@ -64,7 +64,7 @@ void FillCommand::onExecute(Context* ctx)
 {
   ContextWriter writer(ctx);
   Site site = *writer.site();
-  Document* doc = (app::Document*)site.document();
+  Doc* doc = site.document();
   Sprite* sprite = site.sprite();
   Layer* layer = site.layer();
   Mask* mask = doc->mask();

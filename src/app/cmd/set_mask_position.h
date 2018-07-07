@@ -19,7 +19,7 @@ namespace cmd {
   class SetMaskPosition : public Cmd
                         , public WithDocument {
   public:
-    SetMaskPosition(Document* doc, const gfx::Point& pos);
+    SetMaskPosition(Doc* doc, const gfx::Point& pos);
 
   protected:
     void onExecute() override;

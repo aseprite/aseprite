@@ -10,7 +10,7 @@
 
 #include "app/util/new_image_from_mask.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/site.h"
 #include "base/unique_ptr.h"
 #include "doc/image_impl.h"
@@ -24,7 +24,7 @@ using namespace doc;
 
 Image* new_image_from_mask(const Site& site)
 {
-  const Mask* srcMask = static_cast<const app::Document*>(site.document())->mask();
+  const Mask* srcMask = site.document()->mask();
   return new_image_from_mask(site, srcMask);
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,7 +24,7 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
   class Site;
   class Transaction;
 
@@ -73,7 +73,7 @@ namespace app {
     gfx::Rect getTrimDstImageBounds() const;
     ImageRef trimDstImage(const gfx::Rect& bounds) const;
 
-    Document* m_document;
+    Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     frame_t m_frame;

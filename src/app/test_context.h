@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/context.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/site.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -25,7 +25,7 @@ namespace app {
   protected:
 
     void onGetActiveSite(Site* site) const override {
-      Document* doc = m_activeDoc;
+      Doc* doc = m_activeDoc;
       if (!doc)
         return;
 
@@ -35,12 +35,12 @@ namespace app {
       site->frame(0);
     }
 
-    void onAddDocument(Document* doc) override {
+    void onAddDocument(Doc* doc) override {
       m_activeDoc = doc;
       this->notifyActiveSiteChanged();
     }
 
-    void onRemoveDocument(Document* doc) override {
+    void onRemoveDocument(Doc* doc) override {
       if (m_activeDoc == doc) {
         m_activeDoc = nullptr;
         this->notifyActiveSiteChanged();
@@ -48,7 +48,7 @@ namespace app {
     }
 
   private:
-    Document* m_activeDoc;
+    Doc* m_activeDoc;
   };
 
   typedef TestContextT<Context> TestContext;

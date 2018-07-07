@@ -12,7 +12,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -125,7 +125,7 @@ void ModifySelectionCommand::onExecute(Context* context)
 
   // Lock sprite
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
 
   base::UniquePtr<Mask> mask(new Mask);

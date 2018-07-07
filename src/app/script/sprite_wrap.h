@@ -18,7 +18,7 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
   class DocumentView;
   class ImageWrap;
   class Transaction;
@@ -27,21 +27,21 @@ namespace app {
     typedef std::map<doc::ObjectId, ImageWrap*> Images;
 
   public:
-    SpriteWrap(app::Document* doc);
+    SpriteWrap(Doc* doc);
     ~SpriteWrap();
 
     void commit();
     void commitImages();
     Transaction& transaction();
 
-    app::Document* document();
+    Doc* document();
     doc::Sprite* sprite();
     ImageWrap* activeImage();
 
     ImageWrap* wrapImage(doc::Image* img);
 
   private:
-    app::Document* m_doc;
+    Doc* m_doc;
     app::DocumentView* m_view;
     app::Transaction* m_transaction;
 

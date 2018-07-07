@@ -23,7 +23,7 @@ namespace cmd {
   class ReselectMask : public Cmd
                      , public WithDocument {
   public:
-    ReselectMask(Document* doc);
+    ReselectMask(Doc* doc);
 
   protected:
     void onExecute() override;

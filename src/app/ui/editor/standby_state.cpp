@@ -132,7 +132,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
   Site site;
   editor->getSite(&site);
-  app::Document* document = static_cast<app::Document*>(site.document());
+  Doc* document = site.document();
   Layer* layer = site.layer();
 
   // When an editor is clicked the current view is changed.
@@ -675,7 +675,7 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
-  Document* document = editor->document();
+  Doc* document = editor->document();
   for (auto docView : UIContext::instance()->getAllDocumentViews(document)) {
     if (docView->editor()->isMovingPixels()) {
       // TODO Transfer moving pixels state to this editor

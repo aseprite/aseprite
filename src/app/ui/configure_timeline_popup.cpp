@@ -14,7 +14,7 @@
 #include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/loop_tag.h"
@@ -75,7 +75,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->thumbBox()->setVisible(visibleThumb);
 }
 
-app::Document* ConfigureTimelinePopup::doc()
+Doc* ConfigureTimelinePopup::doc()
 {
   return UIContext::instance()->activeDocument();
 }

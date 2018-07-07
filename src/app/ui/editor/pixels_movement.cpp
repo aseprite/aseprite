@@ -16,7 +16,7 @@
 #include "app/cmd/set_mask.h"
 #include "app/cmd/trim_cel.h"
 #include "app/console.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -56,7 +56,7 @@ PixelsMovement::PixelsMovement(
   const char* operationName)
   : m_reader(context)
   , m_site(site)
-  , m_document(static_cast<app::Document*>(site.document()))
+  , m_document(site.document())
   , m_sprite(site.sprite())
   , m_layer(site.layer())
   , m_transaction(context, operationName)

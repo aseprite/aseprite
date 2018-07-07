@@ -13,10 +13,10 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_observer.h"
+#include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/docs_observer.h"
-#include "app/document.h"
 #include "app/document_access.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -75,8 +75,7 @@ private:
         if (m_ctx->activeDocument()) {
           m_frame = m_ctx->activeSite().frame();
 
-          attachDocument(
-            static_cast<app::Document*>(m_ctx->activeDocument()));
+          attachDocument(m_ctx->activeDocument());
         }
         break;
 
@@ -123,11 +122,11 @@ private:
     if (m_document == site.document())
       return;
 
-    attachDocument(const_cast<Document*>(site.document()));
+    attachDocument(const_cast<Doc*>(site.document()));
   }
 
   // DocsObserver
-  void onRemoveDocument(Document* doc) override {
+  void onRemoveDocument(Doc* doc) override {
     if (m_document && m_document == doc)
       detachDocument();
   }
@@ -169,7 +168,7 @@ private:
     updateTitle();
   }
 
-  void attachDocument(Document* document) {
+  void attachDocument(Doc* document) {
     detachDocument();
 
     m_document = document;
@@ -245,7 +244,7 @@ private:
   }
 
   Context* m_ctx;
-  app::Document* m_document;
+  Doc* m_document;
   doc::frame_t m_frame;
   std::string m_title;
 };

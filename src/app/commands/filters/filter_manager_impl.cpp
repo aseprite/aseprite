@@ -16,7 +16,7 @@
 #include "app/cmd/set_palette.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
@@ -82,9 +82,9 @@ FilterManagerImpl::~FilterManagerImpl()
   }
 }
 
-app::Document* FilterManagerImpl::document()
+Doc* FilterManagerImpl::document()
 {
-  return static_cast<app::Document*>(m_site.document());
+  return static_cast<Doc*>(m_site.document());
 }
 
 void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
@@ -115,7 +115,7 @@ void FilterManagerImpl::setCelsTarget(CelsTarget celsTarget)
 
 void FilterManagerImpl::begin()
 {
-  Document* document = static_cast<app::Document*>(m_site.document());
+  Doc* document = m_site.document();
 
   m_row = 0;
   m_mask = (document->isMaskVisible() ? document->mask(): nullptr);
@@ -124,7 +124,7 @@ void FilterManagerImpl::begin()
 
 void FilterManagerImpl::beginForPreview()
 {
-  Document* document = static_cast<app::Document*>(m_site.document());
+  Doc* document = m_site.document();
 
   if (document->isMaskVisible())
     m_previewMask.reset(new Mask(*document->mask()));
@@ -436,7 +436,7 @@ void FilterManagerImpl::init(Cel* cel)
 {
   ASSERT(cel);
 
-  Document* doc = static_cast<app::Document*>(m_site.document());
+  Doc* doc = m_site.document();
   if (!updateBounds(doc->isMaskVisible() ? doc->mask(): nullptr))
     throw InvalidAreaException();
 
@@ -500,8 +500,7 @@ void FilterManagerImpl::redrawColorPalette()
 
 bool FilterManagerImpl::isMaskActive() const
 {
-  return static_cast<const app::Document*>(m_site.document())
-    ->isMaskVisible();
+  return m_site.document()->isMaskVisible();
 }
 
 } // namespace app

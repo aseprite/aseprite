@@ -52,7 +52,7 @@ bool MaskContentCommand::onEnabled(Context* context)
 
 void MaskContentCommand::onExecute(Context* context)
 {
-  Document* document;
+  Doc* document;
   {
     ContextWriter writer(context);
     document = writer.document();

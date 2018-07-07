@@ -11,7 +11,7 @@
 #include "app/cmd/flip_masked_cel.h"
 
 #include "app/cmd/copy_rect.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/util/autocrop.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/cel.h"
@@ -24,7 +24,7 @@ namespace cmd {
 
 FlipMaskedCel::FlipMaskedCel(Cel* cel, doc::algorithm::FlipType flipType)
 {
-  Document* doc = static_cast<Document*>(cel->document());
+  Doc* doc = static_cast<Doc*>(cel->document());
   color_t bgcolor = doc->bgColor(cel->layer());
   Image* image = cel->image();
   Mask* mask = doc->mask();

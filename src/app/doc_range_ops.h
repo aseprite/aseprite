@@ -13,7 +13,7 @@
 #include <vector>
 
 namespace app {
-  class Document;
+  class Doc;
   class DocRange;
 
   enum DocRangePlace {
@@ -25,18 +25,18 @@ namespace app {
   // These functions returns the new location of the "from" range or
   // throws an std::runtime_error() in case that the operation cannot
   // be done. (E.g. the background layer cannot be moved.)
-  DocRange move_range(Document* doc,
-                           const DocRange& from,
-                           const DocRange& to,
-                           const DocRangePlace place,
-                           const TagsHandling tagsHandling = kDefaultTagsAdjustment);
-  DocRange copy_range(Document* doc,
-                           const DocRange& from,
-                           const DocRange& to,
-                           const DocRangePlace place,
-                           const TagsHandling tagsHandling = kDefaultTagsAdjustment);
+  DocRange move_range(Doc* doc,
+                      const DocRange& from,
+                      const DocRange& to,
+                      const DocRangePlace place,
+                      const TagsHandling tagsHandling = kDefaultTagsAdjustment);
+  DocRange copy_range(Doc* doc,
+                      const DocRange& from,
+                      const DocRange& to,
+                      const DocRangePlace place,
+                      const TagsHandling tagsHandling = kDefaultTagsAdjustment);
 
-  void reverse_frames(Document* doc, const DocRange& range);
+  void reverse_frames(Doc* doc, const DocRange& range);
 
 } // namespace app
 

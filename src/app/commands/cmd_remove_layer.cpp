@@ -49,7 +49,7 @@ void RemoveLayerCommand::onExecute(Context* context)
 {
   std::string layerName;
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
     Transaction transaction(writer.context(), "Remove Layer");

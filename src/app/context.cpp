@@ -14,7 +14,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/site.h"
 #include "doc/layer.h"
 
@@ -35,7 +35,7 @@ Context::~Context()
   m_docs.remove_observer(this);
 }
 
-void Context::sendDocumentToTop(Document* document)
+void Context::sendDocumentToTop(Doc* document)
 {
   ASSERT(document != NULL);
 
@@ -49,14 +49,14 @@ Site Context::activeSite() const
   return site;
 }
 
-Document* Context::activeDocument() const
+Doc* Context::activeDocument() const
 {
   Site site;
   onGetActiveSite(&site);
   return site.document();
 }
 
-void Context::setActiveDocument(Document* document)
+void Context::setActiveDocument(Doc* document)
 {
   onSetActiveDocument(document);
 }
@@ -64,7 +64,7 @@ void Context::setActiveDocument(Document* document)
 bool Context::hasModifiedDocuments() const
 {
   for (auto doc : documents())
-    if (static_cast<app::Document*>(doc)->isModified())
+    if (doc->isModified())
       return true;
   return false;
 }
@@ -147,15 +147,15 @@ void Context::executeCommand(Command* command, const Params& params)
 
 void Context::onCreateDocument(CreateDocumentArgs* args)
 {
-  args->setDocument(new app::Document(nullptr));
+  args->setDocument(new Doc(nullptr));
 }
 
-void Context::onAddDocument(Document* doc)
+void Context::onAddDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
 }
 
-void Context::onRemoveDocument(Document* doc)
+void Context::onRemoveDocument(Doc* doc)
 {
   if (doc == m_lastSelectedDoc)
     m_lastSelectedDoc = nullptr;
@@ -164,7 +164,7 @@ void Context::onRemoveDocument(Document* doc)
 void Context::onGetActiveSite(Site* site) const
 {
   // Default/dummy site (maybe for batch/command line mode)
-  if (Document* doc = m_lastSelectedDoc) {
+  if (Doc* doc = m_lastSelectedDoc) {
     site->document(doc);
     site->sprite(doc->sprite());
     site->layer(doc->sprite()->root()->firstLayer());
@@ -172,7 +172,7 @@ void Context::onGetActiveSite(Site* site) const
   }
 }
 
-void Context::onSetActiveDocument(Document* doc)
+void Context::onSetActiveDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
 }

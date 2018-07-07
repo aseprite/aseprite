@@ -16,7 +16,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/file/palette_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"

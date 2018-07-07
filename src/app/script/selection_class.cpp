@@ -10,7 +10,7 @@
 
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/script/app_scripting.h"
 #include "app/script/sprite_wrap.h"
 #include "app/transaction.h"
@@ -52,7 +52,7 @@ void Selection_deselect(script::ContextHandle handle)
   auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
   if (wrap) {
     if (wrap->sprite) {
-      Document* doc = wrap->sprite->document();
+      Doc* doc = wrap->sprite->document();
       ASSERT(doc);
       wrap->sprite->transaction().execute(
         new cmd::DeselectMask(doc));
@@ -100,7 +100,7 @@ void Selection_selectAll(script::ContextHandle handle)
   auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
   if (wrap) {
     if (wrap->sprite) {
-      Document* doc = wrap->sprite->document();
+      Doc* doc = wrap->sprite->document();
 
       Mask newMask;
       newMask.replace(doc->sprite()->bounds());
@@ -124,7 +124,7 @@ void Selection_get_bounds(script::ContextHandle handle)
   auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
   if (wrap) {
     if (wrap->sprite) {
-      Document* doc = wrap->sprite->document();
+      Doc* doc = wrap->sprite->document();
       if (doc->isMaskVisible())
         push_new_rectangle(ctx, doc->mask()->bounds());
       else                        // Empty rectangle

@@ -10,7 +10,7 @@
 
 #include "app/cmd/shift_masked_cel.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/algorithm/shift_image.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -41,7 +41,7 @@ void ShiftMaskedCel::shift(int dx, int dy)
 {
   Cel* cel = this->cel();
   Image* image = cel->image();
-  Mask* mask = static_cast<Document*>(cel->document())->mask();
+  Mask* mask = static_cast<Doc*>(cel->document())->mask();
   ASSERT(mask->bitmap());
   if (!mask->bitmap())
     return;

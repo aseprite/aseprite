@@ -10,7 +10,7 @@
 
 namespace app {
 
-  class Document;
+  class Doc;
   class Site;
 
   class ContextObserver {

@@ -55,7 +55,7 @@ UndoCommand::UndoCommand(Type type)
 bool UndoCommand::onEnabled(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   return
     document != NULL &&
     ((m_type == Undo ? document->undoHistory()->canUndo():
@@ -65,7 +65,7 @@ bool UndoCommand::onEnabled(Context* context)
 void UndoCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
+  Doc* document(writer.document());
   DocUndo* undo = document->undoHistory();
 
 #ifdef ENABLE_UI

@@ -25,7 +25,7 @@ public:
   ~SpriteJob();
 
   ContextWriter& writer() { return m_writer; }
-  Document* document() const { return m_document; }
+  Doc* document() const { return m_document; }
   Sprite* sprite() const { return m_sprite; }
   Transaction& transaction() { return m_transaction; }
 
@@ -45,7 +45,7 @@ private:
   void notifyTaskProgress(double progress) override;
 
   ContextWriter m_writer;
-  Document* m_document;
+  Doc* m_document;
   Sprite* m_sprite;
   Transaction m_transaction;
 

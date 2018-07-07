@@ -10,7 +10,7 @@
 
 #include "app/document_diff.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/frame_tag.h"
 #include "doc/image.h"

@@ -18,7 +18,7 @@
 
 namespace app {
 class Context;
-class Document;
+class Doc;
 namespace crash {
   class Session;
 
@@ -31,8 +31,8 @@ namespace crash {
 
     void stop();
 
-    void onAddDocument(Document* document) override;
-    void onRemoveDocument(Document* document) override;
+    void onAddDocument(Doc* document) override;
+    void onRemoveDocument(Doc* document) override;
 
   private:
     void backgroundThread();
@@ -40,7 +40,7 @@ namespace crash {
     Session* m_session;
     base::mutex m_mutex;
     Context* m_ctx;
-    std::vector<Document*> m_documents;
+    std::vector<Doc*> m_documents;
     bool m_done;
     base::thread m_thread;
   };

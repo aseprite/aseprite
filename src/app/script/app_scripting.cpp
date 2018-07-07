@@ -10,7 +10,7 @@
 
 #include "app/script/app_scripting.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/script/image_wrap.h"
 #include "app/script/sprite_wrap.h"
 
@@ -69,7 +69,7 @@ AppScripting::AppScripting(script::EngineDelegate* delegate)
   ctx.pop(1);
 }
 
-SpriteWrap* AppScripting::wrapSprite(app::Document* doc)
+SpriteWrap* AppScripting::wrapSprite(Doc* doc)
 {
   auto it = m_sprites.find(doc->id());
   if (it != m_sprites.end())

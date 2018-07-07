@@ -19,7 +19,7 @@ namespace cmd {
   class SetLastPoint : public Cmd
                         , public WithDocument {
   public:
-    SetLastPoint(Document* doc, const gfx::Point& pos);
+    SetLastPoint(Doc* doc, const gfx::Point& pos);
 
   protected:
     void onExecute() override;

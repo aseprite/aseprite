@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_total_frames.h"
 
+#include "app/doc.h"
 #include "app/doc_event.h"
-#include "app/document.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -41,7 +41,7 @@ void SetTotalFrames::onUndo()
 void SetTotalFrames::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
-  auto doc = static_cast<Document*>(sprite->document());
+  Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(sprite->totalFrames());

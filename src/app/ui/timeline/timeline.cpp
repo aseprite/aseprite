@@ -18,11 +18,11 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/doc_event.h"
 #include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
-#include "app/document.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -342,7 +342,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   site.document()->add_observer(this);
 
-  app::Document* app_document = static_cast<app::Document*>(site.document());
+  Doc* app_document = site.document();
   DocumentPreferences& docPref = Preferences::instance().document(app_document);
 
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
@@ -360,7 +360,7 @@ void Timeline::updateUsingEditor(Editor* editor)
       m_frame == site.frame())
     return;
 
-  m_document = static_cast<app::Document*>(site.document());
+  m_document = site.document();
   m_sprite = site.sprite();
   m_layer = site.layer();
   m_frame = site.frame();
@@ -592,7 +592,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
-        Document* clipboard_document;
+        Doc* clipboard_document;
         DocRange clipboard_range;
         clipboard::get_document_range_info(
           &clipboard_document,
@@ -1645,7 +1645,7 @@ void Timeline::onActiveSiteChange(const Site& site)
   }
 }
 
-void Timeline::onRemoveDocument(Document* document)
+void Timeline::onRemoveDocument(Doc* document)
 {
   if (document == m_document) {
     detachDocument();
@@ -1879,7 +1879,7 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
 
 void Timeline::drawClipboardRange(ui::Graphics* g)
 {
-  Document* clipboard_document;
+  Doc* clipboard_document;
   DocRange clipboard_range;
   clipboard::get_document_range_info(
     &clipboard_document,
@@ -3791,7 +3791,7 @@ void Timeline::updateDropRange(const gfx::Point& pt)
 
 void Timeline::clearClipboardRange()
 {
-  Document* clipboard_document;
+  Doc* clipboard_document;
   DocRange clipboard_range;
   clipboard::get_document_range_info(
     &clipboard_document,

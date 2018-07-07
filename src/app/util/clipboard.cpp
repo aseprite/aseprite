@@ -14,10 +14,10 @@
 #include "app/cmd/trim_cel.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/doc_range_ops.h"
-#include "app/document.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -68,22 +68,22 @@ namespace {
       m_doc = nullptr;
     }
 
-    void setRange(Document* doc, const DocRange& range) {
+    void setRange(Doc* doc, const DocRange& range) {
       m_doc = doc;
       m_range = range;
     }
 
-    Document* document() const { return m_doc; }
+    Doc* document() const { return m_doc; }
     DocRange range() const { return m_range; }
 
     // DocsObserver impl
-    void onRemoveDocument(Document* doc) override {
+    void onRemoveDocument(Doc* doc) override {
       if (doc == m_doc)
         invalidate();
     }
 
   private:
-    Document* m_doc;
+    Doc* m_doc;
     DocRange m_range;
   };
 
@@ -188,7 +188,7 @@ static void set_clipboard_image(Image* image,
 
 static bool copy_from_document(const Site& site, bool merged = false)
 {
-  const app::Document* document = static_cast<const app::Document*>(site.document());
+  const Doc* document = static_cast<const Doc*>(site.document());
   ASSERT(document);
 
   const Mask* mask = document->mask();
@@ -223,7 +223,7 @@ ClipboardFormat get_current_format()
     return ClipboardNone;
 }
 
-void get_document_range_info(Document** document, DocRange* range)
+void get_document_range_info(Doc** document, DocRange* range)
 {
   if (clipboard_range.valid()) {
     *document = clipboard_range.document();
@@ -326,7 +326,7 @@ void paste()
   if (editor == NULL)
     return;
 
-  Document* dstDoc = editor->document();
+  Doc* dstDoc = editor->document();
   Sprite* dstSpr = dstDoc->sprite();
 
   switch (get_current_format()) {
@@ -378,7 +378,7 @@ void paste()
 
     case clipboard::ClipboardDocRange: {
       DocRange srcRange = clipboard_range.range();
-      Document* srcDoc = clipboard_range.document();
+      Doc* srcDoc = clipboard_range.document();
       Sprite* srcSpr = srcDoc->sprite();
 
       switch (srcRange.type()) {

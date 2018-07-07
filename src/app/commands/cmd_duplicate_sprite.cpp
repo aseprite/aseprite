@@ -49,7 +49,7 @@ bool DuplicateSpriteCommand::onEnabled(Context* context)
 void DuplicateSpriteCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
-  const Document* document = reader.document();
+  const Doc* document = reader.document();
 
   // Load the window widget
   app::gen::DuplicateSprite window;
@@ -69,7 +69,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     set_config_bool("DuplicateSprite", "Flatten", window.flatten()->isSelected());
 
     // Make a copy of the document
-    Document* docCopy;
+    Doc* docCopy;
     if (window.flatten()->isSelected())
       docCopy = document->duplicate(DuplicateWithFlattenLayers);
     else

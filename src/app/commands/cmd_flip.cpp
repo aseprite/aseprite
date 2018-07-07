@@ -64,7 +64,7 @@ bool FlipCommand::onEnabled(Context* context)
 void FlipCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document = writer.document();
+  Doc* document = writer.document();
   Sprite* sprite = writer.sprite();
 
   {

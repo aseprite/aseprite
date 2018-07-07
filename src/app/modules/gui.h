@@ -24,7 +24,7 @@ namespace ui {
 
 namespace app {
   class Command;
-  class Document;
+  class Doc;
   class Params;
 
   namespace tools {
@@ -34,7 +34,7 @@ namespace app {
   int init_module_gui();
   void exit_module_gui();
 
-  void update_screen_for_document(const Document* document);
+  void update_screen_for_document(const Doc* document);
 
   void load_window_pos(ui::Widget* window, const char *section);
   void save_window_pos(ui::Widget* window, const char *section);

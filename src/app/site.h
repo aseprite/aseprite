@@ -21,7 +21,7 @@ namespace doc {
 } // namespace doc
 
 namespace app {
-  class Document;
+  class Doc;
 
   // Specifies the current location in a context. E.g. the location in
   // the current Editor (current document, sprite, layer, frame,
@@ -55,19 +55,19 @@ namespace app {
     bool inColorBar() const { return m_focus == InColorBar; }
     bool inTimeline() const { return (inLayers() || inFrames() || inCels()); }
 
-    const Document* document() const { return m_document; }
+    const Doc* document() const { return m_document; }
     const doc::Sprite* sprite() const { return m_sprite; }
     const doc::Layer* layer() const { return m_layer; }
     doc::frame_t frame() const { return m_frame; }
     const doc::Cel* cel() const;
 
-    Document* document() { return m_document; }
+    Doc* document() { return m_document; }
     doc::Sprite* sprite() { return m_sprite; }
     doc::Layer* layer() { return m_layer; }
     doc::Cel* cel();
 
     void focus(Focus focus) { m_focus = focus; }
-    void document(Document* document) { m_document = document; }
+    void document(Doc* document) { m_document = document; }
     void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
     void layer(doc::Layer* layer) { m_layer = layer; }
     void frame(doc::frame_t frame) { m_frame = frame; }
@@ -90,7 +90,7 @@ namespace app {
 
   private:
     Focus m_focus;
-    Document* m_document;
+    Doc* m_document;
     doc::Sprite* m_sprite;
     doc::Layer* m_layer;
     doc::frame_t m_frame;

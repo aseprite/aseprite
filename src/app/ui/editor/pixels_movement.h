@@ -25,7 +25,7 @@ namespace doc {
 }
 
 namespace app {
-  class Document;
+  class Doc;
 
   namespace cmd {
     class SetMask;
@@ -121,7 +121,7 @@ namespace app {
 
     const ContextReader m_reader;
     Site m_site;
-    Document* m_document;
+    Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     Transaction m_transaction;

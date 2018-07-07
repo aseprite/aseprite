@@ -12,7 +12,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document.h"
+#include "app/doc.h"
 #include "app/document_exporter.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
@@ -626,7 +626,7 @@ bool ExportSpriteSheetCommand::onEnabled(Context* context)
 void ExportSpriteSheetCommand::onExecute(Context* context)
 {
   Site site = context->activeSite();
-  Document* document = static_cast<Document*>(site.document());
+  Doc* document = site.document();
   Sprite* sprite = site.sprite();
   DocumentPreferences& docPref(Preferences::instance().document(document));
   bool askOverwrite = m_askOverwrite;
@@ -777,7 +777,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
                        (!selLayers.empty() ? &selLayers: nullptr),
                        (!selFrames.empty() ? &selFrames: nullptr));
 
-  base::UniquePtr<Document> newDocument(exporter.exportSheet(context));
+  base::UniquePtr<Doc> newDocument(exporter.exportSheet(context));
   if (!newDocument)
     return;
 

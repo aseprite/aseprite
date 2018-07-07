@@ -10,19 +10,19 @@
 
 #include "app/cmd/with_document.h"
 
-#include "app/document.h"
+#include "app/doc.h"
 
 namespace app {
 namespace cmd {
 
-WithDocument::WithDocument(app::Document* doc)
+WithDocument::WithDocument(Doc* doc)
   : m_docId(doc->id())
 {
 }
 
-app::Document* WithDocument::document()
+Doc* WithDocument::document()
 {
-  return doc::get<app::Document>(m_docId);
+  return doc::get<Doc>(m_docId);
 }
 
 } // namespace cmd
