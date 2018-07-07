@@ -34,7 +34,7 @@ Doc* Docs::add(int width, int height, ColorMode mode, int ncolors)
 {
   // Ask to observers to create the document (maybe a doc::Document or
   // a derived class).
-  CreateDocumentArgs args;
+  CreateDocArgs args;
   notify_observers(&DocsObserver::onCreateDocument, &args);
   if (!args.document())
     args.setDocument(new Doc(nullptr));

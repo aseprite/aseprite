@@ -11,9 +11,9 @@
 namespace app {
   class Doc;
 
-  class CreateDocumentArgs {
+  class CreateDocArgs {
   public:
-    CreateDocumentArgs() : m_doc(nullptr) { }
+    CreateDocArgs() : m_doc(nullptr) { }
     Doc* document() { return m_doc; }
     void setDocument(Doc* doc) { m_doc = doc; }
   private:
@@ -23,7 +23,7 @@ namespace app {
   class DocsObserver {
   public:
     virtual ~DocsObserver() { }
-    virtual void onCreateDocument(CreateDocumentArgs* args) { }
+    virtual void onCreateDocument(CreateDocArgs* args) { }
     virtual void onAddDocument(Doc* doc) { }
     virtual void onRemoveDocument(Doc* doc) { }
   };

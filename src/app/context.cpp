@@ -145,7 +145,7 @@ void Context::executeCommand(Command* command, const Params& params)
 #endif
 }
 
-void Context::onCreateDocument(CreateDocumentArgs* args)
+void Context::onCreateDocument(CreateDocArgs* args)
 {
   args->setDocument(new Doc(nullptr));
 }

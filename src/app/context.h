@@ -88,7 +88,7 @@ namespace app {
 
   protected:
     // DocsObserver impl
-    void onCreateDocument(CreateDocumentArgs* args) override;
+    void onCreateDocument(CreateDocArgs* args) override;
     void onAddDocument(Doc* doc) override;
     void onRemoveDocument(Doc* doc) override;
 
