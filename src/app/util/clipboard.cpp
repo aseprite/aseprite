@@ -14,10 +14,10 @@
 #include "app/cmd/trim_cel.h"
 #include "app/console.h"
 #include "app/context_access.h"
-#include "app/document.h"
 #include "app/doc_api.h"
-#include "app/document_range.h"
-#include "app/document_range_ops.h"
+#include "app/doc_range.h"
+#include "app/doc_range_ops.h"
+#include "app/document.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -68,13 +68,13 @@ namespace {
       m_doc = nullptr;
     }
 
-    void setRange(Document* doc, const DocumentRange& range) {
+    void setRange(Document* doc, const DocRange& range) {
       m_doc = doc;
       m_range = range;
     }
 
     Document* document() const { return m_doc; }
-    DocumentRange range() const { return m_range; }
+    DocRange range() const { return m_range; }
 
     // DocsObserver impl
     void onRemoveDocument(Document* doc) override {
@@ -84,7 +84,7 @@ namespace {
 
   private:
     Document* m_doc;
-    DocumentRange m_range;
+    DocRange m_range;
   };
 
 }
@@ -216,14 +216,14 @@ ClipboardFormat get_current_format()
   else if (clipboard_image)
     return ClipboardImage;
   else if (clipboard_range.valid())
-    return ClipboardDocumentRange;
+    return ClipboardDocRange;
   else if (clipboard_palette && clipboard_picks.picks())
     return ClipboardPaletteEntries;
   else
     return ClipboardNone;
 }
 
-void get_document_range_info(Document** document, DocumentRange* range)
+void get_document_range_info(Document** document, DocRange* range)
 {
   if (clipboard_range.valid()) {
     *document = clipboard_range.document();
@@ -285,7 +285,7 @@ void copy_merged(const ContextReader& reader)
   copy_from_document(*reader.site(), true);
 }
 
-void copy_range(const ContextReader& reader, const DocumentRange& range)
+void copy_range(const ContextReader& reader, const DocRange& range)
 {
   ASSERT(reader.document() != NULL);
 
@@ -376,19 +376,19 @@ void paste()
       break;
     }
 
-    case clipboard::ClipboardDocumentRange: {
-      DocumentRange srcRange = clipboard_range.range();
+    case clipboard::ClipboardDocRange: {
+      DocRange srcRange = clipboard_range.range();
       Document* srcDoc = clipboard_range.document();
       Sprite* srcSpr = srcDoc->sprite();
 
       switch (srcRange.type()) {
 
-        case DocumentRange::kCels: {
+        case DocRange::kCels: {
           Layer* dstLayer = editor->layer();
           frame_t dstFrameFirst = editor->frame();
 
-          DocumentRange dstRange;
-          dstRange.startRange(dstLayer, dstFrameFirst, DocumentRange::kCels);
+          DocRange dstRange;
+          dstRange.startRange(dstLayer, dstFrameFirst, DocRange::kCels);
           for (layer_t i=1; i<srcRange.layers(); ++i) {
             dstLayer = dstLayer->getPreviousBrowsable();
             if (dstLayer == nullptr)
@@ -401,7 +401,7 @@ void paste()
           if (srcDoc == dstDoc) {
             // This is the app::copy_range (not clipboard::copy_range()).
             if (srcRange.layers() == dstRange.layers())
-              app::copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+              app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
             editor->invalidate();
             return;
           }
@@ -485,16 +485,16 @@ void paste()
           break;
         }
 
-        case DocumentRange::kFrames: {
+        case DocRange::kFrames: {
           frame_t dstFrame = editor->frame();
 
-          // We use a DocumentRange operation to copy frames inside
+          // We use a DocRange operation to copy frames inside
           // the same sprite.
           if (srcSpr == dstSpr) {
-            DocumentRange dstRange;
-            dstRange.startRange(nullptr, dstFrame, DocumentRange::kFrames);
+            DocRange dstRange;
+            dstRange.startRange(nullptr, dstFrame, DocRange::kFrames);
             dstRange.endRange(nullptr, dstFrame);
-            app::copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+            app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
             break;
           }
 
@@ -537,7 +537,7 @@ void paste()
           break;
         }
 
-        case DocumentRange::kLayers: {
+        case DocRange::kLayers: {
           if (srcDoc->colorMode() != dstDoc->colorMode())
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 

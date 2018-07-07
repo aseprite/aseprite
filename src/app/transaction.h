@@ -15,7 +15,7 @@ namespace app {
   class Cmd;
   class CmdTransaction;
   class Context;
-  class DocumentRange;
+  class DocRange;
   class DocUndo;
 
   enum Modification {
@@ -49,7 +49,7 @@ namespace app {
     // Can be used to change the new document range resulting from
     // executing this transaction. This range can be used then in
     // undo/redo operations to restore the Timeline selection/range.
-    void setNewDocumentRange(const DocumentRange& range);
+    void setNewDocRange(const DocRange& range);
 
     // This must be called to commit all the changes, so the undo will
     // be finally added in the sprite.

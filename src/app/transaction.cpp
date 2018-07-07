@@ -60,10 +60,10 @@ Transaction::~Transaction()
 // Used to set the document range after all the transaction is
 // executed and before the commit. This range is stored in
 // CmdTransaction to recover it on Edit > Redo.
-void Transaction::setNewDocumentRange(const DocumentRange& range)
+void Transaction::setNewDocRange(const DocRange& range)
 {
   ASSERT(m_cmds);
-  m_cmds->setNewDocumentRange(range);
+  m_cmds->setNewDocRange(range);
 }
 
 void Transaction::commit()

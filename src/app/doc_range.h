@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_DOCUMENT_RANGE_H_INCLUDED
-#define APP_DOCUMENT_RANGE_H_INCLUDED
+#ifndef APP_DOC_RANGE_H_INCLUDED
+#define APP_DOC_RANGE_H_INCLUDED
 #pragma once
 
 #include "doc/frame.h"
@@ -22,15 +22,15 @@ namespace doc {
 namespace app {
   using namespace doc;
 
-  class DocumentRange {
+  class DocRange {
   public:
     enum Type { kNone = 0,
                 kCels = 1,
                 kFrames = 2,
                 kLayers = 4 };
 
-    DocumentRange();
-    DocumentRange(Cel* cel);
+    DocRange();
+    DocRange(Cel* cel);
 
     Type type() const { return m_type; }
     bool enabled() const { return m_type != kNone; }
@@ -58,7 +58,7 @@ namespace app {
     frame_t firstFrame() const { return m_selectedFrames.firstFrame(); }
     frame_t lastFrame() const { return m_selectedFrames.lastFrame(); }
 
-    bool operator==(const DocumentRange& o) const {
+    bool operator==(const DocRange& o) const {
       return (m_type == o.m_type &&
               m_selectedLayers == o.m_selectedLayers &&
               m_selectedFrames == o.m_selectedFrames);

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/cmd_sequence.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/sprite_position.h"
 
 #include <memory>
@@ -24,7 +24,7 @@ namespace app {
     CmdTransaction(const std::string& label,
       bool changeSavedState, int* savedCounter);
 
-    void setNewDocumentRange(const DocumentRange& range);
+    void setNewDocRange(const DocRange& range);
     void commit();
 
     SpritePosition spritePositionBeforeExecute() const { return m_spritePositionBefore; }
@@ -42,8 +42,8 @@ namespace app {
 
   private:
     SpritePosition calcSpritePosition() const;
-    bool isDocumentRangeEnabled() const;
-    DocumentRange calcDocumentRange() const;
+    bool isDocRangeEnabled() const;
+    DocRange calcDocRange() const;
 
     struct Ranges {
       std::stringstream m_before;

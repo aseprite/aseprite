@@ -10,7 +10,7 @@
 
 #include "app/doc_observer.h"
 #include "app/docs_observer.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
@@ -62,7 +62,7 @@ namespace app {
                    public InputChainElement,
                    public FrameTagProvider {
   public:
-    typedef DocumentRange Range;
+    typedef DocRange Range;
 
     enum State {
       STATE_STANDBY,

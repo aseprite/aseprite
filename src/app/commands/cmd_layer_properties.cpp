@@ -225,11 +225,11 @@ private:
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Layer Properties");
 
-        DocumentRange range;
+        DocRange range;
         if (m_range.enabled())
           range = m_range;
         else {
-          range.startRange(m_layer, -1, DocumentRange::kLayers);
+          range.startRange(m_layer, -1, DocRange::kLayers);
           range.endRange(m_layer, -1);
         }
 
@@ -347,7 +347,7 @@ private:
   Timer m_timer;
   Document* m_document;
   Layer* m_layer;
-  DocumentRange m_range;
+  DocRange m_range;
   bool m_selfUpdate;
   UserData m_userData;
 };

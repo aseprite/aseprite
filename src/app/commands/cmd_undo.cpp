@@ -102,9 +102,9 @@ void UndoCommand::onExecute(Context* context)
   // range because there could be inexistent layers.
   std::istream* docRangeStream;
   if (m_type == Undo)
-    docRangeStream = undo->nextUndoDocumentRange();
+    docRangeStream = undo->nextUndoDocRange();
   else
-    docRangeStream = undo->nextRedoDocumentRange();
+    docRangeStream = undo->nextRedoDocRange();
 
   StatusBar* statusbar = StatusBar::instance();
   if (statusbar) {
@@ -139,13 +139,13 @@ void UndoCommand::onExecute(Context* context)
     }
   }
 
-  // Update timeline range. We've to deserialize the DocumentRange at
+  // Update timeline range. We've to deserialize the DocRange at
   // this point when objects (possible layers) are re-created after
   // the undo and we can deserialize them.
   if (docRangeStream) {
     Timeline* timeline = App::instance()->timeline();
     if (timeline) {
-      DocumentRange docRange;
+      DocRange docRange;
       if (docRange.read(*docRangeStream))
         timeline->setRange(docRange);
     }

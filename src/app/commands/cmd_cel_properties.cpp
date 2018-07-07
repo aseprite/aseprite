@@ -15,7 +15,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_event.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/timeline/timeline.h"
@@ -169,11 +169,11 @@ private:
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Cel Properties");
 
-        DocumentRange range;
+        DocRange range;
         if (m_range.enabled())
           range = m_range;
         else {
-          range.startRange(m_cel->layer(), m_cel->frame(), DocumentRange::kCels);
+          range.startRange(m_cel->layer(), m_cel->frame(), DocRange::kCels);
           range.endRange(m_cel->layer(), m_cel->frame());
         }
 
@@ -264,7 +264,7 @@ private:
   Timer m_timer;
   Document* m_document;
   Cel* m_cel;
-  DocumentRange m_range;
+  DocRange m_range;
   bool m_selfUpdate;
   UserData m_userData;
   bool m_newUserData;

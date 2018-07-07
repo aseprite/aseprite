@@ -187,7 +187,7 @@ SpritePosition DocUndo::nextRedoSpritePosition() const
     return SpritePosition();
 }
 
-std::istream* DocUndo::nextUndoDocumentRange() const
+std::istream* DocUndo::nextUndoDocRange() const
 {
   const undo::UndoState* state = nextUndo();
   if (state)
@@ -196,7 +196,7 @@ std::istream* DocUndo::nextUndoDocumentRange() const
     return nullptr;
 }
 
-std::istream* DocUndo::nextRedoDocumentRange() const
+std::istream* DocUndo::nextRedoDocRange() const
 {
   const undo::UndoState* state = nextRedo();
   if (state)

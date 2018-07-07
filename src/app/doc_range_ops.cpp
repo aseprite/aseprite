@@ -11,12 +11,12 @@
 #include "config.h"
 #endif
 
-#include "app/document_range_ops.h"
+#include "app/doc_range_ops.h"
 
 #include "app/app.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/transaction.h"
 #include "app/ui/timeline/timeline.h"
 #include "doc/layer.h"
@@ -75,12 +75,12 @@ static void move_or_copy_cels(
   }
 }
 
-static DocumentRange move_or_copy_frames(
+static DocRange move_or_copy_frames(
   DocApi& api, Op op,
   Sprite* sprite,
-  const DocumentRange& srcRange,
+  const DocRange& srcRange,
   frame_t dstFrame,
-  const DocumentRangePlace place,
+  const DocRangePlace place,
   const TagsHandling tagsHandling)
 {
   const SelectedFrames& srcFrames = srcRange.selectedFrames();
@@ -91,9 +91,9 @@ static DocumentRange move_or_copy_frames(
     std::clog << srcFrame << ", ";
   }
   std::clog << "] "
-            << (place == kDocumentRangeBefore ? "before":
-                place == kDocumentRangeAfter ? "after":
-                                               "as first child")
+            << (place == kDocRangeBefore ? "before":
+                place == kDocRangeAfter ? "after":
+                                          "as first child")
             << " " << dstFrame << "\n";
 #endif
 
@@ -102,8 +102,8 @@ static DocumentRange move_or_copy_frames(
   frame_t srcDelta = 0;
   frame_t firstCopiedBlock = 0;
   frame_t dstBeforeFrame =
-    (place == kDocumentRangeBefore ? dstFrame:
-                                     dstFrame+1);
+    (place == kDocRangeBefore ? dstFrame:
+                                dstFrame+1);
 
   for (; srcFrame != srcFrameEnd; ++srcFrame) {
     frame_t fromFrame = (*srcFrame)+srcDelta;
@@ -134,7 +134,7 @@ static DocumentRange move_or_copy_frames(
     std::clog << "] => "
               << (op == Move ? "Move": "Copy")
               << " " << (*srcFrame) << "+" << (srcDelta)
-              << (place == kDocumentRangeBefore ? " before ": " after ")
+              << (place == kDocRangeBefore ? " before ": " after ")
               << dstFrame << " => ";
 #endif
 
@@ -142,8 +142,8 @@ static DocumentRange move_or_copy_frames(
 
       case Move:
         api.moveFrame(sprite, fromFrame, dstFrame,
-                      (place == kDocumentRangeBefore ? kDropBeforeFrame:
-                                                       kDropAfterFrame),
+                      (place == kDocRangeBefore ? kDropBeforeFrame:
+                                                  kDropAfterFrame),
                       tagsHandling);
 
         if (fromFrame < dstBeforeFrame-1) {
@@ -157,8 +157,8 @@ static DocumentRange move_or_copy_frames(
 
       case Copy:
         api.copyFrame(sprite, fromFrame, dstFrame,
-                      (place == kDocumentRangeBefore ? kDropBeforeFrame:
-                                                       kDropAfterFrame),
+                      (place == kDocRangeBefore ? kDropBeforeFrame:
+                                                  kDropAfterFrame),
                       tagsHandling);
 
         if (fromFrame < dstBeforeFrame-1) {
@@ -181,10 +181,10 @@ static DocumentRange move_or_copy_frames(
 #endif
   }
 
-  DocumentRange result;
+  DocRange result;
   if (!srcRange.selectedLayers().empty())
     result.selectLayers(srcRange.selectedLayers());
-  result.startRange(nullptr, dstBeforeFrame-srcFrames.size(), DocumentRange::kFrames);
+  result.startRange(nullptr, dstBeforeFrame-srcFrames.size(), DocRange::kFrames);
   result.endRange(nullptr, dstBeforeFrame-1);
   return result;
 }
@@ -201,25 +201,25 @@ static bool has_child(LayerGroup* parent, Layer* child)
   return false;
 }
 
-static DocumentRange drop_range_op(
+static DocRange drop_range_op(
   Document* doc,
   const Op op,
-  const DocumentRange& from,
-  DocumentRangePlace place,
+  const DocRange& from,
+  DocRangePlace place,
   const TagsHandling tagsHandling,
-  DocumentRange to)
+  DocRange to)
 {
   // Convert "first child" operation into a insert after last child.
   LayerGroup* parent = nullptr;
-  if (to.type() == DocumentRange::kLayers &&
+  if (to.type() == DocRange::kLayers &&
       !to.selectedLayers().empty()) {
-    if (place == kDocumentRangeFirstChild &&
+    if (place == kDocRangeFirstChild &&
         (*to.selectedLayers().begin())->isGroup()) {
-      place = kDocumentRangeAfter;
+      place = kDocRangeAfter;
       parent = static_cast<LayerGroup*>((*to.selectedLayers().begin()));
 
       to.clearRange();
-      to.startRange(parent->lastLayer(), -1, DocumentRange::kLayers);
+      to.startRange(parent->lastLayer(), -1, DocRange::kLayers);
       to.endRange(parent->lastLayer(), -1);
     }
     else {
@@ -235,8 +235,8 @@ static DocumentRange drop_range_op(
     }
   }
 
-  if (place != kDocumentRangeBefore &&
-      place != kDocumentRangeAfter) {
+  if (place != kDocRangeBefore &&
+      place != kDocRangeAfter) {
     ASSERT(false);
     throw std::invalid_argument("Invalid 'place' argument");
   }
@@ -247,20 +247,20 @@ static DocumentRange drop_range_op(
   // Also check invalid cases, like moving a Background layer.
   switch (from.type()) {
 
-    case DocumentRange::kCels:
+    case DocRange::kCels:
       if (from == to)
         return from;
       break;
 
-    case DocumentRange::kFrames:
+    case DocRange::kFrames:
       if (op == Move) {
         // Simple cases with one continuos range of frames that are a
         // no-op.
         if ((from.selectedFrames().ranges() == 1) &&
             ((to.firstFrame() >= from.firstFrame() &&
               to.lastFrame() <= from.lastFrame()) ||
-             (place == kDocumentRangeBefore && to.firstFrame() == from.lastFrame()+1) ||
-             (place == kDocumentRangeAfter && to.lastFrame() == from.firstFrame()-1)) &&
+             (place == kDocRangeBefore && to.firstFrame() == from.lastFrame()+1) ||
+             (place == kDocRangeAfter && to.lastFrame() == from.firstFrame()-1)) &&
             // If there are tags, this might not be a no-op
             (sprite->frameTags().empty() ||
              tagsHandling == kDontAdjustTags)) {
@@ -269,7 +269,7 @@ static DocumentRange drop_range_op(
       }
       break;
 
-    case DocumentRange::kLayers:
+    case DocRange::kLayers:
       if (op == Move) {
         SelectedLayers srcSelLayers = from.selectedLayers();
         SelectedLayers dstSelLayers = to.selectedLayers();
@@ -294,9 +294,9 @@ static DocumentRange drop_range_op(
             if (dstSelLayers.contains(srcLayer))
               return from;
 
-          if ((place == kDocumentRangeBefore
+          if ((place == kDocRangeBefore
                && dstLayers.front() == srcLayers.back()->getNext()) ||
-              (place == kDocumentRangeAfter
+              (place == kDocRangeAfter
                && dstLayers.back() == srcLayers.front()->getPrevious()))
             return from;
         }
@@ -308,7 +308,7 @@ static DocumentRange drop_range_op(
       }
 
       // Before background
-      if (place == kDocumentRangeBefore) {
+      if (place == kDocRangeBefore) {
         for (Layer* background : to.selectedLayers()) {
           if (background && background->isBackground())
             throw std::runtime_error("You cannot move or copy something below the background layer");
@@ -325,7 +325,7 @@ static DocumentRange drop_range_op(
       ASSERT(false);
       throw std::invalid_argument("Invalid 'op' argument");
   }
-  DocumentRange resultRange;
+  DocRange resultRange;
 
   {
     const app::Context* context = static_cast<app::Context*>(doc->context());
@@ -340,7 +340,7 @@ static DocumentRange drop_range_op(
 
     switch (from.type()) {
 
-      case DocumentRange::kCels: {
+      case DocRange::kCels: {
         LayerList allLayers = sprite->allBrowsableLayers();
         if (allLayers.empty())
           break;
@@ -374,9 +374,9 @@ static DocumentRange drop_range_op(
         break;
       }
 
-      case DocumentRange::kFrames: {
+      case DocRange::kFrames: {
         frame_t dstFrame;
-        if (place == kDocumentRangeBefore)
+        if (place == kDocRangeBefore)
           dstFrame = to.firstFrame();
         else
           dstFrame = to.lastFrame();
@@ -387,7 +387,7 @@ static DocumentRange drop_range_op(
         break;
       }
 
-      case DocumentRange::kLayers: {
+      case DocRange::kLayers: {
         LayerList allLayers = sprite->allBrowsableLayers();
         if (allLayers.empty())
           break;
@@ -399,7 +399,7 @@ static DocumentRange drop_range_op(
         switch (op) {
 
           case Move:
-            if (place == kDocumentRangeBefore) {
+            if (place == kDocRangeBefore) {
               Layer* beforeThis = (!dstLayers.empty() ? dstLayers.front(): nullptr);
               Layer* afterThis  = nullptr;
 
@@ -412,7 +412,7 @@ static DocumentRange drop_range_op(
                 afterThis = srcLayer;
               }
             }
-            else if (place == kDocumentRangeAfter) {
+            else if (place == kDocRangeAfter) {
               Layer* afterThis = (!dstLayers.empty() ? dstLayers.back(): nullptr);
               for (Layer* srcLayer : srcLayers) {
                 api.restackLayerAfter(srcLayer, parent, afterThis);
@@ -425,17 +425,17 @@ static DocumentRange drop_range_op(
             break;
 
           case Copy: {
-            if (place == kDocumentRangeBefore) {
+            if (place == kDocRangeBefore) {
               Layer* beforeThis = (!dstLayers.empty() ? dstLayers.front(): nullptr);
               for (Layer* srcLayer :  srcLayers) {
                 Layer* copiedLayer = api.duplicateLayerBefore(
                   srcLayer, parent, beforeThis);
 
-                resultRange.startRange(copiedLayer, -1, DocumentRange::kLayers);
+                resultRange.startRange(copiedLayer, -1, DocRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
               }
             }
-            else if (place == kDocumentRangeAfter) {
+            else if (place == kDocRangeAfter) {
               std::reverse(srcLayers.begin(), srcLayers.end());
 
               Layer* afterThis = (!dstLayers.empty() ? dstLayers.back(): nullptr);
@@ -443,7 +443,7 @@ static DocumentRange drop_range_op(
                 Layer* copiedLayer = api.duplicateLayerAfter(
                   srcLayer, parent, afterThis);
 
-                resultRange.startRange(copiedLayer, -1, DocumentRange::kLayers);
+                resultRange.startRange(copiedLayer, -1, DocRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
               }
             }
@@ -454,8 +454,8 @@ static DocumentRange drop_range_op(
       }
     }
 
-    if (resultRange.type() != DocumentRange::kNone)
-      transaction.setNewDocumentRange(resultRange);
+    if (resultRange.type() != DocRange::kNone)
+      transaction.setNewDocRange(resultRange);
 
     transaction.commit();
   }
@@ -463,27 +463,27 @@ static DocumentRange drop_range_op(
   return resultRange;
 }
 
-DocumentRange move_range(Document* doc,
-                         const DocumentRange& from,
-                         const DocumentRange& to,
-                         const DocumentRangePlace place,
+DocRange move_range(Document* doc,
+                         const DocRange& from,
+                         const DocRange& to,
+                         const DocRangePlace place,
                          const TagsHandling tagsHandling)
 {
   return drop_range_op(doc, Move, from, place,
-                       tagsHandling, DocumentRange(to));
+                       tagsHandling, DocRange(to));
 }
 
-DocumentRange copy_range(Document* doc,
-                         const DocumentRange& from,
-                         const DocumentRange& to,
-                         const DocumentRangePlace place,
+DocRange copy_range(Document* doc,
+                         const DocRange& from,
+                         const DocRange& to,
+                         const DocRangePlace place,
                          const TagsHandling tagsHandling)
 {
   return drop_range_op(doc, Copy, from, place,
-                       tagsHandling, DocumentRange(to));
+                       tagsHandling, DocRange(to));
 }
 
-void reverse_frames(Document* doc, const DocumentRange& range)
+void reverse_frames(Document* doc, const DocRange& range)
 {
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);
@@ -497,19 +497,19 @@ void reverse_frames(Document* doc, const DocumentRange& range)
   bool swapCels = false;
 
   switch (range.type()) {
-    case DocumentRange::kCels:
+    case DocRange::kCels:
       frameBegin = range.firstFrame();
       frameEnd = range.lastFrame();
       layers = range.selectedLayers().toLayerList();
       swapCels = true;
       break;
-    case DocumentRange::kFrames:
+    case DocRange::kFrames:
       frameBegin = range.firstFrame();
       frameEnd = range.lastFrame();
       layers = sprite->allLayers();
       moveFrames = true;
       break;
-    case DocumentRange::kLayers:
+    case DocRange::kLayers:
       frameBegin = frame_t(0);
       frameEnd = sprite->totalFrames()-1;
       layers = range.selectedLayers().toLayerList();
@@ -544,7 +544,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
     }
   }
 
-  transaction.setNewDocumentRange(range);
+  transaction.setNewDocRange(range);
   transaction.commit();
 }
 

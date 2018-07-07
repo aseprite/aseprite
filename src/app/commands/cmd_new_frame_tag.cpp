@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -54,8 +54,8 @@ void NewFrameTagCommand::onExecute(Context* context)
 
   auto range = App::instance()->timeline()->range();
   if (range.enabled() &&
-      (range.type() == DocumentRange::kFrames ||
-       range.type() == DocumentRange::kCels)) {
+      (range.type() == DocRange::kFrames ||
+       range.type() == DocRange::kCels)) {
     from = range.selectedFrames().firstFrame();
     to = range.selectedFrames().lastFrame();
   }

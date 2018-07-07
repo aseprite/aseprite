@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/document_range.h"
+#include "app/doc_range.h"
 
 #include "base/serialization.h"
 #include "doc/cel.h"
@@ -24,7 +24,7 @@ using namespace base::serialization;
 using namespace base::serialization::little_endian;
 using namespace doc;
 
-DocumentRange::DocumentRange()
+DocRange::DocRange()
   : m_type(kNone)
   , m_flags(m_type)
   , m_selectingFromLayer(nullptr)
@@ -32,7 +32,7 @@ DocumentRange::DocumentRange()
 {
 }
 
-DocumentRange::DocumentRange(Cel* cel)
+DocRange::DocRange(Cel* cel)
   : m_type(kCels)
   , m_flags(m_type)
   , m_selectingFromLayer(nullptr)
@@ -42,7 +42,7 @@ DocumentRange::DocumentRange(Cel* cel)
   m_selectedFrames.insert(cel->frame());
 }
 
-void DocumentRange::clearRange()
+void DocRange::clearRange()
 {
   m_type = kNone;
   m_flags = kNone;
@@ -50,7 +50,7 @@ void DocumentRange::clearRange()
   m_selectedFrames.clear();
 }
 
-void DocumentRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
+void DocRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
 {
   m_type = type;
   m_flags |= type;
@@ -63,7 +63,7 @@ void DocumentRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
     m_selectedFrames.insert(fromFrame);
 }
 
-void DocumentRange::endRange(Layer* toLayer, frame_t toFrame)
+void DocRange::endRange(Layer* toLayer, frame_t toFrame)
 {
   ASSERT(enabled());
 
@@ -74,7 +74,7 @@ void DocumentRange::endRange(Layer* toLayer, frame_t toFrame)
     selectFrameRange(m_selectingFromFrame, toFrame);
 }
 
-void DocumentRange::selectLayer(Layer* layer)
+void DocRange::selectLayer(Layer* layer)
 {
   if (m_type == kNone)
     m_type = kLayers;
@@ -83,7 +83,7 @@ void DocumentRange::selectLayer(Layer* layer)
   m_selectedLayers.insert(layer);
 }
 
-void DocumentRange::selectLayers(const SelectedLayers& selLayers)
+void DocRange::selectLayers(const SelectedLayers& selLayers)
 {
   if (m_type == kNone)
     m_type = kLayers;
@@ -93,7 +93,7 @@ void DocumentRange::selectLayers(const SelectedLayers& selLayers)
     m_selectedLayers.insert(layer);
 }
 
-bool DocumentRange::contains(const Layer* layer) const
+bool DocRange::contains(const Layer* layer) const
 {
   if (enabled())
     return m_selectedLayers.contains(const_cast<Layer*>(layer));
@@ -101,15 +101,15 @@ bool DocumentRange::contains(const Layer* layer) const
     return false;
 }
 
-bool DocumentRange::contains(const Layer* layer,
-                             const frame_t frame) const
+bool DocRange::contains(const Layer* layer,
+                        const frame_t frame) const
 {
   switch (m_type) {
-    case DocumentRange::kNone:
+    case DocRange::kNone:
       return false;
-    case DocumentRange::kCels:
+    case DocRange::kCels:
       return contains(layer) && contains(frame);
-    case DocumentRange::kFrames:
+    case DocRange::kFrames:
       if (contains(frame)) {
         if ((m_flags & (kCels | kLayers)) != 0)
           return contains(layer);
@@ -117,7 +117,7 @@ bool DocumentRange::contains(const Layer* layer,
           return true;
       }
       break;
-    case DocumentRange::kLayers:
+    case DocRange::kLayers:
       if (contains(layer)) {
         if ((m_flags & (kCels | kFrames)) != 0)
           return contains(frame);
@@ -129,37 +129,37 @@ bool DocumentRange::contains(const Layer* layer,
   return false;
 }
 
-void DocumentRange::displace(layer_t layerDelta, frame_t frameDelta)
+void DocRange::displace(layer_t layerDelta, frame_t frameDelta)
 {
   m_selectedLayers.displace(layerDelta);
   m_selectedFrames.displace(frameDelta);
 }
 
-bool DocumentRange::convertToCels(const Sprite* sprite)
+bool DocRange::convertToCels(const Sprite* sprite)
 {
   switch (m_type) {
-    case DocumentRange::kNone:
+    case DocRange::kNone:
       return false;
-    case DocumentRange::kCels:
+    case DocRange::kCels:
       break;
-    case DocumentRange::kFrames: {
+    case DocRange::kFrames: {
       if ((m_flags & (kCels | kLayers)) == 0) {
         for (auto layer : sprite->allBrowsableLayers())
           m_selectedLayers.insert(layer);
       }
-      m_type = DocumentRange::kCels;
+      m_type = DocRange::kCels;
       break;
     }
-    case DocumentRange::kLayers:
+    case DocRange::kLayers:
       if ((m_flags & (kCels | kFrames)) == 0)
         selectFrameRange(0, sprite->lastFrame());
-      m_type = DocumentRange::kCels;
+      m_type = DocRange::kCels;
       break;
   }
   return true;
 }
 
-bool DocumentRange::write(std::ostream& os) const
+bool DocRange::write(std::ostream& os) const
 {
   write32(os, m_type);
   write32(os, m_flags);
@@ -172,7 +172,7 @@ bool DocumentRange::write(std::ostream& os) const
   return os.good();
 }
 
-bool DocumentRange::read(std::istream& is)
+bool DocRange::read(std::istream& is)
 {
   clearRange();
 
@@ -188,7 +188,7 @@ bool DocumentRange::read(std::istream& is)
   return is.good();
 }
 
-void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
+void DocRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
 {
   ASSERT(fromLayer);
   ASSERT(toLayer);
@@ -234,7 +234,7 @@ void DocumentRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
   } while (it);
 }
 
-void DocumentRange::selectFrameRange(frame_t fromFrame, frame_t toFrame)
+void DocRange::selectFrameRange(frame_t fromFrame, frame_t toFrame)
 {
   m_selectedFrames.insert(fromFrame, toFrame);
 }

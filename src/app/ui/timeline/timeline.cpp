@@ -18,11 +18,11 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/doc_api.h"
 #include "app/doc_event.h"
+#include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
 #include "app/document.h"
-#include "app/doc_api.h"
-#include "app/document_range_ops.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -593,7 +593,7 @@ bool Timeline::onProcessMessage(Message* msg)
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
         Document* clipboard_document;
-        DocumentRange clipboard_range;
+        DocRange clipboard_range;
         clipboard::get_document_range_info(
           &clipboard_document,
           &clipboard_range);
@@ -1880,7 +1880,7 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
 void Timeline::drawClipboardRange(ui::Graphics* g)
 {
   Document* clipboard_document;
-  DocumentRange clipboard_range;
+  DocRange clipboard_range;
   clipboard::get_document_range_info(
     &clipboard_document,
     &clipboard_range);
@@ -2386,7 +2386,7 @@ void Timeline::drawFrameTags(ui::Graphics* g)
       int dx = 0, dw = 0;
       if (m_dropTarget.outside &&
           m_dropTarget.hhit != DropTarget::HNone &&
-          m_dropRange.type() == DocumentRange::kFrames) {
+          m_dropRange.type() == DocRange::kFrames) {
         switch (m_dropTarget.hhit) {
           case DropTarget::Before:
             if (m_dropRange.firstFrame() == frameTag->fromFrame()) {
@@ -3613,7 +3613,7 @@ void Timeline::dropRange(DropOp op)
 {
   bool copy = (op == Timeline::kCopy);
   Range newFromRange;
-  DocumentRangePlace place = kDocumentRangeAfter;
+  DocRangePlace place = kDocRangeAfter;
   Range dropRange = m_dropRange;
   bool outside = m_dropTarget.outside;
 
@@ -3621,19 +3621,19 @@ void Timeline::dropRange(DropOp op)
 
     case Range::kFrames:
       if (m_dropTarget.hhit == DropTarget::Before)
-        place = kDocumentRangeBefore;
+        place = kDocRangeBefore;
       break;
 
     case Range::kLayers:
       switch (m_dropTarget.vhit) {
         case DropTarget::Bottom:
-          place = kDocumentRangeBefore;
+          place = kDocRangeBefore;
           break;
         case DropTarget::FirstChild:
-          place = kDocumentRangeFirstChild;
+          place = kDocRangeFirstChild;
           break;
         case DropTarget::VeryBottom:
-          place = kDocumentRangeBefore;
+          place = kDocRangeBefore;
           {
             Layer* layer = m_sprite->root()->firstLayer();
             dropRange.clearRange();
@@ -3792,7 +3792,7 @@ void Timeline::updateDropRange(const gfx::Point& pt)
 void Timeline::clearClipboardRange()
 {
   Document* clipboard_document;
-  DocumentRange clipboard_range;
+  DocRange clipboard_range;
   clipboard::get_document_range_info(
     &clipboard_document,
     &clipboard_range);
@@ -3940,7 +3940,7 @@ bool Timeline::onCanCopy(Context* ctx)
 bool Timeline::onCanPaste(Context* ctx)
 {
   return
-    (clipboard::get_current_format() == clipboard::ClipboardDocumentRange &&
+    (clipboard::get_current_format() == clipboard::ClipboardDocRange &&
      ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable));
 }
 
@@ -3968,7 +3968,7 @@ bool Timeline::onCopy(Context* ctx)
 
 bool Timeline::onPaste(Context* ctx)
 {
-  if (clipboard::get_current_format() == clipboard::ClipboardDocumentRange) {
+  if (clipboard::get_current_format() == clipboard::ClipboardDocRange) {
     clipboard::paste();
     return true;
   }
@@ -3984,13 +3984,13 @@ bool Timeline::onClear(Context* ctx)
   Command* cmd = nullptr;
 
   switch (m_range.type()) {
-    case DocumentRange::kCels:
+    case DocRange::kCels:
       cmd = Commands::instance()->byId(CommandId::ClearCel());
       break;
-    case DocumentRange::kFrames:
+    case DocRange::kFrames:
       cmd = Commands::instance()->byId(CommandId::RemoveFrame());
       break;
-    case DocumentRange::kLayers:
+    case DocRange::kLayers:
       cmd = Commands::instance()->byId(CommandId::RemoveLayer());
       break;
   }

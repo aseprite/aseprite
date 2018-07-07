@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 
 #include "app/context_access.h"
 #include "app/document.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -23,10 +23,10 @@ namespace app {
 
 using namespace doc;
 
-// TODO the DocumentRange should be "iteratable" to replace this function
-CelList get_unlocked_unique_cels(Sprite* sprite, const DocumentRange& inrange)
+// TODO the DocRange should be "iteratable" to replace this function
+CelList get_unlocked_unique_cels(Sprite* sprite, const DocRange& inrange)
 {
-  DocumentRange range = inrange;
+  DocRange range = inrange;
   CelList cels;
   if (!range.convertToCels(sprite))
     return cels;

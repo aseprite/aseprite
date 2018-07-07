@@ -225,9 +225,9 @@ void UIContext::onGetActiveSite(Site* site) const
       if (timeline &&
           timeline->range().enabled()) {
         switch (timeline->range().type()) {
-          case DocumentRange::kCels:   site->focus(Site::InCels); break;
-          case DocumentRange::kFrames: site->focus(Site::InFrames); break;
-          case DocumentRange::kLayers: site->focus(Site::InLayers); break;
+          case DocRange::kCels:   site->focus(Site::InCels); break;
+          case DocRange::kFrames: site->focus(Site::InFrames); break;
+          case DocRange::kLayers: site->focus(Site::InLayers); break;
         }
         site->selectedLayers(timeline->selectedLayers());
         site->selectedFrames(timeline->selectedFrames());

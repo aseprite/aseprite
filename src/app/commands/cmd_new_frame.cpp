@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -113,7 +113,7 @@ void NewFrameCommand::onExecute(Context* context)
 
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
-          DocumentRange range = timeline->range();
+          DocRange range = timeline->range();
 
           SelectedLayers selLayers;
           if (site->inFrames())

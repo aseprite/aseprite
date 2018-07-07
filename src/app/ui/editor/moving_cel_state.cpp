@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,7 +14,7 @@
 #include "app/cmd/set_cel_bounds.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -43,13 +43,13 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
   if (layer && layer->isImage())
     m_mainCel = layer->cel(editor->frame());
 
-  DocumentRange range = App::instance()->timeline()->range();
+  DocRange range = App::instance()->timeline()->range();
   if (!range.enabled()) {
-    range.startRange(editor->layer(), editor->frame(), DocumentRange::kCels);
+    range.startRange(editor->layer(), editor->frame(), DocRange::kCels);
     range.endRange(editor->layer(), editor->frame());
   }
 
-  DocumentRange range2 = range;
+  DocRange range2 = range;
   for (Layer* layer : range.selectedLayers()) {
     if (layer && layer->isGroup()) {
       LayerList childrenList;

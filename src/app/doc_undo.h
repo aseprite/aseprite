@@ -8,7 +8,7 @@
 #define APP_DOCUMENT_UNDO_H_INCLUDED
 #pragma once
 
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/sprite_position.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
@@ -53,8 +53,8 @@ namespace app {
 
     SpritePosition nextUndoSpritePosition() const;
     SpritePosition nextRedoSpritePosition() const;
-    std::istream* nextUndoDocumentRange() const;
-    std::istream* nextRedoDocumentRange() const;
+    std::istream* nextUndoDocRange() const;
+    std::istream* nextRedoDocRange() const;
 
     Cmd* lastExecutedCmd() const;
 

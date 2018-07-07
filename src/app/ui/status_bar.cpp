@@ -14,7 +14,7 @@
 #include "app/context_access.h"
 #include "app/doc_event.h"
 #include "app/document_access.h"
-#include "app/document_range.h"
+#include "app/doc_range.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
