@@ -12,7 +12,7 @@
 #include "app/tools/active_tool_observer.h"
 #include "base/time.h"
 #include "doc/context_observer.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "doc/documents_observer.h"
 #include "ui/base.h"
 #include "ui/box.h"
@@ -44,7 +44,7 @@ namespace app {
   class StatusBar : public ui::HBox
                   , public doc::ContextObserver
                   , public doc::DocumentsObserver
-                  , public doc::DocumentObserver
+                  , public doc::DocObserver
                   , public tools::ActiveToolObserver {
     static StatusBar* m_instance;
   public:
@@ -75,11 +75,11 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
 
-    // DocumentObservers impl
+    // DocObservers impl
     void onRemoveDocument(doc::Document* doc) override;
 
-    // DocumentObserver impl
-    void onPixelFormatChanged(DocumentEvent& ev) override;
+    // DocObserver impl
+    void onPixelFormatChanged(DocEvent& ev) override;
 
     // ActiveToolObserver impl
     void onSelectedToolChange(tools::Tool* tool) override;

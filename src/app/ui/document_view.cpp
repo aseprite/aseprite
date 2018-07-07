@@ -35,7 +35,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "base/fs.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -361,25 +361,25 @@ bool DocumentView::onProcessMessage(Message* msg)
   return Box::onProcessMessage(msg);
 }
 
-void DocumentView::onGeneralUpdate(doc::DocumentEvent& ev)
+void DocumentView::onGeneralUpdate(doc::DocEvent& ev)
 {
   if (m_editor->isVisible())
     m_editor->updateEditor();
 }
 
-void DocumentView::onSpritePixelsModified(doc::DocumentEvent& ev)
+void DocumentView::onSpritePixelsModified(doc::DocEvent& ev)
 {
   if (m_editor->isVisible() &&
       m_editor->frame() == ev.frame())
     m_editor->drawSpriteClipped(ev.region());
 }
 
-void DocumentView::onLayerMergedDown(doc::DocumentEvent& ev)
+void DocumentView::onLayerMergedDown(doc::DocEvent& ev)
 {
   m_editor->setLayer(ev.targetLayer());
 }
 
-void DocumentView::onAddLayer(doc::DocumentEvent& ev)
+void DocumentView::onAddLayer(doc::DocEvent& ev)
 {
   if (current_editor == m_editor) {
     ASSERT(ev.layer() != NULL);
@@ -387,7 +387,7 @@ void DocumentView::onAddLayer(doc::DocumentEvent& ev)
   }
 }
 
-void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
+void DocumentView::onBeforeRemoveLayer(doc::DocEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -410,7 +410,7 @@ void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
   }
 }
 
-void DocumentView::onAddFrame(doc::DocumentEvent& ev)
+void DocumentView::onAddFrame(doc::DocEvent& ev)
 {
   if (current_editor == m_editor)
     m_editor->setFrame(ev.frame());
@@ -418,7 +418,7 @@ void DocumentView::onAddFrame(doc::DocumentEvent& ev)
     m_editor->setFrame(m_editor->frame()+1);
 }
 
-void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
+void DocumentView::onRemoveFrame(doc::DocEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -433,24 +433,24 @@ void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
   }
 }
 
-void DocumentView::onAddCel(doc::DocumentEvent& ev)
+void DocumentView::onAddCel(doc::DocEvent& ev)
 {
   UIContext::instance()->notifyActiveSiteChanged();
 }
 
-void DocumentView::onRemoveCel(doc::DocumentEvent& ev)
+void DocumentView::onRemoveCel(doc::DocEvent& ev)
 {
   UIContext::instance()->notifyActiveSiteChanged();
 }
 
-void DocumentView::onTotalFramesChanged(doc::DocumentEvent& ev)
+void DocumentView::onTotalFramesChanged(doc::DocEvent& ev)
 {
   if (m_editor->frame() >= m_editor->sprite()->totalFrames()) {
     m_editor->setFrame(m_editor->sprite()->lastFrame());
   }
 }
 
-void DocumentView::onLayerRestacked(doc::DocumentEvent& ev)
+void DocumentView::onLayerRestacked(doc::DocEvent& ev)
 {
   m_editor->invalidate();
 }

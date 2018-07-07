@@ -11,8 +11,8 @@
 #include "app/cmd/set_cel_frame.h"
 
 #include "doc/cel.h"
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -46,12 +46,12 @@ void SetCelFrame::onFireNotifications()
 {
   Cel* cel = this->cel();
   doc::Document* doc = cel->sprite()->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(cel->layer()->sprite());
   ev.layer(cel->layer());
   ev.cel(cel);
   ev.frame(cel->frame());
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onCelFrameChanged, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onCelFrameChanged, ev);
 }
 
 } // namespace cmd

@@ -12,10 +12,10 @@
 
 #include "base/serialization.h"
 #include "doc/cel.h"
-#include "doc/cel_io.h"
 #include "doc/cel_data_io.h"
+#include "doc/cel_io.h"
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/subobjects_io.h"
@@ -94,21 +94,21 @@ void AddCel::addCel(Layer* layer, Cel* cel)
   layer->incrementVersion();
 
   Document* doc = cel->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
   ev.cel(cel);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddCel, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddCel, ev);
 }
 
 void AddCel::removeCel(Layer* layer, Cel* cel)
 {
   Document* doc = cel->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
   ev.cel(cel);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onRemoveCel, ev);
 
   static_cast<LayerImage*>(layer)->removeCel(cel);
   layer->incrementVersion();

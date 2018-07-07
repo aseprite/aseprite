@@ -4,8 +4,8 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef DOC_DOCUMENT_EVENT_H_INCLUDED
-#define DOC_DOCUMENT_EVENT_H_INCLUDED
+#ifndef DOC_DOC_EVENT_H_INCLUDED
+#define DOC_DOC_EVENT_H_INCLUDED
 #pragma once
 
 #include "gfx/region.h"
@@ -25,9 +25,9 @@ namespace doc {
 
   using namespace doc;
 
-  class DocumentEvent {
+  class DocEvent {
   public:
-    DocumentEvent(Document* document)
+    DocEvent(Document* document)
       : m_document(document)
       , m_sprite(NULL)
       , m_layer(NULL)

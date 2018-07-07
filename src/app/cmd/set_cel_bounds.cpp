@@ -12,7 +12,7 @@
 
 #include "app/document.h"
 #include "doc/cel.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 
 namespace app {
 namespace cmd {
@@ -41,10 +41,10 @@ void SetCelBoundsF::onUndo()
 void SetCelBoundsF::onFireNotifications()
 {
   Cel* cel = this->cel();
-  DocumentEvent ev(cel->document());
+  DocEvent ev(cel->document());
   ev.sprite(cel->sprite());
   ev.cel(cel);
-  cel->document()->notify_observers<DocumentEvent&>(&DocumentObserver::onCelPositionChanged, ev);
+  cel->document()->notify_observers<DocEvent&>(&DocObserver::onCelPositionChanged, ev);
 }
 
 } // namespace cmd

@@ -11,7 +11,7 @@
 #include "app/cmd/set_frame_duration.h"
 
 #include "app/document.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -41,10 +41,10 @@ void SetFrameDuration::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
   doc::Document* doc = sprite->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_frame);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onFrameDurationChanged, ev);
 }
 
 } // namespace cmd

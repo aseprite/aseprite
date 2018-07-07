@@ -18,8 +18,8 @@
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
@@ -152,9 +152,9 @@ void SetPixelFormat::setFormat(PixelFormat format)
     ->setExtraCel(ExtraCelRef(nullptr));
 
   // Generate notification
-  DocumentEvent ev(sprite->document());
+  DocEvent ev(sprite->document());
   ev.sprite(sprite);
-  sprite->document()->notify_observers<DocumentEvent&>(&DocumentObserver::onPixelFormatChanged, ev);
+  sprite->document()->notify_observers<DocEvent&>(&DocObserver::onPixelFormatChanged, ev);
 }
 
 } // namespace cmd

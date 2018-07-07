@@ -10,8 +10,8 @@
 
 #include "app/cmd/set_slice_name.h"
 
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
 

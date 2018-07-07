@@ -11,7 +11,7 @@
 #include "app/cmd/set_total_frames.h"
 
 #include "app/document.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -42,10 +42,10 @@ void SetTotalFrames::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
   doc::Document* doc = sprite->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(sprite->totalFrames());
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onTotalFramesChanged, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onTotalFramesChanged, ev);
 }
 
 } // namespace cmd

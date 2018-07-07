@@ -11,7 +11,7 @@
 #include "base/mutex.h"
 #include "base/thread.h"
 #include "doc/context_observer.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "doc/documents_observer.h"
 
 #include <vector>
@@ -27,7 +27,7 @@ namespace crash {
 
   class BackupObserver : public doc::ContextObserver
                        , public doc::DocumentsObserver
-                       , public doc::DocumentObserver {
+                       , public doc::DocObserver {
   public:
     BackupObserver(Session* session, doc::Context* ctx);
     ~BackupObserver();

@@ -24,8 +24,8 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -53,7 +53,7 @@ static LayerPropertiesWindow* g_window = nullptr;
 
 class LayerPropertiesWindow : public app::gen::LayerProperties
                             , public doc::ContextObserver
-                            , public doc::DocumentObserver {
+                            , public doc::DocObserver {
 public:
   class BlendModeItem : public ListItem {
   public:
@@ -277,18 +277,18 @@ private:
       setLayer(nullptr, nullptr);
   }
 
-  // DocumentObserver impl
-  void onLayerNameChange(DocumentEvent& ev) override {
+  // DocObserver impl
+  void onLayerNameChange(DocEvent& ev) override {
     if (m_layer == ev.layer())
       updateFromLayer();
   }
 
-  void onLayerOpacityChange(DocumentEvent& ev) override {
+  void onLayerOpacityChange(DocEvent& ev) override {
     if (m_layer == ev.layer())
       updateFromLayer();
   }
 
-  void onLayerBlendModeChange(DocumentEvent& ev) override {
+  void onLayerBlendModeChange(DocEvent& ev) override {
     if (m_layer == ev.layer())
       updateFromLayer();
   }

@@ -54,7 +54,7 @@
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/doc.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "she/surface.h"
@@ -1926,34 +1926,34 @@ void Editor::onShowExtrasChange()
   invalidate();
 }
 
-void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
+void Editor::onExposeSpritePixels(doc::DocEvent& ev)
 {
   if (m_state && ev.sprite() == m_sprite)
     m_state->onExposeSpritePixels(ev.region());
 }
 
-void Editor::onSpritePixelRatioChanged(doc::DocumentEvent& ev)
+void Editor::onSpritePixelRatioChanged(doc::DocEvent& ev)
 {
   m_proj.setPixelRatio(ev.sprite()->pixelRatio());
   invalidate();
 }
 
-void Editor::onBeforeRemoveLayer(DocumentEvent& ev)
+void Editor::onBeforeRemoveLayer(DocEvent& ev)
 {
   m_showGuidesThisCel = nullptr;
 }
 
-void Editor::onRemoveCel(DocumentEvent& ev)
+void Editor::onRemoveCel(DocEvent& ev)
 {
   m_showGuidesThisCel = nullptr;
 }
 
-void Editor::onAddFrameTag(DocumentEvent& ev)
+void Editor::onAddFrameTag(DocEvent& ev)
 {
   m_tagFocusBand = -1;
 }
 
-void Editor::onRemoveFrameTag(DocumentEvent& ev)
+void Editor::onRemoveFrameTag(DocEvent& ev)
 {
   m_tagFocusBand = -1;
 }

@@ -435,7 +435,7 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
   }
 }
 
-void ColorBar::onGeneralUpdate(doc::DocumentEvent& ev)
+void ColorBar::onGeneralUpdate(doc::DocEvent& ev)
 {
   // TODO Observe palette changes only
   invalidate();

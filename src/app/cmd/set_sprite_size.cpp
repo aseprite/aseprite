@@ -11,7 +11,7 @@
 #include "app/cmd/set_sprite_size.h"
 
 #include "app/document.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -45,9 +45,9 @@ void SetSpriteSize::onUndo()
 void SetSpriteSize::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
-  DocumentEvent ev(sprite->document());
+  DocEvent ev(sprite->document());
   ev.sprite(sprite);
-  sprite->document()->notify_observers<DocumentEvent&>(&DocumentObserver::onSpriteSizeChanged, ev);
+  sprite->document()->notify_observers<DocEvent&>(&DocObserver::onSpriteSizeChanged, ev);
 }
 
 } // namespace cmd

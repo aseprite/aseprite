@@ -46,7 +46,7 @@
 #include "base/scoped_value.h"
 #include "base/unique_ptr.h"
 #include "doc/doc.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/frame_tag.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -1652,12 +1652,12 @@ void Timeline::onRemoveDocument(doc::Document* document)
   }
 }
 
-void Timeline::onGeneralUpdate(DocumentEvent& ev)
+void Timeline::onGeneralUpdate(DocEvent& ev)
 {
   invalidate();
 }
 
-void Timeline::onAddLayer(doc::DocumentEvent& ev)
+void Timeline::onAddLayer(doc::DocEvent& ev)
 {
   ASSERT(ev.layer() != NULL);
 
@@ -1669,7 +1669,7 @@ void Timeline::onAddLayer(doc::DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
+void Timeline::onAfterRemoveLayer(doc::DocEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -1697,7 +1697,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onAddFrame(doc::DocumentEvent& ev)
+void Timeline::onAddFrame(doc::DocEvent& ev)
 {
   setFrame(ev.frame(), false);
 
@@ -1706,7 +1706,7 @@ void Timeline::onAddFrame(doc::DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
+void Timeline::onRemoveFrame(doc::DocEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -1729,18 +1729,18 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
+void Timeline::onSelectionChanged(doc::DocEvent& ev)
 {
   if (m_rangeLocks == 0)
     clearAndInvalidateRange();
 }
 
-void Timeline::onLayerNameChange(doc::DocumentEvent& ev)
+void Timeline::onLayerNameChange(doc::DocEvent& ev)
 {
   invalidate();
 }
 
-void Timeline::onAddFrameTag(DocumentEvent& ev)
+void Timeline::onAddFrameTag(DocEvent& ev)
 {
   if (m_tagFocusBand >= 0) {
     m_tagFocusBand = -1;
@@ -1749,7 +1749,7 @@ void Timeline::onAddFrameTag(DocumentEvent& ev)
   }
 }
 
-void Timeline::onRemoveFrameTag(DocumentEvent& ev)
+void Timeline::onRemoveFrameTag(DocEvent& ev)
 {
   onAddFrameTag(ev);
 }

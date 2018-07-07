@@ -10,8 +10,8 @@
 
 #include "app/cmd/add_frame_tag.h"
 
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/frame_tag.h"
 #include "doc/frame_tag_io.h"
 #include "doc/sprite.h"
@@ -38,10 +38,10 @@ void AddFrameTag::onExecute()
 
   // Notify observers about the new frame.
   Document* doc = sprite->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frameTag(frameTag);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrameTag, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddFrameTag, ev);
 }
 
 void AddFrameTag::onUndo()
@@ -54,10 +54,10 @@ void AddFrameTag::onUndo()
   // Notify observers about the new frame.
   {
     Document* doc = sprite->document();
-    DocumentEvent ev(doc);
+    DocEvent ev(doc);
     ev.sprite(sprite);
     ev.frameTag(frameTag);
-    doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveFrameTag, ev);
+    doc->notify_observers<DocEvent&>(&DocObserver::onRemoveFrameTag, ev);
   }
 
   sprite->frameTags().remove(frameTag);
@@ -79,10 +79,10 @@ void AddFrameTag::onRedo()
 
   // Notify observers about the new frame.
   Document* doc = sprite->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frameTag(frameTag);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrameTag, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddFrameTag, ev);
 }
 
 } // namespace cmd

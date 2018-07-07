@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/unique_ptr.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "doc/object.h"
 #include "doc/sprites.h"
 #include "obs/observable.h"
@@ -21,7 +21,7 @@ namespace doc {
   class Context;
 
   class Document : public Object
-                 , public obs::observable<DocumentObserver> {
+                 , public obs::observable<DocObserver> {
   public:
     Document();
     ~Document();

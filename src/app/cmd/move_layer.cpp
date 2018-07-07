@@ -10,8 +10,8 @@
 
 #include "app/cmd/move_layer.h"
 
+#include "doc/doc_event.h"
 #include "doc/document.h"
-#include "doc/document_event.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -93,10 +93,10 @@ void MoveLayer::onFireNotifications()
 {
   Layer* layer = m_layer.layer();
   doc::Document* doc = layer->sprite()->document();
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(layer->sprite());
   ev.layer(layer);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onLayerRestacked, ev);
 }
 
 } // namespace cmd

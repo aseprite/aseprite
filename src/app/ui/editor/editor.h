@@ -19,7 +19,7 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "filters/tiled_mode.h"
@@ -65,7 +65,7 @@ namespace app {
   };
 
   class Editor : public ui::Widget
-               , public doc::DocumentObserver
+               , public doc::DocObserver
                , public IColorSource
                , public tools::ActiveToolObserver {
   public:
@@ -280,13 +280,13 @@ namespace app {
     void onTiledModeChange();
     void onShowExtrasChange();
 
-    // DocumentObserver impl
-    void onExposeSpritePixels(doc::DocumentEvent& ev) override;
-    void onSpritePixelRatioChanged(doc::DocumentEvent& ev) override;
-    void onBeforeRemoveLayer(DocumentEvent& ev) override;
-    void onRemoveCel(DocumentEvent& ev) override;
-    void onAddFrameTag(DocumentEvent& ev) override;
-    void onRemoveFrameTag(DocumentEvent& ev) override;
+    // DocObserver impl
+    void onExposeSpritePixels(doc::DocEvent& ev) override;
+    void onSpritePixelRatioChanged(doc::DocEvent& ev) override;
+    void onBeforeRemoveLayer(DocEvent& ev) override;
+    void onRemoveCel(DocEvent& ev) override;
+    void onAddFrameTag(DocEvent& ev) override;
+    void onRemoveFrameTag(DocEvent& ev) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;

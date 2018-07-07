@@ -15,7 +15,7 @@
 #include "app/ui/palette_view.h"
 #include "base/unique_ptr.h"
 #include "doc/context_observer.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
@@ -45,7 +45,7 @@ namespace app {
   class ColorBar : public ui::Box
                  , public PaletteViewDelegate
                  , public doc::ContextObserver
-                 , public doc::DocumentObserver
+                 , public doc::DocObserver
                  , public app::InputChainElement {
     static ColorBar* m_instance;
   public:
@@ -86,8 +86,8 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
 
-    // DocumentObserver impl
-    void onGeneralUpdate(doc::DocumentEvent& ev) override;
+    // DocObserver impl
+    void onGeneralUpdate(doc::DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,

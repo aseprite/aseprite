@@ -14,7 +14,7 @@
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/timeline/ani_controls.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "doc/documents_observer.h"
 #include "doc/frame.h"
 #include "doc/selected_frames.h"
@@ -56,7 +56,7 @@ namespace app {
                  , public ui::ScrollableViewDelegate
                  , public doc::ContextObserver
                  , public doc::DocumentsObserver
-                 , public doc::DocumentObserver
+                 , public doc::DocObserver
                  , public app::EditorObserver
                  , public app::InputChainElement
                  , public app::FrameTagProvider {
@@ -135,16 +135,16 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
-    // DocumentObserver impl.
-    void onGeneralUpdate(DocumentEvent& ev) override;
-    void onAddLayer(doc::DocumentEvent& ev) override;
-    void onAfterRemoveLayer(doc::DocumentEvent& ev) override;
-    void onAddFrame(doc::DocumentEvent& ev) override;
-    void onRemoveFrame(doc::DocumentEvent& ev) override;
-    void onSelectionChanged(doc::DocumentEvent& ev) override;
-    void onLayerNameChange(doc::DocumentEvent& ev) override;
-    void onAddFrameTag(DocumentEvent& ev) override;
-    void onRemoveFrameTag(DocumentEvent& ev) override;
+    // DocObserver impl.
+    void onGeneralUpdate(DocEvent& ev) override;
+    void onAddLayer(doc::DocEvent& ev) override;
+    void onAfterRemoveLayer(doc::DocEvent& ev) override;
+    void onAddFrame(doc::DocEvent& ev) override;
+    void onRemoveFrame(doc::DocEvent& ev) override;
+    void onSelectionChanged(doc::DocEvent& ev) override;
+    void onLayerNameChange(doc::DocEvent& ev) override;
+    void onAddFrameTag(DocEvent& ev) override;
+    void onRemoveFrameTag(DocEvent& ev) override;
 
     // app::Context slots.
     void onAfterCommandExecution(CommandExecutionEvent& ev);

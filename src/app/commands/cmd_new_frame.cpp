@@ -122,7 +122,7 @@ void NewFrameCommand::onExecute(Context* context)
             selLayers = site->selectedLayers();
             selLayers.expandCollapsedGroups();
           }
-          
+
           frame_t frameRange =
             (site->selectedFrames().lastFrame() -
              site->selectedFrames().firstFrame() + 1);
@@ -169,7 +169,7 @@ void NewFrameCommand::onExecute(Context* context)
             static_cast<LayerImage*>(writer.layer()), writer.frame(),
             static_cast<LayerImage*>(writer.layer()), writer.frame()+1);
 
-          // TODO should we use DocumentObserver?
+          // TODO should we use DocObserver?
           if (UIContext::instance() == context) {
             if (DocumentView* view = UIContext::instance()->activeView())
               view->editor()->setFrame(writer.frame()+1);

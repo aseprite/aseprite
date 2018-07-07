@@ -26,7 +26,7 @@
 #include "base/scoped_value.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -43,7 +43,7 @@ static CelPropertiesWindow* g_window = nullptr;
 
 class CelPropertiesWindow : public app::gen::CelProperties
                           , public doc::ContextObserver
-                          , public doc::DocumentObserver {
+                          , public doc::DocObserver {
 public:
   CelPropertiesWindow()
     : m_timer(250, this)
@@ -230,8 +230,8 @@ private:
       setCel(nullptr, nullptr);
   }
 
-  // DocumentObserver impl
-  void onCelOpacityChange(DocumentEvent& ev) override {
+  // DocObserver impl
+  void onCelOpacityChange(DocEvent& ev) override {
     if (m_cel == ev.cel())
       updateFromCel();
   }

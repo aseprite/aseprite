@@ -13,7 +13,7 @@
 #include "app/cmd/add_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -53,10 +53,10 @@ void AddFrame::onExecute()
   }
 
   // Notify observers about the new frame.
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_newFrame);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddFrame, ev);
 }
 
 void AddFrame::onUndo()
@@ -71,10 +71,10 @@ void AddFrame::onUndo()
   sprite->incrementVersion();
 
   // Notify observers about the new frame.
-  DocumentEvent ev(doc);
+  DocEvent ev(doc);
   ev.sprite(sprite);
   ev.frame(m_newFrame);
-  doc->notify_observers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onRemoveFrame, ev);
 }
 
 } // namespace cmd

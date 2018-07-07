@@ -11,7 +11,7 @@
 #include "app/ui/input_chain_element.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "doc/document_observer.h"
+#include "doc/doc_observer.h"
 #include "ui/box.h"
 
 namespace doc {
@@ -36,7 +36,7 @@ namespace app {
 
   class DocumentView : public ui::Box
                      , public TabView
-                     , public doc::DocumentObserver
+                     , public doc::DocObserver
                      , public WorkspaceView
                      , public app::InputChainElement {
   public:
@@ -70,18 +70,18 @@ namespace app {
     void onTabPopup(Workspace* workspace) override;
     InputChainElement* onGetInputChainElement() override { return this; }
 
-    // DocumentObserver implementation
-    void onGeneralUpdate(doc::DocumentEvent& ev) override;
-    void onSpritePixelsModified(doc::DocumentEvent& ev) override;
-    void onLayerMergedDown(doc::DocumentEvent& ev) override;
-    void onAddLayer(doc::DocumentEvent& ev) override;
-    void onBeforeRemoveLayer(doc::DocumentEvent& ev) override;
-    void onAddFrame(doc::DocumentEvent& ev) override;
-    void onRemoveFrame(doc::DocumentEvent& ev) override;
-    void onAddCel(doc::DocumentEvent& ev) override;
-    void onRemoveCel(doc::DocumentEvent& ev) override;
-    void onTotalFramesChanged(doc::DocumentEvent& ev) override;
-    void onLayerRestacked(doc::DocumentEvent& ev) override;
+    // DocObserver implementation
+    void onGeneralUpdate(doc::DocEvent& ev) override;
+    void onSpritePixelsModified(doc::DocEvent& ev) override;
+    void onLayerMergedDown(doc::DocEvent& ev) override;
+    void onAddLayer(doc::DocEvent& ev) override;
+    void onBeforeRemoveLayer(doc::DocEvent& ev) override;
+    void onAddFrame(doc::DocEvent& ev) override;
+    void onRemoveFrame(doc::DocEvent& ev) override;
+    void onAddCel(doc::DocEvent& ev) override;
+    void onRemoveCel(doc::DocEvent& ev) override;
+    void onTotalFramesChanged(doc::DocEvent& ev) override;
+    void onLayerRestacked(doc::DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,

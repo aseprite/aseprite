@@ -35,7 +35,7 @@
 #include "app/util/range_utils.h"
 #include "base/bind.h"
 #include "base/string.h"
-#include "doc/document_event.h"
+#include "doc/doc_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -802,7 +802,7 @@ void StatusBar::onRemoveDocument(doc::Document* doc)
   }
 }
 
-void StatusBar::onPixelFormatChanged(DocumentEvent& ev)
+void StatusBar::onPixelFormatChanged(DocEvent& ev)
 {
   // If this is called from the non-UI thread it means that the pixel
   // format change was made in the background,
