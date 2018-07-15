@@ -1480,7 +1480,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
   try {
     // Lock the sprite to read/render it. We wait 1/4 secs in case
     // the background thread is making a backup.
-    const DocumentReader documentReader(m_document, 250);
+    const DocReader docReader(m_document, 250);
 
     if (m_redrawMarchingAntsOnly) {
       drawClipboardRange(g);
@@ -1615,7 +1615,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 #endif
   }
-  catch (const LockedDocumentException&) {
+  catch (const LockedDocException&) {
     noDoc = true;
     defer_invalid_rect(g->getClipBounds().offset(bounds().origin()));
   }

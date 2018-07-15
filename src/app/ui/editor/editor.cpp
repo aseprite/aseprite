@@ -1825,7 +1825,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
     try {
       // Lock the sprite to read/render it. We wait 1/4 secs in case
       // the background thread is making a backup.
-      DocumentReader documentReader(m_document, 250);
+      DocReader documentReader(m_document, 250);
 
       // Draw the sprite in the editor
       renderChrono.reset();
@@ -1862,7 +1862,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
         m_antsTimer.stop();
       }
     }
-    catch (const LockedDocumentException&) {
+    catch (const LockedDocException&) {
       // The sprite is locked to be read, so we can draw an opaque
       // background only.
       g->fillRect(theme->colors.editorFace(), rc);

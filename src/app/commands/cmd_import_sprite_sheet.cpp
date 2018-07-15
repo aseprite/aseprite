@@ -14,7 +14,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/document_access.h"
+#include "app/doc_access.h"
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
@@ -199,7 +199,7 @@ private:
       releaseEditor();
 
       if (m_fileOpened) {
-        DocumentDestroyer destroyer(m_context, oldDocument, 100);
+        DocDestroyer destroyer(m_context, oldDocument, 100);
         destroyer.destroyDocument();
       }
     }

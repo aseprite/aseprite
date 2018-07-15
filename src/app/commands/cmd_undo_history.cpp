@@ -17,7 +17,7 @@
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/docs_observer.h"
-#include "app/document_access.h"
+#include "app/doc_access.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
@@ -98,7 +98,7 @@ private:
     if (m_document &&
         m_document->undoHistory()->currentState() != item->state()) {
       try {
-        DocumentWriter writer(m_document, 100);
+        DocWriter writer(m_document, 100);
         m_document->undoHistory()->moveToState(item->state());
         m_document->generateMaskBoundaries();
 

@@ -54,7 +54,7 @@ public:
     , m_index_bg_color(-1)
     , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
     , m_doublesur(she::instance()->createRgbaSurface(ui::display_w(), ui::display_h())) {
-    // Do not use DocumentWriter (do not lock the document) because we
+    // Do not use DocWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
     View* view = View::getView(editor);

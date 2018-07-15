@@ -456,7 +456,7 @@ public:
           ContextWriter writer(reader, 500);
           m_expandCelCanvas->commit();
         }
-        catch (const LockedDocumentException& ex) {
+        catch (const LockedDocException& ex) {
           Console::showException(ex);
         }
       }
@@ -487,7 +487,7 @@ public:
         ContextWriter writer(reader, 500);
         m_expandCelCanvas->rollback();
       }
-      catch (const LockedDocumentException& ex) {
+      catch (const LockedDocException& ex) {
         Console::showException(ex);
       }
     }

@@ -8,7 +8,7 @@
 #define APP_CONTEXT_ACCESS_H_INCLUDED
 #pragma once
 
-#include "app/document_access.h"
+#include "app/doc_access.h"
 #include "app/site.h"
 
 namespace app {
@@ -51,10 +51,10 @@ namespace app {
     {
     }
 
-    template<typename DocumentReaderT>
-    ContextAccess(const Context* context, const DocumentReaderT& documentReader, int timeout)
+    template<typename DocReaderT>
+    ContextAccess(const Context* context, const DocReaderT& docReader, int timeout)
       : m_context(context)
-      , m_document(documentReader, timeout)
+      , m_document(docReader, timeout)
       , m_site(context->activeSite())
     {
     }
@@ -67,23 +67,23 @@ namespace app {
 
   // You can use this class to access to the given context to read the
   // active document.
-  class ContextReader : public ContextAccess<DocumentReader> {
+  class ContextReader : public ContextAccess<DocReader> {
   public:
     ContextReader(const Context* context, int timeout = 0)
-      : ContextAccess<DocumentReader>(context, timeout) {
+      : ContextAccess<DocReader>(context, timeout) {
     }
   };
 
   // You can use this class to access to the given context to write the
   // active document.
-  class ContextWriter : public ContextAccess<DocumentWriter> {
+  class ContextWriter : public ContextAccess<DocWriter> {
   public:
     ContextWriter(const Context* context, int timeout = 0)
-      : ContextAccess<DocumentWriter>(context, timeout) {
+      : ContextAccess<DocWriter>(context, timeout) {
     }
 
     ContextWriter(const ContextReader& reader, int timeout = 0)
-      : ContextAccess<DocumentWriter>(reader.context(), reader.document(), timeout) {
+      : ContextAccess<DocWriter>(reader.context(), reader.document(), timeout) {
     }
   };
 

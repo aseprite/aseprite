@@ -21,7 +21,7 @@
 #include "app/context.h"
 #include "app/crash/session.h"
 #include "app/doc.h"
-#include "app/document_access.h"
+#include "app/doc_access.h"
 #include "app/document_diff.h"
 #include "app/pref/preferences.h"
 #include "base/bind.h"
@@ -128,7 +128,7 @@ void BackupObserver::backgroundThread()
             }
 #ifdef TEST_BACKUP_INTEGRITY
             else {
-              DocumentReader reader(doc, 500);
+              DocReader reader(doc, 500);
               std::unique_ptr<Doc> copy(
                 m_session->restoreBackupDocById(doc->id()));
               DocumentDiff diff = compare_docs(doc, copy.get());

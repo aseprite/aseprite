@@ -133,7 +133,7 @@ void MovingPixelsState::rotate(double angle)
 {
   m_pixelsMovement->rotate(angle);
 }
-  
+
 void MovingPixelsState::flip(doc::algorithm::FlipType flipType)
 {
   m_pixelsMovement->flipImage(flipType);
@@ -164,7 +164,7 @@ EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorS
       try {
         m_pixelsMovement->dropImage();
       }
-      catch (const LockedDocumentException& ex) {
+      catch (const LockedDocException& ex) {
         // This is one of the worst possible scenarios. We want to
         // drop pixels because we're leaving this state (e.g. the user
         // changed the current frame/layer, so we came from
@@ -646,7 +646,7 @@ void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color
     m_pixelsMovement->setMaskColor(
       opaque, color_utils::color_for_target_mask(color, ColorTarget(layer)));
   }
-  catch (const LockedDocumentException& ex) {
+  catch (const LockedDocException& ex) {
     Console::showException(ex);
   }
 }

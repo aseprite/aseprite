@@ -15,7 +15,7 @@
 #include "app/crash/read_document.h"
 #include "app/crash/write_document.h"
 #include "app/doc.h"
-#include "app/document_access.h"
+#include "app/doc_access.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -142,11 +142,11 @@ void Session::removeFromDisk()
   }
 }
 
-class CustomWeakDocumentReader : public WeakDocumentReader
-                               , public doc::CancelIO {
+class CustomWeakDocReader : public WeakDocReader
+                          , public doc::CancelIO {
 public:
-  explicit CustomWeakDocumentReader(Doc* doc)
-    : WeakDocumentReader(doc) {
+  explicit CustomWeakDocReader(Doc* doc)
+    : WeakDocReader(doc) {
   }
 
   // CancelIO impl
@@ -157,7 +157,7 @@ public:
 
 bool Session::saveDocumentChanges(Doc* doc)
 {
-  CustomWeakDocumentReader reader(doc);
+  CustomWeakDocReader reader(doc);
   if (!reader.isLocked())
     return false;
 

@@ -445,7 +445,7 @@ void SaveFileCopyAsCommand::moveToUndoState(Doc* doc,
                                             const undo::UndoState* state)
 {
   try {
-    DocumentWriter writer(doc, 100);
+    DocWriter writer(doc, 100);
     doc->undoHistory()->moveToState(state);
     doc->generateMaskBoundaries();
     doc->notifyGeneralUpdate();

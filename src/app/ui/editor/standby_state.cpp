@@ -195,7 +195,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
               editor, msg, handle, collect);
             editor->setState(EditorStatePtr(newState));
           }
-          catch (const LockedDocumentException&) {
+          catch (const LockedDocException&) {
             // TODO break the background task that is locking this sprite
             StatusBar::instance()->showTip(
               1000, "Sprite is used by a backup/data recovery task");
@@ -676,11 +676,11 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType)
 {
   transformSelection(editor, NULL, NoHandle);
-  
+
   if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
     movingPixels->flip(flipType);
 }
-  
+
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Doc* document = editor->document();
@@ -730,7 +730,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
 
     editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, pixelsMovement, handle)));
   }
-  catch (const LockedDocumentException&) {
+  catch (const LockedDocException&) {
     // Other editor is locking the document.
 
     // TODO steal the PixelsMovement of the other editor and use it for this one.

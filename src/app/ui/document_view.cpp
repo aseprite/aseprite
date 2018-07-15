@@ -19,7 +19,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_event.h"
-#include "app/document_access.h"
+#include "app/doc_access.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
@@ -320,7 +320,7 @@ bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
 
   try {
     // Destroy the sprite (locking it as writer)
-    DocumentDestroyer destroyer(
+    DocDestroyer destroyer(
       static_cast<app::Context*>(m_document->context()), m_document, 500);
 
     StatusBar::instance()
@@ -332,7 +332,7 @@ bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
     // At this point the view is already destroyed
     return true;
   }
-  catch (const LockedDocumentException& ex) {
+  catch (const LockedDocException& ex) {
     Console::showException(ex);
     return false;
   }
