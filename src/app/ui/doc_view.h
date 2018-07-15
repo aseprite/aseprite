@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_DOCUMENT_VIEW_H_INCLUDED
-#define APP_UI_DOCUMENT_VIEW_H_INCLUDED
+#ifndef APP_UI_DOC_VIEW_H_INCLUDED
+#define APP_UI_DOC_VIEW_H_INCLUDED
 #pragma once
 
 #include "app/doc_observer.h"
@@ -23,28 +23,28 @@ namespace app {
   class Editor;
   class Site;
 
-  class DocumentViewPreviewDelegate {
+  class DocViewPreviewDelegate {
   public:
-    virtual ~DocumentViewPreviewDelegate() { }
+    virtual ~DocViewPreviewDelegate() { }
     virtual void onScrollOtherEditor(Editor* editor) = 0;
     virtual void onDisposeOtherEditor(Editor* editor) = 0;
     virtual void onPreviewOtherEditor(Editor* editor) = 0;
   };
 
-  class DocumentView : public ui::Box,
-                       public TabView,
-                       public app::DocObserver,
-                       public WorkspaceView,
-                       public app::InputChainElement {
+  class DocView : public ui::Box,
+                  public TabView,
+                  public app::DocObserver,
+                  public WorkspaceView,
+                  public app::InputChainElement {
   public:
     enum Type {
       Normal,
       Preview
     };
 
-    DocumentView(Doc* document, Type type,
-                 DocumentViewPreviewDelegate* previewDelegate);
-    ~DocumentView();
+    DocView(Doc* document, Type type,
+            DocViewPreviewDelegate* previewDelegate);
+    ~DocView();
 
     Doc* document() const { return m_document; }
     Editor* editor() { return m_editor; }
@@ -100,7 +100,7 @@ namespace app {
     Type m_type;
     Doc* m_document;
     ui::View* m_view;
-    DocumentViewPreviewDelegate* m_previewDelegate;
+    DocViewPreviewDelegate* m_previewDelegate;
     Editor* m_editor;
   };
 

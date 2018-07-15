@@ -49,7 +49,7 @@ namespace ui {
 
 namespace app {
   class Context;
-  class DocumentView;
+  class DocView;
   class EditorCustomizationDelegate;
   class EditorRender;
   class PixelsMovement;
@@ -102,8 +102,8 @@ namespace app {
 
     bool isActive() const;
 
-    DocumentView* getDocumentView() { return m_docView; }
-    void setDocumentView(DocumentView* docView) { m_docView = docView; }
+    DocView* getDocView() { return m_docView; }
+    void setDocView(DocView* docView) { m_docView = docView; }
 
     // Returns the current state.
     EditorStatePtr getState() { return m_state; }
@@ -384,7 +384,7 @@ namespace app {
     // TODO This field shouldn't be here. It should be removed when
     // editors.cpp are finally replaced with a fully funtional Workspace
     // widget.
-    DocumentView* m_docView;
+    DocView* m_docView;
 
     gfx::Point m_oldPos;
 

@@ -31,7 +31,7 @@
 #include "app/transaction.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/configure_timeline_popup.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/input_chain.h"
 #include "app/ui/skin/skin_theme.h"
@@ -337,7 +337,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_tagFocusBand = m_editor->tagFocusBand();
 
   Site site;
-  DocumentView* view = m_editor->getDocumentView();
+  DocView* view = m_editor->getDocView();
   view->getSite(&site);
 
   site.document()->add_observer(this);

@@ -13,7 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
@@ -69,9 +69,9 @@ protected:
     Workspace* workspace = App::instance()->workspace();
 
     // Collect all document views
-    DocumentViews docViews;
+    DocViews docViews;
     for (auto view : *workspace) {
-      DocumentView* docView = dynamic_cast<DocumentView*>(view);
+      DocView* docView = dynamic_cast<DocView*>(view);
       if (docView)
         docViews.push_back(docView);
     }

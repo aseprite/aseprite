@@ -273,7 +273,7 @@ void PreviewEditorWindow::onWindowResize()
 {
   Window::onWindowResize();
 
-  DocumentView* view = UIContext::instance()->activeView();
+  DocView* view = UIContext::instance()->activeView();
   if (view)
     updateUsingEditor(view->editor());
 }
@@ -360,7 +360,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
   if (!miniEditor || miniEditor->document() != document) {
     destroyDocView();
 
-    m_docView = new DocumentView(document, DocumentView::Preview, this);
+    m_docView = new DocView(document, DocView::Preview, this);
     addChild(m_docView);
 
     miniEditor = m_docView->editor();

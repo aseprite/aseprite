@@ -321,7 +321,7 @@ if(ENABLE_UI)
     ui/configure_timeline_popup.cpp
     ui/context_bar.cpp
     ui/dithering_selector.cpp
-    ui/document_view.cpp
+    ui/doc_view.cpp
     ui/drop_down_button.cpp
     ui/editor/brush_preview.cpp
     ui/editor/drawing_state.cpp

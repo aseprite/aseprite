@@ -21,7 +21,7 @@ namespace app {
 
   // The chain of objects (in order) that want to receive
   // input/commands from the user (e.g. ColorBar, Timeline, and
-  // Workspace/DocumentView). When each of these elements receive the
+  // Workspace/DocView). When each of these elements receive the
   // user focus, they call InputChain::prioritize().
   class InputChain {
   public:

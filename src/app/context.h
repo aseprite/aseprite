@@ -23,7 +23,7 @@
 namespace app {
   class Command;
   class Doc;
-  class DocumentView;
+  class DocView;
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -79,7 +79,7 @@ namespace app {
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
 
-    virtual DocumentView* getFirstDocumentView(Doc* document) const {
+    virtual DocView* getFirstDocView(Doc* document) const {
       return nullptr;
     }
 

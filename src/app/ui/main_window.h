@@ -27,7 +27,7 @@ namespace app {
   class ColorBar;
   class ContextBar;
   class DevConsoleView;
-  class DocumentView;
+  class DocView;
   class HomeView;
   class INotificationDelegate;
   class MainMenuBar;
@@ -102,7 +102,7 @@ namespace app {
     void onActiveViewChange();
 
   private:
-    DocumentView* getDocView();
+    DocView* getDocView();
     HomeView* getHomeView();
     void configureWorkspaceLayout();
 

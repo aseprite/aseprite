@@ -40,7 +40,7 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/backup_indicator.h"
 #include "app/ui/color_bar.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/input_chain.h"
@@ -563,7 +563,7 @@ void App::updateDisplayTitleBar()
   std::string defaultTitle = PACKAGE " v" VERSION;
   std::string title;
 
-  DocumentView* docView = UIContext::instance()->activeView();
+  DocView* docView = UIContext::instance()->activeView();
   if (docView) {
     // Prepend the document's filename.
     title += docView->document()->name();

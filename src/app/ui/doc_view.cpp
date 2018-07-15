@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 
 #include "app/app.h"
 #include "app/app_menus.h"
@@ -57,7 +57,7 @@ class AppEditor : public Editor,
                   public EditorCustomizationDelegate {
 public:
   AppEditor(Doc* document,
-            DocumentViewPreviewDelegate* previewDelegate)
+            DocViewPreviewDelegate* previewDelegate)
     : Editor(document)
     , m_previewDelegate(previewDelegate) {
     add_observer(this);
@@ -150,7 +150,7 @@ protected:
   }
 
 private:
-  DocumentViewPreviewDelegate* m_previewDelegate;
+  DocViewPreviewDelegate* m_previewDelegate;
 };
 
 class PreviewEditor : public Editor,
@@ -188,8 +188,8 @@ public:
   }
 };
 
-DocumentView::DocumentView(Doc* document, Type type,
-                           DocumentViewPreviewDelegate* previewDelegate)
+DocView::DocView(Doc* document, Type type,
+                 DocViewPreviewDelegate* previewDelegate)
   : Box(VERTICAL)
   , m_type(type)
   , m_document(document)
@@ -205,45 +205,45 @@ DocumentView::DocumentView(Doc* document, Type type,
   m_view->attachToView(m_editor);
   m_view->setExpansive(true);
 
-  m_editor->setDocumentView(this);
+  m_editor->setDocView(this);
   m_document->add_observer(this);
 }
 
-DocumentView::~DocumentView()
+DocView::~DocView()
 {
   m_document->remove_observer(this);
   delete m_editor;
 }
 
-void DocumentView::getSite(Site* site) const
+void DocView::getSite(Site* site) const
 {
   m_editor->getSite(site);
 }
 
-std::string DocumentView::getTabText()
+std::string DocView::getTabText()
 {
   return m_document->name();
 }
 
-TabIcon DocumentView::getTabIcon()
+TabIcon DocView::getTabIcon()
 {
   return TabIcon::NONE;
 }
 
-WorkspaceView* DocumentView::cloneWorkspaceView()
+WorkspaceView* DocView::cloneWorkspaceView()
 {
-  return new DocumentView(m_document, Normal, m_previewDelegate);
+  return new DocView(m_document, Normal, m_previewDelegate);
 }
 
-void DocumentView::onWorkspaceViewSelected()
+void DocView::onWorkspaceViewSelected()
 {
   // Do nothing
 }
 
-void DocumentView::onClonedFrom(WorkspaceView* from)
+void DocView::onClonedFrom(WorkspaceView* from)
 {
   Editor* newEditor = this->editor();
-  Editor* srcEditor = static_cast<DocumentView*>(from)->editor();
+  Editor* srcEditor = static_cast<DocView*>(from)->editor();
 
   newEditor->setLayer(srcEditor->layer());
   newEditor->setFrame(srcEditor->frame());
@@ -253,14 +253,14 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
     ->setViewScroll(View::getView(srcEditor)->viewScroll());
 }
 
-bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
+bool DocView::onCloseView(Workspace* workspace, bool quitting)
 {
   if (m_editor->isMovingPixels())
     m_editor->dropMovingPixels();
 
   // If there is another view for this document, just close the view.
   for (auto view : *workspace) {
-    DocumentView* docView = dynamic_cast<DocumentView*>(view);
+    DocView* docView = dynamic_cast<DocView*>(view);
     if (docView && docView != this &&
         docView->document() == document()) {
       workspace->removeView(this);
@@ -338,7 +338,7 @@ bool DocumentView::onCloseView(Workspace* workspace, bool quitting)
   }
 }
 
-void DocumentView::onTabPopup(Workspace* workspace)
+void DocView::onTabPopup(Workspace* workspace)
 {
   Menu* menu = AppMenus::instance()->getDocumentTabPopupMenu();
   if (!menu)
@@ -351,7 +351,7 @@ void DocumentView::onTabPopup(Workspace* workspace)
   menu->showPopup(ui::get_mouse_position());
 }
 
-bool DocumentView::onProcessMessage(Message* msg)
+bool DocView::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
     case kFocusEnterMessage:
@@ -361,25 +361,25 @@ bool DocumentView::onProcessMessage(Message* msg)
   return Box::onProcessMessage(msg);
 }
 
-void DocumentView::onGeneralUpdate(DocEvent& ev)
+void DocView::onGeneralUpdate(DocEvent& ev)
 {
   if (m_editor->isVisible())
     m_editor->updateEditor();
 }
 
-void DocumentView::onSpritePixelsModified(DocEvent& ev)
+void DocView::onSpritePixelsModified(DocEvent& ev)
 {
   if (m_editor->isVisible() &&
       m_editor->frame() == ev.frame())
     m_editor->drawSpriteClipped(ev.region());
 }
 
-void DocumentView::onLayerMergedDown(DocEvent& ev)
+void DocView::onLayerMergedDown(DocEvent& ev)
 {
   m_editor->setLayer(ev.targetLayer());
 }
 
-void DocumentView::onAddLayer(DocEvent& ev)
+void DocView::onAddLayer(DocEvent& ev)
 {
   if (current_editor == m_editor) {
     ASSERT(ev.layer() != NULL);
@@ -387,7 +387,7 @@ void DocumentView::onAddLayer(DocEvent& ev)
   }
 }
 
-void DocumentView::onBeforeRemoveLayer(DocEvent& ev)
+void DocView::onBeforeRemoveLayer(DocEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -410,7 +410,7 @@ void DocumentView::onBeforeRemoveLayer(DocEvent& ev)
   }
 }
 
-void DocumentView::onAddFrame(DocEvent& ev)
+void DocView::onAddFrame(DocEvent& ev)
 {
   if (current_editor == m_editor)
     m_editor->setFrame(ev.frame());
@@ -418,7 +418,7 @@ void DocumentView::onAddFrame(DocEvent& ev)
     m_editor->setFrame(m_editor->frame()+1);
 }
 
-void DocumentView::onRemoveFrame(DocEvent& ev)
+void DocView::onRemoveFrame(DocEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -433,35 +433,35 @@ void DocumentView::onRemoveFrame(DocEvent& ev)
   }
 }
 
-void DocumentView::onAddCel(DocEvent& ev)
+void DocView::onAddCel(DocEvent& ev)
 {
   UIContext::instance()->notifyActiveSiteChanged();
 }
 
-void DocumentView::onRemoveCel(DocEvent& ev)
+void DocView::onRemoveCel(DocEvent& ev)
 {
   UIContext::instance()->notifyActiveSiteChanged();
 }
 
-void DocumentView::onTotalFramesChanged(DocEvent& ev)
+void DocView::onTotalFramesChanged(DocEvent& ev)
 {
   if (m_editor->frame() >= m_editor->sprite()->totalFrames()) {
     m_editor->setFrame(m_editor->sprite()->lastFrame());
   }
 }
 
-void DocumentView::onLayerRestacked(DocEvent& ev)
+void DocView::onLayerRestacked(DocEvent& ev)
 {
   m_editor->invalidate();
 }
 
-void DocumentView::onNewInputPriority(InputChainElement* element,
-                                      const ui::Message* msg)
+void DocView::onNewInputPriority(InputChainElement* element,
+                                 const ui::Message* msg)
 {
   // Do nothing
 }
 
-bool DocumentView::onCanCut(Context* ctx)
+bool DocView::onCanCut(Context* ctx)
 {
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::ActiveLayerIsVisible |
@@ -476,7 +476,7 @@ bool DocumentView::onCanCut(Context* ctx)
     return false;
 }
 
-bool DocumentView::onCanCopy(Context* ctx)
+bool DocView::onCanCopy(Context* ctx)
 {
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::ActiveLayerIsVisible |
@@ -490,7 +490,7 @@ bool DocumentView::onCanCopy(Context* ctx)
     return false;
 }
 
-bool DocumentView::onCanPaste(Context* ctx)
+bool DocView::onCanPaste(Context* ctx)
 {
   return
     (clipboard::get_current_format() == clipboard::ClipboardImage
@@ -501,7 +501,7 @@ bool DocumentView::onCanPaste(Context* ctx)
      && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference));
 }
 
-bool DocumentView::onCanClear(Context* ctx)
+bool DocView::onCanClear(Context* ctx)
 {
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                       ContextFlags::ActiveLayerIsVisible |
@@ -517,14 +517,14 @@ bool DocumentView::onCanClear(Context* ctx)
     return false;
 }
 
-bool DocumentView::onCut(Context* ctx)
+bool DocView::onCut(Context* ctx)
 {
   ContextWriter writer(ctx);
   clipboard::cut(writer);
   return true;
 }
 
-bool DocumentView::onCopy(Context* ctx)
+bool DocView::onCopy(Context* ctx)
 {
   const ContextReader reader(ctx);
   if (reader.site()->document() &&
@@ -537,7 +537,7 @@ bool DocumentView::onCopy(Context* ctx)
     return false;
 }
 
-bool DocumentView::onPaste(Context* ctx)
+bool DocView::onPaste(Context* ctx)
 {
   if (clipboard::get_current_format() == clipboard::ClipboardImage) {
     clipboard::paste();
@@ -547,7 +547,7 @@ bool DocumentView::onPaste(Context* ctx)
     return false;
 }
 
-bool DocumentView::onClear(Context* ctx)
+bool DocView::onClear(Context* ctx)
 {
   ContextWriter writer(ctx);
   Doc* document = writer.document();
@@ -579,7 +579,7 @@ bool DocumentView::onClear(Context* ctx)
   return true;
 }
 
-void DocumentView::onCancel(Context* ctx)
+void DocView::onCancel(Context* ctx)
 {
   // Deselect mask
   if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |

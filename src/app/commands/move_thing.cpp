@@ -13,7 +13,7 @@
 #include "app/commands/params.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
 #include "fmt/format.h"
@@ -74,7 +74,7 @@ gfx::Point MoveThing::getDelta(Context* context) const
 {
   gfx::Point delta(0, 0);
 
-  DocumentView* view = static_cast<UIContext*>(context)->activeView();
+  DocView* view = static_cast<UIContext*>(context)->activeView();
   if (!view)
     return delta;
 

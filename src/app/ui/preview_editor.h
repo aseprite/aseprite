@@ -8,7 +8,7 @@
 #define APP_UI_PREVIEW_EDITOR_H_INCLUDED
 #pragma once
 
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor_observer.h"
 #include "doc/frame.h"
 #include "app/pref/preferences.h"
@@ -20,7 +20,7 @@ namespace app {
 
   class PreviewEditorWindow : public ui::Window
                             , public EditorObserver
-                            , public DocumentViewPreviewDelegate {
+                            , public DocViewPreviewDelegate {
   public:
     PreviewEditorWindow();
     ~PreviewEditorWindow();
@@ -37,7 +37,7 @@ namespace app {
     void onScrollChanged(Editor* editor) override;
     void onZoomChanged(Editor* editor) override;
 
-    // DocumentViewPreviewDelegate impl
+    // DocViewPreviewDelegate impl
     void onScrollOtherEditor(Editor* editor) override;
     void onDisposeOtherEditor(Editor* editor) override;
     void onPreviewOtherEditor(Editor* editor) override;
@@ -60,7 +60,7 @@ namespace app {
     void saveScrollPref();
 
     bool m_isEnabled;
-    DocumentView* m_docView;
+    DocView* m_docView;
     MiniCenterButton* m_centerButton;
     MiniPlayButton* m_playButton;
     doc::frame_t m_refFrame;

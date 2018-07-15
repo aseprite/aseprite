@@ -237,7 +237,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   // with a couple of Editors, in one is moving pixels and the other
   // one not.
   UIContext* ctx = UIContext::instance();
-  ctx->setActiveView(editor->getDocumentView());
+  ctx->setActiveView(editor->getDocView());
 
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForMovingPixels();

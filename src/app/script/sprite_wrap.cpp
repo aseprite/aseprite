@@ -18,14 +18,14 @@
 #include "app/script/image_wrap.h"
 #include "app/site.h"
 #include "app/transaction.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "doc/sprite.h"
 
 namespace app {
 
 SpriteWrap::SpriteWrap(Doc* doc)
   : m_doc(doc)
-  , m_view(App::instance()->context()->getFirstDocumentView(m_doc))
+  , m_view(App::instance()->context()->getFirstDocView(m_doc))
   , m_transaction(nullptr)
 {
 }
@@ -79,7 +79,7 @@ doc::Sprite* SpriteWrap::sprite()
 ImageWrap* SpriteWrap::activeImage()
 {
   if (!m_view) {
-    m_view = App::instance()->context()->getFirstDocumentView(m_doc);
+    m_view = App::instance()->context()->getFirstDocView(m_doc);
     if (!m_view)
       return nullptr;
   }

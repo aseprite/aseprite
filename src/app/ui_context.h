@@ -12,10 +12,10 @@
 #include "app/docs_observer.h"
 
 namespace app {
-  class DocumentView;
+  class DocView;
   class Editor;
 
-  typedef std::vector<DocumentView*> DocumentViews;
+  typedef std::vector<DocView*> DocViews;
 
   class UIContext : public app::Context {
   public:
@@ -26,11 +26,11 @@ namespace app {
 
     bool isUIAvailable() const override;
 
-    DocumentView* activeView() const;
-    void setActiveView(DocumentView* documentView);
+    DocView* activeView() const;
+    void setActiveView(DocView* documentView);
 
-    DocumentView* getFirstDocumentView(Doc* document) const override;
-    DocumentViews getAllDocumentViews(Doc* document) const;
+    DocView* getFirstDocView(Doc* document) const override;
+    DocViews getAllDocViews(Doc* document) const;
 
     // Returns the current editor. It can be null.
     Editor* activeEditor();
@@ -46,7 +46,7 @@ namespace app {
     void onSetActiveDocument(Doc* doc) override;
 
   private:
-    DocumentView* m_lastSelectedView;
+    DocView* m_lastSelectedView;
     static UIContext* m_instance;
   };
 

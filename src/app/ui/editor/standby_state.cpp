@@ -24,7 +24,7 @@
 #include "app/tools/pick_ink.h"
 #include "app/tools/tool.h"
 #include "app/ui/app_menuitem.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -136,7 +136,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   Layer* layer = site.layer();
 
   // When an editor is clicked the current view is changed.
-  context->setActiveView(editor->getDocumentView());
+  context->setActiveView(editor->getDocView());
 
   // Start scroll loop
   if (editor->checkForScroll(msg) ||
@@ -684,7 +684,7 @@ void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipT
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Doc* document = editor->document();
-  for (auto docView : UIContext::instance()->getAllDocumentViews(document)) {
+  for (auto docView : UIContext::instance()->getAllDocViews(document)) {
     if (docView->editor()->isMovingPixels()) {
       // TODO Transfer moving pixels state to this editor
       docView->editor()->dropMovingPixels();

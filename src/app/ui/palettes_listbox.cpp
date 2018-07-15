@@ -16,7 +16,7 @@
 #include "app/modules/palettes.h"
 #include "app/res/palette_resource.h"
 #include "app/res/palettes_loader_delegate.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/skin/skin_theme.h"

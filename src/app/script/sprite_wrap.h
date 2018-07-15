@@ -19,7 +19,7 @@ namespace doc {
 
 namespace app {
   class Doc;
-  class DocumentView;
+  class DocView;
   class ImageWrap;
   class Transaction;
 
@@ -42,7 +42,7 @@ namespace app {
 
   private:
     Doc* m_doc;
-    app::DocumentView* m_view;
+    app::DocView* m_view;
     app::Transaction* m_transaction;
 
     Images m_images;

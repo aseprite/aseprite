@@ -14,7 +14,7 @@
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/ui/color_bar.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/input_chain.h"
 #include "app/ui/main_window.h"
@@ -58,7 +58,7 @@ bool UIContext::isUIAvailable() const
   return App::instance()->isGui();
 }
 
-DocumentView* UIContext::activeView() const
+DocView* UIContext::activeView() const
 {
   if (!isUIAvailable())
     return nullptr;
@@ -68,13 +68,13 @@ DocumentView* UIContext::activeView() const
     return nullptr;
 
   WorkspaceView* view = workspace->activeView();
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(view))
+  if (DocView* docView = dynamic_cast<DocView*>(view))
     return docView;
   else
     return nullptr;
 }
 
-void UIContext::setActiveView(DocumentView* docView)
+void UIContext::setActiveView(DocView* docView)
 {
   MainWindow* mainWin = App::instance()->mainWindow();
 
@@ -125,7 +125,7 @@ void UIContext::onSetActiveDocument(Doc* document)
   bool notify = (lastSelectedDoc() != document);
   app::Context::onSetActiveDocument(document);
 
-  DocumentView* docView = getFirstDocumentView(document);
+  DocView* docView = getFirstDocView(document);
   if (docView) {     // The view can be null if we are in --batch mode
     setActiveView(docView);
     notify = false;
@@ -135,14 +135,14 @@ void UIContext::onSetActiveDocument(Doc* document)
     notifyActiveSiteChanged();
 }
 
-DocumentView* UIContext::getFirstDocumentView(Doc* document) const
+DocView* UIContext::getFirstDocView(Doc* document) const
 {
   Workspace* workspace = App::instance()->workspace();
   if (!workspace) // Workspace (main window) can be null if we are in --batch mode
     return nullptr;
 
   for (WorkspaceView* view : *workspace) {
-    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+    if (DocView* docView = dynamic_cast<DocView*>(view)) {
       if (docView->document() == document) {
         return docView;
       }
@@ -152,13 +152,13 @@ DocumentView* UIContext::getFirstDocumentView(Doc* document) const
   return nullptr;
 }
 
-DocumentViews UIContext::getAllDocumentViews(Doc* document) const
+DocViews UIContext::getAllDocViews(Doc* document) const
 {
   Workspace* workspace = App::instance()->workspace();
-  DocumentViews docViews;
+  DocViews docViews;
 
   for (WorkspaceView* view : *workspace) {
-    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+    if (DocView* docView = dynamic_cast<DocView*>(view)) {
       if (docView->document() == document) {
         docViews.push_back(docView);
       }
@@ -170,7 +170,7 @@ DocumentViews UIContext::getAllDocumentViews(Doc* document) const
 
 Editor* UIContext::activeEditor()
 {
-  DocumentView* view = activeView();
+  DocView* view = activeView();
   if (view)
     return view->editor();
   else
@@ -186,9 +186,9 @@ void UIContext::onAddDocument(Doc* doc)
     return;
 
   // Add a new view for this document
-  DocumentView* view = new DocumentView(
+  DocView* view = new DocView(
     lastSelectedDoc(),
-    DocumentView::Normal,
+    DocView::Normal,
     App::instance()->mainWindow()->getPreviewEditor());
 
   // Add a tab with the new view for the document
@@ -206,7 +206,7 @@ void UIContext::onRemoveDocument(Doc* doc)
   if (isUIAvailable()) {
     Workspace* workspace = App::instance()->workspace();
 
-    for (DocumentView* docView : getAllDocumentViews(doc)) {
+    for (DocView* docView : getAllDocViews(doc)) {
       workspace->removeView(docView);
       delete docView;
     }
@@ -215,7 +215,7 @@ void UIContext::onRemoveDocument(Doc* doc)
 
 void UIContext::onGetActiveSite(Site* site) const
 {
-  DocumentView* view = activeView();
+  DocView* view = activeView();
   if (view) {
     view->getSite(site);
 

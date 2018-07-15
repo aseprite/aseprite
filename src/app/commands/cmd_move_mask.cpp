@@ -20,7 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"

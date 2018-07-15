@@ -18,7 +18,7 @@
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
@@ -171,7 +171,7 @@ void NewFrameCommand::onExecute(Context* context)
 
           // TODO should we use DocObserver?
           if (UIContext::instance() == context) {
-            if (DocumentView* view = UIContext::instance()->activeView())
+            if (DocView* view = UIContext::instance()->activeView())
               view->editor()->setFrame(writer.frame()+1);
           }
         }

@@ -21,7 +21,7 @@
 #include "app/ui/browser_view.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/home_view.h"
@@ -198,9 +198,9 @@ MainWindow::~MainWindow()
   m_menuBar->setMenu(NULL);
 }
 
-DocumentView* MainWindow::getDocView()
+DocView* MainWindow::getDocView()
 {
-  return dynamic_cast<DocumentView*>(m_workspace->activeView());
+  return dynamic_cast<DocView*>(m_workspace->activeView());
 }
 
 HomeView* MainWindow::getHomeView()
@@ -367,7 +367,7 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
-  if (DocumentView* docView = getDocView())
+  if (DocView* docView = getDocView())
     UIContext::instance()->setActiveView(docView);
   else
     UIContext::instance()->setActiveView(nullptr);
@@ -377,7 +377,7 @@ void MainWindow::onActiveViewChange()
 
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
 {
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
+  if (DocView* docView = dynamic_cast<DocView*>(tabView)) {
     Doc* document = docView->document();
     return document->isModified();
   }
@@ -465,7 +465,7 @@ void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
 void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
+  if (DocView* docView = dynamic_cast<DocView*>(tabView)) {
     Doc* document = docView->document();
 
     std::string name;

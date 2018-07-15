@@ -20,7 +20,7 @@
 #include "app/script/sprite_wrap.h"
 #include "app/site.h"
 #include "app/transaction.h"
-#include "app/ui/document_view.h"
+#include "app/ui/doc_view.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"

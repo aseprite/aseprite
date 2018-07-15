@@ -29,7 +29,7 @@ bool NavigateState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // UIContext* context = UIContext::instance();
   // // When an editor is clicked the current view is changed.
-  // context->setActiveView(editor->getDocumentView());
+  // context->setActiveView(editor->getDocView());
 
   // Start scroll loop
   EditorStatePtr newState(new ScrollingState());

@@ -340,11 +340,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           // If the document is already open, select it.
           Doc* doc = ctx->documents().getByFileName(fn);
           if (doc) {
-            DocumentView* docView = ctx->getFirstDocumentView(doc);
+            DocView* docView = ctx->getFirstDocView(doc);
             if (docView)
               ctx->setActiveView(docView);
             else {
-              ASSERT(false);    // Must be some DocumentView available
+              ASSERT(false);    // Must be some DocView available
             }
           }
           // Load the file
