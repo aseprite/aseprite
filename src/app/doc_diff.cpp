@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/document_diff.h"
+#include "app/doc_diff.h"
 
 #include "app/doc.h"
 #include "doc/cel.h"
@@ -21,10 +21,10 @@
 
 namespace app {
 
-DocumentDiff compare_docs(const Document* a,
-                          const Document* b)
+DocDiff compare_docs(const Doc* a,
+                     const Doc* b)
 {
-  DocumentDiff diff;
+  DocDiff diff;
 
   // Don't compare filenames
   //if (a->filename() != b->filename())...

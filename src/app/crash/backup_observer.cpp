@@ -22,7 +22,7 @@
 #include "app/crash/session.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
-#include "app/document_diff.h"
+#include "app/doc_diff.h"
 #include "app/pref/preferences.h"
 #include "base/bind.h"
 #include "base/chrono.h"
@@ -131,7 +131,7 @@ void BackupObserver::backgroundThread()
               DocReader reader(doc, 500);
               std::unique_ptr<Doc> copy(
                 m_session->restoreBackupDocById(doc->id()));
-              DocumentDiff diff = compare_docs(doc, copy.get());
+              DocDiff diff = compare_docs(doc, copy.get());
               if (diff.anything) {
                 TRACE("RECO: Differences (%s/%s/%s/%s/%s/%s/%s)\n",
                       diff.canvas ? "canvas": "",
