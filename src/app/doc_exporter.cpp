@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/document_exporter.h"
+#include "app/doc_exporter.h"
 
 #include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
@@ -111,7 +111,7 @@ private:
 
 typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
 
-DocumentExporter::Item::Item(Doc* doc,
+DocExporter::Item::Item(Doc* doc,
                              doc::FrameTag* frameTag,
                              doc::SelectedLayers* selLayers,
                              doc::SelectedFrames* selFrames)
@@ -122,7 +122,7 @@ DocumentExporter::Item::Item(Doc* doc,
 {
 }
 
-DocumentExporter::Item::Item(Item&& other)
+DocExporter::Item::Item(Item&& other)
   : doc(other.doc)
   , frameTag(other.frameTag)
   , selLayers(other.selLayers)
@@ -132,13 +132,13 @@ DocumentExporter::Item::Item(Item&& other)
   other.selFrames = nullptr;
 }
 
-DocumentExporter::Item::~Item()
+DocExporter::Item::~Item()
 {
   delete selLayers;
   delete selFrames;
 }
 
-int DocumentExporter::Item::frames() const
+int DocExporter::Item::frames() const
 {
   if (selFrames)
     return selFrames->size();
@@ -150,7 +150,7 @@ int DocumentExporter::Item::frames() const
     return doc->sprite()->totalFrames();
 }
 
-doc::frame_t DocumentExporter::Item::firstFrame() const
+doc::frame_t DocExporter::Item::firstFrame() const
 {
   if (selFrames)
     return selFrames->firstFrame();
@@ -160,7 +160,7 @@ doc::frame_t DocumentExporter::Item::firstFrame() const
     return 0;
 }
 
-doc::SelectedFrames DocumentExporter::Item::getSelectedFrames() const
+doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
 {
   if (selFrames)
     return *selFrames;
@@ -176,7 +176,7 @@ doc::SelectedFrames DocumentExporter::Item::getSelectedFrames() const
   return frames;
 }
 
-class DocumentExporter::Sample {
+class DocExporter::Sample {
 public:
   Sample(Doc* document, Sprite* sprite, SelectedLayers* selLayers,
          frame_t frame, const std::string& filename, int innerPadding) :
@@ -239,7 +239,7 @@ private:
   bool m_isDuplicated;
 };
 
-class DocumentExporter::Samples {
+class DocExporter::Samples {
 public:
   typedef std::list<Sample> List;
   typedef List::iterator iterator;
@@ -260,14 +260,14 @@ private:
   List m_samples;
 };
 
-class DocumentExporter::LayoutSamples {
+class DocExporter::LayoutSamples {
 public:
   virtual ~LayoutSamples() { }
   virtual void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) = 0;
 };
 
-class DocumentExporter::SimpleLayoutSamples :
-    public DocumentExporter::LayoutSamples {
+class DocExporter::SimpleLayoutSamples :
+    public DocExporter::LayoutSamples {
 public:
   SimpleLayoutSamples(SpriteSheetType type)
     : m_type(type) {
@@ -357,8 +357,8 @@ private:
   SpriteSheetType m_type;
 };
 
-class DocumentExporter::BestFitLayoutSamples :
-    public DocumentExporter::LayoutSamples {
+class DocExporter::BestFitLayoutSamples :
+    public DocExporter::LayoutSamples {
 public:
   void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
     gfx::PackingRects pr;
@@ -393,7 +393,7 @@ public:
   }
 };
 
-DocumentExporter::DocumentExporter()
+DocExporter::DocExporter()
  : m_dataFormat(DefaultDataFormat)
  , m_textureWidth(0)
  , m_textureHeight(0)
@@ -409,7 +409,7 @@ DocumentExporter::DocumentExporter()
 {
 }
 
-Doc* DocumentExporter::exportSheet(Context* ctx)
+Doc* DocExporter::exportSheet(Context* ctx)
 {
   // We output the metadata to std::cout if the user didn't specify a file.
   std::ofstream fos;
@@ -463,7 +463,7 @@ Doc* DocumentExporter::exportSheet(Context* ctx)
   return textureDocument.release();
 }
 
-gfx::Size DocumentExporter::calculateSheetSize()
+gfx::Size DocExporter::calculateSheetSize()
 {
   Samples samples;
   captureSamples(samples);
@@ -471,7 +471,7 @@ gfx::Size DocumentExporter::calculateSheetSize()
   return calculateSheetSize(samples);
 }
 
-void DocumentExporter::captureSamples(Samples& samples)
+void DocExporter::captureSamples(Samples& samples)
 {
   for (auto& item : m_documents) {
     Doc* doc = item.doc;
@@ -597,7 +597,7 @@ void DocumentExporter::captureSamples(Samples& samples)
   }
 }
 
-void DocumentExporter::layoutSamples(Samples& samples)
+void DocExporter::layoutSamples(Samples& samples)
 {
   switch (m_sheetType) {
     case SpriteSheetType::Packed: {
@@ -617,7 +617,7 @@ void DocumentExporter::layoutSamples(Samples& samples)
   }
 }
 
-gfx::Size DocumentExporter::calculateSheetSize(const Samples& samples) const
+gfx::Size DocExporter::calculateSheetSize(const Samples& samples) const
 {
   gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
 
@@ -640,7 +640,7 @@ gfx::Size DocumentExporter::calculateSheetSize(const Samples& samples) const
 
   // If the user didn't specified the sprite sheet size, the border is
   // added right here (the left/top border padding should be added by
-  // the DocumentExporter::LayoutSamples() impl).
+  // the DocExporter::LayoutSamples() impl).
   if (m_textureWidth == 0) fullTextureBounds.w += m_borderPadding;
   if (m_textureHeight == 0) fullTextureBounds.h += m_borderPadding;
 
@@ -648,7 +648,7 @@ gfx::Size DocumentExporter::calculateSheetSize(const Samples& samples) const
                    fullTextureBounds.y+fullTextureBounds.h);
 }
 
-Doc* DocumentExporter::createEmptyTexture(const Samples& samples) const
+Doc* DocExporter::createEmptyTexture(const Samples& samples) const
 {
   PixelFormat pixelFormat = IMAGE_INDEXED;
   Palette* palette = nullptr;
@@ -693,7 +693,7 @@ Doc* DocumentExporter::createEmptyTexture(const Samples& samples) const
   return document.release();
 }
 
-void DocumentExporter::renderTexture(Context* ctx, const Samples& samples, Image* textureImage) const
+void DocExporter::renderTexture(Context* ctx, const Samples& samples, Image* textureImage) const
 {
   textureImage->clear(0);
 
@@ -720,7 +720,7 @@ void DocumentExporter::renderTexture(Context* ctx, const Samples& samples, Image
   }
 }
 
-void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage)
+void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage)
 {
   std::string frames_begin;
   std::string frames_end;
@@ -963,7 +963,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "}\n";
 }
 
-void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
+void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
 {
   gfx::Clip clip(x, y, sample.trimmedBounds());
 

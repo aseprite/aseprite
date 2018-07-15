@@ -25,7 +25,7 @@ namespace app {
     void loadPalette(Context* ctx,
                      const CliOpenFile& cof,
                      const std::string& filename) override;
-    void exportFiles(Context* ctx, DocumentExporter& exporter) override;
+    void exportFiles(Context* ctx, DocExporter& exporter) override;
     void execScript(const std::string& filename) override;
 
   private:

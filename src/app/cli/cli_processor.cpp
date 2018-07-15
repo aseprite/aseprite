@@ -17,8 +17,8 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/doc.h"
+#include "app/doc_exporter.h"
 #include "app/doc_undo.h"
-#include "app/document_exporter.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
@@ -119,7 +119,7 @@ CliProcessor::CliProcessor(CliDelegate* delegate,
   , m_exporter(nullptr)
 {
   if (options.hasExporterParams())
-    m_exporter.reset(new DocumentExporter);
+    m_exporter.reset(new DocExporter);
 }
 
 void CliProcessor::process(Context* ctx)
@@ -154,12 +154,12 @@ void CliProcessor::process(Context* ctx)
         // --format <format>
         else if (opt == &m_options.format()) {
           if (m_exporter) {
-            DocumentExporter::DataFormat format = DocumentExporter::DefaultDataFormat;
+            DocExporter::DataFormat format = DocExporter::DefaultDataFormat;
 
             if (value.value() == "json-hash")
-              format = DocumentExporter::JsonHashDataFormat;
+              format = DocExporter::JsonHashDataFormat;
             else if (value.value() == "json-array")
-              format = DocumentExporter::JsonArrayDataFormat;
+              format = DocExporter::JsonArrayDataFormat;
 
             m_exporter->setDataFormat(format);
           }

@@ -13,7 +13,7 @@
 #include "app/cli/cli_open_file.h"
 #include "app/context.h"
 #include "app/doc.h"
-#include "app/document_exporter.h"
+#include "app/doc_exporter.h"
 #include "app/file/file.h"
 #include "base/fs.h"
 #include "base/unique_ptr.h"
@@ -164,7 +164,7 @@ void PreviewCliDelegate::loadPalette(Context* ctx,
             << "  - Palette: '" << filename << "'\n";
 }
 
-void PreviewCliDelegate::exportFiles(Context* ctx, DocumentExporter& exporter)
+void PreviewCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 {
   std::string type = "None";
   switch (exporter.spriteSheetType()) {
@@ -188,8 +188,8 @@ void PreviewCliDelegate::exportFiles(Context* ctx, DocumentExporter& exporter)
   if (!exporter.dataFilename().empty()) {
     std::string format = "Unknown";
     switch (exporter.dataFormat()) {
-      case DocumentExporter::JsonHashDataFormat: format = "JSON Hash"; break;
-      case DocumentExporter::JsonArrayDataFormat: format = "JSON Array"; break;
+      case DocExporter::JsonHashDataFormat: format = "JSON Hash"; break;
+      case DocExporter::JsonArrayDataFormat: format = "JSON Array"; break;
     }
     std::cout << "  - Save data file: '" << exporter.dataFilename() << "'\n"
               << "  - Data format: " << format << "\n";

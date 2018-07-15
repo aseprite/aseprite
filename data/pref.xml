@@ -391,7 +391,7 @@
       <option id="best_fit" type="bool" default="false" />
       <option id="texture_filename" type="std::string" />
       <option id="data_filename" type="std::string" />
-      <option id="data_format" type="DocumentExporter::DataFormat" default="DocumentExporter::DefaultDataFormat" />
+      <option id="data_format" type="DocExporter::DataFormat" default="DocExporter::DefaultDataFormat" />
       <option id="border_padding" type="int" default="0" />
       <option id="shape_padding" type="int" default="0" />
       <option id="inner_padding" type="int" default="0" />

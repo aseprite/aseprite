@@ -8,7 +8,7 @@
 
 #include "app/cli/app_options.h"
 #include "app/cli/cli_processor.h"
-#include "app/document_exporter.h"
+#include "app/doc_exporter.h"
 
 #include <initializer_list>
 
@@ -32,7 +32,7 @@ public:
   void beforeOpenFile(const CliOpenFile& cof) override { }
   void afterOpenFile(const CliOpenFile& cof) override { }
   void saveFile(Context* ctx, const CliOpenFile& cof) override { }
-  void exportFiles(Context* ctx, DocumentExporter& exporter) override { }
+  void exportFiles(Context* ctx, DocExporter& exporter) override { }
   void execScript(const std::string& filename) override { }
 
   bool helpWasShown() const { return m_helpWasShown; }

@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_DOCUMENT_EXPORTER_H_INCLUDED
-#define APP_DOCUMENT_EXPORTER_H_INCLUDED
+#ifndef APP_DOC_EXPORTER_H_INCLUDED
+#define APP_DOC_EXPORTER_H_INCLUDED
 #pragma once
 
 #include "app/sprite_sheet_type.h"
@@ -33,7 +33,7 @@ namespace app {
   class Context;
   class Doc;
 
-  class DocumentExporter {
+  class DocExporter {
   public:
     enum DataFormat {
       JsonHashDataFormat,
@@ -41,7 +41,7 @@ namespace app {
       DefaultDataFormat = JsonHashDataFormat
     };
 
-    DocumentExporter();
+    DocExporter();
 
     DataFormat dataFormat() const { return m_dataFormat; }
     const std::string& dataFilename() { return m_dataFilename; }
@@ -146,7 +146,7 @@ namespace app {
     // will not be exported at all in the final result.
     std::map<doc::ObjectId, std::pair<int, int> > m_tagDelta;
 
-    DISABLE_COPYING(DocumentExporter);
+    DISABLE_COPYING(DocExporter);
   };
 
 } // namespace app

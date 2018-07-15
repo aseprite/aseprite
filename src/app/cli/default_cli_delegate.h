@@ -19,7 +19,7 @@ namespace app {
     void afterOpenFile(const CliOpenFile& cof) override;
     void saveFile(Context* ctx, const CliOpenFile& cof) override;
     void loadPalette(Context* ctx, const CliOpenFile& cof, const std::string& filename) override;
-    void exportFiles(Context* ctx, DocumentExporter& exporter) override;
+    void exportFiles(Context* ctx, DocExporter& exporter) override;
     void execScript(const std::string& filename) override;
   };
 

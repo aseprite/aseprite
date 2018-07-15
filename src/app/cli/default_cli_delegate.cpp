@@ -16,7 +16,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/doc.h"
-#include "app/document_exporter.h"
+#include "app/doc_exporter.h"
 #include "app/file/palette_file.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
@@ -112,7 +112,7 @@ void DefaultCliDelegate::loadPalette(Context* ctx,
   }
 }
 
-void DefaultCliDelegate::exportFiles(Context* ctx, DocumentExporter& exporter)
+void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 {
   LOG("APP: Exporting sheet...\n");
 

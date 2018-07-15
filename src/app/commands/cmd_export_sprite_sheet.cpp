@@ -13,7 +13,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
-#include "app/document_exporter.h"
+#include "app/doc_exporter.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -329,11 +329,11 @@ public:
       return std::string();
   }
 
-  DocumentExporter::DataFormat dataFormatValue() const {
+  DocExporter::DataFormat dataFormatValue() const {
     if (dataEnabled()->isSelected())
-      return DocumentExporter::DataFormat(dataFormat()->getSelectedItemIndex());
+      return DocExporter::DataFormat(dataFormat()->getSelectedItemIndex());
     else
-      return DocumentExporter::DefaultDataFormat;
+      return DocExporter::DefaultDataFormat;
   }
 
   int borderPaddingValue() const {
@@ -679,7 +679,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   bool bestFit = docPref.spriteSheet.bestFit();
   std::string filename = docPref.spriteSheet.textureFilename();
   std::string dataFilename = docPref.spriteSheet.dataFilename();
-  DocumentExporter::DataFormat dataFormat = docPref.spriteSheet.dataFormat();
+  DocExporter::DataFormat dataFormat = docPref.spriteSheet.dataFormat();
   std::string layerName = docPref.spriteSheet.layer();
   std::string frameTagName = docPref.spriteSheet.frameTag();
   int borderPadding = docPref.spriteSheet.borderPadding();
@@ -756,7 +756,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (sheet_w == 0) sheet_w = fit.width;
   if (sheet_h == 0) sheet_h = fit.height;
 
-  DocumentExporter exporter;
+  DocExporter exporter;
   if (!filename.empty())
     exporter.setTextureFilename(filename);
   if (!dataFilename.empty()) {

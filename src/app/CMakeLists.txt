@@ -499,11 +499,11 @@ add_library(app-lib
   doc.cpp
   doc_api.cpp
   doc_diff.cpp
+  doc_exporter.cpp
   doc_range.cpp
   doc_range_ops.cpp
   doc_undo.cpp
   docs.cpp
-  document_exporter.cpp
   extensions.cpp
   extra_cel.cpp
   file/file.cpp

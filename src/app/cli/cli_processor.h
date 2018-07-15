@@ -19,7 +19,7 @@ namespace app {
 
   class AppOptions;
   class Context;
-  class DocumentExporter;
+  class DocExporter;
 
   class CliProcessor {
   public:
@@ -33,7 +33,7 @@ namespace app {
 
     CliDelegate* m_delegate;
     const AppOptions& m_options;
-    base::UniquePtr<DocumentExporter> m_exporter;
+    base::UniquePtr<DocExporter> m_exporter;
   };
 
 } // namespace app

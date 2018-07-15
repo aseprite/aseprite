@@ -14,7 +14,7 @@ namespace app {
 
   class AppOptions;
   class Context;
-  class DocumentExporter;
+  class DocExporter;
   struct CliOpenFile;
 
   class CliDelegate {
@@ -29,7 +29,7 @@ namespace app {
     virtual void afterOpenFile(const CliOpenFile& cof) { }
     virtual void saveFile(Context* ctx, const CliOpenFile& cof) { }
     virtual void loadPalette(Context* ctx, const CliOpenFile& cof, const std::string& filename) { }
-    virtual void exportFiles(Context* ctx, DocumentExporter& exporter) { }
+    virtual void exportFiles(Context* ctx, DocExporter& exporter) { }
     virtual void execScript(const std::string& filename) { }
   };
 
