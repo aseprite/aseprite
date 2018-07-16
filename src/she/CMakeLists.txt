@@ -197,7 +197,8 @@ endif()
 
 if(USE_SKIA_BACKEND)
   target_link_libraries(she
-    ${SKIA_LIBRARIES})
+    ${SKIA_LIBRARIES}
+    ${X11_LIBRARIES})
 
   if(UNIX AND NOT APPLE)
     target_link_libraries(she fontconfig)
