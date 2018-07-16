@@ -423,7 +423,7 @@ void Alleg4Surface::drawRgbaSurface(const Surface* src, int srcx, int srcy, int 
 void Alleg4Surface::drawRgbaSurface(const Surface* src, const gfx::Rect& srcRect, const gfx::Rect& dstRect)
 {
   ASSERT(src);
-  ASSERT(static_cast<Alleg4Surface*>(src)->m_bmp);
+  ASSERT(static_cast<const Alleg4Surface*>(src)->m_bmp);
   ASSERT(static_cast<Alleg4Surface*>(this)->m_bmp);
 
   stretch_blit(
