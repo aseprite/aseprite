@@ -535,7 +535,7 @@
       <key action="MaintainAspectRatio" shortcut="Shift" />
 
       <!-- When you scale the selection, pressing this key the
-           selectino will be scaled from the pivot point -->
+           selection will be scaled from the pivot point -->
       <key action="ScaleFromCenter" shortcut="Alt" />
 
       <!-- Modifiers for selection tool -->
