@@ -120,7 +120,7 @@ std::string AniControls::getTooltipFor(int index) const
   if (cmd) {
     tooltip = cmd->friendlyName();
 
-    Key* key = KeyboardShortcuts::instance()->command(cmd->id().c_str());
+    KeyPtr key = KeyboardShortcuts::instance()->command(cmd->id().c_str());
     if (key && !key->accels().empty()) {
       tooltip += "\n\nShortcut: ";
       tooltip += key->accels().front().toString();

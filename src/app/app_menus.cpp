@@ -266,9 +266,9 @@ AppMenuItem::Native get_native_shortcut_for_command(
   const Params& params = Params())
 {
   AppMenuItem::Native native;
-  Key* key = KeyboardShortcuts::instance()->command(commandId, params);
+  KeyPtr key = KeyboardShortcuts::instance()->command(commandId, params);
   if (key) {
-    native.shortcut = get_os_shortcut_from_key(key);
+    native.shortcut = get_os_shortcut_from_key(key.get());
     native.keyContext = key->keycontext();
   }
   return native;
@@ -276,7 +276,7 @@ AppMenuItem::Native get_native_shortcut_for_command(
 
 } // anonymous namespace
 
-she::Shortcut get_os_shortcut_from_key(Key* key)
+she::Shortcut get_os_shortcut_from_key(const Key* key)
 {
   if (key && !key->accels().empty()) {
     const ui::Accelerator& accel = key->accels().front();
@@ -556,7 +556,9 @@ Widget* AppMenus::createInvalidVersionMenuitem()
   return menuitem;
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command,
+                                                   const Params& params,
+                                                   const KeyPtr& key)
 {
   updateMenusList();
   for (Menu* menu : m_menus)
@@ -564,7 +566,10 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Param
       applyShortcutToMenuitemsWithCommand(menu, command, params, key);
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu,
+                                                   Command* command,
+                                                   const Params& params,
+                                                   const KeyPtr& key)
 {
   for (auto child : menu->children()) {
     if (child->type() == kMenuItemWidget) {

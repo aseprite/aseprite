@@ -181,7 +181,7 @@ void SelectAccelerator::updateAssignedTo()
 {
   std::string res = "None";
 
-  for (Key* key : *KeyboardShortcuts::instance()) {
+  for (const KeyPtr& key : *KeyboardShortcuts::instance()) {
     if (key->keycontext() == m_keyContext &&
         key->hasAccel(m_accel)) {
       res = key->triggerString();

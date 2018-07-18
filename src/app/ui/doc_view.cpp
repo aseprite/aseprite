@@ -113,8 +113,8 @@ protected:
       case kKeyDownMessage:
       case kKeyUpMessage:
         if (static_cast<KeyMessage*>(msg)->repeat() == 0) {
-          Key* lmb = KeyboardShortcuts::instance()->action(KeyAction::LeftMouseButton);
-          Key* rmb = KeyboardShortcuts::instance()->action(KeyAction::RightMouseButton);
+          KeyPtr lmb = KeyboardShortcuts::instance()->action(KeyAction::LeftMouseButton);
+          KeyPtr rmb = KeyboardShortcuts::instance()->action(KeyAction::RightMouseButton);
 
           // Convert action keys into mouse messages.
           if (lmb->isPressed(msg) || rmb->isPressed(msg)) {

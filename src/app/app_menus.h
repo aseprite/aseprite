@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/i18n/xml_translator.h"
+#include "app/ui/key.h"
 #include "app/widget_type_mismatch.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
@@ -25,7 +26,6 @@ namespace she {
 }
 
 namespace app {
-  class Key;
   class Command;
   class Params;
 
@@ -60,7 +60,8 @@ namespace app {
     Menu* getPalettePopupMenu() { return m_palettePopupMenu; }
     Menu* getInkPopupMenu() { return m_inkPopupMenu; }
 
-    void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key);
+    void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params,
+                                             const KeyPtr& key);
     void syncNativeMenuItemKeyShortcuts();
 
   private:
@@ -68,7 +69,8 @@ namespace app {
     Menu* convertXmlelemToMenu(TiXmlElement* elem);
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
     Widget* createInvalidVersionMenuitem();
-    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key);
+    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params,
+                                             const KeyPtr& key);
     void syncNativeMenuItemKeyShortcuts(Menu* menu);
     void updateMenusList();
     void createNativeMenus();
@@ -93,7 +95,7 @@ namespace app {
     XmlTranslator m_xmlTranslator;
   };
 
-  she::Shortcut get_os_shortcut_from_key(Key* key);
+  she::Shortcut get_os_shortcut_from_key(const Key* key);
 
 } // namespace app
 

@@ -105,7 +105,7 @@ private:
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
       case ui::kKeyDownMessage: {
-        const Key* key =
+        const KeyPtr key =
           KeyboardShortcuts::instance()->command(CommandId::SwitchColors());
         if (key && key->isPressed(msg)) {
           // Switch colors

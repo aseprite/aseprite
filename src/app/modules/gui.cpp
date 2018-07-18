@@ -377,7 +377,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       if (Manager::onProcessMessage(msg))
         return true;
 
-      for (const Key* key : *KeyboardShortcuts::instance()) {
+      for (const KeyPtr& key : *KeyboardShortcuts::instance()) {
         if (key->isPressed(msg)) {
           // Cancel menu-bar loops (to close any popup menu)
           App::instance()->mainWindow()->getMenuBar()->cancelMenuLoop();
@@ -392,7 +392,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
               // Collect all tools with the pressed keyboard-shortcut
               for (tools::Tool* tool : *toolbox) {
-                Key* key = KeyboardShortcuts::instance()->tool(tool);
+                const KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
                 if (key && key->isPressed(msg))
                   possibles.push_back(tool);
               }

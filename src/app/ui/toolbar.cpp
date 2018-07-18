@@ -506,7 +506,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     }
 
     // Tool shortcut
-    Key* key = KeyboardShortcuts::instance()->tool(tool);
+    KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
     if (key && !key->accels().empty()) {
       tooltip += "\n\n";
       tooltip += fmt::format(Strings::tools_shortcut(),

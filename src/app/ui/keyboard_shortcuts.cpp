@@ -301,9 +301,6 @@ KeyboardShortcuts::~KeyboardShortcuts()
 
 void KeyboardShortcuts::clear()
 {
-  for (Key* key : m_keys) {
-    delete key;
-  }
   m_keys.clear();
 }
 
@@ -347,7 +344,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         }
 
         // add the keyboard shortcut to the command
-        Key* key = this->command(command_name, params, keycontext);
+        KeyPtr key = this->command(command_name, params, keycontext);
         if (key && command_key) {
           Accelerator accel(command_key);
 
@@ -385,7 +382,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (tool_id) {
       tools::Tool* tool = App::instance()->toolBox()->getToolById(tool_id);
       if (tool) {
-        Key* key = this->tool(tool);
+        KeyPtr key = this->tool(tool);
         if (key && tool_key) {
           LOG(VERBOSE) << "KEYS: Shortcut for tool " << tool_id << ": " << tool_key << "\n";
           Accelerator accel(tool_key);
@@ -413,7 +410,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (tool_id) {
       tools::Tool* tool = App::instance()->toolBox()->getToolById(tool_id);
       if (tool) {
-        Key* key = this->quicktool(tool);
+        KeyPtr key = this->quicktool(tool);
         if (key && tool_key) {
           LOG(VERBOSE) << "KEYS: Shortcut for quicktool " << tool_id << ": " << tool_key << "\n";
           Accelerator accel(tool_key);
@@ -441,7 +438,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (tool_action) {
       KeyAction action = base::convert_to<KeyAction, std::string>(tool_action);
       if (action != KeyAction::None) {
-        Key* key = this->action(action);
+        KeyPtr key = this->action(action);
         if (key && tool_key) {
           LOG(VERBOSE) << "KEYS: Shortcut for action " << tool_action << ": " << tool_key << "\n";
           Accelerator accel(tool_key);
@@ -496,20 +493,20 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
 
 void KeyboardShortcuts::exportKeys(TiXmlElement& parent, KeyType type)
 {
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     // Save only user defined accelerators.
     if (key->type() != type)
       continue;
 
     for (const ui::Accelerator& accel : key->userRemovedAccels())
-      exportAccel(parent, key, accel, true);
+      exportAccel(parent, key.get(), accel, true);
 
     for (const ui::Accelerator& accel : key->userAccels())
-      exportAccel(parent, key, accel, false);
+      exportAccel(parent, key.get(), accel, false);
   }
 }
 
-void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Accelerator& accel, bool removed)
+void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const ui::Accelerator& accel, bool removed)
 {
   TiXmlElement elem("key");
 
@@ -555,17 +552,17 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
 
 void KeyboardShortcuts::reset()
 {
-  for (Key* key : m_keys)
+  for (KeyPtr& key : m_keys)
     key->reset();
 }
 
-Key* KeyboardShortcuts::command(const char* commandName, const Params& params, KeyContext keyContext)
+KeyPtr KeyboardShortcuts::command(const char* commandName, const Params& params, KeyContext keyContext)
 {
   Command* command = Commands::instance()->byId(commandName);
   if (!command)
-    return NULL;
+    return nullptr;
 
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Command &&
         key->keycontext() == keyContext &&
         key->command() == command &&
@@ -574,49 +571,49 @@ Key* KeyboardShortcuts::command(const char* commandName, const Params& params, K
     }
   }
 
-  Key* key = new Key(command, params, keyContext);
+  KeyPtr key = std::make_shared<Key>(command, params, keyContext);
   m_keys.push_back(key);
   return key;
 }
 
-Key* KeyboardShortcuts::tool(tools::Tool* tool)
+KeyPtr KeyboardShortcuts::tool(tools::Tool* tool)
 {
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Tool &&
         key->tool() == tool) {
       return key;
     }
   }
 
-  Key* key = new Key(KeyType::Tool, tool);
+  KeyPtr key = std::make_shared<Key>(KeyType::Tool, tool);
   m_keys.push_back(key);
   return key;
 }
 
-Key* KeyboardShortcuts::quicktool(tools::Tool* tool)
+KeyPtr KeyboardShortcuts::quicktool(tools::Tool* tool)
 {
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Quicktool &&
         key->tool() == tool) {
       return key;
     }
   }
 
-  Key* key = new Key(KeyType::Quicktool, tool);
+  KeyPtr key = std::make_shared<Key>(KeyType::Quicktool, tool);
   m_keys.push_back(key);
   return key;
 }
 
-Key* KeyboardShortcuts::action(KeyAction action)
+KeyPtr KeyboardShortcuts::action(KeyAction action)
 {
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Action &&
         key->action() == action) {
       return key;
     }
   }
 
-  Key* key = new Key(action);
+  KeyPtr key = std::make_shared<Key>(action);
   m_keys.push_back(key);
   return key;
 }
@@ -625,7 +622,7 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
                                      const KeyContext keyContext,
                                      const Key* newKey)
 {
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->keycontext() == keyContext &&
         key->hasAccel(accel) &&
         // Tools can contain the same keyboard shortcut
@@ -651,7 +648,7 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
 
 bool KeyboardShortcuts::getCommandFromKeyMessage(Message* msg, Command** command, Params* params)
 {
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Command && key->isPressed(msg)) {
       if (command) *command = key->command();
       if (params) *params = key->params();
@@ -664,7 +661,7 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(Message* msg, Command** command
 tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
-    Key* key = action(KeyAction::CopySelection);
+    KeyPtr key = action(KeyAction::CopySelection);
     if (key && key->isPressed())
       return NULL;
   }
@@ -673,7 +670,7 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
 
   // Iterate over all tools
   for (tools::Tool* tool : *toolbox) {
-    Key* key = quicktool(tool);
+    KeyPtr key = quicktool(tool);
 
     // Collect all tools with the pressed keyboard-shortcut
     if (key && key->isPressed()) {
@@ -688,7 +685,7 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
 {
   KeyAction flags = KeyAction::None;
 
-  for (Key* key : m_keys) {
+  for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Action &&
         key->keycontext() == context &&
         key->isLooselyPressed()) {
@@ -699,7 +696,7 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
   return flags;
 }
 
-std::string key_tooltip(const char* str, app::Key* key)
+std::string key_tooltip(const char* str, const app::Key* key)
 {
   std::string res;
   if (str)

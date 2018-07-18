@@ -126,7 +126,7 @@ class KeyItem : public ListItem {
 
 public:
   KeyItem(const std::string& text,
-          Key* key,
+          const KeyPtr& key,
           AppMenuItem* menuitem,
           const int level,
           HeaderItem* headerItem)
@@ -144,11 +144,7 @@ public:
     setBorder(border);
   }
 
-  ~KeyItem() {
-    delete m_keyOrig;
-  }
-
-  Key* key() { return m_key; }
+  KeyPtr key() { return m_key; }
   AppMenuItem* menuitem() const { return m_menuitem; }
 
   void restoreKeys() {
@@ -156,7 +152,7 @@ public:
       *m_key = *m_keyOrig;
 
     if (m_menuitem && !m_keyOrig)
-      m_menuitem->setKey(NULL);
+      m_menuitem->setKey(nullptr);
   }
 
   std::string searchableText() const {
@@ -440,8 +436,8 @@ private:
     m_hotAccel = -1;
   }
 
-  Key* m_key;
-  Key* m_keyOrig;
+  KeyPtr m_key;
+  KeyPtr m_keyOrig;
   AppMenuItem* m_menuitem;
   int m_level;
   ui::Accelerators m_newAccels;
@@ -513,7 +509,7 @@ private:
     fillMenusList(menus(), AppMenus::instance()->getRootMenu(), 0);
     fillToolsList(tools(), App::instance()->toolBox());
 
-    for (Key* key : *app::KeyboardShortcuts::instance()) {
+    for (const KeyPtr& key : *app::KeyboardShortcuts::instance()) {
       if (key->type() == KeyType::Tool ||
           key->type() == KeyType::Quicktool) {
         continue;
@@ -714,7 +710,7 @@ private:
     for (Tool* tool : *toolbox) {
       std::string text = tool->getText();
 
-      Key* key = app::KeyboardShortcuts::instance()->tool(tool);
+      KeyPtr key = app::KeyboardShortcuts::instance()->tool(tool);
       KeyItem* keyItem = new KeyItem(text, key, nullptr, 0,
                                      &m_headerItem);
       m_allKeyItems.push_back(keyItem);
@@ -801,7 +797,7 @@ void KeyboardShortcutsCommand::addMissingKeyboardShortcutsForCommands()
 {
   std::set<std::string> commandsAlreadyAdded;
   auto keys = app::KeyboardShortcuts::instance();
-  for (Key* key : *keys) {
+  for (const KeyPtr& key : *keys) {
     if (key->type() != KeyType::Command)
       continue;
 

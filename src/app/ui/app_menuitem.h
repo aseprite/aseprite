@@ -9,7 +9,7 @@
 #pragma once
 
 #include "app/commands/params.h"
-#include "app/ui/key_context.h"
+#include "app/ui/key.h"
 #include "she/shortcut.h"
 #include "ui/menu.h"
 
@@ -18,7 +18,6 @@ namespace she {
 }
 
 namespace app {
-  class Key;
   class Command;
 
   // A widget that represent a menu item of the application.
@@ -39,8 +38,8 @@ namespace app {
                 const Params& params = Params());
     ~AppMenuItem();
 
-    Key* key() { return m_key; }
-    void setKey(Key* key);
+    KeyPtr key() { return m_key; }
+    void setKey(const KeyPtr& key);
 
     Command* getCommand() { return m_command; }
     const Params& getParams() const { return m_params; }
@@ -58,7 +57,7 @@ namespace app {
     void onValidate() override;
 
   private:
-    Key* m_key;
+    KeyPtr m_key;
     Command* m_command;
     Params m_params;
     Native* m_native;

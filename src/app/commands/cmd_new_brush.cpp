@@ -165,7 +165,7 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
   Params params;
   params.set("change", "custom");
   params.set("slot", base::convert_to<std::string>(slot).c_str());
-  Key* key = KeyboardShortcuts::instance()->command(
+  KeyPtr key = KeyboardShortcuts::instance()->command(
     CommandId::ChangeBrush(), params);
   if (key && !key->accels().empty()) {
     std::string tooltip;

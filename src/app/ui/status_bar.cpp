@@ -409,7 +409,7 @@ public:
     m_indicators->addTextIndicator(tool->getText().c_str());
 
     // Tool shortcut
-    Key* key = KeyboardShortcuts::instance()->tool(tool);
+    KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
     if (key && !key->accels().empty()) {
       add(theme->parts.iconKey(), true);
       m_indicators->addTextIndicator(key->accels().front().toString().c_str());
