@@ -54,8 +54,36 @@ namespace {
     { NULL                  , NULL                 , app::KeyAction::None }
   };
 
-  const char* get_shortcut(TiXmlElement* elem)
-  {
+  static struct {
+    const char* name;
+    const char* userfriendly;
+    app::WheelAction action;
+  } wheel_actions[] = {
+    { "Zoom"         , "Zoom"                     , app::WheelAction::Zoom },
+    { "VScroll"      , "Scroll: Vertically"       , app::WheelAction::VScroll },
+    { "HScroll"      , "Scroll: Horizontally"     , app::WheelAction::HScroll },
+    { "FgColor"      , "Color: Foreground Palette Entry" , app::WheelAction::FgColor },
+    { "BgColor"      , "Color: Background Palette Entry" , app::WheelAction::BgColor },
+    { "Frame"        , "Change Frame"             , app::WheelAction::Frame },
+    { "BrushSize"    , "Change Brush Size"        , app::WheelAction::BrushSize },
+    { "BrushAngle"   , "Change Brush Angle"       , app::WheelAction::BrushAngle },
+    { "ToolSameGroup"  , "Change Tool (same group)" , app::WheelAction::ToolSameGroup },
+    { "ToolOtherGroup" , "Change Tool"            , app::WheelAction::ToolOtherGroup },
+    { "Layer"        , "Change Layer"             , app::WheelAction::Layer },
+    { "InkOpacity"   , "Change Ink Opacity"       , app::WheelAction::InkOpacity },
+    { "LayerOpacity" , "Change Layer Opacity"     , app::WheelAction::LayerOpacity },
+    { "CelOpacity"   , "Change Cel Opacity"       , app::WheelAction::CelOpacity },
+    { "Alpha"        , "Color: Alpha"             , app::WheelAction::Alpha },
+    { "HslHue"       , "Color: HSL Hue"           , app::WheelAction::HslHue },
+    { "HslSaturation", "Color: HSL Saturation"    , app::WheelAction::HslSaturation },
+    { "HslLightness" , "Color: HSL Lightness"     , app::WheelAction::HslLightness },
+    { "HsvHue"       , "Color: HSV Hue"           , app::WheelAction::HsvHue },
+    { "HsvSaturation", "Color: HSV Saturation"    , app::WheelAction::HsvSaturation },
+    { "HsvValue"     , "Color: HSV Value"         , app::WheelAction::HsvValue },
+    { nullptr        , nullptr                    , app::WheelAction::None }
+  };
+
+  const char* get_shortcut(TiXmlElement* elem) {
     const char* shortcut = NULL;
 
 #ifdef _WIN32
@@ -72,13 +100,20 @@ namespace {
     return shortcut;
   }
 
-  std::string get_user_friendly_string_for_keyaction(app::KeyAction action)
-  {
+  std::string get_user_friendly_string_for_keyaction(app::KeyAction action) {
     for (int c=0; actions[c].name; ++c) {
       if (action == actions[c].action)
         return actions[c].userfriendly;
     }
-    return "";
+    return std::string();
+  }
+
+  std::string get_user_friendly_string_for_wheelaction(app::WheelAction wheelAction) {
+    for (int c=0; wheel_actions[c].name; ++c) {
+      if (wheelAction == wheel_actions[c].action)
+        return wheel_actions[c].userfriendly;
+    }
+    return std::string();
   }
 
 } // anonymous namespace
@@ -87,12 +122,10 @@ namespace base {
 
   template<> app::KeyAction convert_to(const std::string& from) {
     app::KeyAction action = app::KeyAction::None;
-
     for (int c=0; actions[c].name; ++c) {
       if (from == actions[c].name)
         return actions[c].action;
     }
-
     return action;
   }
 
@@ -100,6 +133,23 @@ namespace base {
     for (int c=0; actions[c].name; ++c) {
       if (from == actions[c].action)
         return actions[c].name;
+    }
+    return "";
+  }
+
+  template<> app::WheelAction convert_to(const std::string& from) {
+    app::WheelAction action = app::WheelAction::None;
+    for (int c=0; wheel_actions[c].name; ++c) {
+      if (from == wheel_actions[c].name)
+        return wheel_actions[c].action;
+    }
+    return action;
+  }
+
+  template<> std::string convert_to(const app::WheelAction& from) {
+    for (int c=0; wheel_actions[c].name; ++c) {
+      if (from == wheel_actions[c].action)
+        return wheel_actions[c].name;
     }
     return "";
   }
@@ -178,6 +228,15 @@ Key::Key(KeyAction action)
   }
 }
 
+Key::Key(WheelAction wheelAction)
+  : m_type(KeyType::WheelAction)
+  , m_useUsers(false)
+  , m_keycontext(KeyContext::MouseWheel)
+  , m_action(KeyAction::None)
+  , m_wheelAction(wheelAction)
+{
+}
+
 void Key::add(const ui::Accelerator& accel, KeySource source)
 {
   Accelerators* accels = &m_accels;
@@ -200,20 +259,31 @@ void Key::add(const ui::Accelerator& accel, KeySource source)
   accels->add(accel);
 }
 
-bool Key::isPressed(Message* msg) const
+bool Key::isPressed(const Message* msg) const
 {
-  ASSERT(dynamic_cast<KeyMessage*>(msg) != NULL);
-
-  for (const Accelerator& accel : accels()) {
-    if (accel.isPressed(msg->modifiers(),
-          static_cast<KeyMessage*>(msg)->scancode(),
-          static_cast<KeyMessage*>(msg)->unicodeChar()) &&
-        (m_keycontext == KeyContext::Any ||
-         m_keycontext == KeyboardShortcuts::instance()->getCurrentKeyContext())) {
-      return true;
+  if (auto keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
+    for (const Accelerator& accel : accels()) {
+      if (accel.isPressed(keyMsg->modifiers(),
+                          keyMsg->scancode(),
+                          keyMsg->unicodeChar()) &&
+          (m_keycontext == KeyContext::Any ||
+           m_keycontext == KeyboardShortcuts::instance()->getCurrentKeyContext())) {
+        return true;
+      }
     }
   }
-
+  else if (auto mouseMsg = dynamic_cast<const MouseMessage*>(msg)) {
+    for (const Accelerator& accel : accels()) {
+      if ((accel.modifiers() == mouseMsg->modifiers()) &&
+          (m_keycontext == KeyContext::Any ||
+           // TODO we could have multiple mouse wheel key-context,
+           // like "sprite editor" context, or "timeline" context,
+           // etc.
+           m_keycontext == KeyContext::MouseWheel)) {
+        return true;
+      }
+    }
+  }
   return false;
 }
 
@@ -260,6 +330,13 @@ void Key::reset()
   m_useUsers = false;
 }
 
+void Key::copyOriginalToUser()
+{
+  m_users = m_accels;
+  m_userRemoved.clear();
+  m_useUsers = true;
+}
+
 std::string Key::triggerString() const
 {
   switch (m_type) {
@@ -275,6 +352,8 @@ std::string Key::triggerString() const
     }
     case KeyType::Action:
       return get_user_friendly_string_for_keyaction(m_action);
+    case KeyType::WheelAction:
+      return get_user_friendly_string_for_wheelaction(m_wheelAction);
   }
   return "Unknown";
 }
@@ -370,7 +449,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   }
 
   // Load keyboard shortcuts for tools
-  // <gui><keyboard><tools><key>
+  // <keyboard><tools><key>
   xmlKey = handle
     .FirstChild("tools")
     .FirstChild("key").ToElement();
@@ -398,7 +477,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   }
 
   // Load keyboard shortcuts for quicktools
-  // <gui><keyboard><quicktools><key>
+  // <keyboard><quicktools><key>
   xmlKey = handle
     .FirstChild("quicktools")
     .FirstChild("key").ToElement();
@@ -426,22 +505,52 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   }
 
   // Load special keyboard shortcuts for sprite editor customization
-  // <gui><keyboard><spriteeditor>
+  // <keyboard><actions><key>
   xmlKey = handle
     .FirstChild("actions")
     .FirstChild("key").ToElement();
   while (xmlKey) {
-    const char* tool_action = xmlKey->Attribute("action");
-    const char* tool_key = get_shortcut(xmlKey);
+    const char* action_id = xmlKey->Attribute("action");
+    const char* action_key = get_shortcut(xmlKey);
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
-    if (tool_action) {
-      KeyAction action = base::convert_to<KeyAction, std::string>(tool_action);
+    if (action_id) {
+      KeyAction action = base::convert_to<KeyAction, std::string>(action_id);
       if (action != KeyAction::None) {
         KeyPtr key = this->action(action);
-        if (key && tool_key) {
-          LOG(VERBOSE) << "KEYS: Shortcut for action " << tool_action << ": " << tool_key << "\n";
-          Accelerator accel(tool_key);
+        if (key && action_key) {
+          LOG(VERBOSE) << "KEYS: Shortcut for action " << action_id
+                       << ": " << action_key << "\n";
+          Accelerator accel(action_key);
+
+          if (!removed)
+            key->add(accel, source);
+          else
+            key->disableAccel(accel);
+        }
+      }
+    }
+    xmlKey = xmlKey->NextSiblingElement();
+  }
+
+  // Load special keyboard shortcuts for mouse wheel customization
+  // <keyboard><wheel><key>
+  xmlKey = handle
+    .FirstChild("wheel")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* action_id = xmlKey->Attribute("action");
+    const char* action_key = get_shortcut(xmlKey);
+    bool removed = bool_attr_is_true(xmlKey, "removed");
+
+    if (action_id) {
+      WheelAction action = base::convert_to<WheelAction, std::string>(action_id);
+      if (action != WheelAction::None) {
+        KeyPtr key = this->wheelAction(action);
+        if (key && action_key) {
+          LOG(VERBOSE) << "KEYS: Shortcut for wheel action " << action_id
+                       << ": " << action_key << "\n";
+          Accelerator accel(action_key);
 
           if (!removed)
             key->add(accel, source);
@@ -472,6 +581,7 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   TiXmlElement tools("tools");
   TiXmlElement quicktools("quicktools");
   TiXmlElement actions("actions");
+  TiXmlElement wheel("wheel");
 
   keyboard.SetAttribute("version", XML_KEYBOARD_FILE_VERSION);
 
@@ -479,11 +589,13 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   exportKeys(tools, KeyType::Tool);
   exportKeys(quicktools, KeyType::Quicktool);
   exportKeys(actions, KeyType::Action);
+  exportKeys(wheel, KeyType::WheelAction);
 
   keyboard.InsertEndChild(commands);
   keyboard.InsertEndChild(tools);
   keyboard.InsertEndChild(quicktools);
   keyboard.InsertEndChild(actions);
+  keyboard.InsertEndChild(wheel);
 
   TiXmlDeclaration declaration("1.0", "utf-8", "");
   doc->InsertEndChild(declaration);
@@ -539,6 +651,11 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
     case KeyType::Action:
       elem.SetAttribute("action",
         base::convert_to<std::string>(key->action()).c_str());
+      break;
+
+    case KeyType::WheelAction:
+      elem.SetAttribute("action",
+        base::convert_to<std::string>(key->wheelAction()).c_str());
       break;
   }
 
@@ -618,6 +735,20 @@ KeyPtr KeyboardShortcuts::action(KeyAction action)
   return key;
 }
 
+KeyPtr KeyboardShortcuts::wheelAction(WheelAction wheelAction)
+{
+  for (KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::WheelAction &&
+        key->wheelAction() == wheelAction) {
+      return key;
+    }
+  }
+
+  KeyPtr key = std::make_shared<Key>(wheelAction);
+  m_keys.push_back(key);
+  return key;
+}
+
 void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
                                      const KeyContext keyContext,
                                      const Key* newKey)
@@ -646,7 +777,7 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
     return KeyContext::Normal;
 }
 
-bool KeyboardShortcuts::getCommandFromKeyMessage(Message* msg, Command** command, Params* params)
+bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg, Command** command, Params* params)
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Command && key->isPressed(msg)) {
@@ -685,7 +816,7 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
 {
   KeyAction flags = KeyAction::None;
 
-  for (KeyPtr& key : m_keys) {
+  for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Action &&
         key->keycontext() == context &&
         key->isLooselyPressed()) {
@@ -694,6 +825,64 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
   }
 
   return flags;
+}
+
+WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext context,
+                                                              const ui::Message* msg)
+{
+  for (const KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::WheelAction &&
+        key->keycontext() == context &&
+        key->isPressed(msg))
+      return key->wheelAction();
+  }
+  return WheelAction::None;
+}
+
+bool KeyboardShortcuts::hasMouseWheelCustomization() const
+{
+  for (const KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::WheelAction &&
+        !key->userAccels().empty())
+      return true;
+  }
+  return false;
+}
+
+Keys KeyboardShortcuts::getDefaultMouseWheelTable(const bool zoomWithWheel) const
+{
+  Keys keys;
+  KeyPtr key;
+
+  key = std::make_shared<Key>(WheelAction::Zoom);
+  key->add(Accelerator(zoomWithWheel ? kKeyNoneModifier: kKeyCtrlModifier, kKeyNil, 0), KeySource::Original);
+  keys.push_back(key);
+
+  if (!zoomWithWheel) {
+    key = std::make_shared<Key>(WheelAction::VScroll);
+    key->add(Accelerator(kKeyNoneModifier, kKeyNil, 0), KeySource::Original);
+    keys.push_back(key);
+  }
+
+  key = std::make_shared<Key>(WheelAction::HScroll);
+  key->add(Accelerator(kKeyShiftModifier, kKeyNil, 0), KeySource::Original);
+  keys.push_back(key);
+
+  key = std::make_shared<Key>(WheelAction::FgColor);
+  key->add(Accelerator(kKeyAltModifier, kKeyNil, 0), KeySource::Original);
+  keys.push_back(key);
+
+  key = std::make_shared<Key>(WheelAction::BgColor);
+  key->add(Accelerator((KeyModifiers)(kKeyAltModifier | kKeyShiftModifier), kKeyNil, 0), KeySource::Original);
+  keys.push_back(key);
+
+  if (zoomWithWheel) {
+    key = std::make_shared<Key>(WheelAction::Frame);
+    key->add(Accelerator(kKeyCtrlModifier, kKeyNil, 0), KeySource::Original);
+    keys.push_back(key);
+  }
+
+  return keys;
 }
 
 std::string key_tooltip(const char* str, const app::Key* key)

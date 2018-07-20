@@ -89,6 +89,7 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext ke
   : m_keyField(new KeyField(accel))
   , m_keyContext(keyContext)
   , m_accel(accel)
+  , m_ok(false)
   , m_modified(false)
 {
   updateModifiers();
@@ -149,6 +150,7 @@ void SelectAccelerator::onClear()
 
 void SelectAccelerator::onOK()
 {
+  m_ok = true;
   m_modified = (m_origAccel != m_accel);
   closeWindow(NULL);
 }

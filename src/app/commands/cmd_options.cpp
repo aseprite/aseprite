@@ -315,13 +315,7 @@ public:
     rightClickBehavior()->addItem("Lasso");
     rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
 
-    // Zoom with Scroll Wheel
-    wheelZoom()->setSelected(m_pref.editor.zoomWithWheel());
-
-    // Zoom sliding two fingers
-#if __APPLE__
-    slideZoom()->setSelected(m_pref.editor.zoomWithSlide());
-#else
+#ifndef __APPLE__ // Zoom sliding two fingers option only on macOS
     slideZoom()->setVisible(false);
 #endif
 
@@ -434,10 +428,6 @@ public:
     m_pref.editor.autoScroll(autoScroll()->isSelected());
     m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());
     m_pref.eyedropper.discardBrush(discardBrush()->isSelected());
-    m_pref.editor.zoomWithWheel(wheelZoom()->isSelected());
-#if __APPLE__
-    m_pref.editor.zoomWithSlide(slideZoom()->isSelected());
-#endif
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
     m_pref.cursor.paintingCursorType(static_cast<app::gen::PaintingCursorType>(paintingCursorType()->getSelectedItemIndex()));
     m_pref.cursor.cursorColor(cursorColor()->getColor());

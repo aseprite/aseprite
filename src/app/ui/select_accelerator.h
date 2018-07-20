@@ -20,6 +20,7 @@ namespace app {
   public:
     SelectAccelerator(const ui::Accelerator& accelerator, KeyContext keyContext);
 
+    bool isOK() const { return m_ok; }
     bool isModified() const { return m_modified; }
     const ui::Accelerator& accel() const { return m_accel; }
 
@@ -39,6 +40,7 @@ namespace app {
     KeyContext m_keyContext;
     ui::Accelerator m_origAccel;
     ui::Accelerator m_accel;
+    bool m_ok;
     bool m_modified;
   };
 

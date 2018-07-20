@@ -37,6 +37,7 @@ namespace app {
     Tool,
     Quicktool,
     Action,
+    WheelAction,
   };
 
   // TODO This should be called "KeyActionModifier" or something similar
@@ -61,6 +62,35 @@ namespace app {
     RotateShape               = 0x00010000,
   };
 
+  enum class WheelAction {
+    None,
+    Zoom,
+    VScroll,
+    HScroll,
+    FgColor,
+    BgColor,
+    Frame,
+    BrushSize,
+    BrushAngle,
+    ToolSameGroup,
+    ToolOtherGroup,
+    Layer,
+    InkOpacity,
+    LayerOpacity,
+    CelOpacity,
+    Alpha,
+    HslHue,
+    HslSaturation,
+    HslLightness,
+    HsvHue,
+    HsvSaturation,
+    HsvValue,
+
+    // Range
+    First = Zoom,
+    Last = HsvValue,
+  };
+
   inline KeyAction operator&(KeyAction a, KeyAction b) {
     return KeyAction(int(a) & int(b));
   }
@@ -70,6 +100,7 @@ namespace app {
     Key(Command* command, const Params& params, KeyContext keyContext);
     Key(KeyType type, tools::Tool* tool);
     explicit Key(KeyAction action);
+    explicit Key(WheelAction action);
 
     KeyType type() const { return m_type; }
     const ui::Accelerators& accels() const {
@@ -80,7 +111,7 @@ namespace app {
     const ui::Accelerators& userRemovedAccels() const { return m_userRemoved; }
 
     void add(const ui::Accelerator& accel, KeySource source);
-    bool isPressed(ui::Message* msg) const;
+    bool isPressed(const ui::Message* msg) const;
     bool isPressed() const;
     bool isLooselyPressed() const;
 
@@ -90,6 +121,8 @@ namespace app {
     // Resets user accelerators to the original ones.
     void reset();
 
+    void copyOriginalToUser();
+
     // for KeyType::Command
     Command* command() const { return m_command; }
     const Params& params() const { return m_params; }
@@ -98,6 +131,8 @@ namespace app {
     tools::Tool* tool() const { return m_tool; }
     // for KeyType::Action
     KeyAction action() const { return m_action; }
+    // for KeyType::WheelAction
+    WheelAction wheelAction() const { return m_wheelAction; }
 
     std::string triggerString() const;
 
@@ -116,6 +151,8 @@ namespace app {
     tools::Tool* m_tool;
     // for KeyType::Action
     KeyAction m_action;
+    // for KeyType::WheelAction
+    WheelAction m_wheelAction;
   };
 
   typedef std::shared_ptr<Key> KeyPtr;
@@ -130,6 +167,9 @@ namespace base {
 
   template<> app::KeyAction convert_to(const std::string& from);
   template<> std::string convert_to(const app::KeyAction& from);
+
+  template<> app::WheelAction convert_to(const std::string& from);
+  template<> std::string convert_to(const app::WheelAction& from);
 
 } // namespace base
 

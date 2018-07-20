@@ -40,15 +40,20 @@ namespace app {
     KeyPtr tool(tools::Tool* tool);
     KeyPtr quicktool(tools::Tool* tool);
     KeyPtr action(KeyAction action);
+    KeyPtr wheelAction(WheelAction action);
 
     void disableAccel(const ui::Accelerator& accel,
                       const KeyContext keyContext,
                       const Key* newKey);
 
     KeyContext getCurrentKeyContext();
-    bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params* params);
+    bool getCommandFromKeyMessage(const ui::Message* msg, Command** command, Params* params);
     tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
     KeyAction getCurrentActionModifiers(KeyContext context);
+    WheelAction getWheelActionFromMouseMessage(const KeyContext context,
+                                               const ui::Message* msg);
+    bool hasMouseWheelCustomization() const;
+    Keys getDefaultMouseWheelTable(const bool zoomWithWheel) const;
 
     // Generated when the tooltips are modified by the user.
     // Useful to regenerate tooltips with shortcuts.

@@ -175,6 +175,7 @@ if(ENABLE_UI)
     commands/cmd_background_from_layer.cpp
     commands/cmd_cancel.cpp
     commands/cmd_canvas_size.cpp
+    commands/cmd_cel_opacity.cpp
     commands/cmd_cel_properties.cpp
     commands/cmd_change_brush.cpp
     commands/cmd_change_color.cpp

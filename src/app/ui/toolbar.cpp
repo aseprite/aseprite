@@ -564,6 +564,14 @@ void ToolBar::selectTool(Tool* tool)
   invalidate();
 }
 
+void ToolBar::selectToolGroup(tools::ToolGroup* toolGroup)
+{
+  ASSERT(toolGroup);
+  ASSERT(m_selectedInGroup[toolGroup]);
+  if (m_selectedInGroup[toolGroup])
+    selectTool(m_selectedInGroup[toolGroup]);
+}
+
 void ToolBar::onClosePopup()
 {
   closeTipWindow();

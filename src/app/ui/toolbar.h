@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -43,8 +43,9 @@ namespace app {
 
     bool isToolVisible(tools::Tool* tool);
     void selectTool(tools::Tool* tool);
+    void selectToolGroup(tools::ToolGroup* toolGroup);
 
-    void openTipWindow(tools::ToolGroup* tool_group, tools::Tool* tool);
+    void openTipWindow(tools::ToolGroup* toolGroup, tools::Tool* tool);
     void closeTipWindow();
 
   protected:

@@ -44,6 +44,7 @@
 
 #include "keyboard_shortcuts.xml.h"
 
+#include <algorithm>
 #include <set>
 
 #define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
@@ -186,6 +187,8 @@ public:
 
 private:
 
+  void onAccelChange(const Accelerator& accel);
+
   void onChangeAccel(int index) {
     LockButtons lock(this);
     Accelerator origAccel = m_key->accels()[index];
@@ -193,6 +196,8 @@ private:
     window.openWindowInForeground();
 
     if (window.isModified()) {
+      onAccelChange(window.accel());
+
       m_key->disableAccel(origAccel);
       if (!window.accel().isEmpty())
         m_key->add(window.accel(), KeySource::UserDefined);
@@ -223,7 +228,9 @@ private:
     SelectAccelerator window(accel, m_key ? m_key->keycontext(): KeyContext::Any);
     window.openWindowInForeground();
 
-    if (window.isModified()) {
+    if ((window.isModified()) ||
+        // We can assign a "None" accelerator to mouse wheel actions
+        (m_key && m_key->type() == KeyType::WheelAction && window.isOK())) {
       if (!m_key) {
         ASSERT(m_menuitem);
         if (!m_menuitem)
@@ -236,6 +243,7 @@ private:
         m_menuitem->setKey(m_key);
       }
 
+      onAccelChange(window.accel());
       m_key->add(window.accel(), KeySource::UserDefined);
     }
 
@@ -245,7 +253,7 @@ private:
   void onSizeHint(SizeHintEvent& ev) override {
     gfx::Size size = textSize();
     size.w = size.w + border().width();
-    size.h = size.h + border().height() + 4*guiscale();
+    size.h = size.h + border().height() + 6*guiscale();
 
     if (m_key && m_key->keycontext() != KeyContext::Any) {
       int w =
@@ -291,8 +299,9 @@ private:
     {
       int x = bounds.x + m_level*16 * guiscale();
       IntersectClip clip(g, gfx::Rect(x, y, keyXPos - x, th));
-      if (clip)
+      if (clip) {
         g->drawUIText(text(), fg, bg, gfx::Point(x, y), 0);
+      }
     }
 
     if (m_key && !m_key->accels().empty()) {
@@ -311,7 +320,7 @@ private:
         for (const Accelerator& accel : m_key->accels()) {
           if (i != m_hotAccel || !m_changeButton) {
             g->drawText(
-              accel.toString(), fg, bg,
+              getAccelText(accel), fg, bg,
               gfx::Point(keyXPos, y));
           }
           y += dh;
@@ -336,6 +345,9 @@ private:
       }
 
       case kMouseMoveMessage: {
+        if (!isEnabled())
+          break;
+
         gfx::Rect bounds = this->bounds();
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
@@ -346,7 +358,7 @@ private:
 
         for (int i=0; i<maxi; ++i, y += dh) {
           int w = Graphics::measureUITextLength(
-            (accels && i < (int)accels->size() ? (*accels)[i].toString().c_str(): ""),
+            (accels && i < (int)accels->size() ? getAccelText((*accels)[i]).c_str(): ""),
             font());
           gfx::Rect itemBounds(bounds.x + m_headerItem->keyXPos(), y, w, dh);
           itemBounds = itemBounds.enlarge(
@@ -375,7 +387,7 @@ private:
 
               m_changeButton->setBgColor(gfx::ColorNone);
               m_changeButton->setBounds(itemBounds);
-              m_changeButton->setText((*accels)[i].toString());
+              m_changeButton->setText(getAccelText((*accels)[i]));
 
               const char* label = "x";
               m_deleteButton->setBgColor(gfx::ColorNone);
@@ -436,6 +448,16 @@ private:
     m_hotAccel = -1;
   }
 
+  std::string getAccelText(const Accelerator& accel) const {
+    if (m_key && m_key->type() == KeyType::WheelAction &&
+        accel.isEmpty()) {
+      return "(Default Action)";
+    }
+    else {
+      return accel.toString();
+    }
+  }
+
   KeyPtr m_key;
   KeyPtr m_keyOrig;
   AppMenuItem* m_menuitem;
@@ -455,18 +477,42 @@ private:
 class KeyboardShortcutsWindow : public app::gen::KeyboardShortcuts {
 public:
   KeyboardShortcutsWindow(const std::string& searchText)
-    : m_searchChange(false) {
+    : m_searchChange(false)
+    , m_wasDefault(false) {
     setAutoRemap(false);
-
-    section()->addChild(new ListItem("Menus"));
-    section()->addChild(new ListItem("Commands"));
-    section()->addChild(new ListItem("Tools"));
-    section()->addChild(new ListItem("Action Modifiers"));
 
     m_listBoxes.push_back(menus());
     m_listBoxes.push_back(commands());
     m_listBoxes.push_back(tools());
     m_listBoxes.push_back(actions());
+    m_listBoxes.push_back(wheelActions());
+
+#ifdef __APPLE__ // Zoom sliding two fingers option only on macOS
+    slideZoom()->setVisible(true);
+#else
+    slideZoom()->setVisible(false);
+#endif
+
+    wheelBehavior()->setSelectedItem(
+      app::KeyboardShortcuts::instance()->hasMouseWheelCustomization() ? 1: 0);
+    if (isDefaultWheelBehavior()) {
+      m_wheelKeys = app::KeyboardShortcuts::instance()
+        ->getDefaultMouseWheelTable(wheelZoom()->isSelected());
+      m_wasDefault = true;
+    }
+    else {
+      for (const KeyPtr& key : *app::KeyboardShortcuts::instance()) {
+        if (key->type() == KeyType::WheelAction)
+          m_wheelKeys.push_back(std::make_shared<Key>(*key));
+      }
+    }
+    updateSlideZoomText();
+    addMissingWheelKeys();
+
+    onWheelBehaviorChange();
+
+    wheelBehavior()->ItemChange.connect(base::Bind<void>(&KeyboardShortcutsWindow::onWheelBehaviorChange, this));
+    wheelZoom()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onWheelZoomChange, this));
 
     search()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSearchChange, this));
     section()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
@@ -492,6 +538,25 @@ public:
     }
   }
 
+  const Keys& wheelKeys() {
+    return m_wheelKeys;
+  }
+
+  bool isDefaultWheelBehavior() {
+    return (wheelBehavior()->selectedItem() == 0);
+  }
+
+  void disableWheelKey(const Accelerator& accel) {
+    for (KeyPtr& key : m_wheelKeys) {
+      for (int i=0; i<key->accels().size(); ++i) {
+        if (key->accels()[i] == accel) {
+          key->disableAccel(accel);
+          break;
+        }
+      }
+    }
+  }
+
 private:
   void deleteAllKeyItems() {
     deleteList(searchList());
@@ -499,6 +564,7 @@ private:
     deleteList(commands());
     deleteList(tools());
     deleteList(actions());
+    deleteList(wheelActions());
     ASSERT(m_allKeyItems.empty());
   }
 
@@ -511,7 +577,8 @@ private:
 
     for (const KeyPtr& key : *app::KeyboardShortcuts::instance()) {
       if (key->type() == KeyType::Tool ||
-          key->type() == KeyType::Quicktool) {
+          key->type() == KeyType::Quicktool ||
+          key->type() == KeyType::WheelAction) {
         continue;
       }
 
@@ -551,6 +618,8 @@ private:
     commands()->sortItems();
     tools()->sortItems();
     actions()->sortItems();
+
+    fillWheelActionsList();
 
     section()->selectIndex(0);
     updateViews();
@@ -599,6 +668,9 @@ private:
                         keyItem->menuitem(), 0,
                         &m_headerItem);
 
+          if (!item->isEnabled())
+            copyItem->setEnabled(false);
+
           m_allKeyItems.push_back(copyItem);
           searchList()->addChild(copyItem);
         }
@@ -606,6 +678,51 @@ private:
 
       ++sectionIdx;
     }
+  }
+
+  void onWheelBehaviorChange() {
+    const bool isDefault = isDefaultWheelBehavior();
+    wheelActions()->setEnabled(!isDefault);
+    wheelZoom()->setVisible(isDefault);
+
+    if (isDefault) {
+      m_wheelKeys = app::KeyboardShortcuts::instance()
+        ->getDefaultMouseWheelTable(wheelZoom()->isSelected());
+      m_wasDefault = true;
+    }
+    else if (m_wasDefault) {
+      m_wasDefault = false;
+      for (KeyPtr& key : m_wheelKeys)
+        key->copyOriginalToUser();
+    }
+    updateSlideZoomText();
+    addMissingWheelKeys();
+
+    fillWheelActionsList();
+    updateViews();
+  }
+
+  void updateSlideZoomText() {
+    slideZoom()->setText(
+      isDefaultWheelBehavior() ?
+      Strings::options_slide_zoom():
+      Strings::keyboard_shortcuts_slide_as_wheel());
+  }
+
+  void fillWheelActionsList() {
+    deleteList(wheelActions());
+    for (const KeyPtr& key : m_wheelKeys) {
+      KeyItem* keyItem = new KeyItem(
+        key->triggerString(), key, nullptr, 0, &m_headerItem);
+      wheelActions()->addChild(keyItem);
+    }
+    wheelActions()->sortItems();
+  }
+
+  void onWheelZoomChange() {
+    const bool isDefault = isDefaultWheelBehavior();
+    if (isDefault)
+      onWheelBehaviorChange();
   }
 
   void onSearchChange() {
@@ -637,6 +754,7 @@ private:
     commandsView()->setVisible(s == 1);
     toolsView()->setVisible(s == 2);
     actionsView()->setVisible(s == 3);
+    wheelSection()->setVisible(s == 4);
 
     if (m_headerItem.parent())
       m_headerItem.parent()->removeChild(&m_headerItem);
@@ -645,7 +763,7 @@ private:
     else
       m_listBoxes[s]->insertChild(0, &m_headerItem);
 
-    layout();
+    listsPlaceholder()->layout();
   }
 
   void onImport() {
@@ -662,7 +780,6 @@ private:
       filename.front(), KeySource::UserDefined);
 
     fillAllLists();
-    layout();
   }
 
   void onExport() {
@@ -682,7 +799,7 @@ private:
   void onReset() {
     if (ui::Alert::show(Strings::alerts_restore_all_shortcuts()) == 1) {
       app::KeyboardShortcuts::instance()->reset();
-      layout();
+      listsPlaceholder()->layout();
     }
   }
 
@@ -725,11 +842,38 @@ private:
     }
   }
 
+  // Adds missing WhellAction in m_wheelKeys
+  void addMissingWheelKeys() {
+    for (int wheelAction=int(WheelAction::First);
+         wheelAction<=int(WheelAction::Last); ++wheelAction) {
+      auto it = std::find_if(
+        m_wheelKeys.begin(), m_wheelKeys.end(),
+        [wheelAction](const KeyPtr& key) -> bool {
+          return key->wheelAction() == (WheelAction)wheelAction;
+        });
+      if (it == m_wheelKeys.end()) {
+        KeyPtr key = std::make_shared<Key>((WheelAction)wheelAction);
+        m_wheelKeys.push_back(key);
+      }
+    }
+  }
+
   std::vector<ListBox*> m_listBoxes;
   std::vector<KeyItem*> m_allKeyItems;
   bool m_searchChange;
+  bool m_wasDefault;
   HeaderItem m_headerItem;
+  Keys m_wheelKeys;
 };
+
+void KeyItem::onAccelChange(const Accelerator& accel)
+{
+  if (m_key && m_key->type() == KeyType::WheelAction) {
+    auto window = dynamic_cast<KeyboardShortcutsWindow*>(this->window());
+    if (window)
+      window->disableWheelKey(accel);
+  }
+}
 
 } // anonymous namespace
 
@@ -777,6 +921,26 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
 
   if (window.closer() == window.ok()) {
     KeyboardShortcuts::instance()->UserChange();
+
+    // Save preferences in widgets that are bound to options automatically
+    {
+      Message* msg = new Message(kSavePreferencesMessage);
+      msg->setPropagateToChildren(msg);
+      window.sendMessage(msg);
+    }
+
+    if (window.isDefaultWheelBehavior()) {
+      for (KeyPtr& key : *KeyboardShortcuts::instance()) {
+        if (key->type() == KeyType::WheelAction)
+          key->reset();
+      }
+    }
+    else {
+      for (const KeyPtr& srcKey : window.wheelKeys()) {
+        KeyPtr dstKey = KeyboardShortcuts::instance()->wheelAction(srcKey->wheelAction());
+        *dstKey = *srcKey;
+      }
+    }
 
     // Save keyboard shortcuts in configuration file
     {
