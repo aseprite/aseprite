@@ -10,7 +10,7 @@
 
 #include "app/ui/select_accelerator.h"
 
-#include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/key.h"
 #include "base/bind.h"
 #include "obs/signal.h"
 #include "ui/entry.h"
@@ -85,9 +85,12 @@ protected:
   Accelerator m_accel;
 };
 
-SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext keyContext)
+SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
+                                     const KeyContext keyContext,
+                                     const Keys& currentKeys)
   : m_keyField(new KeyField(accel))
   , m_keyContext(keyContext)
+  , m_currentKeys(currentKeys)
   , m_accel(accel)
   , m_ok(false)
   , m_modified(false)
@@ -183,7 +186,7 @@ void SelectAccelerator::updateAssignedTo()
 {
   std::string res = "None";
 
-  for (const KeyPtr& key : *KeyboardShortcuts::instance()) {
+  for (const KeyPtr& key : m_currentKeys) {
     if (key->keycontext() == m_keyContext &&
         key->hasAccel(m_accel)) {
       res = key->triggerString();

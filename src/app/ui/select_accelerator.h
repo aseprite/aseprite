@@ -18,7 +18,9 @@ namespace app {
 
   class SelectAccelerator : public app::gen::SelectAccelerator {
   public:
-    SelectAccelerator(const ui::Accelerator& accelerator, KeyContext keyContext);
+    SelectAccelerator(const ui::Accelerator& accelerator,
+                      const KeyContext keyContext,
+                      const Keys& currentKeys);
 
     bool isOK() const { return m_ok; }
     bool isModified() const { return m_modified; }
@@ -38,6 +40,7 @@ namespace app {
     ui::TooltipManager m_tooltipManager;
     KeyField* m_keyField;
     KeyContext m_keyContext;
+    const Keys& m_currentKeys;
     ui::Accelerator m_origAccel;
     ui::Accelerator m_accel;
     bool m_ok;

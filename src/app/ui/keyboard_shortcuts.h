@@ -24,6 +24,8 @@ namespace app {
     static KeyboardShortcuts* instance();
     ~KeyboardShortcuts();
 
+    const Keys& keys() const { return m_keys; }
+
     iterator begin() { return m_keys.begin(); }
     iterator end() { return m_keys.end(); }
     const_iterator begin() const { return m_keys.begin(); }

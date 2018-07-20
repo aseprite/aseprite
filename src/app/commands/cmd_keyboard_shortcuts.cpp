@@ -192,7 +192,9 @@ private:
   void onChangeAccel(int index) {
     LockButtons lock(this);
     Accelerator origAccel = m_key->accels()[index];
-    SelectAccelerator window(origAccel, m_key->keycontext());
+    SelectAccelerator window(origAccel,
+                             m_key->keycontext(),
+                             KeyboardShortcuts::instance()->keys());
     window.openWindowInForeground();
 
     if (window.isModified()) {
@@ -225,7 +227,9 @@ private:
   void onAddAccel() {
     LockButtons lock(this);
     ui::Accelerator accel;
-    SelectAccelerator window(accel, m_key ? m_key->keycontext(): KeyContext::Any);
+    SelectAccelerator window(accel,
+                             m_key ? m_key->keycontext(): KeyContext::Any,
+                             KeyboardShortcuts::instance()->keys());
     window.openWindowInForeground();
 
     if ((window.isModified()) ||
