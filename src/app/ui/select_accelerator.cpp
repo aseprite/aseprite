@@ -11,6 +11,7 @@
 #include "app/ui/select_accelerator.h"
 
 #include "app/ui/key.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "base/bind.h"
 #include "obs/signal.h"
 #include "ui/entry.h"
@@ -87,7 +88,7 @@ protected:
 
 SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
                                      const KeyContext keyContext,
-                                     const Keys& currentKeys)
+                                     const KeyboardShortcuts& currentKeys)
   : m_keyField(new KeyField(accel))
   , m_keyContext(keyContext)
   , m_currentKeys(currentKeys)

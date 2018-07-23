@@ -11,7 +11,6 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/command.h"
-#include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -44,8 +43,7 @@
 
 #include "keyboard_shortcuts.xml.h"
 
-#include <algorithm>
-#include <set>
+#include <map>
 
 #define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
 
@@ -56,6 +54,8 @@ using namespace tools;
 using namespace ui;
 
 namespace {
+
+typedef std::map<AppMenuItem*, KeyPtr> MenuKeys;
 
 class HeaderSplitter : public Splitter {
 public:
@@ -126,12 +126,16 @@ class KeyItem : public ListItem {
   };
 
 public:
-  KeyItem(const std::string& text,
+  KeyItem(KeyboardShortcuts& keys,
+          MenuKeys& menuKeys,
+          const std::string& text,
           const KeyPtr& key,
           AppMenuItem* menuitem,
           const int level,
           HeaderItem* headerItem)
     : ListItem(text)
+    , m_keys(keys)
+    , m_menuKeys(menuKeys)
     , m_key(key)
     , m_keyOrig(key ? new Key(*key): nullptr)
     , m_menuitem(menuitem)
@@ -147,14 +151,6 @@ public:
 
   KeyPtr key() { return m_key; }
   AppMenuItem* menuitem() const { return m_menuitem; }
-
-  void restoreKeys() {
-    if (m_key && m_keyOrig)
-      *m_key = *m_keyOrig;
-
-    if (m_menuitem && !m_keyOrig)
-      m_menuitem->setKey(nullptr);
-  }
 
   std::string searchableText() const {
     if (m_menuitem) {
@@ -187,22 +183,18 @@ public:
 
 private:
 
-  void onAccelChange(const Accelerator& accel);
-
   void onChangeAccel(int index) {
     LockButtons lock(this);
     Accelerator origAccel = m_key->accels()[index];
     SelectAccelerator window(origAccel,
                              m_key->keycontext(),
-                             KeyboardShortcuts::instance()->keys());
+                             m_keys);
     window.openWindowInForeground();
 
     if (window.isModified()) {
-      onAccelChange(window.accel());
-
       m_key->disableAccel(origAccel);
       if (!window.accel().isEmpty())
-        m_key->add(window.accel(), KeySource::UserDefined);
+        m_key->add(window.accel(), KeySource::UserDefined, m_keys);
     }
 
     this->window()->layout();
@@ -229,7 +221,7 @@ private:
     ui::Accelerator accel;
     SelectAccelerator window(accel,
                              m_key ? m_key->keycontext(): KeyContext::Any,
-                             KeyboardShortcuts::instance()->keys());
+                             m_keys);
     window.openWindowInForeground();
 
     if ((window.isModified()) ||
@@ -240,15 +232,16 @@ private:
         if (!m_menuitem)
           return;
 
-        m_key = app::KeyboardShortcuts::instance()->command(
+        ASSERT(m_menuitem->getCommand());
+
+        m_key = m_keys.command(
           m_menuitem->getCommand()->id().c_str(),
           m_menuitem->getParams());
 
-        m_menuitem->setKey(m_key);
+        m_menuKeys[m_menuitem] = m_key;
       }
 
-      onAccelChange(window.accel());
-      m_key->add(window.accel(), KeySource::UserDefined);
+      m_key->add(window.accel(), KeySource::UserDefined, m_keys);
     }
 
     this->window()->layout();
@@ -462,6 +455,8 @@ private:
     }
   }
 
+  KeyboardShortcuts& m_keys;
+  MenuKeys& m_menuKeys;
   KeyPtr m_key;
   KeyPtr m_keyOrig;
   AppMenuItem* m_menuitem;
@@ -480,8 +475,12 @@ private:
 
 class KeyboardShortcutsWindow : public app::gen::KeyboardShortcuts {
 public:
-  KeyboardShortcutsWindow(const std::string& searchText)
-    : m_searchChange(false)
+  KeyboardShortcutsWindow(app::KeyboardShortcuts& keys,
+                          MenuKeys& menuKeys,
+                          const std::string& searchText)
+    : m_keys(keys)
+    , m_menuKeys(menuKeys)
+    , m_searchChange(false)
     , m_wasDefault(false) {
     setAutoRemap(false);
 
@@ -498,20 +497,13 @@ public:
 #endif
 
     wheelBehavior()->setSelectedItem(
-      app::KeyboardShortcuts::instance()->hasMouseWheelCustomization() ? 1: 0);
+      m_keys.hasMouseWheelCustomization() ? 1: 0);
     if (isDefaultWheelBehavior()) {
-      m_wheelKeys = app::KeyboardShortcuts::instance()
-        ->getDefaultMouseWheelTable(wheelZoom()->isSelected());
+      m_keys.setDefaultMouseWheelKeys(wheelZoom()->isSelected());
       m_wasDefault = true;
     }
-    else {
-      for (const KeyPtr& key : *app::KeyboardShortcuts::instance()) {
-        if (key->type() == KeyType::WheelAction)
-          m_wheelKeys.push_back(std::make_shared<Key>(*key));
-      }
-    }
+    m_keys.addMissingMouseWheelKeys();
     updateSlideZoomText();
-    addMissingWheelKeys();
 
     onWheelBehaviorChange();
 
@@ -536,29 +528,8 @@ public:
     deleteAllKeyItems();
   }
 
-  void restoreKeys() {
-    for (KeyItem* keyItem : m_allKeyItems) {
-      keyItem->restoreKeys();
-    }
-  }
-
-  const Keys& wheelKeys() {
-    return m_wheelKeys;
-  }
-
   bool isDefaultWheelBehavior() {
     return (wheelBehavior()->selectedItem() == 0);
-  }
-
-  void disableWheelKey(const Accelerator& accel) {
-    for (KeyPtr& key : m_wheelKeys) {
-      for (int i=0; i<key->accels().size(); ++i) {
-        if (key->accels()[i] == accel) {
-          key->disableAccel(accel);
-          break;
-        }
-      }
-    }
   }
 
 private:
@@ -569,7 +540,6 @@ private:
     deleteList(tools());
     deleteList(actions());
     deleteList(wheelActions());
-    ASSERT(m_allKeyItems.empty());
   }
 
   void fillAllLists() {
@@ -578,8 +548,9 @@ private:
     // Load keyboard shortcuts
     fillMenusList(menus(), AppMenus::instance()->getRootMenu(), 0);
     fillToolsList(tools(), App::instance()->toolBox());
+    fillWheelActionsList();
 
-    for (const KeyPtr& key : *app::KeyboardShortcuts::instance()) {
+    for (const KeyPtr& key : m_keys) {
       if (key->type() == KeyType::Tool ||
           key->type() == KeyType::Quicktool ||
           key->type() == KeyType::WheelAction) {
@@ -600,7 +571,8 @@ private:
             + ": " + text;
           break;
       }
-      KeyItem* keyItem = new KeyItem(text, key, nullptr, 0, &m_headerItem);
+      KeyItem* keyItem = new KeyItem(m_keys, m_menuKeys, text, key,
+                                     nullptr, 0, &m_headerItem);
 
       ListBox* listBox = nullptr;
       switch (key->type()) {
@@ -613,17 +585,13 @@ private:
       }
 
       ASSERT(listBox);
-      if (listBox) {
-        m_allKeyItems.push_back(keyItem);
+      if (listBox)
         listBox->addChild(keyItem);
-      }
     }
 
     commands()->sortItems();
     tools()->sortItems();
     actions()->sortItems();
-
-    fillWheelActionsList();
 
     section()->selectIndex(0);
     updateViews();
@@ -636,11 +604,6 @@ private:
     while (listbox->lastChild()) {
       Widget* item = listbox->lastChild();
       listbox->removeChild(item);
-
-      auto it = std::find(m_allKeyItems.begin(), m_allKeyItems.end(), item);
-      if (it != m_allKeyItems.end())
-        m_allKeyItems.erase(it);
-
       delete item;
     }
   }
@@ -667,15 +630,12 @@ private:
           }
 
           KeyItem* copyItem =
-            new KeyItem(itemText,
-                        keyItem->key(),
-                        keyItem->menuitem(), 0,
-                        &m_headerItem);
+            new KeyItem(m_keys, m_menuKeys, itemText, keyItem->key(),
+                        keyItem->menuitem(), 0, &m_headerItem);
 
           if (!item->isEnabled())
             copyItem->setEnabled(false);
 
-          m_allKeyItems.push_back(copyItem);
           searchList()->addChild(copyItem);
         }
       }
@@ -690,17 +650,18 @@ private:
     wheelZoom()->setVisible(isDefault);
 
     if (isDefault) {
-      m_wheelKeys = app::KeyboardShortcuts::instance()
-        ->getDefaultMouseWheelTable(wheelZoom()->isSelected());
+      m_keys.setDefaultMouseWheelKeys(wheelZoom()->isSelected());
       m_wasDefault = true;
     }
     else if (m_wasDefault) {
       m_wasDefault = false;
-      for (KeyPtr& key : m_wheelKeys)
-        key->copyOriginalToUser();
+      for (KeyPtr& key : m_keys) {
+        if (key->type() == KeyType::WheelAction)
+          key->copyOriginalToUser();
+      }
     }
+    m_keys.addMissingMouseWheelKeys();
     updateSlideZoomText();
-    addMissingWheelKeys();
 
     fillWheelActionsList();
     updateViews();
@@ -715,10 +676,13 @@ private:
 
   void fillWheelActionsList() {
     deleteList(wheelActions());
-    for (const KeyPtr& key : m_wheelKeys) {
-      KeyItem* keyItem = new KeyItem(
-        key->triggerString(), key, nullptr, 0, &m_headerItem);
-      wheelActions()->addChild(keyItem);
+    for (const KeyPtr& key : m_keys) {
+      if (key->type() == KeyType::WheelAction) {
+        KeyItem* keyItem = new KeyItem(
+          m_keys, m_menuKeys, key->triggerString(), key,
+          nullptr, 0, &m_headerItem);
+        wheelActions()->addChild(keyItem);
+      }
     }
     wheelActions()->sortItems();
   }
@@ -780,8 +744,7 @@ private:
 
     ASSERT(!filename.empty());
 
-    app::KeyboardShortcuts::instance()->importFile(
-      filename.front(), KeySource::UserDefined);
+    m_keys.importFile(filename.front(), KeySource::UserDefined);
 
     fillAllLists();
   }
@@ -797,12 +760,12 @@ private:
 
     ASSERT(!filename.empty());
 
-    app::KeyboardShortcuts::instance()->exportFile(filename.front());
+    m_keys.exportFile(filename.front());
   }
 
   void onReset() {
     if (ui::Alert::show(Strings::alerts_restore_all_shortcuts()) == 1) {
-      app::KeyboardShortcuts::instance()->reset();
+      m_keys.reset();
       listsPlaceholder()->layout();
     }
   }
@@ -814,11 +777,12 @@ private:
           continue;
 
         KeyItem* keyItem = new KeyItem(
+          m_keys, m_menuKeys,
           menuItem->text().c_str(),
-          menuItem->key(), menuItem, level,
+          m_menuKeys[menuItem],
+          menuItem, level,
           &m_headerItem);
 
-        m_allKeyItems.push_back(keyItem);
         listbox->addChild(keyItem);
 
         if (menuItem->hasSubmenu())
@@ -831,53 +795,26 @@ private:
     for (Tool* tool : *toolbox) {
       std::string text = tool->getText();
 
-      KeyPtr key = app::KeyboardShortcuts::instance()->tool(tool);
-      KeyItem* keyItem = new KeyItem(text, key, nullptr, 0,
-                                     &m_headerItem);
-      m_allKeyItems.push_back(keyItem);
+      KeyPtr key = m_keys.tool(tool);
+      KeyItem* keyItem = new KeyItem(m_keys, m_menuKeys, text, key,
+                                     nullptr, 0, &m_headerItem);
       listbox->addChild(keyItem);
 
       text += " (quick)";
-      key = app::KeyboardShortcuts::instance()->quicktool(tool);
-      keyItem = new KeyItem(text, key, nullptr, 0,
-                            &m_headerItem);
-      m_allKeyItems.push_back(keyItem);
+      key = m_keys.quicktool(tool);
+      keyItem = new KeyItem(m_keys, m_menuKeys, text, key,
+                            nullptr, 0, &m_headerItem);
       listbox->addChild(keyItem);
     }
   }
 
-  // Adds missing WhellAction in m_wheelKeys
-  void addMissingWheelKeys() {
-    for (int wheelAction=int(WheelAction::First);
-         wheelAction<=int(WheelAction::Last); ++wheelAction) {
-      auto it = std::find_if(
-        m_wheelKeys.begin(), m_wheelKeys.end(),
-        [wheelAction](const KeyPtr& key) -> bool {
-          return key->wheelAction() == (WheelAction)wheelAction;
-        });
-      if (it == m_wheelKeys.end()) {
-        KeyPtr key = std::make_shared<Key>((WheelAction)wheelAction);
-        m_wheelKeys.push_back(key);
-      }
-    }
-  }
-
+  app::KeyboardShortcuts& m_keys;
+  MenuKeys& m_menuKeys;
   std::vector<ListBox*> m_listBoxes;
-  std::vector<KeyItem*> m_allKeyItems;
   bool m_searchChange;
   bool m_wasDefault;
   HeaderItem m_headerItem;
-  Keys m_wheelKeys;
 };
-
-void KeyItem::onAccelChange(const Accelerator& accel)
-{
-  if (m_key && m_key->type() == KeyType::WheelAction) {
-    auto window = dynamic_cast<KeyboardShortcutsWindow*>(this->window());
-    if (window)
-      window->disableWheelKey(accel);
-  }
-}
 
 } // anonymous namespace
 
@@ -891,7 +828,8 @@ protected:
   void onExecute(Context* context) override;
 
 private:
-  void addMissingKeyboardShortcutsForCommands();
+  void fillMenusKeys(app::KeyboardShortcuts& keys,
+                     MenuKeys& menuKeys, Menu* menu);
 
   std::string m_search;
 };
@@ -908,14 +846,20 @@ void KeyboardShortcutsCommand::onLoadParams(const Params& params)
 
 void KeyboardShortcutsCommand::onExecute(Context* context)
 {
-  addMissingKeyboardShortcutsForCommands();
+  app::KeyboardShortcuts* globalKeys = app::KeyboardShortcuts::instance();
+  app::KeyboardShortcuts keys;
+  keys.setKeys(*globalKeys, true);
+  keys.addMissingKeysForCommands();
+
+  MenuKeys menuKeys;
+  fillMenusKeys(keys, menuKeys, AppMenus::instance()->getRootMenu());
 
   // Here we copy the m_search field because
   // KeyboardShortcutsWindow::fillAllLists() modifies this same
   // KeyboardShortcutsCommand instance (so m_search will be "")
   // TODO Seeing this, we need a complete new way to handle UI commands execution
   std::string neededSearchCopy = m_search;
-  KeyboardShortcutsWindow window(neededSearchCopy);
+  KeyboardShortcutsWindow window(keys, menuKeys, neededSearchCopy);
 
   window.setBounds(gfx::Rect(0, 0, ui::display_w()*3/4, ui::display_h()*3/4));
 
@@ -924,7 +868,9 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   window.openWindowInForeground();
 
   if (window.closer() == window.ok()) {
-    KeyboardShortcuts::instance()->UserChange();
+    globalKeys->setKeys(keys, false);
+    for (const auto& p : menuKeys)
+      p.first->setKey(p.second);
 
     // Save preferences in widgets that are bound to options automatically
     {
@@ -933,65 +879,36 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
       window.sendMessage(msg);
     }
 
-    if (window.isDefaultWheelBehavior()) {
-      for (KeyPtr& key : *KeyboardShortcuts::instance()) {
-        if (key->type() == KeyType::WheelAction)
-          key->reset();
-      }
-    }
-    else {
-      for (const KeyPtr& srcKey : window.wheelKeys()) {
-        KeyPtr dstKey = KeyboardShortcuts::instance()->wheelAction(srcKey->wheelAction());
-        *dstKey = *srcKey;
-      }
-    }
-
     // Save keyboard shortcuts in configuration file
     {
       ResourceFinder rf;
       rf.includeUserDir("user." KEYBOARD_FILENAME_EXTENSION);
       std::string fn = rf.getFirstOrCreateDefault();
-      KeyboardShortcuts::instance()->exportFile(fn);
+      globalKeys->exportFile(fn);
     }
-  }
-  else {
-    window.restoreKeys();
   }
 
   AppMenus::instance()->syncNativeMenuItemKeyShortcuts();
 }
 
-void KeyboardShortcutsCommand::addMissingKeyboardShortcutsForCommands()
+void KeyboardShortcutsCommand::fillMenusKeys(app::KeyboardShortcuts& keys,
+                                             MenuKeys& menuKeys,
+                                             Menu* menu)
 {
-  std::set<std::string> commandsAlreadyAdded;
-  auto keys = app::KeyboardShortcuts::instance();
-  for (const KeyPtr& key : *keys) {
-    if (key->type() != KeyType::Command)
-      continue;
+  for (auto child : menu->children()) {
+    if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
+      if (menuItem == AppMenus::instance()->getRecentListMenuitem())
+        continue;
 
-    if (key->params().empty())
-      commandsAlreadyAdded.insert(key->command()->id());
-  }
+      if (menuItem->getCommand()) {
+        menuKeys[menuItem] =
+          keys.command(menuItem->getCommand()->id().c_str(),
+                       menuItem->getParams());
+      }
 
-  std::vector<std::string> ids;
-  Commands* commands = Commands::instance();
-  commands->getAllIds(ids);
-
-  for (const std::string& id : ids) {
-    Command* command = commands->byId(id.c_str());
-
-    // Don't add commands that need params (they will be added to
-    // the list using the list of keyboard shortcuts from gui.xml).
-    if (command->needsParams())
-      continue;
-
-    auto it = commandsAlreadyAdded.find(command->id());
-    if (it != commandsAlreadyAdded.end())
-      continue;
-
-    // Create the new Key element in KeyboardShortcuts for this
-    // command without params.
-    keys->command(command->id().c_str());
+      if (menuItem->hasSubmenu())
+        fillMenusKeys(keys, menuKeys, menuItem->getSubmenu());
+    }
   }
 }
 

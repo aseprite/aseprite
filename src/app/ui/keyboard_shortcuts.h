@@ -9,7 +9,6 @@
 #pragma once
 
 #include "app/ui/key.h"
-#include "base/disable_copying.h"
 #include "obs/signal.h"
 
 class TiXmlElement;
@@ -22,14 +21,20 @@ namespace app {
     typedef Keys::const_iterator const_iterator;
 
     static KeyboardShortcuts* instance();
-    ~KeyboardShortcuts();
 
-    const Keys& keys() const { return m_keys; }
+    KeyboardShortcuts();
+    KeyboardShortcuts(const KeyboardShortcuts&) = delete;
+    KeyboardShortcuts& operator=(const KeyboardShortcuts&) = delete;
+    ~KeyboardShortcuts();
 
     iterator begin() { return m_keys.begin(); }
     iterator end() { return m_keys.end(); }
     const_iterator begin() const { return m_keys.begin(); }
     const_iterator end() const { return m_keys.end(); }
+
+    // const Keys& keys() const { return m_keys; }
+    void setKeys(const KeyboardShortcuts& keys,
+                 const bool cloneKeys);
 
     void clear();
     void importFile(TiXmlElement* rootElement, KeySource source);
@@ -55,21 +60,21 @@ namespace app {
     WheelAction getWheelActionFromMouseMessage(const KeyContext context,
                                                const ui::Message* msg);
     bool hasMouseWheelCustomization() const;
-    Keys getDefaultMouseWheelTable(const bool zoomWithWheel) const;
+    void clearMouseWheelKeys();
+    void addMissingMouseWheelKeys();
+    void setDefaultMouseWheelKeys(const bool zoomWithWheel);
 
-    // Generated when the tooltips are modified by the user.
+    void addMissingKeysForCommands();
+
+    // Generated when the keyboard shortcuts are modified by the user.
     // Useful to regenerate tooltips with shortcuts.
     obs::signal<void()> UserChange;
 
   private:
-    KeyboardShortcuts();
-
     void exportKeys(TiXmlElement& parent, KeyType type);
     void exportAccel(TiXmlElement& parent, const Key* key, const ui::Accelerator& accel, bool removed);
 
     Keys m_keys;
-
-    DISABLE_COPYING(KeyboardShortcuts);
   };
 
   std::string key_tooltip(const char* str, const Key* key);

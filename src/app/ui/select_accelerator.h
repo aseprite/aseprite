@@ -8,19 +8,20 @@
 #define APP_UI_SELECT_ACCELERATOR_H_INCLUDED
 #pragma once
 
-#include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/key_context.h"
 #include "ui/accelerator.h"
 #include "ui/tooltips.h"
 
 #include "select_accelerator.xml.h"
 
 namespace app {
+  class KeyboardShortcuts;
 
   class SelectAccelerator : public app::gen::SelectAccelerator {
   public:
     SelectAccelerator(const ui::Accelerator& accelerator,
                       const KeyContext keyContext,
-                      const Keys& currentKeys);
+                      const KeyboardShortcuts& currentKeys);
 
     bool isOK() const { return m_ok; }
     bool isModified() const { return m_modified; }
@@ -40,7 +41,7 @@ namespace app {
     ui::TooltipManager m_tooltipManager;
     KeyField* m_keyField;
     KeyContext m_keyContext;
-    const Keys& m_currentKeys;
+    const KeyboardShortcuts& m_currentKeys;
     ui::Accelerator m_origAccel;
     ui::Accelerator m_accel;
     bool m_ok;

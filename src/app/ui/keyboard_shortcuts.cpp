@@ -14,6 +14,7 @@
 #include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/doc.h"
 #include "app/tools/ink.h"
@@ -24,6 +25,10 @@
 #include "app/xml_exception.h"
 #include "ui/accelerator.h"
 #include "ui/message.h"
+
+#include <algorithm>
+#include <set>
+#include <vector>
 
 #define XML_KEYBOARD_FILE_VERSION "1"
 
@@ -237,7 +242,9 @@ Key::Key(WheelAction wheelAction)
 {
 }
 
-void Key::add(const ui::Accelerator& accel, KeySource source)
+void Key::add(const ui::Accelerator& accel,
+              const KeySource source,
+              KeyboardShortcuts& globalKeys)
 {
   Accelerators* accels = &m_accels;
 
@@ -251,7 +258,7 @@ void Key::add(const ui::Accelerator& accel, KeySource source)
 
   // Remove the accelerator from other commands
   if (source == KeySource::UserDefined) {
-    KeyboardShortcuts::instance()->disableAccel(accel, m_keycontext, this);
+    globalKeys.disableAccel(accel, m_keycontext, this);
     m_userRemoved.remove(accel);
   }
 
@@ -259,7 +266,8 @@ void Key::add(const ui::Accelerator& accel, KeySource source)
   accels->add(accel);
 }
 
-bool Key::isPressed(const Message* msg) const
+bool Key::isPressed(const Message* msg,
+                    KeyboardShortcuts& globalKeys) const
 {
   if (auto keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     for (const Accelerator& accel : accels()) {
@@ -267,7 +275,7 @@ bool Key::isPressed(const Message* msg) const
                           keyMsg->scancode(),
                           keyMsg->unicodeChar()) &&
           (m_keycontext == KeyContext::Any ||
-           m_keycontext == KeyboardShortcuts::instance()->getCurrentKeyContext())) {
+           m_keycontext == globalKeys.getCurrentKeyContext())) {
         return true;
       }
     }
@@ -378,6 +386,19 @@ KeyboardShortcuts::~KeyboardShortcuts()
   clear();
 }
 
+void KeyboardShortcuts::setKeys(const KeyboardShortcuts& keys,
+                                const bool cloneKeys)
+{
+  if (cloneKeys) {
+    for (const KeyPtr& key : keys)
+      m_keys.push_back(std::make_shared<Key>(*key));
+  }
+  else {
+    m_keys = keys.m_keys;
+  }
+  UserChange();
+}
+
 void KeyboardShortcuts::clear()
 {
   m_keys.clear();
@@ -428,7 +449,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           Accelerator accel(command_key);
 
           if (!removed) {
-            key->add(accel, source);
+            key->add(accel, source, *this);
 
             // Add the shortcut to the menuitems with this command
             // (this is only visual, the
@@ -467,7 +488,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           Accelerator accel(tool_key);
 
           if (!removed)
-            key->add(accel, source);
+            key->add(accel, source, *this);
           else
             key->disableAccel(accel);
         }
@@ -495,7 +516,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           Accelerator accel(tool_key);
 
           if (!removed)
-            key->add(accel, source);
+            key->add(accel, source, *this);
           else
             key->disableAccel(accel);
         }
@@ -524,7 +545,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           Accelerator accel(action_key);
 
           if (!removed)
-            key->add(accel, source);
+            key->add(accel, source, *this);
           else
             key->disableAccel(accel);
         }
@@ -553,7 +574,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           Accelerator accel(action_key);
 
           if (!removed)
-            key->add(accel, source);
+            key->add(accel, source, *this);
           else
             key->disableAccel(accel);
         }
@@ -780,7 +801,8 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
 bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg, Command** command, Params* params)
 {
   for (KeyPtr& key : m_keys) {
-    if (key->type() == KeyType::Command && key->isPressed(msg)) {
+    if (key->type() == KeyType::Command &&
+        key->isPressed(msg, *this)) {
       if (command) *command = key->command();
       if (params) *params = key->params();
       return true;
@@ -833,7 +855,7 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction &&
         key->keycontext() == context &&
-        key->isPressed(msg))
+        key->isPressed(msg, *this))
       return key->wheelAction();
   }
   return WheelAction::None;
@@ -849,40 +871,104 @@ bool KeyboardShortcuts::hasMouseWheelCustomization() const
   return false;
 }
 
-Keys KeyboardShortcuts::getDefaultMouseWheelTable(const bool zoomWithWheel) const
+void KeyboardShortcuts::clearMouseWheelKeys()
 {
-  Keys keys;
-  KeyPtr key;
+  for (auto it=m_keys.begin(); it!=m_keys.end(); ) {
+    if ((*it)->type() == KeyType::WheelAction)
+      it = m_keys.erase(it);
+    else
+      ++it;
+  }
+}
 
+void KeyboardShortcuts::addMissingMouseWheelKeys()
+{
+  for (int wheelAction=int(WheelAction::First);
+       wheelAction<=int(WheelAction::Last); ++wheelAction) {
+    auto it = std::find_if(
+      m_keys.begin(), m_keys.end(),
+      [wheelAction](const KeyPtr& key) -> bool {
+        return key->wheelAction() == (WheelAction)wheelAction;
+      });
+    if (it == m_keys.end()) {
+      KeyPtr key = std::make_shared<Key>((WheelAction)wheelAction);
+      m_keys.push_back(key);
+    }
+  }
+}
+
+void KeyboardShortcuts::setDefaultMouseWheelKeys(const bool zoomWithWheel)
+{
+  clearMouseWheelKeys();
+
+  KeyPtr key;
   key = std::make_shared<Key>(WheelAction::Zoom);
-  key->add(Accelerator(zoomWithWheel ? kKeyNoneModifier: kKeyCtrlModifier, kKeyNil, 0), KeySource::Original);
-  keys.push_back(key);
+  key->add(Accelerator(zoomWithWheel ? kKeyNoneModifier:
+                                       kKeyCtrlModifier, kKeyNil, 0),
+           KeySource::Original, *this);
+  m_keys.push_back(key);
 
   if (!zoomWithWheel) {
     key = std::make_shared<Key>(WheelAction::VScroll);
-    key->add(Accelerator(kKeyNoneModifier, kKeyNil, 0), KeySource::Original);
-    keys.push_back(key);
+    key->add(Accelerator(kKeyNoneModifier, kKeyNil, 0),
+             KeySource::Original, *this);
+    m_keys.push_back(key);
   }
 
   key = std::make_shared<Key>(WheelAction::HScroll);
-  key->add(Accelerator(kKeyShiftModifier, kKeyNil, 0), KeySource::Original);
-  keys.push_back(key);
+  key->add(Accelerator(kKeyShiftModifier, kKeyNil, 0),
+           KeySource::Original, *this);
+  m_keys.push_back(key);
 
   key = std::make_shared<Key>(WheelAction::FgColor);
-  key->add(Accelerator(kKeyAltModifier, kKeyNil, 0), KeySource::Original);
-  keys.push_back(key);
+  key->add(Accelerator(kKeyAltModifier, kKeyNil, 0),
+           KeySource::Original, *this);
+  m_keys.push_back(key);
 
   key = std::make_shared<Key>(WheelAction::BgColor);
-  key->add(Accelerator((KeyModifiers)(kKeyAltModifier | kKeyShiftModifier), kKeyNil, 0), KeySource::Original);
-  keys.push_back(key);
+  key->add(Accelerator((KeyModifiers)(kKeyAltModifier | kKeyShiftModifier), kKeyNil, 0),
+           KeySource::Original, *this);
+  m_keys.push_back(key);
 
   if (zoomWithWheel) {
     key = std::make_shared<Key>(WheelAction::Frame);
-    key->add(Accelerator(kKeyCtrlModifier, kKeyNil, 0), KeySource::Original);
-    keys.push_back(key);
+    key->add(Accelerator(kKeyCtrlModifier, kKeyNil, 0),
+             KeySource::Original, *this);
+    m_keys.push_back(key);
+  }
+}
+
+void KeyboardShortcuts::addMissingKeysForCommands()
+{
+  std::set<std::string> commandsAlreadyAdded;
+  for (const KeyPtr& key : m_keys) {
+    if (key->type() != KeyType::Command)
+      continue;
+
+    if (key->params().empty())
+      commandsAlreadyAdded.insert(key->command()->id());
   }
 
-  return keys;
+  std::vector<std::string> ids;
+  Commands* commands = Commands::instance();
+  commands->getAllIds(ids);
+
+  for (const std::string& id : ids) {
+    Command* command = commands->byId(id.c_str());
+
+    // Don't add commands that need params (they will be added to
+    // the list using the list of keyboard shortcuts from gui.xml).
+    if (command->needsParams())
+      continue;
+
+    auto it = commandsAlreadyAdded.find(command->id());
+    if (it != commandsAlreadyAdded.end())
+      continue;
+
+    // Create the new Key element in KeyboardShortcuts for this
+    // command without params.
+    this->command(command->id().c_str());
+  }
 }
 
 std::string key_tooltip(const char* str, const app::Key* key)

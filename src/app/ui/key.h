@@ -22,6 +22,7 @@ namespace ui {
 
 namespace app {
   class Command;
+  class KeyboardShortcuts;
 
   namespace tools {
     class Tool;
@@ -110,8 +111,11 @@ namespace app {
     const ui::Accelerators& userAccels() const { return m_users; }
     const ui::Accelerators& userRemovedAccels() const { return m_userRemoved; }
 
-    void add(const ui::Accelerator& accel, KeySource source);
-    bool isPressed(const ui::Message* msg) const;
+    void add(const ui::Accelerator& accel,
+             const KeySource source,
+             KeyboardShortcuts& globalKeys);
+    bool isPressed(const ui::Message* msg,
+                   KeyboardShortcuts& globalKeys) const;
     bool isPressed() const;
     bool isLooselyPressed() const;
 
