@@ -11,15 +11,17 @@
       <label text="- Lead developer, graphics &amp;&amp; maintainer" />
       <link text="Gaspar Capello" url="https://github.com/Gasparoken" />
       <label text="- Programmer, bug fixing" />
+
+      <separator text="Contributors:" horizontal="true" cell_hspan="2" />
       <link text="Ilija Melentijevic" url="https://ilkke.net/" />
       <label text="- Default skin &amp;&amp; graphics introduced in v0.8" />
-    </grid>
 
-    <hbox>
-      <link text="Contributors" url="https://www.aseprite.org/contributors/" />
-      <label text="&amp;&amp;" />
-      <link text="Open Source Projects" url="" id="licenses" />
-    </hbox>
+      <hbox cell_hspan="2">
+	<link text="Other Contributors" url="https://www.aseprite.org/contributors/" />
+        <label text="&amp;&amp;" />
+        <link text="Third-Party Projects" url="" id="licenses" />
+      </hbox>
+    </grid>
     <separator horizontal="true" />
     <label text="Copyright (C) 2001-2018 David Capello" />
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />
