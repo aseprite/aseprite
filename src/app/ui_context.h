@@ -16,6 +16,7 @@ namespace app {
   class Editor;
 
   typedef std::vector<DocView*> DocViews;
+  typedef std::vector<Editor*> Editors;
 
   class UIContext : public app::Context {
   public:
@@ -31,6 +32,7 @@ namespace app {
 
     DocView* getFirstDocView(Doc* document) const override;
     DocViews getAllDocViews(Doc* document) const;
+    Editors getAllEditorsIncludingPreview(Doc* document) const;
 
     // Returns the current editor. It can be null.
     Editor* activeEditor();

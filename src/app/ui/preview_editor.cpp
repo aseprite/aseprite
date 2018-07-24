@@ -333,6 +333,11 @@ void PreviewEditorWindow::onPopupSpeed()
   m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
 }
 
+Editor* PreviewEditorWindow::previewEditor() const
+{
+  return (m_docView ? m_docView->editor(): nullptr);
+}
+
 void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 {
   if (!m_isEnabled || !editor) {

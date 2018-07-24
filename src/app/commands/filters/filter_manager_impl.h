@@ -21,6 +21,7 @@
 
 #include <cstring>
 #include <memory>
+#include <vector>
 
 namespace doc {
   class Cel;
@@ -35,9 +36,9 @@ namespace filters {
 }
 
 namespace app {
-
   class Context;
   class Doc;
+  class Editor;
   class Transaction;
 
   using namespace filters;

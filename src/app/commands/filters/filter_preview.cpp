@@ -11,7 +11,6 @@
 #include "app/commands/filters/filter_preview.h"
 
 #include "app/commands/filters/filter_manager_impl.h"
-#include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
 #include "base/bind.h"
@@ -44,7 +43,7 @@ FilterPreview::~FilterPreview()
 void FilterPreview::setEnablePreview(bool state)
 {
   if (state) {
-    current_editor->renderEngine().setPreviewImage(
+    Editor::renderEngine().setPreviewImage(
       m_filterMgr->layer(),
       m_filterMgr->frame(),
       m_filterMgr->destinationImage(),
@@ -52,7 +51,7 @@ void FilterPreview::setEnablePreview(bool state)
       static_cast<doc::LayerImage*>(m_filterMgr->layer())->blendMode());
   }
   else {
-    current_editor->renderEngine().removePreviewImage();
+    Editor::renderEngine().removePreviewImage();
   }
 }
 

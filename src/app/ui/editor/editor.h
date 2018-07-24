@@ -257,7 +257,7 @@ namespace app {
     // Gets the brush preview controller.
     BrushPreview& brushPreview() { return m_brushPreview; }
 
-    EditorRender& renderEngine() { return *m_renderEngine; }
+    static EditorRender& renderEngine() { return *m_renderEngine; }
 
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;

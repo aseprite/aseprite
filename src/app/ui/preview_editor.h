@@ -30,6 +30,7 @@ namespace app {
     void pressPlayButton();
 
     void updateUsingEditor(Editor* editor);
+    Editor* previewEditor() const;
     Editor* relatedEditor() const { return m_relatedEditor; }
 
     // EditorObserver impl
