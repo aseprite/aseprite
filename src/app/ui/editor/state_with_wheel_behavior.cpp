@@ -27,6 +27,7 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "ui/message.h"
+#include "ui/system.h"
 #include "ui/theme.h"
 
 namespace app {
@@ -178,7 +179,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
 
     case WheelAction::BrushSize: {
-      tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
+      tools::Tool* tool = getActiveTool();
       ToolPreferences::Brush& brush =
         Preferences::instance().tool(tool).brush;
 
@@ -189,7 +190,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
 
     case WheelAction::BrushAngle: {
-      tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
+      tools::Tool* tool = getActiveTool();
       ToolPreferences::Brush& brush =
         Preferences::instance().tool(tool).brush;
 
@@ -203,7 +204,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
 
     case WheelAction::ToolSameGroup: {
-      tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
+      tools::Tool* tool = getActiveTool();
 
       auto toolBox = App::instance()->toolBox();
       std::vector<tools::Tool*> tools;
@@ -233,7 +234,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
 
     case WheelAction::ToolOtherGroup: {
-      tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
+      tools::Tool* tool = getActiveTool();
       auto toolBox = App::instance()->toolBox();
       auto begin = toolBox->begin_group();
       auto end = toolBox->end_group();
@@ -266,7 +267,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
 
     case WheelAction::InkOpacity: {
-      tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
+      tools::Tool* tool = getActiveTool();
       auto& toolPref = Preferences::instance().tool(tool);
       int opacity = toolPref.opacity();
       opacity = MID(0, opacity+dz*255/10, 255);
@@ -313,6 +314,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
 
     case WheelAction::Alpha: {
+      disableQuickTool();
+
       ColorBar* colorBar = ColorBar::instance();
       Color c = colorBar->getFgColor();
       int a = c.getAlpha();
@@ -325,6 +328,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WheelAction::HslHue:
     case WheelAction::HslSaturation:
     case WheelAction::HslLightness: {
+      disableQuickTool();
+
       ColorBar* colorBar = ColorBar::instance();
       Color c = colorBar->getFgColor();
       double
@@ -345,6 +350,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WheelAction::HsvHue:
     case WheelAction::HsvSaturation:
     case WheelAction::HsvValue: {
+      disableQuickTool();
+
       ColorBar* colorBar = ColorBar::instance();
       Color c = colorBar->getFgColor();
       double
@@ -387,6 +394,23 @@ void StateWithWheelBehavior::setZoom(Editor* editor,
     zoom, mousePos,
     (center ? Editor::ZoomBehavior::CENTER:
               Editor::ZoomBehavior::MOUSE));
+}
+
+tools::Tool* StateWithWheelBehavior::getActiveTool()
+{
+  disableQuickTool();
+  return App::instance()->activeToolManager()->activeTool();
+}
+
+void StateWithWheelBehavior::disableQuickTool()
+{
+  auto atm = App::instance()->activeToolManager();
+  if (atm->quickTool()) {
+    // As Ctrl key could active the Move tool, and Ctrl+mouse wheel can
+    // change the size of the tool, we want to remove the quick tool so
+    // the effect is for the selected tool.
+    atm->newQuickToolSelectedFromEditor(nullptr);
+  }
 }
 
 } // namespace app

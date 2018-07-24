@@ -1881,7 +1881,10 @@ void Editor::onInvalidateRegion(const gfx::Region& region)
 void Editor::onActiveToolChange(tools::Tool* tool)
 {
   m_state->onActiveToolChange(this, tool);
-  updateStatusBar();
+  if (hasMouse()) {
+    updateStatusBar();
+    setCursor(ui::get_mouse_position());
+  }
 }
 
 void Editor::onFgColorChange()
@@ -1960,6 +1963,10 @@ void Editor::onRemoveFrameTag(DocEvent& ev)
 
 void Editor::setCursor(const gfx::Point& mouseScreenPos)
 {
+  Rect vp = View::getView(this)->viewportBounds();
+  if (!vp.contains(mouseScreenPos))
+    return;
+
   bool used = false;
   if (m_sprite)
     used = m_state->onSetCursor(this, mouseScreenPos);

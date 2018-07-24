@@ -14,6 +14,10 @@ namespace render {
   class Zoom;
 }
 
+namespace tools {
+  class Tool;
+}
+
 namespace app {
 
   class StateWithWheelBehavior : public EditorState {
@@ -22,6 +26,8 @@ namespace app {
     virtual bool onTouchMagnify(Editor* editor, ui::TouchMessage* msg) override;
   private:
     void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
+    tools::Tool* getActiveTool();
+    void disableQuickTool();
   };
 
 } // namespace app

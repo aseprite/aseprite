@@ -1057,11 +1057,19 @@ LRESULT WinWindow::wndProc(UINT msg, WPARAM wparam, LPARAM lparam)
       int vk = wparam;
       int scancode = (lparam >> 16) & 0xff;
       bool sendMsg = true;
+      const KeyScancode sheScancode = win32vk_to_scancode(vk);
+
+      // We only create one KeyDown event for modifiers. Bit 30
+      // indicates the previous state of the key, if the modifier was
+      // already pressed don't generate the event.
+      if ((sheScancode >= kKeyFirstModifierScancode) &&
+          (lparam & (1 << 30)))
+        return 0;
 
       Event ev;
       ev.setType(Event::KeyDown);
       ev.setModifiers(get_modifiers_from_last_win32_message());
-      ev.setScancode(win32vk_to_scancode(vk));
+      ev.setScancode(sheScancode);
       ev.setUnicodeChar(0);
       ev.setRepeat(MAX(0, (lparam & 0xffff)-1));
 
