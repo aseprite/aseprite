@@ -766,6 +766,10 @@ private:
   void onReset() {
     if (ui::Alert::show(Strings::alerts_restore_all_shortcuts()) == 1) {
       m_keys.reset();
+      if (!isDefaultWheelBehavior()) {
+        wheelBehavior()->setSelectedItem(0);
+        onWheelBehaviorChange();
+      }
       listsPlaceholder()->layout();
     }
   }
