@@ -266,8 +266,8 @@ void Key::add(const ui::Accelerator& accel,
   accels->add(accel);
 }
 
-bool Key::isPressed(const Message* msg,
-                    KeyboardShortcuts& globalKeys) const
+const ui::Accelerator* Key::isPressed(const Message* msg,
+                                      KeyboardShortcuts& globalKeys) const
 {
   if (auto keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     for (const Accelerator& accel : accels()) {
@@ -276,7 +276,7 @@ bool Key::isPressed(const Message* msg,
                           keyMsg->unicodeChar()) &&
           (m_keycontext == KeyContext::Any ||
            m_keycontext == globalKeys.getCurrentKeyContext())) {
-        return true;
+        return &accel;
       }
     }
   }
@@ -288,11 +288,11 @@ bool Key::isPressed(const Message* msg,
            // like "sprite editor" context, or "timeline" context,
            // etc.
            m_keycontext == KeyContext::MouseWheel)) {
-        return true;
+        return &accel;
       }
     }
   }
-  return false;
+  return nullptr;
 }
 
 bool Key::isPressed() const
@@ -852,13 +852,21 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
 WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext context,
                                                               const ui::Message* msg)
 {
+  WheelAction wheelAction = WheelAction::None;
+  const ui::Accelerator* bestAccel = nullptr;
+  KeyPtr bestKey;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction &&
-        key->keycontext() == context &&
-        key->isPressed(msg, *this))
-      return key->wheelAction();
+        key->keycontext() == context) {
+      const ui::Accelerator* accel = key->isPressed(msg, *this);
+      if ((accel) &&
+          (!bestAccel || bestAccel->modifiers() < accel->modifiers())) {
+        bestAccel = accel;
+        wheelAction = key->wheelAction();
+      }
+    }
   }
-  return WheelAction::None;
+  return wheelAction;
 }
 
 bool KeyboardShortcuts::hasMouseWheelCustomization() const
