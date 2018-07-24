@@ -62,8 +62,10 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     // precise wheel i.e. a trackpad/touch-like device, we scroll by
     // default.
     else if (Preferences::instance().editor.zoomWithWheel() && !msg->preciseWheel()) {
-      if (msg->ctrlPressed())
+      if (msg->ctrlPressed() && msg->shiftPressed())
         wheelAction = WheelAction::Frame;
+      else if (msg->ctrlPressed())
+        wheelAction = WheelAction::BrushSize;
       else if (delta.x != 0 || msg->shiftPressed())
         wheelAction = WheelAction::HScroll;
       else
@@ -71,8 +73,10 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
     // Zoom sliding two fingers
     else if (Preferences::instance().editor.zoomWithSlide() && msg->preciseWheel()) {
-      if (msg->ctrlPressed())
+      if (msg->ctrlPressed() && msg->shiftPressed())
         wheelAction = WheelAction::Frame;
+      else if (msg->ctrlPressed())
+        wheelAction = WheelAction::BrushSize;
       else if (std::abs(delta.x) > std::abs(delta.y)) {
         delta.y = 0;
         dz = delta.x;

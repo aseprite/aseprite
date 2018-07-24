@@ -931,8 +931,13 @@ void KeyboardShortcuts::setDefaultMouseWheelKeys(const bool zoomWithWheel)
   m_keys.push_back(key);
 
   if (zoomWithWheel) {
-    key = std::make_shared<Key>(WheelAction::Frame);
+    key = std::make_shared<Key>(WheelAction::BrushSize);
     key->add(Accelerator(kKeyCtrlModifier, kKeyNil, 0),
+             KeySource::Original, *this);
+    m_keys.push_back(key);
+
+    key = std::make_shared<Key>(WheelAction::Frame);
+    key->add(Accelerator((KeyModifiers)(kKeyCtrlModifier | kKeyShiftModifier), kKeyNil, 0),
              KeySource::Original, *this);
     m_keys.push_back(key);
   }
