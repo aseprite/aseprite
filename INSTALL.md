@@ -276,12 +276,12 @@ fails.)
 For VS2015:
 
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"""
-    ninja -C out/Release
+    ninja -C out/Release skia
 
 For VS2017:
 
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"" cc=2017"
-    ninja -C out/Release
+    ninja -C out/Release skia
 
 More information about these steps in the
 [official Skia documentation](https://skia.org/user/build).
@@ -302,7 +302,7 @@ several minutes to finish:
     git checkout aseprite-m67
     python tools/git-sync-deps
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false extra_cflags_cc=[\"-frtti\"]"
-    ninja -C out/Release
+    ninja -C out/Release skia
 
 After this you should have all Skia libraries compiled.  When you
 [compile Aseprite](#compiling), remember to add
