@@ -538,6 +538,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   if (dragging) {
     dragPicks.resize(m_hot.color+picksCount);
     std::fill(dragPicks.begin()+m_hot.color, dragPicks.end(), true);
+    
+    update_scroll(dragPicks.firstPick());
+    invalidate();
   }
   PalettePicks& picks = (dragging ? dragPicks: m_selectedEntries);
 
