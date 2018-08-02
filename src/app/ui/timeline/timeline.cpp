@@ -1491,8 +1491,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     layer_t layer, firstLayer, lastLayer;
     frame_t frame, firstFrame, lastFrame;
 
-    getDrawableLayers(g, &firstLayer, &lastLayer);
-    getDrawableFrames(g, &firstFrame, &lastFrame);
+    getDrawableLayers(&firstLayer, &lastLayer);
+    getDrawableFrames(&firstFrame, &lastFrame);
 
     drawTop(g);
 
@@ -1829,7 +1829,7 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   }
 }
 
-void Timeline::getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* lastLayer)
+void Timeline::getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer)
 {
   int hpx = (clientBounds().h - headerBoxHeight() - topHeight());
   layer_t i = this->lastLayer() - ((viewScroll().y+hpx) / layerBoxHeight());
@@ -1845,7 +1845,7 @@ void Timeline::getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* 
   *lastLayer = j;
 }
 
-void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* firstFrame, frame_t* lastFrame)
+void Timeline::getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame)
 {
   int availW = (clientBounds().w - m_separator_x);
 
