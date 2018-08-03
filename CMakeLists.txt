@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.4)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(COMMAND cmake_policy)
   # CMP0003: Libraries linked via full path no longer produce linker search paths.
