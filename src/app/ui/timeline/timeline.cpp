@@ -1050,6 +1050,31 @@ bool Timeline::onProcessMessage(Message* msg)
       if (hasCapture()) {
         switch (m_state) {
 
+            case STATE_MOVING_RANGE: {
+                frame_t firstDrawableFrame;
+                frame_t lastDrawableFrame;
+                getDrawableFrames(&firstDrawableFrame, &lastDrawableFrame);
+
+                layer_t firstDrawableLayer;
+                layer_t lastDrawableLayer;
+                getDrawableLayers(&firstDrawableLayer, &lastDrawableLayer);
+
+                layer_t newLayer = hit.layer;
+                frame_t newFrame = hit.frame;
+
+                if (hit.frame < firstDrawableFrame)
+                    newFrame = firstDrawableFrame - 1;
+                else if (hit.frame > lastDrawableFrame)
+                    newFrame = lastDrawableFrame + 1;
+                if (hit.layer < firstDrawableLayer)
+                    newLayer = firstDrawableLayer - 1;
+                else if (hit.layer > lastDrawableLayer)
+                    newLayer = lastDrawableLayer + 1;
+
+                showCel(newLayer,newFrame);
+                break;
+            }
+
           case STATE_SELECTING_LAYERS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
             if (m_layer != hitLayer) {
