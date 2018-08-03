@@ -156,12 +156,12 @@
         <param name="target" value="foreground" />
         <param name="change" value="increment-index" />
       </key>
-      <key command="ChangeColor" shortcut="Ctrl+9">
-        <param name="target" value="background" mac="Cmd+9" />
+      <key command="ChangeColor">
+        <param name="target" value="background" />
         <param name="change" value="decrement-index" />
       </key>
-      <key command="ChangeColor" shortcut="Ctrl+0">
-        <param name="target" value="background" mac="Cmd+0" />
+      <key command="ChangeColor">
+        <param name="target" value="background" />
         <param name="change" value="increment-index" />
       </key>
 
