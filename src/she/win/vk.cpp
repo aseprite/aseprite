@@ -172,8 +172,8 @@ KeyScancode win32vk_to_scancode(int vk)
     kKeyNumLock, // 0x90 - VK_NUMLOCK
     kKeyScrLock, // 0x91 - VK_SCROLL
     kKeyNil, // 0x92 - VK_OEM_NEC_EQUAL / VK_OEM_FJ_JISHO
-    kKeyNil, // 0x93- VK_OEM_FJ_MASSHOU
-    kKeyNil, // 0x94- VK_OEM_FJ_TOUROKU
+    kKeyNil, // 0x93 - VK_OEM_FJ_MASSHOU
+    kKeyNil, // 0x94 - VK_OEM_FJ_TOUROKU
     kKeyNil, // 0x95 - VK_OEM_FJ_LOYA
     kKeyNil, // 0x96 - VK_OEM_FJ_ROYA
     kKeyNil, // 0x97 - Unassigned
@@ -208,7 +208,7 @@ KeyScancode win32vk_to_scancode(int vk)
     kKeyNil, // 0xB2 - VK_MEDIA_STOP
     kKeyNil, // 0xB3 - VK_MEDIA_PLAY_PAUSE
     kKeyNil, // 0xB4 - VK_LAUNCH_MAIL
-    kKeyNil, // 0xB5- VK_LAUNCH_MEDIA_SELECT
+    kKeyNil, // 0xB5 - VK_LAUNCH_MEDIA_SELECT
     kKeyNil, // 0xB6 - VK_LAUNCH_APP1
     kKeyNil, // 0xB7 - VK_LAUNCH_APP2
     kKeyNil, // 0xB8 - Reserved
