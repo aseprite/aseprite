@@ -89,3 +89,5 @@ We are using some C++11 features, mainly:
   `base::SharedPtr` and `base::UniquePtr` but you should use the STL
   ones now)
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
+* We use GCC 4.8 on Linux, so check the features available since GCC 4.8 in
+  https://developer.mozilla.org/en-US/docs/Mozilla/Using_CXX_in_Mozilla_code
