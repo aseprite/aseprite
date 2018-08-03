@@ -340,7 +340,7 @@ bool PaletteView::onProcessMessage(Message* msg)
             m_delegate->onPaletteViewIndexChange(idx, buttons);
         }
       }
-      
+
       if (m_state == State::DRAGGING_OUTLINE &&
           m_hot.part == Hit::COLOR) {
         update_scroll(m_hot.color);

@@ -1831,11 +1831,11 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
 
 void Timeline::getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer)
 {
-  int hpx = (clientBounds().h - headerBoxHeight() - topHeight());
-  layer_t i = this->lastLayer() - ((viewScroll().y+hpx) / layerBoxHeight());
+  layer_t i = this->lastLayer()
+            - ((viewScroll().y + getCelsBounds().h) / layerBoxHeight());
   i = MID(this->firstLayer(), i, this->lastLayer());
 
-  layer_t j = i + (hpx / layerBoxHeight() + 1);
+  layer_t j = this->lastLayer() - viewScroll().y / layerBoxHeight();;
   if (!m_rows.empty())
     j = MID(this->firstLayer(), j, this->lastLayer());
   else
@@ -1847,12 +1847,9 @@ void Timeline::getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer)
 
 void Timeline::getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame)
 {
-  int availW = (clientBounds().w - m_separator_x);
-
   *firstFrame = frame_t(viewScroll().x / frameBoxWidth());
-  *lastFrame = *firstFrame
-    + frame_t(availW / frameBoxWidth())
-    + ((availW % frameBoxWidth()) > 0 ? 1: 0);
+  *lastFrame = frame_t((viewScroll().x
+      + getCelsBounds().w) / frameBoxWidth());
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
