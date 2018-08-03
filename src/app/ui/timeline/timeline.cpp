@@ -3721,9 +3721,9 @@ void Timeline::setViewScroll(const gfx::Point& pt)
 
   if (newScroll.y != oldScroll.y) {
     gfx::Rect rc;
-    rc |= getPartBounds(Hit(PART_ROW, 0));
-    rc |= getPartBounds(Hit(PART_ROW, lastLayer()));
-    rc.offset(origin());
+    rc = getLayerHeadersBounds();
+    rc.x += bounds().x;
+    rc.y += bounds().y;
     invalidateRect(rc);
   }
 
