@@ -3,14 +3,10 @@
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
-# CMake setup
-if(WIN32)
-  # We need 3.4 to use manifests in the source files list for the main
-  # application target.
-  cmake_minimum_required(VERSION 3.4)
-else()
-  cmake_minimum_required(VERSION 2.8)
-endif()
+cmake_minimum_required(VERSION 3.4)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 
 if(COMMAND cmake_policy)
   # CMP0003: Libraries linked via full path no longer produce linker search paths.
@@ -187,17 +183,6 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_definitions(-DDEBUGMODE -D_DEBUG)
 else()
   add_definitions(-DNDEBUG)
-endif()
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  elseif(UNIX)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu89")
-  endif()
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif()
 
 if(NOT USE_SHARED_CURL)
