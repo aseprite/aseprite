@@ -169,7 +169,7 @@ the following parameters and then `ninja`:
     cmake \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk \
+      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk \
       -DUSE_ALLEG4_BACKEND=OFF \
       -DUSE_SKIA_BACKEND=ON \
       -DSKIA_DIR=$HOME/deps/skia \
