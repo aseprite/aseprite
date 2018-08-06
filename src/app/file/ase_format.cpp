@@ -416,9 +416,10 @@ static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame
 
   fputl(frame_header->size, f);
   fputw(frame_header->magic, f);
-  fputw(frame_header->chunks, f);
+  fputw(frame_header->chunks < 0xFFFF ? frame_header->chunks: 0xFFFF, f);
   fputw(frame_header->duration, f);
-  ase_file_write_padding(f, 6);
+  ase_file_write_padding(f, 2);
+  fputl(frame_header->chunks, f);
 
   fseek(f, end, SEEK_SET);
 }

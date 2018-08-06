@@ -68,7 +68,7 @@ struct AsepriteHeader {
 struct AsepriteFrameHeader {
   uint32_t size;
   uint16_t magic;
-  uint16_t chunks;
+  uint32_t chunks;
   uint16_t duration;
 };
 

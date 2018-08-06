@@ -268,7 +268,12 @@ void AsepriteDecoder::readFrameHeader(AsepriteFrameHeader* frame_header)
   frame_header->magic = read16();
   frame_header->chunks = read16();
   frame_header->duration = read16();
-  readPadding(6);
+  readPadding(2);
+  uint32_t nchunks = read32();
+
+  if (frame_header->chunks == 0xFFFF &&
+      frame_header->chunks < nchunks)
+    frame_header->chunks = nchunks;
 }
 
 void AsepriteDecoder::readPadding(int bytes)
