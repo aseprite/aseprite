@@ -10,9 +10,11 @@
 
 #include "she/x11/window.h"
 
+#include "base/string.h"
 #include "gfx/rect.h"
 #include "she/event.h"
 #include "she/x11/keys.h"
+#include "she/x11/x11.h"
 
 #include <X11/cursorfont.h>
 #include <map>
@@ -128,6 +130,7 @@ X11Window::X11Window(::Display* display, int width, int height, int scale)
   : m_display(display)
   , m_gc(nullptr)
   , m_cursor(None)
+  , m_xic(nullptr)
   , m_scale(scale)
 {
   // Initialize special messages (just the first time a X11Window is
@@ -157,11 +160,21 @@ X11Window::X11Window(::Display* display, int width, int height, int scale)
 
   m_gc = XCreateGC(m_display, m_window, 0, nullptr);
 
+  XIM xim = X11::instance()->xim();
+  if (xim) {
+    m_xic = XCreateIC(xim,
+                      XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                      XNClientWindow, m_window,
+                      XNFocusWindow, m_window,
+                      nullptr);
+  }
   X11Window::addWindow(this);
 }
 
 X11Window::~X11Window()
 {
+  if (m_xic)
+    XDestroyIC(m_xic);
   XFreeGC(m_display, m_gc);
   XDestroyWindow(m_display, m_window);
 
@@ -360,6 +373,24 @@ void X11Window::processX11Event(XEvent& event)
 
       KeySym keysym = XLookupKeysym(&event.xkey, 0);
       ev.setScancode(x11_keysym_to_scancode(keysym));
+
+      if (m_xic) {
+        std::vector<char> buf(16);
+        size_t len = Xutf8LookupString(m_xic, &event.xkey,
+                                       &buf[0], buf.size(),
+                                       nullptr, nullptr);
+        if (len < buf.size())
+          buf[len] = 0;
+        std::wstring wideChars = base::from_utf8(std::string(&buf[0]));
+        if (!wideChars.empty())
+          ev.setUnicodeChar(wideChars[0]);
+        KEY_TRACE("Xutf8LookupString %s\n", &buf[0]);
+      }
+
+      // Key event used by the input method (e.g. when the user
+      // presses a dead key).
+      if (XFilterEvent(&event, m_window))
+        break;
 
       int modifiers = (int)get_modifiers_from_x(event.xkey.state);
       switch (keysym) {

@@ -69,6 +69,7 @@ private:
   ::Window m_window;
   ::GC m_gc;
   ::Cursor m_cursor;
+  ::XIC m_xic;
   int m_scale;
 };
 
