@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,9 +12,14 @@
 
 #include "gfx/rect.h"
 #include "she/event.h"
+#include "she/x11/keys.h"
 
 #include <X11/cursorfont.h>
 #include <map>
+
+#define KEY_TRACE(...)
+#define MOUSE_TRACE(...)
+#define EVENT_TRACE(...)
 
 namespace she {
 
@@ -35,9 +40,24 @@ std::map<::Window, X11Window*> g_activeWindows;
 KeyModifiers get_modifiers_from_x(int state)
 {
   int modifiers = kKeyNoneModifier;
-  if (state & ShiftMask) modifiers |= kKeyShiftModifier;
-  if (state & LockMask) modifiers |= kKeyAltModifier;
-  if (state & ControlMask) modifiers |= kKeyCtrlModifier;
+  if (state & ShiftMask) {
+    modifiers |= kKeyShiftModifier;
+    KEY_TRACE("+SHIFT\n");
+  }
+  if (state & ControlMask) {
+    modifiers |= kKeyCtrlModifier;
+    KEY_TRACE("+CTRL\n");
+  }
+  // Mod1Mask is Alt, and Mod5Mask is AltGr
+  if (state & (Mod1Mask | Mod5Mask)) {
+    modifiers |= kKeyAltModifier;
+    KEY_TRACE("+ALT\n");
+  }
+  // Mod4Mask is Windows key
+  if (state & Mod4Mask) {
+    modifiers |= kKeyWinModifier;
+    KEY_TRACE("+WIN\n");
+  }
   return (KeyModifiers)modifiers;
 }
 
@@ -64,13 +84,13 @@ gfx::Point get_mouse_wheel_delta(int button)
 Event::MouseButton get_mouse_button_from_x(int button)
 {
   switch (button) {
-    case Button1: TRACE("LeftButton\n"); return Event::LeftButton;
-    case Button2: TRACE("MiddleButton\n"); return Event::MiddleButton;
-    case Button3: TRACE("RightButton\n"); return Event::RightButton;
-    case 8: TRACE("X1Button\n"); return Event::X1Button;
-    case 9: TRACE("X2Button\n"); return Event::X2Button;
+    case Button1: MOUSE_TRACE("LeftButton\n");   return Event::LeftButton;
+    case Button2: MOUSE_TRACE("MiddleButton\n"); return Event::MiddleButton;
+    case Button3: MOUSE_TRACE("RightButton\n");  return Event::RightButton;
+    case 8:       MOUSE_TRACE("X1Button\n");     return Event::X1Button;
+    case 9:       MOUSE_TRACE("X2Button\n");     return Event::X2Button;
   }
-  TRACE("Unknown Button %d\n", button);
+  MOUSE_TRACE("Unknown Button %d\n", button);
   return Event::NoneButton;
 }
 
@@ -329,6 +349,53 @@ void X11Window::processX11Event(XEvent& event)
       gfx::Rect rc(event.xexpose.x, event.xexpose.y,
                    event.xexpose.width, event.xexpose.height);
       paintGC(rc);
+      break;
+    }
+
+    case KeyPress:
+    case KeyRelease: {
+      Event ev;
+
+      ev.setType(event.type == KeyPress ? Event::KeyDown: Event::KeyUp);
+
+      KeySym keysym = XLookupKeysym(&event.xkey, 0);
+      ev.setScancode(x11_keysym_to_scancode(keysym));
+
+      int modifiers = (int)get_modifiers_from_x(event.xkey.state);
+      switch (keysym) {
+        case XK_Shift_L:
+        case XK_Shift_R:
+          modifiers |= kKeyShiftModifier;
+          break;
+        case XK_Control_L:
+        case XK_Control_R:
+          modifiers |= kKeyCtrlModifier;
+          break;
+        case XK_Alt_L:
+        case XK_Alt_R:
+          modifiers |= kKeyAltModifier;
+          break;
+        case XK_Meta_L:
+        case XK_Super_L:
+        case XK_Meta_R:
+        case XK_Super_R:
+          modifiers |= kKeyWinModifier;
+          break;
+      }
+      ev.setModifiers((KeyModifiers)modifiers);
+      KEY_TRACE("%s state=%04x keycode=%04x\n",
+                (event.type == KeyPress ? "KeyPress": "KeyRelease"),
+                event.xkey.state,
+                event.xkey.keycode);
+
+#ifndef NDEBUG
+      {
+        char* str = XKeysymToString(keysym);
+        KEY_TRACE(" > %s\n", str);
+      }
+#endif
+
+      queueEvent(ev);
       break;
     }
 

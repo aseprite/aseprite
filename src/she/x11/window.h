@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -48,6 +48,10 @@ public:
   ::Display* x11display() const { return m_display; }
   ::Window handle() const { return m_window; }
   ::GC gc() const { return m_gc; }
+
+  void setTranslateDeadKeys(bool state) {
+    // TODO
+  }
 
   void processX11Event(XEvent& event);
   static X11Window* getPointerFromHandle(Window handle);
