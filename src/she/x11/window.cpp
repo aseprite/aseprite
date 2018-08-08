@@ -276,6 +276,13 @@ void X11Window::releaseMouse()
 
 void X11Window::setMousePosition(const gfx::Point& position)
 {
+  Window root;
+  int x, y;
+  unsigned int w, h, border, depth;
+  XGetGeometry(m_display, m_window, &root,
+               &x, &y, &w, &h, &border, &depth);
+  XWarpPointer(m_display, m_window, m_window, 0, 0, w, h,
+               position.x*m_scale, position.y*m_scale);
 }
 
 void X11Window::updateWindow(const gfx::Rect& unscaledBounds)
