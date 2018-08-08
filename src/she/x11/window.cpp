@@ -13,6 +13,7 @@
 #include "base/string.h"
 #include "gfx/rect.h"
 #include "she/event.h"
+#include "she/surface.h"
 #include "she/x11/keys.h"
 #include "she/x11/x11.h"
 
@@ -130,6 +131,7 @@ X11Window::X11Window(::Display* display, int width, int height, int scale)
   : m_display(display)
   , m_gc(nullptr)
   , m_cursor(None)
+  , m_xcursorImage(nullptr)
   , m_xic(nullptr)
   , m_scale(scale)
 {
@@ -173,6 +175,8 @@ X11Window::X11Window(::Display* display, int width, int height, int scale)
 
 X11Window::~X11Window()
 {
+  if (m_xcursorImage != None)
+    XcursorImageDestroy(m_xcursorImage);
   if (m_xic)
     XDestroyIC(m_xic);
   XFreeGC(m_display, m_gc);
@@ -320,12 +324,71 @@ bool X11Window::setNativeMouseCursor(NativeCursor cursor)
       break;
   }
 
+  return setX11Cursor(xcursor);
+}
+
+bool X11Window::setNativeMouseCursor(const she::Surface* surface,
+                                     const gfx::Point& focus,
+                                     const int scale)
+{
+  ASSERT(surface);
+
+  // This X11 server doesn't support ARGB cursors.
+  if (!XcursorSupportsARGB(m_display))
+    return false;
+
+  SurfaceFormatData format;
+  surface->getFormat(&format);
+
+  // Only for 32bpp surfaces
+  if (format.bitsPerPixel != 32)
+    return false;
+
+  const int w = scale*surface->width();
+  const int h = scale*surface->height();
+
+  Cursor xcursor = None;
+  if (m_xcursorImage == None ||
+      m_xcursorImage->width != XcursorDim(w) ||
+      m_xcursorImage->height != XcursorDim(h)) {
+    if (m_xcursorImage != None)
+      XcursorImageDestroy(m_xcursorImage);
+    m_xcursorImage = XcursorImageCreate(w, h);
+  }
+  if (m_xcursorImage != None) {
+    XcursorPixel* dst = m_xcursorImage->pixels;
+    for (int y=0; y<h; ++y) {
+      const uint32_t* src = (const uint32_t*)surface->getData(0, y/scale);
+      for (int x=0, u=0; x<w; ++x, ++dst) {
+        uint32_t c = *src;
+        *dst =
+          (((c & format.alphaMask) >> format.alphaShift) << 24) |
+          (((c & format.redMask  ) >> format.redShift  ) << 16) |
+          (((c & format.greenMask) >> format.greenShift) << 8) |
+          (((c & format.blueMask ) >> format.blueShift ));
+        if (++u == scale) {
+          u = 0;
+          ++src;
+        }
+      }
+    }
+
+    m_xcursorImage->xhot = scale*focus.x + scale/2;
+    m_xcursorImage->yhot = scale*focus.y + scale/2;
+    xcursor = XcursorImageLoadCursor(m_display,
+                                     m_xcursorImage);
+  }
+
+  return setX11Cursor(xcursor);
+}
+
+bool X11Window::setX11Cursor(::Cursor xcursor)
+{
   if (m_cursor != None) {
     if (m_cursor != empty_xcursor) // Don't delete empty_xcursor
       XFreeCursor(m_display, m_cursor);
     m_cursor = None;
   }
-
   if (xcursor != None) {
     m_cursor = xcursor;
     XDefineCursor(m_display, m_window, xcursor);
@@ -333,13 +396,6 @@ bool X11Window::setNativeMouseCursor(NativeCursor cursor)
   }
   else
     return false;
-}
-
-bool X11Window::setNativeMouseCursor(const she::Surface* surface,
-                                     const gfx::Point& focus,
-                                     const int scale)
-{
-  return false;
 }
 
 void X11Window::processX11Event(XEvent& event)

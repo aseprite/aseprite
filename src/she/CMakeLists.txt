@@ -201,7 +201,7 @@ if(USE_SKIA_BACKEND)
     ${X11_LIBRARIES})
 
   if(UNIX AND NOT APPLE)
-    target_link_libraries(she fontconfig)
+    target_link_libraries(she fontconfig Xcursor)
   endif()
 endif()
 

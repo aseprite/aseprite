@@ -12,8 +12,9 @@
 #include "gfx/size.h"
 #include "she/native_cursor.h"
 
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xcursor/Xcursor.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 #include <cstring>
@@ -62,6 +63,7 @@ protected:
   virtual void resizeDisplay(const gfx::Size& sz) = 0;
 
 private:
+  bool setX11Cursor(::Cursor xcursor);
   static void addWindow(X11Window* window);
   static void removeWindow(X11Window* window);
 
@@ -69,6 +71,7 @@ private:
   ::Window m_window;
   ::GC m_gc;
   ::Cursor m_cursor;
+  ::XcursorImage* m_xcursorImage;
   ::XIC m_xic;
   int m_scale;
 };
