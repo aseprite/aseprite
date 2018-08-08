@@ -20,7 +20,6 @@
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
-#include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -299,15 +298,15 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   if (context->isUIAvailable()) {
     // load the window widget
-    base::UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow());
+    std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow());
 
     window->remapWindow();
     window->centerWindow();
 
-    load_window_pos(window, "CanvasSize");
+    load_window_pos(window.get(), "CanvasSize");
     window->setVisible(true);
     window->openWindowInForeground();
-    save_window_pos(window, "CanvasSize");
+    save_window_pos(window.get(), "CanvasSize");
 
     if (!window->pressedOk())
       return;

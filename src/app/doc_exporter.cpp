@@ -23,7 +23,6 @@
 #include "base/replace_string.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/frame_tag.h"
@@ -439,7 +438,7 @@ Doc* DocExporter::exportSheet(Context* ctx)
   layoutSamples(samples);
 
   // 3) Create and render the texture.
-  base::UniquePtr<Doc> textureDocument(
+  std::unique_ptr<Doc> textureDocument(
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
@@ -539,15 +538,15 @@ void DocExporter::captureSamples(Samples& samples)
         if (layer && layer->isImage() && !cel)
           continue;
 
-        base::UniquePtr<Image> sampleRender(
+        std::unique_ptr<Image> sampleRender(
           Image::create(sprite->pixelFormat(),
             sprite->width(),
             sprite->height(),
             m_sampleRenderBuf));
 
         sampleRender->setMaskColor(sprite->transparentColor());
-        clear_image(sampleRender, sprite->transparentColor());
-        renderSample(sample, sampleRender, 0, 0);
+        clear_image(sampleRender.get(), sprite->transparentColor());
+        renderSample(sample, sampleRender.get(), 0, 0);
 
         gfx::Rect frameBounds;
         doc::color_t refColor = 0;
@@ -558,7 +557,7 @@ void DocExporter::captureSamples(Samples& samples)
               (!layer &&
                sprite->backgroundLayer() &&
                sprite->backgroundLayer()->isVisible())) {
-            refColor = get_pixel(sampleRender, 0, 0);
+            refColor = get_pixel(sampleRender.get(), 0, 0);
           }
           else {
             refColor = sprite->transparentColor();
@@ -567,7 +566,7 @@ void DocExporter::captureSamples(Samples& samples)
         else if (m_ignoreEmptyCels)
           refColor = sprite->transparentColor();
 
-        if (!algorithm::shrink_bounds(sampleRender, frameBounds, refColor)) {
+        if (!algorithm::shrink_bounds(sampleRender.get(), frameBounds, refColor)) {
           // If shrink_bounds() returns false, it's because the whole
           // image is transparent (equal to the mask color).
 
@@ -680,14 +679,14 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
 
   gfx::Size textureSize = calculateSheetSize(samples);
 
-  base::UniquePtr<Sprite> sprite(
+  std::unique_ptr<Sprite> sprite(
     Sprite::createBasicSprite(
       pixelFormat, textureSize.w, textureSize.h, maxColors));
 
   if (palette != NULL)
     sprite->setPalette(palette, false);
 
-  base::UniquePtr<Doc> document(new Doc(sprite));
+  std::unique_ptr<Doc> document(new Doc(sprite.get()));
   sprite.release();
 
   return document.release();

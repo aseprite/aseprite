@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,12 +10,12 @@
 
 #include "doc/algorithm/flip_image.h"
 
-#include "base/unique_ptr.h"
 #include "gfx/rect.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 
+#include <memory>
 #include <vector>
 
 namespace doc {
@@ -59,7 +59,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
   switch (flipType) {
 
     case FlipHorizontal: {
-      base::UniquePtr<Image> originalRow(Image::create(image->pixelFormat(), bounds.w, 1));
+      std::unique_ptr<Image> originalRow(Image::create(image->pixelFormat(), bounds.w, 1));
 
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         // Copy the current row.
@@ -68,7 +68,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
         int u = bounds.x+bounds.w-1;
         for (int x=bounds.x; x<bounds.x+bounds.w; ++x, --u) {
           if (mask->containsPoint(x, y)) {
-            put_pixel(image, u, y, get_pixel(originalRow, x-bounds.x, 0));
+            put_pixel(image, u, y, get_pixel(originalRow.get(), x-bounds.x, 0));
             if (!mask->containsPoint(u, y))
               put_pixel(image, x, y, bgcolor);
           }
@@ -78,7 +78,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
     }
 
     case FlipVertical: {
-      base::UniquePtr<Image> originalCol(Image::create(image->pixelFormat(), 1, bounds.h));
+      std::unique_ptr<Image> originalCol(Image::create(image->pixelFormat(), 1, bounds.h));
 
       for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
         // Copy the current column.
@@ -87,7 +87,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
         int v = bounds.y+bounds.h-1;
         for (int y=bounds.y; y<bounds.y+bounds.h; ++y, --v) {
           if (mask->containsPoint(x, y)) {
-            put_pixel(image, x, v, get_pixel(originalCol, 0, y-bounds.y));
+            put_pixel(image, x, v, get_pixel(originalCol.get(), 0, y-bounds.y));
             if (!mask->containsPoint(x, v))
               put_pixel(image, x, y, bgcolor);
           }

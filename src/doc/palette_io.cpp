@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,10 +11,10 @@
 #include "doc/palette_io.h"
 
 #include "base/serialization.h"
-#include "base/unique_ptr.h"
 #include "doc/palette.h"
 
 #include <iostream>
+#include <memory>
 
 namespace doc {
 
@@ -44,7 +44,7 @@ Palette* read_palette(std::istream& is)
   frame_t frame(read16(is)); // Frame
   int ncolors = read16(is);      // Number of colors
 
-  base::UniquePtr<Palette> palette(new Palette(frame, ncolors));
+  std::unique_ptr<Palette> palette(new Palette(frame, ncolors));
 
   for (int c=0; c<ncolors; ++c) {
     uint32_t color = read32(is);

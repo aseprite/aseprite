@@ -78,8 +78,8 @@ namespace app {
 
     // Returns a copy of the current image being dragged with the
     // current transformation.
-    void getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
-                             base::UniquePtr<Mask>& outputMask);
+    void getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
+                             std::unique_ptr<Mask>& outputMask);
 
     // Copies the image being dragged in the current position.
     void stampImage();

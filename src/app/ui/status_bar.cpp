@@ -452,7 +452,7 @@ protected:
   }
 
 private:
-  base::UniquePtr<ui::Timer> m_timer;
+  std::unique_ptr<ui::Timer> m_timer;
 };
 
 // TODO Use a ui::TipWindow with rounded borders, when we add support

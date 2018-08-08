@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,7 +15,6 @@
 #include "app/ini_file.h"
 #include "app/modules/palettes.h"
 #include "app/transaction.h"
-#include "base/unique_ptr.h"
 #include "doc/palette.h"
 #include "ui/alert.h"
 #include "ui/manager.h"

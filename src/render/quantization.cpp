@@ -10,7 +10,6 @@
 
 #include "render/quantization.h"
 
-#include "base/unique_ptr.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -27,6 +26,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace render {
@@ -96,7 +96,7 @@ Image* convert_pixel_format(
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
       ditheringAlgorithm != DitheringAlgorithm::None) {
-    base::UniquePtr<DitheringAlgorithmBase> dither;
+    std::unique_ptr<DitheringAlgorithmBase> dither;
     switch (ditheringAlgorithm) {
       case DitheringAlgorithm::Ordered:
         dither.reset(new OrderedDither2(is_background ? -1: new_mask_color));

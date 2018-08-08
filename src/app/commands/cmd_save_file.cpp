@@ -37,7 +37,6 @@
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
-#include "base/unique_ptr.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -185,7 +184,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   FileOpROI roi(document, m_slice, m_frameTag,
                 m_selFrames, m_adjustFramesByFrameTag);
 
-  base::UniquePtr<FileOp> fop(
+  std::unique_ptr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
       roi,
@@ -194,7 +193,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   if (!fop)
     return;
 
-  SaveFileJob job(fop);
+  SaveFileJob job(fop.get());
   job.showProgressWindow();
 
   if (fop->hasError()) {

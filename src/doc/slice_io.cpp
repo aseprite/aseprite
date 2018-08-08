@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2017 David Capello
+// Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,12 +11,12 @@
 #include "doc/slice_io.h"
 
 #include "base/serialization.h"
-#include "base/unique_ptr.h"
 #include "doc/slice.h"
 #include "doc/string_io.h"
 #include "doc/user_data_io.h"
 
 #include <iostream>
+#include <memory>
 
 namespace doc {
 
@@ -44,7 +44,7 @@ Slice* read_slice(std::istream& is, bool setId)
   UserData userData = read_user_data(is);
   size_t nkeys = read32(is);
 
-  base::UniquePtr<Slice> slice(new Slice);
+  std::unique_ptr<Slice> slice(new Slice);
   slice->setName(name);
   slice->setUserData(userData);
   while (nkeys--) {

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,7 +10,6 @@
 
 #include "ui/tooltips.h"
 
-#include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"

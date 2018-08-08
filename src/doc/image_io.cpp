@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,12 +13,12 @@
 #include "base/base.h"
 #include "base/exception.h"
 #include "base/serialization.h"
-#include "base/unique_ptr.h"
 #include "doc/cancel_io.h"
 #include "doc/image.h"
 #include "zlib.h"
 
 #include <iostream>
+#include <memory>
 
 namespace doc {
 
@@ -115,7 +115,7 @@ Image* read_image(std::istream& is, bool setId)
       (width > 0xfffff || height > 0xfffff))
     return nullptr;
 
-  base::UniquePtr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
+  std::unique_ptr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
   int rowSize = image->getRowStrideSize();
 
 #if 0

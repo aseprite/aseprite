@@ -19,7 +19,6 @@
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
 #include "base/bind.h"
-#include "base/unique_ptr.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -131,7 +130,7 @@ protected:
 
       int w = scale_x(old_bitmap->width());
       int h = scale_y(old_bitmap->height());
-      base::UniquePtr<Mask> new_mask(new Mask);
+      std::unique_ptr<Mask> new_mask(new Mask);
       new_mask->replace(
         gfx::Rect(
           scale_x(document()->mask()->bounds().x-1),
@@ -147,7 +146,7 @@ protected:
       new_mask->intersect(new_mask->bounds());
 
       // Copy new mask
-      api.copyToCurrentMask(new_mask);
+      api.copyToCurrentMask(new_mask.get());
 
       // Regenerate mask
       document()->resetTransformation();

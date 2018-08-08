@@ -13,7 +13,6 @@
 #include "she/skia/skia_window_osx.h"
 
 #include "base/log.h"
-#include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "she/event.h"
 #include "she/event_queue.h"
@@ -198,7 +197,7 @@ private:
   bool attachGL() {
     if (!m_glCtx) {
       try {
-        base::UniquePtr<GLContext> ctx(new GLContextCGL);
+        std::unique_ptr<GLContext> ctx(new GLContextCGL);
         if (!ctx->createGLContext())
           throw std::runtime_error("Cannot create CGL context");
 
@@ -370,7 +369,7 @@ private:
   bool m_closing;
   OSXWindow* m_window;
 #if SK_SUPPORT_GPU
-  base::UniquePtr<GLContext> m_glCtx;
+  std::unique_ptr<GLContext> m_glCtx;
   sk_sp<const GrGLInterface> m_glInterfaces;
   NSOpenGLContext* m_nsGL;
   sk_sp<GrContext> m_grCtx;

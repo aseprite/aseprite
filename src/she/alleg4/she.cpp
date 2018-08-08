@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,6 @@
 #include "base/concurrent_queue.h"
 #include "base/exception.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "she/alleg4/alleg_display.h"
 #include "she/alleg4/alleg_surface.h"
 #include "she/common/system.h"

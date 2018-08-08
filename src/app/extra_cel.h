@@ -9,7 +9,6 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/unique_ptr.h"
 #include "doc/blend_mode.h"
 #include "doc/cel.h"
 #include "doc/frame.h"
@@ -17,6 +16,8 @@
 #include "doc/image_ref.h"
 #include "gfx/rect.h"
 #include "render/extra_type.h"
+
+#include <memory>
 
 namespace doc {
   class Sprite;
@@ -41,7 +42,7 @@ namespace app {
 
   private:
     render::ExtraType m_type;
-    base::UniquePtr<doc::Cel> m_cel;
+    std::unique_ptr<doc::Cel> m_cel;
     doc::ImageRef m_image;
     doc::ImageBufferPtr m_imageBuffer;
     doc::BlendMode m_blendMode;

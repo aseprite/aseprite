@@ -70,11 +70,11 @@ public:
                    WithoutTiledCheckBox)
     , m_filter(filter)
     , m_controlsWidget(app::load_widget<Widget>("replace_color.xml", "controls"))
-    , m_fromButton(app::find_widget<ColorButton>(m_controlsWidget, "from"))
-    , m_toButton(app::find_widget<ColorButton>(m_controlsWidget, "to"))
-    , m_toleranceSlider(app::find_widget<ui::Slider>(m_controlsWidget, "tolerance"))
+    , m_fromButton(app::find_widget<ColorButton>(m_controlsWidget.get(), "from"))
+    , m_toButton(app::find_widget<ColorButton>(m_controlsWidget.get(), "to"))
+    , m_toleranceSlider(app::find_widget<ui::Slider>(m_controlsWidget.get(), "tolerance"))
   {
-    getContainer()->addChild(m_controlsWidget);
+    getContainer()->addChild(m_controlsWidget.get());
 
     m_fromButton->setColor(m_filter.getFrom());
     m_toButton->setColor(m_filter.getTo());
@@ -121,7 +121,7 @@ private:
   }
 
   ReplaceColorFilterWrapper& m_filter;
-  base::UniquePtr<ui::Widget> m_controlsWidget;
+  std::unique_ptr<ui::Widget> m_controlsWidget;
   ColorButton* m_fromButton;
   ColorButton* m_toButton;
   ui::Slider* m_toleranceSlider;

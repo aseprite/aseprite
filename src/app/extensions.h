@@ -8,7 +8,6 @@
 #define APP_EXTENSIONS_H_INCLUDED
 #pragma once
 
-#include "base/unique_ptr.h"
 #include "obs/signal.h"
 
 #include <map>

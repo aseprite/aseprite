@@ -26,6 +26,8 @@
 #include "doc/sprite.h"
 #include "she/system.h"
 
+#include <memory>
+
 #define MAX_THUMBNAIL_SIZE              128
 
 namespace app {
@@ -35,8 +37,8 @@ public:
   Worker(FileOp* fop, IFileItem* fileitem)
     : m_fop(fop)
     , m_fileitem(fileitem)
-    , m_thumbnail(NULL)
-    , m_palette(NULL)
+    , m_thumbnail(nullptr)
+    , m_palette(nullptr)
     , m_thread(base::Bind<void>(&Worker::loadBgThread, this)) {
   }
 
@@ -68,12 +70,12 @@ private:
         m_palette.reset(new Palette(*sprite->palette(frame_t(0))));
 
         // Render first frame of the sprite in 'image'
-        base::UniquePtr<Image> image(Image::create(
+        std::unique_ptr<Image> image(Image::create(
             IMAGE_RGB, sprite->width(), sprite->height()));
 
         EditorRender render;
         render.setupBackground(NULL, image->pixelFormat());
-        render.renderSprite(image, sprite, frame_t(0));
+        render.renderSprite(image.get(), sprite, frame_t(0));
 
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * image->width() / MAX(image->width(), image->height());
@@ -87,8 +89,8 @@ private:
 
         // Stretch the 'image'
         m_thumbnail.reset(Image::create(image->pixelFormat(), thumb_w, thumb_h));
-        clear_image(m_thumbnail, 0);
-        algorithm::scale_image(m_thumbnail, image,
+        clear_image(m_thumbnail.get(), 0);
+        algorithm::scale_image(m_thumbnail.get(), image.get(),
                                0, 0, thumb_w, thumb_h,
                                0, 0, image->width(), image->height());
       }
@@ -102,7 +104,8 @@ private:
           m_thumbnail->width(),
           m_thumbnail->height());
 
-        convert_image_to_surface(m_thumbnail, m_palette, thumbnail,
+        convert_image_to_surface(
+          m_thumbnail.get(), m_palette.get(), thumbnail,
           0, 0, 0, 0, m_thumbnail->width(), m_thumbnail->height());
 
         m_fileitem->setThumbnail(thumbnail);
@@ -114,10 +117,10 @@ private:
     m_fop->done();
   }
 
-  base::UniquePtr<FileOp> m_fop;
+  std::unique_ptr<FileOp> m_fop;
   IFileItem* m_fileitem;
-  base::UniquePtr<Image> m_thumbnail;
-  base::UniquePtr<Palette> m_palette;
+  std::unique_ptr<Image> m_thumbnail;
+  std::unique_ptr<Palette> m_palette;
   base::thread m_thread;
 };
 
@@ -183,7 +186,7 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
       getWorkerStatus(fileitem, progress) != WithoutWorker)
     return;
 
-  base::UniquePtr<FileOp> fop(
+  std::unique_ptr<FileOp> fop(
     FileOp::createLoadDocumentOperation(
       nullptr,
       fileitem->fileName().c_str(),

@@ -56,7 +56,6 @@
 #include "base/fs.h"
 #include "base/scoped_lock.h"
 #include "base/split_string.h"
-#include "base/unique_ptr.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "render/render.h"
@@ -68,6 +67,7 @@
 #include "ui/ui.h"
 
 #include <iostream>
+#include <memory>
 
 #ifdef ENABLE_SCRIPTING
   #include "app/script/app_scripting.h"
@@ -263,7 +263,7 @@ void App::initialize(const AppOptions& options)
   // Process options
   LOG("APP: Processing options...\n");
   {
-    base::UniquePtr<CliDelegate> delegate;
+    std::unique_ptr<CliDelegate> delegate;
     if (options.previewCLI())
       delegate.reset(new PreviewCliDelegate);
     else

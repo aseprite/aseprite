@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,6 @@
 #include "config.h"
 #endif
 
-#include "base/unique_ptr.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -21,6 +20,7 @@
 #include "render/render.h"
 
 #include <cmath>
+#include <memory>
 
 namespace app {
 
@@ -33,7 +33,7 @@ Cel* create_cel_copy(const Cel* srcCel,
 {
   const Image* celImage = srcCel->image();
 
-  base::UniquePtr<Cel> dstCel(
+  std::unique_ptr<Cel> dstCel(
     new Cel(dstFrame,
             ImageRef(Image::create(dstSprite->pixelFormat(),
                                    celImage->width(),
@@ -83,7 +83,7 @@ Cel* create_cel_copy(const Cel* srcCel,
   if (srcCel->layer()->isReference() && !dstLayer->isReference()) {
     gfx::RectF srcBounds = srcCel->boundsF();
 
-    base::UniquePtr<Cel> dstCel2(
+    std::unique_ptr<Cel> dstCel2(
       new Cel(dstFrame,
               ImageRef(Image::create(dstSprite->pixelFormat(),
                                      std::ceil(srcBounds.w),

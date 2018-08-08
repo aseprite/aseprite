@@ -324,7 +324,7 @@ private:
   Editor* m_editor;
   doc::ImageRef m_image;
   doc::ImageBufferPtr m_imageBuffer;
-  base::UniquePtr<ConvertThread> m_bgThread;
+  std::unique_ptr<ConvertThread> m_bgThread;
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
 };

@@ -712,12 +712,12 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     editor->brushPreview().hide();
 
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getSite()));
+    std::unique_ptr<Image> tmpImage(new_image_from_mask(editor->getSite()));
 
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
                          editor->getSite(),
-                         tmpImage,
+                         tmpImage.get(),
                          document->mask(),
                          "Transformation"));
 

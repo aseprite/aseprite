@@ -17,7 +17,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
-#include "base/unique_ptr.h"
 #include "doc/color_mode.h"
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
@@ -50,7 +49,7 @@ void ColorShades::reverseShadeColors()
 
 doc::Remap* ColorShades::createShadeRemap(bool left)
 {
-  base::UniquePtr<doc::Remap> remap;
+  std::unique_ptr<doc::Remap> remap;
   Shade colors = getShade();
 
   // We need two or more colors to create a shading remap. In

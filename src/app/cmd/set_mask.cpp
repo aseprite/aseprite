@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,17 +26,17 @@ SetMask::SetMask(Doc* doc, Mask* newMask)
 void SetMask::setNewMask(Mask* newMask)
 {
   m_newMask.reset(newMask ? new Mask(*newMask): nullptr);
-  setMask(m_newMask);
+  setMask(m_newMask.get());
 }
 
 void SetMask::onExecute()
 {
-  setMask(m_newMask);
+  setMask(m_newMask.get());
 }
 
 void SetMask::onUndo()
 {
-  setMask(m_oldMask);
+  setMask(m_oldMask.get());
 }
 
 size_t SetMask::onMemSize() const

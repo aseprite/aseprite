@@ -16,6 +16,7 @@
 #include "ui/ui.h"
 
 #include <cctype>
+#include <memory>
 
 static const int kTimeoutToOpenSubmenu = 250;
 
@@ -251,7 +252,7 @@ void Menu::showPopup(const gfx::Point& pos)
   }
 
   // New window and new menu-box
-  base::UniquePtr<Window> window(new Window(Window::WithoutTitleBar));
+  std::unique_ptr<Window> window(new Window(Window::WithoutTitleBar));
   MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
@@ -281,7 +282,7 @@ void Menu::showPopup(const gfx::Point& pos)
   // it means that the user set the focus to other specific widget
   // before we closed the popup.
   Widget* focus = manager->getFocus();
-  if (focus && focus->window() == window)
+  if (focus && focus->window() == window.get())
     focus->releaseFocus();
 
   // Fetch the "menu" so it isn't destroyed

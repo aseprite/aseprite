@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,8 +9,8 @@
 #pragma once
 
 #include "base/mutex.h"
-#include "base/unique_ptr.h"
 
+#include <memory>
 #include <vector>
 
 namespace base {
@@ -53,7 +53,7 @@ namespace app {
 
     WorkerList m_workers;
     base::mutex m_workersAccess;
-    base::UniquePtr<base::thread> m_stopThread;
+    std::unique_ptr<base::thread> m_stopThread;
   };
 } // namespace app
 

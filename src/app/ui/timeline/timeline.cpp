@@ -45,7 +45,6 @@
 #include "base/convert_to.h"
 #include "base/memory.h"
 #include "base/scoped_value.h"
-#include "base/unique_ptr.h"
 #include "doc/doc.h"
 #include "doc/frame_tag.h"
 #include "gfx/point.h"

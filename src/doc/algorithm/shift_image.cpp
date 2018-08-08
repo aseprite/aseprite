@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,7 +10,6 @@
 
 #include "doc/algorithm/shift_image.h"
 
-#include "base/unique_ptr.h"
 #include "gfx/rect.h"
 #include "doc/image.h"
 #include "doc/mask.h"

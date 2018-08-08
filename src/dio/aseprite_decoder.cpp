@@ -38,7 +38,7 @@ bool AsepriteDecoder::decode()
   }
 
   // Create the new sprite
-  base::UniquePtr<doc::Sprite> sprite(
+  std::unique_ptr<doc::Sprite> sprite(
     new doc::Sprite(header.depth == 32 ? doc::IMAGE_RGB:
                     header.depth == 16 ? doc::IMAGE_GRAYSCALE:
                                          doc::IMAGE_INDEXED,
@@ -100,7 +100,7 @@ bool AsepriteDecoder::decode()
           case ASE_FILE_CHUNK_FLI_COLOR2:
             if (!ignore_old_color_chunks) {
               doc::Palette* prevPal = sprite->palette(frame);
-              base::UniquePtr<doc::Palette> pal(
+              std::unique_ptr<doc::Palette> pal(
                 chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
                 readColorChunk(prevPal, frame):
                 readColor2Chunk(prevPal, frame));
@@ -112,7 +112,7 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_PALETTE: {
             doc::Palette* prevPal = sprite->palette(frame);
-            base::UniquePtr<doc::Palette> pal(
+            std::unique_ptr<doc::Palette> pal(
               readPaletteChunk(prevPal, frame));
 
             if (prevPal->countDiff(pal.get(), NULL, NULL) > 0)
@@ -124,7 +124,7 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_LAYER: {
             doc::Layer* newLayer =
-              readLayerChunk(&header, sprite,
+              readLayerChunk(&header, sprite.get(),
                              &last_layer,
                              &current_level);
             if (newLayer) {
@@ -136,7 +136,7 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_CEL: {
             doc::Cel* cel =
-              readCelChunk(sprite, allLayers, frame,
+              readCelChunk(sprite.get(), allLayers, frame,
                            sprite->pixelFormat(), &header,
                            chunk_pos+chunk_size);
             if (cel) {
@@ -599,7 +599,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
   }
 
   // Create the new frame.
-  base::UniquePtr<doc::Cel> cel;
+  std::unique_ptr<doc::Cel> cel;
 
   switch (cel_type) {
 
@@ -707,7 +707,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
   if (!cel)
     return nullptr;
 
-  static_cast<doc::LayerImage*>(layer)->addCel(cel);
+  static_cast<doc::LayerImage*>(layer)->addCel(cel.get());
   return cel.release();
 }
 
@@ -834,7 +834,7 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
   read32();                        // 4 bytes reserved
   std::string name = readString(); // Name
 
-  base::UniquePtr<doc::Slice> slice(new doc::Slice);
+  std::unique_ptr<doc::Slice> slice(new doc::Slice);
   slice->setName(name);
 
   // For each key
@@ -862,7 +862,7 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
     slice->insert(frame, doc::SliceKey(bounds, center, pivot));
   }
 
-  slices.add(slice);
+  slices.add(slice.get());
   return slice.release();
 }
 

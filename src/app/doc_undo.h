@@ -11,7 +11,6 @@
 #include "app/doc_range.h"
 #include "app/sprite_position.h"
 #include "base/disable_copying.h"
-#include "base/unique_ptr.h"
 #include "obs/observable.h"
 #include "undo/undo_history.h"
 

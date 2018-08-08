@@ -8,12 +8,13 @@
 #define UI_MENU_H_INCLUDED
 #pragma once
 
-#include "base/unique_ptr.h"
 #include "obs/signal.h"
 #include "ui/register_message.h"
 #include "ui/separator.h"
 #include "ui/widget.h"
 #include "ui/window.h"
+
+#include <memory>
 
 namespace ui {
 
@@ -149,7 +150,7 @@ namespace ui {
     bool m_highlighted;           // Is it highlighted?
     Menu* m_submenu;              // The sub-menu
     MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item
-    base::UniquePtr<Timer> m_submenu_timer; // Timer to open the submenu
+    std::unique_ptr<Timer> m_submenu_timer; // Timer to open the submenu
 
     friend class Menu;
     friend class MenuBox;

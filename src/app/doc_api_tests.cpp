@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,7 +11,6 @@
 #include "app/doc_api.h"
 #include "app/test_context.h"
 #include "app/transaction.h"
-#include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -19,7 +18,7 @@
 using namespace app;
 using namespace doc;
 
-typedef base::UniquePtr<Doc> DocPtr;
+typedef std::unique_ptr<Doc> DocPtr;
 
 class BasicDocApiTest : public ::testing::Test {
 public:
@@ -130,7 +129,7 @@ TEST_F(BasicDocApiTest, MoveCel)
       image1->putPixel(u, v, u+v*image1->width());
 
   // Create a copy for later comparison.
-  base::UniquePtr<Image> expectedImage(Image::createCopy(image1));
+  std::unique_ptr<Image> expectedImage(Image::createCopy(image1));
 
   Transaction transaction(&ctx, "");
   doc->getApi(transaction).moveCel(
@@ -146,7 +145,7 @@ TEST_F(BasicDocApiTest, MoveCel)
   Image* image2 = cel2->image();
   EXPECT_EQ(32, image2->width());
   EXPECT_EQ(16, image2->height());
-  EXPECT_EQ(0, count_diff_between_images(expectedImage, image2));
+  EXPECT_EQ(0, count_diff_between_images(expectedImage.get(), image2));
   EXPECT_EQ(2, cel2->x());
   EXPECT_EQ(-2, cel2->y());
   EXPECT_EQ(128, cel2->opacity());

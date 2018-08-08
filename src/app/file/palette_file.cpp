@@ -78,7 +78,7 @@ Palette* load_palette(const char* filename)
       if (!ff || !ff->support(FILE_SUPPORT_LOAD))
         break;
 
-      base::UniquePtr<FileOp> fop(
+      std::unique_ptr<FileOp> fop(
         FileOp::createLoadDocumentOperation(
           nullptr, filename,
           FILE_LOAD_SEQUENCE_NONE |

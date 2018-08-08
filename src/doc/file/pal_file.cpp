@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,13 +11,13 @@
 #include "base/fstream_path.h"
 #include "base/split_string.h"
 #include "base/trim_string.h"
-#include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 
 #include <cctype>
 #include <fstream>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -49,7 +49,7 @@ Palette* load_pal_file(const char *filename)
   if (!std::getline(f, line))
     return nullptr;
 
-  base::UniquePtr<Palette> pal(new Palette(frame_t(0), 0));
+  std::unique_ptr<Palette> pal(new Palette(frame_t(0), 0));
 
   while (std::getline(f, line)) {
     // Trim line

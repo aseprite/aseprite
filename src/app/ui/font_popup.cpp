@@ -22,7 +22,6 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"

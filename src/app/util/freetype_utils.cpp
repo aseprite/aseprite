@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,6 @@
 
 #include "app/util/freetype_utils.h"
 
-#include "base/unique_ptr.h"
 #include "doc/blend_funcs.h"
 #include "doc/blend_internals.h"
 #include "doc/color.h"
@@ -21,6 +20,7 @@
 #include "ft/hb_shaper.h"
 #include "ft/lib.h"
 
+#include <memory>
 #include <stdexcept>
 
 namespace app {
@@ -30,7 +30,7 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
                         doc::color_t color,
                         bool antialias)
 {
-  base::UniquePtr<doc::Image> image(nullptr);
+  std::unique_ptr<doc::Image> image(nullptr);
   ft::Lib ft;
 
   ft::Face face(ft.open(fontfile));
@@ -45,7 +45,7 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
     // Render the image and copy it to the clipboard
     if (!bounds.isEmpty()) {
       image.reset(doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
-      doc::clear_image(image, 0);
+      doc::clear_image(image.get(), 0);
 
       ft::ForEachGlyph<ft::Face> feg(face);
       if (feg.initialize(base::utf8_const_iterator(text.begin()),
@@ -85,9 +85,9 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
                             output_alpha);
 
                 doc::put_pixel(
-                  image, ximg, yimg,
+                  image.get(), ximg, yimg,
                   doc::rgba_blender_normal(
-                    doc::get_pixel(image, ximg, yimg),
+                    doc::get_pixel(image.get(), ximg, yimg),
                     output_color));
               }
             }

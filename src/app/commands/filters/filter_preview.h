@@ -10,7 +10,6 @@
 
 #include "base/mutex.h"
 #include "base/thread.h"
-#include "base/unique_ptr.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -38,7 +37,7 @@ namespace app {
     FilterManagerImpl* m_filterMgr;
     ui::Timer m_timer;
     base::mutex m_filterMgrMutex;
-    base::UniquePtr<base::thread> m_filterThread;
+    std::unique_ptr<base::thread> m_filterThread;
     bool m_filterIsDone;
   };
 

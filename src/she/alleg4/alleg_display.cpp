@@ -14,7 +14,6 @@
 #include "base/exception.h"
 #include "base/paths.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "she/alleg4/alleg_display.h"
 #include "she/alleg4/alleg_surface.h"
 #include "she/common/system.h"

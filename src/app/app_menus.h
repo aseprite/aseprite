@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,10 +12,11 @@
 #include "app/ui/key.h"
 #include "app/widget_type_mismatch.h"
 #include "base/disable_copying.h"
-#include "base/unique_ptr.h"
 #include "obs/connection.h"
 #include "ui/base.h"
 #include "ui/menu.h"
+
+#include <memory>
 
 class TiXmlElement;
 class TiXmlHandle;
@@ -47,18 +48,18 @@ namespace app {
     // Updates the menu of recent files.
     bool rebuildRecentList();
 
-    Menu* getRootMenu() { return m_rootMenu; }
+    Menu* getRootMenu() { return m_rootMenu.get(); }
     MenuItem* getRecentListMenuitem() { return m_recentListMenuitem; }
-    Menu* getTabPopupMenu() { return m_tabPopupMenu; }
-    Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu; }
-    Menu* getLayerPopupMenu() { return m_layerPopupMenu; }
-    Menu* getFramePopupMenu() { return m_framePopupMenu; }
-    Menu* getCelPopupMenu() { return m_celPopupMenu; }
-    Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu; }
-    Menu* getFrameTagPopupMenu() { return m_frameTagPopupMenu; }
-    Menu* getSlicePopupMenu() { return m_slicePopupMenu; }
-    Menu* getPalettePopupMenu() { return m_palettePopupMenu; }
-    Menu* getInkPopupMenu() { return m_inkPopupMenu; }
+    Menu* getTabPopupMenu() { return m_tabPopupMenu.get(); }
+    Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu.get(); }
+    Menu* getLayerPopupMenu() { return m_layerPopupMenu.get(); }
+    Menu* getFramePopupMenu() { return m_framePopupMenu.get(); }
+    Menu* getCelPopupMenu() { return m_celPopupMenu.get(); }
+    Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu.get(); }
+    Menu* getFrameTagPopupMenu() { return m_frameTagPopupMenu.get(); }
+    Menu* getSlicePopupMenu() { return m_slicePopupMenu.get(); }
+    Menu* getPalettePopupMenu() { return m_palettePopupMenu.get(); }
+    Menu* getInkPopupMenu() { return m_inkPopupMenu.get(); }
 
     void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params,
                                              const KeyPtr& key);
@@ -76,19 +77,19 @@ namespace app {
     void createNativeMenus();
     void createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu);
 
-    base::UniquePtr<Menu> m_rootMenu;
+    std::unique_ptr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;
     MenuItem* m_helpMenuitem;
-    base::UniquePtr<Menu> m_tabPopupMenu;
-    base::UniquePtr<Menu> m_documentTabPopupMenu;
-    base::UniquePtr<Menu> m_layerPopupMenu;
-    base::UniquePtr<Menu> m_framePopupMenu;
-    base::UniquePtr<Menu> m_celPopupMenu;
-    base::UniquePtr<Menu> m_celMovementPopupMenu;
-    base::UniquePtr<Menu> m_frameTagPopupMenu;
-    base::UniquePtr<Menu> m_slicePopupMenu;
-    base::UniquePtr<Menu> m_palettePopupMenu;
-    base::UniquePtr<Menu> m_inkPopupMenu;
+    std::unique_ptr<Menu> m_tabPopupMenu;
+    std::unique_ptr<Menu> m_documentTabPopupMenu;
+    std::unique_ptr<Menu> m_layerPopupMenu;
+    std::unique_ptr<Menu> m_framePopupMenu;
+    std::unique_ptr<Menu> m_celPopupMenu;
+    std::unique_ptr<Menu> m_celMovementPopupMenu;
+    std::unique_ptr<Menu> m_frameTagPopupMenu;
+    std::unique_ptr<Menu> m_slicePopupMenu;
+    std::unique_ptr<Menu> m_palettePopupMenu;
+    std::unique_ptr<Menu> m_inkPopupMenu;
     obs::scoped_connection m_recentFilesConn;
     std::vector<Menu*> m_menus;
     she::Menu* m_osMenu;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,8 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_document.h"
-#include "base/unique_ptr.h"
+
+#include <memory>
 
 namespace doc {
   class Mask;
@@ -31,7 +32,7 @@ namespace cmd {
     size_t onMemSize() const override;
 
   private:
-    base::UniquePtr<Mask> m_oldMask;
+    std::unique_ptr<Mask> m_oldMask;
   };
 
 } // namespace cmd

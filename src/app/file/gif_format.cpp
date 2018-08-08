@@ -21,7 +21,6 @@
 #include "app/util/autocrop.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
-#include "base/unique_ptr.h"
 #include "doc/doc.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
@@ -333,7 +332,7 @@ private:
       m_sprite->addFrame(m_frameNum);
 
     // Create a temporary image loading the frame pixels from the GIF file
-    UniquePtr<Image> frameImage(
+    std::unique_ptr<Image> frameImage(
       readFrameIndexedImage(frameBounds));
 
     TRACE("GIF: Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
@@ -346,7 +345,7 @@ private:
     }
 
     // Merge this frame colors with the current palette
-    updatePalette(frameImage);
+    updatePalette(frameImage.get());
 
     // Convert the sprite to RGB if we have more than 256 colors
     if ((m_sprite->pixelFormat() == IMAGE_INDEXED) &&
@@ -359,10 +358,10 @@ private:
 
     // Composite frame with previous frame
     if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
-      compositeIndexedImageToIndexed(frameBounds, frameImage);
+      compositeIndexedImageToIndexed(frameBounds, frameImage.get());
     }
     else {
-      compositeIndexedImageToRgb(frameBounds, frameImage);
+      compositeIndexedImageToRgb(frameBounds, frameImage.get());
     }
 
     // Create cel
@@ -392,7 +391,7 @@ private:
   }
 
   Image* readFrameIndexedImage(const gfx::Rect& frameBounds) {
-    UniquePtr<Image> frameImage(
+    std::unique_ptr<Image> frameImage(
       Image::create(IMAGE_INDEXED, frameBounds.w, frameBounds.h));
 
     IndexedTraits::address_t addr;
@@ -511,7 +510,7 @@ private:
       }
     }
 
-    UniquePtr<Palette> palette;
+    std::unique_ptr<Palette> palette;
     if (m_frameNum == 0)
       palette.reset(new Palette(m_frameNum, usedNColors + (needsExtraBgColor ? 1: 0)));
     else {
@@ -598,7 +597,7 @@ private:
     }
 
     ASSERT(base == palette->size());
-    m_sprite->setPalette(palette, false);
+    m_sprite->setPalette(palette.get(), false);
   }
 
   void compositeIndexedImageToIndexed(const gfx::Rect& frameBounds,
@@ -812,7 +811,7 @@ private:
   GifFileType* m_gifFile;
   int m_fd;
   size_t m_filesize;
-  UniquePtr<Sprite> m_sprite;
+  std::unique_ptr<Sprite> m_sprite;
   gfx::Rect m_spriteBounds;
   LayerImage* m_layer;
   int m_frameNum;
@@ -1142,8 +1141,8 @@ private:
                   const gfx::Rect& frameBounds,
                   const DisposalMethod disposal,
                   const bool fixDuration) {
-    UniquePtr<Palette> framePaletteRef;
-    UniquePtr<RgbMap> rgbmapRef;
+    std::unique_ptr<Palette> framePaletteRef;
+    std::unique_ptr<RgbMap> rgbmapRef;
     Palette* framePalette = m_sprite->palette(frame);
     RgbMap* rgbmap = m_sprite->rgbMap(frame);
 

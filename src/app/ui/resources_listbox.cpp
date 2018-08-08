@@ -63,7 +63,7 @@ void ResourceListItem::onPaint(PaintEvent& ev)
   g->fillRect(bgcolor, bounds);
 
   static_cast<ResourcesListBox*>(parent())->
-    paintResource(g, bounds, m_resource);
+    paintResource(g, bounds, m_resource.get());
 
   g->drawText(text(), fgcolor, gfx::ColorNone,
               gfx::Point(
@@ -75,7 +75,7 @@ void ResourceListItem::onSizeHint(SizeHintEvent& ev)
 {
   ev.setSizeHint(
     static_cast<ResourcesListBox*>(parent())->
-    resourceSizeHint(m_resource));
+    resourceSizeHint(m_resource.get()));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -195,12 +195,12 @@ void ResourcesListBox::onTick()
   }
   m_loadingItem->makeProgress();
 
-  base::UniquePtr<Resource> resource;
+  std::unique_ptr<Resource> resource;
   std::string name;
 
   while (m_resourcesLoader->next(resource)) {
-    base::UniquePtr<ResourceListItem> listItem(onCreateResourceItem(resource));
-    insertChild(getItemsCount()-1, listItem);
+    std::unique_ptr<ResourceListItem> listItem(onCreateResourceItem(resource.get()));
+    insertChild(getItemsCount()-1, listItem.get());
     sortItems();
     layout();
 

@@ -25,7 +25,6 @@
 #include "base/process.h"
 #include "base/split_string.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "doc/cancel_io.h"
 
 namespace app {

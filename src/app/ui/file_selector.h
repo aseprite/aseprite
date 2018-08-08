@@ -9,7 +9,6 @@
 #pragma once
 
 #include "app/file_selector.h"
-#include "base/unique_ptr.h"
 #include "ui/window.h"
 
 #include "file_selector.xml.h"

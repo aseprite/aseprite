@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,8 +21,6 @@
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui_context.h"
-#include "base/unique_ptr.h"
-#include "base/unique_ptr.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
@@ -125,7 +123,7 @@ void ColorQuantizationCommand::onExecute(Context* context)
     if (job.isCanceled())
       return;
 
-    base::UniquePtr<Palette> newPalette(
+    std::unique_ptr<Palette> newPalette(
       new Palette(createPal ? tmpPalette:
                               *get_current_palette()));
 

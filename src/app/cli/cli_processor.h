@@ -10,8 +10,8 @@
 
 #include "app/cli/cli_delegate.h"
 #include "app/cli/cli_open_file.h"
-#include "base/unique_ptr.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -33,7 +33,7 @@ namespace app {
 
     CliDelegate* m_delegate;
     const AppOptions& m_options;
-    base::UniquePtr<DocExporter> m_exporter;
+    std::unique_ptr<DocExporter> m_exporter;
   };
 
 } // namespace app

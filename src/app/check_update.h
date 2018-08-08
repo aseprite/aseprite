@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,9 +11,10 @@
 #ifdef ENABLE_UPDATER
 
 #include "base/thread.h"
-#include "base/unique_ptr.h"
 #include "ui/timer.h"
 #include "updater/check_update.h"
+
+#include <memory>
 
 namespace app {
 
@@ -43,8 +44,8 @@ namespace app {
     CheckUpdateDelegate* m_delegate;
     Preferences& m_preferences;
     updater::Uuid m_uuid;
-    base::UniquePtr<base::thread> m_thread;
-    base::UniquePtr<CheckUpdateBackgroundJob> m_bgJob;
+    std::unique_ptr<base::thread> m_thread;
+    std::unique_ptr<CheckUpdateBackgroundJob> m_bgJob;
     bool m_doCheck;
     bool m_received;
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,8 +11,9 @@
 #include "app/cmd.h"
 #include "app/cmd/add_cel.h"
 #include "app/cmd/with_sprite.h"
-#include "base/unique_ptr.h"
 #include "doc/frame.h"
+
+#include <memory>
 
 namespace doc {
   class Sprite;
@@ -39,7 +40,7 @@ namespace cmd {
     void moveFrames(Layer* layer, frame_t fromThis, frame_t delta);
 
     frame_t m_newFrame;
-    base::UniquePtr<AddCel> m_addCel;
+    std::unique_ptr<AddCel> m_addCel;
   };
 
 } // namespace cmd

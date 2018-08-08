@@ -61,7 +61,7 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
 
   Palette* palette = sprite->palette(site.frame());
 
-  base::UniquePtr<Sprite> dstSprite(
+  std::unique_ptr<Sprite> dstSprite(
     Sprite::createBasicSprite(image->pixelFormat(),
                               image->width(),
                               image->height(),
@@ -75,7 +75,7 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
   dstLayer->setFlags(site.layer()->flags()); // Copy all flags
   copy_image(dstLayer->cel(frame_t(0))->image(), image.get());
 
-  base::UniquePtr<Doc> dstDoc(new Doc(dstSprite));
+  std::unique_ptr<Doc> dstDoc(new Doc(dstSprite.get()));
   dstSprite.release();
   char buf[1024];
   std::sprintf(buf, "%s-%dx%d-%dx%d",

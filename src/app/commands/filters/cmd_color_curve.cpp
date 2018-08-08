@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,7 +18,6 @@
 #include "app/modules/gui.h"
 #include "app/ui/color_button.h"
 #include "base/bind.h"
-#include "base/unique_ptr.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "filters/color_curve.h"
@@ -29,7 +28,7 @@ namespace app {
 
 using namespace filters;
 
-static base::UniquePtr<ColorCurve> the_curve;
+static std::unique_ptr<ColorCurve> the_curve;
 
 class ColorCurveWindow : public FilterWindow {
 public:

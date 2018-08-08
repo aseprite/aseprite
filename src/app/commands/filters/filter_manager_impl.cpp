@@ -134,7 +134,7 @@ void FilterManagerImpl::beginForPreview()
   }
 
   m_row = m_nextRowToFlush = 0;
-  m_mask = m_previewMask;
+  m_mask = m_previewMask.get();
 
   // If we have a tiled mode enabled, we'll apply the filter to the whole areaes
   Editor* activeEditor = UIContext::instance()->activeEditor();

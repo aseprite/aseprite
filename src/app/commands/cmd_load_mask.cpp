@@ -68,7 +68,7 @@ void LoadMaskCommand::onExecute(Context* context)
     m_filename = selectedFilename.front();
   }
 
-  base::UniquePtr<Mask> mask(load_msk_file(m_filename.c_str()));
+  std::unique_ptr<Mask> mask(load_msk_file(m_filename.c_str()));
   if (!mask) {
     ui::Alert::show(fmt::format(Strings::alerts_error_loading_file(), m_filename));
     return;
@@ -78,7 +78,7 @@ void LoadMaskCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Doc* document = writer.document();
     Transaction transaction(writer.context(), "Mask Load", DoesntModifyDocument);
-    transaction.execute(new cmd::SetMask(document, mask));
+    transaction.execute(new cmd::SetMask(document, mask.get()));
     transaction.commit();
 
     document->generateMaskBoundaries();

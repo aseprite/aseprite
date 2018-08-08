@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,10 +9,11 @@
 #endif
 
 #include "base/base.h"
-#include "base/unique_ptr.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/image_impl.h"
 #include "doc/primitives.h"
+
+#include <memory>
 
 namespace doc {
 namespace algorithm {
@@ -183,10 +184,10 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
     return;
 
   int scale = 8;
-  base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf[0]));
-  base::UniquePtr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[1]));
-  base::UniquePtr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[2]));
-  base::UniquePtr<Image> msk_copy;
+  std::unique_ptr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf[0]));
+  std::unique_ptr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[1]));
+  std::unique_ptr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[2]));
+  std::unique_ptr<Image> msk_copy;
 
   color_t maskColor = spr->maskColor();
 
@@ -199,30 +200,30 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
 
   for (int i=0; i<3; ++i) {
     // clear_image(tmp_copy, maskColor);
-    image_scale2x(tmp_copy, spr_copy, spr->width()*(1<<i), spr->height()*(1<<i));
-    spr_copy->copy(tmp_copy, gfx::Clip(tmp_copy->bounds()));
+    image_scale2x(tmp_copy.get(), spr_copy.get(), spr->width()*(1<<i), spr->height()*(1<<i));
+    spr_copy->copy(tmp_copy.get(), gfx::Clip(tmp_copy->bounds()));
   }
 
   if (mask) {
     // Same ImageBuffer than tmp_copy
     msk_copy.reset(Image::create(IMAGE_BITMAP, mask->width()*scale, mask->height()*scale, buf[1]));
-    clear_image(msk_copy, 0);
-    scale_image(msk_copy, mask,
+    clear_image(msk_copy.get(), 0);
+    scale_image(msk_copy.get(), mask,
                 0, 0, msk_copy->width(), msk_copy->height(),
                 0, 0, mask->width(), mask->height());
   }
 
-  clear_image(bmp_copy, maskColor);
-  scale_image(bmp_copy, bmp,
+  clear_image(bmp_copy.get(), maskColor);
+  scale_image(bmp_copy.get(), bmp,
               0, 0, bmp_copy->width(), bmp_copy->height(),
               xmin, ymin, rot_width, rot_height);
 
   parallelogram(
-    bmp_copy, spr_copy, msk_copy.get(),
+    bmp_copy.get(), spr_copy.get(), msk_copy.get(),
     (x1-xmin)*scale, (y1-ymin)*scale, (x2-xmin)*scale, (y2-ymin)*scale,
     (x3-xmin)*scale, (y3-ymin)*scale, (x4-xmin)*scale, (y4-ymin)*scale);
 
-  scale_image(bmp, bmp_copy,
+  scale_image(bmp, bmp_copy.get(),
               xmin, ymin, rot_width, rot_height,
               0, 0, bmp_copy->width(), bmp_copy->height());
 }

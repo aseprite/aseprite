@@ -16,10 +16,10 @@
 #include "app/doc_exporter.h"
 #include "app/file/file.h"
 #include "base/fs.h"
-#include "base/unique_ptr.h"
 #include "doc/sprite.h"
 
 #include <iostream>
+#include <memory>
 
 namespace app {
 
@@ -131,7 +131,7 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   if (!cof.filenameFormat.empty())
     std::cout << "  - Filename format: '" << cof.filenameFormat << "'\n";
 
-  base::UniquePtr<FileOp> fop(
+  std::unique_ptr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       ctx,
       cof.roi(),

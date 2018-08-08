@@ -39,9 +39,9 @@ void Sprite_new(script::ContextHandle handle)
   int h = ctx.requireInt(2);
   int colorMode = (ctx.isUndefined(3) ? IMAGE_RGB: ctx.requireInt(3));
 
-  base::UniquePtr<Sprite> sprite(
+  std::unique_ptr<Sprite> sprite(
     Sprite::createBasicSprite((doc::PixelFormat)colorMode, w, h, 256));
-  base::UniquePtr<Doc> doc(new Doc(sprite));
+  std::unique_ptr<Doc> doc(new Doc(sprite.get()));
   sprite.release();
 
   app::Context* appCtx = App::instance()->context();
@@ -173,11 +173,11 @@ void Sprite_loadPalette(script::ContextHandle handle)
 
   if (fn && wrap) {
     Doc* doc = wrap->document();
-    base::UniquePtr<doc::Palette> palette(load_palette(fn));
+    std::unique_ptr<doc::Palette> palette(load_palette(fn));
     if (palette) {
       // TODO Merge this with the code in LoadPaletteCommand
       doc->getApi(wrap->transaction()).setPalette(
-        wrap->sprite(), 0, palette);
+        wrap->sprite(), 0, palette.get());
     }
   }
 

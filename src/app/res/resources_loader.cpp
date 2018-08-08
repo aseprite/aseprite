@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,7 +41,7 @@ void ResourcesLoader::cancel()
   m_cancel = true;
 }
 
-bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
+bool ResourcesLoader::next(std::unique_ptr<Resource>& resource)
 {
   Resource* rawResource;
   if (m_queue.try_pop(rawResource)) {
