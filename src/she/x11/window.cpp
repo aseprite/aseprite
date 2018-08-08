@@ -223,10 +223,15 @@ gfx::Size X11Window::restoredSize() const
 
 void X11Window::captureMouse()
 {
+  XGrabPointer(m_display, m_window, False,
+               PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+               GrabModeAsync, GrabModeAsync,
+               None, None, CurrentTime);
 }
 
 void X11Window::releaseMouse()
 {
+  XUngrabPointer(m_display, CurrentTime);
 }
 
 void X11Window::setMousePosition(const gfx::Point& position)
