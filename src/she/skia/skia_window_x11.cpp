@@ -60,10 +60,12 @@ SkiaWindow::~SkiaWindow()
 
 void SkiaWindow::setVisible(bool visible)
 {
+  // TODO
 }
 
 void SkiaWindow::maximize()
 {
+  // TODO
 }
 
 bool SkiaWindow::isMaximized() const
