@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,7 +11,7 @@
 #include "config.h"
 #endif
 
-#include "she/osx/vk.h"
+#include "she/osx/keys.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h> // TIS functions

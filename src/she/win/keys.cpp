@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2016  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "she/win/vk.h"
+#include "she/win/keys.h"
 
 namespace she {
 

@@ -21,8 +21,8 @@
 #include "gfx/size.h"
 #include "she/event.h"
 #include "she/native_cursor.h"
+#include "she/win/keys.h"
 #include "she/win/system.h"
-#include "she/win/vk.h"
 #include "she/win/window_dde.h"
 
 #define SHE_WND_CLASS_NAME L"Aseprite.Window"
