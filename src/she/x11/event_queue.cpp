@@ -90,7 +90,7 @@ void X11EventQueue::processX11Event(XEvent& event)
   TRACE("XEvent: %s (%d)\n", get_event_name(event), event.type);
 
   X11Window* window = X11Window::getPointerFromHandle(event.xany.window);
-  ASSERT(window);
+  // In MappingNotify the window can be nullptr
   if (window)
     window->processX11Event(event);
 }
