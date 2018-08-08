@@ -14,8 +14,11 @@
 
 #include <X11/Xlib.h>
 
+#define EV_TRACE(...)
+
 namespace she {
 
+#if !defined(NDEBUG)
 namespace {
 
 const char* get_event_name(XEvent& event)
@@ -60,6 +63,7 @@ const char* get_event_name(XEvent& event)
 }
 
 } // anonymous namespace
+#endif
 
 void X11EventQueue::getEvent(Event& ev, bool canWait)
 {
@@ -87,7 +91,7 @@ void X11EventQueue::getEvent(Event& ev, bool canWait)
 
 void X11EventQueue::processX11Event(XEvent& event)
 {
-  TRACE("XEvent: %s (%d)\n", get_event_name(event), event.type);
+  EV_TRACE("XEvent: %s (%d)\n", get_event_name(event), event.type);
 
   X11Window* window = X11Window::getPointerFromHandle(event.xany.window);
   // In MappingNotify the window can be nullptr
