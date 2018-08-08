@@ -1272,10 +1272,8 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
     }
     setEditorScroll(scroll);
 
-#if defined(_WIN32) || defined(__APPLE__)
     mousePos -= delta;
     ui::set_mouse_position(mousePos);
-#endif
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(
