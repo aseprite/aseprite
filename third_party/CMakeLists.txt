@@ -48,10 +48,6 @@ if(NOT USE_SHARED_CURL)
   add_subdirectory(curl)
 endif()
 
-if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_LIBLOADPNG)
-  add_subdirectory(loadpng)
-endif()
-
 if(NOT USE_SHARED_PIXMAN)
   add_subdirectory(pixman-cmake)
 endif()

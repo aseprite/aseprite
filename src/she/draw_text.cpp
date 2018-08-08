@@ -185,10 +185,7 @@ retry:;
                     ((backdrop & fd.redMask) >> fd.redShift),
                     ((backdrop & fd.greenMask) >> fd.greenShift),
                     ((backdrop & fd.blueMask) >> fd.blueShift),
-                    // Backdrop color is always opaque (needed for
-                    // Allegro port because it doesn't contain the
-                    // alpha=255)
-                    255);
+                    ((backdrop & fd.alphaMask) >> fd.alphaShift));
 
                 gfx::Color output = gfx::rgba(gfx::getr(fg),
                                               gfx::getg(fg),

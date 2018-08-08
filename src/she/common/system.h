@@ -125,10 +125,6 @@ public:
         isKeyPressed(kKeyRWin) ? kKeyWinModifier: 0));
   }
 
-  void clearKeyboardBuffer() override {
-    // Do nothing
-  }
-
 private:
 #ifdef _WIN32
   bool m_useWintabAPI;

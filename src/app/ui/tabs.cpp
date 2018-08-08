@@ -927,33 +927,13 @@ void Tabs::createFloatingOverlay(Tab* tab)
   // Fill the surface with pink color
   {
     she::SurfaceLock lock(surface);
-#ifdef USE_ALLEG4_BACKEND
-    surface->fillRect(gfx::rgba(255, 0, 255), gfx::Rect(0, 0, surface->width(), surface->height()));
-#else
     surface->fillRect(gfx::rgba(0, 0, 0, 0), gfx::Rect(0, 0, surface->width(), surface->height()));
-#endif
   }
   {
     Graphics g(surface, 0, 0);
     g.setFont(font());
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
-#ifdef USE_ALLEG4_BACKEND
-  // Make pink parts transparent (TODO remove this hack when we change the back-end to Skia)
-  {
-    she::SurfaceLock lock(surface);
-
-    for (int y=0; y<surface->height(); ++y)
-      for (int x=0; x<surface->width(); ++x) {
-        gfx::Color c = surface->getPixel(x, y);
-        c = (c != gfx::rgba(255, 0, 255, 0) &&
-             c != gfx::rgba(255, 0, 255, 255) ?
-             gfx::rgba(gfx::getr(c), gfx::getg(c), gfx::getb(c), 255):
-             gfx::ColorNone);
-        surface->putPixel(c, x, y);
-      }
-  }
-#endif
 
   m_floatingOverlay.reset(new Overlay(surface, gfx::Point(), Overlay::MouseZOrder-1));
   OverlayManager::instance()->addOverlay(m_floatingOverlay.get());

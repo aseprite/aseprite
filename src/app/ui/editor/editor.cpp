@@ -1751,12 +1751,6 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case kFocusLeaveMessage:
-      // As we use keys like Space-bar as modifier, we can clear the
-      // keyboard buffer when we lost the focus.
-      she::instance()->clearKeyboardBuffer();
-      break;
-
     case kMouseWheelMessage:
       if (m_sprite && hasMouse()) {
         EditorStatePtr holdState(m_state);

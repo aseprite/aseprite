@@ -1,7 +1,5 @@
 # Aseprite
 # Copyright (C) 2001-2018  David Capello
-#
-# Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
 cmake_minimum_required(VERSION 3.4)
 
@@ -67,12 +65,10 @@ option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
-option(USE_SHARED_LIBLOADPNG "Use your installed copy of libloadpng" off)
 option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_FREETYPE "Use shared FreeType library" off)
 option(USE_SHARED_HARFBUZZ "Use shared HarfBuzz library" off)
-option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support)" off)
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(ENABLE_SCRIPTING   "Compile with scripting support" on)
@@ -88,20 +84,11 @@ set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check u
 
 if(NOT ENABLE_UI)
   # Without UI, don't use back-ends
-  set(USE_ALLEG4_BACKEND off)
   set(USE_SKIA_BACKEND off)
   set(USE_NONE_BACKEND on)
 else()
-  if(APPLE)
-    # On OS X Allegro isn't supported anymore
-    set(USE_ALLEG4_BACKEND off)
-    set(USE_SKIA_BACKEND on)
-    set(USE_NONE_BACKEND off)
-  else()
-    option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
-    option(USE_SKIA_BACKEND   "Use Skia backend" off)
-    set(USE_NONE_BACKEND off)
-  endif()
+  set(USE_SKIA_BACKEND on)
+  set(USE_NONE_BACKEND off)
 endif()
 
 # Check valid gtk + libpng combination
@@ -167,7 +154,6 @@ set(CURL_DIR            ${CMAKE_SOURCE_DIR}/third_party/curl)
 set(GIFLIB_DIR          ${CMAKE_SOURCE_DIR}/third_party/giflib)
 set(LIBJPEG_DIR         ${CMAKE_SOURCE_DIR}/third_party/jpeg)
 set(LIBPNG_DIR          ${CMAKE_SOURCE_DIR}/third_party/libpng)
-set(LOADPNG_DIR         ${CMAKE_SOURCE_DIR}/third_party/loadpng)
 set(LIBWEBP_DIR         ${CMAKE_SOURCE_DIR}/third_party/libwebp)
 set(PIXMAN_DIR          ${CMAKE_SOURCE_DIR}/third_party/pixman)
 set(FREETYPE_DIR        ${CMAKE_SOURCE_DIR}/third_party/freetype2)
@@ -297,17 +283,6 @@ else()
 endif()
 include_directories(${JPEG_INCLUDE_DIRS})
 
-if(USE_ALLEG4_BACKEND)
-  if(USE_SHARED_LIBLOADPNG)
-    find_library(LOADPNG_LIBRARY NAMES loadpng)
-    find_path(LOADPNG_INCLUDE_DIR NAMES loadpng.h)
-  else()
-    set(LOADPNG_LIBRARY loadpng)
-    set(LOADPNG_INCLUDE_DIR ${LOADPNG_DIR})
-  endif()
-  include_directories(${LOADPNG_INCLUDE_DIR})
-endif()
-
 if(USE_SHARED_CMARK)
   find_library(CMARK_LIBRARIES NAMES cmark)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
@@ -333,82 +308,20 @@ include_directories(${SIMPLEINI_DIR})
 
 set(PLATFORM_LIBS)
 
-# Allegro 4 backend
-if(USE_ALLEG4_BACKEND)
-  add_definitions(-DUSE_ALLEG4_BACKEND)
-
-  if(USE_SHARED_ALLEGRO4)
-    # Find the shared Allegro 4 library
-    find_library(LIBALLEGRO4_LIBRARY alleg)
-    find_path(LIBALLEGRO4_INCLUDE_DIR allegro.h)
-
-    if(NOT LIBALLEGRO4_LIBRARY)
-      message(FATAL_ERROR "Allegro 4 not found")
-    endif()
-
-    # Get flags to link programs using allegro-config program
-    execute_process(COMMAND allegro-config --libs --shared
-      OUTPUT_VARIABLE LIBALLEGRO4_LINK_FLAGS
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    set(LIBALLEGRO4_LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS} ${PLATFORM_LIBS})
-    include_directories(${LIBALLEGRO4_INCLUDE_DIR})
-  else()
-    include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
-    include_directories(${CMAKE_BINARY_DIR}/include)
-
-    add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
-    add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
-
-    # Static Allegro (the code of Allegro library is embedded).
-    add_definitions(-DALLEGRO_STATICLINK)
-
-    set(LIBALLEGRO4_LINK_FLAGS allegro)
-  endif()
-endif()
-
-# Skia backend
-if(USE_SKIA_BACKEND)
-  add_definitions(-DUSE_SKIA_BACKEND)
-endif()
-
 # -- Unix --
 
 if(UNIX AND NOT APPLE AND NOT BEOS)
-  # Pthreads
   find_package(Threads REQUIRED)
   list(APPEND PLATFORM_LIBS m ${CMAKE_THREAD_LIBS_INIT})
 
-  # X11
   find_package(X11 REQUIRED)
   include_directories(SYSTEM ${X11_INCLUDE_DIR})
   list(APPEND PLATFORM_LIBS ${X11_LIBRARIES})
-
-  if(X11_XShm_FOUND)
-    list(APPEND PLATFORM_LIBS ${X11_Xext_LIB})
-  endif()
-
   if(X11_Xcursor_FOUND)
     list(APPEND PLATFORM_LIBS ${X11_Xcursor_LIB})
   endif()
 
-  if(X11_Xpm_FOUND)
-    list(APPEND PLATFORM_LIBS ${X11_Xpm_LIB})
-  endif()
-
-  find_library(X11_Xxf86vm_LIB Xxf86vm ${X11_LIB_SEARCH_PATH})
-  mark_as_advanced(X11_Xxf86vm_LIB)
-  if(X11_xf86vmode_FOUND)
-    list(APPEND PLATFORM_LIBS ${X11_Xxf86vm_LIB})
-  endif()
-
   check_library_exists(X11 XOpenIM "${X11_LIB_SEARCH_PATH}" XIM_FOUND)
-  check_library_exists(Xxf86dga XDGAQueryExtension
-    "${X11_LIB_SEARCH_PATH}" XDGA_FOUND)
-
-  if(XDGA_FOUND)
-    list(APPEND PLATFORM_LIBS Xxf86dga ${X11_LIBRARIES})
-  endif()
 endif()
 
 # -- Windows --
@@ -467,5 +380,4 @@ set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
 set(UNDO_TESTS     ${ENABLE_TESTS} CACHE BOOL "Enable undo tests")
 
 add_subdirectory(laf)
-
 add_subdirectory(src)

@@ -33,11 +33,6 @@ if(WIN32)
   include_directories(..)
 endif()
 
-# Use patched version of Allegro 4 (with window resize support).
-if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_ALLEGRO4)
-  add_subdirectory(allegro)
-endif()
-
 ######################################################################
 # pthread
 

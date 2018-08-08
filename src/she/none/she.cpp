@@ -38,7 +38,6 @@ public:
   bool isKeyPressed(KeyScancode scancode) override { return false; }
   KeyModifiers keyModifiers() override { return kKeyNoneModifier; }
   int getUnicodeFromScancode(KeyScancode scancode) override { return 0; }
-  void clearKeyboardBuffer() override { }
   void setTranslateDeadKeys(bool state) override { }
 };
 

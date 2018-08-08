@@ -13,7 +13,6 @@ Aseprite is separated in the following layers/modules:
 These libraries are easy to be used and embedded in other software
 because they don't depend on any other component.
 
-  * [allegro](allegro/): Modified version of [Allegro](http://alleg.sourceforge.net/) library, used for keyboard/mouse input, and drawing 2D graphics on screen.
   * [clip](https://github.com/aseprite/clip): Clipboard library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](https://github.com/aseprite/flic): Library to load/save FLI/FLC files.
@@ -35,7 +34,7 @@ because they don't depend on any other component.
 ## Level 2
 
   * [doc](doc/) (base, fixmath, gfx): Document model library.
-  * [she](she/) (allegro, base, gfx, wacom): A wrapper for the Allegro library.
+  * [she](she/) (base, gfx, wacom): OS input/output.
 
 ## Level 3
 

@@ -3,7 +3,6 @@
 
 # TODO the following variables should be available through options
 #      in this file instead of the main Aseprite CMakeLists.txt:
-#      - USE_ALLEG4_BACKEND
 #      - USE_NONE_BACKEND
 #      - USE_SKIA_BACKEND
 #      - WITH_GTK_FILE_DIALOG_SUPPORT
@@ -12,33 +11,6 @@ set(SHE_SOURCES
   common/freetype_font.cpp
   draw_text.cpp
   system.cpp)
-
-######################################################################
-# Allegro 4 backend
-
-if(USE_ALLEG4_BACKEND)
-  add_definitions(-DUSE_KEY_POLLER -DUSE_MOUSE_POLLER)
-  if(WIN32)
-    find_package(DXGuid)
-    if(NOT DXGUID_FOUND)
-      if(MSVC)
-        message(FATAL_ERROR "DirectX required for Windows port. You might need to add DirectX include and lib directories to your INCLUDE and LIB environment variables.")
-      else()
-        message(FATAL_ERROR "DirectX required for Windows port.")
-      endif()
-    endif()
-    include_directories(SYSTEM ${DXGUID_INCLUDE_DIR})
-  endif()
-
-  list(APPEND SHE_SOURCES
-    alleg4/alleg_display.cpp
-    alleg4/alleg_surface.cpp
-    alleg4/display_events.cpp
-    alleg4/key_poller.cpp
-    alleg4/mouse_poller.cpp
-    alleg4/scancode.cpp
-    alleg4/she.cpp)
-endif()
 
 ######################################################################
 # Skia backend
@@ -186,14 +158,6 @@ target_link_libraries(she
   gfx-lib
   laf-base
   ${FREETYPE_LIBRARIES})
-
-if(USE_ALLEG4_BACKEND)
-  target_link_libraries(she
-    ${LOADPNG_LIBRARY}
-    ${LIBALLEGRO4_LINK_FLAGS}
-    ${DXGUID_LIBRARIES}
-    ${X11_LIBRARIES})
-endif()
 
 if(USE_SKIA_BACKEND)
   target_link_libraries(she

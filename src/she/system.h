@@ -69,10 +69,6 @@ namespace she {
     // scancode.
     virtual int getUnicodeFromScancode(KeyScancode scancode) = 0;
 
-    // Clears the keyboard buffer (used only in the Allegro port).
-    // TODO (deprecated)
-    virtual void clearKeyboardBuffer() = 0;
-
     // Indicates if you want to use dead keys or not. By default it's
     // false, which behaves as regular shortcuts. You should set this
     // to true when you're inside a text field in your app.

@@ -1381,9 +1381,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
         case kKeySpace: {
           m_scroll = false;
-
-          // We have to clear all the kKeySpace keys in buffer.
-          she::instance()->clearKeyboardBuffer();
           used = true;
           break;
         }
