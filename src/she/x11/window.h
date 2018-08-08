@@ -11,6 +11,7 @@
 #include "gfx/fwd.h"
 #include "gfx/size.h"
 #include "she/native_cursor.h"
+#include "she/surface_list.h"
 
 #include <X11/Xatom.h>
 #include <X11/Xcursor/Xcursor.h>
@@ -34,6 +35,7 @@ public:
   void setScale(const int scale);
 
   void setTitle(const std::string& title);
+  void setIcons(const SurfaceList& icons);
 
   gfx::Size clientSize() const;
   gfx::Size restoredSize() const;

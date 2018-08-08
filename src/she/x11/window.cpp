@@ -201,6 +201,46 @@ void X11Window::setTitle(const std::string& title)
   XSetWMName(m_display, m_window, &prop);
 }
 
+void X11Window::setIcons(const SurfaceList& icons)
+{
+  if (!m_display || !m_window)
+    return;
+
+  bool first = true;
+  for (Surface* icon : icons) {
+    const int w = icon->width();
+    const int h = icon->height();
+
+    SurfaceFormatData format;
+    icon->getFormat(&format);
+
+    std::vector<unsigned long> data(w*h+2);
+    int i = 0;
+    data[i++] = w;
+    data[i++] = h;
+    for (int y=0; y<h; ++y) {
+      const uint32_t* p = (const uint32_t*)icon->getData(0, y);
+      for (int x=0; x<w; ++x, ++p) {
+        uint32_t c = *p;
+        data[i++] =
+          (((c & format.blueMask ) >> format.blueShift )      ) |
+          (((c & format.greenMask) >> format.greenShift) <<  8) |
+          (((c & format.redMask  ) >> format.redShift  ) << 16) |
+          (((c & format.alphaMask) >> format.alphaShift) << 24);
+      }
+    }
+
+    Atom _NET_WM_ICON = XInternAtom(m_display, "_NET_WM_ICON", False);
+    XChangeProperty(
+      m_display, m_window, _NET_WM_ICON, XA_CARDINAL, 32,
+      first ? PropModeReplace:
+              PropModeAppend,
+      (const unsigned char*)&data[0], data.size());
+
+    first = false;
+  }
+}
+
 gfx::Size X11Window::clientSize() const
 {
   Window root;
