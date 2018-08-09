@@ -13,7 +13,8 @@
 
 namespace she {
 
-  KeyScancode x11_keysym_to_scancode(KeySym keysym);
+  KeyScancode x11_keysym_to_scancode(const KeySym keysym);
+  KeySym x11_keysym_to_scancode(const KeyScancode scancode);
   bool x11_is_key_pressed(KeyScancode scancode);
   int x11_get_unicode_from_scancode(KeyScancode scancode);
 
