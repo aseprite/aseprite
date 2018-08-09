@@ -276,11 +276,11 @@ KeySym x11_keysym_to_scancode(const KeyScancode scancode)
   return 0;
 }
 
-bool x11_is_key_pressed(KeyScancode scancode)
+bool x11_is_key_pressed(const KeyScancode scancode)
 {
   ::Display* display = X11::instance()->display();
-  KeySym keysym = x11_keysym_to_scancode(scancode);
-  KeyCode keycode = XKeysymToKeycode(display, keysym);
+  const KeySym keysym = x11_keysym_to_scancode(scancode);
+  const KeyCode keycode = XKeysymToKeycode(display, keysym);
   if (!keycode)
     return false;
 
@@ -294,9 +294,69 @@ bool x11_is_key_pressed(KeyScancode scancode)
   return (keys[keycode/8] & (1 << (keycode%8)) ? true: false);
 }
 
-int x11_get_unicode_from_scancode(KeyScancode scancode)
+// TODO I guess that this code should be common to all platforms, but
+//      osx/win_get_unicode_from_scancode() work in a different way:
+//      the Unicode is returned only if the scancode key is pressed
+//      (and that's the case anyway in the only part we are using
+//      System::getUnicodeFromScancode(), a System::isKeyPressed() is
+//      tested before).
+int x11_get_unicode_from_scancode(const KeyScancode scancode)
 {
-  return 0;                     // TODO
+  switch (scancode) {
+    case kKeyEqualsPad: return '=';
+    case kKeyAsterisk: return '*';
+    case kKeyPlusPad: return '+';
+    case kKeyMinusPad: return '-';
+    case kKeySlashPad: return '/';
+    case kKeySpace: return ' ';
+    case kKeyQuote: return '\'';
+    case kKeyComma: return ',';
+    case kKeyMinus: return '-';
+    case kKeyStop: return '.';
+    case kKeySlash: return '/';
+    case kKey0: case kKey0Pad: return '0';
+    case kKey1: case kKey1Pad: return '1';
+    case kKey2: case kKey2Pad: return '2';
+    case kKey3: case kKey3Pad: return '3';
+    case kKey4: case kKey4Pad: return '4';
+    case kKey5: case kKey5Pad: return '5';
+    case kKey6: case kKey6Pad: return '6';
+    case kKey7: case kKey7Pad: return '7';
+    case kKey8: case kKey8Pad: return '8';
+    case kKey9: case kKey9Pad: return '9';
+    case kKeyColon: return ':';
+    case kKeyBackslash: case kKeyBackslash2: return '\\';
+    case kKeyOpenbrace: return '[';
+    case kKeyClosebrace: return ']';
+    case kKeyTilde: return '~';
+    case kKeyA: return 'a';
+    case kKeyB: return 'b';
+    case kKeyC: return 'c';
+    case kKeyD: return 'd';
+    case kKeyE: return 'e';
+    case kKeyF: return 'f';
+    case kKeyG: return 'g';
+    case kKeyH: return 'h';
+    case kKeyI: return 'i';
+    case kKeyJ: return 'j';
+    case kKeyK: return 'k';
+    case kKeyL: return 'l';
+    case kKeyM: return 'm';
+    case kKeyN: return 'n';
+    case kKeyO: return 'o';
+    case kKeyP: return 'p';
+    case kKeyQ: return 'q';
+    case kKeyR: return 'r';
+    case kKeyS: return 's';
+    case kKeyT: return 't';
+    case kKeyU: return 'u';
+    case kKeyV: return 'v';
+    case kKeyW: return 'w';
+    case kKeyX: return 'x';
+    case kKeyY: return 'y';
+    case kKeyZ: return 'z';
+  }
+  return 0;
 }
 
 } // namespace she
