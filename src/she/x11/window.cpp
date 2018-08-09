@@ -557,13 +557,7 @@ void X11Window::processX11Event(XEvent& event)
                 (event.type == KeyPress ? "KeyPress": "KeyRelease"),
                 event.xkey.state,
                 event.xkey.keycode);
-
-#ifndef NDEBUG
-      {
-        char* str = XKeysymToString(keysym);
-        KEY_TRACE(" > %s\n", str);
-      }
-#endif
+      KEY_TRACE(" > %s\n", XKeysymToString(keysym));
 
       queueEvent(ev);
       break;
