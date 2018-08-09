@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-namespace she {
+namespace os {
   class Surface;
 }
 
@@ -94,7 +94,7 @@ namespace app {
     // thumbnail to generate when the m_generateThumbnailTimer ticks.
     IFileItem* m_itemToGenerateThumbnail;
 
-    she::Surface* m_thumbnail;
+    os::Surface* m_thumbnail;
 
     // True if this listbox accepts selecting multiple items at the
     // same time.

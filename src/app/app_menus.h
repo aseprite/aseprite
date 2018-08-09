@@ -21,7 +21,7 @@
 class TiXmlElement;
 class TiXmlHandle;
 
-namespace she {
+namespace os {
   class Menu;
   class Shortcut;
 }
@@ -75,7 +75,7 @@ namespace app {
     void syncNativeMenuItemKeyShortcuts(Menu* menu);
     void updateMenusList();
     void createNativeMenus();
-    void createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu);
+    void createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu);
 
     std::unique_ptr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;
@@ -92,11 +92,11 @@ namespace app {
     std::unique_ptr<Menu> m_inkPopupMenu;
     obs::scoped_connection m_recentFilesConn;
     std::vector<Menu*> m_menus;
-    she::Menu* m_osMenu;
+    os::Menu* m_osMenu;
     XmlTranslator m_xmlTranslator;
   };
 
-  she::Shortcut get_os_shortcut_from_key(const Key* key);
+  os::Shortcut get_os_shortcut_from_key(const Key* key);
 
 } // namespace app
 

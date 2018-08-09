@@ -12,9 +12,9 @@
 
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "she/font.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/font.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/paint_event.h"
@@ -79,7 +79,7 @@ void for_each_layer(const Widget* widget,
 }
 
 std::function<void(int srcx, int srcy, int dstx, int dsty, int w, int h)>
-getDrawSurfaceFunction(Graphics* g, she::Surface* sheet, gfx::Color color)
+getDrawSurfaceFunction(Graphics* g, os::Surface* sheet, gfx::Color color)
 {
   if (color != gfx::ColorNone)
     return [g, sheet, color](int srcx, int srcy, int dstx, int dsty, int w, int h) {
@@ -399,7 +399,7 @@ void Theme::paintLayer(Graphics* g,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        she::Font* oldFont = g->font();
+        os::Font* oldFont = g->font();
         if (style->font())
           g->setFont(style->font());
 
@@ -444,7 +444,7 @@ void Theme::paintLayer(Graphics* g,
       break;
 
     case Style::Layer::Type::kIcon: {
-      she::Surface* icon = layer.icon();
+      os::Surface* icon = layer.icon();
       if (icon) {
         gfx::Size iconSize(icon->width(), icon->height());
         gfx::Point pt;
@@ -514,7 +514,7 @@ void Theme::measureLayer(const Widget* widget,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        she::Font* font = (style->font() ? style->font(): widget->font());
+        os::Font* font = (style->font() ? style->font(): widget->font());
         gfx::Size textSize(Graphics::measureUITextLength(widget->text(), font),
                            font->height());
 
@@ -525,7 +525,7 @@ void Theme::measureLayer(const Widget* widget,
       break;
 
     case Style::Layer::Type::kIcon: {
-      she::Surface* icon = layer.icon();
+      os::Surface* icon = layer.icon();
       if (icon) {
         iconHint.w = std::max(iconHint.w, icon->width()+ABS(layer.offset().x));
         iconHint.h = std::max(iconHint.h, icon->height()+ABS(layer.offset().y));
@@ -688,7 +688,7 @@ int details::old_guiscale()
 }
 
 // static
-void Theme::drawSlices(Graphics* g, she::Surface* sheet,
+void Theme::drawSlices(Graphics* g, os::Surface* sheet,
                        const gfx::Rect& rc,
                        const gfx::Rect& sprite,
                        const gfx::Rect& slices,
@@ -776,7 +776,7 @@ void Theme::drawTextBox(Graphics* g, Widget* widget,
   int x, y, chr, len;
   gfx::Point scroll;
   int textheight = widget->textHeight();
-  she::Font* font = widget->font();
+  os::Font* font = widget->font();
   char *beg_end, *old_end;
   int width;
   gfx::Rect vp;

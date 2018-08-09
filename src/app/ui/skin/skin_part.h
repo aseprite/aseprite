@@ -14,7 +14,7 @@
 
 #include <vector>
 
-namespace she {
+namespace os {
   class Surface;
 }
 
@@ -23,7 +23,7 @@ namespace app {
 
     class SkinPart {
     public:
-      typedef std::vector<she::Surface*> Bitmaps;
+      typedef std::vector<os::Surface*> Bitmaps;
 
       SkinPart();
       ~SkinPart();
@@ -34,22 +34,22 @@ namespace app {
       void clear();
 
       // It doesn't destroy the previous bitmap in the given "index".
-      void setBitmap(std::size_t index, she::Surface* bitmap);
+      void setBitmap(std::size_t index, os::Surface* bitmap);
       void setSpriteBounds(const gfx::Rect& bounds);
       void setSlicesBounds(const gfx::Rect& bounds);
 
-      she::Surface* bitmap(std::size_t index) const {
+      os::Surface* bitmap(std::size_t index) const {
         return (index < m_bitmaps.size() ? m_bitmaps[index]: nullptr);
       }
 
-      she::Surface* bitmapNW() const { return bitmap(0); }
-      she::Surface* bitmapN()  const { return bitmap(1); }
-      she::Surface* bitmapNE() const { return bitmap(2); }
-      she::Surface* bitmapE()  const { return bitmap(3); }
-      she::Surface* bitmapSE() const { return bitmap(4); }
-      she::Surface* bitmapS()  const { return bitmap(5); }
-      she::Surface* bitmapSW() const { return bitmap(6); }
-      she::Surface* bitmapW()  const { return bitmap(7); }
+      os::Surface* bitmapNW() const { return bitmap(0); }
+      os::Surface* bitmapN()  const { return bitmap(1); }
+      os::Surface* bitmapNE() const { return bitmap(2); }
+      os::Surface* bitmapE()  const { return bitmap(3); }
+      os::Surface* bitmapSE() const { return bitmap(4); }
+      os::Surface* bitmapS()  const { return bitmap(5); }
+      os::Surface* bitmapSW() const { return bitmap(6); }
+      os::Surface* bitmapW()  const { return bitmap(7); }
 
       gfx::Size size() const;
 

@@ -28,7 +28,7 @@ namespace app {
       m_tooltipManager = tooltipManager;
     }
 
-    static she::Surface* createSurfaceForBrush(const doc::BrushRef& brush);
+    static os::Surface* createSurfaceForBrush(const doc::BrushRef& brush);
 
   private:
     void onStandardBrush();

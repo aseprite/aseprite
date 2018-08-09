@@ -10,7 +10,7 @@
 
 #include "ui/image_view.h"
 
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -20,7 +20,7 @@
 
 namespace ui {
 
-ImageView::ImageView(she::Surface* sur, int align, bool dispose)
+ImageView::ImageView(os::Surface* sur, int align, bool dispose)
  : Widget(kImageViewWidget)
  , m_sur(sur)
  , m_disposeSurface(dispose)

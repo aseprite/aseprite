@@ -89,7 +89,7 @@ This program is distributed under three different licenses:
    are distributed under the MIT license
    (e.g. [laf](https://github.com/aseprite/laf),
    [clip](https://github.com/aseprite/clip),
-   [she](https://github.com/aseprite/aseprite/tree/master/src/she),
+   [os](https://github.com/aseprite/aseprite/tree/master/src/os),
    [gfx](src/gfx), [ui](src/ui), etc.).
 2. You can request a special
    [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license)

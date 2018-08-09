@@ -19,12 +19,12 @@
 #include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "doc/algorithm/rotate.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "she/system.h"
+#include "os/system.h"
 
 #include <memory>
 
@@ -59,7 +59,7 @@ private:
       // Post load
       m_fop->postLoad();
 
-      // Convert the loaded document into the she::Surface.
+      // Convert the loaded document into the os::Surface.
       const Sprite* sprite =
         (m_fop->document() &&
          m_fop->document()->sprite() ?
@@ -100,7 +100,7 @@ private:
 
       // Set the thumbnail of the file-item.
       if (m_thumbnail) {
-        she::Surface* thumbnail = she::instance()->createRgbaSurface(
+        os::Surface* thumbnail = os::instance()->createRgbaSurface(
           m_thumbnail->width(),
           m_thumbnail->height());
 

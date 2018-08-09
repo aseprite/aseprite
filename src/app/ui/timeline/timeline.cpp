@@ -49,9 +49,9 @@
 #include "doc/frame_tag.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "she/font.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/font.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/scroll_helper.h"
 #include "ui/ui.h"
 
@@ -624,7 +624,7 @@ bool Timeline::onProcessMessage(Message* msg)
         break;
 
       if (mouseMsg->middle() ||
-          she::instance()->isKeyPressed(kKeySpace)) {
+          os::instance()->isKeyPressed(kKeySpace)) {
         captureMouse();
         m_state = STATE_SCROLLING;
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
@@ -2201,7 +2201,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
         skinTheme()->calcBorder(this, style));
 
     if (!thumb_bounds.isEmpty()) {
-      she::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds.size());
+      os::Surface* thumb_surf = thumb::get_cel_thumbnail(cel, thumb_bounds.size());
       if (thumb_surf) {
         g->drawRgbaSurface(thumb_surf, thumb_bounds.x, thumb_bounds.y);
         thumb_surf->dispose();
@@ -2311,7 +2311,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
     (int)(image->height() * scale)
   );
 
-  she::Surface* overlay_surf = thumb::get_cel_thumbnail(cel, overlay_size, cel_image_on_overlay);
+  os::Surface* overlay_surf = thumb::get_cel_thumbnail(cel, overlay_size, cel_image_on_overlay);
 
   g->drawRgbaSurface(overlay_surf,
     m_thumbnailsOverlayInner.x, m_thumbnailsOverlayInner.y);

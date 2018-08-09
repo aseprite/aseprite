@@ -14,9 +14,9 @@
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "she/font.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/font.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -921,12 +921,12 @@ void Tabs::createFloatingOverlay(Tab* tab)
 {
   ASSERT(!m_floatingOverlay);
 
-  she::Surface* surface = she::instance()->createRgbaSurface(
+  os::Surface* surface = os::instance()->createRgbaSurface(
     tab->width, m_tabsHeight);
 
   // Fill the surface with pink color
   {
-    she::SurfaceLock lock(surface);
+    os::SurfaceLock lock(surface);
     surface->fillRect(gfx::rgba(0, 0, 0, 0), gfx::Rect(0, 0, surface->width(), surface->height()));
   }
   {

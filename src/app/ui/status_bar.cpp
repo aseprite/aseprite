@@ -40,8 +40,8 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "gfx/size.h"
-#include "she/font.h"
-#include "she/surface.h"
+#include "os/font.h"
+#include "os/surface.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -144,7 +144,7 @@ class StatusBar::Indicators : public HBox {
       gfx::Color textColor = theme->colors.statusBarText();
       Rect rc = clientBounds();
       Graphics* g = ev.graphics();
-      she::Surface* icon = m_part->bitmap(0);
+      os::Surface* icon = m_part->bitmap(0);
 
       g->fillRect(bgColor(), rc);
       if (m_colored)

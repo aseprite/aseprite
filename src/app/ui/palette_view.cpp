@@ -27,8 +27,8 @@
 #include "doc/remap.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
-#include "she/font.h"
-#include "she/surface.h"
+#include "os/font.h"
+#include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -525,7 +525,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   // Handle to resize palette
 
   if (m_editable && !dragging) {
-    she::Surface* handle = theme->parts.palResize()->bitmap(0);
+    os::Surface* handle = theme->parts.palResize()->bitmap(0);
     gfx::Rect box = getPaletteEntryBounds(palSize);
     g->drawRgbaSurface(handle,
                        box.x+box.w/2-handle->width()/2,
@@ -563,7 +563,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         gfx::Color gfxColor = drawEntry(g, box2, i); // Draw color entry
 
         gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
-        she::Font* minifont = theme->getMiniFont();
+        os::Font* minifont = theme->getMiniFont();
         std::string text = base::convert_to<std::string>(k);
         g->setFont(minifont);
         g->drawText(text, neg, gfx::ColorNone,

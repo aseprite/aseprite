@@ -107,7 +107,7 @@ add_subdirectory(net)
 add_subdirectory(render)
 add_subdirectory(dio)
 add_subdirectory(ft)
-add_subdirectory(she)
+add_subdirectory(os)
 add_subdirectory(ui)
 
 if(ENABLE_SCRIPTING)

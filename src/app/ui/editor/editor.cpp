@@ -52,12 +52,12 @@
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -641,14 +641,14 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   }
 
   if (rendered) {
-    // Convert the render to a she::Surface
-    static she::Surface* tmp = nullptr; // TODO move this to other centralized place
+    // Convert the render to a os::Surface
+    static os::Surface* tmp = nullptr; // TODO move this to other centralized place
     if (!tmp || tmp->width() < rc2.w || tmp->height() < rc2.h) {
       const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
       const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
       if (tmp)
         tmp->dispose();
-      tmp = she::instance()->createSurface(maxw, maxh);
+      tmp = os::instance()->createSurface(maxw, maxh);
     }
     if (tmp->nativeHandle()) {
       if (newEngine)

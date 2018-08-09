@@ -23,7 +23,7 @@
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/intern.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -183,7 +183,7 @@ void draw_alpha_slider(ui::Graphics* g,
 }
 
 // TODO this code is exactly the same as draw_alpha_slider() with a ui::Graphics
-void draw_alpha_slider(she::Surface* s,
+void draw_alpha_slider(os::Surface* s,
                        const gfx::Rect& rc,
                        const app::Color& color)
 {

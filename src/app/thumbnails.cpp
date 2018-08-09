@@ -11,19 +11,19 @@
 #include "app/thumbnails.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/doc.h"
 #include "doc/frame.h"
 #include "doc/object.h"
 #include "doc/object_id.h"
 #include "render/render.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 
 namespace app {
 namespace thumb {
 
-she::Surface* get_cel_thumbnail(const doc::Cel* cel,
+os::Surface* get_cel_thumbnail(const doc::Cel* cel,
                                 const gfx::Size& thumb_size,
                                 gfx::Rect cel_image_on_thumb)
 {
@@ -88,7 +88,7 @@ she::Surface* get_cel_thumbnail(const doc::Cel* cel,
     cel_image_on_thumb.y,
     255, BlendMode::NORMAL);
 
-  she::Surface* thumb_surf = she::instance()->createRgbaSurface(
+  os::Surface* thumb_surf = os::instance()->createRgbaSurface(
     thumb_img->width(), thumb_img->height());
 
   convert_image_to_surface(thumb_img.get(), sprite->palette(frame), thumb_surf,

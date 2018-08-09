@@ -19,8 +19,8 @@
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -96,7 +96,7 @@ public:
     }
   }
 
-  she::Surface* getCanvas(int w, int h, gfx::Color bgColor) {
+  os::Surface* getCanvas(int w, int h, gfx::Color bgColor) {
     assert_ui_thread();
 
     if (!m_canvas ||
@@ -106,7 +106,7 @@ public:
       stopCurrentPainting(lock);
 
       auto oldCanvas = m_canvas;
-      m_canvas = she::instance()->createSurface(w, h);
+      m_canvas = os::instance()->createSurface(w, h);
       m_canvas->fillRect(bgColor, gfx::Rect(0, 0, w, h));
       if (oldCanvas) {
         m_canvas->drawSurface(oldCanvas, 0, 0);
@@ -200,7 +200,7 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_paintingCV;
   std::condition_variable m_waitStopCV;
-  she::Surface* m_canvas;
+  os::Surface* m_canvas;
   ColorSelector* m_colorSelector;
   ui::Manager* m_manager;
   gfx::Rect m_mainBounds;
@@ -440,7 +440,7 @@ void ColorSelector::onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc)
 }
 
 void ColorSelector::onPaintSurfaceInBgThread(
-  she::Surface* s,
+  os::Surface* s,
   const gfx::Rect& main,
   const gfx::Rect& bottom,
   const gfx::Rect& alpha,
@@ -466,7 +466,7 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
                                         const bool white)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  she::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
+  os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
 
   g->drawColoredRgbaSurface(
     icon,

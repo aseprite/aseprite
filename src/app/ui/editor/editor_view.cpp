@@ -17,7 +17,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/scroll_region_event.h"

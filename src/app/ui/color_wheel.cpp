@@ -17,7 +17,7 @@
 #include "base/bind.h"
 #include "base/pi.h"
 #include "filters/color_curve.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -239,7 +239,7 @@ void ColorWheel::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
   }
 }
 
-void ColorWheel::onPaintSurfaceInBgThread(she::Surface* s,
+void ColorWheel::onPaintSurfaceInBgThread(os::Surface* s,
                                           const gfx::Rect& main,
                                           const gfx::Rect& bottom,
                                           const gfx::Rect& alpha,

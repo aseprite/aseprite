@@ -15,8 +15,8 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/string.h"
 #include "base/time.h"
-#include "she/font.h"
-#include "she/surface.h"
+#include "os/font.h"
+#include "os/surface.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -472,7 +472,7 @@ gfx::Rect FileList::thumbnailBounds()
       !m_selected->getThumbnail())
     return gfx::Rect();
 
-  she::Surface* thumbnail = m_selected->getThumbnail();
+  os::Surface* thumbnail = m_selected->getThumbnail();
   View* view = View::getView(this);
   gfx::Rect vp = view->viewportBounds();
   int x = vp.x+vp.w - 2*guiscale() - thumbnail->width();

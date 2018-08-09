@@ -28,7 +28,7 @@
 #include "fmt/format.h"
 #include "gfx/size.h"
 #include "obs/signal.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/ui.h"
 
 #include <string>
@@ -67,7 +67,7 @@ private:
 static Size getToolIconSize(Widget* widget)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(widget->theme());
-  she::Surface* icon = theme->getToolIcon("configuration");
+  os::Surface* icon = theme->getToolIcon("configuration");
   if (icon)
     return Size(icon->width(), icon->height());
   else
@@ -321,7 +321,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     theme->drawRect(g, toolrc, nw.get());
 
     // Draw the tool icon
-    she::Surface* icon = theme->getToolIcon(tool->getId().c_str());
+    os::Surface* icon = theme->getToolIcon(tool->getId().c_str());
     if (icon) {
       g->drawRgbaSurface(icon,
         toolrc.x+toolrc.w/2-icon->width()/2,
@@ -340,7 +340,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     (isHot ? theme->parts.toolbuttonHot().get():
              theme->parts.toolbuttonLast().get()));
 
-  she::Surface* icon = theme->getToolIcon("minieditor");
+  os::Surface* icon = theme->getToolIcon("minieditor");
   if (icon) {
     g->drawRgbaSurface(icon,
       toolrc.x+toolrc.w/2-icon->width()/2,
@@ -722,7 +722,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       theme->drawRect(g, toolrc, nw.get());
 
       // Draw the tool icon
-      she::Surface* icon = theme->getToolIcon(tool->getId().c_str());
+      os::Surface* icon = theme->getToolIcon(tool->getId().c_str());
       if (icon) {
         g->drawRgbaSurface(
           icon,

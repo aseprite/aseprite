@@ -10,13 +10,13 @@
 
 #include "ui/overlay.h"
 
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/manager.h"
 
 namespace ui {
 
-Overlay::Overlay(she::Surface* overlaySurface, const gfx::Point& pos, ZOrder zorder)
+Overlay::Overlay(os::Surface* overlaySurface, const gfx::Point& pos, ZOrder zorder)
   : m_surface(overlaySurface)
   , m_overlap(NULL)
   , m_pos(pos)
@@ -39,9 +39,9 @@ Overlay::~Overlay()
     m_overlap->dispose();
 }
 
-she::Surface* Overlay::setSurface(she::Surface* newSurface)
+os::Surface* Overlay::setSurface(os::Surface* newSurface)
 {
-  she::Surface* oldSurface = m_surface;
+  os::Surface* oldSurface = m_surface;
   m_surface = newSurface;
   return oldSurface;
 }
@@ -54,12 +54,12 @@ gfx::Rect Overlay::bounds() const
     return gfx::Rect(0, 0, 0, 0);
 }
 
-void Overlay::drawOverlay(she::Surface* screen)
+void Overlay::drawOverlay(os::Surface* screen)
 {
   if (!m_surface)
     return;
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   screen->drawRgbaSurface(m_surface, m_pos.x, m_pos.y);
 
   Manager::getDefault()->dirtyRect(
@@ -73,20 +73,20 @@ void Overlay::moveOverlay(const gfx::Point& newPos)
   m_pos = newPos;
 }
 
-void Overlay::captureOverlappedArea(she::Surface* screen)
+void Overlay::captureOverlappedArea(os::Surface* screen)
 {
   if (!m_surface)
     return;
 
   if (!m_overlap)
-    m_overlap = she::instance()->createSurface(m_surface->width(), m_surface->height());
+    m_overlap = os::instance()->createSurface(m_surface->width(), m_surface->height());
 
-  she::SurfaceLock lock(m_overlap);
+  os::SurfaceLock lock(m_overlap);
   screen->blitTo(m_overlap, m_pos.x, m_pos.y, 0, 0,
                  m_overlap->width(), m_overlap->height());
 }
 
-void Overlay::restoreOverlappedArea(she::Surface* screen)
+void Overlay::restoreOverlappedArea(os::Surface* screen)
 {
   if (!m_surface)
     return;
@@ -94,7 +94,7 @@ void Overlay::restoreOverlappedArea(she::Surface* screen)
   if (!m_overlap)
     return;
 
-  she::SurfaceLock lock(m_overlap);
+  os::SurfaceLock lock(m_overlap);
   m_overlap->blitTo(screen, 0, 0, m_pos.x, m_pos.y,
                     m_overlap->width(), m_overlap->height());
 

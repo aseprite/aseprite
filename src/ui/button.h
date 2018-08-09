@@ -13,7 +13,7 @@
 
 #include <vector>
 
-namespace she {
+namespace os {
   class Surface;
 }
 

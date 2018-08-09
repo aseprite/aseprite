@@ -10,21 +10,21 @@
 
 #include "gfx/point.h"
 
-namespace she { class Surface; }
+namespace os { class Surface; }
 
 namespace ui {
 
   class Cursor {
   public:
     // The surface is disposed in ~Cursor.
-    Cursor(she::Surface* surface, const gfx::Point& focus);
+    Cursor(os::Surface* surface, const gfx::Point& focus);
     ~Cursor();
 
-    she::Surface* getSurface() const { return m_surface; }
+    os::Surface* getSurface() const { return m_surface; }
     const gfx::Point& getFocus() const { return m_focus; }
 
   private:
-    she::Surface* m_surface;
+    os::Surface* m_surface;
     gfx::Point m_focus;
   };
 

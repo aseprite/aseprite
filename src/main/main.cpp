@@ -17,9 +17,9 @@
 #include "base/memory.h"
 #include "base/memory_dump.h"
 #include "base/system_console.h"
-#include "she/error.h"
-#include "she/scoped_handle.h"
-#include "she/system.h"
+#include "os/error.h"
+#include "os/scoped_handle.h"
+#include "os/system.h"
 
 #include <clocale>
 #include <cstdlib>
@@ -45,7 +45,7 @@ namespace {
 
 }
 
-// Aseprite entry point. (Called from she library.)
+// Aseprite entry point. (Called from "os" library.)
 int app_main(int argc, char* argv[])
 {
   // Initialize the locale. Aseprite isn't ready to handle numeric
@@ -66,7 +66,7 @@ int app_main(int argc, char* argv[])
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
-    she::ScopedHandle<she::System> system(she::create_system());
+    os::ScopedHandle<os::System> system(os::create_system());
     app::App app;
 
     // Change the name of the memory dump file
@@ -86,7 +86,7 @@ int app_main(int argc, char* argv[])
   }
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';
-    she::error_message(e.what());
+    os::error_message(e.what());
     return 1;
   }
 }

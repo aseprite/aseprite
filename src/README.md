@@ -34,13 +34,13 @@ because they don't depend on any other component.
 ## Level 2
 
   * [doc](doc/) (base, fixmath, gfx): Document model library.
-  * [she](she/) (base, gfx, wacom): OS input/output.
+  * [os](os/) (base, gfx, wacom): OS input/output.
 
 ## Level 3
 
   * [filters](filters/) (base, doc, gfx): Effects for images.
   * [render](render/) (base, doc, gfx): Library to render documents.
-  * [ui](ui/) (base, gfx, she): Portable UI library (buttons, windows, text fields, etc.)
+  * [ui](ui/) (base, gfx, os): Portable UI library (buttons, windows, text fields, etc.)
   * [updater](updater/) (base, cfg, net): Component to check for updates.
 
 ## Level 4
@@ -49,11 +49,11 @@ because they don't depend on any other component.
 
 ## Level 5
 
-  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, os, ui, undo, updater, webserver)
 
 ## Level 6
 
-  * [main](main/) (app, base, she, ui)
+  * [main](main/) (app, base, os, ui)
   * [desktop](desktop/) (base, doc, dio, render): Integration with the desktop (Windows Explorer, Finder, GNOME, KDE, etc.)
 
 # Debugging Tricks

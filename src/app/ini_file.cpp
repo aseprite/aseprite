@@ -17,8 +17,8 @@
 #include "cfg/cfg.h"
 
 #ifdef __APPLE__
-#include "she/logger.h"
-#include "she/system.h"
+#include "os/logger.h"
+#include "os/system.h"
 #endif
 
 #ifndef _WIN32
@@ -71,7 +71,7 @@ ConfigModule::ConfigModule()
       std::string err = "Error in configuration migration: ";
       err += ex.what();
 
-      auto system = she::instance();
+      auto system = os::instance();
       if (system && system->logger())
         system->logger()->logError(err.c_str());
     }

@@ -23,7 +23,7 @@ namespace app {
     app::Color getBottomBarColor(const int u, const int umax) override;
     void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
-    void onPaintSurfaceInBgThread(she::Surface* s,
+    void onPaintSurfaceInBgThread(os::Surface* s,
                                   const gfx::Rect& main,
                                   const gfx::Rect& bottom,
                                   const gfx::Rect& alpha,

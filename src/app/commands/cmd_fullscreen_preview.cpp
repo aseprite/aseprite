@@ -21,14 +21,14 @@
 #include "app/ui/editor/editor_render.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/status_bar.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "she/scoped_handle.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/scoped_handle.h"
+#include "os/surface.h"
+#include "os/system.h"
 
 #include <cstring>
 
@@ -53,7 +53,7 @@ public:
     , m_proj(editor->projection())
     , m_index_bg_color(-1)
     , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
-    , m_doublesur(she::instance()->createRgbaSurface(ui::display_w(), ui::display_h())) {
+    , m_doublesur(os::instance()->createRgbaSurface(ui::display_w(), ui::display_h())) {
     // Do not use DocWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -249,7 +249,7 @@ private:
   int m_index_bg_color;
   std::unique_ptr<Image> m_render;
   std::unique_ptr<Image> m_doublebuf;
-  she::ScopedHandle<she::Surface> m_doublesur;
+  os::ScopedHandle<os::Surface> m_doublesur;
   filters::TiledMode m_tiled;
 };
 

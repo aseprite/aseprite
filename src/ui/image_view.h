@@ -10,7 +10,7 @@
 
 #include "ui/widget.h"
 
-namespace she {
+namespace os {
   class Surface;
 }
 
@@ -18,7 +18,7 @@ namespace ui {
 
   class ImageView : public Widget {
   public:
-    ImageView(she::Surface* sur, int align, bool disposeSurface);
+    ImageView(os::Surface* sur, int align, bool disposeSurface);
     ~ImageView();
 
   protected:
@@ -26,7 +26,7 @@ namespace ui {
     void onPaint(PaintEvent& ev) override;
 
   private:
-    she::Surface* m_sur;
+    os::Surface* m_sur;
     bool m_disposeSurface;
   };
 

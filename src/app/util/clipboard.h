@@ -36,7 +36,7 @@ namespace app {
       ClipboardPaletteEntries,
     };
 
-    // TODO Horrible API: refactor it (maybe a merge with she::clipboard).
+    // TODO Horrible API: refactor it (maybe a merge with os::clipboard).
 
     class ClipboardManager : public ui::ClipboardDelegate {
     public:

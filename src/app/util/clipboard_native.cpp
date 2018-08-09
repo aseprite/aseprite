@@ -20,8 +20,8 @@
 #include "doc/mask_io.h"
 #include "doc/palette_io.h"
 #include "gfx/size.h"
-#include "she/display.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/system.h"
 #include "ui/alert.h"
 
 #include <sstream>
@@ -37,7 +37,7 @@ namespace {
   clip::format custom_image_format = 0;
 
   void* native_display_handle() {
-    return she::instance()->defaultDisplay()->nativeHandle();
+    return os::instance()->defaultDisplay()->nativeHandle();
   }
 
   void custom_error_handler(clip::ErrorCode code) {

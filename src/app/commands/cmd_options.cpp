@@ -33,8 +33,8 @@
 #include "doc/image.h"
 #include "fmt/format.h"
 #include "render/render.h"
-#include "she/display.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/system.h"
 #include "ui/ui.h"
 
 #include "options.xml.h"
@@ -222,8 +222,8 @@ public:
       moveOnAddMode()->setSelected(true);
 
     // If the platform supports native cursors...
-    if ((int(she::instance()->capabilities()) &
-         int(she::Capabilities::CustomNativeMouseCursor)) != 0) {
+    if ((int(os::instance()->capabilities()) &
+         int(os::Capabilities::CustomNativeMouseCursor)) != 0) {
       if (m_pref.cursor.useNativeCursor())
         nativeCursor()->setSelected(true);
       nativeCursor()->Click.connect(base::Bind<void>(&OptionsWindow::onNativeCursorChange, this));
@@ -281,8 +281,8 @@ public:
 
     selectScalingItems();
 
-    if ((int(she::instance()->capabilities()) &
-         int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
+    if ((int(os::instance()->capabilities()) &
+         int(os::Capabilities::GpuAccelerationSwitch)) == int(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
     else {
@@ -291,7 +291,7 @@ public:
 
     // If the platform does support native menus, we show the option,
     // in other case, the option doesn't make sense for this platform.
-    if (she::instance()->menus())
+    if (os::instance()->menus())
       showMenuBar()->setSelected(m_pref.general.showMenuBar());
     else
       showMenuBar()->setVisible(false);
@@ -504,7 +504,7 @@ public:
       reset_screen = true;
     }
 
-    if (she::instance()->menus() &&
+    if (os::instance()->menus() &&
         m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
       m_pref.general.showMenuBar(showMenuBar()->isSelected());
     }
@@ -573,8 +573,8 @@ private:
 
   void updateScreenScaling() {
     ui::Manager* manager = ui::Manager::getDefault();
-    she::Display* display = manager->getDisplay();
-    she::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
+    os::Display* display = manager->getDisplay();
+    os::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
     display->setScale(m_pref.general.screenScale());
     manager->setDisplay(display);
   }
@@ -589,8 +589,8 @@ private:
   void onNativeCursorChange() {
     bool state =
       // If the platform supports native cursors...
-      (((int(she::instance()->capabilities()) &
-         int(she::Capabilities::CustomNativeMouseCursor)) != 0) &&
+      (((int(os::instance()->capabilities()) &
+         int(os::Capabilities::CustomNativeMouseCursor)) != 0) &&
        // If the native cursor option is not selec
        !nativeCursor()->isSelected());
 

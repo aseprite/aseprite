@@ -56,7 +56,7 @@ add_library(ui-lib
   window.cpp)
 
 target_link_libraries(ui-lib
-  she
+  os-lib
   gfx-lib
   laf-base
   obs

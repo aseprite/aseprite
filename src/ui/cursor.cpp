@@ -11,11 +11,11 @@
 #include "ui/cursor.h"
 
 #include "base/debug.h"
-#include "she/surface.h"
+#include "os/surface.h"
 
 namespace ui {
 
-Cursor::Cursor(she::Surface* surface, const gfx::Point& focus)
+Cursor::Cursor(os::Surface* surface, const gfx::Point& focus)
   : m_surface(surface)
   , m_focus(focus)
 {

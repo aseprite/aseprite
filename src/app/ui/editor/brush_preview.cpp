@@ -34,7 +34,7 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "render/render.h"
-#include "she/display.h"
+#include "os/display.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 

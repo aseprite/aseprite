@@ -13,9 +13,9 @@
 #include "app/app.h"
 #include "app/pref/preferences.h"
 #include "app/ui/file_selector.h"
-#include "she/display.h"
-#include "she/native_dialogs.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/native_dialogs.h"
+#include "os/system.h"
 
 namespace app {
 
@@ -30,24 +30,24 @@ bool show_file_selector(
     Preferences::instance().saveFile.defaultExtension();
 
   if (Preferences::instance().experimental.useNativeFileDialog() &&
-      she::instance()->nativeDialogs()) {
-    she::FileDialog* dlg =
-      she::instance()->nativeDialogs()->createFileDialog();
+      os::instance()->nativeDialogs()) {
+    os::FileDialog* dlg =
+      os::instance()->nativeDialogs()->createFileDialog();
 
     if (dlg) {
       dlg->setTitle(title);
       dlg->setFileName(initialPath);
 
-      she::FileDialog::Type nativeType = she::FileDialog::Type::OpenFile;
+      os::FileDialog::Type nativeType = os::FileDialog::Type::OpenFile;
       switch (type) {
         case FileSelectorType::Open:
-          nativeType = she::FileDialog::Type::OpenFile;
+          nativeType = os::FileDialog::Type::OpenFile;
           break;
         case FileSelectorType::OpenMultiple:
-          nativeType = she::FileDialog::Type::OpenFiles;
+          nativeType = os::FileDialog::Type::OpenFiles;
           break;
         case FileSelectorType::Save:
-          nativeType = she::FileDialog::Type::SaveFile;
+          nativeType = os::FileDialog::Type::SaveFile;
           break;
       }
       dlg->setType(nativeType);
@@ -58,7 +58,7 @@ bool show_file_selector(
       if (!defExtension.empty())
         dlg->setDefaultExtension(defExtension);
 
-      bool res = dlg->show(she::instance()->defaultDisplay());
+      bool res = dlg->show(os::instance()->defaultDisplay());
       if (res) {
         if (type == FileSelectorType::OpenMultiple)
           dlg->getMultipleFileNames(output);

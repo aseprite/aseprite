@@ -10,10 +10,10 @@
 
 #include "app/commands/params.h"
 #include "app/ui/key.h"
-#include "she/shortcut.h"
+#include "os/shortcut.h"
 #include "ui/menu.h"
 
-namespace she {
+namespace os {
   class MenuItem;
 }
 
@@ -28,8 +28,8 @@ namespace app {
   class AppMenuItem : public ui::MenuItem {
   public:
     struct Native {
-      she::MenuItem* menuItem = nullptr;
-      she::Shortcut shortcut;
+      os::MenuItem* menuItem = nullptr;
+      os::Shortcut shortcut;
       app::KeyContext keyContext = app::KeyContext::Any;
     };
 

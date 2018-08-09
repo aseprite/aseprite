@@ -14,7 +14,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "gfx/color.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/graphics.h"
@@ -145,7 +145,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   }
 
   if (m_icon) {
-    she::Surface* bmp = m_icon->bitmap(0);
+    os::Surface* bmp = m_icon->bitmap(0);
 
     if (isSelected() && hasCapture())
       g->drawColoredRgbaSurface(bmp, theme->colors.buttonSelectedText(),

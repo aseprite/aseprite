@@ -22,7 +22,7 @@ namespace gfx {
   class Region;
 }
 
-namespace she {
+namespace os {
   class DrawTextDelegate;
   class Font;
   class Surface;
@@ -39,13 +39,13 @@ namespace ui {
       Checked,
     };
 
-    Graphics(she::Surface* surface, int dx, int dy);
+    Graphics(os::Surface* surface, int dx, int dy);
     ~Graphics();
 
     int width() const;
     int height() const;
 
-    she::Surface* getInternalSurface() { return m_surface; }
+    os::Surface* getInternalSurface() { return m_surface; }
     int getInternalDeltaX() { return m_dx; }
     int getInternalDeltaY() { return m_dy; }
 
@@ -72,45 +72,45 @@ namespace ui {
     void fillAreaBetweenRects(gfx::Color color,
       const gfx::Rect& outer, const gfx::Rect& inner);
 
-    void drawSurface(she::Surface* surface, int x, int y);
-    void drawRgbaSurface(she::Surface* surface, int x, int y);
-    void drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
-    void drawRgbaSurface(she::Surface* surface,
+    void drawSurface(os::Surface* surface, int x, int y);
+    void drawRgbaSurface(os::Surface* surface, int x, int y);
+    void drawRgbaSurface(os::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
+    void drawRgbaSurface(os::Surface* surface,
                          const gfx::Rect& srcRect,
                          const gfx::Rect& dstRect);
-    void drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y);
-    void drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int srcx, int srcy, int dstx, int dsty, int w, int h);
+    void drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int x, int y);
+    void drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int srcx, int srcy, int dstx, int dsty, int w, int h);
 
-    void blit(she::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
+    void blit(os::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
 
     // ======================================================================
     // FONT & TEXT
     // ======================================================================
 
-    she::Font* font() { return m_font; }
-    void setFont(she::Font* font);
+    os::Font* font() { return m_font; }
+    void setFont(os::Font* font);
 
     void drawText(base::utf8_const_iterator it,
                   const base::utf8_const_iterator& end,
                   gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
-                  she::DrawTextDelegate* delegate);
+                  os::DrawTextDelegate* delegate);
     void drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
     void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, const int mnemonic);
     void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, const int align);
 
     gfx::Size measureUIText(const std::string& str);
-    static int measureUITextLength(const std::string& str, she::Font* font);
+    static int measureUITextLength(const std::string& str, os::Font* font);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
   private:
     gfx::Size doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw);
     void dirty(const gfx::Rect& bounds);
 
-    she::Surface* m_surface;
+    os::Surface* m_surface;
     int m_dx;
     int m_dy;
     gfx::Rect m_clipBounds;
-    she::Font* m_font;
+    os::Font* m_font;
     gfx::Rect m_dirtyBounds;
   };
 

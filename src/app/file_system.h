@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace she {
+namespace os {
   class Surface;
 }
 
@@ -80,8 +80,8 @@ namespace app {
 
     virtual bool hasExtension(const base::paths& extensions) = 0;
 
-    virtual she::Surface* getThumbnail() = 0;
-    virtual void setThumbnail(she::Surface* thumbnail) = 0;
+    virtual os::Surface* getThumbnail() = 0;
+    virtual void setThumbnail(os::Surface* thumbnail) = 0;
   };
 
 } // namespace app

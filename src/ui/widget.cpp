@@ -14,10 +14,10 @@
 
 #include "base/memory.h"
 #include "base/string.h"
-#include "she/display.h"
-#include "she/font.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/font.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -162,7 +162,7 @@ void Widget::setTextQuiet(const std::string& text)
   enableFlags(HAS_TEXT);
 }
 
-she::Font* Widget::font() const
+os::Font* Widget::font() const
 {
   if (!m_font && m_theme)
     m_font = m_theme->getWidgetFont(this);
@@ -1129,15 +1129,15 @@ void Widget::invalidateRegion(const Region& region)
 
 class DeleteGraphicsAndSurface {
 public:
-  DeleteGraphicsAndSurface(const gfx::Rect& clip, she::Surface* surface)
+  DeleteGraphicsAndSurface(const gfx::Rect& clip, os::Surface* surface)
     : m_pt(clip.origin()), m_surface(surface) {
   }
 
   void operator()(Graphics* graphics) {
     {
-      she::Surface* dst = she::instance()->defaultDisplay()->getSurface();
-      she::SurfaceLock lockSrc(m_surface);
-      she::SurfaceLock lockDst(dst);
+      os::Surface* dst = os::instance()->defaultDisplay()->getSurface();
+      os::SurfaceLock lockSrc(m_surface);
+      os::SurfaceLock lockDst(dst);
       m_surface->blitTo(
         dst, 0, 0, m_pt.x, m_pt.y,
         m_surface->width(), m_surface->height());
@@ -1148,19 +1148,19 @@ public:
 
 private:
   gfx::Point m_pt;
-  she::Surface* m_surface;
+  os::Surface* m_surface;
 };
 
 GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
-  she::Surface* surface;
-  she::Surface* defaultSurface = she::instance()->defaultDisplay()->getSurface();
+  os::Surface* surface;
+  os::Surface* defaultSurface = os::instance()->defaultDisplay()->getSurface();
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
   if (isDoubleBuffered() && defaultSurface->isDirectToScreen()) {
-    surface = she::instance()->createSurface(clip.w, clip.h);
+    surface = os::instance()->createSurface(clip.w, clip.h);
     graphics.reset(new Graphics(surface, -clip.x, -clip.y),
       DeleteGraphicsAndSurface(clip, surface));
   }

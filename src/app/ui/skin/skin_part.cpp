@@ -10,7 +10,7 @@
 
 #include "app/ui/skin/skin_part.h"
 
-#include "she/surface.h"
+#include "os/surface.h"
 
 namespace app {
 namespace skin {
@@ -34,7 +34,7 @@ void SkinPart::clear()
   }
 }
 
-void SkinPart::setBitmap(std::size_t index, she::Surface* bitmap)
+void SkinPart::setBitmap(std::size_t index, os::Surface* bitmap)
 {
   if (index >= m_bitmaps.size())
     m_bitmaps.resize(index+1, nullptr);

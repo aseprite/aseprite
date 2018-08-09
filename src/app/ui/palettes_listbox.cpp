@@ -25,7 +25,7 @@
 #include "base/launcher.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
