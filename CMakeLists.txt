@@ -82,12 +82,9 @@ option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 
 if(NOT ENABLE_UI)
-  # Without UI, don't use back-ends
-  set(USE_SKIA_BACKEND off)
-  set(USE_NONE_BACKEND on)
+  set(LAF_OS_BACKEND "none") # Without UI, we use the none backend
 else()
-  set(USE_SKIA_BACKEND on)
-  set(USE_NONE_BACKEND off)
+  set(LAF_OS_BACKEND "skia")
 endif()
 
 # Check valid gtk + libpng combination

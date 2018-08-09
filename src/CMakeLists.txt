@@ -12,7 +12,7 @@ endif()
 if(MSVC)
   # As Skia is compiled with /GL flag (whole program optimization),
   # the linker prefer a /LTCG parameter to improve link times.
-  if(USE_SKIA_BACKEND)
+  if(LAF_OS_BACKEND STREQUAL "skia")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
   endif()
 
@@ -181,7 +181,7 @@ add_dependencies(aseprite copy_data)
 
 if(MSVC)
   if(ENABLE_UI)
-    if(USE_SKIA_BACKEND)
+    if(LAF_OS_BACKEND STREQUAL "skia")
       # Linking with "wsetargv.obj" to add support to expand filename
       # wildcards in argc/argv.
       set_target_properties(aseprite
