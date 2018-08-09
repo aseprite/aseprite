@@ -1,0 +1,39 @@
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VCVARS_FILE: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+      VCVARS_ARG: x86
+      ENABLE_UI: ON
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VCVARS_FILE: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+      VCVARS_ARG: x86_amd64
+      ENABLE_UI: ON
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VCVARS_FILE: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat
+      VCVARS_ARG:
+      ENABLE_UI: ON
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VCVARS_FILE: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat
+      VCVARS_ARG:
+      ENABLE_UI: ON
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VCVARS_FILE: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat
+      VCVARS_ARG:
+      ENABLE_UI: OFF
+
+install:
+  - call "%VCVARS_FILE%" %VCVARS_ARG%
+
+clone_script:
+  - cmd: >-
+      git clone -q --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
+      && cd %APPVEYOR_BUILD_FOLDER%
+      && git checkout -qf %APPVEYOR_REPO_COMMIT%
+      && git submodule update --init --recursive
+
+build_script:
+  - mkdir build
+  - cd build
+  - cmake .. -G "NMake Makefiles" -DENABLE_TESTS=ON -DENABLE_UI=%ENABLE_UI%
+  - nmake
+  - ctest --output-on-failure
