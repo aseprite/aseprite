@@ -575,10 +575,11 @@ target_link_libraries(app-lib
   filters-lib
   fixmath-lib
   flic-lib
-  gfx-lib
+  laf-gfx
   net-lib
   render-lib
-  os-lib
+  laf-ft
+  laf-os
   ui-lib
   undo
   ${CMARK_LIBRARIES}

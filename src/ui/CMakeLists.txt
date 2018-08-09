@@ -56,8 +56,8 @@ add_library(ui-lib
   window.cpp)
 
 target_link_libraries(ui-lib
-  os-lib
-  gfx-lib
+  laf-os
+  laf-gfx
   laf-base
   obs
   ${PIXMAN_LIBRARY})

@@ -12,6 +12,7 @@
 
 #include "app/color_utils.h"
 #include "app/modules/palettes.h"
+#include "base/debug.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
@@ -80,7 +81,7 @@ Color Color::fromGray(int g, int a)
 // static
 Color Color::fromIndex(int index)
 {
-  assert(index >= 0);
+  ASSERT(index >= 0);
 
   Color color(Color::IndexType);
   color.m_value.index = index;

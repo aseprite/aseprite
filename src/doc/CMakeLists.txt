@@ -70,7 +70,7 @@ add_library(doc-lib
 # TODO Remove 'os' as dependency and move conversion_to_surface.cpp/h files
 #      to other library/layer (render-lib? new conversion-lib?)
 target_link_libraries(doc-lib
-  os-lib
-  gfx-lib
+  laf-os
+  laf-gfx
   fixmath-lib
   laf-base)
