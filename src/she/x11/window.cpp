@@ -40,6 +40,8 @@ Cursor empty_xcursor = None;
 // into our own user data pointer (X11Window instance) is using a map.
 std::map<::Window, X11Window*> g_activeWindows;
 
+bool g_spaceBarIsPressed = false;
+
 KeyModifiers get_modifiers_from_x(int state)
 {
   int modifiers = kKeyNoneModifier;
@@ -60,6 +62,10 @@ KeyModifiers get_modifiers_from_x(int state)
   if (state & Mod4Mask) {
     modifiers |= kKeyWinModifier;
     KEY_TRACE("+WIN\n");
+  }
+  if (g_spaceBarIsPressed) {
+    modifiers |= kKeySpaceModifier;
+    KEY_TRACE("+SPACE\n");
   }
   return (KeyModifiers)modifiers;
 }
@@ -502,6 +508,31 @@ void X11Window::processX11Event(XEvent& event)
 
       int modifiers = (int)get_modifiers_from_x(event.xkey.state);
       switch (keysym) {
+        case XK_space: {
+          switch (event.type) {
+            case KeyPress:
+              g_spaceBarIsPressed = true;
+              break;
+            case KeyRelease:
+              g_spaceBarIsPressed = false;
+
+              // If the next event after a KeyRelease is a KeyPress of
+              // the same keycode (the space bar in this case), it
+              // means that this KeyRelease is just a repetition of a
+              // the same keycode.
+              if (XEventsQueued(m_display, QueuedAfterReading)) {
+                XEvent nextEvent;
+                XPeekEvent(m_display, &nextEvent);
+                if (nextEvent.type == KeyPress &&
+                    nextEvent.xkey.time == event.xkey.time &&
+                    nextEvent.xkey.keycode == event.xkey.keycode) {
+                  g_spaceBarIsPressed = true;
+                }
+              }
+              break;
+          }
+          break;
+        }
         case XK_Shift_L:
         case XK_Shift_R:
           modifiers |= kKeyShiftModifier;
@@ -571,6 +602,8 @@ void X11Window::processX11Event(XEvent& event)
 
     case EnterNotify:
     case LeaveNotify:
+      g_spaceBarIsPressed = false;
+
       // "mode" can be NotifyGrab or NotifyUngrab when middle mouse
       // button is pressed/released. We must not generated
       // MouseEnter/Leave events on those cases, only on NotifyNormal
