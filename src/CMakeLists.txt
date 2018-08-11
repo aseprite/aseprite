@@ -34,13 +34,6 @@ if(WIN32)
 endif()
 
 ######################################################################
-# pthread
-
-if (CMAKE_USE_PTHREADS_INIT)
-  list(APPEND PLATFORM_LIBS ${CMAKE_THREAD_LIBS_INIT})
-endif()
-
-######################################################################
 # Custom Aseprite website (for testing server-side)
 
 if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
@@ -176,7 +169,7 @@ add_executable(aseprite main/main.cpp ${win32_resources})
 if(WIN32 AND ENABLE_UI)
   set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
 endif()
-target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
+target_link_libraries(aseprite app-lib)
 add_dependencies(aseprite copy_data)
 
 if(LAF_OS_BACKEND_LINK_FLAGS)

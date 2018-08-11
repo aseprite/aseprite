@@ -299,69 +299,6 @@ include_directories(${CURL_INCLUDE_DIRS})
 # simpleini
 include_directories(${SIMPLEINI_DIR})
 
-######################################################################
-# Platform specific stuff
-
-set(PLATFORM_LIBS)
-
-# -- Unix --
-
-if(UNIX AND NOT APPLE AND NOT BEOS)
-  find_package(Threads REQUIRED)
-  list(APPEND PLATFORM_LIBS m ${CMAKE_THREAD_LIBS_INIT})
-
-  find_package(X11 REQUIRED)
-  include_directories(SYSTEM ${X11_INCLUDE_DIR})
-  list(APPEND PLATFORM_LIBS ${X11_LIBRARIES})
-  if(X11_Xcursor_FOUND)
-    list(APPEND PLATFORM_LIBS ${X11_Xcursor_LIB})
-  endif()
-
-  check_library_exists(X11 XOpenIM "${X11_LIB_SEARCH_PATH}" XIM_FOUND)
-endif()
-
-# -- Windows --
-
-if(WIN32)
-  list(APPEND PLATFORM_LIBS
-    kernel32 user32 gdi32 comdlg32 ole32 winmm
-    shlwapi psapi wininet comctl32 dbghelp)
-
-  # Windows Vista is the minimum supported platform but we're defining
-  # Windows 10 to get the all constant/structure definitions.
-  add_definitions(-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00)
-
-  # We need Unicode support
-  add_definitions(-DUNICODE -D_UNICODE)
-endif(WIN32)
-
-# -- Mac OS X --
-
-if(APPLE)
-  find_library(COCOA_LIBRARY Cocoa)
-  find_library(CARBON_LIBRARY Carbon)
-  find_library(IOKIT_LIBRARY IOKit)
-  mark_as_advanced(COCOA_LIBRARY CARBON_LIBRARY IOKIT_LIBRARY)
-
-  list(APPEND PLATFORM_LIBS
-    ${COCOA_LIBRARY}
-    ${CARBON_LIBRARY}
-    ${IOKIT_LIBRARY})
-
-    # Hack to deal with Mac OS X 10.6.  NSQuickDrawView is not defined by
-    # NSQuickDrawView.h when compiling in 64-bit mode, and 64-bit mode is the
-    # default when compiling on Snow Leopard.
-    if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL i386)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch i386")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch i386")
-    endif()
-
-    # The Mac port simply uses too many deprecated things.
-    if(COMPILER_GCC)
-        set(WFLAGS "${WFLAGS} -Wno-deprecated-declarations")
-    endif(COMPILER_GCC)
-endif(APPLE)
-
 # Third parties
 add_subdirectory(third_party)
 
