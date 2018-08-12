@@ -22,9 +22,7 @@ namespace app {
 // can't split anything
 int split_filename(const std::string& filename, std::string& left, std::string& right, int& width)
 {
-  left = base::join_path(
-    base::get_file_path(filename),
-    base::get_file_title(filename));
+  left = base::get_file_title_with_path(filename);
   right = base::get_file_extension(filename);
   if (!right.empty())
     right.insert(right.begin(), '.');
