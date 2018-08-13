@@ -24,7 +24,6 @@
 #include "app/pref/preferences.h"
 #include "app/util/create_cel_copy.h"
 #include "base/memory.h"
-#include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
@@ -327,7 +326,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       if (sourceCel->frame() > destLayer->sprite()->lastFrame())
         break;
 
-      base::UniquePtr<Cel> newCel;
+      std::unique_ptr<Cel> newCel(nullptr);
 
       auto it = linked.find(sourceCel->data()->id());
       if (it != linked.end()) {
@@ -342,7 +341,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
         linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
       }
 
-      destLayer->addCel(newCel);
+      destLayer->addCel(newCel.get());
       newCel.release();
     }
   }
@@ -351,15 +350,15 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
     LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
 
     for (Layer* sourceChild : sourceLayer->layers()) {
-      base::UniquePtr<Layer> destChild(NULL);
+      std::unique_ptr<Layer> destChild(nullptr);
 
       if (sourceChild->isImage()) {
         destChild.reset(new LayerImage(destLayer->sprite()));
-        copyLayerContent(sourceChild, destDoc, destChild);
+        copyLayerContent(sourceChild, destDoc, destChild.get());
       }
       else if (sourceChild->isGroup()) {
         destChild.reset(new LayerGroup(destLayer->sprite()));
-        copyLayerContent(sourceChild, destDoc, destChild);
+        copyLayerContent(sourceChild, destDoc, destChild.get());
       }
       else {
         ASSERT(false);
@@ -386,13 +385,13 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
 Doc* Doc::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = sprite();
-  base::UniquePtr<Sprite> spriteCopyPtr(new Sprite(
+  std::unique_ptr<Sprite> spriteCopyPtr(new Sprite(
       sourceSprite->pixelFormat(),
       sourceSprite->width(),
       sourceSprite->height(),
       sourceSprite->palette(frame_t(0))->size()));
 
-  base::UniquePtr<Doc> documentCopy(new Doc(spriteCopyPtr));
+  std::unique_ptr<Doc> documentCopy(new Doc(spriteCopyPtr.get()));
   Sprite* spriteCopy = spriteCopyPtr.release();
 
   spriteCopy->setTotalFrames(sourceSprite->totalFrames());
@@ -419,7 +418,9 @@ Doc* Doc::duplicate(DuplicateType type) const
 
     case DuplicateExactCopy:
       // Copy the layer group
-      copyLayerContent(sourceSprite->root(), documentCopy, spriteCopy->root());
+      copyLayerContent(sourceSprite->root(),
+                       documentCopy.get(),
+                       spriteCopy->root());
 
       ASSERT((spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
              (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));

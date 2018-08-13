@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,8 @@
 
 #include "base/concurrent_queue.h"
 #include "base/thread.h"
-#include "base/unique_ptr.h"
+
+#include <memory>
 
 namespace app {
 
@@ -24,7 +25,7 @@ namespace app {
 
     void cancel();
     bool isDone() const { return m_done; }
-    bool next(base::UniquePtr<Resource>& resource);
+    bool next(std::unique_ptr<Resource>& resource);
     void reload();
 
   private:
@@ -37,7 +38,7 @@ namespace app {
     bool m_done;
     bool m_cancel;
     Queue m_queue;
-    base::UniquePtr<base::thread> m_thread;
+    std::unique_ptr<base::thread> m_thread;
   };
 
 } // namespace app

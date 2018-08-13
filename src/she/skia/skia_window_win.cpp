@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -199,7 +199,7 @@ bool SkiaWindow::attachANGLE()
 {
   if (!m_glCtx) {
     try {
-      base::UniquePtr<GLContext> ctx(new GLContextEGL(handle()));
+      std::unique_ptr<GLContext> ctx(new GLContextEGL(handle()));
       if (!ctx->createGLContext())
         throw std::runtime_error("Cannot create EGL context");
 
@@ -235,7 +235,7 @@ bool SkiaWindow::attachGL()
 {
   if (!m_glCtx) {
     try {
-      base::UniquePtr<GLContext> ctx(new GLContextWGL(handle()));
+      std::unique_ptr<GLContext> ctx(new GLContextWGL(handle()));
       if (!ctx->createGLContext())
         throw std::runtime_error("Cannot create WGL context\n");
 

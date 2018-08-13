@@ -36,10 +36,6 @@ public:
   std::string getLayout() { return ""; }
   void setLayout(const std::string& layout) { }
 
-  void setTranslateDeadKeys(bool state) {
-    // Do nothing
-  }
-
 private:
   void queueEvent(Event& ev) override;
   void paintGC(const gfx::Rect& rc) override;

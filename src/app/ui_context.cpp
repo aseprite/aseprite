@@ -168,6 +168,25 @@ DocViews UIContext::getAllDocViews(Doc* document) const
   return docViews;
 }
 
+Editors UIContext::getAllEditorsIncludingPreview(Doc* document) const
+{
+  std::vector<Editor*> editors;
+  for (DocView* docView : getAllDocViews(document)) {
+    if (docView->editor())
+      editors.push_back(docView->editor());
+  }
+
+  if (MainWindow* mainWin = App::instance()->mainWindow()) {
+    PreviewEditorWindow* previewWin = mainWin->getPreviewEditor();
+    if (previewWin) {
+      Editor* miniEditor = previewWin->previewEditor();
+      if (miniEditor && miniEditor->document() == document)
+        editors.push_back(miniEditor);
+    }
+  }
+  return editors;
+}
+
 Editor* UIContext::activeEditor()
 {
   DocView* view = activeView();

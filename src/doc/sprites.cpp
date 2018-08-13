@@ -10,7 +10,6 @@
 
 #include "doc/sprites.h"
 
-#include "base/unique_ptr.h"
 #include "doc/sprite.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -18,6 +17,7 @@
 #include "doc/primitives.h"
 
 #include <algorithm>
+#include <memory>
 
 namespace doc {
 
@@ -34,11 +34,11 @@ Sprites::~Sprites()
 
 Sprite* Sprites::add(int width, int height, ColorMode mode, int ncolors)
 {
-  base::UniquePtr<Sprite> spr(
+  std::unique_ptr<Sprite> spr(
     doc::Sprite::createBasicSprite(
       (doc::PixelFormat)mode, width, height, ncolors));
 
-  add(spr);
+  add(spr.get());
 
   return spr.release();
 }

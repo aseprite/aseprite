@@ -596,11 +596,9 @@ void paste()
 
 bool get_image_size(gfx::Size& size)
 {
-#if defined(_WIN32) || defined(__APPLE__)
   if (use_native_clipboard() &&
       get_native_clipboard_bitmap_size(&size))
     return true;
-#endif
 
   if (clipboard_image) {
     size.w = clipboard_image->width();

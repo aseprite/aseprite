@@ -16,7 +16,6 @@
 #include "base/mutex.h"
 #include "base/rw_lock.h"
 #include "base/shared_ptr.h"
-#include "base/unique_ptr.h"
 #include "doc/blend_mode.h"
 #include "doc/color.h"
 #include "doc/document.h"
@@ -76,8 +75,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Main properties
 
-    const DocUndo* undoHistory() const { return m_undo; }
-    DocUndo* undoHistory() { return m_undo; }
+    const DocUndo* undoHistory() const { return m_undo.get(); }
+    DocUndo* undoHistory() { return m_undo.get(); }
 
     color_t bgColor() const;
     color_t bgColor(Layer* layer) const;
@@ -144,7 +143,7 @@ namespace app {
     // Returns the current mask, it can be empty. The mask could be not
     // empty but hidden to the user if the setMaskVisible(false) was
     // used called before.
-    Mask* mask() const { return m_mask; }
+    Mask* mask() const { return m_mask.get(); }
 
     // Sets the current mask. The new mask will be visible by default,
     // so you don't need to call setMaskVisible(true).
@@ -194,10 +193,10 @@ namespace app {
     int m_flags;
 
     // Undo and redo information about the document.
-    base::UniquePtr<DocUndo> m_undo;
+    std::unique_ptr<DocUndo> m_undo;
 
     // Selected mask region boundaries
-    base::UniquePtr<doc::MaskBoundaries> m_maskBoundaries;
+    std::unique_ptr<doc::MaskBoundaries> m_maskBoundaries;
 
     // Data to save the file in the same format that it was loaded
     base::SharedPtr<FormatOptions> m_format_options;
@@ -206,7 +205,7 @@ namespace app {
     ExtraCelRef m_extraCel;
 
     // Current mask.
-    base::UniquePtr<Mask> m_mask;
+    std::unique_ptr<Mask> m_mask;
 
     // Current transformation.
     Transformation m_transformation;

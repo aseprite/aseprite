@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -75,7 +75,7 @@ void SelectTileCommand::onExecute(Context* ctx)
   Doc* doc(writer.document());
   auto& docPref = Preferences::instance().document(doc);
 
-  base::UniquePtr<Mask> mask(new Mask());
+  std::unique_ptr<Mask> mask(new Mask());
 
   if (m_mode != gen::SelectionMode::DEFAULT)
     mask->copyFrom(doc->mask());
@@ -96,7 +96,7 @@ void SelectTileCommand::onExecute(Context* ctx)
   Transaction transaction(writer.context(),
                           friendlyName(),
                           DoesntModifyDocument);
-  transaction.execute(new cmd::SetMask(doc, mask));
+  transaction.execute(new cmd::SetMask(doc, mask.get()));
   transaction.commit();
 
   doc->generateMaskBoundaries();

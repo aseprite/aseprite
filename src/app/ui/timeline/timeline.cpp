@@ -45,7 +45,6 @@
 #include "base/convert_to.h"
 #include "base/memory.h"
 #include "base/scoped_value.h"
-#include "base/unique_ptr.h"
 #include "doc/doc.h"
 #include "doc/frame_tag.h"
 #include "gfx/point.h"
@@ -1050,6 +1049,31 @@ bool Timeline::onProcessMessage(Message* msg)
       if (hasCapture()) {
         switch (m_state) {
 
+            case STATE_MOVING_RANGE: {
+                frame_t firstDrawableFrame;
+                frame_t lastDrawableFrame;
+                getDrawableFrames(&firstDrawableFrame, &lastDrawableFrame);
+
+                layer_t firstDrawableLayer;
+                layer_t lastDrawableLayer;
+                getDrawableLayers(&firstDrawableLayer, &lastDrawableLayer);
+
+                layer_t newLayer = hit.layer;
+                frame_t newFrame = hit.frame;
+
+                if (hit.frame < firstDrawableFrame)
+                    newFrame = firstDrawableFrame - 1;
+                else if (hit.frame > lastDrawableFrame)
+                    newFrame = lastDrawableFrame + 1;
+                if (hit.layer < firstDrawableLayer)
+                    newLayer = firstDrawableLayer - 1;
+                else if (hit.layer > lastDrawableLayer)
+                    newLayer = lastDrawableLayer + 1;
+
+                showCel(newLayer,newFrame);
+                break;
+            }
+
           case STATE_SELECTING_LAYERS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
             if (m_layer != hitLayer) {
@@ -1491,8 +1515,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     layer_t layer, firstLayer, lastLayer;
     frame_t frame, firstFrame, lastFrame;
 
-    getDrawableLayers(g, &firstLayer, &lastLayer);
-    getDrawableFrames(g, &firstFrame, &lastFrame);
+    getDrawableLayers(&firstLayer, &lastLayer);
+    getDrawableFrames(&firstFrame, &lastFrame);
 
     drawTop(g);
 
@@ -1829,13 +1853,13 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   }
 }
 
-void Timeline::getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* lastLayer)
+void Timeline::getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer)
 {
-  int hpx = (clientBounds().h - headerBoxHeight() - topHeight());
-  layer_t i = this->lastLayer() - ((viewScroll().y+hpx) / layerBoxHeight());
+  layer_t i = this->lastLayer()
+            - ((viewScroll().y + getCelsBounds().h) / layerBoxHeight());
   i = MID(this->firstLayer(), i, this->lastLayer());
 
-  layer_t j = i + (hpx / layerBoxHeight() + 1);
+  layer_t j = this->lastLayer() - viewScroll().y / layerBoxHeight();;
   if (!m_rows.empty())
     j = MID(this->firstLayer(), j, this->lastLayer());
   else
@@ -1845,14 +1869,11 @@ void Timeline::getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* 
   *lastLayer = j;
 }
 
-void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* firstFrame, frame_t* lastFrame)
+void Timeline::getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame)
 {
-  int availW = (clientBounds().w - m_separator_x);
-
   *firstFrame = frame_t(viewScroll().x / frameBoxWidth());
-  *lastFrame = *firstFrame
-    + frame_t(availW / frameBoxWidth())
-    + ((availW % frameBoxWidth()) > 0 ? 1: 0);
+  *lastFrame = frame_t((viewScroll().x
+      + getCelsBounds().w) / frameBoxWidth());
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -3699,8 +3720,7 @@ void Timeline::setViewScroll(const gfx::Point& pt)
 
   if (newScroll.y != oldScroll.y) {
     gfx::Rect rc;
-    rc |= getPartBounds(Hit(PART_ROW, 0));
-    rc |= getPartBounds(Hit(PART_ROW, lastLayer()));
+    rc = getLayerHeadersBounds();
     rc.offset(origin());
     invalidateRect(rc);
   }

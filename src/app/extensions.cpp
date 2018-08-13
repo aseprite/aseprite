@@ -18,7 +18,6 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
-#include "base/unique_ptr.h"
 #include "render/dithering_matrix.h"
 
 #include "archive.h"
@@ -641,7 +640,7 @@ Extension* Extensions::loadExtension(const std::string& path,
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 
-  base::UniquePtr<Extension> extension(
+  std::unique_ptr<Extension> extension(
     new Extension(path,
                   name,
                   version,

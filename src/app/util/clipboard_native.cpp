@@ -12,7 +12,6 @@
 
 #include "app/i18n/strings.h"
 #include "base/serialization.h"
-#include "base/unique_ptr.h"
 #include "clip/clip.h"
 #include "doc/color_scales.h"
 #include "doc/image.h"
@@ -205,7 +204,7 @@ bool get_native_clipboard_bitmap(doc::Image** image,
 
   const clip::image_spec& spec = img.spec();
 
-  base::UniquePtr<doc::Image> dst(
+  std::unique_ptr<doc::Image> dst(
     doc::Image::create(doc::IMAGE_RGB,
                        spec.width, spec.height));
 

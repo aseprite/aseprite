@@ -108,7 +108,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
 
   std::string type(typeStr);
   std::string xmlDir(base::get_file_path(xmlFilename));
-  base::UniquePtr<FontData> font(nullptr);
+  std::unique_ptr<FontData> font(nullptr);
 
   if (type == "spritesheet") {
     const char* fileStr = xmlFont->Attribute("file");

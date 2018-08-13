@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,7 +19,6 @@
 #include "base/fstream_path.h"
 #include "base/serialization.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/cel_data_io.h"
 #include "doc/cel_io.h"
@@ -222,7 +221,7 @@ private:
       return (Sprite*)1;
     }
 
-    base::UniquePtr<Sprite> spr(new Sprite(format, w, h, 256));
+    std::unique_ptr<Sprite> spr(new Sprite(format, w, h, 256));
     m_sprite = spr.get();
     spr->setTransparentColor(transparentColor);
 
@@ -312,7 +311,7 @@ private:
     std::string name = read_string(s);
 
     if (type == ObjectType::LayerImage) {
-      base::UniquePtr<LayerImage> lay(new LayerImage(m_sprite));
+      std::unique_ptr<LayerImage> lay(new LayerImage(m_sprite));
       lay->setName(name);
       lay->setFlags(flags);
 
@@ -336,7 +335,7 @@ private:
       return lay.release();
     }
     else if (type == ObjectType::LayerGroup) {
-      base::UniquePtr<LayerGroup> lay(new LayerGroup(m_sprite));
+      std::unique_ptr<LayerGroup> lay(new LayerGroup(m_sprite));
       lay->setName(name);
       lay->setFlags(flags);
       return lay.release();

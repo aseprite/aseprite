@@ -25,8 +25,6 @@ namespace {
 
 bool convert_skia_bitmap_to_ximage(const SkBitmap& bitmap, XImage& image)
 {
-  bitmap.lockPixels();
-
   memset(&image, 0, sizeof(image));
   int bpp = 8*bitmap.bytesPerPixel();
   image.width = bitmap.width();
@@ -42,7 +40,6 @@ bool convert_skia_bitmap_to_ximage(const SkBitmap& bitmap, XImage& image)
   image.bits_per_pixel = bpp;
 
   bool result = XInitImage(&image);
-  bitmap.unlockPixels();
 
   return result;
 }
@@ -63,10 +60,12 @@ SkiaWindow::~SkiaWindow()
 
 void SkiaWindow::setVisible(bool visible)
 {
+  // TODO
 }
 
 void SkiaWindow::maximize()
 {
+  // TODO
 }
 
 bool SkiaWindow::isMaximized() const

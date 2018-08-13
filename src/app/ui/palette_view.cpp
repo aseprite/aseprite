@@ -341,6 +341,11 @@ bool PaletteView::onProcessMessage(Message* msg)
         }
       }
 
+      if (m_state == State::DRAGGING_OUTLINE &&
+          m_hot.part == Hit::COLOR) {
+        update_scroll(m_hot.color);
+      }
+
       if (hasCapture())
         return true;
 

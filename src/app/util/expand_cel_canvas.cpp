@@ -20,7 +20,6 @@
 #include "app/site.h"
 #include "app/transaction.h"
 #include "app/util/range_utils.h"
-#include "base/unique_ptr.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"

@@ -117,8 +117,10 @@
         <!-- Editor -->
         <vbox id="section_editor">
           <separator text="@.section_editor" horizontal="true" />
-          <check text="@.wheel_zoom" id="wheel_zoom" />
-          <check text="@.slide_zoom" id="slide_zoom" />
+          <check text="@.wheel_zoom" id="wheel_zoom"
+                 pref="editor.zoom_with_wheel" />
+          <check text="@.slide_zoom" id="slide_zoom"
+                 pref="editor.zoom_with_slide" />
           <check text="@.zoom_from_center_with_wheel" id="zoom_from_center_with_wheel" />
           <check text="@.zoom_from_center_with_keys" id="zoom_from_center_with_keys" />
           <check text="@.show_scrollbars" id="show_scrollbars" tooltip="@.show_scrollbars_tooltip" />

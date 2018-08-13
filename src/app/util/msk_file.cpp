@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,9 +12,10 @@
 #include "base/cfile.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
-#include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/mask.h"
+
+#include <memory>
 
 namespace app {
 
@@ -40,12 +41,12 @@ Mask* load_msk_file(const char* filename)
 
     // Just load an Animator Pro PIC file
     int x, y;
-    base::UniquePtr<Image> image(load_pic_file(filename, &x, &y, NULL));
+    std::unique_ptr<Image> image(load_pic_file(filename, &x, &y, NULL));
 
     if (image != NULL && (image->pixelFormat() == IMAGE_BITMAP)) {
       mask = new Mask();
       mask->replace(gfx::Rect(x, y, image->width(), image->height()));
-      mask->bitmap()->copy(image, gfx::Clip(image->bounds()));
+      mask->bitmap()->copy(image.get(), gfx::Clip(image->bounds()));
       mask->shrink();
     }
   }

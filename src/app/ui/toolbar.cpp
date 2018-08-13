@@ -506,7 +506,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     }
 
     // Tool shortcut
-    Key* key = KeyboardShortcuts::instance()->tool(tool);
+    KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
     if (key && !key->accels().empty()) {
       tooltip += "\n\n";
       tooltip += fmt::format(Strings::tools_shortcut(),
@@ -562,6 +562,14 @@ void ToolBar::selectTool(Tool* tool)
     m_currentStrip->invalidate();
 
   invalidate();
+}
+
+void ToolBar::selectToolGroup(tools::ToolGroup* toolGroup)
+{
+  ASSERT(toolGroup);
+  ASSERT(m_selectedInGroup[toolGroup]);
+  if (m_selectedInGroup[toolGroup])
+    selectTool(m_selectedInGroup[toolGroup]);
 }
 
 void ToolBar::onClosePopup()

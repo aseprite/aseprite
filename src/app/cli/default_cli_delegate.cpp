@@ -32,6 +32,7 @@
 #endif
 
 #include <iostream>
+#include <memory>
 
 namespace app {
 
@@ -98,7 +99,7 @@ void DefaultCliDelegate::loadPalette(Context* ctx,
                                      const CliOpenFile& cof,
                                      const std::string& filename)
 {
-  base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));
+  std::unique_ptr<doc::Palette> palette(load_palette(filename.c_str()));
   if (palette) {
     Command* loadPalCommand = Commands::instance()->byId(CommandId::LoadPalette());
     Params params;
@@ -116,7 +117,7 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 {
   LOG("APP: Exporting sheet...\n");
 
-  base::UniquePtr<Doc> spriteSheet(exporter.exportSheet(ctx));
+  std::unique_ptr<Doc> spriteSheet(exporter.exportSheet(ctx));
 
   // Sprite sheet isn't used, we just delete it.
 

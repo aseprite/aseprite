@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,9 +11,11 @@
 #include "gfx/fwd.h"
 #include "gfx/size.h"
 #include "she/native_cursor.h"
+#include "she/surface_list.h"
 
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xcursor/Xcursor.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 #include <cstring>
@@ -33,6 +35,7 @@ public:
   void setScale(const int scale);
 
   void setTitle(const std::string& title);
+  void setIcons(const SurfaceList& icons);
 
   gfx::Size clientSize() const;
   gfx::Size restoredSize() const;
@@ -49,6 +52,10 @@ public:
   ::Window handle() const { return m_window; }
   ::GC gc() const { return m_gc; }
 
+  void setTranslateDeadKeys(bool state) {
+    // TODO
+  }
+
   void processX11Event(XEvent& event);
   static X11Window* getPointerFromHandle(Window handle);
 
@@ -58,6 +65,7 @@ protected:
   virtual void resizeDisplay(const gfx::Size& sz) = 0;
 
 private:
+  bool setX11Cursor(::Cursor xcursor);
   static void addWindow(X11Window* window);
   static void removeWindow(X11Window* window);
 
@@ -65,6 +73,8 @@ private:
   ::Window m_window;
   ::GC m_gc;
   ::Cursor m_cursor;
+  ::XcursorImage* m_xcursorImage;
+  ::XIC m_xic;
   int m_scale;
 };
 

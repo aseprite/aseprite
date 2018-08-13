@@ -20,6 +20,7 @@ namespace app {
     MoveTool,
     FreehandTool,
     ShapeTool,
+    MouseWheel,
   };
 
 } // namespace app

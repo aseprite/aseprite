@@ -7,7 +7,6 @@
 #include "app/modules/palettes.h"
 #include "app/util/wrap_point.h"
 #include "app/util/wrap_value.h"
-#include "base/unique_ptr.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
@@ -1246,7 +1245,7 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
 
 //////////////////////////////////////////////////////////////////////
 
-typedef base::UniquePtr<BaseInkProcessing> InkProcessingPtr;
+typedef std::unique_ptr<BaseInkProcessing> InkProcessingPtr;
 
 template<template<typename> class T>
 BaseInkProcessing* get_ink_proc(ToolLoop* loop)

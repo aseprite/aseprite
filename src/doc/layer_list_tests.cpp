@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2016 David Capello
+// Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,23 +10,23 @@
 
 #include <gtest/gtest.h>
 
-#include "base/unique_ptr.h"
 #include "doc/layer.h"
 #include "doc/layer_list.h"
 #include "doc/sprite.h"
 
 #include <algorithm>
+#include <memory>
 
 using namespace doc;
 
 TEST(LayerList, AreLayersAdjacent)
 {
-  base::UniquePtr<Sprite> spr(new Sprite(IMAGE_RGB, 32, 32, 256));
+  std::unique_ptr<Sprite> spr(new Sprite(IMAGE_RGB, 32, 32, 256));
   LayerGroup* root = spr->root();
-  Layer* layer1 = new LayerImage(spr);
-  Layer* layer2 = new LayerImage(spr);
-  Layer* layer3 = new LayerImage(spr);
-  Layer* layer4 = new LayerImage(spr);
+  Layer* layer1 = new LayerImage(spr.get());
+  Layer* layer2 = new LayerImage(spr.get());
+  Layer* layer3 = new LayerImage(spr.get());
+  Layer* layer4 = new LayerImage(spr.get());
   root->addLayer(layer1);
   root->addLayer(layer2);
   root->addLayer(layer3);

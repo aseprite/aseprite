@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,6 @@
 #include "base/replace_string.h"
 #include "base/split_string.h"
 #include "base/string.h"
-#include "base/unique_ptr.h"
 #include "she/system.h"
 
 #include <cctype>

@@ -37,7 +37,6 @@
 #include "app/ui_context.h"
 #include "base/memory.h"
 #include "base/shared_ptr.h"
-#include "base/unique_ptr.h"
 #include "doc/sprite.h"
 #include "she/display.h"
 #include "she/error.h"
@@ -365,7 +364,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
       break;
 
-    case kKeyDownMessage:
+    case kKeyDownMessage: {
 #if ENABLE_DEVMODE
       if (onProcessDevModeKeyDown(static_cast<KeyMessage*>(msg)))
         return true;
@@ -377,8 +376,9 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       if (Manager::onProcessMessage(msg))
         return true;
 
-      for (const Key* key : *KeyboardShortcuts::instance()) {
-        if (key->isPressed(msg)) {
+      KeyboardShortcuts* keys = KeyboardShortcuts::instance();
+      for (const KeyPtr& key : *keys) {
+        if (key->isPressed(msg, *keys)) {
           // Cancel menu-bar loops (to close any popup menu)
           App::instance()->mainWindow()->getMenuBar()->cancelMenuLoop();
 
@@ -392,8 +392,8 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
               // Collect all tools with the pressed keyboard-shortcut
               for (tools::Tool* tool : *toolbox) {
-                Key* key = KeyboardShortcuts::instance()->tool(tool);
-                if (key && key->isPressed(msg))
+                const KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
+                if (key && key->isPressed(msg, *keys))
                   possibles.push_back(tool);
               }
 
@@ -451,6 +451,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
         }
       }
       break;
+    }
 
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == defered_invalid_timer) {

@@ -410,7 +410,7 @@ void BrushPopup::regenerate(const gfx::Rect& box)
       Params params;
       params.set("change", "custom");
       params.set("slot", base::convert_to<std::string>(slot).c_str());
-      Key* key = KeyboardShortcuts::instance()->command(
+      KeyPtr key = KeyboardShortcuts::instance()->command(
         CommandId::ChangeBrush(), params);
       if (key && !key->accels().empty())
         shortcut = key->accels().front().toString();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/debug.h"
-#include "base/unique_ptr.h"
 #include "net/http_headers.h"
 #include "net/http_request.h"
 #include "net/http_response.h"
@@ -21,6 +20,7 @@
 #include "updater/user_agent.h"
 
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 namespace updater {
@@ -132,7 +132,7 @@ public:
   }
 
 private:
-  base::UniquePtr<net::HttpRequest> m_request;
+  std::unique_ptr<net::HttpRequest> m_request;
 };
 
 CheckUpdate::CheckUpdate()

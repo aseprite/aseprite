@@ -128,12 +128,12 @@ void ModifySelectionCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
 
-  base::UniquePtr<Mask> mask(new Mask);
+  std::unique_ptr<Mask> mask(new Mask);
   {
     mask->reserve(sprite->bounds());
     mask->freeze();
     doc::algorithm::modify_selection(
-       m_modifier, document->mask(), mask, quantity, brush);
+       m_modifier, document->mask(), mask.get(), quantity, brush);
     mask->unfreeze();
   }
 
@@ -141,7 +141,7 @@ void ModifySelectionCommand::onExecute(Context* context)
   Transaction transaction(writer.context(),
                           friendlyName(),
                           DoesntModifyDocument);
-  transaction.execute(new cmd::SetMask(document, mask));
+  transaction.execute(new cmd::SetMask(document, mask.get()));
   transaction.commit();
 
   document->generateMaskBoundaries();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,9 +11,10 @@
 #include "app/cmd.h"
 #include "app/cmd/with_image.h"
 #include "app/cmd_sequence.h"
-#include "base/unique_ptr.h"
 #include "doc/image_ref.h"
 #include "gfx/fwd.h"
+
+#include <memory>
 
 namespace doc {
   class Cel;
@@ -41,7 +42,7 @@ namespace cmd {
     void restore();
 
     CmdSequence m_seq;
-    base::UniquePtr<WithImage> m_dstImage;
+    std::unique_ptr<WithImage> m_dstImage;
     ImageRef m_copy;
     int m_offsetX, m_offsetY;
     color_t m_bgcolor;

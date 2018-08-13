@@ -24,7 +24,6 @@
 #include "app/util/clipboard.h"
 #include "app/util/pixel_ratio.h"
 #include "base/bind.h"
-#include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -163,7 +162,7 @@ void NewFileCommand::onExecute(Context* context)
       ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
       ASSERT(w > 0 && h > 0);
 
-      base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h, ncolors));
+      std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(format, w, h, ncolors));
 
       if (window.advancedCheck()->isSelected()) {
         sprite->setPixelRatio(
@@ -200,7 +199,7 @@ void NewFileCommand::onExecute(Context* context)
       }
 
       // Show the sprite to the user
-      base::UniquePtr<Doc> doc(new Doc(sprite));
+      std::unique_ptr<Doc> doc(new Doc(sprite.get()));
       sprite.release();
       sprintf(buf, "Sprite-%04d", ++_sprite_counter);
       doc->setFilename(buf);

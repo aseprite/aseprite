@@ -13,7 +13,6 @@
 #include "app/doc.h"
 #include "base/fs.h"
 #include "base/mutex.h"
-#include "base/unique_ptr.h"
 
 #include <algorithm>
 
@@ -39,7 +38,7 @@ Doc* Docs::add(int width, int height, ColorMode mode, int ncolors)
   if (!args.document())
     args.setDocument(new Doc(nullptr));
 
-  base::UniquePtr<Doc> doc(args.document());
+  std::unique_ptr<Doc> doc(args.document());
   doc->sprites().add(width, height, mode, ncolors);
   doc->setFilename("Sprite");
   doc->setContext(m_ctx); // Change the document context to add the doc in this collection

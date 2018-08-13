@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -81,13 +81,13 @@ protected:
   gfx::Point m_celOrigin;
   gfx::Point m_speed;
   tools::ToolLoop::Button m_button;
-  base::UniquePtr<tools::Ink> m_ink;
+  std::unique_ptr<tools::Ink> m_ink;
   tools::Controller* m_controller;
   tools::PointShape* m_pointShape;
   tools::Intertwine* m_intertwine;
   tools::TracePolicy m_tracePolicy;
-  base::UniquePtr<tools::Symmetry> m_symmetry;
-  base::UniquePtr<doc::Remap> m_shadingRemap;
+  std::unique_ptr<tools::Symmetry> m_symmetry;
+  std::unique_ptr<doc::Remap> m_shadingRemap;
   app::ColorTarget m_colorTarget;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
@@ -246,7 +246,7 @@ public:
   gfx::Point getCelOrigin() override { return m_celOrigin; }
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
   gfx::Point getSpeed() override { return m_speed; }
-  tools::Ink* getInk() override { return m_ink; }
+  tools::Ink* getInk() override { return m_ink.get(); }
   tools::Controller* getController() override { return m_controller; }
   tools::PointShape* getPointShape() override { return m_pointShape; }
   tools::Intertwine* getIntertwine() override { return m_intertwine; }
@@ -257,7 +257,7 @@ public:
       return m_tracePolicy;
   }
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
-  doc::Remap* getShadingRemap() override { return m_shadingRemap; }
+  doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
   gfx::Region& getDirtyArea() override {
     return m_dirtyArea;

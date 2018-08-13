@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,12 +19,13 @@
   #include "she/native_dialogs.h"
 #endif
 
-#include "base/unique_ptr.h"
 #include "ft/lib.h"
 #include "she/common/freetype_font.h"
 #include "she/common/sprite_sheet_font.h"
 #include "she/menus.h"
 #include "she/system.h"
+
+#include <memory>
 
 namespace she {
 
@@ -134,7 +135,7 @@ private:
 #endif
   NativeDialogs* m_nativeDialogs;
   Menus* m_menus;
-  base::UniquePtr<ft::Lib> m_ft;
+  std::unique_ptr<ft::Lib> m_ft;
 };
 
 } // namespace she

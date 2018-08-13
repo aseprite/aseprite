@@ -7,14 +7,20 @@
         <vbox>
           <search id="search" magnet="true" />
           <view width="80" expansive="true">
-            <listbox id="section" expansive="true" />
+            <listbox id="section" expansive="true">
+              <listitem text="@.section_menus" />
+              <listitem text="@.section_commands" />
+              <listitem text="@.section_tools" />
+              <listitem text="@.section_action_modifiers" />
+              <listitem text="@.section_mouse_wheel" />
+            </listbox>
           </view>
           <separator horizontal="true" />
           <button text="@keyboard_shortcuts.import" id="import_button" />
           <button text="@keyboard_shortcuts.export" id="export_button" />
           <button text="@keyboard_shortcuts.reset" id="reset_button" />
         </vbox>
-        <vbox expansive="true">
+        <vbox id="lists_placeholder" expansive="true">
           <view id="search_view" expansive="true">
             <listbox id="search_list" />
           </view>
@@ -30,6 +36,21 @@
           <view id="actions_view" expansive="true">
             <listbox id="actions" />
           </view>
+          <vbox id="wheel_section" expansive="true">
+	    <hbox>
+              <buttonset columns="2" id="wheel_behavior">
+                <item text="@.default_wheel_behavior" />
+                <item text="@.custom_wheel_behavior" />
+              </buttonset>
+            </hbox>
+            <check text="@options.wheel_zoom" id="wheel_zoom"
+                   pref="editor.zoom_with_wheel" />
+            <check text="@options.slide_zoom" id="slide_zoom"
+                   pref="editor.zoom_with_slide" />
+            <view expansive="true">
+              <listbox id="wheel_actions" />
+            </view>
+          </vbox>
         </vbox>
       </hbox>
       <hbox>

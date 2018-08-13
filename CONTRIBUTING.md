@@ -34,7 +34,7 @@ or creating a [GitHub issue](https://github.com/aseprite/aseprite/issues/new).
 
 # Contributing
 
-One of the easiest ways to contribute is writting articles,
+One of the easiest ways to contribute is writing articles,
 [Steam reviews](https://steamcommunity.com/app/431730/reviews/),
 blog posts, recording video tutorials,
 [creating pixel art](https://aseprite.deviantart.com/), or showing your love

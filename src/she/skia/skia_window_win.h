@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2017  David Capello
+// Copyright (C) 2012-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,7 +9,6 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/unique_ptr.h"
 #include "she/skia/skia_surface.h"
 #include "she/win/window.h"
 
@@ -50,7 +49,7 @@ private:
   SkiaDisplay* m_display;
   Backend m_backend;
 #if SK_SUPPORT_GPU
-  base::UniquePtr<GLContext> m_glCtx;
+  std::unique_ptr<GLContext> m_glCtx;
   sk_sp<const GrGLInterface> m_glInterfaces;
   sk_sp<GrContext> m_grCtx;
   sk_sp<SkSurface> m_skSurfaceDirect;

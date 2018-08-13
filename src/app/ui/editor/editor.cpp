@@ -52,7 +52,6 @@
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
-#include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
@@ -575,7 +574,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     dest.h = rc.h;
   }
 
-  base::UniquePtr<Image> rendered(nullptr);
+  std::unique_ptr<Image> rendered(nullptr);
   try {
     // Generate a "expose sprite pixels" notification. This is used by
     // tool managers that need to validate this region (copy pixels from
@@ -633,7 +632,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     m_renderEngine->renderSprite(
-      rendered, m_sprite, m_frame, gfx::Clip(0, 0, rc2));
+      rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
     m_renderEngine->removeExtraImage();
   }
@@ -655,7 +654,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       if (newEngine)
         tmp->clear(); // TODO why we need this?
 
-      convert_image_to_surface(rendered, m_sprite->palette(m_frame),
+      convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
                                tmp, 0, 0, 0, 0, rc2.w, rc2.h);
       if (newEngine) {
         g->drawRgbaSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
@@ -1273,10 +1272,8 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
     }
     setEditorScroll(scroll);
 
-#if defined(_WIN32) || defined(__APPLE__)
     mousePos -= delta;
     ui::set_mouse_position(mousePos);
-#endif
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(
@@ -1881,7 +1878,10 @@ void Editor::onInvalidateRegion(const gfx::Region& region)
 void Editor::onActiveToolChange(tools::Tool* tool)
 {
   m_state->onActiveToolChange(this, tool);
-  updateStatusBar();
+  if (hasMouse()) {
+    updateStatusBar();
+    setCursor(ui::get_mouse_position());
+  }
 }
 
 void Editor::onFgColorChange()
@@ -1960,6 +1960,10 @@ void Editor::onRemoveFrameTag(DocEvent& ev)
 
 void Editor::setCursor(const gfx::Point& mouseScreenPos)
 {
+  Rect vp = View::getView(this)->viewportBounds();
+  if (!vp.contains(mouseScreenPos))
+    return;
+
   bool used = false;
   if (m_sprite)
     used = m_state->onSetCursor(this, mouseScreenPos);
@@ -2145,7 +2149,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
 {
   ASSERT(image);
 
-  base::UniquePtr<Mask> temp_mask;
+  std::unique_ptr<Mask> temp_mask;
   if (!mask) {
     gfx::Rect visibleBounds = getVisibleSpriteBounds();
     gfx::Rect imageBounds = image->bounds();

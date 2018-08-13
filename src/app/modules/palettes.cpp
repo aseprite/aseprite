@@ -44,7 +44,7 @@ void exit_module_palette()
 
 void load_default_palette()
 {
-  base::UniquePtr<Palette> pal;
+  std::unique_ptr<Palette> pal;
   std::string defaultPalName = get_preset_palette_filename(
     get_default_palette_preset_name(), ".ase");
 

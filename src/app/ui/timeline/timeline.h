@@ -251,8 +251,8 @@ namespace app {
     bool allLayersDiscontinuous();
     void detachDocument();
     void setCursor(ui::Message* msg, const Hit& hit);
-    void getDrawableLayers(ui::Graphics* g, layer_t* firstLayer, layer_t* lastLayer);
-    void getDrawableFrames(ui::Graphics* g, frame_t* firstFrame, frame_t* lastFrame);
+    void getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
+    void getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
                   const std::string* text,
                   ui::Style* style,

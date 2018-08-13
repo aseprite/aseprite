@@ -46,7 +46,6 @@
 #include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/transaction.h"
-#include "base/unique_ptr.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -161,7 +160,7 @@ void DocApi::trimSprite(Sprite* sprite)
 {
   gfx::Rect bounds;
 
-  base::UniquePtr<Image> image_wrap(Image::create(sprite->pixelFormat(),
+  std::unique_ptr<Image> image_wrap(Image::create(sprite->pixelFormat(),
                                                   sprite->width(),
                                                   sprite->height()));
   Image* image = image_wrap.get();
@@ -513,7 +512,7 @@ void DocApi::layerFromBackground(Layer* layer)
 Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
   ASSERT(parent);
-  base::UniquePtr<Layer> newLayerPtr;
+  std::unique_ptr<Layer> newLayerPtr;
 
   if (sourceLayer->isImage())
     newLayerPtr.reset(new LayerImage(sourceLayer->sprite()));
@@ -522,11 +521,11 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer
   else
     throw std::runtime_error("Invalid layer type");
 
-  m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr);
+  m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr.get());
 
   newLayerPtr->setName(newLayerPtr->name() + " Copy");
 
-  addLayer(parent, newLayerPtr, afterLayer);
+  addLayer(parent, newLayerPtr.get(), afterLayer);
 
   // Release the pointer as it is owned by the sprite now.
   return newLayerPtr.release();
@@ -546,9 +545,9 @@ Cel* DocApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& imag
 {
   ASSERT(layer->cel(frameNumber) == NULL);
 
-  base::UniquePtr<Cel> cel(new Cel(frameNumber, image));
+  std::unique_ptr<Cel> cel(new Cel(frameNumber, image));
 
-  addCel(layer, cel);
+  addCel(layer, cel.get());
   return cel.release();
 }
 

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,12 +11,12 @@
 #include "doc/cel_data_io.h"
 
 #include "base/serialization.h"
-#include "base/unique_ptr.h"
 #include "doc/cel_data.h"
 #include "doc/subobjects_io.h"
 #include "doc/user_data_io.h"
 
 #include <iostream>
+#include <memory>
 
 namespace doc {
 
@@ -50,7 +50,7 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId)
   if (!image)
     return nullptr;
 
-  base::UniquePtr<CelData> celdata(new CelData(image));
+  std::unique_ptr<CelData> celdata(new CelData(image));
   celdata->setBounds(gfx::Rect(x, y, w, h));
   celdata->setOpacity(opacity);
   celdata->setUserData(userData);

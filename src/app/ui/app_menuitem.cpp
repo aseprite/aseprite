@@ -49,7 +49,7 @@ AppMenuItem::~AppMenuItem()
   delete m_native;
 }
 
-void AppMenuItem::setKey(Key* key)
+void AppMenuItem::setKey(const KeyPtr& key)
 {
   m_key = key;
   syncNativeMenuItemKeyShortcut();
@@ -66,7 +66,7 @@ void AppMenuItem::setNative(const Native& native)
 void AppMenuItem::syncNativeMenuItemKeyShortcut()
 {
   if (m_native) {
-    she::Shortcut shortcut = get_os_shortcut_from_key(m_key);
+    she::Shortcut shortcut = get_os_shortcut_from_key(m_key.get());
 
     m_native->shortcut = shortcut;
     m_native->menuItem->setShortcut(shortcut);

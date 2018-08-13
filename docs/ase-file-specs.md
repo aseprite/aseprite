@@ -82,9 +82,14 @@ header of 16 bytes:
 
     DWORD       Bytes in this frame
     WORD        Magic number (always 0xF1FA)
-    WORD        Number of "chunks" in this frame
+    WORD        Old field which specifies the number of "chunks"
+                in this frame. If this value is 0xFFFF, we might
+                have more chunks to read in this frame
+                (so we have to use the new field)
     WORD        Frame duration (in milliseconds)
-    BYTE[6]     For future (set to zero)
+    BYTE[2]     For future (set to zero)
+    DWORD       New field which specifies the number of "chunks"
+                in this frame (if this is 0, use the old field)
 
 Then each chunk format is:
 

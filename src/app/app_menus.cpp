@@ -266,9 +266,9 @@ AppMenuItem::Native get_native_shortcut_for_command(
   const Params& params = Params())
 {
   AppMenuItem::Native native;
-  Key* key = KeyboardShortcuts::instance()->command(commandId, params);
+  KeyPtr key = KeyboardShortcuts::instance()->command(commandId, params);
   if (key) {
-    native.shortcut = get_os_shortcut_from_key(key);
+    native.shortcut = get_os_shortcut_from_key(key.get());
     native.keyContext = key->keycontext();
   }
   return native;
@@ -276,7 +276,7 @@ AppMenuItem::Native get_native_shortcut_for_command(
 
 } // anonymous namespace
 
-she::Shortcut get_os_shortcut_from_key(Key* key)
+she::Shortcut get_os_shortcut_from_key(const Key* key)
 {
   if (key && !key->accels().empty()) {
     const ui::Accelerator& accel = key->accels().front();
@@ -556,7 +556,9 @@ Widget* AppMenus::createInvalidVersionMenuitem()
   return menuitem;
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command,
+                                                   const Params& params,
+                                                   const KeyPtr& key)
 {
   updateMenusList();
   for (Menu* menu : m_menus)
@@ -564,7 +566,10 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Param
       applyShortcutToMenuitemsWithCommand(menu, command, params, key);
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu,
+                                                   Command* command,
+                                                   const Params& params,
+                                                   const KeyPtr& key)
 {
   for (auto child : menu->children()) {
     if (child->type() == kMenuItemWidget) {
@@ -611,17 +616,17 @@ void AppMenus::syncNativeMenuItemKeyShortcuts(Menu* menu)
 void AppMenus::updateMenusList()
 {
   m_menus.clear();
-  m_menus.push_back(m_rootMenu);
-  m_menus.push_back(m_tabPopupMenu);
-  m_menus.push_back(m_documentTabPopupMenu);
-  m_menus.push_back(m_layerPopupMenu);
-  m_menus.push_back(m_framePopupMenu);
-  m_menus.push_back(m_celPopupMenu);
-  m_menus.push_back(m_celMovementPopupMenu);
-  m_menus.push_back(m_frameTagPopupMenu);
-  m_menus.push_back(m_slicePopupMenu);
-  m_menus.push_back(m_palettePopupMenu);
-  m_menus.push_back(m_inkPopupMenu);
+  m_menus.push_back(m_rootMenu.get());
+  m_menus.push_back(m_tabPopupMenu.get());
+  m_menus.push_back(m_documentTabPopupMenu.get());
+  m_menus.push_back(m_layerPopupMenu.get());
+  m_menus.push_back(m_framePopupMenu.get());
+  m_menus.push_back(m_celPopupMenu.get());
+  m_menus.push_back(m_celMovementPopupMenu.get());
+  m_menus.push_back(m_frameTagPopupMenu.get());
+  m_menus.push_back(m_slicePopupMenu.get());
+  m_menus.push_back(m_palettePopupMenu.get());
+  m_menus.push_back(m_inkPopupMenu.get());
 }
 
 void AppMenus::createNativeMenus()
@@ -679,7 +684,7 @@ void AppMenus::createNativeMenus()
   }
 #endif
 
-  createNativeSubmenus(m_osMenu, m_rootMenu);
+  createNativeSubmenus(m_osMenu, m_rootMenu.get());
 
 #ifdef __APPLE__
   {

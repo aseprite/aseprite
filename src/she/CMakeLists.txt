@@ -121,8 +121,8 @@ if(USE_SKIA_BACKEND)
   if(WIN32)
     list(APPEND SHE_SOURCES
       skia/skia_window_win.cpp
+      win/keys.cpp
       win/pen.cpp
-      win/vk.cpp
       win/winapi.cpp
       win/window.cpp
       win/window_dde.cpp)
@@ -131,8 +131,8 @@ if(USE_SKIA_BACKEND)
       osx/app.mm
       osx/app_delegate.mm
       osx/event_queue.mm
+      osx/keys.mm
       osx/view.mm
-      osx/vk.mm
       osx/window.mm
       skia/skia_window_osx.mm)
   else()
@@ -197,10 +197,11 @@ endif()
 
 if(USE_SKIA_BACKEND)
   target_link_libraries(she
-    ${SKIA_LIBRARIES})
+    ${SKIA_LIBRARIES}
+    ${X11_LIBRARIES})
 
   if(UNIX AND NOT APPLE)
-    target_link_libraries(she fontconfig)
+    target_link_libraries(she fontconfig Xcursor)
   endif()
 endif()
 

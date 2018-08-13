@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -53,11 +53,11 @@ public:
     , m_filter(filter)
     , m_controlsWidget(app::load_widget<Widget>("convolution_matrix.xml", "controls"))
     , m_stock(stock)
-    , m_view(app::find_widget<View>(m_controlsWidget, "view"))
-    , m_stockListBox(app::find_widget<ListBox>(m_controlsWidget, "stock"))
-    , m_reloadButton(app::find_widget<Button>(m_controlsWidget, "reload"))
+    , m_view(app::find_widget<View>(m_controlsWidget.get(), "view"))
+    , m_stockListBox(app::find_widget<ListBox>(m_controlsWidget.get(), "stock"))
+    , m_reloadButton(app::find_widget<Button>(m_controlsWidget.get(), "reload"))
   {
-    getContainer()->addChild(m_controlsWidget);
+    getContainer()->addChild(m_controlsWidget.get());
 
     m_reloadButton->Click.connect(&ConvolutionMatrixWindow::onReloadStock, this);
     m_stockListBox->Change.connect(base::Bind<void>(&ConvolutionMatrixWindow::onMatrixChange, this));
@@ -133,7 +133,7 @@ private:
   }
 
   ConvolutionMatrixFilter& m_filter;
-  base::UniquePtr<Widget> m_controlsWidget;
+  std::unique_ptr<Widget> m_controlsWidget;
   ConvolutionMatrixStock& m_stock;
   View* m_view;
   ListBox* m_stockListBox;

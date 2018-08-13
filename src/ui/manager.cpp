@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -1069,8 +1070,8 @@ void Manager::_openWindow(Window* window)
 
   // Broadcast the open message.
   {
-    base::UniquePtr<Message> msg(new Message(kOpenMessage));
-    window->sendMessage(msg);
+    std::unique_ptr<Message> msg(new Message(kOpenMessage));
+    window->sendMessage(msg.get());
   }
 
   // Relayout
@@ -1137,8 +1138,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 
   // Close message.
   {
-    base::UniquePtr<Message> msg(new Message(kCloseMessage));
-    window->sendMessage(msg);
+    std::unique_ptr<Message> msg(new Message(kCloseMessage));
+    window->sendMessage(msg.get());
   }
 
   // Update manager list stuff.

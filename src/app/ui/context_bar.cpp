@@ -39,7 +39,6 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
-#include "base/unique_ptr.h"
 #include "doc/brush.h"
 #include "doc/conversion_she.h"
 #include "doc/image.h"
@@ -1733,7 +1732,7 @@ render::DitheringMatrix ContextBar::ditheringMatrix()
 
 render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
 {
-  static base::UniquePtr<render::DitheringAlgorithmBase> s_dither;
+  static std::unique_ptr<render::DitheringAlgorithmBase> s_dither;
 
   switch (m_ditheringSelector->ditheringAlgorithm()) {
     case render::DitheringAlgorithm::None:

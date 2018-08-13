@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,7 +33,7 @@ void DeselectMask::onUndo()
 {
   Doc* doc = document();
 
-  doc->setMask(m_oldMask);
+  doc->setMask(m_oldMask.get());
   doc->setMaskVisible(true);
 
   m_oldMask.reset();

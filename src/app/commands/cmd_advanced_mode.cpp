@@ -62,7 +62,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   if (oldMode == MainWindow::NormalMode &&
       pref.advancedMode.showAlert()) {
-    Key* key = KeyboardShortcuts::instance()->command(this->id().c_str());
+    KeyPtr key = KeyboardShortcuts::instance()->command(this->id().c_str());
     if (!key->accels().empty()) {
       app::gen::AdvancedMode window;
 

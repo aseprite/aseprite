@@ -16,7 +16,6 @@
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
-#include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
 #include "obs/connection.h"
@@ -159,7 +158,7 @@ namespace app {
 
     ui::TooltipManager m_tooltips;
     ButtonSet m_buttons;
-    base::UniquePtr<PalettePopup> m_palettePopup;
+    std::unique_ptr<PalettePopup> m_palettePopup;
     ui::Splitter m_splitter;
     ui::VBox m_palettePlaceholder;
     ui::VBox m_selectorPlaceholder;
@@ -186,7 +185,7 @@ namespace app {
     bool m_fromFgButton;
     bool m_fromBgButton;
 
-    base::UniquePtr<doc::Palette> m_oldPalette;
+    std::unique_ptr<doc::Palette> m_oldPalette;
     Doc* m_lastDocument;
     bool m_ascending;
     obs::scoped_connection m_beforeCmdConn;

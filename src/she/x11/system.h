@@ -9,11 +9,9 @@
 #pragma once
 
 #include "she/common/system.h"
+#include "she/x11/keys.h"
 
 namespace she {
-
-bool x11_is_key_pressed(KeyScancode scancode);
-int x11_get_unicode_from_scancode(KeyScancode scancode);
 
 class X11System : public CommonSystem {
 public:

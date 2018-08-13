@@ -10,13 +10,13 @@
 
 #include "base/cfile.h"
 #include "base/file_handle.h"
-#include "base/unique_ptr.h"
 #include "doc/color_scales.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 
 #include <cstdio>
+#include <memory>
 
 namespace app {
 
@@ -25,7 +25,7 @@ using namespace doc;
 // Loads a PIC file (Animator and Animator Pro format)
 Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
 {
-  base::UniquePtr<Image> image;
+  std::unique_ptr<Image> image;
   int size, compression;
   int block_size;
   int block_type;
@@ -147,7 +147,7 @@ Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
           for (u=0; u<(w+7)/8; u++) {
             byte = std::fgetc(f);
             for (c=0; c<8; c++)
-              put_pixel(image, u*8+c, v, byte & (1<<(7-c)));
+              put_pixel(image.get(), u*8+c, v, byte & (1<<(7-c)));
           }
         break;
     }

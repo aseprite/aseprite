@@ -454,18 +454,18 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   }
 }
 
-void PixelsMovement::getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
-                                         base::UniquePtr<Mask>& outputMask)
+void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
+                                         std::unique_ptr<Mask>& outputMask)
 {
   gfx::Rect bounds = m_currentData.transformedBounds();
-  base::UniquePtr<Image> image(Image::create(m_sprite->pixelFormat(), bounds.w, bounds.h));
+  std::unique_ptr<Image> image(Image::create(m_sprite->pixelFormat(), bounds.w, bounds.h));
 
-  drawImage(image, bounds.origin(), false);
+  drawImage(image.get(), bounds.origin(), false);
 
   // Draw mask without shrinking it, so the mask size is equal to the
   // "image" render.
-  base::UniquePtr<Mask> mask(new Mask);
-  drawMask(mask, false);
+  std::unique_ptr<Mask> mask(new Mask);
+  drawMask(mask.get(), false);
 
   // Now we can shrink and crop the image.
   gfx::Rect oldMaskBounds = mask->bounds();
@@ -474,7 +474,7 @@ void PixelsMovement::getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
   if (newMaskBounds != oldMaskBounds) {
     newMaskBounds.x -= oldMaskBounds.x;
     newMaskBounds.y -= oldMaskBounds.y;
-    image.reset(crop_image(image,
+    image.reset(crop_image(image.get(),
                            newMaskBounds.x,
                            newMaskBounds.y,
                            newMaskBounds.w,

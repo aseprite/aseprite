@@ -128,7 +128,7 @@ protected:
              command->id() == CommandId::GotoLastFrame())) {
           m_context->executeCommand(command, params);
           invalidate();
-          m_render.reset(NULL); // Re-render
+          m_render.reset(nullptr); // Re-render
         }
 #if 0
         // Play the animation
@@ -200,38 +200,38 @@ protected:
     render.setProjection(m_proj);
     if (m_index_bg_color == -1) {
       render.setupBackground(m_doc, m_doublebuf->pixelFormat());
-      render.renderBackground(m_doublebuf,
+      render.renderBackground(m_doublebuf.get(),
         gfx::Clip(0, 0, -m_pos.x, -m_pos.y,
           m_doublebuf->width(), m_doublebuf->height()));
     }
     else {
-      doc::clear_image(m_doublebuf, m_pal->getEntry(m_index_bg_color));
+      doc::clear_image(m_doublebuf.get(), m_pal->getEntry(m_index_bg_color));
     }
 
     switch (m_tiled) {
       case TiledMode::NONE:
-        render.renderImage(m_doublebuf, m_render, m_pal, x, y,
+        render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, y,
                            255, BlendMode::NORMAL);
         break;
       case TiledMode::X_AXIS:
         for (u=x-w; u<ui::display_w()+w; u+=w)
-          render.renderImage(m_doublebuf, m_render, m_pal, u, y,
+          render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, y,
                              255, BlendMode::NORMAL);
         break;
       case TiledMode::Y_AXIS:
         for (v=y-h; v<ui::display_h()+h; v+=h)
-          render.renderImage(m_doublebuf, m_render, m_pal, x, v,
+          render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, v,
                              255, BlendMode::NORMAL);
         break;
       case TiledMode::BOTH:
         for (v=y-h; v<ui::display_h()+h; v+=h)
           for (u=x-w; u<ui::display_w()+w; u+=w)
-            render.renderImage(m_doublebuf, m_render, m_pal, u, v,
+            render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, v,
                                255, BlendMode::NORMAL);
         break;
     }
 
-    doc::convert_image_to_surface(m_doublebuf, m_pal,
+    doc::convert_image_to_surface(m_doublebuf.get(), m_pal,
       m_doublesur, 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
     g->blit(m_doublesur, 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
   }
@@ -247,8 +247,8 @@ private:
   gfx::Point m_delta;
   render::Projection m_proj;
   int m_index_bg_color;
-  base::UniquePtr<Image> m_render;
-  base::UniquePtr<Image> m_doublebuf;
+  std::unique_ptr<Image> m_render;
+  std::unique_ptr<Image> m_doublebuf;
   she::ScopedHandle<she::Surface> m_doublesur;
   filters::TiledMode m_tiled;
 };

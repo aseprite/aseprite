@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,10 +9,11 @@
 #pragma once
 
 #include "app/res/resources_loader.h"
-#include "base/unique_ptr.h"
 #include "ui/listbox.h"
 #include "ui/listitem.h"
 #include "ui/timer.h"
+
+#include <memory>
 
 namespace app {
   class ResourceListItem;
@@ -21,7 +22,7 @@ class ResourceListItem : public ui::ListItem {
   public:
     ResourceListItem(Resource* resource);
 
-    Resource* resource() const { return m_resource; }
+    Resource* resource() const { return m_resource.get(); }
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -29,7 +30,7 @@ class ResourceListItem : public ui::ListItem {
     void onSizeHint(ui::SizeHintEvent& ev) override;
 
   private:
-    base::UniquePtr<Resource> m_resource;
+    std::unique_ptr<Resource> m_resource;
   };
 
   class ResourcesListBox : public ui::ListBox {
@@ -59,7 +60,7 @@ class ResourceListItem : public ui::ListItem {
     void onTick();
     void stop();
 
-    base::UniquePtr<ResourcesLoader> m_resourcesLoader;
+    std::unique_ptr<ResourcesLoader> m_resourcesLoader;
     ui::Timer m_resourcesTimer;
     bool m_reload;
 

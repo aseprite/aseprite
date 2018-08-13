@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,7 +9,6 @@
 #pragma once
 
 #include "app/widget_loader.h"
-#include "base/unique_ptr.h"
 
 namespace app {
 

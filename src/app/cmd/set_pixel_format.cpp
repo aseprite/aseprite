@@ -16,7 +16,6 @@
 #include "app/cmd/set_palette.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
-#include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/document.h"
@@ -116,9 +115,9 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       if (pal->frame() != 0)
         m_seq.add(new cmd::RemovePalette(sprite, pal));
 
-    base::UniquePtr<Palette> graypal(Palette::createGrayscale());
+    std::unique_ptr<Palette> graypal(Palette::createGrayscale());
     if (*graypal != *sprite->palette(0))
-      m_seq.add(new cmd::SetPalette(sprite, 0, graypal));
+      m_seq.add(new cmd::SetPalette(sprite, 0, graypal.get()));
   }
 }
 
