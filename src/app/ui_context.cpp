@@ -78,6 +78,12 @@ void UIContext::setActiveView(DocView* docView)
 {
   MainWindow* mainWin = App::instance()->mainWindow();
 
+  // This can happen when the main window is being destroyed when we
+  // close the app, and the active view is changing because we are
+  // closing down every single tab.
+  if (!mainWin)
+    return;
+
   // Prioritize workspace for user input.
   App::instance()->inputChain().prioritize(mainWin->getWorkspace(), nullptr);
 
