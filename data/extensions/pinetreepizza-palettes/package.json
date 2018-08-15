@@ -10,6 +10,7 @@
   ],
   "contributes": {
     "palettes": [
+      { "id": "BubbleGum16", "path": "./bubblegum-16.gpl" },
       { "id": "Rosy-42", "path": "./rosy-42.gpl" }
     ]
   }
