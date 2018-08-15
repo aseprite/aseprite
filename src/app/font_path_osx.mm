@@ -10,12 +10,20 @@
 
 #include "app/font_path.h"
 
+#include "base/fs.h"
+
+#include <cstdlib>
+
 namespace app {
 
+// TODO use a Cocoa API to get the list of paths
 void get_font_dirs(base::paths& fontDirs)
 {
-  // TODO use a Cocoa API to get the list of paths
-  fontDirs.push_back("~/Library/Fonts");
+  const char* home = std::getenv("HOME");
+  if (home) {
+    fontDirs.push_back(
+      base::join_path(home, "Library/Fonts"));
+  }
   fontDirs.push_back("/Library/Fonts");
   fontDirs.push_back("/System/Library/Fonts/");
 }
