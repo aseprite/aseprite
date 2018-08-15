@@ -88,7 +88,6 @@ bool PngFormat::onLoad(FileOp* fop)
   png_structp png_ptr;
   png_infop info_ptr;
   int bit_depth, color_type, interlace_type;
-  int pass, number_passes;
   int num_palette;
   png_colorp palette;
   png_bytepp rows_pointer;
@@ -169,7 +168,7 @@ bool PngFormat::onLoad(FileOp* fop)
    * png_read_image().  To see how to handle interlacing passes,
    * see the png_read_row() method below:
    */
-  number_passes = png_set_interlace_handling(png_ptr);
+  int number_passes = png_set_interlace_handling(png_ptr);
 
   /* Optional call to gamma correct and add the background to the palette
    * and update info structure.
@@ -256,7 +255,7 @@ bool PngFormat::onLoad(FileOp* fop)
   for (y = 0; y < height; y++)
     rows_pointer[y] = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
 
-  for (pass = 0; pass < number_passes; pass++) {
+  for (int pass=0; pass<number_passes; ++pass) {
     for (y = 0; y < height; y++) {
       png_read_rows(png_ptr, rows_pointer+y, nullptr, 1);
 
@@ -371,7 +370,6 @@ bool PngFormat::onSave(FileOp* fop)
   png_colorp palette = nullptr;
   png_bytep row_pointer;
   int color_type = 0;
-  int pass, number_passes;
 
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
@@ -580,9 +578,7 @@ bool PngFormat::onSave(FileOp* fop)
 
     png_write_rows(png_ptr, &row_pointer, 1);
 
-    fop->setProgress(
-      (double)((double)pass + (double)(y+1) / (double)(height))
-      / (double)number_passes);
+    fop->setProgress((double)(y+1) / (double)(height));
   }
 
   png_free(png_ptr, row_pointer);
