@@ -252,7 +252,7 @@ void Manager::flipDisplay()
       m_dirtyRegion,
       gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
 
-    for (auto& rc : m_dirtyRegion)
+    for (const auto& rc : m_dirtyRegion)
       m_display->flip(rc);
 
     m_dirtyRegion.clear();
