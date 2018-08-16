@@ -98,8 +98,7 @@ void select_layer_boundaries(Layer* layer,
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Doc* doc = writer.document();
-    Sprite* spr = layer->sprite();
-    ASSERT(doc == spr->document());
+    ASSERT(doc == layer->sprite()->document());
 
     if (doc->isMaskVisible()) {
       switch (op) {
