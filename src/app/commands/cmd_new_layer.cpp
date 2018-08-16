@@ -175,7 +175,7 @@ void NewLayerCommand::onExecute(Context* context)
     }
   }
 
-  Layer* layer;
+  Layer* layer = nullptr;
   {
     Transaction transaction(
       writer.context(),
