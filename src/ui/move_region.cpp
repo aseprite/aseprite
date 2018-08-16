@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,8 +22,7 @@ using namespace gfx;
 
 void move_region(Manager* manager, const Region& region, int dx, int dy)
 {
-  os::System* system = os::instance();
-  os::Display* display = Manager::getDefault()->getDisplay();
+  os::Display* display = manager->getDisplay();
   ASSERT(display);
   if (!display)
     return;
@@ -32,39 +31,56 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
   os::SurfaceLock lock(surface);
   std::size_t nrects = region.size();
 
-  // Blit directly screen to screen.
+  // Fast path, move one rectangle.
   if (nrects == 1) {
     gfx::Rect rc = region[0];
     surface->scrollTo(rc, dx, dy);
 
     rc.offset(dx, dy);
-    Manager::getDefault()->dirtyRect(rc);
+    manager->dirtyRect(rc);
   }
-  // Blit saving areas and copy them.
+  // As rectangles in the region internals are separated by bands
+  // through the y-axis, we can sort the rectangles by y-axis and then
+  // by x-axis to move rectangle by rectangle depending on the dx/dy
+  // direction so we don't overlap each rectangle.
   else if (nrects > 1) {
-    std::vector<os::Surface*> images(nrects);
-    Region::const_iterator it, begin=region.begin(), end=region.end();
-    int c;
+    std::vector<gfx::Rect> rcs(nrects);
+    std::copy(region.begin(), region.end(), rcs.begin());
 
-    for (c=0, it=begin; it != end; ++it, ++c) {
-      const Rect& rc = *it;
-      os::Surface* tmpSur = system->createSurface(rc.w, rc.h);
-      {
-        os::SurfaceLock tmpSurLock(tmpSur);
-        surface->blitTo(tmpSur, rc.x, rc.y, 0, 0, rc.w, rc.h);
-      }
-      images[c] = tmpSur;
-    }
+    std::sort(
+      rcs.begin(), rcs.end(),
+      [dx, dy](const gfx::Rect& a, const gfx::Rect& b){
+        if (dy < 0) {
+          if (a.y < b.y)
+            return true;
+          else if (a.y == b.y) {
+            if (dx < 0)
+              return a.x < b.x;
+            else
+              return a.x > b.x;
+          }
+          else
+            return false;
+        }
+        else {
+          if (a.y > b.y)
+            return true;
+          else if (a.y == b.y) {
+            if (dx < 0)
+              return a.x < b.x;
+            else
+              return a.x > b.x;
+          }
+          else
+            return false;
+        }
+      });
 
-    for (c=0, it=begin; it != end; ++it, ++c) {
-      gfx::Rect rc((*it).x+dx, (*it).y+dy, (*it).w, (*it).h);
-      os::Surface* tmpSur = images[c];
-      {
-        os::SurfaceLock tmpSurLock(tmpSur);
-        tmpSur->blitTo(surface, 0, 0, rc.x, rc.y, rc.w, rc.h);
-        manager->dirtyRect(rc);
-      }
-      tmpSur->dispose();
+    for (gfx::Rect& rc : rcs) {
+      surface->scrollTo(rc, dx, dy);
+
+      rc.offset(dx, dy);
+      manager->dirtyRect(rc);
     }
   }
 }
