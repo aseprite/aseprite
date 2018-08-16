@@ -81,12 +81,12 @@ void CelOpacityCommand::onExecute(Context* context)
       range.endRange(layer, cel->frame());
     }
 
-    for (Cel* cel : cel->sprite()->uniqueCels(range.selectedFrames())) {
-      if (range.contains(cel->layer())) {
-        if (!cel->layer()->isBackground() &&
-            cel->layer()->isEditable() &&
-            m_opacity != cel->opacity()) {
-          transaction.execute(new cmd::SetCelOpacity(cel, m_opacity));
+    for (Cel* c : cel->sprite()->uniqueCels(range.selectedFrames())) {
+      if (range.contains(c->layer())) {
+        if (!c->layer()->isBackground() &&
+            c->layer()->isEditable() &&
+            m_opacity != c->opacity()) {
+          transaction.execute(new cmd::SetCelOpacity(c, m_opacity));
         }
       }
     }
