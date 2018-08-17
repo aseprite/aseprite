@@ -34,6 +34,9 @@ matrix:
         - ENABLE_UI=ON
         - XVFB=xvfb-run
 
+before_install:
+  - eval "${MATRIX_EVAL}"
+
 before_script:
   - mkdir build
   - cd build
