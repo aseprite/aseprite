@@ -346,9 +346,6 @@ void View::onSetViewScroll(const gfx::Point& pt)
 
   // Notify about the new scroll position
   onScrollChange();
-
-  // Generate PaintMessages right now.
-  flushRedraw();
 }
 
 void View::onScrollRegion(ScrollRegionEvent& ev)
