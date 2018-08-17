@@ -657,7 +657,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
                                tmp, 0, 0, 0, 0, rc2.w, rc2.h);
       if (newEngine) {
-        g->drawRgbaSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+        g->drawSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
       }
       else {
         g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);

@@ -183,6 +183,21 @@ void Graphics::drawSurface(os::Surface* surface, int x, int y)
   m_surface->drawSurface(surface, m_dx+x, m_dy+y);
 }
 
+void Graphics::drawSurface(os::Surface* surface,
+                           const gfx::Rect& srcRect,
+                           const gfx::Rect& dstRect)
+{
+  dirty(gfx::Rect(m_dx+dstRect.x, m_dy+dstRect.y,
+                  dstRect.w, dstRect.h));
+
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
+  m_surface->drawSurface(
+    surface,
+    srcRect,
+    gfx::Rect(dstRect).offset(m_dx, m_dy));
+}
+
 void Graphics::drawRgbaSurface(os::Surface* surface, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));

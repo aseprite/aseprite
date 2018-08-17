@@ -73,6 +73,9 @@ namespace ui {
       const gfx::Rect& outer, const gfx::Rect& inner);
 
     void drawSurface(os::Surface* surface, int x, int y);
+    void drawSurface(os::Surface* surface,
+                     const gfx::Rect& srcRect,
+                     const gfx::Rect& dstRect);
     void drawRgbaSurface(os::Surface* surface, int x, int y);
     void drawRgbaSurface(os::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
     void drawRgbaSurface(os::Surface* surface,
