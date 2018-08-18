@@ -36,7 +36,8 @@ namespace ui {
     obs::signal<void()> Tick;
 
     static void pollTimers();
-    static void checkNoTimers();
+    static bool haveTimers();
+    static bool haveRunningTimers();
 
   protected:
     virtual void onTick();

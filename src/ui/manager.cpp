@@ -189,7 +189,7 @@ Manager::~Manager()
     set_mouse_cursor(kNoCursor);
 
     // Destroy timers
-    Timer::checkNoTimers();
+    ASSERT(!Timer::haveTimers());
 
     // Destroy filters
 #ifdef _DEBUG
@@ -325,8 +325,10 @@ void Manager::generateMessagesFromOSEvents()
   // Events from "she" layer.
   os::Event sheEvent;
   for (;;) {
-    // bool canWait = (msg_queue.empty());
-    bool canWait = false;
+    // TODO Add timers to laf::os library so we can wait for then in
+    //      the OS message loop.
+    bool canWait = (msg_queue.empty() &&
+                    !Timer::haveRunningTimers());
 
     m_eventQueue->getEvent(sheEvent, canWait);
     if (sheEvent.type() == os::Event::None)

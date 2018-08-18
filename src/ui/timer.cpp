@@ -97,9 +97,21 @@ void Timer::pollTimers()
   }
 }
 
-void Timer::checkNoTimers()
+bool Timer::haveTimers()
 {
-  ASSERT(timers.empty());
+  return !timers.empty();
+}
+
+bool Timer::haveRunningTimers()
+{
+  if (!timers.empty()) {
+    for (auto timer : timers) {
+      if (timer && timer->isRunning()) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 } // namespace ui
