@@ -424,20 +424,17 @@ private:
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
   CustomizedTipWindow(const std::string& text)
-    : ui::TipWindow(text)
-  {
+    : ui::TipWindow(text) {
   }
 
-  void setInterval(int msecs)
-  {
+  void setInterval(int msecs) {
     if (!m_timer)
       m_timer.reset(new ui::Timer(msecs, this));
     else
       m_timer->setInterval(msecs);
   }
 
-  void startTimer()
-  {
+  void startTimer() {
     m_timer->start();
   }
 
@@ -445,7 +442,8 @@ protected:
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
       case kTimerMessage:
-        closeWindow(NULL);
+        closeWindow(nullptr);
+        m_timer->stop();
         break;
     }
     return ui::TipWindow::onProcessMessage(msg);
