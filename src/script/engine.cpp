@@ -396,7 +396,7 @@ void Engine::printLastResult()
   m_printLastResult = true;
 }
 
-void Engine::eval(const std::string& jsCode,
+bool Engine::eval(const std::string& jsCode,
                   const std::string& filename)
 {
   bool errFlag = true;
@@ -429,16 +429,17 @@ void Engine::eval(const std::string& jsCode,
   js_pop(handle, 1);
 
   onAfterEval(errFlag);
+  return !errFlag;
 }
 
-void Engine::evalFile(const std::string& filename)
+bool Engine::evalFile(const std::string& filename)
 {
   std::stringstream buf;
   {
     std::ifstream s(FSTREAM_PATH(filename));
     buf << s.rdbuf();
   }
-  eval(buf.str(), filename);
+  return eval(buf.str(), filename);
 }
 
 } // namespace script

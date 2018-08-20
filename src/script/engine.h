@@ -141,9 +141,9 @@ namespace script {
     ~Engine();
 
     void printLastResult();
-    void eval(const std::string& jsCode,
+    bool eval(const std::string& jsCode,
               const std::string& filename = std::string());
-    void evalFile(const std::string& filename);
+    bool evalFile(const std::string& filename);
 
     Context& context() { return m_ctx; }
 

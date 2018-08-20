@@ -129,7 +129,8 @@ void DefaultCliDelegate::execScript(const std::string& filename)
 #ifdef ENABLE_SCRIPTING
   script::StdoutEngineDelegate delegate;
   AppScripting engine(&delegate);
-  engine.evalFile(filename);
+  if (!engine.evalFile(filename))
+    throw std::runtime_error("Error executing script");
 #endif
 }
 
