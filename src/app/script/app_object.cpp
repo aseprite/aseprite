@@ -14,7 +14,8 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/script/app_scripting.h"
-#include "app/script/sprite_wrap.h"
+#include "app/site.h"
+#include "app/tx.h"
 #include "script/engine.h"
 
 #include <iostream>
@@ -39,7 +40,7 @@ void App_open(script::ContextHandle handle)
 
   Doc* newDoc = appCtx->activeDocument();
   if (newDoc != oldDoc)
-    ctx.newObject("Sprite", unwrap_engine(ctx)->wrapSprite(newDoc), nullptr);
+    push_sprite(ctx, newDoc->sprite());
   else
     ctx.pushNull();
 }
@@ -56,13 +57,26 @@ void App_exit(script::ContextHandle handle)
   ctx.pushUndefined();
 }
 
+void App_transaction(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  if (ctx.isCallable(1)) {
+    Tx tx; // Create a new transaction so it exists in the whole
+           // duration of the argument function call.
+    ctx.call(1);
+    tx.commit();
+  }
+  else
+    ctx.pushUndefined();
+}
+
 void App_get_activeSprite(script::ContextHandle handle)
 {
   script::Context ctx(handle);
   app::Context* appCtx = App::instance()->context();
   Doc* doc = appCtx->activeDocument();
   if (doc)
-    ctx.newObject("Sprite", unwrap_engine(ctx)->wrapSprite(doc), nullptr);
+    push_sprite(ctx, doc->sprite());
   else
     ctx.pushNull();
 }
@@ -71,18 +85,11 @@ void App_get_activeImage(script::ContextHandle handle)
 {
   script::Context ctx(handle);
   app::Context* appCtx = App::instance()->context();
-  Doc* doc = appCtx->activeDocument();
-  if (doc) {
-    SpriteWrap* sprWrap = unwrap_engine(ctx)->wrapSprite(doc);
-    ASSERT(sprWrap);
-
-    ImageWrap* imgWrap = sprWrap->activeImage();
-    if (imgWrap != nullptr) {
-      ctx.newObject("Image", imgWrap, nullptr);
-      return;
-    }
-  }
-  ctx.pushNull();
+  Site site = appCtx->activeSite();
+  if (site.image())
+    ctx.newObject("Image", site.image(), nullptr);
+  else
+    ctx.pushNull();
 }
 
 void App_get_pixelColor(script::ContextHandle handle)
@@ -100,6 +107,7 @@ void App_get_version(script::ContextHandle handle)
 const script::FunctionEntry App_methods[] = {
   { "open", App_open, 1 },
   { "exit", App_exit, 0 },
+  { "transaction", App_transaction, 1 },
   { nullptr, nullptr, 0 }
 };
 

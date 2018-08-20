@@ -55,6 +55,7 @@ namespace script {
     void setContextUserData(void* userData);
     void* getContextUserData();
 
+    void call(index_t i);
     void error(const char* err);
 
     void pop();
@@ -72,6 +73,7 @@ namespace script {
     bool isObject(index_t i);
     bool isArray(index_t i);
     bool isUserData(index_t i, const char* tag);
+    bool isCallable(index_t i);
 
     bool toBool(index_t i);
     double toNumber(index_t i);

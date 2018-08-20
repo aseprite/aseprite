@@ -17,9 +17,9 @@
 #include "app/doc_api.h"
 #include "app/file/palette_file.h"
 #include "app/script/app_scripting.h"
-#include "app/script/sprite_wrap.h"
 #include "app/site.h"
 #include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
@@ -47,35 +47,31 @@ void Sprite_new(script::ContextHandle handle)
   app::Context* appCtx = App::instance()->context();
   doc->setContext(appCtx);
 
-  ctx.newObject(kTag, unwrap_engine(ctx)->wrapSprite(doc.release()), nullptr);
+  ctx.newObject(kTag, doc->sprite(), nullptr);
+  doc.release();
 }
 
 void Sprite_resize(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
+  Sprite* sprite = (Sprite*)ctx.toUserData(0, kTag);
   gfx::Size size = convert_args_into_size(ctx);
 
-  if (wrap) {
-    wrap->commitImages();
-
-    Doc* doc = wrap->document();
-    DocApi api(doc, wrap->transaction());
-    api.setSpriteSize(doc->sprite(), size.w, size.h);
+  if (sprite) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
+    Tx tx;
+    DocApi(doc, tx).setSpriteSize(doc->sprite(), size.w, size.h);
+    tx.commit();
   }
-
   ctx.pushUndefined();
 }
 
 void Sprite_crop(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-
-  if (wrap) {
-    wrap->commitImages();
-
-    Doc* doc = wrap->document();
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
+  if (sprite) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
     gfx::Rect bounds;
 
     // Use mask bounds
@@ -83,30 +79,27 @@ void Sprite_crop(script::ContextHandle handle)
       if (doc->isMaskVisible())
         bounds = doc->mask()->bounds();
       else
-        bounds = doc->sprite()->bounds();
+        bounds = sprite->bounds();
     }
     else {
       bounds = convert_args_into_rectangle(ctx);
     }
 
     if (!bounds.isEmpty()) {
-      DocApi api(doc, wrap->transaction());
-      api.cropSprite(doc->sprite(), bounds);
+      Tx tx;
+      DocApi(doc, tx).cropSprite(sprite, bounds);
+      tx.commit();
     }
   }
-
   ctx.pushUndefined();
 }
 
 void Sprite_save(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-
-  if (wrap) {
-    wrap->commit();
-
-    Doc* doc = wrap->document();
+  auto sprite = (Sprite*)ctx.toUserData(0, kTag);
+  if (sprite) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
     Command* saveCommand =
@@ -120,13 +113,11 @@ void Sprite_save(script::ContextHandle handle)
 void Sprite_saveAs(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
+  auto sprite = (Sprite*)ctx.toUserData(0, kTag);
   const char* fn = ctx.requireString(1);
 
-  if (fn && wrap) {
-    wrap->commit();
-
-    Doc* doc = wrap->document();
+  if (fn && sprite) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
 
@@ -144,13 +135,11 @@ void Sprite_saveAs(script::ContextHandle handle)
 void Sprite_saveCopyAs(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
+  auto sprite = (Sprite*)ctx.toUserData(0, kTag);
   const char* fn = ctx.requireString(1);
 
-  if (fn && wrap) {
-    wrap->commit();
-
-    Doc* doc = wrap->document();
+  if (fn && sprite) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
 
@@ -168,16 +157,17 @@ void Sprite_saveCopyAs(script::ContextHandle handle)
 void Sprite_loadPalette(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
   const char* fn = ctx.toString(1);
 
-  if (fn && wrap) {
-    Doc* doc = wrap->document();
+  if (fn && sprite) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
     std::unique_ptr<doc::Palette> palette(load_palette(fn));
     if (palette) {
+      Tx tx;
       // TODO Merge this with the code in LoadPaletteCommand
-      doc->getApi(wrap->transaction()).setPalette(
-        wrap->sprite(), 0, palette.get());
+      doc->getApi(tx).setPalette(sprite, 0, palette.get());
+      tx.commit();
     }
   }
 
@@ -187,68 +177,62 @@ void Sprite_loadPalette(script::ContextHandle handle)
 void Sprite_get_filename(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  ctx.pushString(wrap->document()->filename().c_str());
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
+  ctx.pushString(sprite->document()->filename().c_str());
 }
 
 void Sprite_get_width(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  ctx.pushInt(wrap->sprite()->width());
-}
-
-void Sprite_get_height(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  ctx.pushInt(wrap->sprite()->height());
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
+  ctx.pushInt(sprite->width());
 }
 
 void Sprite_set_width(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  const int width = ctx.requireInt(1);
-  wrap->transaction().execute(
-    new cmd::SetSpriteSize(wrap->sprite(),
-                           width,
-                           wrap->sprite()->height()));
+  auto sprite = (Sprite*)ctx.toUserData(0, kTag);
+  const int height = ctx.requireInt(1);
+  Tx tx;
+  tx(new cmd::SetSpriteSize(sprite,
+                            sprite->width(),
+                            height));
+  tx.commit();
   ctx.pushUndefined();
+}
+
+void Sprite_get_height(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
+  ctx.pushInt(sprite->height());
 }
 
 void Sprite_set_height(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
+  auto sprite = (Sprite*)ctx.toUserData(0, kTag);
   const int height = ctx.requireInt(1);
-  wrap->transaction().execute(
-    new cmd::SetSpriteSize(wrap->sprite(),
-                           wrap->sprite()->width(),
-                           height));
+  Tx tx;
+  tx(new cmd::SetSpriteSize(sprite,
+                            sprite->width(),
+                            height));
+  tx.commit();
   ctx.pushUndefined();
 }
 
 void Sprite_get_colorMode(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  ctx.pushInt(wrap->sprite()->pixelFormat());
-}
-
-void Sprite_set_colorMode(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  // TODO
-  // auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  ctx.pushUndefined();
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
+  ctx.pushInt(sprite->pixelFormat());
 }
 
 void Sprite_get_selection(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (SpriteWrap*)ctx.toUserData(0, kTag);
-  push_new_selection(ctx, wrap);
+  auto sprite = (doc::Sprite*)ctx.toUserData(0, kTag);
+  push_sprite_selection(ctx, sprite);
 }
 
 const script::FunctionEntry Sprite_methods[] = {
@@ -265,7 +249,7 @@ const script::PropertyEntry Sprite_props[] = {
   { "filename", Sprite_get_filename, nullptr },
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
-  { "colorMode", Sprite_get_colorMode, Sprite_set_colorMode },
+  { "colorMode", Sprite_get_colorMode, nullptr },
   { "selection", Sprite_get_selection, nullptr },
   { nullptr, nullptr, 0 }
 };
@@ -277,6 +261,11 @@ void register_sprite_class(script::index_t idx, script::Context& ctx)
   ctx.registerClass(idx, kTag,
                     Sprite_new, 3,
                     Sprite_methods, Sprite_props);
+}
+
+void push_sprite(script::Context& ctx, Sprite* sprite)
+{
+  ctx.newObject(kTag, sprite, nullptr);
 }
 
 } // namespace app

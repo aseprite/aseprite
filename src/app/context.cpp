@@ -26,6 +26,7 @@ namespace app {
 Context::Context()
   : m_docs(this)
   , m_lastSelectedDoc(nullptr)
+  , m_transaction(nullptr)
 {
   m_docs.add_observer(this);
 }
@@ -175,6 +176,18 @@ void Context::onGetActiveSite(Site* site) const
 void Context::onSetActiveDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
+}
+
+void Context::setTransaction(Transaction* transaction)
+{
+  if (transaction) {
+    ASSERT(!m_transaction);
+    m_transaction = transaction;
+  }
+  else {
+    ASSERT(m_transaction);
+    m_transaction = nullptr;
+  }
 }
 
 } // namespace app

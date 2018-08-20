@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,8 +11,6 @@
 #include "app/script/app_scripting.h"
 
 #include "app/doc.h"
-#include "app/script/image_wrap.h"
-#include "app/script/sprite_wrap.h"
 
 namespace app {
 
@@ -69,36 +67,7 @@ AppScripting::AppScripting(script::EngineDelegate* delegate)
   ctx.pop(1);
 }
 
-SpriteWrap* AppScripting::wrapSprite(Doc* doc)
-{
-  auto it = m_sprites.find(doc->id());
-  if (it != m_sprites.end())
-    return it->second;
-  else {
-    auto wrap = new SpriteWrap(doc);
-    m_sprites[doc->id()] = wrap;
-    return wrap;
-  }
-}
-
-void AppScripting::onAfterEval(bool err)
-{
-  // Commit all transactions
-  if (!err) {
-    for (auto& it : m_sprites)
-      it.second->commit();
-  }
-  destroyWrappers();
-}
-
-void AppScripting::destroyWrappers()
-{
-  for (auto& it : m_sprites)
-    delete it.second;
-  m_sprites.clear();
-}
-
-AppScripting* unwrap_engine(script::Context& ctx)
+AppScripting* get_engine(script::Context& ctx)
 {
   return (AppScripting*)ctx.getContextUserData();
 }

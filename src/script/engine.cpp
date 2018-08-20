@@ -45,6 +45,11 @@ void* Context::getContextUserData()
   return js_getcontext(m_handle);
 }
 
+void Context::call(index_t i)
+{
+  js_call(m_handle, i);
+}
+
 void Context::error(const char* err)
 {
   js_error(m_handle, "%s", err);
@@ -114,6 +119,11 @@ bool Context::isObject(index_t i)
 bool Context::isArray(index_t i)
 {
   return (js_isarray(m_handle, i) ? true: false);
+}
+
+bool Context::isCallable(index_t i)
+{
+  return (js_iscallable(m_handle, i) ? true: false);
 }
 
 bool Context::isUserData(index_t i, const char* tag)

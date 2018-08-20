@@ -8,7 +8,6 @@
 #include "config.h"
 #endif
 
-#include "app/script/image_wrap.h"
 #include "doc/image.h"
 #include "script/engine.h"
 
@@ -27,14 +26,13 @@ void Image_new(script::ContextHandle handle)
 void Image_putPixel(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
+  auto image = (doc::Image*)ctx.toUserData(0, kTag);
   int x = ctx.requireInt(1);
   int y = ctx.requireInt(2);
   doc::color_t color = ctx.requireUInt(3);
 
-  if (wrap) {
-    wrap->modifyRegion(gfx::Region(gfx::Rect(x, y, 1, 1)));
-    wrap->image()->putPixel(x, y, color);
+  if (image) {
+    image->putPixel(x, y, color);
   }
 
   ctx.pushUndefined();
@@ -43,12 +41,12 @@ void Image_putPixel(script::ContextHandle handle)
 void Image_getPixel(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
+  auto image = (doc::Image*)ctx.toUserData(0, kTag);
   int x = ctx.requireInt(1);
   int y = ctx.requireInt(2);
 
-  if (wrap) {
-    doc::color_t color = wrap->image()->getPixel(x, y);
+  if (image) {
+    doc::color_t color = image->getPixel(x, y);
     ctx.pushUInt(color);
   }
   else
@@ -58,9 +56,9 @@ void Image_getPixel(script::ContextHandle handle)
 void Image_get_width(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
-  if (wrap)
-    ctx.pushInt(wrap->image()->width());
+  auto image = (doc::Image*)ctx.toUserData(0, kTag);
+  if (image)
+    ctx.pushInt(image->width());
   else
     ctx.pushUndefined();
 }
@@ -68,9 +66,9 @@ void Image_get_width(script::ContextHandle handle)
 void Image_get_height(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (ImageWrap*)ctx.toUserData(0, kTag);
-  if (wrap)
-    ctx.pushInt(wrap->image()->height());
+  auto image = (doc::Image*)ctx.toUserData(0, kTag);
+  if (image)
+    ctx.pushInt(image->height());
   else
     ctx.pushUndefined();
 }

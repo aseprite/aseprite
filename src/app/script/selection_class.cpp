@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,8 +12,8 @@
 #include "app/cmd/set_mask.h"
 #include "app/doc.h"
 #include "app/script/app_scripting.h"
-#include "app/script/sprite_wrap.h"
 #include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/mask.h"
 #include "script/engine.h"
 
@@ -25,71 +25,81 @@ namespace {
 
 const char* kTag = "Selection";
 
-struct MaskWrap {
+struct SelectionObject {
   Mask* mask;
-  SpriteWrap* sprite;
-  MaskWrap(Mask* mask, SpriteWrap* sprite)
+  Sprite* sprite;
+  SelectionObject(Mask* mask, Sprite* sprite)
     : mask(mask)
-    , sprite(sprite) { }
+    , sprite(sprite) {
+  }
+  ~SelectionObject() {
+    if (!sprite && mask)
+      delete mask;
+  }
 };
 
 void Selection_finalize(script::ContextHandle handle, void* data)
 {
-  auto wrap = (MaskWrap*)data;
-  delete wrap;
+  auto obj = (SelectionObject*)data;
+  delete obj;
 }
 
 void Selection_new(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  ctx.newObject(kTag, new MaskWrap(new Mask, nullptr), Selection_finalize);
+  ctx.newObject(kTag, new SelectionObject(new Mask, nullptr), Selection_finalize);
 }
 
 void Selection_deselect(script::ContextHandle handle)
 {
   script::Context ctx(handle);
 
-  auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
-  if (wrap) {
-    if (wrap->sprite) {
-      Doc* doc = wrap->sprite->document();
+  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
+  if (obj) {
+    if (obj->sprite) {
+      Doc* doc = static_cast<Doc*>(obj->sprite->document());
       ASSERT(doc);
-      wrap->sprite->transaction().execute(
-        new cmd::DeselectMask(doc));
+
+      Tx tx;
+      tx(new cmd::DeselectMask(doc));
+      tx.commit();
     }
     else {
-      ASSERT(wrap->mask);
-      wrap->mask->clear();
+      ASSERT(obj->mask);
+      obj->mask->clear();
     }
   }
-
   ctx.pushUndefined();
 }
 
 void Selection_select(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
+  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
   gfx::Rect bounds = convert_args_into_rectangle(ctx);
 
-  if (wrap) {
+  if (obj) {
     if (bounds.isEmpty()) {
       Selection_deselect(handle);
       return;
     }
     else {
-      if (wrap->sprite) {
+      if (obj->sprite) {
+        Doc* doc = static_cast<Doc*>(obj->sprite->document());
+        ASSERT(doc);
+
         Mask newMask;
         newMask.replace(bounds);
-        wrap->sprite->transaction().execute(
-          new cmd::SetMask(wrap->sprite->document(), &newMask));
+
+        Tx tx;
+        tx(new cmd::SetMask(doc, &newMask));
+        tx.commit();
       }
       else {
-        wrap->mask->replace(bounds);
+        obj->mask->replace(bounds);
       }
     }
   }
-
   ctx.pushUndefined();
 }
 
@@ -97,41 +107,43 @@ void Selection_selectAll(script::ContextHandle handle)
 {
   script::Context ctx(handle);
 
-  auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
-  if (wrap) {
-    if (wrap->sprite) {
-      Doc* doc = wrap->sprite->document();
+  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
+  if (obj) {
+    if (obj->sprite) {
+      Doc* doc = static_cast<Doc*>(obj->sprite->document());
 
       Mask newMask;
-      newMask.replace(doc->sprite()->bounds());
+      newMask.replace(obj->sprite->bounds());
 
-      wrap->sprite->transaction().execute(
-        new cmd::SetMask(doc, &newMask));
+      Tx tx;
+      tx(new cmd::SetMask(doc, &newMask));
+      tx.commit();
     }
     else {
-      gfx::Rect bounds = wrap->mask->bounds();
+      gfx::Rect bounds = obj->mask->bounds();
       if (!bounds.isEmpty())
-        wrap->mask->replace(bounds);
+        obj->mask->replace(bounds);
     }
   }
-
   ctx.pushUndefined();
 }
 
 void Selection_get_bounds(script::ContextHandle handle)
 {
   script::Context ctx(handle);
-  auto wrap = (MaskWrap*)ctx.toUserData(0, kTag);
-  if (wrap) {
-    if (wrap->sprite) {
-      Doc* doc = wrap->sprite->document();
-      if (doc->isMaskVisible())
+  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
+  if (obj) {
+    if (obj->sprite) {
+      Doc* doc = static_cast<Doc*>(obj->sprite->document());
+      if (doc->isMaskVisible()) {
         push_new_rectangle(ctx, doc->mask()->bounds());
-      else                        // Empty rectangle
+      }
+      else {                        // Empty rectangle
         push_new_rectangle(ctx, gfx::Rect(0, 0, 0, 0));
+      }
     }
     else {
-      push_new_rectangle(ctx, wrap->mask->bounds());
+      push_new_rectangle(ctx, obj->mask->bounds());
     }
   }
   else
@@ -160,9 +172,11 @@ void register_selection_class(script::index_t idx, script::Context& ctx)
                     Selection_props);
 }
 
-void push_new_selection(script::Context& ctx, SpriteWrap* spriteWrap)
+void push_sprite_selection(script::Context& ctx, Sprite* sprite)
 {
-  ctx.newObject(kTag, new MaskWrap(nullptr, spriteWrap), Selection_finalize);
+  ctx.newObject(kTag,
+                new SelectionObject(nullptr, sprite),
+                Selection_finalize);
 }
 
 } // namespace app
