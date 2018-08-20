@@ -16,9 +16,8 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/resource_finder.h"
-#include "app/script/app_scripting.h"
+#include "app/script/engine.h"
 #include "base/fs.h"
-#include "script/engine_delegate.h"
 #include "ui/manager.h"
 
 #include <cstdio>
@@ -67,7 +66,7 @@ void RunScriptCommand::onLoadParams(const Params& params)
 void RunScriptCommand::onExecute(Context* context)
 {
   ConsoleEngineDelegate delegate;
-  AppScripting engine(&delegate);
+  script::Engine engine(&delegate);
   engine.evalFile(m_filename);
 
   ui::Manager::getDefault()->invalidate();

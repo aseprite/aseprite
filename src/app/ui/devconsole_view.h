@@ -12,10 +12,9 @@
   #error ENABLE_SCRIPTING must be defined
 #endif
 
-#include "app/script/app_scripting.h"
+#include "app/script/engine.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "script/engine_delegate.h"
 #include "ui/box.h"
 #include "ui/label.h"
 #include "ui/textbox.h"
@@ -57,7 +56,7 @@ namespace app {
     ui::HBox m_bottomBox;
     ui::Label m_label;
     CommmandEntry* m_entry;
-    AppScripting m_engine;
+    script::Engine m_engine;
   };
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,113 +8,100 @@
 #include "config.h"
 #endif
 
+#include "app/script/luacpp.h"
 #include "gfx/size.h"
-#include "script/engine.h"
 
 namespace app {
+namespace script {
 
 namespace {
 
-const char* kTag = "Size";
-
-void Size_finalize(script::ContextHandle handle, void* data)
+gfx::Size Size_new(lua_State* L, int index)
 {
-  auto sz = (gfx::Size*)data;
-  delete sz;
-}
-
-void Size_new(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  auto sz = new gfx::Size(0, 0);
-
+  gfx::Size sz(0, 0);
   // Copy other size
-  if (ctx.isUserData(1, kTag)) {
-    auto sz2 = (gfx::Size*)ctx.toUserData(1, kTag);
-    *sz = *sz2;
+  if (auto sz2 = may_get_obj<gfx::Size>(L, index)) {
+    sz = *sz2;
   }
   // Convert { width, height } into a Size
-  else if (ctx.isObject(1)) {
-    ctx.getProp(1, "width");
-    ctx.getProp(1, "height");
-    sz->w = ctx.toInt(-2);
-    sz->h = ctx.toInt(-1);
-    ctx.pop(4);
+  else if (lua_istable(L, index)) {
+    lua_getfield(L, index, "width");
+    lua_getfield(L, index, "height");
+    sz.w = lua_tointeger(L, -2);
+    sz.h = lua_tointeger(L, -1);
+    lua_pop(L, 2);
   }
-  else if (ctx.isNumber(1)) {
-    sz->w = ctx.toInt(1);
-    sz->h = ctx.toInt(2);
+  else {
+    sz.w = lua_tointeger(L, index);
+    sz.h = lua_tointeger(L, index+1);
   }
-
-  ctx.newObject(kTag, sz, Size_finalize);
+  return sz;
 }
 
-void Size_get_width(script::ContextHandle handle)
+int Size_new(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto sz = (gfx::Size*)ctx.toUserData(0, kTag);
-  ASSERT(sz);
-  ctx.pushInt(sz->w);
+  push_obj(L, Size_new(L, 1));
+  return 1;
 }
 
-void Size_get_height(script::ContextHandle handle)
+int Size_get_width(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto sz = (gfx::Size*)ctx.toUserData(0, kTag);
+  const auto sz = get_obj<gfx::Size>(L, 1);
   ASSERT(sz);
-  ctx.pushInt(sz->h);
+  lua_pushinteger(L, sz->w);
+  return 1;
 }
 
-void Size_set_width(script::ContextHandle handle)
+int Size_get_height(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto sz = (gfx::Size*)ctx.toUserData(0, kTag);
+  const auto sz = get_obj<gfx::Size>(L, 1);
   ASSERT(sz);
-  sz->w = ctx.toInt(1);
+  lua_pushinteger(L, sz->h);
+  return 1;
 }
 
-void Size_set_height(script::ContextHandle handle)
+int Size_set_width(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto sz = (gfx::Size*)ctx.toUserData(0, kTag);
+  auto sz = get_obj<gfx::Size>(L, 1);
   ASSERT(sz);
-  sz->h = ctx.toInt(1);
+  sz->w = lua_tointeger(L, 2);
+  return 0;
 }
 
-const script::FunctionEntry Size_methods[] = {
-  { nullptr, nullptr, 0 }
+int Size_set_height(lua_State* L)
+{
+  auto sz = get_obj<gfx::Size>(L, 1);
+  ASSERT(sz);
+  sz->h = lua_tointeger(L, 2);
+  return 0;
+}
+
+const luaL_Reg Size_methods[] = {
+  { nullptr, nullptr }
 };
 
-const script::PropertyEntry Size_props[] = {
+const Property Size_properties[] = {
   { "width", Size_get_width, Size_set_width },
   { "height", Size_get_height, Size_set_height },
-  { nullptr, nullptr, 0 }
+  { nullptr, nullptr, nullptr }
 };
 
 } // anonymous namespace
 
-void register_size_class(script::index_t idx, script::Context& ctx)
+DEF_MTNAME(gfx::Size);
+
+void register_size_class(lua_State* L)
 {
-  ctx.registerClass(idx, kTag,
-                    Size_new, 3,
-                    Size_methods,
-                    Size_props);
+  using gfx::Size;
+  REG_CLASS(L, Size);
+  REG_CLASS_NEW(L, Size);
+  REG_CLASS_PROPERTIES(L, Size);
 }
 
-void push_new_size(script::Context& ctx, const gfx::Size& sz)
+gfx::Size convert_args_into_size(lua_State* L, int index)
 {
-  ctx.newObject(kTag, new gfx::Size(sz), Size_finalize);
+  return Size_new(L, index);
 }
 
-gfx::Size convert_args_into_size(script::Context& ctx)
-{
-  gfx::Size result;
-  Size_new(ctx.handle());
-  auto sz = (gfx::Size*)ctx.toUserData(-1, kTag);
-  if (sz)
-    result = *sz;
-  ctx.pop(1);
-  return result;
-}
-
+} // namespace script
 } // namespace app

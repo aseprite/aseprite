@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,151 +8,132 @@
 #include "config.h"
 #endif
 
+#include "app/script/luacpp.h"
 #include "gfx/rect.h"
-#include "script/engine.h"
 
 namespace app {
+namespace script {
 
 namespace {
 
-const char* kTag = "Rectangle";
-
-void Rectangle_finalize(script::ContextHandle handle, void* data)
+gfx::Rect Rectangle_new(lua_State* L, int index)
 {
-  auto rc = (gfx::Rect*)data;
-  delete rc;
-}
-
-void Rectangle_new(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  auto rc = new gfx::Rect(0, 0, 0, 0);
-
+  gfx::Rect rc(0, 0, 0, 0);
   // Copy other rectangle
-  if (ctx.isUserData(1, kTag)) {
-    auto rc2 = (gfx::Rect*)ctx.toUserData(1, kTag);
-    *rc = *rc2;
+  if (auto rc2 = may_get_obj<gfx::Rect>(L, index)) {
+    rc = *rc2;
   }
   // Convert { x, y, width, height } into a Rectangle
-  else if (ctx.isObject(1)) {
-    ctx.getProp(1, "x");
-    ctx.getProp(1, "y");
-    ctx.getProp(1, "width");
-    ctx.getProp(1, "height");
-    rc->x = ctx.toInt(-4);
-    rc->y = ctx.toInt(-3);
-    rc->w = ctx.toInt(-2);
-    rc->h = ctx.toInt(-1);
-    ctx.pop(4);
+  else if (lua_istable(L, index)) {
+    lua_getfield(L, index, "x");
+    lua_getfield(L, index, "y");
+    lua_getfield(L, index, "width");
+    lua_getfield(L, index, "height");
+    rc.x = lua_tointeger(L, -4);
+    rc.y = lua_tointeger(L, -3);
+    rc.w = lua_tointeger(L, -2);
+    rc.h = lua_tointeger(L, -1);
+    lua_pop(L, 4);
   }
-  else if (ctx.isNumber(1)) {
-    rc->x = ctx.toInt(1);
-    rc->y = ctx.toInt(2);
-    rc->w = ctx.toInt(3);
-    rc->h = ctx.toInt(4);
+  else {
+    rc.x = lua_tointeger(L, index);
+    rc.y = lua_tointeger(L, index+1);
+    rc.w = lua_tointeger(L, index+2);
+    rc.h = lua_tointeger(L, index+3);
   }
-
-  ctx.newObject(kTag, rc, Rectangle_finalize);
+  return rc;
 }
 
-void Rectangle_get_x(script::ContextHandle handle)
+int Rectangle_new(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ASSERT(rc);
-  ctx.pushInt(rc->x);
+  push_obj(L, Rectangle_new(L, 1));
+  return 1;
 }
 
-void Rectangle_get_y(script::ContextHandle handle)
+int Rectangle_get_x(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ctx.pushInt(rc->y);
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  lua_pushinteger(L, rc->x);
+  return 1;
 }
 
-void Rectangle_get_width(script::ContextHandle handle)
+int Rectangle_get_y(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ASSERT(rc);
-  ctx.pushInt(rc->w);
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  lua_pushinteger(L, rc->y);
+  return 1;
 }
 
-void Rectangle_get_height(script::ContextHandle handle)
+int Rectangle_get_width(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ASSERT(rc);
-  ctx.pushInt(rc->h);
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  lua_pushinteger(L, rc->w);
+  return 1;
 }
 
-void Rectangle_set_x(script::ContextHandle handle)
+int Rectangle_get_height(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ASSERT(rc);
-  rc->x = ctx.toInt(1);
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  lua_pushinteger(L, rc->h);
+  return 1;
 }
 
-void Rectangle_set_y(script::ContextHandle handle)
+int Rectangle_set_x(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  rc->y = ctx.toInt(1);
+  auto rc = get_obj<gfx::Rect>(L, 1);
+  rc->x = lua_tointeger(L, 2);
+  return 0;
 }
 
-void Rectangle_set_width(script::ContextHandle handle)
+int Rectangle_set_y(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ASSERT(rc);
-  rc->w = ctx.toInt(1);
+  auto rc = get_obj<gfx::Rect>(L, 1);
+  rc->y = lua_tointeger(L, 2);
+  return 0;
 }
 
-void Rectangle_set_height(script::ContextHandle handle)
+int Rectangle_set_width(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto rc = (gfx::Rect*)ctx.toUserData(0, kTag);
-  ASSERT(rc);
-  rc->h = ctx.toInt(1);
+  auto rc = get_obj<gfx::Rect>(L, 1);
+  rc->w = lua_tointeger(L, 2);
+  return 0;
 }
 
-const script::FunctionEntry Rectangle_methods[] = {
-  { nullptr, nullptr, 0 }
+int Rectangle_set_height(lua_State* L)
+{
+  auto rc = get_obj<gfx::Rect>(L, 1);
+  rc->h = lua_tointeger(L, 2);
+  return 0;
+}
+
+const luaL_Reg Rectangle_methods[] = {
+  { nullptr, nullptr }
 };
 
-const script::PropertyEntry Rectangle_props[] = {
+const Property Rectangle_properties[] = {
   { "x", Rectangle_get_x, Rectangle_set_x },
   { "y", Rectangle_get_y, Rectangle_set_y },
   { "width", Rectangle_get_width, Rectangle_set_width },
   { "height", Rectangle_get_height, Rectangle_set_height },
-  { nullptr, nullptr, 0 }
+  { nullptr, nullptr, nullptr }
 };
 
 } // anonymous namespace
 
-void register_rectangle_class(script::index_t idx, script::Context& ctx)
+DEF_MTNAME(gfx::Rect);
+
+void register_rect_class(lua_State* L)
 {
-  ctx.registerClass(idx, kTag,
-                    Rectangle_new, 3,
-                    Rectangle_methods,
-                    Rectangle_props);
+  using Rectangle = gfx::Rect;
+  REG_CLASS(L, Rectangle);
+  REG_CLASS_NEW(L, Rectangle);
+  REG_CLASS_PROPERTIES(L, Rectangle);
 }
 
-void push_new_rectangle(script::Context& ctx, const gfx::Rect& rc)
+gfx::Rect convert_args_into_rect(lua_State* L, int index)
 {
-  ctx.newObject(kTag, new gfx::Rect(rc), Rectangle_finalize);
+  return Rectangle_new(L, index);
 }
 
-gfx::Rect convert_args_into_rectangle(script::Context& ctx)
-{
-  gfx::Rect result;
-  Rectangle_new(ctx.handle());
-  auto rc = (gfx::Rect*)ctx.toUserData(-1, kTag);
-  if (rc)
-    result = *rc;
-  ctx.pop(1);
-  return result;
-}
-
+} // namespace script
 } // namespace app

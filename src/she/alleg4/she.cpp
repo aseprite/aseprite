@@ -134,10 +134,6 @@ public:
     allegro_exit();
   }
 
-  void dispose() override {
-    delete this;
-  }
-
   void activateApp() override {
     // Do nothing
   }

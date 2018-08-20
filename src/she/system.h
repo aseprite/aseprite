@@ -82,6 +82,7 @@ namespace she {
 
   System* create_system();
   System* instance();
+  void set_instance(System* system);
 
 } // namespace she
 

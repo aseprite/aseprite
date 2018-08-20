@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,111 +8,96 @@
 #include "config.h"
 #endif
 
+#include "app/script/luacpp.h"
 #include "gfx/point.h"
-#include "script/engine.h"
 
 namespace app {
+namespace script {
 
 namespace {
 
-const char* kTag = "Point";
-
-void Point_finalize(script::ContextHandle handle, void* data)
+gfx::Point Point_new(lua_State* L, int index)
 {
-  auto pt = (gfx::Point*)data;
-  delete pt;
-}
-
-void Point_new(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  auto pt = new gfx::Point(0, 0);
-
+  gfx::Point pt(0, 0);
   // Copy other rectangle
-  if (ctx.isUserData(1, kTag)) {
-    auto pt2 = (gfx::Point*)ctx.toUserData(1, kTag);
-    *pt = *pt2;
+  if (auto pt2 = may_get_obj<gfx::Point>(L, index)) {
+    pt = *pt2;
   }
   // Convert { x, y } into a Point
-  else if (ctx.isObject(1)) {
-    ctx.getProp(1, "x");
-    ctx.getProp(1, "y");
-    pt->x = ctx.toInt(-2);
-    pt->y = ctx.toInt(-1);
-    ctx.pop(2);
+  else if (lua_istable(L, index)) {
+    lua_getfield(L, index, "x");
+    lua_getfield(L, index, "y");
+    pt.x = lua_tointeger(L, -2);
+    pt.y = lua_tointeger(L, -1);
+    lua_pop(L, 2);
   }
-  else if (ctx.isNumber(1)) {
-    pt->x = ctx.toInt(1);
-    pt->y = ctx.toInt(2);
+  else {
+    pt.x = lua_tointeger(L, index);
+    pt.y = lua_tointeger(L, index+1);
   }
-
-  ctx.newObject(kTag, pt, Point_finalize);
+  return pt;
 }
 
-void Point_get_x(script::ContextHandle handle)
+int Point_new(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto pt = (gfx::Point*)ctx.toUserData(0, kTag);
-  ASSERT(pt);
-  ctx.pushInt(pt->x);
+  push_obj(L, Point_new(L, 1));
+  return 1;
 }
 
-void Point_get_y(script::ContextHandle handle)
+int Point_get_x(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto pt = (gfx::Point*)ctx.toUserData(0, kTag);
-  ctx.pushInt(pt->y);
+  const auto pt = get_obj<gfx::Point>(L, 1);
+  lua_pushinteger(L, pt->x);
+  return 1;
 }
 
-void Point_set_x(script::ContextHandle handle)
+int Point_get_y(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto pt = (gfx::Point*)ctx.toUserData(0, kTag);
-  ASSERT(pt);
-  pt->x = ctx.toInt(1);
+  const auto pt = get_obj<gfx::Point>(L, 1);
+  lua_pushinteger(L, pt->y);
+  return 1;
 }
 
-void Point_set_y(script::ContextHandle handle)
+int Point_set_x(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto pt = (gfx::Point*)ctx.toUserData(0, kTag);
-  pt->y = ctx.toInt(1);
+  auto pt = get_obj<gfx::Point>(L, 1);
+  pt->x = lua_tointeger(L, 2);
+  return 0;
 }
 
-const script::FunctionEntry Point_methods[] = {
-  { nullptr, nullptr, 0 }
+int Point_set_y(lua_State* L)
+{
+  auto pt = get_obj<gfx::Point>(L, 1);
+  pt->y = lua_tointeger(L, 2);
+  return 0;
+}
+
+const luaL_Reg Point_methods[] = {
+  { nullptr, nullptr }
 };
 
-const script::PropertyEntry Point_props[] = {
+const Property Point_properties[] = {
   { "x", Point_get_x, Point_set_x },
   { "y", Point_get_y, Point_set_y },
-  { nullptr, nullptr, 0 }
+  { nullptr, nullptr, nullptr }
 };
 
 } // anonymous namespace
 
-void register_point_class(script::index_t idx, script::Context& ctx)
+DEF_MTNAME(gfx::Point);
+
+void register_point_class(lua_State* L)
 {
-  ctx.registerClass(idx, kTag,
-                    Point_new, 3,
-                    Point_methods,
-                    Point_props);
+  using gfx::Point;
+  REG_CLASS(L, Point);
+  REG_CLASS_NEW(L, Point);
+  REG_CLASS_PROPERTIES(L, Point);
 }
 
-void push_new_point(script::Context& ctx, const gfx::Point& pt)
+gfx::Point convert_args_into_point(lua_State* L, int index)
 {
-  ctx.newObject(kTag, new gfx::Point(pt), Point_finalize);
+  return Point_new(L, index);
 }
 
-gfx::Point convert_args_into_point(script::Context& ctx)
-{
-  gfx::Point result;
-  Point_new(ctx.handle());
-  auto pt = (gfx::Point*)ctx.toUserData(-1, kTag);
-  if (pt)
-    result = *pt;
-  ctx.pop(1);
-  return result;
-}
-
+} // namespace script
 } // namespace app

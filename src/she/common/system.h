@@ -49,6 +49,7 @@ public:
   }
 
   void dispose() override {
+    set_instance(nullptr);
     delete this;
   }
 

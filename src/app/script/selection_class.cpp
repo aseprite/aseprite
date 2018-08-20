@@ -11,19 +11,18 @@
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
 #include "app/doc.h"
-#include "app/script/app_scripting.h"
+#include "app/script/engine.h"
+#include "app/script/luacpp.h"
 #include "app/transaction.h"
 #include "app/tx.h"
 #include "doc/mask.h"
-#include "script/engine.h"
 
 namespace app {
+namespace script {
 
 using namespace doc;
 
 namespace {
-
-const char* kTag = "Selection";
 
 struct SelectionObject {
   Mask* mask;
@@ -32,29 +31,35 @@ struct SelectionObject {
     : mask(mask)
     , sprite(sprite) {
   }
+  SelectionObject(SelectionObject&& that)
+    : mask(that.mask)
+    , sprite(that.sprite) {
+    that.mask = nullptr;
+    that.sprite = nullptr;
+  }
   ~SelectionObject() {
     if (!sprite && mask)
       delete mask;
   }
+  SelectionObject(const SelectionObject&) = delete;
+  SelectionObject& operator=(const SelectionObject&) = delete;
 };
 
-void Selection_finalize(script::ContextHandle handle, void* data)
+int Selection_new(lua_State* L)
 {
-  auto obj = (SelectionObject*)data;
-  delete obj;
+  push_obj(L, SelectionObject(new Mask, nullptr));
+  return 1;
 }
 
-void Selection_new(script::ContextHandle handle)
+int Selection_gc(lua_State* L)
 {
-  script::Context ctx(handle);
-  ctx.newObject(kTag, new SelectionObject(new Mask, nullptr), Selection_finalize);
+  get_obj<SelectionObject>(L, 1)->~SelectionObject();
+  return 0;
 }
 
-void Selection_deselect(script::ContextHandle handle)
+int Selection_deselect(lua_State* L)
 {
-  script::Context ctx(handle);
-
-  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
+  auto obj = get_obj<SelectionObject>(L, 1);
   if (obj) {
     if (obj->sprite) {
       Doc* doc = static_cast<Doc*>(obj->sprite->document());
@@ -69,114 +74,101 @@ void Selection_deselect(script::ContextHandle handle)
       obj->mask->clear();
     }
   }
-  ctx.pushUndefined();
+  return 0;
 }
 
-void Selection_select(script::ContextHandle handle)
+int Selection_select(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
-  gfx::Rect bounds = convert_args_into_rectangle(ctx);
+  gfx::Rect bounds = convert_args_into_rect(L, 2);
+  if (bounds.isEmpty())
+    return Selection_deselect(L);
 
-  if (obj) {
-    if (bounds.isEmpty()) {
-      Selection_deselect(handle);
-      return;
+  auto obj = get_obj<SelectionObject>(L, 1);
+  if (obj->sprite) {
+    Doc* doc = static_cast<Doc*>(obj->sprite->document());
+    ASSERT(doc);
+
+    Mask newMask;
+    newMask.replace(bounds);
+
+    Tx tx;
+    tx(new cmd::SetMask(doc, &newMask));
+    tx.commit();
+  }
+  else {
+    obj->mask->replace(bounds);
+  }
+  return 0;
+}
+
+int Selection_selectAll(lua_State* L)
+{
+  auto obj = get_obj<SelectionObject>(L, 1);
+  if (obj->sprite) {
+    Doc* doc = static_cast<Doc*>(obj->sprite->document());
+
+    Mask newMask;
+    newMask.replace(obj->sprite->bounds());
+
+    Tx tx;
+    tx(new cmd::SetMask(doc, &newMask));
+    tx.commit();
+  }
+  else {
+    gfx::Rect bounds = obj->mask->bounds();
+    if (!bounds.isEmpty())
+      obj->mask->replace(bounds);
+  }
+  return 0;
+}
+
+int Selection_get_bounds(lua_State* L)
+{
+  auto obj = get_obj<SelectionObject>(L, 1);
+  if (obj->sprite) {
+    Doc* doc = static_cast<Doc*>(obj->sprite->document());
+    if (doc->isMaskVisible()) {
+      push_obj(L, doc->mask()->bounds());
     }
-    else {
-      if (obj->sprite) {
-        Doc* doc = static_cast<Doc*>(obj->sprite->document());
-        ASSERT(doc);
-
-        Mask newMask;
-        newMask.replace(bounds);
-
-        Tx tx;
-        tx(new cmd::SetMask(doc, &newMask));
-        tx.commit();
-      }
-      else {
-        obj->mask->replace(bounds);
-      }
+    else {   // Empty rectangle
+      push_obj(L, gfx::Rect(0, 0, 0, 0));
     }
   }
-  ctx.pushUndefined();
-}
-
-void Selection_selectAll(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-
-  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
-  if (obj) {
-    if (obj->sprite) {
-      Doc* doc = static_cast<Doc*>(obj->sprite->document());
-
-      Mask newMask;
-      newMask.replace(obj->sprite->bounds());
-
-      Tx tx;
-      tx(new cmd::SetMask(doc, &newMask));
-      tx.commit();
-    }
-    else {
-      gfx::Rect bounds = obj->mask->bounds();
-      if (!bounds.isEmpty())
-        obj->mask->replace(bounds);
-    }
+  else {
+    push_obj(L, obj->mask->bounds());
   }
-  ctx.pushUndefined();
+  return 1;
 }
 
-void Selection_get_bounds(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  auto obj = (SelectionObject*)ctx.toUserData(0, kTag);
-  if (obj) {
-    if (obj->sprite) {
-      Doc* doc = static_cast<Doc*>(obj->sprite->document());
-      if (doc->isMaskVisible()) {
-        push_new_rectangle(ctx, doc->mask()->bounds());
-      }
-      else {                        // Empty rectangle
-        push_new_rectangle(ctx, gfx::Rect(0, 0, 0, 0));
-      }
-    }
-    else {
-      push_new_rectangle(ctx, obj->mask->bounds());
-    }
-  }
-  else
-    ctx.pushUndefined();
-}
-
-const script::FunctionEntry Selection_methods[] = {
-  { "deselect", Selection_deselect, 1 },
-  { "select", Selection_select, 4 },
-  { "selectAll", Selection_selectAll, 0 },
-  { nullptr, nullptr, 0 }
+const luaL_Reg Selection_methods[] = {
+  { "deselect",  Selection_deselect },
+  { "select",    Selection_select },
+  { "selectAll", Selection_selectAll },
+  { "__gc",      Selection_gc },
+  { nullptr,     nullptr }
 };
 
-const script::PropertyEntry Selection_props[] = {
+const Property Selection_properties[] = {
   { "bounds", Selection_get_bounds, nullptr },
-  { nullptr, nullptr, 0 }
+  { nullptr, nullptr, nullptr }
 };
 
 } // anonymous namespace
 
-void register_selection_class(script::index_t idx, script::Context& ctx)
+DEF_MTNAME(SelectionObject);
+
+void register_selection_class(lua_State* L)
 {
-  ctx.registerClass(idx, kTag,
-                    Selection_new, 3,
-                    Selection_methods,
-                    Selection_props);
+  using Selection = SelectionObject;
+  REG_CLASS(L, Selection);
+  REG_CLASS_NEW(L, Selection);
+  REG_CLASS_PROPERTIES(L, Selection);
 }
 
-void push_sprite_selection(script::Context& ctx, Sprite* sprite)
+void push_sprite_selection(lua_State* L, Sprite* sprite)
 {
-  ctx.newObject(kTag,
-                new SelectionObject(nullptr, sprite),
-                Selection_finalize);
+  push_obj(L, SelectionObject(nullptr, sprite));
 }
 
+} // namespace script
 } // namespace app

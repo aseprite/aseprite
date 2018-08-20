@@ -8,64 +8,54 @@
 #include "config.h"
 #endif
 
-#include "app/script/app_scripting.h"
+#include "app/script/engine.h"
+#include "app/script/luacpp.h"
 #include "app/site.h"
 
 namespace app {
+namespace script {
 
 namespace {
 
-const char* kTag = "Site";
-
-void Site_finalize(script::ContextHandle handle, void* data)
+int Site_get_sprite(lua_State* L)
 {
-  auto site = (app::Site*)data;
-  delete site;
-}
-
-void Site_get_sprite(script::ContextHandle handle)
-{
-  script::Context ctx(handle);
-  auto site = (app::Site*)ctx.toUserData(0, kTag);
+  auto site = get_obj<Site>(L, 1);
   if (site->sprite())
-    push_sprite(ctx, site->sprite());
+    push_ptr(L, site->sprite());
   else
-    ctx.pushNull();
+    lua_pushnil(L);
+  return 1;
 }
 
-void Site_get_image(script::ContextHandle handle)
+int Site_get_image(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto site = (app::Site*)ctx.toUserData(0, kTag);
+  auto site = get_obj<Site>(L, 1);
   if (site->image())
-    push_image(ctx, site->image());
+    push_ptr(L, site->image());
   else
-    ctx.pushNull();
+    lua_pushnil(L);
+  return 1;
 }
 
-const script::FunctionEntry Site_methods[] = {
-  { nullptr, nullptr, 0 }
+const luaL_Reg Site_methods[] = {
+  { nullptr, nullptr }
 };
 
-const script::PropertyEntry Site_props[] = {
+const Property Site_properties[] = {
   { "sprite", Site_get_sprite, nullptr },
   { "image", Site_get_image, nullptr },
-  { nullptr, nullptr, 0 }
+  { nullptr, nullptr, nullptr }
 };
 
 } // anonymous namespace
 
-void register_site_class(script::index_t idx, script::Context& ctx)
+DEF_MTNAME(app::Site);
+
+void register_site_class(lua_State* L)
 {
-  ctx.registerClass(idx, kTag,
-                    nullptr, 0,
-                    Site_methods,
-                    Site_props);
+  REG_CLASS(L, Site);
+  REG_CLASS_PROPERTIES(L, Site);
 }
 
-void push_site(script::Context& ctx, app::Site& site)
-{
-  ctx.newObject(kTag, new app::Site(site), Site_finalize);
-}
-
+} // namespace script
 } // namespace app

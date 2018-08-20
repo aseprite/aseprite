@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2016  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,11 +12,10 @@
   #error ENABLE_SCRIPTING must be defined
 #endif
 
-namespace script {
-  class Engine;
-}
-
 namespace app {
+  namespace script {
+    class Engine;
+  }
 
   class Shell {
   public:

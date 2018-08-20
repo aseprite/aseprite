@@ -140,6 +140,7 @@ endif()
 
 set(scripting_files)
 if(ENABLE_SCRIPTING)
+  add_definitions(-DENABLE_SCRIPTING)
   set(scripting_files_ui)
   if(ENABLE_UI)
     set(scripting_files_ui
@@ -149,10 +150,10 @@ if(ENABLE_SCRIPTING)
   set(scripting_files
     commands/cmd_run_script.cpp
     script/app_object.cpp
-    script/app_scripting.cpp
-    script/console_object.cpp
+    script/engine.cpp
     script/image_class.cpp
-    script/pixel_color_class.cpp
+    script/luacpp.cpp
+    script/pixel_color_object.cpp
     script/point_class.cpp
     script/rectangle_class.cpp
     script/selection_class.cpp
@@ -595,7 +596,7 @@ target_link_libraries(app-lib
   tinyexpr)
 
 if(ENABLE_SCRIPTING)
-  target_link_libraries(app-lib script-lib)
+  target_link_libraries(app-lib lua lauxlib lualib)
 endif()
 
 if(ENABLE_UPDATER)

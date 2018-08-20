@@ -31,10 +31,10 @@ Shell::~Shell()
 
 void Shell::run(script::Engine& engine)
 {
-  std::cout << "Welcome to " PACKAGE " v" VERSION " interactive console" << std::endl;
+  std::cout << "Welcome to " PACKAGE " v" VERSION " Interactive Console" << std::endl;
   std::string line;
   while (std::getline(std::cin, line)) {
-    engine.eval(line);
+    engine.evalCode(line);
   }
   std::cout << "Done\n";
 }

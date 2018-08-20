@@ -28,4 +28,9 @@ System* instance()
   return g_system;
 }
 
+void set_instance(System* system)
+{
+  g_system = system;
+}
+
 } // namespace she

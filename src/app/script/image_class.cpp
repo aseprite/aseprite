@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2015-2017  David Capello
+// Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,95 +8,78 @@
 #include "config.h"
 #endif
 
+#include "app/script/luacpp.h"
 #include "doc/image.h"
-#include "script/engine.h"
+#include "doc/primitives.h"
 
 namespace app {
+namespace script {
 
 namespace {
 
-const char* kTag = "Image";
-
-void Image_new(script::ContextHandle handle)
+int Image_new(lua_State* L)
 {
-  script::Context ctx(handle);
-  ctx.pushNull();          // TODO
+  lua_pushnil(L);          // TODO
+  return 1;
 }
 
-void Image_putPixel(script::ContextHandle handle)
+int Image_putPixel(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto image = (doc::Image*)ctx.toUserData(0, kTag);
-  int x = ctx.requireInt(1);
-  int y = ctx.requireInt(2);
-  doc::color_t color = ctx.requireUInt(3);
-
-  if (image) {
-    image->putPixel(x, y, color);
-  }
-
-  ctx.pushUndefined();
+  auto image = get_ptr<doc::Image>(L, 1);
+  const int x = lua_tointeger(L, 2);
+  const int y = lua_tointeger(L, 3);
+  const doc::color_t color = lua_tointeger(L, 4);
+  doc::put_pixel(image, x, y, color);
+  return 0;
 }
 
-void Image_getPixel(script::ContextHandle handle)
+int Image_getPixel(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto image = (doc::Image*)ctx.toUserData(0, kTag);
-  int x = ctx.requireInt(1);
-  int y = ctx.requireInt(2);
-
-  if (image) {
-    doc::color_t color = image->getPixel(x, y);
-    ctx.pushUInt(color);
-  }
-  else
-    ctx.pushUndefined();
+  const auto image = get_ptr<doc::Image>(L, 1);
+  const int x = lua_tointeger(L, 2);
+  const int y = lua_tointeger(L, 3);
+  const doc::color_t color = doc::get_pixel(image, x, y);
+  lua_pushinteger(L, color);
+  return 1;
 }
 
-void Image_get_width(script::ContextHandle handle)
+int Image_get_width(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto image = (doc::Image*)ctx.toUserData(0, kTag);
-  if (image)
-    ctx.pushInt(image->width());
-  else
-    ctx.pushUndefined();
+  const auto image = get_ptr<doc::Image>(L, 1);
+  lua_pushinteger(L, image->width());
+  return 1;
 }
 
-void Image_get_height(script::ContextHandle handle)
+int Image_get_height(lua_State* L)
 {
-  script::Context ctx(handle);
-  auto image = (doc::Image*)ctx.toUserData(0, kTag);
-  if (image)
-    ctx.pushInt(image->height());
-  else
-    ctx.pushUndefined();
+  const auto image = get_ptr<doc::Image>(L, 1);
+  lua_pushinteger(L, image->height());
+  return 1;
 }
 
-const script::FunctionEntry Image_methods[] = {
-  { "getPixel", Image_getPixel, 2 },
-  { "putPixel", Image_putPixel, 3 },
-  { nullptr, nullptr, 0 }
+const luaL_Reg Image_methods[] = {
+  { "getPixel", Image_getPixel },
+  { "putPixel", Image_putPixel },
+  { nullptr, nullptr }
 };
 
-const script::PropertyEntry Image_props[] = {
+const Property Image_properties[] = {
   { "width", Image_get_width, nullptr },
   { "height", Image_get_height, nullptr },
-  { nullptr, nullptr, 0 }
+  { nullptr, nullptr, nullptr }
 };
 
 } // anonymous namespace
 
-void register_image_class(script::index_t idx, script::Context& ctx)
+DEF_MTNAME(doc::Image);
+
+void register_image_class(lua_State* L)
 {
-  ctx.registerClass(idx, kTag,
-                    Image_new, 0,
-                    Image_methods, Image_props);
+  using doc::Image;
+  REG_CLASS(L, Image);
+  REG_CLASS_NEW(L, Image);
+  REG_CLASS_PROPERTIES(L, Image);
 }
 
-void push_image(script::Context& ctx, doc::Image* image)
-{
-  ctx.newObject(kTag, image, nullptr);
-}
-
+} // namespace script
 } // namespace app

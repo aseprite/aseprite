@@ -70,9 +70,8 @@
 #include <memory>
 
 #ifdef ENABLE_SCRIPTING
-  #include "app/script/app_scripting.h"
+  #include "app/script/engine.h"
   #include "app/shell.h"
-  #include "script/engine_delegate.h"
 #endif
 
 #ifdef ENABLE_STEAM
@@ -353,7 +352,7 @@ void App::run()
   // Start shell to execute scripts.
   if (m_isShell) {
     script::StdoutEngineDelegate delegate;
-    AppScripting engine(&delegate);
+    script::Engine engine(&delegate);
     engine.printLastResult();
     Shell shell;
     shell.run(engine);
