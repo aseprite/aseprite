@@ -4,11 +4,25 @@ var a = new Sprite(32, 64)
 console.assert(a.width == 32)
 console.assert(a.height == 64)
 console.assert(a.colorMode == ColorMode.RGB) // RGB by default
-a.selection.select(2, 3, 4, 5)
-console.assert(a.selection.bounds.x == 2)
-console.assert(a.selection.bounds.y == 3)
-console.assert(a.selection.bounds.width == 4)
-console.assert(a.selection.bounds.height == 5)
+
+var s = a.selection
+console.assert(s.bounds.x == 0)
+console.assert(s.bounds.y == 0)
+console.assert(s.bounds.width == 0)
+console.assert(s.bounds.height == 0)
+
+s.selectAll()
+console.assert(s.bounds.x == 0)
+console.assert(s.bounds.y == 0)
+console.assert(s.bounds.width == a.width)
+console.assert(s.bounds.height == a.height)
+
+s.select(2, 3, 4, 5)
+console.assert(s.bounds.x == 2)
+console.assert(s.bounds.y == 3)
+console.assert(s.bounds.width == 4)
+console.assert(s.bounds.height == 5)
+
 a.crop()
 console.assert(a.width == 4)
 console.assert(a.height == 5)
