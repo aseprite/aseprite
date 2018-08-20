@@ -45,11 +45,6 @@ void* Context::getContextUserData()
   return js_getcontext(m_handle);
 }
 
-void Context::call(index_t i)
-{
-  js_call(m_handle, i);
-}
-
 void Context::error(const char* err)
 {
   js_error(m_handle, "%s", err);
@@ -78,6 +73,16 @@ void Context::duplicateTop()
 index_t Context::top()
 {
   return js_gettop(m_handle);
+}
+
+void Context::copy(index_t i)
+{
+  js_copy(m_handle, i);
+}
+
+void Context::call(index_t args)
+{
+  js_call(m_handle, args);
 }
 
 bool Context::isUndefined(index_t i)

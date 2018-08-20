@@ -55,7 +55,6 @@ namespace script {
     void setContextUserData(void* userData);
     void* getContextUserData();
 
-    void call(index_t i);
     void error(const char* err);
 
     void pop();
@@ -63,6 +62,8 @@ namespace script {
     void remove(index_t idx);
     void duplicateTop();
     index_t top();
+    void copy(index_t i);
+    void call(index_t args);
 
     bool isUndefined(index_t i);
     bool isNull(index_t i);

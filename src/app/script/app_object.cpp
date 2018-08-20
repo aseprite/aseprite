@@ -63,7 +63,8 @@ void App_transaction(script::ContextHandle handle)
   if (ctx.isCallable(1)) {
     Tx tx; // Create a new transaction so it exists in the whole
            // duration of the argument function call.
-    ctx.call(1);
+    ctx.copy(1);
+    ctx.call(0);
     tx.commit();
   }
   else
