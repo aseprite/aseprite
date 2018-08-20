@@ -192,11 +192,10 @@ void Sprite_set_width(script::ContextHandle handle)
 {
   script::Context ctx(handle);
   auto sprite = (Sprite*)ctx.toUserData(0, kTag);
-  const int height = ctx.requireInt(1);
+  const int width = ctx.requireInt(1);
   Tx tx;
   tx(new cmd::SetSpriteSize(sprite,
-                            sprite->width(),
-                            height));
+                            width, sprite->height()));
   tx.commit();
   ctx.pushUndefined();
 }
@@ -215,8 +214,7 @@ void Sprite_set_height(script::ContextHandle handle)
   const int height = ctx.requireInt(1);
   Tx tx;
   tx(new cmd::SetSpriteSize(sprite,
-                            sprite->width(),
-                            height));
+                            sprite->width(), height));
   tx.commit();
   ctx.pushUndefined();
 }
