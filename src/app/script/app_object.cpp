@@ -70,6 +70,28 @@ void App_transaction(script::ContextHandle handle)
     ctx.pushUndefined();
 }
 
+void App_undo(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  app::Context* appCtx = App::instance()->context();
+  if (appCtx) {
+    Command* undo = Commands::instance()->byId(CommandId::Undo());
+    appCtx->executeCommand(undo);
+  }
+  ctx.pushUndefined();
+}
+
+void App_redo(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  app::Context* appCtx = App::instance()->context();
+  if (appCtx) {
+    Command* redo = Commands::instance()->byId(CommandId::Redo());
+    appCtx->executeCommand(redo);
+  }
+  ctx.pushUndefined();
+}
+
 void App_get_activeSprite(script::ContextHandle handle)
 {
   script::Context ctx(handle);
@@ -108,6 +130,8 @@ const script::FunctionEntry App_methods[] = {
   { "open", App_open, 1 },
   { "exit", App_exit, 0 },
   { "transaction", App_transaction, 1 },
+  { "undo", App_undo, 0 },
+  { "redo", App_redo, 0 },
   { nullptr, nullptr, 0 }
 };
 
