@@ -15,6 +15,7 @@
 #include "app/doc.h"
 #include "app/script/app_scripting.h"
 #include "app/site.h"
+#include "app/site.h"
 #include "app/tx.h"
 #include "script/engine.h"
 
@@ -110,9 +111,17 @@ void App_get_activeImage(script::ContextHandle handle)
   app::Context* appCtx = App::instance()->context();
   Site site = appCtx->activeSite();
   if (site.image())
-    ctx.newObject("Image", site.image(), nullptr);
+    push_image(ctx, site.image());
   else
     ctx.pushNull();
+}
+
+void App_get_site(script::ContextHandle handle)
+{
+  script::Context ctx(handle);
+  app::Context* appCtx = App::instance()->context();
+  Site site = appCtx->activeSite();
+  push_site(ctx, site);
 }
 
 void App_get_pixelColor(script::ContextHandle handle)
@@ -141,6 +150,7 @@ const script::PropertyEntry App_props[] = {
   { "activeImage", App_get_activeImage, nullptr },
   { "pixelColor", App_get_pixelColor, nullptr },
   { "version", App_get_version, nullptr },
+  { "site", App_get_site, nullptr },
   { nullptr, nullptr, 0 }
 };
 

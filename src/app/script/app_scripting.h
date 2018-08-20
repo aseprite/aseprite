@@ -19,10 +19,12 @@
 #include <map>
 
 namespace doc {
+  class Image;
   class Sprite;
 }
 
 namespace app {
+  class Site;
 
   class AppScripting : public script::Engine {
   public:
@@ -31,11 +33,13 @@ namespace app {
 
   AppScripting* get_engine(script::Context& ctx);
 
+  void push_image(script::Context& ctx, doc::Image* image);
   void push_new_point(script::Context& ctx, const gfx::Point& pt);
   void push_new_rectangle(script::Context& ctx, const gfx::Rect& rc);
   void push_new_size(script::Context& ctx, const gfx::Size& rc);
-  void push_sprite_selection(script::Context& ctx, doc::Sprite* sprite);
+  void push_site(script::Context& ctx, app::Site& site);
   void push_sprite(script::Context& ctx, doc::Sprite* sprite);
+  void push_sprite_selection(script::Context& ctx, doc::Sprite* sprite);
 
   gfx::Point convert_args_into_point(script::Context& ctx);
   gfx::Rect convert_args_into_rectangle(script::Context& ctx);

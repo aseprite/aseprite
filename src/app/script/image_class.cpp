@@ -94,4 +94,9 @@ void register_image_class(script::index_t idx, script::Context& ctx)
                     Image_methods, Image_props);
 }
 
+void push_image(script::Context& ctx, doc::Image* image)
+{
+  ctx.newObject(kTag, image, nullptr);
+}
+
 } // namespace app

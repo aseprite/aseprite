@@ -33,6 +33,7 @@ void register_pixel_color_class(script::index_t idx, script::Context& ctx);
 void register_point_class(script::index_t idx, script::Context& ctx);
 void register_rectangle_class(script::index_t idx, script::Context& ctx);
 void register_selection_class(script::index_t idx, script::Context& ctx);
+void register_site_class(script::index_t idx, script::Context& ctx);
 void register_size_class(script::index_t idx, script::Context& ctx);
 void register_sprite_class(script::index_t idx, script::Context& ctx);
 
@@ -56,11 +57,13 @@ AppScripting::AppScripting(script::EngineDelegate* delegate)
   }
 
   // Register classes/prototypes
+
   register_image_class(-1, ctx);
   register_pixel_color_class(-1, ctx);
   register_point_class(-1, ctx);
   register_rectangle_class(-1, ctx);
   register_selection_class(-1, ctx);
+  register_site_class(-1, ctx);
   register_size_class(-1, ctx);
   register_sprite_class(-1, ctx);
 

@@ -156,6 +156,7 @@ if(ENABLE_SCRIPTING)
     script/point_class.cpp
     script/rectangle_class.cpp
     script/selection_class.cpp
+    script/site_class.cpp
     script/size_class.cpp
     script/sprite_class.cpp
     shell.cpp
