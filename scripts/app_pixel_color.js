@@ -1,4 +1,7 @@
 // Copyright (C) 2018  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 var pc = app.pixelColor
 console.assert(0 == pc.rgba(0, 0, 0, 0))
