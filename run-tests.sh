@@ -32,15 +32,20 @@ EOF
 
 echo ----------------------------------------------------------------------
 echo "Testing scripts..."
+result=0
 for jsfile in scripts/*.js ; do
     [[ $jsfile =~ console ]] && continue
 
     echo "Running $jsfile"
     if ! $ASEPRITE -b --script $jsfile > tmp ; then
-        fail
+        cat tmp
+        echo FAILED
+        result=1
     fi
 done
 
 echo ----------------------------------------------------------------------
 echo Done
 echo ----------------------------------------------------------------------
+
+exit $result
