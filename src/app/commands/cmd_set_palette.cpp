@@ -14,7 +14,7 @@
 #include "app/file_selector.h"
 #include "app/ini_file.h"
 #include "app/modules/palettes.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/palette.h"
 #include "ui/alert.h"
 #include "ui/manager.h"
@@ -37,10 +37,10 @@ void SetPaletteCommand::onExecute(Context* context)
 
   ContextWriter writer(context);
   if (writer.document()) {
-    Transaction transaction(writer.context(), "Set Palette");
-    writer.document()->getApi(transaction)
+    Tx tx(writer.context(), "Set Palette");
+    writer.document()->getApi(tx)
       .setPalette(writer.sprite(), writer.frame(), m_palette);
-    transaction.commit();
+    tx.commit();
   }
   set_current_palette(m_palette, false);
 

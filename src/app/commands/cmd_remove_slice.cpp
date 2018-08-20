@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,7 +15,7 @@
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/ui/status_bar.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "base/convert_to.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
@@ -83,16 +83,16 @@ void RemoveSliceCommand::onExecute(Context* context)
     ContextWriter writer(reader, 500);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
-    Transaction transaction(writer.context(), "Remove Slice");
+    Tx tx(writer.context(), "Remove Slice");
     Slice* slice = const_cast<Slice*>(foundSlice);
 
     if (slice->size() > 1) {
-      transaction.execute(new cmd::SetSliceKey(slice, frame, SliceKey()));
+      tx(new cmd::SetSliceKey(slice, frame, SliceKey()));
     }
     else {
-      transaction.execute(new cmd::RemoveSlice(sprite, slice));
+      tx(new cmd::RemoveSlice(sprite, slice));
     }
-    transaction.commit();
+    tx.commit();
     document->notifyGeneralUpdate();
   }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/status_bar.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -57,7 +57,7 @@ void LinkCelsCommand::onExecute(Context* context)
     if (!site.inTimeline())
       return;
 
-    Transaction transaction(writer.context(), friendlyName());
+    Tx tx(writer.context(), friendlyName());
 
     for (Layer* layer : site.selectedLayers()) {
       if (!layer->isImage())
@@ -76,7 +76,7 @@ void LinkCelsCommand::onExecute(Context* context)
         Cel* cel = layerImage->cel(frame);
         if (cel) {
           for (++it; it != end; ++it) {
-            transaction.execute(
+            tx(
               new cmd::CopyCel(
                 layerImage, cel->frame(),
                 layerImage, *it,
@@ -87,7 +87,7 @@ void LinkCelsCommand::onExecute(Context* context)
       }
     }
 
-    transaction.commit();
+    tx.commit();
   }
 
   if (nonEditableLayers)

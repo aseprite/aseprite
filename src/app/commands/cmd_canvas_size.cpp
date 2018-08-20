@@ -13,7 +13,7 @@
 #include "app/doc_api.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
@@ -331,14 +331,14 @@ void CanvasSizeCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Doc* document = writer.document();
     Sprite* sprite = writer.sprite();
-    Transaction transaction(writer.context(), "Canvas Size");
-    DocApi api = document->getApi(transaction);
+    Tx tx(writer.context(), "Canvas Size");
+    DocApi api = document->getApi(tx);
 
     api.cropSprite(sprite,
                    gfx::Rect(x1, y1,
                              MID(1, x2-x1, DOC_SPRITE_MAX_WIDTH),
                              MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)));
-    transaction.commit();
+    tx.commit();
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

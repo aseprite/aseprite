@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-42017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 
@@ -44,9 +44,9 @@ void DeselectMaskCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   {
-    Transaction transaction(writer.context(), "Deselect", DoesntModifyDocument);
-    transaction.execute(new cmd::DeselectMask(document));
-    transaction.commit();
+    Tx tx(writer.context(), "Deselect", DoesntModifyDocument);
+    tx(new cmd::DeselectMask(document));
+    tx.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);

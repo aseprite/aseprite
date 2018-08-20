@@ -17,7 +17,7 @@
 #include "app/doc_event.h"
 #include "app/doc_range.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
@@ -167,7 +167,7 @@ private:
                                  m_userData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
-        Transaction transaction(writer.context(), "Set Cel Properties");
+        Tx tx(writer.context(), "Set Cel Properties");
 
         DocRange range;
         if (m_range.enabled())
@@ -181,12 +181,12 @@ private:
         for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
           if (range.contains(cel->layer())) {
             if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
-              transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
+              tx(new cmd::SetCelOpacity(cel, newOpacity));
             }
 
             if (m_newUserData &&
                 m_userData != cel->data()->userData()) {
-              transaction.execute(new cmd::SetUserData(cel->data(), m_userData));
+              tx(new cmd::SetUserData(cel->data(), m_userData));
 
               // Redraw timeline because the cel's user data/color
               // might have changed.
@@ -195,7 +195,7 @@ private:
           }
         }
 
-        transaction.commit();
+        tx.commit();
       }
       catch (const std::exception& e) {
         Console::showException(e);

@@ -22,7 +22,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
@@ -251,16 +251,16 @@ void cut(ContextWriter& writer)
   }
   else {
     {
-      Transaction transaction(writer.context(), "Cut");
-      transaction.execute(new cmd::ClearMask(writer.cel()));
+      Tx tx(writer.context(), "Cut");
+      tx(new cmd::ClearMask(writer.cel()));
 
       ASSERT(writer.cel());
       if (writer.cel() &&
           writer.cel()->layer()->isTransparent())
-        transaction.execute(new cmd::TrimCel(writer.cel()));
+        tx(new cmd::TrimCel(writer.cel()));
 
-      transaction.execute(new cmd::DeselectMask(writer.document()));
-      transaction.commit();
+      tx(new cmd::DeselectMask(writer.document()));
+      tx.commit();
     }
     writer.document()->generateMaskBoundaries();
     update_screen_for_document(writer.document());
@@ -406,8 +406,8 @@ void paste()
             return;
           }
 
-          Transaction transaction(UIContext::instance(), "Paste Cels");
-          DocApi api = dstDoc->getApi(transaction);
+          Tx tx(UIContext::instance(), "Paste Cels");
+          DocApi api = dstDoc->getApi(tx);
 
           // Add extra frames if needed
           while (dstFrameFirst+srcRange.frames() > dstSpr->totalFrames())
@@ -480,7 +480,7 @@ void paste()
             }
           }
 
-          transaction.commit();
+          tx.commit();
           editor->invalidate();
           break;
         }
@@ -498,8 +498,8 @@ void paste()
             break;
           }
 
-          Transaction transaction(UIContext::instance(), "Paste Frames");
-          DocApi api = dstDoc->getApi(transaction);
+          Tx tx(UIContext::instance(), "Paste Frames");
+          DocApi api = dstDoc->getApi(tx);
 
           auto srcLayers = srcSpr->allBrowsableLayers();
           auto dstLayers = dstSpr->allBrowsableLayers();
@@ -532,7 +532,7 @@ void paste()
             ++dstFrame;
           }
 
-          transaction.commit();
+          tx.commit();
           editor->invalidate();
           break;
         }
@@ -541,8 +541,8 @@ void paste()
           if (srcDoc->colorMode() != dstDoc->colorMode())
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 
-          Transaction transaction(UIContext::instance(), "Paste Layers");
-          DocApi api = dstDoc->getApi(transaction);
+          Tx tx(UIContext::instance(), "Paste Layers");
+          DocApi api = dstDoc->getApi(tx);
 
           // Remove children if their parent is selected so we only
           // copy the parent.
@@ -583,7 +583,7 @@ void paste()
             srcDoc->copyLayerContent(srcLayer, dstDoc, newLayer);
           }
 
-          transaction.commit();
+          tx.commit();
           editor->invalidate();
           break;
         }

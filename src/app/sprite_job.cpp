@@ -17,14 +17,14 @@ SpriteJob::SpriteJob(const ContextReader& reader, const char* jobName)
   , m_writer(reader, 500)
   , m_document(m_writer.document())
   , m_sprite(m_writer.sprite())
-  , m_transaction(m_writer.context(), jobName, ModifyDocument)
+  , m_tx(m_writer.context(), jobName, ModifyDocument)
 {
 }
 
 SpriteJob::~SpriteJob()
 {
   if (!isCanceled())
-    m_transaction.commit();
+    m_tx.commit();
 }
 
 void SpriteJob::onJob()

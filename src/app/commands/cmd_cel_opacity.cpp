@@ -16,7 +16,7 @@
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -72,7 +72,7 @@ void CelOpacityCommand::onExecute(Context* context)
     return;
 
   {
-    Transaction transaction(writer.context(), "Set Cel Opacity");
+    Tx tx(writer.context(), "Set Cel Opacity");
 
     // TODO the range of selected cels should be in app::Site.
     DocRange range = App::instance()->timeline()->range();
@@ -86,12 +86,12 @@ void CelOpacityCommand::onExecute(Context* context)
         if (!c->layer()->isBackground() &&
             c->layer()->isEditable() &&
             m_opacity != c->opacity()) {
-          transaction.execute(new cmd::SetCelOpacity(c, m_opacity));
+          tx(new cmd::SetCelOpacity(c, m_opacity));
         }
       }
     }
 
-    transaction.commit();
+    tx.commit();
   }
 
   update_screen_for_document(writer.document());

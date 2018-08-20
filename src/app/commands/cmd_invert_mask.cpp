@@ -13,7 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
@@ -93,9 +93,9 @@ void InvertMaskCommand::onExecute(Context* context)
     mask->intersect(sprite->bounds());
 
     // Set the new mask
-    Transaction transaction(writer.context(), "Mask Invert", DoesntModifyDocument);
-    transaction.execute(new cmd::SetMask(document, mask.get()));
-    transaction.commit();
+    Tx tx(writer.context(), "Mask Invert", DoesntModifyDocument);
+    tx(new cmd::SetMask(document, mask.get()));
+    tx.commit();
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

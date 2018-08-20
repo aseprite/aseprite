@@ -15,7 +15,7 @@
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/util/msk_file.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -77,9 +77,9 @@ void LoadMaskCommand::onExecute(Context* context)
   {
     ContextWriter writer(reader);
     Doc* document = writer.document();
-    Transaction transaction(writer.context(), "Mask Load", DoesntModifyDocument);
-    transaction.execute(new cmd::SetMask(document, mask.get()));
-    transaction.commit();
+    Tx tx(writer.context(), "Mask Load", DoesntModifyDocument);
+    tx(new cmd::SetMask(document, mask.get()));
+    tx.commit();
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

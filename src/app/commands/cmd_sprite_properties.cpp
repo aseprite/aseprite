@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,7 +14,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/util/pixel_ratio.h"
 #include "base/bind.h"
@@ -136,16 +136,16 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     if (index != sprite->transparentColor() ||
         pixelRatio != sprite->pixelRatio()) {
-      Transaction transaction(writer.context(), "Change Sprite Properties");
-      DocApi api = writer.document()->getApi(transaction);
+      Tx tx(writer.context(), "Change Sprite Properties");
+      DocApi api = writer.document()->getApi(tx);
 
       if (index != sprite->transparentColor())
         api.setSpriteTransparentColor(sprite, index);
 
       if (pixelRatio != sprite->pixelRatio())
-        transaction.execute(new cmd::SetPixelRatio(sprite, pixelRatio));
+        tx(new cmd::SetPixelRatio(sprite, pixelRatio));
 
-      transaction.commit();
+      tx.commit();
 
       update_screen_for_document(writer.document());
     }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,7 @@
 #include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/slice_window.h"
 #include "base/convert_to.h"
 #include "doc/slice.h"
@@ -85,16 +85,16 @@ void SlicePropertiesCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader, 500);
-    Transaction transaction(writer.context(), "Slice Properties");
+    Tx tx(writer.context(), "Slice Properties");
     Slice* slice = const_cast<Slice*>(foundSlice);
 
     std::string name = window.nameValue();
 
     if (slice->name() != name)
-      transaction.execute(new cmd::SetSliceName(slice, name));
+      tx(new cmd::SetSliceName(slice, name));
 
     if (slice->userData() != window.userDataValue())
-      transaction.execute(new cmd::SetUserData(slice, window.userDataValue()));
+      tx(new cmd::SetUserData(slice, window.userDataValue()));
 
     if (key->bounds() != window.boundsValue() ||
         key->center() != window.centerValue() ||
@@ -103,10 +103,10 @@ void SlicePropertiesCommand::onExecute(Context* context)
       newKey.setBounds(window.boundsValue());
       newKey.setCenter(window.centerValue());
       newKey.setPivot(window.pivotValue());
-      transaction.execute(new cmd::SetSliceKey(slice, frame, newKey));
+      tx(new cmd::SetSliceKey(slice, frame, newKey));
     }
 
-    transaction.commit();
+    tx.commit();
     writer.document()->notifyGeneralUpdate();
   }
 }

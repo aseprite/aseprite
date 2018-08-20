@@ -34,7 +34,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_spectrum.h"
 #include "app/ui/color_tint_shade_tone.h"
 #include "app/ui/color_wheel.h"
@@ -541,7 +541,7 @@ void ColorBar::onRemapButtonClick()
     if (sprite) {
       ASSERT(sprite->pixelFormat() == IMAGE_INDEXED);
 
-      Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
+      Tx tx(writer.context(), "Remap Colors", ModifyDocument);
       bool remapPixels = true;
 
       if (remap.isFor8bit()) {
@@ -553,7 +553,7 @@ void ColorBar::onRemapButtonClick()
         }
 
         if (remap.isInvertible(usedEntries)) {
-          transaction.execute(new cmd::RemapColors(sprite, remap));
+          tx(new cmd::RemapColors(sprite, remap));
           remapPixels = false;
         }
       }
@@ -565,17 +565,17 @@ void ColorBar::onRemapButtonClick()
           ImageRef newImage(Image::createCopy(celImage.get()));
           doc::remap_image(newImage.get(), remap);
 
-          transaction.execute(new cmd::ReplaceImage(
-                                sprite, celImage, newImage));
+          tx(new cmd::ReplaceImage(
+               sprite, celImage, newImage));
         }
       }
 
       color_t oldTransparent = sprite->transparentColor();
       color_t newTransparent = remap[oldTransparent];
       if (oldTransparent != newTransparent)
-        transaction.execute(new cmd::SetTransparentColor(sprite, newTransparent));
+        tx(new cmd::SetTransparentColor(sprite, newTransparent));
 
-      transaction.commit();
+      tx.commit();
     }
     update_screen_for_document(writer.document());
     hideRemap();
@@ -625,9 +625,9 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
     frame_t frame = writer.frame();
     if (sprite &&
         newPalette->countDiff(sprite->palette(frame), nullptr, nullptr)) {
-      Transaction transaction(writer.context(), actionText, ModifyDocument);
-      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
-      transaction.commit();
+      Tx tx(writer.context(), actionText, ModifyDocument);
+      tx(new cmd::SetPalette(sprite, frame, newPalette));
+      tx.commit();
     }
   }
   catch (base::Exception& e) {
@@ -647,10 +647,10 @@ void ColorBar::setTransparentIndex(int index)
         sprite->pixelFormat() == IMAGE_INDEXED &&
         int(sprite->transparentColor()) != index) {
       // TODO merge this code with SpritePropertiesCommand
-      Transaction transaction(writer.context(), "Set Transparent Color");
-      DocApi api = writer.document()->getApi(transaction);
+      Tx tx(writer.context(), "Set Transparent Color");
+      DocApi api = writer.document()->getApi(tx);
       api.setSpriteTransparentColor(sprite, index);
-      transaction.commit();
+      tx.commit();
 
       update_screen_for_document(writer.document());
     }
@@ -1180,9 +1180,9 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
           cmd->execute(UIContext::instance());
         }
         else {
-          Transaction transaction(writer.context(), operationName, ModifyDocument);
-          transaction.execute(cmd);
-          transaction.commit();
+          Tx tx(writer.context(), operationName, ModifyDocument);
+          tx(cmd);
+          tx.commit();
         }
       }
     }

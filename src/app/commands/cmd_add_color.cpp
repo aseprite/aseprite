@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2017  David Capello
+// Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,7 @@
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
@@ -121,9 +121,9 @@ void AddColorCommand::onExecute(Context* ctx)
     if (document) {
       frame_t frame = writer.frame();
 
-      Transaction transaction(writer.context(), friendlyName(), ModifyDocument);
-      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
-      transaction.commit();
+      Tx tx(writer.context(), friendlyName(), ModifyDocument);
+      tx(new cmd::SetPalette(sprite, frame, newPalette));
+      tx.commit();
     }
 
     set_current_palette(newPalette, true);

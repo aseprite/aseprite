@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,7 +15,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "base/convert_to.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -128,13 +128,13 @@ void FramePropertiesCommand::onExecute(Context* context)
     int newMsecs = window.frlen()->textInt();
 
     ContextWriter writer(reader);
-    Transaction transaction(writer.context(), "Frame Duration");
-    DocApi api = writer.document()->getApi(transaction);
+    Tx tx(writer.context(), "Frame Duration");
+    DocApi api = writer.document()->getApi(tx);
 
     for (frame_t frame : selFrames)
       api.setFrameDuration(writer.sprite(), frame, newMsecs);
 
-    transaction.commit();
+    tx.commit();
   }
 }
 

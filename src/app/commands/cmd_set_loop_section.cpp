@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,7 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/loop_tag.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
 #include "doc/frame_tag.h"
 
@@ -108,16 +108,16 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
       loopTag = create_loop_tag(begin, end);
 
       ContextWriter writer(ctx);
-      Transaction transaction(writer.context(), "Add Loop");
-      transaction.execute(new cmd::AddFrameTag(sprite, loopTag));
-      transaction.commit();
+      Tx tx(writer.context(), "Add Loop");
+      tx(new cmd::AddFrameTag(sprite, loopTag));
+      tx.commit();
     }
     else if (loopTag->fromFrame() != begin ||
              loopTag->toFrame() != end) {
       ContextWriter writer(ctx);
-      Transaction transaction(writer.context(), "Set Loop Range");
-      transaction.execute(new cmd::SetFrameTagRange(loopTag, begin, end));
-      transaction.commit();
+      Tx tx(writer.context(), "Set Loop Range");
+      tx(new cmd::SetFrameTagRange(loopTag, begin, end));
+      tx.commit();
     }
     else {
       Command* cmd = Commands::instance()->byId(CommandId::FrameTagProperties());
@@ -127,9 +127,9 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   else {
     if (loopTag) {
       ContextWriter writer(ctx);
-      Transaction transaction(writer.context(), "Remove Loop");
-      transaction.execute(new cmd::RemoveFrameTag(sprite, loopTag));
-      transaction.commit();
+      Tx tx(writer.context(), "Remove Loop");
+      tx(new cmd::RemoveFrameTag(sprite, loopTag));
+      tx.commit();
     }
   }
 

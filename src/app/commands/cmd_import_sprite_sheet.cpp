@@ -21,7 +21,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_decorator.h"
@@ -385,8 +385,8 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     // The following steps modify the sprite, so we wrap all
     // operations in a undo-transaction.
     ContextWriter writer(context);
-    Transaction transaction(writer.context(), "Import Sprite Sheet", ModifyDocument);
-    DocApi api = document->getApi(transaction);
+    Tx tx(writer.context(), "Import Sprite Sheet", ModifyDocument);
+    DocApi api = document->getApi(tx);
 
     // Add the layer in the sprite.
     LayerImage* resultLayer = api.newLayer(sprite->root(), "Sprite Sheet");
@@ -416,7 +416,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     // Set the size of the sprite to the tile size.
     api.setSpriteSize(sprite, frameBounds.w, frameBounds.h);
 
-    transaction.commit();
+    tx.commit();
 
     ASSERT(docPref);
     if (docPref) {

@@ -17,7 +17,7 @@
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
@@ -90,8 +90,8 @@ void NewFrameCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Transaction transaction(writer.context(), friendlyName());
-    DocApi api = document->getApi(transaction);
+    Tx tx(writer.context(), friendlyName());
+    DocApi api = document->getApi(tx);
 
     switch (m_content) {
 
@@ -179,7 +179,7 @@ void NewFrameCommand::onExecute(Context* context)
       }
     }
 
-    transaction.commit();
+    tx.commit();
   }
   update_screen_for_document(document);
 

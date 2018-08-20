@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,7 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/loop_tag.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/frame_tag_window.h"
 #include "base/convert_to.h"
 #include "doc/anidir.h"
@@ -87,29 +87,29 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
     return;
 
   ContextWriter writer(reader);
-  Transaction transaction(writer.context(), "Change Frame Tag Properties");
+  Tx tx(writer.context(), "Change Frame Tag Properties");
   FrameTag* tag = const_cast<FrameTag*>(foundTag);
 
   std::string name = window.nameValue();
   if (tag->name() != name)
-    transaction.execute(new cmd::SetFrameTagName(tag, name));
+    tx(new cmd::SetFrameTagName(tag, name));
 
   doc::frame_t from, to;
   window.rangeValue(from, to);
   if (tag->fromFrame() != from ||
       tag->toFrame() != to) {
-    transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
+    tx(new cmd::SetFrameTagRange(tag, from, to));
   }
 
   doc::color_t docColor = window.colorValue();
   if (tag->color() != docColor)
-    transaction.execute(new cmd::SetFrameTagColor(tag, docColor));
+    tx(new cmd::SetFrameTagColor(tag, docColor));
 
   doc::AniDir anidir = window.aniDirValue();
   if (tag->aniDir() != anidir)
-    transaction.execute(new cmd::SetFrameTagAniDir(tag, anidir));
+    tx(new cmd::SetFrameTagAniDir(tag, anidir));
 
-  transaction.commit();
+  tx.commit();
 }
 
 Command* CommandFactory::createFrameTagPropertiesCommand()

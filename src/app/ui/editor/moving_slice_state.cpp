@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 
 #include "app/cmd/set_slice_key.h"
 #include "app/context_access.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -43,15 +43,15 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   {
     ContextWriter writer(UIContext::instance(), 1000);
-    Transaction transaction(writer.context(), "Slice Movement", ModifyDocument);
+    Tx tx(writer.context(), "Slice Movement", ModifyDocument);
 
     doc::SliceKey newKey = m_key;
     m_hit.slice()->insert(editor->frame(), m_keyStart);
 
-    transaction.execute(new cmd::SetSliceKey(m_hit.slice(),
-                                             editor->frame(),
-                                             newKey));
-    transaction.commit();
+    tx(new cmd::SetSliceKey(m_hit.slice(),
+                            editor->frame(),
+                            newKey));
+    tx.commit();
   }
 
   editor->backToPreviousState();

@@ -20,7 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/sprite_job.h"
 #include "app/tools/tool_box.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
@@ -79,7 +79,7 @@ protected:
 
   // [working thread]
   void onJob() override {
-    DocApi api = document()->getApi(transaction());
+    DocApi api = document()->getApi(tx());
 
     // 1) Rotate cel positions
     for (Cel* cel : m_cels) {
@@ -91,7 +91,7 @@ protected:
         gfx::RectF bounds = cel->boundsF();
         rotate_rect(bounds);
         if (cel->boundsF() != bounds)
-          transaction().execute(new cmd::SetCelBoundsF(cel, bounds));
+          tx()(new cmd::SetCelBoundsF(cel, bounds));
       }
       else {
         gfx::Rect bounds = cel->bounds();
@@ -120,7 +120,7 @@ protected:
 
       // cancel all the operation?
       if (isCanceled())
-        return;        // Transaction destructor will undo all operations
+        return;        // Tx destructor will undo all operations
     }
 
     // rotate mask

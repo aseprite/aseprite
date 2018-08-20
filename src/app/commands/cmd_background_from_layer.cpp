@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -53,10 +53,10 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   Doc* document(writer.document());
 
   {
-    Transaction transaction(writer.context(), "Background from Layer");
-    document->getApi(transaction).backgroundFromLayer(
+    Tx tx(writer.context(), "Background from Layer");
+    document->getApi(tx).backgroundFromLayer(
       static_cast<LayerImage*>(writer.layer()));
-    transaction.commit();
+    tx.commit();
   }
 
   update_screen_for_document(document);

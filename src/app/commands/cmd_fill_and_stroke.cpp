@@ -16,7 +16,7 @@
 #include "app/context_access.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/algorithm/fill_selection.h"
@@ -77,11 +77,11 @@ void FillCommand::onExecute(Context* ctx)
   app::Color color = pref.colorBar.fgColor();
 
   {
-    Transaction transaction(writer.context(), "Fill Selection with Foreground Color");
+    Tx tx(writer.context(), "Fill Selection with Foreground Color");
     {
       ExpandCelCanvas expand(
         site, layer,
-        TiledMode::NONE, transaction,
+        TiledMode::NONE, tx,
         ExpandCelCanvas::None);
 
       gfx::Region rgn(sprite->bounds() |
@@ -115,9 +115,9 @@ void FillCommand::onExecute(Context* ctx)
     // If the cel wasn't deleted by cmd::ClearMask, we trim it.
     Cel* cel = ctx->activeSite().cel();
     if (cel && layer->isTransparent())
-      transaction.execute(new cmd::TrimCel(cel));
+      tx(new cmd::TrimCel(cel));
 
-    transaction.commit();
+    tx.commit();
   }
 
   doc->notifyGeneralUpdate();

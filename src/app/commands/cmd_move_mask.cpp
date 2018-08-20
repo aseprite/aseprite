@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,7 +19,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
@@ -82,10 +82,10 @@ void MoveMaskCommand::onExecute(Context* context)
       ContextWriter writer(context);
       Doc* document(writer.document());
       {
-        Transaction transaction(writer.context(), "Move Selection", DoesntModifyDocument);
+        Tx tx(writer.context(), "Move Selection", DoesntModifyDocument);
         gfx::Point pt = document->mask()->bounds().origin();
-        document->getApi(transaction).setMaskPosition(pt.x+delta.x, pt.y+delta.y);
-        transaction.commit();
+        document->getApi(tx).setMaskPosition(pt.x+delta.x, pt.y+delta.y);
+        tx.commit();
       }
 
       document->generateMaskBoundaries();
@@ -98,9 +98,9 @@ void MoveMaskCommand::onExecute(Context* context)
         ContextWriter writer(context);
         if (writer.cel()) {
           // Rotate content
-          Transaction transaction(writer.context(), "Shift Pixels");
-          transaction.execute(new cmd::ShiftMaskedCel(writer.cel(), delta.x, delta.y));
-          transaction.commit();
+          Tx tx(writer.context(), "Shift Pixels");
+          tx(new cmd::ShiftMaskedCel(writer.cel(), delta.x, delta.y));
+          tx.commit();
         }
         update_screen_for_document(writer.document());
       }

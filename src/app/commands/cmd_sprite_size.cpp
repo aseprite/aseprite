@@ -72,7 +72,7 @@ protected:
 
   // [working thread]
   void onJob() override {
-    DocApi api = writer().document()->getApi(transaction());
+    DocApi api = writer().document()->getApi(tx());
 
     int cels_count = 0;
     for (Cel* cel : sprite()->uniqueCels()) { // TODO add size() member function to CelsRange
@@ -89,7 +89,7 @@ protected:
         // Resize the cel bounds only if it's from a reference layer
         if (cel->layer()->isReference()) {
           gfx::RectF newBounds = scale_rect<double>(cel->boundsF());
-          transaction().execute(new cmd::SetCelBoundsF(cel, newBounds));
+          tx()(new cmd::SetCelBoundsF(cel, newBounds));
         }
         else {
           // Change its location
@@ -118,7 +118,7 @@ protected:
 
       // Cancel all the operation?
       if (isCanceled())
-        return;        // Transaction destructor will undo all operations
+        return;        // Tx destructor will undo all operations
     }
 
     // Resize mask
@@ -170,8 +170,7 @@ protected:
           newKey.setPivot(gfx::Point(scale_x(newKey.pivot().x),
                                      scale_y(newKey.pivot().y)));
 
-        transaction().execute(
-          new cmd::SetSliceKey(slice, k.frame(), newKey));
+        tx()(new cmd::SetSliceKey(slice, k.frame(), newKey));
       }
     }
 

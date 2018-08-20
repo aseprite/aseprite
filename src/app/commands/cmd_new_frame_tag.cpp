@@ -13,7 +13,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/frame_tag_window.h"
 #include "app/ui/timeline/timeline.h"
 #include "doc/frame_tag.h"
@@ -73,10 +73,10 @@ void NewFrameTagCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader);
-    Transaction transaction(writer.context(), "New Frames Tag");
-    transaction.execute(new cmd::AddFrameTag(writer.sprite(), frameTag.get()));
+    Tx tx(writer.context(), "New Frames Tag");
+    tx(new cmd::AddFrameTag(writer.sprite(), frameTag.get()));
     frameTag.release();
-    transaction.commit();
+    tx.commit();
   }
 
   App::instance()->timeline()->invalidate();

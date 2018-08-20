@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/toolbar.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -82,9 +82,9 @@ void MaskContentCommand::onExecute(Context* context)
       newMask.replace(cel->bounds());
     }
 
-    Transaction transaction(writer.context(), "Select Content", DoesntModifyDocument);
-    transaction.execute(new cmd::SetMask(document, &newMask));
-    transaction.commit();
+    Tx tx(writer.context(), "Select Content", DoesntModifyDocument);
+    tx(new cmd::SetMask(document, &newMask));
+    tx.commit();
 
     document->resetTransformation();
     document->generateMaskBoundaries();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,7 +18,7 @@
 #include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
@@ -113,9 +113,9 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
     try {
       ContextWriter writer(UIContext::instance(), 250);
       if (writer.cel()) {
-        Transaction transaction(writer.context(), "Clear");
-        transaction.execute(new cmd::ClearRect(writer.cel(), rect));
-        transaction.commit();
+        Tx tx(writer.context(), "Clear");
+        tx(new cmd::ClearRect(writer.cel(), rect));
+        tx.commit();
       }
     }
     catch (const std::exception& ex) {

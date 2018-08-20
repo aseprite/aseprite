@@ -13,7 +13,7 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/modules/palettes.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
@@ -65,9 +65,9 @@ void PaletteSizeCommand::onExecute(Context* context)
     palette.resize(MID(1, ncolors, std::numeric_limits<int>::max()));
 
     ContextWriter writer(reader);
-    Transaction transaction(context, "Palette Size", ModifyDocument);
-    transaction.execute(new cmd::SetPalette(writer.sprite(), frame, &palette));
-    transaction.commit();
+    Tx tx(context, "Palette Size", ModifyDocument);
+    tx(new cmd::SetPalette(writer.sprite(), frame, &palette));
+    tx.commit();
 
     set_current_palette(&palette, false);
     ui::Manager::getDefault()->invalidate();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "doc/sprite.h"
 
@@ -43,9 +43,9 @@ void FlattenLayersCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Sprite* sprite = writer.sprite();
   {
-    Transaction transaction(writer.context(), "Flatten Layers");
-    transaction.execute(new cmd::FlattenLayers(sprite));
-    transaction.commit();
+    Tx tx(writer.context(), "Flatten Layers");
+    tx(new cmd::FlattenLayers(sprite));
+    tx.commit();
   }
   update_screen_for_document(writer.document());
 }

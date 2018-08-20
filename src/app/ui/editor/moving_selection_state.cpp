@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,7 @@
 
 #include "app/cmd/set_mask_position.h"
 #include "app/context_access.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -55,9 +55,9 @@ EditorState::LeaveAction MovingSelectionState::onLeaveState(Editor* editor, Edit
 
   {
     ContextWriter writer(UIContext::instance(), 1000);
-    Transaction transaction(writer.context(), "Move Selection Edges", DoesntModifyDocument);
-    transaction.execute(new cmd::SetMaskPosition(doc, newOrigin));
-    transaction.commit();
+    Tx tx(writer.context(), "Move Selection Edges", DoesntModifyDocument);
+    tx(new cmd::SetMaskPosition(doc, newOrigin));
+    tx.commit();
   }
 
   doc->resetTransformation();

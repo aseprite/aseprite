@@ -16,7 +16,7 @@
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
 #include "doc/layer.h"
 #include "fmt/format.h"
@@ -68,7 +68,7 @@ void LayerOpacityCommand::onExecute(Context* context)
     return;
 
   {
-    Transaction transaction(writer.context(), "Set Layer Opacity");
+    Tx tx(writer.context(), "Set Layer Opacity");
 
     // TODO the range of selected frames should be in app::Site.
     SelectedLayers selLayers;
@@ -82,11 +82,10 @@ void LayerOpacityCommand::onExecute(Context* context)
 
     for (auto layer : selLayers) {
       if (layer->isImage())
-        transaction.execute(
-          new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), m_opacity));
+        tx(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), m_opacity));
     }
 
-    transaction.commit();
+    tx.commit();
   }
 
   update_screen_for_document(writer.document());

@@ -12,7 +12,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/util/autocrop.h"
 #include "doc/image.h"
@@ -71,9 +71,9 @@ void CropSpriteCommand::onExecute(Context* context)
     bounds = m_bounds;
 
   {
-    Transaction transaction(writer.context(), "Sprite Crop");
-    document->getApi(transaction).cropSprite(sprite, bounds);
-    transaction.commit();
+    Tx tx(writer.context(), "Sprite Crop");
+    document->getApi(tx).cropSprite(sprite, bounds);
+    tx.commit();
   }
   document->generateMaskBoundaries();
 
@@ -109,9 +109,9 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Transaction transaction(writer.context(), "Trim Sprite");
-    document->getApi(transaction).trimSprite(sprite);
-    transaction.commit();
+    Tx tx(writer.context(), "Trim Sprite");
+    document->getApi(tx).trimSprite(sprite);
+    tx.commit();
   }
   document->generateMaskBoundaries();
 

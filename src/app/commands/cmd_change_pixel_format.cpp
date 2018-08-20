@@ -472,9 +472,9 @@ void ChangePixelFormatCommand::onExecute(Context* context)
         Sprite* sprite(job.sprite());
 
         if (flatten)
-          job.transaction().execute(new cmd::FlattenLayers(sprite));
+          job.tx()(new cmd::FlattenLayers(sprite));
 
-        job.transaction().execute(
+        job.tx()(
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_ditheringAlgorithm,

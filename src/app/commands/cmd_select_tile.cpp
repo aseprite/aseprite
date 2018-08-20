@@ -17,7 +17,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "doc/mask.h"
 #include "fmt/format.h"
@@ -93,11 +93,11 @@ void SelectTileCommand::onExecute(Context* ctx)
   }
 
   // Set the new mask
-  Transaction transaction(writer.context(),
+  Tx tx(writer.context(),
                           friendlyName(),
                           DoesntModifyDocument);
-  transaction.execute(new cmd::SetMask(doc, mask.get()));
-  transaction.commit();
+  tx(new cmd::SetMask(doc, mask.get()));
+  tx.commit();
 
   doc->generateMaskBoundaries();
   update_screen_for_document(doc);

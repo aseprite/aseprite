@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,7 +14,7 @@
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/status_bar.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -52,8 +52,8 @@ void RemoveLayerCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Transaction transaction(writer.context(), "Remove Layer");
-    DocApi api = document->getApi(transaction);
+    Tx tx(writer.context(), "Remove Layer");
+    DocApi api = document->getApi(tx);
 
     const Site* site = writer.site();
     if (site->inTimeline() &&
@@ -87,7 +87,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       api.removeLayer(layer);
     }
 
-    transaction.commit();
+    tx.commit();
   }
   update_screen_for_document(document);
 

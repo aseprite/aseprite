@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,7 +15,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/loop_tag.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
 #include "base/convert_to.h"
 #include "doc/frame_tag.h"
@@ -77,9 +77,9 @@ void RemoveFrameTagCommand::onExecute(Context* context)
   if (!foundTag)
     return;
 
-  Transaction transaction(writer.context(), "Remove Frame Tag");
-  transaction.execute(new cmd::RemoveFrameTag(sprite, foundTag));
-  transaction.commit();
+  Tx tx(writer.context(), "Remove Frame Tag");
+  tx(new cmd::RemoveFrameTag(sprite, foundTag));
+  tx.commit();
 
   App::instance()->timeline()->invalidate();
 }

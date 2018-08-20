@@ -15,7 +15,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/main_window.h"
@@ -148,8 +148,8 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (modified) {
     {
       ContextWriter writer(m_reader, 1000);
-      Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
-      DocApi api = document->getApi(transaction);
+      Tx tx(writer.context(), "Cel Movement", ModifyDocument);
+      DocApi api = document->getApi(tx);
       gfx::Point intOffset = intCelOffset();
 
       // And now we move the cel (or all selected range) to the new position.
@@ -163,7 +163,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
             celBounds.w *= m_celScale.w;
             celBounds.h *= m_celScale.h;
           }
-          transaction.execute(new cmd::SetCelBoundsF(cel, celBounds));
+          tx(new cmd::SetCelBoundsF(cel, celBounds));
         }
         else {
           api.setCelPosition(writer.sprite(), cel,
@@ -183,7 +183,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
                             document->mask()->bounds().y + intOffset.y);
       }
 
-      transaction.commit();
+      tx.commit();
     }
 
     // Redraw all editors. We've to notify all views about this

@@ -24,7 +24,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
@@ -559,19 +559,19 @@ bool DocView::onClear(Context* ctx)
     return false;
 
   {
-    Transaction transaction(writer.context(), "Clear");
-    transaction.execute(new cmd::ClearMask(writer.cel()));
+    Tx tx(writer.context(), "Clear");
+    tx(new cmd::ClearMask(writer.cel()));
 
     // If the cel wasn't deleted by cmd::ClearMask, we trim it.
     if (writer.cel() &&
         writer.cel()->layer()->isTransparent())
-      transaction.execute(new cmd::TrimCel(writer.cel()));
+      tx(new cmd::TrimCel(writer.cel()));
 
     if (visibleMask &&
         !Preferences::instance().selection.keepSelectionAfterClear())
-      transaction.execute(new cmd::DeselectMask(document));
+      tx(new cmd::DeselectMask(document));
 
-    transaction.commit();
+    tx.commit();
   }
 
   if (visibleMask)

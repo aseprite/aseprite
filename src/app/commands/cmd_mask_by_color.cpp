@@ -19,7 +19,7 @@
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
 #include "base/bind.h"
@@ -159,10 +159,10 @@ void MaskByColorCommand::onExecute(Context* context)
   Doc* document(writer.document());
 
   if (apply) {
-    Transaction transaction(writer.context(), "Mask by Color", DoesntModifyDocument);
+    Tx tx(writer.context(), "Mask by Color", DoesntModifyDocument);
     std::unique_ptr<Mask> mask(generateMask(sprite, image, xpos, ypos));
-    transaction.execute(new cmd::SetMask(document, mask.get()));
-    transaction.commit();
+    tx(new cmd::SetMask(document, mask.get()));
+    tx.commit();
 
     set_config_color("MaskColor", "Color", m_buttonColor->getColor());
     set_config_int("MaskColor", "Tolerance", m_sliderTolerance->getValue());

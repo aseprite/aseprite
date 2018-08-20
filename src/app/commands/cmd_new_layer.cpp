@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,7 +18,7 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -177,10 +177,10 @@ void NewLayerCommand::onExecute(Context* context)
 
   Layer* layer = nullptr;
   {
-    Transaction transaction(
+    Tx tx(
       writer.context(),
       std::string("New ") + layerPrefix());
-    DocApi api = document->getApi(transaction);
+    DocApi api = document->getApi(tx);
     bool afterBackground = false;
 
     switch (m_type) {
@@ -236,7 +236,7 @@ void NewLayerCommand::onExecute(Context* context)
 
       if (sameParents == selLayers.size()) {
         for (Layer* newChild : selLayers.toLayerList()) {
-          transaction.execute(
+          tx(
             new cmd::MoveLayer(newChild, layer,
                                static_cast<LayerGroup*>(layer)->lastLayer()));
         }
@@ -311,7 +311,7 @@ void NewLayerCommand::onExecute(Context* context)
       }
     }
 
-    transaction.commit();
+    tx.commit();
   }
   update_screen_for_document(document);
 
