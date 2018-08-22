@@ -18,26 +18,27 @@ $ASEPRITE --version
 
 echo ----------------------------------------------------------------------
 echo "Testing console..."
-$ASEPRITE -b --script scripts/console_assert.js >tmp 2>tmp_err
-! grep -q Error tmp && fail
-! grep -q "this should be in the output" tmp && fail
-grep -q "this should not be in the output" tmp && fail
+$ASEPRITE -b --script scripts/console_assert.lua >tmp 2>tmp_err
+! grep -q "this should be in the output" tmp && fail "print() text not found in output"
+! grep -q "assertion failed" tmp && fail "assert() text not found in output"
+grep -q "this should not be in the output" tmp && fail "text that shouldn't be in the output is"
 
-$ASEPRITE -b --script scripts/console_log.js >tmp 2>tmp_err
+$ASEPRITE -b --script scripts/console_print.lua >tmp 2>tmp_err
 cat >tmp_expected <<EOF
 hello world
-1 2 3
+1	2	3
 EOF
 ! diff -u tmp tmp_expected && fail
 
 echo ----------------------------------------------------------------------
 echo "Testing scripts..."
-result=0
-for jsfile in scripts/*.js ; do
-    [[ $jsfile =~ console ]] && continue
 
-    echo "Running $jsfile"
-    if ! $ASEPRITE -b --script $jsfile >tmp 2>tmp_err ; then
+result=0
+for script in scripts/*.lua ; do
+    [[ $script =~ console ]] && continue
+
+    echo "Running $script"
+    if ! $ASEPRITE -b --script $script >tmp 2>tmp_err ; then
         echo FAILED
         echo STDOUT && cat tmp
         echo STDERR && cat tmp_err
