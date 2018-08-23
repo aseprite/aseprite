@@ -16,13 +16,12 @@ because they don't depend on any other component.
   * [clip](https://github.com/aseprite/clip): Clipboard library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](https://github.com/aseprite/flic): Library to load/save FLI/FLC files.
-  * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.
-  * [laf](https://github.com/aseprite/laf): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
-  * [observable](https://github.com/dacap/observable): Signal/slot functions.
+  * laf/[base](https://github.com/aseprite/laf/tree/master/base): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
+  * laf/[gfx](https://github.com/aseprite/laf/tree/master/gfx): Abstract graphics structures like point, size, rectangle, region, color, etc.
+  * [observable](https://github.com/aseprite/observable): Signal/slot functions.
   * [scripting](scripting/): JavaScript engine.
   * [steam](steam/): Steam API wrapper to avoid static linking to the .lib file.
   * [undo](https://github.com/aseprite/undo): Generic library to manage a history of undoable commands.
-  * [wacom](wacom/): Wacom definitions to use Wintab API.
 
 ## Level 1
 
@@ -34,7 +33,7 @@ because they don't depend on any other component.
 ## Level 2
 
   * [doc](doc/) (base, fixmath, gfx): Document model library.
-  * [os](os/) (base, gfx, wacom): OS input/output.
+  * laf/[os](https://github.com/aseprite/laf/tree/master/os) (base, gfx, wacom): OS input/output.
 
 ## Level 3
 
