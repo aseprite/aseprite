@@ -30,7 +30,7 @@
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/memory.h"
-#include "she/system.h"
+#include "os/system.h"
 #include "ui/ui.h"
 
 #include "tinyxml.h"
@@ -494,7 +494,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
         throw base::Exception("File %s not found", file);
 
       try {
-        she::Surface* sur = she::instance()->loadRgbaSurface(rf.filename().c_str());
+        os::Surface* sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
         widget = new ImageView(sur, 0, true);
       }
       catch (...) {

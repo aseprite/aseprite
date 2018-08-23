@@ -16,7 +16,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
-#include "she/menus.h"
+#include "os/menus.h"
 #include "ui/accelerator.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -66,7 +66,7 @@ void AppMenuItem::setNative(const Native& native)
 void AppMenuItem::syncNativeMenuItemKeyShortcut()
 {
   if (m_native) {
-    she::Shortcut shortcut = get_os_shortcut_from_key(m_key.get());
+    os::Shortcut shortcut = get_os_shortcut_from_key(m_key.get());
 
     m_native->shortcut = shortcut;
     m_native->menuItem->setShortcut(shortcut);

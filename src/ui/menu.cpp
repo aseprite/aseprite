@@ -11,7 +11,7 @@
 #include "ui/menu.h"
 
 #include "gfx/size.h"
-#include "she/font.h"
+#include "os/font.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 

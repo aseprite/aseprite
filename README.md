@@ -2,6 +2,7 @@
 *Copyright (C) 2001-2018 David Capello*
 
 [![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
+[![Build status](https://ci.appveyor.com/api/projects/status/kdu2gt7ls014i25h?svg=true)](https://ci.appveyor.com/project/dacap/aseprite)
 [![Discourse Community](https://img.shields.io/badge/discourse-community-brightgreen.svg?style=flat)](https://community.aseprite.org/)
 [![Discord Server](https://discordapp.com/api/guilds/324979738533822464/embed.png)](https://discord.gg/Yb2CeX8)
 
@@ -89,7 +90,7 @@ This program is distributed under three different licenses:
    are distributed under the MIT license
    (e.g. [laf](https://github.com/aseprite/laf),
    [clip](https://github.com/aseprite/clip),
-   [she](https://github.com/aseprite/aseprite/tree/master/src/she),
+   [os](https://github.com/aseprite/aseprite/tree/master/src/os),
    [gfx](src/gfx), [ui](src/ui), etc.).
 2. You can request a special
    [educational license](http://www.aseprite.org/faq/#is-there-an-educational-license)

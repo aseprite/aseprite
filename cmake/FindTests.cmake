@@ -8,10 +8,10 @@ function(find_tests dir dependencies)
   # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
   include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
-  # See if the test is linked with "she" library.
-  list(FIND dependencies she link_with_she)
-  if(link_with_she)
-    set(extra_definitions -DLINKED_WITH_SHE)
+  # See if the test is linked with "laf-os" library.
+  list(FIND dependencies laf-os link_with_os)
+  if(link_with_os)
+    set(extra_definitions -DLINKED_WITH_OS_LIBRARY)
   endif()
 
   foreach(testsourcefile ${tests})

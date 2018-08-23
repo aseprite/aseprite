@@ -9,7 +9,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "she/font.h"
+#include "os/font.h"
 
 #include <map>
 
@@ -18,7 +18,7 @@ namespace skin {
 
   class FontData {
   public:
-    FontData(she::FontType type);
+    FontData(os::FontType type);
     ~FontData();
 
     void setFilename(const std::string& filename) { m_filename = filename; }
@@ -28,13 +28,13 @@ namespace skin {
       m_fallbackSize = fallbackSize;
     }
 
-    she::Font* getFont(int size);
+    os::Font* getFont(int size);
 
   private:
-    she::FontType m_type;
+    os::FontType m_type;
     std::string m_filename;
     bool m_antialias;
-    std::map<int, she::Font*> m_fonts; // key=font size, value=real font
+    std::map<int, os::Font*> m_fonts; // key=font size, value=real font
     FontData* m_fallback;
     int m_fallbackSize;
 

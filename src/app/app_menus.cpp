@@ -28,8 +28,8 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
-#include "she/menus.h"
-#include "she/system.h"
+#include "os/menus.h"
+#include "os/system.h"
 #include "ui/ui.h"
 
 #include "tinyxml.h"
@@ -44,7 +44,7 @@ using namespace ui;
 
 namespace {
 
-// TODO Move this to she layer
+// TODO Move this to "os" layer
 const int kUnicodeEsc      = 27;
 const int kUnicodeEnter    = '\r'; // 10
 const int kUnicodeInsert   = 0xF727; // NSInsertFunctionKey
@@ -63,19 +63,19 @@ void destroy_instance(AppMenus* instance)
   delete instance;
 }
 
-bool is_text_entry_shortcut(const she::Shortcut& shortcut)
+bool is_text_entry_shortcut(const os::Shortcut& shortcut)
 {
-  const she::KeyModifiers mod = shortcut.modifiers();
+  const os::KeyModifiers mod = shortcut.modifiers();
   const int chr = shortcut.unicode();
   const int lchr = std::tolower(chr);
 
   bool result =
-    ((mod == she::KeyModifiers::kKeyNoneModifier ||
-      mod == she::KeyModifiers::kKeyShiftModifier) &&
+    ((mod == os::KeyModifiers::kKeyNoneModifier ||
+      mod == os::KeyModifiers::kKeyShiftModifier) &&
      chr >= 32 && chr < 0xF000)
   ||
-    ((mod == she::KeyModifiers::kKeyCmdModifier ||
-      mod == she::KeyModifiers::kKeyCtrlModifier) &&
+    ((mod == os::KeyModifiers::kKeyCmdModifier ||
+      mod == os::KeyModifiers::kKeyCtrlModifier) &&
      (lchr == 'a' || lchr == 'c' || lchr == 'v' || lchr == 'x'))
   ||
     (chr == kUnicodeInsert ||
@@ -123,7 +123,7 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
 }
 
 // TODO this should be on "she" library (or we should use
-// she::Shortcut instead of ui::Accelerators)
+// os::Shortcut instead of ui::Accelerators)
 int from_scancode_to_unicode(KeyScancode scancode)
 {
   static int map[] = {
@@ -276,17 +276,17 @@ AppMenuItem::Native get_native_shortcut_for_command(
 
 } // anonymous namespace
 
-she::Shortcut get_os_shortcut_from_key(const Key* key)
+os::Shortcut get_os_shortcut_from_key(const Key* key)
 {
   if (key && !key->accels().empty()) {
     const ui::Accelerator& accel = key->accels().front();
-    return she::Shortcut(
+    return os::Shortcut(
       (accel.unicodeChar() ? accel.unicodeChar():
                              from_scancode_to_unicode(accel.scancode())),
       accel.modifiers());
   }
   else
-    return she::Shortcut();
+    return os::Shortcut();
 }
 
 // static
@@ -429,8 +429,8 @@ bool AppMenus::rebuildRecentList()
     // Sync native menus
     if (list_menuitem->native() &&
         list_menuitem->native()->menuItem) {
-      she::Menus* menus = she::instance()->menus();
-      she::Menu* osMenu = (menus ? menus->createMenu(): nullptr);
+      os::Menus* menus = os::instance()->menus();
+      os::Menu* osMenu = (menus ? menus->createMenu(): nullptr);
       if (osMenu) {
         createNativeSubmenus(osMenu, submenu);
         list_menuitem->native()->menuItem->setSubmenu(osMenu);
@@ -631,7 +631,7 @@ void AppMenus::updateMenusList()
 
 void AppMenus::createNativeMenus()
 {
-  she::Menus* menus = she::instance()->menus();
+  os::Menus* menus = os::instance()->menus();
   if (!menus)       // This platform doesn't support native menu items
     return;
 
@@ -641,7 +641,7 @@ void AppMenus::createNativeMenus()
 
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
-    she::MenuItemInfo about("About " PACKAGE);
+    os::MenuItemInfo about("About " PACKAGE);
     auto native = get_native_shortcut_for_command(CommandId::About());
     about.shortcut = native.shortcut;
     about.execute = [native]{
@@ -651,7 +651,7 @@ void AppMenus::createNativeMenus()
       }
     };
 
-    she::MenuItemInfo preferences("Preferences...");
+    os::MenuItemInfo preferences("Preferences...");
     native = get_native_shortcut_for_command(CommandId::Options());
     preferences.shortcut = native.shortcut;
     preferences.execute = [native]{
@@ -661,24 +661,24 @@ void AppMenus::createNativeMenus()
       }
     };
 
-    she::MenuItemInfo hide("Hide " PACKAGE, she::MenuItemInfo::Hide);
-    hide.shortcut = she::Shortcut('h', she::kKeyCmdModifier);
+    os::MenuItemInfo hide("Hide " PACKAGE, os::MenuItemInfo::Hide);
+    hide.shortcut = os::Shortcut('h', os::kKeyCmdModifier);
 
-    she::MenuItemInfo quit("Quit " PACKAGE, she::MenuItemInfo::Quit);
-    quit.shortcut = she::Shortcut('q', she::kKeyCmdModifier);
+    os::MenuItemInfo quit("Quit " PACKAGE, os::MenuItemInfo::Quit);
+    quit.shortcut = os::Shortcut('q', os::kKeyCmdModifier);
 
-    she::Menu* appMenu = menus->createMenu();
+    os::Menu* appMenu = menus->createMenu();
     appMenu->addItem(menus->createMenuItem(about));
-    appMenu->addItem(menus->createMenuItem(she::MenuItemInfo(she::MenuItemInfo::Separator)));
+    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
     appMenu->addItem(menus->createMenuItem(preferences));
-    appMenu->addItem(menus->createMenuItem(she::MenuItemInfo(she::MenuItemInfo::Separator)));
+    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
     appMenu->addItem(menus->createMenuItem(hide));
-    appMenu->addItem(menus->createMenuItem(she::MenuItemInfo("Hide Others", she::MenuItemInfo::HideOthers)));
-    appMenu->addItem(menus->createMenuItem(she::MenuItemInfo("Show All", she::MenuItemInfo::ShowAll)));
-    appMenu->addItem(menus->createMenuItem(she::MenuItemInfo(she::MenuItemInfo::Separator)));
+    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo("Hide Others", os::MenuItemInfo::HideOthers)));
+    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo("Show All", os::MenuItemInfo::ShowAll)));
+    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
     appMenu->addItem(menus->createMenuItem(quit));
 
-    she::MenuItem* appItem = menus->createMenuItem(she::MenuItemInfo("App"));
+    os::MenuItem* appItem = menus->createMenuItem(os::MenuItemInfo("App"));
     appItem->setSubmenu(appMenu);
     m_osMenu->addItem(appItem);
   }
@@ -699,14 +699,14 @@ void AppMenus::createNativeMenus()
       ++i;
     }
 
-    she::MenuItemInfo minimize("Minimize", she::MenuItemInfo::Minimize);
-    minimize.shortcut = she::Shortcut('m', she::kKeyCmdModifier);
+    os::MenuItemInfo minimize("Minimize", os::MenuItemInfo::Minimize);
+    minimize.shortcut = os::Shortcut('m', os::kKeyCmdModifier);
 
-    she::Menu* windowMenu = menus->createMenu();
+    os::Menu* windowMenu = menus->createMenu();
     windowMenu->addItem(menus->createMenuItem(minimize));
-    windowMenu->addItem(menus->createMenuItem(she::MenuItemInfo("Zoom", she::MenuItemInfo::Zoom)));
+    windowMenu->addItem(menus->createMenuItem(os::MenuItemInfo("Zoom", os::MenuItemInfo::Zoom)));
 
-    she::MenuItem* windowItem = menus->createMenuItem(she::MenuItemInfo("Window"));
+    os::MenuItem* windowItem = menus->createMenuItem(os::MenuItemInfo("Window"));
     windowItem->setSubmenu(windowMenu);
 
     // We use helpIndex+1 because the first index in m_osMenu is the
@@ -718,17 +718,17 @@ void AppMenus::createNativeMenus()
   menus->setAppMenu(m_osMenu);
 }
 
-void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
+void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
 {
-  she::Menus* menus = she::instance()->menus();
+  os::Menus* menus = os::instance()->menus();
 
   for (const auto& child : uiMenu->children()) {
-    she::MenuItemInfo info;
+    os::MenuItemInfo info;
     AppMenuItem* appMenuItem = dynamic_cast<AppMenuItem*>(child);
     AppMenuItem::Native native;
 
     if (child->type() == kSeparatorWidget) {
-      info.type = she::MenuItemInfo::Separator;
+      info.type = os::MenuItemInfo::Separator;
     }
     else if (child->type() == kMenuItemWidget) {
       if (appMenuItem &&
@@ -738,14 +738,14 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
           appMenuItem->getParams());
       }
 
-      info.type = she::MenuItemInfo::Normal;
+      info.type = os::MenuItemInfo::Normal;
       info.text = child->text();
       info.shortcut = native.shortcut;
       info.execute = [appMenuItem]{
         if (can_call_global_shortcut(appMenuItem->native()))
           appMenuItem->executeClick();
       };
-      info.validate = [appMenuItem](she::MenuItem* osItem) {
+      info.validate = [appMenuItem](os::MenuItem* osItem) {
         if (can_call_global_shortcut(appMenuItem->native())) {
           appMenuItem->validateItem();
           osItem->setEnabled(appMenuItem->isEnabled());
@@ -762,7 +762,7 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
       continue;
     }
 
-    she::MenuItem* osItem = menus->createMenuItem(info);
+    os::MenuItem* osItem = menus->createMenuItem(info);
     if (osItem) {
       osMenu->addItem(osItem);
       if (appMenuItem) {
@@ -772,7 +772,7 @@ void AppMenus::createNativeSubmenus(she::Menu* osMenu, const ui::Menu* uiMenu)
 
       if (child->type() == ui::kMenuItemWidget &&
           ((ui::MenuItem*)child)->hasSubmenu()) {
-        she::Menu* osSubmenu = menus->createMenu();
+        os::Menu* osSubmenu = menus->createMenu();
         createNativeSubmenus(osSubmenu, ((ui::MenuItem*)child)->getSubmenu());
         osItem->setSubmenu(osSubmenu);
       }

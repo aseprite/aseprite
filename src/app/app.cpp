@@ -59,10 +59,10 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "render/render.h"
-#include "she/display.h"
-#include "she/error.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/error.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -186,7 +186,7 @@ void App::initialize(const AppOptions& options)
 #ifdef _WIN32
   if (options.disableWintab() ||
       !preferences().experimental.loadWintabDriver()) {
-    she::instance()->useWintabAPI(false);
+    os::instance()->useWintabAPI(false);
   }
 #endif
 
@@ -272,7 +272,7 @@ void App::initialize(const AppOptions& options)
     cli.process(&m_modules->m_context);
   }
 
-  she::instance()->finishLaunching();
+  os::instance()->finishLaunching();
 }
 
 void App::run()
@@ -290,14 +290,14 @@ void App::run()
 #if !defined(_WIN32) && !defined(__APPLE__)
     // Setup app icon for Linux window managers
     try {
-      she::Display* display = she::instance()->defaultDisplay();
-      she::SurfaceList icons;
+      os::Display* display = os::instance()->defaultDisplay();
+      os::SurfaceList icons;
 
       for (const int size : { 32, 64, 128 }) {
         ResourceFinder rf;
         rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
         if (rf.findFirst()) {
-          she::Surface* surf = she::instance()->loadRgbaSurface(rf.filename().c_str());
+          os::Surface* surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
           if (surf)
             icons.push_back(surf);
         }
@@ -318,13 +318,13 @@ void App::run()
 #ifdef ENABLE_STEAM
     steam::SteamAPI steam;
     if (steam.initialized())
-      she::instance()->activateApp();
+      os::instance()->activateApp();
 #endif
 
 #if ENABLE_DEVMODE
     // On OS X, when we compile Aseprite on devmode, we're using it
     // outside an app bundle, so we must active the app explicitly.
-    she::instance()->activateApp();
+    os::instance()->activateApp();
 #endif
 
 #ifdef ENABLE_UPDATER
@@ -431,12 +431,12 @@ App::~App()
   }
   catch (const std::exception& e) {
     LOG(ERROR) << "APP: Error: " << e.what() << "\n";
-    she::error_message(e.what());
+    os::error_message(e.what());
 
     // no re-throw
   }
   catch (...) {
-    she::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
+    os::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
 
     // no re-throw
   }
@@ -570,7 +570,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  she::instance()->defaultDisplay()->setTitleBar(title);
+  os::instance()->defaultDisplay()->setTitleBar(title);
 }
 
 InputChain& App::inputChain()

@@ -12,7 +12,7 @@ endif()
 if(MSVC)
   # As Skia is compiled with /GL flag (whole program optimization),
   # the linker prefer a /LTCG parameter to improve link times.
-  if(USE_SKIA_BACKEND)
+  if(LAF_OS_BACKEND STREQUAL "skia")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
   endif()
 
@@ -31,18 +31,6 @@ endif()
 if(WIN32)
   # Needed to include icons in win32 .rc file
   include_directories(..)
-endif()
-
-# Use patched version of Allegro 4 (with window resize support).
-if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_ALLEGRO4)
-  add_subdirectory(allegro)
-endif()
-
-######################################################################
-# pthread
-
-if (CMAKE_USE_PTHREADS_INIT)
-  list(APPEND PLATFORM_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 ######################################################################
@@ -107,12 +95,9 @@ add_subdirectory(filters)
 add_subdirectory(fixmath)
 add_subdirectory(flic)
 add_subdirectory(gen)
-add_subdirectory(gfx)
 add_subdirectory(net)
 add_subdirectory(render)
 add_subdirectory(dio)
-add_subdirectory(ft)
-add_subdirectory(she)
 add_subdirectory(ui)
 
 if(ENABLE_UPDATER)
@@ -179,21 +164,12 @@ add_executable(aseprite main/main.cpp ${win32_resources})
 if(WIN32 AND ENABLE_UI)
   set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
 endif()
-target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
+target_link_libraries(aseprite app-lib)
 add_dependencies(aseprite copy_data)
 
-if(MSVC)
-  if(ENABLE_UI)
-    if(USE_SKIA_BACKEND)
-      # Linking with "wsetargv.obj" to add support to expand filename
-      # wildcards in argc/argv.
-      set_target_properties(aseprite
-        PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wWinMainCRTStartup\"")
-    endif()
-  else()
-    set_target_properties(aseprite
-      PROPERTIES LINK_FLAGS "-LINK wsetargv.obj -ENTRY:\"wmainCRTStartup\"")
-  endif()
+if(LAF_OS_BACKEND_LINK_FLAGS)
+  set_target_properties(aseprite PROPERTIES LINK_FLAGS
+    ${LAF_OS_BACKEND_LINK_FLAGS})
 endif()
 
 install(TARGETS aseprite
@@ -207,7 +183,6 @@ install(DIRECTORY ../data
 
 if(ENABLE_TESTS)
   include(FindTests)
-  find_tests(gfx gfx-lib)
   find_tests(doc doc-lib)
   find_tests(render render-lib)
   find_tests(ui ui-lib)

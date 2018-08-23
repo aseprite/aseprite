@@ -19,11 +19,11 @@
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/time.h"
-#include "she/display.h"
-#include "she/event.h"
-#include "she/event_queue.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/event.h"
+#include "os/event_queue.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -86,7 +86,7 @@ static bool first_time = true;    // true when we don't enter in poll yet
 
 // Don't adjust window positions automatically when it's false. Used
 // when Screen/UI scaling is changed to avoid adjusting windows as
-// when the she::Display is resized by the user.
+// when the os::Display is resized by the user.
 static bool auto_window_adjustment = true;
 
 /* keyboard focus movement stuff */
@@ -189,7 +189,7 @@ Manager::~Manager()
     set_mouse_cursor(kNoCursor);
 
     // Destroy timers
-    Timer::checkNoTimers();
+    ASSERT(!Timer::haveTimers());
 
     // Destroy filters
 #ifdef _DEBUG
@@ -206,14 +206,14 @@ Manager::~Manager()
   }
 }
 
-void Manager::setDisplay(she::Display* display)
+void Manager::setDisplay(os::Display* display)
 {
   base::ScopedValue<bool> lock(
     auto_window_adjustment, false,
     auto_window_adjustment);
 
   m_display = display;
-  m_eventQueue = she::instance()->eventQueue();
+  m_eventQueue = os::instance()->eventQueue();
 
   onNewDisplayConfiguration();
 }
@@ -252,7 +252,7 @@ void Manager::flipDisplay()
       m_dirtyRegion,
       gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
 
-    for (auto& rc : m_dirtyRegion)
+    for (const auto& rc : m_dirtyRegion)
       m_display->flip(rc);
 
     m_dirtyRegion.clear();
@@ -275,7 +275,7 @@ bool Manager::generateMessages()
   }
 
   // Generate messages from OS input
-  generateMessagesFromSheEvents();
+  generateMessagesFromOSEvents();
 
   // Generate messages for timers
   Timer::pollTimers();
@@ -306,59 +306,61 @@ void Manager::generateSetCursorMessage(const gfx::Point& mousePos,
     set_mouse_cursor(kArrowCursor);
 }
 
-static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
+static MouseButtons mouse_buttons_from_os_to_ui(const os::Event& sheEvent)
 {
   switch (sheEvent.button()) {
-    case she::Event::LeftButton:   return kButtonLeft; break;
-    case she::Event::RightButton:  return kButtonRight; break;
-    case she::Event::MiddleButton: return kButtonMiddle; break;
-    case she::Event::X1Button:     return kButtonX1; break;
-    case she::Event::X2Button:     return kButtonX2; break;
+    case os::Event::LeftButton:   return kButtonLeft; break;
+    case os::Event::RightButton:  return kButtonRight; break;
+    case os::Event::MiddleButton: return kButtonMiddle; break;
+    case os::Event::X1Button:     return kButtonX1; break;
+    case os::Event::X2Button:     return kButtonX2; break;
     default: return kButtonNone;
   }
 }
 
-void Manager::generateMessagesFromSheEvents()
+void Manager::generateMessagesFromOSEvents()
 {
-  she::Event lastMouseMoveEvent;
+  os::Event lastMouseMoveEvent;
 
   // Events from "she" layer.
-  she::Event sheEvent;
+  os::Event sheEvent;
   for (;;) {
-    // bool canWait = (msg_queue.empty());
-    bool canWait = false;
+    // TODO Add timers to laf::os library so we can wait for then in
+    //      the OS message loop.
+    bool canWait = (msg_queue.empty() &&
+                    !Timer::haveRunningTimers());
 
     m_eventQueue->getEvent(sheEvent, canWait);
-    if (sheEvent.type() == she::Event::None)
+    if (sheEvent.type() == os::Event::None)
       break;
 
     switch (sheEvent.type()) {
 
-      case she::Event::CloseDisplay: {
+      case os::Event::CloseDisplay: {
         Message* msg = new Message(kCloseDisplayMessage);
         msg->broadcastToChildren(this);
         enqueueMessage(msg);
         break;
       }
 
-      case she::Event::ResizeDisplay: {
+      case os::Event::ResizeDisplay: {
         Message* msg = new Message(kResizeDisplayMessage);
         msg->broadcastToChildren(this);
         enqueueMessage(msg);
         break;
       }
 
-      case she::Event::DropFiles: {
+      case os::Event::DropFiles: {
         Message* msg = new DropFilesMessage(sheEvent.files());
         msg->addRecipient(this);
         enqueueMessage(msg);
         break;
       }
 
-      case she::Event::KeyDown:
-      case she::Event::KeyUp: {
+      case os::Event::KeyDown:
+      case os::Event::KeyUp: {
         Message* msg = new KeyMessage(
-          (sheEvent.type() == she::Event::KeyDown ?
+          (sheEvent.type() == os::Event::KeyDown ?
              kKeyDownMessage:
              kKeyUpMessage),
           sheEvent.scancode(),
@@ -374,14 +376,14 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::MouseEnter: {
+      case os::Event::MouseEnter: {
         _internal_set_mouse_position(sheEvent.position());
         set_mouse_cursor(kArrowCursor);
         lastMouseMoveEvent = sheEvent;
         break;
       }
 
-      case she::Event::MouseLeave: {
+      case os::Event::MouseLeave: {
         set_mouse_cursor(kOutsideDisplay);
         setMouse(NULL);
 
@@ -389,11 +391,11 @@ void Manager::generateMessagesFromSheEvents()
 
         // To avoid calling kSetCursorMessage when the mouse leaves
         // the window.
-        lastMouseMoveEvent = she::Event();
+        lastMouseMoveEvent = os::Event();
         break;
       }
 
-      case she::Event::MouseMove: {
+      case os::Event::MouseMove: {
         _internal_set_mouse_position(sheEvent.position());
         handleMouseMove(
           sheEvent.position(),
@@ -404,8 +406,8 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::MouseDown: {
-        MouseButtons pressedButton = mouse_buttons_from_she_to_ui(sheEvent);
+      case os::Event::MouseDown: {
+        MouseButtons pressedButton = mouse_buttons_from_os_to_ui(sheEvent);
         m_mouseButtons = (MouseButtons)((int)m_mouseButtons | (int)pressedButton);
         _internal_set_mouse_buttons(m_mouseButtons);
 
@@ -417,8 +419,8 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::MouseUp: {
-        MouseButtons releasedButton = mouse_buttons_from_she_to_ui(sheEvent);
+      case os::Event::MouseUp: {
+        MouseButtons releasedButton = mouse_buttons_from_os_to_ui(sheEvent);
         m_mouseButtons = (MouseButtons)((int)m_mouseButtons & ~(int)releasedButton);
         _internal_set_mouse_buttons(m_mouseButtons);
 
@@ -430,8 +432,8 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::MouseDoubleClick: {
-        MouseButtons clickedButton = mouse_buttons_from_she_to_ui(sheEvent);
+      case os::Event::MouseDoubleClick: {
+        MouseButtons clickedButton = mouse_buttons_from_os_to_ui(sheEvent);
         handleMouseDoubleClick(
           sheEvent.position(),
           clickedButton,
@@ -440,7 +442,7 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::MouseWheel: {
+      case os::Event::MouseWheel: {
         handleMouseWheel(sheEvent.position(), m_mouseButtons,
                          sheEvent.modifiers(),
                          sheEvent.pointerType(),
@@ -449,7 +451,7 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::TouchMagnify: {
+      case os::Event::TouchMagnify: {
         _internal_set_mouse_position(sheEvent.position());
 
         handleTouchMagnify(sheEvent.position(),
@@ -462,7 +464,7 @@ void Manager::generateMessagesFromSheEvents()
   }
 
   // Generate just one kSetCursorMessage for the last mouse position
-  if (lastMouseMoveEvent.type() != she::Event::None) {
+  if (lastMouseMoveEvent.type() != os::Event::None) {
     sheEvent = lastMouseMoveEvent;
     generateSetCursorMessage(sheEvent.position(),
                              sheEvent.modifiers(),
@@ -1162,7 +1164,7 @@ bool Manager::onProcessMessage(Message* msg)
     case kPaintMessage:
       // Draw nothing (the manager should be invisible). On Windows,
       // after closing the main window, the manager will not refresh
-      // the she::Display content, so we'll avoid a gray background
+      // the os::Display content, so we'll avoid a gray background
       // (the last main window content is kept until the Display is
       // finally closed.)
       return true;
@@ -1481,7 +1483,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       return false;
 
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
-    she::Surface* surface = m_display->getSurface();
+    os::Surface* surface = m_display->getSurface();
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {
@@ -1496,7 +1498,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
 #ifdef DEBUG_PAINT_EVENTS
       {
-        she::SurfaceLock lock(surface);
+        os::SurfaceLock lock(surface);
         surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
       }
 

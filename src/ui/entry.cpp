@@ -12,9 +12,9 @@
 
 #include "base/bind.h"
 #include "base/string.h"
-#include "she/draw_text.h"
-#include "she/font.h"
-#include "she/system.h"
+#include "os/draw_text.h"
+#include "os/font.h"
+#include "os/system.h"
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -240,7 +240,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       // Start processing dead keys
       if (m_translate_dead_keys)
-        she::instance()->setTranslateDeadKeys(true);
+        os::instance()->setTranslateDeadKeys(true);
       break;
 
     case kFocusLeaveMessage:
@@ -255,7 +255,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       // Stop processing dead keys
       if (m_translate_dead_keys)
-        she::instance()->setTranslateDeadKeys(false);
+        os::instance()->setTranslateDeadKeys(false);
       break;
 
     case kKeyDownMessage:
@@ -811,7 +811,7 @@ void Entry::showEditPopupMenu(const gfx::Point& pt)
   menu.showPopup(pt);
 }
 
-class Entry::CalcBoxesTextDelegate : public she::DrawTextDelegate {
+class Entry::CalcBoxesTextDelegate : public os::DrawTextDelegate {
 public:
   CalcBoxesTextDelegate(const int end) : m_end(end) {
   }
@@ -849,7 +849,7 @@ void Entry::recalcCharBoxes(const std::string& text)
 {
   int lastTextIndex = int(text.size());
   CalcBoxesTextDelegate delegate(lastTextIndex);
-  she::draw_text(nullptr, font(),
+  os::draw_text(nullptr, font(),
                  base::utf8_const_iterator(text.begin()),
                  base::utf8_const_iterator(text.end()),
                  gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);

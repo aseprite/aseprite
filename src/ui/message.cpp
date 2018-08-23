@@ -11,7 +11,7 @@
 #include "ui/message.h"
 
 #include "base/memory.h"
-#include "she/system.h"
+#include "os/system.h"
 #include "ui/manager.h"
 #include "ui/widget.h"
 
@@ -23,8 +23,8 @@ Message::Message(MessageType type, KeyModifiers modifiers)
   : m_type(type)
   , m_flags(0)
 {
-  if (modifiers == kKeyUninitializedModifier && she::instance())
-    m_modifiers = she::instance()->keyModifiers();
+  if (modifiers == kKeyUninitializedModifier && os::instance())
+    m_modifiers = os::instance()->keyModifiers();
   else
     m_modifiers = modifiers;
 }

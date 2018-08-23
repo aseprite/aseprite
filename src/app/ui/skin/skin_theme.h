@@ -26,7 +26,7 @@ namespace ui {
   class Graphics;
 }
 
-namespace she {
+namespace os {
   class Surface;
 }
 
@@ -51,9 +51,9 @@ namespace app {
       int preferredScreenScaling() { return m_preferredScreenScaling; }
       int preferredUIScaling() { return m_preferredUIScaling; }
 
-      she::Font* getDefaultFont() const override { return m_defaultFont; }
-      she::Font* getWidgetFont(const ui::Widget* widget) const override;
-      she::Font* getMiniFont() const { return m_miniFont; }
+      os::Font* getDefaultFont() const override { return m_defaultFont; }
+      os::Font* getWidgetFont(const ui::Widget* widget) const override;
+      os::Font* getMiniFont() const { return m_miniFont; }
 
       ui::Cursor* getStandardCursor(ui::CursorType type) override;
       void initWidget(ui::Widget* widget) override;
@@ -73,13 +73,13 @@ namespace app {
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
       SkinPartPtr getToolPart(const char* toolId) const;
-      she::Surface* getToolIcon(const char* toolId) const;
+      os::Surface* getToolIcon(const char* toolId) const;
 
       // Helper functions to draw bounds/hlines with sheet parts
       void drawRect(ui::Graphics* g, const gfx::Rect& rc,
-                    she::Surface* nw, she::Surface* n, she::Surface* ne,
-                    she::Surface* e, she::Surface* se, she::Surface* s,
-                    she::Surface* sw, she::Surface* w);
+                    os::Surface* nw, os::Surface* n, os::Surface* ne,
+                    os::Surface* e, os::Surface* se, os::Surface* s,
+                    os::Surface* sw, os::Surface* w);
       void drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, const bool drawCenter = true);
       void drawRect2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, SkinPart* nw1, SkinPart* nw2);
       void drawHline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
@@ -137,7 +137,7 @@ namespace app {
       void loadSheet();
       void loadXml();
 
-      she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
+      os::Surface* sliceSheet(os::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
       void drawText(ui::Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
                     ui::Widget* widget, const gfx::Rect& rc,
@@ -147,7 +147,7 @@ namespace app {
       std::string findThemePath(const std::string& themeId) const;
 
       std::string m_path;
-      she::Surface* m_sheet;
+      os::Surface* m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, gfx::Color> m_colors_by_id;
       std::map<std::string, int> m_dimensions_by_id;
@@ -155,9 +155,9 @@ namespace app {
       std::vector<ui::Cursor*> m_standardCursors;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
-      std::map<std::string, she::Font*> m_themeFonts;
-      she::Font* m_defaultFont;
-      she::Font* m_miniFont;
+      std::map<std::string, os::Font*> m_themeFonts;
+      os::Font* m_defaultFont;
+      os::Font* m_miniFont;
       int m_preferredScreenScaling;
       int m_preferredUIScaling;
     };

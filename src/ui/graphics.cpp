@@ -16,11 +16,11 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
-#include "she/display.h"
-#include "she/draw_text.h"
-#include "she/font.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/draw_text.h"
+#include "os/font.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/manager.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
@@ -29,7 +29,7 @@
 
 namespace ui {
 
-Graphics::Graphics(she::Surface* surface, int dx, int dy)
+Graphics::Graphics(os::Surface* surface, int dx, int dy)
   : m_surface(surface)
   , m_dx(dx)
   , m_dy(dy)
@@ -40,7 +40,7 @@ Graphics::~Graphics()
 {
   // If we were drawing in the screen surface, we mark these regions
   // as dirty for the final flip.
-  if (m_surface == she::instance()->defaultDisplay()->getSurface())
+  if (m_surface == os::instance()->defaultDisplay()->getSurface())
     Manager::getDefault()->dirtyRect(m_dirtyBounds);
 }
 
@@ -85,20 +85,20 @@ void Graphics::setDrawMode(DrawMode mode, int param,
 {
   switch (mode) {
     case DrawMode::Solid:
-      m_surface->setDrawMode(she::DrawMode::Solid);
+      m_surface->setDrawMode(os::DrawMode::Solid);
       break;
     case DrawMode::Xor:
-      m_surface->setDrawMode(she::DrawMode::Xor);
+      m_surface->setDrawMode(os::DrawMode::Xor);
       break;
     case DrawMode::Checked:
-      m_surface->setDrawMode(she::DrawMode::Checked, param, a, b);
+      m_surface->setDrawMode(os::DrawMode::Checked, param, a, b);
       break;
   }
 }
 
 gfx::Color Graphics::getPixel(int x, int y)
 {
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   return m_surface->getPixel(m_dx+x, m_dy+y);
 }
 
@@ -106,7 +106,7 @@ void Graphics::putPixel(gfx::Color color, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, 1, 1));
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   m_surface->putPixel(color, m_dx+x, m_dy+y);
 }
 
@@ -114,7 +114,7 @@ void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, w, 1));
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   m_surface->drawHLine(color, m_dx+x, m_dy+y, w);
 }
 
@@ -122,7 +122,7 @@ void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, 1, h));
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   m_surface->drawVLine(color, m_dx+x, m_dy+y, h);
 }
 
@@ -132,7 +132,7 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
   gfx::Point b(m_dx+_b.x, m_dy+_b.y);
   dirty(gfx::Rect(a, b));
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   m_surface->drawLine(color, a, b);
 }
 
@@ -142,7 +142,7 @@ void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
   rc.offset(m_dx, m_dy);
   dirty(rc);
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   m_surface->drawRect(color, rc);
 }
 
@@ -152,7 +152,7 @@ void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
   rc.offset(m_dx, m_dy);
   dirty(rc);
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   m_surface->fillRect(color, rc);
 }
 
@@ -174,79 +174,94 @@ void Graphics::fillAreaBetweenRects(gfx::Color color,
   }
 }
 
-void Graphics::drawSurface(she::Surface* surface, int x, int y)
+void Graphics::drawSurface(os::Surface* surface, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
 
-  she::SurfaceLock lockSrc(surface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
   m_surface->drawSurface(surface, m_dx+x, m_dy+y);
 }
 
-void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
+void Graphics::drawSurface(os::Surface* surface,
+                           const gfx::Rect& srcRect,
+                           const gfx::Rect& dstRect)
+{
+  dirty(gfx::Rect(m_dx+dstRect.x, m_dy+dstRect.y,
+                  dstRect.w, dstRect.h));
+
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
+  m_surface->drawSurface(
+    surface,
+    srcRect,
+    gfx::Rect(dstRect).offset(m_dx, m_dy));
+}
+
+void Graphics::drawRgbaSurface(os::Surface* surface, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
 
-  she::SurfaceLock lockSrc(surface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
   m_surface->drawRgbaSurface(surface, m_dx+x, m_dy+y);
 }
 
-void Graphics::drawRgbaSurface(she::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h)
+void Graphics::drawRgbaSurface(os::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
   dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
 
-  she::SurfaceLock lockSrc(surface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
   m_surface->drawRgbaSurface(surface, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
-void Graphics::drawRgbaSurface(she::Surface* surface,
+void Graphics::drawRgbaSurface(os::Surface* surface,
                                const gfx::Rect& srcRect,
                                const gfx::Rect& dstRect)
 {
   dirty(gfx::Rect(m_dx+dstRect.x, m_dy+dstRect.y,
                   dstRect.w, dstRect.h));
 
-  she::SurfaceLock lockSrc(surface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
   m_surface->drawRgbaSurface(
     surface,
     srcRect,
     gfx::Rect(dstRect).offset(m_dx, m_dy));
 }
 
-void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y)
+void Graphics::drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int x, int y)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
 
-  she::SurfaceLock lockSrc(surface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
   m_surface->drawColoredRgbaSurface(surface, color, gfx::ColorNone,
     gfx::Clip(m_dx+x, m_dy+y, 0, 0, surface->width(), surface->height()));
 }
 
-void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color,
+void Graphics::drawColoredRgbaSurface(os::Surface* surface, gfx::Color color,
                                       int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
   dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
 
-  she::SurfaceLock lockSrc(surface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
   m_surface->drawColoredRgbaSurface(surface, color, gfx::ColorNone,
     gfx::Clip(m_dx+dstx, m_dy+dsty, srcx, srcy, w, h));
 }
 
-void Graphics::blit(she::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
+void Graphics::blit(os::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
   dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
 
-  she::SurfaceLock lockSrc(srcSurface);
-  she::SurfaceLock lockDst(m_surface);
+  os::SurfaceLock lockSrc(srcSurface);
+  os::SurfaceLock lockDst(m_surface);
   srcSurface->blitTo(m_surface, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
-void Graphics::setFont(she::Font* font)
+void Graphics::setFont(os::Font* font)
 {
   m_font = font;
 }
@@ -255,13 +270,13 @@ void Graphics::drawText(base::utf8_const_iterator it,
                         const base::utf8_const_iterator& end,
                         gfx::Color fg, gfx::Color bg,
                         const gfx::Point& origPt,
-                        she::DrawTextDelegate* delegate)
+                        os::DrawTextDelegate* delegate)
 {
   gfx::Point pt(m_dx+origPt.x, m_dy+origPt.y);
 
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   gfx::Rect textBounds =
-    she::draw_text(m_surface, m_font, it, end, fg, bg, pt.x, pt.y, delegate);
+    os::draw_text(m_surface, m_font, it, end, fg, bg, pt.x, pt.y, delegate);
 
   dirty(gfx::Rect(pt.x, pt.y, textBounds.w, textBounds.h));
 }
@@ -275,10 +290,10 @@ void Graphics::drawText(const std::string& str, gfx::Color fg, gfx::Color bg, co
 
 namespace {
 
-class DrawUITextDelegate : public she::DrawTextDelegate {
+class DrawUITextDelegate : public os::DrawTextDelegate {
 public:
-  DrawUITextDelegate(she::Surface* surface,
-                     she::Font* font, const int mnemonic)
+  DrawUITextDelegate(os::Surface* surface,
+                     os::Font* font, const int mnemonic)
     : m_surface(surface)
     , m_font(font)
     , m_mnemonic(std::tolower(mnemonic))
@@ -313,7 +328,7 @@ public:
     if (!gfx::is_transparent(m_underscoreColor)) {
       // TODO underscore height = guiscale() should be configurable from ui::Theme
       int dy = 0;
-      if (m_font->type() == she::FontType::kTrueType) // TODO use other method to locate the underline
+      if (m_font->type() == os::FontType::kTrueType) // TODO use other method to locate the underline
         dy += guiscale();
       gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
                                  charBounds.w, guiscale());
@@ -323,8 +338,8 @@ public:
   }
 
 private:
-  she::Surface* m_surface;
-  she::Font* m_font;
+  os::Surface* m_surface;
+  os::Font* m_font;
   int m_mnemonic;
   gfx::Color m_underscoreColor;
   gfx::Rect m_bounds;
@@ -335,12 +350,12 @@ private:
 void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
                           const gfx::Point& pt, const int mnemonic)
 {
-  she::SurfaceLock lock(m_surface);
+  os::SurfaceLock lock(m_surface);
   int x = m_dx+pt.x;
   int y = m_dy+pt.y;
 
   DrawUITextDelegate delegate(m_surface, m_font, mnemonic);
-  she::draw_text(m_surface, m_font,
+  os::draw_text(m_surface, m_font,
                  base::utf8_const_iterator(str.begin()),
                  base::utf8_const_iterator(str.end()),
                  fg, bg, x, y, &delegate);
@@ -362,10 +377,10 @@ gfx::Size Graphics::measureUIText(const std::string& str)
 }
 
 // static
-int Graphics::measureUITextLength(const std::string& str, she::Font* font)
+int Graphics::measureUITextLength(const std::string& str, os::Font* font)
 {
   DrawUITextDelegate delegate(nullptr, font, 0);
-  she::draw_text(nullptr, font,
+  os::draw_text(nullptr, font,
                  base::utf8_const_iterator(str.begin()),
                  base::utf8_const_iterator(str.end()),
                  gfx::ColorNone, gfx::ColorNone, 0, 0,
@@ -491,7 +506,7 @@ void Graphics::dirty(const gfx::Rect& bounds)
 // ScreenGraphics
 
 ScreenGraphics::ScreenGraphics()
-  : Graphics(she::instance()->defaultDisplay()->getSurface(), 0, 0)
+  : Graphics(os::instance()->defaultDisplay()->getSurface(), 0, 0)
 {
   setFont(get_theme()->getDefaultFont());
 }

@@ -11,7 +11,7 @@
 #include "ui/base.h"
 #include <vector>
 
-namespace she { class Surface; }
+namespace os { class Surface; }
 
 namespace ui {
 

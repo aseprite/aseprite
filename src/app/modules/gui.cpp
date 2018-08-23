@@ -38,10 +38,10 @@
 #include "base/memory.h"
 #include "base/shared_ptr.h"
 #include "doc/sprite.h"
-#include "she/display.h"
-#include "she/error.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/error.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -89,7 +89,7 @@ protected:
   void saveLayout(Widget* widget, const std::string& str) override;
 };
 
-static she::Display* main_display = NULL;
+static os::Display* main_display = NULL;
 static CustomizedGuiManager* manager = NULL;
 static Theme* gui_theme = NULL;
 
@@ -113,15 +113,15 @@ static bool create_main_display(bool gpuAccel,
   // executed.
   int scale = Preferences::instance().general.screenScale();
 
-  she::instance()->setGpuAcceleration(gpuAccel);
+  os::instance()->setGpuAcceleration(gpuAccel);
 
   try {
     if (w > 0 && h > 0) {
-      main_display = she::instance()->createDisplay(
+      main_display = os::instance()->createDisplay(
         w, h, (scale == 0 ? 2: MID(1, scale, 4)));
     }
   }
-  catch (const she::DisplayCreationException& e) {
+  catch (const os::DisplayCreationException& e) {
     lastError = e.what();
   }
 
@@ -129,13 +129,13 @@ static bool create_main_display(bool gpuAccel,
     for (int c=0; try_resolutions[c].width; ++c) {
       try {
         main_display =
-          she::instance()->createDisplay(
+          os::instance()->createDisplay(
             try_resolutions[c].width,
             try_resolutions[c].height,
             (scale == 0 ? try_resolutions[c].scale: scale));
         break;
       }
-      catch (const she::DisplayCreationException& e) {
+      catch (const os::DisplayCreationException& e) {
         lastError = e.what();
       }
     }
@@ -169,8 +169,8 @@ int init_module_gui()
     // If we've created the display with hardware acceleration,
     // now we try to do it without hardware acceleration.
     if (gpuAccel &&
-        (int(she::instance()->capabilities()) &
-         int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
+        (int(os::instance()->capabilities()) &
+         int(os::Capabilities::GpuAccelerationSwitch)) == int(os::Capabilities::GpuAccelerationSwitch)) {
       if (create_main_display(false, maximized, lastError)) {
         // Disable hardware acceleration
         pref.general.gpuAcceleration(false);
@@ -179,7 +179,7 @@ int init_module_gui()
   }
 
   if (!main_display) {
-    she::error_message(
+    os::error_message(
       ("Unable to create a user-interface display.\nDetails: "+lastError+"\n").c_str());
     return -1;
   }
@@ -218,7 +218,7 @@ void exit_module_gui()
 static void load_gui_config(int& w, int& h, bool& maximized,
                             std::string& windowLayout)
 {
-  gfx::Size defSize = she::instance()->defaultNewDisplaySize();
+  gfx::Size defSize = os::instance()->defaultNewDisplaySize();
 
   w = get_config_int("GfxMode", "Width", defSize.w);
   h = get_config_int("GfxMode", "Height", defSize.h);
@@ -228,7 +228,7 @@ static void load_gui_config(int& w, int& h, bool& maximized,
 
 static void save_gui_config()
 {
-  she::Display* display = manager->getDisplay();
+  os::Display* display = manager->getDisplay();
   if (display) {
     set_config_bool("GfxMode", "Maximized", display->isMaximized());
     set_config_int("GfxMode", "Width", display->originalWidth());
@@ -482,7 +482,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
   if (msg->ctrlPressed() &&
       msg->scancode() == kKeyF1) {
     try {
-      she::Display* display = getDisplay();
+      os::Display* display = getDisplay();
       int screenScale = display->scale();
       int uiScale = ui::guiscale();
 

@@ -15,14 +15,14 @@
 #include "app/modules/palettes.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
 #include "render/gradient.h"
 #include "render/quantization.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
@@ -66,7 +66,7 @@ public:
   render::DitheringMatrix matrix() const { return m_matrix; }
 
 private:
-  she::Surface* preview() {
+  os::Surface* preview() {
     const doc::Palette* palette = get_current_palette();
     ASSERT(palette);
 
@@ -104,7 +104,7 @@ private:
         m_algo, m_matrix, nullptr, palette, true, -1, nullptr);
     }
 
-    m_preview = she::instance()->createRgbaSurface(w, h);
+    m_preview = os::instance()->createRgbaSurface(w, h);
     doc::convert_image_to_surface(image2.get(), palette, m_preview,
                                   0, 0, 0, 0, w, h);
 
@@ -152,7 +152,7 @@ private:
   bool m_matrixOnly;
   render::DitheringAlgorithm m_algo;
   render::DitheringMatrix m_matrix;
-  she::Surface* m_preview;
+  os::Surface* m_preview;
   doc::ObjectId m_palId;
   int m_palMods;
 };

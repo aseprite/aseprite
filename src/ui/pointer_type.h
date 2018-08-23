@@ -8,11 +8,11 @@
 #define UI_POINTER_TYPE_H_INCLUDED
 #pragma once
 
-#include "she/pointer_type.h"
+#include "os/pointer_type.h"
 
 namespace ui {
 
-  typedef she::PointerType PointerType;
+  typedef os::PointerType PointerType;
 
 } // namespace ui
 

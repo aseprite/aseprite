@@ -18,9 +18,9 @@
 
 #include "base/fs.h"
 #include "base/string.h"
-#include "she/display.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/surface.h"
+#include "os/system.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -97,13 +97,13 @@ public:
 
   bool hasExtension(const base::paths& extensions);
 
-  she::Surface* getThumbnail();
-  void setThumbnail(she::Surface* thumbnail);
+  os::Surface* getThumbnail();
+  void setThumbnail(os::Surface* thumbnail);
 
 };
 
 typedef std::map<std::string, FileItem*> FileItemMap;
-typedef std::map<std::string, she::Surface*> ThumbnailMap;
+typedef std::map<std::string, os::Surface*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
@@ -393,7 +393,7 @@ const FileItemList& FileItem::children()
         ULONG c, fetched;
 
         /* get the interface to enumerate subitems */
-        hr = pFolder->EnumObjects(reinterpret_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle()),
+        hr = pFolder->EnumObjects(reinterpret_cast<HWND>(os::instance()->defaultDisplay()->nativeHandle()),
           SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &pEnum);
 
         if (hr == S_OK && pEnum != NULL) {
@@ -525,7 +525,7 @@ bool FileItem::hasExtension(const base::paths& extensions)
   return base::has_file_extension(m_filename, extensions);
 }
 
-she::Surface* FileItem::getThumbnail()
+os::Surface* FileItem::getThumbnail()
 {
   ThumbnailMap::iterator it = thumbnail_map->find(m_filename);
   if (it != thumbnail_map->end())
@@ -534,7 +534,7 @@ she::Surface* FileItem::getThumbnail()
     return NULL;
 }
 
-void FileItem::setThumbnail(she::Surface* thumbnail)
+void FileItem::setThumbnail(os::Surface* thumbnail)
 {
   // destroy the current thumbnail of the file (if exists)
   ThumbnailMap::iterator it = thumbnail_map->find(m_filename);

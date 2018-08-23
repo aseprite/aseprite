@@ -16,7 +16,7 @@
 #include "app/ui/status_bar.h"
 #include "doc/sprite.h"
 #include "gfx/rect.h"
-#include "she/display.h"
+#include "os/display.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/system.h"

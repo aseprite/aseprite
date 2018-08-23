@@ -13,7 +13,7 @@
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -78,7 +78,7 @@ void ColorSpectrum::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 }
 
 void ColorSpectrum::onPaintSurfaceInBgThread(
-  she::Surface* s,
+  os::Surface* s,
   const gfx::Rect& main,
   const gfx::Rect& bottom,
   const gfx::Rect& alpha,

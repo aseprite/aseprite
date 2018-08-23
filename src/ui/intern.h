@@ -11,7 +11,7 @@
 #include "gfx/color.h"
 #include "ui/base.h"
 
-namespace she {
+namespace os {
   class Font;
 }
 

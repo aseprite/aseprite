@@ -11,7 +11,7 @@
 #include "app/ui/icon_button.h"
 
 #include "app/ui/skin/skin_theme.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
@@ -37,7 +37,7 @@ void IconButton::onInitTheme(InitThemeEvent& ev)
 
 void IconButton::onSizeHint(SizeHintEvent& ev)
 {
-  she::Surface* icon = m_part->bitmap(0);
+  os::Surface* icon = m_part->bitmap(0);
   ev.setSizeHint(
     gfx::Size(icon->width(),
               icon->height()) + 4*guiscale());
@@ -65,7 +65,7 @@ void IconButton::onPaint(PaintEvent& ev)
   g->fillRect(bg, g->getClipBounds());
 
   gfx::Rect bounds = clientBounds();
-  she::Surface* icon = m_part->bitmap(0);
+  os::Surface* icon = m_part->bitmap(0);
   g->drawColoredRgbaSurface(
     icon, fg,
     bounds.x+bounds.w/2-icon->width()/2,

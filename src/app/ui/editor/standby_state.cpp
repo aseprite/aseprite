@@ -56,8 +56,8 @@
 #include "doc/sprite.h"
 #include "fixmath/fixmath.h"
 #include "gfx/rect.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/alert.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -845,7 +845,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
       ink->isSelection() &&
       editor->document()->isMaskVisible() &&
       (!Preferences::instance().selection.modifiersDisableHandles() ||
-       she::instance()->keyModifiers() == kKeyNoneModifier)) {
+       os::instance()->keyModifiers() == kKeyNoneModifier)) {
     auto theme = skin::SkinTheme::instance();
     const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);
@@ -967,7 +967,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   Handles handles;
   if (StandbyState::Decorator::getSymmetryHandles(editor, handles)) {
     skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(ui::get_theme());
-    she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
+    os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
     ScreenGraphics g;
     for (const auto& handle : handles)
       g.drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
@@ -998,7 +998,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
                              editor->canvasSize());
       gfx::RectF editorViewport(View::getView(editor)->viewportBounds());
       skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(ui::get_theme());
-      she::Surface* part = theme->parts.transformationHandle()->bitmap(0);
+      os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
       if (int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) {
         double pos = symmetry.xAxis();

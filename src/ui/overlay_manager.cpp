@@ -10,8 +10,8 @@
 
 #include "ui/overlay_manager.h"
 
-#include "she/display.h"
-#include "she/surface.h"
+#include "os/display.h"
+#include "os/surface.h"
 #include "ui/manager.h"
 #include "ui/overlay.h"
 
@@ -65,8 +65,8 @@ void OverlayManager::captureOverlappedAreas()
   if (!manager)
     return;
 
-  she::Surface* displaySurface = manager->getDisplay()->getSurface();
-  she::SurfaceLock lock(displaySurface);
+  os::Surface* displaySurface = manager->getDisplay()->getSurface();
+  os::SurfaceLock lock(displaySurface);
   for (Overlay* overlay : *this)
     overlay->captureOverlappedArea(displaySurface);
 }
@@ -77,8 +77,8 @@ void OverlayManager::restoreOverlappedAreas()
   if (!manager)
     return;
 
-  she::Surface* displaySurface = manager->getDisplay()->getSurface();
-  she::SurfaceLock lock(displaySurface);
+  os::Surface* displaySurface = manager->getDisplay()->getSurface();
+  os::SurfaceLock lock(displaySurface);
   for (Overlay* overlay : *this)
     overlay->restoreOverlappedArea(displaySurface);
 }
@@ -89,8 +89,8 @@ void OverlayManager::drawOverlays()
   if (!manager)
     return;
 
-  she::Surface* displaySurface = manager->getDisplay()->getSurface();
-  she::SurfaceLock lock(displaySurface);
+  os::Surface* displaySurface = manager->getDisplay()->getSurface();
+  os::SurfaceLock lock(displaySurface);
   for (Overlay* overlay : *this)
     overlay->drawOverlay(displaySurface);
 }

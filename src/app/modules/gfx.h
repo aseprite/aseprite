@@ -14,7 +14,7 @@
 #include "gfx/rect.h"
 #include "ui/base.h"
 
-namespace she {
+namespace os {
   class Surface;
 }
 
@@ -41,7 +41,7 @@ namespace app {
                          const gfx::Rect& rc,
                          const app::Color& color);
 
-  void draw_alpha_slider(she::Surface* s,
+  void draw_alpha_slider(os::Surface* s,
                          const gfx::Rect& rc,
                          const app::Color& color);
 

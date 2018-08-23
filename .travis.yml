@@ -1,25 +1,46 @@
 language: cpp
-dist: trusty
 
-compiler:
-  - clang
-  - gcc
-
-env:
-  matrix:
-    - ENABLE_UI=OFF
-    - ENABLE_UI=ON
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode9
+      env:
+        - ENABLE_UI=ON
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev
+      env:
+        - ENABLE_UI=OFF
+        - XVFB=xvfb-run
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev
+      env:
+        - ENABLE_UI=ON
+        - XVFB=xvfb-run
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7 libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - ENABLE_UI=ON
+        - XVFB=xvfb-run
 
 before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
-  - sudo apt-get install -y -qq g++-4.8
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+  - eval "${MATRIX_EVAL}"
 
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
+  - $XVFB cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
 
 script:
   - make
@@ -29,6 +50,6 @@ script:
         export ASEPRITE=$PWD/bin/aseprite
         git clone https://github.com/aseprite/tests.git
         cd tests
-        bash run-tests.sh
+        $XVFB bash run-tests.sh
       fi
     fi

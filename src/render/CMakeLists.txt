@@ -11,5 +11,5 @@ add_library(render-lib
 
 target_link_libraries(render-lib
   doc-lib
-  gfx-lib
+  laf-gfx
   laf-base)

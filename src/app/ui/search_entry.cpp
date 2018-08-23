@@ -11,7 +11,7 @@
 #include "app/ui/search_entry.h"
 
 #include "app/ui/skin/skin_theme.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"

@@ -38,8 +38,8 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/fs.h"
-#include "she/display.h"
-#include "she/system.h"
+#include "os/display.h"
+#include "os/system.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -76,7 +76,7 @@ public:
     ui::set_theme(ui::get_theme(), newUIScale);
 
     Manager* manager = Manager::getDefault();
-    she::Display* display = manager->getDisplay();
+    os::Display* display = manager->getDisplay();
     display->setScale(newScreenScale);
     manager->setDisplay(display);
   }
@@ -352,7 +352,7 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   app::gen::MainWindow::onResize(ev);
 
-  she::Display* display = manager()->getDisplay();
+  os::Display* display = manager()->getDisplay();
   if ((display) &&
       (display->scale()*ui::guiscale() > 2) &&
       (!m_scalePanic) &&
@@ -514,7 +514,7 @@ void MainWindow::configureWorkspaceLayout()
   bool normal = (m_mode == NormalMode);
   bool isDoc = (getDocView() != nullptr);
 
-  if (she::instance()->menus() == nullptr ||
+  if (os::instance()->menus() == nullptr ||
       pref.general.showMenuBar()) {
     if (!m_menuBar->parent())
       menuBarPlaceholder()->insertChild(0, m_menuBar);

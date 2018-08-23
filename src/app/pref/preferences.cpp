@@ -15,7 +15,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "doc/sprite.h"
-#include "she/system.h"
+#include "os/system.h"
 
 namespace app {
 
@@ -39,7 +39,7 @@ Preferences::Preferences()
   // Hide the menu bar depending on:
   // 1. the native menu bar is available
   // 2. this is the first run of the program
-  if (she::instance()->menus() &&
+  if (os::instance()->menus() &&
       updater.uuid().empty()) {
     general.showMenuBar(false);
   }

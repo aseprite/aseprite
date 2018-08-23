@@ -100,7 +100,7 @@ add_definitions(-DLIBARCHIVE_STATIC)
 # app-lib target
 
 # These specific-platform files should be in an external library
-# (e.g. "base" or "she").
+# (e.g. "base" or "os").
 set(app_platform_files)
 if(WIN32)
   set(app_platform_files
@@ -575,10 +575,11 @@ target_link_libraries(app-lib
   filters-lib
   fixmath-lib
   flic-lib
-  gfx-lib
+  laf-gfx
   net-lib
   render-lib
-  she
+  laf-ft
+  laf-os
   ui-lib
   undo
   ${CMARK_LIBRARIES}

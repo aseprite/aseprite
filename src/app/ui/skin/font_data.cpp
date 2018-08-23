@@ -10,8 +10,8 @@
 
 #include "app/ui/skin/font_data.h"
 
-#include "she/font.h"
-#include "she/system.h"
+#include "os/font.h"
+#include "os/system.h"
 #include "ui/scale.h"
 
 #include <set>
@@ -19,7 +19,7 @@
 namespace app {
 namespace skin {
 
-FontData::FontData(she::FontType type)
+FontData::FontData(os::FontType type)
   : m_type(type)
   , m_antialias(false)
   , m_fallback(nullptr)
@@ -30,12 +30,12 @@ FontData::FontData(she::FontType type)
 FontData::~FontData()
 {
 #if _DEBUG
-  static std::set<she::Font*> deletedFonts;
+  static std::set<os::Font*> deletedFonts;
 #endif
 
   // Destroy all fonts
   for (auto& it : m_fonts) {
-    she::Font* font = it.second;
+    os::Font* font = it.second;
     if (font) {
 #if _DEBUG // Check that there are not double-cached fonts
       auto it2 = deletedFonts.find(font);
@@ -49,9 +49,9 @@ FontData::~FontData()
   m_fonts.clear();
 }
 
-she::Font* FontData::getFont(int size)
+os::Font* FontData::getFont(int size)
 {
-  if (m_type == she::FontType::kSpriteSheet)
+  if (m_type == os::FontType::kSpriteSheet)
     size = 1;                   // Same size always
 
   // Use cache
@@ -60,14 +60,14 @@ she::Font* FontData::getFont(int size)
   if (it != m_fonts.end())
     return it->second;
 
-  she::Font* font = nullptr;
+  os::Font* font = nullptr;
 
   switch (m_type) {
-    case she::FontType::kSpriteSheet:
-      font = she::instance()->loadSpriteSheetFont(m_filename.c_str(), size);
+    case os::FontType::kSpriteSheet:
+      font = os::instance()->loadSpriteSheetFont(m_filename.c_str(), size);
       break;
-    case she::FontType::kTrueType: {
-      font = she::instance()->loadTrueTypeFont(m_filename.c_str(), size);
+    case os::FontType::kTrueType: {
+      font = os::instance()->loadTrueTypeFont(m_filename.c_str(), size);
       if (font)
         font->setAntialias(m_antialias);
       break;
@@ -75,7 +75,7 @@ she::Font* FontData::getFont(int size)
   }
 
   if (m_fallback) {
-    she::Font* fallback = m_fallback->getFont(m_fallbackSize);
+    os::Font* fallback = m_fallback->getFont(m_fallbackSize);
     if (font)
       font->setFallback(fallback);
     else

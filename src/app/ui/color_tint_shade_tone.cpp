@@ -69,7 +69,7 @@ void ColorTintShadeTone::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 }
 
 void ColorTintShadeTone::onPaintSurfaceInBgThread(
-  she::Surface* s,
+  os::Surface* s,
   const gfx::Rect& main,
   const gfx::Rect& bottom,
   const gfx::Rect& alpha,

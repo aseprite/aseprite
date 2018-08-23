@@ -15,11 +15,11 @@
 #include <gtest/gtest.h>
 
 #ifdef TEST_GUI
-  #include "she/she.h"
+  #include "os/os.h"
   #include "ui/ui.h"
 #endif
 
-#ifdef LINKED_WITH_SHE
+#ifdef LINKED_WITH_OS_LIBRARY
   #undef main
   #ifdef _WIN32
     int main(int argc, char* argv[]) {
@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
 
   #ifdef TEST_GUI
     {
-      // Do not create a she::System, as we don't need it for testing purposes.
-      //she::ScopedHandle<she::System> system(she::create_system());
+      // Do not create a os::System, as we don't need it for testing purposes.
+      //os::ScopedHandle<os::System> system(os::create_system());
       ui::UISystem uiSystem;
       ui::Manager uiManager;
   #endif

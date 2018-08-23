@@ -15,7 +15,7 @@
 #include "ui/pointer_type.h"
 #include "ui/widget.h"
 
-namespace she {
+namespace os {
   class Display;
   class EventQueue;
 }
@@ -34,9 +34,9 @@ namespace ui {
     Manager();
     ~Manager();
 
-    she::Display* getDisplay() { return m_display; }
+    os::Display* getDisplay() { return m_display; }
 
-    void setDisplay(she::Display* display);
+    void setDisplay(os::Display* display);
 
     // Executes the main message loop.
     void run();
@@ -120,7 +120,7 @@ namespace ui {
     void generateSetCursorMessage(const gfx::Point& mousePos,
                                   KeyModifiers modifiers,
                                   PointerType pointerType);
-    void generateMessagesFromSheEvents();
+    void generateMessagesFromOSEvents();
     void handleMouseMove(const gfx::Point& mousePos,
                          MouseButtons mouseButtons,
                          KeyModifiers modifiers,
@@ -168,8 +168,8 @@ namespace ui {
     static gfx::Region m_dirtyRegion;
 
     WidgetsList m_garbage;
-    she::Display* m_display;
-    she::EventQueue* m_eventQueue;
+    os::Display* m_display;
+    os::EventQueue* m_eventQueue;
     gfx::Region m_invalidRegion;  // Invalid region (we didn't receive paint messages yet for this).
 
     // This member is used to make freeWidget() a no-op when we

@@ -12,10 +12,10 @@
     * [Issues with Retina displays](#issues-with-retina-displays)
   * [Linux details](#linux-details)
 * [Using shared third party libraries](#using-shared-third-party-libraries)
-  * [Linux issues](#linux-issues)
 * [Building Skia dependency](#building-skia-dependency)
   * [Skia on Windows](#skia-on-windows)
   * [Skia on macOS](#skia-on-macos)
+  * [Skia on Linux](#skia-on-linux)
 
 # Platforms
 
@@ -53,18 +53,9 @@ To compile Aseprite you will need:
 
 * The latest version of [CMake](http://www.cmake.org/) (3.4 or greater)
 * [Ninja](https://ninja-build.org) build system
-
-Aseprite can be compiled with two different back-ends:
-
-1. Allegro back-end (Windows, Linux): You will not need any extra
-   library because the repository already contains a modified version
-   of the Allegro library. This back-end is deprecated and will be
-   removed in future versions. All new development is being done in
-   the new Skia back-end.
-
-2. Skia back-end (Windows, macOS): You will need a compiled version
-   of the Skia library. Please check the details about
-   [how to build Skia](#building-skia-dependency) on your platform.
+* You will need a compiled version of the Skia library.
+  Please check the details about [how to build Skia](#building-skia-dependency)
+  on your platform.
 
 ## Windows dependencies
 
@@ -78,18 +69,10 @@ Then, you will need an extra little utility: `awk`, used to compile
 the libpng library. You can get this utility from MSYS2 distributions
 like [MozillaBuild](https://wiki.mozilla.org/MozillaBuild).
 
-After that you have to choose the back-end:
-
-1. If you choose the Allegro back-end, you can jump directly to the
-   [Compiling](#compiling) section.
-
-2. If you choose the Skia back-end, you will need to
-   [compile Skia](#skia-on-windows) before and then continue in the
-   [Compiling](#compiling) section. Remember to check the
-   [Windows details](#windows-details) section to know how to call
-   `cmake` correctly.
-
-The official version of Aseprite is compiled with the Skia back-end.
+You will need to [compile Skia](#skia-on-windows) before and then
+continue in the [Compiling](#compiling) section. Remember to check the
+[Windows details](#windows-details) section to know how to call
+`cmake` correctly.
 
 ## macOS dependencies
 
@@ -145,14 +128,13 @@ The `libxcursor-dev` package is needed to
 
 ## Windows details
 
-To choose the Skia back-end
-([after you've compiled Skia](#skia-on-windows)) you can execute `cmake`
+After you've [compiled Skia](#skia-on-windows) you can execute `cmake`
 with the following arguments:
 
     cd aseprite
     mkdir build
     cd build
-    cmake -DUSE_ALLEG4_BACKEND=OFF -DUSE_SKIA_BACKEND=ON -DSKIA_DIR=C:\deps\skia -G Ninja ..
+    cmake -DSKIA_DIR=C:\deps\skia -G Ninja ..
     ninja aseprite
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
@@ -170,8 +152,6 @@ the following parameters and then `ninja`:
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 \
       -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk \
-      -DUSE_ALLEG4_BACKEND=OFF \
-      -DUSE_SKIA_BACKEND=ON \
       -DSKIA_DIR=$HOME/deps/skia \
       -DWITH_HarfBuzz=OFF \
       -G Ninja \
@@ -189,17 +169,17 @@ If you have a Retina display, check the following issue:
 
 ## Linux details
 
-On Linux you can specify a specific directory to install Aseprite
-after a `ninja install` command. For example:
+First you have to [compile Skia](#skia-on-linux), then you should run
+`cmake` with the following parameters and then `ninja`:
 
     cd aseprite
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=~/software -G Ninja ..
+    cmake -DSKIA_DIR=$HOME/deps/skia -G Ninja ..
     ninja aseprite
 
-Then, you can invoke `ninja install` and it will copy the program in
-the given location (e.g. `~/software/bin/aseprite` on Linux).
+In this case, `$HOME/deps/skia` is the directory where Skia was
+compiled as described in [Skia on Linux](#skia-on-linux) section.
 
 # Using shared third party libraries
 
@@ -210,20 +190,6 @@ configuring each `USE_SHARED_` option.
 After running `cmake -G`, you can edit `build/CMakeCache.txt` file,
 and enable the `USE_SHARED_` flag (set its value to `ON`) of the
 library that you want to be linked dynamically.
-
-## Linux issues
-
-If you use the official version of Allegro 4.4 library (i.e. you
-compile with `USE_SHARED_ALLEGRO4=ON`) you will experience a couple of
-known issues solved in
-[our patched version of Allegro 4.4 library](https://github.com/aseprite/aseprite/tree/master/src/allegro):
-
-* You will
-  [not be able to resize the window](https://github.com/aseprite/aseprite/issues/192)
-  ([patch](https://github.com/aseprite/aseprite/commit/920f6275d55113507121afcbcda80adb44cc0563)).
-* You will have problems
-  [adding HSV colors in non-English systems](https://github.com/aseprite/aseprite/commit/27b55030e26e93c5e8d9e7e21206c8709d46ff22)
-  using the warning icon.
 
 # Building Skia dependency
 
@@ -264,9 +230,8 @@ Then:
 Just ignore it.)
 
     cd C:\deps
-    git clone https://github.com/aseprite/skia.git
+    git clone -b aseprite-m67 https://github.com/aseprite/skia.git
     cd skia
-    git checkout aseprite-m67
     python tools/git-sync-deps
 
 (The `tools/git-sync-deps` will take some minutes because it downloads
@@ -296,10 +261,9 @@ several minutes to finish:
     mkdir $HOME/deps
     cd $HOME/deps
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    git clone https://github.com/aseprite/skia.git
+    git clone -b aseprite-m67 https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    git checkout aseprite-m67
     python tools/git-sync-deps
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false extra_cflags_cc=[\"-frtti\"]"
     ninja -C out/Release skia
@@ -308,6 +272,31 @@ After this you should have all Skia libraries compiled.  When you
 [compile Aseprite](#compiling), remember to add
 `-DSKIA_DIR=$HOME/deps/skia` parameter to your `cmake` call as
 described in the [macOS details](#macos-details) section.
+
+More information about these steps in the
+[official Skia documentation](https://skia.org/user/build).
+
+## Skia on Linux
+
+These steps will create a `deps` folder in your home directory with a
+couple of subdirectories needed to build Skia (you can change the
+`$HOME/deps` with other directory). Some of these commands will take
+several minutes to finish:
+
+    mkdir $HOME/deps
+    cd $HOME/deps
+    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+    git clone -b aseprite-m67 https://github.com/aseprite/skia.git
+    export PATH="${PWD}/depot_tools:${PATH}"
+    cd skia
+    python tools/git-sync-deps
+    gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
+    ninja -C out/Release skia
+
+After this you should have all Skia libraries compiled.  When you
+[compile Aseprite](#compiling), remember to add
+`-DSKIA_DIR=$HOME/deps/skia` parameter to your `cmake` call as
+described in the [Linux details](#linux-details) section.
 
 More information about these steps in the
 [official Skia documentation](https://skia.org/user/build).

@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "she/font.h"
+#include "os/font.h"
 #include "ui/label.h"
 #include "ui/message.h"
 #include "ui/size_hint_event.h"

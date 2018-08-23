@@ -61,7 +61,7 @@
 #include "doc/rgbmap.h"
 #include "doc/sort_palette.h"
 #include "doc/sprite.h"
-#include "she/surface.h"
+#include "os/surface.h"
 #include "ui/alert.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"

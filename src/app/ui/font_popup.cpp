@@ -22,11 +22,11 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/graphics.h"
@@ -69,7 +69,7 @@ private:
 
     if (m_image) {
       Graphics* g = ev.graphics();
-      she::Surface* sur = she::instance()->createRgbaSurface(m_image->width(),
+      os::Surface* sur = os::instance()->createRgbaSurface(m_image->width(),
                                                              m_image->height());
 
       convert_image_to_surface(

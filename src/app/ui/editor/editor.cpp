@@ -52,12 +52,12 @@
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
-#include "doc/conversion_she.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
-#include "she/surface.h"
-#include "she/system.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -641,14 +641,14 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   }
 
   if (rendered) {
-    // Convert the render to a she::Surface
-    static she::Surface* tmp = nullptr; // TODO move this to other centralized place
+    // Convert the render to a os::Surface
+    static os::Surface* tmp = nullptr; // TODO move this to other centralized place
     if (!tmp || tmp->width() < rc2.w || tmp->height() < rc2.h) {
       const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
       const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
       if (tmp)
         tmp->dispose();
-      tmp = she::instance()->createSurface(maxw, maxh);
+      tmp = os::instance()->createSurface(maxw, maxh);
     }
     if (tmp->nativeHandle()) {
       if (newEngine)
@@ -657,7 +657,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
                                tmp, 0, 0, 0, 0, rc2.w, rc2.h);
       if (newEngine) {
-        g->drawRgbaSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+        g->drawSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
       }
       else {
         g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);
@@ -1751,12 +1751,6 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case kFocusLeaveMessage:
-      // As we use keys like Space-bar as modifier, we can clear the
-      // keyboard buffer when we lost the focus.
-      she::instance()->clearKeyboardBuffer();
-      break;
-
     case kMouseWheelMessage:
       if (m_sprite && hasMouse()) {
         EditorStatePtr holdState(m_state);
@@ -2141,8 +2135,6 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
     updateEditor();
     setEditorScroll(scrollPos);
   }
-
-  flushRedraw();
 }
 
 void Editor::pasteImage(const Image* image, const Mask* mask)

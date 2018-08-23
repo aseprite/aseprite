@@ -16,7 +16,7 @@
 #include <functional>
 #include <string>
 
-namespace she { class Display; }
+namespace os { class Display; }
 
 namespace ui {
 
@@ -61,7 +61,7 @@ namespace ui {
   void hide_mouse_cursor();
   void show_mouse_cursor();
 
-  void _internal_set_mouse_display(she::Display* display);
+  void _internal_set_mouse_display(os::Display* display);
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
   void _internal_set_mouse_buttons(MouseButtons buttons);
