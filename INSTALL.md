@@ -29,7 +29,8 @@ platforms:
 # Get the source code
 
 You can get the source code downloading a `Aseprite-v1.x-Source.zip`
-file from the latest Aseprite release:
+file from the latest Aseprite release (*in that case please follow the
+compilation instructions inside the `.zip` file*):
 
 https://github.com/aseprite/aseprite/releases
 
@@ -79,8 +80,8 @@ continue in the [Compiling](#compiling) section. Remember to check the
 On macOS you will need macOS 10.12 SDK and Xcode 8.0 (older versions
 might work).
 
-Also, you must compile [Skia](#skia-on-macos) before starting with
-the [compilation](#compiling).
+You must also compile [Skia](#skia-on-macos) before starting with the
+[compilation](#compiling).
 
 ## Linux dependencies
 
@@ -89,8 +90,8 @@ You will need the following dependencies (Ubuntu, Debian):
     sudo apt-get update -qq
     sudo apt-get install -y g++ libx11-dev libxcursor-dev cmake ninja-build
 
-The `libxcursor-dev` package is needed to
-[hide the hardware cursor](https://github.com/aseprite/aseprite/issues/913).
+You must also compile [Skia](#skia-on-linux) before starting with the
+[compilation](#compiling).
 
 # Compiling
 
