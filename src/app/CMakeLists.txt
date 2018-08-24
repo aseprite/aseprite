@@ -9,11 +9,11 @@ foreach(widget_file ${widget_files})
 
   add_custom_command(
     OUTPUT ${output_fn}
-    COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${widget_file} --widgetid ${widget_name} > ${output_fn}.tmp
+    COMMAND ${GEN_EXE} --input ${widget_file} --widgetid ${widget_name} > ${output_fn}.tmp
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     MAIN_DEPENDENCY ${widget_file}
-    DEPENDS gen)
+    DEPENDS ${GEN_DEP})
 
   list(APPEND generated_files ${output_fn})
 endforeach()
@@ -24,21 +24,21 @@ set(pref_xml ${CMAKE_SOURCE_DIR}/data/pref.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/pref.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-h > ${output_fn}.tmp
+  COMMAND ${GEN_EXE} --input ${pref_xml} --pref-h > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${pref_xml}
-  DEPENDS gen)
+  DEPENDS ${GEN_DEP})
 list(APPEND generated_files ${output_fn})
 
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/pref.xml.cpp)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-cpp > ${output_fn}.tmp
+  COMMAND ${GEN_EXE} --input ${pref_xml} --pref-cpp > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${pref_xml}
-  DEPENDS gen)
+  DEPENDS ${GEN_DEP})
 list(APPEND generated_files ${output_fn})
 
 # Generate theme.xml.h from data/extensions/aseprite-theme/theme.xml
@@ -46,11 +46,11 @@ set(theme_xml ${CMAKE_SOURCE_DIR}/data/extensions/aseprite-theme/theme.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${theme_xml} --theme > ${output_fn}.tmp
+  COMMAND ${GEN_EXE} --input ${theme_xml} --theme > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${theme_xml}
-  DEPENDS gen)
+  DEPENDS ${GEN_DEP})
 list(APPEND generated_files ${output_fn})
 
 # Generate strings.ini.h from data/strings/en.ini
@@ -58,22 +58,22 @@ set(strings_en_ini ${CMAKE_SOURCE_DIR}/data/strings/en.ini)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/strings.ini.h)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${strings_en_ini} --strings > ${output_fn}.tmp
+  COMMAND ${GEN_EXE} --input ${strings_en_ini} --strings > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${strings_en_ini}
-  DEPENDS gen)
+  DEPENDS ${GEN_DEP})
 list(APPEND generated_files ${output_fn})
 
 # Generate command_ids.ini.h from data/strings/en.ini
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/command_ids.ini.h)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${strings_en_ini} --command-ids > ${output_fn}.tmp
+  COMMAND ${GEN_EXE} --input ${strings_en_ini} --command-ids > ${output_fn}.tmp
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${strings_en_ini}
-  DEPENDS gen)
+  DEPENDS ${GEN_DEP})
 list(APPEND generated_files ${output_fn})
 
 # Check translations
@@ -81,9 +81,9 @@ file(GLOB string_files ${CMAKE_SOURCE_DIR}/data/strings/*.ini)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/check-translations.txt)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --widgets-dir "${CMAKE_SOURCE_DIR}/data/widgets/" --strings-dir "${CMAKE_SOURCE_DIR}/data/strings/" --gui-file "${CMAKE_SOURCE_DIR}/data/gui.xml" >${output_fn}
+  COMMAND ${GEN_EXE} --widgets-dir "${CMAKE_SOURCE_DIR}/data/widgets/" --strings-dir "${CMAKE_SOURCE_DIR}/data/strings/" --gui-file "${CMAKE_SOURCE_DIR}/data/gui.xml" >${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS gen ${widget_files} ${string_files} "${CMAKE_SOURCE_DIR}/data/gui.xml")
+  DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${CMAKE_SOURCE_DIR}/data/gui.xml")
 list(APPEND generated_files ${output_fn})
 
 # Directory where generated files by "gen" utility will stay.
