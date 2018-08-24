@@ -52,4 +52,6 @@ script:
         cd tests
         $XVFB bash run-tests.sh
       fi
+    else
+      exit 1
     fi
