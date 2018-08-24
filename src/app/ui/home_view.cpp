@@ -17,7 +17,6 @@
 #include "app/i18n/strings.h"
 #include "app/ui/data_recovery_view.h"
 #include "app/ui/main_window.h"
-#include "app/ui/news_listbox.h"
 #include "app/ui/recent_listbox.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
@@ -32,6 +31,10 @@
 #include "ui/textbox.h"
 #include "ui/view.h"
 
+#ifdef ENABLE_NEWS
+#include "app/ui/news_listbox.h"
+#endif
+
 namespace app {
 
 using namespace ui;
@@ -40,7 +43,9 @@ using namespace app::skin;
 HomeView::HomeView()
   : m_files(new RecentFilesListBox)
   , m_folders(new RecentFoldersListBox)
+#ifdef ENABLE_NEWS
   , m_news(new NewsListBox)
+#endif
   , m_dataRecovery(nullptr)
   , m_dataRecoveryView(nullptr)
 {
@@ -50,7 +55,9 @@ HomeView::HomeView()
 
   filesView()->attachToView(m_files);
   foldersView()->attachToView(m_folders);
+#ifdef ENABLE_NEWS
   newsView()->attachToView(m_news);
+#endif
 
   checkUpdate()->setVisible(false);
   recoverSpritesPlaceholder()->setVisible(false);
@@ -128,7 +135,11 @@ void HomeView::onResize(ui::ResizeEvent& ev)
 {
   headerPlaceholder()->setVisible(ev.bounds().h > 200*ui::guiscale());
   foldersPlaceholder()->setVisible(ev.bounds().h > 150*ui::guiscale());
+#ifdef ENABLE_NEWS
   newsPlaceholder()->setVisible(ev.bounds().w > 200*ui::guiscale());
+#else
+  newsPlaceholder()->setVisible(false);
+#endif
 
   ui::VBox::onResize(ev);
 }

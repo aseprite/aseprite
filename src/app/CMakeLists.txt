@@ -361,7 +361,6 @@ if(ENABLE_UI)
     ui/keyboard_shortcuts.cpp
     ui/main_menu_bar.cpp
     ui/main_window.cpp
-    ui/news_listbox.cpp
     ui/notifications.cpp
     ui/optional_alert.cpp
     ui/palette_popup.cpp
@@ -395,6 +394,12 @@ if(ENABLE_UI)
     util/clipboard.cpp
     util/clipboard_native.cpp
     widget_loader.cpp)
+  if(ENABLE_NEWS)
+    set(ui_app_files
+      res/http_loader.cpp
+      ui/news_listbox.cpp
+      ${ui_app_files})
+  endif()
 endif()
 
 add_library(app-lib
@@ -530,7 +535,6 @@ add_library(app-lib
   pref/preferences.cpp
   project.cpp
   recent_files.cpp
-  res/http_loader.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
@@ -575,7 +579,6 @@ target_link_libraries(app-lib
   fixmath-lib
   flic-lib
   laf-gfx
-  net-lib
   render-lib
   laf-ft
   laf-os
@@ -594,6 +597,10 @@ target_link_libraries(app-lib
   archive_static
   fmt
   tinyexpr)
+
+if(REQUIRE_CURL)
+  target_link_libraries(app-lib net-lib)
+endif()
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib lua lauxlib lualib)

@@ -24,6 +24,10 @@ if(MSVC)
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 endif(MSVC)
 
+if(ENABLE_NEWS)
+  add_definitions(-DENABLE_NEWS)
+endif()
+
 if(ENABLE_UPDATER)
   add_definitions(-DENABLE_UPDATER)
 endif()
@@ -43,7 +47,7 @@ endif()
 ######################################################################
 # With static libcurl
 
-if(NOT USE_SHARED_CURL AND CURL_STATICLIB)
+if(REQUIRE_CURL AND NOT USE_SHARED_CURL AND CURL_STATICLIB)
   add_definitions(-DCURL_STATICLIB)
 endif()
 
@@ -94,10 +98,13 @@ add_subdirectory(doc)
 add_subdirectory(filters)
 add_subdirectory(fixmath)
 add_subdirectory(flic)
-add_subdirectory(net)
 add_subdirectory(render)
 add_subdirectory(dio)
 add_subdirectory(ui)
+
+if(REQUIRE_CURL)
+  add_subdirectory(net)
+endif()
 
 if(GEN_EXE)
   add_executable(gen IMPORTED)
