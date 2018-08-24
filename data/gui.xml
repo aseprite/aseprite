@@ -65,6 +65,9 @@
       <key command="LayerVisibility" shortcut="Shift+X" />
       <key command="OpenGroup" shortcut="Shift+E" />
       <key command="NewLayer" shortcut="Shift+N" />
+      <key command="NewLayer" shortcut="Shift+Space+N">
+        <param name="before" value="true" />
+      </key>
       <key command="NewLayer" shortcut="Alt+Shift+N">
         <param name="group" value="true" />
       </key>
@@ -740,7 +743,7 @@
         <item command="MergeDownLayer" text="@.layer_merge_down" />
         <item command="FlattenLayers" text="@.layer_flatten" />
         <separator />
-        <item command="NewLayer" text="@.layer_add_reference_layer" >
+        <item command="NewLayer" text="@.layer_add_reference_layer">
           <param name="reference" value="true" />
           <param name="from-file" value="true" />
         </item>
@@ -906,7 +909,7 @@
       <item command="LayerProperties" text="@main_menu.layer_properties" />
       <separator />
       <item command="NewLayer" text="@main_menu.layer_new_layer" />
-      <item command="NewLayer" text="@main_menu.layer_new_group" >
+      <item command="NewLayer" text="@main_menu.layer_new_group">
         <param name="group" value="true" />
       </item>
       <item command="RemoveLayer" text="@main_menu.layer_delete_layer" />

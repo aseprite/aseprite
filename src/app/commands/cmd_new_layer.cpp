@@ -16,6 +16,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/find_widget.h"
+#include "app/i18n/strings.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
@@ -42,7 +43,7 @@ using namespace ui;
 class NewLayerCommand : public Command {
 public:
   enum class Type { Layer, Group, ReferenceLayer };
-  enum class Place { AfterActiveLayer, Top };
+  enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
 
   NewLayerCommand();
   Command* clone() const override { return new NewLayerCommand(*this); }
@@ -51,6 +52,7 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   std::string getUniqueLayerName(const Sprite* sprite) const;
@@ -87,6 +89,8 @@ void NewLayerCommand::onLoadParams(const Params& params)
   m_place = Place::AfterActiveLayer;
   if (params.get("top") == "true")
     m_place = Place::Top;
+  else if (params.get("before") == "true")
+    m_place = Place::BeforeActiveLayer;
 }
 
 bool NewLayerCommand::onEnabled(Context* context)
@@ -186,6 +190,8 @@ void NewLayerCommand::onExecute(Context* context)
     switch (m_type) {
       case Type::Layer:
         layer = api.newLayer(parent, name);
+        if (m_place == Place::BeforeActiveLayer)
+          api.restackLayerBefore(layer, parent, activeLayer);
         break;
       case Type::Group:
         layer = api.newGroup(parent, name);
@@ -322,6 +328,28 @@ void NewLayerCommand::onExecute(Context* context)
     name.c_str());
 
   App::instance()->mainWindow()->popTimeline();
+}
+
+std::string NewLayerCommand::onGetFriendlyName() const
+{
+  std::string text;
+
+  switch (m_type) {
+    case Type::Layer:
+      if (m_place == Place::BeforeActiveLayer)
+        text = Strings::commands_NewLayer_BeforeActiveLayer();
+      else
+        text = Strings::commands_NewLayer();
+      break;
+    case Type::Group:
+      text = Strings::commands_NewLayer_Group();
+      break;
+    case Type::ReferenceLayer:
+      text = Strings::commands_NewLayer_ReferenceLayer();
+      break;
+  }
+
+  return text;
 }
 
 std::string NewLayerCommand::getUniqueLayerName(const Sprite* sprite) const
