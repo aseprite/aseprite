@@ -557,7 +557,6 @@ add_library(app-lib
   util/range_utils.cpp
   util/readable_time.cpp
   util/wrap_point.cpp
-  webserver.cpp
   xml_document.cpp
   xml_exception.cpp
   ${ui_app_files}
@@ -602,10 +601,6 @@ endif()
 
 if(ENABLE_UPDATER)
   target_link_libraries(app-lib updater-lib)
-endif()
-
-if(ENABLE_WEBSERVER)
-  target_link_libraries(app-lib webserver-lib)
 endif()
 
 if(ENABLE_STEAM)

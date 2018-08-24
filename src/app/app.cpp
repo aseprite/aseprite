@@ -51,7 +51,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "app/webserver.h"
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/scoped_lock.h"
@@ -332,12 +331,6 @@ void App::run()
     app::CheckUpdateThreadLauncher checkUpdate(
       m_mainWindow->getCheckUpdateDelegate());
     checkUpdate.launch();
-#endif
-
-#ifdef ENABLE_WEBSERVER
-    // Launch the webserver.
-    app::WebServer webServer;
-    webServer.start();
 #endif
 
     app::SendCrash sendCrash;

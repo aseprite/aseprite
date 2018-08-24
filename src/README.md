@@ -28,7 +28,6 @@ because they don't depend on any other component.
   * [cfg](cfg/) (base): Library to load/save .ini files.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [net](net/) (base): Networking library to send HTTP requests.
-  * [webserver](webserver/) (base): HTTP web server
 
 ## Level 2
 
@@ -48,7 +47,7 @@ because they don't depend on any other component.
 
 ## Level 5
 
-  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, os, ui, undo, updater, webserver)
+  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, os, ui, undo, updater)
 
 ## Level 6
 
