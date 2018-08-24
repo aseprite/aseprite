@@ -2,7 +2,7 @@
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
-file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
+file(GLOB widget_files ${SOURCE_DATA_DIR}/widgets/*.xml)
 foreach(widget_file ${widget_files})
   get_filename_component(widget_name ${widget_file} NAME_WE)
   set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/${widget_name}.xml.h)
@@ -19,7 +19,7 @@ foreach(widget_file ${widget_files})
 endforeach()
 
 # Generate preference types from data/pref.xml
-set(pref_xml ${CMAKE_SOURCE_DIR}/data/pref.xml)
+set(pref_xml ${SOURCE_DATA_DIR}/pref.xml)
 
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/pref.xml.h)
 add_custom_command(
@@ -42,7 +42,7 @@ add_custom_command(
 list(APPEND generated_files ${output_fn})
 
 # Generate theme.xml.h from data/extensions/aseprite-theme/theme.xml
-set(theme_xml ${CMAKE_SOURCE_DIR}/data/extensions/aseprite-theme/theme.xml)
+set(theme_xml ${SOURCE_DATA_DIR}/extensions/aseprite-theme/theme.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
@@ -54,7 +54,7 @@ add_custom_command(
 list(APPEND generated_files ${output_fn})
 
 # Generate strings.ini.h from data/strings/en.ini
-set(strings_en_ini ${CMAKE_SOURCE_DIR}/data/strings/en.ini)
+set(strings_en_ini ${SOURCE_DATA_DIR}/strings/en.ini)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/strings.ini.h)
 add_custom_command(
   OUTPUT ${output_fn}
@@ -77,13 +77,13 @@ add_custom_command(
 list(APPEND generated_files ${output_fn})
 
 # Check translations
-file(GLOB string_files ${CMAKE_SOURCE_DIR}/data/strings/*.ini)
+file(GLOB string_files ${SOURCE_DATA_DIR}/strings/*.ini)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/check-translations.txt)
 add_custom_command(
   OUTPUT ${output_fn}
-  COMMAND ${GEN_EXE} --widgets-dir "${CMAKE_SOURCE_DIR}/data/widgets/" --strings-dir "${CMAKE_SOURCE_DIR}/data/strings/" --gui-file "${CMAKE_SOURCE_DIR}/data/gui.xml" >${output_fn}
+  COMMAND ${GEN_EXE} --widgets-dir "${SOURCE_DATA_DIR}/widgets/" --strings-dir "${SOURCE_DATA_DIR}/strings/" --gui-file "${SOURCE_DATA_DIR}/gui.xml" >${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${CMAKE_SOURCE_DIR}/data/gui.xml")
+  DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
 # Directory where generated files by "gen" utility will stay.
