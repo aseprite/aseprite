@@ -87,10 +87,12 @@ else()
   set(REQUIRE_CURL OFF)
 endif()
 
-if(NOT ENABLE_UI)
-  set(LAF_OS_BACKEND "none") # Without UI, we use the none backend
-else()
-  set(LAF_OS_BACKEND "skia")
+if(NOT LAF_OS_BACKEND)
+  if(NOT ENABLE_UI)
+    set(LAF_OS_BACKEND "none") # Without UI, we use the none backend
+  else()
+    set(LAF_OS_BACKEND "skia")
+  endif()
 endif()
 
 # Check valid gtk + libpng combination
