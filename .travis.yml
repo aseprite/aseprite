@@ -53,5 +53,5 @@ script:
         $XVFB bash run-tests.sh
       fi
     else
-      exit 1
+      exit 1  
     fi
