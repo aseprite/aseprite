@@ -166,29 +166,31 @@ add_custom_target(copy_data DEPENDS ${out_data_files})
 ######################################################################
 # Aseprite application
 
-if(WIN32)
-  set(win32_resources
-    main/resources_win32.rc
-    main/settings.manifest)
+if(ENABLE_ASEPRITE_EXE)
+  if(WIN32)
+    set(win32_resources
+      main/resources_win32.rc
+      main/settings.manifest)
+  endif()
+
+  add_executable(aseprite main/main.cpp ${win32_resources})
+  if(WIN32 AND ENABLE_UI)
+    set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
+  endif()
+  target_link_libraries(aseprite app-lib)
+  add_dependencies(aseprite copy_data)
+
+  if(LAF_OS_BACKEND_LINK_FLAGS)
+    set_target_properties(aseprite PROPERTIES LINK_FLAGS
+      ${LAF_OS_BACKEND_LINK_FLAGS})
+  endif()
+
+  install(TARGETS aseprite
+    RUNTIME DESTINATION bin)
+
+  install(DIRECTORY ../data
+    DESTINATION share/aseprite)
 endif()
-
-add_executable(aseprite main/main.cpp ${win32_resources})
-if(WIN32 AND ENABLE_UI)
-  set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
-endif()
-target_link_libraries(aseprite app-lib)
-add_dependencies(aseprite copy_data)
-
-if(LAF_OS_BACKEND_LINK_FLAGS)
-  set_target_properties(aseprite PROPERTIES LINK_FLAGS
-    ${LAF_OS_BACKEND_LINK_FLAGS})
-endif()
-
-install(TARGETS aseprite
-  RUNTIME DESTINATION bin)
-
-install(DIRECTORY ../data
-  DESTINATION share/aseprite)
 
 ######################################################################
 # Tests
