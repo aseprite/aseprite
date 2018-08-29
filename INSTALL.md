@@ -85,10 +85,13 @@ You must also compile [Skia](#skia-on-macos) before starting with the
 
 ## Linux dependencies
 
-You will need the following dependencies (Ubuntu, Debian):
+You will need the following dependencies on Ubuntu/Debian:
 
-    sudo apt-get update -qq
-    sudo apt-get install -y g++ libx11-dev libxcursor-dev cmake ninja-build
+    sudo apt-get install -y g++ cmake ninja-build libx11-dev libxcursor-dev
+
+On Fedora:
+
+    sudo yum install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel mesa-libGL-devel fontconfig-devel
 
 You must also compile [Skia](#skia-on-linux) before starting with the
 [compilation](#compiling).
