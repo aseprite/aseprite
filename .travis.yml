@@ -40,12 +40,12 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - $XVFB cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
+  - cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
 
 script:
   - make
   - |
-    if ctest --output-on-failure ; then
+    if $XVFB ctest --output-on-failure ; then
       if [[ "$ENABLE_UI" == "OFF" ]]; then
         export ASEPRITE=$PWD/bin/aseprite
         git clone https://github.com/aseprite/tests.git
