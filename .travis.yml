@@ -6,11 +6,12 @@ matrix:
       osx_image: xcode9
       env:
         - ENABLE_UI=ON
+        - MATRIX_EVAL="wget https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip && unzip ninja-mac.zip && export PATH=$PWD:$PATH"
     - os: linux
       addons:
         apt:
           packages:
-            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
       env:
         - ENABLE_UI=OFF
         - XVFB=xvfb-run
@@ -18,7 +19,7 @@ matrix:
       addons:
         apt:
           packages:
-            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
       env:
         - ENABLE_UI=ON
         - XVFB=xvfb-run
@@ -28,7 +29,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7 libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev
+            - g++-7 libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
         - ENABLE_UI=ON
@@ -40,10 +41,10 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
+  - cmake .. -G Ninja -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
 
 script:
-  - make
+  - ninja
   - |
     if $XVFB ctest --output-on-failure ; then
       if [[ "$ENABLE_UI" == "OFF" ]]; then
