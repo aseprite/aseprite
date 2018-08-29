@@ -59,5 +59,4 @@ target_link_libraries(ui-lib
   laf-os
   laf-gfx
   laf-base
-  obs
-  ${PIXMAN_LIBRARY})
+  obs)
