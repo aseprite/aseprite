@@ -138,6 +138,24 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   // When an editor is clicked the current view is changed.
   context->setActiveView(editor->getDocView());
 
+  // Move symmetry
+  Decorator::Handles handles;
+  if (m_decorator->getSymmetryHandles(editor, handles)) {
+    for (const auto& handle : handles) {
+      if (handle.bounds.contains(msg->position())) {
+        auto mode = (handle.align & (TOP | BOTTOM) ? app::gen::SymmetryMode::HORIZONTAL:
+                                                     app::gen::SymmetryMode::VERTICAL);
+        bool horz = (mode == app::gen::SymmetryMode::HORIZONTAL);
+        auto& symmetry = Preferences::instance().document(editor->document()).symmetry;
+        auto& axis = (horz ? symmetry.xAxis:
+                             symmetry.yAxis);
+        editor->setState(
+          EditorStatePtr(new MovingSymmetryState(editor, msg, mode, axis)));
+        return true;
+      }
+    }
+  }
+
   // Start scroll loop
   if (editor->checkForScroll(msg) ||
       editor->checkForZoom(msg))
@@ -294,24 +312,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       // Change to MovingPixelsState
       transformSelection(editor, msg, MovePixelsHandle);
       return true;
-    }
-  }
-
-  // Move symmetry
-  Decorator::Handles handles;
-  if (m_decorator->getSymmetryHandles(editor, handles)) {
-    for (const auto& handle : handles) {
-      if (handle.bounds.contains(msg->position())) {
-        auto mode = (handle.align & (TOP | BOTTOM) ? app::gen::SymmetryMode::HORIZONTAL:
-                                                     app::gen::SymmetryMode::VERTICAL);
-        bool horz = (mode == app::gen::SymmetryMode::HORIZONTAL);
-        auto& symmetry = Preferences::instance().document(editor->document()).symmetry;
-        auto& axis = (horz ? symmetry.xAxis:
-                             symmetry.yAxis);
-        editor->setState(
-          EditorStatePtr(new MovingSymmetryState(editor, msg, mode, axis)));
-        return true;
-      }
     }
   }
 
