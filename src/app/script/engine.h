@@ -22,7 +22,7 @@
 struct lua_State;
 
 namespace doc {
-  class Image;
+  class Cel;
   class Sprite;
 }
 
@@ -61,6 +61,7 @@ namespace script {
   };
 
   void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
+  void push_cel_image(lua_State* L, doc::Cel* cel);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);

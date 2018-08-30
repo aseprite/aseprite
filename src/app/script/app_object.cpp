@@ -108,8 +108,8 @@ int App_get_activeImage(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
-  if (site.image())
-    push_ptr(L, site.image());
+  if (site.cel())
+    push_cel_image(L, site.cel());
   else
     lua_pushnil(L);
   return 1;

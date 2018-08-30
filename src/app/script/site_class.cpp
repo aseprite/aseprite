@@ -30,8 +30,8 @@ int Site_get_sprite(lua_State* L)
 int Site_get_image(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
-  if (site->image())
-    push_ptr(L, site->image());
+  if (site->cel())
+    push_cel_image(L, site->cel());
   else
     lua_pushnil(L);
   return 1;
