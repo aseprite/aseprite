@@ -60,19 +60,17 @@ int Selection_gc(lua_State* L)
 int Selection_deselect(lua_State* L)
 {
   auto obj = get_obj<SelectionObject>(L, 1);
-  if (obj) {
-    if (obj->sprite) {
-      Doc* doc = static_cast<Doc*>(obj->sprite->document());
-      ASSERT(doc);
+  if (obj->sprite) {
+    Doc* doc = static_cast<Doc*>(obj->sprite->document());
+    ASSERT(doc);
 
-      Tx tx;
-      tx(new cmd::DeselectMask(doc));
-      tx.commit();
-    }
-    else {
-      ASSERT(obj->mask);
-      obj->mask->clear();
-    }
+    Tx tx;
+    tx(new cmd::DeselectMask(doc));
+    tx.commit();
+  }
+  else {
+    ASSERT(obj->mask);
+    obj->mask->clear();
   }
   return 0;
 }
