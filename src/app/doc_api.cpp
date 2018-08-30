@@ -445,20 +445,20 @@ void DocApi::swapCel(
 
 LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
 {
-  LayerImage* layer = new LayerImage(parent->sprite());
-  layer->setName(name);
+  LayerImage* newLayer = new LayerImage(parent->sprite());
+  newLayer->setName(name);
 
-  addLayer(parent, layer, parent->lastLayer());
-  return layer;
+  addLayer(parent, newLayer, parent->lastLayer());
+  return newLayer;
 }
 
 LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
 {
-  LayerGroup* layer = new LayerGroup(parent->sprite());
-  layer->setName(name);
+  LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
+  newLayerGroup->setName(name);
 
-  addLayer(parent, layer, parent->lastLayer());
-  return layer;
+  addLayer(parent, newLayerGroup, parent->lastLayer());
+  return newLayerGroup;
 }
 
 void DocApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
