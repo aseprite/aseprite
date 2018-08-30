@@ -24,42 +24,42 @@ using namespace doc;
 
 namespace {
 
-struct SelectionObject {
+struct SelectionObj {
   Mask* mask;
   Sprite* sprite;
-  SelectionObject(Mask* mask, Sprite* sprite)
+  SelectionObj(Mask* mask, Sprite* sprite)
     : mask(mask)
     , sprite(sprite) {
   }
-  SelectionObject(SelectionObject&& that)
+  SelectionObj(SelectionObj&& that)
     : mask(that.mask)
     , sprite(that.sprite) {
     that.mask = nullptr;
     that.sprite = nullptr;
   }
-  ~SelectionObject() {
+  ~SelectionObj() {
     if (!sprite && mask)
       delete mask;
   }
-  SelectionObject(const SelectionObject&) = delete;
-  SelectionObject& operator=(const SelectionObject&) = delete;
+  SelectionObj(const SelectionObj&) = delete;
+  SelectionObj& operator=(const SelectionObj&) = delete;
 };
 
 int Selection_new(lua_State* L)
 {
-  push_obj(L, SelectionObject(new Mask, nullptr));
+  push_obj(L, SelectionObj(new Mask, nullptr));
   return 1;
 }
 
 int Selection_gc(lua_State* L)
 {
-  get_obj<SelectionObject>(L, 1)->~SelectionObject();
+  get_obj<SelectionObj>(L, 1)->~SelectionObj();
   return 0;
 }
 
 int Selection_deselect(lua_State* L)
 {
-  auto obj = get_obj<SelectionObject>(L, 1);
+  auto obj = get_obj<SelectionObj>(L, 1);
   if (obj->sprite) {
     Doc* doc = static_cast<Doc*>(obj->sprite->document());
     ASSERT(doc);
@@ -81,7 +81,7 @@ int Selection_select(lua_State* L)
   if (bounds.isEmpty())
     return Selection_deselect(L);
 
-  auto obj = get_obj<SelectionObject>(L, 1);
+  auto obj = get_obj<SelectionObj>(L, 1);
   if (obj->sprite) {
     Doc* doc = static_cast<Doc*>(obj->sprite->document());
     ASSERT(doc);
@@ -101,7 +101,7 @@ int Selection_select(lua_State* L)
 
 int Selection_selectAll(lua_State* L)
 {
-  auto obj = get_obj<SelectionObject>(L, 1);
+  auto obj = get_obj<SelectionObj>(L, 1);
   if (obj->sprite) {
     Doc* doc = static_cast<Doc*>(obj->sprite->document());
 
@@ -122,7 +122,7 @@ int Selection_selectAll(lua_State* L)
 
 int Selection_get_bounds(lua_State* L)
 {
-  auto obj = get_obj<SelectionObject>(L, 1);
+  auto obj = get_obj<SelectionObj>(L, 1);
   if (obj->sprite) {
     Doc* doc = static_cast<Doc*>(obj->sprite->document());
     if (doc->isMaskVisible()) {
@@ -153,11 +153,11 @@ const Property Selection_properties[] = {
 
 } // anonymous namespace
 
-DEF_MTNAME(SelectionObject);
+DEF_MTNAME(SelectionObj);
 
 void register_selection_class(lua_State* L)
 {
-  using Selection = SelectionObject;
+  using Selection = SelectionObj;
   REG_CLASS(L, Selection);
   REG_CLASS_NEW(L, Selection);
   REG_CLASS_PROPERTIES(L, Selection);
@@ -165,7 +165,7 @@ void register_selection_class(lua_State* L)
 
 void push_sprite_selection(lua_State* L, Sprite* sprite)
 {
-  push_obj(L, SelectionObject(nullptr, sprite));
+  push_obj(L, SelectionObj(nullptr, sprite));
 }
 
 } // namespace script
