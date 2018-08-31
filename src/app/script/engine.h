@@ -28,8 +28,7 @@ namespace doc {
 
 namespace app {
   class Site;
-
-namespace script {
+  namespace script {
 
   class EngineDelegate {
   public:
@@ -37,17 +36,14 @@ namespace script {
     virtual void onConsolePrint(const char* text) = 0;
   };
 
-  class StdoutEngineDelegate : public EngineDelegate {
-  public:
-    void onConsolePrint(const char* text) override {
-      std::printf("%s\n", text);
-    }
-  };
-
   class Engine {
   public:
-    Engine(EngineDelegate* delegate);
+    Engine();
     ~Engine();
+
+    void setDelegate(EngineDelegate* delegate) {
+      m_delegate = delegate;
+    }
 
     void printLastResult();
     bool evalCode(const std::string& code,
@@ -55,6 +51,8 @@ namespace script {
     bool evalFile(const std::string& filename);
 
   private:
+    void onConsolePrint(const char* text);
+
     lua_State* L;
     EngineDelegate* m_delegate;
     bool m_printLastResult;

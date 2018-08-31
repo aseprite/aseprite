@@ -65,9 +65,9 @@ void register_site_class(lua_State* L);
 void register_size_class(lua_State* L);
 void register_sprite_class(lua_State* L);
 
-Engine::Engine(EngineDelegate* delegate)
+Engine::Engine()
   : L(luaL_newstate())
-  , m_delegate(delegate)
+  , m_delegate(nullptr)
   , m_printLastResult(false)
 {
   int top = lua_gettop(L);
@@ -131,7 +131,7 @@ bool Engine::evalCode(const std::string& code,
     std::string err;
     const char* s = lua_tostring(L, -1);
     if (s)
-      m_delegate->onConsolePrint(s);
+      onConsolePrint(s);
     ok = false;
   }
   else {
@@ -140,7 +140,7 @@ bool Engine::evalCode(const std::string& code,
       if (!lua_isnone(L, -1)) {
         const char* result = lua_tostring(L, -1);
         if (result)
-          m_delegate->onConsolePrint(result);
+          onConsolePrint(result);
       }
     }
   }
@@ -156,6 +156,14 @@ bool Engine::evalFile(const std::string& filename)
     buf << s.rdbuf();
   }
   return evalCode(buf.str(), filename);
+}
+
+void Engine::onConsolePrint(const char* text)
+{
+  if (m_delegate)
+    m_delegate->onConsolePrint(text);
+  else
+    std::printf("%s\n", text);
 }
 
 } // namespace script

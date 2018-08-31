@@ -12,6 +12,7 @@
   #error ENABLE_SCRIPTING must be defined
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/console.h"
@@ -65,9 +66,12 @@ void RunScriptCommand::onLoadParams(const Params& params)
 
 void RunScriptCommand::onExecute(Context* context)
 {
+  script::Engine* engine = App::instance()->scriptEngine();
+
   ConsoleEngineDelegate delegate;
-  script::Engine engine(&delegate);
-  engine.evalFile(m_filename);
+  engine->setDelegate(&delegate);
+  engine->evalFile(m_filename);
+  engine->setDelegate(nullptr);
 
   ui::Manager::getDefault()->invalidate();
 }

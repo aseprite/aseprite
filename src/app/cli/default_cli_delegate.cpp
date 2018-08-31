@@ -27,6 +27,7 @@
 #include "doc/sprite.h"
 
 #ifdef ENABLE_SCRIPTING
+  #include "app/app.h"
   #include "app/script/engine.h"
 #endif
 
@@ -126,9 +127,7 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 void DefaultCliDelegate::execScript(const std::string& filename)
 {
 #ifdef ENABLE_SCRIPTING
-  script::StdoutEngineDelegate delegate;
-  script::Engine engine(&delegate);
-  if (!engine.evalFile(filename))
+  if (!App::instance()->scriptEngine()->evalFile(filename))
     throw std::runtime_error("Error executing script");
 #endif
 }

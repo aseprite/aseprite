@@ -167,6 +167,9 @@ App::App()
 #ifdef ENABLE_UI
   , m_backupIndicator(nullptr)
 #endif
+#ifdef ENABLE_SCRIPTING
+  , m_engine(new script::Engine)
+#endif
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -344,11 +347,9 @@ void App::run()
 #ifdef ENABLE_SCRIPTING
   // Start shell to execute scripts.
   if (m_isShell) {
-    script::StdoutEngineDelegate delegate;
-    script::Engine engine(&delegate);
-    engine.printLastResult();
+    m_engine->printLastResult(); // TODO is this needed?
     Shell shell;
-    shell.run(engine);
+    shell.run(*m_engine);
   }
 #endif  // ENABLE_SCRIPTING
 

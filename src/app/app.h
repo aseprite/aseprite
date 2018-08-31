@@ -31,6 +31,12 @@ namespace ui {
 
 namespace app {
 
+#ifdef ENABLE_SCRIPTING
+  namespace script {
+    class Engine;
+  }
+#endif
+
   class AppOptions;
   class BackupIndicator;
   class Context;
@@ -106,6 +112,10 @@ namespace app {
     InputChain& inputChain();
 #endif
 
+#ifdef ENABLE_SCRIPTING
+    script::Engine* scriptEngine() { return m_engine.get(); }
+#endif
+
     // App Signals
     obs::signal<void()> Exit;
     obs::signal<void()> PaletteChange;
@@ -130,6 +140,9 @@ namespace app {
     BackupIndicator* m_backupIndicator;
     base::mutex m_backupIndicatorMutex;
 #endif // ENABLE_UI
+#ifdef ENABLE_SCRIPTING
+    std::unique_ptr<script::Engine> m_engine;
+#endif
   };
 
   void app_refresh_screen();

@@ -56,7 +56,7 @@ namespace app {
     ui::HBox m_bottomBox;
     ui::Label m_label;
     CommmandEntry* m_entry;
-    script::Engine m_engine;
+    script::Engine* m_engine;
   };
 
 } // namespace app

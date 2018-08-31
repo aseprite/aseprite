@@ -14,6 +14,7 @@
 
 #include "app/ui/devconsole_view.h"
 
+#include "app/app.h"
 #include "app/app_menus.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
@@ -66,8 +67,10 @@ DevConsoleView::DevConsoleView()
   , m_textBox("Welcome to " PACKAGE " v" VERSION " Console\n(Experimental)", LEFT)
   , m_label(">")
   , m_entry(new CommmandEntry)
-  , m_engine(this)
+  , m_engine(App::instance()->scriptEngine())
 {
+  m_engine->setDelegate(this);
+
   addChild(&m_view);
   addChild(&m_bottomBox);
 
@@ -90,6 +93,8 @@ DevConsoleView::DevConsoleView()
 
 DevConsoleView::~DevConsoleView()
 {
+  m_engine->setDelegate(nullptr);
+
   // m_document->remove_observer(this);
   // delete m_editor;
 }
@@ -136,8 +141,8 @@ bool DevConsoleView::onProcessMessage(Message* msg)
 
 void DevConsoleView::onExecuteCommand(const std::string& cmd)
 {
-  m_engine.printLastResult();
-  m_engine.evalCode(cmd);
+  m_engine->printLastResult();
+  m_engine->evalCode(cmd);
 }
 
 void DevConsoleView::onConsolePrint(const char* text)
