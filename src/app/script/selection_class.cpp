@@ -120,9 +120,17 @@ int Selection_selectAll(lua_State* L)
   return 0;
 }
 
+int Selection_contains(lua_State* L)
+{
+  const auto obj = get_obj<SelectionObj>(L, 1);
+  auto pt = convert_args_into_point(L, 2);
+  lua_pushboolean(L, obj->mask->containsPoint(pt.x, pt.y));
+  return 1;
+}
+
 int Selection_get_bounds(lua_State* L)
 {
-  auto obj = get_obj<SelectionObj>(L, 1);
+  const auto obj = get_obj<SelectionObj>(L, 1);
   if (obj->sprite) {
     Doc* doc = static_cast<Doc*>(obj->sprite->document());
     if (doc->isMaskVisible()) {
@@ -146,11 +154,12 @@ int Selection_get_isEmpty(lua_State* L)
 }
 
 const luaL_Reg Selection_methods[] = {
-  { "deselect",  Selection_deselect },
-  { "select",    Selection_select },
+  { "deselect", Selection_deselect },
+  { "select", Selection_select },
   { "selectAll", Selection_selectAll },
-  { "__gc",      Selection_gc },
-  { nullptr,     nullptr }
+  { "contains", Selection_contains },
+  { "__gc", Selection_gc },
+  { nullptr, nullptr }
 };
 
 const Property Selection_properties[] = {
