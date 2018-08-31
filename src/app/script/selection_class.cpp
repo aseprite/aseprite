@@ -138,6 +138,13 @@ int Selection_get_bounds(lua_State* L)
   return 1;
 }
 
+int Selection_get_isEmpty(lua_State* L)
+{
+  const auto obj = get_obj<SelectionObj>(L, 1);
+  lua_pushboolean(L, obj->mask->isEmpty());
+  return 1;
+}
+
 const luaL_Reg Selection_methods[] = {
   { "deselect",  Selection_deselect },
   { "select",    Selection_select },
@@ -148,6 +155,7 @@ const luaL_Reg Selection_methods[] = {
 
 const Property Selection_properties[] = {
   { "bounds", Selection_get_bounds, nullptr },
+  { "isEmpty", Selection_get_isEmpty, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
