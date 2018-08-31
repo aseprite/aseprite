@@ -106,6 +106,13 @@ int Rectangle_set_height(lua_State* L)
   return 0;
 }
 
+int Rectangle_get_isEmpty(lua_State* L)
+{
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  lua_pushboolean(L, rc->isEmpty());
+  return 1;
+}
+
 const luaL_Reg Rectangle_methods[] = {
   { nullptr, nullptr }
 };
@@ -115,6 +122,7 @@ const Property Rectangle_properties[] = {
   { "y", Rectangle_get_y, Rectangle_set_y },
   { "width", Rectangle_get_width, Rectangle_set_width },
   { "height", Rectangle_get_height, Rectangle_set_height },
+  { "isEmpty", Rectangle_get_isEmpty, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
