@@ -140,7 +140,6 @@ endif()
 
 set(scripting_files)
 if(ENABLE_SCRIPTING)
-  add_definitions(-DENABLE_SCRIPTING)
   set(scripting_files_ui)
   if(ENABLE_UI)
     set(scripting_files_ui

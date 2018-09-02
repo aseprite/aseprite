@@ -75,6 +75,11 @@ else()
   set(ENABLE_DATA_RECOVERY off)
 endif()
 
+if(ENABLE_SCRIPTING)
+  # Needed for "app" and "main"
+  add_definitions(-DENABLE_SCRIPTING)
+endif()
+
 ######################################################################
 # Aseprite Libraries (in preferred order to be built)
 
