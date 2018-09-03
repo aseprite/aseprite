@@ -43,13 +43,6 @@ template <typename T> void push_obj(lua_State* L, const T& obj) {
   lua_setmetatable(L, -2);
 }
 
-template <typename T> void push_obj(lua_State* L, T&& obj) {
-  using RRT = typename std::remove_reference<T>::type;
-  new (lua_newuserdata(L, sizeof(RRT))) RRT(std::move(obj));
-  luaL_getmetatable(L, get_mtname<RRT>());
-  lua_setmetatable(L, -2);
-}
-
 template <typename T> T* push_ptr(lua_State* L, T* ptr) {
   *(T**)lua_newuserdata(L, sizeof(T*)) = ptr;
   luaL_getmetatable(L, get_mtname<T>());

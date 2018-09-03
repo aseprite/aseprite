@@ -31,12 +31,6 @@ struct SelectionObj {
     : mask(mask)
     , sprite(sprite) {
   }
-  SelectionObj(SelectionObj&& that)
-    : mask(that.mask)
-    , sprite(that.sprite) {
-    that.mask = nullptr;
-    that.sprite = nullptr;
-  }
   ~SelectionObj() {
     if (!sprite && mask)
       delete mask;
@@ -47,7 +41,7 @@ struct SelectionObj {
 
 int Selection_new(lua_State* L)
 {
-  push_obj(L, SelectionObj(new Mask, nullptr));
+  push_new<SelectionObj>(L, new Mask, nullptr);
   return 1;
 }
 
@@ -182,7 +176,7 @@ void register_selection_class(lua_State* L)
 
 void push_sprite_selection(lua_State* L, Sprite* sprite)
 {
-  push_obj(L, SelectionObj(nullptr, sprite));
+  push_new<SelectionObj>(L, nullptr, sprite);
 }
 
 } // namespace script

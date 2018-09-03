@@ -30,10 +30,6 @@ struct ImageObj {
     : image(image)
     , cel(cel) {
   }
-  ImageObj(ImageObj&& that) {
-    std::swap(image, that.image);
-    std::swap(cel, that.cel);
-  }
   ImageObj(const ImageObj&) = delete;
   ImageObj& operator=(const ImageObj&) = delete;
 };
@@ -45,7 +41,7 @@ int Image_new(lua_State* L)
   const int colorMode = (lua_isnone(L, 3) ? doc::IMAGE_RGB:
                                             lua_tointeger(L, 3));
   doc::ImageRef image(doc::Image::create((doc::PixelFormat)colorMode, w, h));
-  push_obj(L, ImageObj(image, nullptr));
+  push_new<ImageObj>(L, image, nullptr);
   return 1;
 }
 
@@ -53,7 +49,7 @@ int Image_clone(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   doc::ImageRef cloned(doc::Image::createCopy(obj->image.get()));
-  push_obj(L, ImageObj(cloned, nullptr));
+  push_new<ImageObj>(L, cloned, nullptr);
   return 1;
 }
 
@@ -169,7 +165,7 @@ void register_image_class(lua_State* L)
 
 void push_cel_image(lua_State* L, doc::Cel* cel)
 {
-  push_obj(L, ImageObj(cel->imageRef(), cel));
+  push_new<ImageObj>(L, cel->imageRef(), cel);
 }
 
 } // namespace script
