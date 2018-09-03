@@ -305,6 +305,8 @@
                    tooltip="@.undo_goto_modified_tooltip" />
             <check id="undo_allow_nonlinear_history"
                    text="@.undo_allow_nonlinear_history" />
+            <check text="@.undo_show_tooltip" id="undo_show_tooltip"
+                   pref="undo.show_tooltip" />
           </vbox>
         </vbox>
 

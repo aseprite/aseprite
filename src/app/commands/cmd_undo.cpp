@@ -108,11 +108,15 @@ void UndoCommand::onExecute(Context* context)
 
   StatusBar* statusbar = StatusBar::instance();
   if (statusbar) {
-    statusbar->showTip(1000, "%s %s",
-      (m_type == Undo ? "Undid": "Redid"),
-      (m_type == Undo ?
-        undo->nextUndoLabel().c_str():
-        undo->nextRedoLabel().c_str()));
+    std::string msg;
+    if (m_type == Undo)
+      msg = "Undid " + undo->nextUndoLabel();
+    else
+      msg = "Redid " + undo->nextRedoLabel();
+    if (Preferences::instance().undo.showTooltip())
+      statusbar->showTip(1000, msg.c_str());
+    else
+      statusbar->setStatusText(0, msg.c_str());
   }
 #endif // ENABLE_UI
 
