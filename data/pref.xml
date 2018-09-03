@@ -121,6 +121,7 @@
       <option id="size_limit" type="int" default="0" />
       <option id="goto_modified" type="bool" default="true" />
       <option id="allow_nonlinear_history" type="bool" default="false" />
+      <option id="show_tooltip" type="bool" default="true" migrate="Options.show_tooltip" />
     </section>
     <section id="editor" text="Editor">
       <option id="zoom_with_wheel" type="bool" default="true" migrate="Options.ZoomWithMouseWheel" />
