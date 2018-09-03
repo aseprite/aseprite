@@ -12,6 +12,7 @@
   #error ENABLE_SCRIPTING must be defined
 #endif
 
+#include "doc/image_ref.h"
 #include "doc/object_id.h"
 #include "gfx/fwd.h"
 
@@ -60,6 +61,7 @@ namespace app {
 
   void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
   void push_cel_image(lua_State* L, doc::Cel* cel);
+  int push_image_iterator_function(lua_State* L, const doc::ImageRef& image);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);

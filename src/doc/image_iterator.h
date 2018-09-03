@@ -125,6 +125,9 @@ namespace doc {
 
     reference operator*() { return *m_ptr; }
 
+    int x() const { return m_x; }
+    int y() const { return m_y; }
+
   private:
     Image* m_image;
     pointer m_ptr;

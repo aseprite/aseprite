@@ -100,6 +100,13 @@ int Image_putImage(lua_State* L)
   return 0;
 }
 
+int Image_pixels(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  push_image_iterator_function(L, obj->image);
+  return 1;
+}
+
 int Image_getPixel(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -136,6 +143,7 @@ const luaL_Reg Image_methods[] = {
   { "getPixel", Image_getPixel },
   { "putPixel", Image_putPixel },
   { "putImage", Image_putImage },
+  { "pixels", Image_pixels },
   { "__gc", Image_gc },
   { nullptr, nullptr }
 };

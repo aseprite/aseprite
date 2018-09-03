@@ -151,6 +151,7 @@ if(ENABLE_SCRIPTING)
     script/app_object.cpp
     script/engine.cpp
     script/image_class.cpp
+    script/image_iterator_class.cpp
     script/luacpp.cpp
     script/pixel_color_object.cpp
     script/point_class.cpp

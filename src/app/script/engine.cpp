@@ -82,6 +82,7 @@ void register_app_object(lua_State* L);
 void register_app_pixel_color_object(lua_State* L);
 
 void register_image_class(lua_State* L);
+void register_image_iterator_class(lua_State* L);
 void register_point_class(lua_State* L);
 void register_rect_class(lua_State* L);
 void register_selection_class(lua_State* L);
@@ -137,6 +138,7 @@ Engine::Engine()
 
   // Register classes/prototypes
   register_image_class(L);
+  register_image_iterator_class(L);
   register_point_class(L);
   register_rect_class(L);
   register_selection_class(L);
