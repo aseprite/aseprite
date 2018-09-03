@@ -52,6 +52,20 @@ int print(lua_State* L)
   return 0;
 }
 
+int unsupported(lua_State* L)
+{
+  // debug.getinfo(1, "n").name
+  lua_getglobal(L, "debug");
+  lua_getfield(L, -1, "getinfo");
+  lua_remove(L, -2);
+  lua_pushinteger(L, 1);
+  lua_pushstring(L, "n");
+  lua_call(L, 2, 1);
+  lua_getfield(L, -1, "name");
+  return luaL_error(L, "unsupported function '%s'",
+                    lua_tostring(L, -1));
+}
+
 } // anonymous namespace
 
 void register_app_object(lua_State* L);
@@ -74,13 +88,24 @@ Engine::Engine()
 
   // Standard Lua libraries
   luaL_requiref(L, LUA_GNAME, luaopen_base, 1);
-  luaL_requiref(L, LUA_MATHLIBNAME, luaopen_math, 1);
-  luaL_requiref(L, LUA_STRLIBNAME, luaopen_string, 1);
+  luaL_requiref(L, LUA_COLIBNAME, luaopen_coroutine, 1);
   luaL_requiref(L, LUA_TABLIBNAME, luaopen_table, 1);
-  lua_pop(L, 4);
+  luaL_requiref(L, LUA_OSLIBNAME, luaopen_os, 1);
+  luaL_requiref(L, LUA_STRLIBNAME, luaopen_string, 1);
+  luaL_requiref(L, LUA_MATHLIBNAME, luaopen_math, 1);
+  luaL_requiref(L, LUA_UTF8LIBNAME, luaopen_utf8, 1);
+  luaL_requiref(L, LUA_DBLIBNAME, luaopen_debug, 1);
+  lua_pop(L, 8);
 
-  // Our print() impl
+  // Overwrite Lua functions
   lua_register(L, "print", print);
+
+  lua_getglobal(L, "os");
+  for (const char* name : { "execute", "remove", "rename", "exit", "tmpname" }) {
+    lua_pushcfunction(L, unsupported);
+    lua_setfield(L, -2, name);
+  }
+  lua_pop(L, 1);
 
   // Generic code used by metatables
   run_mt_index_code(L);
