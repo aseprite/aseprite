@@ -13,6 +13,7 @@
 #include "app/app.h"
 #include "app/console.h"
 #include "app/script/luacpp.h"
+#include "base/chrono.h"
 #include "base/fstream_path.h"
 #include "doc/color_mode.h"
 
@@ -23,6 +24,9 @@ namespace app {
 namespace script {
 
 namespace {
+
+// High precision clock.
+base::Chrono luaClock;
 
 int print(lua_State* L)
 {
@@ -50,6 +54,12 @@ int print(lua_State* L)
       Console().printf("%s\n", output.c_str());
   }
   return 0;
+}
+
+int os_clock(lua_State* L)
+{
+  lua_pushnumber(L, luaClock.elapsed());
+  return 1;
 }
 
 int unsupported(lua_State* L)
@@ -105,6 +115,8 @@ Engine::Engine()
     lua_pushcfunction(L, unsupported);
     lua_setfield(L, -2, name);
   }
+  lua_pushcfunction(L, os_clock);
+  lua_setfield(L, -2, "clock");
   lua_pop(L, 1);
 
   // Generic code used by metatables
