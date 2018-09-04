@@ -55,6 +55,20 @@ int Layer_get_userData(lua_State* L)
   return 1;
 }
 
+int Layer_get_isImage(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isImage());
+  return 1;
+}
+
+int Layer_get_isGroup(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isGroup());
+  return 1;
+}
+
 int Layer_set_name(lua_State* L)
 {
   auto layer = get_ptr<Layer>(L, 1);
@@ -88,6 +102,8 @@ const Property Layer_properties[] = {
   { "name", Layer_get_name, Layer_set_name },
   { "opacity", Layer_get_opacity, Layer_set_opacity },
   { "userData", Layer_get_userData, nullptr },
+  { "isImage", Layer_get_isImage, nullptr },
+  { "isGroup", Layer_get_isGroup, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
