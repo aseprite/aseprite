@@ -148,6 +148,7 @@ if(ENABLE_SCRIPTING)
   endif()
   set(scripting_files
     commands/cmd_run_script.cpp
+    script/app_command_object.cpp
     script/app_object.cpp
     script/cel_class.cpp
     script/cels_class.cpp
