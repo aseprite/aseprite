@@ -149,17 +149,31 @@ if(ENABLE_SCRIPTING)
   set(scripting_files
     commands/cmd_run_script.cpp
     script/app_object.cpp
+    script/cel_class.cpp
+    script/cels_class.cpp
+    script/color_class.cpp
     script/engine.cpp
+    script/frame_class.cpp
+    script/frames_class.cpp
     script/image_class.cpp
     script/image_iterator_class.cpp
+    script/layer_class.cpp
+    script/layers_class.cpp
     script/luacpp.cpp
+    script/palette_class.cpp
+    script/palettes_class.cpp
     script/pixel_color_object.cpp
     script/point_class.cpp
     script/rectangle_class.cpp
     script/selection_class.cpp
     script/site_class.cpp
     script/size_class.cpp
+    script/slice_class.cpp
+    script/slices_class.cpp
     script/sprite_class.cpp
+    script/tag_class.cpp
+    script/tags_class.cpp
+    script/userdata_class.cpp
     shell.cpp
     ${scripting_files_ui})
 endif()

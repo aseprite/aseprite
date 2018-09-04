@@ -22,6 +22,7 @@
 #include "app/transaction.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
@@ -47,6 +48,14 @@ int Sprite_new(lua_State* L)
 
   push_ptr(L, doc->sprite());
   doc.release();
+  return 1;
+}
+
+int Sprite_eq(lua_State* L)
+{
+  const auto a = get_ptr<Sprite>(L, 1);
+  const auto b = get_ptr<Sprite>(L, 2);
+  lua_pushboolean(L, a->id() == b->id());
   return 1;
 }
 
@@ -189,6 +198,59 @@ int Sprite_get_selection(lua_State* L)
   return 1;
 }
 
+int Sprite_get_frames(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  push_sprite_frames(L, sprite);
+  return 1;
+}
+
+int Sprite_get_palettes(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  push_sprite_palettes(L, sprite);
+  return 1;
+}
+
+int Sprite_get_layers(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  push_sprite_layers(L, sprite);
+  return 1;
+}
+
+int Sprite_get_cels(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  push_sprite_cels(L, sprite);
+  return 1;
+}
+
+int Sprite_get_tags(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  push_sprite_tags(L, sprite);
+  return 1;
+}
+
+int Sprite_get_slices(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  push_sprite_slices(L, sprite);
+  return 1;
+}
+
+int Sprite_get_backgroundLayer(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::Layer* layer = sprite->backgroundLayer();
+  if (layer)
+    push_ptr(L, layer);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int Sprite_set_width(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -210,6 +272,7 @@ int Sprite_set_height(lua_State* L)
 }
 
 const luaL_Reg Sprite_methods[] = {
+  { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
   { "crop", Sprite_crop },
   { "save", Sprite_save },
@@ -225,6 +288,13 @@ const Property Sprite_properties[] = {
   { "height", Sprite_get_height, Sprite_set_height },
   { "colorMode", Sprite_get_colorMode, nullptr },
   { "selection", Sprite_get_selection, nullptr },
+  { "frames", Sprite_get_frames, nullptr },
+  { "palettes", Sprite_get_palettes, nullptr },
+  { "layers", Sprite_get_layers, nullptr },
+  { "cels", Sprite_get_cels, nullptr },
+  { "tags", Sprite_get_tags, nullptr },
+  { "slices", Sprite_get_slices, nullptr },
+  { "backgroundLayer", Sprite_get_backgroundLayer, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

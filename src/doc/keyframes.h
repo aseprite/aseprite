@@ -66,6 +66,12 @@ namespace doc {
           else
             return nullptr;
         }
+        T* operator->() {
+          if (m_it != m_end)
+            return m_it->value();
+          else
+            return nullptr;
+        }
       private:
         iterator m_it, m_next;
         const iterator m_end;

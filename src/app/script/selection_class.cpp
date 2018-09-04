@@ -131,7 +131,7 @@ int Selection_get_bounds(lua_State* L)
       push_obj(L, doc->mask()->bounds());
     }
     else {   // Empty rectangle
-      push_obj(L, gfx::Rect(0, 0, 0, 0));
+      push_new<gfx::Rect>(L, 0, 0, 0, 0);
     }
   }
   else {

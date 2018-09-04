@@ -21,9 +21,36 @@ int Site_get_sprite(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
   if (site->sprite())
-    push_ptr(L, site->sprite());
+    push_ptr<doc::Sprite>(L, site->sprite());
   else
     lua_pushnil(L);
+  return 1;
+}
+
+int Site_get_layer(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
+  if (site->layer())
+    push_ptr<doc::Layer>(L, site->layer());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Site_get_cel(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
+  if (site->cel())
+    push_ptr<doc::Cel>(L, site->cel());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Site_get_frame(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
+  lua_pushinteger(L, site->frame()+1);
   return 1;
 }
 
@@ -43,6 +70,9 @@ const luaL_Reg Site_methods[] = {
 
 const Property Site_properties[] = {
   { "sprite", Site_get_sprite, nullptr },
+  { "layer", Site_get_layer, nullptr },
+  { "cel", Site_get_cel, nullptr },
+  { "frame", Site_get_frame, nullptr },
   { "image", Site_get_image, nullptr },
   { nullptr, nullptr, nullptr }
 };

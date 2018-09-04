@@ -34,6 +34,12 @@ namespace doc {
 
     class iterator {
     public:
+      typedef Cel* value_type;
+      typedef std::ptrdiff_t difference_type;
+      typedef Cel** pointer;
+      typedef Cel*& reference;
+      typedef std::forward_iterator_tag iterator_category;
+
       iterator(const SelectedFrames& selFrames);
       iterator(const Sprite* sprite,
                const SelectedFrames& selFrames,

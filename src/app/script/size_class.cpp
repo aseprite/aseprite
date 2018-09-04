@@ -44,6 +44,12 @@ int Size_new(lua_State* L)
   return 1;
 }
 
+int Size_gc(lua_State* L)
+{
+  get_obj<gfx::Size>(L, 1)->~SizeT();
+  return 0;
+}
+
 int Size_get_width(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
@@ -77,6 +83,7 @@ int Size_set_height(lua_State* L)
 }
 
 const luaL_Reg Size_methods[] = {
+  { "__gc", Size_gc },
   { nullptr, nullptr }
 };
 

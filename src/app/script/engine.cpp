@@ -81,14 +81,28 @@ int unsupported(lua_State* L)
 void register_app_object(lua_State* L);
 void register_app_pixel_color_object(lua_State* L);
 
+void register_cel_class(lua_State* L);
+void register_cels_class(lua_State* L);
+void register_color_class(lua_State* L);
+void register_frame_class(lua_State* L);
+void register_frames_class(lua_State* L);
 void register_image_class(lua_State* L);
 void register_image_iterator_class(lua_State* L);
+void register_layer_class(lua_State* L);
+void register_layers_class(lua_State* L);
+void register_palette_class(lua_State* L);
+void register_palettes_class(lua_State* L);
 void register_point_class(lua_State* L);
 void register_rect_class(lua_State* L);
 void register_selection_class(lua_State* L);
 void register_site_class(lua_State* L);
 void register_size_class(lua_State* L);
+void register_slice_class(lua_State* L);
+void register_slices_class(lua_State* L);
 void register_sprite_class(lua_State* L);
+void register_tag_class(lua_State* L);
+void register_tags_class(lua_State* L);
+void register_userdata_class(lua_State* L);
 
 Engine::Engine()
   : L(luaL_newstate())
@@ -137,14 +151,28 @@ Engine::Engine()
   lua_pop(L, 1);
 
   // Register classes/prototypes
+  register_cel_class(L);
+  register_cels_class(L);
+  register_color_class(L);
+  register_frame_class(L);
+  register_frames_class(L);
   register_image_class(L);
   register_image_iterator_class(L);
+  register_layer_class(L);
+  register_layers_class(L);
+  register_palette_class(L);
+  register_palettes_class(L);
   register_point_class(L);
   register_rect_class(L);
   register_selection_class(L);
   register_site_class(L);
   register_size_class(L);
+  register_slice_class(L);
+  register_slices_class(L);
   register_sprite_class(L);
+  register_tag_class(L);
+  register_tags_class(L);
+  register_userdata_class(L);
 
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);

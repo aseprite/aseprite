@@ -44,6 +44,12 @@ int Point_new(lua_State* L)
   return 1;
 }
 
+int Point_gc(lua_State* L)
+{
+  get_obj<gfx::Point>(L, 1)->~PointT();
+  return 0;
+}
+
 int Point_get_x(lua_State* L)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
@@ -73,6 +79,7 @@ int Point_set_y(lua_State* L)
 }
 
 const luaL_Reg Point_methods[] = {
+  { "__gc", Point_gc },
   { nullptr, nullptr }
 };
 

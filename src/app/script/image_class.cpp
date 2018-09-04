@@ -64,7 +64,11 @@ int Image_putPixel(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   const int x = lua_tointeger(L, 2);
   const int y = lua_tointeger(L, 3);
-  const doc::color_t color = lua_tointeger(L, 4);
+  doc::color_t color;
+  if (lua_isinteger(L, 4))
+    color = lua_tointeger(L, 4);
+  else
+    color = convert_args_into_pixel_color(L, 4);
   doc::put_pixel(obj->image.get(), x, y, color);
   return 0;
 }

@@ -12,6 +12,8 @@
   #error ENABLE_SCRIPTING must be defined
 #endif
 
+#include "app/color.h"
+#include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/object_id.h"
 #include "gfx/fwd.h"
@@ -24,7 +26,11 @@ struct lua_State;
 
 namespace doc {
   class Cel;
+  class FrameTag;
+  class Layer;
+  class Palette;
   class Sprite;
+  class WithUserData;
 }
 
 namespace app {
@@ -59,13 +65,25 @@ namespace app {
     bool m_printLastResult;
   };
 
-  void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
-  void push_cel_image(lua_State* L, doc::Cel* cel);
   int push_image_iterator_function(lua_State* L, const doc::ImageRef& image);
+  void push_cel_image(lua_State* L, doc::Cel* cel);
+  void push_sprite_cel(lua_State* L, doc::Cel* cel);
+  void push_sprite_cels(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_frame(lua_State* L, doc::Sprite* sprite, doc::frame_t frame);
+  void push_sprite_frames(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_layers(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_palette(lua_State* L, doc::Sprite* sprite, doc::Palette* palette);
+  void push_sprite_palettes(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
+  void push_userdata(lua_State* L, doc::WithUserData* userData);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);
   gfx::Size convert_args_into_size(lua_State* L, int index);
+  app::Color convert_args_into_color(lua_State* L, int index);
+  doc::color_t convert_args_into_pixel_color(lua_State* L, int index);
 
 } // namespace script
 } // namespace app
