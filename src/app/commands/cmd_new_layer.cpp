@@ -319,15 +319,18 @@ void NewLayerCommand::onExecute(Context* context)
 
     tx.commit();
   }
-  update_screen_for_document(document);
 
-  StatusBar::instance()->invalidate();
-  StatusBar::instance()->showTip(
-    1000, "%s '%s' created",
-    layerPrefix(),
-    name.c_str());
+  if (context->isUIAvailable()) {
+    update_screen_for_document(document);
 
-  App::instance()->mainWindow()->popTimeline();
+    StatusBar::instance()->invalidate();
+    StatusBar::instance()->showTip(
+      1000, "%s '%s' created",
+      layerPrefix(),
+      name.c_str());
+
+    App::instance()->mainWindow()->popTimeline();
+  }
 }
 
 std::string NewLayerCommand::onGetFriendlyName() const
