@@ -389,7 +389,7 @@ void AppMenus::reload()
             Params params;
             params.set("filename", fullFn.c_str());
             auto menuitem = new AppMenuItem(
-              fn.c_str(),
+              base::get_file_title(fn).c_str(),
               cmd_run_script,
               params);
             scriptsMenu->getSubmenu()->addChild(menuitem);
