@@ -19,6 +19,7 @@
 #include "app/resource_finder.h"
 #include "app/script/engine.h"
 #include "base/fs.h"
+#include "fmt/format.h"
 #include "ui/manager.h"
 
 #include <cstdio>
@@ -43,6 +44,7 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   std::string m_filename;
@@ -74,6 +76,16 @@ void RunScriptCommand::onExecute(Context* context)
   engine->setDelegate(nullptr);
 
   ui::Manager::getDefault()->invalidate();
+}
+
+std::string RunScriptCommand::onGetFriendlyName() const
+{
+  if (m_filename.empty())
+    return getBaseFriendlyName();
+  else
+    return fmt::format("{0}: {1}",
+                       getBaseFriendlyName(),
+                       base::get_file_name(m_filename));
 }
 
 Command* CommandFactory::createRunScriptCommand()
