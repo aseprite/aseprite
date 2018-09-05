@@ -10,6 +10,7 @@
 
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/userdata.h"
 #include "app/tx.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
@@ -79,13 +80,6 @@ int Slice_get_pivot(lua_State* L)
   return 1;
 }
 
-int Slice_get_userData(lua_State* L)
-{
-  auto slice = get_ptr<Slice>(L, 1);
-  push_userdata(L, slice);
-  return 1;
-}
-
 const luaL_Reg Slice_methods[] = {
   { nullptr, nullptr }
 };
@@ -98,7 +92,8 @@ const Property Slice_properties[] = {
   { "bounds", Slice_get_bounds, nullptr },
   { "center", Slice_get_center, nullptr },
   { "pivot", Slice_get_pivot, nullptr },
-  { "userData", Slice_get_userData, nullptr },
+  { "color", UserData_get_color<Slice>, UserData_set_color<Slice> },
+  { "data", UserData_get_text<Slice>, UserData_set_text<Slice> },
   { nullptr, nullptr, nullptr }
 };
 

@@ -174,7 +174,6 @@ if(ENABLE_SCRIPTING)
     script/sprite_class.cpp
     script/tag_class.cpp
     script/tags_class.cpp
-    script/userdata_class.cpp
     shell.cpp
     ${scripting_files_ui})
 endif()

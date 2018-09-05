@@ -12,6 +12,7 @@
 #include "app/cmd/set_layer_opacity.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/userdata.h"
 #include "app/tx.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -46,13 +47,6 @@ int Layer_get_opacity(lua_State* L)
   }
   else
     return 0;
-}
-
-int Layer_get_userData(lua_State* L)
-{
-  auto layer = get_ptr<Layer>(L, 1);
-  push_userdata(L, layer);
-  return 1;
 }
 
 int Layer_get_isImage(lua_State* L)
@@ -101,9 +95,10 @@ const Property Layer_properties[] = {
   { "sprite", Layer_get_sprite, nullptr },
   { "name", Layer_get_name, Layer_set_name },
   { "opacity", Layer_get_opacity, Layer_set_opacity },
-  { "userData", Layer_get_userData, nullptr },
   { "isImage", Layer_get_isImage, nullptr },
   { "isGroup", Layer_get_isGroup, nullptr },
+  { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
+  { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
   { nullptr, nullptr, nullptr }
 };
 

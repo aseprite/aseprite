@@ -10,6 +10,7 @@
 
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/userdata.h"
 #include "doc/cel.h"
 #include "doc/sprite.h"
 
@@ -55,13 +56,6 @@ int Cel_get_bounds(lua_State* L)
   return 1;
 }
 
-int Cel_get_userData(lua_State* L)
-{
-  auto cel = get_ptr<Cel>(L, 1);
-  push_userdata(L, cel->data());
-  return 1;
-}
-
 const luaL_Reg Cel_methods[] = {
   { nullptr, nullptr }
 };
@@ -72,7 +66,8 @@ const Property Cel_properties[] = {
   { "frame", Cel_get_frame, nullptr },
   { "image", Cel_get_image, nullptr },
   { "bounds", Cel_get_bounds, nullptr },
-  { "userData", Cel_get_userData, nullptr },
+  { "color", UserData_get_color<Cel>, UserData_set_color<Cel> },
+  { "data", UserData_get_text<Cel>, UserData_set_text<Cel> },
   { nullptr, nullptr, nullptr }
 };
 

@@ -103,7 +103,6 @@ void register_slices_class(lua_State* L);
 void register_sprite_class(lua_State* L);
 void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
-void register_userdata_class(lua_State* L);
 
 Engine::Engine()
   : L(luaL_newstate())
@@ -174,7 +173,6 @@ Engine::Engine()
   register_sprite_class(L);
   register_tag_class(L);
   register_tags_class(L);
-  register_userdata_class(L);
 
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);
