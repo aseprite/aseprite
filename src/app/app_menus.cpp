@@ -379,23 +379,7 @@ void AppMenus::reload()
     std::string scriptsDir = rf.getFirstOrCreateDefault();
     scriptsDir = base::get_file_path(scriptsDir);
     if (base::is_directory(scriptsDir)) {
-      Command* cmd_run_script =
-        Commands::instance()->byId(CommandId::RunScript());
-
-      for (auto fn : base::list_files(scriptsDir)) {
-        if (base::string_to_lower(base::get_file_extension(fn)) == "lua") {
-          std::string fullFn = base::join_path(scriptsDir, fn);
-          if (base::is_file(fullFn)) {
-            Params params;
-            params.set("filename", fullFn.c_str());
-            auto menuitem = new AppMenuItem(
-              base::get_file_title(fn).c_str(),
-              cmd_run_script,
-              params);
-            scriptsMenu->getSubmenu()->addChild(menuitem);
-          }
-        }
-      }
+      loadScriptsSubmenu(scriptsMenu->getSubmenu(), scriptsDir);
     }
 #else
     // Scripting is not available
@@ -410,6 +394,45 @@ void AppMenus::reload()
   // shortcuts are loaded correctly.
   createNativeMenus();
 }
+
+#ifdef ENABLE_SCRIPTING
+void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir)
+{
+  Command* cmd_run_script =
+    Commands::instance()->byId(CommandId::RunScript());
+
+  auto files = base::list_files(dir);
+  std::sort(files.begin(), files.end());
+  for (auto fn : files) {
+    std::string fullFn = base::join_path(dir, fn);
+    AppMenuItem* menuitem = nullptr;
+
+    if (base::is_file(fullFn)) {
+      if (base::string_to_lower(base::get_file_extension(fn)) == "lua") {
+        Params params;
+        params.set("filename", fullFn.c_str());
+        menuitem = new AppMenuItem(
+          base::get_file_title(fn).c_str(),
+          cmd_run_script,
+          params);
+      }
+    }
+    else if (base::is_directory(fullFn)) {
+      if (fn == "." || fn == "..")
+        continue;
+
+      Menu* submenu = new Menu();
+      loadScriptsSubmenu(submenu, fullFn);
+
+      menuitem = new AppMenuItem(
+        base::get_file_title(fn).c_str());
+      menuitem->setSubmenu(submenu);
+    }
+    if (menuitem)
+      menu->addChild(menuitem);
+  }
+}
+#endif
 
 void AppMenus::initTheme()
 {
