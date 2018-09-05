@@ -24,6 +24,14 @@ using namespace doc;
 
 namespace {
 
+int Layer_eq(lua_State* L)
+{
+  const auto a = get_ptr<Layer>(L, 1);
+  const auto b = get_ptr<Layer>(L, 2);
+  lua_pushboolean(L, a->id() == b->id());
+  return 1;
+}
+
 int Layer_get_sprite(lua_State* L)
 {
   auto layer = get_ptr<Layer>(L, 1);
@@ -88,6 +96,7 @@ int Layer_set_opacity(lua_State* L)
 }
 
 const luaL_Reg Layer_methods[] = {
+  { "__eq", Layer_eq },
   { nullptr, nullptr }
 };
 

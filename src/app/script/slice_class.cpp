@@ -22,6 +22,14 @@ using namespace doc;
 
 namespace {
 
+int Slice_eq(lua_State* L)
+{
+  const auto a = get_ptr<Slice>(L, 1);
+  const auto b = get_ptr<Slice>(L, 2);
+  lua_pushboolean(L, a->id() == b->id());
+  return 1;
+}
+
 int Slice_get_sprite(lua_State* L)
 {
   auto slice = get_ptr<Slice>(L, 1);
@@ -81,6 +89,7 @@ int Slice_get_pivot(lua_State* L)
 }
 
 const luaL_Reg Slice_methods[] = {
+  { "__eq", Slice_eq },
   { nullptr, nullptr }
 };
 

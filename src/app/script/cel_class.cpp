@@ -21,6 +21,14 @@ using namespace doc;
 
 namespace {
 
+int Cel_eq(lua_State* L)
+{
+  const auto a = get_ptr<Cel>(L, 1);
+  const auto b = get_ptr<Cel>(L, 2);
+  lua_pushboolean(L, a->id() == b->id());
+  return 1;
+}
+
 int Cel_get_sprite(lua_State* L)
 {
   auto cel = get_ptr<Cel>(L, 1);
@@ -57,6 +65,7 @@ int Cel_get_bounds(lua_State* L)
 }
 
 const luaL_Reg Cel_methods[] = {
+  { "__eq", Cel_eq },
   { nullptr, nullptr }
 };
 

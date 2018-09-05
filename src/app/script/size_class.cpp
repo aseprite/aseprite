@@ -50,6 +50,14 @@ int Size_gc(lua_State* L)
   return 0;
 }
 
+int Size_eq(lua_State* L)
+{
+  const auto a = get_obj<gfx::Size>(L, 1);
+  const auto b = get_obj<gfx::Size>(L, 2);
+  lua_pushboolean(L, *a == *b);
+  return 1;
+}
+
 int Size_get_width(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
@@ -84,6 +92,7 @@ int Size_set_height(lua_State* L)
 
 const luaL_Reg Size_methods[] = {
   { "__gc", Size_gc },
+  { "__eq", Size_eq },
   { nullptr, nullptr }
 };
 

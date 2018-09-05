@@ -23,6 +23,14 @@ using namespace doc;
 
 namespace {
 
+int Tag_eq(lua_State* L)
+{
+  const auto a = get_ptr<FrameTag>(L, 1);
+  const auto b = get_ptr<FrameTag>(L, 2);
+  lua_pushboolean(L, a->id() == b->id());
+  return 1;
+}
+
 int Tag_get_fromFrame(lua_State* L)
 {
   auto tag = get_ptr<FrameTag>(L, 1);
@@ -104,6 +112,7 @@ int Tag_set_aniDir(lua_State* L)
 }
 
 const luaL_Reg Tag_methods[] = {
+  { "__eq", Tag_eq },
   { nullptr, nullptr }
 };
 

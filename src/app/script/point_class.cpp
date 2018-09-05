@@ -50,6 +50,14 @@ int Point_gc(lua_State* L)
   return 0;
 }
 
+int Point_eq(lua_State* L)
+{
+  const auto a = get_obj<gfx::Point>(L, 1);
+  const auto b = get_obj<gfx::Point>(L, 2);
+  lua_pushboolean(L, *a == *b);
+  return 1;
+}
+
 int Point_get_x(lua_State* L)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
@@ -80,6 +88,7 @@ int Point_set_y(lua_State* L)
 
 const luaL_Reg Point_methods[] = {
   { "__gc", Point_gc },
+  { "__eq", Point_eq },
   { nullptr, nullptr }
 };
 

@@ -56,6 +56,14 @@ int Rectangle_gc(lua_State* L)
   return 0;
 }
 
+int Rectangle_eq(lua_State* L)
+{
+  const auto a = get_obj<gfx::Rect>(L, 1);
+  const auto b = get_obj<gfx::Rect>(L, 2);
+  lua_pushboolean(L, *a == *b);
+  return 1;
+}
+
 int Rectangle_get_x(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
@@ -121,6 +129,7 @@ int Rectangle_get_isEmpty(lua_State* L)
 
 const luaL_Reg Rectangle_methods[] = {
   { "__gc", Rectangle_gc },
+  { "__eq", Rectangle_eq },
   { nullptr, nullptr }
 };
 
