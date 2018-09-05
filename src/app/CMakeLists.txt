@@ -144,6 +144,7 @@ if(ENABLE_SCRIPTING)
   if(ENABLE_UI)
     set(scripting_files_ui
       commands/cmd_developer_console.cpp
+      commands/cmd_open_script_folder.cpp
       ui/devconsole_view.cpp)
   endif()
   set(scripting_files

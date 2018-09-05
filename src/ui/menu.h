@@ -28,6 +28,7 @@ namespace ui {
     ~Menu();
 
     void showPopup(const gfx::Point& pos);
+    Widget* findItemById(const char* id);
 
     // Returns the MenuItem that has as submenu this menu.
     MenuItem* getOwnerMenuItem() {

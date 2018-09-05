@@ -368,6 +368,44 @@ void AppMenus::reload()
       KeyboardShortcuts::instance()->importFile(fn, KeySource::UserDefined);
   }
 
+  // Add one menu item to run each script from the user scripts/ folder
+  {
+    MenuItem* scriptsMenu = dynamic_cast<MenuItem*>(
+      m_rootMenu->findItemById("scripts_menu"));
+#ifdef ENABLE_SCRIPTING
+    // Load scripts
+    ResourceFinder rf;
+    rf.includeUserDir("scripts/.");
+    std::string scriptsDir = rf.getFirstOrCreateDefault();
+    scriptsDir = base::get_file_path(scriptsDir);
+    if (base::is_directory(scriptsDir)) {
+      Command* cmd_run_script =
+        Commands::instance()->byId(CommandId::RunScript());
+
+      for (auto fn : base::list_files(scriptsDir)) {
+        if (base::string_to_lower(base::get_file_extension(fn)) == "lua") {
+          std::string fullFn = base::join_path(scriptsDir, fn);
+          if (base::is_file(fullFn)) {
+            Params params;
+            params.set("filename", fullFn.c_str());
+            auto menuitem = new AppMenuItem(
+              fn.c_str(),
+              cmd_run_script,
+              params);
+            scriptsMenu->getSubmenu()->addChild(menuitem);
+          }
+        }
+      }
+    }
+#else
+    // Scripting is not available
+    if (scriptsMenu) {
+      delete scriptsMenu;
+      delete m_rootMenu->findItemById("scripts_menu_separator");
+    }
+#endif
+  }
+
   // Create native menus after the default + user defined keyboard
   // shortcuts are loaded correctly.
   createNativeMenus();
@@ -485,9 +523,14 @@ Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 
 Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
+  const char* id = elem->Attribute("id");
+
   // is it a <separator>?
-  if (strcmp(elem->Value(), "separator") == 0)
-    return new MenuSeparator;
+  if (strcmp(elem->Value(), "separator") == 0) {
+    auto item = new MenuSeparator;
+    if (id) item->setId(id);
+    return item;
+  }
 
   const char* command_id = elem->Attribute("command");
   Command* command =
@@ -515,10 +558,10 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   if (!menuitem)
     return nullptr;
 
+  if (id) menuitem->setId(id);
   menuitem->processMnemonicFromText();
 
   // Has it a ID?
-  const char* id = elem->Attribute("id");
   if (id) {
     // Recent list menu
     if (std::strcmp(id, "recent_list") == 0) {

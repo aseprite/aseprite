@@ -291,6 +291,22 @@ void Menu::showPopup(const gfx::Point& pos)
 
 }
 
+Widget* Menu::findItemById(const char* id)
+{
+  Widget* result = findChild(id);
+  if (result)
+    return result;
+  for (auto child : children()) {
+    if (child->type() == kMenuItemWidget) {
+      result = static_cast<MenuItem*>(child)
+        ->getSubmenu()->findItemById(id);
+      if (result)
+        return result;
+    }
+  }
+  return nullptr;
+}
+
 void Menu::onPaint(PaintEvent& ev)
 {
   theme()->paintMenu(ev);
