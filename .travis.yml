@@ -47,12 +47,10 @@ script:
   - ninja
   - |
     if $XVFB ctest --output-on-failure ; then
-      if [[ "$ENABLE_UI" == "OFF" ]]; then
-        export ASEPRITE=$PWD/bin/aseprite
-        git clone https://github.com/aseprite/tests.git
-        cd tests
-        $XVFB bash run-tests.sh
-      fi
+      export ASEPRITE=$PWD/bin/aseprite
+      git clone https://github.com/aseprite/tests.git
+      cd tests
+      $XVFB bash run-tests.sh
     else
       exit 1
     fi
