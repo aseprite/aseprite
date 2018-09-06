@@ -75,7 +75,13 @@ void CelOpacityCommand::onExecute(Context* context)
     Tx tx(writer.context(), "Set Cel Opacity");
 
     // TODO the range of selected cels should be in app::Site.
-    DocRange range = App::instance()->timeline()->range();
+    DocRange range;
+
+#ifdef ENABLE_UI
+    if (context->isUIAvailable())
+      range = App::instance()->timeline()->range();
+#endif
+
     if (!range.enabled()) {
       range.startRange(layer, cel->frame(), DocRange::kCels);
       range.endRange(layer, cel->frame());
@@ -94,7 +100,10 @@ void CelOpacityCommand::onExecute(Context* context)
     tx.commit();
   }
 
-  update_screen_for_document(writer.document());
+#ifdef ENABLE_UI
+  if (context->isUIAvailable())
+    update_screen_for_document(writer.document());
+#endif
 }
 
 std::string CelOpacityCommand::onGetFriendlyName() const

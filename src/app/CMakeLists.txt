@@ -187,10 +187,8 @@ if(ENABLE_UI)
     commands/cmd_about.cpp
     commands/cmd_add_color.cpp
     commands/cmd_advanced_mode.cpp
-    commands/cmd_background_from_layer.cpp
     commands/cmd_cancel.cpp
     commands/cmd_canvas_size.cpp
-    commands/cmd_cel_opacity.cpp
     commands/cmd_cel_properties.cpp
     commands/cmd_change_brush.cpp
     commands/cmd_change_color.cpp
@@ -227,7 +225,6 @@ if(ENABLE_UI)
     commands/cmd_invert_mask.cpp
     commands/cmd_keyboard_shortcuts.cpp
     commands/cmd_launch.cpp
-    commands/cmd_layer_from_background.cpp
     commands/cmd_layer_lock.cpp
     commands/cmd_layer_opacity.cpp
     commands/cmd_layer_properties.cpp
@@ -261,7 +258,6 @@ if(ENABLE_UI)
     commands/cmd_refresh.cpp
     commands/cmd_remove_frame.cpp
     commands/cmd_remove_frame_tag.cpp
-    commands/cmd_remove_layer.cpp
     commands/cmd_remove_slice.cpp
     commands/cmd_repeat_last_export.cpp
     commands/cmd_reselect_mask.cpp
@@ -502,11 +498,15 @@ add_library(app-lib
   color.cpp
   color_picker.cpp
   color_utils.cpp
+  commands/cmd_background_from_layer.cpp
+  commands/cmd_cel_opacity.cpp
   commands/cmd_change_pixel_format.cpp
   commands/cmd_crop.cpp
+  commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_open_file.cpp
+  commands/cmd_remove_layer.cpp
   commands/cmd_save_file.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_undo.cpp

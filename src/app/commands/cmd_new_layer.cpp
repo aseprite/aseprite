@@ -151,6 +151,7 @@ void NewLayerCommand::onExecute(Context* context)
       return;
   }
 
+#ifdef ENABLE_UI
   // If params specify to ask the user about the name...
   if (m_ask) {
     // We open the window to ask the name
@@ -163,6 +164,7 @@ void NewLayerCommand::onExecute(Context* context)
 
     name = window.name()->text();
   }
+#endif
 
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = writer.layer();
@@ -320,6 +322,7 @@ void NewLayerCommand::onExecute(Context* context)
     tx.commit();
   }
 
+#ifdef ENABLE_UI
   if (context->isUIAvailable()) {
     update_screen_for_document(document);
 
@@ -331,6 +334,7 @@ void NewLayerCommand::onExecute(Context* context)
 
     App::instance()->mainWindow()->popTimeline();
   }
+#endif
 }
 
 std::string NewLayerCommand::onGetFriendlyName() const

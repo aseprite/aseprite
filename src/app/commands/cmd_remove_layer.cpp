@@ -89,13 +89,18 @@ void RemoveLayerCommand::onExecute(Context* context)
 
     tx.commit();
   }
-  update_screen_for_document(document);
 
-  StatusBar::instance()->invalidate();
-  if (!layerName.empty())
-    StatusBar::instance()->showTip(1000, "Layer '%s' removed", layerName.c_str());
-  else
-    StatusBar::instance()->showTip(1000, "Layers removed");
+#ifdef ENABLE_UI
+  if (context->isUIAvailable()) {
+    update_screen_for_document(document);
+
+    StatusBar::instance()->invalidate();
+    if (!layerName.empty())
+      StatusBar::instance()->showTip(1000, "Layer '%s' removed", layerName.c_str());
+    else
+      StatusBar::instance()->showTip(1000, "Layers removed");
+  }
+#endif
 }
 
 Command* CommandFactory::createRemoveLayerCommand()

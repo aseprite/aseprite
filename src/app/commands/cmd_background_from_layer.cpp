@@ -59,7 +59,10 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
     tx.commit();
   }
 
-  update_screen_for_document(document);
+#ifdef ENABLE_UI
+  if (context->isUIAvailable())
+    update_screen_for_document(document);
+#endif
 }
 
 Command* CommandFactory::createBackgroundFromLayerCommand()

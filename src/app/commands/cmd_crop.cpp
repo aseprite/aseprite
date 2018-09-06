@@ -78,7 +78,8 @@ void CropSpriteCommand::onExecute(Context* context)
   document->generateMaskBoundaries();
 
 #ifdef ENABLE_UI
-  update_screen_for_document(document);
+  if (context->isUIAvailable())
+    update_screen_for_document(document);
 #endif
 }
 
@@ -116,7 +117,8 @@ void AutocropSpriteCommand::onExecute(Context* context)
   document->generateMaskBoundaries();
 
 #ifdef ENABLE_UI
-  update_screen_for_document(document);
+  if (context->isUIAvailable())
+    update_screen_for_document(document);
 #endif
 }
 
