@@ -1,0 +1,16 @@
+{
+  "name": "zughy-palettes",
+  "displayName": "Zughy Palettes",
+  "description": "Palettes contributed by Marco Amato",
+  "version": "1.0",
+  "author": { "name": "Zughy", "url": "https://twitter.com/_Zughy" },
+  "publisher": "aseprite",
+  "categories": [
+    "Palettes"
+  ],
+  "contributes": {
+    "palettes": [
+      { "id": "Zughy-32", "path": "./zughy-32.gpl" }
+    ]
+  }
+}
