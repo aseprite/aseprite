@@ -31,7 +31,6 @@ public:
   void onConsolePrint(const char* text) override {
     m_console.printf("%s\n", text);
   }
-
 private:
   Console m_console;
 };
@@ -69,12 +68,11 @@ void RunScriptCommand::onLoadParams(const Params& params)
 void RunScriptCommand::onExecute(Context* context)
 {
   script::Engine* engine = App::instance()->scriptEngine();
-
-  ConsoleEngineDelegate delegate;
-  engine->setDelegate(&delegate);
-  engine->evalFile(m_filename);
-  engine->setDelegate(nullptr);
-
+  {
+    ConsoleEngineDelegate delegate;
+    script::ScopedEngineDelegate scoped(engine, &delegate);
+    engine->evalFile(m_filename);
+  }
   ui::Manager::getDefault()->invalidate();
 }
 

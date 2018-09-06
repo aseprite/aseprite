@@ -48,6 +48,7 @@ namespace app {
     Engine();
     ~Engine();
 
+    EngineDelegate* delegate() { return m_delegate; }
     void setDelegate(EngineDelegate* delegate) {
       m_delegate = delegate;
     }
@@ -63,6 +64,21 @@ namespace app {
     lua_State* L;
     EngineDelegate* m_delegate;
     bool m_printLastResult;
+  };
+
+  class ScopedEngineDelegate {
+  public:
+    ScopedEngineDelegate(Engine* engine, EngineDelegate* delegate)
+      : m_engine(engine),
+        m_oldDelegate(engine->delegate()) {
+      m_engine->setDelegate(delegate);
+    }
+    ~ScopedEngineDelegate() {
+      m_engine->setDelegate(m_oldDelegate);
+    }
+  private:
+    Engine* m_engine;
+    EngineDelegate* m_oldDelegate;
   };
 
   int push_image_iterator_function(lua_State* L, const doc::ImageRef& image);
