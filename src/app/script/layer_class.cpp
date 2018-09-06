@@ -71,6 +71,20 @@ int Layer_get_isGroup(lua_State* L)
   return 1;
 }
 
+int Layer_get_isTransparent(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isTransparent());
+  return 1;
+}
+
+int Layer_get_isBackground(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isBackground());
+  return 1;
+}
+
 int Layer_set_name(lua_State* L)
 {
   auto layer = get_ptr<Layer>(L, 1);
@@ -106,6 +120,8 @@ const Property Layer_properties[] = {
   { "opacity", Layer_get_opacity, Layer_set_opacity },
   { "isImage", Layer_get_isImage, nullptr },
   { "isGroup", Layer_get_isGroup, nullptr },
+  { "isTransparent", Layer_get_isTransparent, nullptr },
+  { "isBackground", Layer_get_isBackground, nullptr },
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
   { nullptr, nullptr, nullptr }
