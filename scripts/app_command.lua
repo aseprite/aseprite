@@ -3,31 +3,96 @@
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
-local s = Sprite(32, 32)
-assert(s.width == 32)
-assert(s.height == 32)
+do -- Undo/Redo commands (like app.undo/redo())
+  local s = Sprite(32, 32)
+  assert(s.width == 32)
+  assert(s.height == 32)
 
-s:resize(50, 40)
-assert(s.width == 50)
-assert(s.height == 40)
+  s:resize(50, 40)
+  assert(s.width == 50)
+  assert(s.height == 40)
 
--- Undo/Redo
+  app.command.Undo()
+  assert(s.width == 32)
+  assert(s.height == 32)
 
-local pc = app.command.Undo()
-assert(s.width == 32)
-assert(s.height == 32)
+  app.command.Redo()
+  assert(s.width == 50)
+  assert(s.height == 40)
+end
 
-local pc = app.command.Redo()
-assert(s.width == 50)
-assert(s.height == 40)
+do -- NewLayer/RemoveLayer
+  local s = Sprite(32, 32)
+  assert(#s.layers == 1)
+  local lay = s.layers[1]
+  app.command.NewLayer{top=true}
+  assert(#s.layers == 2)
+  assert(s.layers[2].isImage)
 
--- NewLayer
+  app.command.NewLayer{top=true, group=true}
+  assert(#s.layers == 3)
+  assert(s.layers[3].isGroup)
 
-assert(#s.layers == 1)
-app.command.NewLayer{top=true}
-assert(#s.layers == 2)
-assert(s.layers[2].isImage)
+  app.command.RemoveLayer()
+  assert(#s.layers == 2)
 
-app.command.NewLayer{top=true, group=true}
-assert(#s.layers == 3)
-assert(s.layers[3].isGroup)
+  app.command.RemoveLayer()
+  assert(#s.layers == 1)
+end
+
+do -- Background/Transparent layers
+  local s = Sprite(32, 32)
+  assert(s.layers[1].isTransparent)
+  assert(s.cels[1].image:getPixel(0, 0) == app.pixelColor.rgba(0, 0, 0, 0))
+
+  app.bgColor = Color(32, 64, 128)
+  app.command.BackgroundFromLayer() -- the layer will be filled with app.bgColor
+  assert(s.layers[1].isBackground)
+  assert(s.cels[1].image:getPixel(0, 0) == app.pixelColor.rgba(32, 64, 128, 255))
+
+  app.command.LayerFromBackground()
+  assert(s.layers[1].isTransparent)
+  assert(s.cels[1].image:getPixel(0, 0) == app.pixelColor.rgba(32, 64, 128, 255))
+end
+
+do -- Crop and Trim
+  local s = Sprite(32, 32)
+  s.selection:select(4, 5, 8, 10)
+  assert(s.cels[1].bounds == Rectangle(0, 0, 32, 32))
+
+  -- Crop
+
+  app.command.CropSprite()
+  assert(s.width == 8)
+  assert(s.height == 10)
+  assert(s.cels[1].bounds == Rectangle(-4, -5, 32, 32))
+
+  -- Autocrop (Trim)
+
+  app.command.AutocropSprite() -- Trim does nothing when we should remove all pixels
+  assert(s.width == 8)
+  assert(s.height == 10)
+
+  s.cels[1].image:putPixel(5, 5, Color(255, 0, 0))
+  s.cels[1].image:putPixel(4, 6, Color(255, 0, 0))
+  app.command.AutocropSprite()
+  assert(s.width == 2)
+  assert(s.height == 2)
+end
+
+do -- Cel Opacity
+  local s = Sprite(32, 32)
+  local c = s.cels[1]
+  assert(c.opacity == 255)
+
+  app.command.CelOpacity{opacity=128}
+  assert(c.opacity == 128)
+
+  s.cels[1].opacity = 255
+  assert(c.opacity == 255)
+
+  app.undo()
+  assert(c.opacity == 128)
+  app.undo()
+  assert(c.opacity == 255)
+end
