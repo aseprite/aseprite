@@ -23,12 +23,16 @@ $ASEPRITE -b --script scripts/console_assert.lua >tmp 2>tmp_err
 ! grep -q "assertion failed" tmp && fail "assert() text not found in output"
 grep -q "this should not be in the output" tmp && fail "text that shouldn't be in the output is"
 
-$ASEPRITE -b --script scripts/console_print.lua >tmp 2>tmp_err
-cat >tmp_expected <<EOF
+if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
+    echo Ignore console tests on Windows
+else
+    $ASEPRITE -b --script scripts/console_print.lua >tmp 2>tmp_err
+    cat >tmp_expected <<EOF
 hello world
 1	2	3
 EOF
-! diff -u tmp tmp_expected && fail
+    ! diff -u tmp tmp_expected && fail
+fi
 
 echo ----------------------------------------------------------------------
 echo "Testing scripts..."
