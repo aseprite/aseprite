@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_cel_opacity.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
@@ -31,21 +32,21 @@ int Cel_eq(lua_State* L)
 
 int Cel_get_sprite(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_ptr<Cel>(L, 1);
   push_ptr(L, cel->sprite());
   return 1;
 }
 
 int Cel_get_layer(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_ptr<Cel>(L, 1);
   push_ptr<Layer>(L, (Layer*)cel->layer());
   return 1;
 }
 
 int Cel_get_frame(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_ptr<Cel>(L, 1);
   lua_pushinteger(L, cel->frame()+1);
   return 1;
 }
@@ -64,6 +65,22 @@ int Cel_get_bounds(lua_State* L)
   return 1;
 }
 
+int Cel_get_opacity(lua_State* L)
+{
+  const auto cel = get_ptr<Cel>(L, 1);
+  lua_pushinteger(L, cel->opacity());
+  return 1;
+}
+
+int Cel_set_opacity(lua_State* L)
+{
+  auto cel = get_ptr<Cel>(L, 1);
+  Tx tx;
+  tx(new cmd::SetCelOpacity(cel, lua_tointeger(L, 2)));
+  tx.commit();
+  return 0;
+}
+
 const luaL_Reg Cel_methods[] = {
   { "__eq", Cel_eq },
   { nullptr, nullptr }
@@ -75,6 +92,7 @@ const Property Cel_properties[] = {
   { "frame", Cel_get_frame, nullptr },
   { "image", Cel_get_image, nullptr },
   { "bounds", Cel_get_bounds, nullptr },
+  { "opacity", Cel_get_opacity, Cel_set_opacity },
   { "color", UserData_get_color<Cel>, UserData_set_color<Cel> },
   { "data", UserData_get_text<Cel>, UserData_set_text<Cel> },
   { nullptr, nullptr, nullptr }
