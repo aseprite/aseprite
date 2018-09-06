@@ -14,6 +14,7 @@
 #include "app/console.h"
 #include "app/script/luacpp.h"
 #include "base/chrono.h"
+#include "base/fs.h"
 #include "base/fstream_path.h"
 #include "doc/color_mode.h"
 
@@ -222,7 +223,19 @@ bool Engine::evalFile(const std::string& filename)
     std::ifstream s(FSTREAM_PATH(filename));
     buf << s.rdbuf();
   }
-  return evalCode(buf.str(), filename);
+
+  std::string fn = filename;
+  if (fn.size() > 2 &&
+#ifdef _WIN32
+      fn[1] != ':'
+#else
+      fn[0] != '/'
+#endif
+      ) {
+    fn = base::join_path(base::get_current_path(), fn);
+  }
+  fn = base::get_canonical_path(fn);
+  return evalCode(buf.str(), "@" + fn);
 }
 
 void Engine::onConsolePrint(const char* text)
