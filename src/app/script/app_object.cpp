@@ -13,6 +13,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/pref/preferences.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/site.h"
@@ -115,6 +116,30 @@ int App_get_activeImage(lua_State* L)
   return 1;
 }
 
+int App_get_fgColor(lua_State* L)
+{
+  push_obj<app::Color>(L, Preferences::instance().colorBar.fgColor());
+  return 1;
+}
+
+int App_set_fgColor(lua_State* L)
+{
+  Preferences::instance().colorBar.fgColor(*get_obj<app::Color>(L, 2));
+  return 0;
+}
+
+int App_get_bgColor(lua_State* L)
+{
+  push_obj<app::Color>(L, Preferences::instance().colorBar.bgColor());
+  return 1;
+}
+
+int App_set_bgColor(lua_State* L)
+{
+  Preferences::instance().colorBar.bgColor(*get_obj<app::Color>(L, 2));
+  return 0;
+}
+
 int App_get_site(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -141,6 +166,8 @@ const luaL_Reg App_methods[] = {
 const Property App_properties[] = {
   { "activeSprite", App_get_activeSprite, nullptr },
   { "activeImage", App_get_activeImage, nullptr },
+  { "fgColor", App_get_fgColor, App_set_fgColor },
+  { "bgColor", App_get_bgColor, App_set_bgColor },
   { "version", App_get_version, nullptr },
   { "site", App_get_site, nullptr },
   { nullptr, nullptr, nullptr }
