@@ -41,7 +41,13 @@ struct SelectionObj {
 
 int Selection_new(lua_State* L)
 {
-  push_new<SelectionObj>(L, new Mask, nullptr);
+  gfx::Rect bounds = convert_args_into_rect(L, 1);
+
+  auto mask = new Mask;
+  if (!bounds.isEmpty())
+    mask->replace(bounds);
+
+  push_new<SelectionObj>(L, mask, nullptr);
   return 1;
 }
 
