@@ -13,12 +13,14 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/site.h"
 #include "app/site.h"
 #include "app/tx.h"
+#include "ui/alert.h"
 
 #include <iostream>
 
@@ -91,6 +93,73 @@ int App_redo(lua_State* L)
     Command* redo = Commands::instance()->byId(CommandId::Redo());
     ctx->executeCommand(redo);
   }
+  return 0;
+}
+
+int App_alert(lua_State* L)
+{
+#ifdef ENABLE_UI
+  app::Context* ctx = App::instance()->context();
+  if (!ctx || !ctx->isUIAvailable())
+    return 0;                   // No UI to show the alert
+  // app.alert("text...")
+  else if (lua_isstring(L, 1)) {
+    ui::AlertPtr alert(new ui::Alert);
+    alert->addLabel(lua_tostring(L, 1), ui::CENTER);
+    alert->addButton(Strings::general_ok());
+    lua_pushinteger(L, alert->show());
+    return 1;
+  }
+  // app.alert{ ... }
+  else if (lua_istable(L, 1)) {
+    ui::AlertPtr alert(new ui::Alert);
+
+    int type = lua_getfield(L, 1, "title");
+    if (type != LUA_TNIL)
+      alert->setTitle(lua_tostring(L, -1));
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "text");
+    if (type == LUA_TTABLE) {
+      lua_pushnil(L);
+      while (lua_next(L, -2) != 0) {
+        const char* v = luaL_tolstring(L, -1, nullptr);
+        if (v)
+          alert->addLabel(v, ui::LEFT);
+        lua_pop(L, 2);
+      }
+    }
+    else if (type == LUA_TSTRING) {
+      alert->addLabel(lua_tostring(L, -1), ui::LEFT);
+    }
+    lua_pop(L, 1);
+
+    int nbuttons = 0;
+    type = lua_getfield(L, 1, "buttons");
+    if (type == LUA_TTABLE) {
+      lua_pushnil(L);
+      while (lua_next(L, -2) != 0) {
+        const char* v = luaL_tolstring(L, -1, nullptr);
+        if (v) {
+          alert->addButton(v);
+          ++nbuttons;
+        }
+        lua_pop(L, 2);
+      }
+    }
+    else if (type == LUA_TSTRING) {
+      alert->addButton(lua_tostring(L, -1));
+      ++nbuttons;
+    }
+    lua_pop(L, 1);
+
+    if (nbuttons == 0)
+      alert->addButton(Strings::general_ok());
+
+    lua_pushinteger(L, alert->show());
+    return 1;
+  }
+#endif
   return 0;
 }
 
@@ -167,6 +236,7 @@ const luaL_Reg App_methods[] = {
   { "transaction", App_transaction },
   { "undo",        App_undo },
   { "redo",        App_redo },
+  { "alert",       App_alert },
   { nullptr,       nullptr }
 };
 

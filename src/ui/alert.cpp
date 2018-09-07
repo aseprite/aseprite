@@ -54,7 +54,72 @@ Alert::Alert()
   , m_progress(nullptr)
   , m_progressPlaceholder(nullptr)
 {
-  // Do nothing
+  auto box1 = new Box(VERTICAL);
+  auto box2 = new Box(VERTICAL);
+  auto grid = new Grid(1, false);
+  auto box3 = new Box(HORIZONTAL | HOMOGENEOUS);
+
+  // To identify by the user
+  box2->setId("labels");
+  box3->setId("buttons");
+  m_labelsPlaceholder = box2;
+  m_buttonsPlaceholder = box3;
+
+  // Pseudo separators (only to fill blank space)
+  auto box4 = new Box(0);
+  auto box5 = new Box(0);
+  m_progressPlaceholder = new Box(0);
+
+  box4->setExpansive(true);
+  box5->setExpansive(true);
+  box4->noBorderNoChildSpacing();
+  box5->noBorderNoChildSpacing();
+  m_progressPlaceholder->noBorderNoChildSpacing();
+
+  // Setup parent <-> children relationship
+
+  addChild(box1);
+
+  box1->addChild(box4); // Filler
+  box1->addChild(box2); // Labels
+  box1->addChild(m_progressPlaceholder);
+  box1->addChild(box5); // Filler
+  box1->addChild(grid); // Buttons
+
+  grid->addChildInCell(box3, 1, 1, CENTER | BOTTOM | HORIZONTAL);
+}
+
+void Alert::setTitle(const std::string& title)
+{
+  setText(title);
+}
+
+void Alert::addLabel(const std::string& text, const int align)
+{
+  auto label = new Label(text);
+  label->setAlign(align);
+  m_labelsPlaceholder->addChild(label);
+}
+
+void Alert::addSeparator()
+{
+  auto sep = new Separator("", HORIZONTAL);
+  m_labelsPlaceholder->addChild(sep);
+}
+
+void Alert::addButton(const std::string& text)
+{
+  auto button = new Button(text);
+  button->processMnemonicFromText();
+  button->setMinSize(gfx::Size(60*guiscale(), 0));
+  m_buttons.push_back(button);
+
+  char id[256];
+  sprintf(id, "button-%lu", m_buttons.size());
+  button->setId(id);
+  button->Click.connect(base::Bind<void>(&Window::closeWindow, this, button));
+
+  m_buttonsPlaceholder->addChild(button);
 }
 
 void Alert::addProgress()
@@ -86,7 +151,7 @@ AlertPtr Alert::create(const std::string& _msg)
   std::string msg(_msg);
 
   // Create the alert window
-  AlertPtr window(new Alert());
+  AlertPtr window(new Alert);
   window->processString(msg);
   return window;
 }
@@ -97,13 +162,18 @@ int Alert::show(const std::string& _msg)
   std::string msg(_msg);
 
   // Create the alert window
-  AlertPtr window(new Alert());
+  AlertPtr window(new Alert);
   window->processString(msg);
   return window->show();
 }
 
 int Alert::show()
 {
+  // Default button is the first one (Enter default option, Esc should
+  // act like the last button)
+  if (!m_buttons.empty())
+    m_buttons[0]->setFocusMagnet(true);
+
   // Open it
   openWindowInForeground();
 
@@ -129,11 +199,10 @@ void Alert::processString(std::string& buf)
   bool separator = false;
   bool button = false;
   int align = 0;
-  int c, beg;
 
   // Process buffer
-  c = 0;
-  beg = 0;
+  int c = 0;
+  int beg = 0;
   for (;;) {
     // Ignore characters
     if (buf[c] == '\n' ||
@@ -152,28 +221,14 @@ void Alert::processString(std::string& buf)
       if (title || label || separator || button) {
         std::string item = buf.substr(beg, c-beg);
 
-        if (title) {
-          setText(item);
-        }
-        else if (label) {
-          Label* label = new Label(item);
-          label->setAlign(align);
-          m_labels.push_back(label);
-        }
-        else if (separator) {
-          m_labels.push_back(new Separator("", HORIZONTAL));
-        }
-        else if (button) {
-          char buttonId[256];
-          Button* button_widget = new Button(item);
-          button_widget->processMnemonicFromText();
-          button_widget->setMinSize(gfx::Size(60*guiscale(), 0));
-          m_buttons.push_back(button_widget);
-
-          sprintf(buttonId, "button-%lu", m_buttons.size());
-          button_widget->setId(buttonId);
-          button_widget->Click.connect(base::Bind<void>(&Window::closeWindow, this, button_widget));
-        }
+        if (title)
+          setTitle(item);
+        else if (label)
+          addLabel(item, align);
+        else if (separator)
+          addSeparator();
+        else if (button)
+          addButton(item);
       }
 
       // Done
@@ -197,49 +252,6 @@ void Alert::processString(std::string& buf)
     }
     ++c;
   }
-
-  auto box1 = new Box(VERTICAL);
-  auto box2 = new Box(VERTICAL);
-  auto grid = new Grid(1, false);
-  auto box3 = new Box(HORIZONTAL | HOMOGENEOUS);
-
-  // To identify by the user
-  box2->setId("labels");
-  box3->setId("buttons");
-
-  // Pseudo separators (only to fill blank space)
-  auto box4 = new Box(0);
-  auto box5 = new Box(0);
-  m_progressPlaceholder = new Box(0);
-
-  box4->setExpansive(true);
-  box5->setExpansive(true);
-  box4->noBorderNoChildSpacing();
-  box5->noBorderNoChildSpacing();
-  m_progressPlaceholder->noBorderNoChildSpacing();
-
-  // Setup parent <-> children relationship
-
-  addChild(box1);
-
-  box1->addChild(box4); // Filler
-  box1->addChild(box2); // Labels
-  box1->addChild(m_progressPlaceholder);
-  box1->addChild(box5); // Filler
-  box1->addChild(grid); // Buttons
-
-  grid->addChildInCell(box3, 1, 1, CENTER | BOTTOM | HORIZONTAL);
-
-  for (auto it=m_labels.begin(); it!=m_labels.end(); ++it)
-    box2->addChild(*it);
-
-  for (auto it=m_buttons.begin(); it!=m_buttons.end(); ++it)
-    box3->addChild(*it);
-
-  // Default button is the first one (Enter default option, Esc should
-  // act like the last button)
-  if (!m_buttons.empty())
-    m_buttons[0]->setFocusMagnet(true);
 }
 
 } // namespace ui

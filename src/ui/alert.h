@@ -27,6 +27,11 @@ namespace ui {
   public:
     Alert();
 
+    void setTitle(const std::string& title);
+    void addLabel(const std::string& text, const int align);
+    void addSeparator();
+    void addButton(const std::string& text);
+
     void addProgress();
     void setProgress(double progress);
 
@@ -41,8 +46,9 @@ namespace ui {
     void processString(std::string& buf);
 
     Slider* m_progress;
+    Box* m_labelsPlaceholder;
+    Box* m_buttonsPlaceholder;
     Box* m_progressPlaceholder;
-    std::vector<Widget*> m_labels;
     std::vector<Widget*> m_buttons;
   };
 
