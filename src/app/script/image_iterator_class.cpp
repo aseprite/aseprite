@@ -29,9 +29,9 @@ struct ImageIteratorObj {
   doc::ImageRef image;
   typename doc::LockImageBits<ImageTraits> bits;
   typename doc::LockImageBits<ImageTraits>::iterator begin, next, end;
-  ImageIteratorObj(const doc::ImageRef& image)
+  ImageIteratorObj(const doc::ImageRef& image, const gfx::Rect& bounds)
     : image(image),
-      bits(image.get()),
+      bits(image.get(), bounds),
       begin(bits.begin()),
       next(begin),
       end(bits.end()) {
@@ -126,19 +126,40 @@ static int image_iterator_step_closure(lua_State* L)
   return 1;
 }
 
-int push_image_iterator_function(lua_State* L, const doc::ImageRef& image)
+// Used to when an area outside the image canvas is specified, so
+// there is pixel to be iterated.
+static int image_iterator_do_nothing(lua_State* L)
 {
+  lua_pushnil(L);
+  return 1;
+}
+
+int push_image_iterator_function(lua_State* L, const doc::ImageRef& image, int extraArgIndex)
+{
+  gfx::Rect bounds = image->bounds();
+
+  if (!lua_isnone(L, extraArgIndex)) {
+    auto specificBounds = convert_args_into_rect(L, extraArgIndex);
+    if (!specificBounds.isEmpty())
+      bounds &= specificBounds;
+  }
+
+  if (bounds.isEmpty()) {
+    lua_pushcclosure(L, image_iterator_do_nothing, 0);
+    return 1;
+  }
+
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
-      push_new<RgbImageIterator>(L, image);
+      push_new<RgbImageIterator>(L, image, bounds);
       lua_pushcclosure(L, image_iterator_step_closure<doc::RgbTraits>, 1);
       return 1;
     case IMAGE_GRAYSCALE:
-      push_new<GrayscaleImageIterator>(L, image);
+      push_new<GrayscaleImageIterator>(L, image, bounds);
       lua_pushcclosure(L, image_iterator_step_closure<doc::GrayscaleTraits>, 1);
       return 1;
     case IMAGE_INDEXED:
-      push_new<IndexedImageIterator>(L, image);
+      push_new<IndexedImageIterator>(L, image, bounds);
       lua_pushcclosure(L, image_iterator_step_closure<doc::IndexedTraits>, 1);
       return 1;
     default:

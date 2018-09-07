@@ -81,7 +81,7 @@ namespace app {
     EngineDelegate* m_oldDelegate;
   };
 
-  int push_image_iterator_function(lua_State* L, const doc::ImageRef& image);
+  int push_image_iterator_function(lua_State* L, const doc::ImageRef& image, int extraArgIndex);
   void push_cel_image(lua_State* L, doc::Cel* cel);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
   void push_sprite_cels(lua_State* L, doc::Sprite* sprite);

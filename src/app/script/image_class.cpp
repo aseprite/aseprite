@@ -103,7 +103,7 @@ int Image_putImage(lua_State* L)
 int Image_pixels(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
-  push_image_iterator_function(L, obj->image);
+  push_image_iterator_function(L, obj->image, 2);
   return 1;
 }
 
