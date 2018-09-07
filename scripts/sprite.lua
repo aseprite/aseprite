@@ -8,25 +8,8 @@ assert(a.width == 32)
 assert(a.height == 64)
 assert(a.colorMode == ColorMode.RGB) -- RGB by default
 
--- Sprite Selection
-local s = a.selection
-assert(s.bounds.x == 0)
-assert(s.bounds.y == 0)
-assert(s.bounds.width == 0)
-assert(s.bounds.height == 0)
-
-s:selectAll()
-assert(s.bounds.x == 0)
-assert(s.bounds.y == 0)
-assert(s.bounds.width == a.width)
-assert(s.bounds.height == a.height)
-
-s:select(2, 3, 4, 5)
-assert(s.bounds.x == 2)
-assert(s.bounds.y == 3)
-assert(s.bounds.width == 4)
-assert(s.bounds.height == 5)
-
+-- Crop and resize
+a.selection:select(2, 3, 4, 5)
 a:crop()
 assert(a.width == 4)
 assert(a.height == 5)
