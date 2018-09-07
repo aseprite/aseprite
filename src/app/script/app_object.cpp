@@ -148,6 +148,13 @@ int App_get_site(lua_State* L)
   return 1;
 }
 
+int App_get_isUIAvailable(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  lua_pushboolean(L, ctx && ctx->isUIAvailable());
+  return 1;
+}
+
 int App_get_version(lua_State* L)
 {
   lua_pushstring(L, VERSION);
@@ -170,6 +177,7 @@ const Property App_properties[] = {
   { "bgColor", App_get_bgColor, App_set_bgColor },
   { "version", App_get_version, nullptr },
   { "site", App_get_site, nullptr },
+  { "isUIAvailable", App_get_isUIAvailable, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
