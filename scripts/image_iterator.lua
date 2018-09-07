@@ -43,6 +43,21 @@ do
       c = c+1
    end
 
+   c = 0
+   for it in image:pixels{x=1, y=0, width=1, height=2} do
+     local i = 1 + it.y*2 + it.x
+     assert(colors[i] == it())
+     assert(xy[i].x == it.x)
+     assert(xy[i].y == it.y)
+     c = c + 1
+   end
+   assert(c == 2)
+
+   -- Iterating outside
+   for it in image:pixels{x=2, y=0, width=2, height=2} do
+     assert(false)
+   end
+
    c = 1
    for it in image:pixels() do
       it(pc.rgba(255, 32*c, 0, 255))
