@@ -36,6 +36,10 @@ do
   assert(a.bounds.height == 0)
   assert(a.isEmpty)
   assert(not a:contains(0, 0))
+
+  -- Constructor with rectangles
+  local b = Selection(1, 2, 3, 4)
+  assert(b.bounds == Rectangle(1, 2, 3, 4))
 end
 
 -- Sprite Selection
@@ -58,4 +62,51 @@ do
   assert(sel.bounds.y == 3)
   assert(sel.bounds.width == 4)
   assert(sel.bounds.height == 5)
+end
+
+-- Comparison
+do
+  local a = Selection()
+  local b = Selection()
+  assert(a == b)
+
+  a:select(0, 0, 1, 1)
+  assert(a ~= b)
+
+  b:add(a)
+  assert(a == b)
+
+  a:subtract(b)
+  assert(a ~= b)
+
+  b:subtract(b)
+  assert(a == b)
+end
+
+-- Operations
+do
+  local a = Selection()
+  a:select(2, 3, 4, 5)
+  assert(a.bounds == Rectangle(2, 3, 4, 5))
+
+  a:subtract(2, 3, 4, 1)
+  assert(a.bounds == Rectangle(2, 4, 4, 4))
+
+  assert(a:contains(3, 5))
+  a:subtract(3, 5, 1, 1)
+  assert(not a:contains(3, 5))
+  assert(a.bounds == Rectangle(2, 4, 4, 4))
+
+  local b = Selection()
+  assert(a.bounds == Rectangle(2, 4, 4, 4))
+  assert(b.isEmpty)
+  a:subtract(b) -- This should be a no-op because b is empty
+  assert(a.bounds == Rectangle(2, 4, 4, 4))
+
+  b:select(0, 0, 32, 32)
+  assert(a ~= b)
+  b:intersect(a)
+  assert(a == b)
+  assert(b.bounds == Rectangle(2, 4, 4, 4))
+  assert(b.bounds == Rectangle(2, 4, 4, 4))
 end
