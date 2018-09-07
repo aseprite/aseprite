@@ -77,6 +77,7 @@ namespace doc {
 
     // Replace the whole mask with the given region.
     void replace(const gfx::Rect& bounds);
+    void replace(const doc::Mask& sourceMask) { copyFrom(&sourceMask); }
 
     // Inverts the mask.
     void invert();

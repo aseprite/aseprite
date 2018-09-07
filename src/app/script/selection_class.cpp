@@ -51,6 +51,18 @@ int Selection_gc(lua_State* L)
   return 0;
 }
 
+int Selection_eq(lua_State* L)
+{
+  auto a = get_obj<SelectionObj>(L, 1);
+  auto b = get_obj<SelectionObj>(L, 2);
+  const bool result =
+    (a->mask->isEmpty() && b->mask->isEmpty()) ||
+    (!a->mask->isEmpty() && !b->mask->isEmpty() &&
+     count_diff_between_images(a->mask->bitmap(), b->mask->bitmap()) == 0);
+  lua_pushboolean(L, result);
+  return 1;
+}
+
 int Selection_deselect(lua_State* L)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
@@ -69,29 +81,87 @@ int Selection_deselect(lua_State* L)
   return 0;
 }
 
-int Selection_select(lua_State* L)
-{
-  gfx::Rect bounds = convert_args_into_rect(L, 2);
-  if (bounds.isEmpty())
-    return Selection_deselect(L);
+template<typename T>
+void replace(Mask& dst, const Mask& a, const T& b) {
+  if (b.isEmpty())
+    dst.clear();
+  else
+    dst.replace(b);
+}
 
-  auto obj = get_obj<SelectionObj>(L, 1);
-  if (obj->sprite) {
-    Doc* doc = static_cast<Doc*>(obj->sprite->document());
-    ASSERT(doc);
+template<typename T>
+void add(Mask& dst, const Mask& a, const T& b) {
+  if (&dst != &a)
+    dst.replace(a);
+  if (!b.isEmpty())
+    dst.add(b);
+}
 
-    Mask newMask;
-    newMask.replace(bounds);
+template<typename T>
+void subtract(Mask& dst, const Mask& a, const T& b) {
+  if (&dst != &a)
+    dst.replace(a);
+  if (!b.isEmpty())
+    dst.subtract(b);
+}
 
-    Tx tx;
-    tx(new cmd::SetMask(doc, &newMask));
-    tx.commit();
-  }
+template<typename T>
+void intersect(Mask& dst, const Mask& a, const T& b) {
+  if (b.isEmpty())
+    dst.clear();
   else {
-    obj->mask->replace(bounds);
+    if (&dst != &a)
+      dst.replace(a);
+    dst.intersect(b);
+  }
+}
+
+template<typename OpMask, typename OpRect>
+int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
+{
+  auto obj = get_obj<SelectionObj>(L, 1);
+  auto otherObj = may_get_obj<SelectionObj>(L, 2);
+  if (otherObj) {
+    if (obj->sprite) {
+      Doc* doc = static_cast<Doc*>(obj->sprite->document());
+      ASSERT(doc);
+
+      Mask newMask;
+      opMask(newMask, *obj->mask, *otherObj->mask);
+
+      Tx tx;
+      tx(new cmd::SetMask(doc, &newMask));
+      tx.commit();
+    }
+    else {
+      opMask(*obj->mask, *obj->mask, *otherObj->mask);
+    }
+  }
+  // Try with a rectangle
+  else {
+    gfx::Rect bounds = convert_args_into_rect(L, 2);
+    if (obj->sprite) {
+      Doc* doc = static_cast<Doc*>(obj->sprite->document());
+      ASSERT(doc);
+
+      Mask newMask;
+      opRect(newMask, *obj->mask, bounds);
+
+      Tx tx;
+      tx(new cmd::SetMask(doc, &newMask));
+      tx.commit();
+    }
+    else {
+      opRect(*obj->mask, *obj->mask, bounds);
+    }
   }
   return 0;
 }
+
+int Selection_select(lua_State* L) { return Selection_op(L, replace<Mask>, replace<gfx::Rect>); }
+int Selection_add(lua_State* L) { return Selection_op(L, add<Mask>, add<gfx::Rect>); }
+int Selection_subtract(lua_State* L) { return Selection_op(L, subtract<Mask>, subtract<gfx::Rect>); }
+int Selection_intersect(lua_State* L) { return Selection_op(L, intersect<Mask>, intersect<gfx::Rect>); }
 
 int Selection_selectAll(lua_State* L)
 {
@@ -151,8 +221,12 @@ const luaL_Reg Selection_methods[] = {
   { "deselect", Selection_deselect },
   { "select", Selection_select },
   { "selectAll", Selection_selectAll },
+  { "add", Selection_add },
+  { "subtract", Selection_subtract },
+  { "intersect", Selection_intersect },
   { "contains", Selection_contains },
   { "__gc", Selection_gc },
+  { "__eq", Selection_eq },
   { nullptr, nullptr }
 };
 
