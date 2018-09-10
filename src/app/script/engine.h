@@ -100,6 +100,7 @@ namespace app {
   gfx::Size convert_args_into_size(lua_State* L, int index);
   app::Color convert_args_into_color(lua_State* L, int index);
   doc::color_t convert_args_into_pixel_color(lua_State* L, int index);
+  doc::Palette* get_palette_from_arg(lua_State* L, int index);
 
 } // namespace script
 } // namespace app

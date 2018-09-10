@@ -149,5 +149,11 @@ void push_sprite_palette(lua_State* L, doc::Sprite* sprite, doc::Palette* palett
   push_new<PaletteObj>(L, sprite, palette);
 }
 
+doc::Palette* get_palette_from_arg(lua_State* L, int index)
+{
+  auto obj = get_obj<PaletteObj>(L, index);
+  return obj->palette;
+}
+
 } // namespace script
 } // namespace app

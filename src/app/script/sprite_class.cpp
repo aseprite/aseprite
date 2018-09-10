@@ -163,6 +163,20 @@ int Sprite_loadPalette(lua_State* L)
   return 0;
 }
 
+int Sprite_setPalette(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  auto pal = get_palette_from_arg(L, 2);
+  if (sprite && pal) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
+
+    Tx tx;
+    doc->getApi(tx).setPalette(sprite, 0, pal);
+    tx.commit();
+  }
+  return 0;
+}
+
 int Sprite_get_filename(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -279,6 +293,7 @@ const luaL_Reg Sprite_methods[] = {
   { "saveAs", Sprite_saveAs },
   { "saveCopyAs", Sprite_saveCopyAs },
   { "loadPalette", Sprite_loadPalette },
+  { "setPalette", Sprite_setPalette },
   { nullptr, nullptr }
 };
 
