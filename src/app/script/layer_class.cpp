@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
 #include "app/script/engine.h"
@@ -51,6 +52,17 @@ int Layer_get_opacity(lua_State* L)
   auto layer = get_ptr<Layer>(L, 1);
   if (layer->isImage()) {
     lua_pushinteger(L, static_cast<LayerImage*>(layer)->opacity());
+    return 1;
+  }
+  else
+    return 0;
+}
+
+int Layer_get_blendMode(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  if (layer->isImage()) {
+    lua_pushinteger(L, (int)static_cast<LayerImage*>(layer)->blendMode());
     return 1;
   }
   else
@@ -109,6 +121,19 @@ int Layer_set_opacity(lua_State* L)
   return 0;
 }
 
+int Layer_set_blendMode(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  const int blendMode = lua_tointeger(L, 2);
+  if (layer->isImage()) {
+    Tx tx;
+    tx(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(layer),
+                                  (doc::BlendMode)blendMode));
+    tx.commit();
+  }
+  return 0;
+}
+
 const luaL_Reg Layer_methods[] = {
   { "__eq", Layer_eq },
   { nullptr, nullptr }
@@ -118,6 +143,7 @@ const Property Layer_properties[] = {
   { "sprite", Layer_get_sprite, nullptr },
   { "name", Layer_get_name, Layer_set_name },
   { "opacity", Layer_get_opacity, Layer_set_opacity },
+  { "blendMode", Layer_get_blendMode, Layer_set_blendMode },
   { "isImage", Layer_get_isImage, nullptr },
   { "isGroup", Layer_get_isGroup, nullptr },
   { "isTransparent", Layer_get_isTransparent, nullptr },

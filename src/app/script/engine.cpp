@@ -154,6 +154,30 @@ Engine::Engine()
   setfield_integer(L, "INDEXED", doc::ColorMode::INDEXED);
   lua_pop(L, 1);
 
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "BlendMode");
+  setfield_integer(L, "NORMAL", doc::BlendMode::NORMAL);
+  setfield_integer(L, "MULTIPLY", doc::BlendMode::MULTIPLY);
+  setfield_integer(L, "SCREEN", doc::BlendMode::SCREEN);
+  setfield_integer(L, "OVERLAY", doc::BlendMode::OVERLAY);
+  setfield_integer(L, "DARKEN", doc::BlendMode::DARKEN);
+  setfield_integer(L, "LIGHTEN", doc::BlendMode::LIGHTEN);
+  setfield_integer(L, "COLOR_DODGE", doc::BlendMode::COLOR_DODGE);
+  setfield_integer(L, "COLOR_BURN", doc::BlendMode::COLOR_BURN);
+  setfield_integer(L, "HARD_LIGHT", doc::BlendMode::HARD_LIGHT);
+  setfield_integer(L, "SOFT_LIGHT", doc::BlendMode::SOFT_LIGHT);
+  setfield_integer(L, "DIFFERENCE", doc::BlendMode::DIFFERENCE);
+  setfield_integer(L, "EXCLUSION", doc::BlendMode::EXCLUSION);
+  setfield_integer(L, "HSL_HUE", doc::BlendMode::HSL_HUE);
+  setfield_integer(L, "HSL_SATURATION", doc::BlendMode::HSL_SATURATION);
+  setfield_integer(L, "HSL_COLOR", doc::BlendMode::HSL_COLOR);
+  setfield_integer(L, "HSL_LUMINOSITY", doc::BlendMode::HSL_LUMINOSITY);
+  setfield_integer(L, "ADDITION", doc::BlendMode::ADDITION);
+  setfield_integer(L, "SUBTRACT", doc::BlendMode::SUBTRACT);
+  setfield_integer(L, "DIVIDE", doc::BlendMode::DIVIDE);
+  lua_pop(L, 1);
+
   // Register classes/prototypes
   register_cel_class(L);
   register_cels_class(L);
