@@ -45,7 +45,7 @@ int Frame_get_sprite(lua_State* L)
   return 1;
 }
 
-int Frame_get_frame(lua_State* L)
+int Frame_get_frameNumber(lua_State* L)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   lua_pushinteger(L, obj->frame+1);
@@ -76,7 +76,7 @@ const luaL_Reg Frame_methods[] = {
 
 const Property Frame_properties[] = {
   { "sprite", Frame_get_sprite, nullptr },
-  { "frame", Frame_get_frame, nullptr },
+  { "frameNumber", Frame_get_frameNumber, nullptr },
   { "duration", Frame_get_duration, Frame_set_duration },
   { nullptr, nullptr, nullptr }
 };
