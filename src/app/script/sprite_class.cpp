@@ -10,6 +10,7 @@
 
 #include "app/app.h"
 #include "app/cmd/set_sprite_size.h"
+#include "app/cmd/set_transparent_color.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
@@ -265,6 +266,23 @@ int Sprite_get_backgroundLayer(lua_State* L)
   return 1;
 }
 
+int Sprite_get_transparentColor(lua_State* L)
+{
+  const auto sprite = get_ptr<Sprite>(L, 1);
+  lua_pushinteger(L, sprite->transparentColor());
+  return 1;
+}
+
+int Sprite_set_transparentColor(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  const int index = lua_tointeger(L, 2);
+  Tx tx;
+  tx(new cmd::SetTransparentColor(sprite, index));
+  tx.commit();
+  return 0;
+}
+
 int Sprite_set_width(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -310,6 +328,7 @@ const Property Sprite_properties[] = {
   { "tags", Sprite_get_tags, nullptr },
   { "slices", Sprite_get_slices, nullptr },
   { "backgroundLayer", Sprite_get_backgroundLayer, nullptr },
+  { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
   { nullptr, nullptr, nullptr }
 };
 
