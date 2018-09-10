@@ -10,10 +10,12 @@
 
 #include "app/script/luacpp.h"
 
+#include <cstdio>
+
 namespace app {
 namespace script {
 
-static const char* mt_index_code =
+static const char mt_index_code[] =
   "__generic_mt_index = function(t, k) "
   "  local mt = getmetatable(t) "
   "  local f = mt[k] "
@@ -21,7 +23,7 @@ static const char* mt_index_code =
   "  f = mt.__getters[k] "
   "  if f then return f(t) end "
   "  if type(t) == 'table' then return rawget(t, k) end "
-  "  error('Field '..tostring(k)..' does not exist')"
+  "  error(debug.traceback()..': Field '..tostring(k)..' does not exist')"
   "end "
   "__generic_mt_newindex = function(t, k, v) "
   "  local mt = getmetatable(t) "
@@ -30,12 +32,19 @@ static const char* mt_index_code =
   "  f = mt.__setters[k] "
   "  if f then return f(t, v) end "
   "  if type(t) == 'table' then return rawset(t, k, v) end "
-  "  error('Cannot set field '..tostring(k))"
+  "  error(debug.traceback()..': Cannot set field '..tostring(k))"
   "end";
 
 void run_mt_index_code(lua_State* L)
 {
-  luaL_dostring(L, mt_index_code);
+  if (luaL_loadbuffer(L, mt_index_code, sizeof(mt_index_code)-1, "internal") ||
+      lua_pcall(L, 0, 0, 0)) {
+    // Error case
+    std::string err;
+    const char* s = lua_tostring(L, -1);
+    if (s)
+      std::puts(s);
+  }
 }
 
 void create_mt_getters_setters(lua_State* L,
