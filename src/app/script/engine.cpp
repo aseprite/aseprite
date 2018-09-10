@@ -110,7 +110,9 @@ Engine::Engine()
   , m_delegate(nullptr)
   , m_printLastResult(false)
 {
+#if _DEBUG
   int top = lua_gettop(L);
+#endif
 
   // Standard Lua libraries
   luaL_requiref(L, LUA_GNAME, luaopen_base, 1);
