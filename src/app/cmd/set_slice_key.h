@@ -18,7 +18,7 @@ namespace cmd {
   using namespace doc;
 
   class SetSliceKey : public Cmd
-                       , public WithSlice {
+                    , public WithSlice {
   public:
     SetSliceKey(Slice* slice,
                 const doc::frame_t frame,
