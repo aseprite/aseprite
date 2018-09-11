@@ -92,6 +92,7 @@ void register_frame_class(lua_State* L);
 void register_frames_class(lua_State* L);
 void register_image_class(lua_State* L);
 void register_image_iterator_class(lua_State* L);
+void register_image_spec_class(lua_State* L);
 void register_layer_class(lua_State* L);
 void register_layers_class(lua_State* L);
 void register_palette_class(lua_State* L);
@@ -196,6 +197,7 @@ Engine::Engine()
   register_frames_class(L);
   register_image_class(L);
   register_image_iterator_class(L);
+  register_image_spec_class(L);
   register_layer_class(L);
   register_layers_class(L);
   register_palette_class(L);

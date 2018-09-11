@@ -159,6 +159,7 @@ if(ENABLE_SCRIPTING)
     script/frames_class.cpp
     script/image_class.cpp
     script/image_iterator_class.cpp
+    script/image_spec_class.cpp
     script/layer_class.cpp
     script/layers_class.cpp
     script/luacpp.cpp

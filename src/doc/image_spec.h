@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/debug.h"
+#include "doc/color.h"
 #include "doc/color_mode.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

@@ -42,12 +42,23 @@ namespace {
 
 int Sprite_new(lua_State* L)
 {
-  const int w = lua_tointeger(L, 1);
-  const int h = lua_tointeger(L, 2);
-  const int colorMode = (lua_isnone(L, 3) ? IMAGE_RGB: lua_tointeger(L, 3));
+  doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
+  if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
+    spec = *spec2;
+  }
+  else {
+    const int w = lua_tointeger(L, 1);
+    const int h = lua_tointeger(L, 2);
+    const int colorMode = (lua_isnone(L, 3) ? IMAGE_RGB: lua_tointeger(L, 3));
+    spec.setWidth(w);
+    spec.setHeight(h);
+    spec.setColorMode((doc::ColorMode)colorMode);
+  }
 
   std::unique_ptr<Sprite> sprite(
-    Sprite::createBasicSprite((doc::PixelFormat)colorMode, w, h, 256));
+    Sprite::createBasicSprite(
+      (doc::PixelFormat)spec.colorMode(),
+      spec.width(), spec.height(), 256));
   std::unique_ptr<Doc> doc(new Doc(sprite.get()));
   sprite.release();
 
@@ -450,6 +461,13 @@ int Sprite_get_colorMode(lua_State* L)
   return 1;
 }
 
+int Sprite_get_spec(lua_State* L)
+{
+  const auto sprite = get_ptr<Sprite>(L, 1);
+  push_obj(L, sprite->spec());
+  return 1;
+}
+
 int Sprite_get_selection(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -581,6 +599,7 @@ const Property Sprite_properties[] = {
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
   { "colorMode", Sprite_get_colorMode, nullptr },
+  { "spec", Sprite_get_spec, nullptr },
   { "selection", Sprite_get_selection, nullptr },
   { "frames", Sprite_get_frames, nullptr },
   { "palettes", Sprite_get_palettes, nullptr },

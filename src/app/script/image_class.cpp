@@ -36,11 +36,20 @@ struct ImageObj {
 
 int Image_new(lua_State* L)
 {
-  const int w = lua_tointeger(L, 1);
-  const int h = lua_tointeger(L, 2);
-  const int colorMode = (lua_isnone(L, 3) ? doc::IMAGE_RGB:
-                                            lua_tointeger(L, 3));
-  doc::ImageRef image(doc::Image::create((doc::PixelFormat)colorMode, w, h));
+  doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
+  if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
+    spec = *spec2;
+  }
+  else {
+    const int w = lua_tointeger(L, 1);
+    const int h = lua_tointeger(L, 2);
+    const int colorMode = (lua_isnone(L, 3) ? doc::IMAGE_RGB:
+                                              lua_tointeger(L, 3));
+    spec.setWidth(w);
+    spec.setHeight(h);
+    spec.setColorMode((doc::ColorMode)colorMode);
+  }
+  doc::ImageRef image(doc::Image::create(spec));
   push_new<ImageObj>(L, image, nullptr);
   return 1;
 }
@@ -138,6 +147,13 @@ int Image_get_colorMode(lua_State* L)
   return 1;
 }
 
+int Image_get_spec(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  push_obj(L, obj->image->spec());
+  return 1;
+}
+
 const luaL_Reg Image_methods[] = {
   { "clone", Image_clone },
   { "getPixel", Image_getPixel },
@@ -152,6 +168,7 @@ const Property Image_properties[] = {
   { "width", Image_get_width, nullptr },
   { "height", Image_get_height, nullptr },
   { "colorMode", Image_get_colorMode, nullptr },
+  { "spec", Image_get_spec, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
