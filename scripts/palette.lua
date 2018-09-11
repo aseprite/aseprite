@@ -3,7 +3,13 @@
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
-local p = Palette(32)
+local p = Palette()
+assert(#p == 256)
+for i = 0,#p-1 do
+   assert(p:getColor(i) == Color(0, 0, 0))
+end
+
+p = Palette(32)
 assert(#p == 32)
 for i = 0,#p-1 do
    assert(p:getColor(i) == Color(0, 0, 0))
