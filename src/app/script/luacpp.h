@@ -59,6 +59,15 @@ template <typename T> T* get_obj(lua_State* L, int index) {
 }
 
 // Returns nil if the index doesn't have the given metatable
+template <typename T> T* may_get_ptr(lua_State* L, int index) {
+  T** ptr = (T**)luaL_testudata(L, index, get_mtname<T>());
+  if (ptr)
+    return *ptr;
+  else
+    return nullptr;
+}
+
+// Returns nil if the index doesn't have the given metatable
 template <typename T> T* may_get_obj(lua_State* L, int index) {
   return (T*)luaL_testudata(L, index, get_mtname<T>());
 }

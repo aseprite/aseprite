@@ -85,6 +85,7 @@ namespace app {
   void push_cel_image(lua_State* L, doc::Cel* cel);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
   void push_sprite_cels(lua_State* L, doc::Sprite* sprite);
+  void push_layer_cels(lua_State* L, doc::Layer* layer);
   void push_sprite_frame(lua_State* L, doc::Sprite* sprite, doc::frame_t frame);
   void push_sprite_frames(lua_State* L, doc::Sprite* sprite);
   void push_sprite_layers(lua_State* L, doc::Sprite* sprite);
@@ -101,6 +102,7 @@ namespace app {
   app::Color convert_args_into_color(lua_State* L, int index);
   doc::color_t convert_args_into_pixel_color(lua_State* L, int index);
   doc::Palette* get_palette_from_arg(lua_State* L, int index);
+  doc::Image* may_get_image_from_arg(lua_State* L, int index);
 
 } // namespace script
 } // namespace app

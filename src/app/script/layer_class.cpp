@@ -97,6 +97,13 @@ int Layer_get_isBackground(lua_State* L)
   return 1;
 }
 
+int Layer_get_cels(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  push_layer_cels(L, layer);
+  return 1;
+}
+
 int Layer_set_name(lua_State* L)
 {
   auto layer = get_ptr<Layer>(L, 1);
@@ -148,6 +155,7 @@ const Property Layer_properties[] = {
   { "isGroup", Layer_get_isGroup, nullptr },
   { "isTransparent", Layer_get_isTransparent, nullptr },
   { "isBackground", Layer_get_isBackground, nullptr },
+  { "cels", Layer_get_cels, nullptr },
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
   { nullptr, nullptr, nullptr }

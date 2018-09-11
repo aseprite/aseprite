@@ -172,5 +172,14 @@ void push_cel_image(lua_State* L, doc::Cel* cel)
   push_new<ImageObj>(L, cel->imageRef(), cel);
 }
 
+doc::Image* may_get_image_from_arg(lua_State* L, int index)
+{
+  auto obj = may_get_obj<ImageObj>(L, index);
+  if (obj)
+    return obj->image.get();
+  else
+    return nullptr;
+}
+
 } // namespace script
 } // namespace app

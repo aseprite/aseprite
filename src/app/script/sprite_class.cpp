@@ -9,6 +9,11 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/add_layer.h"
+#include "app/cmd/clear_cel.h"
+#include "app/cmd/remove_frame_tag.h"
+#include "app/cmd/remove_layer.h"
+#include "app/cmd/remove_slice.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_transparent_color.h"
 #include "app/commands/commands.h"
@@ -23,9 +28,11 @@
 #include "app/transaction.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
+#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -178,6 +185,243 @@ int Sprite_setPalette(lua_State* L)
   return 0;
 }
 
+int Sprite_newLayer(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::Layer* newLayer = new doc::LayerImage(sprite);
+
+  Tx tx;
+  tx(new cmd::AddLayer(sprite->root(), newLayer, sprite->root()->lastLayer()));
+  tx.commit();
+
+  push_ptr(L, newLayer);
+  return 1;
+}
+
+int Sprite_newGroup(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::Layer* newGroup = new doc::LayerGroup(sprite);
+
+  Tx tx;
+  tx(new cmd::AddLayer(sprite->root(), newGroup, sprite->root()->lastLayer()));
+  tx.commit();
+
+  push_ptr(L, newGroup);
+  return 1;
+}
+
+int Sprite_deleteLayer(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  auto layer = may_get_ptr<Layer>(L, 2);
+  if (!layer && lua_isstring(L, 2)) {
+    const char* layerName = lua_tostring(L, 2);
+    if (layerName) {
+      for (Layer* child : sprite->allLayers()) {
+        if (child->name() == layerName) {
+          layer = child;
+          break;
+        }
+      }
+    }
+  }
+  if (layer) {
+    Tx tx;
+    tx(new cmd::RemoveLayer(layer));
+    tx.commit();
+    return 0;
+  }
+  else {
+    return luaL_error(L, "layer not found");
+  }
+}
+
+int Sprite_newFrame(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::frame_t frame = sprite->lastFrame()+1;
+  if (lua_gettop(L) >= 2) {
+    frame = lua_tointeger(L, 2)-1;
+    if (frame < 0)
+      return luaL_error(L, "frame index out of bounds %d", frame+1);
+  }
+
+  Doc* doc = static_cast<Doc*>(sprite->document());
+
+  Tx tx;
+  doc->getApi(tx).addFrame(sprite, frame);
+  tx.commit();
+
+  push_sprite_frame(L, sprite, frame);
+  return 1;
+}
+
+int Sprite_newEmptyFrame(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::frame_t frame = sprite->lastFrame()+1;
+  if (lua_gettop(L) >= 1) {
+    frame = lua_tointeger(L, 2)-1;
+    if (frame < 0)
+      return luaL_error(L, "frame index out of bounds %d", frame+1);
+  }
+
+  Doc* doc = static_cast<Doc*>(sprite->document());
+
+  Tx tx;
+  DocApi(doc, tx).addEmptyFrame(sprite, frame);
+  tx.commit();
+
+  push_sprite_frame(L, sprite, frame);
+  return 1;
+}
+
+int Sprite_deleteFrame(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::frame_t frame = lua_tointeger(L, 2)-1;
+  if (frame < 0 || frame > sprite->lastFrame())
+    return luaL_error(L, "frame index out of bounds %d", frame+1);
+
+  Doc* doc = static_cast<Doc*>(sprite->document());
+
+  Tx tx;
+  doc->getApi(tx).removeFrame(sprite, frame);
+  tx.commit();
+  return 0;
+}
+
+int Sprite_newCel(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  auto layerBase = get_ptr<Layer>(L, 2);
+  if (!layerBase->isImage())
+    return luaL_error(L, "unexpected kinf of layer in Sprite:newCel()");
+
+  frame_t frame = lua_tointeger(L, 3)-1;
+  if (frame < 0 || frame > sprite->lastFrame())
+    return luaL_error(L, "frame index out of bounds %d", frame+1);
+
+  LayerImage* layer = static_cast<LayerImage*>(layerBase);
+  ImageRef image(nullptr);
+  gfx::Point pos(0, 0);
+
+  Image* srcImage = may_get_image_from_arg(L, 4);
+  if (srcImage) {
+    image.reset(Image::createCopy(srcImage));
+    pos = convert_args_into_point(L, 5);
+  }
+  else {
+    image.reset(Image::create(sprite->spec()));
+  }
+
+  auto cel = new Cel(frame, image);
+  cel->setPosition(pos);
+
+  Doc* doc = static_cast<Doc*>(sprite->document());
+
+  Tx tx;
+  DocApi api = doc->getApi(tx);
+  if (layer->cel(frame))
+    api.clearCel(layer, frame);
+  api.addCel(layer, cel);
+  tx.commit();
+
+  push_ptr(L, cel);
+  return 1;
+}
+
+int Sprite_deleteCel(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  (void)sprite;                 // unused
+
+  auto cel = may_get_ptr<doc::Cel>(L, 2);
+  if (!cel) {
+    if (auto layer = may_get_ptr<doc::Layer>(L, 2)) {
+      doc::frame_t frame = lua_tointeger(L, 3);
+      if (layer->isImage())
+        cel = static_cast<doc::LayerImage*>(layer)->cel(frame);
+    }
+  }
+
+  if (cel) {
+    Tx tx;
+    tx(new cmd::ClearCel(cel));
+    tx.commit();
+    return 0;
+  }
+  else {
+    return luaL_error(L, "cel not found");
+  }
+}
+
+int Sprite_newTag(lua_State* L)
+{
+  auto sprite = get_ptr<doc::Sprite>(L, 1);
+  auto from = lua_tointeger(L, 2)-1;
+  auto to = lua_tointeger(L, 3)-1;
+  auto tag = new doc::FrameTag(from, to);
+  sprite->frameTags().add(tag);
+  push_ptr(L, tag);
+  return 1;
+}
+
+int Sprite_deleteTag(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  auto tag = may_get_ptr<FrameTag>(L, 2);
+  if (!tag && lua_isstring(L, 2)) {
+    const char* tagName = lua_tostring(L, 2);
+    if (tagName)
+      tag = sprite->frameTags().getByName(tagName);
+  }
+  if (tag) {
+    Tx tx;
+    tx(new cmd::RemoveFrameTag(sprite, tag));
+    tx.commit();
+    return 0;
+  }
+  else {
+    return luaL_error(L, "tag not found");
+  }
+}
+
+int Sprite_newSlice(lua_State* L)
+{
+  auto sprite = get_ptr<doc::Sprite>(L, 1);
+  auto slice = new doc::Slice();
+
+  gfx::Rect bounds = convert_args_into_rect(L, 2);
+  if (!bounds.isEmpty())
+    slice->insert(0, doc::SliceKey(bounds));
+
+  sprite->slices().add(slice);
+  push_ptr(L, slice);
+  return 1;
+}
+
+int Sprite_deleteSlice(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  doc::Slice* slice = may_get_ptr<Slice>(L, 2);
+  if (!slice && lua_isstring(L, 2)) {
+    const char* sliceName = lua_tostring(L, 2);
+    if (sliceName)
+      slice = sprite->slices().getByName(sliceName);
+  }
+  if (slice) {
+    Tx tx;
+    tx(new cmd::RemoveSlice(sprite, slice));
+    tx.commit();
+    return 0;
+  }
+  else {
+    return luaL_error(L, "slice not found");
+  }
+}
+
 int Sprite_get_filename(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -312,6 +556,23 @@ const luaL_Reg Sprite_methods[] = {
   { "saveCopyAs", Sprite_saveCopyAs },
   { "loadPalette", Sprite_loadPalette },
   { "setPalette", Sprite_setPalette },
+  // Layers
+  { "newLayer", Sprite_newLayer },
+  { "newGroup", Sprite_newGroup },
+  { "deleteLayer", Sprite_deleteLayer },
+  // Frames
+  { "newFrame", Sprite_newFrame },
+  { "newEmptyFrame", Sprite_newEmptyFrame },
+  { "deleteFrame", Sprite_deleteFrame },
+  // Cel
+  { "newCel", Sprite_newCel },
+  { "deleteCel", Sprite_deleteCel },
+  // Tag
+  { "newTag", Sprite_newTag },
+  { "deleteTag", Sprite_deleteTag },
+  // Slices
+  { "newSlice", Sprite_newSlice },
+  { "deleteSlice", Sprite_deleteSlice },
   { nullptr, nullptr }
 };
 

@@ -10,9 +10,11 @@
 
 #include "app/script/luacpp.h"
 #include "doc/cels_range.h"
+#include "doc/layer.h"
 #include "doc/sprite.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace app {
 namespace script {
@@ -22,8 +24,11 @@ using namespace doc;
 namespace {
 
 struct CelsObj {
-  Sprite* sprite;
-  CelsObj(Sprite* sprite) : sprite(sprite) { }
+  CelList cels;
+  CelsObj(CelsRange&& range) {
+    std::copy(range.begin(), range.end(), std::back_inserter(cels));
+  }
+  CelsObj(CelList&& cels) : cels(std::move(cels)) { }
   CelsObj(const CelsObj&) = delete;
   CelsObj& operator=(const CelsObj&) = delete;
 };
@@ -37,7 +42,7 @@ int Cels_gc(lua_State* L)
 int Cels_len(lua_State* L)
 {
   auto obj = get_obj<CelsObj>(L, 1);
-  lua_pushinteger(L, obj->sprite->cels().size());
+  lua_pushinteger(L, obj->cels.size());
   return 1;
 }
 
@@ -45,13 +50,9 @@ int Cels_index(lua_State* L)
 {
   auto obj = get_obj<CelsObj>(L, 1);
   const int i = lua_tointeger(L, 2);
-  if (i < 1 || i > obj->sprite->cels().size())
+  if (i < 1 || i > obj->cels.size())
     return luaL_error(L, "index out of bounds %d", i);
-
-  auto it = obj->sprite->cels().begin();
-  std::advance(it, i-1);          // TODO improve this
-
-  push_ptr<Cel>(L, *it);
+  push_ptr<Cel>(L, obj->cels[i-1]);
   return 1;
 }
 
@@ -74,7 +75,15 @@ void register_cels_class(lua_State* L)
 
 void push_sprite_cels(lua_State* L, Sprite* sprite)
 {
-  push_new<CelsObj>(L, sprite);
+  push_new<CelsObj>(L, sprite->cels());
+}
+
+void push_layer_cels(lua_State* L, Layer* layer)
+{
+  CelList cels;
+  if (layer->isImage())
+    static_cast<LayerImage*>(layer)->getCels(cels);
+  push_new<CelsObj>(L, std::move(cels));
 }
 
 } // namespace script

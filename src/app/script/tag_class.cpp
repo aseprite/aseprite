@@ -31,17 +31,24 @@ int Tag_eq(lua_State* L)
   return 1;
 }
 
+int Tag_get_sprite(lua_State* L)
+{
+  auto tag = get_ptr<FrameTag>(L, 1);
+  push_ptr(L, tag->owner()->sprite());
+  return 1;
+}
+
 int Tag_get_fromFrame(lua_State* L)
 {
   auto tag = get_ptr<FrameTag>(L, 1);
-  lua_pushinteger(L, tag->fromFrame());
+  lua_pushinteger(L, tag->fromFrame()+1);
   return 1;
 }
 
 int Tag_get_toFrame(lua_State* L)
 {
   auto tag = get_ptr<FrameTag>(L, 1);
-  lua_pushinteger(L, tag->toFrame());
+  lua_pushinteger(L, tag->toFrame()+1);
   return 1;
 }
 
@@ -69,7 +76,7 @@ int Tag_get_aniDir(lua_State* L)
 int Tag_set_fromFrame(lua_State* L)
 {
   auto tag = get_ptr<FrameTag>(L, 1);
-  const int fromFrame = lua_tointeger(L, 2);
+  const int fromFrame = lua_tointeger(L, 2)-1;
   Tx tx;
   tx(new cmd::SetFrameTagRange(tag, fromFrame,
                                std::max(fromFrame, tag->toFrame())));
@@ -80,7 +87,7 @@ int Tag_set_fromFrame(lua_State* L)
 int Tag_set_toFrame(lua_State* L)
 {
   auto tag = get_ptr<FrameTag>(L, 1);
-  const int toFrame = lua_tointeger(L, 2);
+  const int toFrame = lua_tointeger(L, 2)-1;
   Tx tx;
   tx(new cmd::SetFrameTagRange(tag,
                                std::min(tag->fromFrame(), toFrame),
@@ -117,6 +124,7 @@ const luaL_Reg Tag_methods[] = {
 };
 
 const Property Tag_properties[] = {
+  { "sprite", Tag_get_sprite, nullptr },
   { "fromFrame", Tag_get_fromFrame, Tag_set_fromFrame },
   { "toFrame", Tag_get_toFrame, Tag_set_toFrame },
   { "frames", Tag_get_frames, nullptr },

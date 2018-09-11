@@ -16,6 +16,8 @@
 #include "base/chrono.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
+#include "doc/anidir.h"
+#include "doc/blend_mode.h"
 #include "doc/color_mode.h"
 
 #include <fstream>
@@ -152,6 +154,14 @@ Engine::Engine()
   setfield_integer(L, "RGB", doc::ColorMode::RGB);
   setfield_integer(L, "GRAYSCALE", doc::ColorMode::GRAYSCALE);
   setfield_integer(L, "INDEXED", doc::ColorMode::INDEXED);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "AniDir");
+  setfield_integer(L, "FORWARD", doc::AniDir::FORWARD);
+  setfield_integer(L, "REVERSE", doc::AniDir::REVERSE);
+  setfield_integer(L, "PING_PONG", doc::AniDir::PING_PONG);
   lua_pop(L, 1);
 
   lua_newtable(L);
