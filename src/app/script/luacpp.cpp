@@ -40,7 +40,6 @@ void run_mt_index_code(lua_State* L)
   if (luaL_loadbuffer(L, mt_index_code, sizeof(mt_index_code)-1, "internal") ||
       lua_pcall(L, 0, 0, 0)) {
     // Error case
-    std::string err;
     const char* s = lua_tostring(L, -1);
     if (s)
       std::puts(s);
