@@ -58,6 +58,14 @@ Image* Image::create(PixelFormat format, int width, int height,
 }
 
 // static
+Image* Image::create(const ImageSpec& spec,
+                     const ImageBufferPtr& buffer)
+{
+  return Image::create((PixelFormat)spec.colorMode(),
+                       spec.width(), spec.height(), buffer);
+}
+
+// static
 Image* Image::createCopy(const Image* image, const ImageBufferPtr& buffer)
 {
   ASSERT(image);
