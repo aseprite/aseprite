@@ -174,6 +174,7 @@ if(ENABLE_SCRIPTING)
     script/slice_class.cpp
     script/slices_class.cpp
     script/sprite_class.cpp
+    script/sprites_class.cpp
     script/tag_class.cpp
     script/tags_class.cpp
     shell.cpp

@@ -221,6 +221,12 @@ int App_get_activeImage(lua_State* L)
   return 1;
 }
 
+int App_get_sprites(lua_State* L)
+{
+  push_sprites(L);
+  return 1;
+}
+
 int App_get_fgColor(lua_State* L)
 {
   push_obj<app::Color>(L, Preferences::instance().colorBar.fgColor());
@@ -365,6 +371,7 @@ const Property App_properties[] = {
   { "activeFrame", App_get_activeFrame, App_set_activeFrame },
   { "activeCel", App_get_activeCel, App_set_activeCel },
   { "activeImage", App_get_activeImage, App_set_activeImage },
+  { "sprites", App_get_sprites, nullptr },
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },
   { "version", App_get_version, nullptr },

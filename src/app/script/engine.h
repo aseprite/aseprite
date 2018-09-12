@@ -94,6 +94,7 @@ namespace app {
   void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
   void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
   void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
+  void push_sprites(lua_State* L);
   void push_userdata(lua_State* L, doc::WithUserData* userData);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);

@@ -105,6 +105,7 @@ void register_size_class(lua_State* L);
 void register_slice_class(lua_State* L);
 void register_slices_class(lua_State* L);
 void register_sprite_class(lua_State* L);
+void register_sprites_class(lua_State* L);
 void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
 
@@ -210,6 +211,7 @@ Engine::Engine()
   register_slice_class(L);
   register_slices_class(L);
   register_sprite_class(L);
+  register_sprites_class(L);
   register_tag_class(L);
   register_tags_class(L);
 
