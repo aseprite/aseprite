@@ -198,5 +198,10 @@ doc::Image* may_get_image_from_arg(lua_State* L, int index)
     return nullptr;
 }
 
+doc::Cel* get_image_cel_from_arg(lua_State* L, int index)
+{
+  return get_obj<ImageObj>(L, index)->cel;
+}
+
 } // namespace script
 } // namespace app

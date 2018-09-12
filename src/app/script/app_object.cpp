@@ -18,8 +18,11 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/site.h"
-#include "app/site.h"
 #include "app/tx.h"
+#include "app/ui/doc_view.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui_context.h"
+#include "doc/layer.h"
 #include "ui/alert.h"
 
 #include <iostream>
@@ -174,6 +177,39 @@ int App_get_activeSprite(lua_State* L)
   return 1;
 }
 
+int App_get_activeLayer(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+  if (site.layer())
+    push_ptr<Layer>(L, site.layer());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int App_get_activeFrame(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+  if (site.frame())
+    lua_pushinteger(L, site.frame()+1);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int App_get_activeCel(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+  if (site.cel())
+    push_sprite_cel(L, site.cel());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int App_get_activeImage(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -230,6 +266,89 @@ int App_get_version(lua_State* L)
   return 1;
 }
 
+int App_set_activeSprite(lua_State* L)
+{
+  auto sprite = get_ptr<Sprite>(L, 1);
+  app::Context* ctx = App::instance()->context();
+  doc::Document* doc = sprite->document();
+  ctx->setActiveDocument(static_cast<Doc*>(doc));
+  return 0;
+}
+
+int App_set_activeLayer(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 2);
+#ifdef ENABLE_UI
+  app::Context* ctx = App::instance()->context();
+  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
+    DocView* docView = uiCtx->activeView();
+    if (docView) {
+      Editor* editor = docView->editor();
+      if (editor)
+        editor->setLayer(static_cast<LayerImage*>(layer));
+    }
+  }
+#endif
+  return 0;
+}
+
+int App_set_activeFrame(lua_State* L)
+{
+  const doc::frame_t frame = lua_tointeger(L, 2)-1;
+#ifdef ENABLE_UI
+  app::Context* ctx = App::instance()->context();
+  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
+    DocView* docView = uiCtx->activeView();
+    if (docView) {
+      Editor* editor = docView->editor();
+      if (editor)
+        editor->setFrame(frame);
+    }
+  }
+#endif
+  return 0;
+}
+
+int App_set_activeCel(lua_State* L)
+{
+  const auto cel = get_ptr<Cel>(L, 2);
+#ifdef ENABLE_UI
+  app::Context* ctx = App::instance()->context();
+  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
+    DocView* docView = uiCtx->activeView();
+    if (docView) {
+      Editor* editor = docView->editor();
+      if (editor) {
+        editor->setLayer(static_cast<LayerImage*>(cel->layer()));
+        editor->setFrame(cel->frame());
+      }
+    }
+  }
+#endif
+  return 0;
+}
+
+int App_set_activeImage(lua_State* L)
+{
+  const auto cel = get_image_cel_from_arg(L, 2);
+  if (!cel)
+    return 0;
+#ifdef ENABLE_UI
+  app::Context* ctx = App::instance()->context();
+  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
+    DocView* docView = uiCtx->activeView();
+    if (docView) {
+      Editor* editor = docView->editor();
+      if (editor) {
+        editor->setLayer(static_cast<LayerImage*>(cel->layer()));
+        editor->setFrame(cel->frame());
+      }
+    }
+  }
+#endif
+  return 0;
+}
+
 const luaL_Reg App_methods[] = {
   { "open",        App_open },
   { "exit",        App_exit },
@@ -241,8 +360,11 @@ const luaL_Reg App_methods[] = {
 };
 
 const Property App_properties[] = {
-  { "activeSprite", App_get_activeSprite, nullptr },
-  { "activeImage", App_get_activeImage, nullptr },
+  { "activeSprite", App_get_activeSprite, App_set_activeSprite },
+  { "activeLayer", App_get_activeLayer, App_set_activeLayer },
+  { "activeFrame", App_get_activeFrame, App_set_activeFrame },
+  { "activeCel", App_get_activeCel, App_set_activeCel },
+  { "activeImage", App_get_activeImage, App_set_activeImage },
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },
   { "version", App_get_version, nullptr },
