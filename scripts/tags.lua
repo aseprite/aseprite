@@ -20,6 +20,13 @@ do
   assert(b == s.tags[2])
   assert(c == s.tags[3])
 
+  local i = 1
+  for k,v in ipairs(s.tags) do
+    assert(i == k)
+    assert(v == s.tags[k])
+    i = i+1
+  end
+
   s:deleteTag(b)
   assert(a == s.tags[1])
   assert(c == s.tags[2])

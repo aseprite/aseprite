@@ -13,6 +13,13 @@ do
   assert(b.bounds == Rectangle(0, 2, 8, 10))
   assert(c.bounds == Rectangle(0, 0, 32, 32))
 
+  local i = 1
+  for k,v in ipairs(s.slices) do
+    assert(i == k)
+    assert(v == s.slices[k])
+    i = i+1
+  end
+
   s:deleteSlice(b)
   assert(a == s.slices[1])
   assert(c == s.slices[2])

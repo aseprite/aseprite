@@ -30,8 +30,14 @@ do
   assert(cb[2] == b.cels[2])
   assert(cb[3] == b.cels[3])
 
-  s:deleteCel(cb[2])
+  local i = 1
+  for k,v in ipairs(b.cels) do
+    assert(i == k)
+    assert(v == b.cels[k])
+    i = i+1
+  end
 
+  s:deleteCel(cb[2])
   assert(cb[1] == b.cels[1])
   assert(cb[3] == b.cels[2])
 end

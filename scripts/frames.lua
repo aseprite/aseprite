@@ -20,6 +20,13 @@ do
   assert(a.frames[1].duration == 0.1)
   assert(a.frames[2].duration == 0.2)
 
+  local i = 1
+  for k,v in ipairs(a.frames) do
+    assert(i == k)
+    assert(v == a.frames[k])
+    i = i+1
+  end
+
   a:deleteFrame(1)
   assert(a.frames[1].duration == 0.2)
 end

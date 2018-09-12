@@ -16,6 +16,13 @@ do
   assert(s.layers[2] == b)
   assert(s.layers[3] == c)
 
+  local i = 1
+  for k,v in ipairs(s.layers) do
+    assert(i == k)
+    assert(v == s.layers[k])
+    i = i+1
+  end
+
   s:deleteLayer(b)
   assert(#s.layers == 2)
   assert(s.layers[1] == a)
