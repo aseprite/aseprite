@@ -48,6 +48,7 @@ do -- Background/Transparent layers
   app.bgColor = Color(32, 64, 128)
   app.command.BackgroundFromLayer() -- the layer will be filled with app.bgColor
   assert(s.layers[1].isBackground)
+  assert(s.layers[1] == s.backgroundLayer)
   assert(s.cels[1].image:getPixel(0, 0) == app.pixelColor.rgba(32, 64, 128, 255))
 
   app.command.LayerFromBackground()
