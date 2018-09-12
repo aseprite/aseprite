@@ -38,6 +38,16 @@ int Frame_gc(lua_State* L)
   return 0;
 }
 
+int Frame_eq(lua_State* L)
+{
+  const auto a = get_obj<FrameObj>(L, 1);
+  const auto b = get_obj<FrameObj>(L, 2);
+  lua_pushboolean(L,
+                  (a->sprite == b->sprite &&
+                   a->frame == b->frame));
+  return 1;
+}
+
 int Frame_get_sprite(lua_State* L)
 {
   auto obj = get_obj<FrameObj>(L, 1);
@@ -71,6 +81,7 @@ int Frame_set_duration(lua_State* L)
 
 const luaL_Reg Frame_methods[] = {
   { "__gc", Frame_gc },
+  { "__eq", Frame_eq },
   { nullptr, nullptr }
 };
 
