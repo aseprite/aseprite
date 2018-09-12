@@ -46,9 +46,10 @@ int Tags_index(lua_State* L)
   auto obj = get_obj<TagsObj>(L, 1);
   auto& tags = obj->sprite->frameTags();
   const int i = lua_tonumber(L, 2);
-  if (i < 1 || i > int(tags.size()))
-    return luaL_error(L, "index out of bounds %d", i);
-  push_ptr<FrameTag>(L, *(tags.begin()+i-1));
+  if (i >= 1 && i <= int(tags.size()))
+    push_ptr<FrameTag>(L, *(tags.begin()+i-1));
+  else
+    lua_pushnil(L);
   return 1;
 }
 

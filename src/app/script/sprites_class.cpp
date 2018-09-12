@@ -52,9 +52,10 @@ int Sprites_index(lua_State* L)
 {
   auto obj = get_obj<SpritesObj>(L, 1);
   const int i = lua_tonumber(L, 2);
-  if (i < 1 || i > int(obj->docs.size()))
-    return luaL_error(L, "index out of bounds %d", i);
-  push_ptr<Sprite>(L, obj->docs[i-1]->sprite());
+  if (i >= 1 && i <= int(obj->docs.size()))
+    push_ptr<Sprite>(L, obj->docs[i-1]->sprite());
+  else
+    lua_pushnil(L);
   return 1;
 }
 

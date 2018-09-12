@@ -45,9 +45,10 @@ int Frames_index(lua_State* L)
 {
   auto obj = get_obj<FramesObj>(L, 1);
   const int i = lua_tonumber(L, 2);
-  if (i < 1 || i > obj->sprite->totalFrames())
-    return luaL_error(L, "index out of bounds %d", i);
-  push_sprite_frame(L, obj->sprite, i-1);
+  if (i >= 1 && i <= obj->sprite->totalFrames())
+    push_sprite_frame(L, obj->sprite, i-1);
+  else
+    lua_pushnil(L);
   return 1;
 }
 

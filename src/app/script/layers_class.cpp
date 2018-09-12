@@ -48,9 +48,10 @@ int Layers_index(lua_State* L)
 {
   auto obj = get_obj<LayersObj>(L, 1);
   const int i = lua_tonumber(L, 2);
-  if (i < 1 || i > int(obj->layers.size()))
-    return luaL_error(L, "index out of bounds %d", i);
-  push_ptr<Layer>(L, obj->layers[i-1]);
+  if (i >= 1 && i <= int(obj->layers.size()))
+    push_ptr<Layer>(L, obj->layers[i-1]);
+  else
+    lua_pushnil(L);
   return 1;
 }
 
