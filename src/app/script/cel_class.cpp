@@ -9,6 +9,7 @@
 #endif
 
 #include "app/cmd/set_cel_opacity.h"
+#include "app/cmd/set_cel_position.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
@@ -58,6 +59,13 @@ int Cel_get_image(lua_State* L)
   return 1;
 }
 
+int Cel_get_position(lua_State* L)
+{
+  const auto cel = get_ptr<Cel>(L, 1);
+  push_new<gfx::Point>(L, cel->position());
+  return 1;
+}
+
 int Cel_get_bounds(lua_State* L)
 {
   const auto cel = get_ptr<Cel>(L, 1);
@@ -70,6 +78,16 @@ int Cel_get_opacity(lua_State* L)
   const auto cel = get_ptr<Cel>(L, 1);
   lua_pushinteger(L, cel->opacity());
   return 1;
+}
+
+int Cel_set_position(lua_State* L)
+{
+  const auto cel = get_ptr<Cel>(L, 1);
+  const gfx::Point pos = convert_args_into_point(L, 2);
+  Tx tx;
+  tx(new cmd::SetCelPosition(cel, pos.x, pos.y));
+  tx.commit();
+  return 0;
 }
 
 int Cel_set_opacity(lua_State* L)
@@ -92,6 +110,7 @@ const Property Cel_properties[] = {
   { "frame", Cel_get_frame, nullptr },
   { "image", Cel_get_image, nullptr },
   { "bounds", Cel_get_bounds, nullptr },
+  { "position", Cel_get_position, Cel_set_position },
   { "opacity", Cel_get_opacity, Cel_set_opacity },
   { "color", UserData_get_color<Cel>, UserData_set_color<Cel> },
   { "data", UserData_get_text<Cel>, UserData_set_text<Cel> },
