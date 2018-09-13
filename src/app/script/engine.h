@@ -104,6 +104,7 @@ namespace app {
   doc::color_t convert_args_into_pixel_color(lua_State* L, int index);
   doc::Palette* get_palette_from_arg(lua_State* L, int index);
   doc::Image* may_get_image_from_arg(lua_State* L, int index);
+  doc::Image* get_image_from_arg(lua_State* L, int index);
   doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
 
 } // namespace script
