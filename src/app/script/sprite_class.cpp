@@ -124,10 +124,13 @@ int Sprite_saveAs(lua_State* L)
     appCtx->setActiveDocument(doc);
 
     Command* saveCommand =
-      Commands::instance()->byId(CommandId::SaveFile());
+      Commands::instance()->byId(CommandId::SaveFileCopyAs());
+
+    Params params;
+    params.set("filename", fn);
+    appCtx->executeCommand(saveCommand);
 
     doc->setFilename(fn);
-    appCtx->executeCommand(saveCommand);
   }
   return 0;
 }
