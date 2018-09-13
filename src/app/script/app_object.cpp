@@ -235,7 +235,7 @@ int App_get_fgColor(lua_State* L)
 
 int App_set_fgColor(lua_State* L)
 {
-  Preferences::instance().colorBar.fgColor(*get_obj<app::Color>(L, 2));
+  Preferences::instance().colorBar.fgColor(convert_args_into_color(L, 2));
   return 0;
 }
 
@@ -247,7 +247,7 @@ int App_get_bgColor(lua_State* L)
 
 int App_set_bgColor(lua_State* L)
 {
-  Preferences::instance().colorBar.bgColor(*get_obj<app::Color>(L, 2));
+  Preferences::instance().colorBar.bgColor(convert_args_into_color(L, 2));
   return 0;
 }
 
