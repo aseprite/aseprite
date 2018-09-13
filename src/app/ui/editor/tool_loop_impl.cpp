@@ -37,6 +37,7 @@
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
+#include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/brush.h"
@@ -599,8 +600,12 @@ tools::ToolLoop* create_tool_loop(
   app::Color bg = colorbar->getBgColor();
 
   if (!fg.isValid() || !bg.isValid()) {
-    Alert::show(Strings::alerts_invalid_fg_or_bg_colors());
-    return NULL;
+    if (Preferences::instance().colorBar.showInvalidFgBgColorAlert()) {
+      OptionalAlert::show(
+        Preferences::instance().colorBar.showInvalidFgBgColorAlert,
+        1, Strings::alerts_invalid_fg_or_bg_colors());
+      return nullptr;
+    }
   }
 
   // Create the new tool loop

@@ -327,6 +327,8 @@
                  pref="jpeg.show_alert" />
           <check id="advanced_mode_alert" text="@.advanced_mode_alert"
                  pref="advanced_mode.show_alert" />
+          <check id="invalid_fg_bg_color_alert" text="@.invalid_fg_bg_color_alert"
+                 pref="color_bar.show_invalid_fg_bg_color_alert" />
           <separator horizontal="true" />
 	  <hbox>
 	    <hbox expansive="true" />
