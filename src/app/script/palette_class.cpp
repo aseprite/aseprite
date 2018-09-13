@@ -36,9 +36,14 @@ struct PaletteObj {
 
 int Palette_new(lua_State* L)
 {
-  int ncolors = lua_tointeger(L, 1);
-  push_new<PaletteObj>(L, nullptr,
-                       new Palette(0, ncolors > 0 ? ncolors: 256));
+  if (auto pal2 = may_get_obj<PaletteObj>(L, 1)) {
+    push_new<PaletteObj>(L, nullptr, new Palette(*pal2->palette));
+  }
+  else {
+    int ncolors = lua_tointeger(L, 1);
+    push_new<PaletteObj>(L, nullptr,
+                         new Palette(0, ncolors > 0 ? ncolors: 256));
+  }
   return 1;
 }
 
