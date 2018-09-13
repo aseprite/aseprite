@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/script/engine.h"
@@ -80,9 +81,23 @@ int Cel_get_opacity(lua_State* L)
   return 1;
 }
 
+int Cel_set_image(lua_State* L)
+{
+  auto cel = get_ptr<Cel>(L, 1);
+  auto srcImage = get_image_from_arg(L, 2);
+  ImageRef newImage(Image::createCopy(srcImage));
+
+  Tx tx;
+  tx(new cmd::ReplaceImage(cel->sprite(),
+                           cel->imageRef(),
+                           newImage));
+  tx.commit();
+  return 0;
+}
+
 int Cel_set_position(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
+  auto cel = get_ptr<Cel>(L, 1);
   const gfx::Point pos = convert_args_into_point(L, 2);
   Tx tx;
   tx(new cmd::SetCelPosition(cel, pos.x, pos.y));
@@ -108,7 +123,7 @@ const Property Cel_properties[] = {
   { "sprite", Cel_get_sprite, nullptr },
   { "layer", Cel_get_layer, nullptr },
   { "frame", Cel_get_frame, nullptr },
-  { "image", Cel_get_image, nullptr },
+  { "image", Cel_get_image, Cel_set_image },
   { "bounds", Cel_get_bounds, nullptr },
   { "position", Cel_get_position, Cel_set_position },
   { "opacity", Cel_get_opacity, Cel_set_opacity },
