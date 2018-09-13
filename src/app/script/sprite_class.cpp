@@ -114,20 +114,6 @@ int Sprite_crop(lua_State* L)
   return 0;
 }
 
-int Sprite_save(lua_State* L)
-{
-  auto sprite = get_ptr<Sprite>(L, 1);
-  if (sprite) {
-    Doc* doc = static_cast<Doc*>(sprite->document());
-    app::Context* appCtx = App::instance()->context();
-    appCtx->setActiveDocument(doc);
-    Command* saveCommand =
-      Commands::instance()->byId(CommandId::SaveFile());
-    appCtx->executeCommand(saveCommand);
-  }
-  return 0;
-}
-
 int Sprite_saveAs(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -569,7 +555,6 @@ const luaL_Reg Sprite_methods[] = {
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
   { "crop", Sprite_crop },
-  { "save", Sprite_save },
   { "saveAs", Sprite_saveAs },
   { "saveCopyAs", Sprite_saveCopyAs },
   { "loadPalette", Sprite_loadPalette },
