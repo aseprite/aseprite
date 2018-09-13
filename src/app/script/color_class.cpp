@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/script/luacpp.h"
@@ -138,10 +139,21 @@ Color Color_new(lua_State* L, int index)
   else if (!lua_isnone(L, index)) {
     if (lua_isinteger(L, index) && lua_isnone(L, index+1)) {
       doc::color_t docColor = lua_tointeger(L, index);
-      color = app::Color::fromRgb(doc::rgba_getr(docColor),
-                                  doc::rgba_getg(docColor),
-                                  doc::rgba_getb(docColor),
-                                  doc::rgba_geta(docColor));
+      switch (app_get_current_pixel_format()) {
+        case IMAGE_RGB:
+          color = app::Color::fromRgb(doc::rgba_getr(docColor),
+                                      doc::rgba_getg(docColor),
+                                      doc::rgba_getb(docColor),
+                                      doc::rgba_geta(docColor));
+          break;
+        case IMAGE_GRAYSCALE:
+          color = app::Color::fromGray(doc::graya_getv(docColor),
+                                       doc::graya_geta(docColor));
+          break;
+        case IMAGE_INDEXED:
+          color = app::Color::fromIndex(docColor);
+          break;
+      }
     }
     else {
       color = app::Color::fromRgb(lua_tointeger(L, index),
