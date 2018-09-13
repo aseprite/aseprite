@@ -8,15 +8,19 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/tx.h"
+#include "app/util/autocrop.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "render/render.h"
 
 namespace app {
 namespace script {
@@ -109,6 +113,52 @@ int Image_putImage(lua_State* L)
   return 0;
 }
 
+int Image_putSprite(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  const auto sprite = get_ptr<Sprite>(L, 2);
+  doc::frame_t frame = lua_tointeger(L, 3)-1;
+  gfx::Point pos = convert_args_into_point(L, 4);
+  doc::Image* dst = obj->image.get();
+
+  ASSERT(dst);
+  ASSERT(sprite);
+
+  // If the destination image is not related to a sprite, we just draw
+  // the source image without undo information.
+  if (obj->cel == nullptr) {
+    render::Render render;
+    render.renderSprite(
+      dst, sprite, frame,
+      gfx::Clip(0, 0,
+                pos.x, pos.y,
+                sprite->width(),
+                sprite->height()));
+  }
+  else {
+    Tx tx;
+
+    ImageRef tmp(Image::createCopy(dst));
+    render::Render render;
+    render.renderSprite(
+      tmp.get(), sprite, frame,
+      gfx::Clip(0, 0,
+                pos.x, pos.y,
+                sprite->width(),
+                sprite->height()));
+
+    int x1, y1, x2, y2;
+    if (get_shrink_rect2(&x1, &y1, &x2, &y2, dst, tmp.get())) {
+      tx(new cmd::CopyRect(
+           dst, tmp.get(),
+           gfx::Clip(x1, y1, x1, y1, x2-x1+1, y2-y1+1)));
+    }
+
+    tx.commit();
+  }
+  return 0;
+}
+
 int Image_pixels(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
@@ -159,6 +209,7 @@ const luaL_Reg Image_methods[] = {
   { "getPixel", Image_getPixel },
   { "putPixel", Image_putPixel },
   { "putImage", Image_putImage },
+  { "putSprite", Image_putSprite },
   { "pixels", Image_pixels },
   { "__gc", Image_gc },
   { nullptr, nullptr }
