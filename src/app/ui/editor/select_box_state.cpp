@@ -141,10 +141,22 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
     for (int i : m_movingRulers) {
       Ruler& ruler = m_rulers[i];
       const Ruler& start = m_startRulers[i];
+      int oppositeRuler = i^1;// 0 and 1 are opposites, and 2 and 3
+      Ruler& oppRuler = m_rulers[oppositeRuler];
 
       switch (ruler.orientation()) {
-        case Ruler::Horizontal: ruler.setPosition(start.position() + delta.y); break;
-        case Ruler::Vertical: ruler.setPosition(start.position() + delta.x); break;
+        case Ruler::Horizontal:
+          ruler.setPosition(start.position() + delta.y);
+          if (msg->modifiers() == os::kKeyShiftModifier)
+            oppRuler.setPosition(editor->sprite()->height()
+                                 - start.position() - delta.y);
+          break;
+        case Ruler::Vertical:
+          ruler.setPosition(start.position() + delta.x);
+          if (msg->modifiers() == os::kKeyShiftModifier)
+            oppRuler.setPosition(editor->sprite()->width()
+                                 - start.position() - delta.x);
+          break;
       }
     }
     used = true;
