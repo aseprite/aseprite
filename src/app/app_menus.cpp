@@ -347,27 +347,6 @@ void AppMenus::reload()
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup_menu"));
   m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup_menu"));
 
-  ////////////////////////////////////////
-  // Load keyboard shortcuts for commands
-
-  LOG("MENU: Loading commands keyboard shortcuts from %s\n", path);
-
-  TiXmlElement* xmlKey = handle
-    .FirstChild("gui")
-    .FirstChild("keyboard").ToElement();
-
-  KeyboardShortcuts::instance()->clear();
-  KeyboardShortcuts::instance()->importFile(xmlKey, KeySource::Original);
-
-  // Load user settings
-  {
-    ResourceFinder rf;
-    rf.includeUserDir("user.aseprite-keys");
-    std::string fn = rf.getFirstOrCreateDefault();
-    if (base::is_file(fn))
-      KeyboardShortcuts::instance()->importFile(fn, KeySource::UserDefined);
-  }
-
   // Add one menu item to run each script from the user scripts/ folder
   {
     MenuItem* scriptsMenu = dynamic_cast<MenuItem*>(
@@ -388,6 +367,27 @@ void AppMenus::reload()
       delete m_rootMenu->findItemById("scripts_menu_separator");
     }
 #endif
+  }
+
+  ////////////////////////////////////////
+  // Load keyboard shortcuts for commands
+
+  LOG("MENU: Loading commands keyboard shortcuts from %s\n", path);
+
+  TiXmlElement* xmlKey = handle
+    .FirstChild("gui")
+    .FirstChild("keyboard").ToElement();
+
+  KeyboardShortcuts::instance()->clear();
+  KeyboardShortcuts::instance()->importFile(xmlKey, KeySource::Original);
+
+  // Load user settings
+  {
+    ResourceFinder rf;
+    rf.includeUserDir("user.aseprite-keys");
+    std::string fn = rf.getFirstOrCreateDefault();
+    if (base::is_file(fn))
+      KeyboardShortcuts::instance()->importFile(fn, KeySource::UserDefined);
   }
 
   // Create native menus after the default + user defined keyboard
