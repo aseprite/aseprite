@@ -58,6 +58,10 @@ namespace app {
                   const std::string& filename = std::string());
     bool evalFile(const std::string& filename);
 
+    void consolePrint(const char* text) {
+      onConsolePrint(text);
+    }
+
   private:
     void onConsolePrint(const char* text);
 

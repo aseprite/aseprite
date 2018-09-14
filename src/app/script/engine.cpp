@@ -52,10 +52,8 @@ int print(lua_State* L)
     lua_pop(L, 1);  // pop result
   }
   if (!output.empty()) {
-    std::printf("%s\n", output.c_str());
-    std::fflush(stdout);
-    if (App::instance()->isGui())
-      Console().printf("%s\n", output.c_str());
+    App::instance()->scriptEngine()
+      ->consolePrint(output.c_str());
   }
   return 0;
 }
@@ -291,8 +289,10 @@ void Engine::onConsolePrint(const char* text)
 {
   if (m_delegate)
     m_delegate->onConsolePrint(text);
-  else
+  else {
     std::printf("%s\n", text);
+    std::fflush(stdout);
+  }
 }
 
 } // namespace script
