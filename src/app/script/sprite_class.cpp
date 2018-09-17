@@ -24,10 +24,12 @@
 #include "app/file/palette_file.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "app/site.h"
 #include "app/transaction.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
+#include "base/fs.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
@@ -114,8 +116,9 @@ int Sprite_crop(lua_State* L)
   return 0;
 }
 
-int Sprite_saveAs(lua_State* L)
+int Sprite_saveAs_base(lua_State* L, std::string& absFn)
 {
+  bool result = false;
   auto sprite = get_ptr<Sprite>(L, 1);
   const char* fn = luaL_checkstring(L, 2);
   if (fn && sprite) {
@@ -123,35 +126,43 @@ int Sprite_saveAs(lua_State* L)
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
 
+    absFn = base::get_absolute_path(fn);
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+      return luaL_error(L, "script doesn't have access to write file %s",
+                        absFn.c_str());
+
     Command* saveCommand =
       Commands::instance()->byId(CommandId::SaveFileCopyAs());
 
     Params params;
-    params.set("filename", fn);
-    appCtx->executeCommand(saveCommand);
+    params.set("filename", absFn.c_str());
+    params.set("useUI", "false");
+    appCtx->executeCommand(saveCommand, params);
 
-    doc->setFilename(fn);
+    result = true;
   }
-  return 0;
+  lua_pushboolean(L, result);
+  return 1;
+}
+
+int Sprite_saveAs(lua_State* L)
+{
+  std::string fn;
+  int res = Sprite_saveAs_base(L, fn);
+  if (!fn.empty()) {
+    auto sprite = get_ptr<Sprite>(L, 1);
+    if (sprite) {
+      Doc* doc = static_cast<Doc*>(sprite->document());
+      doc->setFilename(fn);
+    }
+  }
+  return res;
 }
 
 int Sprite_saveCopyAs(lua_State* L)
 {
-  auto sprite = get_ptr<Sprite>(L, 1);
-  const char* fn = luaL_checkstring(L, 2);
-  if (fn && sprite) {
-    Doc* doc = static_cast<Doc*>(sprite->document());
-    app::Context* appCtx = App::instance()->context();
-    appCtx->setActiveDocument(doc);
-
-    Command* saveCommand =
-      Commands::instance()->byId(CommandId::SaveFileCopyAs());
-
-    Params params;
-    params.set("filename", fn);
-    appCtx->executeCommand(saveCommand, params);
-  }
-  return 0;
+  std::string fn;
+  return Sprite_saveAs_base(L, fn);
 }
 
 int Sprite_loadPalette(lua_State* L)
@@ -159,8 +170,13 @@ int Sprite_loadPalette(lua_State* L)
   auto sprite = get_ptr<Sprite>(L, 1);
   const char* fn = luaL_checkstring(L, 2);
   if (fn && sprite) {
+    std::string absFn = base::get_absolute_path(fn);
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+      return luaL_error(L, "script doesn't have access to open file %s",
+                        absFn.c_str());
+
     Doc* doc = static_cast<Doc*>(sprite->document());
-    std::unique_ptr<doc::Palette> palette(load_palette(fn));
+    std::unique_ptr<doc::Palette> palette(load_palette(absFn.c_str()));
     if (palette) {
       Tx tx;
       // TODO Merge this with the code in LoadPaletteCommand

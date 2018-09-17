@@ -17,11 +17,13 @@
 #include "app/pref/preferences.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "app/site.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
+#include "base/fs.h"
 #include "doc/layer.h"
 #include "ui/alert.h"
 
@@ -34,7 +36,10 @@ namespace {
 
 int App_open(lua_State* L)
 {
-  const char* filename = luaL_checkstring(L, 1);
+  std::string absFn = base::get_absolute_path(luaL_checkstring(L, 1));
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+      return luaL_error(L, "script doesn't have access to open file %s",
+                        absFn.c_str());
 
   app::Context* ctx = App::instance()->context();
   Doc* oldDoc = ctx->activeDocument();
@@ -42,7 +47,7 @@ int App_open(lua_State* L)
   Command* openCommand =
     Commands::instance()->byId(CommandId::OpenFile());
   Params params;
-  params.set("filename", filename);
+  params.set("filename", absFn.c_str());
   ctx->executeCommand(openCommand, params);
 
   Doc* newDoc = ctx->activeDocument();

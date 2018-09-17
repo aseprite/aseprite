@@ -1,0 +1,22 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2018 by David Capello -->
+<gui>
+<window id="script_access" text="@.title">
+  <vbox>
+    <label text="@.script_label" />
+    <hbox border="4"><link id="script" /></hbox>
+    <label id="file_label" />
+    <hbox border="4"><link id="file" /></hbox>
+    <separator horizontal="true" />
+    <check id="dont_show" text="@.dont_show_for_this_access" />
+    <check id="full" text="@.dont_show_for_this_script" />
+    <separator horizontal="true" />
+    <grid columns="1">
+      <hbox homogeneous="true" cell_align="center bottom horizontal">
+        <button id="allow" closewindow="true" magnet="true" minwidth="60" />
+        <button id="stop" text="@.stop_script" closewindow="true" />
+      </hbox>
+    </grid>
+  </vbox>
+</window>
+</gui>

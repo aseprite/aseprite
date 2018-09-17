@@ -168,6 +168,7 @@ if(ENABLE_SCRIPTING)
     script/pixel_color_object.cpp
     script/point_class.cpp
     script/rectangle_class.cpp
+    script/security.cpp
     script/selection_class.cpp
     script/site_class.cpp
     script/size_class.cpp

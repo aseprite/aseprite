@@ -13,6 +13,7 @@
 #include "app/app.h"
 #include "app/console.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "base/chrono.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -140,12 +141,26 @@ Engine::Engine()
   lua_register(L, "print", print);
 
   lua_getglobal(L, "os");
-  for (const char* name : { "execute", "remove", "rename", "exit", "tmpname" }) {
+  for (const char* name : { "remove", "rename", "exit", "tmpname" }) {
     lua_pushcfunction(L, unsupported);
     lua_setfield(L, -2, name);
   }
   lua_pushcfunction(L, os_clock);
   lua_setfield(L, -2, "clock");
+  lua_pop(L, 1);
+
+  // Wrap io.open()
+  lua_getglobal(L, "io");
+  lua_getfield(L, -1, "open");
+  lua_pushcclosure(L, secure_io_open, 1);
+  lua_setfield(L, -2, "open");
+  lua_pop(L, 1);
+
+  // Wrap os.execute()
+  lua_getglobal(L, "os");
+  lua_getfield(L, -1, "execute");
+  lua_pushcclosure(L, secure_os_execute, 1);
+  lua_setfield(L, -2, "execute");
   lua_pop(L, 1);
 
   // Generic code used by metatables
@@ -270,19 +285,8 @@ bool Engine::evalFile(const std::string& filename)
     std::ifstream s(FSTREAM_PATH(filename));
     buf << s.rdbuf();
   }
-
-  std::string fn = filename;
-  if (fn.size() > 2 &&
-#ifdef _WIN32
-      fn[1] != ':'
-#else
-      fn[0] != '/'
-#endif
-      ) {
-    fn = base::join_path(base::get_current_path(), fn);
-  }
-  fn = base::get_canonical_path(fn);
-  return evalCode(buf.str(), "@" + fn);
+  std::string absFilename = base::get_absolute_path(filename);
+  return evalCode(buf.str(), "@" + absFilename);
 }
 
 void Engine::onConsolePrint(const char* text)

@@ -88,6 +88,7 @@ private:
 SaveFileBaseCommand::SaveFileBaseCommand(const char* id, CommandFlags flags)
   : Command(id, flags)
 {
+  m_useUI = true;
 }
 
 void SaveFileBaseCommand::onLoadParams(const Params& params)
@@ -109,6 +110,9 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
     m_selFrames.clear();
     m_adjustFramesByFrameTag = false;
   }
+
+  std::string useUI = params.get("useUI");
+  m_useUI = (useUI.empty() || (useUI == "true"));
 }
 
 // Returns true if there is a current sprite to save.
@@ -139,7 +143,8 @@ std::string SaveFileBaseCommand::saveAsDialog(
 #ifdef ENABLE_UI
   again:;
     base::paths newfilename;
-    if (!app::show_file_selector(
+    if (!m_useUI ||
+        !app::show_file_selector(
           dlgTitle, filename, exts,
           FileSelectorType::Save,
           newfilename))
@@ -316,7 +321,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   bool isForTwitter = false;
 
 #if ENABLE_UI
-  if (context->isUIAvailable()) {
+  if (m_useUI && context->isUIAvailable()) {
     ExportFileWindow win(doc);
     bool askOverwrite = true;
 

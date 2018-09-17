@@ -547,6 +547,7 @@
             <icon part="check_normal" align="left middle" x="2" />
             <icon part="check_selected" align="left middle" x="2" state="selected" />
             <icon part="check_disabled" align="left middle" x="2" state="disabled" />
+            <icon part="check_selected" align="left middle" x="2" state="disabled selected" />
         </style>
         <style id="radio_button" border="2">
             <background color="radio_hot_face" state="mouse focus" />
