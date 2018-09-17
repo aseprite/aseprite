@@ -298,6 +298,9 @@
     <section id="filters">
       <option id="cels_target" type="CelsTarget" default="CelsTarget::Selected" />
     </section>
+    <section id="scripts">
+      <option id="show_run_script_alert" type="bool" default="true" />
+    </section>
   </global>
 
   <tool>

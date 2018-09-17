@@ -329,6 +329,8 @@
                  pref="advanced_mode.show_alert" />
           <check id="invalid_fg_bg_color_alert" text="@.invalid_fg_bg_color_alert"
                  pref="color_bar.show_invalid_fg_bg_color_alert" />
+          <check id="run_script_alert" text="@.run_script_alert"
+                 pref="scripts.show_run_script_alert" />
           <separator horizontal="true" />
 	  <hbox>
 	    <hbox expansive="true" />

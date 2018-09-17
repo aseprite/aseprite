@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,8 +16,12 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/console.h"
+#include "app/context.h"
+#include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/script/engine.h"
+#include "app/ui/optional_alert.h"
 #include "base/fs.h"
 #include "fmt/format.h"
 #include "ui/manager.h"
@@ -67,6 +71,17 @@ void RunScriptCommand::onLoadParams(const Params& params)
 
 void RunScriptCommand::onExecute(Context* context)
 {
+#if ENABLE_UI
+  if (context->isUIAvailable()) {
+    int ret = OptionalAlert::show(
+      Preferences::instance().scripts.showRunScriptAlert,
+      1, // Yes is the default option when the alert dialog is disabled
+      fmt::format(Strings::alerts_run_script(), m_filename));
+    if (ret != 1)
+      return;
+  }
+#endif // ENABLE_UI
+
   script::Engine* engine = App::instance()->scriptEngine();
   {
     ConsoleEngineDelegate delegate;
