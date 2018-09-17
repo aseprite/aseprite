@@ -35,6 +35,7 @@ namespace app {
     bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
+    void onRemoveFrameTag(Editor* editor, doc::FrameTag* tag) override;
 
   private:
     void onPlaybackTick();

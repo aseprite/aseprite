@@ -167,6 +167,12 @@ bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   return true;
 }
 
+void PlayState::onRemoveFrameTag(Editor* editor, doc::FrameTag* tag)
+{
+  if (m_tag == tag)
+    m_tag = nullptr;
+}
+
 void PlayState::onPlaybackTick()
 {
   ASSERT(m_playTimer.isRunning());

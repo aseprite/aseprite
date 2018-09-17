@@ -1950,6 +1950,8 @@ void Editor::onAddFrameTag(DocEvent& ev)
 void Editor::onRemoveFrameTag(DocEvent& ev)
 {
   m_tagFocusBand = -1;
+  if (m_state)
+    m_state->onRemoveFrameTag(this, ev.frameTag());
 }
 
 void Editor::setCursor(const gfx::Point& mouseScreenPos)

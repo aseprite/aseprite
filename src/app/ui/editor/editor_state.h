@@ -22,6 +22,10 @@ namespace ui {
   class TouchMessage;
 }
 
+namespace doc {
+  class FrameTag;
+}
+
 namespace app {
   class Editor;
   class EditorDecorator;
@@ -116,6 +120,9 @@ namespace app {
 
     // Custom ink in this state.
     virtual tools::Ink* getStateInk() { return nullptr; }
+
+    // Called when a tag is deleted.
+    virtual void onRemoveFrameTag(Editor* editor, doc::FrameTag* tag) { }
 
   private:
     DISABLE_COPYING(EditorState);
