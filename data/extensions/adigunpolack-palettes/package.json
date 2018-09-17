@@ -13,6 +13,7 @@
       { "id": "AAP-64",          "path": "./aap-64.gpl" },
       { "id": "AAP-Micro12",     "path": "./aap-micro12.gpl" },
       { "id": "AAP-Splendor128", "path": "./aap-splendor128.gpl" },
+      { "id": "AAP-RadiantXV",   "path": "./aap-radiantxv.gpl" },
       { "id": "SimpleJPC-16",    "path": "./simplejpc-16.gpl" }
     ]
   }
