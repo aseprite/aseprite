@@ -11,9 +11,13 @@
 #include "app/cmd/flatten_layers.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/doc_range.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/timeline/timeline.h"
+#include "doc/layer.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -24,13 +28,24 @@ public:
   Command* clone() const override { return new FlattenLayersCommand(*this); }
 
 protected:
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+
+  bool m_visibleOnly;
 };
 
 FlattenLayersCommand::FlattenLayersCommand()
   : Command(CommandId::FlattenLayers(), CmdUIOnlyFlag)
 {
+  m_visibleOnly = false;
+}
+
+void FlattenLayersCommand::onLoadParams(const Params& params)
+{
+  std::string visibleOnly = params.get("visibleOnly");
+  m_visibleOnly = (visibleOnly == "true");
 }
 
 bool FlattenLayersCommand::onEnabled(Context* context)
@@ -44,10 +59,42 @@ void FlattenLayersCommand::onExecute(Context* context)
   Sprite* sprite = writer.sprite();
   {
     Tx tx(writer.context(), "Flatten Layers");
-    tx(new cmd::FlattenLayers(sprite));
+
+    // TODO the range of selected layers should be in app::Site.
+    DocRange range;
+
+    if (m_visibleOnly) {
+      for (auto layer : sprite->root()->layers())
+        if (layer->isVisible())
+          range.selectLayer(layer);
+    }
+    else {
+#ifdef ENABLE_UI
+      if (context->isUIAvailable())
+        range = App::instance()->timeline()->range();
+#endif
+
+      if (!range.enabled()) {
+        for (auto layer : sprite->root()->layers())
+          range.selectLayer(layer);
+      }
+    }
+
+    tx(new cmd::FlattenLayers(sprite, range.selectedLayers()));
     tx.commit();
   }
+
+#ifdef ENABLE_UI
   update_screen_for_document(writer.document());
+#endif
+}
+
+std::string FlattenLayersCommand::onGetFriendlyName() const
+{
+  if (m_visibleOnly)
+    return Strings::commands_FlattenLayers_Visible();
+  else
+    return Strings::commands_FlattenLayers();
 }
 
 Command* CommandFactory::createFlattenLayersCommand()

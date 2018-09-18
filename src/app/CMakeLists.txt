@@ -214,7 +214,6 @@ if(ENABLE_UI)
     commands/cmd_eyedropper.cpp
     commands/cmd_fill_and_stroke.cpp
     commands/cmd_fit_screen.cpp
-    commands/cmd_flatten_layers.cpp
     commands/cmd_flip.cpp
     commands/cmd_frame_properties.cpp
     commands/cmd_frame_tag_properties.cpp
@@ -505,6 +504,7 @@ add_library(app-lib
   commands/cmd_cel_opacity.cpp
   commands/cmd_change_pixel_format.cpp
   commands/cmd_crop.cpp
+  commands/cmd_flatten_layers.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_new_layer.cpp

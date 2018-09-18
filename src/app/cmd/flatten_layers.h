@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,18 +10,25 @@
 
 #include "app/cmd/with_sprite.h"
 #include "app/cmd_sequence.h"
+#include "doc/object_id.h"
+#include "doc/selected_layers.h"
+
+#include <vector>
 
 namespace app {
 namespace cmd {
-  using namespace doc;
 
   class FlattenLayers : public CmdSequence
                       , public WithSprite {
   public:
-    FlattenLayers(Sprite* sprite);
+    FlattenLayers(doc::Sprite* sprite,
+                  const doc::SelectedLayers& layers);
 
   protected:
     void onExecute() override;
+
+  private:
+    std::vector<doc::ObjectId> m_layerIds;
   };
 
 } // namespace cmd

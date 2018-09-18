@@ -29,6 +29,7 @@
 #include "base/bind.h"
 #include "base/thread.h"
 #include "doc/image.h"
+#include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "render/dithering_algorithm.h"
@@ -471,8 +472,12 @@ void ChangePixelFormatCommand::onExecute(Context* context)
       [this, &job, flatten] {
         Sprite* sprite(job.sprite());
 
-        if (flatten)
-          job.tx()(new cmd::FlattenLayers(sprite));
+        if (flatten) {
+          SelectedLayers selLayers;
+          for (auto layer : sprite->root()->layers())
+            selLayers.insert(layer);
+          job.tx()(new cmd::FlattenLayers(sprite, selLayers));
+        }
 
         job.tx()(
           new cmd::SetPixelFormat(

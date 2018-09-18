@@ -741,6 +741,9 @@
         <item command="DuplicateLayer" text="@.layer_duplicate" />
         <item command="MergeDownLayer" text="@.layer_merge_down" />
         <item command="FlattenLayers" text="@.layer_flatten" />
+        <item command="FlattenLayers" text="@.layer_flatten_visible">
+          <param name="visibleOnly" value="true" />
+        </item>
         <separator />
         <item command="NewLayer" text="@.layer_add_reference_layer">
           <param name="reference" value="true" />
@@ -914,6 +917,9 @@
       <item command="DuplicateLayer" text="@main_menu.layer_duplicate" />
       <item command="MergeDownLayer" text="@main_menu.layer_merge_down" />
       <item command="FlattenLayers" text="@main_menu.layer_flatten" />
+      <item command="FlattenLayers" text="@main_menu.layer_flatten_visible">
+        <param name="visibleOnly" value="true" />
+      </item>
     </menu>
 
     <menu id="frame_popup_menu">
