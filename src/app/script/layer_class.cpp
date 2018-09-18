@@ -40,6 +40,36 @@ int Layer_get_sprite(lua_State* L)
   return 1;
 }
 
+int Layer_get_parent(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  if (layer->parent() == layer->sprite()->root())
+    push_ptr<Sprite>(L, layer->sprite());
+  else
+    push_ptr<Layer>(L, layer->parent());
+  return 1;
+}
+
+int Layer_get_previous(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  if (auto previous = layer->getPrevious())
+    push_ptr<Layer>(L, previous);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Layer_get_next(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  if (auto next = layer->getNext())
+    push_ptr<Layer>(L, next);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int Layer_get_name(lua_State* L)
 {
   auto layer = get_ptr<Layer>(L, 1);
@@ -218,6 +248,9 @@ const luaL_Reg Layer_methods[] = {
 
 const Property Layer_properties[] = {
   { "sprite", Layer_get_sprite, nullptr },
+  { "parent", Layer_get_parent, nullptr },
+  { "previous", Layer_get_previous, nullptr },
+  { "next", Layer_get_next, nullptr },
   { "name", Layer_get_name, Layer_set_name },
   { "opacity", Layer_get_opacity, Layer_set_opacity },
   { "blendMode", Layer_get_blendMode, Layer_set_blendMode },
