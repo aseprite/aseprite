@@ -97,6 +97,41 @@ int Layer_get_isBackground(lua_State* L)
   return 1;
 }
 
+int Layer_get_isEditable(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isEditable());
+  return 1;
+}
+
+int Layer_get_isVisible(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isVisible());
+  return 1;
+}
+
+int Layer_get_isContinuous(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isContinuous());
+  return 1;
+}
+
+int Layer_get_isCollapsed(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isCollapsed());
+  return 1;
+}
+
+int Layer_get_isExpanded(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  lua_pushboolean(L, layer->isExpanded());
+  return 1;
+}
+
 int Layer_get_cels(lua_State* L)
 {
   auto layer = get_ptr<Layer>(L, 1);
@@ -141,6 +176,41 @@ int Layer_set_blendMode(lua_State* L)
   return 0;
 }
 
+int Layer_set_isEditable(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  layer->setEditable(lua_toboolean(L, 2));
+  return 0;
+}
+
+int Layer_set_isVisible(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  layer->setVisible(lua_toboolean(L, 2));
+  return 0;
+}
+
+int Layer_set_isContinuous(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  layer->setContinuous(lua_toboolean(L, 2));
+  return 0;
+}
+
+int Layer_set_isCollapsed(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  layer->setCollapsed(lua_toboolean(L, 2));
+  return 0;
+}
+
+int Layer_set_isExpanded(lua_State* L)
+{
+  auto layer = get_ptr<Layer>(L, 1);
+  layer->setCollapsed(!lua_toboolean(L, 2));
+  return 0;
+}
+
 const luaL_Reg Layer_methods[] = {
   { "__eq", Layer_eq },
   { nullptr, nullptr }
@@ -155,6 +225,11 @@ const Property Layer_properties[] = {
   { "isGroup", Layer_get_isGroup, nullptr },
   { "isTransparent", Layer_get_isTransparent, nullptr },
   { "isBackground", Layer_get_isBackground, nullptr },
+  { "isEditable", Layer_get_isEditable, Layer_set_isEditable },
+  { "isVisible", Layer_get_isVisible, Layer_set_isVisible },
+  { "isContinuous", Layer_get_isContinuous, Layer_set_isContinuous },
+  { "isCollapsed", Layer_get_isCollapsed, Layer_set_isCollapsed },
+  { "isExpanded", Layer_get_isExpanded, Layer_set_isExpanded },
   { "cels", Layer_get_cels, nullptr },
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
