@@ -442,6 +442,12 @@ void DocView::onAddCel(DocEvent& ev)
 
 void DocView::onRemoveCel(DocEvent& ev)
 {
+  // This can happen when we apply a filter that clear the whole cel
+  // and then the cel is removed in a background/job
+  // thread. (e.g. applying a convolution matrix)
+  if (!ui::is_ui_thread())
+    return;
+
   UIContext::instance()->notifyActiveSiteChanged();
 }
 
