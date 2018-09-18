@@ -74,7 +74,11 @@ void FlattenLayersCommand::onExecute(Context* context)
         range = App::instance()->timeline()->range();
 #endif
 
-      if (!range.enabled()) {
+      // If the range is not selected or we have only one image layer
+      // selected, we'll flatten all layers.
+      if (!range.enabled() ||
+          (range.selectedLayers().size() == 1 &&
+           (*range.selectedLayers().begin())->isImage())) {
         for (auto layer : sprite->root()->layers())
           range.selectLayer(layer);
       }
