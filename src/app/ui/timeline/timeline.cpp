@@ -1050,27 +1050,45 @@ bool Timeline::onProcessMessage(Message* msg)
         switch (m_state) {
 
             case STATE_MOVING_RANGE: {
-                frame_t firstDrawableFrame;
-                frame_t lastDrawableFrame;
-                getDrawableFrames(&firstDrawableFrame, &lastDrawableFrame);
+                frame_t newFrame;
+                if (m_range.type() == Range::kLayers) {
+                  // If we are moving only layers we don't change the
+                  // current frame.
+                  newFrame = m_frame;
+                }
+                else {
+                  frame_t firstDrawableFrame;
+                  frame_t lastDrawableFrame;
+                  getDrawableFrames(&firstDrawableFrame, &lastDrawableFrame);
 
-                layer_t firstDrawableLayer;
-                layer_t lastDrawableLayer;
-                getDrawableLayers(&firstDrawableLayer, &lastDrawableLayer);
-
-                layer_t newLayer = hit.layer;
-                frame_t newFrame = hit.frame;
-
-                if (hit.frame < firstDrawableFrame)
+                  if (hit.frame < firstDrawableFrame)
                     newFrame = firstDrawableFrame - 1;
-                else if (hit.frame > lastDrawableFrame)
+                  else if (hit.frame > lastDrawableFrame)
                     newFrame = lastDrawableFrame + 1;
-                if (hit.layer < firstDrawableLayer)
-                    newLayer = firstDrawableLayer - 1;
-                else if (hit.layer > lastDrawableLayer)
-                    newLayer = lastDrawableLayer + 1;
+                  else
+                    newFrame = hit.frame;
+                }
 
-                showCel(newLayer,newFrame);
+                layer_t newLayer;
+                if (m_range.type() == Range::kFrames) {
+                  // If we are moving only frames we don't change the
+                  // current layer.
+                  newLayer = getLayerIndex(m_layer);
+                }
+                else {
+                  layer_t firstDrawableLayer;
+                  layer_t lastDrawableLayer;
+                  getDrawableLayers(&firstDrawableLayer, &lastDrawableLayer);
+
+                  if (hit.layer < firstDrawableLayer)
+                    newLayer = firstDrawableLayer - 1;
+                  else if (hit.layer > lastDrawableLayer)
+                    newLayer = lastDrawableLayer + 1;
+                  else
+                    newLayer = hit.layer;
+                }
+
+                showCel(newLayer, newFrame);
                 break;
             }
 
