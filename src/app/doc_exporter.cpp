@@ -231,8 +231,6 @@ private:
   SelectedLayers* m_selLayers;
   frame_t m_frame;
   std::string m_filename;
-  int m_borderPadding;
-  int m_shapePadding;
   int m_innerPadding;
   SampleBoundsPtr m_bounds;
   bool m_isDuplicated;
