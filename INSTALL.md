@@ -87,7 +87,7 @@ You must also compile [Skia](#skia-on-macos) before starting with the
 
 You will need the following dependencies on Ubuntu/Debian:
 
-    sudo apt-get install -y g++ cmake ninja-build libx11-dev libxcursor-dev
+    sudo apt-get install -y g++ cmake ninja-build libx11-dev libxcursor-dev libgl1-mesa-dev libfontconfig1-dev
 
 On Fedora:
 
