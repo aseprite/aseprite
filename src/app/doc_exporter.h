@@ -118,7 +118,6 @@ namespace app {
       Item& operator=(const Item&) = delete;
 
       int frames() const;
-      doc::frame_t firstFrame() const;
       doc::SelectedFrames getSelectedFrames() const;
     };
     typedef std::vector<Item> Items;

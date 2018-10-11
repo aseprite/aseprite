@@ -149,16 +149,6 @@ int DocExporter::Item::frames() const
     return doc->sprite()->totalFrames();
 }
 
-doc::frame_t DocExporter::Item::firstFrame() const
-{
-  if (selFrames)
-    return selFrames->firstFrame();
-  else if (frameTag)
-    return frameTag->fromFrame();
-  else
-    return 0;
-}
-
 doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
 {
   if (selFrames)
@@ -487,7 +477,7 @@ void DocExporter::captureSamples(Samples& samples)
         (frameTag != nullptr));         // Has frame tag
     }
 
-    frame_t frameFirst = item.firstFrame();
+    frame_t outputFrame = 0;
     for (frame_t frame : item.getSelectedFrames()) {
       FrameTag* innerTag = (frameTag ? frameTag: sprite->frameTags().innerTag(frame));
       FrameTag* outerTag = sprite->frameTags().outerTag(frame);
@@ -498,7 +488,10 @@ void DocExporter::captureSamples(Samples& samples)
         .groupName(layer && layer->parent() != sprite->root() ? layer->parent()->name(): "")
         .innerTagName(innerTag ? innerTag->name(): "")
         .outerTagName(outerTag ? outerTag->name(): "")
-        .frame((frames > 1) ? frame-frameFirst: frame_t(-1));
+        .frame(outputFrame)
+        .tagFrame(innerTag ? frame - innerTag->fromFrame():
+                             outputFrame);
+      ++outputFrame;
 
       std::string filename = filename_formatter(format, fnInfo);
 
