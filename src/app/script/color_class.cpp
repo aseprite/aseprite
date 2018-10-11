@@ -18,7 +18,7 @@ namespace script {
 
 namespace {
 
-Color Color_new(lua_State* L, int index)
+app::Color Color_new(lua_State* L, int index)
 {
   app::Color color;
   // Copy other color

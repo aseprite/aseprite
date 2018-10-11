@@ -154,6 +154,7 @@ if(ENABLE_SCRIPTING)
     script/cel_class.cpp
     script/cels_class.cpp
     script/color_class.cpp
+    script/dialog_class.cpp
     script/engine.cpp
     script/frame_class.cpp
     script/frames_class.cpp

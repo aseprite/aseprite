@@ -88,6 +88,7 @@ void register_app_command_object(lua_State* L);
 void register_cel_class(lua_State* L);
 void register_cels_class(lua_State* L);
 void register_color_class(lua_State* L);
+void register_dialog_class(lua_State* L);
 void register_frame_class(lua_State* L);
 void register_frames_class(lua_State* L);
 void register_image_class(lua_State* L);
@@ -216,6 +217,7 @@ Engine::Engine()
   register_cel_class(L);
   register_cels_class(L);
   register_color_class(L);
+  register_dialog_class(L);
   register_frame_class(L);
   register_frames_class(L);
   register_image_class(L);
@@ -275,6 +277,9 @@ bool Engine::evalCode(const std::string& code,
     }
   }
   lua_pop(L, 1);
+
+  // Collect script garbage.
+  lua_gc(L, LUA_GCCOLLECT);
   return ok;
 }
 

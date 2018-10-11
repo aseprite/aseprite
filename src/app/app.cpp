@@ -392,6 +392,11 @@ App::~App()
     LOG("APP: Exit\n");
     ASSERT(m_instance == this);
 
+#ifdef ENABLE_SCRIPTING
+    // Destroy scripting engine
+    m_engine.reset(nullptr);
+#endif
+
     // Delete file formats.
     FileFormatsManager::destroyInstance();
 

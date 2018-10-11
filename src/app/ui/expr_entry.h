@@ -17,9 +17,8 @@ namespace app {
   public:
     ExprEntry();
 
-    void setDecimals(int decimals) {
-      m_decimals = decimals;
-    }
+    int decimals() const { return m_decimals; }
+    void setDecimals(int decimals) { m_decimals = decimals; }
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

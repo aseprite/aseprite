@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2017  David Capello
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,9 +22,9 @@
 namespace ui {
 
 ButtonBase::ButtonBase(const std::string& text,
-                       WidgetType type,
-                       WidgetType behaviorType,
-                       WidgetType drawType)
+                       const WidgetType type,
+                       const WidgetType behaviorType,
+                       const WidgetType drawType)
   : Widget(type)
   , m_pressedStatus(false)
   , m_behaviorType(behaviorType)
@@ -274,7 +274,8 @@ Button::Button(const std::string& text)
 // CheckBox class
 // ======================================================================
 
-CheckBox::CheckBox(const std::string& text, WidgetType drawType)
+CheckBox::CheckBox(const std::string& text,
+                   const WidgetType drawType)
   : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
   setAlign(LEFT | MIDDLE);
@@ -284,7 +285,9 @@ CheckBox::CheckBox(const std::string& text, WidgetType drawType)
 // RadioButton class
 // ======================================================================
 
-RadioButton::RadioButton(const std::string& text, int radioGroup, WidgetType drawType)
+RadioButton::RadioButton(const std::string& text,
+                         const int radioGroup,
+                         const WidgetType drawType)
   : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
   setAlign(LEFT | MIDDLE);
