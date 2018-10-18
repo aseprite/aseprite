@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -34,7 +35,7 @@ namespace doc {
 
 Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   : Object(ObjectType::Sprite)
-  , m_document(NULL)
+  , m_document(nullptr)
   , m_spec((ColorMode)format, width, height, 0)
   , m_pixelRatio(1, 1)
   , m_frames(1)
@@ -147,6 +148,11 @@ void Sprite::setSize(int width, int height)
   ASSERT(height > 0);
 
   m_spec.setSize(width, height);
+}
+
+void Sprite::setColorSpace(const gfx::ColorSpacePtr& colorSpace)
+{
+  m_spec.setColorSpace(colorSpace);
 }
 
 bool Sprite::needAlpha() const

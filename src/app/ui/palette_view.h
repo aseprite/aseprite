@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -152,7 +153,8 @@ namespace app {
     int m_rangeAnchor;
     doc::PalettePicks m_selectedEntries;
     bool m_isUpdatingColumns;
-    obs::scoped_connection m_conn;
+    obs::scoped_connection m_palConn;
+    obs::scoped_connection m_csConn;
     Hit m_hot;
     bool m_copy;
   };

@@ -1,5 +1,6 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2018 by David Capello -->
+<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
   <vbox>
@@ -8,6 +9,7 @@
         <listbox id="section_listbox">
           <listitem text="@.section_general" value="section_general" />
           <listitem text="@.section_files" value="section_files" />
+          <listitem text="@.section_color" value="section_color" />
           <listitem text="@.section_alerts" value="section_alerts" />
           <listitem text="@.section_editor" value="section_editor" />
           <listitem text="@.section_selection" value="section_selection" />
@@ -114,6 +116,38 @@
           </grid>
         </vbox>
 
+        <!-- Color -->
+        <vbox id="section_color">
+          <separator text="@.section_color" horizontal="true" />
+          <check text="@.color_management" id="color_management" pref="color.manage" />
+
+	  <grid columns="2">
+            <label text="@.working_rgb_cs" id="working_rgb_cs_label" />
+            <combobox id="working_rgb_cs" />
+
+            <label text="@.files_with_cs" id="files_with_cs_label" />
+            <combobox id="files_with_cs">
+              <listitem text="@.disable_cs" />
+              <listitem text="@.use_embedded_cs" />
+              <listitem text="@.convert_cs" />
+              <listitem text="@.assign_cs" />
+              <listitem text="@.ask_cs" />
+	    </combobox>
+
+            <label text="@.missing_cs" id="missing_cs_label" />
+            <combobox id="missing_cs">
+              <listitem text="@.disable_cs" />
+              <listitem text="@.assign_cs" />
+              <listitem text="@.ask_cs" />
+	    </combobox>
+	  </grid>
+
+	  <hbox>
+	    <hbox expansive="true" />
+            <button id="reset_color_management" text="@general.reset" width="60" />
+	  </hbox>
+        </vbox>
+
         <!-- Editor -->
         <vbox id="section_editor">
           <separator text="@.section_editor" horizontal="true" />
@@ -188,7 +222,7 @@
             </combobox>
 
 	    <label text="@.cursor_color_type" />
-	    <combobox group="1" id="cursor_color_type">
+	    <combobox id="cursor_color_type">
 	      <listitem text="@.cursor_neg_bw" value="0" />
 	      <listitem text="@.cursor_specific_color" value="1" />
 	    </combobox>
@@ -219,7 +253,7 @@
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_bg" text="@.reset_bg" width="60" />
+            <button id="reset_bg" text="@general.reset" width="60" />
 	  </hbox>
         </vbox>
 
@@ -269,7 +303,7 @@
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_grid" text="@.reset_grid" width="60" />
+            <button id="reset_grid" text="@general.reset" width="60" />
 	  </hbox>
         </vbox>
 

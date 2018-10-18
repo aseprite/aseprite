@@ -1,7 +1,5 @@
 # Aseprite File Format (.ase/.aseprite) Specifications
 
-> Copyright (C) 2001-2018 by David Capello
-
 1. [References](#references)
 2. [Introduction](#introduction)
 3. [Header](#header)
@@ -212,6 +210,26 @@ Adds extra information to the latest read cel.
     FIXED       Width of the cel in the sprite (scaled in real-time)
     FIXED       Height of the cel in the sprite
     BYTE[16]    For future use (set to zero)
+
+### Color Profile Chunk (0x2007)
+
+Color profile for RGB or grayscale values.
+
+    WORD        Type
+                  0 - no color profile (as in old .aseprite files)
+                  1 - use sRGB
+                  2 - use the embedded ICC profile
+    WORD        Flags
+                  1 - use special fixed gamma
+    FIXED       Fixed gamma (1.0 = linear)
+                Note: The gamma in sRGB is 2.2 in overall but it doesn't use
+                a this fixed gamma, because sRGB uses different gamma sections
+                (linear and non-linear). If sRGB is specified with a fixed
+                gamma = 1.0, it means that this is Linear sRGB.
+    BYTE[8]     Reserved (set to zero]
+    + If type = ICC:
+      DWORD     ICC profile data length
+      BYTE[]    ICC profile data. More info: http://www.color.org/ICC1V42.pdf
 
 ### Mask Chunk (0x2016) DEPRECATED
 

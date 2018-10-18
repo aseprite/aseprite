@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -56,6 +57,8 @@
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
+#include "os/color_space.h"
+#include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "ui/ui.h"
@@ -643,19 +646,27 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   if (rendered) {
     // Convert the render to a os::Surface
     static os::Surface* tmp = nullptr; // TODO move this to other centralized place
-    if (!tmp || tmp->width() < rc2.w || tmp->height() < rc2.h) {
+
+    if (!tmp ||
+        tmp->width() < rc2.w ||
+        tmp->height() < rc2.h ||
+        tmp->colorSpace() != m_document->osColorSpace()) {
       const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
       const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
       if (tmp)
         tmp->dispose();
-      tmp = os::instance()->createSurface(maxw, maxh);
+
+      tmp = os::instance()->createSurface(
+        maxw, maxh, m_document->osColorSpace());
     }
+
     if (tmp->nativeHandle()) {
       if (newEngine)
         tmp->clear(); // TODO why we need this?
 
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
                                tmp, 0, 0, 0, 0, rc2.w, rc2.h);
+
       if (newEngine) {
         g->drawSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
       }
@@ -1917,6 +1928,13 @@ void Editor::onTiledModeChange()
 
 void Editor::onShowExtrasChange()
 {
+  invalidate();
+}
+
+void Editor::onColorSpaceChanged(DocEvent& ev)
+{
+  // As the document has a new color space, we've to redraw the
+  // complete canvas again with the new color profile.
   invalidate();
 }
 

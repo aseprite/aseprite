@@ -204,7 +204,7 @@ Skia.
 
 You can always check the
 [official Skia instructions](https://skia.org/user/build) and select
-the OS you are building for. Aseprite uses the `aseprite-m67` Skia
+the OS you are building for. Aseprite uses the `aseprite-m71` Skia
 branch from `https://github.com/aseprite/skia`.
 
 ## Skia on Windows
@@ -234,7 +234,7 @@ Then:
 Just ignore it.)
 
     cd C:\deps
-    git clone -b aseprite-m67 https://github.com/aseprite/skia.git
+    git clone -b aseprite-m71 https://github.com/aseprite/skia.git
     cd skia
     python tools/git-sync-deps
 
@@ -265,7 +265,7 @@ several minutes to finish:
     mkdir $HOME/deps
     cd $HOME/deps
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    git clone -b aseprite-m67 https://github.com/aseprite/skia.git
+    git clone -b aseprite-m71 https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
     python tools/git-sync-deps
@@ -290,7 +290,7 @@ several minutes to finish:
     mkdir $HOME/deps
     cd $HOME/deps
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    git clone -b aseprite-m67 https://github.com/aseprite/skia.git
+    git clone -b aseprite-m71 https://github.com/aseprite/skia.git
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
     python tools/git-sync-deps

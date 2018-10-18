@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +12,7 @@
 #include "base/debug.h"
 #include "doc/color.h"
 #include "doc/color_mode.h"
+#include "gfx/color_space.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
@@ -25,7 +27,8 @@ namespace doc {
       : m_colorMode(colorMode),
         m_width(width),
         m_height(height),
-        m_maskColor(maskColor) {
+        m_maskColor(maskColor),
+        m_colorSpace(gfx::ColorSpace::MakeNone()) {
       ASSERT(width > 0);
       ASSERT(height > 0);
     }
@@ -35,6 +38,7 @@ namespace doc {
     int height() const { return m_height; }
     gfx::Size size() const { return gfx::Size(m_width, m_height); }
     gfx::Rect bounds() const { return gfx::Rect(0, 0, m_width, m_height); }
+    const gfx::ColorSpacePtr& colorSpace() const { return m_colorSpace; }
 
     // The transparent color for colored images (0 by default) or just 0 for RGBA and Grayscale
     color_t maskColor() const { return m_maskColor; }
@@ -43,6 +47,7 @@ namespace doc {
     void setWidth(const int width) { m_width = width; }
     void setHeight(const int height) { m_height = height; }
     void setMaskColor(const color_t color) { m_maskColor = color; }
+    void setColorSpace(const gfx::ColorSpacePtr& cs) { m_colorSpace = cs; }
 
     void setSize(const int width, const int height) {
       m_width = width;
@@ -59,6 +64,7 @@ namespace doc {
     int m_width;
     int m_height;
     color_t m_maskColor;
+    gfx::ColorSpacePtr m_colorSpace;
   };
 
 } // namespace doc

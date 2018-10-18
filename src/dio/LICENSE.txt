@@ -1,3 +1,4 @@
+Copyright (c) 2018 Igara Studio S.A.
 Copyright (c) 2016-2018 David Capello
 
 Permission is hereby granted, free of charge, to any person obtaining

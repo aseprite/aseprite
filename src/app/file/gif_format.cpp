@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/color_spaces.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
@@ -279,6 +281,9 @@ public:
 
       if (m_layer && m_opaque)
         m_layer->configureAsBackground();
+
+      // sRGB is the default color space for GIF files
+      m_sprite->setColorSpace(gfx::ColorSpace::MakeSRGB());
 
       return true;
     }
@@ -870,6 +875,7 @@ public:
   GifEncoder(FileOp* fop, GifFileType* gifFile)
     : m_fop(fop)
     , m_gifFile(gifFile)
+    , m_document(fop->document())
     , m_sprite(fop->document()->sprite())
     , m_spriteBounds(m_sprite->bounds())
     , m_hasBackground(m_sprite->backgroundLayer() ? true: false)
@@ -1334,9 +1340,13 @@ private:
 
 private:
 
-  static ColorMapObject* createColorMap(const Palette* palette) {
+  ColorMapObject* createColorMap(const Palette* palette) {
     int n = 1 << GifBitSizeLimited(palette->size());
     ColorMapObject* colormap = GifMakeMapObject(n, nullptr);
+
+    // Color space conversions
+    ConvertCS convert = convert_from_custom_to_srgb(
+      m_document->osColorSpace());
 
     for (int i=0; i<n; ++i) {
       color_t color;
@@ -1344,6 +1354,8 @@ private:
         color = palette->getEntry(i);
       else
         color = rgba(0, 0, 0, 255);
+
+      color = convert(color);
 
       colormap->Colors[i].Red   = rgba_getr(color);
       colormap->Colors[i].Green = rgba_getg(color);
@@ -1355,6 +1367,7 @@ private:
 
   FileOp* m_fop;
   GifFileType* m_gifFile;
+  const Doc* m_document;
   const Sprite* m_sprite;
   gfx::Rect m_spriteBounds;
   bool m_hasBackground;

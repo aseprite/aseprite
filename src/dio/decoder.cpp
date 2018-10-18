@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -57,6 +58,11 @@ uint32_t Decoder::read32()
   }
   else
     return 0;
+}
+
+size_t Decoder::readBytes(uint8_t* buf, size_t n)
+{
+  return m_f->readBytes(buf, n);
 }
 
 } // namespace dio

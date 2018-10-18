@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +17,7 @@
 #include "app/file/png_format.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "gfx/color_space.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,8 +55,10 @@ class PngFormat : public FileFormat {
   }
 
   bool onLoad(FileOp* fop) override;
+  gfx::ColorSpacePtr loadColorSpace(png_structp png_ptr, png_infop info_ptr);
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
+  void saveColorSpace(png_structp png_ptr, png_infop info_ptr, const gfx::ColorSpace* colorSpace);
 #endif
 };
 
@@ -68,7 +72,7 @@ static void report_png_error(png_structp png_ptr, png_const_charp error)
   ((FileOp*)png_get_error_ptr(png_ptr))->setError("libpng: %s\n", error);
 }
 
-// TODO this should be part of an png encoder instance
+// TODO this should be information in FileOp parameter of onSave()
 static bool fix_one_alpha_pixel = false;
 
 PngEncoderOneAlphaPixel::PngEncoderOneAlphaPixel(bool state)
@@ -81,12 +85,26 @@ PngEncoderOneAlphaPixel::~PngEncoderOneAlphaPixel()
   fix_one_alpha_pixel = false;
 }
 
+// As in png_fixed_point_to_float() in skia/src/codec/SkPngCodec.cpp
+static float png_fixtof(png_fixed_point x)
+{
+  // We multiply by the same factor that libpng used to convert
+  // fixed point -> double.  Since we want floats, we choose to
+  // do the conversion ourselves rather than convert
+  // fixed point -> double -> float.
+  return ((float)x) * 0.00001f;
+}
+
+static png_fixed_point png_ftofix(float x)
+{
+  return x * 100000.0f;
+}
+
 bool PngFormat::onLoad(FileOp* fop)
 {
   png_uint_32 width, height, y;
   unsigned int sig_read = 0;
   png_structp png_ptr;
-  png_infop info_ptr;
   int bit_depth, color_type, interlace_type;
   int num_palette;
   png_colorp palette;
@@ -110,7 +128,7 @@ bool PngFormat::onLoad(FileOp* fop)
   }
 
   /* Allocate/initialize the memory for image information. */
-  info_ptr = png_create_info_struct(png_ptr);
+  png_infop info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
     fop->setError("png_create_info_struct\n");
     png_destroy_read_struct(&png_ptr, NULL, NULL);
@@ -125,11 +143,6 @@ bool PngFormat::onLoad(FileOp* fop)
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return false;
   }
-
-  // Do not check sRGB profile
-#ifdef PNG_SKIP_sRGB_CHECK_PROFILE
-  png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, 1);
-#endif
 
   /* Set up the input control if you are using standard C streams */
   png_init_io(png_ptr, fp);
@@ -357,12 +370,92 @@ bool PngFormat::onLoad(FileOp* fop)
   }
   png_free(png_ptr, rows_pointer);
 
+  // Setup the color space.
+  auto colorSpace = PngFormat::loadColorSpace(png_ptr, info_ptr);
+  if (colorSpace &&
+      fop->document()->sprite()->colorSpace()->type() == gfx::ColorSpace::None) {
+    fop->document()->sprite()->setColorSpace(colorSpace);
+    fop->document()->notifyColorSpaceChanged();
+  }
+
   // Clean up after the read, and free any memory allocated
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
   return true;
 }
 
+// Returns a colorSpace object that represents any
+// color space information in the encoded data.  If the encoded data
+// contains an invalid/unsupported color space, this will return
+// NULL. If there is no color space information, it will guess sRGB
+//
+// Code to read color spaces from png files from Skia (SkPngCodec.cpp)
+// by Google Inc.
+gfx::ColorSpacePtr PngFormat::loadColorSpace(png_structp png_ptr, png_infop info_ptr)
+{
+  // First check for an ICC profile
+  png_bytep profile;
+  png_uint_32 length;
+  // The below variables are unused, however, we need to pass them in anyway or
+  // png_get_iCCP() will return nothing.
+  // Could knowing the |name| of the profile ever be interesting?  Maybe for debugging?
+  png_charp name;
+  // The |compression| is uninteresting since:
+  //   (1) libpng has already decompressed the profile for us.
+  //   (2) "deflate" is the only mode of decompression that libpng supports.
+  int compression;
+  if (PNG_INFO_iCCP == png_get_iCCP(png_ptr, info_ptr,
+                                    &name, &compression,
+                                    &profile, &length)) {
+    auto colorSpace = gfx::ColorSpace::MakeICC(profile, length);
+    if (name)
+      colorSpace->setName(name);
+    return colorSpace;
+  }
+
+  // Second, check for sRGB.
+  if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sRGB)) {
+    // sRGB chunks also store a rendering intent: Absolute, Relative,
+    // Perceptual, and Saturation.
+    return gfx::ColorSpace::MakeSRGB();
+  }
+
+  // Next, check for chromaticities.
+  png_fixed_point wx, wy, rx, ry, gx, gy, bx, by, invGamma;
+  if (png_get_cHRM_fixed(png_ptr, info_ptr,
+                         &wx, &wy, &rx, &ry, &gx, &gy, &bx, &by)) {
+    gfx::ColorSpacePrimaries primaries;
+    primaries.wx = png_fixtof(wx); primaries.wy = png_fixtof(wy);
+    primaries.rx = png_fixtof(rx); primaries.ry = png_fixtof(ry);
+    primaries.gx = png_fixtof(gx); primaries.gy = png_fixtof(gy);
+    primaries.bx = png_fixtof(bx); primaries.by = png_fixtof(by);
+
+    if (PNG_INFO_gAMA == png_get_gAMA_fixed(png_ptr, info_ptr, &invGamma)) {
+      gfx::ColorSpaceTransferFn fn;
+      fn.a = 1.0f;
+      fn.b = fn.c = fn.d = fn.e = fn.f = 0.0f;
+      fn.g = 1.0f / png_fixtof(invGamma);
+
+      return gfx::ColorSpace::MakeRGB(fn, primaries);
+    }
+
+    // Default to sRGB gamma if the image has color space information,
+    // but does not specify gamma.
+    return gfx::ColorSpace::MakeRGBWithSRGBGamma(primaries);
+  }
+
+  // Last, check for gamma.
+  if (PNG_INFO_gAMA == png_get_gAMA_fixed(png_ptr, info_ptr, &invGamma)) {
+    // Since there is no cHRM, we will guess sRGB gamut.
+    return gfx::ColorSpace::MakeSRGBWithGamma(1.0f / png_fixtof(invGamma));
+  }
+
+  // Report that there is no color space information in the PNG.
+  // Guess sRGB in this case.
+  return gfx::ColorSpace::MakeSRGB();
+}
+
 #ifdef ENABLE_SAVE
+
 bool PngFormat::onSave(FileOp* fop)
 {
   png_structp png_ptr;
@@ -422,6 +515,9 @@ bool PngFormat::onSave(FileOp* fop)
 
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+  if (fop->document()->sprite()->colorSpace())
+    saveColorSpace(png_ptr, info_ptr, fop->document()->sprite()->colorSpace().get());
 
   if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int c, r, g, b;
@@ -592,6 +688,53 @@ bool PngFormat::onSave(FileOp* fop)
   png_destroy_write_struct(&png_ptr, &info_ptr);
   return true;
 }
-#endif
+
+void PngFormat::saveColorSpace(png_structp png_ptr, png_infop info_ptr,
+                               const gfx::ColorSpace* colorSpace)
+{
+  switch (colorSpace->type()) {
+
+    case gfx::ColorSpace::None:
+      // Do just nothing (png file without profile, like old Aseprite versions)
+      break;
+
+    case gfx::ColorSpace::sRGB:
+      // TODO save the original intent
+      if (!colorSpace->hasGamma()) {
+        png_set_sRGB(png_ptr, info_ptr, PNG_sRGB_INTENT_PERCEPTUAL);
+        return;
+      }
+
+      // Continue to RGB case...
+
+    case gfx::ColorSpace::RGB: {
+      if (colorSpace->hasPrimaries()) {
+        const gfx::ColorSpacePrimaries* p = colorSpace->primaries();
+        png_set_cHRM_fixed(png_ptr, info_ptr,
+                           png_ftofix(p->wx), png_ftofix(p->wy),
+                           png_ftofix(p->rx), png_ftofix(p->ry),
+                           png_ftofix(p->gx), png_ftofix(p->gy),
+                           png_ftofix(p->bx), png_ftofix(p->by));
+      }
+      if (colorSpace->hasGamma()) {
+        png_set_gAMA_fixed(png_ptr, info_ptr,
+                           png_ftofix(1.0f / colorSpace->gamma()));
+      }
+      break;
+    }
+
+    case gfx::ColorSpace::ICC: {
+      png_set_iCCP(png_ptr, info_ptr,
+                   (png_const_charp)colorSpace->name().c_str(),
+                   PNG_COMPRESSION_TYPE_DEFAULT,
+                   (png_const_bytep)colorSpace->iccData(),
+                   (png_uint_32)colorSpace->iccSize());
+      break;
+    }
+
+  }
+}
+
+#endif  // ENABLE_SAVE
 
 } // namespace app

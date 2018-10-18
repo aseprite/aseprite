@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +23,7 @@
 #include "base/memory.h"
 #include "doc/doc.h"
 
+#include <algorithm>
 #include <csetjmp>
 #include <cstdio>
 #include <cstdlib>
@@ -66,8 +68,11 @@ class JpegFormat : public FileFormat {
   }
 
   bool onLoad(FileOp* fop) override;
+  gfx::ColorSpacePtr loadColorSpace(FileOp* fop, jpeg_decompress_struct* dinfo);
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
+  void saveColorSpace(FileOp* fop, jpeg_compress_struct* cinfo,
+                      const gfx::ColorSpace* colorSpace);
 #endif
 
   base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
@@ -107,9 +112,27 @@ static void output_message(j_common_ptr cinfo)
   ((struct error_mgr *)cinfo->err)->fop->setError("%s\n", buffer);
 }
 
+// Some code to read color spaces from jpeg files is from Skia
+// (SkJpegCodec.cpp) by Google Inc.
+static constexpr uint32_t kMarkerMaxSize = 65533;
+static constexpr uint32_t kICCMarker = JPEG_APP0 + 2;
+static constexpr uint32_t kICCMarkerHeaderSize = 14;
+static constexpr uint32_t kICCAvailDataPerMarker = (kMarkerMaxSize - kICCMarkerHeaderSize);
+static constexpr uint8_t kICCSig[] = { 'I', 'C', 'C', '_', 'P', 'R', 'O', 'F', 'I', 'L', 'E', '\0' };
+
+static bool is_icc_marker(jpeg_marker_struct* marker)
+{
+  if (kICCMarker != marker->marker ||
+      marker->data_length < kICCMarkerHeaderSize) {
+    return false;
+  }
+  else
+    return !memcmp(marker->data, kICCSig, sizeof(kICCSig));
+}
+
 bool JpegFormat::onLoad(FileOp* fop)
 {
-  struct jpeg_decompress_struct cinfo;
+  struct jpeg_decompress_struct dinfo;
   struct error_mgr jerr;
   JDIMENSION num_scanlines;
   JSAMPARRAY buffer;
@@ -121,60 +144,65 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   // Initialize the JPEG decompression object with error handling.
   jerr.fop = fop;
-  cinfo.err = jpeg_std_error(&jerr.head);
+  dinfo.err = jpeg_std_error(&jerr.head);
 
   jerr.head.error_exit = error_exit;
   jerr.head.output_message = output_message;
 
   // Establish the setjmp return context for error_exit to use.
   if (setjmp(jerr.setjmp_buffer)) {
-    jpeg_destroy_decompress(&cinfo);
+    jpeg_destroy_decompress(&dinfo);
     return false;
   }
 
-  jpeg_create_decompress(&cinfo);
+  jpeg_create_decompress(&dinfo);
 
   // Specify data source for decompression.
-  jpeg_stdio_src(&cinfo, file);
+  jpeg_stdio_src(&dinfo, file);
+
+  // Instruct jpeg library to save the markers that we care
+  // about. Since the color profile will not change, we can skip this
+  // step on rewinds.
+  jpeg_save_markers(&dinfo, kICCMarker, 0xFFFF);
 
   // Read file header, set default decompression parameters.
-  jpeg_read_header(&cinfo, true);
+  jpeg_read_header(&dinfo, true);
 
-  if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
-    cinfo.out_color_space = JCS_GRAYSCALE;
+  if (dinfo.jpeg_color_space == JCS_GRAYSCALE)
+    dinfo.out_color_space = JCS_GRAYSCALE;
   else
-    cinfo.out_color_space = JCS_RGB;
+    dinfo.out_color_space = JCS_RGB;
 
   // Start decompressor.
-  jpeg_start_decompress(&cinfo);
+  jpeg_start_decompress(&dinfo);
 
   // Create the image.
   Image* image = fop->sequenceImage(
-    (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
+    (dinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
                                         IMAGE_GRAYSCALE),
-    cinfo.output_width,
-    cinfo.output_height);
+    dinfo.output_width,
+    dinfo.output_height);
   if (!image) {
-    jpeg_destroy_decompress(&cinfo);
+    jpeg_destroy_decompress(&dinfo);
     return false;
   }
 
   // Create the buffer.
-  buffer_height = cinfo.rec_outbuf_height;
+  buffer_height = dinfo.rec_outbuf_height;
   buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
-    jpeg_destroy_decompress(&cinfo);
+    jpeg_destroy_decompress(&dinfo);
     return false;
   }
 
   for (c=0; c<(int)buffer_height; c++) {
     buffer[c] = (JSAMPROW)base_malloc(sizeof(JSAMPLE) *
-                                      cinfo.output_width * cinfo.output_components);
+                                      dinfo.output_width * dinfo.output_components);
     if (!buffer[c]) {
       for (c--; c>=0; c--)
         base_free(buffer[c]);
       base_free(buffer);
-      jpeg_destroy_decompress(&cinfo);
+      jpeg_destroy_decompress(&dinfo);
       return false;
     }
   }
@@ -185,12 +213,8 @@ bool JpegFormat::onLoad(FileOp* fop)
       fop->sequenceSetColor(c, c, c, c);
 
   // Read each scan line.
-  while (cinfo.output_scanline < cinfo.output_height) {
-    // TODO
-/*     if (plugin_want_close())  */
-/*       break; */
-
-    num_scanlines = jpeg_read_scanlines(&cinfo, buffer, buffer_height);
+  while (dinfo.output_scanline < dinfo.output_height) {
+    num_scanlines = jpeg_read_scanlines(&dinfo, buffer, buffer_height);
 
     // RGB
     if (image->pixelFormat() == IMAGE_RGB) {
@@ -200,7 +224,7 @@ bool JpegFormat::onLoad(FileOp* fop)
 
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
-        dst_address = (uint32_t*)image->getPixelAddress(0, cinfo.output_scanline-1+y);
+        dst_address = (uint32_t*)image->getPixelAddress(0, dinfo.output_scanline-1+y);
 
         for (x=0; x<image->width(); x++) {
           r = *(src_address++);
@@ -218,30 +242,107 @@ bool JpegFormat::onLoad(FileOp* fop)
 
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
-        dst_address = (uint16_t*)image->getPixelAddress(0, cinfo.output_scanline-1+y);
+        dst_address = (uint16_t*)image->getPixelAddress(0, dinfo.output_scanline-1+y);
 
         for (x=0; x<image->width(); x++)
           *(dst_address++) = graya(*(src_address++), 255);
       }
     }
 
-    fop->setProgress((float)(cinfo.output_scanline+1) / (float)(cinfo.output_height));
+    fop->setProgress((float)(dinfo.output_scanline+1) / (float)(dinfo.output_height));
     if (fop->isStop())
       break;
   }
 
-  /* destroy all data */
+  // Read color space
+  gfx::ColorSpacePtr colorSpace = loadColorSpace(fop, &dinfo);
+  if (colorSpace &&
+      fop->document()->sprite()->colorSpace()->type() == gfx::ColorSpace::None) {
+    fop->document()->sprite()->setColorSpace(colorSpace);
+    fop->document()->notifyColorSpaceChanged();
+  }
+
   for (c=0; c<(int)buffer_height; c++)
     base_free(buffer[c]);
   base_free(buffer);
 
-  jpeg_finish_decompress(&cinfo);
-  jpeg_destroy_decompress(&cinfo);
+  jpeg_finish_decompress(&dinfo);
+  jpeg_destroy_decompress(&dinfo);
 
   return true;
 }
 
+// ICC profiles may be stored using a sequence of multiple markers.  We obtain the ICC profile
+// in two steps:
+//   (1) Discover all ICC profile markers and verify that they are numbered properly.
+//   (2) Copy the data from each marker into a contiguous ICC profile.
+gfx::ColorSpacePtr JpegFormat::loadColorSpace(FileOp* fop, jpeg_decompress_struct* dinfo)
+{
+  // Note that 256 will be enough storage space since each markerIndex is stored in 8-bits.
+  jpeg_marker_struct* markerSequence[256];
+  memset(markerSequence, 0, sizeof(markerSequence));
+  uint8_t numMarkers = 0;
+  size_t totalBytes = 0;
+
+  // Discover any ICC markers and verify that they are numbered properly.
+  for (jpeg_marker_struct* marker = dinfo->marker_list; marker; marker = marker->next) {
+    if (is_icc_marker(marker)) {
+      // Verify that numMarkers is valid and consistent.
+      if (0 == numMarkers) {
+        numMarkers = marker->data[13];
+        if (0 == numMarkers) {
+          fop->setError("ICC Profile Error: numMarkers must be greater than zero.\n");
+          return nullptr;
+        }
+      }
+      else if (numMarkers != marker->data[13]) {
+        fop->setError("ICC Profile Error: numMarkers must be consistent.\n");
+        return nullptr;
+      }
+
+      // Verify that the markerIndex is valid and unique.  Note that zero is not
+      // a valid index.
+      uint8_t markerIndex = marker->data[12];
+      if (markerIndex == 0 || markerIndex > numMarkers) {
+        fop->setError("ICC Profile Error: markerIndex is invalid.\n");
+        return nullptr;
+      }
+      if (markerSequence[markerIndex]) {
+        fop->setError("ICC Profile Error: Duplicate value of markerIndex.\n");
+        return nullptr;
+      }
+      markerSequence[markerIndex] = marker;
+      ASSERT(marker->data_length >= kICCMarkerHeaderSize);
+      totalBytes += marker->data_length - kICCMarkerHeaderSize;
+    }
+  }
+
+  if (0 == totalBytes) {
+    // No non-empty ICC profile markers were found.
+    return nullptr;
+  }
+
+  // Combine the ICC marker data into a contiguous profile.
+  std::vector<uint8_t> iccData(totalBytes);
+  uint8_t* dst = &iccData[0];
+  for (uint32_t i = 1; i <= numMarkers; i++) {
+    jpeg_marker_struct* marker = markerSequence[i];
+    if (!marker) {
+      fop->setError("ICC Profile Error: Missing marker %d of %d.\n", i, numMarkers);
+      return nullptr;
+    }
+
+    uint8_t* src = ((uint8_t*)marker->data) + kICCMarkerHeaderSize;
+    size_t bytes = marker->data_length - kICCMarkerHeaderSize;
+    memcpy(dst, src, bytes);
+    dst = dst + bytes;
+  }
+
+  return gfx::ColorSpace::MakeICC(std::move(iccData));
+}
+
 #ifdef ENABLE_SAVE
+
 bool JpegFormat::onSave(FileOp* fop)
 {
   struct jpeg_compress_struct cinfo;
@@ -287,6 +388,10 @@ bool JpegFormat::onSave(FileOp* fop)
 
   // START compressor.
   jpeg_start_compress(&cinfo, true);
+
+  // Save color space
+  if (fop->document()->sprite()->colorSpace())
+    saveColorSpace(fop, &cinfo, fop->document()->sprite()->colorSpace().get());
 
   // CREATE the buffer.
   buffer_height = 1;
@@ -360,7 +465,53 @@ bool JpegFormat::onSave(FileOp* fop)
   // All fine.
   return true;
 }
-#endif
+
+void JpegFormat::saveColorSpace(FileOp* fop, jpeg_compress_struct* cinfo,
+                                const gfx::ColorSpace* colorSpace)
+{
+  if (!colorSpace || colorSpace->type() != gfx::ColorSpace::ICC)
+    return;
+
+  size_t iccSize = colorSpace->iccSize();
+  auto iccData = (const uint8_t*)colorSpace->iccData();
+  if (!iccSize || !iccData)
+    return;
+
+  std::vector<uint8_t> markerData(kMarkerMaxSize);
+  int markerIndex = 1;
+  int numMarkers =
+    (iccSize / kICCAvailDataPerMarker) +
+    (iccSize % kICCAvailDataPerMarker > 0 ? 1: 0);
+
+  // ICC profile too big to fit in JPEG markers (64kb*255 ~= 16mb)
+  if (numMarkers > 255) {
+    fop->setError("ICC profile is too big to enter in the JPEG file.\n");
+    return;
+  }
+
+  while (iccSize > 0) {
+    const size_t n = std::min<int>(iccSize, kICCAvailDataPerMarker);
+
+    ASSERT(n > 0);
+    ASSERT(n < kICCAvailDataPerMarker);
+
+    // Marker Header
+    std::copy(kICCSig, kICCSig+sizeof(kICCSig), &markerData[0]);
+    markerData[sizeof(kICCSig)  ] = markerIndex;
+    markerData[sizeof(kICCSig)+1] = numMarkers;
+
+    // Marker Data
+    std::copy(iccData, iccData+n, &markerData[kICCMarkerHeaderSize]);
+
+    jpeg_write_marker(cinfo, kICCMarker, &markerData[0], kICCMarkerHeaderSize + n);
+
+    ++markerIndex;
+    iccSize -= n;
+    iccData += n;
+  }
+}
+
+#endif  // ENABLE_SAVE
 
 // Shows the JPEG configuration dialog.
 base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)

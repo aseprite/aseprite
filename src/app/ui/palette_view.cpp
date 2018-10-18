@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
+#include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -65,7 +67,9 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
   setFocusStop(true);
   setDoubleBuffered(true);
 
-  m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
+  m_palConn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
+  m_csConn = App::instance()->ColorSpaceChange.connect(
+    base::Bind<void>(&PaletteView::invalidate, this));
 
   InitTheme.connect(
     [this]{

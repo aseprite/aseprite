@@ -1,4 +1,7 @@
 # Aseprite Document IO Library
-*Copyright (C) 2016-2018 David Capello*
 
 > Distributed under [MIT license](LICENSE.txt)
+
+Library to decode `doc::Document` from `.aseprite` files. This
+library should support encoding of `.aseprite` files in the near
+future.

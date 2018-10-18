@@ -1,4 +1,5 @@
 # Aseprite
+# Copyright (C) 2018  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -431,12 +432,14 @@ add_library(app-lib
   cmd/add_layer.cpp
   cmd/add_palette.cpp
   cmd/add_slice.cpp
+  cmd/assign_color_profile.cpp
   cmd/background_from_layer.cpp
   cmd/clear_cel.cpp
   cmd/clear_image.cpp
   cmd/clear_mask.cpp
   cmd/clear_rect.cpp
   cmd/configure_background.cpp
+  cmd/convert_color_profile.cpp
   cmd/copy_cel.cpp
   cmd/copy_frame.cpp
   cmd/copy_rect.cpp
@@ -500,6 +503,7 @@ add_library(app-lib
   cmd_transaction.cpp
   color.cpp
   color_picker.cpp
+  color_spaces.cpp
   color_utils.cpp
   commands/cmd_background_from_layer.cpp
   commands/cmd_cel_opacity.cpp

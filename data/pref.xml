@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2018 by David Capello -->
+<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
   <types>
@@ -96,6 +97,13 @@
     <enum id="HueSaturationMode">
       <value id="HSV" value="0" />
       <value id="HSL" value="1" />
+    </enum>
+    <enum id="ColorProfileBehavior">
+      <value id="DISABLE" value="0" />
+      <value id="EMBEDDED" value="1" />
+      <value id="CONVERT" value="2" />
+      <value id="ASSIGN" value="3" />
+      <value id="ASK" value="4" />
     </enum>
   </types>
 
@@ -300,6 +308,12 @@
     </section>
     <section id="scripts">
       <option id="show_run_script_alert" type="bool" default="true" />
+    </section>
+    <section id="color">
+      <option id="manage" type="bool" default="true" />
+      <option id="working_rgb_space" type="std::string" default="&quot;sRGB&quot;" />
+      <option id="files_with_profile" type="ColorProfileBehavior" default="ColorProfileBehavior::EMBEDDED" />
+      <option id="missing_profile" type="ColorProfileBehavior" default="ColorProfileBehavior::ASSIGN" />
     </section>
   </global>
 

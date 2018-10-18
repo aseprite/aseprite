@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +24,7 @@
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
 #include "obs/observable.h"
+#include "os/color_space.h"
 
 #include <string>
 
@@ -81,10 +83,13 @@ namespace app {
     color_t bgColor() const;
     color_t bgColor(Layer* layer) const;
 
+    os::ColorSpacePtr osColorSpace() const { return m_osColorSpace; }
+
     //////////////////////////////////////////////////////////////////////
     // Notifications
 
     void notifyGeneralUpdate();
+    void notifyColorSpaceChanged();
     void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
     void notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region);
     void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
@@ -120,7 +125,7 @@ namespace app {
     // Loaded options from file
 
     void setFormatOptions(const base::SharedPtr<FormatOptions>& format_options);
-    base::SharedPtr<FormatOptions> getFormatOptions() { return m_format_options; }
+    base::SharedPtr<FormatOptions> getFormatOptions() const { return m_format_options; }
 
     //////////////////////////////////////////////////////////////////////
     // Boundaries
@@ -188,6 +193,7 @@ namespace app {
 
   private:
     void removeFromContext();
+    void updateOSColorSpace(bool appWideSignal);
 
     Context* m_ctx;
     int m_flags;
@@ -211,6 +217,9 @@ namespace app {
     Transformation m_transformation;
 
     gfx::Point m_lastDrawingPoint;
+
+    // Last used color space to render a sprite.
+    os::ColorSpacePtr m_osColorSpace;
 
     DISABLE_COPYING(Doc);
   };

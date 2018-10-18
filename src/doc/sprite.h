@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -75,10 +76,12 @@ namespace doc {
     gfx::Rect bounds() const { return m_spec.bounds(); }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
+    const gfx::ColorSpacePtr& colorSpace() const { return m_spec.colorSpace(); }
 
     void setPixelFormat(PixelFormat format);
     void setPixelRatio(const PixelRatio& pixelRatio);
     void setSize(int width, int height);
+    void setColorSpace(const gfx::ColorSpacePtr& colorSpace);
 
     // Returns true if the rendered images will contain alpha values less
     // than 255. Only RGBA and Grayscale images without background needs

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +27,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
 #include "obs/connection.h"
+#include "os/color_space.h"
 #include "render/projection.h"
 #include "render/zoom.h"
 #include "ui/base.h"
@@ -284,6 +286,7 @@ namespace app {
     void onShowExtrasChange();
 
     // DocObserver impl
+    void onColorSpaceChanged(DocEvent& ev) override;
     void onExposeSpritePixels(DocEvent& ev) override;
     void onSpritePixelRatioChanged(DocEvent& ev) override;
     void onBeforeRemoveLayer(DocEvent& ev) override;

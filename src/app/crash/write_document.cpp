@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +34,7 @@
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
+#include "fixmath/fixmath.h"
 
 #include <fstream>
 #include <map>
@@ -165,6 +167,23 @@ private:
     for (const Slice* slice : spr->slices())
       write32(s, slice->id());
 
+    // Color Space
+    writeColorSpace(s, spr->colorSpace());
+
+    return true;
+  }
+
+  bool writeColorSpace(std::ofstream& s, const gfx::ColorSpacePtr& colorSpace) {
+    write16(s, colorSpace->type());
+    write16(s, colorSpace->flags());
+    write32(s, fixmath::ftofix(colorSpace->gamma()));
+
+    auto& rawData = colorSpace->rawData();
+    write32(s, rawData.size());
+    if (rawData.size() > 0)
+      s.write((const char*)&rawData[0], rawData.size());
+
+    write_string(s, colorSpace->name());
     return true;
   }
 

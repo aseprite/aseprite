@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,8 @@
 
 #include "app/ui/color_selector.h"
 
+#include "app/app.h"
+#include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/modules/gfx.h"
 #include "app/ui/skin/skin_theme.h"
@@ -99,14 +102,17 @@ public:
   os::Surface* getCanvas(int w, int h, gfx::Color bgColor) {
     assert_ui_thread();
 
+    auto activeCS = get_current_color_space();
+
     if (!m_canvas ||
         m_canvas->width() != w ||
-        m_canvas->height() != h) {
+        m_canvas->height() != h ||
+        m_canvas->colorSpace() != activeCS) {
       std::unique_lock<std::mutex> lock(m_mutex);
       stopCurrentPainting(lock);
 
       auto oldCanvas = m_canvas;
-      m_canvas = os::instance()->createSurface(w, h);
+      m_canvas = os::instance()->createSurface(w, h, activeCS);
       m_canvas->fillRect(bgColor, gfx::Rect(0, 0, w, h));
       if (oldCanvas) {
         m_canvas->drawSurface(oldCanvas, 0, 0);
@@ -221,6 +227,10 @@ ColorSelector::ColorSelector()
 {
   initTheme();
   painter.addRef();
+
+  m_appConn = App::instance()
+    ->ColorSpaceChange.connect(
+      &ColorSelector::updateColorSpace, this);
 }
 
 ColorSelector::~ColorSelector()
@@ -497,6 +507,12 @@ gfx::Rect ColorSelector::alphaBarBounds() const
     return gfx::Rect(rc.x, rc.y2()-size, rc.w, size);
   else
     return gfx::Rect();
+}
+
+void ColorSelector::updateColorSpace()
+{
+  m_paintFlags |= AllAreasFlag;
+  invalidate();
 }
 
 } // namespace app

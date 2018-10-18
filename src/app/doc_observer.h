@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,8 @@ namespace app {
     // General update. If an observer receives this event, it's because
     // anything in the document could be changed.
     virtual void onGeneralUpdate(DocEvent& ev) { }
+
+    virtual void onColorSpaceChanged(DocEvent& ev) { }
 
     virtual void onPixelFormatChanged(DocEvent& ev) { }
 

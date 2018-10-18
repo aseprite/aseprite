@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,9 +50,34 @@ static const char* kSectionExtensionsId = "section_extensions";
 
 static const char* kInfiniteSymbol = "\xE2\x88\x9E"; // Infinite symbol (UTF-8)
 
+static app::gen::ColorProfileBehavior filesWithCsMap[] = {
+  app::gen::ColorProfileBehavior::DISABLE,
+  app::gen::ColorProfileBehavior::EMBEDDED,
+  app::gen::ColorProfileBehavior::CONVERT,
+  app::gen::ColorProfileBehavior::ASSIGN,
+  app::gen::ColorProfileBehavior::ASK,
+};
+
+static app::gen::ColorProfileBehavior missingCsMap[] = {
+  app::gen::ColorProfileBehavior::DISABLE,
+  app::gen::ColorProfileBehavior::ASSIGN,
+  app::gen::ColorProfileBehavior::ASK,
+};
+
 using namespace ui;
 
 class OptionsWindow : public app::gen::Options {
+
+  class ColorSpaceItem : public ListItem {
+  public:
+    ColorSpaceItem(const os::ColorSpacePtr& cs)
+      : ListItem(cs->gfxColorSpace()->name()),
+        m_cs(cs) {
+    }
+    os::ColorSpacePtr cs() const { return m_cs; }
+  private:
+    os::ColorSpacePtr m_cs;
+  };
 
   class ThemeItem : public ListItem {
   public:
@@ -152,6 +178,21 @@ public:
     // Number of recent items
     recentFiles()->setValue(m_pref.general.recentItems());
     clearRecentFiles()->Click.connect(base::Bind<void>(&OptionsWindow::onClearRecentFiles, this));
+
+    // Color profiles
+    resetColorManagement()->Click.connect(base::Bind<void>(&OptionsWindow::onResetColorManagement, this));
+    colorManagement()->Click.connect(base::Bind<void>(&OptionsWindow::onColorManagement, this));
+    {
+      os::instance()->listColorSpaces(m_colorSpaces);
+      for (auto& cs : m_colorSpaces) {
+        if (cs->gfxColorSpace()->type() != gfx::ColorSpace::None)
+          workingRgbCs()->addItem(new ColorSpaceItem(cs));
+      }
+      updateColorProfileControls(m_pref.color.manage(),
+                                 m_pref.color.workingRgbSpace(),
+                                 m_pref.color.filesWithProfile(),
+                                 m_pref.color.missingProfile());
+    }
 
     // Alerts
     resetAlerts()->Click.connect(base::Bind<void>(&OptionsWindow::onResetAlerts, this));
@@ -444,6 +485,14 @@ public:
     m_pref.guides.autoGuidesColor(autoGuidesColor()->getColor());
     m_pref.slices.defaultColor(defaultSliceColor()->getColor());
 
+    m_pref.color.workingRgbSpace(
+      workingRgbCs()->getItemText(
+        workingRgbCs()->getSelectedItemIndex()));
+    m_pref.color.filesWithProfile(
+      filesWithCsMap[filesWithCs()->getSelectedItemIndex()]);
+    m_pref.color.missingProfile(
+      missingCsMap[missingCs()->getSelectedItemIndex()]);
+
     m_curPref->show.grid(gridVisible()->isSelected());
     m_curPref->grid.bounds(gridBounds());
     m_curPref->grid.color(gridColor()->getColor());
@@ -625,6 +674,53 @@ private:
 
   void onClearRecentFiles() {
     App::instance()->recentFiles()->clear();
+  }
+
+  void onColorManagement() {
+    const bool state = colorManagement()->isSelected();
+    workingRgbCsLabel()->setEnabled(state);
+    workingRgbCs()->setEnabled(state);
+    filesWithCsLabel()->setEnabled(state);
+    filesWithCs()->setEnabled(state);
+    missingCsLabel()->setEnabled(state);
+    missingCs()->setEnabled(state);
+  }
+
+  void onResetColorManagement() {
+    updateColorProfileControls(m_pref.color.manage.defaultValue(),
+                               m_pref.color.workingRgbSpace.defaultValue(),
+                               m_pref.color.filesWithProfile.defaultValue(),
+                               m_pref.color.missingProfile.defaultValue());
+  }
+
+  void updateColorProfileControls(const bool manage,
+                                  const std::string& workingRgbSpace,
+                                  const app::gen::ColorProfileBehavior& filesWithProfile,
+                                  const app::gen::ColorProfileBehavior& missingProfile) {
+    colorManagement()->setSelected(manage);
+
+    for (auto child : *workingRgbCs()) {
+      if (child->text() == workingRgbSpace) {
+        workingRgbCs()->setSelectedItem(child);
+        break;
+      }
+    }
+
+    for (int i=0; i<sizeof(filesWithCsMap)/sizeof(filesWithCsMap[0]); ++i) {
+      if (filesWithCsMap[i] == filesWithProfile) {
+        filesWithCs()->setSelectedItemIndex(i);
+        break;
+      }
+    }
+
+    for (int i=0; i<sizeof(missingCsMap)/sizeof(missingCsMap[0]); ++i) {
+      if (missingCsMap[i] == missingProfile) {
+        missingCs()->setSelectedItemIndex(i);
+        break;
+      }
+    }
+
+    onColorManagement();
   }
 
   void onResetAlerts() {
@@ -1124,6 +1220,7 @@ private:
   std::string m_restoreThisTheme;
   int m_restoreScreenScaling;
   int m_restoreUIScaling;
+  std::vector<os::ColorSpacePtr> m_colorSpaces;
 };
 
 class OptionsCommand : public Command {

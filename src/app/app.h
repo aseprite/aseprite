@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -119,6 +120,7 @@ namespace app {
     // App Signals
     obs::signal<void()> Exit;
     obs::signal<void()> PaletteChange;
+    obs::signal<void()> ColorSpaceChange;
 
   private:
     class CoreModules;

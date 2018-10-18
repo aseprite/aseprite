@@ -21,6 +21,7 @@ namespace app {
     bool layers : 1;
     bool cels : 1;
     bool images : 1;
+    bool colorProfiles : 1;
 
     DocDiff() :
       anything(false),
@@ -31,7 +32,8 @@ namespace app {
       palettes(false),
       layers(false),
       cels(false),
-      images(false) {
+      images(false),
+      colorProfiles(false) {
     }
   };
 

@@ -28,31 +28,28 @@ because they don't depend on any other component.
   * [cfg](cfg/) (base): Library to load/save .ini files.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [net](net/) (base): Networking library to send HTTP requests.
+  * laf/[os](https://github.com/aseprite/laf/tree/master/os) (base, gfx, wacom): OS input/output.
 
 ## Level 2
 
-  * [doc](doc/) (base, fixmath, gfx): Document model library.
-  * laf/[os](https://github.com/aseprite/laf/tree/master/os) (base, gfx, wacom): OS input/output.
-
-## Level 3
-
-  * [filters](filters/) (base, doc, gfx): Effects for images.
-  * [render](render/) (base, doc, gfx): Library to render documents.
+  * [doc](doc/) (base, fixmath, gfx, os): Document model library.
   * [ui](ui/) (base, gfx, os): Portable UI library (buttons, windows, text fields, etc.)
   * [updater](updater/) (base, cfg, net): Component to check for updates.
 
-## Level 4
+## Level 3
 
   * [dio](dio/) (base, doc, fixmath, flic): Load/save sprites/documents.
+  * [filters](filters/) (base, doc, gfx): Effects for images.
+  * [render](render/) (base, doc, gfx): Library to render documents.
+
+## Level 4
+
+  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, os, ui, undo, updater)
+  * [desktop](desktop/) (base, doc, dio, render): Integration with the desktop (Windows Explorer, Finder, GNOME, KDE, etc.)
 
 ## Level 5
 
-  * [app](app/) (base, doc, dio, filters, fixmath, flic, gfx, pen, render, scripting, os, ui, undo, updater)
-
-## Level 6
-
   * [main](main/) (app, base, os, ui)
-  * [desktop](desktop/) (base, doc, dio, render): Integration with the desktop (Windows Explorer, Finder, GNOME, KDE, etc.)
 
 # Debugging Tricks
 

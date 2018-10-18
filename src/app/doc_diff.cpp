@@ -138,6 +138,11 @@ DocDiff compare_docs(const Doc* a,
     }
   }
 
+  // Compare color spaces
+  if (!a->sprite()->colorSpace()->nearlyEqual(*b->sprite()->colorSpace())) {
+    diff.anything = diff.colorProfiles = true;
+  }
+
   return diff;
 }
 

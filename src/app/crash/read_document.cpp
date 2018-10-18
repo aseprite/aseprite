@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,6 +36,7 @@
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
+#include "fixmath/fixmath.h"
 
 #include <fstream>
 #include <map>
@@ -298,7 +300,28 @@ private:
       }
     }
 
+    // Read color space
+    gfx::ColorSpacePtr colorSpace = readColorSpace(s);
+    if (colorSpace)
+      spr->setColorSpace(colorSpace);
+
     return spr.release();
+  }
+
+  gfx::ColorSpacePtr readColorSpace(std::ifstream& s) {
+    const gfx::ColorSpace::Type type = (gfx::ColorSpace::Type)read16(s);
+    const gfx::ColorSpace::Flag flags = (gfx::ColorSpace::Flag)read16(s);
+    const double gamma = fixmath::fixtof(read32(s));
+    const size_t n = read32(s);
+    std::vector<uint8_t> buf(n);
+    if (n)
+      s.read((char*)&buf[0], n);
+    std::string name = read_string(s);
+
+    auto colorSpace = std::make_shared<gfx::ColorSpace>(
+      type, flags, gamma, std::move(buf));
+    colorSpace->setName(name);
+    return colorSpace;
   }
 
   // TODO could we use doc::read_layer() here?

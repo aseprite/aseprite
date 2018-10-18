@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2018  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "app/color.h"
 #include "app/ui/color_source.h"
+#include "obs/connection.h"
 #include "obs/signal.h"
 #include "os/surface.h"
 #include "ui/mouse_buttons.h"
@@ -91,6 +93,8 @@ namespace app {
     gfx::Rect bottomBarBounds() const;
     gfx::Rect alphaBarBounds() const;
 
+    void updateColorSpace();
+
     // Internal flag used to lock the modification of m_color.
     // E.g. When the user picks a color harmony, we don't want to
     // change the main color.
@@ -104,6 +108,8 @@ namespace app {
     bool m_capturedInAlpha;
 
     ui::Timer m_timer;
+
+    obs::scoped_connection m_appConn;
   };
 
 } // namespace app

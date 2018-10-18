@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/modules/gfx.h"
 
 #include "app/app.h"
+#include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/console.h"
 #include "app/modules/gui.h"
@@ -81,8 +83,10 @@ void draw_color(ui::Graphics* g,
     return;
 
   app::Color color = _color;
+  const int alpha = color.getAlpha();
 
-  int alpha = color.getAlpha();
+  // Color space conversion
+  auto convertColor = convert_from_current_to_screen_color_space();
 
   if (alpha < 255) {
     if (rc.w == rc.h)
@@ -102,7 +106,7 @@ void draw_color(ui::Graphics* g,
       int index = color.getIndex();
 
       if (index >= 0 && index < get_current_palette()->size()) {
-        g->fillRect(color_utils::color_for_ui(color), rc);
+        g->fillRect(convertColor(color_utils::color_for_ui(color)), rc);
       }
       else {
         g->fillRect(gfx::rgba(0, 0, 0), rc);
@@ -112,7 +116,7 @@ void draw_color(ui::Graphics* g,
       }
     }
     else {
-      g->fillRect(color_utils::color_for_ui(color), rc);
+      g->fillRect(convertColor(color_utils::color_for_ui(color)), rc);
     }
   }
 }

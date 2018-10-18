@@ -140,7 +140,9 @@ void BackupObserver::backgroundThread()
                       diff.frameTags ? "frameTags": "",
                       diff.palettes ? "palettes": "",
                       diff.layers ? "layers": "",
-                      diff.cels ? "cels": "");
+                      diff.cels ? "cels": "",
+                      diff.images ? "images": "",
+                      diff.colorProfiles ? "colorProfiles": "");
 
                 Doc* copyDoc = copy.release();
                 ui::execute_from_ui_thread(

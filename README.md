@@ -1,5 +1,4 @@
 # Aseprite
-*Copyright (C) 2001-2018 David Capello*
 
 [![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
 [![Build status](https://ci.appveyor.com/api/projects/status/kdu2gt7ls014i25h?svg=true)](https://ci.appveyor.com/project/dacap/aseprite)
@@ -50,8 +49,12 @@ You can ask for help in:
 
 ## Authors
 
-* [David Capello](https://davidcapello.com/): Lead developer, bug fixing, new features, designer, and maintainer.
-* [Gaspar Capello](https://github.com/Gasparoken): Developer, bug fixing.
+[Igara Studio](https://www.igarastudio.com/) is developing Aseprite:
+
+* [David Capello](https://davidcapello.com/): Lead developer, fixing
+  issues, new features, and user support.
+* [Gaspar Capello](https://github.com/Gasparoken): Developer, fixing
+  issues and new features.
 
 ## Credits
 

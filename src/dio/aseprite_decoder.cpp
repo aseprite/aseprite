@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +15,7 @@
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
+#include "gfx/color_space.h"
 #include "dio/aseprite_common.h"
 #include "dio/decode_delegate.h"
 #include "dio/file_interface.h"
@@ -149,6 +151,11 @@ bool AsepriteDecoder::decode()
           case ASE_FILE_CHUNK_CEL_EXTRA: {
             if (last_cel)
               readCelExtraChunk(last_cel);
+            break;
+          }
+
+          case ASE_FILE_CHUNK_COLOR_PROFILE: {
+            readColorProfile(sprite.get());
             break;
           }
 
@@ -728,6 +735,46 @@ void AsepriteDecoder::readCelExtraChunk(doc::Cel* cel)
       cel->setBoundsF(bounds);
     }
   }
+}
+
+void AsepriteDecoder::readColorProfile(doc::Sprite* sprite)
+{
+  int type = read16();
+  int flags = read16();
+  fixmath::fixed gamma = read32();
+  readPadding(8);
+
+  // Without color space, like old Aseprite versions
+  gfx::ColorSpacePtr cs(nullptr);
+
+  switch (type) {
+
+    case ASE_FILE_NO_COLOR_PROFILE:
+      if (flags & ASE_COLOR_PROFILE_FLAG_GAMMA)
+        cs = gfx::ColorSpace::MakeSRGBWithGamma(fixmath::fixtof(gamma));
+      else
+        cs = gfx::ColorSpace::MakeNone();
+      break;
+
+    case ASE_FILE_SRGB_COLOR_PROFILE:
+      if (flags & ASE_COLOR_PROFILE_FLAG_GAMMA)
+        cs = gfx::ColorSpace::MakeSRGBWithGamma(fixmath::fixtof(gamma));
+      else
+        cs = gfx::ColorSpace::MakeSRGB();
+      break;
+
+    case ASE_FILE_ICC_COLOR_PROFILE: {
+      size_t length = read32();
+      if (length > 0) {
+        std::vector<uint8_t> data(length);
+        readBytes(&data[0], length);
+        cs = gfx::ColorSpace::MakeICC(std::move(data));
+      }
+      break;
+    }
+  }
+
+  sprite->setColorSpace(cs);
 }
 
 doc::Mask* AsepriteDecoder::readMaskChunk()

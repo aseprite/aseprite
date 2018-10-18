@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -52,6 +53,7 @@ private:
                          AsepriteHeader* header,
                          size_t chunk_end);
   void readCelExtraChunk(doc::Cel* cel);
+  void readColorProfile(doc::Sprite* sprite);
   doc::Mask* readMaskChunk();
   void readFrameTagsChunk(doc::FrameTags* frameTags);
   void readSlicesChunk(doc::Slices& slices);

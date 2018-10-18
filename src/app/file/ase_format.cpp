@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -113,6 +114,9 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
                                      const frame_t firstFrame);
 static void ase_file_write_cel_extra_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header,
                                            const Cel* cel);
+static void ase_file_write_color_profile(FILE* f,
+                                         dio::AsepriteFrameHeader* frame_header,
+                                         const doc::Sprite* sprite);
 #if 0
 static void ase_file_write_mask_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Mask* mask);
 #endif
@@ -264,6 +268,10 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Frame duration
     frame_header.duration = sprite->frameDuration(frame);
+
+    // Save color profile in first frame
+    if (outputFrame == 0)
+      ase_file_write_color_profile(f, &frame_header, sprite);
 
     // is the first frame or did the palette change?
     Palette* pal = sprite->palette(frame);
@@ -831,6 +839,50 @@ static void ase_file_write_cel_extra_chunk(FILE* f,
   fputl(fixmath::ftofix(bounds.w), f);
   fputl(fixmath::ftofix(bounds.h), f);
   ase_file_write_padding(f, 16);
+}
+
+static void ase_file_write_color_profile(FILE* f,
+                                         dio::AsepriteFrameHeader* frame_header,
+                                         const doc::Sprite* sprite)
+{
+  const gfx::ColorSpacePtr& cs = sprite->colorSpace();
+  if (!cs)                      // No color
+    return;
+
+  int type = ASE_FILE_NO_COLOR_PROFILE;
+  switch (cs->type()) {
+
+    case gfx::ColorSpace::None:
+      return; // Without color profile, don't write this chunk.
+
+    case gfx::ColorSpace::sRGB:
+      type = ASE_FILE_SRGB_COLOR_PROFILE;
+      break;
+    case gfx::ColorSpace::ICC:
+      type = ASE_FILE_ICC_COLOR_PROFILE;
+      break;
+    default:
+      ASSERT(false);            // Unknown color profile
+      return;
+  }
+
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_COLOR_PROFILE);
+  fputw(type, f);
+  fputw(cs->hasGamma() ? ASE_COLOR_PROFILE_FLAG_GAMMA: 0, f);
+
+  fixmath::fixed gamma = 0;
+  if (cs->hasGamma())
+    gamma = fixmath::ftofix(cs->gamma());
+  fputl(gamma, f);
+  ase_file_write_padding(f, 8);
+
+  if (cs->type() == gfx::ColorSpace::ICC) {
+    const size_t size = cs->iccSize();
+    const void* data = cs->iccData();
+    fputl(size, f);
+    if (size && data)
+      fwrite(data, 1, size, f);
+  }
 }
 
 #if 0

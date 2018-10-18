@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,12 +9,15 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/assign_color_profile.h"
+#include "app/cmd/convert_color_profile.h"
 #include "app/cmd/set_pixel_ratio.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/util/pixel_ratio.h"
@@ -22,11 +26,12 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
+#include "os/color_space.h"
+#include "os/system.h"
 #include "ui/ui.h"
 
 #include "sprite_properties.xml.h"
-
-#include <cstdio>
 
 namespace app {
 
@@ -56,11 +61,15 @@ bool SpritePropertiesCommand::onEnabled(Context* context)
 void SpritePropertiesCommand::onExecute(Context* context)
 {
   std::string imgtype_text;
-  char buf[256];
-  ColorButton* color_button = NULL;
+  ColorButton* color_button = nullptr;
+
+  // List of available color profiles
+  std::vector<os::ColorSpacePtr> colorSpaces;
+  os::instance()->listColorSpaces(colorSpaces);
 
   // Load the window widget
   app::gen::SpriteProperties window;
+  int selectedColorProfile = -1;
 
   // Get sprite properties and fill frame fields
   {
@@ -77,8 +86,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
         imgtype_text = "Grayscale";
         break;
       case IMAGE_INDEXED:
-        std::sprintf(buf, "Indexed (%d colors)", sprite->palette(0)->size());
-        imgtype_text = buf;
+        imgtype_text = fmt::format("Indexed ({0} colors)",
+                                   sprite->palette(0)->size());
         break;
       default:
         ASSERT(false);
@@ -116,6 +125,64 @@ void SpritePropertiesCommand::onExecute(Context* context)
     // Pixel ratio
     window.pixelRatio()->setValue(
       base::convert_to<std::string>(sprite->pixelRatio()));
+
+    // Color profile
+    selectedColorProfile = -1;
+    int i = 0;
+    for (auto& cs : colorSpaces) {
+      if (cs->gfxColorSpace()->nearlyEqual(*sprite->colorSpace())) {
+        selectedColorProfile = i;
+        break;
+      }
+      ++i;
+    }
+    if (selectedColorProfile < 0) {
+      colorSpaces.push_back(os::instance()->createColorSpace(sprite->colorSpace()));
+      selectedColorProfile = colorSpaces.size()-1;
+    }
+
+    for (auto& cs : colorSpaces)
+      window.colorProfile()->addItem(cs->gfxColorSpace()->name());
+    window.colorProfile()->setSelectedItemIndex(selectedColorProfile);
+
+    auto updateButtons =
+      [&] {
+        bool enabled = (selectedColorProfile != window.colorProfile()->getSelectedItemIndex());
+        window.assignColorProfile()->setEnabled(enabled);
+        window.convertColorProfile()->setEnabled(enabled);
+        window.ok()->setEnabled(!enabled);
+      };
+
+    window.assignColorProfile()->setEnabled(false);
+    window.convertColorProfile()->setEnabled(false);
+    window.colorProfile()->Change.connect(updateButtons);
+
+    window.assignColorProfile()->Click.connect(
+      [&](Event&){
+        selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
+
+        ContextWriter writer(context);
+        Sprite* sprite(writer.sprite());
+        Tx tx(writer.context(), "Assign Color Profile");
+        tx(new cmd::AssignColorProfile(
+             sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
+        tx.commit();
+
+        updateButtons();
+      });
+    window.convertColorProfile()->Click.connect(
+      [&](Event&){
+        selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
+
+        ContextWriter writer(context);
+        Sprite* sprite(writer.sprite());
+        Tx tx(writer.context(), "Convert Color Profile");
+        tx(new cmd::ConvertColorProfile(
+             sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
+        tx.commit();
+
+        updateButtons();
+      });
   }
 
   window.remapWindow();

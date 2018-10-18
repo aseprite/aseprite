@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +19,7 @@
 #define ASE_FILE_CHUNK_LAYER                0x2004
 #define ASE_FILE_CHUNK_CEL                  0x2005
 #define ASE_FILE_CHUNK_CEL_EXTRA            0x2006
+#define ASE_FILE_CHUNK_COLOR_PROFILE        0x2007
 #define ASE_FILE_CHUNK_MASK                 0x2016
 #define ASE_FILE_CHUNK_PATH                 0x2017
 #define ASE_FILE_CHUNK_FRAME_TAGS           0x2018
@@ -32,6 +34,12 @@
 #define ASE_FILE_RAW_CEL                    0
 #define ASE_FILE_LINK_CEL                   1
 #define ASE_FILE_COMPRESSED_CEL             2
+
+#define ASE_FILE_NO_COLOR_PROFILE           0
+#define ASE_FILE_SRGB_COLOR_PROFILE         1
+#define ASE_FILE_ICC_COLOR_PROFILE          2
+
+#define ASE_COLOR_PROFILE_FLAG_GAMMA        1
 
 #define ASE_PALETTE_FLAG_HAS_NAME           1
 

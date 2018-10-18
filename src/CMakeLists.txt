@@ -16,11 +16,6 @@ if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
   endif()
 
-  # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
-  if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
-  endif()
-
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 endif(MSVC)
 
