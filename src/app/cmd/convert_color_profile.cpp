@@ -23,6 +23,70 @@
 namespace app {
 namespace cmd {
 
+void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
+{
+  os::System* system = os::instance();
+
+  ASSERT(sprite->colorSpace());
+  ASSERT(newCS);
+
+  auto srcOCS = system->createColorSpace(sprite->colorSpace());
+  auto dstOCS = system->createColorSpace(newCS);
+
+  ASSERT(srcOCS);
+  ASSERT(dstOCS);
+
+  auto conversion = system->convertBetweenColorSpace(srcOCS, dstOCS);
+  // Convert images
+  if (sprite->pixelFormat() == doc::IMAGE_RGB) {
+    for (Cel* cel : sprite->uniqueCels()) {
+      ImageRef old_image = cel->imageRef();
+
+      ImageSpec spec = old_image->spec();
+      spec.setColorSpace(newCS);
+      ImageRef new_image(Image::create(spec));
+
+      if (conversion) {
+        for (int y=0; y<spec.height(); ++y) {
+          conversion->convert((uint32_t*)new_image->getPixelAddress(0, y),
+                              (const uint32_t*)old_image->getPixelAddress(0, y),
+                              spec.width());
+        }
+      }
+      else {
+        new_image->copy(old_image.get(), gfx::Clip(0, 0, old_image->bounds()));
+      }
+
+      sprite->replaceImage(old_image->id(), new_image);
+    }
+  }
+
+  if (conversion) {
+    // Convert palette
+    if (sprite->pixelFormat() != doc::IMAGE_GRAYSCALE) {
+      for (auto& pal : sprite->getPalettes()) {
+        Palette newPal(pal->frame(), pal->size());
+
+        for (int i=0; i<pal->size(); ++i) {
+          color_t oldCol = pal->entry(i);
+          color_t newCol = pal->entry(i);
+          conversion->convert((uint32_t*)&newCol,
+                              (const uint32_t*)&oldCol, 1);
+          newPal.setEntry(i, newCol);
+        }
+
+        if (*pal != newPal)
+          sprite->setPalette(&newPal, false);
+      }
+    }
+  }
+
+  sprite->setColorSpace(newCS);
+
+  // Generate notification so the Doc::osColorSpace() is regenerated
+  static_cast<Doc*>(sprite->document())->notifyColorSpaceChanged();
+}
+
 ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
   : WithSprite(sprite)
 {

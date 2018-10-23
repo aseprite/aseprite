@@ -37,6 +37,10 @@ namespace cmd {
     CmdSequence m_seq;
   };
 
+  // Converts the sprite to the new color profile without undo information.
+  // TODO how to merge this function with cmd::ConvertColorProfile
+  void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS);
+
 } // namespace cmd
 } // namespace app
 

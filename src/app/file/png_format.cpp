@@ -372,6 +372,11 @@ bool PngFormat::onLoad(FileOp* fop)
 
   // Setup the color space.
   auto colorSpace = PngFormat::loadColorSpace(png_ptr, info_ptr);
+  if (colorSpace)
+    fop->setEmbeddedColorProfile();
+  else { // sRGB is the default PNG color space.
+    colorSpace = gfx::ColorSpace::MakeSRGB();
+  }
   if (colorSpace &&
       fop->document()->sprite()->colorSpace()->type() == gfx::ColorSpace::None) {
     fop->document()->sprite()->setColorSpace(colorSpace);
@@ -449,9 +454,8 @@ gfx::ColorSpacePtr PngFormat::loadColorSpace(png_structp png_ptr, png_infop info
     return gfx::ColorSpace::MakeSRGBWithGamma(1.0f / png_fixtof(invGamma));
   }
 
-  // Report that there is no color space information in the PNG.
-  // Guess sRGB in this case.
-  return gfx::ColorSpace::MakeSRGB();
+  // No color space.
+  return nullptr;
 }
 
 #ifdef ENABLE_SAVE
@@ -516,7 +520,8 @@ bool PngFormat::onSave(FileOp* fop)
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-  if (fop->document()->sprite()->colorSpace())
+  if (fop->preserveColorProfile() &&
+      fop->document()->sprite()->colorSpace())
     saveColorSpace(png_ptr, info_ptr, fop->document()->sprite()->colorSpace().get());
 
   if (color_type == PNG_COLOR_TYPE_PALETTE) {

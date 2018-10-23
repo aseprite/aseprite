@@ -1,0 +1,15 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2018 Igara Studio S.A. -->
+<gui>
+  <window id="ask_for_color_profile" text="@.title">
+    <vbox>
+      <label text="@.sprite_with_profile" id="sprite_with_profile" />
+      <label text="@.sprite_without_profile" id="sprite_without_profile" />
+      <separator horizontal="true" />
+      <button text="@options.use_embedded_cs" closewindow="true" id="embedded" magnet="true" />
+      <button text="@options.convert_cs" closewindow="true" id="convert" />
+      <button text="@options.assign_cs" closewindow="true" id="assign" magnet="true" />
+      <button text="@options.disable_cs" closewindow="true" id="disable" />
+    </vbox>
+  </window>
+</gui>

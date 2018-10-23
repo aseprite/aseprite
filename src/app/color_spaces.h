@@ -9,9 +9,14 @@
 #pragma once
 
 #include "gfx/color.h"
+#include "gfx/color_space.h"
 #include "os/color_space.h"
 
 #include <memory>
+
+namespace doc {
+  class Sprite;
+}
 
 namespace app {
 
@@ -19,6 +24,8 @@ namespace app {
 
   // Returns the color space of the current document.
   os::ColorSpacePtr get_current_color_space();
+
+  gfx::ColorSpacePtr get_working_rgb_space_from_preferences();
 
   class ConvertCS {
   public:

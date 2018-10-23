@@ -200,7 +200,14 @@ bool AseFormat::onLoad(FileOp* fop)
   if (!decoder.decode())
     return false;
 
-  fop->createDocument(delegate.sprite());
+  Sprite* sprite = delegate.sprite();
+  fop->createDocument(sprite);
+
+  if (sprite->colorSpace() != nullptr &&
+      sprite->colorSpace()->type() != gfx::ColorSpace::None) {
+    fop->setEmbeddedColorProfile();
+  }
+
   return true;
 }
 
@@ -270,7 +277,7 @@ bool AseFormat::onSave(FileOp* fop)
     frame_header.duration = sprite->frameDuration(frame);
 
     // Save color profile in first frame
-    if (outputFrame == 0)
+    if (outputFrame == 0 && fop->preserveColorProfile())
       ase_file_write_color_profile(f, &frame_header, sprite);
 
     // is the first frame or did the palette change?

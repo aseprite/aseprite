@@ -256,6 +256,11 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   // Read color space
   gfx::ColorSpacePtr colorSpace = loadColorSpace(fop, &dinfo);
+  if (colorSpace)
+    fop->setEmbeddedColorProfile();
+  else { // sRGB is the default JPG color space.
+    colorSpace = gfx::ColorSpace::MakeSRGB();
+  }
   if (colorSpace &&
       fop->document()->sprite()->colorSpace()->type() == gfx::ColorSpace::None) {
     fop->document()->sprite()->setColorSpace(colorSpace);
@@ -390,7 +395,8 @@ bool JpegFormat::onSave(FileOp* fop)
   jpeg_start_compress(&cinfo, true);
 
   // Save color space
-  if (fop->document()->sprite()->colorSpace())
+  if (fop->preserveColorProfile() &&
+      fop->document()->sprite()->colorSpace())
     saveColorSpace(fop, &cinfo, fop->document()->sprite()->colorSpace().get());
 
   // CREATE the buffer.

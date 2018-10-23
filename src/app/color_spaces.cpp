@@ -12,6 +12,7 @@
 
 #include "app/doc.h"
 #include "app/modules/editors.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "os/display.h"
 #include "os/system.h"
@@ -29,6 +30,23 @@ os::ColorSpacePtr get_current_color_space()
     return current_editor->document()->osColorSpace();
   else
     return get_screen_color_space();
+}
+
+gfx::ColorSpacePtr get_working_rgb_space_from_preferences()
+{
+  if (Preferences::instance().color.manage()) {
+    const std::string name = Preferences::instance().color.workingRgbSpace();
+    if (name == "sRGB")
+      return gfx::ColorSpace::MakeSRGB();
+
+    std::vector<os::ColorSpacePtr> colorSpaces;
+    os::instance()->listColorSpaces(colorSpaces);
+    for (auto& cs : colorSpaces) {
+      if (cs->gfxColorSpace()->name() == name)
+        return cs->gfxColorSpace();
+    }
+  }
+  return gfx::ColorSpace::MakeNone();
 }
 
 //////////////////////////////////////////////////////////////////////

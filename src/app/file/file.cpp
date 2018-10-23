@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,8 @@
 
 #include "app/file/file.h"
 
+#include "app/cmd/convert_color_profile.h"
+#include "app/color_spaces.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
@@ -23,6 +26,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/tx.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "base/fs.h"
@@ -35,8 +39,10 @@
 #include "fmt/format.h"
 #include "render/quantization.h"
 #include "render/render.h"
+#include "ui/alert.h"
 #include "ui/listitem.h"
 
+#include "ask_for_color_profile.xml.h"
 #include "open_sequence.xml.h"
 
 #include <cstring>
@@ -874,6 +880,91 @@ void FileOp::postLoad()
     }
   }
 
+  // What to do with the sprite color profile?
+  gfx::ColorSpacePtr spriteCS = sprite->colorSpace();
+  app::gen::ColorProfileBehavior behavior =
+    app::gen::ColorProfileBehavior::DISABLE;
+
+  if (Preferences::instance().color.manage()) {
+    // Embedded color profile
+    if (this->hasEmbeddedColorProfile()) {
+      behavior = Preferences::instance().color.filesWithProfile();
+      if (behavior == app::gen::ColorProfileBehavior::ASK) {
+#ifdef ENABLE_UI
+        if (m_context && m_context->isUIAvailable()) {
+          app::gen::AskForColorProfile window;
+          window.spriteWithoutProfile()->setVisible(false);
+          window.openWindowInForeground();
+          auto c = window.closer();
+          if (c == window.embedded())
+            behavior = app::gen::ColorProfileBehavior::EMBEDDED;
+          else if (c == window.convert())
+            behavior = app::gen::ColorProfileBehavior::CONVERT;
+          else if (c == window.assign())
+            behavior = app::gen::ColorProfileBehavior::ASSIGN;
+          else
+            behavior = app::gen::ColorProfileBehavior::DISABLE;
+        }
+        else
+#endif // ENABLE_UI
+        {
+          behavior = app::gen::ColorProfileBehavior::EMBEDDED;
+        }
+      }
+    }
+    // Missing color space
+    else {
+      behavior = Preferences::instance().color.missingProfile();
+      if (behavior == app::gen::ColorProfileBehavior::ASK) {
+#ifdef ENABLE_UI
+        if (m_context && m_context->isUIAvailable()) {
+          app::gen::AskForColorProfile window;
+          window.spriteWithProfile()->setVisible(false);
+          window.embedded()->setVisible(false);
+          window.convert()->setVisible(false);
+          window.openWindowInForeground();
+          if (window.closer() == window.assign()) {
+            behavior = app::gen::ColorProfileBehavior::ASSIGN;
+          }
+          else {
+            behavior = app::gen::ColorProfileBehavior::DISABLE;
+          }
+        }
+        else
+#endif // ENABLE_UI
+        {
+          behavior = app::gen::ColorProfileBehavior::ASSIGN;
+        }
+      }
+    }
+  }
+
+  switch (behavior) {
+
+    case app::gen::ColorProfileBehavior::DISABLE:
+      sprite->setColorSpace(gfx::ColorSpace::MakeNone());
+      break;
+
+    case app::gen::ColorProfileBehavior::EMBEDDED:
+      // Do nothing, just keep the current sprite's color sprite
+      break;
+
+    case app::gen::ColorProfileBehavior::CONVERT: {
+      // Convert to the working color profile
+      auto gfxCS = get_working_rgb_space_from_preferences();
+      if (!gfxCS->nearlyEqual(*spriteCS))
+        cmd::convert_color_profile(sprite, gfxCS);
+      break;
+    }
+
+    case app::gen::ColorProfileBehavior::ASSIGN: {
+      // Convert to the working color profile
+      auto gfxCS = get_working_rgb_space_from_preferences();
+      sprite->setColorSpace(gfxCS);
+      break;
+    }
+  }
+
   m_document->markAsSaved();
 }
 
@@ -1062,6 +1153,9 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_done(false)
   , m_stop(false)
   , m_oneframe(false)
+  , m_preserveColorProfile(
+      Preferences::instance().color.manage())
+  , m_embeddedColorProfile(false)
 {
   m_seq.palette = nullptr;
   m_seq.image.reset(nullptr);
