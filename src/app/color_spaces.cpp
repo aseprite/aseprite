@@ -54,16 +54,20 @@ gfx::ColorSpacePtr get_working_rgb_space_from_preferences()
 
 ConvertCS::ConvertCS()
 {
-  auto srcCS = get_current_color_space();
-  auto dstCS = get_screen_color_space();
-  if (srcCS && dstCS)
-    m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
+  if (Preferences::instance().color.manage()) {
+    auto srcCS = get_current_color_space();
+    auto dstCS = get_screen_color_space();
+    if (srcCS && dstCS)
+      m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
+  }
 }
 
 ConvertCS::ConvertCS(const os::ColorSpacePtr& srcCS,
                      const os::ColorSpacePtr& dstCS)
 {
-  m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
+  if (Preferences::instance().color.manage()) {
+    m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
+  }
 }
 
 ConvertCS::ConvertCS(ConvertCS&& that)
