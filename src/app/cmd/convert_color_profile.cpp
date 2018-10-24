@@ -23,6 +23,53 @@
 namespace app {
 namespace cmd {
 
+static doc::ImageRef convert_image_color_space(const doc::Image* srcImage,
+                                               const gfx::ColorSpacePtr& newCS,
+                                               os::ColorSpaceConversion* conversion)
+{
+  ImageSpec spec = srcImage->spec();
+  spec.setColorSpace(newCS);
+  ImageRef dstImage(Image::create(spec));
+
+  if (!conversion) {
+    dstImage->copy(srcImage, gfx::Clip(0, 0, srcImage->bounds()));
+    return dstImage;
+  }
+
+  if (spec.colorMode() == doc::ColorMode::RGB) {
+    for (int y=0; y<spec.height(); ++y) {
+      conversion->convertRgba((uint32_t*)dstImage->getPixelAddress(0, y),
+                              (const uint32_t*)srcImage->getPixelAddress(0, y),
+                              spec.width());
+    }
+  }
+  else if (spec.colorMode() == doc::ColorMode::GRAYSCALE) {
+    // TODO create a set of functions to create pixel format
+    // conversions (this should be available when we add new kind of
+    // pixel formats).
+    std::vector<uint8_t> buf(spec.width()*spec.height());
+
+    auto it = buf.begin();
+    for (int y=0; y<spec.height(); ++y) {
+      auto srcPtr = (const uint16_t*)srcImage->getPixelAddress(0, y);
+      for (int x=0; x<spec.width(); ++x, ++srcPtr, ++it)
+        *it = doc::graya_getv(*srcPtr);
+    }
+
+    conversion->convertGray(&buf[0], &buf[0], spec.width()*spec.height());
+
+    it = buf.begin();
+    for (int y=0; y<spec.height(); ++y) {
+      auto srcPtr = (const uint16_t*)srcImage->getPixelAddress(0, y);
+      auto dstPtr = (uint16_t*)dstImage->getPixelAddress(0, y);
+      for (int x=0; x<spec.width(); ++x, ++dstPtr, ++srcPtr, ++it)
+        *dstPtr = doc::graya(*it, doc::graya_geta(*srcPtr));
+    }
+  }
+
+  return dstImage;
+}
+
 void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
 {
   os::System* system = os::instance();
@@ -37,25 +84,13 @@ void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
   ASSERT(dstOCS);
 
   auto conversion = system->convertBetweenColorSpace(srcOCS, dstOCS);
+
   // Convert images
-  if (sprite->pixelFormat() == doc::IMAGE_RGB) {
+  if (sprite->pixelFormat() != doc::IMAGE_INDEXED) {
     for (Cel* cel : sprite->uniqueCels()) {
       ImageRef old_image = cel->imageRef();
-
-      ImageSpec spec = old_image->spec();
-      spec.setColorSpace(newCS);
-      ImageRef new_image(Image::create(spec));
-
-      if (conversion) {
-        for (int y=0; y<spec.height(); ++y) {
-          conversion->convert((uint32_t*)new_image->getPixelAddress(0, y),
-                              (const uint32_t*)old_image->getPixelAddress(0, y),
-                              spec.width());
-        }
-      }
-      else {
-        new_image->copy(old_image.get(), gfx::Clip(0, 0, old_image->bounds()));
-      }
+      ImageRef new_image = convert_image_color_space(
+        old_image.get(), newCS, conversion.get());
 
       sprite->replaceImage(old_image->id(), new_image);
     }
@@ -70,8 +105,8 @@ void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
         for (int i=0; i<pal->size(); ++i) {
           color_t oldCol = pal->entry(i);
           color_t newCol = pal->entry(i);
-          conversion->convert((uint32_t*)&newCol,
-                              (const uint32_t*)&oldCol, 1);
+          conversion->convertRgba((uint32_t*)&newCol,
+                                  (const uint32_t*)&oldCol, 1);
           newPal.setEntry(i, newCol);
         }
 
@@ -102,25 +137,13 @@ ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSp
   ASSERT(dstOCS);
 
   auto conversion = system->convertBetweenColorSpace(srcOCS, dstOCS);
+
   // Convert images
-  if (sprite->pixelFormat() == doc::IMAGE_RGB) {
+  if (sprite->pixelFormat() != doc::IMAGE_INDEXED) {
     for (Cel* cel : sprite->uniqueCels()) {
       ImageRef old_image = cel->imageRef();
-
-      ImageSpec spec = old_image->spec();
-      spec.setColorSpace(newCS);
-      ImageRef new_image(Image::create(spec));
-
-      if (conversion) {
-        for (int y=0; y<spec.height(); ++y) {
-          conversion->convert((uint32_t*)new_image->getPixelAddress(0, y),
-                              (const uint32_t*)old_image->getPixelAddress(0, y),
-                              spec.width());
-        }
-      }
-      else {
-        new_image->copy(old_image.get(), gfx::Clip(0, 0, old_image->bounds()));
-      }
+      ImageRef new_image = convert_image_color_space(
+        old_image.get(), newCS, conversion.get());
 
       m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));
     }
@@ -135,8 +158,8 @@ ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSp
         for (int i=0; i<pal->size(); ++i) {
           color_t oldCol = pal->entry(i);
           color_t newCol = pal->entry(i);
-          conversion->convert((uint32_t*)&newCol,
-                              (const uint32_t*)&oldCol, 1);
+          conversion->convertRgba((uint32_t*)&newCol,
+                                  (const uint32_t*)&oldCol, 1);
           newPal.setEntry(i, newCol);
         }
 

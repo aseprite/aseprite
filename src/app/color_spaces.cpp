@@ -79,7 +79,7 @@ gfx::Color ConvertCS::operator()(const gfx::Color c)
 {
   if (m_conversion) {
     gfx::Color out;
-    m_conversion->convert((uint32_t*)&out, (const uint32_t*)&c, 1);
+    m_conversion->convertRgba((uint32_t*)&out, (const uint32_t*)&c, 1);
     return out;
   }
   else {
