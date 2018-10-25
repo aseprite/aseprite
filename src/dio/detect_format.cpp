@@ -131,6 +131,9 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "png")
     return FileFormat::PNG_IMAGE;
+  
+  if (ext == "svg")
+    return FileFormat::SVG_IMAGE;
 
   if (ext == "tga")
     return FileFormat::TARGA_IMAGE;
