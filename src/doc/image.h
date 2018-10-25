@@ -51,6 +51,7 @@ namespace doc {
     gfx::Rect bounds() const { return m_spec.bounds(); }
     color_t maskColor() const { return m_spec.maskColor(); }
     void setMaskColor(color_t c) { m_spec.setMaskColor(c); }
+    void setColorSpace(const gfx::ColorSpacePtr& cs) { m_spec.setColorSpace(cs); }
 
     virtual int getMemSize() const override;
     int getRowStrideSize() const;

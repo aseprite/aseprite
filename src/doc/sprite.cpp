@@ -145,6 +145,8 @@ void Sprite::setSize(int width, int height)
 void Sprite::setColorSpace(const gfx::ColorSpacePtr& colorSpace)
 {
   m_spec.setColorSpace(colorSpace);
+  for (auto cel : uniqueCels())
+    cel->image()->setColorSpace(colorSpace);
 }
 
 bool Sprite::needAlpha() const
