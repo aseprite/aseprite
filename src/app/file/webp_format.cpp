@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2015-2018 David Capello
 // Copyright (C) 2015 Gabriel Rauter
 //
@@ -156,7 +157,7 @@ bool WebPFormat::onLoad(FileOp* fop)
   const int w = anim_info.canvas_width;
   const int h = anim_info.canvas_height;
 
-  Sprite* sprite = new Sprite(IMAGE_RGB, w, h, 256);
+  Sprite* sprite = new Sprite(ImageSpec(ColorMode::RGB, w, h), 256);
   LayerImage* layer = new LayerImage(sprite);
   sprite->root()->addLayer(layer);
   sprite->setTotalFrames(anim_info.frame_count);

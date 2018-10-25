@@ -138,7 +138,7 @@ private:
   }
 
   bool writeSprite(std::ofstream& s, Sprite* spr) {
-    write8(s, spr->pixelFormat());
+    write8(s, int(spr->colorMode()));
     write16(s, spr->width());
     write16(s, spr->height());
     write32(s, spr->transparentColor());

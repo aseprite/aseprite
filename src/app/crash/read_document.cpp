@@ -195,17 +195,17 @@ private:
   }
 
   Sprite* readSprite(std::ifstream& s) {
-    PixelFormat format = (PixelFormat)read8(s);
+    ColorMode mode = (ColorMode)read8(s);
     int w = read16(s);
     int h = read16(s);
     color_t transparentColor = read32(s);
     frame_t nframes = read32(s);
 
-    if (format != IMAGE_RGB &&
-        format != IMAGE_INDEXED &&
-        format != IMAGE_GRAYSCALE) {
+    if (mode != ColorMode::RGB &&
+        mode != ColorMode::INDEXED &&
+        mode != ColorMode::GRAYSCALE) {
       if (!m_loadInfo)
-        Console().printf("Invalid sprite format #%d\n", (int)format);
+        Console().printf("Invalid sprite color mode #%d\n", (int)mode);
       return nullptr;
     }
 
@@ -216,14 +216,14 @@ private:
     }
 
     if (m_loadInfo) {
-      m_loadInfo->format = format;
+      m_loadInfo->mode = mode;
       m_loadInfo->width = w;
       m_loadInfo->height = h;
       m_loadInfo->frames = nframes;
       return (Sprite*)1;
     }
 
-    std::unique_ptr<Sprite> spr(new Sprite(format, w, h, 256));
+    std::unique_ptr<Sprite> spr(new Sprite(ImageSpec(mode, w, h), 256));
     m_sprite = spr.get();
     spr->setTransparentColor(transparentColor);
 
@@ -449,14 +449,14 @@ Doc* read_document_with_raw_images(const std::string& dir,
 
   DocumentInfo info;
   if (!reader.loadDocumentInfo(info)) {
-    info.format = IMAGE_RGB;
+    info.mode = ColorMode::RGB;
     info.width = 256;
     info.height = 256;
     info.filename = "Unknown";
   }
   info.width = MID(1, info.width, 99999);
   info.height = MID(1, info.height, 99999);
-  Sprite* spr = new Sprite(info.format, info.width, info.height, 256);
+  Sprite* spr = new Sprite(ImageSpec(info.mode, info.width, info.height), 256);
 
   // Load each image as a new frame
   auto lay = new LayerImage(spr);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,7 +94,6 @@ namespace app {
 
   protected:
     // DocsObserver impl
-    void onCreateDocument(CreateDocArgs* args) override;
     void onAddDocument(Doc* doc) override;
     void onRemoveDocument(Doc* doc) override;
 

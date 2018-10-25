@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,7 +21,7 @@ using namespace doc;
 
 TEST(Sprite, Layers)
 {
-  Sprite* spr = new Sprite(IMAGE_RGB, 32, 32, 256);
+  Sprite* spr = new Sprite(ImageSpec(ColorMode::RGB, 32, 32), 256);
 
   LayerImage* lay1 = new LayerImage(spr);
   LayerImage* lay2 = new LayerImage(spr);
@@ -89,7 +90,7 @@ TEST(Sprite, Layers)
 //   - lay3:  F G~H
 TEST(Sprite, CelsRange)
 {
-  Sprite* spr = new Sprite(IMAGE_RGB, 32, 32, 256);
+  Sprite* spr = new Sprite(ImageSpec(ColorMode::RGB, 32, 32), 256);
   spr->setTotalFrames(3);
 
   LayerImage* lay1 = new LayerImage(spr);

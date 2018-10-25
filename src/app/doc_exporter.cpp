@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -640,28 +641,35 @@ gfx::Size DocExporter::calculateSheetSize(const Samples& samples) const
 
 Doc* DocExporter::createEmptyTexture(const Samples& samples) const
 {
-  PixelFormat pixelFormat = IMAGE_INDEXED;
+  ColorMode colorMode = ColorMode::INDEXED;
   Palette* palette = nullptr;
   int maxColors = 256;
+  gfx::ColorSpacePtr colorSpace;
 
   for (const auto& sample : samples) {
     if (sample.isDuplicated() ||
         sample.isEmpty())
       continue;
 
+    // TODO throw a warning if samples contain different color spaces
+    if (!colorSpace) {
+      if (sample.sprite())
+        colorSpace = sample.sprite()->colorSpace();
+    }
+
     // We try to render an indexed image. But if we find a sprite with
     // two or more palettes, or two of the sprites have different
     // palettes, we've to use RGB format.
-    if (pixelFormat == IMAGE_INDEXED) {
-      if (sample.sprite()->pixelFormat() != IMAGE_INDEXED) {
-        pixelFormat = IMAGE_RGB;
+    if (colorMode == ColorMode::INDEXED) {
+      if (sample.sprite()->colorMode() != ColorMode::INDEXED) {
+        colorMode = ColorMode::RGB;
       }
       else if (sample.sprite()->getPalettes().size() > 1) {
-        pixelFormat = IMAGE_RGB;
+        colorMode = ColorMode::RGB;
       }
       else if (palette != NULL
         && palette->countDiff(sample.sprite()->palette(frame_t(0)), NULL, NULL) > 0) {
-        pixelFormat = IMAGE_RGB;
+        colorMode = ColorMode::RGB;
       }
       else
         palette = sample.sprite()->palette(frame_t(0));
@@ -672,7 +680,9 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
 
   std::unique_ptr<Sprite> sprite(
     Sprite::createBasicSprite(
-      pixelFormat, textureSize.w, textureSize.h, maxColors));
+      ImageSpec(colorMode, textureSize.w, textureSize.h, 0,
+                colorSpace ? colorSpace: gfx::ColorSpace::MakeNone()),
+      maxColors));
 
   if (palette != NULL)
     sprite->setPalette(palette, false);

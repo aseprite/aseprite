@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,7 @@
 #include "doc/algorithm/resize_image.h"
 #include "doc/anidir.h"
 #include "doc/brush_pattern.h"
+#include "doc/color_mode.h"
 #include "doc/frame.h"
 #include "doc/layer_list.h"
 #include "filters/tiled_mode.h"

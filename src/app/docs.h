@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,10 +43,12 @@ namespace app {
     bool empty() const { return m_docs.empty(); }
 
     // Add a new documents to the list.
-    Doc* add(int width, int height,
-             doc::ColorMode mode = doc::ColorMode::RGB,
-             int ncolors = 256);
     Doc* add(Doc* doc);
+
+    // Easy function for testing
+    Doc* add(int width, int height,
+             doc::ColorMode colorMode = doc::ColorMode::RGB,
+             int ncolors = 256);
 
     // Removes a document from the list without deleting it. You must
     // to delete the document after removing it.

@@ -400,9 +400,7 @@ Doc* Doc::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = sprite();
   std::unique_ptr<Sprite> spriteCopyPtr(new Sprite(
-      sourceSprite->pixelFormat(),
-      sourceSprite->width(),
-      sourceSprite->height(),
+      sourceSprite->spec(),
       sourceSprite->palette(frame_t(0))->size()));
 
   std::unique_ptr<Doc> documentCopy(new Doc(spriteCopyPtr.get()));

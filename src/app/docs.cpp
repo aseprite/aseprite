@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,23 +30,6 @@ Docs::~Docs()
   deleteAll();
 }
 
-Doc* Docs::add(int width, int height, ColorMode mode, int ncolors)
-{
-  // Ask to observers to create the document (maybe a doc::Document or
-  // a derived class).
-  CreateDocArgs args;
-  notify_observers(&DocsObserver::onCreateDocument, &args);
-  if (!args.document())
-    args.setDocument(new Doc(nullptr));
-
-  std::unique_ptr<Doc> doc(args.document());
-  doc->sprites().add(width, height, mode, ncolors);
-  doc->setFilename("Sprite");
-  doc->setContext(m_ctx); // Change the document context to add the doc in this collection
-
-  return doc.release();
-}
-
 Doc* Docs::add(Doc* doc)
 {
   ASSERT(doc != NULL);
@@ -61,6 +45,16 @@ Doc* Docs::add(Doc* doc)
 
   notify_observers(&DocsObserver::onAddDocument, doc);
   return doc;
+}
+
+Doc* Docs::add(int width, int height, doc::ColorMode colorMode, int ncolors)
+{
+  std::unique_ptr<Doc> doc(
+    new Doc(Sprite::createBasicSprite(ImageSpec(colorMode, width, height), ncolors)));
+  doc->setFilename("Sprite");
+  doc->setContext(m_ctx); // Change the document context to add the doc in this collection
+
+  return doc.release();
 }
 
 void Docs::remove(Doc* doc)

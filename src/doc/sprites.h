@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +38,6 @@ namespace doc {
     int size() const { return (int)m_sprites.size(); }
     bool empty() const { return m_sprites.empty(); }
 
-    Sprite* add(int width, int height, ColorMode mode = ColorMode::RGB, int ncolors = 256);
     Sprite* add(Sprite* spr);
     void remove(Sprite* spr);
     void move(Sprite* spr, int index);

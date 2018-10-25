@@ -717,7 +717,7 @@ private:
     int w = m_spriteBounds.w;
     int h = m_spriteBounds.h;
 
-    m_sprite.reset(new Sprite(IMAGE_INDEXED, w, h, ncolors));
+    m_sprite.reset(new Sprite(ImageSpec(ColorMode::INDEXED, w, h), ncolors));
     m_sprite->setTransparentColor(m_bgIndex);
 
     m_currentImage.reset(Image::create(IMAGE_INDEXED, w, h));

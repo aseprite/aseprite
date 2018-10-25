@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,17 +31,6 @@ Sprites::Sprites(Document* doc)
 Sprites::~Sprites()
 {
   deleteAll();
-}
-
-Sprite* Sprites::add(int width, int height, ColorMode mode, int ncolors)
-{
-  std::unique_ptr<Sprite> spr(
-    doc::Sprite::createBasicSprite(
-      (doc::PixelFormat)mode, width, height, ncolors));
-
-  add(spr.get());
-
-  return spr.release();
 }
 
 Sprite* Sprites::add(Sprite* spr)

@@ -242,7 +242,7 @@
     <section id="new_file">
       <option id="width" type="int" default="32" />
       <option id="height" type="int" default="32" />
-      <option id="color_mode" type="doc::PixelFormat" default="doc::IMAGE_RGB" />
+      <option id="color_mode" type="doc::ColorMode" default="doc::ColorMode::RGB" />
       <option id="background_color" type="int" default="0" />
       <option id="advanced" type="bool" default="false" />
       <option id="pixel_ratio" type="std::string" />

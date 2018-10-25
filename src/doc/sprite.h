@@ -56,11 +56,11 @@ namespace doc {
     ////////////////////////////////////////
     // Constructors/Destructor
 
-    Sprite(PixelFormat format, int width, int height, int ncolors);
-    Sprite(const ImageSpec& spec, int ncolors);
+    Sprite(const ImageSpec& spec, int ncolors = 256);
     virtual ~Sprite();
 
-    static Sprite* createBasicSprite(PixelFormat format, int width, int height, int ncolors);
+    static Sprite* createBasicSprite(const ImageSpec& spec,
+                                     const int ncolors = 256);
 
     ////////////////////////////////////////
     // Main properties
@@ -71,6 +71,7 @@ namespace doc {
     void setDocument(Document* doc) { m_document = doc; }
 
     PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
+    ColorMode colorMode() const { return m_spec.colorMode(); }
     const PixelRatio& pixelRatio() const { return m_pixelRatio; }
     gfx::Size size() const { return m_spec.size(); }
     gfx::Rect bounds() const { return m_spec.bounds(); }

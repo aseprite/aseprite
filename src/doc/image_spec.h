@@ -23,12 +23,13 @@ namespace doc {
     ImageSpec(ColorMode colorMode,
               int width,
               int height,
-              int maskColor = 0)
+              int maskColor = 0,
+              const gfx::ColorSpacePtr& colorSpace = gfx::ColorSpace::MakeNone())
       : m_colorMode(colorMode),
         m_width(width),
         m_height(height),
         m_maskColor(maskColor),
-        m_colorSpace(gfx::ColorSpace::MakeNone()) {
+        m_colorSpace(colorSpace) {
       ASSERT(width > 0);
       ASSERT(height > 0);
     }

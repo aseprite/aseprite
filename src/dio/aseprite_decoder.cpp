@@ -41,11 +41,11 @@ bool AsepriteDecoder::decode()
 
   // Create the new sprite
   std::unique_ptr<doc::Sprite> sprite(
-    new doc::Sprite(header.depth == 32 ? doc::IMAGE_RGB:
-                    header.depth == 16 ? doc::IMAGE_GRAYSCALE:
-                                         doc::IMAGE_INDEXED,
-                    header.width,
-                    header.height,
+    new doc::Sprite(doc::ImageSpec(header.depth == 32 ? doc::ColorMode::RGB:
+                                   header.depth == 16 ? doc::ColorMode::GRAYSCALE:
+                                                        doc::ColorMode::INDEXED,
+                                   header.width,
+                                   header.height),
                     header.ncolors));
 
   // Set frames and speed

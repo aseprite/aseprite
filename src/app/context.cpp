@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -144,11 +145,6 @@ void Context::executeCommand(Command* command, const Params& params)
                    "memory access, divison by zero, etc.");
   }
 #endif
-}
-
-void Context::onCreateDocument(CreateDocArgs* args)
-{
-  args->setDocument(new Doc(nullptr));
 }
 
 void Context::onAddDocument(Doc* doc)

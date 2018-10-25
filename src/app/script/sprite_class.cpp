@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +17,7 @@
 #include "app/cmd/remove_slice.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_transparent_color.h"
+#include "app/color_spaces.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
@@ -55,12 +57,10 @@ int Sprite_new(lua_State* L)
     spec.setWidth(w);
     spec.setHeight(h);
     spec.setColorMode((doc::ColorMode)colorMode);
+    spec.setColorSpace(get_working_rgb_space_from_preferences());
   }
 
-  std::unique_ptr<Sprite> sprite(
-    Sprite::createBasicSprite(
-      (doc::PixelFormat)spec.colorMode(),
-      spec.width(), spec.height(), 256));
+  std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(spec, 256));
   std::unique_ptr<Doc> doc(new Doc(sprite.get()));
   sprite.release();
 

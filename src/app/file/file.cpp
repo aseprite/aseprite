@@ -1034,7 +1034,7 @@ Image* FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
 
   // Create the image
   if (!m_document) {
-    sprite = new Sprite(pixelFormat, w, h, 256);
+    sprite = new Sprite(ImageSpec((ColorMode)pixelFormat, w, h), 256);
     try {
       LayerImage* layer = new LayerImage(sprite);
 

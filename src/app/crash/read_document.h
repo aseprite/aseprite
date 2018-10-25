@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -9,8 +10,8 @@
 #pragma once
 
 #include "app/crash/raw_images_as.h"
+#include "doc/color_mode.h"
 #include "doc/frame.h"
-#include "doc/pixel_format.h"
 
 #include <string>
 
@@ -19,14 +20,14 @@ class Doc;
 namespace crash {
 
   struct DocumentInfo {
-    doc::PixelFormat format;
+    doc::ColorMode mode;
     int width;
     int height;
     doc::frame_t frames;
     std::string filename;
 
     DocumentInfo() :
-      format(doc::IMAGE_RGB),
+      mode(doc::ColorMode::RGB),
       width(0),
       height(0),
       frames(0) {

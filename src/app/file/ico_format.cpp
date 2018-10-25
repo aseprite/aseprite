@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -135,7 +136,7 @@ bool IcoFormat::onLoad(FileOp* fop)
     pixelFormat = IMAGE_RGB;
 
   // Create the sprite with one background layer
-  Sprite* sprite = new Sprite(pixelFormat, width, height, numcolors);
+  Sprite* sprite = new Sprite(ImageSpec((ColorMode)pixelFormat, width, height), numcolors);
   LayerImage* layer = new LayerImage(sprite);
   sprite->root()->addLayer(layer);
 

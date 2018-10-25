@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,7 +22,7 @@ using namespace doc;
 
 TEST(LayerList, AreLayersAdjacent)
 {
-  std::unique_ptr<Sprite> spr(new Sprite(IMAGE_RGB, 32, 32, 256));
+  std::unique_ptr<Sprite> spr(new Sprite(ImageSpec(ColorMode::RGB, 32, 32), 256));
   LayerGroup* root = spr->root();
   Layer* layer1 = new LayerImage(spr.get());
   Layer* layer2 = new LayerImage(spr.get());

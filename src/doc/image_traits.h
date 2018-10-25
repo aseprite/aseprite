@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,11 +10,13 @@
 #pragma once
 
 #include "doc/blend_funcs.h"
+#include "doc/color_mode.h"
 #include "doc/pixel_format.h"
 
 namespace doc {
 
   struct RgbTraits {
+    static const ColorMode color_mode = ColorMode::RGB;
     static const PixelFormat pixel_format = IMAGE_RGB;
 
     enum {
@@ -41,6 +44,7 @@ namespace doc {
   };
 
   struct GrayscaleTraits {
+    static const ColorMode color_mode = ColorMode::GRAYSCALE;
     static const PixelFormat pixel_format = IMAGE_GRAYSCALE;
 
     enum {
@@ -68,6 +72,7 @@ namespace doc {
   };
 
   struct IndexedTraits {
+    static const ColorMode color_mode = ColorMode::INDEXED;
     static const PixelFormat pixel_format = IMAGE_INDEXED;
 
     enum {
@@ -95,6 +100,7 @@ namespace doc {
   };
 
   struct BitmapTraits {
+    static const ColorMode color_mode = ColorMode::BITMAP;
     static const PixelFormat pixel_format = IMAGE_BITMAP;
 
     enum {

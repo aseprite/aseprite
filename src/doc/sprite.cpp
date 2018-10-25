@@ -33,33 +33,32 @@ namespace doc {
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
 
-Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
+Sprite::Sprite(const ImageSpec& spec,
+               int ncolors)
   : Object(ObjectType::Sprite)
   , m_document(nullptr)
-  , m_spec((ColorMode)format, width, height, 0)
+  , m_spec(spec)
   , m_pixelRatio(1, 1)
   , m_frames(1)
+  , m_frlens(1, 100)            // First frame with 100 msecs of duration
+  , m_root(new LayerGroup(this))
+  , m_rgbMap(nullptr)           // Initial RGB map
   , m_frameTags(this)
   , m_slices(this)
 {
-  ASSERT(width > 0 && height > 0);
-
-  m_frlens.push_back(100);      // First frame with 100 msecs of duration
-  m_root = new LayerGroup(this);
-
   // Generate palette
-  switch (format) {
-    case IMAGE_GRAYSCALE: ncolors = 256; break;
-    case IMAGE_BITMAP: ncolors = 2; break;
+  switch (spec.colorMode()) {
+    case ColorMode::GRAYSCALE: ncolors = 256; break;
+    case ColorMode::BITMAP: ncolors = 2; break;
   }
 
   Palette pal(frame_t(0), ncolors);
 
-  switch (format) {
+  switch (spec.colorMode()) {
 
     // For black and white images
-    case IMAGE_GRAYSCALE:
-    case IMAGE_BITMAP:
+    case ColorMode::GRAYSCALE:
+    case ColorMode::BITMAP:
       for (int c=0; c<ncolors; c++) {
         int g = 255 * c / (ncolors-1);
         g = MID(0, g, 255);
@@ -68,15 +67,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
       break;
   }
 
-  // Initial RGB map
-  m_rgbMap = NULL;
-
   setPalette(&pal, true);
-}
-
-Sprite::Sprite(const ImageSpec& spec, int ncolors)
-  : Sprite((PixelFormat)spec.colorMode(), spec.width(), spec.height(), ncolors)
-{
 }
 
 Sprite::~Sprite()
@@ -97,24 +88,25 @@ Sprite::~Sprite()
 }
 
 // static
-Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height, int ncolors)
+Sprite* Sprite::createBasicSprite(const ImageSpec& spec,
+                                  const int ncolors)
 {
   // Create the sprite.
-  std::unique_ptr<doc::Sprite> sprite(new doc::Sprite(format, width, height, ncolors));
-  sprite->setTotalFrames(doc::frame_t(1));
+  std::unique_ptr<Sprite> sprite(new Sprite(spec, ncolors));
+  sprite->setTotalFrames(frame_t(1));
 
   // Create the main image.
-  doc::ImageRef image(doc::Image::create(format, width, height));
-  doc::clear_image(image.get(), 0);
+  ImageRef image(Image::create(spec));
+  clear_image(image.get(), 0);
 
   // Create the first transparent layer.
   {
-    std::unique_ptr<doc::LayerImage> layer(new doc::LayerImage(sprite.get()));
+    std::unique_ptr<LayerImage> layer(new LayerImage(sprite.get()));
     layer->setName("Layer 1");
 
     // Create the cel.
     {
-      std::unique_ptr<doc::Cel> cel(new doc::Cel(doc::frame_t(0), image));
+      std::unique_ptr<Cel> cel(new Cel(frame_t(0), image));
       cel->setPosition(0, 0);
 
       // Add the cel in the layer.

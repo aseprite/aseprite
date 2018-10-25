@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -141,8 +142,10 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
 
       Context tmpContext;
       Doc* doc = tmpContext.documents().add(
-        w, h, (pal->size() <= 256 ? doc::ColorMode::INDEXED:
-                                    doc::ColorMode::RGB), pal->size());
+        new Doc(Sprite::createBasicSprite(
+                  ImageSpec((pal->size() <= 256 ? doc::ColorMode::INDEXED:
+                                                  doc::ColorMode::RGB),
+                            w, h), pal->size())));
 
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
