@@ -12,6 +12,7 @@
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
+#include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "doc/doc.h"
 
@@ -25,6 +26,7 @@ TEST(File, SeveralSizes)
 {
   // Now we need a preferences instance to load/save files (for color
   // profiles management).
+  push_config_state();
   Preferences preferences;
 
   // Register all possible image formats.
