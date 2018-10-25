@@ -578,8 +578,7 @@ InputChain& App::inputChain()
 }
 #endif
 
-// Updates palette and redraw the screen.
-void app_refresh_screen()
+void app_update_current_palette()
 {
 #ifdef ENABLE_UI
   Context* context = UIContext::instance();
@@ -590,7 +589,15 @@ void app_refresh_screen()
   if (Palette* pal = site.palette())
     set_current_palette(pal, false);
   else
-    set_current_palette(NULL, false);
+    set_current_palette(nullptr, false);
+#endif // ENABLE_UI
+}
+
+// Updates palette and redraw the screen.
+void app_refresh_screen()
+{
+#ifdef ENABLE_UI
+  app_update_current_palette();
 
   // Invalidate the whole screen.
   ui::Manager::getDefault()->invalidate();

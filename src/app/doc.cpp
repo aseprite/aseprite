@@ -34,6 +34,7 @@
 #include "doc/sprite.h"
 #include "os/display.h"
 #include "os/system.h"
+#include "ui/system.h"
 
 #include <limits>
 #include <map>
@@ -507,6 +508,14 @@ void Doc::updateOSColorSpace(bool appWideSignal)
       context() &&
       context()->activeDocument() == this) {
     App::instance()->ColorSpaceChange();
+  }
+
+  if (ui::is_ui_thread()) {
+    // As the color space has changed, we might need to upate the
+    // current palette (because the color space conversion might be
+    // came from a cmd::ConvertColorProfile, so the palette might be
+    // changed). This might generate a PaletteChange() signal.
+    app_update_current_palette();
   }
 }
 
