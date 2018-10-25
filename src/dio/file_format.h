@@ -27,6 +27,7 @@ enum class FileFormat {
   PAL_PALETTE,
   PCX_IMAGE,
   PNG_IMAGE,
+  SVG_IMAGE,
   TARGA_IMAGE,
   WEBP_ANIMATION,
 };
