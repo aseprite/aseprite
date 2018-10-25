@@ -87,9 +87,6 @@ add_custom_command(
   DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
-# Directory where generated files by "gen" utility will stay.
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
@@ -620,6 +617,9 @@ target_link_libraries(app-lib
   archive_static
   fmt
   tinyexpr)
+
+# Directory where generated files by "gen" utility will stay.
+target_include_directories(app-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if(REQUIRE_CURL)
   target_link_libraries(app-lib net-lib)
