@@ -1103,6 +1103,8 @@ void Widget::setTransparent(bool transparent)
 
 void Widget::invalidate()
 {
+  assert_ui_thread();
+
   // TODO we should use invalidateRect(bounds()) here.
 
   if (isVisible()) {
@@ -1118,12 +1120,15 @@ void Widget::invalidate()
 
 void Widget::invalidateRect(const gfx::Rect& rect)
 {
+  assert_ui_thread();
+
   if (isVisible())
     invalidateRegion(Region(rect));
 }
 
 void Widget::invalidateRegion(const Region& region)
 {
+  assert_ui_thread();
   onInvalidateRegion(region);
 }
 
