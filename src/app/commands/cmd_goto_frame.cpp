@@ -59,6 +59,23 @@ protected:
   }
 };
 
+class GotoFirstFrameInTagCommand : public GotoCommand {
+public:
+  GotoFirstFrameInTagCommand()
+    : GotoCommand(CommandId::GotoFirstFrameInTag()) { }
+  Command* clone() const override { return new GotoFirstFrameInTagCommand(*this); }
+
+protected:
+  frame_t onGetFrame(Editor* editor) override {
+    frame_t frame = editor->frame();
+    FrameTag* tag = editor
+      ->getCustomizationDelegate()
+      ->getFrameTagProvider()
+      ->getFrameTagByFrame(frame, false);
+    return (tag ? tag->fromFrame(): 0);
+  }
+};
+
 class GotoPreviousFrameCommand : public GotoCommand {
 public:
   GotoPreviousFrameCommand()
@@ -134,6 +151,23 @@ public:
 protected:
   frame_t onGetFrame(Editor* editor) override {
     return editor->sprite()->lastFrame();
+  }
+};
+
+class GotoLastFrameInTagCommand : public GotoCommand {
+public:
+  GotoLastFrameInTagCommand()
+    : GotoCommand(CommandId::GotoLastFrameInTag()) { }
+  Command* clone() const override { return new GotoLastFrameInTagCommand(*this); }
+
+protected:
+  frame_t onGetFrame(Editor* editor) override {
+    frame_t frame = editor->frame();
+    FrameTag* tag = editor
+      ->getCustomizationDelegate()
+      ->getFrameTagProvider()
+      ->getFrameTagByFrame(frame, false);
+    return (tag ? tag->toFrame(): editor->sprite()->lastFrame());
   }
 };
 
@@ -243,6 +277,11 @@ Command* CommandFactory::createGotoFirstFrameCommand()
   return new GotoFirstFrameCommand;
 }
 
+Command* CommandFactory::createGotoFirstFrameInTagCommand()
+{
+  return new GotoFirstFrameInTagCommand;
+}
+
 Command* CommandFactory::createGotoPreviousFrameCommand()
 {
   return new GotoPreviousFrameCommand;
@@ -256,6 +295,11 @@ Command* CommandFactory::createGotoNextFrameCommand()
 Command* CommandFactory::createGotoLastFrameCommand()
 {
   return new GotoLastFrameCommand;
+}
+
+Command* CommandFactory::createGotoLastFrameInTagCommand()
+{
+  return new GotoLastFrameInTagCommand;
 }
 
 Command* CommandFactory::createGotoNextFrameWithSameTagCommand()

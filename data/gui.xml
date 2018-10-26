@@ -780,6 +780,9 @@
           <item command="GotoNextFrame" text="@.frame_jump_to_next_frame" />
           <item command="GotoLastFrame" text="@.frame_jump_to_last_frame" />
           <separator />
+          <item command="GotoFirstFrameInTag" text="@.frame_jump_to_first_frame_in_tag" />
+          <item command="GotoLastFrameInTag" text="@.frame_jump_to_last_frame_in_tag" />
+          <separator />
           <item command="GotoFrame" text="@.frame_go_to_frame" />
         </menu>
         <item command="PlayAnimation" text="@.frame_play_animation" />
