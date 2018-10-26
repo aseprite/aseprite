@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +15,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/i18n/strings.h"
+#include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -22,6 +24,7 @@
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
 #include "doc/layer.h"
@@ -226,6 +229,31 @@ int App_get_activeImage(lua_State* L)
   return 1;
 }
 
+int App_get_activeTag(lua_State* L)
+{
+  FrameTag* tag = nullptr;
+
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+  if (site.sprite()) {
+#ifdef ENABLE_UI
+    if (App::instance()->timeline()) {
+      tag = App::instance()->timeline()->getFrameTagByFrame(site.frame(), false);
+    }
+    else
+#endif
+    {
+      tag = get_animation_tag(site.sprite(), site.frame());
+    }
+  }
+
+  if (tag)
+    push_ptr<FrameTag>(L, tag);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int App_get_sprites(lua_State* L)
 {
   push_sprites(L);
@@ -376,6 +404,7 @@ const Property App_properties[] = {
   { "activeFrame", App_get_activeFrame, App_set_activeFrame },
   { "activeCel", App_get_activeCel, App_set_activeCel },
   { "activeImage", App_get_activeImage, App_set_activeImage },
+  { "activeTag", App_get_activeTag, nullptr },
   { "sprites", App_get_sprites, nullptr },
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },
