@@ -30,6 +30,8 @@
 namespace app {
 namespace script {
 
+#ifdef ENABLE_UI
+
 using namespace ui;
 
 namespace {
@@ -591,11 +593,15 @@ const Property Dialog_properties[] = {
 
 DEF_MTNAME(Dialog);
 
+#endif  // ENABLE_UI
+
 void register_dialog_class(lua_State* L)
 {
+#ifdef ENABLE_UI
   REG_CLASS(L, Dialog);
   REG_CLASS_NEW(L, Dialog);
   REG_CLASS_PROPERTIES(L, Dialog);
+#endif
 }
 
 } // namespace script

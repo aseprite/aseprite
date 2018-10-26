@@ -26,9 +26,11 @@ os::ColorSpacePtr get_screen_color_space()
 
 os::ColorSpacePtr get_current_color_space()
 {
+#ifdef ENABLE_UI
   if (current_editor)
     return current_editor->document()->osColorSpace();
   else
+#endif
     return get_screen_color_space();
 }
 
