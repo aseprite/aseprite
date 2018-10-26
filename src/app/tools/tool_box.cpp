@@ -267,7 +267,7 @@ void ToolBox::loadTools()
     xmlGroup = xmlGroup->NextSiblingElement();
   }
 
-  LOG("TOOL: Done. %d tools, %d groups.\n", m_tools.size(), m_groups.size());
+  LOG("TOOL: Done. %zu tools, %zu groups.\n", m_tools.size(), m_groups.size());
 }
 
 void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, const std::string& suffix)
