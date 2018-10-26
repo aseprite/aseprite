@@ -244,6 +244,7 @@
         <part id="selection_replace" x="176" y="160" w="7" h="7" />
         <part id="selection_add" x="184" y="160" w="7" h="7" />
         <part id="selection_subtract" x="192" y="160" w="7" h="7" />
+        <part id="selection_intersect" x="200" y="160" w="7" h="7" />
         <part id="unpinned" x="192" y="144" w="8" h="8" />
         <part id="pinned" x="200" y="144" w="8" h="8" />
         <part id="drop_down_button_left_normal" x="48" y="32" w1="3" w2="2" w3="3" h1="4" h2="6" h3="6" />

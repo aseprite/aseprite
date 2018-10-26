@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,16 +52,17 @@ namespace app {
     LockAxis                  = 0x00000010,
     AddSelection              = 0x00000020,
     SubtractSelection         = 0x00000040,
-    AutoSelectLayer           = 0x00000080,
-    LeftMouseButton           = 0x00000100,
-    RightMouseButton          = 0x00000200,
-    StraightLineFromLastPoint = 0x00000400,
-    MoveOrigin                = 0x00000800,
-    SquareAspect              = 0x00001000,
-    DrawFromCenter            = 0x00002000,
-    ScaleFromCenter           = 0x00004000,
-    AngleSnapFromLastPoint    = 0x00008000,
-    RotateShape               = 0x00010000,
+    IntersectSelection        = 0x00000080,
+    AutoSelectLayer           = 0x00000100,
+    LeftMouseButton           = 0x00000200,
+    RightMouseButton          = 0x00000400,
+    StraightLineFromLastPoint = 0x00000800,
+    MoveOrigin                = 0x00001000,
+    SquareAspect              = 0x00002000,
+    DrawFromCenter            = 0x00004000,
+    ScaleFromCenter           = 0x00008000,
+    AngleSnapFromLastPoint    = 0x00010000,
+    RotateShape               = 0x00020000,
   };
 
   enum class WheelAction {

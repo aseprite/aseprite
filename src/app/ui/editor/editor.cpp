@@ -1496,7 +1496,8 @@ void Editor::updateToolLoopModifiersIndicators()
       modifiers |= (int(m_toolLoopModifiers) &
                     (int(tools::ToolLoopModifiers::kReplaceSelection) |
                      int(tools::ToolLoopModifiers::kAddSelection) |
-                     int(tools::ToolLoopModifiers::kSubtractSelection)));
+                     int(tools::ToolLoopModifiers::kSubtractSelection) |
+                     int(tools::ToolLoopModifiers::kIntersectSelection)));
 
       tools::Controller* controller =
         (App::instance()->activeToolManager()->selectedTool() ?
@@ -1535,13 +1536,17 @@ void Editor::updateToolLoopModifiersIndicators()
            App::instance()->activeToolManager()->selectedTool()->getInk(0)->isSelection())) {
         mode = gen::SelectionMode::SUBTRACT;
       }
+      else if (int(action & KeyAction::IntersectSelection)) {
+        mode = gen::SelectionMode::INTERSECT;
+      }
       else if (int(action & KeyAction::AddSelection)) {
         mode = gen::SelectionMode::ADD;
       }
       switch (mode) {
-        case gen::SelectionMode::DEFAULT:  modifiers |= int(tools::ToolLoopModifiers::kReplaceSelection);  break;
-        case gen::SelectionMode::ADD:      modifiers |= int(tools::ToolLoopModifiers::kAddSelection);      break;
-        case gen::SelectionMode::SUBTRACT: modifiers |= int(tools::ToolLoopModifiers::kSubtractSelection); break;
+        case gen::SelectionMode::DEFAULT:   modifiers |= int(tools::ToolLoopModifiers::kReplaceSelection);  break;
+        case gen::SelectionMode::ADD:       modifiers |= int(tools::ToolLoopModifiers::kAddSelection);      break;
+        case gen::SelectionMode::SUBTRACT:  modifiers |= int(tools::ToolLoopModifiers::kSubtractSelection); break;
+        case gen::SelectionMode::INTERSECT: modifiers |= int(tools::ToolLoopModifiers::kIntersectSelection); break;
       }
 
       // For move tool

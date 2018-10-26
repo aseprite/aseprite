@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -47,6 +48,7 @@ namespace {
     { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
     { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
     { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
+    { "IntersectSelection"  , "Intersect Selection" , app::KeyAction::IntersectSelection },
     { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer },
     { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint },
     { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint },
@@ -209,6 +211,7 @@ Key::Key(KeyAction action)
       break;
     case KeyAction::AddSelection:
     case KeyAction::SubtractSelection:
+    case KeyAction::IntersectSelection:
       m_keycontext = KeyContext::SelectionTool;
       break;
     case KeyAction::AutoSelectLayer:

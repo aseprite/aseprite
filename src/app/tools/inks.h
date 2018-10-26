@@ -362,6 +362,7 @@ public:
 class SelectionInk : public BaseInk {
   bool m_modify_selection;
   Mask m_mask;
+  Mask m_intersectMask;
   Rect m_maxBounds;
 
 public:
@@ -390,6 +391,9 @@ public:
       else if ((modifiers & int(ToolLoopModifiers::kSubtractSelection)) != 0) {
         m_mask.subtract(gfx::Rect(x1, y, x2-x1+1, 1));
       }
+      else if ((modifiers & int(ToolLoopModifiers::kIntersectSelection)) != 0) {
+        m_intersectMask.add(gfx::Rect(x1, y, x2-x1+1, 1));
+      }
 
       m_maxBounds |= gfx::Rect(x1, y, x2-x1+1, 1);
     }
@@ -409,6 +413,11 @@ public:
       m_mask.reserve(loop->sprite()->bounds());
     }
     else {
+      int modifiers = int(loop->getModifiers());
+      if ((modifiers & int(ToolLoopModifiers::kIntersectSelection)) != 0) {
+        m_mask.intersect(m_intersectMask);
+      }
+
       // We can intersect the used bounds in inkHline() calls to
       // reduce the shrink computation.
       m_mask.intersect(m_maxBounds);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -926,12 +927,13 @@ protected:
 
 class ContextBar::SelectionModeField : public ButtonSet {
 public:
-  SelectionModeField() : ButtonSet(3) {
+  SelectionModeField() : ButtonSet(4) {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
     addItem(theme->parts.selectionReplace());
     addItem(theme->parts.selectionAdd());
     addItem(theme->parts.selectionSubtract());
+    addItem(theme->parts.selectionIntersect());
 
     setSelectedItem((int)Preferences::instance().selection.mode());
   }
@@ -945,6 +947,9 @@ public:
 
     tooltipManager->addTooltipFor(
       at(2), key_tooltip("Subtract from selection", KeyAction::SubtractSelection), BOTTOM);
+
+    tooltipManager->addTooltipFor(
+      at(3), key_tooltip("Intersect selection", KeyAction::IntersectSelection), BOTTOM);
   }
 
   void setSelectionMode(gen::SelectionMode mode) {
@@ -1510,6 +1515,8 @@ void ContextBar::updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modi
     mode = gen::SelectionMode::ADD;
   else if (int(modifiers) & int(tools::ToolLoopModifiers::kSubtractSelection))
     mode = gen::SelectionMode::SUBTRACT;
+  else if (int(modifiers) & int(tools::ToolLoopModifiers::kIntersectSelection))
+    mode = gen::SelectionMode::INTERSECT;
 
   m_selectionMode->setSelectionMode(mode);
 }

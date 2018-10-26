@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -386,6 +387,8 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
       params.set("mode", "add");
     else if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kSubtractSelection))
       params.set("mode", "subtract");
+    else if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kIntersectSelection))
+      params.set("mode", "intersect");
 
     UIContext::instance()->executeCommand(selectTileCmd, params);
     return true;

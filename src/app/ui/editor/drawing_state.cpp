@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -153,7 +154,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (!m_toolLoop->getInk()->isSelection() ||
       m_toolLoop->getController()->isOnePoint() ||
       m_mouseMoveReceived ||
-      editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kReplaceSelection) {
+      (editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kReplaceSelection &&
+       editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kIntersectSelection)) {
     // Notify the release of the mouse button to the tool loop
     // manager. This is the correct way to say "the user finishes the
     // drawing trace correctly".
