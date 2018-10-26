@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -189,8 +190,22 @@ public:
 
 
 class MoveInk : public Ink {
+  bool m_autoSelect;
 public:
+  MoveInk(bool autoSelect) : m_autoSelect(autoSelect) { }
+
   Ink* clone() override { return new MoveInk(*this); }
+
+  bool isCelMovement() const override { return true; }
+  bool isAutoSelectLayer() const override { return m_autoSelect; }
+  void prepareInk(ToolLoop* loop) override { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override { }
+};
+
+
+class SelectLayerInk : public Ink {
+public:
+  Ink* clone() override { return new SelectLayerInk(*this); }
 
   bool isCelMovement() const override { return true; }
   void prepareInk(ToolLoop* loop) override { }

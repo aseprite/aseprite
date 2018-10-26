@@ -1311,9 +1311,13 @@ tools::Ink* Editor::getCurrentEditorInk()
     return App::instance()->activeToolManager()->activeInk();
 }
 
-bool Editor::isAutoSelectLayer() const
+bool Editor::isAutoSelectLayer()
 {
-  return App::instance()->contextBar()->isAutoSelectLayer();
+  tools::Ink* ink = getCurrentEditorInk();
+  if (ink && ink->isAutoSelectLayer())
+    return true;
+  else
+    return App::instance()->contextBar()->isAutoSelectLayer();
 }
 
 gfx::Point Editor::screenToEditor(const gfx::Point& pt)

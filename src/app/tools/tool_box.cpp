@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,6 +50,7 @@ const char* WellKnownTools::Pencil = "pencil";
 const char* WellKnownTools::Eraser = "eraser";
 const char* WellKnownTools::Eyedropper = "eyedropper";
 const char* WellKnownTools::Hand = "hand";
+const char* WellKnownTools::Move = "move";
 
 const char* WellKnownInks::Selection = "selection";
 const char* WellKnownInks::Paint = "paint";
@@ -66,6 +68,7 @@ const char* WellKnownInks::PickBg = "pick_bg";
 const char* WellKnownInks::Zoom = "zoom";
 const char* WellKnownInks::Scroll = "scroll";
 const char* WellKnownInks::Move = "move";
+const char* WellKnownInks::SelectLayerAndMove = "select_layer_and_move";
 const char* WellKnownInks::Slice = "slice";
 const char* WellKnownInks::MoveSlice = "move_slice";
 const char* WellKnownInks::Blur = "blur";
@@ -123,7 +126,8 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::PickBg]          = new PickInk(PickInk::Bg);
   m_inks[WellKnownInks::Zoom]            = new ZoomInk();
   m_inks[WellKnownInks::Scroll]          = new ScrollInk();
-  m_inks[WellKnownInks::Move]            = new MoveInk();
+  m_inks[WellKnownInks::Move]            = new MoveInk(false);
+  m_inks[WellKnownInks::SelectLayerAndMove] = new MoveInk(true);
   m_inks[WellKnownInks::Slice]           = new SliceInk();
   m_inks[WellKnownInks::Blur]            = new BlurInk();
   m_inks[WellKnownInks::Jumble]          = new JumbleInk();

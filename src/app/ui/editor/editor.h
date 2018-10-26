@@ -198,7 +198,7 @@ namespace app {
     tools::Ink* getCurrentEditorInk();
 
     tools::ToolLoopModifiers getToolLoopModifiers() const { return m_toolLoopModifiers; }
-    bool isAutoSelectLayer() const;
+    bool isAutoSelectLayer();
 
     // Returns true if we are able to draw in the current doc/sprite/layer/cel.
     bool canDraw();

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -184,6 +185,10 @@ void ActiveToolManager::pressButton(const Pointer& pointer)
         case app::gen::RightClickMode::LASSO:
           tool = m_toolbox->getToolById(WellKnownTools::Lasso);
           ink = m_toolbox->getInkById(tools::WellKnownInks::Selection);
+          break;
+        case app::gen::RightClickMode::SELECT_LAYER_AND_MOVE:
+          tool = m_toolbox->getToolById(WellKnownTools::Move);
+          ink = m_toolbox->getInkById(tools::WellKnownInks::SelectLayerAndMove);
           break;
       }
     }

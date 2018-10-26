@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,6 +28,7 @@ namespace app {
       extern const char* Eraser;
       extern const char* Eyedropper;
       extern const char* Hand;
+      extern const char* Move;
     };
 
     namespace WellKnownInks {
@@ -46,6 +48,7 @@ namespace app {
       extern const char* Zoom;
       extern const char* Scroll;
       extern const char* Move;
+      extern const char* SelectLayerAndMove;
       extern const char* Slice;
       extern const char* MoveSlice;
       extern const char* Blur;

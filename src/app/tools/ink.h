@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -60,6 +61,9 @@ namespace app {
 
       // Returns true if this ink moves cels
       virtual bool isCelMovement() const { return false; }
+
+      // Returns true if this ink selects layers automatically
+      virtual bool isAutoSelectLayer() const { return false; }
 
       // Returns true if this ink is used to mark slices
       virtual bool isSlice() const { return false; }

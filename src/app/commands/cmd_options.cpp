@@ -347,6 +347,7 @@ public:
     static_assert(int(app::gen::RightClickMode::SCROLL) == 3, "");
     static_assert(int(app::gen::RightClickMode::RECTANGULAR_MARQUEE) == 4, "");
     static_assert(int(app::gen::RightClickMode::LASSO) == 5, "");
+    static_assert(int(app::gen::RightClickMode::SELECT_LAYER_AND_MOVE) == 6, "");
 
     rightClickBehavior()->addItem("Paint with background color");
     rightClickBehavior()->addItem("Pick foreground color");
@@ -354,6 +355,7 @@ public:
     rightClickBehavior()->addItem("Scroll");
     rightClickBehavior()->addItem("Rectangular Marquee");
     rightClickBehavior()->addItem("Lasso");
+    rightClickBehavior()->addItem("Select Layer & Move");
     rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
 
 #ifndef __APPLE__ // Zoom sliding two fingers option only on macOS
