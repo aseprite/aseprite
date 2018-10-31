@@ -82,8 +82,7 @@ static bool update_custom_native_cursor(const Cursor* cursor)
   bool result = false;
 
   // Check if we can use a custom native mouse in this platform
-  if (!use_native_mouse_cursor &&
-      support_native_custom_cursor &&
+  if (support_native_custom_cursor &&
       mouse_display) {
     if (cursor) {
       result = mouse_display->setNativeMouseCursor(
@@ -167,7 +166,8 @@ static void update_mouse_cursor()
   }
 
   // Try to use a custom native cursor if it's possible
-  if (!update_custom_native_cursor(cursor)) {
+  if (nativeCursor == os::kNoCursor &&
+      !update_custom_native_cursor(cursor)) {
     // Or an overlay as last resource
     update_mouse_overlay(cursor);
   }

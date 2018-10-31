@@ -78,8 +78,12 @@ void Overlay::captureOverlappedArea(os::Surface* screen)
   if (!m_surface)
     return;
 
-  if (!m_overlap)
-    m_overlap = os::instance()->createSurface(m_surface->width(), m_surface->height());
+  if (!m_overlap) {
+    // Use the same color space for the overlay as in the screen
+    m_overlap = os::instance()->createSurface(m_surface->width(),
+                                              m_surface->height(),
+                                              screen->colorSpace());
+  }
 
   os::SurfaceLock lock(m_overlap);
   screen->blitTo(m_overlap, m_pos.x, m_pos.y, 0, 0,
