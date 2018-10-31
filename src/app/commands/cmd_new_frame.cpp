@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -111,9 +112,11 @@ void NewFrameCommand::onExecute(Context* context)
             !site->selectedFrames().empty()) {
           std::map<CelData*, Cel*> relatedCels;
 
+#if ENABLE_UI
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
           DocRange range = timeline->range();
+#endif
 
           SelectedLayers selLayers;
           if (site->inFrames())
@@ -161,19 +164,23 @@ void NewFrameCommand::onExecute(Context* context)
             }
           }
 
+#ifdef ENABLE_UI                // TODO the range should be part of the Site
           range.displace(0, frameRange);
           timeline->moveRange(range);
+#endif
         }
         else {
           api.copyCel(
             static_cast<LayerImage*>(writer.layer()), writer.frame(),
             static_cast<LayerImage*>(writer.layer()), writer.frame()+1);
 
+#ifdef ENABLE_UI                // TODO the active frame should be part of the Site
           // TODO should we use DocObserver?
           if (UIContext::instance() == context) {
             if (DocView* view = UIContext::instance()->activeView())
               view->editor()->setFrame(writer.frame()+1);
           }
+#endif
         }
         break;
       }
@@ -181,14 +188,19 @@ void NewFrameCommand::onExecute(Context* context)
 
     tx.commit();
   }
-  update_screen_for_document(document);
 
-  StatusBar::instance()
-    ->showTip(1000, "New frame %d/%d",
-              (int)context->activeSite().frame()+1,
-              (int)sprite->totalFrames());
+#ifdef ENABLE_UI
+  if (context->isUIAvailable()) {
+    update_screen_for_document(document);
 
-  App::instance()->mainWindow()->popTimeline();
+    StatusBar::instance()
+      ->showTip(1000, "New frame %d/%d",
+                (int)context->activeSite().frame()+1,
+                (int)sprite->totalFrames());
+
+    App::instance()->mainWindow()->popTimeline();
+  }
+#endif
 }
 
 std::string NewFrameCommand::onGetFriendlyName() const

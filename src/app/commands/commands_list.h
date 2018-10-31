@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@ FOR_EACH_COMMAND(CropSprite)
 FOR_EACH_COMMAND(FlattenLayers)
 FOR_EACH_COMMAND(LayerFromBackground)
 FOR_EACH_COMMAND(LoadPalette)
+FOR_EACH_COMMAND(NewFrame)
 FOR_EACH_COMMAND(NewLayer)
 FOR_EACH_COMMAND(OpenFile)
 FOR_EACH_COMMAND(Redo)
@@ -95,7 +97,6 @@ FOR_EACH_COMMAND(MoveCel)
 FOR_EACH_COMMAND(MoveMask)
 FOR_EACH_COMMAND(NewBrush)
 FOR_EACH_COMMAND(NewFile)
-FOR_EACH_COMMAND(NewFrame)
 FOR_EACH_COMMAND(NewFrameTag)
 FOR_EACH_COMMAND(NewSpriteFromSelection)
 FOR_EACH_COMMAND(OpenBrowser)
