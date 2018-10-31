@@ -200,8 +200,8 @@ int App_get_activeFrame(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
-  if (site.frame())
-    lua_pushinteger(L, site.frame()+1);
+  if (site.sprite())
+    push_sprite_frame(L, site.sprite(), site.frame());
   else
     lua_pushnil(L);
   return 1;
