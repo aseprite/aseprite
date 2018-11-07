@@ -105,7 +105,8 @@ namespace app {
     static FileOp* createSaveDocumentOperation(const Context* context,
                                                const FileOpROI& roi,
                                                const std::string& filename,
-                                               const std::string& filenameFormat);
+                                               const std::string& filenameFormat,
+                                               const bool ignoreEmptyFrames);
 
     ~FileOp();
 
@@ -196,6 +197,7 @@ namespace app {
     bool m_oneframe;            // Load just one frame (in formats
                                 // that support animation like
                                 // GIF/FLI/ASE).
+    bool m_ignoreEmpty;
 
     // Return if we've to save/embed the color space of the document
     // in the file.

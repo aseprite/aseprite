@@ -98,6 +98,10 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
     std::cout << "  - Trim\n";
   }
 
+  if (cof.ignoreEmpty) {
+    std::cout << "  - Ignore empty frames\n";
+  }
+
   std::cout << "  - Size: "
             << cof.document->sprite()->width() << "x"
             << cof.document->sprite()->height() << "\n";
@@ -136,7 +140,8 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
       ctx,
       cof.roi(),
       cof.filename,
-      cof.filenameFormat));
+      cof.filenameFormat,
+      cof.ignoreEmpty));
 
   if (fop) {
     base::paths files;

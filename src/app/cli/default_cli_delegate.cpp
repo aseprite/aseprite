@@ -92,6 +92,9 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
     params.set("slice", cof.slice.c_str());
   }
 
+  if (cof.ignoreEmpty)
+    params.set("ignoreEmpty", "true");
+
   ctx->executeCommand(saveAsCommand, params);
 }
 

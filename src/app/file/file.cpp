@@ -104,7 +104,8 @@ int save_document(Context* context, Doc* document)
     FileOp::createSaveDocumentOperation(
       context,
       FileOpROI(document, "", "", SelectedFrames(), false),
-      document->filename(), ""));
+      document->filename(), "",
+      false));
   if (!fop)
     return -1;
 
@@ -317,7 +318,8 @@ done:;
 FileOp* FileOp::createSaveDocumentOperation(const Context* context,
                                             const FileOpROI& roi,
                                             const std::string& filename,
-                                            const std::string& filenameFormatArg)
+                                            const std::string& filenameFormatArg,
+                                            const bool ignoreEmptyFrames)
 {
   std::unique_ptr<FileOp> fop(
     new FileOp(FileOpSave, const_cast<Context*>(context)));
@@ -325,6 +327,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   // Document to save
   fop->m_document = const_cast<Doc*>(roi.document());
   fop->m_roi = roi;
+  fop->m_ignoreEmpty = ignoreEmptyFrames;
 
   // Get the extension of the filename (in lower case)
   LOG("FILE: Saving document \"%s\"\n", filename.c_str());
@@ -744,31 +747,42 @@ void FileOp::operate(IFileOpProgress* progress)
           render.renderSprite(m_seq.image.get(), sprite, frame);
         }
 
-        // Setup the palette.
-        sprite->palette(frame)->copyColorsTo(m_seq.palette);
+        bool save = true;
 
-        // Setup the filename to be used.
-        m_filename = m_seq.filename_list[outputFrame];
-
-        // Make directories
-        {
-          std::string dir = base::get_file_path(m_filename);
-          try {
-            if (!base::is_directory(dir))
-              base::make_all_directories(dir);
-          }
-          catch (const std::exception& ex) {
-            // Ignore errors and make the delegate fail
-            setError("Error creating directory \"%s\"\n%s",
-                     dir.c_str(), ex.what());
-          }
+        // Check if we have to ignore empty frames
+        if (m_ignoreEmpty &&
+            !sprite->isOpaque() &&
+            doc::is_empty_image(m_seq.image.get())) {
+          save = false;
         }
 
-        // Call the "save" procedure... did it fail?
-        if (!m_format->save(this)) {
-          setError("Error saving frame %d in the file \"%s\"\n",
-                   outputFrame+1, m_filename.c_str());
-          break;
+        if (save) {
+          // Setup the palette.
+          sprite->palette(frame)->copyColorsTo(m_seq.palette);
+
+          // Setup the filename to be used.
+          m_filename = m_seq.filename_list[outputFrame];
+
+          // Make directories
+          {
+            std::string dir = base::get_file_path(m_filename);
+            try {
+              if (!base::is_directory(dir))
+                base::make_all_directories(dir);
+            }
+            catch (const std::exception& ex) {
+              // Ignore errors and make the delegate fail
+              setError("Error creating directory \"%s\"\n%s",
+                       dir.c_str(), ex.what());
+            }
+          }
+
+          // Call the "save" procedure... did it fail?
+          if (!m_format->save(this)) {
+            setError("Error saving frame %d in the file \"%s\"\n",
+                     outputFrame+1, m_filename.c_str());
+            break;
+          }
         }
 
         m_seq.progress_offset += m_seq.progress_fraction;
@@ -1153,6 +1167,7 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_done(false)
   , m_stop(false)
   , m_oneframe(false)
+  , m_ignoreEmpty(false)
   , m_preserveColorProfile(
       Preferences::instance().color.manage())
   , m_embeddedColorProfile(false)

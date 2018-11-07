@@ -89,6 +89,7 @@ SaveFileBaseCommand::SaveFileBaseCommand(const char* id, CommandFlags flags)
   : Command(id, flags)
 {
   m_useUI = true;
+  m_ignoreEmpty = false;
 }
 
 void SaveFileBaseCommand::onLoadParams(const Params& params)
@@ -113,6 +114,9 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
 
   std::string useUI = params.get("useUI");
   m_useUI = (useUI.empty() || (useUI == "true"));
+
+  std::string ignoreEmpty = params.get("ignoreEmpty");
+  m_ignoreEmpty = (ignoreEmpty == "true");
 }
 
 // Returns true if there is a current sprite to save.
@@ -194,7 +198,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(
       context,
       roi,
       filename,
-      m_filenameFormat));
+      m_filenameFormat,
+      m_ignoreEmpty));
   if (!fop)
     return;
 

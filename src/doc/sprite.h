@@ -84,6 +84,9 @@ namespace doc {
     void setSize(int width, int height);
     void setColorSpace(const gfx::ColorSpacePtr& colorSpace);
 
+    // Returns true if the sprite has a background layer and it's visible
+    bool isOpaque() const;
+
     // Returns true if the rendered images will contain alpha values less
     // than 255. Only RGBA and Grayscale images without background needs
     // alpha channel in the render.

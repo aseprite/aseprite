@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -296,6 +297,19 @@ void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t color)
 namespace {
 
 template<typename ImageTraits>
+bool is_plain_image_templ(const Image* img, const color_t color)
+{
+  const LockImageBits<ImageTraits> bits(img);
+  typename LockImageBits<ImageTraits>::const_iterator it, end;
+  for (it=bits.begin(), end=bits.end(); it!=end; ++it) {
+    if (*it != color)
+      return false;
+  }
+  ASSERT(it == end);
+  return true;
+}
+
+template<typename ImageTraits>
 int count_diff_between_images_templ(const Image* i1, const Image* i2)
 {
   int diff = 0;
@@ -315,6 +329,25 @@ int count_diff_between_images_templ(const Image* i1, const Image* i2)
 }
 
 } // anonymous namespace
+
+bool is_plain_image(const Image* img, color_t c)
+{
+  switch (img->pixelFormat()) {
+    case IMAGE_RGB:       return is_plain_image_templ<RgbTraits>(img, c);
+    case IMAGE_GRAYSCALE: return is_plain_image_templ<GrayscaleTraits>(img, c);
+    case IMAGE_INDEXED:   return is_plain_image_templ<IndexedTraits>(img, c);
+    case IMAGE_BITMAP:    return is_plain_image_templ<BitmapTraits>(img, c);
+  }
+  return false;
+}
+
+bool is_empty_image(const Image* img)
+{
+  color_t c = 0;                // alpha = 0
+  if (img->colorMode() == ColorMode::INDEXED)
+    c = img->maskColor();
+  return is_plain_image(img, 0);
+}
 
 int count_diff_between_images(const Image* i1, const Image* i2)
 {

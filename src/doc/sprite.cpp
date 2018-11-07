@@ -149,16 +149,21 @@ void Sprite::setColorSpace(const gfx::ColorSpacePtr& colorSpace)
     cel->image()->setColorSpace(colorSpace);
 }
 
+bool Sprite::isOpaque() const
+{
+  Layer* bg = backgroundLayer();
+  return (bg && bg->isVisible());
+}
+
 bool Sprite::needAlpha() const
 {
   switch (pixelFormat()) {
     case IMAGE_RGB:
-    case IMAGE_GRAYSCALE: {
-      Layer* bg = backgroundLayer();
-      return (!bg || !bg->isVisible());
-    }
+    case IMAGE_GRAYSCALE:
+      return !isOpaque();
+    default:
+      return false;
   }
-  return false;
 }
 
 bool Sprite::supportAlpha() const
