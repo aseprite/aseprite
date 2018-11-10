@@ -39,6 +39,7 @@ namespace doc {
     bool contains(Layer* layer) const;
     bool hasSameParent() const;
     LayerList toLayerList() const;
+    LayerList toAllLayersList() const;
 
     void removeChildrenIfParentIsSelected();
     void expandCollapsedGroups();

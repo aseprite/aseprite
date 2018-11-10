@@ -215,6 +215,14 @@ LayerImage* Sprite::backgroundLayer() const
   return NULL;
 }
 
+Layer* Sprite::firstLayer() const
+{
+  Layer* layer = root()->firstLayer();
+  while (layer->isGroup())
+    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+  return layer;
+}
+
 Layer* Sprite::firstBrowsableLayer() const
 {
   Layer* layer = root()->firstLayer();

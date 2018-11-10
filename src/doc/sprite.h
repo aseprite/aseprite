@@ -104,6 +104,7 @@ namespace doc {
     LayerGroup* root() const { return m_root; }
     LayerImage* backgroundLayer() const;
     Layer* firstBrowsableLayer() const;
+    Layer* firstLayer() const;
     layer_t allLayersCount() const;
     bool hasVisibleReferenceLayers() const;
 

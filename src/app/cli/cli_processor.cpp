@@ -540,7 +540,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
         filter_layers(doc->sprite()->allLayers(), cof, filteredLayers);
 
         if (cof.splitLayers) {
-          for (Layer* layer : filteredLayers) {
+          for (Layer* layer : filteredLayers.toAllLayersList()) {
             SelectedLayers oneLayer;
             oneLayer.insert(layer);
 

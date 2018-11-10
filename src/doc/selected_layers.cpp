@@ -58,6 +58,26 @@ bool SelectedLayers::hasSameParent() const
   return true;
 }
 
+LayerList SelectedLayers::toAllLayersList() const
+{
+  LayerList output;
+
+  if (empty())
+    return output;
+
+  ASSERT(*begin());
+  ASSERT((*begin())->sprite());
+
+  for (Layer* layer = (*begin())->sprite()->firstLayer();
+       layer != nullptr;
+       layer = layer->getNext()) {
+    if (contains(layer))
+      output.push_back(layer);
+  }
+
+  return output;
+}
+
 LayerList SelectedLayers::toLayerList() const
 {
   LayerList output;
