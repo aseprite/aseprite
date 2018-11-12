@@ -350,6 +350,8 @@ bool Tabs::onProcessMessage(Message* msg)
     case kMouseLeaveMessage:
       if (m_hot) {
         m_hot.reset();
+        if (m_delegate)
+          m_delegate->onMouseLeaveTab();
         invalidate();
       }
       return true;

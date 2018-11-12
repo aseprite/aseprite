@@ -135,7 +135,7 @@ bool ColorButton::onProcessMessage(Message* msg)
       break;
 
     case kMouseLeaveMessage:
-      StatusBar::instance()->clearText();
+      StatusBar::instance()->showDefaultText();
       break;
 
     case kMouseMoveMessage:

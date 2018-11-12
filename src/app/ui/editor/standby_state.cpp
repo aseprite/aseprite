@@ -524,7 +524,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     - gfx::PointF(editor->mainTilePosition());
 
   if (!sprite) {
-    StatusBar::instance()->clearText();
+    StatusBar::instance()->showDefaultText();
   }
   // For eye-dropper
   else if (ink->isEyedropper()) {
@@ -549,12 +549,16 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     char buf[1024];
     sprintf(
-      buf, ":pos: %d %d :%s: %d %d",
-      int(std::floor(spritePos.x)),
-      int(std::floor(spritePos.y)),
-      (mask ? "selsize": "size"),
-      (mask ? mask->bounds().w: sprite->width()),
-      (mask ? mask->bounds().h: sprite->height()));
+            buf, ":pos: %d %d :size: %d %d",
+            int(std::floor(spritePos.x)),
+            int(std::floor(spritePos.y)),
+            sprite->width(),
+            sprite->height());
+
+    if (mask)
+      sprintf(buf+std::strlen(buf), " :selsize: %d %d",
+              mask->bounds().w,
+              mask->bounds().h);
 
     if (sprite->totalFrames() > 1) {
       sprintf(

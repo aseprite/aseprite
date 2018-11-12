@@ -912,7 +912,7 @@ void PaletteView::setStatusBar()
   StatusBar* statusBar = StatusBar::instance();
 
   if (m_hot.part == Hit::NONE) {
-    statusBar->clearText();
+    statusBar->showDefaultText();
     return;
   }
 
@@ -930,7 +930,7 @@ void PaletteView::setStatusBar()
           0, "", app::Color::fromIndex(i));
       }
       else {
-        statusBar->clearText();
+        statusBar->showDefaultText();
       }
       break;
 
@@ -949,7 +949,7 @@ void PaletteView::setStatusBar()
           destIndex, newPalSize);
       }
       else {
-        statusBar->clearText();
+        statusBar->showDefaultText();
       }
       break;
 
@@ -963,7 +963,7 @@ void PaletteView::setStatusBar()
           newPalSize);
       }
       else {
-        statusBar->clearText();
+        statusBar->showDefaultText();
       }
       break;
   }

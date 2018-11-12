@@ -1642,7 +1642,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseLeaveMessage:
       m_brushPreview.hide();
-      StatusBar::instance()->clearText();
+      StatusBar::instance()->showDefaultText();
       break;
 
     case kMouseDownMessage:

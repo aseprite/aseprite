@@ -474,11 +474,14 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
     else
       name = base::get_file_name(document->filename());
 
-    m_statusBar->setStatusText(250, "%s", name.c_str());
+    m_statusBar->showDefaultText(document);
   }
-  else {
-    m_statusBar->clearText();
-  }
+  else
+    m_statusBar->showDefaultText();
+}
+
+void MainWindow::onMouseLeaveTab() {
+  m_statusBar->showDefaultText();
 }
 
 DropViewPreviewResult MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
