@@ -615,6 +615,29 @@ void StatusBar::clearText()
   setStatusText(1, "");
 }
 
+void StatusBar::showDefaultText()
+{
+  clearText();
+  showDefaultText(current_editor? current_editor->document() : nullptr);
+}
+
+void StatusBar::showDefaultText(Doc* doc)
+{
+  clearText();
+  if (doc){
+    std::string buf = base::string_printf("%s  :size: %d %d",
+                                          doc->name().c_str(),
+                                          doc->width(),
+                                          doc->height());
+    if (doc->getTransformation().bounds().w != 0) {
+      buf += base::string_printf(" :selsize: %d %d",
+                                 int(doc->getTransformation().bounds().w),
+                                 int(doc->getTransformation().bounds().h));
+    }
+    setStatusText(1, buf.c_str());
+  }
+}
+
 void StatusBar::updateFromEditor(Editor* editor)
 {
   if (editor)

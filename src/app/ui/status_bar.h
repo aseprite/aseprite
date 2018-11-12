@@ -56,6 +56,8 @@ namespace app {
     ~StatusBar();
 
     void clearText();
+    void showDefaultText();
+    void showDefaultText(Doc* document);
 
     bool setStatusText(int msecs, const char* format, ...);
     void showTip(int msecs, const char* format, ...);

@@ -3390,7 +3390,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
     }
   }
 
-  sb->clearText();
+  sb->showDefaultText();
 }
 
 void Timeline::updateStatusBarForFrame(const frame_t frame,

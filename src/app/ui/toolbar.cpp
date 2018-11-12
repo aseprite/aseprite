@@ -264,7 +264,7 @@ bool ToolBar::onProcessMessage(Message* msg)
         invalidate();
       }
 
-      StatusBar::instance()->clearText();
+      StatusBar::instance()->showDefaultText();
       break;
 
     case kTimerMessage:

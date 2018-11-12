@@ -95,6 +95,9 @@ namespace app {
     // mouse just leave all tabs)
     virtual void onMouseOverTab(Tabs* tabs, TabView* tabView) = 0;
 
+    // Called when the mouse is leaving a tab
+    virtual void onMouseLeaveTab() = 0;
+    
     // Called when the user is dragging a tab outside the Tabs
     // bar.
     virtual DropViewPreviewResult onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
