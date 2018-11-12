@@ -22,7 +22,7 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + VS2015 or VS2017 Community Edition + Windows 10 SDK
+* Windows 10 + VS2017 Community Edition + Windows 10 SDK
 * macOS 10.12.6 Sierra + Xcode 9.0 + macOS 10.13 SDK + Skia
 * Linux + gcc 4.8 with some C++11 support
 
@@ -63,8 +63,10 @@ To compile Aseprite you will need:
 First of all, you will need:
 
 * Windows 10 (we don't support cross-compiling and don't know if this would be possible)
-* [Visual Studio Community Edition](https://www.visualstudio.com/downloads/) (VS2015 or VS2017)
-* Windows 10 SDK (it's included with the Visual Studio installer, remember to install it)
+* [Visual Studio Community Edition](https://www.visualstudio.com/downloads/) (VS2017)
+* The [Desktop development with C++](https://docs.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=vs-2017#visual-studio-2017-installation) item
+  from the Visual Studio installer
+* Windows 10 SDK item from the Visual Studio installer
 
 Then, you will need an extra little utility: `awk`, used to compile
 the libpng library. You can get this utility from MSYS2 distributions
@@ -213,13 +215,8 @@ Download
 [Google depot tools](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
 and uncompress it in some place like `C:\deps\depot_tools`.
 
-Then open a command line follow these steps:
-
-For VS2015:
-
-    call "%VS140COMNTOOLS%\vsvars32.bat"
-
-For VS2017:
+Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
+or command line (`cmd.exe`) and call:
 
     call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
 
@@ -241,13 +238,6 @@ Just ignore it.)
 (The `tools/git-sync-deps` will take some minutes because it downloads
 a lot of packages, please wait and re-run the same command in case it
 fails.)
-
-For VS2015:
-
-    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"""
-    ninja -C out/Release skia
-
-For VS2017:
 
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"" cc=2017"
     ninja -C out/Release skia
