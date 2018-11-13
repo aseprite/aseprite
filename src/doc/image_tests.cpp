@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -136,12 +137,20 @@ TEST(Image, DiffRgbImages)
   clear_image(b.get(), rgba(0, 0, 0, 0));
 
   ASSERT_EQ(0, count_diff_between_images(a.get(), b.get()));
+  ASSERT_TRUE(is_same_image(a.get(), b.get()));
 
+  // No difference because alpha=0
   put_pixel(a.get(), 0, 0, rgba(255, 0, 0, 0));
-  ASSERT_EQ(1, count_diff_between_images(a.get(), b.get()));
+  ASSERT_EQ(0, count_diff_between_images(a.get(), b.get()));
+  ASSERT_TRUE(is_same_image(a.get(), b.get()));
 
-  put_pixel(a.get(), 1, 1, rgba(0, 0, 255, 0));
+  put_pixel(a.get(), 0, 0, rgba(255, 0, 0, 255));
+  ASSERT_EQ(1, count_diff_between_images(a.get(), b.get()));
+  ASSERT_FALSE(is_same_image(a.get(), b.get()));
+
+  put_pixel(a.get(), 1, 1, rgba(0, 0, 255, 128));
   ASSERT_EQ(2, count_diff_between_images(a.get(), b.get()));
+  ASSERT_FALSE(is_same_image(a.get(), b.get()));
 }
 
 TYPED_TEST(ImageAllTypes, DrawHLine)
