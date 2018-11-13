@@ -72,6 +72,18 @@ int Image_gc(lua_State* L)
   return 0;
 }
 
+int Image_clear(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  doc::color_t color;
+  if (lua_isinteger(L, 2))
+    color = lua_tointeger(L, 2);
+  else
+    color = convert_args_into_pixel_color(L, 2);
+  doc::clear_image(obj->image.get(), color);
+  return 0;
+}
+
 int Image_drawPixel(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
@@ -216,6 +228,7 @@ int Image_get_spec(lua_State* L)
 
 const luaL_Reg Image_methods[] = {
   { "clone", Image_clone },
+  { "clear", Image_clear },
   { "getPixel", Image_getPixel },
   { "drawPixel", Image_drawPixel }, { "putPixel", Image_drawPixel },
   { "drawImage", Image_drawImage }, { "putImage", Image_drawImage }, // TODO putImage is deprecated
