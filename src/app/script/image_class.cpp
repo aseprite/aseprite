@@ -72,7 +72,7 @@ int Image_gc(lua_State* L)
   return 0;
 }
 
-int Image_putPixel(lua_State* L)
+int Image_drawPixel(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   const int x = lua_tointeger(L, 2);
@@ -86,7 +86,7 @@ int Image_putPixel(lua_State* L)
   return 0;
 }
 
-int Image_putImage(lua_State* L)
+int Image_drawImage(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   auto sprite = get_obj<ImageObj>(L, 2);
@@ -113,7 +113,7 @@ int Image_putImage(lua_State* L)
   return 0;
 }
 
-int Image_putSprite(lua_State* L)
+int Image_drawSprite(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   const auto sprite = get_ptr<Sprite>(L, 2);
@@ -217,9 +217,9 @@ int Image_get_spec(lua_State* L)
 const luaL_Reg Image_methods[] = {
   { "clone", Image_clone },
   { "getPixel", Image_getPixel },
-  { "putPixel", Image_putPixel },
-  { "putImage", Image_putImage },
-  { "putSprite", Image_putSprite },
+  { "drawPixel", Image_drawPixel }, { "putPixel", Image_drawPixel },
+  { "drawImage", Image_drawImage }, { "putImage", Image_drawImage }, // TODO putImage is deprecated
+  { "drawSprite", Image_drawSprite }, { "putSprite", Image_drawSprite }, // TODO putSprite is deprecated
   { "pixels", Image_pixels },
   { "isEqual", Image_isEqual },
   { "__gc", Image_gc },
