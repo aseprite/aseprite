@@ -10,6 +10,7 @@
 #pragma once
 
 #include "doc/blend_funcs.h"
+#include "doc/color.h"
 #include "doc/color_mode.h"
 #include "doc/pixel_format.h"
 
@@ -41,6 +42,19 @@ namespace doc {
     static inline BlendFunc get_blender(BlendMode blend_mode) {
       return get_rgba_blender(blend_mode);
     }
+
+    static inline bool same_color(const pixel_t a, const pixel_t b) {
+      if (rgba_geta(a) == 0) {
+        if (rgba_geta(b) == 0)
+          return true;
+        else
+          return false;
+      }
+      else if (rgba_geta(b) == 0)
+        return false;
+      else
+        return a == b;
+    }
   };
 
   struct GrayscaleTraits {
@@ -68,6 +82,19 @@ namespace doc {
 
     static inline BlendFunc get_blender(BlendMode blend_mode) {
       return get_graya_blender(blend_mode);
+    }
+
+    static inline bool same_color(const pixel_t a, const pixel_t b) {
+      if (graya_geta(a) == 0) {
+        if (graya_geta(b) == 0)
+          return true;
+        else
+          return false;
+      }
+      else if (graya_geta(b) == 0)
+        return false;
+      else
+        return a == b;
     }
   };
 
@@ -97,6 +124,10 @@ namespace doc {
     static inline BlendFunc get_blender(BlendMode blend_mode) {
       return get_indexed_blender(blend_mode);
     }
+
+    static inline bool same_color(const pixel_t a, const pixel_t b) {
+      return a == b;
+    }
   };
 
   struct BitmapTraits {
@@ -120,6 +151,10 @@ namespace doc {
 
     static inline int getRowStrideBytes(int pixels_per_row) {
       return ((pixels_per_row+7) / 8);
+    }
+
+    static inline bool same_color(const pixel_t a, const pixel_t b) {
+      return a == b;
     }
   };
 

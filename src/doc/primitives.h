@@ -44,6 +44,7 @@ namespace doc {
   bool is_empty_image(const Image* img);
 
   int count_diff_between_images(const Image* i1, const Image* i2);
+  bool is_same_image(const Image* i1, const Image* i2);
 
   void remap_image(Image* image, const Remap& remap);
 

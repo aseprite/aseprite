@@ -64,7 +64,7 @@ int Selection_eq(lua_State* L)
   const bool result =
     (a->mask->isEmpty() && b->mask->isEmpty()) ||
     (!a->mask->isEmpty() && !b->mask->isEmpty() &&
-     count_diff_between_images(a->mask->bitmap(), b->mask->bitmap()) == 0);
+     is_same_image(a->mask->bitmap(), b->mask->bitmap()));
   lua_pushboolean(L, result);
   return 1;
 }

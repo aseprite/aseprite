@@ -176,6 +176,16 @@ int Image_getPixel(lua_State* L)
   return 1;
 }
 
+int Image_isEqual(lua_State* L)
+{
+  auto objA = get_obj<ImageObj>(L, 1);
+  auto objB = get_obj<ImageObj>(L, 2);
+  bool res = doc::is_same_image(objA->image.get(),
+                                objB->image.get());
+  lua_pushboolean(L, res);
+  return 1;
+}
+
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -211,6 +221,7 @@ const luaL_Reg Image_methods[] = {
   { "putImage", Image_putImage },
   { "putSprite", Image_putSprite },
   { "pixels", Image_pixels },
+  { "isEqual", Image_isEqual },
   { "__gc", Image_gc },
   { nullptr, nullptr }
 };
