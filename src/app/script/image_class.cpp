@@ -130,8 +130,8 @@ int Image_putSprite(lua_State* L)
     render::Render render;
     render.renderSprite(
       dst, sprite, frame,
-      gfx::Clip(0, 0,
-                pos.x, pos.y,
+      gfx::Clip(pos.x, pos.y,
+                0, 0,
                 sprite->width(),
                 sprite->height()));
   }
@@ -142,8 +142,8 @@ int Image_putSprite(lua_State* L)
     render::Render render;
     render.renderSprite(
       tmp.get(), sprite, frame,
-      gfx::Clip(0, 0,
-                pos.x, pos.y,
+      gfx::Clip(pos.x, pos.y,
+                0, 0,
                 sprite->width(),
                 sprite->height()));
 
