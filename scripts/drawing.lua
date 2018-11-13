@@ -5,7 +5,33 @@
 
 local pc = app.pixelColor
 
--- drawSprite
+-- Image:clear
+local function test_clear(colorMode)
+  local i = Image(2, 2, colorMode)
+  i:putPixel(0, 0, 1)
+  i:putPixel(1, 0, 2)
+  i:putPixel(0, 1, 3)
+  i:putPixel(1, 1, 4)
+  assert(1 == i:getPixel(0, 0))
+  assert(2 == i:getPixel(1, 0))
+  assert(3 == i:getPixel(0, 1))
+  assert(4 == i:getPixel(1, 1))
+  i:clear(5)
+  assert(5 == i:getPixel(0, 0))
+  assert(5 == i:getPixel(1, 0))
+  assert(5 == i:getPixel(0, 1))
+  assert(5 == i:getPixel(1, 1))
+  i:clear()  -- Image:clear() clears with 0 by default
+  assert(0 == i:getPixel(0, 0))
+  assert(0 == i:getPixel(1, 0))
+  assert(0 == i:getPixel(0, 1))
+  assert(0 == i:getPixel(1, 1))
+end
+test_clear(ColorMode.RGB)
+test_clear(ColorMode.GRAYSCALE)
+test_clear(ColorMode.INDEXED)
+
+-- Image:drawSprite
 do
    local spr = Sprite(4, 4)
    local cel = spr.cels[1]
