@@ -177,6 +177,7 @@ Engine::Engine()
   lua_pushvalue(L, -1);
   lua_setglobal(L, "ColorMode");
   setfield_integer(L, "RGB", doc::ColorMode::RGB);
+  setfield_integer(L, "GRAY", doc::ColorMode::GRAYSCALE);
   setfield_integer(L, "GRAYSCALE", doc::ColorMode::GRAYSCALE);
   setfield_integer(L, "INDEXED", doc::ColorMode::INDEXED);
   lua_pop(L, 1);
