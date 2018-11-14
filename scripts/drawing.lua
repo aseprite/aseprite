@@ -6,8 +6,8 @@
 local pc = app.pixelColor
 
 -- Image:clear
-local function test_clear(colorMode)
-  local i = Image(2, 2, colorMode)
+local function test_clear(colorMode, transparentColor)
+  local i = Image(ImageSpec{ width=2, height=2, colorMode=colorMode, transparentColor=transparentColor })
   i:putPixel(0, 0, 1)
   i:putPixel(1, 0, 2)
   i:putPixel(0, 1, 3)
@@ -21,15 +21,20 @@ local function test_clear(colorMode)
   assert(5 == i:getPixel(1, 0))
   assert(5 == i:getPixel(0, 1))
   assert(5 == i:getPixel(1, 1))
-  i:clear()  -- Image:clear() clears with 0 by default
-  assert(0 == i:getPixel(0, 0))
-  assert(0 == i:getPixel(1, 0))
-  assert(0 == i:getPixel(0, 1))
-  assert(0 == i:getPixel(1, 1))
+
+  print("transparentColor = ", transparentColor)
+  assert(transparentColor == i.spec.transparentColor)
+
+  i:clear()  -- Image:clear() clears with i.spec.transparentColor by default
+  assert(transparentColor == i:getPixel(0, 0))
+  assert(transparentColor == i:getPixel(1, 0))
+  assert(transparentColor == i:getPixel(0, 1))
+  assert(transparentColor == i:getPixel(1, 1))
 end
-test_clear(ColorMode.RGB)
-test_clear(ColorMode.GRAYSCALE)
-test_clear(ColorMode.INDEXED)
+test_clear(ColorMode.RGB, 0)
+test_clear(ColorMode.GRAYSCALE, 0)
+test_clear(ColorMode.INDEXED, 0)
+test_clear(ColorMode.INDEXED, 255)
 
 -- Image:drawSprite
 do
