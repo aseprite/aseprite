@@ -17,6 +17,7 @@
 #include "app/i18n/strings.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
+#include "app/script/api_version.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
@@ -305,6 +306,12 @@ int App_get_version(lua_State* L)
   return 1;
 }
 
+int App_get_apiVersion(lua_State* L)
+{
+  lua_pushinteger(L, API_VERSION);
+  return 1;
+}
+
 int App_set_activeSprite(lua_State* L)
 {
   auto sprite = get_ptr<Sprite>(L, 1);
@@ -409,6 +416,7 @@ const Property App_properties[] = {
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },
   { "version", App_get_version, nullptr },
+  { "apiVersion", App_get_apiVersion, nullptr },
   { "site", App_get_site, nullptr },
   { "isUIAvailable", App_get_isUIAvailable, nullptr },
   { nullptr, nullptr, nullptr }
