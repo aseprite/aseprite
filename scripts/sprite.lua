@@ -8,6 +8,7 @@ do
   assert(a.width == 32)
   assert(a.height == 64)
   assert(a.colorMode == ColorMode.RGB) -- RGB by default
+  assert(a.bounds == Rectangle{x=0, y=0, width=32, height=64})
 
   -- Crop and resize
   a.selection:select(2, 3, 4, 5)
