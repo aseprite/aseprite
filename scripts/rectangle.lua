@@ -37,3 +37,25 @@ assert(rc.x == 2)
 assert(rc.y == 3)
 assert(rc.width == 4)
 assert(rc.height == 5)
+
+-- Rectangle:contains
+
+local a = Rectangle{x=2, y=3, width=4, height=5}
+local b = Rectangle{x=3, y=4, width=1, height=1}
+assert(a:contains(b))
+assert(not b:contains(a))
+
+-- Rectangle:intersect
+
+assert(a:intersects(b))
+assert(b == a:intersect(b))
+
+a = Rectangle{x=2, y=3, width=4, height=5}
+b = Rectangle{x=3, y=4, width=4, height=5}
+c = Rectangle{x=3, y=4, width=3, height=4}
+assert(c == a:intersect(b))
+assert(c == b:intersect(a))
+
+-- Rectangle:union
+
+assert(Rectangle{x=2, y=3, width=5, height=6} == a:union(b))
