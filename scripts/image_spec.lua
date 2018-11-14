@@ -1,11 +1,12 @@
+-- Copyright (C) 2018  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
 do
-  local spec = ImageSpec{colorMode=ColorMode.GRAYSCALE, width=32, height=64, transparentColor=2}
-  assert(spec.colorMode == ColorMode.GRAYSCALE)
+  local spec = ImageSpec{colorMode=ColorMode.GRAY, width=32, height=64, transparentColor=2}
+  assert(spec.colorMode == ColorMode.GRAY)
   assert(spec.width == 32)
   assert(spec.height == 64)
   assert(spec.transparentColor == 2)
