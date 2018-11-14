@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -55,14 +56,16 @@ namespace doc {
       return (address_t)(m_rows[y] + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
     }
 
-    ImageImpl(int width, int height,
+    ImageImpl(const ImageSpec& spec,
               const ImageBufferPtr& buffer)
-      : Image(static_cast<PixelFormat>(Traits::pixel_format), width, height)
+      : Image(spec)
       , m_buffer(buffer)
     {
-      std::size_t for_rows = sizeof(address_t) * height;
-      std::size_t rowstride_bytes = Traits::getRowStrideBytes(width);
-      std::size_t required_size = for_rows + rowstride_bytes*height;
+      ASSERT(Traits::color_mode == spec.colorMode());
+
+      std::size_t for_rows = sizeof(address_t) * spec.height();
+      std::size_t rowstride_bytes = Traits::getRowStrideBytes(spec.width());
+      std::size_t required_size = for_rows + rowstride_bytes*spec.height();
 
       if (!m_buffer)
         m_buffer.reset(new ImageBuffer(required_size));
@@ -73,7 +76,7 @@ namespace doc {
       m_bits = (address_t)(m_buffer->buffer() + for_rows);
 
       address_t addr = m_bits;
-      for (int y=0; y<height; ++y) {
+      for (int y=0; y<spec.height(); ++y) {
         m_rows[y] = addr;
         addr = (address_t)(((uint8_t*)addr) + rowstride_bytes);
       }

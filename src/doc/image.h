@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2018 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -85,7 +86,7 @@ namespace doc {
     virtual void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) = 0;
 
   protected:
-    Image(PixelFormat format, int width, int height);
+    Image(const ImageSpec& spec);
 
   private:
     ImageSpec m_spec;

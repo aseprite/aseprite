@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,6 +55,7 @@ int Image_new(lua_State* L)
     spec.setColorMode((doc::ColorMode)colorMode);
   }
   doc::ImageRef image(doc::Image::create(spec));
+  doc::clear_image(image.get(), spec.maskColor());
   push_new<ImageObj>(L, image, nullptr);
   return 1;
 }
@@ -76,7 +78,9 @@ int Image_clear(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   doc::color_t color;
-  if (lua_isinteger(L, 2))
+  if (lua_isnone(L, 2))
+    color = obj->image.get()->maskColor();
+  else if (lua_isinteger(L, 2))
     color = lua_tointeger(L, 2);
   else
     color = convert_args_into_pixel_color(L, 2);
