@@ -570,6 +570,13 @@ int Sprite_set_height(lua_State* L)
   return 0;
 }
 
+int Sprite_get_bounds(lua_State* L)
+{
+  const auto sprite = get_ptr<Sprite>(L, 1);
+  push_obj<gfx::Rect>(L, sprite->bounds());
+  return 1;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
@@ -613,6 +620,7 @@ const Property Sprite_properties[] = {
   { "slices", Sprite_get_slices, nullptr },
   { "backgroundLayer", Sprite_get_backgroundLayer, nullptr },
   { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
+  { "bounds", Sprite_get_bounds, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
