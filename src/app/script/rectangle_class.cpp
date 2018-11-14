@@ -9,6 +9,7 @@
 #endif
 
 #include "app/script/luacpp.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 
 namespace app {
@@ -61,6 +62,38 @@ int Rectangle_eq(lua_State* L)
   const auto a = get_obj<gfx::Rect>(L, 1);
   const auto b = get_obj<gfx::Rect>(L, 2);
   lua_pushboolean(L, *a == *b);
+  return 1;
+}
+
+int Rectangle_contains(lua_State* L)
+{
+  const auto a = get_obj<gfx::Rect>(L, 1);
+  const auto b = get_obj<gfx::Rect>(L, 2);
+  lua_pushboolean(L, a->contains(*b));
+  return 1;
+}
+
+int Rectangle_intersects(lua_State* L)
+{
+  const auto a = get_obj<gfx::Rect>(L, 1);
+  const auto b = get_obj<gfx::Rect>(L, 2);
+  lua_pushboolean(L, a->intersects(*b));
+  return 1;
+}
+
+int Rectangle_union(lua_State* L)
+{
+  const auto a = get_obj<gfx::Rect>(L, 1);
+  const auto b = get_obj<gfx::Rect>(L, 2);
+  push_obj(L, a->createUnion(*b));
+  return 1;
+}
+
+int Rectangle_intersect(lua_State* L)
+{
+  const auto a = get_obj<gfx::Rect>(L, 1);
+  const auto b = get_obj<gfx::Rect>(L, 2);
+  push_obj(L, a->createIntersection(*b));
   return 1;
 }
 
@@ -130,6 +163,10 @@ int Rectangle_get_isEmpty(lua_State* L)
 const luaL_Reg Rectangle_methods[] = {
   { "__gc", Rectangle_gc },
   { "__eq", Rectangle_eq },
+  { "contains", Rectangle_contains },
+  { "intersects", Rectangle_intersects },
+  { "union", Rectangle_union },
+  { "intersect", Rectangle_intersect },
   { nullptr, nullptr }
 };
 
