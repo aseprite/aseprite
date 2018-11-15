@@ -383,8 +383,10 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
 void ColorSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
   Widget::onInitTheme(ev);
-  setBorder(gfx::Border(3*ui::guiscale()));
+  setBorder(theme->calcBorder(this, theme->styles.editorView()));
 }
 
 void ColorSelector::onResize(ui::ResizeEvent& ev)
