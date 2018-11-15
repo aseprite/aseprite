@@ -70,8 +70,6 @@ namespace app {
       void paintTextBox(ui::PaintEvent& ev) override;
       void paintViewViewport(ui::PaintEvent& ev) override;
 
-      int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
-
       SkinPartPtr getToolPart(const char* toolId) const;
       os::Surface* getToolIcon(const char* toolId) const;
 
