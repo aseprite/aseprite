@@ -378,7 +378,8 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
   tools::Ink* ink = editor->getCurrentEditorInk();
 
   // Select a tile with double-click
-  if (ink->isSelection()) {
+  if (ink->isSelection() &&
+      Preferences::instance().selection.doubleclickSelectTile()) {
     Command* selectTileCmd =
       Commands::instance()->byId(CommandId::SelectTile());
 
