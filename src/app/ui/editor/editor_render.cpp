@@ -70,6 +70,10 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
       bgType = render::BgType::CHECKED;
       tile = gfx::Size(1, 1);
       break;
+    case app::gen::BgType::CHECKED_CUSTOM:
+      bgType = render::BgType::CHECKED;
+      tile = docPref.bg.size();
+      break;
     default:
       bgType = render::BgType::TRANSPARENT;
       break;

@@ -241,6 +241,8 @@
             <label text="@.bg_size" />
 	    <hbox>
               <combobox id="checked_bg_size" />
+              <expr id="checked_bg_custom_w" />
+              <expr id="checked_bg_custom_h" />
               <check text="@.bg_apply_zoom" id="checked_bg_zoom" />
 	    </hbox>
 

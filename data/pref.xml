@@ -35,6 +35,7 @@
       <value id="CHECKED_4x4" value="2" />
       <value id="CHECKED_2x2" value="3" />
       <value id="CHECKED_1x1" value="4" />
+      <value id="CHECKED_CUSTOM" value="5" />
     </enum>
     <enum id="StopAtGrid">
       <value id="NEVER" value="0" />
@@ -369,6 +370,7 @@
     </section>
     <section id="bg">
       <option id="type" type="BgType" default="BgType::CHECKED_16x16" migrate="Option.CheckedBgType" />
+      <option id="size" type="gfx::Size" default="gfx::Size(16, 16)" />
       <option id="zoom" type="bool" default="true" migrate="Option.CheckedBgZoom" />
       <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" migrate="Option.CheckedBgColor1" />
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />

@@ -365,11 +365,14 @@ public:
     // Checked background size
     static_assert(int(app::gen::BgType::CHECKED_16x16) == 0, "");
     static_assert(int(app::gen::BgType::CHECKED_1x1) == 4, "");
+    static_assert(int(app::gen::BgType::CHECKED_CUSTOM) == 5, "");
     checkedBgSize()->addItem("16x16");
     checkedBgSize()->addItem("8x8");
     checkedBgSize()->addItem("4x4");
     checkedBgSize()->addItem("2x2");
     checkedBgSize()->addItem("1x1");
+    checkedBgSize()->addItem("Custom");
+    checkedBgSize()->Change.connect(base::Bind<void>(&OptionsWindow::onCheckedBgSizeChange, this));
 
     // Reset buttons
     resetBg()->Click.connect(base::Bind<void>(&OptionsWindow::onResetBg, this));
@@ -507,6 +510,11 @@ public:
     m_curPref->pixelGrid.autoOpacity(pixelGridAutoOpacity()->isSelected());
 
     m_curPref->bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
+    if (m_curPref->bg.type() == app::gen::BgType::CHECKED_CUSTOM) {
+      m_curPref->bg.size(gfx::Size(
+        checkedBgCustomW()->textInt(),
+        checkedBgCustomH()->textInt()));
+    }
     m_curPref->bg.zoom(checkedBgZoom()->isSelected());
     m_curPref->bg.color1(checkedBgColor1()->getColor());
     m_curPref->bg.color2(checkedBgColor2()->getColor());
@@ -736,8 +744,7 @@ private:
   }
 
   void onChangeBgScope() {
-    int item = bgScope()->getSelectedItemIndex();
-
+    const int item = bgScope()->getSelectedItemIndex();
     switch (item) {
       case 0: m_curPref = &m_globPref; break;
       case 1: m_curPref = &m_docPref; break;
@@ -747,6 +754,22 @@ private:
     checkedBgZoom()->setSelected(m_curPref->bg.zoom());
     checkedBgColor1()->setColor(m_curPref->bg.color1());
     checkedBgColor2()->setColor(m_curPref->bg.color2());
+
+    onCheckedBgSizeChange();
+  }
+
+  void onCheckedBgSizeChange() {
+    if (checkedBgSize()->getSelectedItemIndex() == int(app::gen::BgType::CHECKED_CUSTOM)) {
+      checkedBgCustomW()->setTextf("%d", m_curPref->bg.size().w);
+      checkedBgCustomH()->setTextf("%d", m_curPref->bg.size().h);
+      checkedBgCustomW()->setVisible(true);
+      checkedBgCustomH()->setVisible(true);
+    }
+    else {
+      checkedBgCustomW()->setVisible(false);
+      checkedBgCustomH()->setVisible(false);
+    }
+    sectionBg()->layout();
   }
 
   void onChangeGridScope() {
@@ -779,6 +802,8 @@ private:
     // Reset global preferences (use default values specified in pref.xml)
     if (m_curPref == &m_globPref) {
       checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
+      checkedBgCustomW()->setVisible(false);
+      checkedBgCustomH()->setVisible(false);
       checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
       checkedBgColor1()->setColor(pref.bg.color1.defaultValue());
       checkedBgColor2()->setColor(pref.bg.color2.defaultValue());

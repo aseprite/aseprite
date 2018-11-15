@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -209,6 +210,28 @@ void set_config_point(const char* section, const char* name, const Point& point)
 {
   char buf[128];
   sprintf(buf, "%d %d", point.x, point.y);
+  set_config_string(section, name, buf);
+}
+
+Size get_config_size(const char* section, const char* name, const Size& size)
+{
+  Size size2(size);
+  const char* value = get_config_string(section, name, "");
+  if (value) {
+    std::vector<std::string> parts;
+    base::split_string(value, parts, " ");
+    if (parts.size() == 2) {
+      size2.w = strtol(parts[0].c_str(), NULL, 10);
+      size2.h = strtol(parts[1].c_str(), NULL, 10);
+    }
+  }
+  return size2;
+}
+
+void set_config_size(const char* section, const char* name, const Size& size)
+{
+  char buf[128];
+  sprintf(buf, "%d %d", size.w, size.h);
   set_config_string(section, name, buf);
 }
 
