@@ -243,7 +243,6 @@ void Manager::flipDisplay()
   update_cursor_overlay();
 
   // Draw overlays.
-  overlays->captureOverlappedAreas();
   overlays->drawOverlays();
 
   // Flip dirty region.
@@ -257,8 +256,6 @@ void Manager::flipDisplay()
 
     m_dirtyRegion.clear();
   }
-
-  overlays->restoreOverlappedAreas();
 }
 
 bool Manager::generateMessages()
@@ -1483,6 +1480,10 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       return false;
 
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
+
+    // Restore overlays in the region that we're going to paint.
+    OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
+
     os::Surface* surface = m_display->getSurface();
     surface->saveClip();
 

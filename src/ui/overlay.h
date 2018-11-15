@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -34,9 +35,9 @@ namespace ui {
     gfx::Rect bounds() const;
 
     void captureOverlappedArea(os::Surface* screen);
-    void restoreOverlappedArea(os::Surface* screen);
+    void restoreOverlappedArea(const gfx::Rect& restoreBounds);
 
-    void drawOverlay(os::Surface* screen);
+    void drawOverlay();
     void moveOverlay(const gfx::Point& newPos);
 
     bool operator<(const Overlay& other) const {
@@ -46,6 +47,11 @@ namespace ui {
   private:
     os::Surface* m_surface;
     os::Surface* m_overlap;
+
+    // Surface where we captured the overlapped (m_overlap)
+    // region. It's nullptr if the overlay wasn't drawn yet.
+    os::Surface* m_captured;
+
     gfx::Point m_pos;
     ZOrder m_zorder;
   };
