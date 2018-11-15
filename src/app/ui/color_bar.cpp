@@ -155,7 +155,7 @@ ColorBar::ColorBar(int align)
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
-  m_buttons.addItem(theme->parts.palEdit());
+  m_buttons.addItem(theme->parts.timelineOpenPadlockActive());
   m_buttons.addItem(theme->parts.palSort());
   m_buttons.addItem(theme->parts.palPresets());
   m_buttons.addItem(theme->parts.palOptions());
