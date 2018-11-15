@@ -487,8 +487,9 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
 
 gfx::Rect ColorSelector::bottomBarBounds() const
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   const gfx::Rect rc = childrenBounds();
-  const int size = 8*guiscale();      // TODO 8 should be configurable in theme.xml
+  const int size = theme->dimensions.colorSelectorBarSize();
   if (rc.h > 2*size) {
     if (rc.h > 3*size)          // Alpha bar is visible too
       return gfx::Rect(rc.x, rc.y2()-size*2, rc.w, size);
@@ -501,8 +502,9 @@ gfx::Rect ColorSelector::bottomBarBounds() const
 
 gfx::Rect ColorSelector::alphaBarBounds() const
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   const gfx::Rect rc = childrenBounds();
-  const int size = 8*guiscale();      // TODO 8 should be configurable in theme.xml
+  const int size = theme->dimensions.colorSelectorBarSize();
   if (rc.h > 3*size)
     return gfx::Rect(rc.x, rc.y2()-size, rc.w, size);
   else
