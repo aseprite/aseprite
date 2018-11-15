@@ -24,6 +24,9 @@
         <dim id="palette_outline_width" value="3" />
         <dim id="color_slider_height" value="14" />
         <dim id="timeline_base_size" value="12" />
+        <dim id="color_bar_buttons_height" value="16" />
+        <dim id="context_bar_height" value="18" />
+        <dim id="brush_type_width" value="16" />
     </dimensions>
     <colors>
         <color id="text" value="#000000" />

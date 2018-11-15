@@ -184,7 +184,9 @@ protected:
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
-    ev.setSizeHint(Size(16, 18)*guiscale());
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    ev.setSizeHint(Size(theme->dimensions.brushTypeWidth(),
+                        theme->dimensions.contextBarHeight()));
   }
 
   void onInitTheme(InitThemeEvent& ev) override {
@@ -1178,7 +1180,8 @@ void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(gfx::Size(0, 18*guiscale())); // TODO calculate height
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  ev.setSizeHint(gfx::Size(0, theme->dimensions.contextBarHeight()));
 }
 
 void ContextBar::onToolSetOpacity(const int& newOpacity)

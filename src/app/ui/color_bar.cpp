@@ -223,13 +223,13 @@ ColorBar::ColorBar(int align)
       m_bgColor.resetSizeHint();
       m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
       m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
+      m_buttons.setMinSize(gfx::Size(0, theme->dimensions.colorBarButtonsHeight()));
       m_buttons.setMaxSize(gfx::Size(std::numeric_limits<int>::max(),
                                      std::numeric_limits<int>::max())); // TODO add resetMaxSize
       m_buttons.setMaxSize(gfx::Size(m_buttons.sizeHint().w,
-                                     16*ui::guiscale()));
+                                     theme->dimensions.colorBarButtonsHeight()));
 
-      // TODO hardcoded scroll bar width should be get from skin.xml file
-      int scrollBarWidth = 6*guiscale();
+      int scrollBarWidth = theme->dimensions.miniScrollbarSize();
       m_scrollableView.horizontalBar()->setBarWidth(scrollBarWidth);
       m_scrollableView.verticalBar()->setBarWidth(scrollBarWidth);
 
