@@ -78,7 +78,9 @@ namespace app {
     void createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu);
 
 #ifdef ENABLE_SCRIPTING
-    void loadScriptsSubmenu(ui::Menu* menu, const std::string& dir);
+    void loadScriptsSubmenu(ui::Menu* menu,
+                            const std::string& dir,
+                            const bool rootLevel);
 #endif
 
     std::unique_ptr<Menu> m_rootMenu;

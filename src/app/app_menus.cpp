@@ -358,7 +358,7 @@ void AppMenus::reload()
     std::string scriptsDir = rf.getFirstOrCreateDefault();
     scriptsDir = base::get_file_path(scriptsDir);
     if (base::is_directory(scriptsDir)) {
-      loadScriptsSubmenu(scriptsMenu->getSubmenu(), scriptsDir);
+      loadScriptsSubmenu(scriptsMenu->getSubmenu(), scriptsDir, true);
     }
 #else
     // Scripting is not available
@@ -396,13 +396,19 @@ void AppMenus::reload()
 }
 
 #ifdef ENABLE_SCRIPTING
-void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir)
+void AppMenus::loadScriptsSubmenu(ui::Menu* menu,
+                                  const std::string& dir,
+                                  const bool rootLevel)
 {
   Command* cmd_run_script =
     Commands::instance()->byId(CommandId::RunScript());
 
   auto files = base::list_files(dir);
-  std::sort(files.begin(), files.end());
+  std::sort(files.begin(), files.end(),
+            [](const std::string& a, const std::string& b) {
+              return base::compare_filenames(a, b) < 0;
+            });
+  int insertPos = 0;
   for (auto fn : files) {
     std::string fullFn = base::join_path(dir, fn);
     AppMenuItem* menuitem = nullptr;
@@ -422,15 +428,18 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir)
     }
     else if (base::is_directory(fullFn)) {
       Menu* submenu = new Menu();
-      loadScriptsSubmenu(submenu, fullFn);
+      loadScriptsSubmenu(submenu, fullFn, false);
 
       menuitem = new AppMenuItem(
         base::get_file_title(fn).c_str());
       menuitem->setSubmenu(submenu);
     }
-    if (menuitem)
-      menu->addChild(menuitem);
+    if (menuitem) {
+      menu->insertChild(insertPos++, menuitem);
+    }
   }
+  if (rootLevel && insertPos > 0)
+    menu->insertChild(insertPos, new MenuSeparator());
 }
 #endif
 
