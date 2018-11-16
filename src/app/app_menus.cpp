@@ -407,6 +407,9 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir)
     std::string fullFn = base::join_path(dir, fn);
     AppMenuItem* menuitem = nullptr;
 
+    if (fn[0] == '.') // Ignore all files and directories that start with a dot
+      continue;
+
     if (base::is_file(fullFn)) {
       if (base::string_to_lower(base::get_file_extension(fn)) == "lua") {
         Params params;
@@ -418,9 +421,6 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir)
       }
     }
     else if (base::is_directory(fullFn)) {
-      if (fn == "." || fn == "..")
-        continue;
-
       Menu* submenu = new Menu();
       loadScriptsSubmenu(submenu, fullFn);
 
