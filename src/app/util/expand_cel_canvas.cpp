@@ -241,7 +241,7 @@ void ExpandCelCanvas::rollback()
       static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
     delete m_cel;
-    m_celImage.reset(NULL);
+    m_celImage.reset();
   }
 
   m_closed = true;

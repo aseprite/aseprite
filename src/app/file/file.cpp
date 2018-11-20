@@ -594,7 +594,7 @@ void FileOp::operate(IFileOpProgress* progress)
         }
 
         old_image = m_seq.image.get();
-        m_seq.image.reset(NULL);
+        m_seq.image.reset();
         m_seq.last_cel = NULL;
       };
 
@@ -792,7 +792,7 @@ void FileOp::operate(IFileOpProgress* progress)
       m_filename = *m_seq.filename_list.begin();
 
       // Destroy the image
-      m_seq.image.reset(NULL);
+      m_seq.image.reset();
     }
     // Direct save to a file.
     else {
@@ -1173,7 +1173,7 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_embeddedColorProfile(false)
 {
   m_seq.palette = nullptr;
-  m_seq.image.reset(nullptr);
+  m_seq.image.reset();
   m_seq.progress_offset = 0.0f;
   m_seq.progress_fraction = 0.0f;
   m_seq.frame = frame_t(0);
