@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "doc/sprite.h"
@@ -20,12 +22,14 @@ using namespace doc;
 namespace {
 
 struct PalettesObj {
-  Sprite* sprite;
+  ObjectId spriteId;
   PalettesObj(Sprite* sprite)
-    : sprite(sprite) {
+    : spriteId(sprite->id()) {
   }
   PalettesObj(const PalettesObj&) = delete;
   PalettesObj& operator=(const PalettesObj&) = delete;
+
+  Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
 int Palettes_gc(lua_State* L)
@@ -37,18 +41,19 @@ int Palettes_gc(lua_State* L)
 int Palettes_len(lua_State* L)
 {
   auto obj = get_obj<PalettesObj>(L, 1);
-  lua_pushinteger(L, obj->sprite->getPalettes().size());
+  lua_pushinteger(L, obj->sprite(L)->getPalettes().size());
   return 1;
 }
 
 int Palettes_index(lua_State* L)
 {
   auto obj = get_obj<PalettesObj>(L, 1);
-  auto& pals = obj->sprite->getPalettes();
+  auto sprite = obj->sprite(L);
+  auto& pals = sprite->getPalettes();
   int i = lua_tointeger(L, 2);
   if (i < 1 || i > int(pals.size()))
     return luaL_error(L, "index out of bounds %d", i);
-  push_sprite_palette(L, obj->sprite, pals[i-1]);
+  push_sprite_palette(L, sprite, pals[i-1]);
   return 1;
 }
 

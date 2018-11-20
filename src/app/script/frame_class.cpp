@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #endif
 
 #include "app/cmd/set_frame_duration.h"
+#include "app/script/docobj.h"
 #include "app/script/luacpp.h"
 #include "app/tx.h"
 #include "doc/frame.h"
@@ -22,14 +24,16 @@ using namespace doc;
 namespace {
 
 struct FrameObj {
-  Sprite* sprite;
+  ObjectId spriteId;
   frame_t frame;
   FrameObj(Sprite* sprite, frame_t frame)
-    : sprite(sprite),
+    : spriteId(sprite ? sprite->id(): 0),
       frame(frame) {
   }
   FrameObj(const FrameObj&) = delete;
   FrameObj& operator=(const FrameObj&) = delete;
+
+  Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
 int Frame_gc(lua_State* L)
@@ -43,7 +47,7 @@ int Frame_eq(lua_State* L)
   const auto a = get_obj<FrameObj>(L, 1);
   const auto b = get_obj<FrameObj>(L, 2);
   lua_pushboolean(L,
-                  (a->sprite == b->sprite &&
+                  (a->spriteId == b->spriteId &&
                    a->frame == b->frame));
   return 1;
 }
@@ -51,7 +55,7 @@ int Frame_eq(lua_State* L)
 int Frame_get_sprite(lua_State* L)
 {
   auto obj = get_obj<FrameObj>(L, 1);
-  push_ptr<Sprite>(L, obj->sprite);
+  push_docobj<Sprite>(L, obj->spriteId);
   return 1;
 }
 
@@ -65,16 +69,18 @@ int Frame_get_frameNumber(lua_State* L)
 int Frame_get_duration(lua_State* L)
 {
   auto obj = get_obj<FrameObj>(L, 1);
-  lua_pushnumber(L, obj->sprite->frameDuration(obj->frame) / 1000.0);
+  auto sprite = obj->sprite(L);
+  lua_pushnumber(L, sprite->frameDuration(obj->frame) / 1000.0);
   return 1;
 }
 
 int Frame_set_duration(lua_State* L)
 {
   auto obj = get_obj<FrameObj>(L, 1);
+  auto sprite = obj->sprite(L);
   double duration = lua_tonumber(L, 2) * 1000.0;
   Tx tx;
-  tx(new cmd::SetFrameDuration(obj->sprite, obj->frame, int(duration)));
+  tx(new cmd::SetFrameDuration(sprite, obj->frame, int(duration)));
   tx.commit();
   return 1;
 }

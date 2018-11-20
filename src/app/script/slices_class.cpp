@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,8 +9,10 @@
 #include "config.h"
 #endif
 
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -18,12 +21,14 @@ namespace script {
 namespace {
 
 struct SlicesObj {
-  Sprite* sprite;
+  ObjectId spriteId;
   SlicesObj(Sprite* sprite)
-    : sprite(sprite) {
+    : spriteId(sprite->id()) {
   }
   SlicesObj(const SlicesObj&) = delete;
   SlicesObj& operator=(const SlicesObj&) = delete;
+
+  Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
 int Slices_gc(lua_State* L)
@@ -35,17 +40,17 @@ int Slices_gc(lua_State* L)
 int Slices_len(lua_State* L)
 {
   auto obj = get_obj<SlicesObj>(L, 1);
-  lua_pushinteger(L, obj->sprite->slices().size());
+  lua_pushinteger(L, obj->sprite(L)->slices().size());
   return 1;
 }
 
 int Slices_index(lua_State* L)
 {
   auto obj = get_obj<SlicesObj>(L, 1);
-  auto& slices = obj->sprite->slices();
+  auto& slices = obj->sprite(L)->slices();
   const int i = lua_tonumber(L, 2);
   if (i >= 1 && i <= int(slices.size()))
-    push_ptr<Slice>(L, *(slices.begin()+i-1));
+    push_docobj(L, *(slices.begin()+i-1));
   else
     lua_pushnil(L);
   return 1;

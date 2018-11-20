@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/app.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 
@@ -26,10 +28,10 @@ using namespace doc;
 namespace {
 
 struct SpritesObj {
-  std::vector<Doc*> docs;
+  std::vector<ObjectId> docs;
   SpritesObj(const Docs& docs) {
-    std::copy(docs.begin(), docs.end(),
-              std::back_inserter(this->docs));
+    for (const Doc* doc : docs)
+      this->docs.push_back(doc->id());
   }
   SpritesObj(const SpritesObj&) = delete;
   SpritesObj& operator=(const SpritesObj&) = delete;
@@ -53,7 +55,7 @@ int Sprites_index(lua_State* L)
   auto obj = get_obj<SpritesObj>(L, 1);
   const int i = lua_tonumber(L, 2);
   if (i >= 1 && i <= int(obj->docs.size()))
-    push_ptr<Sprite>(L, obj->docs[i-1]->sprite());
+    push_docobj<Sprite>(L, obj->docs[i-1]);
   else
     lua_pushnil(L);
   return 1;

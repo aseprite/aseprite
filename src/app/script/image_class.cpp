@@ -11,6 +11,7 @@
 
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/tx.h"
@@ -29,21 +30,50 @@ namespace script {
 namespace {
 
 struct ImageObj {
-  doc::ImageRef image;
-  doc::Cel* cel;
-  ImageObj(const doc::ImageRef& image, doc::Cel* cel)
-    : image(image)
-    , cel(cel) {
+  doc::ObjectId imageId = 0;
+  doc::ObjectId celId = 0;
+  ImageObj(doc::Image* image)
+    : imageId(image->id()) {
+  }
+  ImageObj(doc::Cel* cel)
+    : imageId(cel->image()->id())
+    , celId(cel->id()) {
   }
   ImageObj(const ImageObj&) = delete;
   ImageObj& operator=(const ImageObj&) = delete;
+
+  ~ImageObj() {
+    ASSERT(!imageId);
+  }
+
+  void gc(lua_State* L) {
+    if (!celId)
+      delete this->image(L);
+    imageId = 0;
+  }
+
+  doc::Image* image(lua_State* L) {
+    return check_docobj(L, doc::get<doc::Image>(imageId));
+  }
+
+  doc::Cel* cel(lua_State* L) {
+    if (celId)
+      return check_docobj(L, doc::get<doc::Cel>(celId));
+    else
+      return nullptr;
+  }
 };
+
+int Image_clone(lua_State* L);
 
 int Image_new(lua_State* L)
 {
   doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
   if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
     spec = *spec2;
+  }
+  else if (auto otherImg = may_get_obj<ImageObj>(L, 1)) {
+    return Image_clone(L);
   }
   else {
     const int w = lua_tointeger(L, 1);
@@ -54,37 +84,40 @@ int Image_new(lua_State* L)
     spec.setHeight(h);
     spec.setColorMode((doc::ColorMode)colorMode);
   }
-  doc::ImageRef image(doc::Image::create(spec));
-  doc::clear_image(image.get(), spec.maskColor());
-  push_new<ImageObj>(L, image, nullptr);
+  doc::Image* image = doc::Image::create(spec);
+  doc::clear_image(image, spec.maskColor());
+  push_new<ImageObj>(L, image);
   return 1;
 }
 
 int Image_clone(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
-  doc::ImageRef cloned(doc::Image::createCopy(obj->image.get()));
-  push_new<ImageObj>(L, cloned, nullptr);
+  doc::Image* cloned = doc::Image::createCopy(obj->image(L));
+  push_new<ImageObj>(L, cloned);
   return 1;
 }
 
 int Image_gc(lua_State* L)
 {
-  get_obj<ImageObj>(L, 1)->~ImageObj();
+  auto obj = get_obj<ImageObj>(L, 1);
+  obj->gc(L);
+  obj->~ImageObj();
   return 0;
 }
 
 int Image_clear(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
+  auto img = obj->image(L);
   doc::color_t color;
   if (lua_isnone(L, 2))
-    color = obj->image.get()->maskColor();
+    color = img->maskColor();
   else if (lua_isinteger(L, 2))
     color = lua_tointeger(L, 2);
   else
     color = convert_args_into_pixel_color(L, 2);
-  doc::clear_image(obj->image.get(), color);
+  doc::clear_image(img, color);
   return 0;
 }
 
@@ -98,7 +131,7 @@ int Image_drawPixel(lua_State* L)
     color = lua_tointeger(L, 4);
   else
     color = convert_args_into_pixel_color(L, 4);
-  doc::put_pixel(obj->image.get(), x, y, color);
+  doc::put_pixel(obj->image(L), x, y, color);
   return 0;
 }
 
@@ -107,12 +140,12 @@ int Image_drawImage(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   auto sprite = get_obj<ImageObj>(L, 2);
   gfx::Point pos = convert_args_into_point(L, 3);
-  Image* dst = obj->image.get();
-  const Image* src = sprite->image.get();
+  Image* dst = obj->image(L);
+  const Image* src = sprite->image(L);
 
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
-  if (obj->cel == nullptr) {
+  if (obj->cel(L) == nullptr) {
     doc::copy_image(dst, src, pos.x, pos.y);
   }
   else {
@@ -132,17 +165,17 @@ int Image_drawImage(lua_State* L)
 int Image_drawSprite(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
-  const auto sprite = get_ptr<Sprite>(L, 2);
+  const auto sprite = get_docobj<Sprite>(L, 2);
   doc::frame_t frame = lua_tointeger(L, 3)-1;
   gfx::Point pos = convert_args_into_point(L, 4);
-  doc::Image* dst = obj->image.get();
+  doc::Image* dst = obj->image(L);
 
   ASSERT(dst);
   ASSERT(sprite);
 
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
-  if (obj->cel == nullptr) {
+  if (obj->cel(L) == nullptr) {
     render::Render render;
     render.renderSprite(
       dst, sprite, frame,
@@ -178,7 +211,7 @@ int Image_drawSprite(lua_State* L)
 int Image_pixels(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
-  push_image_iterator_function(L, obj->image, 2);
+  push_image_iterator_function(L, obj->image(L), 2);
   return 1;
 }
 
@@ -187,7 +220,7 @@ int Image_getPixel(lua_State* L)
   const auto obj = get_obj<ImageObj>(L, 1);
   const int x = lua_tointeger(L, 2);
   const int y = lua_tointeger(L, 3);
-  const doc::color_t color = doc::get_pixel(obj->image.get(), x, y);
+  const doc::color_t color = doc::get_pixel(obj->image(L), x, y);
   lua_pushinteger(L, color);
   return 1;
 }
@@ -196,8 +229,8 @@ int Image_isEqual(lua_State* L)
 {
   auto objA = get_obj<ImageObj>(L, 1);
   auto objB = get_obj<ImageObj>(L, 2);
-  bool res = doc::is_same_image(objA->image.get(),
-                                objB->image.get());
+  bool res = doc::is_same_image(objA->image(L),
+                                objB->image(L));
   lua_pushboolean(L, res);
   return 1;
 }
@@ -205,28 +238,28 @@ int Image_isEqual(lua_State* L)
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
-  lua_pushinteger(L, obj->image->width());
+  lua_pushinteger(L, obj->image(L)->width());
   return 1;
 }
 
 int Image_get_height(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
-  lua_pushinteger(L, obj->image->height());
+  lua_pushinteger(L, obj->image(L)->height());
   return 1;
 }
 
 int Image_get_colorMode(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
-  lua_pushinteger(L, obj->image->pixelFormat());
+  lua_pushinteger(L, obj->image(L)->pixelFormat());
   return 1;
 }
 
 int Image_get_spec(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
-  push_obj(L, obj->image->spec());
+  push_obj(L, obj->image(L)->spec());
   return 1;
 }
 
@@ -254,6 +287,7 @@ const Property Image_properties[] = {
 } // anonymous namespace
 
 DEF_MTNAME(ImageObj);
+DEF_MTNAME_ALIAS(ImageObj, Image);
 
 void register_image_class(lua_State* L)
 {
@@ -265,26 +299,26 @@ void register_image_class(lua_State* L)
 
 void push_cel_image(lua_State* L, doc::Cel* cel)
 {
-  push_new<ImageObj>(L, cel->imageRef(), cel);
+  push_new<ImageObj>(L, cel);
 }
 
 doc::Image* may_get_image_from_arg(lua_State* L, int index)
 {
   auto obj = may_get_obj<ImageObj>(L, index);
   if (obj)
-    return obj->image.get();
+    return obj->image(L);
   else
     return nullptr;
 }
 
 doc::Image* get_image_from_arg(lua_State* L, int index)
 {
-  return get_obj<ImageObj>(L, index)->image.get();
+  return get_obj<ImageObj>(L, index)->image(L);
 }
 
 doc::Cel* get_image_cel_from_arg(lua_State* L, int index)
 {
-  return get_obj<ImageObj>(L, index)->cel;
+  return get_obj<ImageObj>(L, index)->cel(L);
 }
 
 } // namespace script

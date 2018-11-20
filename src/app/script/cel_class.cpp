@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
@@ -26,64 +28,64 @@ namespace {
 
 int Cel_eq(lua_State* L)
 {
-  const auto a = get_ptr<Cel>(L, 1);
-  const auto b = get_ptr<Cel>(L, 2);
+  const auto a = get_docobj<Cel>(L, 1);
+  const auto b = get_docobj<Cel>(L, 2);
   lua_pushboolean(L, a->id() == b->id());
   return 1;
 }
 
 int Cel_get_sprite(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
-  push_ptr(L, cel->sprite());
+  const auto cel = get_docobj<Cel>(L, 1);
+  push_docobj(L, cel->sprite());
   return 1;
 }
 
 int Cel_get_layer(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
-  push_ptr<Layer>(L, (Layer*)cel->layer());
+  const auto cel = get_docobj<Cel>(L, 1);
+  push_docobj(L, (Layer*)cel->layer());
   return 1;
 }
 
 int Cel_get_frame(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_docobj<Cel>(L, 1);
   lua_pushinteger(L, cel->frame()+1);
   return 1;
 }
 
 int Cel_get_image(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  auto cel = get_docobj<Cel>(L, 1);
   push_cel_image(L, cel);
   return 1;
 }
 
 int Cel_get_position(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_docobj<Cel>(L, 1);
   push_new<gfx::Point>(L, cel->position());
   return 1;
 }
 
 int Cel_get_bounds(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_docobj<Cel>(L, 1);
   push_new<gfx::Rect>(L, cel->bounds());
   return 1;
 }
 
 int Cel_get_opacity(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 1);
+  const auto cel = get_docobj<Cel>(L, 1);
   lua_pushinteger(L, cel->opacity());
   return 1;
 }
 
 int Cel_set_image(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  auto cel = get_docobj<Cel>(L, 1);
   auto srcImage = get_image_from_arg(L, 2);
   ImageRef newImage(Image::createCopy(srcImage));
 
@@ -97,7 +99,7 @@ int Cel_set_image(lua_State* L)
 
 int Cel_set_position(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  auto cel = get_docobj<Cel>(L, 1);
   const gfx::Point pos = convert_args_into_point(L, 2);
   Tx tx;
   tx(new cmd::SetCelPosition(cel, pos.x, pos.y));
@@ -107,7 +109,7 @@ int Cel_set_position(lua_State* L)
 
 int Cel_set_opacity(lua_State* L)
 {
-  auto cel = get_ptr<Cel>(L, 1);
+  auto cel = get_docobj<Cel>(L, 1);
   Tx tx;
   tx(new cmd::SetCelOpacity(cel, lua_tointeger(L, 2)));
   tx.commit();
@@ -145,7 +147,7 @@ void register_cel_class(lua_State* L)
 
 void push_sprite_cel(lua_State* L, Cel* cel)
 {
-  push_ptr<Cel>(L, cel);
+  push_docobj(L, cel);
 }
 
 } // namespace script

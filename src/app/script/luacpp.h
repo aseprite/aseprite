@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,12 @@ namespace script {
 template <typename T> const char* get_mtname();
 #define DEF_MTNAME(T)                         \
   template <> const char* get_mtname<T>() {   \
-    return #T "_Metatable";                   \
+    return #T;                                \
+  }
+
+#define DEF_MTNAME_ALIAS(T, ALIAS)              \
+  template <> const char* get_mtname<ALIAS>() { \
+    return #T;                                  \
   }
 
 template <typename T, typename... Args> T* push_new(lua_State* L, Args&&... args) {

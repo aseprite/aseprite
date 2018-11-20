@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
@@ -27,34 +29,34 @@ namespace {
 
 int Layer_eq(lua_State* L)
 {
-  const auto a = get_ptr<Layer>(L, 1);
-  const auto b = get_ptr<Layer>(L, 2);
+  const auto a = get_docobj<Layer>(L, 1);
+  const auto b = get_docobj<Layer>(L, 2);
   lua_pushboolean(L, a->id() == b->id());
   return 1;
 }
 
 int Layer_get_sprite(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
-  push_ptr<Sprite>(L, layer->sprite());
+  auto layer = get_docobj<Layer>(L, 1);
+  push_docobj<Sprite>(L, layer->sprite());
   return 1;
 }
 
 int Layer_get_parent(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   if (layer->parent() == layer->sprite()->root())
-    push_ptr<Sprite>(L, layer->sprite());
+    push_docobj<Sprite>(L, layer->sprite());
   else
-    push_ptr<Layer>(L, layer->parent());
+    push_docobj<Layer>(L, layer->parent());
   return 1;
 }
 
 int Layer_get_previous(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   if (auto previous = layer->getPrevious())
-    push_ptr<Layer>(L, previous);
+    push_docobj<Layer>(L, previous);
   else
     lua_pushnil(L);
   return 1;
@@ -62,9 +64,9 @@ int Layer_get_previous(lua_State* L)
 
 int Layer_get_next(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   if (auto next = layer->getNext())
-    push_ptr<Layer>(L, next);
+    push_docobj<Layer>(L, next);
   else
     lua_pushnil(L);
   return 1;
@@ -72,14 +74,14 @@ int Layer_get_next(lua_State* L)
 
 int Layer_get_name(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushstring(L, layer->name().c_str());
   return 1;
 }
 
 int Layer_get_opacity(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   if (layer->isImage()) {
     lua_pushinteger(L, static_cast<LayerImage*>(layer)->opacity());
     return 1;
@@ -90,7 +92,7 @@ int Layer_get_opacity(lua_State* L)
 
 int Layer_get_blendMode(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   if (layer->isImage()) {
     lua_pushinteger(L, (int)static_cast<LayerImage*>(layer)->blendMode());
     return 1;
@@ -101,77 +103,77 @@ int Layer_get_blendMode(lua_State* L)
 
 int Layer_get_isImage(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isImage());
   return 1;
 }
 
 int Layer_get_isGroup(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isGroup());
   return 1;
 }
 
 int Layer_get_isTransparent(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isTransparent());
   return 1;
 }
 
 int Layer_get_isBackground(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isBackground());
   return 1;
 }
 
 int Layer_get_isEditable(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isEditable());
   return 1;
 }
 
 int Layer_get_isVisible(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isVisible());
   return 1;
 }
 
 int Layer_get_isContinuous(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isContinuous());
   return 1;
 }
 
 int Layer_get_isCollapsed(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isCollapsed());
   return 1;
 }
 
 int Layer_get_isExpanded(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isExpanded());
   return 1;
 }
 
 int Layer_get_cels(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   push_layer_cels(L, layer);
   return 1;
 }
 
 int Layer_set_name(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   const char* name = lua_tostring(L, 2);
   if (name) {
     Tx tx;
@@ -183,7 +185,7 @@ int Layer_set_name(lua_State* L)
 
 int Layer_set_opacity(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   const int opacity = lua_tointeger(L, 2);
   if (layer->isImage()) {
     Tx tx;
@@ -195,7 +197,7 @@ int Layer_set_opacity(lua_State* L)
 
 int Layer_set_blendMode(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   const int blendMode = lua_tointeger(L, 2);
   if (layer->isImage()) {
     Tx tx;
@@ -208,35 +210,35 @@ int Layer_set_blendMode(lua_State* L)
 
 int Layer_set_isEditable(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   layer->setEditable(lua_toboolean(L, 2));
   return 0;
 }
 
 int Layer_set_isVisible(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   layer->setVisible(lua_toboolean(L, 2));
   return 0;
 }
 
 int Layer_set_isContinuous(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   layer->setContinuous(lua_toboolean(L, 2));
   return 0;
 }
 
 int Layer_set_isCollapsed(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   layer->setCollapsed(lua_toboolean(L, 2));
   return 0;
 }
 
 int Layer_set_isExpanded(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 1);
+  auto layer = get_docobj<Layer>(L, 1);
   layer->setCollapsed(!lua_toboolean(L, 2));
   return 0;
 }

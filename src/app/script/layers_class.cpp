@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,10 +9,13 @@
 #include "config.h"
 #endif
 
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+
+#include <vector>
 
 namespace app {
 namespace script {
@@ -21,11 +25,10 @@ using namespace doc;
 namespace {
 
 struct LayersObj {
-  Sprite* sprite;
-  LayerList layers;
-  LayersObj(Sprite* sprite)
-    : sprite(sprite),
-      layers(sprite->allLayers()) {
+  std::vector<ObjectId> layers;
+  LayersObj(Sprite* sprite) {
+    for (const Layer* layer : sprite->allLayers())
+      layers.push_back(layer->id());
   }
   LayersObj(const LayersObj&) = delete;
   LayersObj& operator=(const LayersObj&) = delete;
@@ -49,7 +52,7 @@ int Layers_index(lua_State* L)
   auto obj = get_obj<LayersObj>(L, 1);
   const int i = lua_tonumber(L, 2);
   if (i >= 1 && i <= int(obj->layers.size()))
-    push_ptr<Layer>(L, obj->layers[i-1]);
+    push_docobj<Layer>(L, obj->layers[i-1]);
   else
     lua_pushnil(L);
   return 1;

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,12 +27,10 @@ namespace {
 
 template<typename ImageTraits>
 struct ImageIteratorObj {
-  doc::ImageRef image;
   typename doc::LockImageBits<ImageTraits> bits;
   typename doc::LockImageBits<ImageTraits>::iterator begin, next, end;
-  ImageIteratorObj(const doc::ImageRef& image, const gfx::Rect& bounds)
-    : image(image),
-      bits(image.get(), bounds),
+  ImageIteratorObj(const doc::Image* image, const gfx::Rect& bounds)
+    : bits(image, bounds),
       begin(bits.begin()),
       next(begin),
       end(bits.end()) {
@@ -134,7 +133,7 @@ static int image_iterator_do_nothing(lua_State* L)
   return 1;
 }
 
-int push_image_iterator_function(lua_State* L, const doc::ImageRef& image, int extraArgIndex)
+int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex)
 {
   gfx::Rect bounds = image->bounds();
 

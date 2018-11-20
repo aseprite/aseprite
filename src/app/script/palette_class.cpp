@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/tx.h"
@@ -24,20 +26,43 @@ using namespace doc;
 namespace {
 
 struct PaletteObj {
-  Sprite* sprite;
-  Palette* palette;
+  ObjectId spriteId;
+  ObjectId paletteId;
+
   PaletteObj(Sprite* sprite, Palette* palette)
-    : sprite(sprite),
-      palette(palette) {
+    : spriteId(sprite ? sprite->id(): 0),
+      paletteId(palette ? palette->id(): 0) {
   }
+
+  ~PaletteObj() {
+    ASSERT(!paletteId);
+  }
+
+  void gc(lua_State* L) {
+    if (!spriteId)
+      delete this->palette(L);
+    paletteId = 0;
+  }
+
   PaletteObj(const PaletteObj&) = delete;
   PaletteObj& operator=(const PaletteObj&) = delete;
+
+  Sprite* sprite(lua_State* L) {
+    if (spriteId)
+      return check_docobj(L, doc::get<Sprite>(spriteId));
+    else
+      return nullptr;
+  }
+
+  Palette* palette(lua_State* L) {
+    return check_docobj(L, doc::get<Palette>(paletteId));
+  }
 };
 
 int Palette_new(lua_State* L)
 {
   if (auto pal2 = may_get_obj<PaletteObj>(L, 1)) {
-    push_new<PaletteObj>(L, nullptr, new Palette(*pal2->palette));
+    push_new<PaletteObj>(L, nullptr, new Palette(*pal2->palette(L)));
   }
   else {
     int ncolors = lua_tointeger(L, 1);
@@ -49,42 +74,47 @@ int Palette_new(lua_State* L)
 
 int Palette_gc(lua_State* L)
 {
-  get_obj<PaletteObj>(L, 1)->~PaletteObj();
+  auto obj = get_obj<PaletteObj>(L, 1);
+  obj->gc(L);
+  obj->~PaletteObj();
   return 0;
 }
 
 int Palette_len(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
-  lua_pushinteger(L, obj->palette->size());
+  auto pal = obj->palette(L);
+  lua_pushinteger(L, pal->size());
   return 1;
 }
 
 int Palette_resize(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
+  auto pal = obj->palette(L);
   int ncolors = lua_tointeger(L, 2);
-  if (obj->sprite) {
-    Palette newPal(*obj->palette);
+  if (auto sprite = obj->sprite(L)) {
+    Palette newPal(*pal);
     newPal.resize(ncolors);
 
     Tx tx;
-    tx(new cmd::SetPalette(obj->sprite, obj->palette->frame(), &newPal));
+    tx(new cmd::SetPalette(sprite, pal->frame(), &newPal));
     tx.commit();
   }
   else
-    obj->palette->resize(ncolors);
+    pal->resize(ncolors);
   return 1;
 }
 
 int Palette_getColor(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
+  auto pal = obj->palette(L);
   int i = lua_tointeger(L, 2);
-  if (i < 0 || i >= int(obj->palette->size()))
+  if (i < 0 || i >= int(pal->size()))
     return luaL_error(L, "index out of bounds %d", i);
 
-  doc::color_t docColor = obj->palette->getEntry(i);
+  doc::color_t docColor = pal->getEntry(i);
   app::Color appColor = app::Color::fromRgb(doc::rgba_getr(docColor),
                                             doc::rgba_getg(docColor),
                                             doc::rgba_getb(docColor),
@@ -97,22 +127,23 @@ int Palette_getColor(lua_State* L)
 int Palette_setColor(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
+  auto pal = obj->palette(L);
   int i = lua_tointeger(L, 2);
-  if (i < 0 || i >= int(obj->palette->size()))
+  if (i < 0 || i >= int(pal->size()))
     return luaL_error(L, "index out of bounds %d", i);
 
   doc::color_t docColor = convert_args_into_pixel_color(L, 3);
 
-  if (obj->sprite) {
-    Palette newPal(*obj->palette);
+  if (auto sprite = obj->sprite(L)) {
+    Palette newPal(*pal);
     newPal.setEntry(i, docColor);
 
     Tx tx;
-    tx(new cmd::SetPalette(obj->sprite, obj->palette->frame(), &newPal));
+    tx(new cmd::SetPalette(sprite, pal->frame(), &newPal));
     tx.commit();
   }
   else {
-    obj->palette->setEntry(i, docColor);
+    pal->setEntry(i, docColor);
   }
   return 0;
 }
@@ -120,7 +151,8 @@ int Palette_setColor(lua_State* L)
 int Palette_get_frame(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
-  lua_pushinteger(L, obj->palette->frame()+1);
+  auto pal = obj->palette(L);
+  lua_pushinteger(L, pal->frame()+1);
   return 1;
 }
 
@@ -141,6 +173,7 @@ const Property Palette_properties[] = {
 } // anonymous namespace
 
 DEF_MTNAME(PaletteObj);
+DEF_MTNAME_ALIAS(PaletteObj, Palette);
 
 void register_palette_class(lua_State* L)
 {
@@ -152,13 +185,14 @@ void register_palette_class(lua_State* L)
 
 void push_sprite_palette(lua_State* L, doc::Sprite* sprite, doc::Palette* palette)
 {
+  ASSERT(sprite);
   push_new<PaletteObj>(L, sprite, palette);
 }
 
 doc::Palette* get_palette_from_arg(lua_State* L, int index)
 {
   auto obj = get_obj<PaletteObj>(L, index);
-  return obj->palette;
+  return obj->palette(L);
 }
 
 } // namespace script

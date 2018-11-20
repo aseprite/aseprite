@@ -18,6 +18,7 @@
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/script/api_version.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
@@ -28,6 +29,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
+#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "ui/alert.h"
 
@@ -56,7 +58,7 @@ int App_open(lua_State* L)
 
   Doc* newDoc = ctx->activeDocument();
   if (newDoc != oldDoc)
-    push_ptr(L, newDoc->sprite());
+    push_docobj(L, newDoc->sprite());
   else
     lua_pushnil(L);
   return 1;
@@ -180,7 +182,7 @@ int App_get_activeSprite(lua_State* L)
   app::Context* ctx = App::instance()->context();
   Doc* doc = ctx->activeDocument();
   if (doc)
-    push_ptr(L, doc->sprite());
+    push_docobj(L, doc->sprite());
   else
     lua_pushnil(L);
   return 1;
@@ -191,7 +193,7 @@ int App_get_activeLayer(lua_State* L)
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
   if (site.layer())
-    push_ptr<Layer>(L, site.layer());
+    push_docobj(L, site.layer());
   else
     lua_pushnil(L);
   return 1;
@@ -249,7 +251,7 @@ int App_get_activeTag(lua_State* L)
   }
 
   if (tag)
-    push_ptr<FrameTag>(L, tag);
+    push_docobj(L, tag);
   else
     lua_pushnil(L);
   return 1;
@@ -314,7 +316,7 @@ int App_get_apiVersion(lua_State* L)
 
 int App_set_activeSprite(lua_State* L)
 {
-  auto sprite = get_ptr<Sprite>(L, 1);
+  auto sprite = get_docobj<Sprite>(L, 1);
   app::Context* ctx = App::instance()->context();
   doc::Document* doc = sprite->document();
   ctx->setActiveDocument(static_cast<Doc*>(doc));
@@ -323,7 +325,7 @@ int App_set_activeSprite(lua_State* L)
 
 int App_set_activeLayer(lua_State* L)
 {
-  auto layer = get_ptr<Layer>(L, 2);
+  auto layer = get_docobj<Layer>(L, 2);
 #ifdef ENABLE_UI
   app::Context* ctx = App::instance()->context();
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
@@ -357,7 +359,7 @@ int App_set_activeFrame(lua_State* L)
 
 int App_set_activeCel(lua_State* L)
 {
-  const auto cel = get_ptr<Cel>(L, 2);
+  const auto cel = get_docobj<Cel>(L, 2);
 #ifdef ENABLE_UI
   app::Context* ctx = App::instance()->context();
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {

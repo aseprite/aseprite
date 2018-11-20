@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,14 +32,14 @@ inline doc::WithUserData* get_WithUserData<doc::Cel>(doc::Cel* obj) {
 
 template<typename T>
 int UserData_get_text(lua_State* L) {
-  auto obj = get_ptr<T>(L, 1);
+  auto obj = get_docobj<T>(L, 1);
   lua_pushstring(L, get_WithUserData<T>(obj)->userData().text().c_str());
   return 1;
 }
 
 template<typename T>
 int UserData_get_color(lua_State* L) {
-  auto obj = get_ptr<T>(L, 1);
+  auto obj = get_docobj<T>(L, 1);
   doc::color_t docColor = get_WithUserData<T>(obj)->userData().color();
   app::Color appColor = app::Color::fromRgb(doc::rgba_getr(docColor),
                                             doc::rgba_getg(docColor),
@@ -52,7 +53,7 @@ int UserData_get_color(lua_State* L) {
 
 template<typename T>
 int UserData_set_text(lua_State* L) {
-  auto obj = get_ptr<T>(L, 1);
+  auto obj = get_docobj<T>(L, 1);
   const char* text = lua_tostring(L, 2);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
@@ -65,7 +66,7 @@ int UserData_set_text(lua_State* L) {
 
 template<typename T>
 int UserData_set_color(lua_State* L) {
-  auto obj = get_ptr<T>(L, 1);
+  auto obj = get_docobj<T>(L, 1);
   doc::color_t docColor = convert_args_into_pixel_color(L, 2);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();

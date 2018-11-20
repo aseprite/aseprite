@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +15,6 @@
 
 #include "app/color.h"
 #include "doc/frame.h"
-#include "doc/image_ref.h"
 #include "doc/object_id.h"
 #include "gfx/fwd.h"
 
@@ -27,6 +27,7 @@ struct lua_State;
 namespace doc {
   class Cel;
   class FrameTag;
+  class Image;
   class Layer;
   class Palette;
   class Sprite;
@@ -92,7 +93,7 @@ namespace app {
     EngineDelegate* m_oldDelegate;
   };
 
-  int push_image_iterator_function(lua_State* L, const doc::ImageRef& image, int extraArgIndex);
+  int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex);
   void push_cel_image(lua_State* L, doc::Cel* cel);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
   void push_sprite_cels(lua_State* L, doc::Sprite* sprite);

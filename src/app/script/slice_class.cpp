@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "app/cmd/set_slice_key.h"
 #include "app/cmd/set_slice_name.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
@@ -26,29 +28,29 @@ namespace {
 
 int Slice_eq(lua_State* L)
 {
-  const auto a = get_ptr<Slice>(L, 1);
-  const auto b = get_ptr<Slice>(L, 2);
+  const auto a = get_docobj<Slice>(L, 1);
+  const auto b = get_docobj<Slice>(L, 2);
   lua_pushboolean(L, a->id() == b->id());
   return 1;
 }
 
 int Slice_get_sprite(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
-  push_ptr(L, slice->owner()->sprite());
+  auto slice = get_docobj<Slice>(L, 1);
+  push_docobj(L, slice->owner()->sprite());
   return 1;
 }
 
 int Slice_get_name(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   lua_pushstring(L, slice->name().c_str());
   return 1;
 }
 
 int Slice_get_bounds(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   if (!slice->empty())
     push_new<gfx::Rect>(L, slice->begin()->value()->bounds());
   else
@@ -58,7 +60,7 @@ int Slice_get_bounds(lua_State* L)
 
 int Slice_get_center(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   if (!slice->empty() && slice->begin()->value()->hasCenter())
     push_new<gfx::Rect>(L, slice->begin()->value()->center());
   else
@@ -68,7 +70,7 @@ int Slice_get_center(lua_State* L)
 
 int Slice_get_pivot(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   if (!slice->empty() && slice->begin()->value()->hasPivot())
     push_new<gfx::Point>(L, slice->begin()->value()->pivot());
   else
@@ -78,7 +80,7 @@ int Slice_get_pivot(lua_State* L)
 
 int Slice_set_name(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   const char* name = lua_tostring(L, 2);
   if (name) {
     Tx tx;
@@ -90,7 +92,7 @@ int Slice_set_name(lua_State* L)
 
 int Slice_set_bounds(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   gfx::Rect bounds = convert_args_into_rect(L, 2);
   SliceKey key;
   if (const SliceKey* srcKey = slice->getByFrame(0))
@@ -104,7 +106,7 @@ int Slice_set_bounds(lua_State* L)
 
 int Slice_set_center(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   gfx::Rect center = convert_args_into_rect(L, 2);
   SliceKey key;
   if (const SliceKey* srcKey = slice->getByFrame(0))
@@ -118,7 +120,7 @@ int Slice_set_center(lua_State* L)
 
 int Slice_set_pivot(lua_State* L)
 {
-  auto slice = get_ptr<Slice>(L, 1);
+  auto slice = get_docobj<Slice>(L, 1);
   gfx::Point pivot = convert_args_into_point(L, 2);
   SliceKey key;
   if (const SliceKey* srcKey = slice->getByFrame(0))
