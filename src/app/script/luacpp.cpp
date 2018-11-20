@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,7 +51,9 @@ void create_mt_getters_setters(lua_State* L,
                                const char* tname,
                                const Property* properties)
 {
+#ifdef _DEBUG
   const int top = lua_gettop(L);
+#endif
 
   bool withGetters = false;
   bool withSetters = false;
