@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -70,7 +71,12 @@ Console::Console(Context* ctx)
 
   // The "button" closes the console
   button->processMnemonicFromText();
-  button->Click.connect(base::Bind<void>(&Window::closeWindow, window, button));
+  button->Click.connect(
+    base::Bind<void>(
+      [window, button, textbox] {
+        textbox->setText(std::string());
+        window->closeWindow(button);
+      }));
 
   view->attachToView(textbox);
 

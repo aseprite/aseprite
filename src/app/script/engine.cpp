@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -258,26 +259,32 @@ bool Engine::evalCode(const std::string& code,
                       const std::string& filename)
 {
   bool ok = true;
-  if (luaL_loadbuffer(L, code.c_str(), code.size(), filename.c_str()) ||
-      lua_pcall(L, 0, 1, 0)) {
-    // Error case
-    std::string err;
-    const char* s = lua_tostring(L, -1);
-    if (s)
-      onConsolePrint(s);
-    ok = false;
-  }
-  else {
-    // Code was executed correctly
-    if (m_printLastResult) {
-      if (!lua_isnone(L, -1)) {
-        const char* result = lua_tostring(L, -1);
-        if (result)
-          onConsolePrint(result);
+  try {
+    if (luaL_loadbuffer(L, code.c_str(), code.size(), filename.c_str()) ||
+        lua_pcall(L, 0, 1, 0)) {
+      // Error case
+      std::string err;
+      const char* s = lua_tostring(L, -1);
+      if (s)
+        onConsolePrint(s);
+      ok = false;
+    }
+    else {
+      // Code was executed correctly
+      if (m_printLastResult) {
+        if (!lua_isnone(L, -1)) {
+          const char* result = lua_tostring(L, -1);
+          if (result)
+            onConsolePrint(result);
+        }
       }
     }
+    lua_pop(L, 1);
   }
-  lua_pop(L, 1);
+  catch (const std::exception& ex) {
+    onConsolePrint(ex.what());
+    ok = false;
+  }
 
   // Collect script garbage.
   lua_gc(L, LUA_GCCOLLECT);

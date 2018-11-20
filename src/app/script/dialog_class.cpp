@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -288,14 +289,24 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
         [dlg, widget, L, ref, n](ui::Event& ev) {
           dlg->lastButton = widget;
 
-          lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-          lua_geti(L, -1, n);
+          try {
+            lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+            lua_geti(L, -1, n);
 
-          if (lua_isfunction(L, -1))
-            lua_call(L, 0, 0);
-          else
-            lua_pop(L, 1);
-          lua_pop(L, 1);        // Pop table from the registry
+            if (lua_isfunction(L, -1))
+              lua_call(L, 0, 0);
+            else
+              lua_pop(L, 1);
+            lua_pop(L, 1);        // Pop table from the registry
+          }
+          catch (const std::exception& ex) {
+            // This is used to catch unhandled exception or for
+            // example, std::runtime_error exceptions when a Tx() is
+            // created without an active sprite.
+            App::instance()
+              ->scriptEngine()
+              ->consolePrint(ex.what());
+          }
         });
       closeWindowByDefault = false;
     }

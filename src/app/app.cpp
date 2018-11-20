@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -80,6 +81,23 @@
 namespace app {
 
 using namespace ui;
+
+#ifdef ENABLE_SCRIPTING
+
+namespace {
+
+class ConsoleEngineDelegate : public script::EngineDelegate {
+public:
+  void onConsolePrint(const char* text) override {
+    m_console.printf("%s\n", text);
+  }
+private:
+  Console m_console;
+};
+
+} // anonymous namespace
+
+#endif // ENABLER_SCRIPTING
 
 class App::CoreModules {
 public:
@@ -338,6 +356,15 @@ void App::run()
 
     app::SendCrash sendCrash;
     sendCrash.search();
+
+    // Keep the console alive the whole program execute (just in case
+    // we've to print errors).
+    Console console;
+#ifdef ENABLE_SCRIPTING
+    // Use the app::Console() for script erros
+    ConsoleEngineDelegate delegate;
+    script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
+#endif
 
     // Run the GUI main message loop
     ui::Manager::getDefault()->run();

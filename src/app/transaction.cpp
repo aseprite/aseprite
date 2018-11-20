@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,7 +32,11 @@ Transaction::Transaction(Context* ctx, const std::string& label, Modification mo
            modification == ModifyDocument ? "modifies document":
                                             "doesn't modify document");
 
-  m_undo = m_ctx->activeDocument()->undoHistory();
+  Doc* doc = m_ctx->activeDocument();
+  if (!doc)
+    throw std::runtime_error("No active document to execute a transaction");
+  m_undo = doc->undoHistory();
+
   m_cmds = new CmdTransaction(label,
     modification == Modification::ModifyDocument,
     m_undo->savedCounter());
