@@ -293,8 +293,14 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
             lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
             lua_geti(L, -1, n);
 
-            if (lua_isfunction(L, -1))
-              lua_call(L, 0, 0);
+            if (lua_isfunction(L, -1)) {
+              if (lua_pcall(L, 0, 0, 0)) {
+                if (const char* s = lua_tostring(L, -1))
+                  App::instance()
+                    ->scriptEngine()
+                    ->consolePrint(s);
+              }
+            }
             else
               lua_pop(L, 1);
             lua_pop(L, 1);        // Pop table from the registry
