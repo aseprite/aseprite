@@ -68,6 +68,7 @@ Console::Console(Context* ctx)
   View* view = new View();
   TextBox* textbox = new TextBox("", WORDWRAP);
   Button* button = new Button("&Cancel");
+  button->setFocusMagnet(true);
 
   // The "button" closes the console
   button->processMnemonicFromText();
@@ -105,16 +106,17 @@ Console::~Console()
 
   console_counter--;
 
-  if ((wid_console) && (console_counter == 0)) {
-    if (console_locked
-        && !want_close_flag
-        && wid_console->isVisible()) {
-      // Open in foreground
-      wid_console->openWindowInForeground();
-    }
+  if (wid_console
+      && console_locked
+      && !want_close_flag
+      && wid_console->isVisible()) {
+    // Open in foreground
+    wid_console->openWindowInForeground();
+  }
 
+  if (console_counter == 0) {
     delete wid_console;         // window
-    wid_console = NULL;
+    wid_console = nullptr;
     want_close_flag = false;
   }
 }
