@@ -25,6 +25,8 @@
 
 #include <fstream>
 #include <sstream>
+#include <stack>
+#include <string>
 
 namespace app {
 namespace script {
@@ -33,6 +35,19 @@ namespace {
 
 // High precision clock.
 base::Chrono luaClock;
+
+// Stack of script filenames that are being executed.
+std::stack<std::string> current_script_dirs;
+
+class AddScriptFilename {
+public:
+  AddScriptFilename(const std::string& fn) {
+    current_script_dirs.push(fn);
+  }
+  ~AddScriptFilename() {
+    current_script_dirs.pop();
+  }
+};
 
 int print(lua_State* L)
 {
@@ -58,6 +73,38 @@ int print(lua_State* L)
       ->consolePrint(output.c_str());
   }
   return 0;
+}
+
+static int dofilecont(lua_State *L, int d1, lua_KContext d2)
+{
+  (void)d1;
+  (void)d2;
+  return lua_gettop(L) - 1;
+}
+
+int dofile(lua_State *L)
+{
+  const char* argFname = luaL_optstring(L, 1, NULL);
+  std::string fname = argFname;
+
+  if (!base::is_file(fname) &&
+      !current_script_dirs.empty()) {
+    // Try to complete a relative filename
+    std::string altFname =
+      base::join_path(base::get_file_path(current_script_dirs.top()),
+                      fname);
+    if (base::is_file(altFname))
+      fname = altFname;
+  }
+
+  lua_settop(L, 1);
+  if (luaL_loadfile(L, fname.c_str()) != LUA_OK)
+    return lua_error(L);
+  {
+    AddScriptFilename add(fname);
+    lua_callk(L, 0, LUA_MULTRET, 0, dofilecont);
+  }
+  return dofilecont(L, 0, 0);
 }
 
 int os_clock(lua_State* L)
@@ -141,6 +188,7 @@ Engine::Engine()
 
   // Overwrite Lua functions
   lua_register(L, "print", print);
+  lua_register(L, "dofile", dofile);
 
   lua_getglobal(L, "os");
   for (const char* name : { "remove", "rename", "exit", "tmpname" }) {
@@ -262,8 +310,6 @@ bool Engine::evalCode(const std::string& code,
   try {
     if (luaL_loadbuffer(L, code.c_str(), code.size(), filename.c_str()) ||
         lua_pcall(L, 0, 1, 0)) {
-      // Error case
-      std::string err;
       const char* s = lua_tostring(L, -1);
       if (s)
         onConsolePrint(s);
@@ -299,6 +345,8 @@ bool Engine::evalFile(const std::string& filename)
     buf << s.rdbuf();
   }
   std::string absFilename = base::get_absolute_path(filename);
+
+  AddScriptFilename add(absFilename);
   return evalCode(buf.str(), "@" + absFilename);
 }
 
