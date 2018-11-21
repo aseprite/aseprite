@@ -49,8 +49,22 @@ struct SelectionObj {
   Mask* mask(lua_State* L) {
     if (maskId)
       return check_docobj(L, doc::get<Mask>(maskId));
-    else
-      return static_cast<Doc*>(sprite(L)->document())->mask();
+    else {
+      auto doc = static_cast<Doc*>(sprite(L)->document());
+      ASSERT(doc);
+
+      // The selection might be invisible but has something (e.g. when
+      // the user calls "Select > Deselect" option). In this case we
+      // want to show to the script an empty selection, so we'll clear
+      // the invisible selection so the script sees it empty.
+      //
+      // This breaks the "Select > Reselect" command, but it looks
+      // like the expected behavior for script authors.
+      if (!doc->isMaskVisible())
+        doc->mask()->clear();
+
+      return doc->mask();
+    }
   }
   Sprite* sprite(lua_State* L) {
     if (spriteId)
