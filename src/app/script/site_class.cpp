@@ -55,6 +55,16 @@ int Site_get_cel(lua_State* L)
 int Site_get_frame(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
+  if (site->sprite())
+    push_sprite_frame(L, site->sprite(), site->frame());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Site_get_frameNumber(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
   lua_pushinteger(L, site->frame()+1);
   return 1;
 }
@@ -78,6 +88,7 @@ const Property Site_properties[] = {
   { "layer", Site_get_layer, nullptr },
   { "cel", Site_get_cel, nullptr },
   { "frame", Site_get_frame, nullptr },
+  { "frameNumber", Site_get_frameNumber, nullptr },
   { "image", Site_get_image, nullptr },
   { nullptr, nullptr, nullptr }
 };
