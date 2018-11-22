@@ -12,6 +12,7 @@ assert(s == app.activeFrame.sprite)
 assert(s == app.site.frame.sprite)
 assert(1 == app.activeFrame.frameNumber)
 assert(1 == app.site.frame.frameNumber)
+assert(1 == app.site.frameNumber)
 assert(0.100 == app.activeFrame.duration) -- Default frame duration
 assert(0.100 == app.site.frame.duration)
 
