@@ -96,7 +96,8 @@ int Range_contains(lua_State* L)
   else if (Cel* cel = may_get_docobj<Cel>(L, 2)) {
     result = obj->contains(cel);
   }
-  else if (frame_t frame = get_frame_number_from_arg(L, 2)) {
+  else {
+    frame_t frame = get_frame_number_from_arg(L, 2);
     result = obj->contains(frame);
   }
   lua_pushboolean(L, result);
