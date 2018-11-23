@@ -12,6 +12,7 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/site.h"
 #include "app/util/range_utils.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -34,21 +35,30 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   std::vector<frame_t> frames;
   std::set<ObjectId> cels;
 
-  RangeObj(Sprite* sprite, const DocRange& docRange) {
-    spriteId = sprite->id();
+  RangeObj(Site& site, const DocRange& docRange) {
+    spriteId = site.sprite()->id();
     type = docRange.type();
-    for (const Layer* layer : docRange.selectedLayers())
-      layers.insert(layer->id());
-    for (const frame_t frame : docRange.selectedFrames())
-      frames.push_back(frame);
 
-    // TODO improve this, in the best case we should defer layers,
-    // frames, and cels vectors when the properties are accessed, but
-    // it might not be possible because we have to save the IDs of the
-    // objects (and we cannot store the DocRange because it contains
-    // pointers instead of IDs).
-    for (Cel* cel : get_cels(sprite, docRange))
-      cels.insert(cel->id());
+    if (docRange.enabled()) {
+      for (const Layer* layer : docRange.selectedLayers())
+        layers.insert(layer->id());
+      for (const frame_t frame : docRange.selectedFrames())
+        frames.push_back(frame);
+
+      // TODO improve this, in the best case we should defer layers,
+      // frames, and cels vectors when the properties are accessed, but
+      // it might not be possible because we have to save the IDs of the
+      // objects (and we cannot store the DocRange because it contains
+      // pointers instead of IDs).
+      for (Cel* cel : get_cels(site.sprite(), docRange))
+        cels.insert(cel->id());
+    }
+    else {
+      // Put the active frame/layer/cel information in the range
+      frames.push_back(site.frame());
+      if (site.layer()) layers.insert(site.layer()->id());
+      if (site.cel()) cels.insert(site.cel()->id());
+    }
   }
   RangeObj(const RangeObj&) = delete;
   RangeObj& operator=(const RangeObj&) = delete;
@@ -200,9 +210,9 @@ void register_range_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Range);
 }
 
-void push_doc_range(lua_State* L, Sprite* sprite, const DocRange& docRange)
+void push_doc_range(lua_State* L, Site& site, const DocRange& docRange)
 {
-  push_new<RangeObj>(L, sprite, docRange);
+  push_new<RangeObj>(L, site, docRange);
 }
 
 } // namespace script

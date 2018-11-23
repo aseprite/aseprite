@@ -301,7 +301,7 @@ int App_get_range(lua_State* L)
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
   if (site.sprite() && App::instance()->timeline()) {
-    push_doc_range(L, site.sprite(), App::instance()->timeline()->range());
+    push_doc_range(L, site, App::instance()->timeline()->range());
   }
   else {
     lua_pushnil(L);

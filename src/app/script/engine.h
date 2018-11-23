@@ -101,7 +101,7 @@ namespace app {
   void push_cels(lua_State* L, const doc::ObjectIds& cels);
   void push_cels(lua_State* L, doc::Layer* layer);
   void push_cels(lua_State* L, doc::Sprite* sprite);
-  void push_doc_range(lua_State* L, doc::Sprite* sprite, const DocRange& docRange);
+  void push_doc_range(lua_State* L, Site& site, const DocRange& docRange);
   void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
