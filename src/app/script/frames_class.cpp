@@ -23,9 +23,17 @@ namespace {
 
 struct FramesObj {
   ObjectId spriteId;
+  const std::vector<frame_t>* frames;
+
   FramesObj(Sprite* sprite)
-    : spriteId(sprite->id()) {
+    : spriteId(sprite->id()),
+      frames(nullptr) {
   }
+  FramesObj(Sprite* sprite, const std::vector<frame_t>& frames)
+    : spriteId(sprite->id()),
+      frames(new std::vector<frame_t>(frames)) {
+  }
+
   FramesObj(const FramesObj&) = delete;
   FramesObj& operator=(const FramesObj&) = delete;
 
@@ -41,7 +49,10 @@ int Frames_gc(lua_State* L)
 int Frames_len(lua_State* L)
 {
   auto obj = get_obj<FramesObj>(L, 1);
-  lua_pushinteger(L, obj->sprite(L)->totalFrames());
+  if (obj->frames)
+    lua_pushinteger(L, int(obj->frames->size()));
+  else
+    lua_pushinteger(L, obj->sprite(L)->totalFrames());
   return 1;
 }
 
@@ -50,10 +61,19 @@ int Frames_index(lua_State* L)
   auto obj = get_obj<FramesObj>(L, 1);
   auto sprite = obj->sprite(L);
   const int i = lua_tonumber(L, 2);
-  if (i >= 1 && i <= sprite->totalFrames())
-    push_sprite_frame(L, sprite, i-1);
-  else
-    lua_pushnil(L);
+
+  if (obj->frames) {
+    if (i >= 1 && i <= obj->frames->size())
+      push_sprite_frame(L, sprite, i-1);
+    else
+      lua_pushnil(L);
+  }
+  else {
+    if (i >= 1 && i <= sprite->totalFrames())
+      push_sprite_frame(L, sprite, i-1);
+    else
+      lua_pushnil(L);
+  }
   return 1;
 }
 
@@ -77,6 +97,11 @@ void register_frames_class(lua_State* L)
 void push_sprite_frames(lua_State* L, Sprite* sprite)
 {
   push_new<FramesObj>(L, sprite);
+}
+
+void push_sprite_frames(lua_State* L, doc::Sprite* sprite, const std::vector<doc::frame_t>& frames)
+{
+  push_new<FramesObj>(L, sprite, frames);
 }
 
 } // namespace script

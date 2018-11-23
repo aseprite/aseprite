@@ -505,7 +505,7 @@ int Sprite_get_layers(lua_State* L)
 int Sprite_get_cels(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  push_sprite_cels(L, sprite);
+  push_cels(L, sprite);
   return 1;
 }
 

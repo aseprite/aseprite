@@ -114,5 +114,14 @@ void push_sprite_frame(lua_State* L, Sprite* sprite, frame_t frame)
   push_new<FrameObj>(L, sprite, frame);
 }
 
+doc::frame_t get_frame_number_from_arg(lua_State* L, int index)
+{
+  auto obj = may_get_obj<FrameObj>(L, 1);
+  if (obj)
+    return obj->frame;
+  else
+    return lua_tointeger(L, index)-1;
+}
+
 } // namespace script
 } // namespace app

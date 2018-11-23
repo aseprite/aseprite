@@ -10,10 +10,8 @@
 
 #include "app/cmd/with_sprite.h"
 #include "app/cmd_sequence.h"
-#include "doc/object_id.h"
+#include "doc/object_ids.h"
 #include "doc/selected_layers.h"
-
-#include <vector>
 
 namespace app {
 namespace cmd {
@@ -28,7 +26,7 @@ namespace cmd {
     void onExecute() override;
 
   private:
-    std::vector<doc::ObjectId> m_layerIds;
+    ObjectIds m_layerIds;
   };
 
 } // namespace cmd

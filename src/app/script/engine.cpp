@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/doc_range.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "base/chrono.h"
@@ -142,11 +143,13 @@ void register_frames_class(lua_State* L);
 void register_image_class(lua_State* L);
 void register_image_iterator_class(lua_State* L);
 void register_image_spec_class(lua_State* L);
+void register_images_class(lua_State* L);
 void register_layer_class(lua_State* L);
 void register_layers_class(lua_State* L);
 void register_palette_class(lua_State* L);
 void register_palettes_class(lua_State* L);
 void register_point_class(lua_State* L);
+void register_range_class(lua_State* L);
 void register_rect_class(lua_State* L);
 void register_selection_class(lua_State* L);
 void register_site_class(lua_State* L);
@@ -263,6 +266,15 @@ Engine::Engine()
   setfield_integer(L, "DIVIDE", doc::BlendMode::DIVIDE);
   lua_pop(L, 1);
 
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "RangeType");
+  setfield_integer(L, "EMPTY", DocRange::kNone);
+  setfield_integer(L, "LAYERS", DocRange::kLayers);
+  setfield_integer(L, "FRAMES", DocRange::kFrames);
+  setfield_integer(L, "CELS", DocRange::kCels);
+  lua_pop(L, 1);
+
   // Register classes/prototypes
   register_cel_class(L);
   register_cels_class(L);
@@ -273,11 +285,13 @@ Engine::Engine()
   register_image_class(L);
   register_image_iterator_class(L);
   register_image_spec_class(L);
+  register_images_class(L);
   register_layer_class(L);
   register_layers_class(L);
   register_palette_class(L);
   register_palettes_class(L);
   register_point_class(L);
+  register_range_class(L);
   register_rect_class(L);
   register_selection_class(L);
   register_site_class(L);

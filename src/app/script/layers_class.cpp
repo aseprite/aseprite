@@ -13,9 +13,8 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "doc/layer.h"
+#include "doc/object_ids.h"
 #include "doc/sprite.h"
-
-#include <vector>
 
 namespace app {
 namespace script {
@@ -25,11 +24,16 @@ using namespace doc;
 namespace {
 
 struct LayersObj {
-  std::vector<ObjectId> layers;
+  ObjectIds layers;
+
   LayersObj(Sprite* sprite) {
     for (const Layer* layer : sprite->allLayers())
       layers.push_back(layer->id());
   }
+  LayersObj(const ObjectIds& layers)
+    : layers(layers) {
+  }
+
   LayersObj(const LayersObj&) = delete;
   LayersObj& operator=(const LayersObj&) = delete;
 };
@@ -78,6 +82,11 @@ void register_layers_class(lua_State* L)
 void push_sprite_layers(lua_State* L, Sprite* sprite)
 {
   push_new<LayersObj>(L, sprite);
+}
+
+void push_layers(lua_State* L, const ObjectIds& layers)
+{
+  push_new<LayersObj>(L, layers);
 }
 
 } // namespace script

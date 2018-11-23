@@ -15,6 +15,7 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "doc/object_ids.h"
 
 #include <algorithm>
 #include <iterator>
@@ -28,11 +29,13 @@ using namespace doc;
 namespace {
 
 struct SpritesObj {
-  std::vector<ObjectId> docs;
+  ObjectIds docs;
+
   SpritesObj(const Docs& docs) {
     for (const Doc* doc : docs)
       this->docs.push_back(doc->id());
   }
+
   SpritesObj(const SpritesObj&) = delete;
   SpritesObj& operator=(const SpritesObj&) = delete;
 };

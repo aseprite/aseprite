@@ -295,6 +295,23 @@ int App_get_site(lua_State* L)
   return 1;
 }
 
+int App_get_range(lua_State* L)
+{
+#ifdef ENABLE_UI
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+  if (site.sprite() && App::instance()->timeline()) {
+    push_doc_range(L, site.sprite(), App::instance()->timeline()->range());
+  }
+  else {
+    lua_pushnil(L);
+  }
+#else
+  lua_pushnil(L);
+#endif
+  return 1;
+}
+
 int App_get_isUIAvailable(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -420,6 +437,7 @@ const Property App_properties[] = {
   { "version", App_get_version, nullptr },
   { "apiVersion", App_get_apiVersion, nullptr },
   { "site", App_get_site, nullptr },
+  { "range", App_get_range, nullptr },
   { "isUIAvailable", App_get_isUIAvailable, nullptr },
   { nullptr, nullptr, nullptr }
 };

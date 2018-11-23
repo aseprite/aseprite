@@ -15,7 +15,7 @@
 
 #include "app/color.h"
 #include "doc/frame.h"
-#include "doc/object_id.h"
+#include "doc/object_ids.h"
 #include "gfx/fwd.h"
 
 #include <cstdio>
@@ -35,7 +35,10 @@ namespace doc {
 }
 
 namespace app {
+
+  class DocRange;
   class Site;
+
   namespace script {
 
   enum class FileAccessMode {
@@ -95,11 +98,16 @@ namespace app {
 
   int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex);
   void push_cel_image(lua_State* L, doc::Cel* cel);
+  void push_cels(lua_State* L, const doc::ObjectIds& cels);
+  void push_cels(lua_State* L, doc::Layer* layer);
+  void push_cels(lua_State* L, doc::Sprite* sprite);
+  void push_doc_range(lua_State* L, doc::Sprite* sprite, const DocRange& docRange);
+  void push_images(lua_State* L, const doc::ObjectIds& images);
+  void push_layers(lua_State* L, const doc::ObjectIds& layers);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
-  void push_sprite_cels(lua_State* L, doc::Sprite* sprite);
-  void push_layer_cels(lua_State* L, doc::Layer* layer);
   void push_sprite_frame(lua_State* L, doc::Sprite* sprite, doc::frame_t frame);
   void push_sprite_frames(lua_State* L, doc::Sprite* sprite);
+  void push_sprite_frames(lua_State* L, doc::Sprite* sprite, const std::vector<doc::frame_t>& frames);
   void push_sprite_layers(lua_State* L, doc::Sprite* sprite);
   void push_sprite_palette(lua_State* L, doc::Sprite* sprite, doc::Palette* palette);
   void push_sprite_palettes(lua_State* L, doc::Sprite* sprite);
@@ -118,6 +126,7 @@ namespace app {
   doc::Image* may_get_image_from_arg(lua_State* L, int index);
   doc::Image* get_image_from_arg(lua_State* L, int index);
   doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
+  doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
 
 } // namespace script
 } // namespace app

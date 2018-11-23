@@ -14,6 +14,7 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/layer.h"
+#include "doc/object_ids.h"
 #include "doc/sprite.h"
 
 #include <algorithm>
@@ -27,14 +28,17 @@ using namespace doc;
 namespace {
 
 struct CelsObj {
-  std::vector<ObjectId> cels;
+  ObjectIds cels;
   CelsObj(CelsRange& range) {
-    for (Cel* cel : range)
+    for (const Cel* cel : range)
       cels.push_back(cel->id());
   }
   CelsObj(CelList& list) {
     for (Cel* cel : list)
       cels.push_back(cel->id());
+  }
+  CelsObj(const ObjectIds& cels)
+    : cels(cels) {
   }
   CelsObj(const CelsObj&) = delete;
   CelsObj& operator=(const CelsObj&) = delete;
@@ -81,17 +85,22 @@ void register_cels_class(lua_State* L)
   REG_CLASS(L, Cels);
 }
 
-void push_sprite_cels(lua_State* L, Sprite* sprite)
+void push_cels(lua_State* L, Sprite* sprite)
 {
   CelsRange cels = sprite->cels();
   push_new<CelsObj>(L, cels);
 }
 
-void push_layer_cels(lua_State* L, Layer* layer)
+void push_cels(lua_State* L, Layer* layer)
 {
   CelList cels;
   if (layer->isImage())
     static_cast<LayerImage*>(layer)->getCels(cels);
+  push_new<CelsObj>(L, cels);
+}
+
+void push_cels(lua_State* L, const ObjectIds& cels)
+{
   push_new<CelsObj>(L, cels);
 }
 

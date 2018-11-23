@@ -160,6 +160,7 @@ if(ENABLE_SCRIPTING)
     script/image_class.cpp
     script/image_iterator_class.cpp
     script/image_spec_class.cpp
+    script/images_class.cpp
     script/layer_class.cpp
     script/layers_class.cpp
     script/luacpp.cpp
@@ -167,6 +168,7 @@ if(ENABLE_SCRIPTING)
     script/palettes_class.cpp
     script/pixel_color_object.cpp
     script/point_class.cpp
+    script/range_class.cpp
     script/rectangle_class.cpp
     script/security.cpp
     script/selection_class.cpp

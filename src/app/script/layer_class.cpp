@@ -167,7 +167,7 @@ int Layer_get_isExpanded(lua_State* L)
 int Layer_get_cels(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  push_layer_cels(L, layer);
+  push_cels(L, layer);
   return 1;
 }
 
