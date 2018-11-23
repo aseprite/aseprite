@@ -64,20 +64,19 @@ int Frames_index(lua_State* L)
 {
   auto obj = get_obj<FramesObj>(L, 1);
   auto sprite = obj->sprite(L);
-  const int i = lua_tonumber(L, 2);
+  int i = lua_tonumber(L, 2);
 
   if (obj->frames) {
     if (i >= 1 && i <= obj->frames->size())
-      push_sprite_frame(L, sprite, i-1);
+      i = (*obj->frames)[i-1]+1;
     else
-      lua_pushnil(L);
+      i = 0;
   }
-  else {
-    if (i >= 1 && i <= sprite->totalFrames())
-      push_sprite_frame(L, sprite, i-1);
-    else
-      lua_pushnil(L);
-  }
+
+  if (i >= 1 && i <= sprite->totalFrames())
+    push_sprite_frame(L, sprite, i-1);
+  else
+    lua_pushnil(L);
   return 1;
 }
 
