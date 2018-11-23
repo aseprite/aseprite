@@ -28,12 +28,13 @@ template <typename T> void push_docobj(lua_State* L, T* obj) {
 }
 
 template <typename T> T* may_get_docobj(lua_State* L, int index) {
-  const doc::ObjectId id = *(doc::ObjectId*)luaL_checkudata(L, index, get_mtname<T>());
-  T* obj = doc::get<T>(id);
-  if (obj)
-    return obj;
-  else
-    return nullptr;
+  const doc::ObjectId* id = (doc::ObjectId*)luaL_testudata(L, index, get_mtname<T>());
+  if (id) {
+    T* obj = doc::get<T>(*id);
+    if (obj)
+      return obj;
+  }
+  return nullptr;
 }
 
 template <typename T> T* check_docobj(lua_State* L, T* obj) {
