@@ -116,7 +116,7 @@ void push_sprite_frame(lua_State* L, Sprite* sprite, frame_t frame)
 
 doc::frame_t get_frame_number_from_arg(lua_State* L, int index)
 {
-  auto obj = may_get_obj<FrameObj>(L, 1);
+  auto obj = may_get_obj<FrameObj>(L, index);
   if (obj)
     return obj->frame;
   else
