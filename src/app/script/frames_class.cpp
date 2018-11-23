@@ -34,6 +34,10 @@ struct FramesObj {
       frames(new std::vector<frame_t>(frames)) {
   }
 
+  ~FramesObj() {
+    delete frames;
+  }
+
   FramesObj(const FramesObj&) = delete;
   FramesObj& operator=(const FramesObj&) = delete;
 
