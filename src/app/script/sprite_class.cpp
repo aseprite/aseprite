@@ -40,6 +40,8 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 
+#include <algorithm>
+
 namespace app {
 namespace script {
 
@@ -84,7 +86,12 @@ int Sprite_eq(lua_State* L)
 int Sprite_resize(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  const gfx::Size size = convert_args_into_size(L, 2);
+  gfx::Size size = convert_args_into_size(L, 2);
+
+  // Fix invalid sizes
+  size.w = std::max(1, size.w);
+  size.h = std::max(1, size.h);
+
   Doc* doc = static_cast<Doc*>(sprite->document());
   Tx tx;
   DocApi(doc, tx).setSpriteSize(doc->sprite(), size.w, size.h);
