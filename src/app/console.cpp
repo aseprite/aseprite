@@ -72,11 +72,13 @@ Console::Console(Context* ctx)
 
   // The "button" closes the console
   button->processMnemonicFromText();
-  button->Click.connect(
+  button->Click.connect(base::Bind<void>(&Window::closeWindow, window, button));
+
+  // When the window is closed, we clear the text
+  window->Close.connect(
     base::Bind<void>(
-      [window, button, textbox] {
+      [textbox] {
         textbox->setText(std::string());
-        window->closeWindow(button);
       }));
 
   view->attachToView(textbox);
