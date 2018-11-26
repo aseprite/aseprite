@@ -1,12 +1,14 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2016  David Capello -->
 <gui>
   <window id="keyboard_shortcuts" text="@keyboard_shortcuts.title">
     <vbox>
-      <hbox expansive="true">
-        <vbox>
+      <splitter horizontal="true" expansive="true" noborders="true" childspacing="2"
+                by="pixel" position="80" id="section_splitter">
+        <vbox expansive="true">
           <search id="search" magnet="true" />
-          <view width="80" expansive="true">
+          <view expansive="true">
             <listbox id="section" expansive="true">
               <listitem text="@.section_menus" />
               <listitem text="@.section_commands" />
@@ -52,7 +54,7 @@
             </view>
           </vbox>
         </vbox>
-      </hbox>
+      </splitter>
       <hbox>
         <boxfiller />
         <hbox homogeneous="true">

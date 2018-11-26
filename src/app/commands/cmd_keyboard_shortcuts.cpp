@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +16,7 @@
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
+#include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -533,6 +535,7 @@ public:
   }
 
 private:
+
   void deleteAllKeyItems() {
     deleteList(searchList());
     deleteList(menus());
@@ -812,6 +815,19 @@ private:
     }
   }
 
+  bool onProcessMessage(ui::Message* msg) override {
+    switch (msg->type()) {
+      case kOpenMessage:
+        load_window_pos(this, "KeyboardShortcuts");
+        invalidate();
+        break;
+      case kCloseMessage:
+        save_window_pos(this, "KeyboardShortcuts");
+        break;
+    }
+    return app::gen::KeyboardShortcuts::onProcessMessage(msg);
+  }
+
   app::KeyboardShortcuts& m_keys;
   MenuKeys& m_menuKeys;
   std::vector<ListBox*> m_listBoxes;
@@ -866,6 +882,7 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   KeyboardShortcutsWindow window(keys, menuKeys, neededSearchCopy);
 
   window.setBounds(gfx::Rect(0, 0, ui::display_w()*3/4, ui::display_h()*3/4));
+  window.loadLayout();
 
   window.centerWindow();
   window.setVisible(true);
