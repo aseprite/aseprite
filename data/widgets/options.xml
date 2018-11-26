@@ -363,6 +363,8 @@
                  pref="gif.show_alert" />
           <check id="jpeg_options_alert" text="@.jpeg_options_alert"
                  pref="jpeg.show_alert" />
+          <check id="svg_options_alert" text="@.svg_options_alert"
+                 pref="svg.show_alert" />
           <check id="advanced_mode_alert" text="@.advanced_mode_alert"
                  pref="advanced_mode.show_alert" />
           <check id="invalid_fg_bg_color_alert" text="@.invalid_fg_bg_color_alert"

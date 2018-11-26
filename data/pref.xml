@@ -295,6 +295,10 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="quality" type="double" default="1.0" migrate="JPEG.Quality" />
     </section>
+    <section id="svg">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="pixel_scale" type="int" default="1" />
+    </section>
     <section id="webp">
       <option id="show_alert" type="bool" default="true" />
       <option id="loop" type="bool" default="true" />
