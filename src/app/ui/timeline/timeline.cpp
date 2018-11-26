@@ -239,7 +239,8 @@ Timeline::Timeline()
   , m_state(STATE_STANDBY)
   , m_tagBands(0)
   , m_tagFocusBand(-1)
-  , m_separator_x(100 * guiscale())
+  , m_separator_x(
+      Preferences::instance().general.timelineLayerPanelWidth() * guiscale())
   , m_separator_w(1)
   , m_confPopup(NULL)
   , m_clipboard_timer(100, this)
@@ -267,6 +268,9 @@ Timeline::Timeline()
 
 Timeline::~Timeline()
 {
+  Preferences::instance().general.timelineLayerPanelWidth(
+    m_separator_x / guiscale());
+
   m_clipboard_timer.stop();
 
   detachDocument();
