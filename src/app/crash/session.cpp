@@ -65,6 +65,14 @@ std::string Session::name() const
   base::split_string(name, parts, "-");
 
   if (parts.size() == 3) {
+    if (parts[0].size() == 4+2+2) { // YYYYMMDD -> YYYY-MM-DD
+      parts[0].insert(6, 1, '-');
+      parts[0].insert(4, 1, '-');
+    }
+    if (parts[1].size() == 2+2+2) { // HHMMSS -> HH:MM.SS
+      parts[1].insert(4, 1, '.');
+      parts[1].insert(2, 1, ':');
+    }
     return "Session date: " + parts[0] + " time: " + parts[1] + " (PID " + parts[2] + ")";
   }
   else
