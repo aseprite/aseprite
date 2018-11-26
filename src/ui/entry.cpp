@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,6 +25,7 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdarg>
 #include <cstdio>
@@ -431,18 +433,35 @@ bool Entry::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+// static
+gfx::Size Entry::sizeHintWithText(Entry* entry,
+                                  const std::string& text)
+{
+  int w =
+    entry->font()->textLength(text) +
+    + 2*entry->theme()->getEntryCaretSize(entry).w
+    + entry->border().width();
+
+  w = std::min(w, ui::display_w()/2);
+
+  int h =
+    + entry->font()->height()
+    + entry->border().height();
+
+  return gfx::Size(w, h);
+}
+
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
   int trailing = font()->textLength(getSuffix());
   trailing = MAX(trailing, 2*theme()->getEntryCaretSize(this).w);
 
   int w =
-    + font()->textLength("w") * MIN(m_maxsize, 6)
+    font()->textLength("w") * std::min(m_maxsize, 6) +
     + trailing
-    + 2*guiscale()
     + border().width();
 
-  w = MIN(w, ui::display_w()/2);
+  w = std::min(w, ui::display_w()/2);
 
   int h =
     + font()->height()
