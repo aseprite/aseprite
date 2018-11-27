@@ -177,6 +177,14 @@ int App_alert(lua_State* L)
   return 0;
 }
 
+int App_refresh(lua_State* L)
+{
+#ifdef ENABLE_UI
+  app_refresh_screen();
+#endif
+  return 0;
+}
+
 int App_get_activeSprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -421,6 +429,7 @@ const luaL_Reg App_methods[] = {
   { "undo",        App_undo },
   { "redo",        App_redo },
   { "alert",       App_alert },
+  { "refresh",     App_refresh },
   { nullptr,       nullptr }
 };
 
