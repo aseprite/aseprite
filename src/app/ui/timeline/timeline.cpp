@@ -871,6 +871,13 @@ bool Timeline::onProcessMessage(Message* msg)
 
               setLayerCollapsedFlag(m_clk.layer, m_state == STATE_COLLAPSING_LAYERS);
               updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+
+              // The m_clk might have changed because we've
+              // expanded/collapsed a group just right now (i.e. we've
+              // called regenerateRows())
+              m_clk = m_hot;
+
+              ASSERT(m_rows[m_clk.layer].layer() == layer);
             }
           }
           break;
