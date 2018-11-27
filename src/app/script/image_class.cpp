@@ -263,6 +263,13 @@ int Image_get_spec(lua_State* L)
   return 1;
 }
 
+int Image_get_cel(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  push_docobj<Cel>(L, obj->celId);
+  return 1;
+}
+
 const luaL_Reg Image_methods[] = {
   { "clone", Image_clone },
   { "clear", Image_clear },
@@ -281,6 +288,7 @@ const Property Image_properties[] = {
   { "height", Image_get_height, nullptr },
   { "colorMode", Image_get_colorMode, nullptr },
   { "spec", Image_get_spec, nullptr },
+  { "cel", Image_get_cel, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
