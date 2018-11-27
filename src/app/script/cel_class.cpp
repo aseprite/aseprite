@@ -51,6 +51,16 @@ int Cel_get_layer(lua_State* L)
 int Cel_get_frame(lua_State* L)
 {
   const auto cel = get_docobj<Cel>(L, 1);
+  if (auto sprite = cel->sprite())
+    push_sprite_frame(L, sprite, cel->frame());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Cel_get_frameNumber(lua_State* L)
+{
+  const auto cel = get_docobj<Cel>(L, 1);
   lua_pushinteger(L, cel->frame()+1);
   return 1;
 }
@@ -125,6 +135,7 @@ const Property Cel_properties[] = {
   { "sprite", Cel_get_sprite, nullptr },
   { "layer", Cel_get_layer, nullptr },
   { "frame", Cel_get_frame, nullptr },
+  { "frameNumber", Cel_get_frameNumber, nullptr },
   { "image", Cel_get_image, Cel_set_image },
   { "bounds", Cel_get_bounds, nullptr },
   { "position", Cel_get_position, Cel_set_position },

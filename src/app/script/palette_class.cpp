@@ -152,6 +152,17 @@ int Palette_get_frame(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
+  if (auto sprite = obj->sprite(L))
+    push_sprite_frame(L, sprite, pal->frame());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Palette_get_frameNumber(lua_State* L)
+{
+  auto obj = get_obj<PaletteObj>(L, 1);
+  auto pal = obj->palette(L);
   lua_pushinteger(L, pal->frame()+1);
   return 1;
 }
@@ -167,6 +178,7 @@ const luaL_Reg Palette_methods[] = {
 
 const Property Palette_properties[] = {
   { "frame", Palette_get_frame, nullptr },
+  { "frameNumber", Palette_get_frameNumber, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
