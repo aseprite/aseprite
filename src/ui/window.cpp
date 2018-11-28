@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -127,7 +128,7 @@ Window::Window(Type type, const std::string& text)
 
 Window::~Window()
 {
-  manager()->_closeWindow(this, false);
+  manager()->_closeWindow(this, isVisible());
 }
 
 void Window::setAutoRemap(bool state)
