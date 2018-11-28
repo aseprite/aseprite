@@ -367,7 +367,7 @@ int App_set_activeLayer(lua_State* L)
 
 int App_set_activeFrame(lua_State* L)
 {
-  const doc::frame_t frame = lua_tointeger(L, 2)-1;
+  const doc::frame_t frame = get_frame_number_from_arg(L, 2);
 #ifdef ENABLE_UI
   app::Context* ctx = App::instance()->context();
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
