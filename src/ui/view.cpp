@@ -233,6 +233,10 @@ void View::onSizeHint(SizeHintEvent& ev)
 
 void View::onSetViewScroll(const gfx::Point& pt)
 {
+  // If the view is not visible, we don't adjust any screen region.
+  if (!isVisible())
+    return;
+
   Point oldScroll = viewScroll();
   Size maxsize = getScrollableSize();
   Size visible = visibleSize();
