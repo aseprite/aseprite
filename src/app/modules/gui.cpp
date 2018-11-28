@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,8 +36,10 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
+#include "base/fs.h"
 #include "base/memory.h"
 #include "base/shared_ptr.h"
+#include "base/string.h"
 #include "doc/sprite.h"
 #include "os/display.h"
 #include "os/error.h"
@@ -327,10 +330,13 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
 
     case kDropFilesMessage:
-      {
+      // Files are processed only when the main window is the current
+      // window running.
+      //
+      // TODO could we send the files to each dialog?
+      if (getForegroundWindow() == App::instance()->mainWindow()) {
         base::paths files = static_cast<DropFilesMessage*>(msg)->files();
         UIContext* ctx = UIContext::instance();
-        OpenFileCommand cmd;
 
         while (!files.empty()) {
           auto fn = files.front();
@@ -348,16 +354,31 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           }
           // Load the file
           else {
-            Params params;
-            params.set("filename", fn.c_str());
-            params.set("repeat_checkbox", "true");
-            ctx->executeCommand(&cmd, params);
+            // Depending on the file type we will want to do different things:
+            std::string extension = base::string_to_lower(
+              base::get_file_extension(fn));
 
-            // Remove all used file names from the "dropped files"
-            for (const auto& usedFn : cmd.usedFiles()) {
-              auto it = std::find(files.begin(), files.end(), usedFn);
-              if (it != files.end())
-                files.erase(it);
+            // Install the extension
+            if (extension == "aseprite-extension") {
+              Command* cmd = Commands::instance()->byId(CommandId::Options());
+              Params params;
+              params.set("installExtension", fn.c_str());
+              ctx->executeCommand(cmd, params);
+            }
+            // Other extensions will be handled as an image/sprite
+            else {
+              OpenFileCommand cmd;
+              Params params;
+              params.set("filename", fn.c_str());
+              params.set("repeat_checkbox", "true");
+              ctx->executeCommand(&cmd, params);
+
+              // Remove all used file names from the "dropped files"
+              for (const auto& usedFn : cmd.usedFiles()) {
+                auto it = std::find(files.begin(), files.end(), usedFn);
+                if (it != files.end())
+                  files.erase(it);
+              }
             }
           }
         }

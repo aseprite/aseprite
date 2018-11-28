@@ -601,6 +601,25 @@ public:
     }
   }
 
+  bool showDialogToInstallExtension(const std::string& filename) {
+    for (Widget* item : sectionListbox()->children()) {
+      if (auto listItem = dynamic_cast<const ListItem*>(item)) {
+        if (listItem->getValue() == kSectionExtensionsId) {
+          sectionListbox()->selectChild(item);
+          break;
+        }
+      }
+    }
+
+    // Install?
+    if (ui::Alert::show(
+          fmt::format(Strings::alerts_install_extension(), filename)) != 1)
+      return false;
+
+    installExtension(filename);
+    return true;
+  }
+
 private:
 
   void fillExtensionsCombobox(ui::ComboBox* combobox,
@@ -1076,7 +1095,7 @@ private:
   }
 
   void onAddExtension() {
-    base::paths exts = { "zip" };
+    base::paths exts = { "aseprite-extension", "zip" };
     base::paths filename;
     if (!app::show_file_selector(
           "Add Extension", "", exts,
@@ -1084,13 +1103,16 @@ private:
       return;
 
     ASSERT(!filename.empty());
+    installExtension(filename.front());
+  }
 
+  void installExtension(const std::string& filename) {
     try {
       Extensions& exts = App::instance()->extensions();
 
       // Get the extension information from the compressed
       // package.json file.
-      ExtensionInfo info = exts.getCompressedExtensionInfo(filename.front());
+      ExtensionInfo info = exts.getCompressedExtensionInfo(filename);
 
       // Check if the extension already exist
       for (auto ext : exts) {
@@ -1124,8 +1146,7 @@ private:
         break;
       }
 
-      Extension* ext =
-        exts.installCompressedExtension(filename.front(), info);
+      Extension* ext = exts.installCompressedExtension(filename, info);
 
       // Enable extension
       exts.enableExtension(ext, true);
@@ -1133,8 +1154,9 @@ private:
       // Add the new extension in the listbox
       ExtensionItem* item = new ExtensionItem(ext);
       extensionsList()->addChild(item);
-      extensionsList()->selectChild(item);
+      extensionsList()->sortItems();
       extensionsList()->layout();
+      extensionsList()->selectChild(item);
     }
     catch (const std::exception& ex) {
       Console::showException(ex);
@@ -1256,7 +1278,11 @@ public:
   Command* clone() const override { return new OptionsCommand(*this); }
 
 protected:
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+
+private:
+  std::string m_installExtensionFilename;
 };
 
 OptionsCommand::OptionsCommand()
@@ -1268,11 +1294,23 @@ OptionsCommand::OptionsCommand()
     preferences.general.expandMenubarOnMouseover());
 }
 
+void OptionsCommand::onLoadParams(const Params& params)
+{
+  m_installExtensionFilename = params.get("installExtension");
+}
+
 void OptionsCommand::onExecute(Context* context)
 {
   static int curSection = 0;
 
   OptionsWindow window(context, curSection);
+  window.openWindow();
+
+  if (!m_installExtensionFilename.empty()) {
+    if (!window.showDialogToInstallExtension(m_installExtensionFilename))
+      return;
+  }
+
   window.openWindowInForeground();
   if (window.ok())
     window.saveConfig();
