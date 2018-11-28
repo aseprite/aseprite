@@ -285,6 +285,8 @@ void FullscreenPreviewCommand::onExecute(Context* context)
 
   PreviewWindow window(context, editor);
   window.openWindowInForeground();
+
+  app_refresh_screen();
 }
 
 Command* CommandFactory::createFullscreenPreviewCommand()
