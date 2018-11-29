@@ -36,6 +36,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/memory.h"
 #include "base/shared_ptr.h"
@@ -263,7 +264,8 @@ void update_screen_for_document(const Doc* document)
   }
 }
 
-void load_window_pos(Widget* window, const char *section)
+void load_window_pos(Widget* window, const char* section,
+                     const bool limitMinSize)
 {
   // Default position
   Rect orig_pos = window->bounds();
@@ -272,11 +274,17 @@ void load_window_pos(Widget* window, const char *section)
   // Load configurated position
   pos = get_config_rect(section, "WindowPos", pos);
 
-  pos.w = MID(orig_pos.w, pos.w, ui::display_w());
-  pos.h = MID(orig_pos.h, pos.h, ui::display_h());
+  if (limitMinSize) {
+    pos.w = base::clamp(pos.w, orig_pos.w, ui::display_w());
+    pos.h = base::clamp(pos.h, orig_pos.h, ui::display_h());
+  }
+  else {
+    pos.w = std::min(pos.w, ui::display_w());
+    pos.h = std::min(pos.h, ui::display_h());
+  }
 
-  pos.setOrigin(Point(MID(0, pos.x, ui::display_w()-pos.w),
-      MID(0, pos.y, ui::display_h()-pos.h)));
+  pos.setOrigin(Point(base::clamp(pos.x, 0, ui::display_w()-pos.w),
+                      base::clamp(pos.y, 0, ui::display_h()-pos.h)));
 
   window->setBounds(pos);
 }

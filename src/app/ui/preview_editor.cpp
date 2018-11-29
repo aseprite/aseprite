@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -231,7 +232,7 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
             ui::display_h() - height - StatusBar::instance()->bounds().h - extra,
             width, height));
 
-        load_window_pos(this, "MiniEditor");
+        load_window_pos(this, "MiniEditor", false);
         invalidate();
       }
       break;
