@@ -583,6 +583,23 @@ int Dialog_set_data(lua_State* L)
   return 1;
 }
 
+int Dialog_get_bounds(lua_State* L)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+  if (!dlg->window.isVisible())
+    dlg->window.remapWindow();
+  push_new<gfx::Rect>(L, dlg->window.bounds());
+  return 1;
+}
+
+int Dialog_set_bounds(lua_State* L)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+  const auto rc = get_obj<gfx::Rect>(L, 2);
+  dlg->window.setBounds(*rc);
+  return 0;
+}
+
 const luaL_Reg Dialog_methods[] = {
   { "__gc", Dialog_gc },
   { "show", Dialog_show },
@@ -603,6 +620,7 @@ const luaL_Reg Dialog_methods[] = {
 
 const Property Dialog_properties[] = {
   { "data", Dialog_get_data, Dialog_set_data },
+  { "bounds", Dialog_get_bounds, Dialog_set_bounds },
   { nullptr, nullptr, nullptr }
 };
 
