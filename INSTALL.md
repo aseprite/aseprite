@@ -215,6 +215,10 @@ Download
 [Google depot tools](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
 and uncompress it in some place like `C:\deps\depot_tools`.
 
+It's recommended to compile Skia with Clang to get better performance.
+So you will need to [download Clang](http://releases.llvm.org/7.0.0/LLVM-7.0.0-win64.exe),
+and install it on a folder like `C:\deps\llvm` (a folder without whitespaces).
+
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 or command line (`cmd.exe`) and call:
 
@@ -238,6 +242,16 @@ Just ignore it.)
 (The `tools/git-sync-deps` will take some minutes because it downloads
 a lot of packages, please wait and re-run the same command in case it
 fails.)
+
+Finally, if you've downloaded Clang, use this command:
+
+    set PATH=C:\deps\llvm\bin;%PATH%
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=""clang"" cxx=""clang++"" clang_win=""c:\deps\llvm"""
+    ninja -C out/Release skia
+
+If you haven't installed Clang, and want to compile Skia with MSVC
+(anyway it's not recommended because the performance penalty is too
+big), you can use the following commands instead:
 
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"" cc=2017"
     ninja -C out/Release skia
