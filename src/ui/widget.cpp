@@ -801,9 +801,8 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     view = View::getView(manager);
 
     Rect cpos;
-    if (view) {
+    if (view)
       cpos = static_cast<View*>(view)->viewportBounds();
-    }
     else
       cpos = manager->childrenBounds();
 
