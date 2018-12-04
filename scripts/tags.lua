@@ -31,6 +31,6 @@ do
   assert(a == s.tags[1])
   assert(c == s.tags[2])
 
-  assert(c.fromFrame == 5)
-  assert(c.toFrame == 8)
+  assert(c.fromFrame.frameNumber == 5)
+  assert(c.toFrame.frameNumber == 8)
 end

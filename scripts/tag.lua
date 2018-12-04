@@ -10,14 +10,14 @@ do
 
   a = s:newTag(1, 8)
   assert(a.sprite == s)
-  assert(a.fromFrame == 1)
-  assert(a.toFrame == 8)
+  assert(a.fromFrame.frameNumber == 1)
+  assert(a.toFrame.frameNumber == 8)
   assert(a.frames == 8)
 
   a.fromFrame = 2
   a.toFrame = 5
-  assert(a.fromFrame == 2)
-  assert(a.toFrame == 5)
+  assert(a.fromFrame.frameNumber == 2)
+  assert(a.toFrame.frameNumber == 5)
 
   assert(a.name == "Tag")
   a.name = "Tag A"
