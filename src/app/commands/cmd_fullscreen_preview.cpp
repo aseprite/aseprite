@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +11,6 @@
 
 #include "ui/ui.h"
 
-#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
@@ -286,7 +286,12 @@ void FullscreenPreviewCommand::onExecute(Context* context)
   PreviewWindow window(context, editor);
   window.openWindowInForeground();
 
-  app_refresh_screen();
+  // Check that the full screen invalidation code is working
+  // correctly. This check is just in case that some regression is
+  // introduced in ui::Manager() that doesn't handle correctly the
+  // invalidation of the manager when it's fully covered by the closed
+  // window (desktop windows, like PreviewWindow, match this case).
+  ASSERT(editor->manager()->hasFlags(DIRTY));
 }
 
 Command* CommandFactory::createFullscreenPreviewCommand()

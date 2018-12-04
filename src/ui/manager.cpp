@@ -45,6 +45,20 @@
 
 namespace ui {
 
+namespace {
+
+// The redraw state is used to avoid drawing the manager when a window
+// has been just closed by the user, so we delay the redrawing (the
+// kPaintMessages generation) for the next generateMessages() round.
+enum class RedrawState {
+   Normal,
+   AWindowHasJustBeenClosed,
+   RedrawDelayed,
+};
+RedrawState redrawState = RedrawState::Normal;
+
+} // anonymous namespace
+
 #define ACCEPT_FOCUS(widget)                                    \
   ((((widget)->flags() & (FOCUS_STOP |                          \
                           DISABLED |                            \
@@ -636,14 +650,26 @@ void Manager::dispatchMessages()
   // might change the state of widgets, etc. In case pumpQueue()
   // returns a number greater than 0, it means that we've processed
   // some messages, so we've to redraw the screen.
-  if (pumpQueue() > 0) {
-    // Generate and send just kPaintMessages with the latest UI state.
-    flushRedraw();
-    pumpQueue();
-  }
+  if (pumpQueue() > 0 || redrawState == RedrawState::RedrawDelayed) {
+    // If a window has just been closed with Manager::_closeWindow()
+    // after processing messages, we'll wait the next event generation
+    // to process painting events (so the manager doesn't lost the
+    // DIRTY flag right now).
+    if (redrawState == RedrawState::AWindowHasJustBeenClosed) {
+      redrawState = RedrawState::RedrawDelayed;
+    }
+    else {
+      if (redrawState == RedrawState::RedrawDelayed)
+        redrawState = RedrawState::Normal;
 
-  // Flip the back-buffer to the real display.
-  flipDisplay();
+      // Generate and send just kPaintMessages with the latest UI state.
+      flushRedraw();
+      pumpQueue();
+
+      // Flip the back-buffer to the real display.
+      flipDisplay();
+    }
+  }
 }
 
 void Manager::addToGarbage(Widget* widget)
@@ -1153,6 +1179,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   Widget* widget = pick(ui::get_mouse_position());
   if (widget)
     setMouse(widget);
+
+  redrawState = RedrawState::AWindowHasJustBeenClosed;
 }
 
 bool Manager::onProcessMessage(Message* msg)
