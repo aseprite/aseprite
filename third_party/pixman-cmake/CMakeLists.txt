@@ -6,9 +6,10 @@ if(UNIX OR APPLE)
   add_definitions(-DHAVE_PTHREADS)
 endif()
 
+# Minor and micro versions must be even numbers (to avoid defining DEBUG)
 set(PIXMAN_VERSION_MAJOR 0)
-set(PIXMAN_VERSION_MINOR 33)
-set(PIXMAN_VERSION_MICRO 6)
+set(PIXMAN_VERSION_MINOR 34)
+set(PIXMAN_VERSION_MICRO 0)
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/../pixman/pixman/pixman-version.h.in"
