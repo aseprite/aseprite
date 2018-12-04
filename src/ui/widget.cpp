@@ -1611,16 +1611,10 @@ void Widget::offsetWidgets(int dx, int dy)
 void Widget::setDirtyFlag()
 {
   Widget* widget = this;
-  while (widget && !widget->hasFlags(DIRTY)) {
+  while (widget) {
     widget->enableFlags(DIRTY);
     widget = widget->parent();
   }
-#if _DEBUG // Check that all parents has the DIRTY flag
-  while (widget) {
-    ASSERT(widget->hasFlags(DIRTY));
-    widget = widget->parent();
-  }
-#endif
 }
 
 } // namespace ui
