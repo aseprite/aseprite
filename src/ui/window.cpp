@@ -673,7 +673,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     invalidateRegion(reg1);
   }
 
-  manager->invalidateDisplayRegion(invalidManagerRegion);
+  manager->invalidateRegion(invalidManagerRegion);
 
   onWindowMovement();
 }

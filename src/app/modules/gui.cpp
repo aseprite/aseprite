@@ -484,7 +484,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == defered_invalid_timer) {
-        invalidateDisplayRegion(defered_invalid_region);
+        invalidateRegion(defered_invalid_region);
         defered_invalid_region.clear();
         defered_invalid_timer->stop();
       }

@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -82,8 +83,6 @@ namespace ui {
     void removeMessageFilter(int message, Widget* widget);
     void removeMessageFilterFor(Widget* widget);
 
-    void invalidateDisplayRegion(const gfx::Region& region);
-
     LayoutIO* getLayoutIO();
 
     bool isFocusMovementMessage(Message* msg);
@@ -109,6 +108,7 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) override;
+    void onInvalidateRegion(const gfx::Region& region) override;
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
     void onBroadcastMouseMessage(WidgetsList& targets) override;

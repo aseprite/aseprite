@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1530,9 +1531,18 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
   return used;
 }
 
-void Manager::invalidateDisplayRegion(const gfx::Region& region)
+// It's like Widget::onInvalidateRegion() but optimized for the
+// Manager (as we know that all children in a Manager will be windows,
+// we can use this knowledge to avoid some calculations).
+void Manager::onInvalidateRegion(const gfx::Region& region)
 {
-  // TODO intersect with getDrawableRegion()???
+  if (!isVisible() || region.contains(bounds()) == gfx::Region::Out)
+    return;
+
+  // Intersect only with manager bounds, we don't need to use
+  // getDrawableRegion() because each window will be processed in the
+  // following for() loop (and it's highly probable that a desktop
+  // Window will use the whole manager portion anyway).
   gfx::Region reg1;
   reg1.createIntersection(region, gfx::Region(bounds()));
 
@@ -1549,19 +1559,23 @@ void Manager::invalidateDisplayRegion(const gfx::Region& region)
     // There is desktop?
     if (window->isDesktop()) {
       withDesktop = true;
-      break;                                    // Work done
+      break; // Work done
     }
 
     // Clip this window area for the next window.
-    gfx::Region reg3;
-    window->getRegion(reg3);
-    reg1.createSubtraction(reg1, reg3);
+    gfx::Region reg2;
+    window->getRegion(reg2);
+    reg1.createSubtraction(reg1, reg2);
   }
 
   // Invalidate areas outside windows (only when there are not a
   // desktop window).
-  if (!withDesktop)
-    Widget::invalidateRegion(reg1);
+  if (!withDesktop) {
+    // TODO we should be able to modify m_updateRegion directly here,
+    // so we avoid the getDrawableRegion() call from
+    // Widget::onInvalidateRegion().
+    Widget::onInvalidateRegion(reg1);
+  }
 }
 
 LayoutIO* Manager::getLayoutIO()

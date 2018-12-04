@@ -1480,21 +1480,22 @@ bool Widget::onProcessMessage(Message* msg)
 
 void Widget::onInvalidateRegion(const Region& region)
 {
-  if (isVisible() && region.contains(bounds()) != Region::Out) {
-    Region reg1;
-    reg1.createUnion(m_updateRegion, region);
-    {
-      Region reg2;
-      getDrawableRegion(reg2, kCutTopWindows);
-      m_updateRegion.createIntersection(reg1, reg2);
-    }
-    reg1.createSubtraction(region, m_updateRegion);
+  if (!isVisible() || region.contains(bounds()) == Region::Out)
+    return;
 
-    setDirtyFlag();
-
-    for (auto child : m_children)
-      child->invalidateRegion(reg1);
+  Region reg1;
+  reg1.createUnion(m_updateRegion, region);
+  {
+    Region reg2;
+    getDrawableRegion(reg2, kCutTopWindows);
+    m_updateRegion.createIntersection(reg1, reg2);
   }
+  reg1.createSubtraction(region, m_updateRegion);
+
+  setDirtyFlag();
+
+  for (auto child : m_children)
+    child->invalidateRegion(reg1);
 }
 
 void Widget::onSizeHint(SizeHintEvent& ev)
