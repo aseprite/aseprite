@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -399,6 +400,7 @@ namespace ui {
                const bool isBg);
     bool paintEvent(Graphics* graphics,
                     const bool isBg);
+    void setDirtyFlag();
 
     WidgetType m_type;           // Widget's type
     std::string m_id;            // Widget's id

@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -45,14 +46,6 @@
 namespace ui {
 
 using namespace gfx;
-
-static inline void mark_dirty_flag(Widget* widget)
-{
-  while (widget) {
-    widget->enableFlags(DIRTY);
-    widget = widget->parent();
-  }
-}
 
 WidgetType register_widget_type()
 {
@@ -1111,7 +1104,7 @@ void Widget::invalidate()
     m_updateRegion.clear();
     getDrawableRegion(m_updateRegion, kCutTopWindows);
 
-    mark_dirty_flag(this);
+    setDirtyFlag();
 
     for (auto child : m_children)
       child->invalidate();
@@ -1497,7 +1490,7 @@ void Widget::onInvalidateRegion(const Region& region)
     }
     reg1.createSubtraction(region, m_updateRegion);
 
-    mark_dirty_flag(this);
+    setDirtyFlag();
 
     for (auto child : m_children)
       child->invalidateRegion(reg1);
@@ -1613,6 +1606,21 @@ void Widget::offsetWidgets(int dx, int dy)
 
   for (auto child : m_children)
     child->offsetWidgets(dx, dy);
+}
+
+void Widget::setDirtyFlag()
+{
+  Widget* widget = this;
+  while (widget && !widget->hasFlags(DIRTY)) {
+    widget->enableFlags(DIRTY);
+    widget = widget->parent();
+  }
+#if _DEBUG // Check that all parents has the DIRTY flag
+  while (widget) {
+    ASSERT(widget->hasFlags(DIRTY));
+    widget = widget->parent();
+  }
+#endif
 }
 
 } // namespace ui
