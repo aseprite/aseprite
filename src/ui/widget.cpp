@@ -1096,32 +1096,22 @@ void Widget::setTransparent(bool transparent)
 void Widget::invalidate()
 {
   assert_ui_thread();
-
-  // TODO we should use invalidateRect(bounds()) here.
-
-  if (isVisible()) {
-    m_updateRegion.clear();
-    getDrawableRegion(m_updateRegion, kCutTopWindows);
-
-    setDirtyFlag();
-
-    for (auto child : m_children)
-      child->invalidate();
-  }
+  if (!hasFlags(HIDDEN))        // Quick filter for hidden widgets
+    onInvalidateRegion(Region(bounds()));
 }
 
 void Widget::invalidateRect(const gfx::Rect& rect)
 {
   assert_ui_thread();
-
-  if (isVisible())
-    invalidateRegion(Region(rect));
+  if (!hasFlags(HIDDEN))        // Quick filter for hidden widgets
+    onInvalidateRegion(Region(rect));
 }
 
 void Widget::invalidateRegion(const Region& region)
 {
   assert_ui_thread();
-  onInvalidateRegion(region);
+  if (!hasFlags(HIDDEN))        // Quick filter for hidden widgets
+    onInvalidateRegion(region);
 }
 
 class DeleteGraphicsAndSurface {
