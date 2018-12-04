@@ -13,6 +13,7 @@
 #include "app/cmd/set_frame_tag_name.h"
 #include "app/cmd/set_frame_tag_range.h"
 #include "app/script/docobj.h"
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/tx.h"
 #include "doc/frame_tag.h"
@@ -43,14 +44,20 @@ int Tag_get_sprite(lua_State* L)
 int Tag_get_fromFrame(lua_State* L)
 {
   auto tag = get_docobj<FrameTag>(L, 1);
-  lua_pushinteger(L, tag->fromFrame()+1);
+  if (tag->owner()->sprite())
+    push_sprite_frame(L, tag->owner()->sprite(), tag->fromFrame());
+  else
+    lua_pushnil(L);
   return 1;
 }
 
 int Tag_get_toFrame(lua_State* L)
 {
   auto tag = get_docobj<FrameTag>(L, 1);
-  lua_pushinteger(L, tag->toFrame()+1);
+  if (tag->owner()->sprite())
+    push_sprite_frame(L, tag->owner()->sprite(), tag->toFrame());
+  else
+    lua_pushnil(L);
   return 1;
 }
 
@@ -78,7 +85,7 @@ int Tag_get_aniDir(lua_State* L)
 int Tag_set_fromFrame(lua_State* L)
 {
   auto tag = get_docobj<FrameTag>(L, 1);
-  const int fromFrame = lua_tointeger(L, 2)-1;
+  const auto fromFrame = get_frame_number_from_arg(L, 2);
   Tx tx;
   tx(new cmd::SetFrameTagRange(tag, fromFrame,
                                std::max(fromFrame, tag->toFrame())));
@@ -89,7 +96,7 @@ int Tag_set_fromFrame(lua_State* L)
 int Tag_set_toFrame(lua_State* L)
 {
   auto tag = get_docobj<FrameTag>(L, 1);
-  const int toFrame = lua_tointeger(L, 2)-1;
+  const auto toFrame = get_frame_number_from_arg(L, 2);
   Tx tx;
   tx(new cmd::SetFrameTagRange(tag,
                                std::min(tag->fromFrame(), toFrame),
