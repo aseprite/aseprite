@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,7 +39,7 @@
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
 #define WEBSITE_NEWS_RSS        "http://blog.aseprite.org/rss"
 #define UPDATE_URL              WEBSITE "update/?xml=1"
-#define COPYRIGHT               "Copyright (C) 2001-2018 David Capello"
+#define COPYRIGHT               "Copyright (C) 2001-2018 Igara Studio S.A."
 
 #include "base/base.h"
 #include "base/debug.h"
