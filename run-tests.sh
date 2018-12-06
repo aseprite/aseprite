@@ -67,14 +67,17 @@ done
 echo ----------------------------------------------------------------------
 echo "Testing CLI..."
 
-result=0
 for script in cli/*.sh ; do
     echo "Running $script"
     source $script
 done
 
 echo ----------------------------------------------------------------------
-echo Done
+if [ $result == 0 ] ; then
+    echo Done
+else
+    echo FAILED
+fi
 echo ----------------------------------------------------------------------
 
 exit $result
