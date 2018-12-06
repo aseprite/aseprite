@@ -279,7 +279,7 @@ static void hline_for_image(int x1, int y, int x2, Data* data)
 void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t color)
 {
   Data data = { image, color };
-  algo_line(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
+  algo_line_continuous(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
 void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t color)

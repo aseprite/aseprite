@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,7 +21,7 @@
 
 namespace doc {
 
-void algo_line(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
+void algo_line_perfect(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
 {
   bool yaxis;
 
@@ -60,6 +61,32 @@ void algo_line(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
     if (e >= w) {
       y += dy;
       e -= w;
+    }
+  }
+}
+
+// Line code based on Alois Zingl work released under the
+// MIT license http://members.chello.at/easyfilter/bresenham.html
+void algo_line_continuous(int x0, int y0, int x1, int y1, void* data, AlgoPixel proc)
+{
+  int dx =  ABS(x1-x0), sx = (x0 < x1 ? 1: -1);
+  int dy = -ABS(y1-y0), sy = (y0 < y1 ? 1: -1);
+  int err = dx+dy, e2;                                  // error value e_xy
+
+  for (;;) {
+    proc(x0, y0, data);
+    e2 = 2*err;
+    if (e2 >= dy) {                                       // e_xy+e_x > 0
+      if (x0 == x1)
+        break;
+      err += dy;
+      x0 += sx;
+    }
+    if (e2 <= dx) {                                       // e_xy+e_y < 0
+      if (y0 == y1)
+        break;
+      err += dx;
+      y0 += sy;
     }
   }
 }
@@ -132,11 +159,11 @@ void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
   rx = ABS(x1 - x2);
   ry = ABS(y1 - y2);
 
-  if (rx == 1) { algo_line(x2, y1, x2, y2, data, proc); rx--; }
-  if (rx == 0) { algo_line(x1, y1, x1, y2, data, proc); return; }
+  if (rx == 1) { algo_line_perfect(x2, y1, x2, y2, data, proc); rx--; }
+  if (rx == 0) { algo_line_perfect(x1, y1, x1, y2, data, proc); return; }
 
-  if (ry == 1) { algo_line(x1, y2, x2, y2, data, proc); ry--; }
-  if (ry == 0) { algo_line(x1, y1, x2, y1, data, proc); return; }
+  if (ry == 1) { algo_line_perfect(x1, y2, x2, y2, data, proc); ry--; }
+  if (ry == 0) { algo_line_perfect(x1, y1, x2, y1, data, proc); return; }
 
   rx /= 2;
   ry /= 2;
@@ -316,7 +343,7 @@ static void draw_quad_rational_bezier_seg(int x0, int y0,
       }
     } while (dy <= xy && dx >= xy);    // gradient negates -> algorithm fails
   }
-  algo_line(x0, y0, x2, y2, data, proc); // plot remaining needle to end
+  algo_line_continuous(x0, y0, x2, y2, data, proc); // plot remaining needle to end
 }
 
 static void draw_rotated_ellipse_rect(int x0, int y0, int x1, int y1, double zd, void* data, AlgoPixel proc)

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -57,15 +58,15 @@ public:
         int x2 = stroke[c+1].x;
         int y2 = stroke[c+1].y;
 
-        algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
+        doPointshapeLine(x1, y1, x2, y2, loop);
       }
     }
 
     // Closed shape (polygon outline)
     if (loop->getFilled()) {
-      algo_line(stroke[0].x, stroke[0].y,
-                stroke[stroke.size()-1].x,
-                stroke[stroke.size()-1].y, loop, (AlgoPixel)doPointshapePoint);
+      doPointshapeLine(stroke[0].x, stroke[0].y,
+                       stroke[stroke.size()-1].x,
+                       stroke[stroke.size()-1].y, loop);
     }
   }
 
@@ -308,20 +309,22 @@ public:
         doPointshapePoint(stroke[c].x, stroke[c].y, loop);
       }
       else if (stroke.size()-c == 2) {
-        algo_line(stroke[c].x, stroke[c].y,
-                  stroke[c+1].x, stroke[c+1].y, loop, (AlgoPixel)doPointshapePoint);
+        doPointshapeLine(stroke[c].x, stroke[c].y,
+                         stroke[c+1].x, stroke[c+1].y, loop);
       }
       else if (stroke.size()-c == 3) {
         algo_spline(stroke[c  ].x, stroke[c  ].y,
                     stroke[c+1].x, stroke[c+1].y,
                     stroke[c+1].x, stroke[c+1].y,
-                    stroke[c+2].x, stroke[c+2].y, loop, (AlgoLine)doPointshapeLine);
+                    stroke[c+2].x, stroke[c+2].y, loop,
+                    (AlgoLine)doPointshapeLine);
       }
       else {
         algo_spline(stroke[c  ].x, stroke[c  ].y,
                     stroke[c+1].x, stroke[c+1].y,
                     stroke[c+2].x, stroke[c+2].y,
-                    stroke[c+3].x, stroke[c+3].y, loop, (AlgoLine)doPointshapeLine);
+                    stroke[c+3].x, stroke[c+3].y, loop,
+                    (AlgoLine)doPointshapeLine);
       }
     }
   }
@@ -363,12 +366,16 @@ public:
 
     if (stroke.size() == 0)
       return;
+    else if (stroke.size() == 2) {
+      doPointshapeLine(stroke[0].x, stroke[0].y,
+                       stroke[1].x, stroke[1].y, loop);
+    }
     else if (m_pts.empty() && stroke.size() == 1) {
       m_pts = stroke;
     }
     else {
       for (int c=0; c+1<stroke.size(); ++c) {
-        algo_line(
+        algo_line_continuous(
           stroke[c].x,
           stroke[c].y,
           stroke[c+1].x,
