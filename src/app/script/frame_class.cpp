@@ -11,6 +11,7 @@
 
 #include "app/cmd/set_frame_duration.h"
 #include "app/script/docobj.h"
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/tx.h"
 #include "doc/frame.h"
@@ -74,6 +75,30 @@ int Frame_get_duration(lua_State* L)
   return 1;
 }
 
+int Frame_get_previous(lua_State* L)
+{
+  auto obj = get_obj<FrameObj>(L, 1);
+  auto sprite = obj->sprite(L);
+  auto frame = obj->frame-1;
+  if (frame >= 0 && frame < sprite->totalFrames())
+    push_sprite_frame(L, sprite, frame);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Frame_get_next(lua_State* L)
+{
+  auto obj = get_obj<FrameObj>(L, 1);
+  auto sprite = obj->sprite(L);
+  auto frame = obj->frame+1;
+  if (frame >= 0 && frame < sprite->totalFrames())
+    push_sprite_frame(L, sprite, frame);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int Frame_set_duration(lua_State* L)
 {
   auto obj = get_obj<FrameObj>(L, 1);
@@ -95,6 +120,8 @@ const Property Frame_properties[] = {
   { "sprite", Frame_get_sprite, nullptr },
   { "frameNumber", Frame_get_frameNumber, nullptr },
   { "duration", Frame_get_duration, Frame_set_duration },
+  { "previous", Frame_get_previous, nullptr },
+  { "next", Frame_get_next, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
