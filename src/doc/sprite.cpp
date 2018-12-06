@@ -24,6 +24,7 @@
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
 
+#include <algorithm>
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -357,7 +358,9 @@ RgbMap* Sprite::rgbMap(frame_t frame, RgbMapFor forLayer) const
 void Sprite::addFrame(frame_t newFrame)
 {
   setTotalFrames(m_frames+1);
-  for (frame_t i=m_frames-1; i>=newFrame; --i)
+
+  frame_t to = std::max(1, newFrame);
+  for (frame_t i=m_frames-1; i>=to; --i)
     setFrameDuration(i, frameDuration(i-1));
 
   root()->displaceFrames(newFrame, +1);
