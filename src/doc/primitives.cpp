@@ -362,7 +362,7 @@ bool is_empty_image(const Image* img)
   color_t c = 0;                // alpha = 0
   if (img->colorMode() == ColorMode::INDEXED)
     c = img->maskColor();
-  return is_plain_image(img, 0);
+  return is_plain_image(img, c);
 }
 
 int count_diff_between_images(const Image* i1, const Image* i2)
