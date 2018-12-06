@@ -60,6 +60,19 @@ namespace doc {
       m_height = sz.h;
     }
 
+    bool operator==(const ImageSpec& that) const {
+      return (m_colorMode == that.m_colorMode &&
+              m_width == that.m_width &&
+              m_height == that.m_height &&
+              m_maskColor == that.m_maskColor &&
+              ((!m_colorSpace && !that.m_colorSpace) ||
+               (m_colorSpace && that.m_colorSpace &&
+                m_colorSpace->nearlyEqual(*that.m_colorSpace))));
+    }
+    bool operator!=(const ImageSpec& that) const {
+      return !operator==(that);
+    }
+
   private:
     ColorMode m_colorMode;
     int m_width;

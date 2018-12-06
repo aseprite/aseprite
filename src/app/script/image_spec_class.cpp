@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2018  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,6 +55,14 @@ int ImageSpec_gc(lua_State* L)
 {
   get_obj<doc::ImageSpec>(L, 1)->~ImageSpec();
   return 0;
+}
+
+int ImageSpec_eq(lua_State* L)
+{
+  auto a = get_obj<doc::ImageSpec>(L, 1);
+  auto b = get_obj<doc::ImageSpec>(L, 2);
+  lua_pushboolean(L, *a == *b);
+  return 1;
 }
 
 int ImageSpec_get_colorMode(lua_State* L)
@@ -114,6 +123,7 @@ int ImageSpec_set_transparentColor(lua_State* L)
 
 const luaL_Reg ImageSpec_methods[] = {
   { "__gc", ImageSpec_gc },
+  { "__eq", ImageSpec_eq },
   { nullptr, nullptr }
 };
 
