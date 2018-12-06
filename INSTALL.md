@@ -215,8 +215,8 @@ Download
 [Google depot tools](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
 and uncompress it in some place like `C:\deps\depot_tools`.
 
-It's recommended to compile Skia with Clang to get better performance.
-So you will need to [download Clang](http://releases.llvm.org/7.0.0/LLVM-7.0.0-win64.exe),
+[It's recommended to compile Skia with Clang](https://github.com/google/skia/blob/master/site/user/build.md#a-note-on-software-backend-performance)
+to get better performance. So you will need to [download Clang](http://releases.llvm.org/7.0.0/LLVM-7.0.0-win64.exe),
 and install it on a folder like `C:\deps\llvm` (a folder without whitespaces).
 
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
