@@ -166,7 +166,7 @@ int Image_drawSprite(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   const auto sprite = get_docobj<Sprite>(L, 2);
-  doc::frame_t frame = lua_tointeger(L, 3)-1;
+  doc::frame_t frame = get_frame_number_from_arg(L, 3);
   gfx::Point pos = convert_args_into_point(L, 4);
   doc::Image* dst = obj->image(L);
 

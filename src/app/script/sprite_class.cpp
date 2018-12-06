@@ -266,7 +266,7 @@ int Sprite_newFrame(lua_State* L)
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = sprite->lastFrame()+1;
   if (lua_gettop(L) >= 2) {
-    frame = lua_tointeger(L, 2)-1;
+    frame = get_frame_number_from_arg(L, 2);
     if (frame < 0)
       return luaL_error(L, "frame index out of bounds %d", frame+1);
   }
@@ -285,8 +285,8 @@ int Sprite_newEmptyFrame(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = sprite->lastFrame()+1;
-  if (lua_gettop(L) >= 1) {
-    frame = lua_tointeger(L, 2)-1;
+  if (lua_gettop(L) >= 2) {
+    frame = get_frame_number_from_arg(L, 2);
     if (frame < 0)
       return luaL_error(L, "frame index out of bounds %d", frame+1);
   }
@@ -304,7 +304,7 @@ int Sprite_newEmptyFrame(lua_State* L)
 int Sprite_deleteFrame(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  doc::frame_t frame = lua_tointeger(L, 2)-1;
+  doc::frame_t frame = get_frame_number_from_arg(L, 2);
   if (frame < 0 || frame > sprite->lastFrame())
     return luaL_error(L, "frame index out of bounds %d", frame+1);
 
@@ -323,7 +323,7 @@ int Sprite_newCel(lua_State* L)
   if (!layerBase->isImage())
     return luaL_error(L, "unexpected kinf of layer in Sprite:newCel()");
 
-  frame_t frame = lua_tointeger(L, 3)-1;
+  frame_t frame = get_frame_number_from_arg(L, 3);
   if (frame < 0 || frame > sprite->lastFrame())
     return luaL_error(L, "frame index out of bounds %d", frame+1);
 
@@ -364,7 +364,7 @@ int Sprite_deleteCel(lua_State* L)
   auto cel = may_get_docobj<doc::Cel>(L, 2);
   if (!cel) {
     if (auto layer = may_get_docobj<doc::Layer>(L, 2)) {
-      doc::frame_t frame = lua_tointeger(L, 3);
+      doc::frame_t frame = get_frame_number_from_arg(L, 3);
       if (layer->isImage())
         cel = static_cast<doc::LayerImage*>(layer)->cel(frame);
     }
@@ -384,8 +384,8 @@ int Sprite_deleteCel(lua_State* L)
 int Sprite_newTag(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  auto from = lua_tointeger(L, 2)-1;
-  auto to = lua_tointeger(L, 3)-1;
+  auto from = get_frame_number_from_arg(L, 2);
+  auto to = get_frame_number_from_arg(L, 3);
   auto tag = new doc::FrameTag(from, to);
   sprite->frameTags().add(tag);
   push_docobj(L, tag);
