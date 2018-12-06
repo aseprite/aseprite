@@ -35,6 +35,17 @@ int Layer_eq(lua_State* L)
   return 1;
 }
 
+int Layer_cel(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  auto cel = layer->cel(get_frame_number_from_arg(L, 2));
+  if (cel)
+    push_docobj<Cel>(L, cel);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int Layer_get_sprite(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -245,6 +256,7 @@ int Layer_set_isExpanded(lua_State* L)
 
 const luaL_Reg Layer_methods[] = {
   { "__eq", Layer_eq },
+  { "cel", Layer_cel },
   { nullptr, nullptr }
 };
 
