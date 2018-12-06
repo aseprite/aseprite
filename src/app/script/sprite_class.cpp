@@ -265,16 +265,18 @@ int Sprite_newFrame(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = sprite->lastFrame()+1;
+  doc::frame_t copyThis = frame;
   if (lua_gettop(L) >= 2) {
     frame = get_frame_number_from_arg(L, 2);
     if (frame < 0)
       return luaL_error(L, "frame index out of bounds %d", frame+1);
+    copyThis = frame+1; // addFrame() copies the previous frame of the given one.
   }
 
   Doc* doc = static_cast<Doc*>(sprite->document());
 
   Tx tx;
-  doc->getApi(tx).addFrame(sprite, frame);
+  doc->getApi(tx).addFrame(sprite, copyThis);
   tx.commit();
 
   push_sprite_frame(L, sprite, frame);
