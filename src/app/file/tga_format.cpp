@@ -463,6 +463,9 @@ bool TgaFormat::onSave(FileOp* fop)
       break;
   }
 
+  const char* tga2_footer = "\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0";
+  fwrite(tga2_footer, 1, 26, f);
+
   if (ferror(f)) {
     fop->setError("Error writing file.\n");
     return false;
