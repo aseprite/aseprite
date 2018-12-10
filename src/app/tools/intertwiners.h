@@ -366,10 +366,6 @@ public:
 
     if (stroke.size() == 0)
       return;
-    else if (stroke.size() == 2) {
-      doPointshapeLine(stroke[0].x, stroke[0].y,
-                       stroke[1].x, stroke[1].y, loop);
-    }
     else if (m_pts.empty() && stroke.size() == 1) {
       m_pts = stroke;
     }
