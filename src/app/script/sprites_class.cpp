@@ -33,7 +33,7 @@ struct SpritesObj {
 
   SpritesObj(const Docs& docs) {
     for (const Doc* doc : docs)
-      this->docs.push_back(doc->id());
+      this->docs.push_back(doc->sprite()->id());
   }
 
   SpritesObj(const SpritesObj&) = delete;

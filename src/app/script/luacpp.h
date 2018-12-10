@@ -15,6 +15,8 @@ extern "C" {
   #include "lauxlib.h"
 }
 
+#include "base/debug.h"
+
 #include <functional>
 #include <type_traits>
 
@@ -61,14 +63,18 @@ template <typename T> T* get_ptr(lua_State* L, int index) {
 }
 
 template <typename T> T* get_obj(lua_State* L, int index) {
-  return (T*)luaL_checkudata(L, index, get_mtname<T>());
+  T* ptr = (T*)luaL_checkudata(L, index, get_mtname<T>());
+  ASSERT(typeid(*ptr) == typeid(T));
+  return ptr;
 }
 
 // Returns nil if the index doesn't have the given metatable
 template <typename T> T* may_get_ptr(lua_State* L, int index) {
   T** ptr = (T**)luaL_testudata(L, index, get_mtname<T>());
-  if (ptr)
+  if (ptr) {
+    ASSERT(typeid(**ptr) == typeid(T));
     return *ptr;
+  }
   else
     return nullptr;
 }
