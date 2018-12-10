@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +16,7 @@ namespace app {
   class AppOptions;
   class Context;
   class DocExporter;
+  class Params;
   struct CliOpenFile;
 
   class CliDelegate {
@@ -30,7 +32,10 @@ namespace app {
     virtual void saveFile(Context* ctx, const CliOpenFile& cof) { }
     virtual void loadPalette(Context* ctx, const CliOpenFile& cof, const std::string& filename) { }
     virtual void exportFiles(Context* ctx, DocExporter& exporter) { }
-    virtual void execScript(const std::string& filename) { }
+#ifdef ENABLE_SCRIPTING
+    virtual void execScript(const std::string& filename,
+                            const Params& params) { }
+#endif // ENABLE_SCRIPTING
   };
 
 } // namespace app

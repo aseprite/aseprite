@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -206,10 +207,19 @@ void PreviewCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
   }
 }
 
-void PreviewCliDelegate::execScript(const std::string& filename)
+#ifdef ENABLE_SCRIPTING
+void PreviewCliDelegate::execScript(const std::string& filename,
+                                    const Params& params)
 {
   std::cout << "- Run script: '" << filename << "'\n";
+  if (!params.empty()) {
+    std::cout << "  - With app.params = {\n";
+    for (const auto& kv : params)
+      std::cout << "    " << kv.first << "=\"" << kv.second << "\",\n";
+    std::cout << "  }\n";
+  }
 }
+#endif // ENABLE_SCRIPTING
 
 void PreviewCliDelegate::showLayersFilter(const CliOpenFile& cof)
 {

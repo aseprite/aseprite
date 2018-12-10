@@ -161,6 +161,8 @@ void register_sprites_class(lua_State* L);
 void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
 
+void set_app_params(lua_State* L, const Params& params);
+
 // We use our own fopen() that supports Unicode filename on Windows
 extern "C" FILE* lua_user_fopen(const char* fname,
                                 const char* mode)
@@ -351,7 +353,8 @@ bool Engine::evalCode(const std::string& code,
   return ok;
 }
 
-bool Engine::evalFile(const std::string& filename)
+bool Engine::evalFile(const std::string& filename,
+                      const Params& params)
 {
   std::stringstream buf;
   {
@@ -361,6 +364,7 @@ bool Engine::evalFile(const std::string& filename)
   std::string absFilename = base::get_absolute_path(filename);
 
   AddScriptFilename add(absFilename);
+  set_app_params(L, params);
   return evalCode(buf.str(), "@" + absFilename);
 }
 

@@ -43,6 +43,7 @@ protected:
 
 private:
   std::string m_filename;
+  Params m_params;
 };
 
 RunScriptCommand::RunScriptCommand()
@@ -59,6 +60,8 @@ void RunScriptCommand::onLoadParams(const Params& params)
     if (rf.findFirst())
       m_filename = rf.filename();
   }
+
+  m_params = params;
 }
 
 void RunScriptCommand::onExecute(Context* context)
@@ -76,7 +79,7 @@ void RunScriptCommand::onExecute(Context* context)
 
   App::instance()
     ->scriptEngine()
-    ->evalFile(m_filename);
+    ->evalFile(m_filename, m_params);
 
   ui::Manager::getDefault()->invalidate();
 }

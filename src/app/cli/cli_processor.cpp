@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -134,6 +135,9 @@ void CliProcessor::process(Context* ctx)
   }
   // Process other options and file names
   else if (!m_options.values().empty()) {
+#ifdef ENABLE_SCRIPTING
+    Params scriptParams;
+#endif
     Console console;
     CliOpenFile cof;
     SpriteSheetType sheetType = SpriteSheetType::None;
@@ -431,7 +435,17 @@ void CliProcessor::process(Context* ctx)
         // --script <filename>
         else if (opt == &m_options.script()) {
           std::string filename = value.value();
-          m_delegate->execScript(filename);
+          m_delegate->execScript(filename, scriptParams);
+        }
+        // --script-param <name=value>
+        else if (opt == &m_options.scriptParam()) {
+          const std::string& v = value.value();
+          auto i = v.find('=');
+          if (i != std::string::npos)
+            scriptParams.set(v.substr(0, i).c_str(),
+                             v.substr(i+1).c_str());
+          else
+            scriptParams.set(v.c_str(), "1");
         }
 #endif
         // --list-layers

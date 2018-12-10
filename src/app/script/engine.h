@@ -14,6 +14,7 @@
 #endif
 
 #include "app/color.h"
+#include "app/commands/params.h"
 #include "doc/frame.h"
 #include "doc/object_ids.h"
 #include "gfx/fwd.h"
@@ -67,7 +68,8 @@ namespace app {
     void printLastResult();
     bool evalCode(const std::string& code,
                   const std::string& filename = std::string());
-    bool evalFile(const std::string& filename);
+    bool evalFile(const std::string& filename,
+                  const Params& params = Params());
 
     void consolePrint(const char* text) {
       onConsolePrint(text);

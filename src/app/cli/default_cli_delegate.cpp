@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -127,12 +128,13 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
   LOG("APP: Export sprite sheet: Done\n");
 }
 
-void DefaultCliDelegate::execScript(const std::string& filename)
-{
 #ifdef ENABLE_SCRIPTING
-  if (!App::instance()->scriptEngine()->evalFile(filename))
+void DefaultCliDelegate::execScript(const std::string& filename,
+                                    const Params& params)
+{
+  if (!App::instance()->scriptEngine()->evalFile(filename, params))
     throw std::runtime_error("Error executing script");
-#endif
 }
+#endif // ENABLE_SCRIPTING
 
 } // namespace app

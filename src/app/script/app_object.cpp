@@ -468,5 +468,17 @@ void register_app_object(lua_State* L)
   lua_pop(L, 1);                // Pop app table
 }
 
+void set_app_params(lua_State* L, const Params& params)
+{
+  lua_getglobal(L, "app");
+  lua_newtable(L);
+  for (const auto& kv : params) {
+    lua_pushstring(L, kv.second.c_str());
+    lua_setfield(L, -2, kv.first.c_str());
+  }
+  lua_setfield(L, -2, "params");
+  lua_pop(L, 1);
+}
+
 } // namespace script
 } // namespace app
