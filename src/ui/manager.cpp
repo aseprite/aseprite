@@ -292,7 +292,10 @@ bool Manager::generateMessages()
   // Generate messages for timers
   Timer::pollTimers();
 
-  if (!msg_queue.empty())
+  // Returns true if we have to dispatch messages (if the redraw was
+  // delayed, we have to pump messages because there is where paint
+  // messages are flushed)
+  if (!msg_queue.empty() || redrawState != RedrawState::Normal)
     return true;
   else
     return false;
@@ -340,6 +343,7 @@ void Manager::generateMessagesFromOSEvents()
     // TODO Add timers to laf::os library so we can wait for then in
     //      the OS message loop.
     bool canWait = (msg_queue.empty() &&
+                    redrawState == RedrawState::Normal &&
                     !Timer::haveRunningTimers());
 
     m_eventQueue->getEvent(sheEvent, canWait);
