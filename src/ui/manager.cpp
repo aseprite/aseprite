@@ -89,6 +89,7 @@ static base::thread::native_handle_type manager_thread = 0;
 
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
+static Messages used_msg_queue;        // Messages queue
 static base::concurrent_queue<Message*> concurrent_msg_queue;
 static Filters msg_filters[NFILTERS]; // Filters for every enqueued message
 static int filter_locks = 0;
@@ -972,6 +973,9 @@ void Manager::removeMessagesFor(Widget* widget)
 
   for (Message* msg : msg_queue)
     removeWidgetFromRecipients(widget, msg);
+
+  for (Message* msg : used_msg_queue)
+    removeWidgetFromRecipients(widget, msg);
 }
 
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
@@ -981,6 +985,10 @@ void Manager::removeMessagesFor(Widget* widget, MessageType type)
 #endif
 
   for (Message* msg : msg_queue)
+    if (msg->type() == type)
+      removeWidgetFromRecipients(widget, msg);
+
+  for (Message* msg : used_msg_queue)
     if (msg->type() == type)
       removeWidgetFromRecipients(widget, msg);
 }
@@ -993,9 +1001,7 @@ void Manager::removeMessagesForTimer(Timer* timer)
 
   for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* msg = *it;
-
-    if (!msg->isUsed() &&
-        msg->type() == kTimerMessage &&
+    if (msg->type() == kTimerMessage &&
         static_cast<TimerMessage*>(msg)->timer() == timer) {
       delete msg;
       it = msg_queue.erase(it);
@@ -1368,25 +1374,19 @@ int Manager::pumpQueue()
 #endif
 
   int count = 0;                // Number of processed messages
-  auto it = msg_queue.begin();
-  while (it != msg_queue.end()) {
+  while (!msg_queue.empty()) {
 #ifdef LIMIT_DISPATCH_TIME
     if (base::current_tick()-t > 250)
       break;
 #endif
 
     // The message to process
+    auto it = msg_queue.begin();
     Message* msg = *it;
 
-    // Go to next message
-    if (msg->isUsed()) {
-      ++it;
-      continue;
-    }
-
-    // This message is in use
-    msg->markAsUsed();
-    Message* first_msg = msg;
+    // Move the message from msg_queue to used_msg_queue
+    msg_queue.erase(it);
+    auto eraseIt = used_msg_queue.insert(used_msg_queue.end(), msg);
 
     // Call Timer::tick() if this is a tick message.
     if (msg->type() == kTimerMessage) {
@@ -1427,11 +1427,11 @@ int Manager::pumpQueue()
       }
     }
 
-    // Remove the message from the msg_queue
-    it = msg_queue.erase(it);
+    // Remove the message from the used_msg_queue
+    used_msg_queue.erase(eraseIt);
 
     // Destroy the message
-    delete first_msg;
+    delete msg;
     ++count;
   }
 

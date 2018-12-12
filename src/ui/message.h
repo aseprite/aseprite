@@ -28,10 +28,9 @@ namespace ui {
 
   class Message {
     enum Flags {
-      Used = 1,               // Message already used/processed by one widget
-      FromFilter = 2,         // Sent from pre-filter
-      PropagateToChildren = 4,
-      PropagateToParent = 8,
+      FromFilter          = 1,  // Sent from pre-filter
+      PropagateToChildren = 2,
+      PropagateToParent   = 4,
     };
   public:
     typedef WidgetsList::iterator& recipients_iterator;
@@ -43,10 +42,8 @@ namespace ui {
     MessageType type() const { return m_type; }
     const WidgetsList& recipients() const { return m_recipients; }
     bool hasRecipients() const { return !m_recipients.empty(); }
-    bool isUsed() const { return hasFlag(Used); }
     bool fromFilter() const { return hasFlag(FromFilter); }
     void setFromFilter(const bool state) { setFlag(FromFilter, state); }
-    void markAsUsed() { setFlag(Used, true); }
     KeyModifiers modifiers() const { return m_modifiers; }
     bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
     bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
@@ -80,7 +77,7 @@ namespace ui {
 
     MessageType m_type;       // Type of message
     WidgetsList m_recipients; // List of recipients of the message
-    int m_flags;              // Was used
+    int m_flags;              // Special flags for this message
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
   };
 
