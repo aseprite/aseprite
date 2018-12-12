@@ -372,7 +372,8 @@ bool ComboBox::onProcessMessage(Message* msg)
 
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
           Widget* pick = manager()->pick(mouseMsg->position());
-          return (pick && pick->hasAncestor(this) ? true: false);
+          if (pick && pick->hasAncestor(this))
+            return true;
         }
       }
       break;

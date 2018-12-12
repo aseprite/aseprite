@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -495,7 +496,7 @@ private:
       label->Click.connect(
         [this, url]{
           Message* msg = new LoadFileMessage(url);
-          msg->addRecipient(this);
+          msg->setRecipient(this);
           Manager::getDefault()->enqueueMessage(msg);
         });
     }

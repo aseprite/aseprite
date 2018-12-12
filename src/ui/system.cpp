@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -355,7 +356,7 @@ void execute_from_ui_thread(std::function<void()>&& f)
   ASSERT(man);
 
   FunctionMessage* msg = new FunctionMessage(std::move(f));
-  msg->addRecipient(man);
+  msg->setRecipient(man);
   man->enqueueMessage(msg);
 }
 

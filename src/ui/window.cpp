@@ -609,7 +609,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
   // Send a kWinMoveMessage message to the window
   Message* msg = new Message(kWinMoveMessage);
-  msg->addRecipient(this);
+  msg->setRecipient(this);
   manager->enqueueMessage(msg);
 
   // Get the region & the drawable region of the window

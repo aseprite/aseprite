@@ -23,6 +23,8 @@ namespace ui {
 Message::Message(MessageType type, KeyModifiers modifiers)
   : m_type(type)
   , m_flags(0)
+  , m_recipient(nullptr)
+  , m_commonAncestor(nullptr)
 {
   if (modifiers == kKeyUninitializedModifier && os::instance())
     m_modifiers = os::instance()->keyModifiers();
@@ -34,31 +36,17 @@ Message::~Message()
 {
 }
 
-void Message::addRecipient(Widget* widget)
+void Message::setRecipient(Widget* widget)
 {
+  ASSERT(m_recipient == nullptr);
   ASSERT_VALID_WIDGET(widget);
-
-  m_recipients.push_back(widget);
+  m_recipient = widget;
 }
 
 void Message::removeRecipient(Widget* widget)
 {
-  for (WidgetsList::iterator
-         it = m_recipients.begin(),
-         end = m_recipients.end(); it != end; ++it) {
-    if (*it == widget)
-      *it = NULL;
-  }
-}
-
-void Message::broadcastToChildren(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  for (auto child : widget->children())
-    broadcastToChildren(child);
-
-  addRecipient(widget);
+  if (m_recipient == widget)
+    m_recipient = nullptr;
 }
 
 KeyMessage::KeyMessage(MessageType type,

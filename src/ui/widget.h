@@ -165,11 +165,6 @@ namespace ui {
     Widget* parent() const { return m_parent; }
     Manager* manager() const;
 
-    // Returns a list of parents, if "ascendant" is true the list is
-    // build from child to parents, else the list is from parent to
-    // children.
-    void getParents(bool ascendant, WidgetsList& parents);
-
     // Returns a list of children.
     const WidgetsList& children() const { return m_children; }
 
@@ -341,10 +336,10 @@ namespace ui {
     void captureMouse();
     void releaseMouse();
 
-    bool hasFocus() const;
-    bool hasMouse() const;
+    bool hasFocus() const { return hasFlags(HAS_FOCUS); }
+    bool hasMouse() const { return hasFlags(HAS_MOUSE); }
+    bool hasCapture() const { return hasFlags(HAS_CAPTURE); }
     bool hasMouseOver() const;
-    bool hasCapture() const;
 
     // Offer the capture to widgets of the given type. Returns true if
     // the capture was passed to other widget.

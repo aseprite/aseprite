@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -91,7 +92,7 @@ void Timer::pollTimers()
           ASSERT(timer->m_owner != nullptr);
 
           Message* msg = new TimerMessage(count, timer);
-          msg->addRecipient(timer->m_owner);
+          msg->setRecipient(timer->m_owner);
           Manager::getDefault()->enqueueMessage(msg);
         }
       }

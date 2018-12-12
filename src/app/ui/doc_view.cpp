@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -357,7 +358,8 @@ bool DocView::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
     case kFocusEnterMessage:
-      m_editor->requestFocus();
+      if (msg->recipient() != m_editor)
+        m_editor->requestFocus();
       break;
   }
   return Box::onProcessMessage(msg);

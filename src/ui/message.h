@@ -40,8 +40,7 @@ namespace ui {
     virtual ~Message();
 
     MessageType type() const { return m_type; }
-    const WidgetsList& recipients() const { return m_recipients; }
-    bool hasRecipients() const { return !m_recipients.empty(); }
+    Widget* recipient() const { return m_recipient; }
     bool fromFilter() const { return hasFlag(FromFilter); }
     void setFromFilter(const bool state) { setFlag(FromFilter, state); }
     KeyModifiers modifiers() const { return m_modifiers; }
@@ -56,15 +55,16 @@ namespace ui {
     bool onlyCmdPressed() const { return m_modifiers == kKeyCmdModifier; }
     bool onlyWinPressed() const { return m_modifiers == kKeyWinModifier; }
 
-    void addRecipient(Widget* widget);
+    void setRecipient(Widget* widget);
     void removeRecipient(Widget* widget);
-
-    void broadcastToChildren(Widget* widget);
 
     bool propagateToChildren() const { return hasFlag(PropagateToChildren); }
     bool propagateToParent() const { return hasFlag(PropagateToParent); }
     void setPropagateToChildren(const bool state) { setFlag(PropagateToChildren, state); }
     void setPropagateToParent(const bool state) { setFlag(PropagateToParent, state); }
+
+    Widget* commonAncestor() { return m_commonAncestor; }
+    void setCommonAncestor(Widget* widget) { m_commonAncestor = widget; }
 
   private:
     bool hasFlag(const Flags flag) const {
@@ -76,8 +76,9 @@ namespace ui {
     }
 
     MessageType m_type;       // Type of message
-    WidgetsList m_recipients; // List of recipients of the message
     int m_flags;              // Special flags for this message
+    Widget* m_recipient;      // Recipient of this message
+    Widget* m_commonAncestor; // Common ancestor between the Leave <-> Enter messages
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
   };
 

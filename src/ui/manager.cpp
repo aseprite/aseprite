@@ -355,21 +355,23 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::CloseDisplay: {
         Message* msg = new Message(kCloseDisplayMessage);
-        msg->broadcastToChildren(this);
+        msg->setRecipient(this);
+        msg->setPropagateToChildren(true);
         enqueueMessage(msg);
         break;
       }
 
       case os::Event::ResizeDisplay: {
         Message* msg = new Message(kResizeDisplayMessage);
-        msg->broadcastToChildren(this);
+        msg->setRecipient(this);
+        msg->setPropagateToChildren(true);
         enqueueMessage(msg);
         break;
       }
 
       case os::Event::DropFiles: {
         Message* msg = new DropFilesMessage(sheEvent.files());
-        msg->addRecipient(this);
+        msg->setRecipient(this);
         enqueueMessage(msg);
         break;
       }
@@ -598,7 +600,7 @@ void Manager::handleTouchMagnify(const gfx::Point& mousePos,
       mousePos,
       magnification);
 
-    msg->addRecipient(widget);
+    msg->setRecipient(widget);
 
     enqueueMessage(msg);
   }
@@ -731,67 +733,40 @@ void Manager::setFocus(Widget* widget)
               && !(widget->hasFlags(HIDDEN))
               && !(widget->hasFlags(DECORATIVE))
               && someParentIsFocusStop(widget)))) {
-    WidgetsList widget_parents;
-    Widget* common_parent = NULL;
-
-    if (widget)
-      widget->getParents(false, widget_parents);
+    Widget* commonAncestor = findLowestCommonAncestor(focus_widget, widget);
 
     // Fetch the focus
     if (focus_widget) {
-      WidgetsList focus_parents;
-      focus_widget->getParents(true, focus_parents);
-
-      Message* msg = new Message(kFocusLeaveMessage);
-
-      for (Widget* parent1 : focus_parents) {
-        if (widget) {
-          for (Widget* parent2 : widget_parents) {
-            if (parent1 == parent2) {
-              common_parent = parent1;
-              break;
-            }
-          }
-          if (common_parent)
-            break;
-        }
-
-        if (parent1->hasFocus()) {
-          parent1->disableFlags(HAS_FOCUS);
-          msg->addRecipient(parent1);
-        }
-      }
-
+      auto msg = new Message(kFocusLeaveMessage);
+      msg->setRecipient(focus_widget);
+      msg->setPropagateToParent(true);
+      msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
+
+      // Remove HAS_FOCUS from all hierarchy
+      auto a = focus_widget;
+      while (a && a != commonAncestor) {
+        a->disableFlags(HAS_FOCUS);
+        a = a->parent();
+      }
     }
 
     // Put the focus
     focus_widget = widget;
     if (widget) {
-      WidgetsList::iterator it;
-
-      if (common_parent) {
-        it = std::find(widget_parents.begin(),
-                       widget_parents.end(),
-                       common_parent);
-        ASSERT(it != widget_parents.end());
-        ++it;
-      }
-      else
-        it = widget_parents.begin();
-
-      Message* msg = new Message(kFocusEnterMessage);
-
-      for (; it != widget_parents.end(); ++it) {
-        Widget* w = *it;
-
-        if (w->hasFlags(FOCUS_STOP)) {
-          w->enableFlags(HAS_FOCUS);
-          msg->addRecipient(w);
-        }
-      }
-
+      auto msg = new Message(kFocusEnterMessage);
+      msg->setRecipient(widget);
+      msg->setPropagateToParent(true);
+      msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
+
+      // Add HAS_FOCUS to all hierarchy
+      auto a = focus_widget;
+      while (a && a != commonAncestor) {
+        if (a->hasFlags(FOCUS_STOP))
+          a->enableFlags(HAS_FOCUS);
+        a = a->parent();
+      }
     }
   }
 }
@@ -812,71 +787,49 @@ void Manager::setMouse(Widget* widget)
 #endif
 
   if ((mouse_widget != widget) && (!capture_widget)) {
-    WidgetsList widget_parents;
-    Widget* common_parent = NULL;
-
-    if (widget)
-      widget->getParents(false, widget_parents);
+    Widget* commonAncestor = findLowestCommonAncestor(mouse_widget, widget);
 
     // Fetch the mouse
     if (mouse_widget) {
-      WidgetsList mouse_parents;
-      mouse_widget->getParents(true, mouse_parents);
-
-      Message* msg = new Message(kMouseLeaveMessage);
-
-      for (Widget* parent1 : mouse_parents) {
-        if (widget) {
-          for (Widget* parent2 : widget_parents) {
-            if (parent1 == parent2) {
-              common_parent = parent1;
-              break;
-            }
-          }
-          if (common_parent)
-            break;
-        }
-
-        if (parent1->hasMouse()) {
-          parent1->disableFlags(HAS_MOUSE);
-          msg->addRecipient(parent1);
-        }
-      }
-
+      auto msg = new Message(kMouseLeaveMessage);
+      msg->setRecipient(mouse_widget);
+      msg->setCommonAncestor(commonAncestor);
+      msg->setPropagateToParent(true);
+      msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
+
+      // Remove HAS_MOUSE from all the hierarchy
+      auto a = mouse_widget;
+      while (a && a != commonAncestor) {
+        a->disableFlags(HAS_MOUSE);
+        a = a->parent();
+      }
     }
 
     // Put the mouse
     mouse_widget = widget;
     if (widget) {
-      WidgetsList::iterator it;
-
-      if (common_parent) {
-        it = std::find(widget_parents.begin(),
-                       widget_parents.end(),
-                       common_parent);
-        ASSERT(it != widget_parents.end());
-        ++it;
-      }
-      else
-        it = widget_parents.begin();
-
-      Message* msg = newMouseMessage(
+      auto msg = newMouseMessage(
         kMouseEnterMessage, NULL,
         get_mouse_position(),
         PointerType::Unknown,
         _internal_get_mouse_buttons(),
         kKeyUninitializedModifier);
 
-      for (; it != widget_parents.end(); ++it) {
-        (*it)->enableFlags(HAS_MOUSE);
-        msg->addRecipient(*it);
-      }
-
+      msg->setRecipient(widget);
+      msg->setPropagateToParent(true);
+      msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
       generateSetCursorMessage(get_mouse_position(),
                                kKeyUninitializedModifier,
                                PointerType::Unknown);
+
+      // Add HAS_MOUSE to all the hierarchy
+      auto a = mouse_widget;
+      while (a && a != commonAncestor) {
+        a->enableFlags(HAS_MOUSE);
+        a = a->parent();
+      }
     }
   }
 }
@@ -1419,12 +1372,9 @@ int Manager::pumpQueue()
     }
 
     if (!done) {
-      // Then send the message to its recipients
-      for (Widget* widget : msg->recipients()) {
+      // Then send the message to its recipient
+      if (Widget* widget = msg->recipient())
         done = sendMessageToWidget(msg, widget);
-        if (done)
-          break;
-      }
     }
 
     // Remove the message from the used_msg_queue
@@ -1622,6 +1572,46 @@ void Manager::collectGarbage()
  **********************************************************************/
 
 // static
+Widget* Manager::findLowestCommonAncestor(Widget* a, Widget* b)
+{
+  if (!a || !b)
+    return nullptr;
+
+  a = a->parent();
+  b = b->parent();
+
+  Widget* u = a;
+  Widget* v = b;
+  int aDepth = 0;
+  int bDepth = 0;
+  while (u) {
+    ++aDepth;
+    u = u->parent();
+  }
+  while (v) {
+    ++bDepth;
+    v = v->parent();
+  }
+
+  while (aDepth > bDepth) {
+    --aDepth;
+    a = a->parent();
+  }
+  while (bDepth > aDepth) {
+    --bDepth;
+    b = b->parent();
+  }
+
+  while (a && b) {
+    if (a == b)
+      break;
+    a = a->parent();
+    b = b->parent();
+  }
+  return a;
+}
+
+// static
 void Manager::removeWidgetFromRecipients(Widget* widget, Message* msg)
 {
   msg->removeRecipient(widget);
@@ -1685,7 +1675,7 @@ Message* Manager::newMouseMessage(
     wheelDelta, preciseWheel);
 
   if (widget)
-    msg->addRecipient(widget);
+    msg->setRecipient(widget);
 
   return msg;
 }
@@ -1695,15 +1685,15 @@ void Manager::broadcastKeyMsg(Message* msg)
 {
   // Send the message to the widget with capture
   if (capture_widget) {
-    msg->addRecipient(capture_widget);
+    msg->setRecipient(capture_widget);
   }
   // Send the msg to the focused widget
   else if (focus_widget) {
-    msg->addRecipient(focus_widget);
+    msg->setRecipient(focus_widget);
   }
   // Finally, send the message to the manager, it'll know what to do
   else {
-    msg->addRecipient(this);
+    msg->setRecipient(this);
   }
 }
 

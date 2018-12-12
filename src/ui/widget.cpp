@@ -409,20 +409,6 @@ Manager* Widget::manager() const
   return Manager::getDefault();
 }
 
-void Widget::getParents(bool ascendant, WidgetsList& parents)
-{
-  assert_ui_thread();
-
-  for (Widget* widget=this; widget; widget=widget->m_parent) {
-    // append parents in tail
-    if (ascendant)
-      parents.push_back(widget);
-    // append parents in head
-    else
-      parents.insert(parents.begin(), widget);
-  }
-}
-
 Widget* Widget::nextSibling()
 {
   assert_ui_thread();
@@ -983,7 +969,7 @@ void Widget::flushRedraw()
       for (c=0; c<nrects; ++c, ++it, --count) {
         // Create the draw message
         msg = new PaintMessage(count, *it);
-        msg->addRecipient(widget);
+        msg->setRecipient(widget);
 
         // Enqueue the draw message
         manager->enqueueMessage(msg);
@@ -1282,10 +1268,8 @@ void Widget::releaseFocus()
     manager()->freeFocus();
 }
 
-/**
- * Captures the mouse to send all the future mouse messsages to the
- * specified widget (included the kMouseMoveMessage and kSetCursorMessage).
- */
+// Captures the mouse to send all the future mouse messsages to the
+// specified widget (included the kMouseMoveMessage and kSetCursorMessage).
 void Widget::captureMouse()
 {
   if (!manager()->getCapture()) {
@@ -1293,9 +1277,7 @@ void Widget::captureMouse()
   }
 }
 
-/**
- * Releases the capture of the mouse events.
- */
+// Releases the capture of the mouse events.
 void Widget::releaseMouse()
 {
   if (manager()->getCapture() == this) {
@@ -1316,7 +1298,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
         mouseMsg->buttons(),
         mouseMsg->modifiers(),
         mouseMsg->position());
-      mouseMsg2->addRecipient(pick);
+      mouseMsg2->setRecipient(pick);
       manager()->enqueueMessage(mouseMsg2);
       return true;
     }
@@ -1324,24 +1306,9 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
   return false;
 }
 
-bool Widget::hasFocus() const
-{
-  return hasFlags(HAS_FOCUS);
-}
-
-bool Widget::hasMouse() const
-{
-  return hasFlags(HAS_MOUSE);
-}
-
 bool Widget::hasMouseOver() const
 {
   return (this == pick(get_mouse_position()));
-}
-
-bool Widget::hasCapture() const
-{
-  return hasFlags(HAS_CAPTURE);
 }
 
 void Widget::setMnemonic(int mnemonic)
@@ -1433,7 +1400,7 @@ bool Widget::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
     case kMouseWheelMessage:
       // Propagate the message to the parent.
-      if (parent() != NULL)
+      if (parent())
         return parent()->sendMessage(msg);
       else
         break;
@@ -1446,6 +1413,7 @@ bool Widget::onProcessMessage(Message* msg)
         set_mouse_cursor(kArrowCursor);
         return true;
       }
+      break;
 
   }
 
@@ -1457,8 +1425,10 @@ bool Widget::onProcessMessage(Message* msg)
   }
 
   // Propagate the message to the parent.
-  if (msg->propagateToParent() && parent())
+  if (msg->propagateToParent() && parent() &&
+      msg->commonAncestor() != parent()) {
     return parent()->sendMessage(msg);
+  }
 
   return false;
 }

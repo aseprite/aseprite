@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1059,7 +1060,7 @@ void MenuItem::openSubmenu(bool select_first)
   }
 
   msg = new OpenMenuItemMessage(select_first);
-  msg->addRecipient(this);
+  msg->setRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 
   // Get the 'base'
@@ -1102,7 +1103,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
 
   // Second: now we can close the 'menuitem'
   msg = new CloseMenuItemMessage(last_of_close_chain);
-  msg->addRecipient(this);
+  msg->setRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 
   // If this is the last message of the chain, here we have the
@@ -1181,7 +1182,7 @@ void Menu::closeAll()
 void MenuBox::closePopup()
 {
   Message* msg = new Message(kClosePopupMessage);
-  msg->addRecipient(this);
+  msg->setRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 }
 
@@ -1223,7 +1224,7 @@ void MenuItem::executeClick()
 {
   // Send the message
   Message* msg = new Message(kExecuteMenuItemMessage);
-  msg->addRecipient(this);
+  msg->setRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 }
 
