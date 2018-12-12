@@ -533,6 +533,7 @@
             <background-border part="button_hot" state="mouse" />
             <background-border part="button_focused" state="focus" />
             <background-border part="button_selected" state="selected" />
+            <background-border part="button_normal" state="mouse disabled" />
             <text color="button_normal_text" />
             <text color="button_hot_text" state="mouse" />
             <text color="button_selected_text" state="selected" />
