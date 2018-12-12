@@ -49,13 +49,15 @@ void Timer::start()
 
 void Timer::stop()
 {
-  m_running = false;
+  if (m_running) {
+    m_running = false;
 
-  // Remove messages of this timer in the queue. The expected behavior
-  // is that when we stop a timer, we'll not receive more messages
-  // about it (even if there are enqueued messages waiting in the
-  // message queue).
-  Manager::getDefault()->removeMessagesForTimer(this);
+    // Remove messages of this timer in the queue. The expected behavior
+    // is that when we stop a timer, we'll not receive more messages
+    // about it (even if there are enqueued messages waiting in the
+    // message queue).
+    Manager::getDefault()->removeMessagesForTimer(this);
+  }
 }
 
 void Timer::tick()
