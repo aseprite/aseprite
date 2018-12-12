@@ -94,6 +94,7 @@ namespace ui {
     bool isPosInSelection(int pos);
     void showEditPopupMenu(const gfx::Point& pt);
     void recalcCharBoxes(const std::string& text);
+    bool shouldStartTimer(const bool hasFocus);
 
     class CalcBoxesTextDelegate;
 

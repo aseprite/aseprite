@@ -91,12 +91,15 @@ void Entry::setReadOnly(bool state)
 void Entry::showCaret()
 {
   m_hidden = false;
+  if (shouldStartTimer(hasFocus()))
+    m_timer.start();
   invalidate();
 }
 
 void Entry::hideCaret()
 {
   m_hidden = true;
+  m_timer.stop();
   invalidate();
 }
 
@@ -131,7 +134,8 @@ void Entry::setCaretPos(int pos)
     }
   }
 
-  m_timer.start();
+  if (shouldStartTimer(hasFocus()))
+    m_timer.start();
   m_state = true;
 
   invalidate();
@@ -227,7 +231,8 @@ bool Entry::onProcessMessage(Message* msg)
       break;
 
     case kFocusEnterMessage:
-      m_timer.start();
+      if (shouldStartTimer(true))
+        m_timer.start();
 
       m_state = true;
       invalidate();
@@ -392,7 +397,8 @@ bool Entry::onProcessMessage(Message* msg)
 
         // Show the caret
         if (is_dirty) {
-          m_timer.start();
+          if (shouldStartTimer(true))
+            m_timer.start();
           m_state = true;
         }
 
@@ -883,6 +889,11 @@ void Entry::recalcCharBoxes(const std::string& text)
   box.codepoint = 0;
   box.from = box.to = lastTextIndex;
   m_boxes.push_back(box);
+}
+
+bool Entry::shouldStartTimer(bool hasFocus)
+{
+  return (!m_hidden && hasFocus && isEnabled());
 }
 
 } // namespace ui
