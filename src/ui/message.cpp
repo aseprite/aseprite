@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -38,13 +39,6 @@ void Message::addRecipient(Widget* widget)
   ASSERT_VALID_WIDGET(widget);
 
   m_recipients.push_back(widget);
-}
-
-void Message::prependRecipient(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  m_recipients.insert(m_recipients.begin(), widget);
 }
 
 void Message::removeRecipient(Widget* widget)
