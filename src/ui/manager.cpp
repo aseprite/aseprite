@@ -964,17 +964,6 @@ void Manager::freeWidget(Widget* widget)
   ASSERT(!Manager::widgetAssociatedToManager(widget));
 }
 
-void Manager::removeMessage(Message* msg)
-{
-#ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
-#endif
-
-  auto it = std::find(msg_queue.begin(), msg_queue.end(), msg);
-  ASSERT(it != msg_queue.end());
-  msg_queue.erase(it);
-}
-
 void Manager::removeMessagesFor(Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
