@@ -743,7 +743,7 @@ void Manager::setFocus(Widget* widget)
     Widget* commonAncestor = findLowestCommonAncestor(focus_widget, widget);
 
     // Fetch the focus
-    if (focus_widget) {
+    if (focus_widget && focus_widget != commonAncestor) {
       auto msg = new Message(kFocusLeaveMessage);
       msg->setRecipient(focus_widget);
       msg->setPropagateToParent(true);
@@ -797,10 +797,9 @@ void Manager::setMouse(Widget* widget)
     Widget* commonAncestor = findLowestCommonAncestor(mouse_widget, widget);
 
     // Fetch the mouse
-    if (mouse_widget) {
+    if (mouse_widget && mouse_widget != commonAncestor) {
       auto msg = new Message(kMouseLeaveMessage);
       msg->setRecipient(mouse_widget);
-      msg->setCommonAncestor(commonAncestor);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
@@ -1583,9 +1582,6 @@ Widget* Manager::findLowestCommonAncestor(Widget* a, Widget* b)
 {
   if (!a || !b)
     return nullptr;
-
-  a = a->parent();
-  b = b->parent();
 
   Widget* u = a;
   Widget* v = b;
