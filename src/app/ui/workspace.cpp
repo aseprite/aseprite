@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,6 +42,7 @@ Workspace::Workspace()
   , m_dropPreviewPanel(nullptr)
   , m_dropPreviewTabs(nullptr)
 {
+  enableFlags(IGNORE_MOUSE);
   addChild(&m_mainPanel);
 
   InitTheme.connect(

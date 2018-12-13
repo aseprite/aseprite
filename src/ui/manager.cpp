@@ -504,8 +504,13 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
   Widget* widget = nullptr;
   for (auto mouseWidget : mouse_widgets_list) {
     widget = mouseWidget->pick(mousePos);
-    if (widget)
+    if (widget) {
+      // Get the first ancestor of the picked widget that doesn't
+      // ignore mouse events.
+      while (widget && widget->hasFlags(IGNORE_MOUSE))
+        widget = widget->parent();
       break;
+    }
   }
 
   // Fixup "mouse" flag

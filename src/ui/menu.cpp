@@ -104,6 +104,7 @@ Menu::Menu()
   : Widget(kMenuWidget)
   , m_menuitem(NULL)
 {
+  enableFlags(IGNORE_MOUSE);
   initTheme();
 }
 

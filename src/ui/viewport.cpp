@@ -1,5 +1,6 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +25,7 @@ using namespace gfx;
 Viewport::Viewport()
   : Widget(kViewViewportWidget)
 {
+  enableFlags(IGNORE_MOUSE);
   initTheme();
 }
 

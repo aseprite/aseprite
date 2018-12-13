@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -41,6 +42,8 @@ Grid::Grid(int columns, bool same_width_columns)
   , m_colstrip(columns)
 {
   ASSERT(columns > 0);
+
+  enableFlags(IGNORE_MOUSE);
 
   m_same_width_columns = same_width_columns;
 

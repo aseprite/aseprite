@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -50,7 +51,8 @@ namespace ui {
     DOUBLE_BUFFERED  = 0x00002000, // The widget is painted in a back-buffer and then flipped to the main display
     TRANSPARENT      = 0x00004000, // The widget has transparent parts that needs the background painted before
     CTRL_RIGHT_CLICK = 0x00008000, // The widget should transform Ctrl+click to right-click on OS X.
-    PROPERTIES_MASK  = 0x0000ffff,
+    IGNORE_MOUSE     = 0x80000000, // Don't process mouse messages for this widget (useful for labels, boxes, grids, etc.)
+    PROPERTIES_MASK  = 0x8000ffff,
 
     HORIZONTAL       = 0x00010000,
     VERTICAL         = 0x00020000,
@@ -62,7 +64,7 @@ namespace ui {
     BOTTOM           = 0x00800000,
     HOMOGENEOUS      = 0x01000000,
     WORDWRAP         = 0x02000000,
-    ALIGN_MASK       = 0xffff0000,
+    ALIGN_MASK       = 0x7fff0000,
   };
 
 } // namespace ui

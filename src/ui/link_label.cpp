@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,6 +23,7 @@ LinkLabel::LinkLabel(const std::string& urlOrText)
   : Label(urlOrText)
   , m_url(urlOrText)
 {
+  disableFlags(IGNORE_MOUSE);
   setType(kLinkLabelWidget);
   initTheme();
 }
@@ -30,6 +32,7 @@ LinkLabel::LinkLabel(const std::string& url, const std::string& text)
   : Label(text)
   , m_url(url)
 {
+  disableFlags(IGNORE_MOUSE);
   setType(kLinkLabelWidget);
   initTheme();
 }
