@@ -59,13 +59,6 @@ RedrawState redrawState = RedrawState::Normal;
 
 } // anonymous namespace
 
-#define ACCEPT_FOCUS(widget)                                    \
-  ((((widget)->flags() & (FOCUS_STOP |                          \
-                          DISABLED |                            \
-                          HIDDEN |                              \
-                          DECORATIVE)) == FOCUS_STOP) &&        \
-   ((widget)->isVisible()))
-
 static const int NFILTERS = (int)(kFirstRegisteredMessage+1);
 
 struct Filter {
@@ -105,7 +98,16 @@ static bool first_time = true;    // true when we don't enter in poll yet
 // when the os::Display is resized by the user.
 static bool auto_window_adjustment = true;
 
-/* keyboard focus movement stuff */
+// Keyboard focus movement stuff
+inline bool does_accept_focus(Widget* widget)
+{
+  return ((((widget)->flags() & (FOCUS_STOP |
+                                 DISABLED |
+                                 HIDDEN |
+                                 DECORATIVE)) == FOCUS_STOP) &&
+          ((widget)->isVisible()));
+}
+
 static int count_widgets_accept_focus(Widget* widget);
 static bool child_accept_focus(Widget* widget, bool first);
 static Widget* next_widget(Widget* widget);
@@ -865,7 +867,7 @@ void Manager::attractFocus(Widget* widget)
 void Manager::focusFirstChild(Widget* widget)
 {
   for (Widget* it=widget->window(); it; it=next_widget(it)) {
-    if (ACCEPT_FOCUS(it) && !(child_accept_focus(it, true))) {
+    if (does_accept_focus(it) && !(child_accept_focus(it, true))) {
       setFocus(it);
       break;
     }
@@ -1740,11 +1742,11 @@ bool Manager::processFocusMovementMessage(Message* msg)
 
     // Create a list of possible candidates to receive the focus
     for (it=focus_widget; it; it=next_widget(it)) {
-      if (ACCEPT_FOCUS(it) && !(child_accept_focus(it, true)))
+      if (does_accept_focus(it) && !(child_accept_focus(it, true)))
         list[c++] = it;
     }
     for (it=window; it != focus_widget; it=next_widget(it)) {
-      if (ACCEPT_FOCUS(it) && !(child_accept_focus(it, true)))
+      if (does_accept_focus(it) && !(child_accept_focus(it, true)))
         list[c++] = it;
     }
 
@@ -1821,7 +1823,7 @@ static int count_widgets_accept_focus(Widget* widget)
   for (auto child : widget->children())
     count += count_widgets_accept_focus(child);
 
-  if ((count == 0) && (ACCEPT_FOCUS(widget)))
+  if ((count == 0) && (does_accept_focus(widget)))
     count++;
 
   return count;
@@ -1833,7 +1835,7 @@ static bool child_accept_focus(Widget* widget, bool first)
     if (child_accept_focus(child, false))
       return true;
 
-  return (first ? false: ACCEPT_FOCUS(widget));
+  return (first ? false: does_accept_focus(widget));
 }
 
 static Widget* next_widget(Widget* widget)
