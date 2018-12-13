@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -330,7 +331,6 @@ private:
 
 BrushPopup::BrushPopup()
   : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
-  , m_tooltipManager(nullptr)
   , m_standardBrushes(3)
   , m_customBrushes(nullptr)
 {

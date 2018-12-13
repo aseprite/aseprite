@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -537,7 +538,7 @@ public:
 
 StatusBar* StatusBar::m_instance = NULL;
 
-StatusBar::StatusBar()
+StatusBar::StatusBar(TooltipManager* tooltipManager)
   : m_timeout(0)
   , m_indicators(new Indicators)
   , m_docControls(new HBox)
@@ -580,9 +581,7 @@ StatusBar::StatusBar()
     m_commandsBox = box1;
   }
 
-  // Tooltips manager
-  TooltipManager* tooltipManager = new TooltipManager();
-  addChild(tooltipManager);
+  // Tooltips
   tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
   tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
   tooltipManager->addTooltipFor(m_newFrame, "New Frame", BOTTOM);

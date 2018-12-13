@@ -12,6 +12,7 @@
 
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
+#include "ui/tooltips.h"
 
 namespace app {
 

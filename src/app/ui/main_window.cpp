@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +44,7 @@
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
+#include "ui/tooltips.h"
 #include "ui/view.h"
 
 #ifdef ENABLE_SCRIPTING
@@ -91,16 +93,18 @@ MainWindow::MainWindow()
   , m_devConsoleView(nullptr)
 #endif
 {
+  m_tooltipManager = new TooltipManager();
   m_menuBar = new MainMenuBar();
   m_notifications = new Notifications();
-  m_contextBar = new ContextBar();
-  m_statusBar = new StatusBar();
-  m_colorBar = new ColorBar(colorBarPlaceholder()->align());
+  m_contextBar = new ContextBar(m_tooltipManager);
+  m_statusBar = new StatusBar(m_tooltipManager);
+  m_colorBar = new ColorBar(colorBarPlaceholder()->align(),
+                            m_tooltipManager);
   m_toolBar = new ToolBar();
   m_tabsBar = new WorkspaceTabs(this);
   m_workspace = new Workspace();
   m_previewEditor = new PreviewEditorWindow();
-  m_timeline = new Timeline();
+  m_timeline = new Timeline(m_tooltipManager);
 
   Editor::registerCommands();
 
@@ -126,6 +130,7 @@ MainWindow::MainWindow()
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
   // Add the widgets in the boxes
+  addChild(m_tooltipManager);
   menuBarPlaceholder()->addChild(m_menuBar);
   menuBarPlaceholder()->addChild(m_notifications);
   contextBarPlaceholder()->addChild(m_contextBar);

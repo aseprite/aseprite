@@ -301,7 +301,6 @@ ButtonSet::ButtonSet(int columns)
   , m_triggerOnMouseUp(false)
   , m_multipleSelection(false)
 {
-  enableFlags(IGNORE_MOUSE);
   InitTheme.connect(
     [this]{
       noBorderNoChildSpacing();

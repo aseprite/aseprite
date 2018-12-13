@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -14,12 +15,16 @@
 #include <string>
 #include <vector>
 
+namespace ui {
+  class TooltipManager;
+}
+
 namespace app {
   class Editor;
 
   class AniControls : public ButtonSet {
   public:
-    AniControls();
+    AniControls(ui::TooltipManager* tooltipManager);
 
     void updateUsingEditor(Editor* editor);
 

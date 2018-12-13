@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -39,7 +40,7 @@ enum AniAction {
   ACTIONS
 };
 
-AniControls::AniControls()
+AniControls::AniControls(TooltipManager* tooltipManager)
   : ButtonSet(5)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
@@ -54,10 +55,8 @@ AniControls::AniControls()
   setTriggerOnMouseUp(true);
   setTransparent(true);
 
-  TooltipManager* tooltips = new TooltipManager;
-  addChild(tooltips);
   for (int i=0; i<ACTIONS; ++i)
-    tooltips->addTooltipFor(getItem(i), getTooltipFor(i), BOTTOM);
+    tooltipManager->addTooltipFor(getItem(i), getTooltipFor(i), BOTTOM);
 
   getItem(ACTION_PLAY)->enableFlags(CTRL_RIGHT_CLICK);
 

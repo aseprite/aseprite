@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +38,7 @@ namespace doc {
 
 namespace ui {
   class Graphics;
+  class TooltipManager;
 }
 
 namespace app {
@@ -87,7 +89,7 @@ namespace app {
 
     enum DropOp { kMove, kCopy };
 
-    Timeline();
+    Timeline(ui::TooltipManager* tooltipManager);
     ~Timeline();
 
     void updateUsingEditor(Editor* editor);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +24,6 @@
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/splitter.h"
-#include "ui/tooltips.h"
 #include "ui/view.h"
 
 namespace ui {
@@ -58,7 +58,7 @@ namespace app {
 
     static ColorBar* instance() { return m_instance; }
 
-    ColorBar(int align);
+    ColorBar(int align, ui::TooltipManager* tooltipManager);
     ~ColorBar();
 
     void setPixelFormat(PixelFormat pixelFormat);
@@ -156,7 +156,6 @@ namespace app {
 
     class WarningIcon;
 
-    ui::TooltipManager m_tooltips;
     ButtonSet m_buttons;
     std::unique_ptr<PalettePopup> m_palettePopup;
     ui::Splitter m_splitter;

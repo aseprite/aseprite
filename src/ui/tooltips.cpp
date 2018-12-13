@@ -51,6 +51,8 @@ TooltipManager::~TooltipManager()
 
 void TooltipManager::addTooltipFor(Widget* widget, const std::string& text, int arrowAlign)
 {
+  ASSERT(!widget->hasFlags(IGNORE_MOUSE));
+
   m_tips[widget] = TipInfo(text, arrowAlign);
 }
 
@@ -66,6 +68,8 @@ bool TooltipManager::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseEnterMessage: {
+      // Tooltips are only for widgets that can directly get the mouse
+      // (get the kMouseEnterMessage directly).
       if (Widget* widget = msg->recipient()) {
         Tips::iterator it = m_tips.find(widget);
         if (it != m_tips.end()) {

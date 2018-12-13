@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -124,7 +125,7 @@ void ColorBar::ScrollableView::onInitTheme(InitThemeEvent& ev)
 
 ColorBar* ColorBar::m_instance = NULL;
 
-ColorBar::ColorBar(int align)
+ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   : Box(align)
   , m_buttons(int(PalButton::MAX))
   , m_splitter(Splitter::ByPercentage, VERTICAL)
@@ -207,10 +208,10 @@ ColorBar::ColorBar(int align)
   m_redrawTimer.Tick.connect(base::Bind<void>(&ColorBar::onTimerTick, this));
   m_buttons.ItemChange.connect(base::Bind<void>(&ColorBar::onPaletteButtonClick, this));
 
-  m_tooltips.addTooltipFor(&m_fgColor, "Foreground color", LEFT);
-  m_tooltips.addTooltipFor(&m_bgColor, "Background color", LEFT);
-  m_tooltips.addTooltipFor(m_fgWarningIcon, "Add foreground color to the palette", LEFT);
-  m_tooltips.addTooltipFor(m_bgWarningIcon, "Add background color to the palette", LEFT);
+  tooltipManager->addTooltipFor(&m_fgColor, "Foreground color", LEFT);
+  tooltipManager->addTooltipFor(&m_bgColor, "Background color", LEFT);
+  tooltipManager->addTooltipFor(m_fgWarningIcon, "Add foreground color to the palette", LEFT);
+  tooltipManager->addTooltipFor(m_bgWarningIcon, "Add background color to the palette", LEFT);
 
   InitTheme.connect(
     [this, fgBox, bgBox]{
@@ -261,8 +262,6 @@ ColorBar::ColorBar(int align)
   setFgColor(Preferences::instance().colorBar.fgColor());
 
   // Tooltips
-  TooltipManager* tooltipManager = new TooltipManager();
-  addChild(tooltipManager);
   setupTooltips(tooltipManager);
 
   onColorButtonChange(getFgColor());

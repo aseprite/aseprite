@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +14,6 @@
 #include "doc/brushes.h"
 #include "ui/box.h"
 #include "ui/popup_window.h"
-#include "ui/tooltips.h"
 
 namespace app {
 
@@ -24,17 +24,12 @@ namespace app {
     void setBrush(doc::Brush* brush);
     void regenerate(const gfx::Rect& box);
 
-    void setupTooltips(ui::TooltipManager* tooltipManager) {
-      m_tooltipManager = tooltipManager;
-    }
-
     static os::Surface* createSurfaceForBrush(const doc::BrushRef& brush);
 
   private:
     void onStandardBrush();
     void onBrushChanges();
 
-    ui::TooltipManager* m_tooltipManager;
     ui::VBox m_box;
     ButtonSet m_standardBrushes;
     ButtonSet* m_customBrushes;

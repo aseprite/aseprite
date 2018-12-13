@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -226,7 +227,7 @@ bool Timeline::Row::parentEditable() const
   return ((int(m_inheritedFlags) & int(LayerFlags::Editable)) != 0);
 }
 
-Timeline::Timeline()
+Timeline::Timeline(TooltipManager* tooltipManager)
   : Widget(kGenericWidget)
   , m_hbar(HORIZONTAL, this)
   , m_vbar(VERTICAL, this)
@@ -248,6 +249,7 @@ Timeline::Timeline()
   , m_redrawMarchingAntsOnly(false)
   , m_scroll(false)
   , m_fromTimeline(false)
+  , m_aniControls(tooltipManager)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
