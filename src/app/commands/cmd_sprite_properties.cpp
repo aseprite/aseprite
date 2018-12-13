@@ -16,6 +16,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
@@ -117,6 +118,14 @@ void SpritePropertiesCommand::onExecute(Context* context)
                                      ColorButtonOptions());
 
       window.transparentColorPlaceholder()->addChild(color_button);
+
+      // TODO add a way to get or create an existent TooltipManager
+      TooltipManager* tooltipManager = new TooltipManager;
+      window.addChild(tooltipManager);
+      tooltipManager->addTooltipFor(
+        color_button,
+        Strings::sprite_properties_transparent_color_tooltip(),
+        LEFT);
     }
     else {
       window.transparentColorPlaceholder()->addChild(new Label("(only for indexed images)"));

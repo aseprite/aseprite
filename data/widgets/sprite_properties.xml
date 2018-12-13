@@ -21,7 +21,7 @@
 
       <label text="@.transparent_color" />
       <hbox>
-	<hbox id="transparent_color_placeholder" tooltip="@.transparent_color_tooltip" />
+	<hbox id="transparent_color_placeholder" />
       </hbox>
 
       <label text="@.pixel_ratio" />
