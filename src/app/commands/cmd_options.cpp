@@ -759,7 +759,10 @@ private:
     overwriteFilesOnExportSpriteSheetAlert()->resetWithDefaultValue();
     gifOptionsAlert()->resetWithDefaultValue();
     jpegOptionsAlert()->resetWithDefaultValue();
+    svgOptionsAlert()->resetWithDefaultValue();
     advancedModeAlert()->resetWithDefaultValue();
+    invalidFgBgColorAlert()->resetWithDefaultValue();
+    runScriptAlert()->resetWithDefaultValue();
   }
 
   void onChangeBgScope() {
