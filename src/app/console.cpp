@@ -29,14 +29,61 @@ namespace app {
 
 using namespace ui;
 
-static Window* wid_console = NULL;
-static Widget* wid_view = NULL;
-static Widget* wid_textbox = NULL;
-static Widget* wid_cancel = NULL;
-static int console_counter = 0;
-static bool console_locked;
-static bool want_close_flag = false;
-static bool has_text = false;
+class Console::ConsoleWindow : public Window {
+public:
+  ConsoleWindow() : Window(Window::WithTitleBar, "Console"),
+                    m_textbox("", WORDWRAP),
+                    m_button("&Cancel") {
+    m_button.setFocusMagnet(true);
+    m_button.processMnemonicFromText();
+    m_button.Click.connect(base::Bind<void>(&ConsoleWindow::closeWindow, this, &m_button));
+
+    // When the window is closed, we clear the text
+    Close.connect(
+      base::Bind<void>(
+        [this] {
+          m_textbox.setText(std::string());
+        }));
+
+    m_view.attachToView(&m_textbox);
+
+    m_button.setMinSize(gfx::Size(60*ui::guiscale(), 0));
+
+    Grid* grid = new Grid(1, false);
+    grid->addChildInCell(&m_view, 1, 1, HORIZONTAL | VERTICAL);
+    grid->addChildInCell(&m_button, 1, 1, CENTER);
+    addChild(grid);
+
+    m_button.setFocusMagnet(true);
+    m_view.setExpansive(true);
+  }
+
+  void addMessage(const std::string& msg) {
+    if (!m_hasText) {
+      m_hasText = true;
+
+      remapWindow();
+      setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
+      centerWindow();
+      invalidate();
+    }
+
+    m_textbox.setText(m_textbox.text() + msg);
+  }
+
+  bool isConsoleVisible() const {
+    return (m_hasText && isVisible());
+  }
+
+private:
+  View m_view;
+  TextBox m_textbox;
+  Button m_button;
+  bool m_hasText = false;
+};
+
+int Console::m_consoleCounter = 0;
+Console::ConsoleWindow* Console::m_console = nullptr;
 
 Console::Console(Context* ctx)
   : m_withUI(false)
@@ -56,49 +103,11 @@ Console::Console(Context* ctx)
   if (!m_withUI)
     return;
 
-  if (console_counter == 0)
-    has_text = false;
-
-  console_counter++;
-  if (wid_console || console_counter > 1)
+  ++m_consoleCounter;
+  if (m_console || m_consoleCounter > 1)
     return;
 
-  Window* window = new Window(Window::WithTitleBar, "Errors Console");
-  Grid* grid = new Grid(1, false);
-  View* view = new View();
-  TextBox* textbox = new TextBox("", WORDWRAP);
-  Button* button = new Button("&Cancel");
-  button->setFocusMagnet(true);
-
-  // The "button" closes the console
-  button->processMnemonicFromText();
-  button->Click.connect(base::Bind<void>(&Window::closeWindow, window, button));
-
-  // When the window is closed, we clear the text
-  window->Close.connect(
-    base::Bind<void>(
-      [textbox] {
-        textbox->setText(std::string());
-      }));
-
-  view->attachToView(textbox);
-
-  button->setMinSize(gfx::Size(60, 0));
-
-  grid->addChildInCell(view, 1, 1, HORIZONTAL | VERTICAL);
-  grid->addChildInCell(button, 1, 1, CENTER);
-  window->addChild(grid);
-
-  view->setVisible(false);
-  button->setFocusMagnet(true);
-  view->setExpansive(true);
-
-  wid_console = window;
-  wid_view = view;
-  wid_textbox = textbox;
-  wid_cancel = button;
-  console_locked = false;
-  want_close_flag = false;
+  m_console = new ConsoleWindow;
 }
 
 Console::~Console()
@@ -106,69 +115,39 @@ Console::~Console()
   if (!m_withUI)
     return;
 
-  console_counter--;
+  --m_consoleCounter;
 
-  if (wid_console
-      && console_locked
-      && !want_close_flag
-      && wid_console->isVisible()) {
-    // Open in foreground
-    wid_console->openWindowInForeground();
+  if (m_console && m_console->isConsoleVisible()) {
+    m_console->openWindowInForeground();
   }
 
-  if (console_counter == 0) {
-    delete wid_console;         // window
-    wid_console = nullptr;
-    want_close_flag = false;
+  if (m_consoleCounter == 0) {
+    delete m_console;         // window
+    m_console = nullptr;
   }
-}
-
-bool Console::hasText() const
-{
-  return has_text;
 }
 
 void Console::printf(const char* format, ...)
 {
-  has_text = true;
-
   std::va_list ap;
   va_start(ap, format);
   std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
-  if (!m_withUI || !wid_console) {
+  if (!m_withUI || !m_console) {
     fputs(msg.c_str(), stdout);
     fflush(stdout);
     return;
   }
 
   // Open the window
-  if (!wid_console->isVisible()) {
-    wid_console->openWindow();
+  if (!m_console->isVisible()) {
+    m_console->openWindow();
     ui::Manager::getDefault()->invalidate();
   }
 
   // Update the textbox
-  if (!console_locked) {
-    console_locked = true;
-
-    wid_view->setVisible(true);
-
-    wid_console->remapWindow();
-    wid_console->setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
-    wid_console->centerWindow();
-    wid_console->invalidate();
-  }
-
-  const std::string& text = wid_textbox->text();
-
-  std::string final;
-  if (!text.empty())
-    final += text;
-  final += msg;
-
-  wid_textbox->setText(final.c_str());
+  m_console->addMessage(msg);
 }
 
 // static
