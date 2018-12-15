@@ -151,7 +151,6 @@ namespace ui {
     bool sendMessageToWidget(Message* msg, Widget* widget);
 
     static Widget* findLowestCommonAncestor(Widget* a, Widget* b);
-    static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
     static Message* newMouseMessage(

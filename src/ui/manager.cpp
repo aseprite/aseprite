@@ -931,10 +931,10 @@ void Manager::removeMessagesFor(Widget* widget)
 #endif
 
   for (Message* msg : msg_queue)
-    removeWidgetFromRecipients(widget, msg);
+    msg->removeRecipient(widget);
 
   for (Message* msg : used_msg_queue)
-    removeWidgetFromRecipients(widget, msg);
+    msg->removeRecipient(widget);
 }
 
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
@@ -945,11 +945,11 @@ void Manager::removeMessagesFor(Widget* widget, MessageType type)
 
   for (Message* msg : msg_queue)
     if (msg->type() == type)
-      removeWidgetFromRecipients(widget, msg);
+      msg->removeRecipient(widget);
 
   for (Message* msg : used_msg_queue)
     if (msg->type() == type)
-      removeWidgetFromRecipients(widget, msg);
+      msg->removeRecipient(widget);
 }
 
 void Manager::removeMessagesForTimer(Timer* timer)
@@ -1612,12 +1612,6 @@ Widget* Manager::findLowestCommonAncestor(Widget* a, Widget* b)
     b = b->parent();
   }
   return a;
-}
-
-// static
-void Manager::removeWidgetFromRecipients(Widget* widget, Message* msg)
-{
-  msg->removeRecipient(widget);
 }
 
 // static
