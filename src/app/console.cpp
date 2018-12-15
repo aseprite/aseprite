@@ -33,9 +33,7 @@ class Console::ConsoleWindow : public Window {
 public:
   ConsoleWindow() : Window(Window::WithTitleBar, "Console"),
                     m_textbox("", WORDWRAP),
-                    m_button("&Cancel") {
-    m_button.setFocusMagnet(true);
-    m_button.processMnemonicFromText();
+                    m_button("Cancel") {
     m_button.Click.connect(base::Bind<void>(&ConsoleWindow::closeWindow, this, &m_button));
 
     // When the window is closed, we clear the text
@@ -46,7 +44,6 @@ public:
         }));
 
     m_view.attachToView(&m_textbox);
-
     m_button.setMinSize(gfx::Size(60*ui::guiscale(), 0));
 
     Grid* grid = new Grid(1, false);
@@ -54,6 +51,7 @@ public:
     grid->addChildInCell(&m_button, 1, 1, CENTER);
     addChild(grid);
 
+    m_textbox.setFocusMagnet(true);
     m_button.setFocusMagnet(true);
     m_view.setExpansive(true);
   }
@@ -76,6 +74,21 @@ public:
   }
 
 private:
+  bool onProcessMessage(ui::Message* msg) override {
+    if (msg->type() == ui::kKeyDownMessage) {
+#if defined __APPLE__
+      if (msg->onlyCmdPressed())
+#else
+      if (msg->onlyCtrlPressed())
+#endif
+      {
+        if (static_cast<KeyMessage*>(msg)->scancode() == kKeyC)
+          set_clipboard_text(m_textbox.text());
+      }
+    }
+    return Window::onProcessMessage(msg);
+  }
+
   View m_view;
   TextBox m_textbox;
   Button m_button;
@@ -118,6 +131,7 @@ Console::~Console()
   --m_consoleCounter;
 
   if (m_console && m_console->isConsoleVisible()) {
+    m_console->manager()->attractFocus(m_console);
     m_console->openWindowInForeground();
   }
 
