@@ -17,7 +17,6 @@
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
 #include "ui/pointer_type.h"
-#include "ui/widgets_list.h"
 
 #include <functional>
 
@@ -33,8 +32,6 @@ namespace ui {
       PropagateToParent   = 4,
     };
   public:
-    typedef WidgetsList::iterator& recipients_iterator;
-
     Message(MessageType type,
             KeyModifiers modifiers = kKeyUninitializedModifier);
     virtual ~Message();
