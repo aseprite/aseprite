@@ -473,6 +473,12 @@
       <key command="ChangeBrush">
         <param name="change" value="decrement-angle" />
       </key>
+      <key command="SymmetryMode">
+        <param name="orientation" value="vertical" />
+      </key>
+      <key command="SymmetryMode">
+        <param name="orientation" value="horizontal" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
