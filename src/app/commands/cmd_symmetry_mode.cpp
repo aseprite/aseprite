@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -76,16 +77,46 @@ bool SymmetryModeCommand::onChecked(Context* ctx)
 void SymmetryModeCommand::onExecute(Context* ctx)
 {
   auto& enabled = Preferences::instance().symmetryMode.enabled;
+  // When the m_mode is NONE, it toggles the whole symmetry controls in
+  // the context bar.
   if (m_mode == app::gen::SymmetryMode::NONE) {
     enabled(!enabled());
   }
+  // In other case it toggles the specific document symmetry specified
+  // in m_mode.
   else {
-    Doc* document = ctx->activeDocument();
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    app::gen::SymmetryMode actual = docPref.symmetry.mode();
-    docPref.symmetry.mode(app::gen::SymmetryMode(int(m_mode) ^ int(actual)));
-    enabled(true);
-    document->notifyGeneralUpdate();
+    Doc* doc = ctx->activeDocument();
+    DocumentPreferences& docPref = Preferences::instance().document(doc);
+    const app::gen::SymmetryMode actual = docPref.symmetry.mode();
+
+    // If the symmetry options are hidden, we'll always show them and
+    // activate the m_mode symmetry. We cannot just toggle the
+    // symmetry when the options aren't visible in the context bar,
+    // because if m_mode is checked, this would cause to show the
+    // symmetry options in the context bar but with a unchecked m_mode
+    // symmetry.
+    if (!enabled()) {
+      docPref.symmetry.mode(app::gen::SymmetryMode(int(m_mode) | int(actual)));
+      enabled(true);
+    }
+    // If the symmetry options are visible, we just switch the m_mode
+    // symmetry.
+    else {
+      docPref.symmetry.mode(app::gen::SymmetryMode(int(m_mode) ^ int(actual)));
+    }
+
+    // Redraw all editors
+    //
+    // TODO It looks like only the current editor shows the symmetry,
+    //      so it's not necessary to invalidate all editors (only the
+    //      current one).
+    doc->notifyGeneralUpdate();
+
+    // Redraw the buttons in the context bar.
+    //
+    // TODO Same with context bar, in the future the context bar could
+    //      be listening the DocPref changes to be automatically
+    //      invalidated (like it already does with symmetryMode.enabled)
     App::instance()->contextBar()->updateForActiveTool();
   }
 }
