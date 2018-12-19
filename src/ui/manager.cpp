@@ -349,6 +349,9 @@ void Manager::generateMessagesFromOSEvents()
                     redrawState == RedrawState::Normal &&
                     !Timer::haveRunningTimers());
 
+    if (canWait && used_msg_queue.empty())
+      collectGarbage();
+
     m_eventQueue->getEvent(sheEvent, canWait);
     if (sheEvent.type() == os::Event::None)
       break;

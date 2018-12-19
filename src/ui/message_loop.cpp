@@ -25,12 +25,8 @@ void MessageLoop::pumpMessages()
 {
   base::Chrono chrono;
 
-  if (m_manager->generateMessages()) {
+  if (m_manager->generateMessages())
     m_manager->dispatchMessages();
-  }
-  else {
-    m_manager->collectGarbage();
-  }
 
   // If the dispatching of messages was faster than 10 milliseconds,
   // it means that the process is not using a lot of CPU, so we can
