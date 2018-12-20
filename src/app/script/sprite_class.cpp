@@ -162,6 +162,7 @@ int Sprite_saveAs(lua_State* L)
     if (sprite) {
       Doc* doc = static_cast<Doc*>(sprite->document());
       doc->setFilename(fn);
+      doc->markAsSaved();
     }
   }
   return res;
