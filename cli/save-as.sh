@@ -162,7 +162,6 @@ $ASEPRITE -b -script "$d/compare.lua" || exit 1
 
 d=$t/save-as-without-path
 mkdir $d
-open $d
 oldwd=$(pwd)
 cd $d
 $ASEPRITE -b -split-layers $oldwd/sprites/abcd.aseprite -save-as issue591.png || exit 1
