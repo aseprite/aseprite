@@ -22,6 +22,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/doc_access.h"
 #include "app/doc_api.h"
 #include "app/file/palette_file.h"
 #include "app/script/docobj.h"
@@ -172,6 +173,20 @@ int Sprite_saveCopyAs(lua_State* L)
 {
   std::string fn;
   return Sprite_saveAs_base(L, fn);
+}
+
+int Sprite_close(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  try {
+    DocDestroyer destroyer(static_cast<app::Context*>(doc->context()), doc, 500);
+    destroyer.destroyDocument();
+    return 0;
+  }
+  catch (const LockedDocException& ex) {
+    return luaL_error(L, "cannot lock document to close it\n%s", ex.what());
+  }
 }
 
 int Sprite_loadPalette(lua_State* L)
@@ -594,6 +609,7 @@ const luaL_Reg Sprite_methods[] = {
   { "crop", Sprite_crop },
   { "saveAs", Sprite_saveAs },
   { "saveCopyAs", Sprite_saveCopyAs },
+  { "close", Sprite_close },
   { "loadPalette", Sprite_loadPalette },
   { "setPalette", Sprite_setPalette },
   // Layers
