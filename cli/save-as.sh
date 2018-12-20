@@ -156,3 +156,21 @@ for f = 1,3 do
 end
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# --save-as without path
+# https://github.com/aseprite/aseprite/issues/591
+
+d=$t/save-as-without-path
+mkdir $d
+open $d
+oldwd=$(pwd)
+cd $d
+$ASEPRITE -b -split-layers $oldwd/sprites/abcd.aseprite -save-as issue591.png || exit 1
+if [[ ! -f "issue591 (a).png" ||
+      ! -f "issue591 (b).png" ||
+      ! -f "issue591 (c).png" ||
+      ! -f "issue591 (d).png" ]]; then
+    echo "FAIL: Regression detected (issue 591)"
+    exit 1
+fi
+cd $oldwd
