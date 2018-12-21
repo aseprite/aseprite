@@ -22,6 +22,7 @@ namespace ui {
 typedef obs::safe_list<Timer> Timers;
 
 static Timers timers; // Registered timers
+static int running_timers = 0;
 
 Timer::Timer(int interval, Widget* owner)
   : m_owner(owner ? owner: Manager::getDefault())
@@ -46,12 +47,14 @@ void Timer::start()
 {
   m_lastTick = base::current_tick();
   m_running = true;
+  ++running_timers;
 }
 
 void Timer::stop()
 {
   if (m_running) {
     m_running = false;
+    --running_timers;
 
     // Remove messages of this timer in the queue. The expected behavior
     // is that when we stop a timer, we'll not receive more messages
@@ -80,7 +83,8 @@ void Timer::onTick()
 void Timer::pollTimers()
 {
   // Generate messages for timers
-  if (!timers.empty()) {
+  if (running_timers != 0) {
+    ASSERT(!timers.empty());
     base::tick_t t = base::current_tick();
 
     for (auto timer : timers) {
@@ -107,14 +111,7 @@ bool Timer::haveTimers()
 
 bool Timer::haveRunningTimers()
 {
-  if (!timers.empty()) {
-    for (auto timer : timers) {
-      if (timer && timer->isRunning()) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return (running_timers != 0);
 }
 
 } // namespace ui
