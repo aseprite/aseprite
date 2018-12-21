@@ -50,6 +50,8 @@ public:
     initTheme();
   }
 
+  const std::string& fullpath() const { return m_fullpath; }
+
 protected:
   void onInitTheme(InitThemeEvent& ev) override {
     LinkLabel::onInitTheme(ev);
@@ -104,6 +106,11 @@ protected:
     }
   }
 
+  void onFinalDrop() override {
+    if (wasDragged())
+      static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems();
+  }
+
 private:
   std::string m_fullpath;
   std::string m_name;
@@ -141,6 +148,14 @@ void RecentListBox::rebuildList()
     layout();
 }
 
+void RecentListBox::updateRecentListFromUIItems()
+{
+  base::paths paths;
+  for (auto item : children())
+    paths.push_back(static_cast<RecentFileItem*>(item)->fullpath());
+  onUpdateRecentListFromUIItems(paths);
+}
+
 //////////////////////////////////////////////////////////////////////
 // RecentFilesListBox
 
@@ -172,6 +187,11 @@ void RecentFilesListBox::onClick(const std::string& path)
   UIContext::instance()->executeCommand(command, params);
 }
 
+void RecentFilesListBox::onUpdateRecentListFromUIItems(const base::paths& paths)
+{
+  App::instance()->recentFiles()->setFiles(paths);
+}
+
 //////////////////////////////////////////////////////////////////////
 // RecentFoldersListBox
 
@@ -201,6 +221,11 @@ void RecentFoldersListBox::onClick(const std::string& path)
   Params params;
   params.set("folder", path.c_str());
   UIContext::instance()->executeCommand(command, params);
+}
+
+void RecentFoldersListBox::onUpdateRecentListFromUIItems(const base::paths& paths)
+{
+  App::instance()->recentFiles()->setFolders(paths);
 }
 
 } // namespace app

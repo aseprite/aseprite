@@ -72,16 +72,18 @@ public:
       case ui::kMouseUpMessage: {
         m_wasDragged = (this->hasCapture() && m_floatingOverlay);
         const bool result = Base::onProcessMessage(msg);
-        m_wasDragged = false;
 
         if (!this->hasCapture()) {
           if (m_floatingOverlay) {
             destroyFloatingOverlay();
             ASSERT(!m_createFloatingOverlay);
+            onFinalDrop();
           }
           else if (m_createFloatingOverlay)
             m_createFloatingOverlay = false;
         }
+
+        m_wasDragged = false;
         return result;
       }
 
@@ -137,7 +139,8 @@ private:
     this->onPaint(ev);
   }
 
-  virtual void onReorderWidgets(const gfx::Point& mousePos) = 0;
+  virtual void onReorderWidgets(const gfx::Point& mousePos) { }
+  virtual void onFinalDrop() { }
 
   // True if we should create the floating overlay after leaving the
   // widget bounds.

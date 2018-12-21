@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define APP_RECENT_FILES_H_INCLUDED
 #pragma once
 
+#include "base/paths.h"
 #include "base/recent_items.h"
 #include "obs/signal.h"
 
@@ -37,6 +39,9 @@ namespace app {
     void removeRecentFolder(const std::string& dir);
     void setLimit(const int n);
     void clear();
+
+    void setFiles(base::paths paths);
+    void setFolders(base::paths paths);
 
     obs::signal<void()> Changed;
 

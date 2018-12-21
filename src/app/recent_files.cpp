@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -144,6 +145,24 @@ void RecentFiles::clear()
   m_paths.clear();
 
   Changed();
+}
+
+void RecentFiles::setFiles(base::paths paths)
+{
+  m_files.clear();
+  for (auto it=paths.rbegin(), end=paths.rend(); it!=end; ++it) {
+    const auto& p = *it;
+    m_files.addItem(p, compare_path(p));
+  }
+}
+
+void RecentFiles::setFolders(base::paths paths)
+{
+  m_paths.clear();
+  for (auto it=paths.rbegin(), end=paths.rend(); it!=end; ++it) {
+    const auto& p = *it;
+    m_paths.addItem(p, compare_path(p));
+  }
 }
 
 std::string RecentFiles::normalizePath(const std::string& filename)
