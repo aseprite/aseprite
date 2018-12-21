@@ -571,7 +571,7 @@ void App::showNotification(INotificationDelegate* del)
 
 void App::showBackupNotification(bool state)
 {
-  base::scoped_lock lock(m_backupIndicatorMutex);
+  assert_ui_thread();
   if (state) {
     if (!m_backupIndicator)
       m_backupIndicator = new BackupIndicator;

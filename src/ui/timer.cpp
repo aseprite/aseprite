@@ -12,14 +12,17 @@
 #include "ui/timer.h"
 
 #include "base/time.h"
-#include "obs/safe_list.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/system.h"
 #include "ui/widget.h"
+
+#include <algorithm>
+#include <vector>
 
 namespace ui {
 
-typedef obs::safe_list<Timer> Timers;
+typedef std::vector<Timer*> Timers;
 
 static Timers timers; // Registered timers
 static int running_timers = 0;
@@ -31,13 +34,19 @@ Timer::Timer(int interval, Widget* owner)
   , m_lastTick(0)
 {
   ASSERT(m_owner != nullptr);
+  assert_ui_thread();
 
   timers.push_back(this);
 }
 
 Timer::~Timer()
 {
-  timers.erase(this);
+  assert_ui_thread();
+
+  auto it = std::find(timers.begin(), timers.end(), this);
+  ASSERT(it != timers.end());
+  if (it != timers.end())
+    timers.erase(it);
 
   // Stop the timer and remove it from the message queue.
   stop();
@@ -45,6 +54,8 @@ Timer::~Timer()
 
 void Timer::start()
 {
+  assert_ui_thread();
+
   m_lastTick = base::current_tick();
   m_running = true;
   ++running_timers;
@@ -52,6 +63,8 @@ void Timer::start()
 
 void Timer::stop()
 {
+  assert_ui_thread();
+
   if (m_running) {
     m_running = false;
     --running_timers;
@@ -66,6 +79,8 @@ void Timer::stop()
 
 void Timer::tick()
 {
+  assert_ui_thread();
+
   onTick();
 }
 
@@ -82,6 +97,8 @@ void Timer::onTick()
 
 void Timer::pollTimers()
 {
+  assert_ui_thread();
+
   // Generate messages for timers
   if (running_timers != 0) {
     ASSERT(!timers.empty());

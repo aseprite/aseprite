@@ -13,7 +13,6 @@
 #include "app/app_brushes.h"
 #endif
 
-#include "base/mutex.h"
 #include "base/paths.h"
 #include "doc/pixel_format.h"
 #include "obs/signal.h"
@@ -106,7 +105,6 @@ namespace app {
     }
 
     void showNotification(INotificationDelegate* del);
-    // This can be called from a non-UI thread.
     void showBackupNotification(bool state);
     void updateDisplayTitleBar();
 
@@ -140,7 +138,6 @@ namespace app {
 #ifdef ENABLE_UI
     std::unique_ptr<AppBrushes> m_brushes;
     BackupIndicator* m_backupIndicator;
-    base::mutex m_backupIndicatorMutex;
 #endif // ENABLE_UI
 #ifdef ENABLE_SCRIPTING
     std::unique_ptr<script::Engine> m_engine;

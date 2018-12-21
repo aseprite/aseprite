@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,10 +29,7 @@
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
-
-#ifdef TEST_BACKUP_INTEGRITY
 #include "ui/system.h"
-#endif
 
 namespace app {
 namespace crash {
@@ -41,14 +39,18 @@ namespace {
 class SwitchBackupIcon {
 public:
   SwitchBackupIcon() {
-    App* app = App::instance();
-    if (app)
-      app->showBackupNotification(true);
+    ui::execute_from_ui_thread(
+      []{
+        if (App* app = App::instance())
+          app->showBackupNotification(true);
+      });
   }
   ~SwitchBackupIcon() {
-    App* app = App::instance();
-    if (app)
-      app->showBackupNotification(false);
+    ui::execute_from_ui_thread(
+      []{
+        if (App* app = App::instance())
+          app->showBackupNotification(false);
+      });
   }
 };
 
