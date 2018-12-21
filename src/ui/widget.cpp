@@ -577,6 +577,19 @@ void Widget::insertChild(int index, Widget* child)
   child->m_parent = this;
 }
 
+void Widget::moveChildTo(Widget* thisChild, Widget* toThisPosition)
+{
+  auto itA = std::find(m_children.begin(), m_children.end(), thisChild);
+  auto itB = std::find(m_children.begin(), m_children.end(), toThisPosition);
+  if (itA == m_children.end()) {
+    ASSERT(false);
+    return;
+  }
+  int index = itB - m_children.begin();
+  m_children.erase(itA);
+  m_children.insert(m_children.begin() + index, thisChild);
+}
+
 // ===============================================================
 // LAYOUT & CONSTRAINT
 // ===============================================================

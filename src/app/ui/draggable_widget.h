@@ -1,0 +1,165 @@
+// Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
+
+#ifndef APP_UI_DRAGGABLE_WIDGET_H_INCLUDED
+#define APP_UI_DRAGGABLE_WIDGET_H_INCLUDED
+#pragma once
+
+#include "os/surface.h"
+#include "os/system.h"
+#include "ui/graphics.h"
+#include "ui/message.h"
+#include "ui/overlay.h"
+#include "ui/overlay_manager.h"
+#include "ui/paint_event.h"
+#include "ui/system.h"
+#include "ui/view.h"
+
+namespace app {
+
+template<typename Base>
+class DraggableWidget : public Base {
+public:
+  template<typename...Args>
+  DraggableWidget(Args...args) : Base(args...) { }
+
+  bool onProcessMessage(ui::Message* msg) override {
+    switch (msg->type()) {
+
+      case ui::kSetCursorMessage:
+        if (m_floatingOverlay) {
+          ui::set_mouse_cursor(ui::kMoveCursor);
+          return true;
+        }
+        break;
+
+      case ui::kMouseDownMessage: {
+        const bool wasCaptured = this->hasCapture();
+        const bool result = Base::onProcessMessage(msg);
+
+        if (!wasCaptured && this->hasCapture()) {
+          const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+          const gfx::Point mousePos = mouseMsg->position();
+          m_dragMousePos = mousePos;
+          m_floatingOffset = mouseMsg->position() - this->bounds().origin();
+          m_createFloatingOverlay = true;
+        }
+        return result;
+      }
+
+      case ui::kMouseMoveMessage: {
+        const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+        const gfx::Point mousePos = mouseMsg->position();
+
+        if (this->hasCapture() && m_createFloatingOverlay) {
+          if (this->manager()->pick(mousePos) != this) {
+            m_createFloatingOverlay = false;
+            if (!m_floatingOverlay)
+              createFloatingOverlay();
+          }
+        }
+
+        if (m_floatingOverlay) {
+          m_floatingOverlay->moveOverlay(mousePos - m_floatingOffset);
+          onReorderWidgets(mousePos);
+        }
+        break;
+      }
+
+      case ui::kMouseUpMessage: {
+        m_wasDragged = (this->hasCapture() && m_floatingOverlay);
+        const bool result = Base::onProcessMessage(msg);
+        m_wasDragged = false;
+
+        if (!this->hasCapture()) {
+          if (m_floatingOverlay) {
+            destroyFloatingOverlay();
+            ASSERT(!m_createFloatingOverlay);
+          }
+          else if (m_createFloatingOverlay)
+            m_createFloatingOverlay = false;
+        }
+        return result;
+      }
+
+    }
+    return Base::onProcessMessage(msg);
+  }
+
+  bool wasDragged() const {
+    return m_wasDragged;
+  }
+
+private:
+
+  void createFloatingOverlay() {
+    ASSERT(!m_floatingOverlay);
+
+    gfx::Size sz = getFloatingOverlaySize();
+    os::Surface* surface = os::instance()->createRgbaSurface(sz.w, sz.h);
+
+    {
+      os::SurfaceLock lock(surface);
+      surface->fillRect(gfx::rgba(0, 0, 0, 0),
+                        gfx::Rect(0, 0, surface->width(), surface->height()));
+    }
+    {
+      ui::Graphics g(surface, 0, 0);
+      g.setFont(this->font());
+      drawFloatingOverlay(g);
+    }
+
+    m_floatingOverlay.reset(new ui::Overlay(surface, gfx::Point(),
+                                            ui::Overlay::MouseZOrder-1));
+    ui::OverlayManager::instance()->addOverlay(m_floatingOverlay.get());
+  }
+
+  void destroyFloatingOverlay() {
+    ui::OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
+    m_floatingOverlay.reset();
+  }
+
+  gfx::Size getFloatingOverlaySize() {
+    auto view = ui::View::getView(this);
+    if (!view)
+      view = ui::View::getView(this->parent());
+    if (view)
+      return (view->viewportBounds() & this->bounds()).size();
+    else
+      return this->size();
+  }
+
+  void drawFloatingOverlay(ui::Graphics& g) {
+    ui::PaintEvent ev(this, &g);
+    this->onPaint(ev);
+  }
+
+  virtual void onReorderWidgets(const gfx::Point& mousePos) = 0;
+
+  // True if we should create the floating overlay after leaving the
+  // widget bounds.
+  bool m_createFloatingOverlay = false;
+
+  // True when the mouse button is released (drop operation) and we've
+  // dragged the widget to other position. Can be used to avoid
+  // triggering the default click operation by derived classes when
+  // we've dragged the widget.
+  bool m_wasDragged = false;
+
+  // Initial mouse position when we start the dragging process.
+  gfx::Point m_dragMousePos;
+
+  // Overlay used to show the floating widget (this overlay floats
+  // next to the mouse cursor).
+  std::unique_ptr<ui::Overlay> m_floatingOverlay;
+
+  // Relative mouse position between the widget and the overlay.
+  gfx::Point m_floatingOffset;
+};
+
+} // namespace app
+
+#endif

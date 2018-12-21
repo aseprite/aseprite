@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +17,7 @@
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
+#include "app/ui/draggable_widget.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -38,10 +40,10 @@ using namespace skin;
 //////////////////////////////////////////////////////////////////////
 // RecentFileItem
 
-class RecentFileItem : public LinkLabel {
+class RecentFileItem : public DraggableWidget<LinkLabel> {
 public:
   RecentFileItem(const std::string& file)
-    : LinkLabel("")
+    : DraggableWidget<LinkLabel>("")
     , m_fullpath(file)
     , m_name(base::get_file_name(file))
     , m_path(base::get_file_path(file)) {
@@ -89,7 +91,17 @@ protected:
   }
 
   void onClick() override {
-    static_cast<RecentListBox*>(parent())->onClick(m_fullpath);
+    if (!wasDragged())
+      static_cast<RecentListBox*>(parent())->onClick(m_fullpath);
+  }
+
+  void onReorderWidgets(const gfx::Point& mousePos) override {
+    auto parent = this->parent();
+    auto other = manager()->pick(mousePos);
+    if (other && other != this && other->parent() == parent) {
+      parent->moveChildTo(this, other);
+      parent->layout();
+    }
   }
 
 private:
