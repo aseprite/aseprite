@@ -43,11 +43,13 @@ using namespace skin;
 
 class RecentFileItem : public DraggableWidget<LinkLabel> {
 public:
-  RecentFileItem(const std::string& file)
+  RecentFileItem(const std::string& file,
+                 const bool pinned)
     : DraggableWidget<LinkLabel>("")
     , m_fullpath(file)
     , m_name(base::get_file_name(file))
-    , m_path(base::get_file_path(file)) {
+    , m_path(base::get_file_path(file))
+    , m_pinned(pinned) {
     initTheme();
   }
 
@@ -121,6 +123,7 @@ protected:
             parent->moveChildTo(this, moveTo);
             parent->layout();
           }
+          saveConfig();
           return true;
         }
         break;
@@ -188,7 +191,7 @@ protected:
       }
     }
 
-    static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems();
+    saveConfig();
   }
 
 private:
@@ -204,10 +207,14 @@ private:
                      pinSize.w, pinSize.h);
   }
 
+  void saveConfig() {
+    static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems();
+  }
+
   std::string m_fullpath;
   std::string m_name;
   std::string m_path;
-  bool m_pinned = false;
+  bool m_pinned;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -243,10 +250,17 @@ void RecentListBox::rebuildList()
 
 void RecentListBox::updateRecentListFromUIItems()
 {
-  base::paths paths;
-  for (auto item : children())
-    paths.push_back(static_cast<RecentFileItem*>(item)->fullpath());
-  onUpdateRecentListFromUIItems(paths);
+  base::paths pinnedPaths;
+  base::paths recentPaths;
+  for (auto item : children()) {
+    auto fi = static_cast<RecentFileItem*>(item);
+    if (fi->pinned())
+      pinnedPaths.push_back(fi->fullpath());
+    else
+      recentPaths.push_back(fi->fullpath());
+  }
+  onUpdateRecentListFromUIItems(pinnedPaths,
+                                recentPaths);
 }
 
 void RecentListBox::onScrollRegion(ui::ScrollRegionEvent& ev)
@@ -266,10 +280,10 @@ RecentFilesListBox::RecentFilesListBox()
 void RecentFilesListBox::onRebuildList()
 {
   auto recent = App::instance()->recentFiles();
-  auto it = recent->files_begin();
-  auto end = recent->files_end();
-  for (; it != end; ++it)
-    addChild(new RecentFileItem(it->c_str()));
+  for (const auto& fn : recent->pinnedFiles())
+    addChild(new RecentFileItem(fn, true));
+  for (const auto& fn : recent->recentFiles())
+    addChild(new RecentFileItem(fn, false));
 }
 
 void RecentFilesListBox::onClick(const std::string& path)
@@ -286,9 +300,11 @@ void RecentFilesListBox::onClick(const std::string& path)
   UIContext::instance()->executeCommand(command, params);
 }
 
-void RecentFilesListBox::onUpdateRecentListFromUIItems(const base::paths& paths)
+void RecentFilesListBox::onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                                       const base::paths& recentPaths)
 {
-  App::instance()->recentFiles()->setFiles(paths);
+  App::instance()->recentFiles()->setFiles(pinnedPaths,
+                                           recentPaths);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -302,10 +318,10 @@ RecentFoldersListBox::RecentFoldersListBox()
 void RecentFoldersListBox::onRebuildList()
 {
   auto recent = App::instance()->recentFiles();
-  auto it = recent->paths_begin();
-  auto end = recent->paths_end();
-  for (; it != end; ++it)
-    addChild(new RecentFileItem(*it));
+  for (const auto& fn : recent->pinnedFolders())
+    addChild(new RecentFileItem(fn, true));
+  for (const auto& fn : recent->recentFolders())
+    addChild(new RecentFileItem(fn, false));
 }
 
 void RecentFoldersListBox::onClick(const std::string& path)
@@ -322,9 +338,11 @@ void RecentFoldersListBox::onClick(const std::string& path)
   UIContext::instance()->executeCommand(command, params);
 }
 
-void RecentFoldersListBox::onUpdateRecentListFromUIItems(const base::paths& paths)
+void RecentFoldersListBox::onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                                         const base::paths& recentPaths)
 {
-  App::instance()->recentFiles()->setFolders(paths);
+  App::instance()->recentFiles()->setFolders(pinnedPaths,
+                                             recentPaths);
 }
 
 } // namespace app

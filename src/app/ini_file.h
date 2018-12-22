@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "base/paths.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -57,6 +58,8 @@ namespace app {
   void set_config_color(const char* section, const char* name, const app::Color& value);
 
   void del_config_value(const char* section, const char* name);
+
+  base::paths enum_config_keys(const char* section);
 
   // Generic get/set_config_value functions
 

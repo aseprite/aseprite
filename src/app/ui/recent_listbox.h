@@ -32,7 +32,8 @@ namespace app {
 
     virtual void onRebuildList() = 0;
     virtual void onClick(const std::string& path) = 0;
-    virtual void onUpdateRecentListFromUIItems(const base::paths& paths) = 0;
+    virtual void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                               const base::paths& recentPaths) = 0;
 
   private:
     void rebuildList();
@@ -48,7 +49,8 @@ namespace app {
   private:
     void onRebuildList() override;
     void onClick(const std::string& path) override;
-    void onUpdateRecentListFromUIItems(const base::paths& paths) override;
+    void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                       const base::paths& recentPaths) override;
   };
 
   class RecentFoldersListBox : public RecentListBox {
@@ -58,7 +60,8 @@ namespace app {
   private:
     void onRebuildList() override;
     void onClick(const std::string& path) override;
-    void onUpdateRecentListFromUIItems(const base::paths& paths) override;
+    void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                       const base::paths& recentPaths) override;
   };
 
 } // namespace app

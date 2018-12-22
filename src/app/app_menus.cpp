@@ -474,17 +474,20 @@ bool AppMenus::rebuildRecentList()
     submenu = new Menu();
     list_menuitem->setSubmenu(submenu);
 
-    auto it = App::instance()->recentFiles()->files_begin();
-    auto end = App::instance()->recentFiles()->files_end();
-    if (it != end) {
+    auto recent = App::instance()->recentFiles();
+    base::paths files;
+    files.insert(files.end(),
+                 recent->pinnedFiles().begin(),
+                 recent->pinnedFiles().end());
+    files.insert(files.end(),
+                 recent->recentFiles().begin(),
+                 recent->recentFiles().end());
+    if (!files.empty()) {
       Params params;
-
-      for (; it != end; ++it) {
-        const char* filename = it->c_str();
-        params.set("filename", filename);
-
+      for (const auto& fn : files) {
+        params.set("filename", fn.c_str());
         menuitem = new AppMenuItem(
-          base::get_file_name(filename).c_str(),
+          base::get_file_name(fn).c_str(),
           cmd_open_file,
           params);
         submenu->addChild(menuitem);

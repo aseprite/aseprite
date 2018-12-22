@@ -274,4 +274,11 @@ void del_config_value(const char* section, const char* name)
   g_configs.back()->deleteValue(section, name);
 }
 
+base::paths enum_config_keys(const char* section)
+{
+  base::paths keys;
+  g_configs.back()->getAllKeys(section, keys);
+  return keys;
+}
+
 } // namespace app

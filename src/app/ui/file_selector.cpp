@@ -20,6 +20,7 @@
 #include "app/recent_files.h"
 #include "app/ui/file_list.h"
 #include "app/ui/file_list_view.h"
+#include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
@@ -36,6 +37,7 @@
 #include <cctype>
 #include <cerrno>
 #include <iterator>
+#include <list>
 #include <set>
 #include <string>
 #include <vector>
@@ -675,14 +677,20 @@ void FileSelector::updateLocation()
   }
 
   // Add paths from recent files list
-  {
-    location()->addItem("");
-    location()->addItem("-------- Recent Paths --------");
-
-    auto it = App::instance()->recentFiles()->paths_begin();
-    auto end = App::instance()->recentFiles()->paths_end();
-    for (; it != end; ++it)
-      location()->addItem(new CustomFolderNameItem(it->c_str()));
+  auto recent = App::instance()->recentFiles();
+  if (!recent->pinnedFolders().empty()) {
+    auto sep = new SeparatorInView(Strings::file_selector_pinned_folders(), HORIZONTAL);
+    sep->setMinSize(gfx::Size(0, sep->sizeHint().h*2));
+    location()->addItem(sep);
+    for (const auto& fn : recent->pinnedFolders())
+      location()->addItem(new CustomFolderNameItem(fn.c_str()));
+  }
+  if (!recent->recentFolders().empty()) {
+    auto sep = new SeparatorInView(Strings::file_selector_recent_folders(), HORIZONTAL);
+    sep->setMinSize(gfx::Size(0, sep->sizeHint().h*2));
+    location()->addItem(sep);
+    for (const auto& fn : recent->recentFolders())
+      location()->addItem(new CustomFolderNameItem(fn.c_str()));
   }
 
   // Select the location

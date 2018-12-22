@@ -12,8 +12,8 @@
 #include "app/recent_files.h"
 
 #include "app/ini_file.h"
+#include "base/convert_to.h"
 #include "base/fs.h"
-#include "fmt/format.h"
 
 #include <cstdio>
 #include <cstring>
@@ -21,8 +21,10 @@
 
 namespace {
 
-const char* kRecentFilesSection = "RecentFiles";
-const char* kRecentFoldersSection = "RecentPaths";
+const char* kSectionName[] = { "PinnedFiles",
+                               "RecentFiles",
+                               "PinnedPaths",
+                               "RecentPaths" };
 
 struct compare_path {
   std::string a;
@@ -32,81 +34,40 @@ struct compare_path {
   }
 };
 
-std::string format_filename_var(const int i) {
-  return fmt::format("Filename{0:02d}", i);
-}
-
-std::string format_folder_var(const int i) {
-  return fmt::format("Path{0:02d}", i);
-}
-
 }
 
 namespace app {
 
 RecentFiles::RecentFiles(const int limit)
-  : m_files(limit)
-  , m_paths(limit)
+  : m_limit(limit)
 {
-  for (int c=m_files.limit()-1; c>=0; c--) {
-    const char* filename = get_config_string(kRecentFilesSection,
-                                             format_filename_var(c).c_str(),
-                                             nullptr);
-    if (filename && *filename && base::is_file(filename)) {
-      std::string fn = normalizePath(filename);
-      m_files.addItem(fn, compare_path(fn));
-    }
-  }
-
-  for (int c=m_paths.limit()-1; c>=0; c--) {
-    const char* path = get_config_string(kRecentFoldersSection,
-                                         format_folder_var(c).c_str(),
-                                         nullptr);
-    if (path && *path) {
-      std::string p = normalizePath(path);
-      m_paths.addItem(p, compare_path(p));
-    }
-  }
+  load();
 }
 
 RecentFiles::~RecentFiles()
 {
-  // Save recent files
-
-  int c = 0;
-  for (auto const& filename : m_files) {
-    set_config_string(kRecentFilesSection,
-                      format_filename_var(c).c_str(),
-                      filename.c_str());
-    ++c;
-  }
-  for (; c<m_files.limit(); ++c) {
-    del_config_value(kRecentFilesSection,
-                     format_filename_var(c).c_str());
-  }
-
-  // Save recent folders
-
-  c = 0;
-  for (auto const& path : m_paths) {
-    set_config_string(kRecentFoldersSection,
-                      format_folder_var(c).c_str(),
-                      path.c_str());
-    ++c;
-  }
-  for (; c<m_files.limit(); ++c) {
-    del_config_value(kRecentFoldersSection,
-                     format_folder_var(c).c_str());
-  }
+  save();
 }
 
 void RecentFiles::addRecentFile(const std::string& filename)
 {
   std::string fn = normalizePath(filename);
-  m_files.addItem(fn, compare_path(fn));
 
+  // If the filename is already pinned, we don't add it in the
+  // collection of recent files collection.
+  auto it = std::find(m_paths[kPinnedFiles].begin(),
+                      m_paths[kPinnedFiles].end(), fn);
+  if (it != m_paths[kPinnedFiles].end())
+    return;
+  addItem(m_paths[kRecentFiles], fn);
+
+  // Add recent folder
   std::string path = base::get_file_path(fn);
-  m_paths.addItem(path, compare_path(path));
+  it = std::find(m_paths[kPinnedFolders].begin(),
+                 m_paths[kPinnedFolders].end(), path);
+  if (it == m_paths[kPinnedFolders].end()) {
+    addItem(m_paths[kRecentFolders], path);
+  }
 
   Changed();
 }
@@ -114,7 +75,7 @@ void RecentFiles::addRecentFile(const std::string& filename)
 void RecentFiles::removeRecentFile(const std::string& filename)
 {
   std::string fn = normalizePath(filename);
-  m_files.removeItem(fn, compare_path(fn));
+  removeItem(m_paths[kRecentFiles], fn);
 
   std::string dir = base::get_file_path(fn);
   if (!base::is_directory(dir))
@@ -126,48 +87,109 @@ void RecentFiles::removeRecentFile(const std::string& filename)
 void RecentFiles::removeRecentFolder(const std::string& dir)
 {
   std::string fn = normalizePath(dir);
-  m_paths.removeItem(fn, compare_path(fn));
+  removeItem(m_paths[kRecentFolders], fn);
 
   Changed();
 }
 
-void RecentFiles::setLimit(const int n)
+void RecentFiles::setLimit(const int newLimit)
 {
-  m_files.setLimit(n);
-  m_paths.setLimit(n);
+  ASSERT(newLimit >= 0);
 
+  for (auto& list : m_paths) {
+    if (newLimit < list.size()) {
+      auto it = list.begin();
+      std::advance(it, newLimit);
+      list.erase(it, list.end());
+    }
+  }
+
+  m_limit = newLimit;
   Changed();
 }
 
 void RecentFiles::clear()
 {
-  m_files.clear();
-  m_paths.clear();
+  // Clear only recent items (not pinned items)
+  m_paths[kRecentFiles].clear();
+  m_paths[kRecentFolders].clear();
 
   Changed();
 }
 
-void RecentFiles::setFiles(base::paths paths)
+void RecentFiles::setFiles(const base::paths& pinnedFiles,
+                           const base::paths& recentFiles)
 {
-  m_files.clear();
-  for (auto it=paths.rbegin(), end=paths.rend(); it!=end; ++it) {
-    const auto& p = *it;
-    m_files.addItem(p, compare_path(p));
-  }
+  m_paths[kPinnedFiles] = pinnedFiles;
+  m_paths[kRecentFiles] = recentFiles;
 }
 
-void RecentFiles::setFolders(base::paths paths)
+void RecentFiles::setFolders(const base::paths& pinnedFolders,
+                             const base::paths& recentFolders)
 {
-  m_paths.clear();
-  for (auto it=paths.rbegin(), end=paths.rend(); it!=end; ++it) {
-    const auto& p = *it;
-    m_paths.addItem(p, compare_path(p));
-  }
+  m_paths[kPinnedFolders] = pinnedFolders;
+  m_paths[kRecentFolders] = recentFolders;
 }
 
 std::string RecentFiles::normalizePath(const std::string& filename)
 {
   return base::normalize_path(filename);
+}
+
+void RecentFiles::addItem(base::paths& list, const std::string& fn)
+{
+  auto it = std::find_if(list.begin(), list.end(), compare_path(fn));
+
+  // If the item already exist in the list...
+  if (it != list.end()) {
+    // Move it to the first position
+    list.erase(it);
+    list.insert(list.begin(), fn);
+    return;
+  }
+
+  if (m_limit > 0)
+    list.insert(list.begin(), fn);
+
+  while (list.size() > m_limit)
+    list.erase(--list.end());
+}
+
+void RecentFiles::removeItem(base::paths& list, const std::string& fn)
+{
+  auto it = std::find_if(list.begin(), list.end(), compare_path(fn));
+  if (it != list.end())
+    list.erase(it);
+}
+
+void RecentFiles::load()
+{
+  for (int i=0; i<kCollections; ++i) {
+    for (const auto& key : enum_config_keys(kSectionName[i])) {
+      const char* fn = get_config_string(kSectionName[i], key.c_str(), nullptr);
+      if (fn && *fn &&
+          ((i < 2 && base::is_file(fn)) ||
+           (i >= 2 && base::is_directory(fn)))) {
+        std::string normalFn = normalizePath(fn);
+        m_paths[i].push_back(normalFn);
+      }
+    }
+  }
+}
+
+void RecentFiles::save()
+{
+  for (int i=0; i<kCollections; ++i) {
+    for (const auto& key : enum_config_keys(kSectionName[i]))
+      del_config_value(kSectionName[i],
+                       key.c_str());
+
+    for (int j=0; j<m_paths[i].size(); ++j) {
+      set_config_string(kSectionName[i],
+                        base::convert_to<std::string>(j).c_str(),
+                        m_paths[i][j].c_str());
+    }
+  }
 }
 
 } // namespace app
