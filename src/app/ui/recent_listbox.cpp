@@ -28,6 +28,7 @@
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
+#include "ui/scroll_region_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -51,6 +52,16 @@ public:
   }
 
   const std::string& fullpath() const { return m_fullpath; }
+  bool pinned() const { return m_pinned; }
+
+  void pin() {
+    m_pinned = true;
+    invalidate();
+  }
+
+  void onScrollRegion(ui::ScrollRegionEvent& ev) {
+    ev.region() -= gfx::Region(pinBounds(bounds()));
+  }
 
 protected:
   void onInitTheme(InitThemeEvent& ev) override {
@@ -72,6 +83,52 @@ protected:
     ev.setSizeHint(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
   }
 
+  bool onProcessMessage(Message* msg) override {
+    switch (msg->type()) {
+      case kMouseDownMessage: {
+        const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        gfx::Rect rc = pinBounds(bounds());
+        rc.y = bounds().y;
+        rc.h = bounds().h;
+        if (rc.contains(mousePos)) {
+          m_pinned = !m_pinned;
+          invalidate();
+
+          auto parent = this->parent();
+          const auto& children = parent->children();
+          auto end = children.end();
+          auto moveTo = parent->firstChild();
+          if (m_pinned) {
+            for (auto it=children.begin(); it != end; ++it) {
+              if (*it == this || !static_cast<RecentFileItem*>(*it)->pinned()) {
+                moveTo = *it;
+                break;
+              }
+            }
+          }
+          else {
+            auto it = std::find(children.begin(), end, this);
+            if (it != end) {
+              auto prevIt = it++;
+              for (; it != end; prevIt=it++) {
+                if (!static_cast<RecentFileItem*>(*it)->pinned())
+                  break;
+              }
+              moveTo = *prevIt;
+            }
+          }
+          if (this != moveTo) {
+            parent->moveChildTo(this, moveTo);
+            parent->layout();
+          }
+          return true;
+        }
+        break;
+      }
+    }
+    return DraggableWidget<LinkLabel>::onProcessMessage(msg);
+  }
+
   void onPaint(PaintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     Graphics* g = ev.graphics();
@@ -90,6 +147,17 @@ protected:
       setTextQuiet(m_path.c_str());
       theme->paintWidget(g, this, styleDetail, detailsBounds);
     }
+
+    if (!isDragging() && (m_pinned || hasMouse())) {
+      ui::Style* pinStyle = theme->styles.recentFilePin();
+      const gfx::Rect pinBounds = this->pinBounds(bounds);
+      PaintWidgetPartInfo pi;
+      pi.styleFlags =
+        (isSelected() ? ui::Style::Layer::kSelected: 0) |
+        (m_pinned ? ui::Style::Layer::kFocus: 0) |
+        (hasMouse() ? ui::Style::Layer::kMouse: 0);
+      theme->paintWidgetPart(g, pinStyle, pinBounds, pi);
+    }
   }
 
   void onClick() override {
@@ -107,14 +175,39 @@ protected:
   }
 
   void onFinalDrop() override {
-    if (wasDragged())
-      static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems();
+    if (!wasDragged())
+      return;
+
+    // Pin all elements to keep the order
+    const auto& children = parent()->children();
+    for (auto it=children.rbegin(), end=children.rend(); it!=end; ++it) {
+      if (this == *it) {
+        for (; it!=end; ++it)
+          static_cast<RecentFileItem*>(*it)->pin();
+        break;
+      }
+    }
+
+    static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems();
   }
 
 private:
+  gfx::Rect pinBounds(const gfx::Rect& bounds) {
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    ui::Style* pinStyle = theme->styles.recentFilePin();
+    ui::View* view = View::getView(parent());
+    const gfx::Size pinSize = theme->calcSizeHint(this, pinStyle);
+    const gfx::Rect vp = view->viewportBounds();
+    const gfx::Point scroll = view->viewScroll();
+    return gfx::Rect(scroll.x+bounds.x+vp.w-pinSize.w,
+                     bounds.y+bounds.h/2-pinSize.h/2,
+                     pinSize.w, pinSize.h);
+  }
+
   std::string m_fullpath;
   std::string m_name;
   std::string m_path;
+  bool m_pinned = false;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -154,6 +247,12 @@ void RecentListBox::updateRecentListFromUIItems()
   for (auto item : children())
     paths.push_back(static_cast<RecentFileItem*>(item)->fullpath());
   onUpdateRecentListFromUIItems(paths);
+}
+
+void RecentListBox::onScrollRegion(ui::ScrollRegionEvent& ev)
+{
+  for (auto item : children())
+    static_cast<RecentFileItem*>(item)->onScrollRegion(ev);
 }
 
 //////////////////////////////////////////////////////////////////////

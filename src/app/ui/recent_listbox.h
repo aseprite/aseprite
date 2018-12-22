@@ -12,12 +12,14 @@
 #include "base/paths.h"
 #include "obs/connection.h"
 #include "ui/listbox.h"
+#include "ui/view.h"
 
 namespace app {
 
   class RecentFileItem;
 
-  class RecentListBox : public ui::ListBox {
+  class RecentListBox : public ui::ListBox,
+                        public ui::ViewableWidget {
     friend class RecentFileItem;
   public:
     RecentListBox();
@@ -25,6 +27,9 @@ namespace app {
     void updateRecentListFromUIItems();
 
   protected:
+    // ui::ViewableWidget impl
+    virtual void onScrollRegion(ui::ScrollRegionEvent& ev);
+
     virtual void onRebuildList() = 0;
     virtual void onClick(const std::string& path) = 0;
     virtual void onUpdateRecentListFromUIItems(const base::paths& paths) = 0;

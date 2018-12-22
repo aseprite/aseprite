@@ -95,12 +95,20 @@ public:
     return m_wasDragged;
   }
 
+  bool isDragging() const {
+    return m_isDragging;
+  }
+
 private:
 
   void createFloatingOverlay() {
     ASSERT(!m_floatingOverlay);
 
+    m_isDragging = true;
+
     gfx::Size sz = getFloatingOverlaySize();
+    sz.w = std::max(1, sz.w);
+    sz.h = std::max(1, sz.h);
     os::Surface* surface = os::instance()->createRgbaSurface(sz.w, sz.h);
 
     {
@@ -122,6 +130,7 @@ private:
   void destroyFloatingOverlay() {
     ui::OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
     m_floatingOverlay.reset();
+    m_isDragging = false;
   }
 
   gfx::Size getFloatingOverlaySize() {
@@ -129,7 +138,7 @@ private:
     if (!view)
       view = ui::View::getView(this->parent());
     if (view)
-      return (view->viewportBounds() & this->bounds()).size();
+      return (view->viewportBounds().offset(view->viewScroll()) & this->bounds()).size();
     else
       return this->size();
   }
@@ -145,6 +154,8 @@ private:
   // True if we should create the floating overlay after leaving the
   // widget bounds.
   bool m_createFloatingOverlay = false;
+
+  bool m_isDragging = false;
 
   // True when the mouse button is released (drop operation) and we've
   // dragged the widget to other position. Can be used to avoid
