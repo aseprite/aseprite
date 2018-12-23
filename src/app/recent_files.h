@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,7 +9,7 @@
 #define APP_RECENT_FILES_H_INCLUDED
 #pragma once
 
-#include "base/recent_items.h"
+#include "base/paths.h"
 #include "obs/signal.h"
 
 #include <string>
@@ -16,18 +17,16 @@
 namespace app {
 
   class RecentFiles {
+    enum { kPinnedFiles,
+           kRecentFiles,
+           kPinnedFolders,
+           kRecentFolders,
+           kCollections };
   public:
-    typedef base::RecentItems<std::string> List;
-    typedef List::iterator iterator;
-    typedef List::const_iterator const_iterator;
-
-    // Iterate through recent files.
-    const_iterator files_begin() { return m_files.begin(); }
-    const_iterator files_end() { return m_files.end(); }
-
-    // Iterate through recent paths.
-    const_iterator paths_begin() { return m_paths.begin(); }
-    const_iterator paths_end() { return m_paths.end(); }
+    const base::paths& pinnedFiles() { return m_paths[kPinnedFiles]; }
+    const base::paths& recentFiles() { return m_paths[kRecentFiles]; }
+    const base::paths& pinnedFolders() { return m_paths[kPinnedFolders]; }
+    const base::paths& recentFolders() { return m_paths[kRecentFolders]; }
 
     RecentFiles(const int limit);
     ~RecentFiles();
@@ -35,16 +34,25 @@ namespace app {
     void addRecentFile(const std::string& filename);
     void removeRecentFile(const std::string& filename);
     void removeRecentFolder(const std::string& dir);
-    void setLimit(const int n);
+    void setLimit(const int newLimit);
     void clear();
+
+    void setFiles(const base::paths& pinnedFiles,
+                  const base::paths& recentFiles);
+    void setFolders(const base::paths& pinnedFolders,
+                    const base::paths& recentFolders);
 
     obs::signal<void()> Changed;
 
   private:
     std::string normalizePath(const std::string& filename);
+    void addItem(base::paths& list, const std::string& filename);
+    void removeItem(base::paths& list, const std::string& filename);
+    void load();
+    void save();
 
-    List m_files;
-    List m_paths;
+    base::paths m_paths[kCollections];
+    int m_limit;
   };
 
 } // namespace app

@@ -121,8 +121,6 @@ void EditorView::onSetViewScroll(const gfx::Point& pt)
 
 void EditorView::onScrollRegion(ui::ScrollRegionEvent& ev)
 {
-  View::onScrollRegion(ev);
-
   gfx::Region& region = ev.region();
   Editor* editor = this->editor();
   ASSERT(editor);

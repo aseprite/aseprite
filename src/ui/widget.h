@@ -212,6 +212,7 @@ namespace ui {
     void removeAllChildren();
     void replaceChild(Widget* oldChild, Widget* newChild);
     void insertChild(int index, Widget* child);
+    void moveChildTo(Widget* thisChild, Widget* toThisPosition);
 
     // ===============================================================
     // LAYOUT & CONSTRAINT

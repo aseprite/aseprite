@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2018  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +14,7 @@
 #include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "ui/overlay_manager.h"
 
 #include <vector>
 
@@ -26,6 +28,11 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
   ASSERT(display);
   if (!display)
     return;
+
+  auto overlays = ui::OverlayManager::instance();
+  gfx::Rect bounds = region.bounds();
+  bounds |= gfx::Rect(bounds).offset(dx, dy);
+  overlays->restoreOverlappedAreas(bounds);
 
   os::Surface* surface = display->getSurface();
   os::SurfaceLock lock(surface);
@@ -83,6 +90,8 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
       manager->dirtyRect(rc);
     }
   }
+
+  overlays->drawOverlays();
 }
 
 } // namespace ui

@@ -356,7 +356,8 @@ void View::onSetViewScroll(const gfx::Point& pt)
 
 void View::onScrollRegion(ScrollRegionEvent& ev)
 {
-  // Do nothing
+  if (auto viewable = dynamic_cast<ViewableWidget*>(attachedWidget()))
+    viewable->onScrollRegion(ev);
 }
 
 void View::onScrollChange()

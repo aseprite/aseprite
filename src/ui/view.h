@@ -17,6 +17,12 @@
 namespace ui {
   class ScrollRegionEvent;
 
+  class ViewableWidget {
+  public:
+    virtual ~ViewableWidget() { }
+    virtual void onScrollRegion(ScrollRegionEvent& ev) = 0;
+  };
+
   class View : public Widget
              , public ScrollableViewDelegate {
   public:

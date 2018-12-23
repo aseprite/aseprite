@@ -17,8 +17,6 @@ namespace app {
 
 void FileListView::onScrollRegion(ui::ScrollRegionEvent& ev)
 {
-  View::onScrollRegion(ev);
-
   if (auto fileList = dynamic_cast<FileList*>(attachedWidget())) {
     gfx::Rect tbounds = fileList->thumbnailBounds();
     if (!tbounds.isEmpty()) {
