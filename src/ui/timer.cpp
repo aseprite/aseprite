@@ -57,8 +57,10 @@ void Timer::start()
   assert_ui_thread();
 
   m_lastTick = base::current_tick();
-  m_running = true;
-  ++running_timers;
+  if (!m_running) {
+    m_running = true;
+    ++running_timers;
+  }
 }
 
 void Timer::stop()
