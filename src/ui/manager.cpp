@@ -10,6 +10,7 @@
 // #define DEBUG_PAINT_EVENTS
 // #define LIMIT_DISPATCH_TIME
 // #define DEBUG_UI_THREADS
+#define GARBAGE_TRACE(...)
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -351,6 +352,17 @@ void Manager::generateMessagesFromOSEvents()
 
     if (canWait && used_msg_queue.empty())
       collectGarbage();
+#if _DEBUG
+    else if (!m_garbage.empty()) {
+      GARBAGE_TRACE("collectGarbage() wasn't called #objects=%d"
+                    " (msg_queue=%d used_msg_queue=%d redrawState=%d runningTimers=%d)\n",
+                    int(m_garbage.size()),
+                    msg_queue.size(),
+                    used_msg_queue.size(),
+                    int(redrawState),
+                    Timer::haveRunningTimers());
+    }
+#endif
 
     m_eventQueue->getEvent(sheEvent, canWait);
     if (sheEvent.type() == os::Event::None)
@@ -1568,10 +1580,13 @@ void Manager::collectGarbage()
   if (m_garbage.empty())
     return;
 
-  for (WidgetsList::iterator
-         it = m_garbage.begin(),
-         end = m_garbage.end(); it != end; ++it) {
-    delete *it;
+  GARBAGE_TRACE("Manager::collectGarbage() #objects=%d\n", int(m_garbage.size()));
+
+  for (auto widget : m_garbage) {
+    GARBAGE_TRACE(" -> deleting %s %s ---\n",
+                  typeid(*widget).name(),
+                  widget->id().c_str());
+    delete widget;
   }
   m_garbage.clear();
 }
