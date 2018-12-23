@@ -31,7 +31,15 @@ public:
 
       case ui::kSetCursorMessage:
         if (m_floatingOverlay) {
-          ui::set_mouse_cursor(ui::kMoveCursor);
+          const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+          const gfx::Point mousePos = mouseMsg->position();
+          if (onCanDropItemsOutside() &&
+              !getParentBounds().contains(mousePos)) {
+            ui::set_mouse_cursor(ui::kForbiddenCursor);
+          }
+          else {
+            ui::set_mouse_cursor(ui::kMoveCursor);
+          }
           return true;
         }
         break;
@@ -64,12 +72,33 @@ public:
 
         if (m_floatingOverlay) {
           m_floatingOverlay->moveOverlay(mousePos - m_floatingOffset);
-          onReorderWidgets(mousePos);
+
+          bool inside = true;
+          if (onCanDropItemsOutside()) {
+            inside = getParentBounds().contains(mousePos);
+            if (inside) {
+              if (this->hasFlags(ui::HIDDEN)) {
+                this->disableFlags(ui::HIDDEN);
+                layoutParent();
+              }
+            }
+            else {
+              if (!this->hasFlags(ui::HIDDEN)) {
+                this->enableFlags(ui::HIDDEN);
+                layoutParent();
+              }
+            }
+          }
+
+          onReorderWidgets(mousePos, inside);
         }
         break;
       }
 
       case ui::kMouseUpMessage: {
+        const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+        const gfx::Point mousePos = mouseMsg->position();
+
         m_wasDragged = (this->hasCapture() && m_floatingOverlay);
         const bool result = Base::onProcessMessage(msg);
 
@@ -77,7 +106,7 @@ public:
           if (m_floatingOverlay) {
             destroyFloatingOverlay();
             ASSERT(!m_createFloatingOverlay);
-            onFinalDrop();
+            onFinalDrop(getParentBounds().contains(mousePos));
           }
           else if (m_createFloatingOverlay)
             m_createFloatingOverlay = false;
@@ -134,13 +163,26 @@ private:
   }
 
   gfx::Size getFloatingOverlaySize() {
-    auto view = ui::View::getView(this);
-    if (!view)
-      view = ui::View::getView(this->parent());
+    auto view = ui::View::getView(this->parent());
     if (view)
       return (view->viewportBounds().offset(view->viewScroll()) & this->bounds()).size();
     else
       return this->size();
+  }
+
+  gfx::Rect getParentBounds() {
+    auto view = ui::View::getView(this->parent());
+    if (view)
+      return view->viewportBounds();
+    else
+      return this->parent()->bounds();
+  }
+
+  void layoutParent() {
+    this->parent()->layout();
+    auto view = ui::View::getView(this->parent());
+    if (view)
+      return view->updateView();
   }
 
   void drawFloatingOverlay(ui::Graphics& g) {
@@ -148,8 +190,9 @@ private:
     this->onPaint(ev);
   }
 
-  virtual void onReorderWidgets(const gfx::Point& mousePos) { }
-  virtual void onFinalDrop() { }
+  virtual bool onCanDropItemsOutside() { return true; }
+  virtual void onReorderWidgets(const gfx::Point& mousePos, bool inside) { }
+  virtual void onFinalDrop(bool inside) { }
 
   // True if we should create the floating overlay after leaving the
   // widget bounds.

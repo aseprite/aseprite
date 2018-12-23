@@ -168,7 +168,7 @@ protected:
       static_cast<RecentListBox*>(parent())->onClick(m_fullpath);
   }
 
-  void onReorderWidgets(const gfx::Point& mousePos) override {
+  void onReorderWidgets(const gfx::Point& mousePos, bool inside) override {
     auto parent = this->parent();
     auto other = manager()->pick(mousePos);
     if (other && other != this && other->parent() == parent) {
@@ -177,21 +177,30 @@ protected:
     }
   }
 
-  void onFinalDrop() override {
+  void onFinalDrop(bool inside) override {
     if (!wasDragged())
       return;
 
-    // Pin all elements to keep the order
-    const auto& children = parent()->children();
-    for (auto it=children.rbegin(), end=children.rend(); it!=end; ++it) {
-      if (this == *it) {
-        for (; it!=end; ++it)
-          static_cast<RecentFileItem*>(*it)->pin();
-        break;
+    if (inside) {
+      // Pin all elements to keep the order
+      const auto& children = parent()->children();
+      for (auto it=children.rbegin(), end=children.rend(); it!=end; ++it) {
+        if (this == *it) {
+          for (; it!=end; ++it)
+            static_cast<RecentFileItem*>(*it)->pin();
+          break;
+        }
       }
+    }
+    else {
+      setVisible(false);
+      parent()->layout();
     }
 
     saveConfig();
+
+    if (!inside)
+      deferDelete();
   }
 
 private:
@@ -254,6 +263,8 @@ void RecentListBox::updateRecentListFromUIItems()
   base::paths recentPaths;
   for (auto item : children()) {
     auto fi = static_cast<RecentFileItem*>(item);
+    if (fi->hasFlags(ui::HIDDEN))
+      continue;
     if (fi->pinned())
       pinnedPaths.push_back(fi->fullpath());
     else
