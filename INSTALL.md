@@ -156,8 +156,8 @@ the following parameters and then `ninja`:
     cd build
     cmake \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk \
       -DSKIA_DIR=$HOME/deps/skia \
       -DWITH_HarfBuzz=OFF \
       -G Ninja \
@@ -166,6 +166,10 @@ the following parameters and then `ninja`:
 
 In this case, `$HOME/deps/skia` is the directory where Skia was
 compiled as described in [Skia on macOS](#skia-on-macos) section.
+Make sure that `CMAKE_OSX_SYSROOT` is pointing to the correct SDK
+directory (in this case
+`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk`),
+but it could be different in your Mac.
 
 ### Issues with Retina displays
 
