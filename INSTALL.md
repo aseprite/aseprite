@@ -134,13 +134,18 @@ You must also compile [Skia](#skia-on-linux) before starting with the
 
 ## Windows details
 
-After you've [compiled Skia](#skia-on-windows) you can execute `cmake`
-with the following arguments:
+After you've [compiled Skia](#skia-on-windows),
+open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
+or in the command line (`cmd.exe`) call:
+
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+
+And then
 
     cd aseprite
     mkdir build
     cd build
-    cmake -DSKIA_DIR=C:\deps\skia -G Ninja ..
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_OS_BACKEND=skia -DSKIA_DIR=C:\deps\skia -DSKIA_OUT_DIR=C:\deps\skia\out\Release -G Ninja ..
     ninja aseprite
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
@@ -155,11 +160,13 @@ the following parameters and then `ninja`:
     mkdir build
     cd build
     cmake \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
       -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk \
+      -DLAF_OS_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
-      -DWITH_HarfBuzz=OFF \
+      -DSKIA_OUT_DIR=$HOME/deps/skia/out/Release \
       -G Ninja \
       ..
     ninja aseprite
@@ -185,7 +192,13 @@ First you have to [compile Skia](#skia-on-linux), then you should run
     cd aseprite
     mkdir build
     cd build
-    cmake -DSKIA_DIR=$HOME/deps/skia -G Ninja ..
+    cmake \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DLAF_OS_BACKEND=skia \
+      -DSKIA_DIR=$HOME/deps/skia \
+      -DSKIA_OUT_DIR=$HOME/deps/skia/out/Release \
+      -G Ninja \
+      ..
     ninja aseprite
 
 In this case, `$HOME/deps/skia` is the directory where Skia was
@@ -226,7 +239,7 @@ and install it on a folder like `C:\deps\llvm` (a folder without whitespaces).
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 or command line (`cmd.exe`) and call:
 
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 Then:
 
@@ -257,7 +270,7 @@ If you haven't installed Clang, and want to compile Skia with MSVC
 (anyway it's not recommended because the performance penalty is too
 big), you can use the following commands instead:
 
-    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x86"" cc=2017"
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=2017"
     ninja -C out/Release skia
 
 More information about these steps in the
