@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +37,7 @@ namespace app {
   }
 #endif
 
+  class AppMod;
   class AppOptions;
   class BackupIndicator;
   class Context;
@@ -67,7 +68,7 @@ namespace app {
 
   class App {
   public:
-    App();
+    App(AppMod* mod = nullptr);
     ~App();
 
     static App* instance() { return m_instance; }
@@ -86,6 +87,7 @@ namespace app {
     void initialize(const AppOptions& options);
     void run();
 
+    AppMod* mod() const { return m_mod; }
     tools::ToolBox* toolBox() const;
     tools::Tool* activeTool() const;
     tools::ActiveToolManager* activeToolManager() const;
@@ -127,6 +129,7 @@ namespace app {
 
     static App* m_instance;
 
+    AppMod* m_mod;
     std::unique_ptr<ui::UISystem> m_uiSystem;
     CoreModules* m_coreModules;
     Modules* m_modules;

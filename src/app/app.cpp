@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 
+#include "app/app_mod.h"
 #include "app/check_update.h"
 #include "app/cli/app_options.h"
 #include "app/cli/cli_processor.h"
@@ -174,12 +175,13 @@ public:
 
 };
 
-App* App::m_instance = NULL;
+App* App::m_instance = nullptr;
 
-App::App()
-  : m_coreModules(NULL)
-  , m_modules(NULL)
-  , m_legacy(NULL)
+App::App(AppMod* mod)
+  : m_mod(mod)
+  , m_coreModules(nullptr)
+  , m_modules(nullptr)
+  , m_legacy(nullptr)
   , m_isGui(false)
   , m_isShell(false)
 #ifdef ENABLE_UI
@@ -261,8 +263,10 @@ void App::initialize(const AppOptions& options)
 
     ui::Manager::getDefault()->invalidate();
 
-    // Create the main window and show it.
+    // Create the main window.
     m_mainWindow.reset(new MainWindow);
+    if (m_mod)
+      m_mod->modMainWindow(m_mainWindow.get());
 
     // Default status of the main window.
     app_rebuild_documents_tabs();
