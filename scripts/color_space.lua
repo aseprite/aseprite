@@ -10,10 +10,9 @@ assert(none ~= srgb)
 local spr = Sprite(32, 32)
 local cs1 = spr.colorSpace
 local cs2 = spr.spec.colorSpace
-assert(cs1.name == "sRGB")    -- Default color profile: sRGB
 assert(cs1 == cs2)
 assert(cs1 ~= none)
-assert(cs1 == srgb)
+assert(cs1 == srgb)    -- Default color profile: sRGB
 
 local spr3 = Sprite(32, 32)
 local cs3 = spr.spec.colorSpace
