@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/script/luacpp.h"
 #include "base/file_content.h"
+#include "gfx/color_space.h"
 
 namespace app {
 namespace script {
