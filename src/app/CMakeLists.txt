@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018  Igara Studio S.A.
+# Copyright (C) 2018-2019  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -153,6 +153,7 @@ if(ENABLE_SCRIPTING)
     script/cel_class.cpp
     script/cels_class.cpp
     script/color_class.cpp
+    script/color_space_class.cpp
     script/dialog_class.cpp
     script/engine.cpp
     script/frame_class.cpp

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018  Igara Studio S.A.
+// Copyright (c) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "doc/image_spec.h"
 
@@ -72,6 +73,16 @@ int ImageSpec_get_colorMode(lua_State* L)
   return 1;
 }
 
+int ImageSpec_get_colorSpace(lua_State* L)
+{
+  const auto spec = get_obj<doc::ImageSpec>(L, 1);
+  if (spec->colorSpace())
+    push_color_space(L, *spec->colorSpace());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int ImageSpec_get_width(lua_State* L)
 {
   const auto spec = get_obj<doc::ImageSpec>(L, 1);
@@ -97,6 +108,14 @@ int ImageSpec_set_colorMode(lua_State* L)
 {
   auto spec = get_obj<doc::ImageSpec>(L, 1);
   spec->setColorMode((doc::ColorMode)lua_tointeger(L, 2));
+  return 0;
+}
+
+int ImageSpec_set_colorSpace(lua_State* L)
+{
+  auto spec = get_obj<doc::ImageSpec>(L, 1);
+  auto cs = get_obj<gfx::ColorSpace>(L, 2);
+  spec->setColorSpace(std::make_shared<gfx::ColorSpace>(*cs));
   return 0;
 }
 
@@ -129,6 +148,7 @@ const luaL_Reg ImageSpec_methods[] = {
 
 const Property ImageSpec_properties[] = {
   { "colorMode", ImageSpec_get_colorMode, ImageSpec_set_colorMode },
+  { "colorSpace", ImageSpec_get_colorSpace, ImageSpec_set_colorSpace },
   { "width", ImageSpec_get_width, ImageSpec_set_width },
   { "height", ImageSpec_get_height, ImageSpec_set_height },
   { "transparentColor", ImageSpec_get_transparentColor, ImageSpec_set_transparentColor },

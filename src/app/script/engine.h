@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,10 @@
 #include <map>
 
 struct lua_State;
+
+namespace gfx {
+  class ColorSpace;
+}
 
 namespace doc {
   class Cel;
@@ -103,6 +107,7 @@ namespace app {
   void push_cels(lua_State* L, const doc::ObjectIds& cels);
   void push_cels(lua_State* L, doc::Layer* layer);
   void push_cels(lua_State* L, doc::Sprite* sprite);
+  void push_color_space(lua_State* L, const gfx::ColorSpace& cs);
   void push_doc_range(lua_State* L, Site& site, const DocRange& docRange);
   void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);

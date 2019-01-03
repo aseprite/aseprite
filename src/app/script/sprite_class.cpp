@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,9 @@
 
 #include "app/app.h"
 #include "app/cmd/add_layer.h"
+#include "app/cmd/assign_color_profile.h"
 #include "app/cmd/clear_cel.h"
+#include "app/cmd/convert_color_profile.h"
 #include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
@@ -223,6 +225,28 @@ int Sprite_setPalette(lua_State* L)
     tx.commit();
   }
   return 0;
+}
+
+int Sprite_assignColorSpace(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  auto cs = get_obj<gfx::ColorSpace>(L, 2);
+  Tx tx;
+  tx(new cmd::AssignColorProfile(
+       sprite, std::make_shared<gfx::ColorSpace>(*cs)));
+  tx.commit();
+  return 1;
+}
+
+int Sprite_convertColorSpace(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  auto cs = get_obj<gfx::ColorSpace>(L, 2);
+  Tx tx;
+  tx(new cmd::ConvertColorProfile(
+       sprite, std::make_shared<gfx::ColorSpace>(*cs)));
+  tx.commit();
+  return 1;
 }
 
 int Sprite_newLayer(lua_State* L)
@@ -492,6 +516,17 @@ int Sprite_get_colorMode(lua_State* L)
   return 1;
 }
 
+int Sprite_get_colorSpace(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  auto cs = sprite->colorSpace();
+  if (cs)
+    push_color_space(L, *cs);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int Sprite_get_spec(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
@@ -612,6 +647,8 @@ const luaL_Reg Sprite_methods[] = {
   { "close", Sprite_close },
   { "loadPalette", Sprite_loadPalette },
   { "setPalette", Sprite_setPalette },
+  { "assignColorSpace", Sprite_assignColorSpace },
+  { "convertColorSpace", Sprite_convertColorSpace },
   // Layers
   { "newLayer", Sprite_newLayer },
   { "newGroup", Sprite_newGroup },
@@ -637,6 +674,7 @@ const Property Sprite_properties[] = {
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
   { "colorMode", Sprite_get_colorMode, nullptr },
+  { "colorSpace", Sprite_get_colorSpace, Sprite_assignColorSpace },
   { "spec", Sprite_get_spec, nullptr },
   { "selection", Sprite_get_selection, nullptr },
   { "frames", Sprite_get_frames, nullptr },
