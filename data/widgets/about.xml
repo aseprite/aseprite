@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
 <!-- Copyright (C) 2018  David Capello -->
 <gui i18nwarnings="false">
 <window id="about" text="About Aseprite">
@@ -25,7 +25,7 @@
     </grid>
     <separator horizontal="true" />
     <hbox>
-      <label text="Copyright (C) 2001-2018" />
+      <label text="Copyright (C) 2001-2019" />
       <link text="Igara Studio S.A." url="https://www.igarastudio.com/" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />
