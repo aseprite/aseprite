@@ -6,3 +6,7 @@
 local spr = Sprite(32, 32)
 local cs = spr.spec.colorSpace
 assert(cs.name == "sRGB")    -- Default color profile
+
+local spr2 = Sprite(32, 32)
+local cs2 = spr.spec.colorSpace
+assert(cs == cs2)
