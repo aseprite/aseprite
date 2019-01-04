@@ -367,6 +367,10 @@ public:
     return trimEnabled()->isSelected();
   }
 
+  bool extrudeValue() const {
+    return extrudeEnabled()->isSelected();
+  }
+
   bool openGeneratedValue() const {
     return openGenerated()->isSelected();
   }
@@ -651,6 +655,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.shapePadding(window.shapePaddingValue());
     docPref.spriteSheet.innerPadding(window.innerPaddingValue());
     docPref.spriteSheet.trim(window.trimValue());
+    docPref.spriteSheet.extrude(window.extrudeValue());
     docPref.spriteSheet.openGenerated(window.openGeneratedValue());
     docPref.spriteSheet.layer(window.layerValue());
     docPref.spriteSheet.frameTag(window.frameTagValue());
@@ -689,6 +694,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   shapePadding = MID(0, shapePadding, 100);
   innerPadding = MID(0, innerPadding, 100);
   const bool trimCels = docPref.spriteSheet.trim();
+  const bool extrude = docPref.spriteSheet.extrude();
   const bool listLayers = docPref.spriteSheet.listLayers();
   const bool listFrameTags = docPref.spriteSheet.listFrameTags();
   const bool listSlices = docPref.spriteSheet.listSlices();
@@ -770,6 +776,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);
   exporter.setTrimCels(trimCels);
+  exporter.setExtrude(extrude);
   if (listLayers) exporter.setListLayers(true);
   if (listFrameTags) exporter.setListFrameTags(true);
   if (listSlices) exporter.setListSlices(true);
