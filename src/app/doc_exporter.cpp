@@ -971,48 +971,27 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
 
 void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
 {
-  int extrude_x = 0, extrude_y = 0;
+  render::Render render;
   if (m_extrude) {
-    extrude_x = extrude_y = 1;
-    render::Render render;
+    const gfx::Rect& trim = sample.trimmedBounds();
+    int dx[] = {0, 1, trim.w+1};
+    int dy[] = {0, 1, trim.h+1};
+    int srcx[] = {trim.x, trim.x, trim.w-1};
+    int srcy[] = {trim.y, trim.y, trim.h-1};
+    int szx[] = {1, trim.w, 1};
+    int szy[] = {1, trim.h, 1};
 
-    //top band of extruded image
-    gfx::Clip clip(x+extrude_x, y, gfx::RectT<int>(0, 0, sample.sprite()->width(), 1));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //bottom band of extruded image
-    clip = gfx::Clip(x+extrude_x, y+sample.sprite()->height()+extrude_y, gfx::RectT<int>(0, sample.sprite()->height()-1, sample.sprite()->width(), 1));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //left band of extruded image
-    clip = gfx::Clip(x, y+extrude_y, gfx::RectT<int>(0, 0, 1, sample.sprite()->height()));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //right band of extruded image
-    clip = gfx::Clip(x+sample.sprite()->width()+extrude_x, y+extrude_y, gfx::RectT<int>(sample.sprite()->width()-1, 0, 1, sample.sprite()->height()));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //top-left corner of extruded image
-    clip = gfx::Clip(x, y, gfx::RectT<int>(0, 0, 1, 1));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //bottom-left corner of extruded image
-    clip = gfx::Clip(x, y+sample.sprite()->height()+extrude_y, gfx::RectT<int>(0, sample.sprite()->height()-1, 1, 1));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //top-right corner of extruded image
-    clip = gfx::Clip(x+sample.sprite()->width()+extrude_x, y, gfx::RectT<int>(sample.sprite()->width()-1, 0, 1, 1));
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-
-    //bottom-right corner of extruded image
-    clip = gfx::Clip(x+sample.sprite()->width()+extrude_x, y+sample.sprite()->height()+extrude_y, gfx::RectT<int>(sample.sprite()->width()-1, sample.sprite()->height()-1, 1, 1));
+    for(int i=0; i<3; ++i) {
+      for(int j=0; j<3; ++j) {
+        gfx::Clip clip(x+dx[i], y+dy[j], gfx::RectT<int>(srcx[i], srcy[j], szx[i], szy[j]));
+        render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+      }
+    }
+  }
+  else {
+    gfx::Clip clip(x, y, sample.trimmedBounds());
     render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
   }
-
-  //copy current frame (sample) of the original sprite into the new image
-  gfx::Clip clip(x+extrude_x, y+extrude_y, sample.trimmedBounds());
-  render::Render render;
-  render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
 
   RestoreVisibleLayers layersVisibility;
   if (sample.selectedLayers())
