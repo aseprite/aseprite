@@ -169,13 +169,14 @@ doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
 class DocExporter::Sample {
 public:
   Sample(Doc* document, Sprite* sprite, SelectedLayers* selLayers,
-         frame_t frame, const std::string& filename, int innerPadding) :
+         frame_t frame, const std::string& filename, int innerPadding, bool extrude) :
     m_document(document),
     m_sprite(sprite),
     m_selLayers(selLayers),
     m_frame(frame),
     m_filename(filename),
     m_innerPadding(innerPadding),
+    m_extrude(extrude),
     m_bounds(new SampleBounds(sprite)),
     m_isDuplicated(false) {
   }
@@ -194,9 +195,12 @@ public:
   const gfx::Rect& inTextureBounds() const { return m_bounds->inTextureBounds(); }
 
   gfx::Size requiredSize() const {
+    // if extrude option is enabled, an extra pixel is needed for each side
+    // left+right borders and top+bottom borders
+    int extraExtrudePixels = m_extrude ? 2 : 0;
     gfx::Size size = m_bounds->trimmedBounds().size();
-    size.w += 2*m_innerPadding;
-    size.h += 2*m_innerPadding;
+    size.w += 2*m_innerPadding + extraExtrudePixels;
+    size.h += 2*m_innerPadding + extraExtrudePixels;
     return size;
   }
 
@@ -223,6 +227,7 @@ private:
   frame_t m_frame;
   std::string m_filename;
   int m_innerPadding;
+  bool m_extrude;
   SampleBoundsPtr m_bounds;
   bool m_isDuplicated;
 };
@@ -391,6 +396,7 @@ DocExporter::DocExporter()
  , m_shapePadding(0)
  , m_innerPadding(0)
  , m_trimCels(false)
+ , m_extrude(false)
  , m_listFrameTags(false)
  , m_listLayers(false)
  , m_listSlices(false)
@@ -496,7 +502,7 @@ void DocExporter::captureSamples(Samples& samples)
 
       std::string filename = filename_formatter(format, fnInfo);
 
-      Sample sample(doc, sprite, item.selLayers, frame, filename, m_innerPadding);
+      Sample sample(doc, sprite, item.selLayers, frame, filename, m_innerPadding, m_extrude);
       Cel* cel = nullptr;
       Cel* link = nullptr;
       bool done = false;
@@ -965,15 +971,53 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
 
 void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
 {
-  gfx::Clip clip(x, y, sample.trimmedBounds());
+  int extrude_x = 0, extrude_y = 0;
+  if (m_extrude) {
+    extrude_x = extrude_y = 1;
+    render::Render render;
+
+    //top band of extruded image
+    gfx::Clip clip(x+extrude_x, y, gfx::RectT<int>(0, 0, sample.sprite()->width(), 1));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //bottom band of extruded image
+    clip = gfx::Clip(x+extrude_x, y+sample.sprite()->height()+extrude_y, gfx::RectT<int>(0, sample.sprite()->height()-1, sample.sprite()->width(), 1));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //left band of extruded image
+    clip = gfx::Clip(x, y+extrude_y, gfx::RectT<int>(0, 0, 1, sample.sprite()->height()));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //right band of extruded image
+    clip = gfx::Clip(x+sample.sprite()->width()+extrude_x, y+extrude_y, gfx::RectT<int>(sample.sprite()->width()-1, 0, 1, sample.sprite()->height()));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //top-left corner of extruded image
+    clip = gfx::Clip(x, y, gfx::RectT<int>(0, 0, 1, 1));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //bottom-left corner of extruded image
+    clip = gfx::Clip(x, y+sample.sprite()->height()+extrude_y, gfx::RectT<int>(0, sample.sprite()->height()-1, 1, 1));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //top-right corner of extruded image
+    clip = gfx::Clip(x+sample.sprite()->width()+extrude_x, y, gfx::RectT<int>(sample.sprite()->width()-1, 0, 1, 1));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+
+    //bottom-right corner of extruded image
+    clip = gfx::Clip(x+sample.sprite()->width()+extrude_x, y+sample.sprite()->height()+extrude_y, gfx::RectT<int>(sample.sprite()->width()-1, sample.sprite()->height()-1, 1, 1));
+    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
+  }
+
+  //copy current frame (sample) of the original sprite into the new image
+  gfx::Clip clip(x+extrude_x, y+extrude_y, sample.trimmedBounds());
+  render::Render render;
+  render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
 
   RestoreVisibleLayers layersVisibility;
   if (sample.selectedLayers())
     layersVisibility.showSelectedLayers(sample.sprite(),
                                         *sample.selectedLayers());
-
-  render::Render render;
-  render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
 }
 
 } // namespace app
