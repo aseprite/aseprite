@@ -254,7 +254,6 @@ if(ENABLE_UI)
     commands/cmd_open_with_app.cpp
     commands/cmd_options.cpp
     commands/cmd_palette_editor.cpp
-    commands/cmd_palette_size.cpp
     commands/cmd_paste.cpp
     commands/cmd_paste_text.cpp
     commands/cmd_pixel_perfect_mode.cpp
@@ -516,6 +515,7 @@ add_library(app-lib
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_open_file.cpp
+  commands/cmd_palette_size.cpp
   commands/cmd_remove_layer.cpp
   commands/cmd_save_file.cpp
   commands/cmd_sprite_size.cpp
