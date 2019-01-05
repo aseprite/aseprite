@@ -974,15 +974,44 @@ void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int
   render::Render render;
   if (m_extrude) {
     const gfx::Rect& trim = sample.trimmedBounds();
+
+    // dx, dy arrays represent the displaced
+    // position onto the destination texture
     int dx[] = {0, 1, trim.w+1};
     int dy[] = {0, 1, trim.h+1};
+
+    // srcx, srcy arrays represent the starting point
+    // of the area to be copied from the original image
+    // taking into account the size of the trimmed sprite
     int srcx[] = {trim.x, trim.x, trim.w-1};
     int srcy[] = {trim.y, trim.y, trim.h-1};
+
+    // these array variables represent the size of the area to be
+    // copied from original image, starting at the point (srcx[i], srxy[j])
     int szx[] = {1, trim.w, 1};
     int szy[] = {1, trim.h, 1};
 
-    for(int i=0; i<3; ++i) {
-      for(int j=0; j<3; ++j) {
+
+    // Suppose that the block at center (1,1) in the following sketch
+    // depicts the original image, and the other blocks represent
+    // its extruded parts
+    // ===========================
+    // || 0,0 |    0,1    | 0,2 ||
+    // ||-----+-----------+-----||
+    // ||     |           |     ||
+    // || 1,0 |    1,1    | 1,2 ||
+    // ||     |           |     ||
+    // ||-----+-----------+-----||
+    // || 2,0 |    2,1    | 2,2 ||
+    // ===========================
+
+    // The next block of nested loops does the work
+    // of extruding the original image (1,1) and rendering
+    // every part depicted in the previous sketch.
+    // Each cell has a tuple that represent the values of (i, j)
+    // indexes of the following code
+    for(int j=0; j<3; ++j) {
+      for(int i=0; i<3; ++i) {
         gfx::Clip clip(x+dx[i], y+dy[j], gfx::RectT<int>(srcx[i], srcy[j], szx[i], szy[j]));
         render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
       }
