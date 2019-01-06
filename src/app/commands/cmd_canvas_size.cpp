@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -268,21 +269,31 @@ private:
 };
 
 class CanvasSizeCommand : public Command {
-  int m_left, m_right, m_top, m_bottom;
-
 public:
   CanvasSizeCommand();
   Command* clone() const override { return new CanvasSizeCommand(*this); }
 
 protected:
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+
+private:
+  int m_left, m_right, m_top, m_bottom;
 };
 
 CanvasSizeCommand::CanvasSizeCommand()
   : Command(CommandId::CanvasSize(), CmdRecordableFlag)
 {
   m_left = m_right = m_top = m_bottom = 0;
+}
+
+void CanvasSizeCommand::onLoadParams(const Params& params)
+{
+  m_left = params.get_as<int>("left");
+  m_right = params.get_as<int>("right");
+  m_top = params.get_as<int>("top");
+  m_bottom = params.get_as<int>("bottom");
 }
 
 bool CanvasSizeCommand::onEnabled(Context* context)
@@ -296,6 +307,7 @@ void CanvasSizeCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
 
+#ifdef ENABLE_UI
   if (context->isUIAvailable()) {
     // load the window widget
     std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow());
@@ -316,6 +328,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     m_top    = window->getTop();
     m_bottom = window->getBottom();
   }
+#endif
 
   // Resize canvas
 
@@ -329,10 +342,10 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader);
-    Doc* document = writer.document();
+    Doc* doc = writer.document();
     Sprite* sprite = writer.sprite();
     Tx tx(writer.context(), "Canvas Size");
-    DocApi api = document->getApi(tx);
+    DocApi api = doc->getApi(tx);
 
     api.cropSprite(sprite,
                    gfx::Rect(x1, y1,
@@ -340,8 +353,12 @@ void CanvasSizeCommand::onExecute(Context* context)
                              MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)));
     tx.commit();
 
-    document->generateMaskBoundaries();
-    update_screen_for_document(document);
+    doc->generateMaskBoundaries();
+
+#ifdef ENABLE_UI
+    if (context->isUIAvailable())
+      update_screen_for_document(doc);
+#endif
   }
 }
 
