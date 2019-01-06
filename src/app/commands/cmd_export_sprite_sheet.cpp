@@ -193,6 +193,7 @@ public:
 
     openGenerated()->setSelected(m_docPref.spriteSheet.openGenerated());
     trimEnabled()->setSelected(m_docPref.spriteSheet.trim());
+    extrudeEnabled()->setSelected(m_docPref.spriteSheet.extrude());
 
     borderPadding()->setTextf("%d", m_docPref.spriteSheet.borderPadding());
     shapePadding()->setTextf("%d", m_docPref.spriteSheet.shapePadding());
