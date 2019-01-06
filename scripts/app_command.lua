@@ -106,3 +106,12 @@ do -- PaletteSize
   app.command.PaletteSize{ size=8 }
   assert(#s.palettes[1] == 8)
 end
+
+do -- CanvasSize
+  local s = Sprite(32, 32)
+  assert(s.bounds == Rectangle(0, 0, 32, 32))
+  app.command.CanvasSize{ left=2 }
+  assert(s.bounds == Rectangle(0, 0, 34, 32))
+  app.command.CanvasSize{ top=2, right=4, bottom=8 }
+  assert(s.bounds == Rectangle(0, 0, 38, 42))
+end
