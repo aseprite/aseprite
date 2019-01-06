@@ -97,3 +97,12 @@ do -- Cel Opacity
   app.undo()
   assert(c.opacity == 255)
 end
+
+do -- PaletteSize
+  local s = Sprite(32, 32)
+  assert(#s.palettes[1] == 256)
+  app.command.PaletteSize{ size=32 }
+  assert(#s.palettes[1] == 32)
+  app.command.PaletteSize{ size=8 }
+  assert(#s.palettes[1] == 8)
+end
