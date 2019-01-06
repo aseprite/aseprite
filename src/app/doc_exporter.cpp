@@ -983,8 +983,8 @@ void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int
     // srcx, srcy arrays represent the starting point
     // of the area to be copied from the original image
     // taking into account the size of the trimmed sprite
-    int srcx[] = {trim.x, trim.x, trim.w-1};
-    int srcy[] = {trim.y, trim.y, trim.h-1};
+    int srcx[] = {trim.x, trim.x, trim.x2()-1};
+    int srcy[] = {trim.y, trim.y, trim.y2()-1};
 
     // these array variables represent the size of the area to be
     // copied from original image, starting at the point (srcx[i], srxy[j])
