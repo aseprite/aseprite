@@ -194,7 +194,6 @@ if(ENABLE_UI)
     commands/cmd_add_color.cpp
     commands/cmd_advanced_mode.cpp
     commands/cmd_cancel.cpp
-    commands/cmd_canvas_size.cpp
     commands/cmd_cel_properties.cpp
     commands/cmd_change_brush.cpp
     commands/cmd_change_color.cpp
@@ -213,7 +212,6 @@ if(ENABLE_UI)
     commands/cmd_duplicate_sprite.cpp
     commands/cmd_duplicate_view.cpp
     commands/cmd_exit.cpp
-    commands/cmd_export_sprite_sheet.cpp
     commands/cmd_eyedropper.cpp
     commands/cmd_fill_and_stroke.cpp
     commands/cmd_fit_screen.cpp
@@ -506,9 +504,11 @@ add_library(app-lib
   color_spaces.cpp
   color_utils.cpp
   commands/cmd_background_from_layer.cpp
+  commands/cmd_canvas_size.cpp
   commands/cmd_cel_opacity.cpp
   commands/cmd_change_pixel_format.cpp
   commands/cmd_crop.cpp
+  commands/cmd_export_sprite_sheet.cpp
   commands/cmd_flatten_layers.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
@@ -523,6 +523,7 @@ add_library(app-lib
   commands/command.cpp
   commands/commands.cpp
   commands/move_thing.cpp
+  commands/new_params.cpp
   commands/quick_command.cpp
   console.cpp
   context.cpp

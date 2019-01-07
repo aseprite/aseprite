@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +10,7 @@
 #endif
 
 #include "app/app.h"
-#include "app/commands/command.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
@@ -581,41 +582,24 @@ private:
   bool m_dataFilenameAskOverwrite;
 };
 
-class ExportSpriteSheetCommand : public Command {
+struct ExportSpriteSheetParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<bool> askOverwrite { this, true, { "askOverwrite", "ask-overwrite" } };
+};
+
+class ExportSpriteSheetCommand : public CommandWithNewParams<ExportSpriteSheetParams> {
 public:
   ExportSpriteSheetCommand();
   Command* clone() const override { return new ExportSpriteSheetCommand(*this); }
 
-  void setUseUI(bool useUI) { m_useUI = useUI; }
-
 protected:
-  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
-
-private:
-  bool m_useUI;
-  bool m_askOverwrite;
 };
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
-  : Command(CommandId::ExportSpriteSheet(), CmdRecordableFlag)
-  , m_useUI(true)
-  , m_askOverwrite(true)
+  : CommandWithNewParams(CommandId::ExportSpriteSheet(), CmdRecordableFlag)
 {
-}
-
-void ExportSpriteSheetCommand::onLoadParams(const Params& params)
-{
-  if (params.has_param("ui"))
-    m_useUI = params.get_as<bool>("ui");
-  else
-    m_useUI = true;
-
-  if (params.has_param("ask-overwrite"))
-    m_askOverwrite = params.get_as<bool>("ask-overwrite");
-  else
-    m_askOverwrite = true;
 }
 
 bool ExportSpriteSheetCommand::onEnabled(Context* context)
@@ -629,9 +613,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   Doc* document = site.document();
   Sprite* sprite = site.sprite();
   DocumentPreferences& docPref(Preferences::instance().document(document));
-  bool askOverwrite = m_askOverwrite;
 
-  if (m_useUI && context->isUIAvailable()) {
+#ifdef ENABLE_UI
+  bool askOverwrite = params().askOverwrite();
+  if (params().ui() && context->isUIAvailable()) {
     ExportSpriteSheetWindow window(site, docPref);
     window.openWindowInForeground();
     if (!window.ok())
@@ -670,6 +655,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
     askOverwrite = false; // Already asked in the ExportSpriteSheetWindow
   }
+#endif // ENABLE_UI
 
   app::SpriteSheetType type = docPref.spriteSheet.type();
   int columns = docPref.spriteSheet.columns();
@@ -693,11 +679,13 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   const bool listFrameTags = docPref.spriteSheet.listFrameTags();
   const bool listSlices = docPref.spriteSheet.listSlices();
 
+#ifdef ENABLE_UI
   if (context->isUIAvailable() && askOverwrite) {
     if (!ask_overwrite(true, filename,
                        true, dataFilename))
       return;                   // Do not overwrite
   }
+#endif
 
   SelectedFrames selFrames;
   FrameTag* frameTag =
@@ -781,9 +769,13 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (!newDocument)
     return;
 
-  StatusBar* statusbar = StatusBar::instance();
-  if (statusbar)
-    statusbar->showTip(1000, "Sprite Sheet Generated");
+#ifdef ENABLE_UI
+  if (context->isUIAvailable()) {
+    StatusBar* statusbar = StatusBar::instance();
+    if (statusbar)
+      statusbar->showTip(1000, "Sprite Sheet Generated");
+  }
+#endif
 
   // Copy background and grid preferences
   {

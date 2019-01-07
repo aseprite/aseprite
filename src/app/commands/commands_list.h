@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@ FOR_EACH_COMMAND(CanvasSize)
 FOR_EACH_COMMAND(CelOpacity)
 FOR_EACH_COMMAND(ChangePixelFormat)
 FOR_EACH_COMMAND(CropSprite)
+FOR_EACH_COMMAND(ExportSpriteSheet)
 FOR_EACH_COMMAND(FlattenLayers)
 FOR_EACH_COMMAND(LayerFromBackground)
 FOR_EACH_COMMAND(LoadPalette)
@@ -54,7 +55,6 @@ FOR_EACH_COMMAND(DuplicateLayer)
 FOR_EACH_COMMAND(DuplicateSprite)
 FOR_EACH_COMMAND(DuplicateView)
 FOR_EACH_COMMAND(Exit)
-FOR_EACH_COMMAND(ExportSpriteSheet)
 FOR_EACH_COMMAND(Eyedropper)
 FOR_EACH_COMMAND(Fill)
 FOR_EACH_COMMAND(FitScreen)
