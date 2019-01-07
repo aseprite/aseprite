@@ -39,7 +39,6 @@ class ModifySelectionWindow : public app::gen::ModifySelection {
 class ModifySelectionCommand : public Command {
 public:
   ModifySelectionCommand();
-  Command* clone() const override { return new ModifySelectionCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

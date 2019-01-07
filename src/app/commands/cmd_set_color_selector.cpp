@@ -20,7 +20,6 @@ namespace app {
 class SetColorSelectorCommand : public Command {
 public:
   SetColorSelectorCommand();
-  Command* clone() const override { return new SetColorSelectorCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

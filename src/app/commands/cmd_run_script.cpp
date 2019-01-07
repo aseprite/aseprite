@@ -34,7 +34,6 @@ namespace app {
 class RunScriptCommand : public Command {
 public:
   RunScriptCommand();
-  Command* clone() const override { return new RunScriptCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

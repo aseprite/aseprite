@@ -51,7 +51,6 @@ class GotoFirstFrameCommand : public GotoCommand {
 public:
   GotoFirstFrameCommand()
     : GotoCommand(CommandId::GotoFirstFrame()) { }
-  Command* clone() const override { return new GotoFirstFrameCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -63,7 +62,6 @@ class GotoFirstFrameInTagCommand : public GotoCommand {
 public:
   GotoFirstFrameInTagCommand()
     : GotoCommand(CommandId::GotoFirstFrameInTag()) { }
-  Command* clone() const override { return new GotoFirstFrameInTagCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -80,7 +78,6 @@ class GotoPreviousFrameCommand : public GotoCommand {
 public:
   GotoPreviousFrameCommand()
     : GotoCommand(CommandId::GotoPreviousFrame()) { }
-  Command* clone() const override { return new GotoPreviousFrameCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -94,7 +91,6 @@ protected:
 class GotoNextFrameCommand : public GotoCommand {
 public:
   GotoNextFrameCommand() : GotoCommand(CommandId::GotoNextFrame()) { }
-  Command* clone() const override { return new GotoNextFrameCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -108,7 +104,6 @@ protected:
 class GotoNextFrameWithSameTagCommand : public GotoCommand {
 public:
   GotoNextFrameWithSameTagCommand() : GotoCommand(CommandId::GotoNextFrameWithSameTag()) { }
-  Command* clone() const override { return new GotoNextFrameWithSameTagCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -127,7 +122,6 @@ protected:
 class GotoPreviousFrameWithSameTagCommand : public GotoCommand {
 public:
   GotoPreviousFrameWithSameTagCommand() : GotoCommand(CommandId::GotoPreviousFrameWithSameTag()) { }
-  Command* clone() const override { return new GotoPreviousFrameWithSameTagCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -146,7 +140,6 @@ protected:
 class GotoLastFrameCommand : public GotoCommand {
 public:
   GotoLastFrameCommand() : GotoCommand(CommandId::GotoLastFrame()) { }
-  Command* clone() const override { return new GotoLastFrameCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -158,7 +151,6 @@ class GotoLastFrameInTagCommand : public GotoCommand {
 public:
   GotoLastFrameInTagCommand()
     : GotoCommand(CommandId::GotoLastFrameInTag()) { }
-  Command* clone() const override { return new GotoLastFrameInTagCommand(*this); }
 
 protected:
   frame_t onGetFrame(Editor* editor) override {
@@ -175,7 +167,6 @@ class GotoFrameCommand : public GotoCommand {
 public:
   GotoFrameCommand() : GotoCommand(CommandId::GotoFrame())
                      , m_showUI(true) { }
-  Command* clone() const override { return new GotoFrameCommand(*this); }
 
 private:
 

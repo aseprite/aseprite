@@ -37,7 +37,6 @@ static std::string last_text_used;
 class PasteTextCommand : public Command {
 public:
   PasteTextCommand();
-  Command* clone() const override { return new PasteTextCommand(*this); }
 
 protected:
   bool onEnabled(Context* ctx) override;

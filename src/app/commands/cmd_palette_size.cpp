@@ -28,7 +28,6 @@ namespace app {
 class PaletteSizeCommand : public Command {
 public:
   PaletteSizeCommand();
-  Command* clone() const override { return new PaletteSizeCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

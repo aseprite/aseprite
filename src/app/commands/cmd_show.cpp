@@ -21,8 +21,6 @@ public:
     : Command(CommandId::ShowExtras(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new ShowExtrasCommand(*this); }
-
 protected:
   bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
@@ -60,8 +58,6 @@ public:
     : Command(CommandId::ShowLayerEdges(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new ShowLayerEdgesCommand(*this); }
-
 protected:
   bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
@@ -79,8 +75,6 @@ public:
   ShowGridCommand()
     : Command(CommandId::ShowGrid(), CmdUIOnlyFlag) {
   }
-
-  Command* clone() const override { return new ShowGridCommand(*this); }
 
 protected:
   bool onChecked(Context* ctx) override {
@@ -100,8 +94,6 @@ public:
     : Command(CommandId::ShowPixelGrid(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new ShowPixelGridCommand(*this); }
-
 protected:
   bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
@@ -120,8 +112,6 @@ public:
     : Command(CommandId::ShowSelectionEdges(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new ShowSelectionEdgesCommand(*this); }
-
 protected:
   bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
@@ -139,8 +129,6 @@ public:
   ShowBrushPreviewCommand()
     : Command(CommandId::ShowBrushPreview(), CmdUIOnlyFlag) {
   }
-
-  Command* clone() const override { return new ShowBrushPreviewCommand(*this); }
 
 protected:
   bool onChecked(Context* ctx) override {
@@ -165,8 +153,6 @@ public:
     : Command(CommandId::ShowAutoGuides(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new ShowAutoGuidesCommand(*this); }
-
 protected:
   bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
@@ -184,8 +170,6 @@ public:
   ShowSlicesCommand()
     : Command(CommandId::ShowSlices(), CmdUIOnlyFlag) {
   }
-
-  Command* clone() const override { return new ShowSlicesCommand(*this); }
 
 protected:
   bool onChecked(Context* ctx) override {

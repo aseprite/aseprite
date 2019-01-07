@@ -41,7 +41,6 @@ using namespace ui;
 class LayerPropertiesCommand : public Command {
 public:
   LayerPropertiesCommand();
-  Command* clone() const override { return new LayerPropertiesCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

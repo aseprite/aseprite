@@ -19,8 +19,6 @@ namespace app {
     QuickCommand(const char* id, std::function<void()> execute);
     ~QuickCommand();
 
-    QuickCommand* clone() const override;
-
   protected:
     void onExecute(Context* context) override;
 

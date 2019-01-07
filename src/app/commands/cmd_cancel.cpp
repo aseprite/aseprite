@@ -26,7 +26,6 @@ public:
   };
 
   CancelCommand();
-  Command* clone() const override { return new CancelCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

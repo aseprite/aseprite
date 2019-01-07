@@ -35,7 +35,6 @@ class NewBrushCommand : public Command
                       , public SelectBoxDelegate {
 public:
   NewBrushCommand();
-  Command* clone() const override { return new NewBrushCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

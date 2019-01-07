@@ -24,7 +24,6 @@ namespace app {
 class SaveMaskCommand : public Command {
 public:
   SaveMaskCommand();
-  Command* clone() const override { return new SaveMaskCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

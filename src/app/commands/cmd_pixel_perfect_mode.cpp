@@ -21,7 +21,6 @@ namespace app {
 class PixelPerfectModeCommand : public Command {
 public:
   PixelPerfectModeCommand();
-  Command* clone() const override { return new PixelPerfectModeCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

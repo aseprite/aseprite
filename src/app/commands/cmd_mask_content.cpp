@@ -32,7 +32,6 @@ namespace app {
 class MaskContentCommand : public Command {
 public:
   MaskContentCommand();
-  Command* clone() const override { return new MaskContentCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

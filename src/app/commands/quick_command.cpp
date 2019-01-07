@@ -22,11 +22,6 @@ QuickCommand::~QuickCommand()
 {
 }
 
-QuickCommand* QuickCommand::clone() const
-{
-  return new QuickCommand(*this);
-}
-
 void QuickCommand::onExecute(Context* context)
 {
   m_execute();

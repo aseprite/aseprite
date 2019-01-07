@@ -29,7 +29,6 @@ class FillCommand : public Command {
 public:
   enum Type { Fill, Stroke };
   FillCommand(Type type);
-  Command* clone() const override { return new FillCommand(*this); }
 protected:
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;

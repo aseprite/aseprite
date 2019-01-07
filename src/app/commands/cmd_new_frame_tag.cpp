@@ -27,7 +27,6 @@ using namespace doc;
 class NewFrameTagCommand : public Command {
 public:
   NewFrameTagCommand();
-  Command* clone() const override { return new NewFrameTagCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

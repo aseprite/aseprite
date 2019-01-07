@@ -29,7 +29,6 @@ class LoadMaskCommand : public Command {
 
 public:
   LoadMaskCommand();
-  Command* clone() const override { return new LoadMaskCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

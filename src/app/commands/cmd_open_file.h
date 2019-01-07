@@ -22,7 +22,6 @@ namespace app {
     };
 
     OpenFileCommand();
-    Command* clone() const override { return new OpenFileCommand(*this); }
 
     const base::paths& usedFiles() const {
       return m_usedFiles;

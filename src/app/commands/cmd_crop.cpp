@@ -25,7 +25,6 @@ namespace app {
 class CropSpriteCommand : public Command {
 public:
   CropSpriteCommand();
-  Command* clone() const override { return new CropSpriteCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;
@@ -86,7 +85,6 @@ void CropSpriteCommand::onExecute(Context* context)
 class AutocropSpriteCommand : public Command {
 public:
   AutocropSpriteCommand();
-  Command* clone() const override { return new AutocropSpriteCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

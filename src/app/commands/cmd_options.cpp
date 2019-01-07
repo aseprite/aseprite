@@ -1278,7 +1278,6 @@ private:
 class OptionsCommand : public Command {
 public:
   OptionsCommand();
-  Command* clone() const override { return new OptionsCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

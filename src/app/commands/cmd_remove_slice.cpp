@@ -27,7 +27,6 @@ namespace app {
 class RemoveSliceCommand : public Command {
 public:
   RemoveSliceCommand();
-  Command* clone() const override { return new RemoveSliceCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

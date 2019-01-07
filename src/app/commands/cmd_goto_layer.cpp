@@ -88,9 +88,6 @@ public:
     : GotoLayerCommand(-1, "GotoPreviousLayer",
                        CmdUIOnlyFlag) {
   }
-  Command* clone() const override {
-    return new GotoPreviousLayerCommand(*this);
-  }
 };
 
 class GotoNextLayerCommand : public GotoLayerCommand {
@@ -98,9 +95,6 @@ public:
   GotoNextLayerCommand()
     : GotoLayerCommand(+1, "GotoNextLayer",
                        CmdUIOnlyFlag) {
-  }
-  Command* clone() const override {
-    return new GotoNextLayerCommand(*this);
   }
 };
 

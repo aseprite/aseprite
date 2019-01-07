@@ -18,7 +18,6 @@ namespace app {
 class ContiguousFillCommand : public Command {
 public:
   ContiguousFillCommand();
-  Command* clone() const override { return new ContiguousFillCommand(*this); }
 
 protected:
   bool onChecked(Context* context) override;

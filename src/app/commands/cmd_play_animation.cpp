@@ -27,7 +27,6 @@ using namespace ui;
 class PlayAnimationCommand : public Command {
 public:
   PlayAnimationCommand();
-  Command* clone() const override { return new PlayAnimationCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;
@@ -71,7 +70,6 @@ void PlayAnimationCommand::onExecute(Context* context)
 class PlayPreviewAnimationCommand : public Command {
 public:
   PlayPreviewAnimationCommand();
-  Command* clone() const override { return new PlayPreviewAnimationCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

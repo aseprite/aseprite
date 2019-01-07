@@ -26,7 +26,6 @@ using namespace ui;
 class AdvancedModeCommand : public Command {
 public:
   AdvancedModeCommand();
-  Command* clone() const override { return new AdvancedModeCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;

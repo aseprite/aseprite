@@ -27,7 +27,6 @@ namespace app {
 class DuplicateLayerCommand : public Command {
 public:
   DuplicateLayerCommand();
-  Command* clone() const override { return new DuplicateLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

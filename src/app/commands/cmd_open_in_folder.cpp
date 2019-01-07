@@ -19,7 +19,6 @@ namespace app {
 class OpenInFolderCommand : public Command {
 public:
   OpenInFolderCommand();
-  Command* clone() const override { return new OpenInFolderCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

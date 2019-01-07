@@ -31,7 +31,6 @@ using namespace doc;
 class SelectTileCommand : public Command {
 public:
   SelectTileCommand();
-  Command* clone() const override { return new SelectTileCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

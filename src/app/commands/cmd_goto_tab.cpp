@@ -17,7 +17,6 @@ namespace app {
 class GotoNextTabCommand : public Command {
 public:
   GotoNextTabCommand();
-  Command* clone() const override { return new GotoNextTabCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;
@@ -42,7 +41,6 @@ void GotoNextTabCommand::onExecute(Context* context)
 class GotoPreviousTabCommand : public Command {
 public:
   GotoPreviousTabCommand();
-  Command* clone() const override { return new GotoPreviousTabCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

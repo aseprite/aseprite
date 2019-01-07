@@ -21,7 +21,6 @@ namespace app {
 class RepeatLastExportCommand : public Command {
 public:
   RepeatLastExportCommand();
-  Command* clone() const override { return new RepeatLastExportCommand(*this); }
 
 protected:
   virtual bool onEnabled(Context* context) override;

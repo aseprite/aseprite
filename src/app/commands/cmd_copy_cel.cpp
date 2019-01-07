@@ -19,7 +19,6 @@ namespace app {
 class CopyCelCommand : public Command {
 public:
   CopyCelCommand();
-  Command* clone() const override { return new CopyCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -238,7 +238,6 @@ void SaveFileBaseCommand::saveDocumentInBackground(
 class SaveFileCommand : public SaveFileBaseCommand {
 public:
   SaveFileCommand();
-  Command* clone() const override { return new SaveFileCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;
@@ -277,7 +276,6 @@ void SaveFileCommand::onExecute(Context* context)
 class SaveFileAsCommand : public SaveFileBaseCommand {
 public:
   SaveFileAsCommand();
-  Command* clone() const override { return new SaveFileAsCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;
@@ -298,7 +296,6 @@ void SaveFileAsCommand::onExecute(Context* context)
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {
 public:
   SaveFileCopyAsCommand();
-  Command* clone() const override { return new SaveFileCopyAsCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;

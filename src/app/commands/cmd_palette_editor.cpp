@@ -19,7 +19,6 @@ namespace app {
 class PaletteEditorCommand : public Command {
 public:
   PaletteEditorCommand();
-  Command* clone() const override { return new PaletteEditorCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

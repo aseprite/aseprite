@@ -29,7 +29,6 @@ using namespace ui;
 class FramePropertiesCommand : public Command {
 public:
   FramePropertiesCommand();
-  Command* clone() const override { return new FramePropertiesCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

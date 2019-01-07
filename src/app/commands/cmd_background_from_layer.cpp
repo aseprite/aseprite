@@ -22,7 +22,6 @@ namespace app {
 class BackgroundFromLayerCommand : public Command {
 public:
   BackgroundFromLayerCommand();
-  Command* clone() const override { return new BackgroundFromLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

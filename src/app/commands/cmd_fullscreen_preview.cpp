@@ -256,7 +256,6 @@ private:
 class FullscreenPreviewCommand : public Command {
 public:
   FullscreenPreviewCommand();
-  Command* clone() const override { return new FullscreenPreviewCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

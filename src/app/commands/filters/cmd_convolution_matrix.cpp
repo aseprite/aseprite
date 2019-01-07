@@ -143,7 +143,6 @@ private:
 class ConvolutionMatrixCommand : public Command {
 public:
   ConvolutionMatrixCommand();
-  Command* clone() const override { return new ConvolutionMatrixCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

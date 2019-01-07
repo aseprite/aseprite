@@ -35,7 +35,6 @@ public:
   enum Type { Undo, Redo };
 
   UndoCommand(Type type);
-  Command* clone() const override { return new UndoCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

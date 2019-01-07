@@ -25,7 +25,6 @@ namespace app {
 class ScrollCommand : public Command {
 public:
   ScrollCommand();
-  Command* clone() const override { return new ScrollCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

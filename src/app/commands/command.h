@@ -28,8 +28,6 @@ namespace app {
     Command(const char* id, CommandFlags flags);
     virtual ~Command();
 
-    virtual Command* clone() const { return new Command(*this); }
-
     const std::string& id() const { return m_id; }
     std::string friendlyName() const;
 

@@ -23,7 +23,6 @@ using namespace ui;
 class LayerLockCommand : public Command {
 public:
   LayerLockCommand();
-  Command* clone() const override { return new LayerLockCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

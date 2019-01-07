@@ -20,7 +20,6 @@ namespace app {
 class TiledModeCommand : public Command {
 public:
   TiledModeCommand();
-  Command* clone() const override { return new TiledModeCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

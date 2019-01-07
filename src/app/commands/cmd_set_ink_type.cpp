@@ -22,7 +22,6 @@ namespace app {
 class SetInkTypeCommand : public Command {
 public:
   SetInkTypeCommand();
-  Command* clone() const override { return new SetInkTypeCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

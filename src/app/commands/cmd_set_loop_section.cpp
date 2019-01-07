@@ -28,7 +28,6 @@ public:
   enum class Action { Auto, On, Off };
 
   SetLoopSectionCommand();
-  Command* clone() const override { return new SetLoopSectionCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

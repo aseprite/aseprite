@@ -25,7 +25,6 @@ namespace app {
 class SymmetryModeCommand : public Command {
 public:
   SymmetryModeCommand();
-  Command* clone() const override { return new SymmetryModeCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

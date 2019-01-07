@@ -23,7 +23,6 @@ using namespace ui;
 class AboutCommand : public Command {
 public:
   AboutCommand();
-  Command* clone() const override { return new AboutCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;

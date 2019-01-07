@@ -841,7 +841,6 @@ private:
 class KeyboardShortcutsCommand : public Command {
 public:
   KeyboardShortcutsCommand();
-  Command* clone() const override { return new KeyboardShortcutsCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

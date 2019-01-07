@@ -24,7 +24,6 @@ namespace app {
 class UnlinkCelCommand : public Command {
 public:
   UnlinkCelCommand();
-  Command* clone() const override { return new UnlinkCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

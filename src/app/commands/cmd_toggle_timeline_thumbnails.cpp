@@ -25,8 +25,6 @@ public:
     : Command(CommandId::ToggleTimelineThumbnails(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new ToggleTimelineThumbnailsCommand(*this); }
-
 protected:
   bool onChecked(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());

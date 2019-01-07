@@ -19,7 +19,6 @@ namespace app {
 class OpenBrowserCommand : public Command {
 public:
   OpenBrowserCommand();
-  Command* clone() const override { return new OpenBrowserCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

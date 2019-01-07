@@ -21,7 +21,6 @@ namespace app {
 class SetSameInkCommand : public Command {
 public:
   SetSameInkCommand();
-  Command* clone() const override { return new SetSameInkCommand(*this); }
 
 protected:
   bool onChecked(Context* context) override;

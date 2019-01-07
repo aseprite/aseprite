@@ -17,7 +17,6 @@ namespace app {
 class CopyMergedCommand : public Command {
 public:
   CopyMergedCommand();
-  Command* clone() const override { return new CopyMergedCommand(*this); }
 
 protected:
   bool onEnabled(Context* ctx) override;

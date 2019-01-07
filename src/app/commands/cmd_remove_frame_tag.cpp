@@ -25,7 +25,6 @@ namespace app {
 class RemoveFrameTagCommand : public Command {
 public:
   RemoveFrameTagCommand();
-  Command* clone() const override { return new RemoveFrameTagCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

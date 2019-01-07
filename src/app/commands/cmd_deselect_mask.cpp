@@ -21,7 +21,6 @@ namespace app {
 class DeselectMaskCommand : public Command {
 public:
   DeselectMaskCommand();
-  Command* clone() const override { return new DeselectMaskCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

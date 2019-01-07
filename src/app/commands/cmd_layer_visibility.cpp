@@ -23,7 +23,6 @@ using namespace ui;
 class LayerVisibilityCommand : public Command {
 public:
   LayerVisibilityCommand();
-  Command* clone() const override { return new LayerVisibilityCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

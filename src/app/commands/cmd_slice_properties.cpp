@@ -26,7 +26,6 @@ using namespace ui;
 class SlicePropertiesCommand : public Command {
 public:
   SlicePropertiesCommand();
-  Command* clone() const override { return new SlicePropertiesCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

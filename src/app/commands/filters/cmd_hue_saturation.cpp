@@ -120,7 +120,6 @@ private:
 class HueSaturationCommand : public Command {
 public:
   HueSaturationCommand();
-  Command* clone() const override { return new HueSaturationCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

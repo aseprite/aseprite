@@ -279,11 +279,6 @@ SpriteSizeCommand::SpriteSizeCommand()
   m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
 }
 
-Command* SpriteSizeCommand::clone() const
-{
-  return new SpriteSizeCommand(*this);
-}
-
 void SpriteSizeCommand::onLoadParams(const Params& params)
 {
   std::string useUI = params.get("use-ui");

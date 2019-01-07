@@ -18,7 +18,6 @@ namespace app {
 class LaunchCommand : public Command {
 public:
   LaunchCommand();
-  Command* clone() const override { return new LaunchCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

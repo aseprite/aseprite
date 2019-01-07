@@ -19,7 +19,6 @@ namespace app {
 class TogglePreviewCommand : public Command {
 public:
   TogglePreviewCommand();
-  Command* clone() const override { return new TogglePreviewCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

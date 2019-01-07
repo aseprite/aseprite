@@ -28,7 +28,6 @@ using namespace ui;
 class LoadPaletteCommand : public Command {
 public:
   LoadPaletteCommand();
-  Command* clone() const override { return new LoadPaletteCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

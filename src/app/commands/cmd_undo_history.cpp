@@ -252,7 +252,6 @@ private:
 class UndoHistoryCommand : public Command {
 public:
   UndoHistoryCommand();
-  Command* clone() const override { return new UndoHistoryCommand(*this); }
 
 protected:
   void onExecute(Context* ctx) override;

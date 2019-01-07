@@ -17,7 +17,6 @@ namespace app {
 class PasteCommand : public Command {
 public:
   PasteCommand();
-  Command* clone() const override { return new PasteCommand(*this); }
 
 protected:
   bool onEnabled(Context* ctx) override;

@@ -19,7 +19,6 @@ namespace app {
 class FitScreenCommand : public Command {
 public:
   FitScreenCommand();
-  Command* clone() const override { return new FitScreenCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

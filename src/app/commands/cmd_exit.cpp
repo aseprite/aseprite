@@ -22,7 +22,6 @@ namespace app {
 class ExitCommand : public Command {
 public:
   ExitCommand();
-  Command* clone() const override { return new ExitCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;

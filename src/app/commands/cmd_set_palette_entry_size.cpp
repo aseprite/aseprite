@@ -18,7 +18,6 @@ namespace app {
 class SetPaletteEntrySizeCommand : public Command {
 public:
   SetPaletteEntrySizeCommand();
-  Command* clone() const override { return new SetPaletteEntrySizeCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

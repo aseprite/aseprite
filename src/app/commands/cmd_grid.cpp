@@ -36,8 +36,6 @@ public:
     : Command(CommandId::SnapToGrid(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new SnapToGridCommand(*this); }
-
 protected:
   bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
@@ -58,8 +56,6 @@ public:
   SelectionAsGridCommand()
     : Command(CommandId::SelectionAsGrid(), CmdUIOnlyFlag) {
   }
-
-  Command* clone() const override { return new SelectionAsGridCommand(*this); }
 
 protected:
   bool onEnabled(Context* ctx) override {
@@ -85,7 +81,6 @@ protected:
 class GridSettingsCommand : public Command {
 public:
   GridSettingsCommand();
-  Command* clone() const override { return new GridSettingsCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -20,7 +20,6 @@ using namespace ui;
 class OpenGroupCommand : public Command {
 public:
   OpenGroupCommand();
-  Command* clone() const override { return new OpenGroupCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

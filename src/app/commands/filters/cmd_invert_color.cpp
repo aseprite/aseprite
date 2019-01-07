@@ -44,7 +44,6 @@ public:
 class InvertColorCommand : public Command {
 public:
   InvertColorCommand();
-  Command* clone() const override { return new InvertColorCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -29,7 +29,6 @@ public:
   enum class Focus { Default, Mouse, Center };
 
   ZoomCommand();
-  Command* clone() const override { return new ZoomCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

@@ -46,7 +46,6 @@ public:
    };
 
   NewFrameCommand();
-  Command* clone() const override { return new NewFrameCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

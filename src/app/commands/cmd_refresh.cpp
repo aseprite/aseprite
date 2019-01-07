@@ -26,7 +26,6 @@ namespace app {
 class RefreshCommand : public Command {
 public:
   RefreshCommand();
-  Command* clone() const override { return new RefreshCommand(*this); }
 
 protected:
   void onExecute(Context* context) override;

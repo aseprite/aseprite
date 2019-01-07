@@ -46,7 +46,6 @@ public:
   enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
 
   NewLayerCommand();
-  Command* clone() const override { return new NewLayerCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

@@ -33,7 +33,6 @@ namespace app {
 class ColorQuantizationCommand : public Command {
 public:
   ColorQuantizationCommand();
-  Command* clone() const override { return new ColorQuantizationCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

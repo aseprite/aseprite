@@ -22,7 +22,6 @@ namespace app {
 class TimelineCommand : public Command {
 public:
   TimelineCommand();
-  Command* clone() const override { return new TimelineCommand(*this); }
 
 protected:
   bool onNeedsParams() const override { return true; }

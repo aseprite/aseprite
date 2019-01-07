@@ -32,8 +32,6 @@ public:
     : Command(CommandId::CloseFile(), CmdUIOnlyFlag) {
   }
 
-  Command* clone() const override { return new CloseFileCommand(*this); }
-
 protected:
 
   bool onEnabled(Context* context) override {
@@ -56,8 +54,6 @@ public:
     : Command(CommandId::CloseAllFiles(), CmdRecordableFlag) {
     m_quitting = false;
   }
-
-  Command* clone() const override { return new CloseAllFilesCommand(*this); }
 
 protected:
 

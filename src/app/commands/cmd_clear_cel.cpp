@@ -24,7 +24,6 @@ namespace app {
 class ClearCelCommand : public Command {
 public:
   ClearCelCommand();
-  Command* clone() const override { return new ClearCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

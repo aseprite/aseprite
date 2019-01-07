@@ -67,7 +67,6 @@ private:
 class BrightnessContrastCommand : public Command {
 public:
   BrightnessContrastCommand();
-  Command* clone() const override { return new BrightnessContrastCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

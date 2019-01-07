@@ -19,7 +19,6 @@ namespace app {
 class OpenWithAppCommand : public Command {
 public:
   OpenWithAppCommand();
-  Command* clone() const override { return new OpenWithAppCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -590,7 +590,6 @@ struct ExportSpriteSheetParams : public NewParams {
 class ExportSpriteSheetCommand : public CommandWithNewParams<ExportSpriteSheetParams> {
 public:
   ExportSpriteSheetCommand();
-  Command* clone() const override { return new ExportSpriteSheetCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -17,7 +17,6 @@ namespace app {
 class ClearCommand : public Command {
 public:
   ClearCommand();
-  Command* clone() const override { return new ClearCommand(*this); }
 
 protected:
   bool onEnabled(Context* ctx) override;

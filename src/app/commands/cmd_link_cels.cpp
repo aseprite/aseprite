@@ -24,7 +24,6 @@ namespace app {
 class LinkCelsCommand : public Command {
 public:
   LinkCelsCommand();
-  Command* clone() const override { return new LinkCelsCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

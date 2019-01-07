@@ -25,7 +25,6 @@ namespace app {
 class FlattenLayersCommand : public Command {
 public:
   FlattenLayersCommand();
-  Command* clone() const override { return new FlattenLayersCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

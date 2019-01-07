@@ -19,7 +19,6 @@ namespace app {
 class ScrollCenterCommand : public Command {
 public:
   ScrollCenterCommand();
-  Command* clone() const override { return new ScrollCenterCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

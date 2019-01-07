@@ -31,7 +31,6 @@ using namespace ui;
 class FrameTagPropertiesCommand : public Command {
 public:
   FrameTagPropertiesCommand();
-  Command* clone() const override { return new FrameTagPropertiesCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

@@ -271,7 +271,6 @@ private:
 class CanvasSizeCommand : public Command {
 public:
   CanvasSizeCommand();
-  Command* clone() const override { return new CanvasSizeCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

@@ -21,7 +21,6 @@ namespace app {
 class DuplicateViewCommand : public Command {
 public:
   DuplicateViewCommand();
-  Command* clone() const override { return new DuplicateViewCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -20,7 +20,6 @@ namespace app {
 class ReverseFramesCommand : public Command {
 public:
   ReverseFramesCommand();
-  Command* clone() const override { return new ReverseFramesCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

@@ -273,7 +273,6 @@ private:
 class CelPropertiesCommand : public Command {
 public:
   CelPropertiesCommand();
-  Command* clone() const override { return new CelPropertiesCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

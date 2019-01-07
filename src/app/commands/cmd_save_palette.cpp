@@ -28,7 +28,6 @@ using namespace ui;
 class SavePaletteCommand : public Command {
 public:
   SavePaletteCommand();
-  Command* clone() const override { return new SavePaletteCommand(*this); }
 
 protected:
   void onLoadParams(const Params& params) override;

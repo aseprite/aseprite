@@ -31,7 +31,6 @@ using namespace doc;
 class NewSpriteFromSelectionCommand : public Command {
 public:
   NewSpriteFromSelectionCommand();
-  Command* clone() const override { return new NewSpriteFromSelectionCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;

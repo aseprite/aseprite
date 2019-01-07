@@ -22,7 +22,6 @@ namespace app {
 class DiscardBrushCommand : public Command {
 public:
   DiscardBrushCommand();
-  Command* clone() const override { return new DiscardBrushCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) override;
