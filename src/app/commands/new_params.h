@@ -73,8 +73,13 @@ namespace app {
         params->addParam(id, this);
     }
 
+    bool isSet() {
+      return m_isSet;
+    }
+
     void resetValue() override {
       m_value = m_defaultValue;
+      m_isSet = false;
     }
 
     void fromString(const std::string& value) override;
@@ -86,13 +91,20 @@ namespace app {
       return m_value;
     }
 
-    void operator()(const T& value) {
+    T& operator()(const T& value) {
       m_value = value;
+      m_isSet = true;
+      return m_value;
     }
 
   private:
+    void setValue(const T& value) {
+      operator()(value);
+    }
+
     T m_defaultValue;
     T m_value;
+    bool m_isSet = false;
   };
 
   class CommandWithNewParamsBase : public Command {

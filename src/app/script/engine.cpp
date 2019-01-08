@@ -13,9 +13,11 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/doc_exporter.h"
 #include "app/doc_range.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "app/sprite_sheet_type.h"
 #include "base/chrono.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -276,6 +278,23 @@ Engine::Engine()
   setfield_integer(L, "LAYERS", DocRange::kLayers);
   setfield_integer(L, "FRAMES", DocRange::kFrames);
   setfield_integer(L, "CELS", DocRange::kCels);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "SpriteSheetType");
+  setfield_integer(L, "HORIZONTAL", SpriteSheetType::Horizontal);
+  setfield_integer(L, "VERTICAL", SpriteSheetType::Vertical);
+  setfield_integer(L, "ROWS", SpriteSheetType::Rows);
+  setfield_integer(L, "COLUMNS", SpriteSheetType::Columns);
+  setfield_integer(L, "PACKED", SpriteSheetType::Packed);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "SpriteSheetDataFormat");
+  setfield_integer(L, "JSON_HASH", DocExporter::JsonHashDataFormat);
+  setfield_integer(L, "JSON_ARRAY", DocExporter::JsonArrayDataFormat);
   lua_pop(L, 1);
 
   // Register classes/prototypes
