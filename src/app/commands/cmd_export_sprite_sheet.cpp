@@ -636,8 +636,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   bool askOverwrite = params.askOverwrite();
   // Show UI if the user specified it explicitly or the sprite sheet type wasn't specified.
   if (context->isUIAvailable() && params.ui() &&
-      (params.ui.isSet() ||
-       !params.type() == app::SpriteSheetType::None)) {
+      (params.ui.isSet() || !params.type.isSet())) {
     // Copy document preferences to undefined params
     if (docPref.spriteSheet.defined(true) &&
         !params.type.isSet()) {
