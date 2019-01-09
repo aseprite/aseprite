@@ -183,7 +183,11 @@ void CliProcessor::process(Context* ctx)
           if (m_exporter)
             m_exporter->setTextureHeight(strtol(value.value().c_str(), NULL, 0));
         }
-        // --sheet-pack
+        // --sheet-type <sheet-type>
+        // TODO Implement this parameter (never documented, but it's
+        //      shown in --help), anyway some work needed to move the
+        //      sprite sheet size calculation from ExportSpriteSheetCommand
+        //      to DocExporter
         else if (opt == &m_options.sheetType()) {
           if (value.value() == "horizontal")
             sheetType = SpriteSheetType::Horizontal;
