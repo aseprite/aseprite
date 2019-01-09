@@ -401,6 +401,7 @@
         <part id="aseprite_face" x="0" y="272" w="28" h="30" />
         <part id="aseprite_face_mouse" x="28" y="272" w="28" h="30" />
         <part id="aseprite_face_pushed" x="56" y="272" w="28" h="30" />
+        <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8" />
     </parts>
     <styles>
         <style id="box" />
