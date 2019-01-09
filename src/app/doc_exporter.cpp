@@ -544,7 +544,7 @@ void DocExporter::captureSamples(Samples& samples)
 
         sampleRender->setMaskColor(sprite->transparentColor());
         clear_image(sampleRender.get(), sprite->transparentColor());
-        renderSample(sample, sampleRender.get(), 0, 0);
+        renderSample(sample, sampleRender.get(), 0, 0, false);
 
         gfx::Rect frameBounds;
         doc::color_t refColor = 0;
@@ -722,7 +722,8 @@ void DocExporter::renderTexture(Context* ctx, const Samples& samples, Image* tex
 
     renderSample(sample, textureImage,
       sample.inTextureBounds().x+m_innerPadding,
-      sample.inTextureBounds().y+m_innerPadding);
+      sample.inTextureBounds().y+m_innerPadding,
+      m_extrude);
   }
 }
 
@@ -732,6 +733,16 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
   std::string frames_end;
   bool filename_as_key = false;
   bool filename_as_attr = false;
+  int nonExtrudedPosition = 0;
+  int nonExtrudedSize = 0;
+
+  // if the the image was extruded then the exported meta-information (JSON)
+  // should inform where start the real image (+1 displaced) and its
+  // size (-2 pixels: one per each dimension compared the extruded image)
+  if (m_extrude) {
+    nonExtrudedPosition += 1;
+    nonExtrudedSize -= 2;
+  }
 
   // TODO we should use some string templates system here
   switch (m_dataFormat) {
@@ -765,10 +776,10 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
          << "    \"filename\": \"" << escape_for_json(sample.filename()) << "\",\n";
 
     os << "    \"frame\": { "
-       << "\"x\": " << frameBounds.x << ", "
-       << "\"y\": " << frameBounds.y << ", "
-       << "\"w\": " << frameBounds.w << ", "
-       << "\"h\": " << frameBounds.h << " },\n"
+       << "\"x\": " << frameBounds.x + nonExtrudedPosition << ", "
+       << "\"y\": " << frameBounds.y + nonExtrudedPosition << ", "
+       << "\"w\": " << frameBounds.w + nonExtrudedSize << ", "
+       << "\"h\": " << frameBounds.h + nonExtrudedSize << " },\n"
        << "    \"rotated\": false,\n"
        << "    \"trimmed\": " << (sample.trimmed() ? "true": "false") << ",\n"
        << "    \"spriteSourceSize\": { "
@@ -969,10 +980,15 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
      << "}\n";
 }
 
-void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y) const
+void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y, bool extrude) const
 {
+  RestoreVisibleLayers layersVisibility;
+  if (sample.selectedLayers())
+    layersVisibility.showSelectedLayers(sample.sprite(),
+                                        *sample.selectedLayers());
+
   render::Render render;
-  if (m_extrude) {
+  if (extrude) {
     const gfx::Rect& trim = sample.trimmedBounds();
 
     // Displaced position onto the destination texture
@@ -1002,11 +1018,6 @@ void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int
     gfx::Clip clip(x, y, sample.trimmedBounds());
     render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
   }
-
-  RestoreVisibleLayers layersVisibility;
-  if (sample.selectedLayers())
-    layersVisibility.showSelectedLayers(sample.sprite(),
-                                        *sample.selectedLayers());
 }
 
 } // namespace app
