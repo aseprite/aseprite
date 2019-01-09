@@ -91,7 +91,7 @@ void Param<std::string>::fromLua(lua_State* L, int index)
 template<>
 void Param<app::SpriteSheetType>::fromLua(lua_State* L, int index)
 {
-  if (lua_isstring(L, index))
+  if (lua_type(L, index) == LUA_TSTRING)
     fromString(lua_tostring(L, index));
   else
     setValue((app::SpriteSheetType)lua_tointeger(L, index));
@@ -100,7 +100,7 @@ void Param<app::SpriteSheetType>::fromLua(lua_State* L, int index)
 template<>
 void Param<app::DocExporter::DataFormat>::fromLua(lua_State* L, int index)
 {
-  if (lua_isstring(L, index))
+  if (lua_type(L, index) == LUA_TSTRING)
     fromString(lua_tostring(L, index));
   else
     setValue((app::DocExporter::DataFormat)lua_tointeger(L, index));
