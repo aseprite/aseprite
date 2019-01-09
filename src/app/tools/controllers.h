@@ -1,9 +1,11 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "base/gcd.h"
 #include "base/pi.h"
 
 #include <cmath>
@@ -237,10 +239,12 @@ public:
 
     gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
-    sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :distance: %.1f",
+    int gcd = base::gcd(w, h);
+    sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :distance: %.1f :aspect_ratio: %2d : %2d",
             stroke[0].x+offset.x, stroke[0].y+offset.y,
             stroke[1].x+offset.x, stroke[1].y+offset.y,
-            w, h, std::sqrt(w*w + h*h));
+            w, h, std::sqrt(w*w + h*h),
+            w/gcd, h/gcd);
 
     if (hasAngle() ||
         loop->getIntertwine()->snapByAngle()) {

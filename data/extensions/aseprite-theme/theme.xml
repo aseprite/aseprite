@@ -401,6 +401,7 @@
         <part id="aseprite_face" x="0" y="272" w="28" h="30" />
         <part id="aseprite_face_mouse" x="28" y="272" w="28" h="30" />
         <part id="aseprite_face_pushed" x="56" y="272" w="28" h="30" />
+        <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8" />
     </parts>
     <styles>
         <style id="box" />
@@ -655,13 +656,13 @@
             <text color="disabled" align="left" x="2" />
         </style>
         <style id="recent_file_pin">
-          <background color="background" />
-          <background color="menuitem_hot_face" state="mouse" />
-          <background color="listitem_selected_face" state="selected" />
-          <icon part="unpinned" align="center middle" color="text" />
-          <icon part="unpinned" align="center middle" color="listitem_selected_text" state="selected" />
-          <icon part="pinned" align="center middle" color="text" state="focus" />
-          <icon part="pinned" align="center middle" color="listitem_selected_text" state="focus selected" />
+            <background color="background" />
+            <background color="menuitem_hot_face" state="mouse" />
+            <background color="listitem_selected_face" state="selected" />
+            <icon part="unpinned" align="center middle" color="text" />
+            <icon part="unpinned" align="center middle" color="listitem_selected_text" state="selected" />
+            <icon part="pinned" align="center middle" color="text" state="focus" />
+            <icon part="pinned" align="center middle" color="listitem_selected_text" state="focus selected" />
         </style>
         <style id="news_item" border="2">
             <background color="background" />
