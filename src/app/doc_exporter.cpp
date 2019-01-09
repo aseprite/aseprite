@@ -408,6 +408,20 @@ Doc* DocExporter::exportSheet(Context* ctx)
       osbuf = std::cout.rdbuf();
   }
   else {
+    // Make missing directories for the json file
+    {
+      std::string dir = base::get_file_path(m_dataFilename);
+      try {
+        if (!base::is_directory(dir))
+          base::make_all_directories(dir);
+      }
+      catch (const std::exception& ex) {
+        Console console;
+        console.printf("Error creating directory \"%s\"\n%s",
+                       dir.c_str(), ex.what());
+      }
+    }
+
     fos.open(FSTREAM_PATH(m_dataFilename), std::ios::out);
     osbuf = fos.rdbuf();
   }
