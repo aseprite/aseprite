@@ -828,7 +828,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     Preferences::instance().removeDocument(newDocument.get());
   }
 
-  if (docPref.spriteSheet.openGenerated()) {
+  if (params.openGenerated()) {
     // Setup a filename for the new document in case that user didn't
     // save the file/specified one output filename.
     if (filename.empty()) {
