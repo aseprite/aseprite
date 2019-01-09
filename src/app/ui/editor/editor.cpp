@@ -1448,14 +1448,17 @@ void Editor::updateStatusBar()
 void Editor::updateQuicktool()
 {
   if (m_customizationDelegate && !hasCapture()) {
-    auto activeToolManager = App::instance()->activeToolManager();
-    tools::Tool* selectedTool = activeToolManager->selectedTool();
+    auto atm = App::instance()->activeToolManager();
+    tools::Tool* selectedTool = atm->selectedTool();
 
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
     if (selectedTool->getInk(0)->isSelection() &&
-        int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0)
+        int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0) {
+      if (atm->quickTool())
+        atm->newQuickToolSelectedFromEditor(nullptr);
       return;
+    }
 
     tools::Tool* newQuicktool =
       m_customizationDelegate->getQuickTool(selectedTool);
@@ -1464,8 +1467,7 @@ void Editor::updateQuicktool()
     if (newQuicktool && !m_state->acceptQuickTool(newQuicktool))
       return;
 
-    activeToolManager
-      ->newQuickToolSelectedFromEditor(newQuicktool);
+    atm->newQuickToolSelectedFromEditor(newQuicktool);
   }
 }
 
@@ -1489,6 +1491,8 @@ void Editor::updateToolLoopModifiersIndicators()
   KeyAction action;
 
   if (m_customizationDelegate) {
+    auto atm = App::instance()->activeToolManager();
+
     // When the mouse is captured, is when we are scrolling, or
     // drawing, or moving, or selecting, etc. So several
     // parameters/tool-loop-modifiers are static.
@@ -1500,8 +1504,8 @@ void Editor::updateToolLoopModifiersIndicators()
                      int(tools::ToolLoopModifiers::kIntersectSelection)));
 
       tools::Controller* controller =
-        (App::instance()->activeToolManager()->selectedTool() ?
-         App::instance()->activeToolManager()->selectedTool()->getController(0): nullptr);
+        (atm->selectedTool() ?
+         atm->selectedTool()->getController(0): nullptr);
 
       // Shape tools modifiers (line, curves, rectangles, etc.)
       if (controller && controller->isTwoPoints()) {
@@ -1532,8 +1536,8 @@ void Editor::updateToolLoopModifiersIndicators()
           // Don't use "subtract" mode if the selection was activated
           // with the "right click mode = a selection-like tool"
           (m_secondaryButton &&
-           App::instance()->activeToolManager()->selectedTool() &&
-           App::instance()->activeToolManager()->selectedTool()->getInk(0)->isSelection())) {
+           atm->selectedTool() &&
+           atm->selectedTool()->getInk(0)->isSelection())) {
         mode = gen::SelectionMode::SUBTRACT;
       }
       else if (int(action & KeyAction::IntersectSelection)) {

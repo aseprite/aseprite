@@ -1472,9 +1472,6 @@ void ContextBar::updateForSelectingBox(const std::string& text)
 
 void ContextBar::updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modifiers)
 {
-  if (!m_selectionMode->isVisible())
-    return;
-
   gen::SelectionMode mode = gen::SelectionMode::DEFAULT;
   if (int(modifiers) & int(tools::ToolLoopModifiers::kAddSelection))
     mode = gen::SelectionMode::ADD;
