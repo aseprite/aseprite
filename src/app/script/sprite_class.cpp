@@ -611,6 +611,14 @@ int Sprite_set_transparentColor(lua_State* L)
   return 0;
 }
 
+int Sprite_set_filename(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  const char* fn = lua_tostring(L, 2);
+  sprite->document()->setFilename(fn ? std::string(fn): std::string());
+  return 0;
+}
+
 int Sprite_set_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -670,7 +678,7 @@ const luaL_Reg Sprite_methods[] = {
 };
 
 const Property Sprite_properties[] = {
-  { "filename", Sprite_get_filename, nullptr },
+  { "filename", Sprite_get_filename, Sprite_set_filename },
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
   { "colorMode", Sprite_get_colorMode, nullptr },
