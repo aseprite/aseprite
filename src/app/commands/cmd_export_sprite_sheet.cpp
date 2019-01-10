@@ -179,6 +179,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<int> shapePadding { this, 0, "shapePadding" };
   Param<int> innerPadding { this, 0, "innerPadding" };
   Param<bool> trim { this, false, "trim" };
+  Param<bool> extrude { this, false, "extrude" };
   Param<bool> openGenerated { this, false, "openGenerated" };
   Param<std::string> layer { this, std::string(), "layer" };
   Param<std::string> tag { this, std::string(), "tag" };
@@ -218,6 +219,7 @@ public:
 
     openGenerated()->setSelected(params.openGenerated());
     trimEnabled()->setSelected(params.trim());
+    extrudeEnabled()->setSelected(params.extrude());
 
     borderPadding()->setTextf("%d", params.borderPadding());
     shapePadding()->setTextf("%d", params.shapePadding());
@@ -390,6 +392,10 @@ public:
 
   bool trimValue() const {
     return trimEnabled()->isSelected();
+  }
+
+  bool extrudeValue() const {
+    return extrudeEnabled()->isSelected();
   }
 
   bool openGeneratedValue() const {
@@ -680,6 +686,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.shapePadding    (params.shapePadding    (window.shapePaddingValue()));
     docPref.spriteSheet.innerPadding    (params.innerPadding    (window.innerPaddingValue()));
     docPref.spriteSheet.trim            (params.trim            (window.trimValue()));
+    docPref.spriteSheet.extrude         (params.extrude         (window.extrudeValue()));
     docPref.spriteSheet.openGenerated   (params.openGenerated   (window.openGeneratedValue()));
     docPref.spriteSheet.layer           (params.layer           (window.layerValue()));
     docPref.spriteSheet.frameTag        (params.tag             (window.frameTagValue()));
@@ -716,6 +723,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   const int shapePadding = base::clamp(params.shapePadding(), 0, 100);
   const int innerPadding = base::clamp(params.innerPadding(), 0, 100);
   const bool trimCels = params.trim();
+  const bool extrude = params.extrude();
   const bool listLayers = params.listLayers();
   const bool listTags = params.listTags();
   const bool listSlices = params.listSlices();
@@ -799,6 +807,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);
   exporter.setTrimCels(trimCels);
+  exporter.setExtrude(extrude);
   if (listLayers) exporter.setListLayers(true);
   if (listTags) exporter.setListFrameTags(true);
   if (listSlices) exporter.setListSlices(true);
