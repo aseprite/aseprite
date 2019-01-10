@@ -97,9 +97,11 @@ int Palette_resize(lua_State* L)
     Palette newPal(*pal);
     newPal.resize(ncolors);
 
-    Tx tx;
-    tx(new cmd::SetPalette(sprite, pal->frame(), &newPal));
-    tx.commit();
+    if (*pal != newPal) {
+      Tx tx;
+      tx(new cmd::SetPalette(sprite, pal->frame(), &newPal));
+      tx.commit();
+    }
   }
   else
     pal->resize(ncolors);
@@ -135,6 +137,10 @@ int Palette_setColor(lua_State* L)
   doc::color_t docColor = convert_args_into_pixel_color(L, 3);
 
   if (auto sprite = obj->sprite(L)) {
+    // Nothing to do
+    if (pal->getEntry(i) == docColor)
+      return 0;
+
     Palette newPal(*pal);
     newPal.setEntry(i, docColor);
 
