@@ -73,7 +73,6 @@ EOF
 $ASEPRITE -b -script "$d/create.lua" || exit 1
 compare_sheet_data "$d/sheet1.json" "$d/sheet2.json" || exit 1
 cmp "$d/sheet1.png" "$d/sheet2.png" || exit 1
-open $d
 cat >$d/compare.lua <<EOF
 local orig = app.open("sprites/1empty3.aseprite")
 local sheet = app.open("$d/sheet1.png")
@@ -93,7 +92,6 @@ $ASEPRITE -b --split-layers sprites/1empty3.aseprite \
 	  --filename-format "{layer}-{frame}" \
 	  --sheet "$d/sheet.png" \
 	  --data "$d/sheet.json" || exit 1
-open $d
 cat >$d/compare.lua <<EOF
 local json = dofile('third_party/json/json.lua')
 local data = json.decode(io.open('$d/sheet.json'):read('a'))
