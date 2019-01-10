@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -173,6 +173,12 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     type = lua_getfield(L, 2, "label");
     if (type == LUA_TSTRING)
       label = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    // Focus magnet
+    type = lua_getfield(L, 2, "focus");
+    if (type != LUA_TNONE && lua_toboolean(L, -1))
+      widget->setFocusMagnet(true);
     lua_pop(L, 1);
   }
 
