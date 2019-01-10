@@ -85,3 +85,39 @@ end
 assert(expected:isEqual(sheet.cels[1].image))
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# --split-layers --sheet --data
+
+d=$t/split-layers-sheet-data
+$ASEPRITE -b --split-layers sprites/1empty3.aseprite \
+	  --filename-format "{layer}-{frame}" \
+	  --sheet "$d/sheet.png" \
+	  --data "$d/sheet.json" || exit 1
+open $d
+cat >$d/compare.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local data = json.decode(io.open('$d/sheet.json'):read('a'))
+assert(data.meta.size.w == 96)
+assert(data.meta.size.h == 64)
+
+local orig = app.open("sprites/1empty3.aseprite")
+local sheet = app.open("$d/sheet.png")
+local expected = Image(orig.width*3, orig.height*2, orig.colorMode)
+expected:clear()
+for lay = 1,2 do
+  orig.layers[1].isVisible = (lay == 1)
+  orig.layers[2].isVisible = (lay == 2)
+  for frm = 1,3 do
+    local x, y = (frm-1)*orig.width, (lay-1)*orig.height
+    expected:drawSprite(orig, frm, x, y)
+
+    local frmData = data.frames[orig.layers[lay].name .. '-' .. (frm-1)]
+    assert(frmData.frame.x == x)
+    assert(frmData.frame.y == y)
+    assert(frmData.frame.w == 32)
+    assert(frmData.frame.h == 32)
+  end
+end
+assert(expected:isEqual(sheet.cels[1].image))
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1
