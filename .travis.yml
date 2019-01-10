@@ -48,7 +48,7 @@ script:
   - |
     if $XVFB ctest --output-on-failure ; then
       export ASEPRITE=$PWD/bin/aseprite
-      git clone https://github.com/aseprite/tests.git
+      git clone --recursive https://github.com/aseprite/tests.git
       cd tests
       $XVFB bash run-tests.sh
     else
