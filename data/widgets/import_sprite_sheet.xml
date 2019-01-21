@@ -1,34 +1,49 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2019 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
   <window id="import_sprite_sheet" text="@.title">
-  <grid columns="4">
-    <button id="select_file" text="@.select_file" cell_hspan="4" />
+    <vbox>
+      <grid columns="4">
+        <button id="select_file" text="@.select_file" cell_hspan="4" />
 
-    <label text="@.type" />
-    <combobox id="sheet_type" cell_hspan="3" />
+        <label text="@.type" />
+        <combobox id="sheet_type" cell_hspan="3" />
 
-    <label text="@.x" />
-    <expr id="x" text="0" />
+        <separator text="Tiles:" horizontal="true" cell_hspan="4" />
 
-    <label text="@.y" />
-    <expr id="y" text="0" />
+        <label text="@.x" />
+        <expr id="x" text="0" />
 
-    <label text="@.width" />
-    <expr id="width" text="16" />
+        <label text="@.y" />
+        <expr id="y" text="0" />
 
-    <label text="@.height" />
-    <expr id="height" text="16" />
+        <label text="@.width" />
+        <expr id="width" text="16" />
 
-    <check id="partial_tiles" text="@.partial_tiles" cell_hspan="4" />
+        <label text="@.height" />
+        <expr id="height" text="16" />
 
-    <hbox cell_hspan="4">
-      <boxfiller />
-      <hbox>
-      </hbox>
-      <button id="import" text="@.import" minwidth="60" magnet="true" cell_align="center" closewindow="true" />
-      <button id="cancel" text="@.cancel" minwidth="60" cell_align="center" closewindow="true" />
-    </hbox>
-  </grid>
+        <separator text="Padding:" horizontal="true" cell_hspan="4" />
+
+        <label text="@.horizontal_padding" />
+        <expr id="horizontal_padding" text="0" />
+        <label text="" cell_hspan="2" />
+
+        <label text="@.vertical_padding" />
+        <expr id="vertical_padding" text="0" />
+        <label text="" cell_hspan="2" />
+
+        <check id="partial_tiles" text="@.partial_tiles" cell_hspan="4" />
+
+        <hbox cell_hspan="4">
+          <boxfiller />
+          <hbox>
+          </hbox>
+          <button id="import" text="@.import" minwidth="60" magnet="true" cell_align="center" closewindow="true" />
+          <button id="cancel" text="@.cancel" minwidth="60" cell_align="center" closewindow="true" />
+        </hbox>
+      </grid>
+    </vbox>
   </window>
 </gui>
