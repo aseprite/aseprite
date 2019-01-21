@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/ruler.h"
 #include "app/ui/editor/standby_state.h"
+#include "gfx/fwd.h"
 #include "ui/cursor_type.h"
 #include "ui/mouse_buttons.h"
 
@@ -26,6 +28,7 @@ namespace app {
     // Called each time the selected box is modified (e.g. rulers are
     // moved).
     virtual void onChangeRectangle(const gfx::Rect& rect) { }
+    virtual void onChangePadding(const gfx::Size& padding) { }
 
     // Called only in QUICKBOX mode, when the user released the mouse
     // button.
@@ -38,7 +41,7 @@ namespace app {
 
   class SelectBoxState : public StandbyState
                        , public EditorDecorator {
-    enum { H1, H2, V1, V2 };
+    enum { H1, H2, V1, V2, PH, PV };
 
   public:
     enum class Flags {
@@ -59,6 +62,12 @@ namespace app {
 
       // Select the box as in selection tool, drawing a boxu
       QuickBox = 16,
+
+      // Adding 2 rules more for padding. Used in Import Sprite Sheet render
+      PaddingRulers = 32,
+
+      // Include Partial Tiles at the end of the sprite? Used in Import Sprite Sheet render
+      IncludePartialTiles = 64
     };
 
     SelectBoxState(SelectBoxDelegate* delegate,
@@ -66,11 +75,18 @@ namespace app {
                    Flags flags);
     ~SelectBoxState();
 
+    Flags getFlags();
     void setFlags(Flags flags);
+    void setFlag(Flags flag);
+    void clearFlag(Flags flag);
 
     // Returns the bounding box arranged by the rulers.
     gfx::Rect getBoxBounds() const;
     void setBoxBounds(const gfx::Rect& rc);
+
+    // Get & Set the size of the padding rulers during Import Sprite Sheet Dialog
+    gfx::Size getPaddingBounds() const;
+    void setPaddingBounds(const gfx::Size& padding);
 
     // EditorState overrides
     virtual void onEnterState(Editor* editor) override;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -436,6 +436,7 @@
     <section id="import_sprite_sheet">
       <option id="type" type="app::SpriteSheetType" default="app::SpriteSheetType::Rows" />
       <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 0, 0)" />
+      <option id="padding_bounds" type="gfx::Size" default="gfx::Size(0, 0)" />
       <option id="partial_tiles" type="bool" default="false" />
     </section>
     <section id="preview" text="Preview">
