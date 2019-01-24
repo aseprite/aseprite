@@ -659,6 +659,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.shapePadding.isSet())     params.shapePadding(    docPref.spriteSheet.shapePadding());
       if (!params.innerPadding.isSet())     params.innerPadding(    docPref.spriteSheet.innerPadding());
       if (!params.trim.isSet())             params.trim(            docPref.spriteSheet.trim());
+      if (!params.extrude.isSet())          params.extrude(         docPref.spriteSheet.extrude());
       if (!params.openGenerated.isSet())    params.openGenerated(   docPref.spriteSheet.openGenerated());
       if (!params.layer.isSet())            params.layer(           docPref.spriteSheet.layer());
       if (!params.tag.isSet())              params.tag(             docPref.spriteSheet.frameTag());
