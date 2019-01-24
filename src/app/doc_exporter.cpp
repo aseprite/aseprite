@@ -281,13 +281,12 @@ public:
         sample.setInTextureBounds(gfx::Rect(0, 0, 0, 0));
         continue;
       }
-
       const Sprite* sprite = sample.sprite();
       const Layer* layer = sample.layer();
       gfx::Size size = sample.requiredSize();
 
       if (oldSprite) {
-        if (m_type == SpriteSheetType::Columns) {
+        if (m_type == SpriteSheetType::Columns || m_type == SpriteSheetType::Horizontal) {
           // If the user didn't specify a height for the texture, we
           // put each sprite/layer in a different column.
           if (height == 0) {
@@ -332,11 +331,21 @@ public:
       sample.setInTextureBounds(gfx::Rect(framePt, size));
 
       // Next frame position.
-      if (m_type == SpriteSheetType::Columns) {
-        framePt.y += size.h + shapePadding;
-      }
-      else {
-        framePt.x += size.w + shapePadding;
+      switch (m_type) {
+        case SpriteSheetType::Columns:
+          framePt.y += size.h + shapePadding;
+          break;
+        case SpriteSheetType::Vertical:
+          framePt.y += shapePadding;
+          break;
+        case SpriteSheetType::Rows:
+          framePt.x += size.w + shapePadding;
+        case SpriteSheetType::Horizontal:
+          framePt.x += shapePadding;
+        default:
+          framePt.x += shapePadding;
+          framePt.y += shapePadding;
+          break;
       }
 
       rowSize = rowSize.createUnion(size);
