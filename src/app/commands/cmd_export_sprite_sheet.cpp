@@ -118,7 +118,10 @@ namespace {
 
   Fit calculate_sheet_size(Sprite* sprite, int nframes,
                            int columns, int rows,
-                           int borderPadding, int shapePadding, int innerPadding, bool extrude) {
+                           int borderPadding,
+                           int shapePadding,
+                           int innerPadding,
+                           bool extrude) {
     if (columns == 0) {
       rows = MID(1, rows, nframes);
       columns = ((nframes/rows) + ((nframes%rows) > 0 ? 1: 0));
@@ -128,15 +131,10 @@ namespace {
       rows = ((nframes/columns) + ((nframes%columns) > 0 ? 1: 0));
     }
 
-    int extrudeColumns = 0;
-    int extrudeRows = 0;
-    if (extrude) {
-      extrudeColumns = columns*2;
-      extrudeRows = rows*2;
-    }
+    int extraPerSample = 2*innerPadding + (extrude ? 2: 0);
     return Fit(
-      2*borderPadding + (sprite->width()+2*innerPadding)*columns + (columns-1)*shapePadding + extrudeColumns,
-      2*borderPadding + (sprite->height()+2*innerPadding)*rows + (rows-1)*shapePadding + extrudeRows,
+      2*borderPadding + (sprite->width()+extraPerSample)*columns + (columns-1)*shapePadding,
+      2*borderPadding + (sprite->height()+extraPerSample)*rows + (rows-1)*shapePadding,
       columns, rows, 0);
   }
 
