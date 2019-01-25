@@ -118,7 +118,7 @@ namespace {
 
   Fit calculate_sheet_size(Sprite* sprite, int nframes,
                            int columns, int rows,
-                           int borderPadding, int shapePadding, int innerPadding) {
+                           int borderPadding, int shapePadding, int innerPadding, bool extrude) {
     if (columns == 0) {
       rows = MID(1, rows, nframes);
       columns = ((nframes/rows) + ((nframes%rows) > 0 ? 1: 0));
@@ -128,9 +128,15 @@ namespace {
       rows = ((nframes/columns) + ((nframes%columns) > 0 ? 1: 0));
     }
 
+    int extrudeColumns = 0;
+    int extrudeRows = 0;
+    if (extrude) {
+      extrudeColumns = columns*2;
+      extrudeRows = rows*2;
+    }
     return Fit(
-      2*borderPadding + (sprite->width()+2*innerPadding)*columns + (columns-1)*shapePadding,
-      2*borderPadding + (sprite->height()+2*innerPadding)*rows + (rows-1)*shapePadding,
+      2*borderPadding + (sprite->width()+2*innerPadding)*columns + (columns-1)*shapePadding + extrudeColumns,
+      2*borderPadding + (sprite->height()+2*innerPadding)*rows + (rows-1)*shapePadding + extrudeRows,
       columns, rows, 0);
   }
 
@@ -588,7 +594,8 @@ private:
         rowsValue(),
         borderPaddingValue(),
         shapePaddingValue(),
-        innerPaddingValue());
+        innerPaddingValue(),
+        extrudeValue());
     }
 
     columns()->setTextf("%d", fit.columns);
@@ -790,7 +797,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   Fit fit = calculate_sheet_size(
     sprite, nframes,
     columns, rows,
-    borderPadding, shapePadding, innerPadding);
+    borderPadding, shapePadding, innerPadding, extrude);
   if (sheet_w == 0) sheet_w = fit.width;
   if (sheet_h == 0) sheet_h = fit.height;
 
