@@ -771,14 +771,24 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   int sheet_w = 0;
   int sheet_h = 0;
 
+  int extrude_w = 0;
+  int extrude_h = 0;
   switch (type) {
     case app::SpriteSheetType::Horizontal:
       columns = sprite->totalFrames();
       rows = 1;
+      if (extrude) {
+        extrude_w = sprite->totalFrames()*2;
+        extrude_h = 2;
+      }
       break;
     case app::SpriteSheetType::Vertical:
       columns = 1;
       rows = nframes;
+      if (extrude) {
+        extrude_w = 2;
+        extrude_h = sprite->totalFrames()*2;
+      }
       break;
     case app::SpriteSheetType::Rows:
     case app::SpriteSheetType::Columns:
@@ -791,8 +801,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     sprite, nframes,
     columns, rows,
     borderPadding, shapePadding, innerPadding);
-  if (sheet_w == 0) sheet_w = fit.width;
-  if (sheet_h == 0) sheet_h = fit.height;
+  if (sheet_w == 0) sheet_w = fit.width + extrude_w;
+  if (sheet_h == 0) sheet_h = fit.height + extrude_h;
 
   DocExporter exporter;
   if (!filename.empty())

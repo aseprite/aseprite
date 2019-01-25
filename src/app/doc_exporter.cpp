@@ -286,7 +286,7 @@ public:
       gfx::Size size = sample.requiredSize();
 
       if (oldSprite) {
-        if (m_type == SpriteSheetType::Columns || m_type == SpriteSheetType::Horizontal) {
+        if (m_type == SpriteSheetType::Columns) {
           // If the user didn't specify a height for the texture, we
           // put each sprite/layer in a different column.
           if (height == 0) {
@@ -331,21 +331,11 @@ public:
       sample.setInTextureBounds(gfx::Rect(framePt, size));
 
       // Next frame position.
-      switch (m_type) {
-        case SpriteSheetType::Columns:
-          framePt.y += size.h + shapePadding;
-          break;
-        case SpriteSheetType::Vertical:
-          framePt.y += shapePadding;
-          break;
-        case SpriteSheetType::Rows:
-          framePt.x += size.w + shapePadding;
-        case SpriteSheetType::Horizontal:
-          framePt.x += shapePadding;
-        default:
-          framePt.x += shapePadding;
-          framePt.y += shapePadding;
-          break;
+      if (m_type == SpriteSheetType::Columns) {
+        framePt.y += size.h + shapePadding;
+      }
+      else {
+        framePt.x += size.w + shapePadding;
       }
 
       rowSize = rowSize.createUnion(size);
@@ -640,7 +630,6 @@ void DocExporter::layoutSamples(Samples& samples)
 gfx::Size DocExporter::calculateSheetSize(const Samples& samples) const
 {
   gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
-
   for (const auto& sample : samples) {
     if (sample.isDuplicated() ||
         sample.isEmpty())
