@@ -403,6 +403,10 @@ public:
     return extrudeEnabled()->isSelected();
   }
 
+  bool extrudePadding() const {
+    return (extrudeValue() ? 1: 0);
+  }
+
   bool openGeneratedValue() const {
     return openGenerated()->isSelected();
   }
@@ -588,7 +592,8 @@ private:
     Fit fit;
     if (bestFit()->isSelected()) {
       fit = best_fit(m_sprite, nframes,
-                     borderPaddingValue(), shapePaddingValue(), innerPaddingValue());
+                     borderPaddingValue(), shapePaddingValue(),
+                     innerPaddingValue() + extrudePadding());
     }
     else {
       fit = calculate_sheet_size(
@@ -735,6 +740,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   const int innerPadding = base::clamp(params.innerPadding(), 0, 100);
   const bool trimCels = params.trim();
   const bool extrude = params.extrude();
+  const int extrudePadding = (extrude ? 1: 0);
   const bool listLayers = params.listLayers();
   const bool listTags = params.listTags();
   const bool listSlices = params.listSlices();
@@ -771,7 +777,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   }
 
   if (bestFit) {
-    Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding, innerPadding);
+    Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding,
+                       innerPadding + extrudePadding);
     columns = fit.columns;
     rows = fit.rows;
     width = fit.width;
