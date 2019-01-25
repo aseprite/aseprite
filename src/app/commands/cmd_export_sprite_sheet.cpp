@@ -299,6 +299,7 @@ public:
     borderPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
     shapePadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
     innerPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    extrudeEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onExtrudeChange, this));
     imageEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageEnabledChange, this));
     imageFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
     dataEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
@@ -547,6 +548,10 @@ private:
   }
 
   void onPaddingChange() {
+    updateSizeFields();
+  }
+
+  void onExtrudeChange() {
     updateSizeFields();
   }
 
