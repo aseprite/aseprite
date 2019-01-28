@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018  Igara Studio S.A.
+// Copyright (c) 2018-2019  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -56,7 +56,8 @@ class SvgFormat : public FileFormat {
       FILE_SUPPORT_GRAYA |
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_SEQUENCES |
-      FILE_SUPPORT_GET_FORMAT_OPTIONS;
+      FILE_SUPPORT_GET_FORMAT_OPTIONS |
+      FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
   bool onLoad(FileOp* fop) override;

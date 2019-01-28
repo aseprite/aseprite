@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -432,17 +432,21 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   // Palette with alpha
   if (!fop->m_format->support(FILE_SUPPORT_PALETTE_WITH_ALPHA)) {
-    bool done = false;
-    for (const Palette* pal : fop->m_document->sprite()->getPalettes()) {
-      for (int c=0; c<pal->size(); ++c) {
-        if (rgba_geta(pal->getEntry(c)) < 255) {
-          warnings += "<<- Palette with alpha channel";
-          done = true;
-          break;
+    if (!fop->m_format->support(FILE_SUPPORT_RGBA) ||
+        !fop->m_format->support(FILE_SUPPORT_INDEXED) ||
+        fop->document()->colorMode() == ColorMode::INDEXED) {
+      bool done = false;
+      for (const Palette* pal : fop->m_document->sprite()->getPalettes()) {
+        for (int c=0; c<pal->size(); ++c) {
+          if (rgba_geta(pal->getEntry(c)) < 255) {
+            warnings += "<<- Palette with alpha channel";
+            done = true;
+            break;
+          }
         }
+        if (done)
+          break;
       }
-      if (done)
-        break;
     }
   }
 
