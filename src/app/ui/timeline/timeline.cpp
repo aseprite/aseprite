@@ -1597,6 +1597,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       data.end = layerImagePtr->getCelEnd();
       data.it = layerImagePtr->findFirstCelIteratorAfter(firstFrame-1);
       data.prevIt = data.end;
+      if (firstFrame > 0 && data.it != data.begin)
+        data.prevIt = data.it-1;
       data.nextIt = (data.it != data.end ? data.it+1: data.end);
 
       // Calculate link range for the active cel
