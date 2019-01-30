@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -104,6 +105,8 @@ namespace app {
     // Rotates the image and the mask the given angle. It's used to
     // simulate RotateCommand when we're inside MovingPixelsState.
     void rotate(double angle);
+    
+    void shift(int dx, int dy);
 
     const Transformation& getTransformation() const { return m_currentData; }
 
