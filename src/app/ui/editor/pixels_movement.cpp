@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +33,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/algorithm/rotsprite.h"
+#include "doc/algorithm/shift_image.h"
 #include "doc/blend_internals.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -171,6 +173,20 @@ void PixelsMovement::rotate(double angle)
   updateDocumentMask();
 
   update_screen_for_document(m_document);
+}
+
+void PixelsMovement::shift(int dx, int dy)
+{
+  doc::algorithm::shift_image(m_originalImage, dx, dy, m_currentData.angle());
+  {
+    ContextWriter writer(m_reader, 1000);
+
+    redrawExtraImage();
+    redrawCurrentMask();
+    updateDocumentMask();
+
+    update_screen_for_document(m_document);
+  }
 }
 
 void PixelsMovement::trim()

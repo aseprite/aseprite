@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +21,8 @@ namespace app {
     MoveMaskCommand();
 
     Target getTarget() const { return m_target; }
-    gfx::Point getDelta(Context* context) const;
+    MoveThing getMoveThing() const { return m_moveThing; }
+    bool isWrap() const { return m_wrap; }
 
   protected:
     bool onNeedsParams() const override { return true; }
