@@ -17,7 +17,9 @@
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
+#include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
+#include "app/snap_to_grid.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -396,6 +398,7 @@ DocExporter::DocExporter()
  , m_shapePadding(0)
  , m_innerPadding(0)
  , m_trimCels(false)
+ , m_trimByGrid(false)
  , m_extrude(false)
  , m_listFrameTags(false)
  , m_listLayers(false)
@@ -599,8 +602,17 @@ void DocExporter::captureSamples(Samples& samples)
           sample.setTrimmedBounds(frameBounds = gfx::Rect(0, 0, 0, 0));
         }
 
-        if (m_trimCels)
+        if (m_trimCels) {
+          if (m_trimByGrid) {
+            auto& docPref = Preferences::instance().document(doc);
+            gfx::Point startingPoint(frameBounds.x, frameBounds.y);
+            gfx::Point endingPoint(frameBounds.x + frameBounds.w, frameBounds.y + frameBounds.h);
+            gfx::Point posTopLeft = snap_to_grid(docPref.grid.bounds(), startingPoint, PreferSnapTo::FloorGrid);
+            gfx::Point posBottomRight = snap_to_grid(docPref.grid.bounds(), endingPoint, PreferSnapTo::CeilGrid);
+            frameBounds = gfx::Rect(posTopLeft, posBottomRight);
+          }
           sample.setTrimmedBounds(frameBounds);
+        }
       }
 
       samples.addSample(sample);

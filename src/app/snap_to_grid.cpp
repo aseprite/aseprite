@@ -38,11 +38,20 @@ gfx::Point snap_to_grid(const gfx::Rect& grid,
       break;
 
     case PreferSnapTo::BoxOrigin:
+    case PreferSnapTo::FloorGrid:
       d = std::div(point.x-dx.rem, grid.w);
       newPoint.x = dx.rem + d.quot*grid.w;
 
       d = std::div(point.y-dy.rem, grid.h);
       newPoint.y = dy.rem + d.quot*grid.h;
+      break;
+
+    case PreferSnapTo::CeilGrid:
+      d = std::div(point.x-dx.rem, grid.w);
+      newPoint.x = grid.w + dx.rem + d.quot*grid.w;
+
+      d = std::div(point.y-dy.rem, grid.h);
+      newPoint.y = grid.h + dy.rem + d.quot*grid.h;
       break;
   }
 
