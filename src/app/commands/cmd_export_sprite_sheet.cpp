@@ -181,7 +181,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<int> shapePadding { this, 0, "shapePadding" };
   Param<int> innerPadding { this, 0, "innerPadding" };
   Param<bool> trim { this, false, "trim" };
-  Param<bool> grid { this, false, "grid" };
+  Param<bool> trimByGrid { this, false, "trimByGrid" };
   Param<bool> extrude { this, false, "extrude" };
   Param<bool> openGenerated { this, false, "openGenerated" };
   Param<std::string> layer { this, std::string(), "layer" };
@@ -223,7 +223,7 @@ public:
     openGenerated()->setSelected(params.openGenerated());
     trimEnabled()->setSelected(params.trim());
     trimContainer()->setVisible(trimEnabled()->isSelected());
-    gridTrimEnabled()->setSelected(trimEnabled()->isSelected() && params.grid());
+    gridTrimEnabled()->setSelected(trimEnabled()->isSelected() && params.trimByGrid());
     extrudeEnabled()->setSelected(params.extrude());
 
     borderPadding()->setTextf("%d", params.borderPadding());
@@ -401,7 +401,7 @@ public:
     return trimEnabled()->isSelected();
   }
 
-  bool gridValue() const {
+  bool trimByGridValue() const {
     return gridTrimEnabled()->isSelected();
   }
 
@@ -685,7 +685,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.shapePadding.isSet())     params.shapePadding(    docPref.spriteSheet.shapePadding());
       if (!params.innerPadding.isSet())     params.innerPadding(    docPref.spriteSheet.innerPadding());
       if (!params.trim.isSet())             params.trim(            docPref.spriteSheet.trim());
-      if (!params.grid.isSet())             params.grid(            docPref.spriteSheet.grid());
+      if (!params.trimByGrid.isSet())       params.trimByGrid(      docPref.spriteSheet.trimByGrid());
       if (!params.extrude.isSet())          params.extrude(         docPref.spriteSheet.extrude());
       if (!params.openGenerated.isSet())    params.openGenerated(   docPref.spriteSheet.openGenerated());
       if (!params.layer.isSet())            params.layer(           docPref.spriteSheet.layer());
@@ -714,7 +714,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.shapePadding    (params.shapePadding    (window.shapePaddingValue()));
     docPref.spriteSheet.innerPadding    (params.innerPadding    (window.innerPaddingValue()));
     docPref.spriteSheet.trim            (params.trim            (window.trimValue()));
-    docPref.spriteSheet.grid            (params.grid            (window.gridValue()));
+    docPref.spriteSheet.trimByGrid      (params.trimByGrid      (window.trimByGridValue()));
     docPref.spriteSheet.extrude         (params.extrude         (window.extrudeValue()));
     docPref.spriteSheet.openGenerated   (params.openGenerated   (window.openGeneratedValue()));
     docPref.spriteSheet.layer           (params.layer           (window.layerValue()));
@@ -752,7 +752,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   const int shapePadding = base::clamp(params.shapePadding(), 0, 100);
   const int innerPadding = base::clamp(params.innerPadding(), 0, 100);
   const bool trimCels = params.trim();
-  const bool trimByGrid = params.grid();
+  const bool trimByGrid = params.trimByGrid();
   const bool extrude = params.extrude();
   const int extrudePadding = (extrude ? 1: 0);
   const bool listLayers = params.listLayers();
