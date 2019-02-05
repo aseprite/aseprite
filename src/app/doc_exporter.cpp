@@ -605,10 +605,14 @@ void DocExporter::captureSamples(Samples& samples)
         if (m_trimCels) {
           if (m_trimByGrid) {
             auto& docPref = Preferences::instance().document(doc);
-            gfx::Point startingPoint(frameBounds.x, frameBounds.y);
-            gfx::Point endingPoint(frameBounds.x + frameBounds.w, frameBounds.y + frameBounds.h);
-            gfx::Point posTopLeft = snap_to_grid(docPref.grid.bounds(), startingPoint, PreferSnapTo::FloorGrid);
-            gfx::Point posBottomRight = snap_to_grid(docPref.grid.bounds(), endingPoint, PreferSnapTo::CeilGrid);
+            gfx::Point posTopLeft =
+                    snap_to_grid(docPref.grid.bounds(),
+                            frameBounds.origin(),
+                            PreferSnapTo::FloorGrid);
+            gfx::Point posBottomRight =
+                    snap_to_grid(docPref.grid.bounds(),
+                            frameBounds.point2(),
+                            PreferSnapTo::CeilGrid);
             frameBounds = gfx::Rect(posTopLeft, posBottomRight);
           }
           sample.setTrimmedBounds(frameBounds);
