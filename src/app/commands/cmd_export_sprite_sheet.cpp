@@ -223,6 +223,7 @@ public:
     openGenerated()->setSelected(params.openGenerated());
     trimEnabled()->setSelected(params.trim());
     trimContainer()->setVisible(trimEnabled()->isSelected());
+    gridTrimEnabled()->setSelected(trimEnabled()->isSelected() && params.grid());
     extrudeEnabled()->setSelected(params.extrude());
 
     borderPadding()->setTextf("%d", params.borderPadding());
@@ -401,7 +402,7 @@ public:
   }
 
   bool gridValue() const {
-    return gridTrim()->isSelected();
+    return gridTrimEnabled()->isSelected();
   }
 
   bool extrudeValue() const {

@@ -22,7 +22,7 @@
         <hbox>
           <boxfiller />
           <boxfiller />
-            <check id="grid_trim" text="@.grid" cell_align="right"/>
+            <check id="grid_trim_enabled" text="@.grid" cell_align="right"/>
         </hbox>
         </grid>
       <check id="extrude_enabled" text="@.extrude" />
