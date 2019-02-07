@@ -18,6 +18,10 @@
     <vbox>
       <check id="padding_enabled" text="@.padding" />
       <check id="trim_enabled" text="@.trim" />
+      <hbox id="trim_container">
+        <boxfiller />
+        <check id="grid_trim_enabled" text="@.trim_by_grid" />
+      </hbox>
       <check id="extrude_enabled" text="@.extrude" />
     </vbox>
     <grid columns="2" id="padding_container" cell_hspan="2">

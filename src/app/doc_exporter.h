@@ -54,6 +54,7 @@ namespace app {
     int shapePadding() const { return m_shapePadding; }
     int innerPadding() const { return m_innerPadding; }
     bool trimCels() const { return m_trimCels; }
+    bool trimByGrid() const { return m_trimByGrid; }
     bool extrude() const { return m_extrude; }
     const std::string& filenameFormat() const { return m_filenameFormat; }
     bool listFrameTags() const { return m_listFrameTags; }
@@ -70,6 +71,7 @@ namespace app {
     void setShapePadding(int padding) { m_shapePadding = padding; }
     void setInnerPadding(int padding) { m_innerPadding = padding; }
     void setTrimCels(bool trim) { m_trimCels = trim; }
+    void setTrimByGrid(bool trimByGrid) { m_trimByGrid = trimByGrid; }
     void setExtrude(bool extrude) { m_extrude = extrude; }
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
     void setListFrameTags(bool value) { m_listFrameTags = value; }
@@ -135,6 +137,7 @@ namespace app {
     int m_shapePadding;
     int m_innerPadding;
     bool m_trimCels;
+    bool m_trimByGrid;
     bool m_extrude;
     Items m_documents;
     std::string m_filenameFormat;

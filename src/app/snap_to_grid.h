@@ -14,7 +14,9 @@ namespace app {
 
   enum class PreferSnapTo {
     ClosestGridVertex,
-    BoxOrigin
+    BoxOrigin,
+    FloorGrid,
+    CeilGrid
   };
 
   gfx::Point snap_to_grid(const gfx::Rect& grid,
