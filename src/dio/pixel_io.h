@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +38,6 @@ public:
     return doc::rgba(r, g, b, a);
   }
   void write_pixel(FileInterface* f, doc::RgbTraits::pixel_t c) {
-    f->write8(doc::rgba_getr(c));
     f->write8(doc::rgba_getr(c));
     f->write8(doc::rgba_getg(c));
     f->write8(doc::rgba_getb(c));
