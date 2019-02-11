@@ -37,6 +37,7 @@ namespace app {
     bool listSlices;
     bool ignoreEmpty;
     bool trim;
+    bool trimByGrid;
     bool oneFrame;
     gfx::Rect crop;
 
