@@ -10,7 +10,7 @@
         <label text="@.type" />
         <combobox id="sheet_type" cell_hspan="3" />
 
-        <separator text="Tiles:" horizontal="true" cell_hspan="4" />
+        <separator text="@.tiles" horizontal="true" cell_hspan="4" />
 
         <label text="@.x" />
         <expr id="x" text="0" />
@@ -24,7 +24,7 @@
         <label text="@.height" />
         <expr id="height" text="16" />
 
-        <separator text="Padding:" horizontal="true" cell_hspan="4" />
+        <separator text="@.padding" horizontal="true" cell_hspan="4" />
 
         <label text="@.horizontal_padding" />
         <expr id="horizontal_padding" text="0" />
