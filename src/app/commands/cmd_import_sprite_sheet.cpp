@@ -74,6 +74,7 @@ public:
     y()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     width()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     height()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    paddingEnabled()->Click.connect(base::Bind<void>(&ImportSpriteSheetWindow::onPaddingEnabledChange, this));
     horizontalPadding()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     verticalPadding()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     partialTiles()->Click.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
@@ -87,6 +88,8 @@ public:
       selectActiveDocument();
       m_fileOpened = false;
     }
+
+    onPaddingEnabledChange();
   }
 
   ~ImportSpriteSheetWindow() {
@@ -99,6 +102,10 @@ public:
 
   bool partialTilesValue() const {
     return partialTiles()->isSelected();
+  }
+
+  bool paddingEnabledValue() const {
+    return paddingEnabled()->isSelected();
   }
 
   bool ok() const {
@@ -208,13 +215,20 @@ protected:
   }
 
   void onChangePadding(const gfx::Size& padding) override {
-    m_padding = padding;
-    if (padding.w < 0)
-      m_padding.w = 0;
-    if (padding.h < 0)
-      m_padding.h = 0;
-    horizontalPadding()->setTextf("%d", m_padding.w);
-    verticalPadding()->setTextf("%d", m_padding.h);
+    if (paddingEnabled()->isSelected()) {
+      m_padding = padding;
+      if (padding.w < 0)
+        m_padding.w = 0;
+      if (padding.h < 0)
+        m_padding.h = 0;
+      horizontalPadding()->setTextf("%d", m_padding.w);
+      verticalPadding()->setTextf("%d", m_padding.h);
+    }
+    else {
+      m_padding = gfx::Size(0, 0);
+      horizontalPadding()->setTextf("%d", 0);
+      verticalPadding()->setTextf("%d", 0);
+    }
   }
 
   std::string onGetContextBarHelp() override {
@@ -243,6 +257,8 @@ private:
 
     if (m_document) {
       m_docPref = &Preferences::instance().document(m_document);
+      paddingEnabled()->setSelected(Preferences::instance().document(m_document).importSpriteSheet.paddingEnabled());
+      partialTiles()->setSelected(Preferences::instance().document(m_document).importSpriteSheet.partialTiles());
 
       if (m_docPref->importSpriteSheet.type() >= app::SpriteSheetType::Horizontal &&
           m_docPref->importSpriteSheet.type() <= app::SpriteSheetType::Columns)
@@ -251,14 +267,19 @@ private:
         sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
 
       gfx::Rect defBounds = m_docPref->importSpriteSheet.bounds();
-      gfx::Size defPaddingBounds = m_docPref->importSpriteSheet.paddingBounds();
       if (defBounds.isEmpty())
         defBounds = m_docPref->grid.bounds();
       onChangeRectangle(defBounds);
+
+      gfx::Size defPaddingBounds = m_docPref->importSpriteSheet.paddingBounds();
+      if (defPaddingBounds.w < 0 || defPaddingBounds.h < 0)
+        defPaddingBounds = gfx::Size(0, 0);
       onChangePadding(defPaddingBounds);
 
+      paddingEnabled()->setSelected(m_docPref->importSpriteSheet.paddingEnabled());
       partialTiles()->setSelected(m_docPref->importSpriteSheet.partialTiles());
       onEntriesChange();
+      onPaddingEnabledChange();
     }
   }
 
@@ -314,6 +335,32 @@ private:
     }
   }
 
+  void onPaddingEnabledChange() {
+    const bool state = paddingEnabled()->isSelected();
+    horizontalPaddingLabel()->setVisible(state);
+    horizontalPadding()->setVisible(state);
+    verticalPaddingLabel()->setVisible(state);
+    verticalPadding()->setVisible(state);
+    if (m_docPref != NULL) {
+      if (state)
+        onChangePadding(m_docPref->importSpriteSheet.paddingBounds());
+      else {
+        m_docPref->importSpriteSheet.paddingBounds(m_padding);
+        onChangePadding(gfx::Size(0, 0));
+      }
+    }
+
+    onEntriesChange();
+    resize();
+  }
+
+  void resize() {
+    gfx::Size reqSize = sizeHint();
+    moveWindow(gfx::Rect(origin(), reqSize));
+    layout();
+    invalidate();
+  }
+
   Context* m_context;
   Doc* m_document;
   Editor* m_editor;
@@ -354,6 +401,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
   gfx::Rect frameBounds = window.frameBounds();
   gfx::Size padThickness = window.paddingThickness();
   bool partialTiles = window.partialTilesValue();
+  bool paddingEnable = window.paddingEnabledValue();
   auto sheetType = window.sheetTypeValue();
 
   ASSERT(document);
@@ -466,6 +514,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
       docPref->importSpriteSheet.bounds(frameBounds);
       docPref->importSpriteSheet.partialTiles(partialTiles);
       docPref->importSpriteSheet.paddingBounds(padThickness);
+      docPref->importSpriteSheet.paddingEnabled(paddingEnable);
     }
   }
   catch (...) {

@@ -24,15 +24,12 @@
         <label text="@.height" />
         <expr id="height" text="16" />
 
-        <separator text="@.padding" horizontal="true" cell_hspan="4" />
+        <check id="padding_enabled" text="@.padding" cell_hspan="4" />
 
-        <label text="@.horizontal_padding" />
+        <label text="@.horizontal_padding" id="horizontal_padding_label" />
         <expr id="horizontal_padding" text="0" />
-        <label text="" cell_hspan="2" />
-
-        <label text="@.vertical_padding" />
+        <label text="@.vertical_padding" id="vertical_padding_label" />
         <expr id="vertical_padding" text="0" />
-        <label text="" cell_hspan="2" />
 
         <check id="partial_tiles" text="@.partial_tiles" cell_hspan="4" />
 

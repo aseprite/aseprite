@@ -79,6 +79,12 @@ gfx::Rect SelectBoxState::getBoxBounds() const
 
 void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 {
+  if (hasFlag(Flags::PaddingRulers)) {
+    int w = m_rulers[PV].position() - m_rulers[V2].position();
+    int h = m_rulers[PH].position() - m_rulers[H2].position();
+    m_rulers[PH] = Ruler(Ruler::Horizontal, m_rulers[H2].position() + h);
+    m_rulers[PV] = Ruler(Ruler::Vertical, m_rulers[V2].position() + w);
+  }
   m_rulers[H1] = Ruler(Ruler::Horizontal, box.y);
   m_rulers[H2] = Ruler(Ruler::Horizontal, box.y+box.h);
   m_rulers[V1] = Ruler(Ruler::Vertical, box.x);
@@ -186,12 +192,20 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 
       switch (ruler.orientation()) {
         case Ruler::Horizontal:
+          if (hasFlag(Flags::PaddingRulers) && (i == H2)) {
+            int pad = m_rulers[PH].position() - m_rulers[H2].position();
+            m_rulers[PH].setPosition(start.position() + delta.y + pad);
+          }
           ruler.setPosition(start.position() + delta.y);
           if (msg->modifiers() == os::kKeyShiftModifier)
             oppRuler.setPosition(editor->sprite()->height()
                                  - start.position() - delta.y);
           break;
         case Ruler::Vertical:
+          if (hasFlag(Flags::PaddingRulers) && (i == V2)) {
+            int pad = m_rulers[PV].position() - m_rulers[V2].position();
+            m_rulers[PV].setPosition(start.position() + delta.x + pad);
+          }
           ruler.setPosition(start.position() + delta.x);
           if (msg->modifiers() == os::kKeyShiftModifier)
             oppRuler.setPosition(editor->sprite()->width()
