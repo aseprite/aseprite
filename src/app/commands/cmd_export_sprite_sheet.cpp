@@ -46,9 +46,11 @@ using namespace ui;
 
 namespace {
 
+#ifdef ENABLE_UI
   // Special key value used in default preferences to know if by default
   // the user wants to generate texture and/or files.
   static const char* kSpecifiedFilename = "**filename**";
+#endif
 
   struct Fit {
     int width;
@@ -136,6 +138,7 @@ namespace {
       columns, rows, 0);
   }
 
+#ifdef ENABLE_UI
   bool ask_overwrite(bool askFilename, std::string filename,
                      bool askDataname, std::string dataname) {
     if ((askFilename &&
@@ -162,6 +165,7 @@ namespace {
     }
     return true;
   }
+#endif // ENABLE_UI
 
 }
 
@@ -190,6 +194,8 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> listTags { this, true, "listTags" };
   Param<bool> listSlices { this, true, "listSlices" };
 };
+
+#if ENABLE_UI
 
 class ExportSpriteSheetWindow : public app::gen::ExportSpriteSheet {
 public:
@@ -637,6 +643,8 @@ private:
   bool m_dataFilenameAskOverwrite;
 };
 
+#endif // ENABLE_UI
+
 class ExportSpriteSheetCommand : public CommandWithNewParams<ExportSpriteSheetParams> {
 public:
   ExportSpriteSheetCommand();
@@ -661,10 +669,18 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   Site site = context->activeSite();
   Doc* document = site.document();
   Sprite* sprite = site.sprite();
-  DocumentPreferences& docPref(Preferences::instance().document(document));
   auto& params = this->params();
 
 #ifdef ENABLE_UI
+  // TODO if we use this line when !ENABLE_UI,
+  // Preferences::~Preferences() crashes on Linux when it wants to
+  // save the document preferences. It looks like
+  // Preferences::onRemoveDocument() is not called for some documents
+  // and when the Preferences::m_docs collection is iterated to save
+  // all DocumentPreferences, it accesses an invalid Doc* pointer (an
+  // already removed/deleted document).
+  DocumentPreferences& docPref(Preferences::instance().document(document));
+
   bool askOverwrite = params.askOverwrite();
   // Show UI if the user specified it explicitly or the sprite sheet type wasn't specified.
   if (context->isUIAvailable() && params.ui() &&
@@ -857,11 +873,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     StatusBar* statusbar = StatusBar::instance();
     if (statusbar)
       statusbar->showTip(1000, "Sprite Sheet Generated");
-  }
-#endif
 
-  // Copy background and grid preferences
-  {
+    // Copy background and grid preferences
     DocumentPreferences& newDocPref(
       Preferences::instance().document(newDocument.get()));
     newDocPref.bg = docPref.bg;
@@ -869,6 +882,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     newDocPref.pixelGrid = docPref.pixelGrid;
     Preferences::instance().removeDocument(newDocument.get());
   }
+#endif
 
   if (params.openGenerated()) {
     // Setup a filename for the new document in case that user didn't
