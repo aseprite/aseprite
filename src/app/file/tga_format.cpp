@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "config.h"
 #endif
 
+#include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
@@ -289,7 +291,8 @@ bool TgaFormat::onLoad(FileOp* fop)
            (bpp != 24) && (bpp != 32))) {
         return false;
       }
-
+      if ((descriptor_bits & 0xf) == 8)
+        fop->sequenceSetHasAlpha(true);
       pixelFormat = IMAGE_RGB;
       break;
 
@@ -416,7 +419,7 @@ bool TgaFormat::onSave(FileOp* fop)
   fputc(depth, f);                     /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
-  fputc(image->pixelFormat() == IMAGE_RGB ? 8: 0, f);
+  fputc(image->pixelFormat() == IMAGE_RGB && !fop->document()->sprite()->isOpaque()? 8: 0, f);
 
   if (need_pal) {
     for (y=0; y<256; y++) {
