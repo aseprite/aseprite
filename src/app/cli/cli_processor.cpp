@@ -274,8 +274,10 @@ void CliProcessor::process(Context* ctx)
         // --trim-by-grid
         else if (opt == &m_options.trimByGrid()) {
           cof.trimByGrid = true;
-          if (m_exporter)
+          if (m_exporter) {
+            m_exporter->setTrimCels(true);
             m_exporter->setTrimByGrid(true);
+          }
         }
         // --crop x,y,width,height
         else if (opt == &m_options.crop()) {
