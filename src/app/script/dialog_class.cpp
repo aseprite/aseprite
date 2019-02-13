@@ -12,10 +12,14 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/file_selector.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/ui/color_button.h"
 #include "app/ui/expr_entry.h"
+#include "app/ui/filename_field.h"
+#include "base/bind.h"
+#include "base/paths.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -27,6 +31,7 @@
 #include "ui/window.h"
 
 #include <map>
+#include <string>
 
 namespace app {
 namespace script {
@@ -86,6 +91,53 @@ struct Dialog {
     }
   }
 };
+
+template<typename Signal,
+         typename Callback>
+void Dialog_connect_signal(lua_State* L,
+                           Signal& signal,
+                           Callback callback)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+
+  // Add a reference to the onclick function
+  const int ref = dlg->callbacksTableRef;
+  lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+  lua_len(L, -1);
+  const int n = 1+lua_tointegerx(L, -1, nullptr);
+  lua_pop(L, 1);
+  lua_pushvalue(L, -2);     // Copy the function in onclick
+  lua_seti(L, -2, n);       // Put the copy of the function in the callbacksTableRef
+
+  signal.connect(
+    base::Bind<void>([=]() {
+      callback();
+      try {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+        lua_geti(L, -1, n);
+
+        if (lua_isfunction(L, -1)) {
+          if (lua_pcall(L, 0, 0, 0)) {
+            if (const char* s = lua_tostring(L, -1))
+              App::instance()
+                ->scriptEngine()
+                ->consolePrint(s);
+          }
+        }
+        else
+          lua_pop(L, 1);
+        lua_pop(L, 1);        // Pop table from the registry
+      }
+      catch (const std::exception& ex) {
+        // This is used to catch unhandled exception or for
+        // example, std::runtime_error exceptions when a Tx() is
+        // created without an active sprite.
+        App::instance()
+          ->scriptEngine()
+          ->consolePrint(ex.what());
+      }
+    }));
+}
 
 int Dialog_new(lua_State* L)
 {
@@ -255,8 +307,6 @@ int Dialog_label(lua_State* L)
 template<typename T>
 int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
 {
-  auto dlg = get_obj<Dialog>(L, 1);
-
   std::string text;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
@@ -283,43 +333,11 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
 
     type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
-      // Add a reference to the onclick function
-      const int ref = dlg->callbacksTableRef;
-      lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-      lua_len(L, -1);
-      const int n = 1+lua_tointegerx(L, -1, nullptr);
-      lua_pop(L, 1);
-      lua_pushvalue(L, -2);     // Copy the function in onclick
-      lua_seti(L, -2, n);       // Put the copy of the function in the callbacksTableRef
-      widget->Click.connect(
-        [dlg, widget, L, ref, n](ui::Event& ev) {
-          dlg->lastButton = widget;
-
-          try {
-            lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-            lua_geti(L, -1, n);
-
-            if (lua_isfunction(L, -1)) {
-              if (lua_pcall(L, 0, 0, 0)) {
-                if (const char* s = lua_tostring(L, -1))
-                  App::instance()
-                    ->scriptEngine()
-                    ->consolePrint(s);
-              }
-            }
-            else
-              lua_pop(L, 1);
-            lua_pop(L, 1);        // Pop table from the registry
-          }
-          catch (const std::exception& ex) {
-            // This is used to catch unhandled exception or for
-            // example, std::runtime_error exceptions when a Tx() is
-            // created without an active sprite.
-            App::instance()
-              ->scriptEngine()
-              ->consolePrint(ex.what());
-          }
-        });
+      auto dlg = get_obj<Dialog>(L, 1);
+      Dialog_connect_signal(L, widget->Click,
+                            [dlg, widget]{
+                              dlg->lastButton = widget;
+                            });
       closeWindowByDefault = false;
     }
     lua_pop(L, 1);
@@ -480,6 +498,74 @@ int Dialog_color(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
+int Dialog_file(lua_State* L)
+{
+  std::string title = "Open File";
+  std::string fn;
+  base::paths exts;
+  auto dlgType = FileSelectorType::Open;
+  auto fnFieldType = FilenameField::ButtonOnly;
+
+  if (lua_istable(L, 2)) {
+    lua_getfield(L, 2, "filename");
+    if (auto p = lua_tostring(L, -1))
+      fn = p;
+    lua_pop(L, 1);
+
+    int type = lua_getfield(L, 2, "save");
+    if (type == LUA_TBOOLEAN) {
+      dlgType = FileSelectorType::Save;
+      title = "Save File";
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "title");
+    if (type == LUA_TSTRING)
+      title = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "entry");
+    if (type == LUA_TBOOLEAN) {
+      fnFieldType = FilenameField::EntryAndButton;
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "filetypes");
+    if (type == LUA_TTABLE) {
+      lua_pushnil(L);
+      while (lua_next(L, -2) != 0) {
+        if (auto p = lua_tostring(L, -1))
+          exts.push_back(p);
+        lua_pop(L, 1);
+      }
+    }
+    lua_pop(L, 1);
+  }
+
+  auto widget = new FilenameField(fnFieldType, fn);
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(L, widget->Change, []{ });
+    }
+    lua_pop(L, 1);
+  }
+
+  widget->SelectFile.connect(
+    [=]() -> std::string {
+      base::paths newfilename;
+      if (app::show_file_selector(
+            title, widget->filename(), exts,
+            dlgType,
+            newfilename))
+        return newfilename.front();
+      else
+        return widget->filename();
+    });
+  return Dialog_add_widget(L, widget);
+}
+
 int Dialog_get_data(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
@@ -524,6 +610,8 @@ int Dialog_get_data(lua_State* L)
       default:
         if (auto colorButton = dynamic_cast<const ColorButton*>(widget))
           push_obj<app::Color>(L, colorButton->getColor());
+        else if (auto filenameField = dynamic_cast<const FilenameField*>(widget))
+          lua_pushstring(L, filenameField->filename().c_str());
         else
           lua_pushnil(L);
         break;
@@ -581,6 +669,10 @@ int Dialog_set_data(lua_State* L)
       default:
         if (auto colorButton = dynamic_cast<ColorButton*>(widget))
           colorButton->setColor(convert_args_into_color(L, -1));
+        else if (auto filenameField = dynamic_cast<FilenameField*>(widget)) {
+          if (auto p = lua_tostring(L, -1))
+            filenameField->setFilename(p);
+        }
         break;
     }
 
@@ -621,6 +713,7 @@ const luaL_Reg Dialog_methods[] = {
   { "slider", Dialog_slider },
   { "combobox", Dialog_combobox },
   { "color", Dialog_color },
+  { "file", Dialog_file },
   { nullptr, nullptr }
 };
 

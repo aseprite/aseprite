@@ -363,6 +363,7 @@ if(ENABLE_UI)
     ui/file_list.cpp
     ui/file_list_view.cpp
     ui/file_selector.cpp
+    ui/filename_field.cpp
     ui/font_popup.cpp
     ui/frame_tag_window.cpp
     ui/hex_color_entry.cpp

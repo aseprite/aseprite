@@ -485,8 +485,8 @@ private:
   }
 
   void onFileNamesChange() {
-    imageFilename()->setText("Select File: " + base::get_file_name(m_filename));
-    dataFilename()->setText("Select File: " + base::get_file_name(m_dataFilename));
+    imageFilename()->setText(base::get_file_name(m_filename));
+    dataFilename()->setText(base::get_file_name(m_dataFilename));
     resize();
   }
 
