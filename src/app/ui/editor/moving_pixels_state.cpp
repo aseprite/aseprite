@@ -509,12 +509,15 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
   if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
-      // Do not drop pixels
+      gfx::Point delta = moveMaskCmd->getMoveThing().getDelta(UIContext::instance());
       // Verify Shift condition of the MoveMaskCommand (i.e. wrap = true)
       if (moveMaskCmd->isWrap()) {
-          gfx::Point delta = moveMaskCmd->getMoveThing().getDelta(UIContext::instance());
-          m_pixelsMovement->shift(delta.x, delta.y);
+        m_pixelsMovement->shift(delta.x, delta.y);
       }
+      else {
+        translate(delta);
+      }
+      // We've processed the selection content movement right here.
       ev.cancel();
       return;
     }
