@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
 #include "app/doc.h"
+#include "app/doc_api.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -261,6 +262,44 @@ int Selection_get_bounds(lua_State* L)
   return 1;
 }
 
+int Selection_get_origin(lua_State* L)
+{
+  const auto obj = get_obj<SelectionObj>(L, 1);
+  if (auto sprite = obj->sprite(L)) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
+    if (doc->isMaskVisible()) {
+      push_obj(L, doc->mask()->bounds().origin());
+    }
+    else {
+      push_new<gfx::Point>(L, 0, 0);
+    }
+  }
+  else {
+    const auto mask = obj->mask(L);
+    push_obj(L, mask->bounds().origin());
+  }
+  return 1;
+}
+
+int Selection_set_origin(lua_State* L)
+{
+  auto obj = get_obj<SelectionObj>(L, 1);
+  const auto pt = convert_args_into_point(L, 2);
+  if (auto sprite = obj->sprite(L)) {
+    Doc* doc = static_cast<Doc*>(sprite->document());
+    if (doc->isMaskVisible()) {
+      Tx tx;
+      doc->getApi(tx).setMaskPosition(pt.x, pt.y);
+      tx.commit();
+    }
+  }
+  else {
+    const auto mask = obj->mask(L);
+    mask->setOrigin(pt.x, pt.y);
+  }
+  return 0;
+}
+
 int Selection_get_isEmpty(lua_State* L)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
@@ -284,6 +323,7 @@ const luaL_Reg Selection_methods[] = {
 
 const Property Selection_properties[] = {
   { "bounds", Selection_get_bounds, nullptr },
+  { "origin", Selection_get_origin, Selection_set_origin },
   { "isEmpty", Selection_get_isEmpty, nullptr },
   { nullptr, nullptr, nullptr }
 };
@@ -304,6 +344,11 @@ void register_selection_class(lua_State* L)
 void push_sprite_selection(lua_State* L, Sprite* sprite)
 {
   push_new<SelectionObj>(L, nullptr, sprite);
+}
+
+const doc::Mask* get_mask_from_arg(lua_State* L, int index)
+{
+  return get_obj<SelectionObj>(L, index)->mask(L);
 }
 
 } // namespace script
