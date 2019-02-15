@@ -560,7 +560,6 @@ add_library(app-lib
   modules.cpp
   modules/palettes.cpp
   pref/preferences.cpp
-  project.cpp
   recent_files.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
