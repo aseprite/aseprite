@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,10 +51,8 @@ void MaskAllCommand::onExecute(Context* context)
 
   Tx tx(writer.context(), "Select All", DoesntModifyDocument);
   tx(new cmd::SetMask(document, &newMask));
-  tx.commit();
-
   document->resetTransformation();
-  document->generateMaskBoundaries();
+  tx.commit();
 
   if (Preferences::instance().selection.autoShowSelectionEdges()) {
     DocumentPreferences& docPref = Preferences::instance().document(document);

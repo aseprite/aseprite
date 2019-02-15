@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -189,9 +189,11 @@ void MaskByColorCommand::onExecute(Context* context)
     set_config_int("MaskColor", "Tolerance", m_sliderTolerance->getValue());
     set_config_bool("MaskColor", "Preview", m_checkPreview->isSelected());
   }
+  else {
+    document->generateMaskBoundaries();
+  }
 
   // Update boundaries and editors.
-  document->generateMaskBoundaries();
   update_screen_for_document(document);
 
   // Save window configuration.

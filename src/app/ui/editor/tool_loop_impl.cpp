@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -463,7 +464,6 @@ public:
       }
       // Selection ink
       else if (getInk()->isSelection()) {
-        m_document->generateMaskBoundaries();
         redraw = true;
 
         // Show selection edges

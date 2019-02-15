@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1784,7 +1784,7 @@ void Timeline::onRemoveFrame(DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onSelectionChanged(DocEvent& ev)
+void Timeline::onSelectionBoundariesChanged(DocEvent& ev)
 {
   if (m_rangeLocks == 0)
     clearAndInvalidateRange();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -109,7 +109,6 @@ void SelectTileCommand::onExecute(Context* ctx)
   tx(new cmd::SetMask(doc, mask.get()));
   tx.commit();
 
-  doc->generateMaskBoundaries();
   update_screen_for_document(doc);
 }
 

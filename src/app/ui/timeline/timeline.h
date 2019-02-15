@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -144,7 +144,7 @@ namespace app {
     void onAfterRemoveLayer(DocEvent& ev) override;
     void onAddFrame(DocEvent& ev) override;
     void onRemoveFrame(DocEvent& ev) override;
-    void onSelectionChanged(DocEvent& ev) override;
+    void onSelectionBoundariesChanged(DocEvent& ev) override;
     void onLayerNameChange(DocEvent& ev) override;
     void onAddFrameTag(DocEvent& ev) override;
     void onRemoveFrameTag(DocEvent& ev) override;
