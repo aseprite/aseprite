@@ -40,6 +40,12 @@ do
   -- Constructor with rectangles
   local b = Selection(1, 2, 3, 4)
   assert(b.bounds == Rectangle(1, 2, 3, 4))
+  assert(b.origin == Point(1, 2))
+
+  -- Move
+  b.origin = Point(5, 6)
+  assert(b.bounds == Rectangle(5, 6, 3, 4))
+  assert(b.origin == Point(5, 6))
 end
 
 -- Sprite Selection
@@ -62,6 +68,9 @@ do
   assert(sel.bounds.y == 3)
   assert(sel.bounds.width == 4)
   assert(sel.bounds.height == 5)
+
+  sel.origin = Point(5, 6)
+  assert(sel.bounds == Rectangle(5, 6, 4, 5))
 end
 
 -- Comparison
