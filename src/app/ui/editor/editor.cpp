@@ -1825,12 +1825,16 @@ bool Editor::onProcessMessage(Message* msg)
           m_document->setExtraCel(ExtraCelRef(nullptr));
         }
 
-        invalidate();
+        // Redraw all editors (without this the preview editor will
+        // still show the flashing layer).
+        for (auto editor : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
+          editor->invalidate();
 
-        // Re-generate painting messages just right now (it looks like
-        // the widget update region is lost after the last
-        // kPaintMessage).
-        flushRedraw();
+          // Re-generate painting messages just right now (it looks
+          // like the widget update region is lost after the last
+          // kPaintMessage).
+          editor->flushRedraw();
+        }
       }
     }
   }
