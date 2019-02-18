@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018  Igara Studio S.A.
+// Copyright (c) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -149,6 +149,7 @@ Editor::Editor(Doc* document, EditorFlags flags)
   , m_docView(NULL)
   , m_flags(flags)
   , m_secondaryButton(false)
+  , m_flashing(Flashing::None)
   , m_aniSpeed(1.0)
   , m_isPlaying(false)
   , m_showGuidesThisCel(nullptr)
@@ -1221,29 +1222,26 @@ void Editor::flashCurrentLayer()
     return;
 
   Site site = getSite();
+  if (const Cel* src_cel = site.cel()) {
+    // Hide and destroy the extra cel used by the brush preview
+    // because we'll need to use the extra cel now for the flashing
+    // layer.
+    m_brushPreview.hide();
 
-  int x, y;
-  const Image* src_image = site.image(&x, &y);
-  if (src_image) {
     m_renderEngine->removePreviewImage();
 
     ExtraCelRef extraCel(new ExtraCel);
-    extraCel->create(m_sprite, m_sprite->bounds(), m_frame, 255);
+    extraCel->create(m_sprite, src_cel->bounds(), m_frame, 255);
     extraCel->setType(render::ExtraType::COMPOSITE);
     extraCel->setBlendMode(BlendMode::NEG_BW);
 
     Image* flash_image = extraCel->image();
     clear_image(flash_image, flash_image->maskColor());
-    copy_image(flash_image, src_image, x, y);
+    copy_image(flash_image, src_cel->image(), 0, 0);
 
-    {
-      ExtraCelRef oldExtraCel = m_document->extraCel();
-      m_document->setExtraCel(extraCel);
-      drawSpriteClipped(gfx::Region(
-                          gfx::Rect(0, 0, m_sprite->width(), m_sprite->height())));
-      manager()->flipDisplay();
-      m_document->setExtraCel(oldExtraCel);
-    }
+    ExtraCelRef oldExtraCel = m_document->extraCel();
+    m_document->setExtraCel(extraCel);
+    m_flashing = Flashing::WithFlashExtraCel;
 
     invalidate();
   }
@@ -1653,6 +1651,13 @@ bool Editor::onProcessMessage(Message* msg)
       if (m_sprite) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
+        // If we're going to start drawing, we cancel the flashing
+        // layer.
+        if (m_flashing != Flashing::None) {
+          m_flashing = Flashing::None;
+          invalidate();
+        }
+
         m_oldPos = mouseMsg->position();
         updateToolByTipProximity(mouseMsg->pointerType());
         updateAutoCelGuides(msg);
@@ -1786,9 +1791,51 @@ bool Editor::onProcessMessage(Message* msg)
     case kSetCursorMessage:
       setCursor(static_cast<MouseMessage*>(msg)->position());
       return true;
+
   }
 
-  return Widget::onProcessMessage(msg);
+  bool result = Widget::onProcessMessage(msg);
+
+  if (msg->type() == kPaintMessage &&
+      m_flashing != Flashing::None) {
+    const PaintMessage* ptmsg = static_cast<const PaintMessage*>(msg);
+    if (ptmsg->count() == 0) {
+      if (m_flashing == Flashing::WithFlashExtraCel) {
+        m_flashing = Flashing::WaitingDeferedPaint;
+
+        // We have to defer an invalidation so we can keep the
+        // flashing layer in the extra cel some time.
+        defer_invalid_rect(View::getView(this)->viewportBounds());
+      }
+      else if (m_flashing == Flashing::WaitingDeferedPaint) {
+        m_flashing = Flashing::None;
+
+        if (m_brushPreview.onScreen()) {
+          m_brushPreview.hide();
+
+          // Destroy the extra cel explicitly (it could happend
+          // automatically by the m_brushPreview.show()) just in case
+          // that the brush preview will not use the extra cel
+          // (e.g. in the case of the Eraser tool).
+          m_document->setExtraCel(ExtraCelRef(nullptr));
+
+          showBrushPreview(ui::get_mouse_position());
+        }
+        else {
+          m_document->setExtraCel(ExtraCelRef(nullptr));
+        }
+
+        invalidate();
+
+        // Re-generate painting messages just right now (it looks like
+        // the widget update region is lost after the last
+        // kPaintMessage).
+        flushRedraw();
+      }
+    }
+  }
+
+  return result;
 }
 
 void Editor::onSizeHint(SizeHintEvent& ev)
@@ -1816,15 +1863,17 @@ void Editor::onResize(ui::ResizeEvent& ev)
 void Editor::onPaint(ui::PaintEvent& ev)
 {
   std::unique_ptr<HideBrushPreview> hide;
-  // If we are drawing the editor for a tooltip background or any
-  // other semi-transparent widget (e.g. popups), we destroy the brush
-  // preview/extra cel to avoid drawing a part of the brush in the
-  // transparent widget background.
-  if (ev.isTransparentBg()) {
-    m_brushPreview.discardBrushPreview();
-  }
-  else {
-    hide.reset(new HideBrushPreview(m_brushPreview));
+  if (m_flashing == Flashing::None) {
+    // If we are drawing the editor for a tooltip background or any
+    // other semi-transparent widget (e.g. popups), we destroy the brush
+    // preview/extra cel to avoid drawing a part of the brush in the
+    // transparent widget background.
+    if (ev.isTransparentBg()) {
+      m_brushPreview.discardBrushPreview();
+    }
+    else {
+      hide.reset(new HideBrushPreview(m_brushPreview));
+    }
   }
 
   Graphics* g = ev.graphics();

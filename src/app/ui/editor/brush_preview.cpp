@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -166,6 +167,13 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   if (m_type & SELECTION_CROSSHAIR)
     showPreview = false;
+
+  // When the extra cel is locked (e.g. we are flashing the active
+  // layer) we don't show the brush preview temporally.
+  if (showPreview && m_editor->isExtraCelLocked()) {
+    showPreview = false;
+    m_type |= BRUSH_BOUNDARIES;
+  }
 
   // Use a simple cross
   if (pref.cursor.paintingCursorType() == gen::PaintingCursorType::SIMPLE_CROSSHAIR) {
