@@ -575,6 +575,7 @@ add_library(app-lib
   transformation.cpp
   ui/layer_frame_comboboxes.cpp
   util/autocrop.cpp
+  util/buffer_region.cpp
   util/create_cel_copy.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
