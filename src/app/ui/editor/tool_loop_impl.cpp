@@ -95,7 +95,6 @@ protected:
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
-  gfx::Region m_dirtyArea;
 
 public:
   ToolLoopBase(Editor* editor,
@@ -261,11 +260,7 @@ public:
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
-  gfx::Region& getDirtyArea() override {
-    return m_dirtyArea;
-  }
-
-  void updateDirtyArea() override {
+  void updateDirtyArea(const gfx::Region& dirtyArea) override {
     // This is necessary here so the "on sprite crosshair" is hidden,
     // we update screen pixels with the new sprite, and then we show
     // the crosshair saving the updated pixels. It fixes problems with
@@ -274,7 +269,7 @@ public:
     HideBrushPreview hide(m_editor->brushPreview());
 
     m_document->notifySpritePixelsModified(
-      m_sprite, m_dirtyArea, m_frame);
+      m_sprite, dirtyArea, m_frame);
   }
 
   void updateStatusBar(const char* text) override {

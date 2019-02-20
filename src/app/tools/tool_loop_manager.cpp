@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,7 +36,6 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
-  , m_dirtyArea(toolLoop->getDirtyArea())
 {
 }
 
@@ -206,7 +206,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   }
 
   if (!m_dirtyArea.isEmpty())
-    m_toolLoop->updateDirtyArea();
+    m_toolLoop->updateDirtyArea(m_dirtyArea);
 }
 
 // Applies the grid settings to the specified sprite point.
