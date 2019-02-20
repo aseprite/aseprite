@@ -111,7 +111,8 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
-  if (!res && (m_toolLoop->getInk()->isSelection() ||
+  if (!res && (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
+               m_toolLoop->getInk()->isSelection() ||
                m_toolLoop->getInk()->isSlice() ||
                m_toolLoop->getFilled())) {
     m_toolLoop->getInk()->setFinalStep(m_toolLoop, true);
@@ -165,6 +166,13 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 
   calculateDirtyArea(strokes);
 
+  // If we are not in the last step (when the mouse button is
+  // released) we are only showing a preview of the tool, so we can
+  // limit the dirty area to the visible viewport bounds. In this way
+  // the area using in validateoDstImage() can be a lot smaller.
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last && !lastStep)
+    m_toolLoop->limitDirtyAreaToViewport(m_dirtyArea);
+
   // Validate source image area.
   if (m_toolLoop->getInk()->needsSpecialSourceArea()) {
     gfx::Region srcArea;
@@ -177,10 +185,10 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 
   m_toolLoop->getInk()->prepareForStrokes(m_toolLoop, strokes);
 
-  // Invalidate destionation image areas.
+  // Invalidate destination image area.
   if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {
     // Copy source to destination (reset the previous trace). Useful
-    // for tools like Line and Ellipse (we kept the last trace only).
+    // for tools like Line and Ellipse (we keep the last trace only).
     m_toolLoop->invalidateDstImage();
   }
   else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {

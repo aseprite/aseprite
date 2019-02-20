@@ -260,6 +260,10 @@ public:
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
+  void limitDirtyAreaToViewport(gfx::Region& rgn) override {
+    rgn &= gfx::Region(m_editor->getVisibleSpriteBounds().inflate(1, 1));
+  }
+
   void updateDirtyArea(const gfx::Region& dirtyArea) override {
     // This is necessary here so the "on sprite crosshair" is hidden,
     // we update screen pixels with the new sprite, and then we show

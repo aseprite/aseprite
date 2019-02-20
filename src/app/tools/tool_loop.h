@@ -222,6 +222,8 @@ namespace app {
       // Returns true if the loop was canceled by the user
       virtual bool isCanceled() = 0;
 
+      virtual void limitDirtyAreaToViewport(gfx::Region& rgn) = 0;
+
       // Redraws the dirty area.
       virtual void updateDirtyArea(const gfx::Region& dirtyArea) = 0;
 
