@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -42,14 +43,15 @@ namespace ui {
     // Returns the maximum viewable size requested by the attached
     // widget in the viewport.
     gfx::Size getScrollableSize();
-    void setScrollableSize(const gfx::Size& sz);
+    void setScrollableSize(const gfx::Size& sz,
+                           const bool setScrollPos = true);
 
     // Returns the visible/available size to see the attached widget.
     gfx::Size visibleSize() const override;
     gfx::Point viewScroll() const override;
     void setViewScroll(const gfx::Point& pt) override;
 
-    void updateView();
+    void updateView(const bool restoreScrollPos = true);
 
     Viewport* viewport();
     gfx::Rect viewportBounds();

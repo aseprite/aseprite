@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +34,7 @@ namespace app {
     virtual bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onScrollChange(Editor* editor) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
     virtual void onExposeSpritePixels(const gfx::Region& rgn) override;
 
@@ -50,6 +52,7 @@ namespace app {
     void notifyToolLoopModifiersChange(Editor* editor);
 
   private:
+    void handleMouseMovement(const tools::Pointer& pointer);
     bool canExecuteCommands();
     void onBeforeCommandExecution(CommandExecutionEvent& cmd);
     void destroyLoopIfCanceled(Editor* editor);
@@ -69,16 +72,18 @@ namespace app {
     // release the mouse button in the same location).
     bool m_mouseMoveReceived;
 
-    // Stores the last drawing position before we start this
-    // DrawingState. It's used to restore the last drawing position in
-    // case this stroke is canceled.
-    gfx::Point m_lastPoint;
+    // Stores the last mouse pointer, used to re-use the latest mouse
+    // button when onScrollChange() event is received.
+    tools::Pointer m_lastPointer;
 
     // Used to know if the button was pressed after the DrawingState
     // was initialized. In this way we can cancel the ToolLoop if the
     // Shift press is used to draw a line, but then released without a
     // mouse click.
     bool m_mousePressedReceived;
+
+    // Locks the scroll
+    bool m_processScrollChange;
 
     obs::scoped_connection m_beforeCmdConn;
   };

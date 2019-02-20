@@ -491,7 +491,7 @@ void Editor::setEditorZoom(const render::Zoom& zoom)
 
 void Editor::updateEditor()
 {
-  View::getView(this)->updateView();
+  View::getView(this)->updateView(false);
 }
 
 void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& spriteRectToDraw, int dx, int dy)
@@ -2331,6 +2331,10 @@ void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
 void Editor::notifyScrollChanged()
 {
   m_observers.notifyScrollChanged(this);
+
+  ASSERT(m_state);
+  if (m_state)
+    m_state->onScrollChange(this);
 }
 
 void Editor::notifyZoomChanged()
