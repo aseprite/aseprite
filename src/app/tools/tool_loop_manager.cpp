@@ -145,12 +145,12 @@ void ToolLoopManager::movement(const Pointer& pointer)
   doLoopStep(false);
 }
 
-void ToolLoopManager::doLoopStep(bool last_step)
+void ToolLoopManager::doLoopStep(bool lastStep)
 {
   // Original set of points to interwine (original user stroke,
   // relative to sprite origin).
   Stroke main_stroke;
-  if (!last_step)
+  if (!lastStep)
     m_toolLoop->getController()->getStrokeToInterwine(m_stroke, main_stroke);
   else
     main_stroke = m_stroke;
@@ -194,7 +194,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Join or fill user points
-  if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
+  if (!m_toolLoop->getFilled() || (!lastStep && !m_toolLoop->getPreviewFilled()))
     m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
   else
     m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, main_stroke);

@@ -70,7 +70,7 @@ public:
   const Pointer& lastPointer() const { return m_lastPointer; }
 
 private:
-  void doLoopStep(bool last_step);
+  void doLoopStep(bool lastStep);
   void snapToGrid(gfx::Point& point);
 
   void calculateDirtyArea(const Strokes& strokes);
