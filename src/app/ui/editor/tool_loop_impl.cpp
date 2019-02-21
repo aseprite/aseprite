@@ -40,6 +40,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
+#include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
@@ -261,7 +262,19 @@ public:
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
   void limitDirtyAreaToViewport(gfx::Region& rgn) override {
-    rgn &= gfx::Region(m_editor->getVisibleSpriteBounds().inflate(1, 1));
+    // Visible region (on the screen) of the all editors showing the
+    // given document.
+    gfx::Region allVisibleRgn;
+
+    // TODO use the context given to the ToolLoopImpl ctor
+    for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
+      gfx::Region viewportRegion;
+      e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
+      for (auto rc : viewportRegion)
+        allVisibleRgn |= gfx::Region(e->screenToEditor(rc).inflate(1, 1));
+    }
+
+    rgn &= allVisibleRgn;
   }
 
   void updateDirtyArea(const gfx::Region& dirtyArea) override {
