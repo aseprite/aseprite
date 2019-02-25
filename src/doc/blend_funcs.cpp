@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,6 +37,23 @@ namespace  {
                                    blend_screen((b), ((s)<<1)-255, (t)))
 #define blend_difference(b, s)    (ABS((b) - (s)))
 #define blend_exclusion(b, s, t)  ((t) = MUL_UN8((b), (s), (t)), ((b) + (s) - 2*(t)))
+
+// New Blender Method macros
+#define RGBA_BLENDER_N(name)                                                    \
+  color_t rgba_blender_##name##_n(color_t backdrop, color_t src, int opacity) { \
+    if (backdrop & rgba_a_mask)                                                 \
+      return rgba_blender_##name(backdrop, src, opacity);                       \
+    else                                                                        \
+      return rgba_blender_normal(backdrop, src, opacity);                       \
+  }
+
+#define GRAYA_BLENDER_N(name)                                                    \
+  color_t graya_blender_##name##_n(color_t backdrop, color_t src, int opacity) { \
+    if (backdrop & graya_a_mask)                                                 \
+      return graya_blender_##name(backdrop, src, opacity);                       \
+    else                                                                         \
+      return graya_blender_normal(backdrop, src, opacity);                       \
+  }
 
 inline uint32_t blend_divide(uint32_t b, uint32_t s)
 {
@@ -169,13 +187,13 @@ color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
 {
   int t;
 
-  if ((backdrop & rgba_a_mask) == 0) {
+  if (!(backdrop & rgba_a_mask)) {
     int a = rgba_geta(src);
     a = MUL_UN8(a, opacity, t);
     a <<= rgba_a_shift;
     return (src & rgba_rgb_mask) | a;
   }
-  else if ((src & rgba_a_mask) == 0) {
+  else if (!(src & rgba_a_mask)) {
     return backdrop;
   }
 
@@ -469,6 +487,27 @@ color_t rgba_blender_divide(color_t backdrop, color_t src, int opacity)
   return rgba_blender_normal(backdrop, src, opacity);
 }
 
+// New Blender Methods:
+RGBA_BLENDER_N(multiply)
+RGBA_BLENDER_N(screen)
+RGBA_BLENDER_N(overlay)
+RGBA_BLENDER_N(darken)
+RGBA_BLENDER_N(lighten)
+RGBA_BLENDER_N(color_dodge)
+RGBA_BLENDER_N(color_burn)
+RGBA_BLENDER_N(hard_light)
+RGBA_BLENDER_N(soft_light)
+RGBA_BLENDER_N(difference)
+RGBA_BLENDER_N(exclusion)
+RGBA_BLENDER_N(hsl_hue)
+RGBA_BLENDER_N(hsl_saturation)
+RGBA_BLENDER_N(hsl_color)
+RGBA_BLENDER_N(hsl_luminosity)
+RGBA_BLENDER_N(addition)
+RGBA_BLENDER_N(subtract)
+RGBA_BLENDER_N(divide)
+
+
 //////////////////////////////////////////////////////////////////////
 // GRAY blenders
 
@@ -520,13 +559,13 @@ color_t graya_blender_normal(color_t backdrop, color_t src, int opacity)
 {
   int t;
 
-  if ((backdrop & graya_a_mask) == 0) {
+  if (!(backdrop & graya_a_mask)) {
     int a = graya_geta(src);
     a = MUL_UN8(a, opacity, t);
     a <<= graya_a_shift;
     return (src & 0xff) | a;
   }
-  else if ((src & graya_a_mask) == 0)
+  else if (!(src & graya_a_mask))
     return backdrop;
 
   int Bg, Ba;
@@ -649,6 +688,21 @@ color_t graya_blender_divide(color_t backdrop, color_t src, int opacity)
   return graya_blender_normal(backdrop, src, opacity);
 }
 
+GRAYA_BLENDER_N(multiply)
+GRAYA_BLENDER_N(screen)
+GRAYA_BLENDER_N(overlay)
+GRAYA_BLENDER_N(darken)
+GRAYA_BLENDER_N(lighten)
+GRAYA_BLENDER_N(color_dodge)
+GRAYA_BLENDER_N(color_burn)
+GRAYA_BLENDER_N(hard_light)
+GRAYA_BLENDER_N(soft_light)
+GRAYA_BLENDER_N(difference)
+GRAYA_BLENDER_N(exclusion)
+GRAYA_BLENDER_N(addition)
+GRAYA_BLENDER_N(subtract)
+GRAYA_BLENDER_N(divide)
+
 //////////////////////////////////////////////////////////////////////
 // indexed
 
@@ -660,7 +714,7 @@ color_t indexed_blender_src(color_t dst, color_t src, int opacity)
 //////////////////////////////////////////////////////////////////////
 // getters
 
-BlendFunc get_rgba_blender(BlendMode blendmode)
+BlendFunc get_rgba_blender(BlendMode blendmode, const bool newBlend)
 {
   switch (blendmode) {
     case BlendMode::SRC:            return rgba_blender_src;
@@ -670,30 +724,30 @@ BlendFunc get_rgba_blender(BlendMode blendmode)
     case BlendMode::BLUE_TINT:      return rgba_blender_blue_tint;
 
     case BlendMode::NORMAL:         return rgba_blender_normal;
-    case BlendMode::MULTIPLY:       return rgba_blender_multiply;
-    case BlendMode::SCREEN:         return rgba_blender_screen;
-    case BlendMode::OVERLAY:        return rgba_blender_overlay;
-    case BlendMode::DARKEN:         return rgba_blender_darken;
-    case BlendMode::LIGHTEN:        return rgba_blender_lighten;
-    case BlendMode::COLOR_DODGE:    return rgba_blender_color_dodge;
-    case BlendMode::COLOR_BURN:     return rgba_blender_color_burn;
-    case BlendMode::HARD_LIGHT:     return rgba_blender_hard_light;
-    case BlendMode::SOFT_LIGHT:     return rgba_blender_soft_light;
-    case BlendMode::DIFFERENCE:     return rgba_blender_difference;
-    case BlendMode::EXCLUSION:      return rgba_blender_exclusion;
-    case BlendMode::HSL_HUE:        return rgba_blender_hsl_hue;
-    case BlendMode::HSL_SATURATION: return rgba_blender_hsl_saturation;
-    case BlendMode::HSL_COLOR:      return rgba_blender_hsl_color;
-    case BlendMode::HSL_LUMINOSITY: return rgba_blender_hsl_luminosity;
-    case BlendMode::ADDITION:       return rgba_blender_addition;
-    case BlendMode::SUBTRACT:       return rgba_blender_subtract;
-    case BlendMode::DIVIDE:         return rgba_blender_divide;
+    case BlendMode::MULTIPLY:       return newBlend? rgba_blender_multiply_n: rgba_blender_multiply;
+    case BlendMode::SCREEN:         return newBlend? rgba_blender_screen_n: rgba_blender_screen;
+    case BlendMode::OVERLAY:        return newBlend? rgba_blender_overlay_n: rgba_blender_overlay;
+    case BlendMode::DARKEN:         return newBlend? rgba_blender_darken_n: rgba_blender_darken;
+    case BlendMode::LIGHTEN:        return newBlend? rgba_blender_lighten_n: rgba_blender_lighten;
+    case BlendMode::COLOR_DODGE:    return newBlend? rgba_blender_color_dodge_n: rgba_blender_color_dodge;
+    case BlendMode::COLOR_BURN:     return newBlend? rgba_blender_color_burn_n: rgba_blender_color_burn;
+    case BlendMode::HARD_LIGHT:     return newBlend? rgba_blender_hard_light_n: rgba_blender_hard_light;
+    case BlendMode::SOFT_LIGHT:     return newBlend? rgba_blender_soft_light_n: rgba_blender_soft_light;
+    case BlendMode::DIFFERENCE:     return newBlend? rgba_blender_difference_n: rgba_blender_difference;
+    case BlendMode::EXCLUSION:      return newBlend? rgba_blender_exclusion_n: rgba_blender_exclusion;
+    case BlendMode::HSL_HUE:        return newBlend? rgba_blender_hsl_hue_n: rgba_blender_hsl_hue;
+    case BlendMode::HSL_SATURATION: return newBlend? rgba_blender_hsl_saturation_n: rgba_blender_hsl_saturation;
+    case BlendMode::HSL_COLOR:      return newBlend? rgba_blender_hsl_color_n: rgba_blender_hsl_color;
+    case BlendMode::HSL_LUMINOSITY: return newBlend? rgba_blender_hsl_luminosity_n: rgba_blender_hsl_luminosity;
+    case BlendMode::ADDITION:       return newBlend? rgba_blender_addition_n: rgba_blender_addition;
+    case BlendMode::SUBTRACT:       return newBlend? rgba_blender_subtract_n: rgba_blender_subtract;
+    case BlendMode::DIVIDE:         return newBlend? rgba_blender_divide_n: rgba_blender_divide;
   }
   ASSERT(false);
   return rgba_blender_src;
 }
 
-BlendFunc get_graya_blender(BlendMode blendmode)
+BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend)
 {
   switch (blendmode) {
     case BlendMode::SRC:            return graya_blender_src;
@@ -703,30 +757,30 @@ BlendFunc get_graya_blender(BlendMode blendmode)
     case BlendMode::BLUE_TINT:      return graya_blender_normal;
 
     case BlendMode::NORMAL:         return graya_blender_normal;
-    case BlendMode::MULTIPLY:       return graya_blender_multiply;
-    case BlendMode::SCREEN:         return graya_blender_screen;
-    case BlendMode::OVERLAY:        return graya_blender_overlay;
-    case BlendMode::DARKEN:         return graya_blender_darken;
-    case BlendMode::LIGHTEN:        return graya_blender_lighten;
-    case BlendMode::COLOR_DODGE:    return graya_blender_color_dodge;
-    case BlendMode::COLOR_BURN:     return graya_blender_color_burn;
-    case BlendMode::HARD_LIGHT:     return graya_blender_hard_light;
-    case BlendMode::SOFT_LIGHT:     return graya_blender_soft_light;
-    case BlendMode::DIFFERENCE:     return graya_blender_difference;
-    case BlendMode::EXCLUSION:      return graya_blender_exclusion;
+    case BlendMode::MULTIPLY:       return newBlend? graya_blender_multiply_n: graya_blender_multiply;
+    case BlendMode::SCREEN:         return newBlend? graya_blender_screen_n: graya_blender_screen;
+    case BlendMode::OVERLAY:        return newBlend? graya_blender_overlay_n: graya_blender_overlay;
+    case BlendMode::DARKEN:         return newBlend? graya_blender_darken_n: graya_blender_darken;
+    case BlendMode::LIGHTEN:        return newBlend? graya_blender_lighten_n: graya_blender_lighten;
+    case BlendMode::COLOR_DODGE:    return newBlend? graya_blender_color_dodge_n: graya_blender_color_dodge;
+    case BlendMode::COLOR_BURN:     return newBlend? graya_blender_color_burn_n: graya_blender_color_burn;
+    case BlendMode::HARD_LIGHT:     return newBlend? graya_blender_hard_light_n: graya_blender_hard_light;
+    case BlendMode::SOFT_LIGHT:     return newBlend? graya_blender_soft_light_n: graya_blender_soft_light;
+    case BlendMode::DIFFERENCE:     return newBlend? graya_blender_difference_n: graya_blender_difference;
+    case BlendMode::EXCLUSION:      return newBlend? graya_blender_exclusion_n: graya_blender_exclusion;
     case BlendMode::HSL_HUE:        return graya_blender_normal;
     case BlendMode::HSL_SATURATION: return graya_blender_normal;
     case BlendMode::HSL_COLOR:      return graya_blender_normal;
     case BlendMode::HSL_LUMINOSITY: return graya_blender_normal;
-    case BlendMode::ADDITION:       return graya_blender_addition;
-    case BlendMode::SUBTRACT:       return graya_blender_subtract;
-    case BlendMode::DIVIDE:         return graya_blender_divide;
+    case BlendMode::ADDITION:       return newBlend? graya_blender_exclusion_n: graya_blender_addition;
+    case BlendMode::SUBTRACT:       return newBlend? graya_blender_subtract_n: graya_blender_subtract;
+    case BlendMode::DIVIDE:         return newBlend? graya_blender_divide_n: graya_blender_divide;
   }
   ASSERT(false);
   return graya_blender_src;
 }
 
-BlendFunc get_indexed_blender(BlendMode blendmode)
+BlendFunc get_indexed_blender(BlendMode blendmode, const bool newBlend)
 {
   return indexed_blender_src;
 }

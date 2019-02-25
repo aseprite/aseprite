@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,9 +17,11 @@ namespace doc {
 namespace app {
   class Site;
 
-  doc::Image* new_image_from_mask(const Site& site);
+  doc::Image* new_image_from_mask(const Site& site,
+                                  const bool newBlend);
   doc::Image* new_image_from_mask(const Site& site,
                                   const doc::Mask* mask,
+                                  const bool newBlend,
                                   bool merged = false);
 
 } // namespace app

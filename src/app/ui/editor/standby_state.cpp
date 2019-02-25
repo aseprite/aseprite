@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -720,7 +720,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     editor->brushPreview().hide();
 
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    std::unique_ptr<Image> tmpImage(new_image_from_mask(editor->getSite()));
+    std::unique_ptr<Image> tmpImage(new_image_from_mask(editor->getSite(),
+                                                        Preferences::instance().experimental.newBlend()));
 
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),

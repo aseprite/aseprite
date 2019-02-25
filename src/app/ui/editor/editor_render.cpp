@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,7 @@ static doc::ImageBufferPtr g_renderBuffer;
 EditorRender::EditorRender()
   : m_render(new render::Render)
 {
+  m_render->setNewBlend(Preferences::instance().experimental.newBlend());
 }
 
 EditorRender::~EditorRender()
@@ -36,6 +38,11 @@ void EditorRender::setRefLayersVisiblity(const bool visible)
 void EditorRender::setNonactiveLayersOpacity(const int opacity)
 {
   m_render->setNonactiveLayersOpacity(opacity);
+}
+
+void EditorRender::setNewBlendMethod(const bool newBlend)
+{
+  m_render->setNewBlend(newBlend);
 }
 
 void EditorRender::setProjection(const render::Projection& projection)

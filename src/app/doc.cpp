@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -448,7 +448,8 @@ Doc* Doc::duplicate(DuplicateType type) const
             (spriteCopy,
              sourceSprite->root(),
              gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
-             frame_t(0), sourceSprite->lastFrame());
+             frame_t(0), sourceSprite->lastFrame(),
+             Preferences::instance().experimental.newBlend());
 
         // Add and select the new flat layer
         spriteCopy->root()->addLayer(flatLayer);

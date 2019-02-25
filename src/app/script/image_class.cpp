@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -177,6 +177,7 @@ int Image_drawSprite(lua_State* L)
   // the source image without undo information.
   if (obj->cel(L) == nullptr) {
     render::Render render;
+    render.setNewBlend(true);
     render.renderSprite(
       dst, sprite, frame,
       gfx::Clip(pos.x, pos.y,
@@ -189,6 +190,7 @@ int Image_drawSprite(lua_State* L)
 
     ImageRef tmp(Image::createCopy(dst));
     render::Render render;
+    render.setNewBlend(true);
     render.renderSprite(
       tmp.get(), sprite, frame,
       gfx::Clip(pos.x, pos.y,

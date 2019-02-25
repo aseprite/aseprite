@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -41,7 +42,8 @@ namespace render {
     const int opacity,
     const BlendMode blendMode,
     const double sx,
-    const double sy);
+    const double sy,
+    const bool newBlend);
 
   class Render {
     enum Flags {
@@ -53,6 +55,7 @@ namespace render {
 
     void setRefLayersVisiblity(const bool visible);
     void setNonactiveLayersOpacity(const int opacity);
+    void setNewBlend(const bool newBlend);
 
     // Viewport configuration
     void setProjection(const Projection& projection);
@@ -127,6 +130,18 @@ namespace render {
       const int opacity,
       const BlendMode blendMode);
 
+    void drawLayersBehind(
+      Image* dstImage,
+      const gfx::ClipF& area,
+      frame_t frame,
+      CompositeImageFunc compositeImage);
+
+    void drawBg(
+      Image* image,
+      const Layer* bgLayer,
+      color_t bg_color,
+      const gfx::ClipF& area);
+    
   private:
     void renderOnionskin(
       Image* image,
@@ -180,6 +195,7 @@ namespace render {
     const Cel* m_extraCel;
     const Image* m_extraImage;
     BlendMode m_extraBlendMode;
+    bool m_newBlendMethod;
     BgType m_bgType;
     bool m_bgZoom;
     color_t m_bgColor1;

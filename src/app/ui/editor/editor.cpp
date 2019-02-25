@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018  Igara Studio S.A.
+// Copyright (c) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -588,6 +588,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     rendered.reset(Image::create(IMAGE_RGB, rc2.w, rc2.h,
                                  m_renderEngine->getRenderImageBuffer()));
 
+    m_renderEngine->setNewBlendMethod(Preferences::instance().experimental.newBlend());
     m_renderEngine->setRefLayersVisiblity(true);
     m_renderEngine->setSelectedLayer(m_layer);
     if (m_flags & Editor::kUseNonactiveLayersOpacityWhenEnabled)

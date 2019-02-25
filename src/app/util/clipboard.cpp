@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -192,7 +193,9 @@ static bool copy_from_document(const Site& site, bool merged = false)
   ASSERT(document);
 
   const Mask* mask = document->mask();
-  Image* image = new_image_from_mask(site, mask, merged);
+  Image* image = new_image_from_mask(site, mask,
+                                     Preferences::instance().experimental.newBlend(),
+                                     merged);
   if (!image)
     return false;
 

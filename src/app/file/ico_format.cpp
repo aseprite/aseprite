@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "app/pref/preferences.h"
 #include "base/cfile.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
@@ -284,6 +285,8 @@ bool IcoFormat::onSave(FileOp* fop)
       sprite->height()));
 
   render::Render render;
+  render.setNewBlend(Preferences::instance().experimental.newBlend());
+  
   for (n=frame_t(0); n<num; ++n) {
     render.renderSprite(image.get(), sprite, n);
 

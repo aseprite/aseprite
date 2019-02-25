@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -359,7 +360,9 @@ public:
 
         m_floodfillSrcImage->clear(m_sprite->transparentColor());
 
-        render::Render().renderSprite(
+        render::Render render;
+        render.setNewBlend(Preferences::instance().experimental.newBlend());
+        render.renderSprite(
           m_floodfillSrcImage,
           m_sprite,
           m_frame,

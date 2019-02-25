@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,13 +21,15 @@ namespace cmd {
                       , public WithSprite {
   public:
     FlattenLayers(doc::Sprite* sprite,
-                  const doc::SelectedLayers& layers);
+                  const doc::SelectedLayers& layers,
+                  const bool newBlendMethod);
 
   protected:
     void onExecute() override;
 
   private:
     ObjectIds m_layerIds;
+    bool m_newBlendMethod;
   };
 
 } // namespace cmd

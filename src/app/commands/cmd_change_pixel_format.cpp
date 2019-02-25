@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,7 +94,8 @@ public:
         run(sprite, frame,
             pixelFormat,
             ditheringAlgorithm,
-            ditheringMatrix);
+            ditheringMatrix,
+            Preferences::instance().experimental.newBlend());
       })
   {
   }
@@ -116,13 +118,15 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::DitheringAlgorithm ditheringAlgorithm,
-           const render::DitheringMatrix& ditheringMatrix) {
+           const render::DitheringMatrix& ditheringMatrix,
+           const bool newBlend) {
     doc::ImageRef tmp(
       Image::create(sprite->pixelFormat(),
                     m_image->width(),
                     m_image->height()));
 
     render::Render render;
+    render.setNewBlend(newBlend);
     render.renderSprite(
       tmp.get(), sprite, frame,
       gfx::Clip(0, 0,
@@ -473,9 +477,10 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
         if (flatten) {
           SelectedLayers selLayers;
+          const bool newBlend = Preferences::instance().experimental.newBlend();
           for (auto layer : sprite->root()->layers())
             selLayers.insert(layer);
-          job.tx()(new cmd::FlattenLayers(sprite, selLayers));
+          job.tx()(new cmd::FlattenLayers(sprite, selLayers, newBlend));
         }
 
         job.tx()(

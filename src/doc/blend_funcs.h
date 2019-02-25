@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -55,12 +56,16 @@ namespace doc {
   color_t graya_blender_soft_light(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_difference(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_exclusion(color_t backdrop, color_t src, int opacity);
+  color_t graya_blender_addition(color_t backdrop, color_t src, int opacity);
+  color_t graya_blender_subtract(color_t backdrop, color_t src, int opacity);
+  color_t graya_blender_divide(color_t backdrop, color_t src, int opacity);
+  
 
   color_t indexed_blender_src(color_t dst, color_t src, int opacity);
 
-  BlendFunc get_rgba_blender(BlendMode blendmode);
-  BlendFunc get_graya_blender(BlendMode blendmode);
-  BlendFunc get_indexed_blender(BlendMode blendmode);
+  BlendFunc get_rgba_blender(BlendMode blendmode, const bool newBlend);
+  BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend);
+  BlendFunc get_indexed_blender(BlendMode blendmode, const bool newBlend);
 
 } // namespace doc
 
