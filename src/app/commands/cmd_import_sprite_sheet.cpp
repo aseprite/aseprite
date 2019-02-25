@@ -367,6 +367,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     Sprite* sprite = document->sprite();
     frame_t currentFrame = context->activeSite().frame();
     render::Render render;
+    render.setNewBlend(Preferences::instance().experimental.newBlend());
 
     // Each sprite in the sheet
     std::vector<gfx::Rect> tileRects;

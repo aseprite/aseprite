@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1018,6 +1018,8 @@ void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int
                                         *sample.selectedLayers());
 
   render::Render render;
+  render.setNewBlend(Preferences::instance().experimental.newBlend());
+
   if (extrude) {
     const gfx::Rect& trim = sample.trimmedBounds();
 

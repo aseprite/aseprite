@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -413,6 +413,11 @@
             <check text="@.new_render_engine"
                    pref="experimental.new_render_engine" />
             <link text="(#1671)" url="https://github.com/aseprite/aseprite/issues/1671" />
+          </hbox>
+          <hbox>
+            <check text="@.new_blend"
+                   pref="experimental.new_blend" />
+            <link text="(#1096)" url="https://github.com/aseprite/aseprite/issues/1096" />
           </hbox>
           <check id="native_clipboard" text="@.native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog" />

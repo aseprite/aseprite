@@ -730,6 +730,8 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // For each frame in the sprite.
       render::Render render;
+      render.setNewBlend(Preferences::instance().experimental.newBlend());
+
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.selectedFrames()) {
         // Draw the "frame" in "m_seq.image"
@@ -891,7 +893,7 @@ void FileOp::postLoad()
       base::SharedPtr<Palette> palette(
         render::create_palette_from_sprite(
           sprite, frame_t(0), sprite->lastFrame(), true,
-          nullptr, nullptr));
+          nullptr, nullptr, Preferences::instance().experimental.newBlend()));
 
       sprite->resetPalettes();
       sprite->setPalette(palette.get(), false);

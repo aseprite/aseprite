@@ -1,4 +1,5 @@
 // Aseprite Rener Library
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2015, 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -43,7 +44,8 @@ namespace render {
     const doc::frame_t toFrame,
     const bool withAlpha,
     doc::Palette* newPalette, // Can be NULL to create a new palette
-    TaskDelegate* delegate);
+    TaskDelegate* delegate,
+    const bool newBlend);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.
