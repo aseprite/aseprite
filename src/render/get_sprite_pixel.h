@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -26,7 +27,8 @@ namespace render {
                            const double x,
                            const double y,
                            const frame_t frame,
-                           const Projection& proj);
+                           const Projection& proj,
+                           const bool newBlend);
 
 } // namespace render
 

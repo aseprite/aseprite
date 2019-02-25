@@ -685,11 +685,13 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool rende
   dst->setMaskColor(m_sprite->transparentColor());
   dst->clear(dst->maskColor());
 
-  if (renderOriginalLayer)
-    render::Render().renderLayer(
+  if (renderOriginalLayer) {
+    render::Render render;
+    render.renderLayer(
       dst, m_layer, m_site.frame(),
       gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
       BlendMode::SRC);
+  }
 
   color_t maskColor = m_maskColor;
 

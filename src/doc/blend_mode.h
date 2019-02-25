@@ -20,6 +20,7 @@ namespace doc {
     NEG_BW          = -4,       // Negative Black & White
     RED_TINT        = -5,
     BLUE_TINT       = -6,
+    DST_OVER        = -7,
 
     // Aseprite (.ase files) blend modes
     NORMAL          = 0,

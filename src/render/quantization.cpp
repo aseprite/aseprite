@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -40,7 +41,8 @@ Palette* create_palette_from_sprite(
   const frame_t toFrame,
   const bool withAlpha,
   Palette* palette,
-  TaskDelegate* delegate)
+  TaskDelegate* delegate,
+  const bool newBlend)
 {
   PaletteOptimizer optimizer;
 
@@ -53,6 +55,7 @@ Palette* create_palette_from_sprite(
 
   // Feed the optimizer with all rendered frames
   render::Render render;
+  render.setNewBlend(newBlend);
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
     optimizer.feedWithImage(flat_image.get(), withAlpha);

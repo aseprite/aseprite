@@ -166,6 +166,7 @@
     </section>
     <section id="experimental" text="Experimental">
       <option id="new_render_engine" type="bool" default="true" />
+      <option id="new_blend" type="bool" default="true" />
       <option id="use_native_clipboard" type="bool" default="true" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />

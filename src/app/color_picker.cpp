@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -88,7 +89,8 @@ void ColorPicker::pickColor(const Site& site,
       m_color = app::Color::fromImage(
         sprite->pixelFormat(),
         render::get_sprite_pixel(sprite, pos.x, pos.y,
-                                 site.frame(), proj));
+                                 site.frame(), proj,
+                                 Preferences::instance().experimental.newBlend()));
 
       doc::CelList cels;
       sprite->pickCels(pos.x, pos.y, site.frame(), 128,

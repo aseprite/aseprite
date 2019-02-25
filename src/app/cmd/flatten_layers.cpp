@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,9 +32,11 @@ namespace app {
 namespace cmd {
 
 FlattenLayers::FlattenLayers(doc::Sprite* sprite,
-                             const doc::SelectedLayers& layers0)
+                             const doc::SelectedLayers& layers0,
+                             const bool newBlend)
   : WithSprite(sprite)
 {
+  m_newBlendMethod = newBlend;
   doc::SelectedLayers layers(layers0);
   layers.removeChildrenIfParentIsSelected();
 
@@ -87,6 +90,7 @@ void FlattenLayers::onExecute()
   }
 
   render::Render render;
+  render.setNewBlend(m_newBlendMethod);
   render.setBgType(render::BgType::NONE);
 
   {

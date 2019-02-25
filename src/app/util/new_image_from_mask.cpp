@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,14 +22,15 @@ namespace app {
 
 using namespace doc;
 
-Image* new_image_from_mask(const Site& site)
+Image* new_image_from_mask(const Site& site, const bool newBlend)
 {
   const Mask* srcMask = site.document()->mask();
-  return new_image_from_mask(site, srcMask);
+  return new_image_from_mask(site, srcMask, newBlend);
 }
 
 doc::Image* new_image_from_mask(const Site& site,
                                 const doc::Mask* srcMask,
+                                const bool newBlend,
                                 bool merged)
 {
   const Sprite* srcSprite = site.sprite();
@@ -53,6 +55,7 @@ doc::Image* new_image_from_mask(const Site& site,
   int x = 0, y = 0;
   if (merged) {
     render::Render render;
+    render.setNewBlend(newBlend);
     render.renderSprite(dst.get(), srcSprite, site.frame(),
                         gfx::Clip(0, 0, srcBounds));
 

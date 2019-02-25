@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -111,12 +112,14 @@ void ColorQuantizationCommand::onExecute(Context* context)
 
     ContextReader reader(context);
     SpriteJob job(reader, "Color Quantization");
+    const bool newBlend = Preferences::instance().experimental.newBlend();
     job.startJobWithCallback(
-      [sprite, withAlpha, &tmpPalette, &job]{
+      [sprite, withAlpha, &tmpPalette, &job, newBlend]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette,
-          &job);              // SpriteJob is a render::TaskDelegate
+          &job,
+          newBlend);     // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
     if (job.isCanceled())

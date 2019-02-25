@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -82,8 +83,10 @@ void FlattenLayersCommand::onExecute(Context* context)
           range.selectLayer(layer);
       }
     }
-
-    tx(new cmd::FlattenLayers(sprite, range.selectedLayers()));
+    const bool newBlend = Preferences::instance().experimental.newBlend();
+    tx(new cmd::FlattenLayers(sprite,
+                              range.selectedLayers(),
+                              newBlend));
     tx.commit();
   }
 

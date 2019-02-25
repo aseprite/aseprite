@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,7 +79,8 @@ public:
                 const doc::PixelFormat pixelFormat,
                 const render::DitheringAlgorithm ditheringAlgorithm,
                 const render::DitheringMatrix& ditheringMatrix,
-                const gfx::Point& pos)
+                const gfx::Point& pos,
+                const bool newBlend)
     : m_image(dstImage)
     , m_pos(pos)
     , m_running(true)
@@ -89,11 +91,13 @@ public:
        sprite, frame,
        pixelFormat,
        ditheringAlgorithm,
-       ditheringMatrix]() { // Copy the matrix
+       ditheringMatrix,
+       newBlend]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
             ditheringAlgorithm,
-            ditheringMatrix);
+            ditheringMatrix,
+            newBlend);
       })
   {
   }
@@ -116,13 +120,15 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::DitheringAlgorithm ditheringAlgorithm,
-           const render::DitheringMatrix& ditheringMatrix) {
+           const render::DitheringMatrix& ditheringMatrix,
+           const bool newBlend) {
     doc::ImageRef tmp(
       Image::create(sprite->pixelFormat(),
                     m_image->width(),
                     m_image->height()));
 
     render::Render render;
+    render.setNewBlend(newBlend);
     render.renderSprite(
       tmp.get(), sprite, frame,
       gfx::Clip(0, 0,
@@ -291,7 +297,8 @@ private:
         dstPixelFormat,
         ditheringAlgorithm(),
         ditheringMatrix(),
-        visibleBounds.origin()));
+        visibleBounds.origin(),
+        Preferences::instance().experimental.newBlend()));
 
     m_timer.start();
   }
@@ -467,15 +474,16 @@ void ChangePixelFormatCommand::onExecute(Context* context)
   {
     const ContextReader reader(context);
     SpriteJob job(reader, "Color Mode Change");
+    const bool newBlend = Preferences::instance().experimental.newBlend();
     job.startJobWithCallback(
-      [this, &job, flatten] {
+      [this, &job, flatten, newBlend] {
         Sprite* sprite(job.sprite());
 
         if (flatten) {
           SelectedLayers selLayers;
           for (auto layer : sprite->root()->layers())
             selLayers.insert(layer);
-          job.tx()(new cmd::FlattenLayers(sprite, selLayers));
+          job.tx()(new cmd::FlattenLayers(sprite, selLayers, newBlend));
         }
 
         job.tx()(
