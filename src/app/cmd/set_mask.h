@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,10 +26,10 @@ namespace cmd {
   class SetMask : public Cmd
                 , public WithDocument {
   public:
-    SetMask(Doc* doc, Mask* newMask);
+    SetMask(Doc* doc, const Mask* newMask);
 
     // Used to change the new mask used in the onRedo()
-    void setNewMask(Mask* newMask);
+    void setNewMask(const Mask* newMask);
 
   protected:
     void onExecute() override;
@@ -36,7 +37,7 @@ namespace cmd {
     size_t onMemSize() const override;
 
   private:
-    void setMask(Mask* mask);
+    void setMask(const Mask* mask);
 
     std::unique_ptr<Mask> m_oldMask;
     std::unique_ptr<Mask> m_newMask;

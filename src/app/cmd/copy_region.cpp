@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -10,9 +11,8 @@
 
 #include "app/cmd/copy_region.h"
 
+#include "app/util/buffer_region.h"
 #include "doc/image.h"
-
-#include <algorithm>
 
 namespace app {
 namespace cmd {
@@ -22,7 +22,6 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
                        const gfx::Point& dstPos,
                        bool alreadyCopied)
   : WithImage(dst)
-  , m_size(0)
   , m_alreadyCopied(alreadyCopied)
 {
   // Create region to save/swap later
@@ -38,16 +37,7 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
     m_region.createUnion(m_region, gfx::Region(clip.dstBounds()));
   }
 
-  // Save region pixels
-  for (const auto& rc : m_region) {
-    for (int y=0; y<rc.h; ++y) {
-      m_stream.write(
-        (const char*)src->getPixelAddress(rc.x-dstPos.x,
-                                          rc.y-dstPos.y+y),
-        src->getRowStrideSize(rc.w));
-    }
-  }
-  m_size = size_t(m_stream.tellp());
+  save_image_region_in_buffer(m_region, src, dstPos, m_buffer);
 }
 
 void CopyRegion::onExecute()
@@ -69,29 +59,7 @@ void CopyRegion::onRedo()
 void CopyRegion::swap()
 {
   Image* image = this->image();
-
-  // Save current image region in "tmp" stream
-  std::stringstream tmp;
-  for (const auto& rc : m_region)
-    for (int y=0; y<rc.h; ++y)
-      tmp.write(
-        (const char*)image->getPixelAddress(rc.x, rc.y+y),
-        image->getRowStrideSize(rc.w));
-
-  // Restore m_stream into the image
-  m_stream.seekg(0, std::ios_base::beg);
-  for (const auto& rc : m_region) {
-    for (int y=0; y<rc.h; ++y) {
-      m_stream.read(
-        (char*)image->getPixelAddress(rc.x, rc.y+y),
-        image->getRowStrideSize(rc.w));
-    }
-  }
-
-  // TODO use m_stream.swap(tmp) when clang and gcc support it
-  m_stream.str(tmp.str());
-  m_stream.clear();
-
+  swap_image_region_with_buffer(m_region, image, m_buffer);
   image->incrementVersion();
 }
 

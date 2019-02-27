@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -221,12 +222,10 @@ namespace app {
       // Returns true if the loop was canceled by the user
       virtual bool isCanceled() = 0;
 
-      // This region is modified by the ToolLoopManager so then you know
-      // what must be updated in updateDirtyArea().
-      virtual gfx::Region& getDirtyArea() = 0;
+      virtual void limitDirtyAreaToViewport(gfx::Region& rgn) = 0;
 
       // Redraws the dirty area.
-      virtual void updateDirtyArea() = 0;
+      virtual void updateDirtyArea(const gfx::Region& dirtyArea) = 0;
 
       virtual void updateStatusBar(const char* text) = 0;
       virtual gfx::Point statusBarPositionOffset() = 0;

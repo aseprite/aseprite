@@ -352,8 +352,6 @@ void CanvasSizeCommand::onExecute(Context* context)
                              MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)));
     tx.commit();
 
-    doc->generateMaskBoundaries();
-
 #ifdef ENABLE_UI
     if (context->isUIAvailable())
       update_screen_for_document(doc);

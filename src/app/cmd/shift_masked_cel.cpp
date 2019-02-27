@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -40,20 +41,11 @@ void ShiftMaskedCel::onUndo()
 void ShiftMaskedCel::shift(int dx, int dy)
 {
   Cel* cel = this->cel();
-  Image* image = cel->image();
   Mask* mask = static_cast<Doc*>(cel->document())->mask();
   ASSERT(mask->bitmap());
   if (!mask->bitmap())
     return;
-
-  int x = cel->x();
-  int y = cel->y();
-
-  mask->offsetOrigin(-x, -y);
-  doc::algorithm::shift_image_with_mask(image, mask, dx, dy);
-  mask->offsetOrigin(x, y);
-
-  image->incrementVersion();
+  doc::algorithm::shift_image_with_mask(cel, mask, dx, dy);
 }
 
 } // namespace cmd

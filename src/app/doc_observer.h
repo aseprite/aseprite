@@ -68,6 +68,7 @@ namespace app {
 
     // The selection has changed.
     virtual void onSelectionChanged(DocEvent& ev) { }
+    virtual void onSelectionBoundariesChanged(DocEvent& ev) { }
 
     // Called to destroy the observable. (Here you could call "delete this".)
     virtual void dispose() { }

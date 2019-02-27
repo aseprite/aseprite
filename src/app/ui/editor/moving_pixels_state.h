@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -35,6 +36,7 @@ namespace app {
     void translate(const gfx::Point& delta);
     void rotate(double angle);
     void flip(doc::algorithm::FlipType flipType);
+    void shift(int dx, int dy);
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;

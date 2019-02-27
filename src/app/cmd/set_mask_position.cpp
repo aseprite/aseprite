@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -38,6 +39,8 @@ void SetMaskPosition::setMaskPosition(const gfx::Point& pos)
   Doc* doc = document();
   doc->mask()->setOrigin(pos.x, pos.y);
   doc->resetTransformation();
+
+  doc->notifySelectionChanged();
 }
 
 } // namespace cmd

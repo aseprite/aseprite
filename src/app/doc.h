@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -96,6 +96,7 @@ namespace app {
     void notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
     void notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
     void notifySelectionChanged();
+    void notifySelectionBoundariesChanged();
 
     //////////////////////////////////////////////////////////////////////
     // File related properties
@@ -211,7 +212,7 @@ namespace app {
     ExtraCelRef m_extraCel;
 
     // Current mask.
-    std::unique_ptr<Mask> m_mask;
+    std::unique_ptr<doc::Mask> m_mask;
 
     // Current transformation.
     Transformation m_transformation;

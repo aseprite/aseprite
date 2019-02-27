@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -40,6 +40,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
+#include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
@@ -95,7 +96,6 @@ protected:
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
-  gfx::Region m_dirtyArea;
 
 public:
   ToolLoopBase(Editor* editor,
@@ -261,11 +261,23 @@ public:
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
-  gfx::Region& getDirtyArea() override {
-    return m_dirtyArea;
+  void limitDirtyAreaToViewport(gfx::Region& rgn) override {
+    // Visible region (on the screen) of the all editors showing the
+    // given document.
+    gfx::Region allVisibleRgn;
+
+    // TODO use the context given to the ToolLoopImpl ctor
+    for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
+      gfx::Region viewportRegion;
+      e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
+      for (auto rc : viewportRegion)
+        allVisibleRgn |= gfx::Region(e->screenToEditor(rc).inflate(1, 1));
+    }
+
+    rgn &= allVisibleRgn;
   }
 
-  void updateDirtyArea() override {
+  void updateDirtyArea(const gfx::Region& dirtyArea) override {
     // This is necessary here so the "on sprite crosshair" is hidden,
     // we update screen pixels with the new sprite, and then we show
     // the crosshair saving the updated pixels. It fixes problems with
@@ -274,7 +286,7 @@ public:
     HideBrushPreview hide(m_editor->brushPreview());
 
     m_document->notifySpritePixelsModified(
-      m_sprite, m_dirtyArea, m_frame);
+      m_sprite, dirtyArea, m_frame);
   }
 
   void updateStatusBar(const char* text) override {
@@ -466,7 +478,6 @@ public:
       }
       // Selection ink
       else if (getInk()->isSelection()) {
-        m_document->generateMaskBoundaries();
         redraw = true;
 
         // Show selection edges

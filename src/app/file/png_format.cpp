@@ -127,6 +127,11 @@ bool PngFormat::onLoad(FileOp* fop)
     return false;
   }
 
+  // Do don't check if the sRGB color profile is valid, it gives
+  // problems with sRGB IEC61966-2.1 color profile from Photoshop.
+  // See this thread: https://community.aseprite.org/t/2656
+  png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+
   /* Allocate/initialize the memory for image information. */
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
@@ -476,6 +481,9 @@ bool PngFormat::onSave(FileOp* fop)
   if (png_ptr == NULL) {
     return false;
   }
+
+  // Remove sRGB profile checks
+  png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
 
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {

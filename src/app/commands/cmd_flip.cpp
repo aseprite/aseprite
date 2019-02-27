@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -222,8 +223,6 @@ void FlipCommand::onExecute(Context* context)
             (m_flipType == doc::algorithm::FlipVertical ?
               sprite->height() - mask->bounds().y2():
               mask->bounds().y))));
-
-    document->generateMaskBoundaries();
   }
 
   tx.commit();

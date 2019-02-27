@@ -5,7 +5,7 @@
   <window id="import_sprite_sheet" text="@.title">
     <vbox>
       <grid columns="4">
-        <button id="select_file" text="@.select_file" cell_hspan="4" />
+        <button id="select_file" text="@select_file.text" cell_hspan="4" />
 
         <label text="@.type" />
         <combobox id="sheet_type" cell_hspan="3" />

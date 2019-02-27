@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +33,7 @@ void ReselectMask::onExecute()
   }
 
   doc->setMaskVisible(true);
+  doc->notifySelectionChanged();
 }
 
 void ReselectMask::onUndo()
@@ -41,6 +43,7 @@ void ReselectMask::onUndo()
   m_oldMask.reset(doc->isMaskVisible() ? new Mask(*doc->mask()): nullptr);
 
   doc->setMaskVisible(false);
+  doc->notifySelectionChanged();
 }
 
 size_t ReselectMask::onMemSize() const

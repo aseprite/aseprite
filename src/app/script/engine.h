@@ -34,6 +34,7 @@ namespace doc {
   class FrameTag;
   class Image;
   class Layer;
+  class Mask;
   class Palette;
   class Sprite;
   class WithUserData;
@@ -134,6 +135,7 @@ namespace app {
   doc::Image* get_image_from_arg(lua_State* L, int index);
   doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
   doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
+  const doc::Mask* get_mask_from_arg(lua_State* L, int index);
 
 } // namespace script
 } // namespace app

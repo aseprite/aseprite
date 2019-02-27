@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -74,7 +75,6 @@ void CropSpriteCommand::onExecute(Context* context)
     document->getApi(tx).cropSprite(sprite, bounds);
     tx.commit();
   }
-  document->generateMaskBoundaries();
 
 #ifdef ENABLE_UI
   if (context->isUIAvailable())
@@ -112,7 +112,6 @@ void AutocropSpriteCommand::onExecute(Context* context)
     document->getApi(tx).trimSprite(sprite);
     tx.commit();
   }
-  document->generateMaskBoundaries();
 
 #ifdef ENABLE_UI
   if (context->isUIAvailable())

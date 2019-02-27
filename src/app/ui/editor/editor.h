@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -127,6 +127,10 @@ namespace app {
 
     EditorFlags editorFlags() const { return m_flags; }
     void setEditorFlags(EditorFlags flags) { m_flags = flags; }
+
+    bool isExtraCelLocked() const {
+      return m_flashing != Flashing::None;
+    }
 
     Doc* document() { return m_document; }
     Sprite* sprite() { return m_sprite; }
@@ -298,6 +302,8 @@ namespace app {
     void onActiveToolChange(tools::Tool* tool) override;
 
   private:
+    enum class Flashing { None, WithFlashExtraCel, WaitingDeferedPaint };
+
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
     void updateToolByTipProximity(ui::PointerType pointerType);
@@ -394,6 +400,7 @@ namespace app {
     EditorFlags m_flags;
 
     bool m_secondaryButton;
+    Flashing m_flashing;
 
     // Animation speed multiplier.
     double m_aniSpeed;

@@ -180,6 +180,12 @@ void Doc::notifySelectionChanged()
   notify_observers<DocEvent&>(&DocObserver::onSelectionChanged, ev);
 }
 
+void Doc::notifySelectionBoundariesChanged()
+{
+  DocEvent ev(this);
+  notify_observers<DocEvent&>(&DocObserver::onSelectionBoundariesChanged, ev);
+}
+
 bool Doc::isModified() const
 {
   return !m_undo->isSavedState();
@@ -252,8 +258,7 @@ void Doc::generateMaskBoundaries(const Mask* mask)
                              mask->bounds().y);
   }
 
-  // TODO move this to the exact place where selection is modified.
-  notifySelectionChanged();
+  notifySelectionBoundariesChanged();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -261,7 +266,9 @@ void Doc::generateMaskBoundaries(const Mask* mask)
 
 void Doc::setMask(const Mask* mask)
 {
-  m_mask.reset(new Mask(*mask));
+  ASSERT(mask);
+
+  m_mask->copyFrom(mask);
   m_flags |= kMaskVisible;
 
   resetTransformation();
@@ -271,7 +278,6 @@ bool Doc::isMaskVisible() const
 {
   return
     (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
-    m_mask &&                   // The mask does exist
     !m_mask->isEmpty();         // The mask is not empty
 }
 
@@ -298,10 +304,7 @@ void Doc::setTransformation(const Transformation& transform)
 
 void Doc::resetTransformation()
 {
-  if (m_mask)
-    m_transformation = Transformation(gfx::RectF(m_mask->bounds()));
-  else
-    m_transformation = Transformation();
+  m_transformation = Transformation(gfx::RectF(m_mask->bounds()));
 }
 
 //////////////////////////////////////////////////////////////////////

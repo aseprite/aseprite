@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,14 +17,14 @@
 namespace app {
 namespace cmd {
 
-SetMask::SetMask(Doc* doc, Mask* newMask)
+SetMask::SetMask(Doc* doc, const Mask* newMask)
   : WithDocument(doc)
   , m_oldMask(doc->isMaskVisible() ? new Mask(*doc->mask()): nullptr)
   , m_newMask(newMask && !newMask->isEmpty() ? new Mask(*newMask): nullptr)
 {
 }
 
-void SetMask::setNewMask(Mask* newMask)
+void SetMask::setNewMask(const Mask* newMask)
 {
   m_newMask.reset(newMask ? new Mask(*newMask): nullptr);
   setMask(m_newMask.get());
@@ -46,7 +47,7 @@ size_t SetMask::onMemSize() const
     (m_newMask ? m_newMask->getMemSize(): 0);
 }
 
-void SetMask::setMask(Mask* mask)
+void SetMask::setMask(const Mask* mask)
 {
   Doc* doc = document();
 
@@ -59,6 +60,8 @@ void SetMask::setMask(Mask* mask)
     doc->setMask(&empty);
     doc->setMaskVisible(false);
   }
+
+  doc->notifySelectionChanged();
 }
 
 } // namespace cmd

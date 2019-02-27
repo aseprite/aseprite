@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -10,10 +11,9 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_image.h"
+#include "base/buffer.h"
 #include "gfx/point.h"
 #include "gfx/region.h"
-
-#include <sstream>
 
 namespace app {
 namespace cmd {
@@ -36,16 +36,15 @@ namespace cmd {
     void onUndo() override;
     void onRedo() override;
     size_t onMemSize() const override {
-      return sizeof(*this) + m_size;
+      return sizeof(*this) + m_buffer.size();
     }
 
   private:
     void swap();
 
-    size_t m_size;
     bool m_alreadyCopied;
     gfx::Region m_region;
-    std::stringstream m_stream;
+    base::buffer m_buffer;
   };
 
 } // namespace cmd

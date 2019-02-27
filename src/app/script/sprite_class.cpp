@@ -17,6 +17,7 @@
 #include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
+#include "app/cmd/set_mask.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_transparent_color.h"
 #include "app/color_spaces.h"
@@ -639,6 +640,17 @@ int Sprite_set_height(lua_State* L)
   return 0;
 }
 
+int Sprite_set_selection(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  const auto mask = get_mask_from_arg(L, 2);
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  Tx tx;
+  tx(new cmd::SetMask(doc, mask));
+  tx.commit();
+  return 0;
+}
+
 int Sprite_get_bounds(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
@@ -684,7 +696,7 @@ const Property Sprite_properties[] = {
   { "colorMode", Sprite_get_colorMode, nullptr },
   { "colorSpace", Sprite_get_colorSpace, Sprite_assignColorSpace },
   { "spec", Sprite_get_spec, nullptr },
-  { "selection", Sprite_get_selection, nullptr },
+  { "selection", Sprite_get_selection, Sprite_set_selection },
   { "frames", Sprite_get_frames, nullptr },
   { "palettes", Sprite_get_palettes, nullptr },
   { "layers", Sprite_get_layers, nullptr },

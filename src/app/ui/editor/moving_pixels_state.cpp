@@ -18,6 +18,7 @@
 #include "app/commands/cmd_rotate.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/commands/move_thing.h"
 #include "app/console.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -138,6 +139,11 @@ void MovingPixelsState::rotate(double angle)
 void MovingPixelsState::flip(doc::algorithm::FlipType flipType)
 {
   m_pixelsMovement->flipImage(flipType);
+}
+
+void MovingPixelsState::shift(int dx, int dy)
+{
+  m_pixelsMovement->shift(dx, dy);
 }
 
 void MovingPixelsState::onEnterState(Editor* editor)
@@ -501,9 +507,18 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
     return;
 
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
-  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(ev.command())) {
+  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
-      // Do not drop pixels
+      gfx::Point delta = moveMaskCmd->getMoveThing().getDelta(UIContext::instance());
+      // Verify Shift condition of the MoveMaskCommand (i.e. wrap = true)
+      if (moveMaskCmd->isWrap()) {
+        m_pixelsMovement->shift(delta.x, delta.y);
+      }
+      else {
+        translate(delta);
+      }
+      // We've processed the selection content movement right here.
+      ev.cancel();
       return;
     }
   }

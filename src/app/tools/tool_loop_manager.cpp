@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,7 +36,6 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
-  , m_dirtyArea(toolLoop->getDirtyArea())
 {
 }
 
@@ -111,7 +111,8 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
-  if (!res && (m_toolLoop->getInk()->isSelection() ||
+  if (!res && (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
+               m_toolLoop->getInk()->isSelection() ||
                m_toolLoop->getInk()->isSlice() ||
                m_toolLoop->getFilled())) {
     m_toolLoop->getInk()->setFinalStep(m_toolLoop, true);
@@ -145,12 +146,12 @@ void ToolLoopManager::movement(const Pointer& pointer)
   doLoopStep(false);
 }
 
-void ToolLoopManager::doLoopStep(bool last_step)
+void ToolLoopManager::doLoopStep(bool lastStep)
 {
   // Original set of points to interwine (original user stroke,
   // relative to sprite origin).
   Stroke main_stroke;
-  if (!last_step)
+  if (!lastStep)
     m_toolLoop->getController()->getStrokeToInterwine(m_stroke, main_stroke);
   else
     main_stroke = m_stroke;
@@ -165,6 +166,13 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   calculateDirtyArea(strokes);
 
+  // If we are not in the last step (when the mouse button is
+  // released) we are only showing a preview of the tool, so we can
+  // limit the dirty area to the visible viewport bounds. In this way
+  // the area using in validateoDstImage() can be a lot smaller.
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last && !lastStep)
+    m_toolLoop->limitDirtyAreaToViewport(m_dirtyArea);
+
   // Validate source image area.
   if (m_toolLoop->getInk()->needsSpecialSourceArea()) {
     gfx::Region srcArea;
@@ -177,10 +185,10 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   m_toolLoop->getInk()->prepareForStrokes(m_toolLoop, strokes);
 
-  // Invalidate destionation image areas.
+  // Invalidate destination image area.
   if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {
     // Copy source to destination (reset the previous trace). Useful
-    // for tools like Line and Ellipse (we kept the last trace only).
+    // for tools like Line and Ellipse (we keep the last trace only).
     m_toolLoop->invalidateDstImage();
   }
   else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {
@@ -194,7 +202,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Join or fill user points
-  if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
+  if (!m_toolLoop->getFilled() || (!lastStep && !m_toolLoop->getPreviewFilled()))
     m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
   else
     m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, main_stroke);
@@ -206,7 +214,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   }
 
   if (!m_dirtyArea.isEmpty())
-    m_toolLoop->updateDirtyArea();
+    m_toolLoop->updateDirtyArea(m_dirtyArea);
 }
 
 // Applies the grid settings to the specified sprite point.

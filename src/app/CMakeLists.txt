@@ -363,6 +363,7 @@ if(ENABLE_UI)
     ui/file_list.cpp
     ui/file_list_view.cpp
     ui/file_selector.cpp
+    ui/filename_field.cpp
     ui/font_popup.cpp
     ui/frame_tag_window.cpp
     ui/hex_color_entry.cpp
@@ -559,7 +560,6 @@ add_library(app-lib
   modules.cpp
   modules/palettes.cpp
   pref/preferences.cpp
-  project.cpp
   recent_files.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
@@ -575,6 +575,7 @@ add_library(app-lib
   transformation.cpp
   ui/layer_frame_comboboxes.cpp
   util/autocrop.cpp
+  util/buffer_region.cpp
   util/create_cel_copy.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp

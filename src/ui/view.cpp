@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -103,7 +103,8 @@ Size View::getScrollableSize()
               m_scrollbar_v.size());
 }
 
-void View::setScrollableSize(const Size& sz)
+void View::setScrollableSize(const gfx::Size& sz,
+                             const bool setScrollPos)
 {
   gfx::Rect viewportArea = childrenBounds();
 
@@ -122,11 +123,13 @@ void View::setScrollableSize(const Size& sz)
     m_scrollbar_h.setSize(sz.w);
     m_scrollbar_v.setSize(sz.h);
   }
+  m_viewport.setBoundsQuietly(viewportArea);
 
   // Setup viewport
-  invalidate();
-  m_viewport.setBounds(viewportArea);
-  setViewScroll(viewScroll()); // Setup the same scroll-point
+  if (setScrollPos) {
+    invalidate();
+    setViewScroll(viewScroll()); // Setup the same scroll-point
+  }
 }
 
 Size View::visibleSize() const
@@ -146,27 +149,31 @@ void View::setViewScroll(const Point& pt)
   onSetViewScroll(pt);
 }
 
-void View::updateView()
+void View::updateView(const bool restoreScrollPos)
 {
   Widget* vw = UI_FIRST_WIDGET(m_viewport.children());
   Point scroll = viewScroll();
 
   // Set minimum (remove scroll-bars)
-  setScrollableSize(Size(0, 0));
+  setScrollableSize(Size(0, 0), false);
 
   // Set needed size
-  setScrollableSize(m_viewport.calculateNeededSize());
+  setScrollableSize(m_viewport.calculateNeededSize(), false);
 
   // If there are scroll-bars, we have to setup the scrollable-size
   // again (because they remove visible space, maybe now we need a
   // vertical or horizontal bar too).
   if (hasChild(&m_scrollbar_h) || hasChild(&m_scrollbar_v))
-    setScrollableSize(m_viewport.calculateNeededSize());
+    setScrollableSize(m_viewport.calculateNeededSize(), false);
 
-  if (vw)
-    setViewScroll(scroll);
-  else
-    setViewScroll(Point(0, 0));
+  m_viewport.setBounds(m_viewport.bounds());
+  invalidate();
+  if (restoreScrollPos) {
+    if (vw)
+      setViewScroll(scroll);
+    else
+      setViewScroll(Point(0, 0));
+  }
 }
 
 Viewport* View::viewport()
