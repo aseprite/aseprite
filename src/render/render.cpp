@@ -125,6 +125,12 @@ public:
     if (m_blendMode == BlendMode::SRC) {
       return src;
     }
+    else if (m_blendMode == BlendMode::DST_OVER) {
+      if (dst != m_mask_color)
+        return dst;
+      else
+        return src;
+    }
     else {
       if (src != m_mask_color)
         return src;
