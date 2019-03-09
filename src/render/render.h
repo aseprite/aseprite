@@ -131,6 +131,7 @@ namespace render {
       const int opacity,
       const BlendMode blendMode);
 
+  private:
     void renderSpriteLayers(
       Image* dstImage,
       const gfx::ClipF& area,
@@ -143,7 +144,6 @@ namespace render {
       color_t bg_color,
       const gfx::ClipF& area);
 
-  private:
     void renderOnionskin(
       Image* image,
       const gfx::Clip& area,
