@@ -79,7 +79,7 @@ namespace app {
       const doc::Sprite* sprite,
       doc::frame_t frame,
       const gfx::ClipF& area);
-    void renderBackground(
+    void renderCheckedBackground(
       doc::Image* image,
       const gfx::Clip& area);
     void renderImage(

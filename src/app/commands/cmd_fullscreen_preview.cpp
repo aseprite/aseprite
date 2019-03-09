@@ -200,7 +200,7 @@ protected:
     render.setProjection(m_proj);
     if (m_index_bg_color == -1) {
       render.setupBackground(m_doc, m_doublebuf->pixelFormat());
-      render.renderBackground(m_doublebuf.get(),
+      render.renderCheckedBackground(m_doublebuf.get(),
         gfx::Clip(0, 0, -m_pos.x, -m_pos.y,
           m_doublebuf->width(), m_doublebuf->height()));
     }

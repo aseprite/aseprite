@@ -118,7 +118,7 @@ namespace render {
       const gfx::ClipF& area);
 
     // Extra functions
-    void renderBackground(
+    void renderCheckedBackground(
       Image* image,
       const gfx::Clip& area);
 
@@ -138,11 +138,15 @@ namespace render {
       frame_t frame,
       CompositeImageFunc compositeImage);
 
-    void renderBg(
+    void renderBackground(
       Image* image,
       const Layer* bgLayer,
-      color_t bg_color,
+      const color_t bg_color,
       const gfx::ClipF& area);
+
+    bool isSolidBackground(
+      const Layer* bgLayer,
+      const color_t bg_color) const;
 
     void renderOnionskin(
       Image* image,

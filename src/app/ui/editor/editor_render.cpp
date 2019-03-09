@@ -161,11 +161,11 @@ void EditorRender::renderSprite(
   m_render->renderSprite(dstImage, sprite, frame, area);
 }
 
-void EditorRender::renderBackground(
+void EditorRender::renderCheckedBackground(
   doc::Image* image,
   const gfx::Clip& area)
 {
-  m_render->renderBackground(image, area);
+  m_render->renderCheckedBackground(image, area);
 }
 
 void EditorRender::renderImage(

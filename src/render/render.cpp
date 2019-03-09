@@ -711,24 +711,34 @@ void Render::renderSprite(
     }
   }
 
+  // New Blending Method:
   if (m_newBlendMethod) {
-    // New Blending Method:
-    // Generate temporal background image. It will merge with dstImage.
-    if (!m_tmpBuf)
-      m_tmpBuf.reset(new doc::ImageBuffer);
-    ImageRef tmpBackground(Image::create(dstImage->spec(), m_tmpBuf));
-    renderBg(tmpBackground.get(), bgLayer, bg_color, area);
-    // Clear dstImage
+    // Clear dstImage with the bg_color (if the background is not a
+    // special background pattern like the checked background, this is
+    // enough as a base color).
     fill_rect(dstImage, area.dstBounds(), bg_color);
-    // Draw Background - Onion skin behind the sprite - Transparent Layers
+
+    // Draw the Background layer - Onion skin behind the sprite - Transparent Layers
     renderSpriteLayers(dstImage, area, frame, compositeImage);
-    // Draw the background on each pixel which opacity is different to 255
-    composite_image(dstImage, tmpBackground.get(), sprite->palette(frame),
-                    0, 0, 255, BlendMode::DST_OVER);
+
+    // In case that we need a special background (e.g. like the
+    // checked pattern), we can draw the background in a temporal
+    // image and then merge this temporal image with the dstImage.
+    if (!isSolidBackground(bgLayer, bg_color)) {
+      if (!m_tmpBuf)
+        m_tmpBuf.reset(new doc::ImageBuffer);
+      ImageRef tmpBackground(Image::create(dstImage->spec(), m_tmpBuf));
+      renderBackground(tmpBackground.get(), bgLayer, bg_color, area);
+
+      // Draws dstImage over the background on each pixel of dstImage
+      // with opacity is < 255 (the result is left on dstImage itself)
+      composite_image(dstImage, tmpBackground.get(), sprite->palette(frame),
+                      0, 0, 255, BlendMode::DST_OVER);
+    }
   }
+  // Old Blending Method:
   else {
-    // Old Blending Method:
-    renderBg(dstImage, bgLayer, bg_color, area);
+    renderBackground(dstImage, bgLayer, bg_color, area);
     renderSpriteLayers(dstImage, area, frame, compositeImage);
   }
 
@@ -759,7 +769,8 @@ void Render::renderSprite(
 void Render::renderSpriteLayers(Image* dstImage,
                               const gfx::ClipF& area,
                               frame_t frame,
-                              CompositeImageFunc compositeImage) {
+                              CompositeImageFunc compositeImage)
+{
   // Draw the background layer.
   m_globalOpacity = 255;
   renderLayer(m_sprite->root(), dstImage,
@@ -782,15 +793,22 @@ void Render::renderSpriteLayers(Image* dstImage,
               BlendMode::UNSPECIFIED, false);
 }
 
-void Render::renderBg(Image* image, const Layer* bgLayer, color_t bg_color, const gfx::ClipF& area) {
-  switch (m_bgType) {
-    case BgType::CHECKED:
-      if (bgLayer && bgLayer->isVisible() && rgba_geta(bg_color) == 255) {
-        fill_rect(image, area.dstBounds(), bg_color);
-      }
-      else {
-        renderBackground(image, area);
-        if (bgLayer && bgLayer->isVisible() && rgba_geta(bg_color) > 0) {
+void Render::renderBackground(Image* image,
+                              const Layer* bgLayer,
+                              const color_t bg_color,
+                              const gfx::ClipF& area)
+{
+  if (isSolidBackground(bgLayer, bg_color)) {
+    fill_rect(image, area.dstBounds(), bg_color);
+  }
+  else {
+    switch (m_bgType) {
+      case BgType::CHECKED:
+        renderCheckedBackground(image, area);
+        if (bgLayer && bgLayer->isVisible() &&
+            // TODO Review this: bg_color can be an index (not an rgba())
+            //      when sprite and dstImage are indexed
+            rgba_geta(bg_color) > 0) {
           blend_rect(image,
                      int(area.dst.x),
                      int(area.dst.y),
@@ -798,13 +816,25 @@ void Render::renderBg(Image* image, const Layer* bgLayer, color_t bg_color, cons
                      int(area.dst.y+area.size.h-1),
                      bg_color, 255);
         }
-      }
-      break;
-
-    case BgType::TRANSPARENT:
-      fill_rect(image, area.dstBounds(), bg_color);
-      break;
+        break;
+      default:
+        ASSERT(false); // Invalid case, needsBackground() should
+                       // return false in this case
+        break;
+    }
   }
+}
+
+bool Render::isSolidBackground(
+  const Layer* bgLayer,
+  const color_t bg_color) const
+{
+  return
+    ((m_bgType != BgType::CHECKED) ||
+     (bgLayer && bgLayer->isVisible() &&
+      // TODO Review this: bg_color can be an index (not an rgba())
+      //      when sprite and dstImage are indexed
+      rgba_geta(bg_color) == 255));
 }
 
 void Render::renderOnionskin(
@@ -869,7 +899,7 @@ void Render::renderOnionskin(
   }
 }
 
-void Render::renderBackground(
+void Render::renderCheckedBackground(
   Image* image,
   const gfx::Clip& area)
 {
