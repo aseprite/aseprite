@@ -46,6 +46,7 @@ namespace doc {
   color_t graya_blender_merge(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_neg_bw(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_normal(color_t backdrop, color_t src, int opacity = 255);
+  color_t graya_blender_normal_dst_over(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_multiply(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_screen(color_t backdrop, color_t src, int opacity);
   color_t graya_blender_overlay(color_t backdrop, color_t src, int opacity);

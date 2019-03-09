@@ -608,6 +608,14 @@ color_t graya_blender_normal(color_t backdrop, color_t src, int opacity)
   return graya(Rg, Ra);
 }
 
+color_t graya_blender_normal_dst_over(color_t backdrop, color_t src, int opacity)
+{
+  int t;
+  int Sa = MUL_UN8(graya_geta(src), opacity, t);
+  src = (src & graya_v_mask) | (Sa << graya_a_shift);
+  return graya_blender_normal(src, backdrop);
+}
+
 color_t graya_blender_multiply(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -779,6 +787,7 @@ BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend)
     case BlendMode::NEG_BW:         return graya_blender_neg_bw;
     case BlendMode::RED_TINT:       return graya_blender_normal;
     case BlendMode::BLUE_TINT:      return graya_blender_normal;
+    case BlendMode::DST_OVER:       return graya_blender_normal_dst_over;
 
     case BlendMode::NORMAL:         return graya_blender_normal;
     case BlendMode::MULTIPLY:       return newBlend? graya_blender_multiply_n: graya_blender_multiply;
