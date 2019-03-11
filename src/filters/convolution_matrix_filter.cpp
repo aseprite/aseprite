@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -126,7 +127,6 @@ ConvolutionMatrixFilter::ConvolutionMatrixFilter()
 void ConvolutionMatrixFilter::setMatrix(const base::SharedPtr<ConvolutionMatrix>& matrix)
 {
   m_matrix = matrix;
-  m_lines.resize(matrix->getHeight());
 }
 
 void ConvolutionMatrixFilter::setTiledMode(TiledMode tiledMode)

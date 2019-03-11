@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -8,9 +9,6 @@
 #define FILTERS_CONVOLUTION_MATRIX_FILTER_H_INCLUDED
 #pragma once
 
-#include <vector>
-
-#include "base/ints.h"
 #include "base/shared_ptr.h"
 #include "filters/filter.h"
 #include "filters/tiled_mode.h"
@@ -38,7 +36,6 @@ namespace filters {
   private:
     base::SharedPtr<ConvolutionMatrix> m_matrix;
     TiledMode m_tiledMode;
-    std::vector<uint8_t*> m_lines;
   };
 
 } // namespace filters
