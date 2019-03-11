@@ -34,7 +34,6 @@ namespace {
       div = matrix->getDiv();
       matrixData = &matrix->value(0, 0);
     }
-
   };
 
   struct GetPixelsDelegateRgba : public GetPixelsDelegate {
@@ -45,8 +44,7 @@ namespace {
       r = g = b = a = 0;
     }
 
-    void operator()(RgbTraits::pixel_t color)
-    {
+    void operator()(RgbTraits::pixel_t color) {
       if (*matrixData) {
         if (rgba_geta(color) == 0)
           div -= *matrixData;
@@ -59,7 +57,6 @@ namespace {
       }
       matrixData++;
     }
-
   };
 
   struct GetPixelsDelegateGrayscale : public GetPixelsDelegate {
@@ -70,8 +67,7 @@ namespace {
       v = a = 0;
     }
 
-    void operator()(GrayscaleTraits::pixel_t color)
-    {
+    void operator()(GrayscaleTraits::pixel_t color) {
       if (*matrixData) {
         if (graya_geta(color) == 0)
           div -= *matrixData;
@@ -82,7 +78,6 @@ namespace {
       }
       matrixData++;
     }
-
   };
 
   struct GetPixelsDelegateIndexed : public GetPixelsDelegate {
@@ -96,8 +91,7 @@ namespace {
       r = g = b = a = index = 0;
     }
 
-    void operator()(IndexedTraits::pixel_t color)
-    {
+    void operator()(IndexedTraits::pixel_t color) {
       if (*matrixData) {
         index += color * (*matrixData);
         color_t rgba = pal->getEntry(color);
@@ -112,7 +106,6 @@ namespace {
       }
       matrixData++;
     }
-
   };
 
 }

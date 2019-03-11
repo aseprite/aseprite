@@ -1,16 +1,17 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2019 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <box vertical="true" expansive="true" id="controls">
-    <box horizontal="true" expansive="true">
+  <vbox expansive="true" id="controls">
+    <hbox expansive="true">
       <grid columns="2" id="controls">
         <label text="@replace_color.from" />
         <colorpicker id="from" cell_align="horizontal" />
         <label text="@replace_color.to" />
         <colorpicker id="to" cell_align="horizontal" />
       </grid>
-    </box>
+    </hbox>
     <label text="@replace_color.tolerance" />
     <slider min="0" max="255" id="tolerance" />
-  </box>
+  </vbox>
 </gui>

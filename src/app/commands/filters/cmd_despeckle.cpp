@@ -72,8 +72,7 @@ private:
     restartPreview();
   }
 
-  void setupTiledMode(TiledMode tiledMode)
-  {
+  void setupTiledMode(TiledMode tiledMode) override {
     m_filter.setTiledMode(tiledMode);
   }
 

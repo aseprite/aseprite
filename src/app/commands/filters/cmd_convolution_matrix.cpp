@@ -66,19 +66,16 @@ public:
   }
 
 private:
-  void onReloadStock(Event& ev)
-  {
+  void onReloadStock(Event& ev) {
     m_stock.reloadStock();
     fillStockListBox();
   }
 
-  void setupTiledMode(TiledMode tiledMode)
-  {
+  void setupTiledMode(TiledMode tiledMode) override {
     m_filter.setTiledMode(tiledMode);
   }
 
-  void fillStockListBox()
-  {
+  void fillStockListBox() {
     const char* oldSelected = (m_filter.getMatrix() ? m_filter.getMatrix()->getName(): NULL);
 
     // Clean the list
