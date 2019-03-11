@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define FILTERS_REPLACE_COLOR_FILTER_H_INCLUDED
 #pragma once
 
+#include "doc/color.h"
 #include "filters/filter.h"
 
 namespace filters {
@@ -16,12 +18,12 @@ namespace filters {
   public:
     ReplaceColorFilter();
 
-    void setFrom(int from);
-    void setTo(int to);
+    void setFrom(const doc::color_t from);
+    void setTo(const doc::color_t to);
     void setTolerance(int tolerance);
 
-    int getFrom() const { return m_from; }
-    int getTo() const { return m_to; }
+    doc::color_t getFrom() const { return m_from; }
+    doc::color_t getTo() const { return m_to; }
     int getTolerance() const { return m_tolerance; }
 
     // Filter implementation
@@ -31,8 +33,8 @@ namespace filters {
     void applyToIndexed(FilterManager* filterMgr);
 
   private:
-    int m_from;
-    int m_to;
+    doc::color_t m_from;
+    doc::color_t m_to;
     int m_tolerance;
   };
 
