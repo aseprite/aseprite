@@ -27,7 +27,6 @@ using namespace doc;
 namespace {
 
   struct GetPixelsDelegate {
-    uint32_t color;
     int div;
     const int* matrixData;
 
