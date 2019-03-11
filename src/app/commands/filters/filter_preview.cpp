@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +14,6 @@
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
-#include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -31,6 +31,7 @@ FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   , m_filterMgr(filterMgr)
   , m_timer(1, this)
   , m_filterThread(nullptr)
+  , m_filterIsDone(false)
 {
   setVisible(false);
 }
@@ -81,10 +82,9 @@ void FilterPreview::restartPreview()
 
   m_filterMgr->beginForPreview();
   m_filterIsDone = false;
-  m_filterThread.reset(new base::thread(
-    base::Bind<void>(&FilterPreview::onFilterThread, this)));
-
   m_timer.start();
+  m_filterThread.reset(
+    new base::thread([this]{ onFilterThread(); }));
 }
 
 bool FilterPreview::onProcessMessage(Message* msg)
@@ -99,7 +99,10 @@ bool FilterPreview::onProcessMessage(Message* msg)
       setEnablePreview(false);
 
       // Stop the preview timer.
-      m_timer.stop();
+      {
+        base::scoped_lock lock(m_filterMgrMutex);
+        m_timer.stop();
+      }
       break;
 
     case kTimerMessage: {
@@ -119,10 +122,12 @@ bool FilterPreview::onProcessMessage(Message* msg)
 // This is executed in other thread.
 void FilterPreview::onFilterThread()
 {
-  while (!m_filterIsDone && m_timer.isRunning()) {
+  bool running = true;
+  while (running) {
     {
       base::scoped_lock lock(m_filterMgrMutex);
       m_filterIsDone = !m_filterMgr->applyStep();
+      running = (!m_filterIsDone && m_timer.isRunning());
     }
     base::this_thread::yield();
   }
