@@ -293,6 +293,7 @@ if(ENABLE_UI)
     commands/filters/cmd_despeckle.cpp
     commands/filters/cmd_hue_saturation.cpp
     commands/filters/cmd_invert_color.cpp
+    commands/filters/cmd_outline.cpp
     commands/filters/cmd_replace_color.cpp
     commands/filters/color_curve_editor.cpp
     commands/filters/convolution_matrix_stock.cpp

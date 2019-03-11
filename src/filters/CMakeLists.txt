@@ -10,6 +10,7 @@ add_library(filters-lib
   hue_saturation_filter.cpp
   invert_color_filter.cpp
   median_filter.cpp
+  outline_filter.cpp
   replace_color_filter.cpp)
 
 target_link_libraries(filters-lib

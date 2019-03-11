@@ -1,0 +1,22 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2019 by Igara Studio S.A. -->
+<gui>
+  <vbox id="outline" expansive="true">
+    <grid columns="2">
+      <label text="@.color" />
+      <colorpicker id="color" cell_align="horizontal" />
+      <label text="@.bg_color" />
+      <colorpicker id="bg_color" cell_align="horizontal" />
+    </grid>
+    <hbox>
+      <vbox>
+	<radio id="circle" text="@.circle" group="1" />
+	<radio id="square" text="@.square" group="1" />
+      </vbox>
+      <vbox>
+	<radio id="outside" text="@.outside" group="2" />
+	<radio id="inside" text="@.inside" group="2" />
+      </vbox>
+    </hbox>
+  </vbox>
+</gui>

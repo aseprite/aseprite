@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui version="1.3-dev">
   <!-- Keyboard shortcuts -->
@@ -53,6 +53,7 @@
       <key command="ReplaceColor" shortcut="Shift+R" />
       <key command="HueSaturation" shortcut="Ctrl+U" mac="Cmd+U" />
       <key command="ConvolutionMatrix" shortcut="F9" />
+      <key command="Outline" shortcut="Shift+O" />
       <key command="ColorCurve" shortcut="Ctrl+M" />
       <key command="ColorCurve" shortcut="F10" />
       <key command="PasteText" shortcut="T" />
@@ -680,6 +681,7 @@
           <item command="ColorCurve" text="@.edit_adjustments_color_curve" />
         </menu>
         <menu text="@.edit_fx" id="fx_popup_menu">
+          <item command="Outline" text="@.edit_fx_outline" />
           <item command="ConvolutionMatrix" text="@.edit_fx_convolution_matrix" />
           <item command="Despeckle" text="@.edit_fx_despeckle" />
         </menu>
