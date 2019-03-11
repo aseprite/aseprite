@@ -1100,6 +1100,9 @@ void FileOp::setError(const char *format, ...)
   // Concatenate the new error
   {
     scoped_lock lock(m_mutex);
+    // Add a newline char automatically if it's needed
+    if (!m_error.empty() && m_error.back() != '\n')
+      m_error.push_back('\n');
     m_error += buf_error;
   }
 }
