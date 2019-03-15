@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,9 +23,14 @@
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/site.h"
+#include "app/tools/active_tool.h"
+#include "app/tools/tool_box.h"
+#include "app/tools/tool_loop.h"
+#include "app/tools/tool_loop_manager.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
@@ -181,6 +186,71 @@ int App_refresh(lua_State* L)
 {
 #ifdef ENABLE_UI
   app_refresh_screen();
+#endif
+  return 0;
+}
+
+int App_drawWithTool(lua_State* L)
+{
+#ifdef ENABLE_UI
+  // First argument must be a table
+  if (!lua_istable(L, 1))
+    return luaL_error(L, "app.drawWithTool() must be called with a table as its first argument");
+
+  auto ctx = App::instance()->context();
+  Doc* doc = ctx->activeDocument();
+  if (!doc)
+    return luaL_error(L, "there is no active document to draw with the tool");
+
+  // Select tool by name
+  tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
+  tools::Ink* ink = App::instance()->activeToolManager()->activeInk();
+  int type = lua_getfield(L, 1, "tool");
+  if (type == LUA_TSTRING) {
+    const char* toolId = lua_tostring(L, -1);
+    tool = App::instance()->toolBox()->getToolById(toolId);
+    ink = tool->getInk(0);
+  }
+  lua_pop(L, 1);
+
+  // Default color is the active fgColor
+  app::Color color = Preferences::instance().colorBar.fgColor();
+  type = lua_getfield(L, 1, "color");
+  if (type != LUA_TNIL)
+    color = convert_args_into_color(L, -1);
+  lua_pop(L, 1);
+
+  // Do the tool loop
+  type = lua_getfield(L, 1, "points");
+  if (type == LUA_TTABLE) {
+    std::unique_ptr<tools::ToolLoop> loop(
+      create_tool_loop_for_script(ctx, tool, ink, color));
+    tools::ToolLoopManager manager(loop.get());
+    tools::Pointer lastPointer;
+    bool first = true;
+
+    lua_pushnil(L);
+    while (lua_next(L, -2) != 0) {
+      gfx::Point pt = convert_args_into_point(L, -1);
+
+      tools::Pointer pointer(pt, tools::Pointer::Button::Left);
+      if (first) {
+        first = false;
+        manager.prepareLoop(pointer);
+        manager.pressButton(pointer);
+      }
+      else {
+        manager.movement(pointer);
+      }
+      lastPointer = pointer;
+      lua_pop(L, 1);
+    }
+    if (!first)
+      manager.releaseButton(lastPointer);
+
+    loop->commitOrRollback();
+  }
+  lua_pop(L, 1);
 #endif
   return 0;
 }
@@ -430,6 +500,7 @@ const luaL_Reg App_methods[] = {
   { "redo",        App_redo },
   { "alert",       App_alert },
   { "refresh",     App_refresh },
+  { "drawWithTool", App_drawWithTool },
   { nullptr,       nullptr }
 };
 

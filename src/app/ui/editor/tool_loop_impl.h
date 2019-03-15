@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -17,10 +18,13 @@ namespace doc {
 }
 
 namespace app {
+  class Color;
   class Context;
   class Editor;
 
   namespace tools {
+    class Ink;
+    class Tool;
     class ToolLoop;
   }
 
@@ -29,6 +33,12 @@ namespace app {
     Context* context,
     const tools::Pointer::Button button,
     const bool convertLineToFreehand);
+
+  tools::ToolLoop* create_tool_loop_for_script(
+    Context* context,
+    tools::Tool* tool,
+    tools::Ink* ink,
+    const app::Color& color);
 
   tools::ToolLoop* create_tool_loop_preview(
     Editor* editor,

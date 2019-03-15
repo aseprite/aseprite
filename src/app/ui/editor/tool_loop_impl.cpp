@@ -98,23 +98,21 @@ protected:
   doc::color_t m_secondaryColor;
 
 public:
-  ToolLoopBase(Editor* editor,
-               Layer* layer,
-               tools::Tool* tool,
-               tools::Ink* ink,
+  ToolLoopBase(Editor* editor, Site site,
+               tools::Tool* tool, tools::Ink* ink,
                tools::Controller* controller,
-               Doc* document,
+               const BrushRef& brush,
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
                const app::Color& bgColor)
     : m_editor(editor)
     , m_tool(tool)
-    , m_brush(App::instance()->contextBar()->activeBrush(m_tool, ink))
+    , m_brush(brush)
     , m_oldPatternOrigin(m_brush->patternOrigin())
-    , m_document(document)
-    , m_sprite(editor->sprite())
-    , m_layer(layer)
-    , m_frame(editor->frame())
+    , m_document(site.document())
+    , m_sprite(site.sprite())
+    , m_layer(site.layer())
+    , m_frame(site.frame())
     , m_rgbMap(nullptr)
     , m_docPref(Preferences::instance().document(m_document))
     , m_toolPref(Preferences::instance().tool(m_tool))
@@ -229,7 +227,10 @@ public:
   int getOpacity() override { return m_opacity; }
   int getTolerance() override { return m_tolerance; }
   bool getContiguous() override { return m_contiguous; }
-  tools::ToolLoopModifiers getModifiers() override { return m_editor->getToolLoopModifiers(); }
+  tools::ToolLoopModifiers getModifiers() override {
+    return m_editor ? m_editor->getToolLoopModifiers():
+                      tools::ToolLoopModifiers::kNone;
+  }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.show.grid(); }
   bool getSnapToGrid() override { return m_docPref.grid.snap(); }
@@ -278,6 +279,9 @@ public:
   }
 
   void updateDirtyArea(const gfx::Region& dirtyArea) override {
+    if (!m_editor)
+      return;
+
     // This is necessary here so the "on sprite crosshair" is hidden,
     // we update screen pixels with the new sprite, and then we show
     // the crosshair saving the updated pixels. It fixes problems with
@@ -290,11 +294,12 @@ public:
   }
 
   void updateStatusBar(const char* text) override {
-    StatusBar::instance()->setStatusText(0, text);
+    if (auto statusBar = StatusBar::instance())
+      statusBar->setStatusText(0, text);
   }
 
   gfx::Point statusBarPositionOffset() override {
-    return -m_editor->mainTilePosition();
+    return (m_editor ? -m_editor->mainTilePosition(): gfx::Point(0, 0));
   }
 
   render::DitheringMatrix getDitheringMatrix() override {
@@ -327,25 +332,19 @@ class ToolLoopImpl : public ToolLoopBase {
 
 public:
   ToolLoopImpl(Editor* editor,
-               Layer* layer,
+               Site site,
                Context* context,
                tools::Tool* tool,
                tools::Ink* ink,
                tools::Controller* controller,
-               Doc* document,
+               const BrushRef& brush,
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
                const app::Color& bgColor,
                const bool saveLastPoint)
-    : ToolLoopBase(editor,
-                   layer,
-                   tool,
-                   ink,
-                   controller,
-                   document,
-                   button,
-                   fgColor,
-                   bgColor)
+    : ToolLoopBase(editor, site,
+                   tool, ink, controller, brush,
+                   button, fgColor, bgColor)
     , m_context(context)
     , m_canceled(false)
     , m_transaction(m_context,
@@ -360,8 +359,6 @@ public:
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
   {
-    ASSERT(m_context->activeDocument() == m_editor->document());
-
     if (m_pointShape->isFloodFill()) {
       // Prepare a special image for floodfill when it's configured to
       // stop using all visible layers.
@@ -393,8 +390,7 @@ public:
     }
 
     m_expandCelCanvas = new ExpandCelCanvas(
-      editor->getSite(),
-      layer,
+      site, site.layer(),
       m_docPref.tiled.mode(),
       m_transaction,
       ExpandCelCanvas::Flags(
@@ -567,7 +563,7 @@ tools::ToolLoop* create_tool_loop(
   if (!tool || !ink)
     return nullptr;
 
-  Layer* layer;
+  Site site = editor->getSite();
 
   // For selection tools, we can use any layer (even without layers at
   // all), so we specify a nullptr here as the active layer. This is
@@ -580,10 +576,10 @@ tools::ToolLoop* create_tool_loop(
   // image/pixels to stop the flood-fill algorithm.
   if (ink->isSelection() &&
       !tool->getPointShape(button != tools::Pointer::Left ? 1: 0)->isFloodFill()) {
-    layer = nullptr;
+    site.layer(nullptr);
   }
   else {
-    layer = editor->layer();
+    Layer* layer = site.layer();
     if (!layer) {
       StatusBar::instance()->showTip(
         1000, "There is no active layer");
@@ -639,19 +635,51 @@ tools::ToolLoop* create_tool_loop(
        (controller->isFreehand() ||
         convertLineToFreehand));
 
+    ASSERT(context->activeDocument() == editor->document());
     return new ToolLoopImpl(
-      editor, layer, context,
-      tool,
-      ink,
-      controller,
-      editor->document(),
-      toolLoopButton,
-      fg, bg,
+      editor, site, context,
+      tool, ink, controller,
+      App::instance()->contextBar()->activeBrush(tool, ink),
+      toolLoopButton, fg, bg,
       saveLastPoint);
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
     return NULL;
+  }
+}
+
+tools::ToolLoop* create_tool_loop_for_script(
+  Context* context,
+  tools::Tool* tool,
+  tools::Ink* ink,
+  const app::Color& color)
+{
+  ASSERT(tool);
+  ASSERT(ink);
+
+  Site site = context->activeSite();
+  if (!site.layer())
+    return nullptr;
+
+  try {
+    tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
+    tools::Controller* controller = tool->getController(toolLoopButton);
+    BrushRef brush;
+    if (App::instance()->contextBar())
+      brush = App::instance()->contextBar()->activeBrush(tool, ink);
+    if (!brush)
+      brush = BrushRef(new Brush(BrushType::kCircleBrushType, 1, 0));
+
+    return new ToolLoopImpl(
+      nullptr, site, context,
+      tool, ink, controller,
+      brush,
+      toolLoopButton, color, color, false);
+  }
+  catch (const std::exception& ex) {
+    Console::showException(ex);
+    return nullptr;
   }
 }
 
@@ -666,20 +694,14 @@ public:
     Editor* editor,
     tools::Tool* tool,
     tools::Ink* ink,
-    Doc* document,
     const app::Color& fgColor,
     const app::Color& bgColor,
     Image* image,
     const gfx::Point& celOrigin)
-    : ToolLoopBase(editor,
-                   editor->layer(),
-                   tool,
-                   ink,
-                   tool->getController(tools::ToolLoop::Left),
-                   document,
-                   tools::ToolLoop::Left,
-                   fgColor,
-                   bgColor)
+    : ToolLoopBase(editor, editor->getSite(),
+                   tool, ink, tool->getController(tools::ToolLoop::Left),
+                   App::instance()->contextBar()->activeBrush(tool, ink),
+                   tools::ToolLoop::Left, fgColor, bgColor)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
@@ -750,10 +772,7 @@ tools::ToolLoop* create_tool_loop_preview(
   // Create the new tool loop
   try {
     return new PreviewToolLoopImpl(
-      editor,
-      tool,
-      ink,
-      editor->document(),
+      editor, tool, ink,
       fg, bg, image, celOrigin);
   }
   catch (const std::exception&) {
