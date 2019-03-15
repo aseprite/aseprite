@@ -41,7 +41,7 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -G Ninja -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
+  - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON -DENABLE_UI=$ENABLE_UI
 
 script:
   - ninja
