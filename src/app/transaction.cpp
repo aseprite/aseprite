@@ -81,7 +81,9 @@ void Transaction::setNewDocRange(const DocRange& range)
 
 void Transaction::commit()
 {
-  ui::assert_ui_thread();
+  // This assert can fail when we run scripts in batch mode
+  //ui::assert_ui_thread();
+
   ASSERT(m_cmds);
   TX_TRACE("TX: Commit <%s>\n", m_cmds->label().c_str());
 
