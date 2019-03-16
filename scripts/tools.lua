@@ -7,14 +7,14 @@ local spr = Sprite(4, 4)
 local cel = spr.cels[1]
 assert(cel.bounds == Rectangle(0, 0, 4, 4))
 
-app.drawWithTool{
+app.toolStroke{
   tool='pencil',
   color=Color{ r=0, g=0, b=0 },
   points={ Point(2, 2),
            Point(3, 2) }}
 assert(cel.bounds == Rectangle(2, 2, 2, 1))
 
-app.drawWithTool{
+app.toolStroke{
   tool='eraser',
   points={ Point(2, 2) }}
 assert(cel.bounds == Rectangle(3, 2, 1, 1))
