@@ -204,7 +204,7 @@ int App_toolStroke(lua_State* L)
 
   // Select tool by name
   tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
-  tools::Ink* ink = App::instance()->activeToolManager()->activeInk();
+  tools::Ink* ink = tool->getInk(0);
   int type = lua_getfield(L, 1, "tool");
   if (type == LUA_TSTRING) {
     const char* toolId = lua_tostring(L, -1);
