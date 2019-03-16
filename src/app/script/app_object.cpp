@@ -190,12 +190,12 @@ int App_refresh(lua_State* L)
   return 0;
 }
 
-int App_drawWithTool(lua_State* L)
+int App_toolStroke(lua_State* L)
 {
 #ifdef ENABLE_UI
   // First argument must be a table
   if (!lua_istable(L, 1))
-    return luaL_error(L, "app.drawWithTool() must be called with a table as its first argument");
+    return luaL_error(L, "app.toolStroke() must be called with a table as its first argument");
 
   auto ctx = App::instance()->context();
   Doc* doc = ctx->activeDocument();
@@ -500,7 +500,7 @@ const luaL_Reg App_methods[] = {
   { "redo",        App_redo },
   { "alert",       App_alert },
   { "refresh",     App_refresh },
-  { "drawWithTool", App_drawWithTool },
+  { "toolStroke",  App_toolStroke },
   { nullptr,       nullptr }
 };
 
