@@ -187,11 +187,13 @@ public:
       m_opacity = 255;
     }
 
+#ifdef ENABLE_UI // TODO add support when UI is not enabled
     if (m_toolPref.ink() == tools::InkType::SHADING) {
       m_shadingRemap.reset(
         App::instance()->contextBar()->createShadeRemap(
           button == tools::ToolLoop::Left));
     }
+#endif
   }
 
   ~ToolLoopBase() {
@@ -263,6 +265,7 @@ public:
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
   void limitDirtyAreaToViewport(gfx::Region& rgn) override {
+#ifdef ENABLE_UI
     // Visible region (on the screen) of the all editors showing the
     // given document.
     gfx::Region allVisibleRgn;
@@ -276,38 +279,55 @@ public:
     }
 
     rgn &= allVisibleRgn;
+#endif // ENABLE_UI
   }
 
   void updateDirtyArea(const gfx::Region& dirtyArea) override {
     if (!m_editor)
       return;
 
+#ifdef ENABLE_UI
     // This is necessary here so the "on sprite crosshair" is hidden,
     // we update screen pixels with the new sprite, and then we show
     // the crosshair saving the updated pixels. It fixes problems with
     // filled shape tools when we release the button, or paint-bucket
     // when we press the button.
     HideBrushPreview hide(m_editor->brushPreview());
+#endif
 
     m_document->notifySpritePixelsModified(
       m_sprite, dirtyArea, m_frame);
   }
 
   void updateStatusBar(const char* text) override {
+#ifdef ENABLE_UI
     if (auto statusBar = StatusBar::instance())
       statusBar->setStatusText(0, text);
+#endif
   }
 
   gfx::Point statusBarPositionOffset() override {
+#ifdef ENABLE_UI
     return (m_editor ? -m_editor->mainTilePosition(): gfx::Point(0, 0));
+#else
+    return gfx::Point(0, 0);
+#endif
   }
 
   render::DitheringMatrix getDitheringMatrix() override {
+#ifdef ENABLE_UI // TODO add support when UI is not enabled
     return App::instance()->contextBar()->ditheringMatrix();
+#else
+    return render::DitheringMatrix();
+#endif
   }
 
   render::DitheringAlgorithmBase* getDitheringAlgorithm() override {
+#ifdef ENABLE_UI // TODO add support when UI is not enabled
     return App::instance()->contextBar()->ditheringAlgorithm();
+#else
+    return nullptr;
+#endif
   }
 
 };
@@ -503,8 +523,10 @@ public:
       }
     }
 
+#ifdef ENABLE_UI
     if (redraw)
       update_screen_for_document(m_document);
+#endif
   }
 
   const Image* getSrcImage() override { return m_expandCelCanvas->getSourceCanvas(); }
@@ -551,6 +573,8 @@ public:
   bool isCanceled() override { return m_canceled; }
 
 };
+
+#ifdef ENABLE_UI
 
 tools::ToolLoop* create_tool_loop(
   Editor* editor,
@@ -649,6 +673,8 @@ tools::ToolLoop* create_tool_loop(
   }
 }
 
+#endif // ENABLE_UI
+
 tools::ToolLoop* create_tool_loop_for_script(
   Context* context,
   tools::Tool* tool,
@@ -666,8 +692,10 @@ tools::ToolLoop* create_tool_loop_for_script(
     tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
     tools::Controller* controller = tool->getController(toolLoopButton);
     BrushRef brush;
+#ifdef ENABLE_UI
     if (App::instance()->contextBar())
       brush = App::instance()->contextBar()->activeBrush(tool, ink);
+#endif
     if (!brush)
       brush = BrushRef(new Brush(BrushType::kCircleBrushType, 1, 0));
 
@@ -685,6 +713,8 @@ tools::ToolLoop* create_tool_loop_for_script(
 
 //////////////////////////////////////////////////////////////////////
 // For preview
+
+#ifdef ENABLE_UI
 
 class PreviewToolLoopImpl : public ToolLoopBase {
   Image* m_image;
@@ -779,6 +809,8 @@ tools::ToolLoop* create_tool_loop_preview(
     return nullptr;
   }
 }
+
+#endif // ENABLE_UI
 
 //////////////////////////////////////////////////////////////////////
 

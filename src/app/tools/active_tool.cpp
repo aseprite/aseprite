@@ -84,11 +84,13 @@ Ink* ActiveToolManager::activeInk() const
       case tools::InkType::SIMPLE: {
         id = tools::WellKnownInks::Paint;
 
+#ifdef ENABLE_UI
         ColorBar* colorbar = ColorBar::instance();
         app::Color color = (m_rightClick ? colorbar->getBgColor():
                                            colorbar->getFgColor());
         if (color.getAlpha() == 0)
           id = tools::WellKnownInks::PaintCopy;
+#endif
         break;
       }
 

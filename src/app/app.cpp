@@ -127,10 +127,8 @@ public:
   Extensions m_extensions;
   // Load main language (after loading the extensions)
   LoadLanguage m_loadLanguage;
-#ifdef ENABLE_UI
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
-#endif
   Commands m_commands;
   ContextT m_context;
 #ifdef ENABLE_UI
@@ -145,8 +143,8 @@ public:
           Preferences& pref)
     : m_loggerModule(createLogInDesktop)
     , m_loadLanguage(pref, m_extensions)
-#ifdef ENABLE_UI
     , m_activeToolManager(&m_toolbox)
+#ifdef ENABLE_UI
     , m_recent_files(pref.general.recentItems())
 #endif
     , m_recovery(nullptr) {
@@ -493,29 +491,17 @@ bool App::isPortable()
 tools::ToolBox* App::toolBox() const
 {
   ASSERT(m_modules != NULL);
-#ifdef ENABLE_UI
   return &m_modules->m_toolbox;
-#else
-  return nullptr;
-#endif
 }
 
 tools::Tool* App::activeTool() const
 {
-#ifdef ENABLE_UI
   return m_modules->m_activeToolManager.activeTool();
-#else
-  return nullptr;
-#endif
 }
 
 tools::ActiveToolManager* App::activeToolManager() const
 {
-#ifdef ENABLE_UI
   return &m_modules->m_activeToolManager;
-#else
-  return nullptr;
-#endif
 }
 
 RecentFiles* App::recentFiles() const

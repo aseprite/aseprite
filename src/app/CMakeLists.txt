@@ -303,20 +303,10 @@ if(ENABLE_UI)
     commands/filters/filter_window.cpp
     commands/filters/filter_worker.cpp
     file_selector.cpp
-    gui_xml.cpp
     modules/editors.cpp
     modules/gfx.cpp
     modules/gui.cpp
     send_crash.cpp
-    tools/active_tool.cpp
-    tools/ink_type.cpp
-    tools/intertwine.cpp
-    tools/pick_ink.cpp
-    tools/point_shape.cpp
-    tools/stroke.cpp
-    tools/symmetries.cpp
-    tools/tool_box.cpp
-    tools/tool_loop_manager.cpp
     ui/app_menuitem.cpp
     ui/backup_indicator.cpp
     ui/browser_view.cpp
@@ -356,7 +346,6 @@ if(ENABLE_UI)
     ui/editor/select_box_state.cpp
     ui/editor/standby_state.cpp
     ui/editor/state_with_wheel_behavior.cpp
-    ui/editor/tool_loop_impl.cpp
     ui/editor/transform_handles.cpp
     ui/editor/zooming_state.cpp
     ui/export_file_window.cpp
@@ -550,6 +539,7 @@ add_library(app-lib
   filename_formatter.cpp
   flatten.cpp
   font_path.cpp
+  gui_xml.cpp
   i18n/strings.cpp
   i18n/xml_translator.cpp
   ini_file.cpp
@@ -572,8 +562,18 @@ add_library(app-lib
   sprite_job.cpp
   thumbnail_generator.cpp
   thumbnails.cpp
+  tools/active_tool.cpp
+  tools/ink_type.cpp
+  tools/intertwine.cpp
+  tools/pick_ink.cpp
+  tools/point_shape.cpp
+  tools/stroke.cpp
+  tools/symmetries.cpp
+  tools/tool_box.cpp
+  tools/tool_loop_manager.cpp
   transaction.cpp
   transformation.cpp
+  ui/editor/tool_loop_impl.cpp
   ui/layer_frame_comboboxes.cpp
   util/autocrop.cpp
   util/buffer_region.cpp

@@ -192,7 +192,6 @@ int App_refresh(lua_State* L)
 
 int App_toolStroke(lua_State* L)
 {
-#ifdef ENABLE_UI
   // First argument must be a table
   if (!lua_istable(L, 1))
     return luaL_error(L, "app.toolStroke() must be called with a table as its first argument");
@@ -251,7 +250,6 @@ int App_toolStroke(lua_State* L)
     loop->commitOrRollback();
   }
   lua_pop(L, 1);
-#endif
   return 0;
 }
 
@@ -420,8 +418,8 @@ int App_set_activeSprite(lua_State* L)
 
 int App_set_activeLayer(lua_State* L)
 {
-  auto layer = get_docobj<Layer>(L, 2);
 #ifdef ENABLE_UI
+  auto layer = get_docobj<Layer>(L, 2);
   app::Context* ctx = App::instance()->context();
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
     DocView* docView = uiCtx->activeView();
@@ -437,8 +435,8 @@ int App_set_activeLayer(lua_State* L)
 
 int App_set_activeFrame(lua_State* L)
 {
-  const doc::frame_t frame = get_frame_number_from_arg(L, 2);
 #ifdef ENABLE_UI
+  const doc::frame_t frame = get_frame_number_from_arg(L, 2);
   app::Context* ctx = App::instance()->context();
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
     DocView* docView = uiCtx->activeView();
@@ -454,8 +452,8 @@ int App_set_activeFrame(lua_State* L)
 
 int App_set_activeCel(lua_State* L)
 {
-  const auto cel = get_docobj<Cel>(L, 2);
 #ifdef ENABLE_UI
+  const auto cel = get_docobj<Cel>(L, 2);
   app::Context* ctx = App::instance()->context();
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
     DocView* docView = uiCtx->activeView();
