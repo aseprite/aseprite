@@ -21,10 +21,17 @@
 
 namespace {
 
+enum { kPinnedFiles, kRecentFiles,
+       kPinnedPaths, kRecentPaths };
+
 const char* kSectionName[] = { "PinnedFiles",
                                "RecentFiles",
                                "PinnedPaths",
                                "RecentPaths" };
+
+// Special key used in recent sections (files/paths) to indicate that
+// the section was already converted at least one time.
+const char* kConversionKey = "_";
 
 struct compare_path {
   std::string a;
@@ -165,8 +172,30 @@ void RecentFiles::removeItem(base::paths& list, const std::string& fn)
 void RecentFiles::load()
 {
   for (int i=0; i<kCollections; ++i) {
-    for (const auto& key : enum_config_keys(kSectionName[i])) {
-      const char* fn = get_config_string(kSectionName[i], key.c_str(), nullptr);
+    const char* section = kSectionName[i];
+
+    // For recent files: If there is an item called "Filename00" and no "0" key
+    // For recent paths: If there is an item called "Path00" and no "0" key
+    // -> We are migrating from and old version to a new one
+    const bool processOldFilenames =
+      (i == kRecentFiles &&
+       get_config_string(section, "Filename00", nullptr) &&
+       !get_config_bool(section, kConversionKey, false));
+
+    const bool processOldPaths =
+      (i == kRecentPaths &&
+       get_config_string(section, "Path00", nullptr) &&
+       !get_config_bool(section, kConversionKey, false));
+
+    for (const auto& key : enum_config_keys(section)) {
+      if ((!processOldFilenames && std::strncmp(key.c_str(), "Filename", 8) == 0)
+          ||
+          (!processOldPaths && std::strncmp(key.c_str(), "Path", 4) == 0)) {
+        // Ignore old entries if we are going to read the new ones
+        continue;
+      }
+
+      const char* fn = get_config_string(section, key.c_str(), nullptr);
       if (fn && *fn &&
           ((i < 2 && base::is_file(fn)) ||
            (i >= 2 && base::is_directory(fn)))) {
@@ -180,14 +209,29 @@ void RecentFiles::load()
 void RecentFiles::save()
 {
   for (int i=0; i<kCollections; ++i) {
-    for (const auto& key : enum_config_keys(kSectionName[i]))
-      del_config_value(kSectionName[i],
-                       key.c_str());
+    const char* section = kSectionName[i];
+
+    for (const auto& key : enum_config_keys(section)) {
+      if ((i == kRecentFiles &&
+           (std::strncmp(key.c_str(), "Filename", 8) == 0 || key == kConversionKey))
+          ||
+          (i == kRecentPaths &&
+           (std::strncmp(key.c_str(), "Path", 4) == 0 || key == kConversionKey))) {
+        // Ignore old entries if we are going to read the new ones
+        continue;
+      }
+      del_config_value(section, key.c_str());
+    }
 
     for (int j=0; j<m_paths[i].size(); ++j) {
-      set_config_string(kSectionName[i],
+      set_config_string(section,
                         base::convert_to<std::string>(j).c_str(),
                         m_paths[i][j].c_str());
+    }
+    // Special entry that indicates that we've already converted
+    if ((i == kRecentFiles || i == kRecentPaths) &&
+        !get_config_bool(section, kConversionKey, false)) {
+      set_config_bool(section, kConversionKey, true);
     }
   }
 }
