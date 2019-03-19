@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "obs/connection.h"
 #include "obs/observable.h"
 #include "obs/signal.h"
+#include "render/gradient.h"
 #include "ui/box.h"
 
 #include <vector>
@@ -48,6 +49,7 @@ namespace app {
 
   class BrushSlot;
   class DitheringSelector;
+  class GradientTypeSelector;
 
   class ContextBar : public ui::Box
                    , public obs::observable<ContextBarObserver>
@@ -83,6 +85,7 @@ namespace app {
     // For gradients
     render::DitheringMatrix ditheringMatrix();
     render::DitheringAlgorithmBase* ditheringAlgorithm();
+    render::GradientType gradientType();
 
     // Signals
     obs::signal<void()> BrushChange;
@@ -122,6 +125,7 @@ namespace app {
     class SprayWidthField;
     class SpraySpeedField;
     class SelectionModeField;
+    class GradientTypeField;
     class TransparentColorField;
     class PivotField;
     class RotAlgorithmField;
@@ -157,6 +161,7 @@ namespace app {
     ui::Box* m_selectionOptionsBox;
     DitheringSelector* m_ditheringSelector;
     SelectionModeField* m_selectionMode;
+    GradientTypeField* m_gradientType;
     TransparentColorField* m_transparentColor;
     PivotField* m_pivot;
     RotAlgorithmField* m_rotAlgo;

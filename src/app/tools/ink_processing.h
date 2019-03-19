@@ -908,9 +908,10 @@ public:
       imgPos.y *= h;
     }
 
-    render::render_rgba_linear_gradient(
+    render::render_rgba_gradient(
       m_tmpImage.get(), imgPos, u, v, c0, c1,
-      loop->getDitheringMatrix());
+      loop->getDitheringMatrix(),
+      loop->getGradientType());
   }
 
 protected:

@@ -402,6 +402,8 @@
         <part id="aseprite_face_mouse" x="28" y="272" w="28" h="30" />
         <part id="aseprite_face_pushed" x="56" y="272" w="28" h="30" />
         <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8" />
+        <part id="linear_gradient" x="176" y="208" w="8" h="8" />
+        <part id="radial_gradient" x="184" y="208" w="8" h="8" />
     </parts>
     <styles>
         <style id="box" />

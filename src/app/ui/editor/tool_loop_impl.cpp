@@ -330,6 +330,15 @@ public:
 #endif
   }
 
+  render::GradientType getGradientType() override {
+#ifdef ENABLE_UI // TODO add support when UI is not enabled
+    return App::instance()->contextBar()->gradientType();
+#else
+    return render::GradientType::Linear;
+#endif
+  }
+
+
 };
 
 //////////////////////////////////////////////////////////////////////

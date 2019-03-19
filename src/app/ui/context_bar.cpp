@@ -933,6 +933,27 @@ protected:
   }
 };
 
+class ContextBar::GradientTypeField : public ButtonSet {
+public:
+  GradientTypeField() : ButtonSet(2) {
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+
+    addItem(theme->parts.linearGradient());
+    addItem(theme->parts.radialGradient());
+
+    setSelectedItem(0);
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    tooltipManager->addTooltipFor(at(0), "Linear Gradient", BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Radial Gradient", BOTTOM);
+  }
+
+  render::GradientType gradientType() const {
+    return (render::GradientType)selectedItem();
+  }
+};
+
 class ContextBar::DropPixelsField : public ButtonSet {
 public:
   DropPixelsField() : ButtonSet(2) {
@@ -1100,6 +1121,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager)
   addChild(m_tolerance = new ToleranceField());
   addChild(m_contiguous = new ContiguousField());
   addChild(m_paintBucketSettings = new PaintBucketSettingsField());
+  addChild(m_gradientType = new GradientTypeField());
   addChild(m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectMatrix));
   m_ditheringSelector->setUseCustomWidget(false); // Disable custom widget because the context bar is too small
 
@@ -1428,6 +1450,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_paintBucketSettings->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
+  m_gradientType->setVisible(withDithering);
   m_ditheringSelector->setVisible(withDithering);
   m_selectionMode->setVisible(true);
   m_pivot->setVisible(true);
@@ -1718,6 +1741,11 @@ render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
   return s_dither.get();
 }
 
+render::GradientType ContextBar::gradientType()
+{
+  return m_gradientType->gradientType();
+}
+
 void ContextBar::setupTooltips(TooltipManager* tooltipManager)
 {
   tooltipManager->addTooltipFor(m_brushBack->at(0), "Discard Brush (Esc)", BOTTOM);
@@ -1741,6 +1769,7 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
                                 "Extra paint bucket options", BOTTOM);
 
   m_selectionMode->setupTooltips(tooltipManager);
+  m_gradientType->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
 }

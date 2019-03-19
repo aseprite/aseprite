@@ -16,6 +16,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "render/gradient.h"
 
 namespace gfx {
   class Region;
@@ -233,6 +234,7 @@ namespace app {
       // For gradients
       virtual render::DitheringMatrix getDitheringMatrix() = 0;
       virtual render::DitheringAlgorithmBase* getDitheringAlgorithm() = 0;
+      virtual render::GradientType getGradientType() = 0;
     };
 
   } // namespace tools
