@@ -93,7 +93,7 @@ public:
     gfx::Point pt = wrap_point(loop->getTiledMode(),
                                gfx::Size(srcImage->width(),
                                          srcImage->height()),
-                               gfx::Point(x, y));
+                               gfx::Point(x, y), true);
 
     doc::algorithm::floodfill(
       srcImage,

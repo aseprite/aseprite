@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,8 +30,19 @@ public:
   bool snapByAngle() override { return true; }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
-    if (!stroke.empty())
-      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
+    if (!stroke.empty()) {
+      gfx::Point mid(0, 0);
+      int n = 0;
+      for (auto& pt : stroke) {
+        mid.x += pt.x;
+        mid.y += pt.y;
+        ++n;
+      }
+      mid.x /= n;
+      mid.y /= n;
+
+      doPointshapePoint(mid.x, mid.y, loop);
+    }
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -644,7 +645,8 @@ private:
 
     pt = wrap_point(m_tiledMode,
                     gfx::Size(m_srcImageWidth,
-                              m_srcImageHeight), pt);
+                              m_srcImageHeight),
+                    pt, false);
 
     pt.x = MID(0, pt.x, m_srcImageWidth-1);
     pt.y = MID(0, pt.y, m_srcImageHeight-1);
