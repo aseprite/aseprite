@@ -160,17 +160,17 @@ DocView* UIContext::getFirstDocView(Doc* document) const
 
 DocViews UIContext::getAllDocViews(Doc* document) const
 {
-  Workspace* workspace = App::instance()->workspace();
   DocViews docViews;
-
-  for (WorkspaceView* view : *workspace) {
-    if (DocView* docView = dynamic_cast<DocView*>(view)) {
-      if (docView->document() == document) {
-        docViews.push_back(docView);
+  // The workspace can be nullptr when we are running in batch mode.
+  if (Workspace* workspace = App::instance()->workspace()) {
+    for (WorkspaceView* view : *workspace) {
+      if (DocView* docView = dynamic_cast<DocView*>(view)) {
+        if (docView->document() == document) {
+          docViews.push_back(docView);
+        }
       }
     }
   }
-
   return docViews;
 }
 
