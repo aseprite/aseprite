@@ -189,6 +189,7 @@
       <option id="wheel_model" type="int" default="0" />
       <option id="harmony" type="int" default="0" />
       <option id="show_invalid_fg_bg_color_alert" type="bool" default="true" />
+      <option id="entries_separator" type="bool" default="true" />
     </section>
     <section id="updater">
       <option id="inits" type="int" default="0" migrate="Updater.Inits" />

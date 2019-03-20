@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -191,6 +191,7 @@ namespace app {
     obs::scoped_connection m_afterCmdConn;
     obs::scoped_connection m_fgConn;
     obs::scoped_connection m_bgConn;
+    obs::scoped_connection m_sepConn;
     obs::scoped_connection m_appPalChangeConn;
     ui::MouseButtons m_lastButtons;
 

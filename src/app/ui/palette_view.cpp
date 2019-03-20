@@ -459,10 +459,12 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int fgIndex = -1;
   int bgIndex = -1;
   int transparentIndex = -1;
-  bool hotColor = (m_hot.part == Hit::COLOR ||
-                   m_hot.part == Hit::POSSIBLE_COLOR);
-  bool dragging = (m_state == State::DRAGGING_OUTLINE && hotColor);
-  bool resizing = (m_state == State::RESIZING_PALETTE && hotColor);
+  const bool hotColor = (m_hot.part == Hit::COLOR ||
+                         m_hot.part == Hit::POSSIBLE_COLOR);
+  const bool dragging = (m_state == State::DRAGGING_OUTLINE && hotColor);
+  const bool resizing = (m_state == State::RESIZING_PALETTE && hotColor);
+  const bool withSeparator =
+    Preferences::instance().colorBar.entriesSeparator();
 
   if (m_style == FgBgColors && m_delegate) {
     fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
@@ -495,7 +497,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     }
 
     gfx::Rect box = getPaletteEntryBounds(i + boxOffset);
-    gfx::Color gfxColor = drawEntry(g, box, i + idxOffset);
+    gfx::Color gfxColor = drawEntry(g, box, i + idxOffset, withSeparator);
     const int boxsize = int(m_boxsize * guiscale());
 
     switch (m_style) {
@@ -564,7 +566,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       // Draw color being dragged + label
       if (dragging) {
         gfx::Rect box2 = getPaletteEntryBounds(k);
-        gfx::Color gfxColor = drawEntry(g, box2, i); // Draw color entry
+        gfx::Color gfxColor = drawEntry(g, box2, i, withSeparator); // Draw color entry
 
         gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
         os::Font* minifont = theme->getMiniFont();
@@ -1014,7 +1016,10 @@ void PaletteView::setNewPalette(doc::Palette* oldPalette,
   manager()->invalidate();
 }
 
-gfx::Color PaletteView::drawEntry(ui::Graphics* g, const gfx::Rect& box, int palIdx)
+gfx::Color PaletteView::drawEntry(ui::Graphics* g,
+                                  const gfx::Rect& box,
+                                  const int palIdx,
+                                  const bool withSeparator)
 {
   doc::color_t palColor =
     (palIdx < currentPalette()->size() ? currentPalette()->getEntry(palIdx):
@@ -1031,10 +1036,12 @@ gfx::Color PaletteView::drawEntry(ui::Graphics* g, const gfx::Rect& box, int pal
     rgba_geta(palColor));
 
   gfx::Rect box2(box);
-  box2.enlarge(1);
-  for (int i=1; i<=guiscale(); ++i, box2.enlarge(1))
-    g->drawRect(gfx::rgba(0, 0, 0), box2);
-  draw_color(g, box, appColor, doc::ColorMode::RGB);
+  box2.enlarge(guiscale());
+  if (withSeparator) {
+    for (int i=0; i<guiscale(); ++i, box2.shrink(1))
+      g->drawRect(gfx::rgba(0, 0, 0), box2);
+  }
+  draw_color(g, box2, appColor, doc::ColorMode::RGB);
   return gfxColor;
 }
 

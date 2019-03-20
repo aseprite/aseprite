@@ -141,7 +141,10 @@ namespace app {
     int findExactIndex(const app::Color& color) const;
     void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette,
                        PaletteViewModification mod);
-    gfx::Color drawEntry(ui::Graphics* g, const gfx::Rect& box, int palIdx);
+    gfx::Color drawEntry(ui::Graphics* g,
+                         const gfx::Rect& box,
+                         const int palIdx,
+                         const bool withSeparator);
 
     State m_state;
     bool m_editable;
