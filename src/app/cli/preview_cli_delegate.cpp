@@ -96,7 +96,10 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   }
 
   if (cof.trim) {
-    std::cout << "  - Trim\n";
+    if (cof.trimByGrid)
+      std::cout << "  - Trim by Grid\n";
+    else
+      std::cout << "  - Trim\n";
   }
 
   if (cof.ignoreEmpty) {

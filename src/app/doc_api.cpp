@@ -9,6 +9,7 @@
 #endif
 
 #include "app/doc_api.h"
+#include "app/snap_to_grid.h"
 
 #include "app/cmd/add_cel.h"
 #include "app/cmd/add_frame.h"
@@ -45,6 +46,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -156,7 +158,7 @@ void DocApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
   }
 }
 
-void DocApi::trimSprite(Sprite* sprite)
+void DocApi::trimSprite(Sprite* sprite, bool isByGrid)
 {
   gfx::Rect bounds;
 
@@ -172,6 +174,19 @@ void DocApi::trimSprite(Sprite* sprite)
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
     gfx::Rect frameBounds;
+    if (isByGrid) {
+      Doc* doc = m_document;
+      auto& docPref = Preferences::instance().document(doc);
+      gfx::Point posTopLeft =
+              snap_to_grid(docPref.grid.bounds(),
+                           frameBounds.origin(),
+                           PreferSnapTo::FloorGrid);
+      gfx::Point posBottomRight =
+              snap_to_grid(docPref.grid.bounds(),
+                           frameBounds.point2(),
+                           PreferSnapTo::CeilGrid);
+      frameBounds = gfx::Rect(posTopLeft, posBottomRight);
+    }
     if (doc::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
       bounds = bounds.createUnion(frameBounds);
   }

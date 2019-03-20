@@ -45,7 +45,7 @@ namespace app {
     void setSpriteSize(Sprite* sprite, int w, int h);
     void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
     void cropSprite(Sprite* sprite, const gfx::Rect& bounds);
-    void trimSprite(Sprite* sprite);
+    void trimSprite(Sprite* sprite, bool isByGrid);
 
     // Frames API
     void addFrame(Sprite* sprite, frame_t newFrame);

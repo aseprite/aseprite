@@ -87,13 +87,25 @@ public:
   AutocropSpriteCommand();
 
 protected:
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+
+private:
+    bool m_byGrid = false;
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()
   : Command(CommandId::AutocropSprite(), CmdRecordableFlag)
 {
+}
+
+void AutocropSpriteCommand::onLoadParams(const app::Params &params)
+{
+  std::string isByGrid = params.get("byGrid");
+  if (isByGrid == "true")
+    m_byGrid = true;
 }
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
@@ -108,8 +120,8 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Tx tx(writer.context(), "Trim Sprite");
-    document->getApi(tx).trimSprite(sprite);
+    Tx tx(writer.context(), onGetFriendlyName());
+    document->getApi(tx).trimSprite(sprite, m_byGrid);
     tx.commit();
   }
   document->generateMaskBoundaries();
@@ -118,6 +130,16 @@ void AutocropSpriteCommand::onExecute(Context* context)
   if (context->isUIAvailable())
     update_screen_for_document(document);
 #endif
+}
+
+std::string AutocropSpriteCommand::onGetFriendlyName() const
+{
+  std::string text;
+  if (m_byGrid)
+    text = "Trim Sprite by grid";
+  else
+    text = "Trim Sprite";
+  return text;
 }
 
 Command* CommandFactory::createCropSpriteCommand()
