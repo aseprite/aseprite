@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,10 +71,19 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
   m_csConn = App::instance()->ColorSpaceChange.connect(
     base::Bind<void>(&PaletteView::invalidate, this));
 
+  {
+    auto& entriesSep = Preferences::instance().colorBar.entriesSeparator;
+    m_withSeparator = entriesSep();
+    m_sepConn = entriesSep.AfterChange.connect(
+        [this, &entriesSep](bool newValue) {
+          m_withSeparator = entriesSep();
+          updateBorderAndChildSpacing();
+        });
+  }
+
   InitTheme.connect(
     [this]{
-      setBorder(gfx::Border(1 * guiscale()));
-      setChildSpacing(1 * guiscale());
+      updateBorderAndChildSpacing();
     });
   initTheme();
 }
@@ -408,7 +417,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         if (static_cast<MouseMessage*>(msg)->preciseWheel())
           scroll += delta;
         else
-          scroll += delta * 3 * int(m_boxsize*guiscale());
+          scroll += delta * 3 * boxSizePx();
 
         view->setViewScroll(scroll);
       }
@@ -440,7 +449,8 @@ bool PaletteView::onProcessMessage(Message* msg)
     }
 
     case kTouchMagnifyMessage: {
-      setBoxSize(m_boxsize + m_boxsize * static_cast<ui::TouchMessage*>(msg)->magnification());
+      setBoxSize(m_boxsize +
+                 m_boxsize * static_cast<ui::TouchMessage*>(msg)->magnification());
       break;
     }
 
@@ -451,8 +461,8 @@ bool PaletteView::onProcessMessage(Message* msg)
 
 void PaletteView::onPaint(ui::PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  int outlineWidth = theme->dimensions.paletteOutlineWidth();
+  auto theme = static_cast<SkinTheme*>(this->theme());
+  const int outlineWidth = theme->dimensions.paletteOutlineWidth();
   ui::Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
   Palette* palette = currentPalette();
@@ -463,8 +473,6 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
                          m_hot.part == Hit::POSSIBLE_COLOR);
   const bool dragging = (m_state == State::DRAGGING_OUTLINE && hotColor);
   const bool resizing = (m_state == State::RESIZING_PALETTE && hotColor);
-  const bool withSeparator =
-    Preferences::instance().colorBar.entriesSeparator();
 
   if (m_style == FgBgColors && m_delegate) {
     fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
@@ -497,33 +505,30 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     }
 
     gfx::Rect box = getPaletteEntryBounds(i + boxOffset);
-    gfx::Color gfxColor = drawEntry(g, box, i + idxOffset, withSeparator);
-    const int boxsize = int(m_boxsize * guiscale());
+    gfx::Color negColor;
+    drawEntry(g, i + idxOffset, i + boxOffset, box, negColor);
+    const int boxsize = boxSizePx();
 
     switch (m_style) {
 
       case SelectOneColor:
         if (m_currentEntry == i)
-          g->fillRect(color_utils::blackandwhite_neg(gfxColor),
-                      gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
+          g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
         break;
 
       case FgBgColors:
         if (fgIndex == i) {
-          gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
           for (int i=0; i<int(boxsize/2); ++i)
-            g->drawHLine(neg, box.x, box.y+i, int(boxsize/2)-i);
+            g->drawHLine(negColor, box.x, box.y+i, int(boxsize/2)-i);
         }
 
         if (bgIndex == i) {
-          gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
           for (int i=0; i<int(boxsize/4); ++i)
-            g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-int(boxsize/4)+i, i+1);
+            g->drawHLine(negColor, box.x+box.w-(i+1), box.y+box.h-int(boxsize/4)+i, i+1);
         }
 
         if (transparentIndex == i)
-          g->fillRect(color_utils::blackandwhite_neg(gfxColor),
-                      gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
+          g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
         break;
     }
   }
@@ -556,21 +561,22 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     if (!m_selectedEntries[i])
       continue;
 
-    int k = (dragging ? m_hot.color+j: i);
+    const int k = (dragging ? m_hot.color+j: i);
 
     gfx::Rect box, clipR;
-    getEntryBoundsAndClip(k, picks, box, clipR, outlineWidth);
+    getEntryBoundsAndClip(k, picks, outlineWidth, box, clipR);
 
     IntersectClip clip(g, clipR);
     if (clip) {
       // Draw color being dragged + label
       if (dragging) {
         gfx::Rect box2 = getPaletteEntryBounds(k);
-        gfx::Color gfxColor = drawEntry(g, box2, i, withSeparator); // Draw color entry
+        gfx::Color negColor;
+        drawEntry(g, i, k, box2, negColor);
 
-        gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
+        gfx::Color neg = color_utils::blackandwhite_neg(negColor);
         os::Font* minifont = theme->getMiniFont();
-        std::string text = base::convert_to<std::string>(k);
+        const std::string text = base::convert_to<std::string>(k);
         g->setFont(minifont);
         g->drawText(text, neg, gfx::ColorNone,
                     gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
@@ -599,7 +605,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
           continue;
 
         gfx::Rect box, clipR;
-        getEntryBoundsAndClip(i, clipboardPicks, box, clipR, outlineWidth);
+        getEntryBoundsAndClip(i, clipboardPicks, 1*guiscale(), box, clipR);
 
         IntersectClip clip(g, clipR);
         if (clip) {
@@ -620,8 +626,11 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
     View* view = View::getView(this);
     if (view) {
       int columns =
-        (view->viewportBounds().w-this->childSpacing()*2)
-        / (int(m_boxsize*guiscale())+this->childSpacing());
+        (view->viewportBounds().w
+         -this->border().width()
+         +this->childSpacing())
+        / (boxSizePx()
+           +this->childSpacing());
       setColumns(MAX(1, columns));
     }
     m_isUpdatingColumns = false;
@@ -640,7 +649,7 @@ void PaletteView::onSizeHint(ui::SizeHintEvent& ev)
     ++rows;
   }
 
-  const int boxsize = int(m_boxsize * guiscale());
+  const int boxsize = boxSizePx();
   ev.setSizeHint(
     gfx::Size(
       border().width() + cols*boxsize + (cols-1)*childSpacing(),
@@ -662,7 +671,7 @@ void PaletteView::update_scroll(int color)
   gfx::Point scroll;
   int x, y, cols;
   div_t d;
-  const int boxsize = int(m_boxsize * guiscale());
+  const int boxsize = boxSizePx();
 
   scroll = view->viewScroll();
 
@@ -696,22 +705,22 @@ void PaletteView::onAppPaletteChange()
 
 gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
 {
-  gfx::Rect bounds = clientBounds();
-  int cols = m_columns;
-  int col = index % cols;
-  int row = index / cols;
-  int boxsize = int(m_boxsize * guiscale());
+  const gfx::Rect bounds = clientChildrenBounds();
+  const int col = index % m_columns;
+  const int row = index / m_columns;
+  const int boxsize = boxSizePx();
+  const int spacing = childSpacing();
 
   return gfx::Rect(
-    bounds.x + border().left() + col*(boxsize+childSpacing()),
-    bounds.y + border().top() + row*(boxsize+childSpacing()),
+    bounds.x + col*boxsize + (col-1)*spacing + (m_withSeparator ? border().left(): 0),
+    bounds.y + row*boxsize + (row-1)*spacing + (m_withSeparator ? border().top(): 0),
     boxsize, boxsize);
 }
 
 PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  int outlineWidth = theme->dimensions.paletteOutlineWidth();
+  auto theme = static_cast<SkinTheme*>(this->theme());
+  const int outlineWidth = theme->dimensions.paletteOutlineWidth();
   Palette* palette = currentPalette();
 
   if (m_state == State::WAITING && m_editable) {
@@ -757,9 +766,6 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   }
 
   gfx::Rect box = getPaletteEntryBounds(0);
-  int boxsize = int(m_boxsize * guiscale());
-  box.w = (boxsize+childSpacing());
-  box.h = (boxsize+childSpacing());
 
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)
@@ -828,46 +834,59 @@ void PaletteView::dropColors(int beforeIndex)
 }
 
 void PaletteView::getEntryBoundsAndClip(int i, const PalettePicks& entries,
-                                        gfx::Rect& box, gfx::Rect& clip,
-                                        int outlineWidth) const
+                                        const int outlineWidth,
+                                        gfx::Rect& box, gfx::Rect& clip) const
 {
+  const auto theme = static_cast<SkinTheme*>(this->theme());
+  const int childSpacing = this->childSpacing();
+
   box = clip = getPaletteEntryBounds(i);
   box.enlarge(outlineWidth);
 
+  gfx::Border boxBorder(0, 0, 0, 0);
+  gfx::Border clipBorder(0, 0, 0, 0);
+
   // Left
-  if (!pickedXY(entries, i, -1, 0)) {
-    clip.x -= outlineWidth;
-    clip.w += outlineWidth;
+  if (!pickedXY(entries, i, -1, 0))
+    clipBorder.left(outlineWidth);
+  else {
+    boxBorder.left((childSpacing+1)/2);
+    clipBorder.left((childSpacing+1)/2);
   }
 
   // Top
-  if (!pickedXY(entries, i, 0, -1)) {
-    clip.y -= outlineWidth;
-    clip.h += outlineWidth;
+  if (!pickedXY(entries, i, 0, -1))
+    clipBorder.top(outlineWidth);
+  else {
+    boxBorder.top((childSpacing+1)/2);
+    clipBorder.top((childSpacing+1)/2);
   }
 
   // Right
   if (!pickedXY(entries, i, +1, 0))
-    clip.w += outlineWidth;
+    clipBorder.right(outlineWidth);
   else {
-    clip.w += guiscale();
-    box.w += outlineWidth;
+    boxBorder.right(childSpacing/2);
+    clipBorder.right(childSpacing/2);
   }
 
   // Bottom
   if (!pickedXY(entries, i, 0, +1))
-    clip.h += outlineWidth;
+    clipBorder.bottom(outlineWidth);
   else {
-    clip.h += guiscale();
-    box.h += outlineWidth;
+    boxBorder.bottom(childSpacing/2);
+    clipBorder.bottom(childSpacing/2);
   }
+
+  box.enlarge(boxBorder);
+  clip.enlarge(clipBorder);
 }
 
 bool PaletteView::pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const
 {
-  int x = (i % m_columns) + dx;
-  int y = (i / m_columns) + dy;
-  int lastcolor = entries.size()-1;
+  const int x = (i % m_columns) + dx;
+  const int y = (i / m_columns) + dy;
+  const int lastcolor = entries.size()-1;
 
   if (x < 0 || x >= m_columns || y < 0 || y > lastcolor/m_columns)
     return false;
@@ -1016,10 +1035,11 @@ void PaletteView::setNewPalette(doc::Palette* oldPalette,
   manager()->invalidate();
 }
 
-gfx::Color PaletteView::drawEntry(ui::Graphics* g,
-                                  const gfx::Rect& box,
-                                  const int palIdx,
-                                  const bool withSeparator)
+void PaletteView::drawEntry(ui::Graphics* g,
+                            const int palIdx,
+                            const int offIdx,
+                            gfx::Rect& box,
+                            gfx::Color& negColor)
 {
   doc::color_t palColor =
     (palIdx < currentPalette()->size() ? currentPalette()->getEntry(palIdx):
@@ -1029,20 +1049,40 @@ gfx::Color PaletteView::drawEntry(ui::Graphics* g,
     rgba_getg(palColor),
     rgba_getb(palColor),
     rgba_geta(palColor));
-  gfx::Color gfxColor = gfx::rgba(
+
+  if (m_withSeparator) {
+    auto theme = static_cast<SkinTheme*>(this->theme());
+    gfx::Color color = theme->colors.paletteEntriesSeparator();
+    g->fillRect(color, gfx::Rect(box).enlarge(childSpacing()));
+  }
+  draw_color(g, box, appColor, doc::ColorMode::RGB);
+
+  const gfx::Color gfxColor = gfx::rgba(
     rgba_getr(palColor),
     rgba_getg(palColor),
     rgba_getb(palColor),
     rgba_geta(palColor));
+  negColor = color_utils::blackandwhite_neg(gfxColor);
+}
 
-  gfx::Rect box2(box);
-  box2.enlarge(guiscale());
-  if (withSeparator) {
-    for (int i=0; i<guiscale(); ++i, box2.shrink(1))
-      g->drawRect(gfx::rgba(0, 0, 0), box2);
-  }
-  draw_color(g, box2, appColor, doc::ColorMode::RGB);
-  return gfxColor;
+int PaletteView::boxSizePx() const
+{
+  return m_boxsize*guiscale()
+    + (m_withSeparator ? 0: childSpacing());
+}
+
+void PaletteView::updateBorderAndChildSpacing()
+{
+  auto theme = static_cast<SkinTheme*>(this->theme());
+  const int dim = theme->dimensions.paletteEntriesSeparator();
+  setBorder(gfx::Border(dim));
+  setChildSpacing(m_withSeparator ? dim: 0);
+
+  View* view = View::getView(this);
+  if (view)
+    view->updateView();
+
+  invalidate();
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -130,9 +130,10 @@ namespace app {
     gfx::Rect getPaletteEntryBounds(int index) const;
     Hit hitTest(const gfx::Point& pos);
     void dropColors(int beforeIndex);
-    void getEntryBoundsAndClip(int i, const doc::PalettePicks& entries,
-                               gfx::Rect& box, gfx::Rect& clip,
-                               int outlineWidth) const;
+    void getEntryBoundsAndClip(int i,
+                               const doc::PalettePicks& entries,
+                               const int outlineWidth,
+                               gfx::Rect& box, gfx::Rect& clip) const;
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
     void updateCopyFlag(ui::Message* msg);
     void setCursor();
@@ -141,10 +142,13 @@ namespace app {
     int findExactIndex(const app::Color& color) const;
     void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette,
                        PaletteViewModification mod);
-    gfx::Color drawEntry(ui::Graphics* g,
-                         const gfx::Rect& box,
-                         const int palIdx,
-                         const bool withSeparator);
+    void drawEntry(ui::Graphics* g,
+                   const int palIdx,
+                   const int offIdx,
+                   gfx::Rect& box,
+                   gfx::Color& negColor);
+    int boxSizePx() const;
+    void updateBorderAndChildSpacing();
 
     State m_state;
     bool m_editable;
@@ -158,8 +162,10 @@ namespace app {
     bool m_isUpdatingColumns;
     obs::scoped_connection m_palConn;
     obs::scoped_connection m_csConn;
+    obs::scoped_connection m_sepConn;
     Hit m_hot;
     bool m_copy;
+    bool m_withSeparator;
   };
 
 } // namespace app

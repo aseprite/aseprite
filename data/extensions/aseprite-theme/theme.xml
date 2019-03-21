@@ -22,6 +22,7 @@
         <dim id="timeline_tags_area_height" value="4" />
         <dim id="timeline_outline_width" value="2" />
         <dim id="palette_outline_width" value="3" />
+        <dim id="palette_entries_separator" value="1" />
         <dim id="color_slider_height" value="14" />
         <dim id="timeline_base_size" value="12" />
         <dim id="color_bar_buttons_height" value="16" />
@@ -109,6 +110,7 @@
         <color id="select_box_ruler" value="#0000ff" />
         <color id="select_box_grid" value="#64c864" />
         <color id="edit_pal_face" value="#655561" />
+        <color id="palette_entries_separator" value="#000000" />
     </colors>
     <parts>
         <part id="cursor_normal" x="80" y="0" w="16" h="16" focusx="0" focusy="0" />
