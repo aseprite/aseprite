@@ -11,6 +11,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
@@ -103,9 +104,12 @@ AutocropSpriteCommand::AutocropSpriteCommand()
 
 void AutocropSpriteCommand::onLoadParams(const app::Params &params)
 {
-  std::string isByGrid = params.get("byGrid");
-  if (isByGrid == "true")
-    m_byGrid = true;
+  m_byGrid = false;
+  if (params.has_param("byGrid")) {
+    std::string isByGrid = params.get("byGrid");
+    if (isByGrid == "true")
+      m_byGrid = true;
+  }
 }
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
@@ -134,12 +138,10 @@ void AutocropSpriteCommand::onExecute(Context* context)
 
 std::string AutocropSpriteCommand::onGetFriendlyName() const
 {
-  std::string text;
   if (m_byGrid)
-    text = "Trim Sprite by grid";
+    return "Trim Sprite by Grid";
   else
-    text = "Trim Sprite";
-  return text;
+    return "Trim Sprite";
 }
 
 Command* CommandFactory::createCropSpriteCommand()
