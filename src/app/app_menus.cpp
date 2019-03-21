@@ -728,6 +728,7 @@ void AppMenus::createNativeMenus()
         UIContext::instance()->executeCommand(cmd);
       }
     };
+    about.validate = [](os::MenuItem* item){ item->setEnabled(true); };
 
     os::MenuItemInfo preferences("Preferences...");
     native = get_native_shortcut_for_command(CommandId::Options());
@@ -738,6 +739,7 @@ void AppMenus::createNativeMenus()
         UIContext::instance()->executeCommand(cmd);
       }
     };
+    preferences.validate = [](os::MenuItem* item){ item->setEnabled(true); };
 
     os::MenuItemInfo hide("Hide " PACKAGE, os::MenuItemInfo::Hide);
     hide.shortcut = os::Shortcut('h', os::kKeyCmdModifier);
