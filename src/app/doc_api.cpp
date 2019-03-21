@@ -174,21 +174,22 @@ void DocApi::trimSprite(Sprite* sprite, bool isByGrid)
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
     gfx::Rect frameBounds;
+    if (doc::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
+      bounds = bounds.createUnion(frameBounds);
+
     if (isByGrid) {
       Doc* doc = m_document;
       auto& docPref = Preferences::instance().document(doc);
       gfx::Point posTopLeft =
               snap_to_grid(docPref.grid.bounds(),
-                           frameBounds.origin(),
+                           bounds.origin(),
                            PreferSnapTo::FloorGrid);
       gfx::Point posBottomRight =
               snap_to_grid(docPref.grid.bounds(),
-                           frameBounds.point2(),
+                           bounds.point2(),
                            PreferSnapTo::CeilGrid);
-      frameBounds = gfx::Rect(posTopLeft, posBottomRight);
+      bounds = gfx::Rect(posTopLeft, posBottomRight);
     }
-    if (doc::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
-      bounds = bounds.createUnion(frameBounds);
   }
 
   if (!bounds.isEmpty())
