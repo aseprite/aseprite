@@ -837,7 +837,6 @@ void PaletteView::getEntryBoundsAndClip(int i, const PalettePicks& entries,
                                         const int outlineWidth,
                                         gfx::Rect& box, gfx::Rect& clip) const
 {
-  const auto theme = static_cast<SkinTheme*>(this->theme());
   const int childSpacing = this->childSpacing();
 
   box = clip = getPaletteEntryBounds(i);
