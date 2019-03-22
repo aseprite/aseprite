@@ -9,6 +9,7 @@
 #endif
 
 #include "app/doc_api.h"
+#include "app/snap_to_grid.h"
 
 #include "app/cmd/add_cel.h"
 #include "app/cmd/add_frame.h"
@@ -45,6 +46,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -156,7 +158,7 @@ void DocApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
   }
 }
 
-void DocApi::trimSprite(Sprite* sprite)
+void DocApi::trimSprite(Sprite* sprite, bool isByGrid)
 {
   gfx::Rect bounds;
 
@@ -174,6 +176,20 @@ void DocApi::trimSprite(Sprite* sprite)
     gfx::Rect frameBounds;
     if (doc::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
       bounds = bounds.createUnion(frameBounds);
+
+    if (isByGrid) {
+      Doc* doc = m_document;
+      auto& docPref = Preferences::instance().document(doc);
+      gfx::Point posTopLeft =
+              snap_to_grid(docPref.grid.bounds(),
+                           bounds.origin(),
+                           PreferSnapTo::FloorGrid);
+      gfx::Point posBottomRight =
+              snap_to_grid(docPref.grid.bounds(),
+                           bounds.point2(),
+                           PreferSnapTo::CeilGrid);
+      bounds = gfx::Rect(posTopLeft, posBottomRight);
+    }
   }
 
   if (!bounds.isEmpty())

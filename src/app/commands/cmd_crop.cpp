@@ -12,6 +12,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
@@ -87,13 +88,28 @@ public:
   AutocropSpriteCommand();
 
 protected:
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+
+private:
+    bool m_byGrid = false;
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()
   : Command(CommandId::AutocropSprite(), CmdRecordableFlag)
 {
+}
+
+void AutocropSpriteCommand::onLoadParams(const app::Params &params)
+{
+  m_byGrid = false;
+  if (params.has_param("byGrid")) {
+    std::string isByGrid = params.get("byGrid");
+    if (isByGrid == "true")
+      m_byGrid = true;
+  }
 }
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
@@ -108,8 +124,8 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Tx tx(writer.context(), "Trim Sprite");
-    document->getApi(tx).trimSprite(sprite);
+    Tx tx(writer.context(), onGetFriendlyName());
+    document->getApi(tx).trimSprite(sprite, m_byGrid);
     tx.commit();
   }
 
@@ -117,6 +133,14 @@ void AutocropSpriteCommand::onExecute(Context* context)
   if (context->isUIAvailable())
     update_screen_for_document(document);
 #endif
+}
+
+std::string AutocropSpriteCommand::onGetFriendlyName() const
+{
+  if (m_byGrid)
+    return "Trim Sprite by Grid";
+  else
+    return "Trim Sprite";
 }
 
 Command* CommandFactory::createCropSpriteCommand()

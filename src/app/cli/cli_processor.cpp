@@ -271,6 +271,14 @@ void CliProcessor::process(Context* ctx)
           if (m_exporter)
             m_exporter->setTrimCels(true);
         }
+        // --trim-by-grid
+        else if (opt == &m_options.trimByGrid()) {
+          cof.trim = cof.trimByGrid = true;
+          if (m_exporter) {
+            m_exporter->setTrimCels(true);
+            m_exporter->setTrimByGrid(true);
+          }
+        }
         // --crop x,y,width,height
         else if (opt == &m_options.crop()) {
           std::vector<std::string> parts;
@@ -712,8 +720,13 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
         // don't have sheet .json) Also, we should trim each frame
         // individually (a process that can be done only in
         // FileOp::operate()).
-        if (cof.trim)
-          ctx->executeCommand(trimCommand);
+        if (cof.trim) {
+          Params params;
+          if (cof.trimByGrid) {
+            params.set("byGrid", "true");
+          }
+          ctx->executeCommand(trimCommand, params);
+        }
 
         CliOpenFile itemCof = cof;
         FilenameInfo fnInfo;
@@ -744,6 +757,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
         // Call delegate
         m_delegate->saveFile(ctx, itemCof);
 
+        // for trim or trimByGrid case
         if (cof.trim) {
           ctx->executeCommand(undoCommand);
           clearUndo = true;

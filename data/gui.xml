@@ -480,6 +480,10 @@
       <key command="SymmetryMode">
         <param name="orientation" value="horizontal" />
       </key>
+      <key command="AutocropSprite" />
+      <key command="AutocropSprite">
+        <param name="byGrid" value="true" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->

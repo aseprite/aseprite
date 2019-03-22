@@ -32,6 +32,7 @@ CliOpenFile::CliOpenFile()
   listSlices = false;
   ignoreEmpty = false;
   trim = false;
+  trimByGrid = false;
   oneFrame = false;
   crop = gfx::Rect();
 }
