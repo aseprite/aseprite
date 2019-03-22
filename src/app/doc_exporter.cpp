@@ -603,6 +603,7 @@ void DocExporter::captureSamples(Samples& samples)
         }
 
         if (m_trimCels) {
+          // TODO merge this code with the code in DocApi::trimSprite()
           if (m_trimByGrid) {
             auto& docPref = Preferences::instance().document(doc);
             gfx::Point posTopLeft =

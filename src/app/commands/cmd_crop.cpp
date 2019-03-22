@@ -102,7 +102,7 @@ AutocropSpriteCommand::AutocropSpriteCommand()
 {
 }
 
-void AutocropSpriteCommand::onLoadParams(const app::Params &params)
+void AutocropSpriteCommand::onLoadParams(const app::Params& params)
 {
   m_byGrid = false;
   if (params.has_param("byGrid")) {

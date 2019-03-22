@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -158,7 +159,7 @@ void DocApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
   }
 }
 
-void DocApi::trimSprite(Sprite* sprite, bool isByGrid)
+void DocApi::trimSprite(Sprite* sprite, const bool byGrid)
 {
   gfx::Rect bounds;
 
@@ -177,7 +178,8 @@ void DocApi::trimSprite(Sprite* sprite, bool isByGrid)
     if (doc::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
       bounds = bounds.createUnion(frameBounds);
 
-    if (isByGrid) {
+    // TODO merge this code with the code in DocExporter::captureSamples()
+    if (byGrid) {
       Doc* doc = m_document;
       auto& docPref = Preferences::instance().document(doc);
       gfx::Point posTopLeft =

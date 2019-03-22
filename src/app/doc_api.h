@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -45,7 +46,7 @@ namespace app {
     void setSpriteSize(Sprite* sprite, int w, int h);
     void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
     void cropSprite(Sprite* sprite, const gfx::Rect& bounds);
-    void trimSprite(Sprite* sprite, bool isByGrid);
+    void trimSprite(Sprite* sprite, const bool byGrid);
 
     // Frames API
     void addFrame(Sprite* sprite, frame_t newFrame);
