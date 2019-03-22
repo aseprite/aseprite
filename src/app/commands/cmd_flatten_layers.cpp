@@ -44,8 +44,7 @@ FlattenLayersCommand::FlattenLayersCommand()
 
 void FlattenLayersCommand::onLoadParams(const Params& params)
 {
-  std::string visibleOnly = params.get("visibleOnly");
-  m_visibleOnly = (visibleOnly == "true");
+  m_visibleOnly = params.get_as<bool>("visibleOnly");
 }
 
 bool FlattenLayersCommand::onEnabled(Context* context)

@@ -45,7 +45,7 @@ void PaletteEditorCommand::onLoadParams(const Params& params)
   m_edit =
     (params.empty() ||
      params.get("edit") == "switch" ||
-     params.get("switch") == "true"); // "switch" for backward compatibility
+     params.get_as<bool>("switch")); // "switch" for backward compatibility
   m_popup = (!params.get("popup").empty());
   m_background = (params.get("popup") == "background");
 }

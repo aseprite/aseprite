@@ -72,6 +72,17 @@ namespace app {
     Map m_params;
   };
 
+  template<>
+  inline const bool Params::get_as<bool>(const char* name) const {
+    bool value = false;
+    auto it = m_params.find(name);
+    if (it != m_params.end()) {
+      value = (it->second == "1" ||
+               it->second == "true");
+    }
+    return value;
+  }
+
 } // namespace app
 
 #endif

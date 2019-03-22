@@ -44,17 +44,9 @@ TimelineCommand::TimelineCommand()
 
 void TimelineCommand::onLoadParams(const Params& params)
 {
-  std::string open_str = params.get("open");
-  if (open_str == "true") m_open = true;
-  else m_open = false;
-
-  std::string close_str = params.get("close");
-  if (close_str == "true") m_close = true;
-  else m_close = false;
-
-  std::string switch_str = params.get("switch");
-  if (switch_str == "true") m_switch = true;
-  else m_switch = false;
+  m_open = params.get_as<bool>("open");
+  m_close = params.get_as<bool>("close");
+  m_switch = params.get_as<bool>("switch");
 }
 
 void TimelineCommand::onExecute(Context* context)

@@ -115,8 +115,7 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
   std::string useUI = params.get("useUI");
   m_useUI = (useUI.empty() || (useUI == "true"));
 
-  std::string ignoreEmpty = params.get("ignoreEmpty");
-  m_ignoreEmpty = (ignoreEmpty == "true");
+  m_ignoreEmpty = params.get_as<bool>("ignoreEmpty");
 }
 
 // Returns true if there is a current sprite to save.

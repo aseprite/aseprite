@@ -85,8 +85,8 @@ void OpenFileCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_folder = params.get("folder"); // Initial folder
-  m_repeatCheckbox = (params.get("repeat_checkbox") == "true");
-  m_oneFrame = (params.get("oneframe") == "true");
+  m_repeatCheckbox = params.get_as<bool>("repeat_checkbox");
+  m_oneFrame = params.get_as<bool>("oneframe");
 
   std::string sequence = params.get("sequence");
   if (m_oneFrame || sequence == "skip")

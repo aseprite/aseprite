@@ -79,17 +79,17 @@ void NewLayerCommand::onLoadParams(const Params& params)
 {
   m_name = params.get("name");
   m_type = Type::Layer;
-  if (params.get("group") == "true")
+  if (params.get_as<bool>("group"))
     m_type = Type::Group;
-  else if (params.get("reference") == "true")
+  else if (params.get_as<bool>("reference"))
     m_type = Type::ReferenceLayer;
 
-  m_ask = (params.get("ask") == "true");
-  m_fromFile = (params.get("from-file") == "true");
+  m_ask = params.get_as<bool>("ask");
+  m_fromFile = params.get_as<bool>("from-file");
   m_place = Place::AfterActiveLayer;
-  if (params.get("top") == "true")
+  if (params.get_as<bool>("top"))
     m_place = Place::Top;
-  else if (params.get("before") == "true")
+  else if (params.get_as<bool>("before"))
     m_place = Place::BeforeActiveLayer;
 }
 

@@ -104,12 +104,7 @@ AutocropSpriteCommand::AutocropSpriteCommand()
 
 void AutocropSpriteCommand::onLoadParams(const app::Params& params)
 {
-  m_byGrid = false;
-  if (params.has_param("byGrid")) {
-    std::string isByGrid = params.get("byGrid");
-    if (isByGrid == "true")
-      m_byGrid = true;
-  }
+  m_byGrid = params.get_as<bool>("byGrid");
 }
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
