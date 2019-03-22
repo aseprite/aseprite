@@ -30,8 +30,13 @@ public:
   bool snapByAngle() override { return true; }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
-    if (!stroke.empty()) {
-      gfx::Point mid(0, 0);
+    if (stroke.empty())
+      return;
+
+    gfx::Point mid;
+
+    if (loop->getController()->isTwoPoints() &&
+        (int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter))) {
       int n = 0;
       for (auto& pt : stroke) {
         mid.x += pt.x;
@@ -40,9 +45,12 @@ public:
       }
       mid.x /= n;
       mid.y /= n;
-
-      doPointshapePoint(mid.x, mid.y, loop);
     }
+    else {
+      mid = stroke[0];
+    }
+
+    doPointshapePoint(mid.x, mid.y, loop);
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
