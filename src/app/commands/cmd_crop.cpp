@@ -138,9 +138,9 @@ void AutocropSpriteCommand::onExecute(Context* context)
 std::string AutocropSpriteCommand::onGetFriendlyName() const
 {
   if (m_byGrid)
-    return "Trim Sprite by Grid";
+    return Strings::commands_AutocropSprite_ByGrid();
   else
-    return "Trim Sprite";
+    return Strings::commands_AutocropSprite();
 }
 
 Command* CommandFactory::createCropSpriteCommand()
