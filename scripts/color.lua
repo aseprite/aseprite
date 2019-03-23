@@ -26,6 +26,9 @@ assert(a.green == 100)
 assert(a.blue == 20)
 assert(a.alpha == 200)
 assert(a == b)
+print(a.rgbaPixel)
+print(app.pixelColor.rgba(200, 100, 20, 200))
+assert(a.rgbaPixel == app.pixelColor.rgba(200, 100, 20, 200))
 
 a = Color{ h=180, s=0.4, v=0.5, a=200 }
 b = Color{ hue=180, saturation=0.4, value=0.5, alpha=200 }

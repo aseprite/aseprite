@@ -60,7 +60,7 @@ app.useTool{
 local cel = spr.cels[1]
 assert(cel.bounds == Rectangle(0, 0, 4, 4))
 do
-  local r = app.pixelColor.rgba(red.red, red.green, red.blue)
+  local r = red.rgbaPixel
   local expected = { r, 0, 0, 0,
                      0, r, 0, 0,
                      0, 0, r, 0,
@@ -85,7 +85,7 @@ app.useTool{
   points={ Point(3, 0) }}
 local cel = spr.cels[1]
 do
-  local r = app.pixelColor.rgba(red.red, red.green, red.blue)
+  local r = red.rgbaPixel
   local expected = { r, r, r, r,
                      0, r, r, r,
                      0, 0, r, r,
@@ -111,8 +111,8 @@ app.useTool{
   points={ Point(0, 0), Point(3, 3) }}
 local cel = spr.cels[1]
 do
-  local r = app.pixelColor.rgba(red.red, red.green, red.blue)
-  local b = app.pixelColor.rgba(blue.red, blue.green, blue.blue)
+  local r = red.rgbaPixel
+  local b = blue.rgbaPixel
   local expected = { b, b, b, b,
                      b, r, r, b,
                      b, 0, r, b,
@@ -138,9 +138,9 @@ app.useTool{
   points={ Point(0, 0), Point(3, 3) }}
 local cel = spr.cels[1]
 do
-  local r = app.pixelColor.rgba(red.red, red.green, red.blue)
-  local b = app.pixelColor.rgba(blue.red, blue.green, blue.blue)
-  local y = app.pixelColor.rgba(yellow.red, yellow.green, yellow.blue)
+  local r = red.rgbaPixel
+  local b = blue.rgbaPixel
+  local y = yellow.rgbaPixel
   local expected = { b, y, y, b,
                      y, r, r, y,
                      y, 0, r, y,
