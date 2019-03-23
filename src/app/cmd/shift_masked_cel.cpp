@@ -45,7 +45,24 @@ void ShiftMaskedCel::shift(int dx, int dy)
   ASSERT(mask->bitmap());
   if (!mask->bitmap())
     return;
-  doc::algorithm::shift_image_with_mask(cel, mask, dx, dy);
+
+  gfx::Rect newBounds;
+  ImageRef newImage =
+    doc::algorithm::shift_image_with_mask(cel, mask, dx, dy, newBounds);
+
+  ImageRef oldImage = cel->imageRef();
+  if (!is_same_image(oldImage.get(), newImage.get())) {
+    ObjectId id = oldImage->id();
+    ObjectVersion ver = oldImage->version();
+    oldImage->setId(NullId);
+
+    newImage->setId(id);
+    newImage->setVersion(ver);
+    newImage->incrementVersion();
+    cel->data()->setImage(newImage);
+  }
+  cel->data()->setBounds(newBounds);
+  cel->data()->incrementVersion();
 }
 
 } // namespace cmd

@@ -59,6 +59,8 @@ void CopyRegion::onRedo()
 void CopyRegion::swap()
 {
   Image* image = this->image();
+  ASSERT(image);
+
   swap_image_region_with_buffer(m_region, image, m_buffer);
   image->incrementVersion();
 }

@@ -58,7 +58,11 @@ void shift_image(Image* image, int dx, int dy, double angle)
   }
 }
 
-void shift_image_with_mask(Cel* cel, const Mask* mask, int dx, int dy)
+ImageRef shift_image_with_mask(const Cel* cel,
+                               const Mask* mask,
+                               const int dx,
+                               const int dy,
+                               gfx::Rect& newCelBounds)
 {
   ASSERT(!cel->bounds().isEmpty());
   ASSERT(!mask->bounds().isEmpty());
@@ -107,13 +111,15 @@ void shift_image_with_mask(Cel* cel, const Mask* mask, int dx, int dy)
     compCelBounds.setSize(newBounds.size());
   }
   ImageRef finalImage(Image::create(compImage->pixelFormat(), compCelBounds.w, compCelBounds.h));
-  finalImage->copy(compImage.get(), gfx::Clip(0, 0, newBounds.x, newBounds.y,
-                                        compCelBounds.w, compCelBounds.h));
+  finalImage->copy(
+    compImage.get(),
+    gfx::Clip(0, 0, newBounds.x, newBounds.y,
+              compCelBounds.w, compCelBounds.h));
 
   // Final cel content assign
-  finalImage->incrementVersion(); // TODO this should be in app::cmd module
-  cel->data()->setBounds(compCelBounds);
-  cel->data()->setImage(finalImage);
+  newCelBounds = compCelBounds;
+  return finalImage;
 }
+
 } // namespace algorithm
 } // namespace doc
