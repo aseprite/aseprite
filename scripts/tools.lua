@@ -3,6 +3,22 @@
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
+----------------------------------------------------------------------
+-- activeTool
+----------------------------------------------------------------------
+
+local pencil = app.activeTool -- pencil is the default tool
+assert(pencil ~= nil)
+assert(pencil.id == 'pencil')
+app.activeTool = 'line'
+assert(app.activeTool.id == 'line')
+app.activeTool = pencil
+assert(app.activeTool.id == 'pencil')
+
+----------------------------------------------------------------------
+-- create sprite for testing
+----------------------------------------------------------------------
+
 local spr = Sprite(4, 4)
 local cel = spr.cels[1]
 assert(cel.bounds == Rectangle(0, 0, 4, 4))
