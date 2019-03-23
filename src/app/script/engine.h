@@ -40,6 +40,10 @@ namespace doc {
   class WithUserData;
 }
 
+namespace tools {
+  class Tool;
+}
+
 namespace app {
 
   class DocRange;
@@ -124,6 +128,7 @@ namespace app {
   void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
   void push_sprites(lua_State* L);
   void push_userdata(lua_State* L, doc::WithUserData* userData);
+  void push_tool(lua_State* L, tools::Tool* tool);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);
@@ -136,6 +141,7 @@ namespace app {
   doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
   doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
   const doc::Mask* get_mask_from_arg(lua_State* L, int index);
+  tools::Tool* get_tool_from_arg(lua_State* L, int index);
 
 } // namespace script
 } // namespace app

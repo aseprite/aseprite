@@ -205,9 +205,8 @@ int App_toolStroke(lua_State* L)
   tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
   tools::Ink* ink = tool->getInk(0);
   int type = lua_getfield(L, 1, "tool");
-  if (type == LUA_TSTRING) {
-    const char* toolId = lua_tostring(L, -1);
-    tool = App::instance()->toolBox()->getToolById(toolId);
+  if (auto toolArg = get_tool_from_arg(L, -1)) {
+    tool = toolArg;
     ink = tool->getInk(0);
   }
   lua_pop(L, 1);
@@ -490,6 +489,20 @@ int App_set_activeImage(lua_State* L)
   return 0;
 }
 
+int App_get_activeTool(lua_State* L)
+{
+  tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
+  push_tool(L, tool);
+  return 1;
+}
+
+int App_set_activeTool(lua_State* L)
+{
+  if (auto tool = get_tool_from_arg(L, 2))
+    App::instance()->activeToolManager()->setSelectedTool(tool);
+  return 0;
+}
+
 const luaL_Reg App_methods[] = {
   { "open",        App_open },
   { "exit",        App_exit },
@@ -509,6 +522,7 @@ const Property App_properties[] = {
   { "activeCel", App_get_activeCel, App_set_activeCel },
   { "activeImage", App_get_activeImage, App_set_activeImage },
   { "activeTag", App_get_activeTag, nullptr },
+  { "activeTool", App_get_activeTool, App_set_activeTool },
   { "sprites", App_get_sprites, nullptr },
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },

@@ -163,6 +163,7 @@ void register_sprite_class(lua_State* L);
 void register_sprites_class(lua_State* L);
 void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
+void register_tool_class(lua_State* L);
 
 void set_app_params(lua_State* L, const Params& params);
 
@@ -325,6 +326,7 @@ Engine::Engine()
   register_sprites_class(L);
   register_tag_class(L);
   register_tags_class(L);
+  register_tool_class(L);
 
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);

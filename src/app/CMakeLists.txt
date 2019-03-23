@@ -181,6 +181,7 @@ if(ENABLE_SCRIPTING)
     script/sprites_class.cpp
     script/tag_class.cpp
     script/tags_class.cpp
+    script/tool_class.cpp
     shell.cpp
     ${scripting_files_ui})
 endif()
