@@ -728,6 +728,9 @@ void AppMenus::createNativeMenus()
         UIContext::instance()->executeCommand(cmd);
       }
     };
+    about.validate = [native](os::MenuItem* item){
+      item->setEnabled(can_call_global_shortcut(&native));
+    };
 
     os::MenuItemInfo preferences("Preferences...");
     native = get_native_shortcut_for_command(CommandId::Options());
@@ -737,6 +740,9 @@ void AppMenus::createNativeMenus()
         Command* cmd = Commands::instance()->byId(CommandId::Options());
         UIContext::instance()->executeCommand(cmd);
       }
+    };
+    preferences.validate = [native](os::MenuItem* item){
+      item->setEnabled(can_call_global_shortcut(&native));
     };
 
     os::MenuItemInfo hide("Hide " PACKAGE, os::MenuItemInfo::Hide);
