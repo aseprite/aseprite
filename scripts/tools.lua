@@ -27,19 +27,19 @@ assert(cel.bounds == Rectangle(0, 0, 4, 4))
 -- pencil and eraser
 ----------------------------------------------------------------------
 
-app.toolStroke{
+app.useTool{
   tool='pencil',
   color=Color{ r=0, g=0, b=0 },
   points={ Point(2, 2),
            Point(3, 2) }}
 assert(cel.bounds == Rectangle(2, 2, 2, 1))
 
-app.toolStroke{
+app.useTool{
   tool='eraser',
   points={ Point(2, 2) }}
 assert(cel.bounds == Rectangle(3, 2, 1, 1))
 
-app.toolStroke{
+app.useTool{
   tool='eraser',
   points={ Point(3, 2) }}
 -- This must fail because cel is pointing to an invalid cel now.
@@ -53,7 +53,7 @@ assert(not pcall(function() print(cel.bounds) end))
 ----------------------------------------------------------------------
 
 local red = Color{ r=255, g=0, b=0 }
-app.toolStroke{
+app.useTool{
   tool='line',
   color=red,
   points={ Point(0, 0), Point(3, 3) }}
@@ -79,7 +79,7 @@ end
 -- paint_bucket
 ----------------------------------------------------------------------
 
-app.toolStroke{
+app.useTool{
   tool='paint_bucket',
   color=red,
   points={ Point(3, 0) }}
@@ -105,7 +105,7 @@ end
 ----------------------------------------------------------------------
 
 local blue = Color{ r=0, g=0, b=255 }
-app.toolStroke{
+app.useTool{
   tool='rectangle',
   color=blue,
   points={ Point(0, 0), Point(3, 3) }}
@@ -132,7 +132,7 @@ end
 ----------------------------------------------------------------------
 
 local yellow = Color{ r=255, g=255, b=0 }
-app.toolStroke{
+app.useTool{
   tool='ellipse',
   color=yellow,
   points={ Point(0, 0), Point(3, 3) }}
