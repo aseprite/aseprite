@@ -154,3 +154,41 @@ do
     end
   end
 end
+
+----------------------------------------------------------------------
+-- draw in several cels
+----------------------------------------------------------------------
+
+do
+  local spr2 = Sprite(4, 4)
+  spr2:newFrame()
+
+  local bgLay = spr2.layers[1]
+  local fgLay = spr2:newLayer()
+  local bgCel1 = spr2:newCel(fgLay, 1, Image(spr2.spec))
+  local fgCel1 = spr2:newCel(bgLay, 1, Image(spr2.spec))
+  local bgCel2 = spr2:newCel(fgLay, 2, Image(spr2.spec))
+  local fgCel2 = spr2:newCel(bgLay, 2, Image(spr2.spec))
+  assert(fgCel1.bounds == Rectangle(0, 0, 4, 4))
+  assert(bgCel1.bounds == Rectangle(0, 0, 4, 4))
+  assert(fgCel2.bounds == Rectangle(0, 0, 4, 4))
+  assert(bgCel2.bounds == Rectangle(0, 0, 4, 4))
+
+  -- After each useTool(), the cels will be shrunken to the minimum
+  -- required size.
+  app.activeTool = 'pencil'
+  app.useTool{ color=red, cel=bgCel1, points={ Point(0, 0) }}
+  app.useTool{ color=red, cel=bgCel2, points={ Point(1, 0) }}
+  app.useTool{ color=yellow, cel=fgCel1, points={ Point(1, 1) }}
+  app.useTool{ color=yellow, cel=fgCel2, points={ Point(2, 1) }}
+
+  assert(bgCel1.bounds == Rectangle(0, 0, 1, 1))
+  assert(bgCel2.bounds == Rectangle(1, 0, 1, 1))
+  assert(fgCel1.bounds == Rectangle(1, 1, 1, 1))
+  assert(fgCel2.bounds == Rectangle(2, 1, 1, 1))
+
+  assert(bgCel1.image:getPixel(0, 0) == red.rgbaPixel)
+  assert(bgCel2.image:getPixel(0, 0) == red.rgbaPixel)
+  assert(fgCel1.image:getPixel(0, 0) == yellow.rgbaPixel)
+  assert(fgCel2.image:getPixel(0, 0) == yellow.rgbaPixel)
+end
