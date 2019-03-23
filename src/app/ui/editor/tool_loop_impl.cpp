@@ -686,21 +686,20 @@ tools::ToolLoop* create_tool_loop(
 
 tools::ToolLoop* create_tool_loop_for_script(
   Context* context,
+  const Site& site,
   tools::Tool* tool,
   tools::Ink* ink,
   const app::Color& color)
 {
   ASSERT(tool);
   ASSERT(ink);
-
-  Site site = context->activeSite();
   if (!site.layer())
     return nullptr;
 
   try {
-    tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
+    const tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
     tools::Controller* controller = tool->getController(toolLoopButton);
-    BrushRef brush;
+    BrushRef brush(nullptr);
 #ifdef ENABLE_UI
     if (App::instance()->contextBar())
       brush = App::instance()->contextBar()->activeBrush(tool, ink);
@@ -710,8 +709,7 @@ tools::ToolLoop* create_tool_loop_for_script(
 
     return new ToolLoopImpl(
       nullptr, site, context,
-      tool, ink, controller,
-      brush,
+      tool, ink, controller, brush,
       toolLoopButton, color, color, false);
   }
   catch (const std::exception& ex) {

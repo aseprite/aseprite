@@ -21,6 +21,7 @@ namespace app {
   class Color;
   class Context;
   class Editor;
+  class Site;
 
   namespace tools {
     class Ink;
@@ -36,6 +37,7 @@ namespace app {
 
   tools::ToolLoop* create_tool_loop_for_script(
     Context* context,
+    const Site& site,
     tools::Tool* tool,
     tools::Ink* ink,
     const app::Color& color);

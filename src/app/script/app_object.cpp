@@ -197,14 +197,43 @@ int App_useTool(lua_State* L)
     return luaL_error(L, "app.useTool() must be called with a table as its first argument");
 
   auto ctx = App::instance()->context();
-  Doc* doc = ctx->activeDocument();
-  if (!doc)
+  Site site = ctx->activeSite();
+
+  // Draw in a specific cel, layer, or frame
+  int type = lua_getfield(L, 1, "layer");
+  if (type != LUA_TNIL) {
+    if (auto layer = get_docobj<Layer>(L, -1)) {
+      site.document(static_cast<Doc*>(layer->sprite()->document()));
+      site.sprite(layer->sprite());
+      site.layer(layer);
+    }
+  }
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 1, "frame");
+  if (type != LUA_TNIL) {
+    site.frame(get_frame_number_from_arg(L, -1));
+  }
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 1, "cel");
+  if (type != LUA_TNIL) {
+    if (auto cel = get_docobj<Cel>(L, -1)) {
+      site.document(static_cast<Doc*>(cel->sprite()->document()));
+      site.sprite(cel->sprite());
+      site.layer(cel->layer());
+      site.frame(cel->frame());
+    }
+  }
+  lua_pop(L, 1);
+
+  if (!site.document())
     return luaL_error(L, "there is no active document to draw with the tool");
 
   // Select tool by name
   tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
   tools::Ink* ink = tool->getInk(0);
-  int type = lua_getfield(L, 1, "tool");
+  type = lua_getfield(L, 1, "tool");
   if (auto toolArg = get_tool_from_arg(L, -1)) {
     tool = toolArg;
     ink = tool->getInk(0);
@@ -222,7 +251,10 @@ int App_useTool(lua_State* L)
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
     std::unique_ptr<tools::ToolLoop> loop(
-      create_tool_loop_for_script(ctx, tool, ink, color));
+      create_tool_loop_for_script(ctx, site, tool, ink, color));
+    if (!loop)
+      return luaL_error(L, "cannot draw in the active site");
+
     tools::ToolLoopManager manager(loop.get());
     tools::Pointer lastPointer;
     bool first = true;
