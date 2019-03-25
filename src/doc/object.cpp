@@ -53,7 +53,7 @@ const ObjectId Object::id() const
   // The first time the ID is request, we store the object in the
   // "objects" hash table.
   if (!m_id) {
-    base::scoped_unlock hold(mutex);
+    base::scoped_lock hold(mutex);
     m_id = ++newId;
     objects.insert(std::make_pair(m_id, const_cast<Object*>(this)));
   }
@@ -62,7 +62,7 @@ const ObjectId Object::id() const
 
 void Object::setId(ObjectId id)
 {
-  base::scoped_unlock hold(mutex);
+  base::scoped_lock hold(mutex);
 
   if (m_id) {
     auto it = objects.find(m_id);
@@ -87,7 +87,7 @@ void Object::setVersion(ObjectVersion version)
 
 Object* get_object(ObjectId id)
 {
-  base::scoped_unlock hold(mutex);
+  base::scoped_lock hold(mutex);
   auto it = objects.find(id);
   if (it != objects.end())
     return it->second;
