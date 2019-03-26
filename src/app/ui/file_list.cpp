@@ -663,8 +663,20 @@ void FileList::recalcAllFileItemInfo()
 
   m_itemsPerRow = 1;
 
+  // Add the vertical scrollbar space
+  if (isListView()) {
+    if (view) {
+      view->updateView();
+      if (!view->verticalBar()->isVisible()) {
+        gfx::Rect vp = view->viewportBounds();
+        for (auto& info : m_info) {
+          info.bounds.w = vp.w;
+        }
+      }
+    }
+  }
   // Redistribute items in X axis
-  if (isIconView()) {
+  else if (isIconView()) {
     int maxWidth = 0;
     int maxTextWidth = 0;
     for (const auto& info : m_info) {
