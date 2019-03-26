@@ -24,6 +24,7 @@ namespace app {
   class IFileItem;
 
   class ThumbnailGenerator {
+    ThumbnailGenerator();
   public:
     static ThumbnailGenerator* instance();
 
@@ -43,6 +44,8 @@ namespace app {
     void stopAllWorkers();
 
   private:
+    void startWorker();
+
     class Worker;
     typedef std::vector<Worker*> WorkerList;
 
@@ -56,6 +59,7 @@ namespace app {
       }
     };
 
+    int m_maxWorkers;
     WorkerList m_workers;
     base::mutex m_workersAccess;
     std::unique_ptr<base::thread> m_stopThread;

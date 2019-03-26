@@ -203,6 +203,13 @@ ThumbnailGenerator* ThumbnailGenerator::instance()
   return singleton;
 }
 
+ThumbnailGenerator::ThumbnailGenerator()
+{
+  int n = std::thread::hardware_concurrency()-1;
+  if (n < 1) n = 1;
+  m_maxWorkers = n;
+}
+
 bool ThumbnailGenerator::checkWorkers()
 {
   base::scoped_lock hold(m_workersAccess);
@@ -231,17 +238,31 @@ void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
     return;
 
   if (fileitem->getThumbnailProgress() > 0.0) {
-    if (fileitem->getThumbnailProgress() < 0.0002) {
+    if (fileitem->getThumbnailProgress() == 0.00001) {
       m_remainingItems.prioritize(
         [fileitem](const Item& item) {
           return (item.fileitem == fileitem);
         });
+
+      // If there is no more workers running, we have to start a new
+      // one to process the m_remainingItems queue. How is it possible
+      // that a IFileItem has a thumbnail progress == 0.00001 but
+      // there is no workers?  This is an edge case where:
+      // 1. The Worker::loadBgThread() asks for the queue of remaining items
+      //    and it's empty, so the thread is going to be closed
+      // 2. We've just created a FOP for this IFileItem and ask for
+      //    available workers and we've already launch the max quantity
+      //    of possible workers (m_maxWorkers)
+      // 3. All worker threads are just closed so there is no more
+      //    worker for the remaining item in the queue.
+      if (m_workers.empty())
+        startWorker();
     }
     return;
   }
 
   // Set a starting progress so we don't enqueue the same item two times.
-  fileitem->setThumbnailProgress(0.0001);
+  fileitem->setThumbnailProgress(0.00001);
 
   THUMB_TRACE("Queue FOP thumbnail for %s\n",
               fileitem->fileName().c_str());
@@ -261,19 +282,7 @@ void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
   m_remainingItems.push(Item(fileitem, fop.get()));
   fop.release();
 
-  int n = std::thread::hardware_concurrency()-1;
-  if (n < 1) n = 1;
-  if (m_workers.size() < n) {
-    Worker* worker = new Worker(m_remainingItems);
-    try {
-      base::scoped_lock hold(m_workersAccess);
-      m_workers.push_back(worker);
-    }
-    catch (...) {
-      delete worker;
-      throw;
-    }
-  }
+  startWorker();
 }
 
 void ThumbnailGenerator::stopAllWorkers()
@@ -294,6 +303,16 @@ void ThumbnailGenerator::stopAllWorkers()
   base::scoped_lock hold(m_workersAccess);
   for (auto worker : m_workers)
     worker->stop();
+}
+
+void ThumbnailGenerator::startWorker()
+{
+  base::scoped_lock hold(m_workersAccess);
+  if (m_workers.size() < m_maxWorkers) {
+    std::unique_ptr<Worker> worker(new Worker(m_remainingItems));
+    m_workers.push_back(worker.get());
+    worker.release();
+  }
 }
 
 } // namespace app
