@@ -59,12 +59,10 @@ FileFormat* CreateTgaFormat()
   return new TgaFormat;
 }
 
-/* rle_tga_read:
- *  Helper for reading 256 color RLE data from TGA files.
- */
-static void rle_tga_read(unsigned char *address, int w, int type, FILE *f)
+static void rle_tga_read8(FILE* f, uint8_t* address, int w, int type)
 {
-  unsigned char value;
+  uint8_t* end = address + (w * (type == 1 ? 1: 2));
+  uint8_t value;
   int count, g;
   int c = 0;
 
@@ -75,11 +73,14 @@ static void rle_tga_read(unsigned char *address, int w, int type, FILE *f)
       c += count;
       value = fgetc(f);
       while (count--) {
-        if (type == 1)
-          *(address++) = value;
+        if (type == 1) {
+          if (address+1 < end)
+            *(address++) = value;
+        }
         else {
-          *((uint16_t*)address) = value;
-          address += sizeof(uint16_t);
+          if (address+2 < end)
+            *((uint16_t*)address) = graya(value, 255);
+          address += 2;
         }
       }
     }
@@ -87,24 +88,25 @@ static void rle_tga_read(unsigned char *address, int w, int type, FILE *f)
       count++;
       c += count;
       if (type == 1) {
-        fread(address, 1, count, f);
+        if (address+count < end)
+          fread(address, 1, count, f);
         address += count;
       }
       else {
         for (g=0; g<count; g++) {
-          *((uint16_t*)address) = fgetc(f);
-          address += sizeof(uint16_t);
+          int c = fgetc(f);
+          if (address+2 < end)
+            *((uint16_t*)address) = graya(c, 255);
+          address += 2;
         }
       }
     }
   } while (c < w);
 }
 
-/* rle_tga_read32:
- *  Helper for reading 32 bit RLE data from TGA files.
- */
-static void rle_tga_read32(uint32_t* address, int w, FILE *f)
+static void rle_tga_read32(FILE* f, uint32_t* address, int w, bool withAlpha)
 {
+  uint32_t* end = address + w;
   unsigned char value[4];
   int count;
   int c = 0;
@@ -115,25 +117,28 @@ static void rle_tga_read32(uint32_t* address, int w, FILE *f)
       count = (count & 0x7F) + 1;
       c += count;
       fread(value, 1, 4, f);
-      while (count--)
-        *(address++) = rgba(value[2], value[1], value[0], value[3]);
+      while (count--) {
+        if (address+1 < end)
+          *(address++) = rgba(value[2], value[1], value[0],
+                              withAlpha ? value[3]: 255);
+      }
     }
     else {
       count++;
       c += count;
       while (count--) {
         fread(value, 1, 4, f);
-        *(address++) = rgba(value[2], value[1], value[0], value[3]);
+        if (address+1 < end)
+          *(address++) = rgba(value[2], value[1], value[0],
+                              withAlpha ? value[3]: 255);
       }
     }
   } while (c < w);
 }
 
-/* rle_tga_read24:
- *  Helper for reading 24 bit RLE data from TGA files.
- */
-static void rle_tga_read24(uint32_t* address, int w, FILE *f)
+static void rle_tga_read24(FILE* f, uint32_t* address, int w)
 {
+  uint32_t* end = address + w;
   unsigned char value[4];
   int count;
   int c = 0;
@@ -144,25 +149,26 @@ static void rle_tga_read24(uint32_t* address, int w, FILE *f)
       count = (count & 0x7F) + 1;
       c += count;
       fread(value, 1, 3, f);
-      while (count--)
-        *(address++) = rgba(value[2], value[1], value[0], 255);
+      while (count--) {
+        if (address+1 < end)
+          *(address++) = rgba(value[2], value[1], value[0], 255);
+      }
     }
     else {
       count++;
       c += count;
       while (count--) {
         fread(value, 1, 3, f);
-        *(address++) = rgba(value[2], value[1], value[0], 255);
+        if (address+1 < end)
+          *(address++) = rgba(value[2], value[1], value[0], 255);
       }
     }
   } while (c < w);
 }
 
-/* rle_tga_read16:
- *  Helper for reading 16 bit RLE data from TGA files.
- */
 static void rle_tga_read16(uint32_t* address, int w, FILE *f)
 {
+  uint32_t* end = address + w;
   unsigned int value;
   uint32_t color;
   int count;
@@ -174,22 +180,26 @@ static void rle_tga_read16(uint32_t* address, int w, FILE *f)
       count = (count & 0x7F) + 1;
       c += count;
       value = fgetw(f);
-      color = rgba(scale_5bits_to_8bits(((value >> 10) & 0x1F)),
-                   scale_5bits_to_8bits(((value >> 5) & 0x1F)),
-                   scale_5bits_to_8bits((value & 0x1F)), 255);
+      color = rgba(scale_5bits_to_8bits((value >> 10) & 0x1F),
+                   scale_5bits_to_8bits((value >> 5) & 0x1F),
+                   scale_5bits_to_8bits(value & 0x1F), 255);
 
-      while (count--)
-        *(address++) = color;
+      while (count--) {
+        if (address+1 < end)
+          *(address++) = color;
+      }
     }
     else {
       count++;
       c += count;
       while (count--) {
         value = fgetw(f);
-        color = rgba(scale_5bits_to_8bits(((value >> 10) & 0x1F)),
-                     scale_5bits_to_8bits(((value >> 5) & 0x1F)),
-                     scale_5bits_to_8bits((value & 0x1F)), 255);
-        *(address++) = color;
+        color = rgba(scale_5bits_to_8bits((value >> 10) & 0x1F),
+                     scale_5bits_to_8bits((value >> 5) & 0x1F),
+                     scale_5bits_to_8bits(value & 0x1F), 255);
+
+        if (address+1 < end)
+          *(address++) = color;
       }
     }
   } while (c < w);
@@ -232,9 +242,9 @@ bool TgaFormat::onLoad(FileOp* fop)
 
         case 16:
           c = fgetw(f);
-          image_palette[i][0] = (c & 0x1F) << 3;
-          image_palette[i][1] = ((c >> 5) & 0x1F) << 3;
-          image_palette[i][2] = ((c >> 10) & 0x1F) << 3;
+          image_palette[i][0] = scale_5bits_to_8bits(c & 0x1F);
+          image_palette[i][1] = scale_5bits_to_8bits((c >> 5) & 0x1F);
+          image_palette[i][2] = scale_5bits_to_8bits((c >> 10) & 0x1F);
           break;
 
         case 24:
@@ -265,6 +275,7 @@ bool TgaFormat::onLoad(FileOp* fop)
   image_type &= 7;
 
   PixelFormat pixelFormat;
+  bool withAlpha = false;
 
   switch (image_type) {
 
@@ -291,7 +302,8 @@ bool TgaFormat::onLoad(FileOp* fop)
            (bpp != 24) && (bpp != 32))) {
         return false;
       }
-      if ((descriptor_bits & 0xf) == 8)
+      withAlpha = ((descriptor_bits & 0xf) == 8);
+      if (withAlpha)
         fop->sequenceSetHasAlpha(true);
       pixelFormat = IMAGE_RGB;
       break;
@@ -325,7 +337,7 @@ bool TgaFormat::onLoad(FileOp* fop)
       case 1:
       case 3:
         if (compressed)
-          rle_tga_read(image->getPixelAddress(0, yc), image_width, image_type, f);
+          rle_tga_read8(f, image->getPixelAddress(0, yc), image_width, image_type);
         else if (image_type == 1)
           fread(image->getPixelAddress(0, yc), 1, image_width, f);
         else {
@@ -337,18 +349,21 @@ bool TgaFormat::onLoad(FileOp* fop)
       case 2:
         if (bpp == 32) {
           if (compressed) {
-            rle_tga_read32((uint32_t*)image->getPixelAddress(0, yc), image_width, f);
+            rle_tga_read32(f, (uint32_t*)image->getPixelAddress(0, yc), image_width,
+                           withAlpha);
           }
           else {
             for (x=0; x<image_width; x++) {
               fread(rgb, 1, 4, f);
-              put_pixel_fast<RgbTraits>(image, x, yc, rgba(rgb[2], rgb[1], rgb[0], rgb[3]));
+              put_pixel_fast<RgbTraits>(image, x, yc,
+                                        rgba(rgb[2], rgb[1], rgb[0],
+                                             withAlpha ? rgb[3]: 255));
             }
           }
         }
         else if (bpp == 24) {
           if (compressed) {
-            rle_tga_read24((uint32_t*)image->getPixelAddress(0, yc), image_width, f);
+            rle_tga_read24(f, (uint32_t*)image->getPixelAddress(0, yc), image_width);
           }
           else {
             for (x=0; x<image_width; x++) {
@@ -364,9 +379,10 @@ bool TgaFormat::onLoad(FileOp* fop)
           else {
             for (x=0; x<image_width; x++) {
               c = fgetw(f);
-              put_pixel_fast<RgbTraits>(image, x, yc, rgba(((c >> 10) & 0x1F),
-                                                           ((c >> 5) & 0x1F),
-                                                           (c & 0x1F), 255));
+              put_pixel_fast<RgbTraits>(
+                image, x, yc, rgba(scale_5bits_to_8bits((c >> 10) & 0x1F),
+                                   scale_5bits_to_8bits((c >> 5) & 0x1F),
+                                   scale_5bits_to_8bits(c & 0x1F), 255));
             }
           }
         }
@@ -419,7 +435,8 @@ bool TgaFormat::onSave(FileOp* fop)
   fputc(depth, f);                     /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
-  fputc(image->pixelFormat() == IMAGE_RGB && !fop->document()->sprite()->isOpaque()? 8: 0, f);
+  fputc(image->pixelFormat() == IMAGE_RGB &&
+        !fop->document()->sprite()->isOpaque() ? 8: 0, f);
 
   if (need_pal) {
     for (y=0; y<256; y++) {
