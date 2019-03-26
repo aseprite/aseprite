@@ -481,7 +481,11 @@ again:
         enter_folder = folder;
     }
     else if (fn.empty()) {
-      if (m_type != FileSelectorType::OpenMultiple) {
+      IFileItem* selected = m_fileList->selectedFileItem();
+      if (selected && selected->isBrowsable())
+        enter_folder = selected;
+      else if (m_type != FileSelectorType::OpenMultiple ||
+               m_fileList->selectedFileItems().empty()) {
         // Show the window again
         setVisible(true);
         goto again;
