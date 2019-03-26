@@ -57,7 +57,7 @@ namespace ui {
     gfx::Rect viewportBounds();
 
     // For viewable widgets
-    static View* getView(Widget* viewableWidget);
+    static View* getView(const Widget* viewableWidget);
 
   protected:
     // Events

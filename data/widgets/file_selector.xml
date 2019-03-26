@@ -1,15 +1,25 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2018 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="file_selector" text="">
   <vbox id="main">
     <box horizontal="true">
-      <box horizontal="true" noborders="true">
-        <button text="" id="go_back_button" style="go_back_button" tooltip="@.go_back_button_tooltip" />
-        <button text="" id="go_forward_button" style="go_forward_button" tooltip="@.go_forward_button_tooltip" />
-      </box>
-      <button text="" id="go_up_button" style="go_up_button" tooltip="@.go_up_button_tooltip" />
-      <button text="" id="new_folder_button" style="new_folder_button" tooltip="@.new_folder_button_tooltip" />
+      <hbox noborders="true">
+        <button text="" id="go_back_button" style="go_back_button"
+                tooltip="@.go_back_button_tooltip" tooltip_dir="bottom" />
+        <button text="" id="go_forward_button" style="go_forward_button"
+                tooltip="@.go_forward_button_tooltip" tooltip_dir="bottom" />
+      </hbox>
+      <button text="" id="go_up_button" style="go_up_button"
+              tooltip="@.go_up_button_tooltip" tooltip_dir="bottom" />
+      <button text="" id="new_folder_button" style="new_folder_button"
+              tooltip="@.new_folder_button_tooltip" tooltip_dir="bottom" />
+      <buttonset id="view_type" columns="3">
+        <item icon="list_view" tooltip="@.list_view_button_tooltip" tooltip_dir="bottom" />
+        <item icon="small_icon_view" tooltip="@.small_icon_view_button_tooltip" tooltip_dir="bottom" />
+        <item icon="big_icon_view" tooltip="@.big_icon_view_button_tooltip" tooltip_dir="bottom" />
+      </buttonset>
       <combobox id="location" expansive="true" />
     </box>
     <vbox id="file_view_placeholder" expansive="true" />

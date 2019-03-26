@@ -490,7 +490,9 @@ CompositeImageFunc get_fastest_composition_path(const Projection& proj,
   }
   // Slower composite function for special cases with odd zoom and non-square pixel ratio
   else if (((proj.removeX(1) > 1) && (proj.removeX(1) & 1)) ||
-           ((proj.removeY(1) > 1) && (proj.removeY(1) & 1))) {
+           ((proj.removeY(1) > 1) && (proj.removeY(1) & 1)) ||
+           (proj.applyX(1.0) - proj.applyX(1) > 0.01) ||
+           (proj.applyY(1.0) - proj.applyY(1) > 0.01)) {
     return composite_image_general<DstTraits, SrcTraits>;
   }
   else {

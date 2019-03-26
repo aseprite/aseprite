@@ -133,6 +133,7 @@ void OpenFileCommand::onExecute(Context* context)
 
   int flags =
     FILE_LOAD_DATA_FILE |
+    FILE_LOAD_CREATE_PALETTE |
     (m_repeatCheckbox ? FILE_LOAD_SEQUENCE_ASK_CHECKBOX: 0);
 
   switch (m_seqDecision) {

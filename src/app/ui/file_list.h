@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "app/file_system.h"
+#include "app/ui/animated_widget.h"
 #include "base/paths.h"
 #include "base/time.h"
 #include "obs/signal.h"
@@ -24,7 +26,8 @@ namespace os {
 
 namespace app {
 
-  class FileList : public ui::Widget {
+  class FileList : public ui::Widget
+                 , private AnimatedWidget {
   public:
     FileList();
     virtual ~FileList();
@@ -45,7 +48,11 @@ namespace app {
 
     void goUp();
 
-    gfx::Rect thumbnailBounds();
+    gfx::Rect mainThumbnailBounds();
+
+    double zoom() const { return m_zoom; }
+    void setZoom(const double zoom);
+    void animateToZoom(const double zoom);
 
     obs::signal<void()> FileSelected;
     obs::signal<void()> FileAccepted;
@@ -60,18 +67,40 @@ namespace app {
     virtual void onCurrentFolderChanged();
 
   private:
+    enum {
+      ANI_NONE,
+      ANI_ZOOM,
+    };
+
+    struct ItemInfo {
+      gfx::Rect bounds;
+      gfx::Rect text;
+      gfx::Rect thumbnail;
+    };
+
+    void paintItem(ui::Graphics* g, IFileItem* fi, const int i);
     void onGenerateThumbnailTick();
     void onMonitoringTick();
-    gfx::Size getFileItemSize(IFileItem* fi) const;
+    void recalcAllFileItemInfo();
+    ItemInfo calcFileItemInfo(int i) const;
+    ItemInfo getFileItemInfo(int i) const { return m_info[i]; }
     void makeSelectedFileitemVisible();
     void regenerateList();
     int selectedIndex() const;
     void selectIndex(int index);
-    void generatePreviewOfSelectedItem();
-    int thumbnailY();
+    void generateThumbnailForFileItem(IFileItem* fi);
+    void delayThumbnailGenerationForSelectedItem();
+    bool hasThumbnailsPerItem() const { return m_zoom > 1.0; }
+    bool isListView() const { return !hasThumbnailsPerItem(); }
+    bool isIconView() const { return hasThumbnailsPerItem(); }
+
+    // AnimatedWidget impl
+    void onAnimationStop(int animation) override;
+    void onAnimationFrame() override;
 
     IFileItem* m_currentFolder;
     FileItemList m_list;
+    std::vector<ItemInfo> m_info;
 
     bool m_req_valid;
     int m_req_w, m_req_h;
@@ -94,11 +123,15 @@ namespace app {
     // thumbnail to generate when the m_generateThumbnailTimer ticks.
     IFileItem* m_itemToGenerateThumbnail;
 
-    os::Surface* m_thumbnail;
-
     // True if this listbox accepts selecting multiple items at the
     // same time.
     bool m_multiselect;
+
+    double m_zoom;
+    double m_fromZoom;
+    double m_toZoom;
+
+    int m_itemsPerRow;
   };
 
 } // namespace app

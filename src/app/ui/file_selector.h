@@ -52,6 +52,7 @@ namespace app {
     void onGoForward();
     void onGoUp();
     void onNewFolder();
+    void onChangeViewType();
     void onLocationCloseListBox();
     void onFileTypeChange();
     void onFileListFileSelected();

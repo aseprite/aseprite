@@ -75,7 +75,11 @@ base::paths get_writable_extensions()
 Doc* load_document(Context* context, const std::string& filename)
 {
   /* TODO add a option to configure what to do with the sequence */
-  std::unique_ptr<FileOp> fop(FileOp::createLoadDocumentOperation(context, filename, FILE_LOAD_SEQUENCE_NONE));
+  std::unique_ptr<FileOp> fop(
+    FileOp::createLoadDocumentOperation(
+      context, filename,
+      FILE_LOAD_CREATE_PALETTE |
+      FILE_LOAD_SEQUENCE_NONE));
   if (!fop)
     return nullptr;
 
@@ -302,6 +306,9 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string&
   // Load just one frame
   if (flags & FILE_LOAD_ONE_FRAME)
     fop->m_oneframe = true;
+
+  if (flags & FILE_LOAD_CREATE_PALETTE)
+    fop->m_createPaletteFromRgba = true;
 
   // Does data file exist?
   if (flags & FILE_LOAD_DATA_FILE) {
@@ -887,7 +894,8 @@ void FileOp::postLoad()
   Sprite* sprite = m_document->sprite();
   if (sprite) {
     // Creates a suitable palette for RGB images
-    if (sprite->pixelFormat() == IMAGE_RGB &&
+    if (m_createPaletteFromRgba &&
+        sprite->pixelFormat() == IMAGE_RGB &&
         sprite->getPalettes().size() <= 1 &&
         sprite->palette(frame_t(0))->isBlack()) {
       base::SharedPtr<Palette> palette(
@@ -1176,6 +1184,7 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_done(false)
   , m_stop(false)
   , m_oneframe(false)
+  , m_createPaletteFromRgba(false)
   , m_ignoreEmpty(false)
   , m_preserveColorProfile(
       Preferences::instance().color.manage())

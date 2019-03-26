@@ -82,6 +82,7 @@ Palette* load_palette(const char* filename)
       std::unique_ptr<FileOp> fop(
         FileOp::createLoadDocumentOperation(
           nullptr, filename,
+          FILE_LOAD_CREATE_PALETTE |
           FILE_LOAD_SEQUENCE_NONE |
           FILE_LOAD_ONE_FRAME));
 

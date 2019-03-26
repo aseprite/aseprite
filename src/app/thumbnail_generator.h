@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define APP_THUMBNAIL_GENERATOR_H_INCLUDED
 #pragma once
 
+#include "base/concurrent_queue.h"
 #include "base/mutex.h"
 
 #include <memory>
@@ -18,21 +20,16 @@ namespace base {
 }
 
 namespace app {
+  class FileOp;
   class IFileItem;
 
   class ThumbnailGenerator {
   public:
-    enum WorkerStatus { WithoutWorker, WorkingOnThumbnail, ThumbnailIsDone };
-
     static ThumbnailGenerator* instance();
 
     // Generate a thumbnail for the given file-item.  It must be called
     // from the GUI thread.
-    void addWorkerToGenerateThumbnail(IFileItem* fileitem);
-
-    // Returns the status of the worker that is generating the thumbnail
-    // for the given file.
-    WorkerStatus getWorkerStatus(IFileItem* fileitem, double& progress);
+    void generateThumbnail(IFileItem* fileitem);
 
     // Checks the status of workers. If there are workers that already
     // done its job, we've to destroy them. This function must be called
@@ -51,10 +48,22 @@ namespace app {
     class Worker;
     typedef std::vector<Worker*> WorkerList;
 
+    struct Item {
+      IFileItem* fileitem;
+      FileOp* fop;
+      Item() : fileitem(nullptr), fop(nullptr) { }
+      Item(const Item& item) : fileitem(item.fileitem), fop(item.fop) { }
+      Item(IFileItem* fileitem, FileOp* fop)
+        : fileitem(fileitem), fop(fop) {
+      }
+    };
+
     WorkerList m_workers;
     base::mutex m_workersAccess;
     std::unique_ptr<base::thread> m_stopThread;
+    base::concurrent_queue<Item> m_remainingItems;
   };
+
 } // namespace app
 
 #endif

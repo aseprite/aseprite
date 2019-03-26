@@ -80,6 +80,9 @@ namespace app {
 
     virtual bool hasExtension(const base::paths& extensions) = 0;
 
+    virtual double getThumbnailProgress() = 0;
+    virtual void setThumbnailProgress(double progress) = 0;
+
     virtual os::Surface* getThumbnail() = 0;
     virtual void setThumbnail(os::Surface* thumbnail) = 0;
   };

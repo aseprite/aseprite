@@ -27,6 +27,7 @@
 #define FILE_LOAD_SEQUENCE_YES          0x00000008
 #define FILE_LOAD_ONE_FRAME             0x00000010
 #define FILE_LOAD_DATA_FILE             0x00000020
+#define FILE_LOAD_CREATE_PALETTE        0x00000040
 
 namespace doc {
   class FrameTag;
@@ -197,6 +198,7 @@ namespace app {
     bool m_oneframe;            // Load just one frame (in formats
                                 // that support animation like
                                 // GIF/FLI/ASE).
+    bool m_createPaletteFromRgba;
     bool m_ignoreEmpty;
 
     // Return if we've to save/embed the color space of the document

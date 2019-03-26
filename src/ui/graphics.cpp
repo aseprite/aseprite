@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -407,26 +408,40 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
   }
 
   gfx::Size calculatedSize(0, 0);
-  std::size_t beg, end, new_word_beg, old_end;
+  std::size_t beg, end, newBeg;
   std::string line;
   int lineSeparation = 2*guiscale();
 
   // Draw line-by-line
-  for (beg=end=0; end != std::string::npos; ) {
+  for (beg=end=0; end != std::string::npos && beg<str.size(); ) {
     pt.x = rc.x;
 
     // Without word-wrap
-    if ((align & WORDWRAP) == 0) {
+    if ((align & (WORDWRAP | CHARWRAP)) == 0) {
       end = str.find('\n', beg);
+      newBeg = end+1;
+    }
+    // With char-wrap
+    else if ((align & CHARWRAP) == CHARWRAP) {
+      for (end=beg+1; end<str.size(); ++end) {
+        // If we are out of the available width (rc.w) using the new "end"
+        if ((rc.w > 0) &&
+            (m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
+          if (end > beg+1)
+            --end;
+          break;
+        }
+      }
+      newBeg = end;
     }
     // With word-wrap
     else {
-      old_end = std::string::npos;
-      for (new_word_beg=beg;;) {
+      std::size_t old_end = std::string::npos;
+      for (std::size_t new_word_beg=beg;;) {
         end = str.find_first_of(" \n", new_word_beg);
 
         // If we have already a word to print (old_end != npos), and
-        // we are out of the available width (rc.w) using the new "end",
+        // we are out of the available width (rc.w) using the new "end"
         if ((old_end != std::string::npos) &&
             (rc.w > 0) &&
             (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
@@ -449,7 +464,10 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
 
         old_end = end;
       }
+      newBeg = end+1;
     }
+
+    ASSERT(beg < end);
 
     // Get the entire line to be painted
     line = str.substr(beg, end-beg);
@@ -479,7 +497,10 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
 
     pt.y += lineSize.h;
     calculatedSize.h += lineSize.h;
-    beg = end+1;
+    beg = newBeg;
+
+    if (pt.y+lineSize.h >= rc.y2())
+      break;
   }
 
   if (calculatedSize.h > 0)

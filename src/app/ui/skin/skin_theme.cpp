@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1623,7 +1624,11 @@ void SkinTheme::drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* part)
 
 void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double progress)
 {
-  g->drawRect(colors.text(), rc0);
+  gfx::Color border = colors.text();
+  border = gfx::rgba(gfx::getr(border),
+                     gfx::getg(border),
+                     gfx::getb(border), 64);
+  g->drawRect(border, rc0);
 
   gfx::Rect rc = rc0;
   rc.shrink(1);

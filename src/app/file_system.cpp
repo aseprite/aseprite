@@ -63,6 +63,8 @@ public:
   unsigned int m_version;
   bool m_removed;
   bool m_is_folder;
+  double m_thumbnailProgress;
+  os::Surface* m_thumbnail;
 #ifdef _WIN32
   LPITEMIDLIST m_pidl;            // relative to parent
   LPITEMIDLIST m_fullpidl;        // relative to the Desktop folder
@@ -81,34 +83,35 @@ public:
   bool operator==(const FileItem& that) const { return compare(that) == 0; }
   bool operator!=(const FileItem& that) const { return compare(that) != 0; }
 
-  // IFileItem interface
+  // IFileItem impl
+  bool isFolder() const override;
+  bool isBrowsable() const override;
+  bool isHidden() const override;
 
-  bool isFolder() const;
-  bool isBrowsable() const;
-  bool isHidden() const;
+  std::string keyName() const override;
+  std::string fileName() const override;
+  std::string displayName() const override;
 
-  std::string keyName() const;
-  std::string fileName() const;
-  std::string displayName() const;
+  IFileItem* parent() const override;
+  const FileItemList& children() override;
+  void createDirectory(const std::string& dirname) override;
 
-  IFileItem* parent() const;
-  const FileItemList& children();
-  void createDirectory(const std::string& dirname);
+  bool hasExtension(const base::paths& extensions) override;
 
-  bool hasExtension(const base::paths& extensions);
+  double getThumbnailProgress() override { return m_thumbnailProgress; }
+  void setThumbnailProgress(double progress) override {
+    m_thumbnailProgress = progress;
+  }
 
-  os::Surface* getThumbnail();
-  void setThumbnail(os::Surface* thumbnail);
-
+  os::Surface* getThumbnail() override;
+  void setThumbnail(os::Surface* thumbnail) override;
 };
 
 typedef std::map<std::string, FileItem*> FileItemMap;
-typedef std::map<std::string, os::Surface*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
 static FileItemMap* fileitems_map;
-static ThumbnailMap* thumbnail_map;
 static unsigned int current_file_system_version = 0;
 
 #ifdef _WIN32
@@ -146,7 +149,6 @@ FileSystemModule::FileSystemModule()
   m_instance = this;
 
   fileitems_map = new FileItemMap;
-  thumbnail_map = new ThumbnailMap;
 
 #ifdef _WIN32
   /* get the IMalloc interface */
@@ -178,12 +180,6 @@ FileSystemModule::~FileSystemModule()
   }
   fileitems_map->clear();
 
-  for (ThumbnailMap::iterator
-         it=thumbnail_map->begin(); it!=thumbnail_map->end(); ++it) {
-    it->second->dispose();
-  }
-  thumbnail_map->clear();
-
 #ifdef _WIN32
   // relase desktop IShellFolder interface
   shl_idesktop->Release();
@@ -194,7 +190,6 @@ FileSystemModule::~FileSystemModule()
 #endif
 
   delete fileitems_map;
-  delete thumbnail_map;
 
   m_instance = NULL;
 }
@@ -527,24 +522,14 @@ bool FileItem::hasExtension(const base::paths& extensions)
 
 os::Surface* FileItem::getThumbnail()
 {
-  ThumbnailMap::iterator it = thumbnail_map->find(m_filename);
-  if (it != thumbnail_map->end())
-    return it->second;
-  else
-    return NULL;
+  return m_thumbnail;
 }
 
 void FileItem::setThumbnail(os::Surface* thumbnail)
 {
-  // destroy the current thumbnail of the file (if exists)
-  ThumbnailMap::iterator it = thumbnail_map->find(m_filename);
-  if (it != thumbnail_map->end()) {
-    it->second->dispose();
-    thumbnail_map->erase(it);
-  }
-
-  // insert the new one in the map
-  thumbnail_map->insert(std::make_pair(m_filename, thumbnail));
+  if (m_thumbnail)
+    m_thumbnail->dispose();
+  m_thumbnail = thumbnail;
 }
 
 FileItem::FileItem(FileItem* parent)
@@ -558,6 +543,8 @@ FileItem::FileItem(FileItem* parent)
   m_version = current_file_system_version;
   m_removed = false;
   m_is_folder = false;
+  m_thumbnailProgress = 0.0;
+  m_thumbnail = nullptr;
 #ifdef _WIN32
   m_pidl = NULL;
   m_fullpidl = NULL;
@@ -567,6 +554,9 @@ FileItem::FileItem(FileItem* parent)
 FileItem::~FileItem()
 {
   FS_TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
+
+  if (m_thumbnail)
+    m_thumbnail->dispose();
 
 #ifdef _WIN32
   if (m_fullpidl && m_fullpidl != m_pidl) {

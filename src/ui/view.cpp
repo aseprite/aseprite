@@ -187,7 +187,7 @@ Rect View::viewportBounds()
 }
 
 // static
-View* View::getView(Widget* widget)
+View* View::getView(const Widget* widget)
 {
   if ((widget->parent()) &&
       (widget->parent()->type() == kViewViewportWidget) &&

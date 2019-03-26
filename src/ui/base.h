@@ -64,6 +64,7 @@ namespace ui {
     BOTTOM           = 0x00800000,
     HOMOGENEOUS      = 0x01000000,
     WORDWRAP         = 0x02000000,
+    CHARWRAP         = 0x04000000,
     ALIGN_MASK       = 0x7fff0000,
   };
 
