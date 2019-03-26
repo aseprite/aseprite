@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -135,6 +136,11 @@ std::string SaveFileBaseCommand::saveAsDialog(
   const std::string& forbiddenFilename)
 {
   Doc* document = context->activeDocument();
+  
+  // Before to release de original document, we have to save all
+  // preferences which are not saved in a Close operation:
+  Preferences::instance().save();
+
   std::string filename;
 
   if (!m_filename.empty()) {
@@ -168,6 +174,14 @@ std::string SaveFileBaseCommand::saveAsDialog(
     saveDocumentInBackground(
       context, document,
       filename, markAsSaved);
+    auto& docPref = Preferences::instance().document(document);
+    docPref.saveCopy.filename(docPref.saveCopy.filename.defaultValue());
+    docPref.saveCopy.aniDir(docPref.saveCopy.aniDir.defaultValue());
+    docPref.saveCopy.applyPixelRatio(docPref.saveCopy.applyPixelRatio.defaultValue());
+    docPref.saveCopy.frameTag(docPref.saveCopy.frameTag.defaultValue());
+    docPref.saveCopy.layer(docPref.saveCopy.layer.defaultValue());
+    docPref.saveCopy.forTwitter(docPref.saveCopy.forTwitter.defaultValue());
+    docPref.saveCopy.resizeScale(docPref.saveCopy.resizeScale.defaultValue());
   }
 
   return filename;
