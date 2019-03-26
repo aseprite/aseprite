@@ -55,6 +55,12 @@ public:
     m_thread.join();
   }
 
+  void stop() const {
+    base::scoped_lock lock(m_mutex);
+    if (m_fop)
+      m_fop->stop();
+  }
+
   bool isDone() const {
     return m_isDone;
   }
@@ -285,21 +291,9 @@ void ThumbnailGenerator::stopAllWorkers()
     }
   }
 
-  base::thread* ptr = new base::thread(base::Bind<void>(&ThumbnailGenerator::stopAllWorkersBackground, this));
-  m_stopThread.reset(ptr);
-}
-
-void ThumbnailGenerator::stopAllWorkersBackground()
-{
-  WorkerList workersCopy;
-  {
-    base::scoped_lock hold(m_workersAccess);
-    workersCopy = m_workers;
-    m_workers.clear();
-  }
-
-  for (auto worker : workersCopy)
-    delete worker;
+  base::scoped_lock hold(m_workersAccess);
+  for (auto worker : m_workers)
+    worker->stop();
 }
 
 } // namespace app

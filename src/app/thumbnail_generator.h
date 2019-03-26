@@ -43,8 +43,6 @@ namespace app {
     void stopAllWorkers();
 
   private:
-    void stopAllWorkersBackground();
-
     class Worker;
     typedef std::vector<Worker*> WorkerList;
 
