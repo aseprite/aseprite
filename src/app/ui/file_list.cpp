@@ -624,6 +624,15 @@ void FileList::onCurrentFolderChanged()
 
 void FileList::onMonitoringTick()
 {
+  auto start = base::current_tick();
+  while (!m_generateThumbnailsForTheseItems.empty() &&
+         // No more than 200ms launching thumbnail generators
+         base::current_tick() - start < 200) {
+    auto fi = m_generateThumbnailsForTheseItems.front();
+    m_generateThumbnailsForTheseItems.pop_front();
+    ThumbnailGenerator::instance()->generateThumbnail(fi);
+  }
+
   if (ThumbnailGenerator::instance()->checkWorkers())
     invalidate();
 }
@@ -842,8 +851,13 @@ void FileList::selectIndex(int index)
 
 void FileList::generateThumbnailForFileItem(IFileItem* fi)
 {
-  if (fi && animation() == ANI_NONE)
-    ThumbnailGenerator::instance()->generateThumbnail(fi);
+  if (fi && animation() == ANI_NONE) {
+    auto it = std::find(m_generateThumbnailsForTheseItems.begin(),
+                        m_generateThumbnailsForTheseItems.end(), fi);
+    if (it != m_generateThumbnailsForTheseItems.end())
+      m_generateThumbnailsForTheseItems.erase(it);
+    m_generateThumbnailsForTheseItems.push_front(fi);
+  }
 }
 
 void FileList::delayThumbnailGenerationForSelectedItem()

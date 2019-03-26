@@ -17,6 +17,7 @@
 #include "ui/timer.h"
 #include "ui/widget.h"
 
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -122,6 +123,10 @@ namespace app {
     // Used keep the last-selected item in the list so we know
     // thumbnail to generate when the m_generateThumbnailTimer ticks.
     IFileItem* m_itemToGenerateThumbnail;
+
+    // List of thumbnails to generate in the next m_monitoringTimer in
+    // a isIconView()
+    std::deque<IFileItem*> m_generateThumbnailsForTheseItems;
 
     // True if this listbox accepts selecting multiple items at the
     // same time.
