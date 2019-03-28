@@ -356,9 +356,7 @@ class DocExporter::BestFitLayoutSamples :
     public DocExporter::LayoutSamples {
 public:
   void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
-    gfx::PackingRects pr;
-
-    // TODO Add support for shape paddings
+    gfx::PackingRects pr(borderPadding, shapePadding);
 
     for (auto& sample : samples) {
       if (sample.isDuplicated() ||
