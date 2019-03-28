@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -70,16 +70,15 @@ static doc::ImageRef convert_image_color_space(const doc::Image* srcImage,
   return dstImage;
 }
 
-void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
+void convert_color_profile(doc::Sprite* sprite,
+                           const gfx::ColorSpacePtr& newCS)
 {
-  os::System* system = os::instance();
-
   ASSERT(sprite->colorSpace());
   ASSERT(newCS);
 
+  os::System* system = os::instance();
   auto srcOCS = system->createColorSpace(sprite->colorSpace());
   auto dstOCS = system->createColorSpace(newCS);
-
   ASSERT(srcOCS);
   ASSERT(dstOCS);
 
@@ -120,6 +119,46 @@ void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)
 
   // Generate notification so the Doc::osColorSpace() is regenerated
   static_cast<Doc*>(sprite->document())->notifyColorSpaceChanged();
+}
+
+void convert_color_profile(doc::Image* image,
+                           doc::Palette* palette,
+                           const gfx::ColorSpacePtr& oldCS,
+                           const gfx::ColorSpacePtr& newCS)
+{
+  ASSERT(oldCS);
+  ASSERT(newCS);
+
+  os::System* system = os::instance();
+  auto srcOCS = system->createColorSpace(oldCS);
+  auto dstOCS = system->createColorSpace(newCS);
+  ASSERT(srcOCS);
+  ASSERT(dstOCS);
+
+  auto conversion = system->convertBetweenColorSpace(srcOCS, dstOCS);
+  if (conversion) {
+    switch (image->pixelFormat()) {
+      case doc::IMAGE_RGB:
+      case doc::IMAGE_GRAYSCALE: {
+        ImageRef newImage = convert_image_color_space(
+          image, newCS, conversion.get());
+
+        image->copy(newImage.get(), gfx::Clip(image->bounds()));
+        break;
+      }
+
+      case doc::IMAGE_INDEXED: {
+        for (int i=0; i<palette->size(); ++i) {
+          color_t oldCol, newCol;
+          oldCol = newCol = palette->entry(i);
+          conversion->convertRgba((uint32_t*)&newCol,
+                                  (const uint32_t*)&oldCol, 1);
+          palette->setEntry(i, newCol);
+        }
+        break;
+      }
+    }
+  }
 }
 
 ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS)

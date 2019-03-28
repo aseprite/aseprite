@@ -429,7 +429,6 @@ void FileList::onPaint(ui::PaintEvent& ev)
   g->fillRect(theme->colors.background(), bounds);
   // g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
 
-  // os::Surface* mainThumbnail = nullptr;
   int i = 0, selectedIndex = -1;
   for (IFileItem* fi : m_list) {
     if (m_selected != fi) {
@@ -452,10 +451,14 @@ void FileList::onPaint(ui::PaintEvent& ev)
       m_selected &&
       m_selected->getThumbnail()) {
     gfx::Rect tbounds = mainThumbnailBounds();
+    tbounds.enlarge(1);
     g->drawRect(gfx::rgba(0, 0, 0, 64), tbounds);
     tbounds.shrink(1);
-    g->blit(m_selected->getThumbnail(),
-            0, 0, tbounds.x, tbounds.y, tbounds.w, tbounds.h);
+
+    os::Surface* thumbnail = m_selected->getThumbnail();
+    g->drawRgbaSurface(thumbnail,
+                       gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
+                       tbounds);
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,11 @@
 
 namespace gfx {
   class ColorSpace;
+}
+
+namespace doc {
+  class Image;
+  class Palette;
 }
 
 namespace app {
@@ -39,7 +44,13 @@ namespace cmd {
 
   // Converts the sprite to the new color profile without undo information.
   // TODO how to merge this function with cmd::ConvertColorProfile
-  void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpacePtr& newCS);
+  void convert_color_profile(doc::Sprite* sprite,
+                             const gfx::ColorSpacePtr& newCS);
+
+  void convert_color_profile(doc::Image* image,
+                             doc::Palette* palette,
+                             const gfx::ColorSpacePtr& oldCS,
+                             const gfx::ColorSpacePtr& newCS);
 
 } // namespace cmd
 } // namespace app

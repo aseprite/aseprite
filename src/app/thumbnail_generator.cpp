@@ -12,12 +12,11 @@
 #include "app/thumbnail_generator.h"
 
 #include "app/app.h"
+#include "app/cmd/convert_color_profile.h"
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
-#include "app/ui/editor/editor_render.h"
 #include "base/bind.h"
-#include "base/scoped_lock.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "doc/algorithm/rotate.h"
@@ -28,6 +27,7 @@
 #include "doc/sprite.h"
 #include "os/system.h"
 #include "render/projection.h"
+#include "render/render.h"
 
 #include <memory>
 #include <thread>
@@ -125,12 +125,20 @@ private:
 
         render::Projection proj(sprite->pixelRatio(),
                                 render::Zoom(thumb_w, w));
-        EditorRender render;
-        render.setupBackground(NULL, thumbnailImage->pixelFormat());
+        render::Render render;
+        render.setBgType(render::BgType::TRANSPARENT);
         render.setProjection(proj);
         render.renderSprite(
           thumbnailImage.get(), sprite, frame_t(0),
           gfx::Clip(0, 0, 0, 0, w, h));
+
+        // Convert the image to sRGB color space
+        auto cs = sprite->colorSpace();
+        if (cs && !cs->nearlyEqual(*gfx::ColorSpace::MakeSRGB())) {
+          app::cmd::convert_color_profile(
+            thumbnailImage.get(), palette.get(),
+            cs, gfx::ColorSpace::MakeSRGB());
+        }
       }
 
       // Close file
@@ -138,9 +146,10 @@ private:
 
       // Set the thumbnail of the file-item.
       if (thumbnailImage) {
-        os::Surface* thumbnail = os::instance()->createRgbaSurface(
-          thumbnailImage->width(),
-          thumbnailImage->height());
+        os::Surface* thumbnail =
+          os::instance()->createRgbaSurface(
+            thumbnailImage->width(),
+            thumbnailImage->height());
 
         convert_image_to_surface(
           thumbnailImage.get(), palette.get(), thumbnail,
