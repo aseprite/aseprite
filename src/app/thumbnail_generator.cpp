@@ -105,6 +105,15 @@ private:
         // The palette to convert the Image
         palette.reset(new Palette(*sprite->palette(frame_t(0))));
 
+        // Special case for indexed images:
+        // If the sprite is transparent -> set the transparent color index alpha = 0
+        if (sprite->colorMode() == ColorMode::INDEXED &&
+            !sprite->backgroundLayer()) {
+          int i = sprite->transparentColor();
+          if (i >= 0 && i < int(palette->size()))
+            palette->setEntry(i, doc::rgba(0, 0, 0, 0));
+        }
+
         const int w = sprite->width()*sprite->pixelRatio().w;
         const int h = sprite->height()*sprite->pixelRatio().h;
 
