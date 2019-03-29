@@ -23,7 +23,7 @@
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/pref/preferences.h"
-#include "app/util/create_cel_copy.h"
+#include "app/util/cel_ops.h"
 #include "base/memory.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -213,6 +213,13 @@ void Doc::notifySelectionBoundariesChanged()
   notify_observers<DocEvent&>(&DocObserver::onSelectionBoundariesChanged, ev);
 }
 
+void Doc::notifyTilesetChanged(Tileset* tileset)
+{
+  DocEvent ev(this);
+  ev.tileset(tileset);
+  notify_observers<DocEvent&>(&DocObserver::onTilesetChanged, ev);
+}
+
 bool Doc::isModified() const
 {
   return !m_undo->isSavedState();
@@ -395,7 +402,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
                                    it->second));
       }
       else {
-        newCel.reset(create_cel_copy(sourceCel,
+        newCel.reset(create_cel_copy(nullptr, // TODO add undo information?
+                                     sourceCel,
                                      destLayer->sprite(),
                                      destLayer,
                                      sourceCel->frame()));

@@ -17,21 +17,28 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/site.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/pal_ops.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
+#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
+#include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "doc/tileset.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "os/font.h"
 #include "os/surface.h"
+#include "os/surface.h"
+#include "os/system.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -51,12 +58,186 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
+// Interface used to adapt the PaletteView widget to see tilesets too.
+class AbstractPaletteViewAdapter {
+public:
+  virtual ~AbstractPaletteViewAdapter() { }
+  virtual int size() const = 0;
+  virtual void paletteChange(doc::PalettePicks& picks) = 0;
+  virtual void activeSiteChange(const Site& site, doc::PalettePicks& picks) = 0;
+  virtual void clearSelection(PaletteView* paletteView,
+                              doc::PalettePicks& picks) = 0;
+  virtual void showEntryInStatusBar(StatusBar* statusBar, int index) = 0;
+  virtual void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) = 0;
+  virtual void showResizeInfoInStatusBar(StatusBar* statusBar, int newSize) = 0;
+  virtual void drawEntry(ui::Graphics* g,
+                         SkinTheme* theme,
+                         const int palIdx,
+                         const int offIdx,
+                         const int childSpacing,
+                         gfx::Rect& box,
+                         gfx::Color& negColor) = 0;
+  virtual doc::Tileset* tileset() const { return nullptr; }
+};
+
+// This default adapter uses the default behavior to use the
+// PaletteView as just a doc::Palette view.
+class PaletteViewAdapter : public AbstractPaletteViewAdapter {
+public:
+  int size() const override { return palette()->size(); }
+  void paletteChange(doc::PalettePicks& picks) override {
+    picks.resize(palette()->size());
+  }
+  void activeSiteChange(const Site& site, doc::PalettePicks& picks) override {
+    // Do nothing
+  }
+  void clearSelection(PaletteView* paletteView,
+                      doc::PalettePicks& picks) override {
+    Palette palette(*this->palette());
+    Palette newPalette(palette);
+    newPalette.resize(MAX(1, newPalette.size() - picks.picks()));
+
+    Remap remap = create_remap_to_move_picks(picks, palette.size());
+    for (int i=0; i<palette.size(); ++i) {
+      if (!picks[i])
+        newPalette.setEntry(remap[i], palette.getEntry(i));
+    }
+
+    paletteView->setNewPalette(&palette, &newPalette, PaletteViewModification::CLEAR);
+  }
+  void showEntryInStatusBar(StatusBar* statusBar, int index) override {
+    statusBar->showColor(
+      0, "", app::Color::fromIndex(index));
+  }
+  void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
+    statusBar->setStatusText(
+      0, "%s to %d - New Palette Size %d",
+      (copy ? "Copy": "Move"),
+      destIndex, newSize);
+  }
+  void showResizeInfoInStatusBar(StatusBar* statusBar, int newSize) override {
+    statusBar->setStatusText(
+      0, "New Palette Size %d", newSize);
+  }
+  void drawEntry(ui::Graphics* g,
+                 SkinTheme* theme,
+                 const int palIdx,
+                 const int offIdx,
+                 const int childSpacing,
+                 gfx::Rect& box,
+                 gfx::Color& negColor) override {
+    doc::color_t palColor =
+      (palIdx < palette()->size() ? palette()->getEntry(palIdx):
+                                    rgba(0, 0, 0, 255));
+    app::Color appColor = app::Color::fromRgb(
+      rgba_getr(palColor),
+      rgba_getg(palColor),
+      rgba_getb(palColor),
+      rgba_geta(palColor));
+
+    if (childSpacing > 0) {
+      gfx::Color color = theme->colors.paletteEntriesSeparator();
+      g->fillRect(color, gfx::Rect(box).enlarge(childSpacing));
+    }
+    draw_color(g, box, appColor, doc::ColorMode::RGB);
+
+    const gfx::Color gfxColor = gfx::rgba(
+      rgba_getr(palColor),
+      rgba_getg(palColor),
+      rgba_getb(palColor),
+      rgba_geta(palColor));
+    negColor = color_utils::blackandwhite_neg(gfxColor);
+  }
+private:
+  doc::Palette* palette() const {
+    return get_current_palette();
+  }
+};
+
+// This adapter makes it possible to use a PaletteView to edit a
+// doc::Tileset.
+class TilesetViewAdapter : public AbstractPaletteViewAdapter {
+public:
+  int size() const override {
+    if (auto t = tileset())
+      return t->size();
+    else
+      return 0;
+  }
+  void paletteChange(doc::PalettePicks& picks) override {
+    // Do nothing
+  }
+  void activeSiteChange(const Site& site, doc::PalettePicks& picks) override {
+    if (auto tileset = this->tileset())
+      picks.resize(tileset->size());
+    else
+      picks.clear();
+  }
+  void clearSelection(PaletteView* paletteView,
+                      doc::PalettePicks& picks) override {
+    paletteView->delegate()->onPaletteViewClearTiles(picks);
+  }
+  void showEntryInStatusBar(StatusBar* statusBar, int index) override {
+    statusBar->setStatusText(
+      0, "Tile %d", index);
+  }
+  void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
+    statusBar->setStatusText(
+      0, "%s to %d - New Tileset Size %d",
+      (copy ? "Copy": "Move"),
+      destIndex, newSize);
+  }
+  void showResizeInfoInStatusBar(StatusBar* statusBar, int newSize) override {
+    statusBar->setStatusText(
+      0, "New Tileset Size %d", newSize);
+  }
+  void drawEntry(ui::Graphics* g,
+                 SkinTheme* theme,
+                 const int palIdx,
+                 const int offIdx,
+                 const int childSpacing,
+                 gfx::Rect& box,
+                 gfx::Color& negColor) override {
+    if (childSpacing > 0) {
+      gfx::Color color = theme->colors.paletteEntriesSeparator();
+      g->fillRect(color, gfx::Rect(box).enlarge(childSpacing));
+    }
+    draw_color(g, box, app::Color::fromMask(), doc::ColorMode::RGB);
+
+    doc::ImageRef tileImage;
+    if (auto t = this->tileset())
+      tileImage = t->get(palIdx);
+    if (tileImage) {
+      int w = tileImage->width();
+      int h = tileImage->height();
+      os::Surface* surface = os::instance()->createRgbaSurface(w, h);
+      doc::convert_image_to_surface(tileImage.get(), get_current_palette(),
+                                    surface, 0, 0, 0, 0, w, h);
+      g->drawRgbaSurface(surface, gfx::Rect(0, 0, w, h), box);
+      surface->dispose();
+    }
+    negColor = gfx::rgba(255, 255, 255);
+  }
+  doc::Tileset* tileset() const override {
+    Site site = App::instance()->context()->activeSite();
+    if (site.layer() &&
+        site.layer()->isTilemap()) {
+      return static_cast<LayerTilemap*>(site.layer())->tileset();
+    }
+    else
+      return nullptr;
+  }
+private:
+};
+
 PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDelegate* delegate, int boxsize)
   : Widget(kGenericWidget)
   , m_state(State::WAITING)
   , m_editable(editable)
   , m_style(style)
   , m_delegate(delegate)
+  , m_adapter(isTiles() ? (AbstractPaletteViewAdapter*)new TilesetViewAdapter:
+                          (AbstractPaletteViewAdapter*)new PaletteViewAdapter)
   , m_columns(16)
   , m_boxsize(boxsize)
   , m_currentEntry(-1)
@@ -82,11 +263,20 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
         });
   }
 
+  if (isTiles())
+    UIContext::instance()->add_observer(this);
+
   InitTheme.connect(
     [this]{
       updateBorderAndChildSpacing();
     });
   initTheme();
+}
+
+PaletteView::~PaletteView()
+{
+  if (isTiles())
+    UIContext::instance()->remove_observer(this);
 }
 
 void PaletteView::setColumns(int columns)
@@ -107,7 +297,7 @@ void PaletteView::deselect()
 {
   bool invalidate = (m_selectedEntries.picks() > 0);
 
-  m_selectedEntries.resize(currentPalette()->size());
+  m_selectedEntries.resize(m_adapter->size());
   m_selectedEntries.clear();
 
   if (invalidate)
@@ -116,7 +306,7 @@ void PaletteView::deselect()
 
 void PaletteView::selectColor(int index)
 {
-  if (index < 0 || index >= currentPalette()->size())
+  if (index < 0 || index >= m_adapter->size())
     return;
 
   if (m_currentEntry != index || !m_selectedEntries[index]) {
@@ -202,15 +392,25 @@ void PaletteView::setSelectedEntries(const doc::PalettePicks& entries)
   invalidate();
 }
 
+doc::Tileset* PaletteView::tileset() const
+{
+  return m_adapter->tileset();
+}
+
 app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 {
   gfx::Point relPos = pos - bounds().origin();
-  Palette* palette = currentPalette();
-  for (int i=0; i<palette->size(); ++i) {
+  for (int i=0; i<m_adapter->size(); ++i) {
     if (getPaletteEntryBounds(i).contains(relPos))
       return app::Color::fromIndex(i);
   }
   return app::Color::fromMask();
+}
+
+void PaletteView::onActiveSiteChange(const Site& site)
+{
+  ASSERT(isTiles());
+  m_adapter->activeSiteChange(site, m_selectedEntries);
 }
 
 int PaletteView::getBoxSize() const
@@ -220,7 +420,10 @@ int PaletteView::getBoxSize() const
 
 void PaletteView::setBoxSize(double boxsize)
 {
-  m_boxsize = MID(4.0, boxsize, 32.0);
+  if (isTiles())
+    m_boxsize = MID(4.0, boxsize, 64.0);
+  else
+    m_boxsize = MID(4.0, boxsize, 32.0);
 
   if (m_delegate)
     m_delegate->onPaletteViewChangeSize(int(m_boxsize));
@@ -235,21 +438,11 @@ void PaletteView::clearSelection()
   if (!m_selectedEntries.picks())
     return;
 
-  Palette palette(*currentPalette());
-  Palette newPalette(palette);
-  newPalette.resize(MAX(1, newPalette.size() - m_selectedEntries.picks()));
-
-  Remap remap = create_remap_to_move_picks(m_selectedEntries, palette.size());
-  for (int i=0; i<palette.size(); ++i) {
-    if (!m_selectedEntries[i])
-      newPalette.setEntry(remap[i], palette.getEntry(i));
-  }
+  m_adapter->clearSelection(this, m_selectedEntries);
 
   m_currentEntry = m_selectedEntries.firstPick();
   m_selectedEntries.clear();
   stopMarchingAnts();
-
-  setNewPalette(&palette, &newPalette, PaletteViewModification::CLEAR);
 }
 
 void PaletteView::cutToClipboard()
@@ -342,7 +535,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
-        idx = MID(0, idx, currentPalette()->size()-1);
+        idx = MID(0, idx, m_adapter->size()-1);
 
         MouseButtons buttons = mouseMsg->buttons();
 
@@ -497,11 +690,11 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
   g->fillRect(theme->colors.editorFace(), bounds);
 
-  // Draw palette entries
+  // Draw palette/tileset entries
   int picksCount = m_selectedEntries.picks();
   int idxOffset = 0;
   int boxOffset = 0;
-  int palSize = palette->size();
+  int palSize = m_adapter->size();
   if (dragging && !m_copy) palSize -= picksCount;
   if (resizing) palSize = m_hot.color;
 
@@ -519,7 +712,8 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
     gfx::Rect box = getPaletteEntryBounds(i + boxOffset);
     gfx::Color negColor;
-    drawEntry(g, i + idxOffset, i + boxOffset, box, negColor);
+    m_adapter->drawEntry(g, theme, i + idxOffset, i + boxOffset,
+                         childSpacing(), box, negColor);
     const int boxsize = boxSizePx();
 
     switch (m_style) {
@@ -570,7 +764,8 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   }
   PalettePicks& picks = (dragging ? dragPicks: m_selectedEntries);
 
-  for (int i=0; i<palette->size(); ++i) {
+  const int size = m_adapter->size();
+  for (int i=0; i<size; ++i) {
     if (!m_selectedEntries[i])
       continue;
 
@@ -585,13 +780,13 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       if (dragging) {
         gfx::Rect box2 = getPaletteEntryBounds(k);
         gfx::Color negColor;
-        drawEntry(g, i, k, box2, negColor);
+        m_adapter->drawEntry(g, theme, i, k, childSpacing(),
+                             box2, negColor);
 
-        gfx::Color neg = color_utils::blackandwhite_neg(negColor);
         os::Font* minifont = theme->getMiniFont();
         const std::string text = base::convert_to<std::string>(k);
         g->setFont(minifont);
-        g->drawText(text, neg, gfx::ColorNone,
+        g->drawText(text, negColor, gfx::ColorNone,
                     gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
                                box2.y + box2.h/2 - minifont->height()/2));
       }
@@ -654,7 +849,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
 
 void PaletteView::onSizeHint(ui::SizeHintEvent& ev)
 {
-  div_t d = div(currentPalette()->size(), m_columns);
+  div_t d = div(m_adapter->size(), m_columns);
   int cols = m_columns;
   int rows = d.quot + ((d.rem)? 1: 0);
 
@@ -688,7 +883,7 @@ void PaletteView::update_scroll(int color)
 
   scroll = view->viewScroll();
 
-  d = div(currentPalette()->size(), m_columns);
+  d = div(m_adapter->size(), m_columns);
   cols = m_columns;
 
   y = (boxsize+childSpacing()) * (color / cols);
@@ -709,7 +904,7 @@ void PaletteView::update_scroll(int color)
 
 void PaletteView::onAppPaletteChange()
 {
-  m_selectedEntries.resize(currentPalette()->size());
+  m_adapter->paletteChange(m_selectedEntries);
 
   View* view = View::getView(this);
   if (view)
@@ -734,19 +929,18 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 {
   auto theme = static_cast<SkinTheme*>(this->theme());
   const int outlineWidth = theme->dimensions.paletteOutlineWidth();
-  Palette* palette = currentPalette();
+  const int size = m_adapter->size();
 
   if (m_state == State::WAITING && m_editable) {
     // First check if the mouse is inside the selection outline.
-    for (int i=0; i<palette->size(); ++i) {
+    for (int i=0; i<size; ++i) {
       if (!m_selectedEntries[i])
         continue;
 
-      const int max = palette->size();
-      bool top    = (i >= m_columns            && i-m_columns >= 0  ? m_selectedEntries[i-m_columns]: false);
-      bool bottom = (i < max-m_columns         && i+m_columns < max ? m_selectedEntries[i+m_columns]: false);
-      bool left   = ((i%m_columns)>0           && i-1         >= 0  ? m_selectedEntries[i-1]: false);
-      bool right  = ((i%m_columns)<m_columns-1 && i+1         < max ? m_selectedEntries[i+1]: false);
+      bool top    = (i >= m_columns             && i-m_columns >= 0   ? m_selectedEntries[i-m_columns]: false);
+      bool bottom = (i < size-m_columns         && i+m_columns < size ? m_selectedEntries[i+m_columns]: false);
+      bool left   = ((i%m_columns)>0            && i-1         >= 0   ? m_selectedEntries[i-1]: false);
+      bool right  = ((i%m_columns)<m_columns-1  && i+1         < size ? m_selectedEntries[i+1]: false);
 
       gfx::Rect box = getPaletteEntryBounds(i);
       box.enlarge(outlineWidth);
@@ -759,17 +953,18 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
     }
 
     // Check if we are in the resize handle
-    if (getPaletteEntryBounds(palette->size()).contains(pos)) {
-      return Hit(Hit::RESIZE_HANDLE, palette->size());
+    if (getPaletteEntryBounds(size).contains(pos)) {
+      return Hit(Hit::RESIZE_HANDLE, size);
     }
   }
 
   // Check if we are inside a color.
   View* view = View::getView(this);
+  ASSERT(view);
   gfx::Rect vp = view->viewportBounds();
   for (int i=0; ; ++i) {
     gfx::Rect box = getPaletteEntryBounds(i);
-    if (i >= palette->size() && box.y2() > vp.h)
+    if (i >= size && box.y2() > vp.h)
       break;
 
     box.w += childSpacing();
@@ -912,11 +1107,10 @@ void PaletteView::setStatusBar()
       if ((m_hot.part == Hit::COLOR ||
            m_hot.part == Hit::OUTLINE ||
            m_hot.part == Hit::POSSIBLE_COLOR) &&
-          (m_hot.color < currentPalette()->size())) {
-        int i = MAX(0, m_hot.color);
+          (m_hot.color < m_adapter->size())) {
+        const int index = MAX(0, m_hot.color);
 
-        statusBar->showColor(
-          0, "", app::Color::fromIndex(i));
+        m_adapter->showEntryInStatusBar(statusBar, index);
       }
       else {
         statusBar->showDefaultText();
@@ -927,15 +1121,13 @@ void PaletteView::setStatusBar()
       if (m_hot.part == Hit::COLOR) {
         const int picks = m_selectedEntries.picks();
         const int destIndex = MAX(0, m_hot.color);
-        const int palSize = currentPalette()->size();
+        const int palSize = m_adapter->size();
         const int newPalSize =
           (m_copy ? MAX(palSize + picks, destIndex + picks):
                     MAX(palSize,         destIndex + picks));
 
-        statusBar->setStatusText(
-          0, "%s to %d - New Palette Size %d",
-          (m_copy ? "Copy": "Move"),
-          destIndex, newPalSize);
+        m_adapter->showDragInfoInStatusBar(
+          statusBar, m_copy, destIndex, newPalSize);
       }
       else {
         statusBar->showDefaultText();
@@ -946,10 +1138,9 @@ void PaletteView::setStatusBar()
       if (m_hot.part == Hit::COLOR ||
           m_hot.part == Hit::POSSIBLE_COLOR ||
           m_hot.part == Hit::RESIZE_HANDLE) {
-        int newPalSize = MAX(1, m_hot.color);
-        statusBar->setStatusText(
-          0, "New Palette Size %d",
-          newPalSize);
+        const int newSize = MAX(1, m_hot.color);
+
+        m_adapter->showResizeInfoInStatusBar(statusBar, newSize);
       }
       else {
         statusBar->showDefaultText();
@@ -1001,36 +1192,6 @@ void PaletteView::setNewPalette(doc::Palette* oldPalette,
 
   set_current_palette(newPalette, false);
   manager()->invalidate();
-}
-
-void PaletteView::drawEntry(ui::Graphics* g,
-                            const int palIdx,
-                            const int offIdx,
-                            gfx::Rect& box,
-                            gfx::Color& negColor)
-{
-  doc::color_t palColor =
-    (palIdx < currentPalette()->size() ? currentPalette()->getEntry(palIdx):
-                                         rgba(0, 0, 0, 255));
-  app::Color appColor = app::Color::fromRgb(
-    rgba_getr(palColor),
-    rgba_getg(palColor),
-    rgba_getb(palColor),
-    rgba_geta(palColor));
-
-  if (m_withSeparator) {
-    auto theme = static_cast<SkinTheme*>(this->theme());
-    gfx::Color color = theme->colors.paletteEntriesSeparator();
-    g->fillRect(color, gfx::Rect(box).enlarge(childSpacing()));
-  }
-  draw_color(g, box, appColor, doc::ColorMode::RGB);
-
-  const gfx::Color gfxColor = gfx::rgba(
-    rgba_getr(palColor),
-    rgba_getg(palColor),
-    rgba_getb(palColor),
-    rgba_geta(palColor));
-  negColor = color_utils::blackandwhite_neg(gfxColor);
 }
 
 int PaletteView::boxSizePx() const

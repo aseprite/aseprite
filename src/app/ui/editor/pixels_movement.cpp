@@ -26,6 +26,7 @@
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/util/cel_ops.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
@@ -278,7 +279,9 @@ void PixelsMovement::cutMask()
   {
     ContextWriter writer(m_reader, 1000);
     if (writer.cel()) {
-      m_tx(new cmd::ClearMask(writer.cel()));
+      clear_mask_from_cel(m_tx,
+                          writer.cel(),
+                          m_site.tilesetMode());
 
       // Do not trim here so we don't lost the information about all
       // linked cels related to "writer.cel()"
@@ -1080,7 +1083,9 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
   for (const InnerCmd& c : m_innerCmds) {
     switch (c.type) {
       case InnerCmd::Clear:
-        m_tx(new cmd::ClearMask(m_site.cel()));
+        clear_mask_from_cel(m_tx,
+                            m_site.cel(),
+                            m_site.tilesetMode());
         break;
       case InnerCmd::Flip:
         flipOriginalImage(c.data.flip.type);

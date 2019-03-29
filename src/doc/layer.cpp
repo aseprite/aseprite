@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,7 +29,9 @@ Layer::Layer(ObjectType type, Sprite* sprite)
       int(LayerFlags::Visible) |
       int(LayerFlags::Editable)))
 {
-  ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup);
+  ASSERT(type == ObjectType::LayerImage ||
+         type == ObjectType::LayerGroup ||
+         type == ObjectType::LayerTilemap);
 
   setName("Layer");
 }
@@ -184,10 +187,15 @@ Cel* Layer::cel(frame_t frame) const
 //////////////////////////////////////////////////////////////////////
 // LayerImage class
 
-LayerImage::LayerImage(Sprite* sprite)
-  : Layer(ObjectType::LayerImage, sprite)
+LayerImage::LayerImage(ObjectType type, Sprite* sprite)
+  : Layer(type, sprite)
   , m_blendmode(BlendMode::NORMAL)
   , m_opacity(255)
+{
+}
+
+LayerImage::LayerImage(Sprite* sprite)
+  : LayerImage(ObjectType::LayerImage, sprite)
 {
 }
 
@@ -297,7 +305,8 @@ void LayerImage::addCel(Cel* cel)
   ASSERT(cel->data() && "The cel doesn't contain CelData");
   ASSERT(cel->image());
   ASSERT(sprite());
-  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat());
+  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat() ||
+         cel->image()->pixelFormat() == IMAGE_TILEMAP);
 
   CelIterator it = findFirstCelIteratorAfter(cel->frame());
   m_cels.insert(it, cel);

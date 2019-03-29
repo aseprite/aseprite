@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/add_tileset.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/move_layer.h"
 #include "app/cmd/trim_cel.h"
@@ -30,6 +31,7 @@
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -52,6 +54,7 @@ struct NewLayerParams : public NewParams {
   Param<std::string> name { this, std::string(), "name" };
   Param<bool> group { this, false, "group" };
   Param<bool> reference { this, false, "reference" };
+  Param<bool> tilemap { this, false, "tilemap" };
   Param<bool> ask { this, false, "ask" };
   Param<bool> fromFile { this, false, { "fromFile", "from-file" } };
   Param<bool> fromClipboard { this, false, "fromClipboard" };
@@ -63,7 +66,7 @@ struct NewLayerParams : public NewParams {
 
 class NewLayerCommand : public CommandWithNewParams<NewLayerParams> {
 public:
-  enum class Type { Layer, Group, ReferenceLayer };
+  enum class Type { Layer, Group, ReferenceLayer, TilemapLayer };
   enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
 
   NewLayerCommand();
@@ -98,6 +101,10 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
     m_type = Type::Group;
   else if (params().reference())
     m_type = Type::ReferenceLayer;
+  else if (params().tilemap())
+    m_type = Type::TilemapLayer;
+  else
+    m_type = Type::Layer;
 
   m_place = Place::AfterActiveLayer;
   if (params().top())
@@ -232,6 +239,20 @@ void NewLayerCommand::onExecute(Context* context)
           layer->setReference(true);
         afterBackground = true;
         break;
+      case Type::TilemapLayer: {
+        // TODO show a dialog to configure the grid
+        auto grid = doc::Grid::MakeRect(gfx::Size(16, 16));
+        auto tileset = new Tileset(sprite, grid, 0);
+        auto addTileset = new cmd::AddTileset(sprite, tileset);
+        tx(addTileset);
+
+        auto tsi = addTileset->tilesetIndex();
+
+        layer = new LayerTilemap(sprite, tsi);
+        layer->setName(name);
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
     }
 
     ASSERT(layer);
@@ -460,6 +481,7 @@ std::string NewLayerCommand::layerPrefix() const
     case Type::Layer: return Strings::commands_NewLayer_Layer();
     case Type::Group: return Strings::commands_NewLayer_Group();
     case Type::ReferenceLayer: return Strings::commands_NewLayer_ReferenceLayer();
+    case Type::TilemapLayer: return Strings::commands_NewLayer_TilemapLayer();
   }
   return "Unknown";
 }

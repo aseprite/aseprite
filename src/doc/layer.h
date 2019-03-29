@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -23,8 +24,8 @@ namespace doc {
   class Image;
   class Sprite;
   class Layer;
-  class LayerImage;
   class LayerGroup;
+  class LayerImage;
 
   //////////////////////////////////////////////////////////////////////
   // Layer class
@@ -72,8 +73,10 @@ namespace doc {
     Layer* getPreviousInWholeHierarchy() const;
     Layer* getNextInWholeHierarchy() const;
 
-    bool isImage() const { return type() == ObjectType::LayerImage; }
+    bool isImage() const { return (type() == ObjectType::LayerImage ||
+                                   type() == ObjectType::LayerTilemap); }
     bool isGroup() const { return type() == ObjectType::LayerGroup; }
+    bool isTilemap() const { return type() == ObjectType::LayerTilemap; }
     virtual bool isBrowsable() const { return false; }
 
     bool isBackground() const  { return hasFlags(LayerFlags::Background); }
@@ -135,6 +138,7 @@ namespace doc {
 
   class LayerImage : public Layer {
   public:
+    LayerImage(ObjectType type, Sprite* sprite);
     explicit LayerImage(Sprite* sprite);
     virtual ~LayerImage();
 

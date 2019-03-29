@@ -382,6 +382,7 @@ void Editor::getSite(Site* site) const
   site->sprite(m_sprite);
   site->layer(m_layer);
   site->frame(m_frame);
+
   if (!m_selectedSlices.empty() &&
       getCurrentEditorInk()->isSlice()) {
     site->selectedSlices(m_selectedSlices);
@@ -392,6 +393,15 @@ void Editor::getSite(Site* site) const
   if (timeline &&
       timeline->range().enabled()) {
     site->range(timeline->range());
+  }
+
+  if (m_layer && m_layer->isTilemap()) {
+    TilesetMode mode = site->tilesetMode();
+    const ColorBar* colorbar = ColorBar::instance();
+    ASSERT(colorbar);
+    if (colorbar)
+      mode = colorbar->tilesetMode();
+    site->tilesetMode(mode);
   }
 }
 
@@ -737,7 +747,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
       // Draw the grid
       if (m_docPref.show.grid()) {
-        gfx::Rect gridrc = m_sprite->gridBounds();
+        gfx::Rect gridrc;
+        if (!m_state->getGridBounds(this, gridrc))
+          gridrc = getSite().gridBounds();
+
         if (m_proj.applyX(gridrc.w) > 2 &&
             m_proj.applyY(gridrc.h) > 2) {
           int alpha = m_docPref.grid.opacity();

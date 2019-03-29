@@ -693,7 +693,7 @@ private:
     try {
       ImageRef celImage(Image::createCopy(m_currentImage.get()));
       try {
-        cel->data()->setImage(celImage);
+        cel->data()->setImage(celImage, m_layer);
       }
       catch (...) {
         throw;

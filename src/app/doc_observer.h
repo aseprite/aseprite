@@ -76,6 +76,9 @@ namespace app {
     // Slices
     virtual void onSliceNameChange(DocEvent& ev) { }
 
+    // The tileset has changed.
+    virtual void onTilesetChanged(DocEvent& ev) { }
+
     // Called to destroy the observable. (Here you could call "delete this".)
     virtual void dispose() { }
   };

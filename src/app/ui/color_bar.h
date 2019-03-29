@@ -13,10 +13,12 @@
 #include "app/context_observer.h"
 #include "app/doc_observer.h"
 #include "app/docs_observer.h"
+#include "app/tileset_mode.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
+#include "doc/object_id.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
 #include "obs/connection.h"
@@ -78,6 +80,14 @@ namespace app {
     bool inEditMode() const;
     void setEditMode(bool state);
 
+    bool inTilesMode() const;
+    void setTilesMode(bool state);
+
+    bool inAutoTilesMode() const;
+    void setAutoTilesMode(bool state);
+
+    TilesetMode tilesetMode() const;
+
     ColorButton* fgColorButton() { return &m_fgColor; }
     ColorButton* bgColorButton() { return &m_bgColor; }
 
@@ -86,6 +96,7 @@ namespace app {
 
     // DocObserver impl
     void onGeneralUpdate(DocEvent& ev) override;
+    void onTilesetChanged(DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,
@@ -108,6 +119,7 @@ namespace app {
     void onBeforeExecuteCommand(CommandExecutionEvent& ev);
     void onAfterExecuteCommand(CommandExecutionEvent& ev);
     void onPaletteButtonClick();
+    void onTilesButtonClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorChangeFromPreferences();
@@ -131,6 +143,7 @@ namespace app {
     void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
     app::Color onPaletteViewGetForegroundIndex() override;
     app::Color onPaletteViewGetBackgroundIndex() override;
+    void onPaletteViewClearTiles(const doc::PalettePicks& picks) override;
 
   private:
     void showRemap();
@@ -157,12 +170,15 @@ namespace app {
     class WarningIcon;
 
     ButtonSet m_buttons;
+    ButtonSet m_tilesButtons;
     std::unique_ptr<PalettePopup> m_palettePopup;
     ui::Splitter m_splitter;
     ui::VBox m_palettePlaceholder;
     ui::VBox m_selectorPlaceholder;
-    ScrollableView m_scrollableView;
+    ScrollableView m_scrollablePalView;
+    ScrollableView m_scrollableTilesView;
     PaletteView m_paletteView;
+    PaletteView m_tilesView;
     ui::Button m_remapButton;
     ColorSelector m_selector;
     ColorTintShadeTone* m_tintShadeTone;
@@ -186,6 +202,7 @@ namespace app {
 
     std::unique_ptr<doc::Palette> m_oldPalette;
     Doc* m_lastDocument;
+    doc::ObjectId m_lastTilesetId;
     bool m_ascending;
     obs::scoped_connection m_beforeCmdConn;
     obs::scoped_connection m_afterCmdConn;
@@ -195,8 +212,12 @@ namespace app {
     obs::scoped_connection m_appPalChangeConn;
     ui::MouseButtons m_lastButtons;
 
-    // True if we the editing mode is on.
+    // True if the editing mode is on.
     bool m_editMode;
+
+    // True if we should be putting/setting tiles.
+    bool m_tilesMode;
+    bool m_autoTilesMode;
 
     // Timer to redraw editors after a palette change.
     ui::Timer m_redrawTimer;

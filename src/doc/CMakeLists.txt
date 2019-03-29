@@ -1,5 +1,6 @@
 # Aseprite Document Library
-# Copyright (C) 2001-2018 David Capello
+# Copyright (C) 2019  Igara Studio S.A.
+# Copyright (C) 2001-2018  David Capello
 
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -36,6 +37,8 @@ add_library(doc-lib
   file/gpl_file.cpp
   file/hex_file.cpp
   file/pal_file.cpp
+  grid.cpp
+  grid_io.cpp
   handle_anidir.cpp
   image.cpp
   image_impl.cpp
@@ -43,6 +46,7 @@ add_library(doc-lib
   layer.cpp
   layer_io.cpp
   layer_list.cpp
+  layer_tilemap.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp
@@ -66,6 +70,9 @@ add_library(doc-lib
   tag.cpp
   tag_io.cpp
   tags.cpp
+  tileset.cpp
+  tileset_io.cpp
+  tilesets.cpp
   user_data_io.cpp)
 
 # TODO Remove 'os' as dependency and move conversion_to_surface.cpp/h files

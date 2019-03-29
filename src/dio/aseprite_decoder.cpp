@@ -201,8 +201,7 @@ bool AsepriteDecoder::decode()
           }
 
           case ASE_FILE_CHUNK_TILESET: {
-            delegate()->error(
-              "Warning: The given file contains a tileset.\nThis version of Aseprite doesn't support tilemap layers.\n");
+            readTilesetChunk(sprite.get(), &header);
             break;
           }
 
@@ -439,6 +438,12 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
     case ASE_FILE_LAYER_GROUP:
       layer = new doc::LayerGroup(sprite);
       break;
+
+    case ASE_FILE_LAYER_TILEMAP: {
+      doc::tileset_index tsi = read32();
+      layer = new doc::LayerTilemap(sprite, tsi);
+      break;
+    }
   }
 
   if (layer) {
@@ -481,11 +486,13 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
 // Raw Image
 //////////////////////////////////////////////////////////////////////
 
+namespace {
+
 template<typename ImageTraits>
 void read_raw_image(FileInterface* f,
                     DecodeDelegate* delegate,
                     doc::Image* image,
-                    AsepriteHeader* header)
+                    const AsepriteHeader* header)
 {
   PixelIO<ImageTraits> pixel_io;
   int x, y;
@@ -505,11 +512,11 @@ void read_raw_image(FileInterface* f,
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-void read_compressed_image(FileInterface* f,
-                           DecodeDelegate* delegate,
-                           doc::Image* image,
-                           size_t chunk_end,
-                           AsepriteHeader* header)
+void read_compressed_image_templ(FileInterface* f,
+                                 DecodeDelegate* delegate,
+                                 doc::Image* image,
+                                 const AsepriteHeader* header,
+                                 const size_t chunk_end)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
@@ -538,8 +545,9 @@ void read_compressed_image(FileInterface* f,
       if (input_bytes == 0)
         break;                  // Done, we consumed all chunk
     }
-    else
+    else {
       input_bytes = compressed.size();
+    }
 
     size_t bytes_read = f->readBytes(&compressed[0], input_bytes);
     zstream.next_in = (Bytef*)&compressed[0];
@@ -583,6 +591,46 @@ void read_compressed_image(FileInterface* f,
     throw base::Exception("ZLib error %d in inflateEnd().", err);
 }
 
+void read_compressed_image(FileInterface* f,
+                           DecodeDelegate* delegate,
+                           doc::Image* image,
+                           const AsepriteHeader* header,
+                           const size_t chunk_end)
+{
+  // Try to read pixel data
+  try {
+    switch (image->pixelFormat()) {
+
+      case doc::IMAGE_RGB:
+        read_compressed_image_templ<doc::RgbTraits>(
+          f, delegate, image, header, chunk_end);
+        break;
+
+      case doc::IMAGE_GRAYSCALE:
+        read_compressed_image_templ<doc::GrayscaleTraits>(
+          f, delegate, image, header, chunk_end);
+        break;
+
+      case doc::IMAGE_INDEXED:
+        read_compressed_image_templ<doc::IndexedTraits>(
+          f, delegate, image, header, chunk_end);
+        break;
+
+      case doc::IMAGE_TILEMAP:
+        read_compressed_image_templ<doc::TilemapTraits>(
+          f, delegate, image, header, chunk_end);
+        break;
+    }
+  }
+  // OK, in case of error we can show the problem, but continue
+  // loading more cels.
+  catch (const std::exception& e) {
+    delegate->error(e.what());
+  }
+}
+
+} // anonymous namespace
+
 //////////////////////////////////////////////////////////////////////
 // Cel Chunk
 //////////////////////////////////////////////////////////////////////
@@ -591,8 +639,8 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
                                         doc::LayerList& allLayers,
                                         doc::frame_t frame,
                                         doc::PixelFormat pixelFormat,
-                                        AsepriteHeader* header,
-                                        size_t chunk_end)
+                                        const AsepriteHeader* header,
+                                        const size_t chunk_end)
 {
   // Read chunk data
   doc::layer_t layer_index = read16();
@@ -687,33 +735,29 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
 
       if (w > 0 && h > 0) {
         doc::ImageRef image(doc::Image::create(pixelFormat, w, h));
+        read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
 
-        // Try to read pixel data
-        try {
-          switch (image->pixelFormat()) {
+        cel.reset(new doc::Cel(frame, image));
+        cel->setPosition(x, y);
+        cel->setOpacity(opacity);
+      }
+      break;
+    }
 
-            case doc::IMAGE_RGB:
-              read_compressed_image<doc::RgbTraits>(
-                f(), delegate(), image.get(), chunk_end, header);
-              break;
+    case ASE_FILE_COMPRESSED_TILEMAP: {
+      // Read width and height
+      int w = read16();
+      int h = read16();
+      int bitsPerTile = read16();
+      uint32_t tileIDkMask = read32();
+      uint32_t flipxMask = read32();
+      uint32_t fileyMask = read32();
+      uint32_t rot90Mask = read32();
+      readPadding(10);
 
-            case doc::IMAGE_GRAYSCALE:
-              read_compressed_image<doc::GrayscaleTraits>(
-                f(), delegate(), image.get(), chunk_end, header);
-              break;
-
-            case doc::IMAGE_INDEXED:
-              read_compressed_image<doc::IndexedTraits>(
-                f(), delegate(), image.get(), chunk_end, header);
-              break;
-          }
-        }
-        // OK, in case of error we can show the problem, but continue
-        // loading more cels.
-        catch (const std::exception& e) {
-          delegate()->error(e.what());
-        }
-
+      if (w > 0 && h > 0) {
+        doc::ImageRef image(doc::Image::create(doc::IMAGE_TILEMAP, w, h));
+        read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
         cel.reset(new doc::Cel(frame, image));
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
@@ -923,6 +967,47 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
 
   slices.add(slice.get());
   return slice.release();
+}
+
+void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
+                                       const AsepriteHeader* header)
+{
+  const doc::tileset_index id = read32();
+  const uint32_t flags = read32();
+  const int w = read16();
+  const int h = read16();
+  readPadding(20);
+  const std::string name = readString();
+
+  // TODO add support to load the external filename
+  if (flags & 1) {
+    // Ignore fields
+    readString();               // external filename
+    read32();                   // tileset ID in the external file
+  }
+
+  if (flags & 2) {
+    const doc::tile_index ntiles = read32();
+
+    doc::Grid grid(gfx::Size(w, h));
+    auto tileset = new doc::Tileset(sprite, grid, ntiles);
+    tileset->setName(name);
+
+    for (doc::tile_index i=0; i<ntiles; ++i) {
+      read32();                 // Flags (ignore)
+      const size_t dataSize = read32(); // Size of compressed data
+      const size_t dataBeg = f()->tell();
+      const size_t dataEnd = dataBeg+dataSize;
+
+      doc::ImageRef tile(doc::Image::create(sprite->pixelFormat(), w, h));
+      read_compressed_image(f(), delegate(), tile.get(), header, dataEnd);
+      tileset->set(i, tile);
+
+      f()->seek(dataEnd);
+    }
+
+    sprite->tilesets()->set(id, tileset);
+  }
 }
 
 } // namespace dio

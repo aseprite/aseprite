@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -61,6 +61,7 @@ Image* Image::create(const ImageSpec& spec,
     case ColorMode::GRAYSCALE: return new ImageImpl<GrayscaleTraits>(spec, buffer);
     case ColorMode::INDEXED:   return new ImageImpl<IndexedTraits>(spec, buffer);
     case ColorMode::BITMAP:    return new ImageImpl<BitmapTraits>(spec, buffer);
+    case ColorMode::TILEMAP:   return new ImageImpl<TilemapTraits>(spec, buffer);
   }
   return nullptr;
 }

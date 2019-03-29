@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -110,12 +111,14 @@ Image* read_image(std::istream& is, bool setId)
   if ((pixelFormat != IMAGE_RGB &&
        pixelFormat != IMAGE_GRAYSCALE &&
        pixelFormat != IMAGE_INDEXED &&
-       pixelFormat != IMAGE_BITMAP) ||
+       pixelFormat != IMAGE_BITMAP &&
+       pixelFormat != IMAGE_TILEMAP) ||
       (width < 1 || height < 1) ||
       (width > 0xfffff || height > 0xfffff))
     return nullptr;
 
-  std::unique_ptr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
+  std::unique_ptr<Image> image(
+    Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
   int rowSize = image->getRowStrideSize();
 
 #if 0

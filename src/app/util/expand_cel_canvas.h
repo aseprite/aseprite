@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
 #pragma once
 
+#include "app/tileset_mode.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "filters/tiled_mode.h"
@@ -24,9 +26,9 @@ namespace doc {
 }
 
 namespace app {
+  class CmdSequence;
   class Doc;
   class Site;
-  class Transaction;
 
   using namespace filters;
   using namespace doc;
@@ -46,7 +48,9 @@ namespace app {
     };
 
     ExpandCelCanvas(Site site, Layer* layer,
-      TiledMode tiledMode, Transaction& undo, Flags flags);
+                    const TiledMode tiledMode,
+                    CmdSequence* cmds,
+                    const Flags flags);
     ~ExpandCelCanvas();
 
     // Commit changes made in getDestCanvas() in the cel's image. Adds
@@ -87,7 +91,7 @@ namespace app {
     ImageRef m_dstImage;
     bool m_closed;
     bool m_committed;
-    Transaction& m_transaction;
+    CmdSequence* m_cmds;
     gfx::Region m_validSrcRegion;
     gfx::Region m_validDstRegion;
 
@@ -95,6 +99,8 @@ namespace app {
     // cel. This is false when dst is copied to the src, so we cannot
     // reduce the patched region because both images will be the same.
     bool m_canCompareSrcVsDst;
+
+    TilesetMode m_tilesetMode;
   };
 
 } // namespace app

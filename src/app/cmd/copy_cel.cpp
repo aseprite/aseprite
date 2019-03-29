@@ -19,7 +19,7 @@
 #include "app/cmd/set_cel_data.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/doc.h"
-#include "app/util/create_cel_copy.h"
+#include "app/util/cel_ops.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -32,8 +32,8 @@ namespace cmd {
 using namespace doc;
 
 CopyCel::CopyCel(
-  LayerImage* srcLayer, frame_t srcFrame,
-  LayerImage* dstLayer, frame_t dstFrame, bool continuous)
+  Layer* srcLayer, frame_t srcFrame,
+  Layer* dstLayer, frame_t dstFrame, bool continuous)
   : m_srcLayer(srcLayer)
   , m_dstLayer(dstLayer)
   , m_srcFrame(srcFrame)
@@ -44,8 +44,8 @@ CopyCel::CopyCel(
 
 void CopyCel::onExecute()
 {
-  LayerImage* srcLayer = static_cast<LayerImage*>(m_srcLayer.layer());
-  LayerImage* dstLayer = static_cast<LayerImage*>(m_dstLayer.layer());
+  Layer* srcLayer = m_srcLayer.layer();
+  Layer* dstLayer = m_dstLayer.layer();
 
   ASSERT(srcLayer);
   ASSERT(dstLayer);
@@ -114,7 +114,7 @@ void CopyCel::onExecute()
       if (createLink)
         dstCel = Cel::MakeLink(m_dstFrame, srcCel);
       else
-        dstCel = create_cel_copy(srcCel, dstSprite, dstLayer, m_dstFrame);
+        dstCel = create_cel_copy(this, srcCel, dstSprite, dstLayer, m_dstFrame);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
     }

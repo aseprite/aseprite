@@ -14,6 +14,7 @@
 #include "app/doc.h"
 #include "app/site.h"
 #include "doc/image_impl.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 #include "render/render.h"
@@ -53,7 +54,7 @@ doc::Image* new_image_from_mask(const Site& site,
 
   const Image* src = nullptr;
   int x = 0, y = 0;
-  if (merged) {
+  if (merged || site.layer()->isTilemap()) {
     render::Render render;
     render.setNewBlend(newBlend);
     render.renderSprite(dst.get(), srcSprite, site.frame(),

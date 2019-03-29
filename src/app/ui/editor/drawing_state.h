@@ -42,6 +42,8 @@ namespace app {
     // already drawing (viewing the real trace).
     virtual bool requireBrushPreview() override { return false; }
 
+    virtual bool getGridBounds(Editor* editor, gfx::Rect& gridBounds) override;
+
     void initToolLoop(Editor* editor,
                       const tools::Pointer& pointer);
 

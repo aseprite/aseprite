@@ -662,6 +662,13 @@ int Sprite_get_slices(lua_State* L)
   return 1;
 }
 
+int Sprite_get_tilesets(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  push_tilesets(L, sprite->tilesets());
+  return 1;
+}
+
 int Sprite_get_backgroundLayer(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -799,6 +806,7 @@ const Property Sprite_properties[] = {
   { "cels", Sprite_get_cels, nullptr },
   { "tags", Sprite_get_tags, nullptr },
   { "slices", Sprite_get_slices, nullptr },
+  { "tilesets", Sprite_get_tilesets, nullptr },
   { "backgroundLayer", Sprite_get_backgroundLayer, nullptr },
   { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
   { "bounds", Sprite_get_bounds, nullptr },

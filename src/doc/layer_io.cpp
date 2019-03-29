@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +19,7 @@
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/layer_io.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
@@ -96,6 +98,12 @@ void write_layer(std::ostream& os, const Layer* layer)
       break;
     }
 
+    case ObjectType::LayerTilemap: {
+      // Tileset index
+      write32(os, static_cast<const LayerTilemap*>(layer)->tilesetIndex());
+      break;
+    }
+
   }
 
   write_user_data(os, layer->userData());
@@ -148,7 +156,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
     }
 
     case ObjectType::LayerGroup: {
-      // Create the layer set
+      // Create the layer group
       layer.reset(new LayerGroup(subObjects->sprite()));
 
       // Number of sub-layers
@@ -160,6 +168,13 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
         else
           break;
       }
+      break;
+    }
+
+    case ObjectType::LayerTilemap: {
+      // Create the layer tilemap
+      doc::tileset_index tsi = read32(is); // Tileset index
+      layer.reset(new LayerTilemap(subObjects->sprite(), tsi));
       break;
     }
 

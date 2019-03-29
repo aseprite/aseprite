@@ -31,10 +31,12 @@
 
 #define ASE_FILE_LAYER_IMAGE                0
 #define ASE_FILE_LAYER_GROUP                1
+#define ASE_FILE_LAYER_TILEMAP              2
 
 #define ASE_FILE_RAW_CEL                    0
 #define ASE_FILE_LINK_CEL                   1
 #define ASE_FILE_COMPRESSED_CEL             2
+#define ASE_FILE_COMPRESSED_TILEMAP         3
 
 #define ASE_FILE_NO_COLOR_PROFILE           0
 #define ASE_FILE_SRGB_COLOR_PROFILE         1

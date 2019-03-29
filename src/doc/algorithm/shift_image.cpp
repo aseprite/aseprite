@@ -106,7 +106,10 @@ ImageRef shift_image_with_mask(const Cel* cel,
 
   // Bounds and Image shrinking (we have to fit compound image (compImage) and bounds (compCelBounds))
   gfx::Rect newBounds = compImage->bounds();
-  if (algorithm::shrink_bounds(compImage.get(), newBounds, compImage->maskColor())) {
+  if (algorithm::shrink_bounds(compImage.get(),
+                               compImage->maskColor(),
+                               nullptr,
+                               newBounds)) {
     compCelBounds.offset(newBounds.x, newBounds.y);
     compCelBounds.setSize(newBounds.size());
   }

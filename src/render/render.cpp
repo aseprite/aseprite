@@ -17,10 +17,15 @@
 #include "doc/doc.h"
 #include "doc/handle_anidir.h"
 #include "doc/image_impl.h"
+#include "doc/layer_tilemap.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
 #include "gfx/clip.h"
 #include "gfx/region.h"
 
 #include <cmath>
+
+#define TRACE_RENDER_CEL(...)
 
 namespace render {
 
@@ -1042,7 +1047,8 @@ void Render::renderLayer(
 
   switch (layer->type()) {
 
-    case ObjectType::LayerImage: {
+    case ObjectType::LayerImage:
+    case ObjectType::LayerTilemap: {
       if ((!render_background  &&  layer->isBackground()) ||
           (!render_transparent && !layer->isBackground()))
         break;
@@ -1084,8 +1090,6 @@ void Render::renderLayer(
                                  m_previewPos.y,
                                  m_previewImage->width(),
                                  m_previewImage->height());
-
-          ASSERT(celImage->pixelFormat() == cel->image()->pixelFormat());
         }
         else {
           celImage = cel->image();
@@ -1115,8 +1119,6 @@ void Render::renderLayer(
           if (!isSelected && m_nonactiveLayersOpacity != 255)
             opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
-          ASSERT(celImage->maskColor() == m_sprite->transparentColor());
-
           // Draw parts outside the "m_extraCel" area
           if (drawExtra && m_extraType == ExtraType::PATCH) {
             gfx::Region originalAreas(area.srcBounds());
@@ -1125,16 +1127,16 @@ void Render::renderLayer(
 
             for (auto rc : originalAreas) {
               renderCel(
-                image, celImage, pal, celBounds,
+                image, celImage, layer, pal, celBounds,
                 gfx::Clip(area.dst.x+rc.x-area.src.x,
-                          area.dst.y+rc.y-area.src.y, rc), compositeImage,
-                opacity, layerBlendMode);
+                          area.dst.y+rc.y-area.src.y, rc),
+                compositeImage, opacity, layerBlendMode);
             }
           }
           // Draw the whole cel
           else {
             renderCel(
-              image, celImage, pal,
+              image, celImage, layer, pal,
               celBounds, area, compositeImage,
               opacity, layerBlendMode);
           }
@@ -1164,6 +1166,7 @@ void Render::renderLayer(
     if (m_extraCel->opacity() > 0) {
       renderCel(
         image, m_extraImage,
+        nullptr,                // Without layer
         m_sprite->palette(frame),
         m_extraCel->bounds(),
         gfx::Clip(area.dst.x+extraArea.x-area.src.x,
@@ -1199,6 +1202,7 @@ void Render::renderCel(
   renderCel(
     dst_image,
     cel_image,
+    cel_layer,
     pal,
     celBounds,
     area,
@@ -1210,6 +1214,7 @@ void Render::renderCel(
 void Render::renderCel(
   Image* dst_image,
   const Image* cel_image,
+  const Layer* cel_layer,
   const Palette* pal,
   const gfx::RectF& celBounds,
   const gfx::Clip& area,
@@ -1217,14 +1222,56 @@ void Render::renderCel(
   const int opacity,
   const BlendMode blendMode)
 {
-  renderImage(dst_image,
-              cel_image,
-              pal,
-              celBounds,
-              area,
-              compositeImage,
-              opacity,
-              blendMode);
+  TRACE_RENDER_CEL("dstImage=(%d %d) celImage=(%d %d) celBounds=(%d %d %d %d) clipArea=(src=%d %d dst=%d %d %d %d)\n",
+                   dst_image->width(), dst_image->height(),
+                   cel_image->width(), cel_image->height(),
+                   int(celBounds.x), int(celBounds.y),
+                   int(celBounds.w), int(celBounds.h),
+                   area.src.x, area.src.y, area.dst.x, area.dst.y, area.size.w, area.size.h);
+
+  if (cel_layer &&
+      cel_image->pixelFormat() == IMAGE_TILEMAP) {
+    ASSERT(cel_layer->isTilemap());
+
+    auto tilemapLayer = static_cast<const LayerTilemap*>(cel_layer);
+    doc::Grid grid = tilemapLayer->tileset()->grid();
+    grid.origin(grid.origin() + gfx::Point(celBounds.origin()));
+
+    const Tileset* tileset = tilemapLayer->tileset();
+    ASSERT(tileset);
+    if (!tileset)
+      return;
+
+    gfx::Rect tilesToDraw = grid.canvasToTile(gfx::Rect(area.src, area.size));
+    tilesToDraw &= cel_image->bounds();
+    TRACE_RENDER_CEL("Drawing tilemap (%d %d %d %d)\n",
+                     tilesToDraw.x, tilesToDraw.y, tilesToDraw.w, tilesToDraw.h);
+
+    for (int v=tilesToDraw.y; v<tilesToDraw.y2(); ++v) {
+      for (int u=tilesToDraw.x; u<tilesToDraw.x2(); ++u) {
+        auto tileBoundsOnCanvas = grid.tileToCanvas(gfx::Rect(u, v, 1, 1));
+        TRACE_RENDER_CEL(" - tile (%d %d) -> (%d %d %d %d)\n", u, v,
+                         tileBoundsOnCanvas.x, tileBoundsOnCanvas.y,
+                         tileBoundsOnCanvas.w, tileBoundsOnCanvas.h);
+        if (!cel_image->bounds().contains(u, v))
+          continue;
+
+        const tile_t t = cel_image->getPixel(u, v);
+        const tile_index i = tile_geti(t);
+
+        const ImageRef tile_image = tileset->get(i);
+        if (!tile_image)
+          continue;
+
+        renderImage(dst_image, tile_image.get(), pal, tileBoundsOnCanvas,
+                    area, compositeImage, opacity, blendMode);
+      }
+    }
+  }
+  else {
+    renderImage(dst_image, cel_image, pal, celBounds,
+                area, compositeImage, opacity, blendMode);
+  }
 }
 
 void Render::renderImage(

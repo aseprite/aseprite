@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -107,6 +107,7 @@ namespace doc {
       case IMAGE_GRAYSCALE: return GrayscaleTraits::getRowStrideBytes(pixels_per_row);
       case IMAGE_INDEXED:   return IndexedTraits::getRowStrideBytes(pixels_per_row);
       case IMAGE_BITMAP:    return BitmapTraits::getRowStrideBytes(pixels_per_row);
+      case IMAGE_TILEMAP:   return TilemapTraits::getRowStrideBytes(pixels_per_row);
     }
     return 0;
   }

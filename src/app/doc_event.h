@@ -20,6 +20,7 @@ namespace doc {
   class Slice;
   class Sprite;
   class Tag;
+  class Tileset;
 }
 
 namespace app {
@@ -37,6 +38,7 @@ namespace app {
       , m_frame(0)
       , m_tag(nullptr)
       , m_slice(nullptr)
+      , m_tileset(nullptr)
       , m_targetLayer(nullptr)
       , m_targetFrame(0) {
     }
@@ -51,6 +53,7 @@ namespace app {
     doc::frame_t frame() const { return m_frame; }
     doc::Tag* tag() const { return m_tag; }
     doc::Slice* slice() const { return m_slice; }
+    doc::Tileset* tileset() const { return m_tileset; }
     const gfx::Region& region() const { return m_region; }
 
     void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
@@ -61,6 +64,7 @@ namespace app {
     void frame(doc::frame_t frame) { m_frame = frame; }
     void tag(doc::Tag* tag) { m_tag = tag; }
     void slice(doc::Slice* slice) { m_slice = slice; }
+    void tileset(doc::Tileset* tileset) { m_tileset = tileset; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
 
     // Destination of the operation.
@@ -80,6 +84,7 @@ namespace app {
     doc::frame_t m_frame;
     doc::Tag* m_tag;
     doc::Slice* m_slice;
+    doc::Tileset* m_tileset;
     gfx::Region m_region;
 
     // For copy/move commands, the m_layer/m_frame are source of the

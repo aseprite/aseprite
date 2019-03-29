@@ -17,6 +17,7 @@
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
+#include "gfx/region.h"
 
 #include <stdexcept>
 
@@ -61,6 +62,12 @@ void copy_image(Image* dst, const Image* src, int x, int y)
   ASSERT(src);
 
   dst->copy(src, gfx::Clip(x, y, 0, 0, src->width(), src->height()));
+}
+
+void copy_image(Image* dst, const Image* src, const gfx::Region& rgn)
+{
+  for (const gfx::Rect& rc : rgn)
+    dst->copy(src, gfx::Clip(rc));
 }
 
 Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer)
@@ -353,6 +360,7 @@ bool is_plain_image(const Image* img, color_t c)
     case IMAGE_GRAYSCALE: return is_plain_image_templ<GrayscaleTraits>(img, c);
     case IMAGE_INDEXED:   return is_plain_image_templ<IndexedTraits>(img, c);
     case IMAGE_BITMAP:    return is_plain_image_templ<BitmapTraits>(img, c);
+    case IMAGE_TILEMAP:   return is_plain_image_templ<TilemapTraits>(img, c);
   }
   return false;
 }
@@ -377,6 +385,7 @@ int count_diff_between_images(const Image* i1, const Image* i2)
     case IMAGE_GRAYSCALE: return count_diff_between_images_templ<GrayscaleTraits>(i1, i2);
     case IMAGE_INDEXED:   return count_diff_between_images_templ<IndexedTraits>(i1, i2);
     case IMAGE_BITMAP:    return count_diff_between_images_templ<BitmapTraits>(i1, i2);
+    case IMAGE_TILEMAP:   return count_diff_between_images_templ<TilemapTraits>(i1, i2);
   }
 
   ASSERT(false);
@@ -395,6 +404,7 @@ bool is_same_image(const Image* i1, const Image* i2)
     case IMAGE_GRAYSCALE: return is_same_image_templ<GrayscaleTraits>(i1, i2);
     case IMAGE_INDEXED:   return is_same_image_templ<IndexedTraits>(i1, i2);
     case IMAGE_BITMAP:    return is_same_image_templ<BitmapTraits>(i1, i2);
+    case IMAGE_TILEMAP:   return is_same_image_templ<TilemapTraits>(i1, i2);
   }
 
   ASSERT(false);

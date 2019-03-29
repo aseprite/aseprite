@@ -138,6 +138,7 @@
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
       </key>
+      <key command="ToggleTilesMode" shortcut="Shift+Tab" />
       <key command="PaletteEditor" shortcut="A" />
       <key command="PaletteEditor" shortcut="F4">
         <param name="edit" value="switch" />
@@ -806,6 +807,9 @@
           <item command="NewLayer" text="@.layer_new_reference_layer_from_file">
             <param name="reference" value="true" />
             <param name="fromFile" value="true" />
+          </item>
+          <item command="NewLayer" text="@.layer_new_tilemap_layer">
+            <param name="tilemap" value="true" />
           </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" />

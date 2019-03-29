@@ -25,9 +25,7 @@ using namespace doc;
 TrimCel::TrimCel(Cel* cel)
 {
   gfx::Rect newBounds;
-  if (algorithm::shrink_bounds(cel->image(), newBounds,
-                               cel->image()->maskColor())) {
-    newBounds.offset(cel->position());
+  if (algorithm::shrink_cel_bounds(cel, cel->image()->maskColor(), newBounds)) {
     if (cel->bounds() != newBounds) {
       add(new cmd::CropCel(cel, newBounds));
     }

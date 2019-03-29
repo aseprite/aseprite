@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/cmd/crop_cel.h"
 
 #include "doc/cel.h"
+#include "doc/layer.h"
 #include "doc/primitives.h"
 
 namespace app {
@@ -22,7 +24,9 @@ CropCel::CropCel(Cel* cel, const gfx::Rect& newBounds)
   : WithCel(cel)
   , m_oldOrigin(cel->position())
   , m_newOrigin(newBounds.origin())
-  , m_oldBounds(cel->bounds())
+  // Instead of using cel->bounds() we use the image size because it
+  // works for tilemaps too.
+  , m_oldBounds(cel->position(), cel->image()->size())
   , m_newBounds(newBounds)
 {
   m_oldBounds.offset(-m_newOrigin);
@@ -59,7 +63,7 @@ void CropCel::cropImage(const gfx::Point& origin,
     image->setId(id);
     image->setVersion(ver);
     image->incrementVersion();
-    cel->data()->setImage(image);
+    cel->data()->setImage(image, cel->layer());
     cel->data()->incrementVersion();
   }
 

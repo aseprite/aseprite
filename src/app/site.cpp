@@ -14,8 +14,11 @@
 #include "app/pref/preferences.h"
 #include "base/base.h"
 #include "doc/cel.h"
+#include "doc/grid.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
 #include "ui/system.h"
 
 namespace app {
@@ -81,6 +84,15 @@ void Site::range(const DocRange& range)
 
 gfx::Rect Site::gridBounds() const
 {
+  if (m_layer && m_layer->isTilemap()) {
+    const Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
+    if (cel) {
+      const Grid& grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+      return gfx::Rect(grid.tileOffset() + cel->bounds().origin(),
+                       grid.tileSize());
+    }
+  }
+
   gfx::Rect bounds;
   if (m_sprite) {
     bounds = m_sprite->gridBounds();

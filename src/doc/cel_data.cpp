@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,10 +11,12 @@
 
 #include "doc/cel_data.h"
 
-#include "gfx/rect.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
+#include "gfx/rect.h"
 
 namespace doc {
 
@@ -43,13 +46,38 @@ CelData::~CelData()
   delete m_boundsF;
 }
 
-void CelData::setImage(const ImageRef& image)
+void CelData::setImage(const ImageRef& image, Layer* layer)
 {
   ASSERT(image.get());
 
   m_image = image;
-  m_bounds.w = image->width();
-  m_bounds.h = image->height();
+  adjustBounds(layer);
+}
+
+void CelData::setPosition(const gfx::Point& pos)
+{
+  m_bounds.setOrigin(pos);
+}
+
+void CelData::adjustBounds(Layer* layer)
+{
+  ASSERT(m_image);
+  if (m_image->pixelFormat() == IMAGE_TILEMAP) {
+    Tileset* tileset = nullptr;
+    if (layer && layer->isTilemap())
+      tileset = static_cast<LayerTilemap*>(layer)->tileset();
+    if (tileset) {
+      gfx::Size canvasSize =
+        tileset->grid().tilemapSizeToCanvas(
+          gfx::Size(m_image->width(),
+                    m_image->height()));
+      m_bounds.w = canvasSize.w;
+      m_bounds.h = canvasSize.h;
+      return;
+    }
+  }
+  m_bounds.w = m_image->width();
+  m_bounds.h = m_image->height();
 }
 
 } // namespace doc

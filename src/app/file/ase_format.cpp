@@ -127,6 +127,13 @@ static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame
 static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Slice* slice,
                                        const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_write_user_data_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const UserData* userData);
+static void ase_file_write_tileset_chunks(FILE* f,
+                                          dio::AsepriteFrameHeader* frame_header,
+                                          const Tilesets* tilesets);
+static void ase_file_write_tileset_chunk(FILE* f,
+                                         dio::AsepriteFrameHeader* frame_header,
+                                         const Tileset* tileset,
+                                         const tileset_index si);
 static bool ase_has_groups(LayerGroup* group);
 static void ase_ungroup_all(LayerGroup* group);
 
@@ -305,6 +312,9 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Write extra chunks in the first frame
     if (frame == fop->roi().fromFrame()) {
+      // Write tilesets
+      ase_file_write_tileset_chunks(f, &frame_header, sprite->tilesets());
+
       // Write layer chunks
       for (Layer* child : sprite->root()->layers())
         ase_file_write_layers(f, &frame_header, child, 0);
@@ -315,7 +325,7 @@ bool AseFormat::onSave(FileOp* fop)
                                   fop->roi().fromFrame(),
                                   fop->roi().toFrame());
 
-      // Writer slice chunks
+      // Write slice chunks
       ase_file_write_slice_chunks(f, &frame_header,
                                   sprite->slices(),
                                   fop->roi().fromFrame(),
@@ -585,8 +595,15 @@ static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
         static_cast<int>(doc::LayerFlags::PersistentFlagsMask), f);
 
   // Layer type
-  fputw((layer->isImage() ? ASE_FILE_LAYER_IMAGE:
-         (layer->isGroup() ? ASE_FILE_LAYER_GROUP: -1)), f);
+  int layerType = ASE_FILE_LAYER_IMAGE;
+  if (layer->isImage()) {
+    if (layer->isTilemap())
+      layerType = ASE_FILE_LAYER_TILEMAP;
+  }
+  else if (layer->isGroup()) {
+    layerType = ASE_FILE_LAYER_GROUP;
+  }
+  fputw(layerType, f);
 
   // Layer child level
   fputw(child_level, f);
@@ -602,6 +619,10 @@ static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
 
   // Layer name
   ase_file_write_string(f, layer->name());
+
+  // Tileset index
+  if (layer->isTilemap())
+    fputl(static_cast<const LayerTilemap*>(layer)->tilesetIndex(), f);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -624,14 +645,12 @@ public:
     fputc(rgba_getb(c), f);
     fputc(rgba_geta(c), f);
   }
-  void write_scanline(RgbTraits::address_t address, int w, uint8_t* buffer)
-  {
-    for (int x=0; x<w; ++x) {
+  void write_scanline(RgbTraits::address_t address, int w, uint8_t* buffer) {
+    for (int x=0; x<w; ++x, ++address) {
       *(buffer++) = rgba_getr(*address);
       *(buffer++) = rgba_getg(*address);
       *(buffer++) = rgba_getb(*address);
       *(buffer++) = rgba_geta(*address);
-      ++address;
     }
   }
 };
@@ -643,12 +662,10 @@ public:
     fputc(graya_getv(c), f);
     fputc(graya_geta(c), f);
   }
-  void write_scanline(GrayscaleTraits::address_t address, int w, uint8_t* buffer)
-  {
-    for (int x=0; x<w; ++x) {
+  void write_scanline(GrayscaleTraits::address_t address, int w, uint8_t* buffer) {
+    for (int x=0; x<w; ++x, ++address) {
       *(buffer++) = graya_getv(*address);
       *(buffer++) = graya_geta(*address);
-      ++address;
     }
   }
 };
@@ -659,9 +676,24 @@ public:
   void write_pixel(FILE* f, IndexedTraits::pixel_t c) {
     fputc(c, f);
   }
-  void write_scanline(IndexedTraits::address_t address, int w, uint8_t* buffer)
-  {
+  void write_scanline(IndexedTraits::address_t address, int w, uint8_t* buffer) {
     memcpy(buffer, address, w);
+  }
+};
+
+template<>
+class PixelIO<TilemapTraits> {
+public:
+  void write_pixel(FILE* f, TilemapTraits::pixel_t c) {
+    fputl(c, f);
+  }
+  void write_scanline(TilemapTraits::address_t address, int w, uint8_t* buffer) {
+    for (int x=0; x<w; ++x, ++address) {
+      *(buffer++) = ((*address) & 0x000000ffl);
+      *(buffer++) = ((*address) & 0x0000ff00l) >> 8;
+      *(buffer++) = ((*address) & 0x00ff0000l) >> 16;
+      *(buffer++) = ((*address) & 0xff000000l) >> 24;
+    }
   }
 };
 
@@ -685,7 +717,7 @@ static void write_raw_image(FILE* f, const Image* image)
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-static void write_compressed_image(FILE* f, const Image* image)
+static void write_compressed_image_templ(FILE* f, const Image* image)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
@@ -734,6 +766,27 @@ static void write_compressed_image(FILE* f, const Image* image)
     throw base::Exception("ZLib error %d in deflateEnd().", err);
 }
 
+static void write_compressed_image(FILE* f, const Image* image)
+{
+  switch (image->pixelFormat()) {
+    case IMAGE_RGB:
+      write_compressed_image_templ<RgbTraits>(f, image);
+      break;
+
+    case IMAGE_GRAYSCALE:
+      write_compressed_image_templ<GrayscaleTraits>(f, image);
+      break;
+
+    case IMAGE_INDEXED:
+      write_compressed_image_templ<IndexedTraits>(f, image);
+      break;
+
+    case IMAGE_TILEMAP:
+      write_compressed_image_templ<TilemapTraits>(f, image);
+      break;
+  }
+}
+
 //////////////////////////////////////////////////////////////////////
 // Cel Chunk
 //////////////////////////////////////////////////////////////////////
@@ -762,7 +815,9 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
       link = nullptr;
   }
 
-  int cel_type = (link ? ASE_FILE_LINK_CEL: ASE_FILE_COMPRESSED_CEL);
+  int cel_type = (link ? ASE_FILE_LINK_CEL:
+                  cel->layer()->isTilemap() ? ASE_FILE_COMPRESSED_TILEMAP:
+                                              ASE_FILE_COMPRESSED_CEL);
 
   fputw(layer_index, f);
   fputw(cel->x(), f);
@@ -795,6 +850,7 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
           case IMAGE_INDEXED:
             write_raw_image<IndexedTraits>(f, image);
             break;
+
         }
       }
       else {
@@ -812,27 +868,12 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
 
     case ASE_FILE_COMPRESSED_CEL: {
       const Image* image = cel->image();
-
+      ASSERT(image);
       if (image) {
         // Width and height
         fputw(image->width(), f);
         fputw(image->height(), f);
-
-        // Pixel data
-        switch (image->pixelFormat()) {
-
-          case IMAGE_RGB:
-            write_compressed_image<RgbTraits>(f, image);
-            break;
-
-          case IMAGE_GRAYSCALE:
-            write_compressed_image<GrayscaleTraits>(f, image);
-            break;
-
-          case IMAGE_INDEXED:
-            write_compressed_image<IndexedTraits>(f, image);
-            break;
-        }
+        write_compressed_image(f, image);
       }
       else {
         // Width and height
@@ -840,6 +881,23 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
         fputw(0, f);
       }
       break;
+    }
+
+    case ASE_FILE_COMPRESSED_TILEMAP: {
+      const Image* image = cel->image();
+      ASSERT(image);
+      ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
+
+      fputw(image->width(), f);
+      fputw(image->height(), f);
+      fputw(32, f);             // TODO use different bpp when possible
+      fputl(tile_i_mask, f);
+      fputl(tile_f_flipx, f);
+      fputl(tile_f_flipy, f);
+      fputl(tile_f_90cw, f);
+      ase_file_write_padding(f, 10);
+
+      write_compressed_image(f, image);
     }
   }
 }
@@ -1082,6 +1140,48 @@ static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
       oldKey = key;
     }
     ++frame;
+  }
+}
+
+static void ase_file_write_tileset_chunks(FILE* f,
+                                          dio::AsepriteFrameHeader* frame_header,
+                                          const Tilesets* tilesets)
+{
+  tileset_index si = 0;
+  for (const Tileset* tileset : *tilesets) {
+    ase_file_write_tileset_chunk(f, frame_header, tileset, si);
+    ++si;
+  }
+}
+
+static void ase_file_write_tileset_chunk(FILE* f,
+                                         dio::AsepriteFrameHeader* frame_header,
+                                         const Tileset* tileset,
+                                         const tileset_index si)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_TILESET);
+
+  fputl(si, f);             // Tileset ID
+  fputl(2, f);              // Tileset Flags (2=include tiles inside file)
+  fputw(tileset->grid().tileSize().w, f);
+  fputw(tileset->grid().tileSize().h, f);
+  ase_file_write_padding(f, 20);
+  ase_file_write_string(f, tileset->name()); // tileset name
+
+  // Flag 2 = tileset
+  fputl(tileset->size(), f);
+  for (tile_index i=0; i<tileset->size(); ++i) {
+    fputl(0, f);                // Flags (zero)
+    size_t beg = ftell(f);
+    fputl(0, f);
+
+    ImageRef tileImg = tileset->get(i);
+    write_compressed_image(f, tileImg.get());
+
+    size_t end = ftell(f);
+    fseek(f, beg, SEEK_SET);
+    fputl(end-beg-4, f);          // Save the compressed data length
+    fseek(f, end, SEEK_SET);
   }
 }
 

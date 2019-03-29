@@ -160,6 +160,7 @@ if(ENABLE_SCRIPTING)
     script/engine.cpp
     script/frame_class.cpp
     script/frames_class.cpp
+    script/grid_class.cpp
     script/image_class.cpp
     script/image_iterator_class.cpp
     script/image_spec_class.cpp
@@ -184,6 +185,8 @@ if(ENABLE_SCRIPTING)
     script/sprites_class.cpp
     script/tag_class.cpp
     script/tags_class.cpp
+    script/tileset_class.cpp
+    script/tilesets_class.cpp
     script/tool_class.cpp
     script/values.cpp
     script/version_class.cpp
@@ -288,6 +291,7 @@ if(ENABLE_UI)
     commands/cmd_tiled_mode.cpp
     commands/cmd_timeline.cpp
     commands/cmd_toggle_preview.cpp
+    commands/cmd_toggle_tiles_mode.cpp
     commands/cmd_toggle_timeline_thumbnails.cpp
     commands/cmd_undo_history.cpp
     commands/cmd_unlink_cel.cpp
@@ -417,6 +421,8 @@ add_library(app-lib
   cmd/add_palette.cpp
   cmd/add_slice.cpp
   cmd/add_tag.cpp
+  cmd/add_tile.cpp
+  cmd/add_tileset.cpp
   cmd/assign_color_profile.cpp
   cmd/background_from_layer.cpp
   cmd/clear_cel.cpp
@@ -446,6 +452,8 @@ add_library(app-lib
   cmd/remove_palette.cpp
   cmd/remove_slice.cpp
   cmd/remove_tag.cpp
+  cmd/remove_tile.cpp
+  cmd/remove_tileset.cpp
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_bounds.cpp
@@ -485,6 +493,7 @@ add_library(app-lib
   cmd/with_slice.cpp
   cmd/with_sprite.cpp
   cmd/with_tag.cpp
+  cmd/with_tileset.cpp
   cmd_sequence.cpp
   cmd_transaction.cpp
   color.cpp
@@ -593,7 +602,7 @@ add_library(app-lib
   ui/layer_frame_comboboxes.cpp
   util/autocrop.cpp
   util/buffer_region.cpp
-  util/create_cel_copy.cpp
+  util/cel_ops.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
   util/freetype_utils.cpp

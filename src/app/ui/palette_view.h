@@ -10,19 +10,23 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/context_observer.h"
 #include "app/ui/color_source.h"
 #include "app/ui/marching_ants.h"
 #include "doc/palette_picks.h"
+#include "doc/tile.h"
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "ui/event.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
+#include <memory>
 #include <vector>
 
 namespace doc {
   class Palette;
+  class Tileset;
 }
 
 namespace app {
@@ -43,20 +47,32 @@ namespace app {
       const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
     virtual app::Color onPaletteViewGetForegroundIndex() { return app::Color::fromMask(); }
     virtual app::Color onPaletteViewGetBackgroundIndex() { return app::Color::fromMask(); }
+    virtual void onPaletteViewClearTiles(const doc::PalettePicks& tiles) { }
   };
+
+  class AbstractPaletteViewAdapter;
+  class PaletteViewAdapter;
 
   class PaletteView : public ui::Widget
                     , public MarchingAnts
-                    , public IColorSource {
+                    , public IColorSource
+                    , public ContextObserver {
+    friend class PaletteViewAdapter;
   public:
     enum PaletteViewStyle {
       SelectOneColor,
-      FgBgColors
+      FgBgColors,
+      FgBgTiles,
     };
 
     PaletteView(bool editable, PaletteViewStyle style, PaletteViewDelegate* delegate, int boxsize);
+    ~PaletteView();
+
+    PaletteViewDelegate* delegate() { return m_delegate; }
 
     bool isEditable() const { return m_editable; }
+    bool isPalette() const { return m_style != FgBgTiles; }
+    bool isTiles() const { return m_style == FgBgTiles; }
 
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
@@ -72,8 +88,13 @@ namespace app {
     int getSelectedEntriesCount() const;
     void setSelectedEntries(const doc::PalettePicks& entries);
 
+    doc::Tileset* tileset() const;
+
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;
+
+    // ContextObserver impl
+    void onActiveSiteChange(const Site& site) override;
 
     int getBoxSize() const;
     void setBoxSize(double boxsize);
@@ -143,11 +164,6 @@ namespace app {
     int findExactIndex(const app::Color& color) const;
     void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette,
                        PaletteViewModification mod);
-    void drawEntry(ui::Graphics* g,
-                   const int palIdx,
-                   const int offIdx,
-                   gfx::Rect& box,
-                   gfx::Color& negColor);
     int boxSizePx() const;
     void updateBorderAndChildSpacing();
 
@@ -155,6 +171,7 @@ namespace app {
     bool m_editable;
     PaletteViewStyle m_style;
     PaletteViewDelegate* m_delegate;
+    std::unique_ptr<AbstractPaletteViewAdapter> m_adapter;
     int m_columns;
     double m_boxsize;
     int m_currentEntry;

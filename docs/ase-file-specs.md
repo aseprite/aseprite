@@ -25,7 +25,9 @@ ASE files use Intel (little-endian) byte order.
 * `PIXEL`: One pixel, depending on the image pixel format:
   - **RGBA**: `BYTE[4]`, each pixel have 4 bytes in this order Red, Green, Blue, Alpha.
   - **Grayscale**: `BYTE[2]`, each pixel have 2 bytes in the order Value, Alpha.
-  - **Indexed**: `BYTE`, Each pixel uses 1 byte (the index).
+  - **Indexed**: `BYTE`, each pixel uses 1 byte (the index).
+* `TILE`: **Tilemaps**: Each tile can be a 8-bit, 16-bit, or 32-bit
+  value and there are masks related to the meaning of each bit.
 
 ## Introduction
 
@@ -146,6 +148,7 @@ Ignore this chunk if you find the new palette chunk (0x2019)
     WORD        Layer type
                   0 = Normal (image) layer
                   1 = Group
+                  2 = Tilemap
     WORD        Layer child level (see NOTE.1)
     WORD        Default layer width in pixels (ignored)
     WORD        Default layer height in pixels (ignored)
@@ -173,19 +176,24 @@ Ignore this chunk if you find the new palette chunk (0x2019)
                   Note: valid only if file header flags field has bit 1 set
     BYTE[3]     For future (set to zero)
     STRING      Layer name
+    + If layer type = 3
+      DWORD     Tileset index
 
 ### Cel Chunk (0x2005)
 
-  This chunk determine where to put a cel in the specified
-  layer/frame.
+This chunk determine where to put a cel in the specified layer/frame.
 
     WORD        Layer index (see NOTE.2)
     SHORT       X position
     SHORT       Y position
     BYTE        Opacity level
-    WORD        Cel type
+    WORD        Cel Type
+                0 - Raw Image Data (unused, compressed image is preferred)
+                1 - Linked Cel
+                2 - Compressed Image
+                3 - Compressed Tilemap
     BYTE[7]     For future (set to zero)
-    + For cel type = 0 (Raw Cel)
+    + For cel type = 0 (Raw Image Data)
       WORD      Width in pixels
       WORD      Height in pixels
       PIXEL[]   Raw pixel data: row by row from top to bottom,
@@ -195,14 +203,18 @@ Ignore this chunk if you find the new palette chunk (0x2019)
     + For cel type = 2 (Compressed Image)
       WORD      Width in pixels
       WORD      Height in pixels
-      BYTE[]    "Raw Cel" data compressed with ZLIB method
-
-Details about the ZLIB and DEFLATE compression methods:
-
-* https://www.ietf.org/rfc/rfc1950
-* https://www.ietf.org/rfc/rfc1951
-* Some extra notes that might help you to decode the data:
-  http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
+      BYTE[]    "Raw Cel" data compressed with ZLIB method (see NOTE.3)
+    + For cel type = 3 (Compressed Tilemap)
+      WORD      Width in pixels
+      WORD      Height in pixels
+      WORD      Bits per pixel/tile reference (8, 16, or 32)
+      DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
+      DWORD     Bitmask for X flip
+      DWORD     Bitmask for Y flip
+      DWORD     Bitmask for 90CW rotation
+      BYTE[10]  Reserved
+      TILE[]    Row by row, from top to bottom tile by tile
+                compressed with ZLIB method (see NOTE.3)
 
 ### Cel Extra Chunk (0x2006)
 
@@ -326,6 +338,26 @@ belongs to that cel, etc.
         LONG    Pivot X position (relative to the slice origin)
         LONG    Pivot Y position (relative to the slice origin)
 
+### Tileset Chunk (0x2023)
+
+    DWORD       Tileset ID
+    DWORD       Tileset flags
+                  1 - Include link to external file
+                  2 - Include tiles inside this file
+    WORD        Tiles width
+    WORD        Tiles height
+    BYTE[36]    Reserved
+    STRING      Name of the tileset
+    + If flag 1 is set
+      STRING    Name of the external file (path relative to this file, in the best case)
+      DWORD     Tileset ID in the external file
+    + If flag 2 is set
+      DWORD     Number of tiles to read
+      + For each tile
+        DWORD   Tile flags (0)
+        DWORD   Compressed data length
+        PIXEL[] Read tile image (tile width x height compressed pixels, see NOTE.3)
+
 ### Notes
 
 #### NOTE.1
@@ -355,6 +387,15 @@ example:
       |- My set1                  3
       |  `- Layer2                4
       `- Layer3                   5
+
+#### NOTE.3
+
+Details about the ZLIB and DEFLATE compression methods:
+
+* https://www.ietf.org/rfc/rfc1950
+* https://www.ietf.org/rfc/rfc1951
+* Some extra notes that might help you to decode the data:
+  http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
 
 ## File Format Changes
 

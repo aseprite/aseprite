@@ -10,6 +10,8 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "base/shared_ptr.h"
+#include "gfx/fwd.h"
 #include "gfx/point.h"
 
 #include <memory>
@@ -131,6 +133,10 @@ namespace app {
 
     // Called when a tag is deleted.
     virtual void onRemoveTag(Editor* editor, doc::Tag* tag) { }
+
+    // Used to adjust the grid origin point for temporal cels created
+    // by states like DrawingState + ExpandCelCanvas.
+    virtual bool getGridBounds(Editor* editor, gfx::Rect& gridBounds) { return false; }
 
   private:
     DISABLE_COPYING(EditorState);

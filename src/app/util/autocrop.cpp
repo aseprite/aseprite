@@ -276,7 +276,7 @@ gfx::Rect get_trimmed_bounds(
     gfx::Rect frameBounds;
     doc::color_t refColor;
     if (get_best_refcolor_for_trimming(image, refColor) &&
-        doc::algorithm::shrink_bounds(image, frameBounds, refColor)) {
+        doc::algorithm::shrink_bounds(image, refColor, nullptr, frameBounds)) {
       bounds = bounds.createUnion(frameBounds);
     }
 

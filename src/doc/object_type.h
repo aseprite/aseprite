@@ -22,10 +22,13 @@ namespace doc {
     CelData,
     LayerImage,
     LayerGroup,
+    LayerTilemap,
     Sprite,
     Document,
     Tag,
     Slice,
+    Tileset,
+    Tilesets,
   };
 
 } // namespace doc

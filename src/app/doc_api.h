@@ -75,7 +75,7 @@ namespace app {
     // Cels API
     void addCel(LayerImage* layer, Cel* cel);
     Cel* addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image);
-    void clearCel(LayerImage* layer, frame_t frame);
+    void clearCel(Layer* layer, frame_t frame);
     void clearCel(Cel* cel);
     void clearCelAndAllLinks(Cel* cel);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);

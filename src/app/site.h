@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/doc_range.h"
+#include "app/tileset_mode.h"
 #include "doc/frame.h"
 #include "doc/palette_picks.h"
 #include "doc/selected_objects.h"
@@ -49,7 +50,8 @@ namespace app {
       , m_document(nullptr)
       , m_sprite(nullptr)
       , m_layer(nullptr)
-      , m_frame(0) { }
+      , m_frame(0)
+      , m_tilesetMode(TilesetMode::Locked) { }
 
     const Focus focus() const { return m_focus; }
     bool inEditor() const { return m_focus == InEditor; }
@@ -101,6 +103,9 @@ namespace app {
 
     gfx::Rect gridBounds() const;
 
+    void tilesetMode(const TilesetMode& mode) { m_tilesetMode = mode; }
+    const TilesetMode& tilesetMode() const { return m_tilesetMode; }
+
   private:
     Focus m_focus;
     Doc* m_document;
@@ -110,6 +115,7 @@ namespace app {
     DocRange m_range;
     doc::PalettePicks m_selectedColors;
     doc::SelectedObjects m_selectedSlices;
+    TilesetMode m_tilesetMode;
   };
 
 } // namespace app

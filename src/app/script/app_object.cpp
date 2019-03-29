@@ -311,6 +311,13 @@ int App_useTool(lua_State* L)
   if (!brush)
     brush.reset(new Brush(BrushType::kCircleBrushType, 1, 0));
 
+  // How the tileset must be modified depending on this tool usage
+  type = lua_getfield(L, 1, "tilesetMode");
+  if (type != LUA_TNIL) {
+    site.tilesetMode(TilesetMode(lua_tointeger(L, -1)));
+  }
+  lua_pop(L, 1);
+
   // Do the tool loop
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {

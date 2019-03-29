@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -79,6 +80,7 @@ namespace app {
     void onRemoveCel(DocEvent& ev) override;
     void onTotalFramesChanged(DocEvent& ev) override;
     void onLayerRestacked(DocEvent& ev) override;
+    void onTilesetChanged(DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,

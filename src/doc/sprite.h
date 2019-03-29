@@ -43,6 +43,7 @@ namespace doc {
   class Remap;
   class RgbMap;
   class SelectedFrames;
+  class Tilesets;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -188,6 +189,11 @@ namespace doc {
     CelsRange uniqueCels() const;
     CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 
+    ////////////////////////////////////////
+    // Tilesets
+
+    Tilesets* tilesets() const;
+
   private:
     Document* m_document;
     ImageSpec m_spec;
@@ -203,6 +209,9 @@ namespace doc {
 
     Tags m_tags;
     Slices m_slices;
+
+    // Tilesets
+    mutable Tilesets* m_tilesets;
 
     // Disable default constructor and copying
     Sprite();

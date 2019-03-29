@@ -27,6 +27,7 @@ namespace doc {
 
   void copy_image(Image* dst, const Image* src);
   void copy_image(Image* dst, const Image* src, int x, int y);
+  void copy_image(Image* dst, const Image* src, const gfx::Region& rgn);
   Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   Image* crop_image(const Image* image, const gfx::Rect& bounds, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   void rotate_image(const Image* src, Image* dst, int angle);

@@ -23,6 +23,7 @@
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
 #include "doc/tag.h"
+#include "doc/tilesets.h"
 
 #include <algorithm>
 #include <cstring>
@@ -61,6 +62,7 @@ Sprite::Sprite(const ImageSpec& spec,
   , m_rgbMap(nullptr)           // Initial RGB map
   , m_tags(this)
   , m_slices(this)
+  , m_tilesets(nullptr)
 {
   // Generate palette
   switch (spec.colorMode()) {
@@ -90,6 +92,9 @@ Sprite::~Sprite()
 {
   // Destroy layers
   delete m_root;
+
+  // Destroy tilesets
+  delete m_tilesets;
 
   // Destroy palettes
   {
@@ -467,7 +472,7 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 {
   for (Cel* cel : cels()) {
     if (cel->image()->id() == curImageId)
-      cel->data()->setImage(newImage);
+      cel->data()->setImage(newImage, cel->layer());
   }
 }
 
@@ -506,8 +511,6 @@ void Sprite::pickCels(const double x,
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
     const Layer* layer = layers[i];
-    if (!layer->isImage())
-      continue;
 
     Cel* cel = layer->cel(frame);
     if (!cel)
@@ -609,6 +612,16 @@ CelsRange Sprite::uniqueCels() const
 CelsRange Sprite::uniqueCels(const SelectedFrames& selFrames) const
 {
   return CelsRange(this, selFrames, CelsRange::UNIQUE);
+}
+
+////////////////////////////////////////
+// Tilesets
+
+Tilesets* Sprite::tilesets() const
+{
+  if (!m_tilesets)
+    m_tilesets = new Tilesets;
+  return m_tilesets;
 }
 
 } // namespace doc

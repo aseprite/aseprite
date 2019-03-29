@@ -30,6 +30,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
+#include "app/util/cel_ops.h"
 #include "app/util/clipboard.h"
 #include "app/util/clipboard_native.h"
 #include "app/util/new_image_from_mask.h"
@@ -248,12 +249,14 @@ void clear_mask_from_cels(Tx& tx,
   for (Cel* cel : cels) {
     ObjectId celId = cel->id();
 
-    tx(new cmd::ClearMask(cel));
+    clear_mask_from_cel(
+      tx, cel, ColorBar::instance()->tilesetMode());
 
     // Get cel again just in case the cmd::ClearMask() called cmd::ClearCel()
     cel = doc::get<Cel>(celId);
     if (cel &&
-        cel->layer()->isTransparent()) {
+        cel->layer()->isTransparent() &&
+        !cel->layer()->isTilemap()) {
       tx(new cmd::TrimCel(cel));
     }
   }
@@ -278,6 +281,7 @@ void cut(ContextWriter& writer)
     console.printf("Can't copying an image portion from the current layer\n");
   }
   else {
+    // TODO This code is similar to DocView::onClear()
     {
       Tx tx(writer.context(), "Cut");
       Site site = writer.context()->activeSite();

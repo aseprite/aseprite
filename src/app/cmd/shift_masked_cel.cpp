@@ -59,7 +59,7 @@ void ShiftMaskedCel::shift(int dx, int dy)
     newImage->setId(id);
     newImage->setVersion(ver);
     newImage->incrementVersion();
-    cel->data()->setImage(newImage);
+    cel->data()->setImage(newImage, cel->layer());
   }
   cel->data()->setBounds(newBounds);
   cel->data()->incrementVersion();
