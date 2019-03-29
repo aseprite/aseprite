@@ -247,6 +247,11 @@ public:
     }
     return false;
   }
+
+  bool isPixelConnectivityEightConnected() override {
+    return m_toolPref.floodfill.pixelConnectivity() == app::gen::PixelConnectivity::EIGHT_CONNECTED;
+  }
+
   gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
   gfx::Point getCelOrigin() override { return m_celOrigin; }
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }

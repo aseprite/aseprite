@@ -46,6 +46,10 @@
       <value id="ACTIVE_LAYER" value="0" />
       <value id="ALL_LAYERS" value="1" />
     </enum>
+    <enum id="PixelConnectivity">
+      <value id="FOUR_CONNECTED" value="0" />
+      <value id="EIGHT_CONNECTED" value="1" />
+    </enum>
     <enum id="EyedropperChannel">
       <value id="COLOR_ALPHA" value="0" />
       <value id="COLOR" value="1" />
@@ -354,6 +358,7 @@
     <section id="floodfill">
       <option id="stop_at_grid" type="StopAtGrid" default="StopAtGrid::NEVER" />
       <option id="refer_to" type="FillReferTo" default="FillReferTo::ACTIVE_LAYER" />
+      <option id="pixel_connectivity" type="PixelConnectivity" default="PixelConnectivity::FOUR_CONNECTED" />
     </section>
   </tool>
 
