@@ -348,8 +348,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
 
       auto it = linked.find(sourceCel->data()->id());
       if (it != linked.end()) {
-        newCel.reset(Cel::createLink(it->second));
-        newCel->setFrame(sourceCel->frame());
+        newCel.reset(Cel::MakeLink(sourceCel->frame(),
+                                   it->second));
       }
       else {
         newCel.reset(create_cel_copy(sourceCel,

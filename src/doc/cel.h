@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,8 +28,8 @@ namespace doc {
     Cel(frame_t frame, const ImageRef& image);
     Cel(frame_t frame, const CelDataRef& celData);
 
-    static Cel* createCopy(const Cel* other);
-    static Cel* createLink(const Cel* other);
+    static Cel* MakeCopy(const frame_t newFrame, const Cel* other);
+    static Cel* MakeLink(const frame_t newFrame, const Cel* other);
 
     frame_t frame() const { return m_frame; }
     int x() const { return m_data->position().x; }

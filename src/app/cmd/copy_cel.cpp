@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -110,10 +111,8 @@ void CopyCel::onExecute()
       executeAndAdd(new cmd::RemoveCel(dstCel));
 
     if (srcCel) {
-      if (createLink) {
-        dstCel = Cel::createLink(srcCel);
-        dstCel->setFrame(m_dstFrame);
-      }
+      if (createLink)
+        dstCel = Cel::MakeLink(m_dstFrame, srcCel);
       else
         dstCel = create_cel_copy(srcCel, dstSprite, dstLayer, m_dstFrame);
 

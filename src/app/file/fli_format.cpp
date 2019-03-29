@@ -138,8 +138,7 @@ bool FliFormat::onLoad(FileOp* fop)
       ++frame_out;
     }
     else if (palChange) {
-      Cel* cel = Cel::createLink(prevCel);
-      cel->setFrame(frame_out);
+      Cel* cel = Cel::MakeLink(frame_out, prevCel);
       layer->addCel(cel);
 
       ++frame_out;

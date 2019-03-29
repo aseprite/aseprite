@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -34,10 +35,11 @@ Cel::Cel(frame_t frame, const CelDataRef& celData)
 }
 
 // static
-Cel* Cel::createCopy(const Cel* other)
+Cel* Cel::MakeCopy(const frame_t newFrame,
+                   const Cel* other)
 {
-  Cel* cel = new Cel(other->frame(),
-    ImageRef(Image::createCopy(other->image())));
+  Cel* cel = new Cel(newFrame,
+                     ImageRef(Image::createCopy(other->image())));
 
   cel->setPosition(other->position());
   cel->setOpacity(other->opacity());
@@ -45,9 +47,10 @@ Cel* Cel::createCopy(const Cel* other)
 }
 
 // static
-Cel* Cel::createLink(const Cel* other)
+Cel* Cel::MakeLink(const frame_t newFrame,
+                   const Cel* other)
 {
-  return new Cel(other->frame(), other->dataRef());
+  return new Cel(newFrame, other->dataRef());
 }
 
 void Cel::setFrame(frame_t frame)

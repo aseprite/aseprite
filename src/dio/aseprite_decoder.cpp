@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -651,12 +651,10 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         // different X, Y, or opacity per link, in that case we must
         // create a copy.
         if (link->x() == x && link->y() == y && link->opacity() == opacity) {
-          cel.reset(doc::Cel::createLink(link));
-          cel->setFrame(frame);
+          cel.reset(doc::Cel::MakeLink(frame, link));
         }
         else {
-          cel.reset(doc::Cel::createCopy(link));
-          cel->setFrame(frame);
+          cel.reset(doc::Cel::MakeCopy(frame, link));
           cel->setPosition(x, y);
           cel->setOpacity(opacity);
         }
