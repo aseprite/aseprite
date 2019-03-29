@@ -237,6 +237,32 @@ int Image_isEqual(lua_State* L)
   return 1;
 }
 
+int Image_isEmpty(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  auto img = obj->image(L);
+  bool res = doc::is_empty_image(img);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+int Image_isPlain(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  auto img = obj->image(L);
+  doc::color_t color;
+  if (lua_isnone(L, 2))
+    color = img->maskColor();
+  else if (lua_isinteger(L, 2))
+    color = lua_tointeger(L, 2);
+  else
+    color = convert_args_into_pixel_color(L, 2);
+
+  bool res = doc::is_plain_image(img, color);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -281,6 +307,8 @@ const luaL_Reg Image_methods[] = {
   { "drawSprite", Image_drawSprite }, { "putSprite", Image_drawSprite }, // TODO putSprite is deprecated
   { "pixels", Image_pixels },
   { "isEqual", Image_isEqual },
+  { "isEmpty", Image_isEmpty },
+  { "isPlain", Image_isPlain },
   { "__gc", Image_gc },
   { nullptr, nullptr }
 };
