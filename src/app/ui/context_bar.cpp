@@ -383,12 +383,31 @@ protected:
     menu.addChild(&activeLayer);
     menu.addChild(&allLayers);
 
+    menu.addChild(new MenuSeparator);
+    menu.addChild(new Label("Pixel Connectivity:"));
+
+    HBox box;
+    ButtonSet buttonset(2);
+    buttonset.addItem("4-Connected");
+    buttonset.addItem("8-connected");
+    box.addChild(&buttonset);
+    menu.addChild(&box);
+
     stopAtGrid.setSelected(
       toolPref.floodfill.stopAtGrid() == app::gen::StopAtGrid::IF_VISIBLE);
     activeLayer.setSelected(
       toolPref.floodfill.referTo() == app::gen::FillReferTo::ACTIVE_LAYER);
     allLayers.setSelected(
       toolPref.floodfill.referTo() == app::gen::FillReferTo::ALL_LAYERS);
+
+    int index = 0;
+
+    switch (toolPref.floodfill.pixelConnectivity()) {
+      case app::gen::PixelConnectivity::FOUR_CONNECTED: index = 0; break;
+      case app::gen::PixelConnectivity::EIGHT_CONNECTED: index = 1; break;
+    }
+
+    buttonset.setSelectedItem(index);
 
     stopAtGrid.Click.connect(
       [&]{
@@ -403,6 +422,18 @@ protected:
     allLayers.Click.connect(
       [&]{
         toolPref.floodfill.referTo(app::gen::FillReferTo::ALL_LAYERS);
+      });
+
+    buttonset.ItemChange.connect(
+      [&buttonset, &toolPref](ButtonSet::Item* item){
+        switch (buttonset.selectedItem()) {
+          case 0:
+            toolPref.floodfill.pixelConnectivity(app::gen::PixelConnectivity::FOUR_CONNECTED);
+            break;
+          case 1:
+            toolPref.floodfill.pixelConnectivity(app::gen::PixelConnectivity::EIGHT_CONNECTED);
+            break;
+        }
       });
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));

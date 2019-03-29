@@ -26,6 +26,7 @@ namespace doc {
                    const doc::color_t srcColor,
                    const int tolerance,
                    const bool contiguous,
+                   const bool isEightConnected,
                    void* data,
                    AlgoHLine proc);
 
