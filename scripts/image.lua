@@ -9,6 +9,9 @@ local a = Image(32, 64)
 assert(a.width == 32)
 assert(a.height == 64)
 assert(a.colorMode == ColorMode.RGB) -- RGB by default
+assert(a:isEmpty())
+assert(a:isPlain(pc.rgba(0, 0, 0, 0)))
+assert(a:isPlain(0))
 
 do
    local b = Image(32, 64, ColorMode.INDEXED)
@@ -24,6 +27,7 @@ do
          a:putPixel(x, y, pc.rgba(x, y, x+y, x-y))
       end
    end
+   assert(not a:isEmpty())
 end
 
 -- Clone
