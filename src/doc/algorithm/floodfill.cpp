@@ -346,6 +346,7 @@ void floodfill(const Image* image,
                const doc::color_t src_color,
                const int tolerance,
                const bool contiguous,
+               const bool isEightConnected,
                void* data,
                AlgoHLine proc)
 {
@@ -398,6 +399,33 @@ void floodfill(const Image* image,
       // Check below the segment?
       if (p->flags & FLOOD_TODO_BELOW) {
         p->flags &= ~FLOOD_TODO_BELOW;
+
+        if(isEightConnected) {
+          if (check_flood_line(image, mask, p->y+1, p->lpos+1, p->rpos, bounds,
+            src_color, tolerance, data, proc)) {
+              done = false;
+              p = FLOOD_LINE(c);
+          }
+
+           if (check_flood_line(image, mask, p->y+1, p->lpos-1, p->rpos, bounds,
+            src_color, tolerance, data, proc)) {
+            done = false;
+            p = FLOOD_LINE(c);
+          }
+
+           if (check_flood_line(image, mask, p->y+1, p->lpos, p->rpos+1, bounds,
+            src_color, tolerance, data, proc)) {
+            done = false;
+            p = FLOOD_LINE(c);
+          }
+
+           if (check_flood_line(image, mask, p->y+1, p->lpos, p->rpos-1, bounds,
+            src_color, tolerance, data, proc)) {
+            done = false;
+            p = FLOOD_LINE(c);
+          }
+        }
+
         if (check_flood_line(image, mask, p->y+1, p->lpos, p->rpos, bounds,
             src_color, tolerance, data, proc)) {
           done = false;
@@ -408,6 +436,30 @@ void floodfill(const Image* image,
       // Check above the segment?
       if (p->flags & FLOOD_TODO_ABOVE) {
         p->flags &= ~FLOOD_TODO_ABOVE;
+
+        if(isEightConnected) {
+          if (check_flood_line(image, mask, p->y-1, p->lpos+1, p->rpos, bounds,
+                             src_color, tolerance, data, proc)) {
+            done = false;
+          }
+          //If p->lpos-1 < 0 (out of bounds), then it will cause a crash when filling in the top leftmost pixel.  This check prevents that
+          if(p->lpos-1 >= 0) {
+            if (check_flood_line(image, mask, p->y-1, p->lpos-1, p->rpos, bounds,
+                             src_color, tolerance, data, proc)) {
+            done = false;
+            }
+          }
+
+           if (check_flood_line(image, mask, p->y-1, p->lpos, p->rpos+1, bounds,
+                             src_color, tolerance, data, proc)) {
+            done = false;
+          }
+          if (check_flood_line(image, mask, p->y-1, p->lpos, p->rpos-1, bounds,
+                             src_color, tolerance, data, proc)) {
+            done = false;            
+          }
+        }
+      
         if (check_flood_line(image, mask, p->y-1, p->lpos, p->rpos, bounds,
                              src_color, tolerance, data, proc)) {
           done = false;
