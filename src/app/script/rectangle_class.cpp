@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #endif
 
 #include "app/script/luacpp.h"
+#include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -62,6 +64,14 @@ int Rectangle_eq(lua_State* L)
   const auto a = get_obj<gfx::Rect>(L, 1);
   const auto b = get_obj<gfx::Rect>(L, 2);
   lua_pushboolean(L, *a == *b);
+  return 1;
+}
+
+int Rectangle_tostring(lua_State* L)
+{
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  lua_pushstring(L, fmt::format("Rectangle{{ x={}, y={}, width={}, height={} }}",
+                                rc->x, rc->y, rc->w, rc->h).c_str());
   return 1;
 }
 
@@ -163,6 +173,7 @@ int Rectangle_get_isEmpty(lua_State* L)
 const luaL_Reg Rectangle_methods[] = {
   { "__gc", Rectangle_gc },
   { "__eq", Rectangle_eq },
+  { "__tostring", Rectangle_tostring },
   { "contains", Rectangle_contains },
   { "intersects", Rectangle_intersects },
   { "union", Rectangle_union },

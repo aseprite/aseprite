@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #endif
 
 #include "app/script/luacpp.h"
+#include "fmt/format.h"
 #include "gfx/size.h"
 
 namespace app {
@@ -58,6 +60,14 @@ int Size_eq(lua_State* L)
   return 1;
 }
 
+int Size_tostring(lua_State* L)
+{
+  const auto sz = get_obj<gfx::Size>(L, 1);
+  lua_pushstring(L, fmt::format("Size{{ width={}, height={} }}",
+                                sz->w, sz->h).c_str());
+  return 1;
+}
+
 int Size_get_width(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
@@ -93,6 +103,7 @@ int Size_set_height(lua_State* L)
 const luaL_Reg Size_methods[] = {
   { "__gc", Size_gc },
   { "__eq", Size_eq },
+  { "__tostring", Size_tostring },
   { nullptr, nullptr }
 };
 

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #endif
 
 #include "app/script/luacpp.h"
+#include "fmt/format.h"
 #include "gfx/point.h"
 
 namespace app {
@@ -58,6 +60,14 @@ int Point_eq(lua_State* L)
   return 1;
 }
 
+int Point_tostring(lua_State* L)
+{
+  const auto pt = get_obj<gfx::Point>(L, 1);
+  lua_pushstring(L, fmt::format("Point{{ x={}, y={} }}",
+                                pt->x, pt->y).c_str());
+  return 1;
+}
+
 int Point_get_x(lua_State* L)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
@@ -89,6 +99,7 @@ int Point_set_y(lua_State* L)
 const luaL_Reg Point_methods[] = {
   { "__gc", Point_gc },
   { "__eq", Point_eq },
+  { "__tostring", Point_tostring },
   { nullptr, nullptr }
 };
 
