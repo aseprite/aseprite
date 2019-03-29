@@ -10,6 +10,7 @@ assert(pt.y == 0)
 pt = Point(1, 2)
 assert(pt.x == 1)
 assert(pt.y == 2)
+assert("Point{ x=1, y=2 }" == tostring(pt))
 
 local pt2 = Point(pt)
 assert(pt2.x == 1)

@@ -16,6 +16,7 @@ assert(rc.y == 2)
 assert(rc.width == 3)
 assert(rc.height == 4)
 assert(not rc.isEmpty)
+assert("Rectangle{ x=1, y=2, width=3, height=4 }" == tostring(rc))
 
 local rc2 = Rectangle(rc)
 assert(rc2.x == 1)

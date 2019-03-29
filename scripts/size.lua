@@ -10,6 +10,7 @@ assert(sz.height == 0)
 sz = Size(3, 4)
 assert(sz.width == 3)
 assert(sz.height == 4)
+assert("Size{ width=3, height=4 }" == tostring(sz))
 
 local sz2 = Size(sz)
 assert(sz2.width == 3)
