@@ -223,7 +223,7 @@ Color profile for RGB or grayscale values.
                   1 - use special fixed gamma
     FIXED       Fixed gamma (1.0 = linear)
                 Note: The gamma in sRGB is 2.2 in overall but it doesn't use
-                a this fixed gamma, because sRGB uses different gamma sections
+                this fixed gamma, because sRGB uses different gamma sections
                 (linear and non-linear). If sRGB is specified with a fixed
                 gamma = 1.0, it means that this is Linear sRGB.
     BYTE[8]     Reserved (set to zero]
@@ -245,7 +245,7 @@ Color profile for RGB or grayscale values.
 
 ### Path Chunk (0x2017)
 
-  Never used.
+Never used.
 
 ### Frame Tags Chunk (0x2018)
 
