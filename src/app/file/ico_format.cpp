@@ -285,7 +285,7 @@ bool IcoFormat::onSave(FileOp* fop)
       sprite->height()));
 
   render::Render render;
-  render.setNewBlend(Preferences::instance().experimental.newBlend());
+  render.setNewBlend(fop->newBlend());
 
   for (n=frame_t(0); n<num; ++n) {
     render.renderSprite(image.get(), sprite, n);

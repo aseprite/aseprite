@@ -175,6 +175,8 @@ namespace app {
     void setEmbeddedColorProfile() { m_embeddedColorProfile = true; }
     bool hasEmbeddedColorProfile() const { return m_embeddedColorProfile; }
 
+    bool newBlend() const { return m_newBlend; }
+
   private:
     FileOp();                   // Undefined
     FileOp(FileOpType type, Context* context);

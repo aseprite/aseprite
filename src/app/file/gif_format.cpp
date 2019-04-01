@@ -1333,7 +1333,7 @@ private:
 
   void renderFrame(frame_t frame, Image* dst) {
     render::Render render;
-    render.setNewBlend(Preferences::instance().experimental.newBlend());
+    render.setNewBlend(m_fop->newBlend());
 
     render.setBgType(render::BgType::NONE);
     clear_image(dst, m_clearColor);

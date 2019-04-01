@@ -217,7 +217,7 @@ bool FliFormat::onSave(FileOp* fop)
   // Create the bitmaps
   ImageRef bmp(Image::create(IMAGE_INDEXED, sprite->width(), sprite->height()));
   render::Render render;
-  render.setNewBlend(Preferences::instance().experimental.newBlend());
+  render.setNewBlend(fop->newBlend());
 
   // Write frame by frame
   flic::Frame fliFrame;
