@@ -87,7 +87,7 @@ void Transaction::commit()
   ASSERT(m_cmds);
   TX_TRACE("TX: Commit <%s>\n", m_cmds->label().c_str());
 
-  m_cmds->commit();
+  m_cmds->updateSpritePositionAfter();
   m_undo->add(m_cmds);
   m_cmds = nullptr;
 

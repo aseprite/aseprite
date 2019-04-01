@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/cmd_transaction.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -3725,6 +3726,12 @@ void Timeline::dropRange(DropOp op)
         !m_sprite->frameTags().empty()) {
       invalidateRect(getFrameHeadersBounds().offset(origin()));
     }
+
+    // Update the sprite position after the command was executed
+    // TODO improve this workaround
+    Cmd* cmd = m_document->undoHistory()->lastExecutedCmd();
+    if (auto cmdTx = dynamic_cast<CmdTransaction*>(cmd))
+      cmdTx->updateSpritePositionAfter();
   }
   catch (const std::exception& ex) {
     Console::showException(ex);

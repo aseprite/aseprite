@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,7 +39,7 @@ void CmdTransaction::setNewDocRange(const DocRange& range)
 #endif
 }
 
-void CmdTransaction::commit()
+void CmdTransaction::updateSpritePositionAfter()
 {
   m_spritePositionAfter = calcSpritePosition();
 
