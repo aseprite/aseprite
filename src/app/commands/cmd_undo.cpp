@@ -130,9 +130,10 @@ void UndoCommand::onExecute(Context* context)
   // (because new frames/layers could be added, positions that we
   // weren't able to reach before the undo).
   if (gotoModified) {
+    Site newSite = context->activeSite();
     SpritePosition currentPosition(
-      writer.site()->layer(),
-      writer.site()->frame());
+      newSite.layer(),
+      newSite.frame());
 
     if (spritePosition != currentPosition) {
       Layer* selectLayer = spritePosition.layer();
