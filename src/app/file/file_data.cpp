@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,13 +11,14 @@
 
 #include "app/file/file_data.h"
 
-#include "app/pref/preferences.h"
+#include "app/color.h"
 #include "app/xml_document.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "doc/color.h"
 #include "doc/document.h"
 #include "doc/slice.h"
+#include "gfx/color.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -222,7 +224,9 @@ void update_xml_slice(const doc::Slice* slice, TiXmlElement* xmlSlice)
 
 } // anonymous namespace
 
-void load_aseprite_data_file(const std::string& dataFilename, doc::Document* doc)
+void load_aseprite_data_file(const std::string& dataFilename,
+                             doc::Document* doc,
+                             app::Color& defaultSliceColor)
 {
   XmlDocumentRef xmlDoc = open_xml(dataFilename);
   TiXmlHandle handle(xmlDoc.get());
@@ -254,12 +258,11 @@ void load_aseprite_data_file(const std::string& dataFilename, doc::Document* doc
       slice->setName(partId);
 
       // Default slice color
-      auto color = Preferences::instance().slices.defaultColor();
       slice->userData().setColor(
-        doc::rgba(color.getRed(),
-                  color.getGreen(),
-                  color.getBlue(),
-                  color.getAlpha()));
+        doc::rgba(defaultSliceColor.getRed(),
+                  defaultSliceColor.getGreen(),
+                  defaultSliceColor.getBlue(),
+                  defaultSliceColor.getAlpha()));
 
       doc::SliceKey key;
 
@@ -320,11 +323,10 @@ void load_aseprite_data_file(const std::string& dataFilename, doc::Document* doc
         color = color_from_hex(xmlSlice->Attribute("color"));
       }
       else {
-        app::Color appColor = Preferences::instance().slices.defaultColor();
-        color = doc::rgba(appColor.getRed(),
-                          appColor.getGreen(),
-                          appColor.getBlue(),
-                          appColor.getAlpha());
+        color = doc::rgba(defaultSliceColor.getRed(),
+                          defaultSliceColor.getGreen(),
+                          defaultSliceColor.getBlue(),
+                          defaultSliceColor.getAlpha());
       }
       slice->userData().setColor(color);
 

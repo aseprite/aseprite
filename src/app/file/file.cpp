@@ -709,7 +709,9 @@ void FileOp::operate(IFileOpProgress* progress)
         m_document->sprite()  &&
         !m_dataFilename.empty()) {
       try {
-        load_aseprite_data_file(m_dataFilename, m_document);
+        load_aseprite_data_file(m_dataFilename,
+                                m_document,
+                                m_defaultSliceColor);
       }
       catch (const std::exception& ex) {
         setError("Error loading data file: %s\n", ex.what());
@@ -1191,6 +1193,7 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_preserveColorProfile(Preferences::instance().color.manage())
   , m_embeddedColorProfile(false)
   , m_newBlend(Preferences::instance().experimental.newBlend())
+  , m_defaultSliceColor(Preferences::instance().slices.defaultColor())
 {
   m_seq.palette = nullptr;
   m_seq.image.reset();

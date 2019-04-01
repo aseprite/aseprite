@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #define APP_FILE_FILE_H_INCLUDED
 #pragma once
 
+#include "app/color.h"
 #include "base/mutex.h"
 #include "base/paths.h"
 #include "base/shared_ptr.h"
@@ -211,6 +212,8 @@ namespace app {
     // True if we should render each frame to save it with the new
     // blend mode.
     bool m_newBlend;
+
+    app::Color m_defaultSliceColor;
 
     base::SharedPtr<FormatOptions> m_formatOptions;
 
