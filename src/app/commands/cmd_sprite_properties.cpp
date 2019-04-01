@@ -71,6 +71,14 @@ void SpritePropertiesCommand::onExecute(Context* context)
   app::gen::SpriteProperties window;
   int selectedColorProfile = -1;
 
+  auto updateButtons =
+    [&] {
+      bool enabled = (selectedColorProfile != window.colorProfile()->getSelectedItemIndex());
+      window.assignColorProfile()->setEnabled(enabled);
+      window.convertColorProfile()->setEnabled(enabled);
+      window.ok()->setEnabled(!enabled);
+    };
+
   // Get sprite properties and fill frame fields
   {
     const ContextReader reader(context);
@@ -152,14 +160,6 @@ void SpritePropertiesCommand::onExecute(Context* context)
     for (auto& cs : colorSpaces)
       window.colorProfile()->addItem(cs->gfxColorSpace()->name());
     window.colorProfile()->setSelectedItemIndex(selectedColorProfile);
-
-    auto updateButtons =
-      [&] {
-        bool enabled = (selectedColorProfile != window.colorProfile()->getSelectedItemIndex());
-        window.assignColorProfile()->setEnabled(enabled);
-        window.convertColorProfile()->setEnabled(enabled);
-        window.ok()->setEnabled(!enabled);
-      };
 
     window.assignColorProfile()->setEnabled(false);
     window.convertColorProfile()->setEnabled(false);
