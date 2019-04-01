@@ -143,7 +143,8 @@ private:
 
         // Convert the image to sRGB color space
         auto cs = sprite->colorSpace();
-        if (cs && !cs->nearlyEqual(*gfx::ColorSpace::MakeSRGB())) {
+        if (m_fop->preserveColorProfile() &&
+            cs && !cs->nearlyEqual(*gfx::ColorSpace::MakeSRGB())) {
           app::cmd::convert_color_profile(
             thumbnailImage.get(), palette.get(),
             cs, gfx::ColorSpace::MakeSRGB());
