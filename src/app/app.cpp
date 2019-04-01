@@ -17,6 +17,7 @@
 #include "app/cli/cli_processor.h"
 #include "app/cli/default_cli_delegate.h"
 #include "app/cli/preview_cli_delegate.h"
+#include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
@@ -59,11 +60,11 @@
 #include "base/split_string.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
-#include "render/render.h"
 #include "os/display.h"
 #include "os/error.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -104,6 +105,9 @@ class App::CoreModules {
 public:
   ConfigModule m_configModule;
   Preferences m_preferences;
+  CoreModules() {
+    initialize_color_spaces();
+  }
 };
 
 class App::LoadLanguage {

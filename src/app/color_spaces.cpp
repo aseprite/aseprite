@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,6 +18,20 @@
 #include "os/system.h"
 
 namespace app {
+
+// We use this variable to avoid accessing Preferences::instance()
+// from background threads when a color conversion between color
+// spaces must be done.
+static bool g_manage = false;
+
+void initialize_color_spaces()
+{
+  g_manage = Preferences::instance().color.manage();
+  Preferences::instance().color.manage.AfterChange.connect(
+    [](bool manage){
+      g_manage = manage;
+    });
+}
 
 os::ColorSpacePtr get_screen_color_space()
 {
@@ -56,7 +70,7 @@ gfx::ColorSpacePtr get_working_rgb_space_from_preferences()
 
 ConvertCS::ConvertCS()
 {
-  if (Preferences::instance().color.manage()) {
+  if (g_manage) {
     auto srcCS = get_current_color_space();
     auto dstCS = get_screen_color_space();
     if (srcCS && dstCS)
@@ -67,7 +81,7 @@ ConvertCS::ConvertCS()
 ConvertCS::ConvertCS(const os::ColorSpacePtr& srcCS,
                      const os::ColorSpacePtr& dstCS)
 {
-  if (Preferences::instance().color.manage()) {
+  if (g_manage) {
     m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
   }
 }
