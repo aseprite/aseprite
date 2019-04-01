@@ -26,9 +26,12 @@ static Preferences* singleton = nullptr;
 // static
 Preferences& Preferences::instance()
 {
+#ifdef _DEBUG
   // Preferences can be used only from the main UI thread. In other
   // case access to std::map<> could crash the program.
-  ui::assert_ui_thread();
+  if (ui::UISystem::instance())
+    ui::assert_ui_thread();
+#endif
 
   ASSERT(singleton);
   return *singleton;

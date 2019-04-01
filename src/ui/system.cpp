@@ -362,8 +362,7 @@ void execute_from_ui_thread(std::function<void()>&& f)
 
 bool is_ui_thread()
 {
-  return (!main_gui_thread ||
-          main_gui_thread == base::this_thread::native_handle());
+  return (main_gui_thread == base::this_thread::native_handle());
 }
 
 #ifdef _DEBUG

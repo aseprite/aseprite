@@ -105,9 +105,6 @@ class App::CoreModules {
 public:
   ConfigModule m_configModule;
   Preferences m_preferences;
-  CoreModules() {
-    initialize_color_spaces();
-  }
 };
 
 class App::LoadLanguage {
@@ -230,6 +227,8 @@ void App::initialize(const AppOptions& options)
       createLogInDesktop = true;
       break;
   }
+
+  initialize_color_spaces();
 
   // Load modules
   m_modules = new Modules(createLogInDesktop, preferences());
