@@ -61,6 +61,12 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
   adjustResize()->setVisible(false);
 
+  // Here we don't call updateAniDir() because it's already filled and
+  // set by the function fill_anidir_combobox(). So if the user
+  // exported a tag with a specific AniDir, we want to keep the option
+  // in the preference (instead of the tag's AniDir).
+  //updateAniDir();
+
   updateAdjustResizeButton();
 
   outputFilename()->Change.connect(

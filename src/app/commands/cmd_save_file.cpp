@@ -135,9 +135,11 @@ std::string SaveFileBaseCommand::saveAsDialog(
   const std::string& forbiddenFilename)
 {
   Doc* document = context->activeDocument();
-  
-  // Before to release de original document, we have to save all
-  // preferences which are not saved in a Close operation:
+
+  // Before we change the document filename to the copy, we save its
+  // preferences so in a future export operation the values persist,
+  // and we can re-export the original document with the same
+  // preferences.
   Preferences::instance().save();
 
   std::string filename;
@@ -173,6 +175,19 @@ std::string SaveFileBaseCommand::saveAsDialog(
     saveDocumentInBackground(
       context, document,
       filename, markAsSaved);
+
+    // Reset the "saveCopy" document preferences of the new document
+    // (here "document" contains the new filename), because these
+    // preferences make sense only for the original document that was
+    // exported/copied, not for the new one.
+    //
+    // The new document (the copy) must have the default preferences
+    // just in case the user want to export it to other file (so a
+    // proper default export filename is calculated). This scenario is
+    // described here:
+    //
+    //   https://github.com/aseprite/aseprite/issues/1964
+    //
     auto& docPref = Preferences::instance().document(document);
     docPref.saveCopy.filename(docPref.saveCopy.filename.defaultValue());
     docPref.saveCopy.aniDir(docPref.saveCopy.aniDir.defaultValue());
