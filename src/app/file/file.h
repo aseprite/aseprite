@@ -208,6 +208,10 @@ namespace app {
     // True if the file contained a color profile when it was loaded.
     bool m_embeddedColorProfile;
 
+    // True if we should render each frame to save it with the new
+    // blend mode.
+    bool m_newBlend;
+
     base::SharedPtr<FormatOptions> m_formatOptions;
 
     // Data for sequences.

@@ -17,6 +17,7 @@
 #include "app/tools/tool.h"
 #include "doc/sprite.h"
 #include "os/system.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -25,6 +26,10 @@ static Preferences* singleton = nullptr;
 // static
 Preferences& Preferences::instance()
 {
+  // Preferences can be used only from the main UI thread. In other
+  // case access to std::map<> could crash the program.
+  ui::assert_ui_thread();
+
   ASSERT(singleton);
   return *singleton;
 }

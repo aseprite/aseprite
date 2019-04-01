@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -60,6 +60,7 @@ BackupObserver::BackupObserver(Session* session, Context* ctx)
   : m_session(session)
   , m_ctx(ctx)
   , m_done(false)
+  , m_period(Preferences::instance().general.dataRecoveryPeriod())
   , m_thread(base::Bind<void>(&BackupObserver::backgroundThread, this))
 {
   m_ctx->add_observer(this);
@@ -97,7 +98,7 @@ void BackupObserver::onRemoveDocument(Doc* document)
 
 void BackupObserver::backgroundThread()
 {
-  int normalPeriod = int(60.0*Preferences::instance().general.dataRecoveryPeriod());
+  int normalPeriod = int(60.0*m_period);
   int lockedPeriod = 5;
 #ifdef TEST_BACKUPS_WITH_A_SHORT_PERIOD
   normalPeriod = 5;

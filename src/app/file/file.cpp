@@ -737,7 +737,7 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // For each frame in the sprite.
       render::Render render;
-      render.setNewBlend(Preferences::instance().experimental.newBlend());
+      render.setNewBlend(m_newBlend);
 
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.selectedFrames()) {
@@ -913,7 +913,7 @@ void FileOp::postLoad()
   app::gen::ColorProfileBehavior behavior =
     app::gen::ColorProfileBehavior::DISABLE;
 
-  if (Preferences::instance().color.manage()) {
+  if (m_preserveColorProfile) {
     // Embedded color profile
     if (this->hasEmbeddedColorProfile()) {
       behavior = Preferences::instance().color.filesWithProfile();
@@ -1186,9 +1186,9 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_oneframe(false)
   , m_createPaletteFromRgba(false)
   , m_ignoreEmpty(false)
-  , m_preserveColorProfile(
-      Preferences::instance().color.manage())
+  , m_preserveColorProfile(Preferences::instance().color.manage())
   , m_embeddedColorProfile(false)
+  , m_newBlend(Preferences::instance().experimental.newBlend())
 {
   m_seq.palette = nullptr;
   m_seq.image.reset();

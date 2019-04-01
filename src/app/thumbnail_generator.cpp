@@ -90,8 +90,8 @@ private:
       // Load the file
       m_fop->operate(nullptr);
 
-      // Post load
-      m_fop->postLoad();
+      // Don't call post-load because postLoad() needs user interaction.
+      //m_fop->postLoad();
 
       // Convert the loaded document into the os::Surface.
       const Sprite* sprite =
