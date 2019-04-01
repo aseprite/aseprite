@@ -971,6 +971,7 @@ void FileOp::postLoad()
 
     case app::gen::ColorProfileBehavior::DISABLE:
       sprite->setColorSpace(gfx::ColorSpace::MakeNone());
+      m_document->notifyColorSpaceChanged();
       break;
 
     case app::gen::ColorProfileBehavior::EMBEDDED:
@@ -989,6 +990,7 @@ void FileOp::postLoad()
       // Convert to the working color profile
       auto gfxCS = get_working_rgb_space_from_preferences();
       sprite->setColorSpace(gfxCS);
+      m_document->notifyColorSpaceChanged();
       break;
     }
   }
