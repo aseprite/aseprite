@@ -29,10 +29,8 @@ void ErrorDiffusionDither::start(
 {
   m_srcImage = srcImage;
   m_width = 2+srcImage->width();
-  for (int i=0; i<kChannels; ++i) {
-    m_err[i].resize(m_width*2);
-    m_err[i].clear();
-  }
+  for (int i=0; i<kChannels; ++i)
+    m_err[i].resize(m_width*2, 0);
   m_lastY = -1;
 }
 
